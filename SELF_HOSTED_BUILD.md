@@ -33,7 +33,10 @@ uploaded to the calling workflow run, so Neon can publish one complete manifest.
 | autoscaler-agent | `autoscaler-agent/Dockerfile` |
 | cluster-autoscaler-neonvm | upstream Kubernetes Autoscaler fixed commit + `ca.patch` |
 
-Go race tests gate the Go builds. Images include build provenance and SBOMs.
+Go race tests, including the upstream controller functional tests with a local
+Kubernetes 1.31 API server and etcd, gate the Go builds. `ci/test.sh` provisions
+these test binaries with an immutable envtest installer commit.
+Images include build provenance and SBOMs.
 All component records contain the checked-out source commit and image digest.
 Images still need Kubernetes resources, permissions, configuration and KVM hosts
 to run as a complete NeonVM deployment. A successful image build alone does not
