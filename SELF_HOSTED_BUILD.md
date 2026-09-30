@@ -37,6 +37,9 @@ Go race tests, including the upstream controller functional tests with a local
 Kubernetes 1.31 API server and etcd, gate the Go builds. `ci/test.sh` provisions
 these test binaries with an immutable envtest installer commit.
 Images include build provenance and SBOMs.
+Job outputs carry only digests; Docker Hub usernames held in Secrets would
+cause GitHub to suppress full image-reference outputs. The kernel version suffix
+uses the kernel directory's Git tree, so CI-only edits reuse compiled kernel layers.
 All component records contain the checked-out source commit and image digest.
 Images still need Kubernetes resources, permissions, configuration and KVM hosts
 to run as a complete NeonVM deployment. A successful image build alone does not
