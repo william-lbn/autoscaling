@@ -80,6 +80,7 @@ COPY --from=build_amd64 /build/linux-${KERNEL_VERSION}/arch/x86/boot/bzImage /vm
 # Build the kernel on arm64
 FROM build-deps AS build_arm64
 ARG KERNEL_VERSION
+ARG VERSION_SUFFIX
 ADD linux-config-aarch64-${KERNEL_VERSION} linux-${KERNEL_VERSION}/.config
 RUN cd linux-${KERNEL_VERSION} \
 	&& make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- EXTRAVERSION="$VERSION_SUFFIX" -j `nproc`
