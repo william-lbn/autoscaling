@@ -53,7 +53,7 @@ func newTLSClient(t *testing.T, handler http.HandlerFunc) (*Client, Config) {
 			provider := false
 			boot := request.Key.Instance.PGBootID
 			reply(w, control.Capabilities{
-				ProtocolVersion: 1, ProductionReady: false, VMShrinkPermit: false, Supported: true, BufferAPIVersion: 5, Enabled: true, InstanceBound: true,
+				ProtocolVersion: 1, ProductionReady: false, VMShrinkPermit: false, Supported: true, BufferAPIVersion: 6, Enabled: true, InstanceBound: true,
 				HistoryCapacity: &history, ProviderCanRelease: &provider, Instance: &control.DiscoveryIdentity{VMUID: request.Key.Instance.VMUID, ComputeInstanceID: request.Key.Instance.ComputeInstanceID, PGBootID: &boot},
 			})
 			return
@@ -92,6 +92,14 @@ func TestExecutionAndObservationUseIndependentPoolsAndKeepFence(t *testing.T) {
 				fact.Receipt.Result.Operation.CancelRequested = true
 			}
 			reply(w, fact)
+		case "/dsg/v1/issuer/fence":
+			_, fact := fixtures(t)
+			fact.Observed.CapacityGeneration = 1
+			fact.Observed.HighBuffers = 512
+			fact.Observed.LowBuffers = 512
+			fact.Observed.Operation.Phase = control.Preparing
+			fact.Observed.Operation.CancelClosed = false
+			reply(w, control.FenceResponse{ProtocolVersion: 1, VMShrinkPermit: false, RequestedInstance: intent.Key.Instance, RequestedEpoch: intent.Key.IssuerEpoch, Disposition: control.FencePending, Observed: fact.Observed})
 		default:
 			http.Error(w, "unexpected path", http.StatusNotFound)
 		}
@@ -110,6 +118,8 @@ func TestExecutionAndObservationUseIndependentPoolsAndKeepFence(t *testing.T) {
 	require.NoError(t, err)
 	_, err = client.Cancel(ctx, query)
 	require.NoError(t, err)
+	_, err = client.Fence(ctx, control.FenceRequest{ProtocolVersion: 1, Instance: intent.Key.Instance, IssuerEpoch: intent.Key.IssuerEpoch})
+	require.NoError(t, err, "fence must remain reachable while execution pool is occupied")
 	require.Equal(t, &intent, client.Pending(), "observation/cancellation must not clear an active execution fence")
 	_, err = client.Resize(ctx, intent)
 	require.Error(t, err, "even an identical call cannot overlap in flight")
@@ -307,4 +317,35 @@ func TestObservedBootChangeIsRejectedWithoutAutomaticRebinding(t *testing.T) {
 	_, err = New(context.Background(), config)
 	require.ErrorContains(t, err, "binding_changed")
 	require.Equal(t, intent.Key.Instance, client.instance)
+}
+
+func TestIssuerFenceNeverErasesRestoredIntentOrAcceptsAnotherEpoch(t *testing.T) {
+	intent, terminal := fixtures(t)
+	request := control.FenceRequest{ProtocolVersion: 1, Instance: intent.Key.Instance, IssuerEpoch: intent.Key.IssuerEpoch + 1}
+	var calls atomic.Int32
+	_, config := newTLSClient(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/dsg/v1/issuer/fence" {
+			http.Error(w, "unexpected", http.StatusBadRequest)
+			return
+		}
+		calls.Add(1)
+		fact := control.FenceResponse{ProtocolVersion: 1, VMShrinkPermit: false, RequestedInstance: request.Instance, RequestedEpoch: request.IssuerEpoch, Disposition: control.Fenced, Observed: terminal.Observed}
+		fact.Observed.IssuerFloorEpoch = request.IssuerEpoch
+		reply(w, fact)
+	})
+	config.IssuerEpoch = request.IssuerEpoch
+	config.Pending = &intent
+	restored, err := New(context.Background(), config)
+	require.NoError(t, err)
+	defer restored.CloseIdleConnections()
+	_, err = restored.Fence(context.Background(), request)
+	require.NoError(t, err)
+	require.Equal(t, &intent, restored.Pending())
+	changed := request
+	changed.IssuerEpoch--
+	_, err = restored.Fence(context.Background(), changed)
+	var callError *CallError
+	require.ErrorAs(t, err, &callError)
+	require.False(t, callError.MayHaveExecuted)
+	require.EqualValues(t, 1, calls.Load())
 }

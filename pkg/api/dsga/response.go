@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-// 本文件与Neon compute_api/dsg_state.rs的ABI5事实逐字段对应。这里校验事实的
+// 本文件与Neon compute_api/dsg_state.rs的ABI6事实逐字段对应。这里校验事实的
 // 内部一致性和实例归属，不生成预算证明、Provider/Host事实或VM缩容许可。
 type ReceiptDisposition string
 
@@ -110,6 +110,7 @@ type OperationFact struct {
 
 type Snapshot struct {
 	Instance                Instance       `json:"instance"`
+	IssuerFloorEpoch        Uint64         `json:"issuer_floor_epoch"`
 	CapacityGeneration      Uint64         `json:"capacity_generation"`
 	LowBuffers              uint32         `json:"low_buffers"`
 	HighBuffers             uint32         `json:"high_buffers"`
@@ -139,6 +140,66 @@ type MemoryResponse struct {
 	ProtocolVersion uint32   `json:"protocol_version"`
 	VMShrinkPermit  bool     `json:"vm_shrink_permit"`
 	Observed        Snapshot `json:"observed"`
+}
+
+type FenceDisposition string
+
+const (
+	Fenced       FenceDisposition = "fenced"
+	FencePending FenceDisposition = "pending"
+	FenceStale   FenceDisposition = "stale"
+)
+
+// Fenced只证明PG串行执行者已退出，不等于物理释放或VM完成。Pending已推进
+// floor但旧执行者仍在途；二者都不得清除外层原意图/预算或客户端未知请求。
+type FenceResponse struct {
+	ProtocolVersion   uint32           `json:"protocol_version"`
+	VMShrinkPermit    bool             `json:"vm_shrink_permit"`
+	RequestedInstance Instance         `json:"requested_instance"`
+	RequestedEpoch    Uint64           `json:"requested_epoch"`
+	Disposition       FenceDisposition `json:"disposition"`
+	Observed          Snapshot         `json:"observed"`
+}
+
+func (response *FenceResponse) UnmarshalJSON(data []byte) error {
+	type plain FenceResponse
+	var decoded plain
+	if err := UnmarshalObject(data, &decoded); err != nil {
+		return err
+	}
+	*response = FenceResponse(decoded)
+	return nil
+}
+
+func (response FenceResponse) ValidateFor(request FenceRequest, bound Instance) error {
+	if err := request.Validate(); err != nil {
+		return err
+	}
+	if err := validateEnvelope(response.ProtocolVersion, response.VMShrinkPermit); err != nil {
+		return err
+	}
+	if err := response.Observed.Validate(); err != nil {
+		return err
+	}
+	if response.RequestedInstance != request.Instance || response.RequestedEpoch != request.IssuerEpoch || response.Observed.Instance != bound {
+		return fmt.Errorf("issuer fence request or observed binding differs")
+	}
+	switch response.Disposition {
+	case Fenced, FencePending:
+		if request.Instance != bound || response.Observed.IssuerFloorEpoch != request.IssuerEpoch {
+			return fmt.Errorf("issuer fence did not establish requested floor")
+		}
+		if response.Disposition == Fenced && response.Observed.Operation != nil && response.Observed.Operation.Phase == Preparing {
+			return fmt.Errorf("fenced response still has unreconciled operation")
+		}
+	case FenceStale:
+		if request.Instance == bound && response.Observed.IssuerFloorEpoch <= request.IssuerEpoch {
+			return fmt.Errorf("stale fence has no newer floor or changed instance")
+		}
+	default:
+		return fmt.Errorf("unknown DSGA issuer fence disposition")
+	}
+	return nil
 }
 
 type DiscoveryIdentity struct {
@@ -172,9 +233,9 @@ func (capabilities Capabilities) Bind(vmUID, computeID string) (Instance, error)
 	if err := validateEnvelope(capabilities.ProtocolVersion, capabilities.VMShrinkPermit); err != nil {
 		return Instance{}, err
 	}
-	if !capabilities.Supported || capabilities.BufferAPIVersion != 5 || !capabilities.Enabled || !capabilities.InstanceBound ||
+	if !capabilities.Supported || capabilities.BufferAPIVersion != 6 || !capabilities.Enabled || !capabilities.InstanceBound ||
 		capabilities.HistoryCapacity == nil || *capabilities.HistoryCapacity == 0 || capabilities.ProviderCanRelease == nil || capabilities.Instance == nil || capabilities.Instance.PGBootID == nil {
-		return Instance{}, fmt.Errorf("DSGA ABI5 bound capabilities are unavailable")
+		return Instance{}, fmt.Errorf("DSGA ABI6 bound capabilities are unavailable")
 	}
 	identity := capabilities.Instance
 	instance := Instance{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID, PGBootID: *identity.PGBootID}
@@ -226,6 +287,9 @@ func (array ArrayFact) validate(snapshot Snapshot) error {
 		if array.ReleaseKey.Instance != snapshot.Instance {
 			return fmt.Errorf("release belongs to another instance")
 		}
+		if array.ReleaseKey.IssuerEpoch > snapshot.IssuerFloorEpoch {
+			return fmt.Errorf("release epoch exceeds issuer floor")
+		}
 	}
 	provider := array.Provider
 	known := array.ReleaseState == ReleaseVerified || array.ReleaseState == ReleaseUnsupported || array.ReleaseState == ReleaseFailed
@@ -255,6 +319,7 @@ func (operation OperationFact) validate(snapshot Snapshot) error {
 		return err
 	}
 	if operation.Key.Instance != snapshot.Instance || (operation.Kind != Grow && operation.Kind != Shrink) || operation.TargetBuffers < 16 || operation.TargetBuffers > snapshot.MaximumBuffers ||
+		operation.Key.IssuerEpoch > snapshot.IssuerFloorEpoch ||
 		operation.ExpectedCapacityGeneration == 0 || len(operation.ContextSHA256) != 64 || (operation.CancelRequested && operation.CancelClosed) {
 		return fmt.Errorf("invalid DSGA operation identity, target or cancellation")
 	}

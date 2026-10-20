@@ -36,6 +36,7 @@ func TestNativeComputeHTTPChain(t *testing.T) {
 		IssuerEpoch   control.Uint64   `json:"issuer_epoch"`
 		Token         string           `json:"token"`
 		RejectedToken string           `json:"rejected_token"`
+		NextToken     string           `json:"next_token"`
 		Original      control.Request  `json:"original"`
 		AfterRestart  bool             `json:"after_restart"`
 	}
@@ -110,6 +111,11 @@ func TestNativeComputeHTTPChain(t *testing.T) {
 	require.NoError(t, err)
 	require.False(t, capability.ProductionReady)
 	require.False(t, capability.VMShrinkPermit)
+	initialFence, err := client.Fence(context.Background(), control.FenceRequest{ProtocolVersion: 1, Instance: input.Instance, IssuerEpoch: input.IssuerEpoch})
+	require.NoError(t, err)
+	require.Equal(t, control.Fenced, initialFence.Disposition)
+	require.Equal(t, input.IssuerEpoch, initialFence.Observed.IssuerFloorEpoch)
+	require.Equal(t, input.Original.ExpectedCapacityGeneration, initialFence.Observed.CapacityGeneration)
 
 	original := input.Original
 	_, err = client.Resize(context.Background(), original)
@@ -174,4 +180,18 @@ func TestNativeComputeHTTPChain(t *testing.T) {
 	require.Equal(t, control.ReceiptConflict, fact.Receipt.Disposition)
 	require.Nil(t, fact.Receipt.Result)
 	require.Equal(t, &conflict, client.Pending(), "conflict does not prove old effect absence")
+	// 使用真实签名的新代次令牌接管。只核验PG floor与原意图保留；这里没有
+	// owner租约/完整VM预算证明，不执行第二代次的资源动作或清理外层未知效果。
+	nextConfig := config
+	nextConfig.IssuerEpoch = input.IssuerEpoch + 1
+	nextConfig.Token = func(context.Context) (string, error) { return input.NextToken, nil }
+	nextClient, err := New(context.Background(), nextConfig)
+	require.NoError(t, err)
+	defer nextClient.CloseIdleConnections()
+	nextFence, err := nextClient.Fence(context.Background(), control.FenceRequest{ProtocolVersion: 1, Instance: input.Instance, IssuerEpoch: nextConfig.IssuerEpoch})
+	require.NoError(t, err)
+	require.Equal(t, control.Fenced, nextFence.Disposition)
+	require.Equal(t, nextConfig.IssuerEpoch, nextFence.Observed.IssuerFloorEpoch)
+	require.Equal(t, &conflict, client.Pending())
+	require.EqualValues(t, 2048, nextFence.Observed.HighBuffers)
 }

@@ -129,3 +129,40 @@ func TestResponseRequiresExplicitFieldsAndRejectsNullBooleansAtomically(t *testi
 		require.Equal(t, original, fact)
 	}
 }
+
+func TestIssuerFenceKeepsPendingDistinctAndRejectsInvalidProof(t *testing.T) {
+	_, intent := goldenRequest(t)
+	_, original := goldenResponse(t)
+	request := FenceRequest{ProtocolVersion: 1, Instance: intent.Key.Instance, IssuerEpoch: intent.Key.IssuerEpoch + 1}
+	fact := FenceResponse{ProtocolVersion: 1, VMShrinkPermit: false, RequestedInstance: request.Instance, RequestedEpoch: request.IssuerEpoch, Disposition: FencePending, Observed: original.Observed}
+	fact.Observed.IssuerFloorEpoch = request.IssuerEpoch
+	require.NoError(t, fact.ValidateFor(request, request.Instance), "COMMITTED may still have an executing Provider")
+	fact.Disposition = Fenced
+	require.NoError(t, fact.ValidateFor(request, request.Instance))
+	for _, change := range []func(*FenceResponse){
+		func(f *FenceResponse) { f.RequestedEpoch-- },
+		func(f *FenceResponse) { f.Observed.IssuerFloorEpoch = 0 },
+		func(f *FenceResponse) { f.RequestedInstance.PGBootID-- },
+		func(f *FenceResponse) { f.VMShrinkPermit = true },
+		func(f *FenceResponse) { f.Disposition = FenceStale },
+	} {
+		changed := fact
+		change(&changed)
+		require.Error(t, changed.ValidateFor(request, request.Instance))
+	}
+	operation := *fact.Observed.Operation
+	operation.Phase = Preparing
+	operation.CancelClosed = false
+	operation.CancelRequested = true
+	fact.Observed.Operation = &operation
+	fact.Observed.CapacityGeneration = 1
+	fact.Observed.LowBuffers = 512
+	fact.Observed.HighBuffers = 512
+	require.Error(t, fact.ValidateFor(request, request.Instance))
+	fact.Disposition = FencePending
+	require.NoError(t, fact.ValidateFor(request, request.Instance))
+	for _, raw := range []string{`{"protocol_version":1,"issuer_epoch":"1","issuer_epoch":"2"}`, `{"protocol_version":null,"instance":{},"issuer_epoch":"1"}`} {
+		var decoded FenceRequest
+		require.Error(t, json.Unmarshal([]byte(raw), &decoded))
+	}
+}

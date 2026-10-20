@@ -1,7 +1,17 @@
 # DSGA Autoscaling 执行状态与恢复
 
-更新：2026-10-20。分支`codex/dsga-autoscaling-20261019`，只推自有fork，不合main。
+更新：2026-10-21。分支`codex/dsga-autoscaling-20261019`，只推自有fork，不合main。
 本文件是当前入口；初始维护快照仍见[基线](DSGA-上游基线与开发约束.md)。
+
+## 最新接续：ABI6与PG接管隔离
+
+PG17依赖6b7c3655ab74062e117eef7400953cd000679a49已先推送核验。当前Go批次升级
+ABI6、强制Snapshot floor、新增第六正式Fence路由消费者，保留原未知意图与独立
+observer池；Fenced不是VM许可。详见[契约与实测](DSGA-PG接管隔离与ABI6.md)。
+完整race185个case pass事件/0fail或用例skip，10测试包与9无测试包分列；普通及
+native标签lint0issues。真实Compute/SQL/PG候选链路1外层/2 Go race进程通过，
+准确提交复验随后记录。恢复以实际Git/远程refs为准；AGENTS.md已有7行所有者
+边界修改保留，不混入业务提交。可信owner/持久循环及全部预算/VM链仍需继续。
 
 ## 当前已实施
 

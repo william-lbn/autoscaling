@@ -225,6 +225,27 @@ func (client *Client) Memory(ctx context.Context) (control.MemoryResponse, error
 	return fact, nil
 }
 
+// 接管走独立观察池，旧执行阻塞时仍可推进floor。即使Fenced也不清pending：
+// 外层必须保留原意图/VM预算并实际对账，不能把PG接管事实当成整个操作取消。
+func (client *Client) Fence(ctx context.Context, intent control.FenceRequest) (control.FenceResponse, error) {
+	if intent.Validate() != nil || intent.Instance != client.instance || intent.IssuerEpoch != client.epoch {
+		return control.FenceResponse{}, &CallError{MayHaveExecuted: false, Code: "invalid_fence_binding"}
+	}
+	payload, _ := json.Marshal(intent)
+	request, err := client.prepare(ctx, "/dsg/v1/issuer/fence", http.MethodPost, payload)
+	if err != nil {
+		return control.FenceResponse{}, err
+	}
+	var fact control.FenceResponse
+	if err := exchange(client.observer, request, &fact); err != nil {
+		return control.FenceResponse{}, err
+	}
+	if err := fact.ValidateFor(intent, client.instance); err != nil {
+		return control.FenceResponse{}, &CallError{MayHaveExecuted: true, Code: "invalid_fence_fact"}
+	}
+	return fact, nil
+}
+
 func (client *Client) Resize(ctx context.Context, intent control.Request) (fact control.ControlResponse, err error) {
 	if intent.Validate() != nil || intent.Key.Instance != client.instance || intent.Key.IssuerEpoch != client.epoch {
 		return fact, &CallError{MayHaveExecuted: false, Code: "invalid_execution_binding"}

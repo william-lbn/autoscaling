@@ -66,6 +66,35 @@ type Query struct {
 	Key             Key    `json:"key"`
 }
 
+// 独立接管只推进PG最低代次，不用虚构resize操作ID。签名/真实所有权与外层
+// 持久租约另核验；请求可表示并不能授权资源动作。
+type FenceRequest struct {
+	ProtocolVersion uint32   `json:"protocol_version"`
+	Instance        Instance `json:"instance"`
+	IssuerEpoch     Uint64   `json:"issuer_epoch"`
+}
+
+func (request FenceRequest) Validate() error {
+	if request.ProtocolVersion != ProtocolVersion || request.IssuerEpoch == 0 {
+		return fmt.Errorf("invalid DSGA issuer fence protocol or epoch")
+	}
+	return request.Instance.Validate()
+}
+
+func (request *FenceRequest) UnmarshalJSON(data []byte) error {
+	type plain FenceRequest
+	var decoded plain
+	if err := UnmarshalObject(data, &decoded); err != nil {
+		return err
+	}
+	next := FenceRequest(decoded)
+	if err := next.Validate(); err != nil {
+		return err
+	}
+	*request = next
+	return nil
+}
+
 func ValidateID(value, kind string) error {
 	if len(value) == 0 || len(value) > 128 {
 		return fmt.Errorf("invalid DSGA %s identity length", kind)
