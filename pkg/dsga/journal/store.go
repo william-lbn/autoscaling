@@ -31,6 +31,10 @@ type Store struct {
 	binding Binding
 }
 
+// Binding返回固定值副本，供选主/凭据适配器核对同一VM incarnation；它不是
+// 当前owner或派发许可，不能用最新GET替换其UID并把同名重建当成原实例。
+func (store *Store) Binding() Binding { return store.binding }
+
 // Snapshot不可由调用方修改元数据/原始模型。State返回深拷贝，不跨网络持本地锁；
 // 唯一线性化点是apiserver对固定UID/resourceVersion的原子JSON Patch。
 type Snapshot struct {

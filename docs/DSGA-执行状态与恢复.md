@@ -3,6 +3,16 @@
 更新：2026-10-21。分支`codex/dsga-autoscaling-20261019`，只推自有fork，不合main。
 本文件是当前入口；初始维护快照仍见[基线](DSGA-上游基线与开发约束.md)。
 
+## 最新接续：所有权选主与持久PG循环
+
+生产owner包已实现固定VM/Lease身份的client-go选主、journal CAS单调epoch接管、
+Session真实授权检查/有界API与凭据等待、停止登记屏障及实际工作join，以及长期
+同一Client的PG协调循环。真实epoch2签名→PG循环→4096 grow/丢回复恢复已运行；
+完整结果、反向/夹具失败与边界见[本模块](DSGA-所有权选主与持久PG循环.md)。
+仍未接Agent实际入口/凭据发放、完整预算及最终VM执行链，不能关闭R03或Goal。
+PG6b7/ABI6和锁不变，上游再次fetch未新增；只推自有功能分支。当前提交/远程
+以Git/refs核验，AGENTS.md所有者7行修改保留，不混入本业务。
+
 ## 最新接续：PG持久派发与显式原意图恢复
 
 pgexec已将真实Store/Compute客户端接成写前确认→实际PG→严格完整事实落账，

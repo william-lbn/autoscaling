@@ -76,8 +76,9 @@ func TestNativeComputeHTTPChain(t *testing.T) {
 		director(request)
 	}
 	var dropped atomic.Bool
+	var ownedDrop atomic.Bool
 	proxy.ModifyResponse = func(response *http.Response) error {
-		if response.Request.URL.Path == "/dsg/v1/resize" && response.StatusCode == http.StatusOK && dropped.CompareAndSwap(false, true) {
+		if response.Request.URL.Path == "/dsg/v1/resize" && response.StatusCode == http.StatusOK && (dropped.CompareAndSwap(false, true) || ownedDrop.CompareAndSwap(true, false)) {
 			_ = response.Body.Close()
 			body := `{"test":"reply_lost_after_real_pg_commit"}`
 			response.StatusCode = http.StatusServiceUnavailable
@@ -193,6 +194,21 @@ func TestNativeComputeHTTPChain(t *testing.T) {
 	current, err := client.Memory(context.Background())
 	require.NoError(t, err)
 	require.EqualValues(t, 2048, current.Observed.HighBuffers)
+	// 新的独立journal由生产Lease选主接管至epoch2；其PG循环实际执行4096
+	// grow、经历第二次提交丢回复并从持久状态恢复。非PG领域仍为明确测试夹具。
+	ownedConfig := config
+	ownedConfig.IssuerEpoch = input.IssuerEpoch + 1
+	ownedConfig.Token = func(context.Context) (string, error) { return input.NextToken, nil }
+	owned := regrow
+	owned.Key.IssuerEpoch = ownedConfig.IssuerEpoch
+	owned.Key.Revision = 1
+	owned.Key.OperationID.Low = 10
+	owned.ExpectedCapacityGeneration = current.Observed.CapacityGeneration
+	owned.TargetBuffers = 4096
+	beforeOwned := resizeCalls.Load()
+	ownedDrop.Store(true)
+	nativeOwnedPG(t, owned, ownedConfig)
+	require.EqualValues(t, beforeOwned+2, resizeCalls.Load(), "one actual owned resize and one explicit replay, no automatic POST retry")
 	conflict := original
 	conflict.BudgetCommitmentID += "-different"
 	fact, err := client.Resize(context.Background(), conflict)
@@ -200,8 +216,8 @@ func TestNativeComputeHTTPChain(t *testing.T) {
 	require.Equal(t, control.ReceiptConflict, fact.Receipt.Disposition)
 	require.Nil(t, fact.Receipt.Result)
 	require.Equal(t, &conflict, client.Pending(), "conflict does not prove old effect absence")
-	// 使用真实签名的新代次令牌接管。只核验PG floor与原意图保留；这里没有
-	// owner租约/完整VM预算证明，不执行第二代次的资源动作或清理外层未知效果。
+	// 重复核验第二代次floor和旧客户端未知意图保留。这一手动API断言只验证
+	// 签名/PG事实，不声称仍持有已结束owner Session或拥有完整VM预算证明。
 	nextConfig := config
 	nextConfig.IssuerEpoch = input.IssuerEpoch + 1
 	nextConfig.Token = func(context.Context) (string, error) { return input.NextToken, nil }
@@ -213,5 +229,5 @@ func TestNativeComputeHTTPChain(t *testing.T) {
 	require.Equal(t, control.Fenced, nextFence.Disposition)
 	require.Equal(t, nextConfig.IssuerEpoch, nextFence.Observed.IssuerFloorEpoch)
 	require.Equal(t, &conflict, client.Pending())
-	require.EqualValues(t, 2048, nextFence.Observed.HighBuffers)
+	require.EqualValues(t, 4096, nextFence.Observed.HighBuffers)
 }
