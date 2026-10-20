@@ -29,10 +29,14 @@ type Options struct {
 	LeaseDuration time.Duration
 	RenewDeadline time.Duration
 	RetryPeriod   time.Duration
+	// PodUID来自Downward API，并在远程签发时与TokenReview/真实Pod再次核对。
+	// 空值保留嵌入式兼容性，但这样的holder不能申请远程生产凭据。
+	// 同一Pod内每次New仍生成独立随机身份，不能以Pod UID替代进程随机数。
+	PodUID types.UID
 }
 
 func DefaultOptions() Options {
-	return Options{LeaseDuration: 30 * time.Second, RenewDeadline: 20 * time.Second, RetryPeriod: 2 * time.Second}
+	return Options{LeaseDuration: 30 * time.Second, RenewDeadline: 20 * time.Second, RetryPeriod: 2 * time.Second, PodUID: ""}
 }
 
 // Elector每次New生成随机进程身份，不能将Pod名或调用方自报holder当领导权。
@@ -53,12 +57,19 @@ func New(client coordclient.CoordinationV1Interface, store *journal.Store, optio
 		options.LeaseDuration <= options.RenewDeadline || options.RetryPeriod >= options.RenewDeadline || options.RenewDeadline <= time.Duration(leaderelection.JitterFactor*float64(options.RetryPeriod)) {
 		return nil, fmt.Errorf("invalid DSGA owner clients or lease timings")
 	}
+	if options.PodUID != "" && !validPodUID(options.PodUID) {
+		return nil, fmt.Errorf("invalid DSGA owner pod identity")
+	}
 	var entropy [16]byte
 	if _, err := rand.Read(entropy[:]); err != nil {
 		return nil, fmt.Errorf("DSGA process identity entropy unavailable")
 	}
 	binding := store.Binding()
-	return &Elector{client: client.Leases(binding.Namespace), store: store, binding: binding, options: options, holder: "dsga-" + hex.EncodeToString(entropy[:]), mu: sync.Mutex{}, used: false}, nil
+	holder := "dsga-" + hex.EncodeToString(entropy[:])
+	if options.PodUID != "" {
+		holder += "." + string(options.PodUID)
+	}
+	return &Elector{client: client.Leases(binding.Namespace), store: store, binding: binding, options: options, holder: holder, mu: sync.Mutex{}, used: false}, nil
 }
 
 // Session只能由选主成功且journal接管已确认后创建。Actor只是值副本，不是
@@ -93,18 +104,10 @@ func (session *Session) Check(ctx context.Context) error {
 	if session.ctx.Err() != nil {
 		return ErrLeadershipLost
 	}
-	lease, err := session.client.Get(callCtx, LeaseName(session.binding), metav1.GetOptions{})
-	if err != nil {
+	if _, _, err := verifyCurrent(callCtx, session.client, session.store, session.Ownership()); err != nil {
 		return err
 	}
-	if validateLease(lease, session.binding, LeaseName(session.binding), session.leaseUID) != nil || *lease.Spec.HolderIdentity != session.actor.HolderID {
-		return ErrLeadershipLost
-	}
-	snapshot, err := session.store.Load(callCtx)
-	if err != nil {
-		return err
-	}
-	if snapshot.State().Owner != session.actor || session.ctx.Err() != nil {
+	if session.ctx.Err() != nil {
 		return ErrLeadershipLost
 	}
 	return nil

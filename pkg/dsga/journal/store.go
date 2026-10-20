@@ -46,6 +46,11 @@ type Snapshot struct {
 func (snapshot *Snapshot) State() Model            { return snapshot.model.Clone() }
 func (snapshot *Snapshot) ResourceVersion() string { return snapshot.vm.ResourceVersion }
 
+// VirtualMachine返回与完整journal同一次GET解码的VM深拷贝。凭据签发器须用
+// 它核对Node/生命周期/业务归属，不能另取不受保护的owner镜像注解；返回值修改
+// 不影响CAS快照或内部模型。跨对象读取仍不是最终执行许可。
+func (snapshot *Snapshot) VirtualMachine() *vmv1.VirtualMachine { return snapshot.vm.DeepCopy() }
+
 // Dispatchable只是已读取快照的生命周期条件，不是派发票据或租约。PG显式原意图
 // 重放也须拒绝正在删除/没有Runner的VM；网络竞态仍靠UID/RV及最终执行fence封闭。
 func (snapshot *Snapshot) Dispatchable() bool {

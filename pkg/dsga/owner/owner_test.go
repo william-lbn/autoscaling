@@ -204,7 +204,7 @@ func unknownOperation(t *testing.T, store *journal.Store) control.Request {
 }
 
 func testOptions() Options {
-	return Options{LeaseDuration: time.Second, RenewDeadline: 400 * time.Millisecond, RetryPeriod: 40 * time.Millisecond}
+	return Options{LeaseDuration: time.Second, RenewDeadline: 400 * time.Millisecond, RetryPeriod: 40 * time.Millisecond, PodUID: ""}
 }
 
 func TestConfirmedLeaseAndJournalClaimPreserveUnknownIntentOnLostReply(t *testing.T) {
@@ -483,7 +483,7 @@ func TestOptionsAndLeaseNameBoundFullInstance(t *testing.T) {
 	_, store, client := newAPI(t)
 	defaults := DefaultOptions()
 	require.Greater(t, defaults.LeaseDuration, defaults.RenewDeadline)
-	for _, opts := range []Options{{LeaseDuration: time.Millisecond, RenewDeadline: time.Millisecond, RetryPeriod: time.Millisecond}, {LeaseDuration: time.Second, RenewDeadline: 2 * time.Second, RetryPeriod: time.Millisecond}, {LeaseDuration: time.Second, RenewDeadline: 400 * time.Millisecond, RetryPeriod: time.Hour}} {
+	for _, opts := range []Options{{LeaseDuration: time.Millisecond, RenewDeadline: time.Millisecond, RetryPeriod: time.Millisecond, PodUID: ""}, {LeaseDuration: time.Second, RenewDeadline: 2 * time.Second, RetryPeriod: time.Millisecond, PodUID: ""}, {LeaseDuration: time.Second, RenewDeadline: 400 * time.Millisecond, RetryPeriod: time.Hour, PodUID: ""}} {
 		_, err := New(client, store, opts)
 		require.Error(t, err)
 	}
