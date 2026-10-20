@@ -2,6 +2,10 @@
 
 日期：2026-10-19。功能分支：`codex/dsga-autoscaling-20261019`。
 
+本页为初始维护快照。2026-10-20已继续实现Agent条件资源写入与Go请求类型，
+当前证据/剩余项以[执行状态](DSGA-执行状态与恢复.md)为准，不再把下面“仅建立基线”
+当成最新状态；完整DSGA控制链仍未完成。
+
 本分支直接从刚重新 fetch 的自有 `origin/main` 建立：
 `c0052f5f2d38fce6c70e448f3f1ee2ee239a0a93`。官方 `upstream/main` 为
 `a4bce09e4d6bd7932ea634a1ed79afe26a9cfd1f`；自有分支多 3 个 CI 提交、落后 0。

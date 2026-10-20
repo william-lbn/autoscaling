@@ -1,0 +1,22 @@
+{
+  "protocol_version": 1,
+  "key": {
+    "instance": {
+      "vm_uid": "dsg-vm-1",
+      "compute_instance_id": "dsg-compute-1",
+      "pg_boot_id": "18446744073709551615"
+    },
+    "issuer_epoch": "9007199254740993",
+    "revision": "9223372036854775808",
+    "operation_id": {
+      "high": "18364758544493064720",
+      "low": "81985529216486895"
+    }
+  },
+  "kind": "grow",
+  "expected_capacity_generation": "1",
+  "target_buffers": 1024,
+  "target_vm_memory_bytes": "1073741824",
+  "budget_commitment_id": "reservation-1",
+  "deadline_unix_ms": "18446744073709551615"
+}
