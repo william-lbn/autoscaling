@@ -1,7 +1,7 @@
 package plugin
 
 import (
-	"context"
+	"math/rand"
 	"testing"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -45,6 +45,7 @@ func TestNormalizeScoreRandomization(t *testing.T) {
 		{Name: "node3", Score: 25},
 		{Name: "node4", Score: 10},
 		{Name: "node5", Score: 0}, // Special case: score of 0 should remain unchanged
+		{Name: "node6", Score: 1}, // 闭区间[1,1]只有原值，必须合法保留。
 	}
 
 	// Make a copy of the original scores for comparison
@@ -58,7 +59,8 @@ func TestNormalizeScoreRandomization(t *testing.T) {
 	copy(testScores, originalScores)
 
 	// Call the actual NormalizeScore method
-	status := enforcer.NormalizeScore(context.Background(), nil, pod, testScores)
+	draw := rand.New(rand.NewSource(1))
+	status := enforcer.normalizeScore(pod, testScores, draw.Intn)
 
 	// Check that the function returned success
 	if status != nil && !status.IsSuccess() {
@@ -81,10 +83,7 @@ func TestNormalizeScoreRandomization(t *testing.T) {
 			continue
 		}
 
-		// For other scores, they should be randomized
-		if nodeScore.Score == originalScore {
-			t.Errorf("Node %s score was not changed, remained at %d", nodeScore.Name, nodeScore.Score)
-		}
+		// 官方范围是闭区间，抽到原值是合法结果；不能要求每个节点每次必定变化。
 
 		// Check that the new score is within the expected range [minScore, originalScore]
 		if nodeScore.Score < minScore || nodeScore.Score > originalScore {
@@ -100,6 +99,14 @@ func TestNormalizeScoreRandomization(t *testing.T) {
 	// Ensure at least some scores were changed
 	if changedCount == 0 {
 		t.Error("No scores were changed by NormalizeScore")
+	}
+	// 确定性覆盖闭区间上端：所有正分都抽回原值仍必须合法，不重采样或减一。
+	boundary := append(framework.NodeScoreList(nil), originalScores...)
+	enforcer.normalizeScore(pod, boundary, func(n int) int { return n - 1 })
+	for i, node := range boundary {
+		if node.Score != originalScores[i].Score {
+			t.Errorf("upper endpoint changed score %d to %d", originalScores[i].Score, node.Score)
+		}
 	}
 }
 
@@ -136,6 +143,8 @@ func TestMultipleNormalizeScoreRuns(t *testing.T) {
 	// Run NormalizeScore multiple times and collect results
 	const runs = 10
 	results := make([]int64, runs)
+	// 局部固定种子，不依赖随机进程状态，也不调用Go新版已默认无效的全局rand.Seed。
+	draw := rand.New(rand.NewSource(2))
 
 	for i := 0; i < runs; i++ {
 		// Create a copy of the original score
@@ -143,7 +152,7 @@ func TestMultipleNormalizeScoreRuns(t *testing.T) {
 		testScore[0] = originalScore[0]
 
 		// Call NormalizeScore
-		enforcer.NormalizeScore(context.Background(), nil, pod, testScore)
+		enforcer.normalizeScore(pod, testScore, draw.Intn)
 
 		// Store the result
 		results[i] = testScore[0].Score

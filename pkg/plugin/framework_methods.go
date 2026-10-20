@@ -396,6 +396,16 @@ func (e *AutoscaleEnforcer) NormalizeScore(
 	pod *corev1.Pod,
 	scores framework.NodeScoreList,
 ) (status *framework.Status) {
+	return e.normalizeScore(pod, scores, rand.Intn)
+}
+
+// 保留生产rand.Intn及闭区间语义，只让测试传入独立固定种子的随机源/边界抽样。
+// 不修改全局RNG，不因随机结果恰好等于原分数误判失败，避免测试之间相互干扰。
+func (e *AutoscaleEnforcer) normalizeScore(
+	pod *corev1.Pod,
+	scores framework.NodeScoreList,
+	draw func(int) int,
+) (status *framework.Status) {
 	ignored := e.state.config.ignoredNamespace(pod.Namespace)
 
 	e.metrics.IncMethodCall("NormalizeScore", pod, ignored)
@@ -436,7 +446,7 @@ func (e *AutoscaleEnforcer) NormalizeScore(
 
 		// We want to pick a score in the range [minScore, score], so use score + 1 - minScore, as
 		// rand.Intn picks a number in the *half open* range [0, n).
-		newScore := minScore + int64(rand.Intn(int(oldScore+1-minScore)))
+		newScore := minScore + int64(draw(int(oldScore+1-minScore)))
 		scoreInfos = append(scoreInfos, scoring{
 			Node:     node.Name,
 			OldScore: oldScore,
