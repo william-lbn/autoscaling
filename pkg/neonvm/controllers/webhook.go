@@ -99,6 +99,13 @@ func (w *VMWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (adm
 // ValidateUpdate implements webhook.CustomValidator
 func (w *VMWebhook) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
 	newVM := newObj.(*vmv1.VirtualMachine)
+	oldVM, ok := oldObj.(*vmv1.VirtualMachine)
+	if !ok {
+		return nil, fmt.Errorf("invalid previous VM object")
+	}
+	if err := newVM.ValidateDSGAUpdate(oldVM); err != nil {
+		return nil, err
+	}
 	return validateUpdate(ctx, w.Config, w.Recorder, oldObj, newVM)
 }
 

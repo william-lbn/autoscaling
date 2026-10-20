@@ -24,6 +24,7 @@ import (
 	vmclient "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned"
 	vmtyped "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned/typed/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/api"
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 )
 
 func patchFixtureVM() *vmv1.VirtualMachine {
@@ -354,4 +355,17 @@ func TestVMInfoCarriesVMUIDRatherThanPodUID(t *testing.T) {
 	identity.UID = ""
 	_, client := patchAPI(t, vm)
 	require.ErrorContains(t, patchVMResources(context.Background(), client, identity, patchCurrent(), api.Resources{VCPU: 3000, Mem: 4 << 30}, patchRevision(5)), "lacks fixed execution identity")
+}
+
+func TestLegacyResourcePathRefusesPartialOrCorruptDSGAMode(t *testing.T) {
+	for _, annotations := range []map[string]string{{control.ModeAnnotation: "corrupt"}, {control.JournalAnnotation: ""}, {control.ModeAnnotation: "1:1234567890abcdef1234567890abcdef", control.JournalAnnotation: "opaque"}} {
+		vm := patchFixtureVM()
+		vm.Annotations = annotations
+		f, client := patchAPI(t, vm)
+		err := patchVMResources(context.Background(), client, patchFixtureIdentity(), patchCurrent(), api.Resources{VCPU: 3000, Mem: 4 << 30}, patchRevision(5))
+		require.ErrorContains(t, err, "fenced operation executor")
+		f.mu.Lock()
+		require.Zero(t, f.patchCalls)
+		f.mu.Unlock()
+	}
 }

@@ -48,17 +48,14 @@ func (v *Uint64) UnmarshalJSON(data []byte) error {
 // 所有无omitempty的字段（包括可为null的指针）必须出现；Go默认的大小写折叠也拒绝。
 // 最多64KiB/32层/2048个值节点，供有界持久状态复用；单次Resize原始入口另限制16KiB。
 func UnmarshalObject(data []byte, into any) error {
-	if len(data) > 64*1024 || !utf8.Valid(data) {
-		return fmt.Errorf("invalid DSGA JSON size or UTF-8")
-	}
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.UseNumber()
-	tokens := 0
-	if err := uniqueValue(decoder, 0, &tokens); err != nil {
+	return UnmarshalObjectBounded(data, into, 64*1024, 2048)
+}
+
+// 持久账本有多条完整历史，显式扩大对象边界；请求入口仍使用原64KiB/2048默认值。
+// 上限封顶1MiB/65536个值，禁止以可配置的无限制解码破坏内存边界。
+func UnmarshalObjectBounded(data []byte, into any, maxBytes, maxValues int) error {
+	if err := ValidateJSON(data, maxBytes, maxValues); err != nil {
 		return err
-	}
-	if _, err := decoder.Token(); err != io.EOF {
-		return fmt.Errorf("trailing DSGA JSON data")
 	}
 	trimmed := bytes.TrimSpace(data)
 	if len(trimmed) == 0 || trimmed[0] != '{' {
@@ -82,8 +79,8 @@ func UnmarshalObject(data []byte, into any) error {
 			continue
 		}
 		tag := strings.Split(field.Tag.Get("json"), ",")
-		if len(tag) == 0 || tag[0] == "" || tag[0] == "-" {
-			return fmt.Errorf("DSGA schema field requires an explicit JSON name")
+		if tag[0] == "" || tag[0] == "-" || allowed[tag[0]] {
+			return fmt.Errorf("DSGA schema requires unique explicit JSON field names")
 		}
 		optional := false
 		for _, flag := range tag[1:] {
@@ -99,15 +96,32 @@ func UnmarshalObject(data []byte, into any) error {
 			return fmt.Errorf("unknown DSGA field %q", key)
 		}
 	}
-	decoder = json.NewDecoder(bytes.NewReader(data))
+	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.UseNumber()
 	decoder.DisallowUnknownFields()
 	return decoder.Decode(into)
 }
 
-func uniqueValue(decoder *json.Decoder, depth int, tokens *int) error {
+// 只检查有界原始JSON/任意层重复键，不把此检查当作领域回执已被核验。
+func ValidateJSON(data []byte, maxBytes, maxValues int) error {
+	if maxBytes < 1 || maxBytes > 1024*1024 || maxValues < 1 || maxValues > 65536 || len(data) > maxBytes || !utf8.Valid(data) {
+		return fmt.Errorf("invalid DSGA JSON size or UTF-8")
+	}
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.UseNumber()
+	tokens := 0
+	if err := uniqueValue(decoder, 0, &tokens, maxValues); err != nil {
+		return err
+	}
+	if _, err := decoder.Token(); err != io.EOF {
+		return fmt.Errorf("trailing DSGA JSON data")
+	}
+	return nil
+}
+
+func uniqueValue(decoder *json.Decoder, depth int, tokens *int, maxValues int) error {
 	*tokens += 1
-	if depth > 32 || *tokens > 2048 {
+	if depth > 32 || *tokens > maxValues {
 		return fmt.Errorf("DSGA JSON exceeds structural limits")
 	}
 	token, err := decoder.Token()
@@ -134,13 +148,13 @@ func uniqueValue(decoder *json.Decoder, depth int, tokens *int) error {
 				return fmt.Errorf("duplicate DSGA field %q", key)
 			}
 			seen[key] = true
-			if err := uniqueValue(decoder, depth+1, tokens); err != nil {
+			if err := uniqueValue(decoder, depth+1, tokens, maxValues); err != nil {
 				return err
 			}
 		}
 	case '[':
 		for decoder.More() {
-			if err := uniqueValue(decoder, depth+1, tokens); err != nil {
+			if err := uniqueValue(decoder, depth+1, tokens, maxValues); err != nil {
 				return err
 			}
 		}

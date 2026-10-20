@@ -12,6 +12,7 @@ import (
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	vmclient "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned/typed/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/api"
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/util/patch"
 )
 
@@ -59,6 +60,9 @@ func patchVMResources(ctx context.Context, client vmclient.VirtualMachineInterfa
 func resourcePatch(vm *vmv1.VirtualMachine, identity vmPatchIdentity, currentResources, target api.Resources,
 	revision vmv1.RevisionWithTime,
 ) ([]byte, bool, error) {
+	if vm != nil && control.Managed(vm.Annotations) {
+		return nil, false, fmt.Errorf("DSGA-managed VM requires the fenced operation executor; legacy resource writes are disabled")
+	}
 	if vm == nil || vm.UID != identity.UID || vm.Name != identity.Name || vm.Namespace != identity.Namespace || vm.ResourceVersion == "" ||
 		vm.DeletionTimestamp != nil || vm.Status.PodName != identity.PodName || vm.Status.PodIP != identity.PodIP ||
 		(vm.Status.Phase != vmv1.VmRunning && vm.Status.Phase != vmv1.VmScaling) {

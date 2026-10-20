@@ -52,6 +52,7 @@ import (
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/api"
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/neonvm/controllers/reqchan"
 	"github.com/neondatabase/autoscaling/pkg/neonvm/ipam"
 	"github.com/neondatabase/autoscaling/pkg/util/gzip64"
@@ -596,6 +597,11 @@ func (r *VMReconciler) doReconcile(ctx context.Context, vm *vmv1.VirtualMachine)
 		}
 
 	case vmv1.VmScaling:
+		// 受管模式不得先执行旧CPU/Pod副作用、再因内存fencing缺失失败。完整新执行链
+		// 尚未接入此分支；默认关闭并明确拒绝降级，不能把旧Revision/Ok当新协议许可。
+		if control.Managed(vm.Annotations) {
+			return fmt.Errorf("DSGA-managed VM requires the fenced scaling controller")
+		}
 		// Check that runner pod is still ok
 		vmRunner := &corev1.Pod{}
 		err := r.Get(ctx, types.NamespacedName{Name: vm.Status.PodName, Namespace: vm.Namespace}, vmRunner)

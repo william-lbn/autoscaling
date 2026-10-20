@@ -26,6 +26,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	"k8s.io/apimachinery/pkg/runtime"
+
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 )
 
 //+kubebuilder:webhook:path=/mutate-vm-neon-tech-v1-virtualmachine,mutating=true,failurePolicy=fail,sideEffects=None,groups=vm.neon.tech,resources=virtualmachines,verbs=create;update,versions=v1,name=mvirtualmachine.kb.io,admissionReviewVersions=v1
@@ -47,6 +49,9 @@ var _ webhook.Validator = &VirtualMachine{}
 //
 // The controller wraps this logic so it can inject extra control.
 func (r *VirtualMachine) ValidateCreate() (admission.Warnings, error) {
+	if control.Managed(r.Annotations) {
+		return nil, fmt.Errorf("DSGA journal must initialize after the VM UID is assigned")
+	}
 	// validate .spec.guest.cpus.use and .spec.guest.cpus.max
 	if r.Spec.Guest.CPUs.Use < r.Spec.Guest.CPUs.Min {
 		return nil, fmt.Errorf(".spec.guest.cpus.use (%v) should be greater than or equal to the .spec.guest.cpus.min (%v)",
@@ -112,6 +117,9 @@ func (r *VirtualMachine) ValidateCreate() (admission.Warnings, error) {
 func (r *VirtualMachine) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
 	// process immutable fields
 	before, _ := old.(*VirtualMachine)
+	if err := r.ValidateDSGAUpdate(before); err != nil {
+		return nil, err
+	}
 
 	immutableFields := []struct {
 		fieldName string
@@ -183,6 +191,17 @@ func (r *VirtualMachine) ValidateUpdate(old runtime.Object) (admission.Warnings,
 	}
 
 	return nil, nil
+}
+
+// DSGA标记不受旧不可变字段调试豁免影响。只允许新VM首次启动之前显式初始化，
+// 生命周期内保持incarnation及账本存在；无法读取历史不能当作可回退的静态模式。
+func (r *VirtualMachine) ValidateDSGAUpdate(before *VirtualMachine) error {
+	if before == nil {
+		return fmt.Errorf("invalid previous VM object")
+	}
+	initial := before.UID != "" && before.DeletionTimestamp == nil && before.Status.RestartCount == 0 &&
+		before.Status.PodName == "" && before.Status.PodIP == "" && before.Status.Node == "" && (before.Status.Phase == "" || before.Status.Phase == VmPending)
+	return control.ValidateManagedTransition(before.Annotations, r.Annotations, initial)
 }
 
 // ValidateDelete implements webhook.Validator

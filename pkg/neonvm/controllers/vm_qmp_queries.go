@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 )
 
 type QmpCpus struct {
@@ -264,6 +265,9 @@ searchForEmpty:
 // If the new target size is equal to the previous one, this function does nothing but query the
 // target.
 func QmpSetVirtioMem(vm *vmv1.VirtualMachine, targetVirtioMemSize int64) (previous int64, _ error) {
+	if control.Managed(vm.Annotations) {
+		return 0, fmt.Errorf("DSGA-managed VM requires fenced Runner memory control; legacy direct QMP writes are disabled")
+	}
 	// Note: The virtio-mem device only exists when max mem != min mem.
 	// So if min == max, we should just short-cut, skip the queries, and say it's all good.
 	// Refer to the instantiation in neonvm-runner for more.
