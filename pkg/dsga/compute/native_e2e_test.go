@@ -1,6 +1,6 @@
 //go:build dsga_native_e2e
 
-package compute
+package compute_test
 
 import (
 	"context"
@@ -21,6 +21,9 @@ import (
 	"github.com/stretchr/testify/require"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
+	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
+	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 )
 
 // 只在显式跨仓库门禁编入；常规测试既不将它skip算通过，也不连接已有服务。
@@ -90,12 +93,12 @@ func TestNativeComputeHTTPChain(t *testing.T) {
 	}
 	tls := httptest.NewTLSServer(proxy)
 	defer tls.Close()
-	config := Config{BaseURL: tls.URL, Instance: input.Instance, IssuerEpoch: input.IssuerEpoch, Timeout: 10 * time.Second, Transport: tls.Client().Transport.(*http.Transport), Token: func(context.Context) (string, error) { return input.Token, nil }, Pending: nil}
-	client, err := New(context.Background(), config)
+	config := compute.Config{BaseURL: tls.URL, Instance: input.Instance, IssuerEpoch: input.IssuerEpoch, Timeout: 10 * time.Second, Transport: tls.Client().Transport.(*http.Transport), Token: func(context.Context) (string, error) { return input.Token, nil }, Pending: nil}
+	client, err := compute.New(context.Background(), config)
 	if input.AfterRestart {
 		// Rust已真实重启本次PG并确认旧Compute观察通道503。客户端不能因新建
 		// Go对象而重新绑定旧boot，或把丢失的旧执行上下文当成空闲。
-		var callError *CallError
+		var callError *compute.CallError
 		require.ErrorAs(t, err, &callError)
 		require.Equal(t, "http_unconfirmed", callError.Code)
 		require.Nil(t, client)
@@ -105,7 +108,7 @@ func TestNativeComputeHTTPChain(t *testing.T) {
 	defer client.CloseIdleConnections()
 	denied := config
 	denied.Token = func(context.Context) (string, error) { return input.RejectedToken, nil }
-	_, err = New(context.Background(), denied)
+	_, err = compute.New(context.Background(), denied)
 	require.Error(t, err, "signed legacy scope must fail in actual Rust middleware")
 	capability, err := client.Capabilities(context.Background())
 	require.NoError(t, err)
@@ -118,8 +121,12 @@ func TestNativeComputeHTTPChain(t *testing.T) {
 	require.Equal(t, input.Original.ExpectedCapacityGeneration, initialFence.Observed.CapacityGeneration)
 
 	original := input.Original
-	_, err = client.Resize(context.Background(), original)
-	var callError *CallError
+	store := nativeJournal(t, original)
+	executor, err := pgexec.New(store, client, journal.Owner{HolderID: "native-pg-owner", Epoch: input.IssuerEpoch})
+	require.NoError(t, err)
+	progress, err := executor.Advance(context.Background())
+	require.Equal(t, pgexec.AwaitingFact, progress)
+	var callError *compute.CallError
 	require.ErrorAs(t, err, &callError)
 	require.True(t, callError.MayHaveExecuted)
 	require.True(t, dropped.Load())
@@ -132,16 +139,29 @@ func TestNativeComputeHTTPChain(t *testing.T) {
 	require.Equal(t, control.Committed, status.Receipt.Result.Operation.Phase)
 	require.Equal(t, original.TargetBuffers, status.Receipt.Result.HighBuffers)
 	require.Equal(t, &original, client.Pending(), "query cannot silently clear external uncertainty")
+	// 重新构造无本地执行状态的适配器；恢复只读取持久完整意图，再独立查询真实PG。
+	recovered, err := pgexec.New(store, client, journal.Owner{HolderID: "native-pg-owner", Epoch: input.IssuerEpoch})
+	require.NoError(t, err)
+	progress, err = recovered.Advance(context.Background())
+	require.NoError(t, err)
+	require.Equal(t, pgexec.Recorded, progress)
+	require.EqualValues(t, 1, resizeCalls.Load(), "journal recovery must not resend resize")
+	checkNativeJournal(t, store, original)
+	require.Equal(t, &original, client.Pending())
 	changed := original
 	changed.Key.Revision++
 	changed.TargetBuffers = 2048
 	_, err = client.Resize(context.Background(), changed)
 	require.Error(t, err)
 	require.EqualValues(t, 1, resizeCalls.Load())
-	replayed, err := client.Resize(context.Background(), original)
+	progress, err = recovered.ReplayOriginal(context.Background())
+	require.NoError(t, err)
+	require.Equal(t, pgexec.Replayed, progress)
+	replayed, err := client.Status(context.Background(), query)
 	require.NoError(t, err)
 	require.Equal(t, control.ReceiptReplayed, replayed.Receipt.Disposition)
 	require.Nil(t, client.Pending())
+	finishNativeJournal(t, store, original)
 
 	shrink := original
 	shrink.Key.Revision = 2
@@ -185,7 +205,7 @@ func TestNativeComputeHTTPChain(t *testing.T) {
 	nextConfig := config
 	nextConfig.IssuerEpoch = input.IssuerEpoch + 1
 	nextConfig.Token = func(context.Context) (string, error) { return input.NextToken, nil }
-	nextClient, err := New(context.Background(), nextConfig)
+	nextClient, err := compute.New(context.Background(), nextConfig)
 	require.NoError(t, err)
 	defer nextClient.CloseIdleConnections()
 	nextFence, err := nextClient.Fence(context.Background(), control.FenceRequest{ProtocolVersion: 1, Instance: input.Instance, IssuerEpoch: nextConfig.IssuerEpoch})

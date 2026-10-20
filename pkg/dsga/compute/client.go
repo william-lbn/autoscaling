@@ -125,6 +125,12 @@ func (client *Client) CloseIdleConnections() {
 	}
 }
 
+// Binding返回构造时固定的值副本。协调器只可用它核对持久意图与当前owner；
+// 不能据此更改实例、刷新epoch或把能力发现当作新的领导权证明。
+func (client *Client) Binding() (control.Instance, control.Uint64) {
+	return client.instance, client.epoch
+}
+
 // Pending只返回副本，关闭空闲连接/一次查询成功都不会清除此栅栏。它不替代跨
 // 进程journal，不能通过重新构造空Client来绕过外层未知动作或资源承诺。
 func (client *Client) Pending() *control.Request {

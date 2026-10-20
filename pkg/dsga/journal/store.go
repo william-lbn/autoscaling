@@ -42,6 +42,14 @@ type Snapshot struct {
 func (snapshot *Snapshot) State() Model            { return snapshot.model.Clone() }
 func (snapshot *Snapshot) ResourceVersion() string { return snapshot.vm.ResourceVersion }
 
+// Dispatchable只是已读取快照的生命周期条件，不是派发票据或租约。PG显式原意图
+// 重放也须拒绝正在删除/没有Runner的VM；网络竞态仍靠UID/RV及最终执行fence封闭。
+func (snapshot *Snapshot) Dispatchable() bool {
+	return snapshot != nil && snapshot.vm != nil && snapshot.vm.DeletionTimestamp == nil &&
+		(snapshot.vm.Status.Phase == vmv1.VmRunning || snapshot.vm.Status.Phase == vmv1.VmScaling) &&
+		snapshot.vm.Status.PodName != "" && snapshot.vm.Status.PodIP != ""
+}
+
 // Dispatch仅在写前日志被确认持久提交后返回。它仍不是VM许可；实际执行适配器须
 // 再验证来源认证、当前epoch、原意图/完整命令和预算，最终Runner再次fence/串行化。
 type Dispatch struct {
@@ -253,7 +261,7 @@ func (store *Store) Start(ctx context.Context, snapshot *Snapshot, actor Owner, 
 	if err := store.checked(snapshot); err != nil {
 		return nil, nil, err
 	}
-	if snapshot.vm.DeletionTimestamp != nil || (snapshot.vm.Status.Phase != vmv1.VmRunning && snapshot.vm.Status.Phase != vmv1.VmScaling) || snapshot.vm.Status.PodName == "" || snapshot.vm.Status.PodIP == "" {
+	if !snapshot.Dispatchable() {
 		return nil, nil, fmt.Errorf("VM cannot dispatch in this lifecycle")
 	}
 	next, err := snapshot.model.Start(actor, key, action, target, command)

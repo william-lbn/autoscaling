@@ -3,6 +3,16 @@
 更新：2026-10-21。分支`codex/dsga-autoscaling-20261019`，只推自有fork，不合main。
 本文件是当前入口；初始维护快照仍见[基线](DSGA-上游基线与开发约束.md)。
 
+## 最新接续：PG持久派发与显式原意图恢复
+
+pgexec已将真实Store/Compute客户端接成写前确认→实际PG→严格完整事实落账，
+独立Provider阶段与显式同owner/boot原意图重放均实现；没有自动重发未知POST、
+清SDK/外层预算或跳过其他领域。完整race219事件/11测试包/9无测试包，0fail/用例
+skip；真实Router/JWT/SQL/准确PG链路已通过，仍非完整协调器/VM端到端。详见
+[本模块与失败证据](DSGA-PG持久派发与原意图恢复.md)。扩展envtest缺etcd的失败
+单列保留，不把它称为Mac限制或通过。当前业务提交/远程以Git/refs核验，所有者
+AGENTS.md修改保留。本批不改PG或锁，不构建镜像/准备K8s/合主分支，Goal继续。
+
 ## 最新接续：ABI6与PG接管隔离
 
 PG17依赖6b7c3655ab74062e117eef7400953cd000679a49已先推送核验。当前Go批次升级
