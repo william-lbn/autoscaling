@@ -20,7 +20,10 @@
   context摘要核验，详见[HTTP客户端](DSGA-Go正式HTTP客户端.md)。原始null标量
   明确拒绝；完整审计body提高为正式HTTP的32KiB，命令独立保留8KiB。
 
-这些模块不构成完整DSGA自动伸缩。尚未接入Go→真实Compute→PG整体门禁、可信owner分配/
+- Go→真实Compute→SQL→PG原生门禁已完成，含丢回复、原意图重放、真实PG重启和
+  数据校验；详见[真实联调](DSGA-Go真实Compute联调.md)。没有执行VM/预算动作。
+
+这些模块不构成完整DSGA自动伸缩。尚未接入可信owner分配/
 日志启动与协调循环、组件实际对账、全部预算/quiesce、Monitor新协议、Scheduler承诺和最终
 Controller/Runner串行fencing；当前Controller仍有直接QMP路径，Core旧模式以
 spec传播状态调度，不能用API成功或旧Ok替代实际VM完成。这些是代码剩余项。
@@ -89,6 +92,11 @@ CommandLineTools27.0 SDK链接错误日志保留，是宿主配置问题，切SD
 原宿主golangci1.63太旧，独立工具在工作区build/tools，不修改全局安装。
 
 ## 继续顺序与不可破坏项
+
+最新跨语言门禁：Neon严格脚本编译本仓显式tag的Go race程序，1个Rust外层/2次
+独立Go真实用例通过，0skip/ignored/filtered；Go tag lint0issues。普通183事件
+沿用ee7f7df批次未改的生产代码验证，不把新标签用例重复计入该数字。本批仅增加
+测试和文档，未改生产路径/PG锁。相关官方main fresh fetch仍为上述SHA且均是祖先。
 
 继续真实持久协调循环/唯一执行者与完整资源承诺：不能将账本丢失、lease到期、PG换boot
 或HTTP超时视作旧动作取消；明确原操作全部效果后才允许冲突新目标。先接Go

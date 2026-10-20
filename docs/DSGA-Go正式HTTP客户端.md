@@ -50,7 +50,7 @@ v2lint含plugin在内全部受影响范围0issues。日志工作区build/
 autoscaling-dsga-http-{verified-final.jsonl,verified-final.stderr,lint-release.log}。
 过程中既有Scheduler误判单独修复并保留失败证据，见对应文档。
 
-Neon真实SDK8/HTTP11原生门禁另通过，证明正式生产端点/PG语义；Go这里的TLS
-端是夹具，没有在同一测试中运行Go→真实Compute→PG，更不包含VM或预算执行。
-该跨语言实链、Agent/Monitor/owner/预算/Scheduler/Runner控制循环仍须继续编码
+初次提交的Go TLS端是人工协议夹具，后续已另完成
+[真实Go→Compute→PG门禁](DSGA-Go真实Compute联调.md)，不能混淆两批证据。
+该门禁仍不包含VM或预算执行；Agent/Monitor/owner/预算/Scheduler/Runner控制循环继续编码
 集成，不能归入Linux待测。真实Linux/VM/物理回收/K8s/性能后验，不启用、不发布。
