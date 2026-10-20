@@ -353,6 +353,7 @@ func (s *agentState) newRunner(vmInfo api.VmInfo, podName util.NamespacedName, p
 
 		shutdown:    nil, // set by (*Runner).Run
 		vmName:      vmInfo.NamespacedName(),
+		vmUID:       vmInfo.UID,
 		podName:     podName,
 		podIP:       podIP,
 		memSlotSize: vmInfo.Mem.SlotSize,

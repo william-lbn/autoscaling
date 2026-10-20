@@ -118,7 +118,7 @@ func (iface *execNeonVMInterface) Request(
 ) error {
 	iface.runner.recordResourceChange(current, target, iface.runner.global.metrics.neonvmRequestedChange)
 
-	err := iface.runner.doNeonVMRequest(ctx, target, targetRevision)
+	err := iface.runner.doNeonVMRequest(ctx, current, target, targetRevision)
 	if err != nil {
 		iface.runner.status.update(iface.runner.global, func(ps podStatus) podStatus {
 			ps.failedNeonVMRequestCounter.Inc()

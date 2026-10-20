@@ -30,7 +30,6 @@ import (
 
 	"go.uber.org/zap"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ktypes "k8s.io/apimachinery/pkg/types"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
@@ -41,7 +40,6 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/agent/schedwatch"
 	"github.com/neondatabase/autoscaling/pkg/api"
 	"github.com/neondatabase/autoscaling/pkg/util"
-	"github.com/neondatabase/autoscaling/pkg/util/patch"
 )
 
 // PluginProtocolVersion is the current version of the agent<->scheduler plugin in use by this
@@ -65,7 +63,9 @@ type Runner struct {
 	// is set exactly once, by (*Runner).Run
 	shutdown context.CancelFunc
 
-	vmName  util.NamespacedName
+	vmName util.NamespacedName
+	// 在创建本Runner的watch事件处固定，绝不能用派发前GET到的新UID替换。
+	vmUID   ktypes.UID
 	podName util.NamespacedName
 	podIP   string
 
@@ -723,37 +723,20 @@ func doMetricsRequest(
 
 func (r *Runner) doNeonVMRequest(
 	ctx context.Context,
-	target api.Resources,
+	current, target api.Resources,
 	targetRevision vmv1.RevisionWithTime,
 ) error {
-	patches := []patch.Operation{{
-		Op:    patch.OpReplace,
-		Path:  "/spec/guest/cpus/use",
-		Value: target.VCPU.ToResourceQuantity(),
-	}, {
-		Op:    patch.OpReplace,
-		Path:  "/spec/guest/memorySlots/use",
-		Value: uint32(target.Mem / r.memSlotSize),
-	}, {
-		Op:    patch.OpReplace,
-		Path:  "/spec/targetRevision",
-		Value: targetRevision,
-	}}
-
-	patchPayload, err := json.Marshal(patches)
-	if err != nil {
-		panic(fmt.Errorf("error marshalling JSON patch: %w", err))
-	}
-
 	timeout := time.Second * time.Duration(r.global.config.NeonVM.RequestTimeoutSeconds)
 	requestCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	// FIXME: We should check the returned VM object here, in case the values are different.
-	//
-	// Also relevant: <https://github.com/neondatabase/autoscaling/issues/23>
-	_, err = r.global.vmClient.NeonvmV1().VirtualMachines(r.vmName.Namespace).
-		Patch(requestCtx, r.vmName.Name, ktypes.JSONPatchType, patchPayload, metav1.PatchOptions{})
+	// GET与条件Patch共用本次期限，不持Runner/Core锁跨网络；CAS失败不在这里重新GET
+	// 后强行套用旧目标。旧请求应交回策略/执行者重新对账，API成功也不是VM实际完成。
+	err := patchVMResources(requestCtx, r.global.vmClient.NeonvmV1().VirtualMachines(r.vmName.Namespace),
+		vmPatchIdentity{
+			UID: r.vmUID, Namespace: r.vmName.Namespace, Name: r.vmName.Name, PodName: r.podName.Name, PodIP: r.podIP,
+			SlotBytes: r.memSlotSize,
+		}, current, target, targetRevision)
 	if err != nil {
 		errMsg := util.RootError(err).Error()
 		// Some error messages contain the object name. We could try to filter them all out, but

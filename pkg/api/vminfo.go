@@ -14,6 +14,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/util"
@@ -85,6 +86,9 @@ func ExtractApprovedScaling(obj metav1.ObjectMetaAccessor) (*Resources, error) {
 // care about. It takes various labels and annotations into account, so certain fields might be
 // different from what's strictly in the VirtualMachine object.
 type VmInfo struct {
+	// 名称可被删除重建复用；真正的资源写入必须绑定VM UID。仅策略/历史fixture可为空，
+	// 因而保持省略兼容；Agent实际派发时明确拒绝空UID，不能从最新GET补成新对象。
+	UID             types.UID              `json:"uid,omitempty" exhaustruct:"optional"`
 	Name            string                 `json:"name"`
 	Namespace       string                 `json:"namespace"`
 	Cpu             VmCpuInfo              `json:"cpu"`
@@ -188,6 +192,7 @@ func ExtractVmInfo(logger *zap.Logger, vm *vmv1.VirtualMachine) (*VmInfo, error)
 	}
 
 	info.CurrentRevision = vm.Status.CurrentRevision
+	info.UID = vm.UID
 	return info, nil
 }
 
@@ -200,7 +205,16 @@ func ExtractVmInfoFromPod(logger *zap.Logger, pod *corev1.Pod) (*VmInfo, error) 
 	}
 
 	vmName := pod.Labels[vmv1.VirtualMachineNameLabel]
-	return extractVmInfoGeneric(logger, vmName, pod, *resources)
+	info, err := extractVmInfoGeneric(logger, vmName, pod, *resources)
+	if err != nil {
+		return nil, err
+	}
+	// Pod UID不是VM UID。只采用实际控制者引用，不能把标签里的名字视为身份。
+	if owner := metav1.GetControllerOf(pod); owner != nil && owner.Kind == "VirtualMachine" &&
+		owner.APIVersion == vmv1.SchemeGroupVersion.String() && owner.Name == vmName {
+		info.UID = owner.UID
+	}
+	return info, nil
 }
 
 func extractVmInfoGeneric(
