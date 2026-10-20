@@ -1,0 +1,54 @@
+[
+  {
+    "request": {
+      "protocol_version": 1,
+      "key": {
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "operation_id": {
+          "high": "18364758544493064720",
+          "low": "81985529216486895"
+        }
+      },
+      "kind": "grow",
+      "expected_capacity_generation": "1",
+      "target_buffers": 1024,
+      "target_vm_memory_bytes": "1073741824",
+      "budget_commitment_id": "reservation-1",
+      "deadline_unix_ms": "18446744073709551615"
+    },
+    "canonical": "{\"key\": {\"instance\": {\"vm_uid\": \"dsg-vm-1\", \"pg_boot_id\": \"18446744073709551615\", \"compute_instance_id\": \"dsg-compute-1\"}, \"revision\": \"9223372036854775808\", \"issuer_epoch\": \"9007199254740993\", \"operation_id\": {\"low\": \"81985529216486895\", \"high\": \"18364758544493064720\"}}, \"kind\": \"grow\", \"target_buffers\": 1024, \"deadline_unix_ms\": \"18446744073709551615\", \"protocol_version\": 1, \"budget_commitment_id\": \"reservation-1\", \"target_vm_memory_bytes\": \"1073741824\", \"expected_capacity_generation\": \"1\"}",
+    "sha256": "f86603d6547f38a4e0f11e31541a46f748e4407fe248c54659fea6ad92fcd094"
+  },
+  {
+    "request": {
+      "protocol_version": 1,
+      "key": {
+        "instance": {
+          "vm_uid": "v\"\\<>&/",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "operation_id": {
+          "high": "18364758544493064720",
+          "low": "81985529216486895"
+        }
+      },
+      "kind": "grow",
+      "expected_capacity_generation": "1",
+      "target_buffers": 1024,
+      "target_vm_memory_bytes": "1073741824",
+      "budget_commitment_id": "quote\"-slash\\-html<>&/",
+      "deadline_unix_ms": "18446744073709551615"
+    },
+    "canonical": "{\"key\": {\"instance\": {\"vm_uid\": \"v\\\"\\\\<>&/\", \"pg_boot_id\": \"18446744073709551615\", \"compute_instance_id\": \"dsg-compute-1\"}, \"revision\": \"9223372036854775808\", \"issuer_epoch\": \"9007199254740993\", \"operation_id\": {\"low\": \"81985529216486895\", \"high\": \"18364758544493064720\"}}, \"kind\": \"grow\", \"target_buffers\": 1024, \"deadline_unix_ms\": \"18446744073709551615\", \"protocol_version\": 1, \"budget_commitment_id\": \"quote\\\"-slash\\\\-html<>&/\", \"target_vm_memory_bytes\": \"1073741824\", \"expected_capacity_generation\": \"1\"}",
+    "sha256": "1988dbc848abd74b7a7fca104f308a6e43003c930b756b670d747807315fb949"
+  }
+]

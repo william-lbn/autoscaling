@@ -3,6 +3,7 @@ package journal
 import (
 	"encoding/json"
 	"math"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -13,6 +14,25 @@ import (
 const testIncarnation = "1234567890abcdef1234567890abcdef"
 
 var testCommand = []byte(`{"model_test":true}`)
+
+func TestJournalRetainsFullHTTPResponseWithinSeparateCommandLimit(t *testing.T) {
+	model := testModel(t)
+	request := testRequest(model, 1, control.Grow)
+	model = beginModel(t, model, request)
+	_, err := model.Start(model.Owner, request.Key, PrepareBudget, "component", []byte(`{"large":"`+strings.Repeat("x", MaxCommandBytes)+`"}`))
+	require.Error(t, err, "response limit must not silently enlarge business commands")
+	model, err = model.Start(model.Owner, request.Key, PrepareBudget, "component", testCommand)
+	require.NoError(t, err)
+	fact := observation(model, model.Active.Steps[0], Completed)
+	fact.Data = []byte(`{"complete_http_body":"` + strings.Repeat("x", 24*1024) + `"}`)
+	model, err = model.Record(model.Owner, request.Key, fact)
+	require.NoError(t, err, "complete HTTP facts over 8KiB cannot be truncated to fit the old command bound")
+	_, encoded, err := encode(model, MaxEncodedBytes)
+	require.NoError(t, err)
+	restored, err := decode(encoded, model.VMUID, model.Incarnation)
+	require.NoError(t, err)
+	require.Equal(t, fact.Data, restored.Active.Steps[0].Observation.Data)
+}
 
 func testModel(t testing.TB) Model {
 	t.Helper()

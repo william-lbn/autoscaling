@@ -87,8 +87,14 @@ func UnmarshalObjectBounded(data []byte, into any, maxBytes, maxValues int) erro
 			optional = optional || flag == "omitempty"
 		}
 		allowed[tag[0]] = true
-		if _, present := fields[tag[0]]; !present && !optional {
+		raw, present := fields[tag[0]]
+		if !present && !optional {
 			return fmt.Errorf("missing DSGA field %q", tag[0])
+		}
+		// encoding/json会把null布尔/整数静默变成零值，Rust/C则不接受。可为null
+		// 的协议字段必须显式使用指针；字节slice的null由各模型的Planned语义处理。
+		if present && bytes.Equal(bytes.TrimSpace(raw), []byte("null")) && field.Type.Kind() != reflect.Pointer && field.Type.Kind() != reflect.Slice {
+			return fmt.Errorf("nonnull DSGA field %q is null", tag[0])
 		}
 	}
 	for key := range fields {

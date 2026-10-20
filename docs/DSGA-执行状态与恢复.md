@@ -16,7 +16,11 @@
   Controller/QMP内存入口拒绝回退；显式新VM初始化和Webhook标记保护。详见
   [本批边界与恢复规则](DSGA-持久执行日志与恢复.md)。
 
-这些模块不构成完整DSGA自动伸缩。尚未实现Go实际HTTP消费者、可信owner分配/
+- 正式Go HTTP消费者已完成五路由、双连接池/在途栅栏、完整有类型事实和原生
+  context摘要核验，详见[HTTP客户端](DSGA-Go正式HTTP客户端.md)。原始null标量
+  明确拒绝；完整审计body提高为正式HTTP的32KiB，命令独立保留8KiB。
+
+这些模块不构成完整DSGA自动伸缩。尚未接入Go→真实Compute→PG整体门禁、可信owner分配/
 日志启动与协调循环、组件实际对账、全部预算/quiesce、Monitor新协议、Scheduler承诺和最终
 Controller/Runner串行fencing；当前Controller仍有直接QMP路径，Core旧模式以
 spec传播状态调度，不能用API成功或旧Ok替代实际VM完成。这些是代码剩余项。
@@ -66,6 +70,19 @@ autoscaling-dsga-contract-fuzz.log。最终测试62209/lint88750已终态0，负
 
 这是本地HTTP/RFC6902持久协议测试，无真实apiserver/etcd、PG/VM动作或领导权
 认证证据。新Store未自动接入运行循环，无自动打标/启用；完整业务继续实现。
+
+### 正式HTTP消费者批次
+
+完整受影响race最终183pass事件、0fail/用例skip；10有测试包通过，9无测试包
+单列。v2lint包含plugin全范围，最终0issues。日志autoscaling-dsga-http-
+{verified-final.jsonl,verified-final.stderr,lint-release.log}。请求/响应向量与Neon
+逐字节共享，原生context向量由PG486338生成，未改PG/三处锁。Neon main再次
+fresh fetch仍fa504217且包含于功能分支。没有全量重编未修改的PG/C代码。
+
+既有Scheduler闭区间随机测试误判实际触发，原失败保留在release-final.jsonl，
+单独修复后定向race100轮通过，再执行最终完整组合。Rust原有摘要漏核对也已
+反向确认：移除新比较后full_context用例确定性失败，finally恢复后SDK8/HTTP11
+真实门禁通过；最初SDK路径错误是链接配置失败，未算业务反向证据。
 
 Mac Go1.25.13 arm64，显式Xcode14.4 SDK/clang/CGO编译与链接参数；初始默认
 CommandLineTools27.0 SDK链接错误日志保留，是宿主配置问题，切SDK后完成检查。

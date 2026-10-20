@@ -1,0 +1,261 @@
+{
+  "protocol_version": 1,
+  "vm_shrink_permit": false,
+  "receipt": {
+    "key": {
+      "instance": {
+        "vm_uid": "dsg-vm-1",
+        "compute_instance_id": "dsg-compute-1",
+        "pg_boot_id": "18446744073709551615"
+      },
+      "issuer_epoch": "9007199254740993",
+      "revision": "9223372036854775808",
+      "operation_id": {
+        "high": "18364758544493064720",
+        "low": "81985529216486895"
+      }
+    },
+    "disposition": "replayed",
+    "has_result": true,
+    "result": {
+      "instance": {
+        "vm_uid": "dsg-vm-1",
+        "compute_instance_id": "dsg-compute-1",
+        "pg_boot_id": "18446744073709551615"
+      },
+      "capacity_generation": "2",
+      "low_buffers": 1024,
+      "high_buffers": 1024,
+      "maximum_buffers": 8192,
+      "admission_open": false,
+      "admission_revision": "0",
+      "startup_shared_upper_bytes": "33554432",
+      "operation": {
+        "key": {
+          "instance": {
+            "vm_uid": "dsg-vm-1",
+            "compute_instance_id": "dsg-compute-1",
+            "pg_boot_id": "18446744073709551615"
+          },
+          "issuer_epoch": "9007199254740993",
+          "revision": "9223372036854775808",
+          "operation_id": {
+            "high": "18364758544493064720",
+            "low": "81985529216486895"
+          }
+        },
+        "kind": "grow",
+        "phase": "committed",
+        "reason": "none",
+        "target_buffers": 1024,
+        "expected_capacity_generation": "1",
+        "context_sha256": "f86603d6547f38a4e0f11e31541a46f748e4407fe248c54659fea6ad92fcd094",
+        "cancel_requested": false,
+        "cancel_closed": true,
+        "replayed": true
+      },
+      "arrays": [
+        {
+          "array": "descriptors",
+          "committed_upper_bytes": "16777216",
+          "allocation_unknown": false,
+          "release_state": "none",
+          "release_key": null,
+          "release_capacity_generation": "0",
+          "provider": {
+            "has_result": false,
+            "status": "unknown",
+            "system_errno": 0,
+            "requested_offset": "0",
+            "requested_bytes": "0",
+            "affected_offset": "0",
+            "affected_bytes": "0",
+            "physical_release_verified": false,
+            "allocation_may_be_partial": false,
+            "release_may_be_partial": false
+          }
+        },
+        {
+          "array": "blocks",
+          "committed_upper_bytes": "16777216",
+          "allocation_unknown": false,
+          "release_state": "none",
+          "release_key": null,
+          "release_capacity_generation": "0",
+          "provider": {
+            "has_result": false,
+            "status": "unknown",
+            "system_errno": 0,
+            "requested_offset": "0",
+            "requested_bytes": "0",
+            "affected_offset": "0",
+            "affected_bytes": "0",
+            "physical_release_verified": false,
+            "allocation_may_be_partial": false,
+            "release_may_be_partial": false
+          }
+        },
+        {
+          "array": "iocv",
+          "committed_upper_bytes": "16777216",
+          "allocation_unknown": false,
+          "release_state": "none",
+          "release_key": null,
+          "release_capacity_generation": "0",
+          "provider": {
+            "has_result": false,
+            "status": "unknown",
+            "system_errno": 0,
+            "requested_offset": "0",
+            "requested_bytes": "0",
+            "affected_offset": "0",
+            "affected_bytes": "0",
+            "physical_release_verified": false,
+            "allocation_may_be_partial": false,
+            "release_may_be_partial": false
+          }
+        },
+        {
+          "array": "checkpoint",
+          "committed_upper_bytes": "16777216",
+          "allocation_unknown": false,
+          "release_state": "none",
+          "release_key": null,
+          "release_capacity_generation": "0",
+          "provider": {
+            "has_result": false,
+            "status": "unknown",
+            "system_errno": 0,
+            "requested_offset": "0",
+            "requested_bytes": "0",
+            "affected_offset": "0",
+            "affected_bytes": "0",
+            "physical_release_verified": false,
+            "allocation_may_be_partial": false,
+            "release_may_be_partial": false
+          }
+        }
+      ]
+    }
+  },
+  "observed": {
+    "instance": {
+      "vm_uid": "dsg-vm-1",
+      "compute_instance_id": "dsg-compute-1",
+      "pg_boot_id": "18446744073709551615"
+    },
+    "capacity_generation": "2",
+    "low_buffers": 1024,
+    "high_buffers": 1024,
+    "maximum_buffers": 8192,
+    "admission_open": false,
+    "admission_revision": "0",
+    "startup_shared_upper_bytes": "33554432",
+    "operation": {
+      "key": {
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "operation_id": {
+          "high": "18364758544493064720",
+          "low": "81985529216486895"
+        }
+      },
+      "kind": "grow",
+      "phase": "committed",
+      "reason": "none",
+      "target_buffers": 1024,
+      "expected_capacity_generation": "1",
+      "context_sha256": "f86603d6547f38a4e0f11e31541a46f748e4407fe248c54659fea6ad92fcd094",
+      "cancel_requested": false,
+      "cancel_closed": true,
+      "replayed": true
+    },
+    "arrays": [
+      {
+        "array": "descriptors",
+        "committed_upper_bytes": "16777216",
+        "allocation_unknown": false,
+        "release_state": "none",
+        "release_key": null,
+        "release_capacity_generation": "0",
+        "provider": {
+          "has_result": false,
+          "status": "unknown",
+          "system_errno": 0,
+          "requested_offset": "0",
+          "requested_bytes": "0",
+          "affected_offset": "0",
+          "affected_bytes": "0",
+          "physical_release_verified": false,
+          "allocation_may_be_partial": false,
+          "release_may_be_partial": false
+        }
+      },
+      {
+        "array": "blocks",
+        "committed_upper_bytes": "16777216",
+        "allocation_unknown": false,
+        "release_state": "none",
+        "release_key": null,
+        "release_capacity_generation": "0",
+        "provider": {
+          "has_result": false,
+          "status": "unknown",
+          "system_errno": 0,
+          "requested_offset": "0",
+          "requested_bytes": "0",
+          "affected_offset": "0",
+          "affected_bytes": "0",
+          "physical_release_verified": false,
+          "allocation_may_be_partial": false,
+          "release_may_be_partial": false
+        }
+      },
+      {
+        "array": "iocv",
+        "committed_upper_bytes": "16777216",
+        "allocation_unknown": false,
+        "release_state": "none",
+        "release_key": null,
+        "release_capacity_generation": "0",
+        "provider": {
+          "has_result": false,
+          "status": "unknown",
+          "system_errno": 0,
+          "requested_offset": "0",
+          "requested_bytes": "0",
+          "affected_offset": "0",
+          "affected_bytes": "0",
+          "physical_release_verified": false,
+          "allocation_may_be_partial": false,
+          "release_may_be_partial": false
+        }
+      },
+      {
+        "array": "checkpoint",
+        "committed_upper_bytes": "16777216",
+        "allocation_unknown": false,
+        "release_state": "none",
+        "release_key": null,
+        "release_capacity_generation": "0",
+        "provider": {
+          "has_result": false,
+          "status": "unknown",
+          "system_errno": 0,
+          "requested_offset": "0",
+          "requested_bytes": "0",
+          "affected_offset": "0",
+          "affected_bytes": "0",
+          "physical_release_verified": false,
+          "allocation_may_be_partial": false,
+          "release_may_be_partial": false
+        }
+      }
+    ]
+  }
+}

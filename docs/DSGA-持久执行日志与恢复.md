@@ -49,8 +49,10 @@ UnconfirmedWrite；调用者必须重读原意图对账。重新构造clientset�
 
 存储使用两个annotation：`internal.autoscaling.neon.tech/dsga-incarnation`与
 `internal.autoscaling.neon.tech/dsga-journal-v1`。封装有版本、incarnation、zlib和
-原始JSON SHA256，最大192KiB；解压最大1MiB、16384值节点、32层。命令和审计
-body各8KiB，任意层重复键、未知/缺失字段、非法UTF8、尾随压缩数据均拒绝。
+原始JSON SHA256，最大192KiB；解压最大1MiB、16384值节点、32层。任意层重复
+键、未知/缺失字段、非法UTF8、尾随压缩数据均拒绝。命令限8KiB；正式HTTP消费者
+接入批次将审计body界限提高为32KiB，与响应边界一致，
+不可为适应旧8KiB界限截断完整回执。每层Step仍受64KiB、整体受1MiB约束。
 同时从Kubernetes 256KiB annotation总预算扣除其他键值，活动意图预留4KiB关闭
 空间。字节不足只淘汰最老终态，保留活动意图/高水位；仍不足则拒绝新写入，不截
 掉未知动作。checksum/压缩不提供身份认证，模型有效也不等于允许发布生产。
@@ -86,7 +88,7 @@ UID反向还断言新对象的账本被实际覆盖，避免只检查写后返�
 
 - 协调器启动时的显式初始化/加载、唯一owner认证及真实控制循环；Takeover目前
   只持久化上层已认证决定，不检查领导权租约。不是一个自足的选主服务。
-- Go实际Compute HTTP消费者、Monitor协议、PG issuer接管fence及领域回执核验。
+- Go消费者与实际Compute的实链集成、Monitor协议、PG issuer接管fence及领域回执核验。
   不把任意调用者能构造的Observation当成可信数据。
 - 完整硬预算/排空/承诺生命周期、Scheduler/Controller/Runner实际执行与恢复；
   最终私有QMP边界和持久串行fencing，跨重启/迁移对账。

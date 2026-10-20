@@ -16,7 +16,8 @@ import (
 
 const (
 	HistoryLimit        = 16
-	MaxObservationBytes = 8 * 1024
+	MaxObservationBytes = 32 * 1024
+	MaxCommandBytes     = 8 * 1024
 	MaxRawBytes         = 1024 * 1024
 )
 
@@ -81,7 +82,8 @@ const (
 
 // Observation只存储上层核验后的结论和完整审计body。不能从旧Ok、HTTP200、查询
 // not-found或单次RSS采样构造Completed/NoEffect；来源真实性与领域约束由适配器负责。
-// Data不得含Bearer/密码等凭据。8KiB限制完整协议事实，不能用任意大日志填满VM对象。
+// Data不得含Bearer/密码等凭据。32KiB与正式HTTP响应同界，完整回执不得截断；
+// 命令另限8KiB，不能用任意大日志填满VM对象。总持久化字节预算仍独立核验。
 type Observation struct {
 	Key           control.Key    `json:"key"`
 	RequestSHA256 string         `json:"request_sha256"`
@@ -707,7 +709,7 @@ func (model Model) StartCleanup(actor Owner, key control.Key, targetID string, c
 // 完整业务DTO（含CPU/目标/预算等实际动作参数）在派发前固化，不保存鉴权头。
 // 原始字节不可改，来源实例和派发owner也绑定摘要。这里不认证业务DTO的领域语义。
 func commandDigest(requestHash string, step Step) (string, error) {
-	if err := control.ValidateJSON(step.Command, MaxObservationBytes, 2048); err != nil {
+	if err := control.ValidateJSON(step.Command, MaxCommandBytes, 2048); err != nil {
 		return "", err
 	}
 	if data := bytes.TrimSpace(step.Command); len(data) == 0 || data[0] != '{' {
