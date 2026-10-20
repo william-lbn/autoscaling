@@ -86,6 +86,10 @@ native标签全受影响lint另验；go.mod/go.sum不变。
 最终源码门禁又通过8.49s，Go正常4.05s/重启后0.01s，日志
 neon-owner-native-final.log。准确Go提交推送后再复验，结果记入Neon主仓。
 
+严格门禁另要求实际完成阶段标记；带此约束的候选8.09s通过。对同一成功日志
+仅删除owner阶段、保留两次PASS的反向，门禁验证器明确拒绝；原日志通过。补强
+只改native标签测试日志/门禁，不改生产逻辑，不重复计入254个普通case事件。
+
 Kubernetes仅为本机HTTP/RFC6902/UID/RV语义夹具，非PG预算/Guest/VM仍是明确
 test_only body。没有运行真实apiserver/etcd/RBAC、Host/Guest/VM或物理释放。
 不能用测试中的假非PG回执调用生产预算适配器。既有envtest缺etcd的失败沿用

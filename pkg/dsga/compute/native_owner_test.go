@@ -179,4 +179,7 @@ func nativeOwnedPG(t *testing.T, intent control.Request, config compute.Config) 
 		return nil
 	})
 	require.NoError(t, err)
+	// 严格门禁必须确认本新增阶段实际结束，不能仅凭旧顶层用例PASS就把
+	// 未运行所有权循环的旧Go二进制算作本批验证。标记不含凭据/随机holder。
+	t.Logf("DSGA_NATIVE_OWNER_LOOP epoch=%d buffers=%d journal=recorded replay=confirmed", config.IssuerEpoch, intent.TargetBuffers)
 }
