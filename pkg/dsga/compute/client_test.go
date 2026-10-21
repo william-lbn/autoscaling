@@ -68,6 +68,27 @@ func newTLSClient(t *testing.T, handler http.HandlerFunc) (*Client, Config) {
 	return client, config
 }
 
+func TestInitialDiscoveryFixesBootBeforePublicationAndRejectsHistory(t *testing.T) {
+	_, config := newTLSClient(t, func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(500) })
+	expected := config.Instance
+	config.Instance.PGBootID = 0
+	client, err := DiscoverInitial(context.Background(), config)
+	require.NoError(t, err)
+	defer client.CloseIdleConnections()
+	instance, _ := client.Binding()
+	require.Equal(t, expected, instance)
+	_, err = New(context.Background(), config)
+	require.Error(t, err, "ordinary constructor must still require the retained boot")
+	request, _ := fixtures(t)
+	config.Pending = &request
+	_, err = DiscoverInitial(context.Background(), config)
+	require.Error(t, err)
+	config.Pending = nil
+	config.Instance = expected
+	_, err = DiscoverInitial(context.Background(), config)
+	require.Error(t, err)
+}
+
 func TestExecutionAndObservationUseIndependentPoolsAndKeepFence(t *testing.T) {
 	intent, terminal := fixtures(t)
 	started := make(chan struct{})

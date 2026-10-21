@@ -100,6 +100,42 @@ func pgConfig(t *testing.T, request control.Request, handler http.HandlerFunc) c
 	return compute.Config{BaseURL: server.URL, Instance: request.Key.Instance, IssuerEpoch: 0, Timeout: 3 * time.Second, Transport: server.Client().Transport.(*http.Transport), Token: func(context.Context) (string, error) { return "private-test-token", nil }, Pending: nil}
 }
 
+func TestPGWorkerInitialDiscoveryOrRetainedHighWaterBinding(t *testing.T) {
+	for _, withHistory := range []bool{false, true} {
+		_, store, client := newAPI(t)
+		elector, err := New(client, store, testOptions())
+		require.NoError(t, err)
+		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+		err = elector.Run(ctx, func(ctx context.Context, session *Session) error {
+			request := pgRequest(t, session.Actor())
+			if withHistory {
+				beginPG(t, store, request)
+			}
+			config := pgConfig(t, request, func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(500) })
+			config.Instance.PGBootID = 0
+			worker, err := session.NewPGWorker(ctx, config)
+			require.NoError(t, err)
+			defer worker.CloseIdleConnections()
+			instance, _ := worker.Binding()
+			require.Equal(t, request.Key.Instance, instance)
+			if withHistory {
+				config.Instance.ComputeInstanceID = "another-compute"
+				_, err = session.NewPGWorker(ctx, config)
+				require.Error(t, err, "credential refresh cannot replace a retained Compute identity")
+				changed := request
+				changed.Key.Instance.PGBootID++
+				config = pgConfig(t, changed, func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(500) })
+				config.Instance.PGBootID = 0
+				_, err = session.NewPGWorker(ctx, config)
+				require.Error(t, err, "retained journal cannot silently discover a new PG boot")
+			}
+			return nil
+		})
+		cancel()
+		require.NoError(t, err)
+	}
+}
+
 func TestOwnedPGLoopKeepsClientAndRequiresExplicitReplayAfterLostReply(t *testing.T) {
 	_, store, client := newAPI(t)
 	elector, err := New(client, store, testOptions())

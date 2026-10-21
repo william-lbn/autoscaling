@@ -47,6 +47,24 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config) 
 	if err != nil {
 		return nil, err
 	}
+	initial := false
+	model := snapshot.State()
+	if config.Instance.PGBootID == 0 {
+		if model.HighWater != nil {
+			// 包括终态历史被淘汰的情况，HWM仍绑定原boot。不能因Active为空
+			// 或新凭据返回新实例，就悄悄采用新PG boot并丢掉未知效果。
+			known := model.HighWater.Instance
+			if known.VMUID != config.Instance.VMUID || known.ComputeInstanceID != config.Instance.ComputeInstanceID {
+				return nil, fmt.Errorf("PG worker retained Compute binding differs")
+			}
+			config.Instance = known
+		} else {
+			if model.Active != nil || len(model.History) != 0 || model.ExpiredResults != 0 || config.Pending != nil {
+				return nil, fmt.Errorf("PG worker initial discovery requires pristine journal")
+			}
+			initial = true
+		}
+	}
 	var pending *control.Request
 	if active := snapshot.State().Active; active != nil {
 		if active.Request.Key.Instance != config.Instance {
@@ -77,7 +95,12 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config) 
 		}
 		return token(tokenCtx)
 	}
-	client, err := compute.New(callCtx, config)
+	var client *compute.Client
+	if initial {
+		client, err = compute.DiscoverInitial(callCtx, config)
+	} else {
+		client, err = compute.New(callCtx, config)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -90,6 +113,10 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config) 
 }
 
 func (worker *PGWorker) CloseIdleConnections() { worker.client.CloseIdleConnections() }
+
+// Binding只暴露实际协商/恢复后固定的PG实例，用于后续计划完整原意图；
+// 它不是准入/预算或VM许可，也不允许调用方改写Client绑定。
+func (worker *PGWorker) Binding() (control.Instance, control.Uint64) { return worker.client.Binding() }
 
 func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 	if err := worker.session.Check(ctx); err != nil {

@@ -63,7 +63,21 @@ type Client struct {
 // New验证固定TLS端点并实时协商ABI/boot。不会在断连后自动新建Client或改变boot，
 // 否则可能丢失未确认操作；调用者必须将原journal恢复到新Client并处理旧效果。
 func New(ctx context.Context, config Config) (*Client, error) {
-	if err := config.Instance.Validate(); err != nil {
+	return newClient(ctx, config, false)
+}
+
+// DiscoverInitial只用于外层已确认完整journal从未有过意图/HWM/历史的初始
+// 协商。不能拿它重造已有未知Client；有Pending或已指定boot时直接拒绝。
+// 新boot在返回Client前固定，此后Capabilities仍严格比较，永不自动改绑。
+func DiscoverInitial(ctx context.Context, config Config) (*Client, error) {
+	if config.Instance.PGBootID != 0 || config.Pending != nil {
+		return nil, &CallError{MayHaveExecuted: false, Code: "initial_discovery_has_history"}
+	}
+	return newClient(ctx, config, true)
+}
+
+func newClient(ctx context.Context, config Config, initial bool) (*Client, error) {
+	if (!initial && config.Instance.Validate() != nil) || (initial && (control.ValidateID(config.Instance.VMUID, "VM") != nil || control.ValidateID(config.Instance.ComputeInstanceID, "Compute") != nil)) {
 		return nil, &CallError{MayHaveExecuted: false, Code: "invalid_binding"}
 	}
 	endpoint, err := url.Parse(config.BaseURL)
@@ -112,10 +126,17 @@ func New(ctx context.Context, config Config) (*Client, error) {
 			client.observer = httpClient
 		}
 	}
-	if _, err := client.Capabilities(ctx); err != nil {
+	var capability control.Capabilities
+	if err := client.read(ctx, "/dsg/v1/capabilities", &capability); err != nil {
 		client.CloseIdleConnections()
 		return nil, err
 	}
+	bound, err := capability.Bind(client.instance.VMUID, client.instance.ComputeInstanceID)
+	if err != nil || (!initial && bound != client.instance) {
+		client.CloseIdleConnections()
+		return nil, &CallError{MayHaveExecuted: true, Code: "capability_binding_changed"}
+	}
+	client.instance = bound
 	return client, nil
 }
 
