@@ -38,6 +38,7 @@ type agentState struct {
 	config       *Config
 	kubeClient   *kubernetes.Clientset
 	vmClient     *vmclient.Clientset
+	envArgs      EnvArgs
 	schedTracker *schedwatch.SchedulerTracker
 	metrics      GlobalMetrics
 	vmMetrics    *PerVMMetrics
@@ -60,6 +61,7 @@ func (r MainRunner) newAgentState(
 		config:       r.Config,
 		kubeClient:   r.KubeClient,
 		vmClient:     r.VMClient,
+		envArgs:      r.EnvArgs,
 		podIP:        podIP,
 		schedTracker: schedTracker,
 		metrics:      globalMetrics,
@@ -161,6 +163,8 @@ func (s *agentState) handleVMEventAdded(
 
 			startTime:                     now,
 			lastSuccessfulMonitorComm:     nil,
+			dsga:                          false,
+			dsgaLastSuccessfulCheck:       nil,
 			failedMonitorRequestCounter:   util.NewRecentCounter(time.Duration(s.config.Monitor.MaxFailedRequestRate.IntervalSeconds) * time.Second),
 			failedNeonVMRequestCounter:    util.NewRecentCounter(time.Duration(s.config.NeonVM.MaxFailedRequestRate.IntervalSeconds) * time.Second),
 			failedSchedulerRequestCounter: util.NewRecentCounter(time.Duration(s.config.Scheduler.MaxFailedRequestRate.IntervalSeconds) * time.Second),
@@ -243,7 +247,7 @@ func (s *agentState) TriggerRestartIfNecessary(runnerCtx context.Context, logger
 	case podStatusExitCanceled:
 		logger.Info("Runner's context was canceled; no need to restart")
 		return // successful exit, no need to restart.
-	case podStatusExitPanicked:
+	case podStatusExitPanicked, podStatusExitErrored:
 		// Should restart; continue.
 		logger.Info("Runner had abnormal exit kind; it will restart", zap.String("exitKind", string(exitKind)))
 	default:
@@ -365,6 +369,7 @@ func (s *agentState) newRunner(vmInfo api.VmInfo, podName util.NamespacedName, p
 
 		backgroundWorkerCount: atomic.Int64{},
 		backgroundPanic:       make(chan error),
+		dsga:                  *new(DSGARunnerState),
 	}
 }
 
@@ -416,6 +421,8 @@ type podStatus struct {
 	previousEndStates []podStatusEndState
 
 	lastSuccessfulMonitorComm *time.Time
+	dsga                      bool
+	dsgaLastSuccessfulCheck   *time.Time
 
 	failedMonitorRequestCounter   *util.RecentCounter
 	failedNeonVMRequestCounter    *util.RecentCounter
@@ -444,6 +451,8 @@ type podStatusDump struct {
 	PreviousEndStates []podStatusEndState `json:"previousEndStates"`
 
 	LastSuccessfulMonitorComm     *time.Time `json:"lastSuccessfulMonitorComm"`
+	DSGA                          bool       `json:"dsga"`
+	DSGALastSuccessfulCheck       *time.Time `json:"dsgaLastSuccessfulCheck"`
 	FailedMonitorRequestCounter   uint       `json:"failedMonitorRequestCounter"`
 	FailedNeonVMRequestCounter    uint       `json:"failedNeonVMRequestCounter"`
 	FailedSchedulerRequestCounter uint       `json:"failedSchedulerRequestCounter"`
@@ -470,6 +479,7 @@ type podStatusExitKind string
 const (
 	podStatusExitPanicked podStatusExitKind = "panicked"
 	podStatusExitCanceled podStatusExitKind = "canceled" // top-down signal that the Runner should stop.
+	podStatusExitErrored  podStatusExitKind = "errored"
 )
 
 func (s *lockedPodStatus) update(global *agentState, with func(podStatus) podStatus) {
@@ -490,6 +500,8 @@ func (s *lockedPodStatus) update(global *agentState, with func(podStatus) podSta
 			newState = s.state
 		case podStatusExitPanicked:
 			newState = runnerMetricStatePanicked
+		case podStatusExitErrored:
+			newState = runnerMetricStateStuck
 		}
 	} else if isStuck, _ := newStatus.isStuck(global, now); isStuck {
 		newState = runnerMetricStateStuck
@@ -519,6 +531,22 @@ func (s *lockedPodStatus) update(global *agentState, with func(podStatus) podSta
 }
 
 func (s podStatus) isStuck(global *agentState, now time.Time) (bool, []string) {
+	if s.dsga {
+		// 受管模式不启动旧monitor，不能因没有legacy心跳而必然报stuck。
+		// 这里仅报告协调检查新鲜度，不把它解释为PG/Guest/VM完成证明。
+		limit := 50 * time.Second
+		if c := global.config.DSGA; c != nil {
+			limit = max(limit, time.Duration(2*c.ComputeTimeoutSeconds+2*c.PollIntervalSeconds)*time.Second)
+		}
+		last := s.startTime
+		if s.dsgaLastSuccessfulCheck != nil {
+			last = *s.dsgaLastSuccessfulCheck
+		}
+		if now.After(last.Add(limit)) {
+			return true, []string{"DSGA owner reconciliation check is stale"}
+		}
+		return false, nil
+	}
 	var reasons []string
 	if s.monitorStuckAt(global.config).Before(now) {
 		reasons = append(reasons, "monitor health check failed")
@@ -612,6 +640,8 @@ func (s *lockedPodStatus) dump() podStatusDump {
 		StateUpdatedAt: s.stateUpdatedAt,
 
 		LastSuccessfulMonitorComm:     s.lastSuccessfulMonitorComm,
+		DSGA:                          s.dsga,
+		DSGALastSuccessfulCheck:       s.dsgaLastSuccessfulCheck,
 		FailedMonitorRequestCounter:   s.failedMonitorRequestCounter.Get(),
 		FailedNeonVMRequestCounter:    s.failedNeonVMRequestCounter.Get(),
 		FailedSchedulerRequestCounter: s.failedSchedulerRequestCounter.Get(),

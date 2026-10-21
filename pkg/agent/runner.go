@@ -90,6 +90,7 @@ type Runner struct {
 	// updated by r.spawnBackgroundWorker
 	backgroundWorkerCount atomic.Int64
 	backgroundPanic       chan error
+	dsga                  DSGARunnerState // guarded by lock; no credentials retained in status
 }
 
 // RunnerState is the serializable state of the Runner, extracted by its State method
@@ -98,6 +99,7 @@ type RunnerState struct {
 	ExecutorState         executor.StateDump `json:"executorState"`
 	Monitor               *MonitorState      `json:"monitor"`
 	BackgroundWorkerCount int64              `json:"backgroundWorkerCount"`
+	DSGA                  DSGARunnerState    `json:"dsga"`
 }
 
 // SchedulerState is the state of a Scheduler, constructed as part of a Runner's State Method
@@ -123,7 +125,8 @@ func (r *Runner) State(ctx context.Context) (*RunnerState, error) {
 		}
 	}
 
-	var executorState *executor.StateDump
+	// DSGA/启动检查阶段没有legacy执行器，返回零状态而不是解引用nil。
+	executorState := new(executor.StateDump)
 	if r.executorStateDump != nil /* may be nil if r.Run() hasn't fully started yet */ {
 		s := r.executorStateDump()
 		executorState = &s
@@ -134,6 +137,7 @@ func (r *Runner) State(ctx context.Context) (*RunnerState, error) {
 		ExecutorState:         *executorState,
 		Monitor:               monitorState,
 		BackgroundWorkerCount: r.backgroundWorkerCount.Load(),
+		DSGA:                  r.dsga,
 	}, nil
 }
 
@@ -156,27 +160,37 @@ func (r *Runner) Spawn(ctx context.Context, logger *zap.Logger, vmInfoUpdated ut
 			r.global.TriggerRestartIfNecessary(ctx, logger, r.podName, r.podIP)
 		}()
 
-		r.Run(ctx, logger, vmInfoUpdated)
+		runErr := r.Run(ctx, logger, vmInfoUpdated)
 		endTime := time.Now()
 
 		exitKind := podStatusExitCanceled // normal exit, only by context being canceled.
+		if runErr != nil && ctx.Err() == nil {
+			exitKind = podStatusExitErrored
+		}
 		r.status.update(r.global, func(stat podStatus) podStatus {
 			stat.endState = &podStatusEndState{
 				ExitKind: exitKind,
-				Error:    nil,
+				Error:    runErr,
 				Time:     endTime,
 			}
 			return stat
 		})
 
-		logger.Info("Ended without error")
+		if runErr != nil && ctx.Err() == nil {
+			logger.Warn("Runner ended with error", zap.Error(runErr))
+		} else {
+			logger.Info("Ended without error")
+		}
 	}()
 }
 
 // Run is the main entrypoint to the long-running per-VM pod tasks
-func (r *Runner) Run(ctx context.Context, logger *zap.Logger, vmInfoUpdated util.CondChannelReceiver) {
+func (r *Runner) Run(ctx context.Context, logger *zap.Logger, vmInfoUpdated util.CondChannelReceiver) error {
 	ctx, r.shutdown = context.WithCancel(ctx)
 	defer r.shutdown()
+	if managed, err := r.runDSGA(ctx, logger, vmInfoUpdated); managed || err != nil {
+		return err
+	}
 
 	getVmInfo := func() api.VmInfo {
 		r.status.mu.Lock()
@@ -233,7 +247,11 @@ func (r *Runner) Run(ctx context.Context, logger *zap.Logger, vmInfoUpdated util
 		},
 	})
 
+	if err := r.lock.TryLock(ctx); err != nil {
+		return err
+	}
 	r.executorStateDump = executorCore.StateDump
+	r.lock.Unlock()
 
 	monitorGeneration := executor.NewStoredGenerationNumber()
 
@@ -328,7 +346,7 @@ func (r *Runner) Run(ctx context.Context, logger *zap.Logger, vmInfoUpdated util
 	// pod was deleted, or the autoscaler-agent is exiting.
 	select {
 	case <-ctx.Done():
-		return
+		return nil
 	case err := <-r.backgroundPanic:
 		panic(err)
 	}

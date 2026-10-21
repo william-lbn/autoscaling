@@ -3,7 +3,9 @@ package agent
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
+	"path/filepath"
 
 	"github.com/tychoish/fun/erc"
 
@@ -25,6 +27,7 @@ type Config struct {
 	Monitor   MonitorConfig    `json:"monitor"`
 	NeonVM    NeonVMConfig     `json:"neonvm"`
 	DumpState *DumpStateConfig `json:"dumpState"`
+	DSGA      *DSGAConfig      `json:"dsga,omitempty"`
 }
 
 type RateThresholdConfig struct {
@@ -165,6 +168,13 @@ func ReadConfig(path string) (*Config, error) {
 
 func (c *Config) validate() error {
 	ec := &erc.Collector{}
+	if c.DSGA != nil {
+		u, err := url.Parse(c.DSGA.GatewayURL)
+		erc.Whenf(ec, err != nil || u == nil || u.Scheme != "https" || u.Hostname() == "" || u.User != nil || u.RawQuery != "" || u.ForceQuery || u.Fragment != "" || (u.Path != "" && u.Path != "/") || u.RawPath != "", "invalid trusted DSGA gateway URL")
+		erc.Whenf(ec, !filepath.IsAbs(c.DSGA.ManagementCAFile) || !filepath.IsAbs(c.DSGA.ProjectedTokenFile), "DSGA requires absolute trusted file paths")
+		erc.Whenf(ec, c.DSGA.RequestTimeoutSeconds == 0 || c.DSGA.RequestTimeoutSeconds > 30 || c.DSGA.PollIntervalSeconds == 0 || c.DSGA.PollIntervalSeconds > 60, "invalid DSGA bounded timeouts")
+		erc.Whenf(ec, c.DSGA.ComputeTimeoutSeconds < 90 || c.DSGA.ComputeTimeoutSeconds > 120, "DSGA Compute timeout must cover the 60-second PG wait and bounded gateway checks")
+	}
 
 	const (
 		emptyTmpl = "field %q cannot be empty"

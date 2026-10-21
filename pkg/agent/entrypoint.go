@@ -26,6 +26,9 @@ type MainRunner struct {
 }
 
 func (r MainRunner) Run(logger *zap.Logger, ctx context.Context) error {
+	if r.Config.DSGA != nil && r.EnvArgs.K8sPodUID == "" {
+		return fmt.Errorf("DSGA requires K8S_POD_UID from Downward API")
+	}
 	vmEventQueue := pubsub.NewUnlimitedQueue[vmEvent]()
 	defer vmEventQueue.Close()
 	pushToQueue := func(ev vmEvent) {
