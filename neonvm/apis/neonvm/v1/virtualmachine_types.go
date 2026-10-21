@@ -74,7 +74,14 @@ type VirtualMachineResources struct {
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 // VirtualMachineSpec defines the desired state of VirtualMachine
+// +kubebuilder:validation:XValidation:rule="has(oldSelf.dsgaBootstrap) == has(self.dsgaBootstrap)",message="DSGA bootstrap cannot be added or removed"
 type VirtualMachineSpec struct {
+	// DSGABootstrap是从创建即生效的一次性持久屏障，非nil且未ready时禁止
+	// 分配Runner/IPAM/SSH/TLS资源。普通legacy VM省略此字段；已创建VM不得
+	// 在线补加/删除它。ready不代表预算/PG/物理许可，只表示启动身份准备完成。
+	// +optional
+	DSGABootstrap *DSGABootstrap `json:"dsgaBootstrap,omitempty"`
+
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=65535
 	// +kubebuilder:default:=20183
@@ -679,6 +686,11 @@ func (p VmPhase) IsAlive() bool {
 // +kubebuilder:printcolumn:name="Image",type=string,priority=1,JSONPath=`.spec.guest.rootDisk.image`
 // +kubebuilder:printcolumn:name="CPUScalingMode",type=string,priority=1,JSONPath=`.spec.cpuScalingMode`
 // +kubebuilder:printcolumn:name="TargetArchitecture",type=string,priority=1,JSONPath=`.spec.targetArchitecture`
+// held时在schema层禁止写入Runner/资源分配事实，补充Controller与Webhook防线；
+// 不理解新字段的旧Controller也不能先持久化PodName再创建Runner。它不撤销已
+// 发送的外部动作，混合版本发布及最终fencing仍需目标环境验收。
+// CEL空串比较用size==0，避免GoDoc排版改写引号而破坏发布schema。
+// +kubebuilder:validation:XValidation:rule="!has(self.spec) || !has(self.spec.dsgaBootstrap) || self.spec.dsgaBootstrap.ready || !has(self.status) || ((!has(self.status.phase) || size(self.status.phase) == 0 || self.status.phase == 'Pending') && (!has(self.status.restartCount) || self.status.restartCount == 0) && (!has(self.status.podName) || size(self.status.podName) == 0) && (!has(self.status.podIP) || size(self.status.podIP) == 0) && (!has(self.status.node) || size(self.status.node) == 0) && (!has(self.status.extraNetIP) || size(self.status.extraNetIP) == 0) && (!has(self.status.extraNetMask) || size(self.status.extraNetMask) == 0) && (!has(self.status.sshSecretName) || size(self.status.sshSecretName) == 0) && (!has(self.status.tlsSecretName) || size(self.status.tlsSecretName) == 0) && !has(self.status.cpus) && !has(self.status.memorySize) && !has(self.status.currentRevision))",message="held DSGA VM cannot acquire Runner or resource state"
 type VirtualMachine struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

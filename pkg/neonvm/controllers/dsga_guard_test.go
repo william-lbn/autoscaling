@@ -17,7 +17,7 @@ func TestLegacyControllerRejectsManagedBeforeCPUOrQMP(t *testing.T) {
 		vm.Status.Phase = vmv1.VmScaling
 		// 不提供client/QMP，若先触碰旧副作用路径会失败或panic，不能伪造成功。
 		var reconciler VMReconciler
-		require.ErrorContains(t, reconciler.doReconcile(context.Background(), vm), "fenced scaling controller")
+		require.ErrorContains(t, reconciler.doReconcile(context.Background(), vm), "bootstrap")
 		_, err := QmpSetVirtioMem(vm, 0)
 		require.ErrorContains(t, err, "fenced Runner")
 	}
@@ -25,11 +25,13 @@ func TestLegacyControllerRejectsManagedBeforeCPUOrQMP(t *testing.T) {
 
 func TestVMWebhookDebugExceptionCannotEraseManagedMarker(t *testing.T) {
 	old := defaultVm()
+	old.UID = "vm-uid"
+	old.Spec.DSGABootstrap = &vmv1.DSGABootstrap{ProtocolVersion: 1, Incarnation: "1234567890abcdef1234567890abcdef", ComputeInstanceID: "compute-1", VMUID: "vm-uid", ConfigSecretUID: "config-uid", Ready: true}
 	old.Annotations = map[string]string{control.ModeAnnotation: "1:1234567890abcdef1234567890abcdef", control.JournalAnnotation: "opaque"}
 	next := old.DeepCopy()
 	next.Annotations = nil
 	// DSGA标记保护必须先于cfg/旧调试例外。空Config若被先访问将panic，直接证明入口顺序。
 	var webhook VMWebhook
 	_, err := webhook.ValidateUpdate(context.Background(), old, next)
-	require.ErrorContains(t, err, "mode/journal")
+	require.ErrorContains(t, err, "journal")
 }

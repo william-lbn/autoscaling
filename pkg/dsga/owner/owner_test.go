@@ -164,6 +164,7 @@ func newAPI(t *testing.T) (*ownerAPI, *journal.Store, coordclient.CoordinationV1
 	t.Helper()
 	var vmStatus vmv1.VirtualMachineStatus
 	api := &ownerAPI{mu: sync.Mutex{}, vm: &vmv1.VirtualMachine{TypeMeta: metav1.TypeMeta{APIVersion: vmv1.SchemeGroupVersion.String(), Kind: "VirtualMachine"}, ObjectMeta: metav1.ObjectMeta{Namespace: "testing", Name: "vm", UID: binding().VMUID, ResourceVersion: "vm-rv-1"}, Spec: vmv1.VirtualMachineSpec{}, Status: vmStatus}, lease: nil, vmVersion: 1, leaseVersion: 0, denyLeaseWrites: false, loseJournalReply: false, loseLeaseReply: false, calls: 0, config: nil, blockVMGet: false}
+	api.vm.Spec.DSGABootstrap = &vmv1.DSGABootstrap{ProtocolVersion: 1, Incarnation: binding().Incarnation, ComputeInstanceID: "compute-1", VMUID: "", ConfigSecretUID: "", Ready: false}
 	server := httptest.NewServer(http.HandlerFunc(api.serve))
 	t.Cleanup(server.Close)
 	config := new(rest.Config)
@@ -176,7 +177,9 @@ func newAPI(t *testing.T) (*ownerAPI, *journal.Store, coordclient.CoordinationV1
 	require.NoError(t, err)
 	store, err := journal.NewStore(client.NeonvmV1().VirtualMachines("testing"), binding())
 	require.NoError(t, err)
-	_, err = store.Initialize(context.Background(), "vm-rv-1", "bootstrap-process")
+	initial, err := store.Initialize(context.Background(), "vm-rv-1", "bootstrap-process")
+	require.NoError(t, err)
+	_, err = store.ReleaseBootstrap(context.Background(), initial.ResourceVersion(), "config-uid")
 	require.NoError(t, err)
 	api.mu.Lock()
 	api.vm.Status.Phase = vmv1.VmRunning

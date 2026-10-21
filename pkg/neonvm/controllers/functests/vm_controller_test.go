@@ -102,8 +102,9 @@ var _ = Describe("VirtualMachine controller", func() {
 
 			By("Reconciling the custom resource created")
 			virtualmachineReconciler := &controllers.VMReconciler{
-				Client: k8sClient,
-				Scheme: k8sClient.Scheme(),
+				Client:    k8sClient,
+				APIReader: k8sClient,
+				Scheme:    k8sClient.Scheme(),
 				Config: &controllers.ReconcilerConfig{
 					DisableRunnerCgroup:     false,
 					MaxConcurrentReconciles: 1,

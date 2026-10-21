@@ -42,10 +42,12 @@ func newStoreAPI(t *testing.T) (*storeAPI, *Store) {
 	t.Helper()
 	var status vmv1.VirtualMachineStatus
 	status.Phase = vmv1.VmPending
+	spec := new(vmv1.VirtualMachineSpec)
+	spec.DSGABootstrap = &vmv1.DSGABootstrap{ProtocolVersion: 1, Incarnation: testIncarnation, ComputeInstanceID: "compute-1", VMUID: "", ConfigSecretUID: "", Ready: false}
 	f := &storeAPI{
 		mu: sync.Mutex{}, vm: &vmv1.VirtualMachine{
 			TypeMeta:   metav1.TypeMeta{APIVersion: vmv1.SchemeGroupVersion.String(), Kind: "VirtualMachine"},
-			ObjectMeta: metav1.ObjectMeta{Namespace: "testing", Name: "vm-name", UID: "vm-uid", ResourceVersion: "opaque-1", Annotations: map[string]string{"keep": "unchanged"}}, Spec: vmv1.VirtualMachineSpec{}, Status: status,
+			ObjectMeta: metav1.ObjectMeta{Namespace: "testing", Name: "vm-name", UID: "vm-uid", ResourceVersion: "opaque-1", Annotations: map[string]string{"keep": "unchanged"}}, Spec: *spec, Status: status,
 		},
 		version: 1, patches: 0, failAfterCommit: false, corruptResponse: false, beforePatch: nil, server: nil,
 	}
@@ -143,7 +145,9 @@ func (f *storeAPI) change(change func(*vmv1.VirtualMachine)) {
 
 func initializeStore(t *testing.T, f *storeAPI, store *Store) *Snapshot {
 	t.Helper()
-	_, err := store.Initialize(context.Background(), "opaque-1", "process-a")
+	initial, err := store.Initialize(context.Background(), "opaque-1", "process-a")
+	require.NoError(t, err)
+	_, err = store.ReleaseBootstrap(context.Background(), initial.ResourceVersion(), "config-uid")
 	require.NoError(t, err)
 	f.change(func(vm *vmv1.VirtualMachine) {
 		vm.Status.Phase = vmv1.VmRunning

@@ -28,6 +28,7 @@ func pgRequest(t *testing.T, actor journal.Owner) control.Request {
 	var request control.Request
 	require.NoError(t, json.Unmarshal(raw, &request))
 	request.Key.Instance.VMUID = string(binding().VMUID)
+	request.Key.Instance.ComputeInstanceID = "compute-1"
 	request.Key.IssuerEpoch = actor.Epoch
 	request.Key.Revision = 1
 	return request
@@ -129,6 +130,12 @@ func TestPGWorkerInitialDiscoveryOrRetainedHighWaterBinding(t *testing.T) {
 				_, err = session.NewPGWorker(ctx, config)
 				require.Error(t, err, "retained journal cannot silently discover a new PG boot")
 			}
+			config.Instance.ComputeInstanceID = "wrong-bootstrap-compute"
+			var tokenCalled atomic.Bool
+			config.Token = func(context.Context) (string, error) { tokenCalled.Store(true); return "fixture-token", nil }
+			_, err = session.NewPGWorker(ctx, config)
+			require.Error(t, err)
+			require.False(t, tokenCalled.Load(), "even pristine startup must reject a different Compute before token/HTTP discovery")
 			return nil
 		})
 		cancel()

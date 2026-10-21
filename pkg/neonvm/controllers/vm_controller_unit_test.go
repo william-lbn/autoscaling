@@ -94,8 +94,9 @@ func newTestParams(t *testing.T) *testParams {
 	}
 
 	params.r = &VMReconciler{
-		Client: params.client,
-		Scheme: scheme,
+		Client:    params.client,
+		APIReader: params.client,
+		Scheme:    scheme,
 		Config: &ReconcilerConfig{
 			DisableRunnerCgroup:     false,
 			MaxConcurrentReconciles: 10,

@@ -40,6 +40,7 @@ func nativeOwnerStore(t *testing.T, instance control.Instance) (*journal.Store, 
 	var mu sync.Mutex
 	var vmStatus vmv1.VirtualMachineStatus
 	vm := &vmv1.VirtualMachine{TypeMeta: metav1.TypeMeta{APIVersion: vmv1.SchemeGroupVersion.String(), Kind: "VirtualMachine"}, ObjectMeta: metav1.ObjectMeta{Namespace: "testing", Name: "owner-native-vm", UID: types.UID(instance.VMUID), ResourceVersion: "vm-1"}, Spec: vmv1.VirtualMachineSpec{}, Status: vmStatus}
+	vm.Spec.DSGABootstrap = &vmv1.DSGABootstrap{ProtocolVersion: 1, Incarnation: "1234567890abcdef1234567890abcdef", ComputeInstanceID: instance.ComputeInstanceID, VMUID: "", ConfigSecretUID: "", Ready: false}
 	var lease *coordination.Lease
 	vmVersion, leaseVersion := 1, 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -118,7 +119,9 @@ func nativeOwnerStore(t *testing.T, instance control.Instance) (*journal.Store, 
 	require.NoError(t, err)
 	store, err := journal.NewStore(client.NeonvmV1().VirtualMachines("testing"), journal.Binding{Namespace: "testing", Name: "owner-native-vm", VMUID: types.UID(instance.VMUID), Incarnation: "1234567890abcdef1234567890abcdef"})
 	require.NoError(t, err)
-	_, err = store.Initialize(context.Background(), "vm-1", "native-bootstrap")
+	initial, err := store.Initialize(context.Background(), "vm-1", "native-bootstrap")
+	require.NoError(t, err)
+	_, err = store.ReleaseBootstrap(context.Background(), initial.ResourceVersion(), "config-uid")
 	require.NoError(t, err)
 	mu.Lock()
 	vm.Status.Phase = vmv1.VmRunning

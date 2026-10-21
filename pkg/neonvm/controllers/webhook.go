@@ -67,11 +67,13 @@ func validateUpdate(
 }
 
 type VMWebhook struct {
-	Recorder record.EventRecorder
-	Config   *ReconcilerConfig
+	Recorder  record.EventRecorder
+	Config    *ReconcilerConfig
+	APIReader client.Reader
 }
 
 func (w *VMWebhook) SetupWithManager(mgr ctrl.Manager) error {
+	w.APIReader = mgr.GetAPIReader()
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(&vmv1.VirtualMachine{}).
 		WithDefaulter(w).
@@ -105,6 +107,13 @@ func (w *VMWebhook) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.O
 	}
 	if err := newVM.ValidateDSGAUpdate(oldVM); err != nil {
 		return nil, err
+	}
+	// 释放在debug skip之外校验完整原始日志/owned配置；不能靠普通spec
+	// 更新或绕过旧不可变字段的运维开关取消持久创建屏障。
+	if next := newVM.Spec.DSGABootstrap; next != nil && next.Ready && oldVM.Spec.DSGABootstrap != nil && !oldVM.Spec.DSGABootstrap.Ready {
+		if err := readyBootstrapInputs(ctx, w.APIReader, newVM, true); err != nil {
+			return nil, err
+		}
 	}
 	return validateUpdate(ctx, w.Config, w.Recorder, oldObj, newVM)
 }

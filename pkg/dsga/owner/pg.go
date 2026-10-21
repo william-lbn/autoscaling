@@ -47,6 +47,12 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config) 
 	if err != nil {
 		return nil, err
 	}
+	bootstrap := snapshot.VirtualMachine().Spec.DSGABootstrap
+	// HWM尚空也已有创建时固定的Compute身份；不能仅因签发器/配置返回
+	// 另一个合法CIID，就先向错误实例协商或fence，再等Begin时才拒绝。
+	if bootstrap == nil || !bootstrap.Ready || bootstrap.ComputeInstanceID != config.Instance.ComputeInstanceID {
+		return nil, fmt.Errorf("PG worker Compute binding differs from ready bootstrap")
+	}
 	initial := false
 	model := snapshot.State()
 	if config.Instance.PGBootID == 0 {

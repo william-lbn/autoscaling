@@ -55,7 +55,12 @@ spec:
     name: v1
     schema:
       openAPIV3Schema:
-        description: VirtualMachine is the Schema for the virtualmachines API
+        description: |-
+          VirtualMachine is the Schema for the virtualmachines API
+          held时在schema层禁止写入Runner/资源分配事实，补充Controller与Webhook防线；
+          不理解新字段的旧Controller也不能先持久化PodName再创建Runner。它不撤销已
+          发送的外部动作，混合版本发布及最终fencing仍需目标环境验收。
+          CEL空串比较用size==0，避免GoDoc排版改写引号而破坏发布schema。
         properties:
           apiVersion:
             description: |-
@@ -1202,6 +1207,56 @@ spec:
                   - name
                   type: object
                 type: array
+              dsgaBootstrap:
+                description: |-
+                  DSGABootstrap是从创建即生效的一次性持久屏障，非nil且未ready时禁止
+                  分配Runner/IPAM/SSH/TLS资源。普通legacy VM省略此字段；已创建VM不得
+                  在线补加/删除它。ready不代表预算/PG/物理许可，只表示启动身份准备完成。
+                properties:
+                  computeInstanceID:
+                    maxLength: 128
+                    minLength: 1
+                    pattern: ^[!-~]+$
+                    type: string
+                  configSecretUID:
+                    description: held时为空；释放时指向同namespace/name且归属同一VM的实际Secret UID。
+                    maxLength: 128
+                    type: string
+                  incarnation:
+                    maxLength: 32
+                    minLength: 32
+                    pattern: ^[0-9a-f]{32}$
+                    type: string
+                  protocolVersion:
+                    format: int32
+                    maximum: 1
+                    minimum: 1
+                    type: integer
+                  ready:
+                    type: boolean
+                  vmUID:
+                    description: held时为空；释放时与metadata.uid准确相等，之后不可更改。
+                    maxLength: 128
+                    type: string
+                required:
+                - computeInstanceID
+                - configSecretUID
+                - incarnation
+                - protocolVersion
+                - ready
+                - vmUID
+                type: object
+                x-kubernetes-validations:
+                - message: DSGA bootstrap identity is immutable
+                  rule: self.protocolVersion == oldSelf.protocolVersion && self.incarnation
+                    == oldSelf.incarnation && self.computeInstanceID == oldSelf.computeInstanceID
+                - message: ready DSGA bootstrap cannot change
+                  rule: '!oldSelf.ready || self == oldSelf'
+                - message: DSGA release requires both immutable UIDs
+                  rule: 'self.ready ? size(self.vmUID) > 0 && size(self.configSecretUID)
+                    > 0 : size(self.vmUID) == 0 && size(self.configSecretUID) == 0'
+                - message: DSGA incarnation cannot be zero
+                  rule: self.incarnation != '00000000000000000000000000000000'
               enableAcceleration:
                 default: true
                 description: Use KVM acceleation
@@ -3071,6 +3126,9 @@ spec:
             required:
             - guest
             type: object
+            x-kubernetes-validations:
+            - message: DSGA bootstrap cannot be added or removed
+              rule: has(oldSelf.dsgaBootstrap) == has(self.dsgaBootstrap)
           status:
             description: VirtualMachineStatus defines the observed state of VirtualMachine
             properties:
@@ -3199,6 +3257,19 @@ spec:
                 type: string
             type: object
         type: object
+        x-kubernetes-validations:
+        - message: held DSGA VM cannot acquire Runner or resource state
+          rule: '!has(self.spec) || !has(self.spec.dsgaBootstrap) || self.spec.dsgaBootstrap.ready
+            || !has(self.status) || ((!has(self.status.phase) || size(self.status.phase)
+            == 0 || self.status.phase == ''Pending'') && (!has(self.status.restartCount)
+            || self.status.restartCount == 0) && (!has(self.status.podName) || size(self.status.podName)
+            == 0) && (!has(self.status.podIP) || size(self.status.podIP) == 0) &&
+            (!has(self.status.node) || size(self.status.node) == 0) && (!has(self.status.extraNetIP)
+            || size(self.status.extraNetIP) == 0) && (!has(self.status.extraNetMask)
+            || size(self.status.extraNetMask) == 0) && (!has(self.status.sshSecretName)
+            || size(self.status.sshSecretName) == 0) && (!has(self.status.tlsSecretName)
+            || size(self.status.tlsSecretName) == 0) && !has(self.status.cpus) &&
+            !has(self.status.memorySize) && !has(self.status.currentRevision))'
     served: true
     storage: true
     subresources:

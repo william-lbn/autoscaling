@@ -169,11 +169,12 @@ func main() {
 	defer retryChan.Close()
 
 	vmReconciler := &controllers.VMReconciler{
-		Client:  mgr.GetClient(),
-		Scheme:  mgr.GetScheme(),
-		Config:  rc,
-		Metrics: reconcilerMetrics,
-		IPAM:    ipam,
+		Client:    mgr.GetClient(),
+		APIReader: mgr.GetAPIReader(),
+		Scheme:    mgr.GetScheme(),
+		Config:    rc,
+		Metrics:   reconcilerMetrics,
+		IPAM:      ipam,
 	}
 	vmReconcilerMetrics, err := vmReconciler.SetupWithManager(mgr, retryChan, cli.forceRetryNotRetried)
 	if err != nil {
@@ -181,8 +182,9 @@ func main() {
 		panic(err)
 	}
 	vmWebhook := &controllers.VMWebhook{
-		Recorder: mgr.GetEventRecorderFor("virtualmachine-webhook"),
-		Config:   rc,
+		Recorder:  mgr.GetEventRecorderFor("virtualmachine-webhook"),
+		Config:    rc,
+		APIReader: mgr.GetAPIReader(),
 	}
 	if err := vmWebhook.SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "VirtualMachine")

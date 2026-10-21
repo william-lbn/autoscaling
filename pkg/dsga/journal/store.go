@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
+	"reflect"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -54,7 +55,11 @@ func (snapshot *Snapshot) VirtualMachine() *vmv1.VirtualMachine { return snapsho
 // Dispatchable只是已读取快照的生命周期条件，不是派发票据或租约。PG显式原意图
 // 重放也须拒绝正在删除/没有Runner的VM；网络竞态仍靠UID/RV及最终执行fence封闭。
 func (snapshot *Snapshot) Dispatchable() bool {
-	return snapshot != nil && snapshot.vm != nil && snapshot.vm.DeletionTimestamp == nil &&
+	if snapshot == nil || snapshot.vm == nil {
+		return false
+	}
+	held, err := snapshot.vm.DSGABootstrapHeld()
+	return err == nil && !held && snapshot.vm.DeletionTimestamp == nil &&
 		(snapshot.vm.Status.Phase == vmv1.VmRunning || snapshot.vm.Status.Phase == vmv1.VmScaling) &&
 		snapshot.vm.Status.PodName != "" && snapshot.vm.Status.PodIP != ""
 }
@@ -99,21 +104,36 @@ func (store *Store) readVM(ctx context.Context) (*vmv1.VirtualMachine, error) {
 }
 
 func (store *Store) fromVM(vm *vmv1.VirtualMachine) (*Snapshot, error) {
-	if vm == nil || vm.UID != store.binding.VMUID || vm.Name != store.binding.Name || vm.Namespace != store.binding.Namespace || vm.ResourceVersion == "" {
+	return Inspect(vm, store.binding)
+}
+
+// Inspect以唯一有界解码器核验已读取的完整VM/journal，供Controller/准入复用。
+// 它不访问网络、不认证调用方、不造票据；快照深拷贝，外部修改不能改变CAS事实。
+func Inspect(vm *vmv1.VirtualMachine, binding Binding) (*Snapshot, error) {
+	if vm == nil || vm.UID != binding.VMUID || vm.Name != binding.Name || vm.Namespace != binding.Namespace || vm.ResourceVersion == "" {
 		return nil, fmt.Errorf("journal response VM identity changed")
 	}
-	if vm.Annotations[control.ModeAnnotation] != "1:"+store.binding.Incarnation {
+	if vm.Annotations[control.ModeAnnotation] != "1:"+binding.Incarnation {
 		return nil, fmt.Errorf("journal incarnation marker missing or changed")
 	}
 	data, present := vm.Annotations[control.JournalAnnotation]
 	if !present {
 		return nil, fmt.Errorf("journal history is missing; automatic reset is forbidden")
 	}
-	model, err := decode(data, string(store.binding.VMUID), store.binding.Incarnation)
+	if _, err := vm.DSGABootstrapHeld(); err != nil {
+		return nil, err
+	}
+	if vm.Spec.DSGABootstrap == nil || vm.Spec.DSGABootstrap.Incarnation != binding.Incarnation {
+		return nil, fmt.Errorf("journal bootstrap binding differs")
+	}
+	model, err := decode(data, string(binding.VMUID), binding.Incarnation)
 	if err != nil {
 		return nil, err
 	}
-	return &Snapshot{binding: store.binding, vm: vm.DeepCopy(), model: model}, nil
+	if model.HighWater != nil && model.HighWater.Instance.ComputeInstanceID != vm.Spec.DSGABootstrap.ComputeInstanceID {
+		return nil, fmt.Errorf("journal retained Compute identity differs from bootstrap")
+	}
+	return &Snapshot{binding: binding, vm: vm.DeepCopy(), model: model}, nil
 }
 
 func (store *Store) Load(ctx context.Context) (*Snapshot, error) {
@@ -132,9 +152,9 @@ func (store *Store) Initialize(ctx context.Context, bootstrapVersion, holder str
 	if err != nil {
 		return nil, err
 	}
+	held, holdErr := vm.DSGABootstrapHeld()
 	if bootstrapVersion == "" || vm.ResourceVersion != bootstrapVersion || control.Managed(vm.Annotations) ||
-		vm.DeletionTimestamp != nil || vm.Status.RestartCount != 0 || vm.Status.PodName != "" || vm.Status.PodIP != "" || vm.Status.Node != "" ||
-		(vm.Status.Phase != "" && vm.Status.Phase != vmv1.VmPending) {
+		vm.DeletionTimestamp != nil || !held || holdErr != nil || vm.Spec.DSGABootstrap == nil || vm.Spec.DSGABootstrap.Ready || vm.Spec.DSGABootstrap.Incarnation != store.binding.Incarnation || !vm.DSGAUndispatched() {
 		return nil, fmt.Errorf("journal initialization is not a new undispatched VM")
 	}
 	model, err := New(string(store.binding.VMUID), store.binding.Incarnation, holder)
@@ -157,6 +177,53 @@ func (store *Store) Initialize(ctx context.Context, bootstrapVersion, holder str
 		{Op: patch.OpAdd, Path: "/metadata/annotations", Value: annotations},
 	}
 	return store.write(ctx, operations, model, encoded)
+}
+
+// ReleaseBootstrap只能由已持久化/读回安全Compute配置的可信Driver调用。Config
+// UID不是自报预算许可：生产Webhook和Controller仍独立读取owned Secret及完整
+// journal核验。此处只负责同UID/RV与原held记录的原子one-shot释放，不写新身份。
+// 丢回复返回UnconfirmedWrite；同一原绑定重读已ready可确认原事实，不重置日志。
+func (store *Store) ReleaseBootstrap(ctx context.Context, bootstrapVersion string, configSecretUID types.UID) (*Snapshot, error) {
+	snapshot, err := store.Load(ctx)
+	if err != nil {
+		return nil, err
+	}
+	vm, model := snapshot.vm, snapshot.model
+	if control.ValidateID(string(configSecretUID), "config Secret") != nil {
+		return nil, fmt.Errorf("invalid bootstrap config UID")
+	}
+	bootstrap := vm.Spec.DSGABootstrap
+	if bootstrap.Ready {
+		if bootstrap.ConfigSecretUID != string(configSecretUID) {
+			return nil, fmt.Errorf("bootstrap already released with another config UID")
+		}
+		return snapshot, nil
+	}
+	if bootstrapVersion == "" || vm.ResourceVersion != bootstrapVersion || vm.DeletionTimestamp != nil || !vm.DSGAUndispatched() || !PristineBootstrap(model) {
+		return nil, fmt.Errorf("bootstrap release requires the original held pristine journal")
+	}
+	ready := *bootstrap
+	ready.Ready, ready.VMUID, ready.ConfigSecretUID = true, string(vm.UID), string(configSecretUID)
+	operations := []patch.Operation{
+		{Op: patch.OpTest, Path: "/metadata/uid", Value: store.binding.VMUID},
+		{Op: patch.OpTest, Path: "/metadata/resourceVersion", Value: vm.ResourceVersion},
+		{Op: patch.OpTest, Path: "/spec/dsgaBootstrap", Value: bootstrap},
+		{Op: patch.OpReplace, Path: "/spec/dsgaBootstrap", Value: ready},
+	}
+	result, err := store.write(ctx, operations, model, vm.Annotations[control.JournalAnnotation])
+	if err != nil {
+		return nil, err
+	}
+	if !reflect.DeepEqual(result.vm.Spec.DSGABootstrap, &ready) {
+		return nil, &UnconfirmedWrite{Err: fmt.Errorf("bootstrap release response differs")}
+	}
+	return result, nil
+}
+
+// PristineBootstrap只供初次启动屏障，不能用来证明运行期没有未知效果。
+// Sequence/owner代次也必须是初始化值，不能把淘汰历史后的空Active误当新日志。
+func PristineBootstrap(model Model) bool {
+	return model.ProtocolVersion == 1 && model.Sequence == 1 && model.Owner.Epoch == 1 && model.HighWater == nil && model.Active == nil && len(model.History) == 0 && model.ExpiredResults == 0 && model.Validate() == nil
 }
 
 func annotationBudget(annotations map[string]string) int {
@@ -191,7 +258,7 @@ func (store *Store) write(ctx context.Context, operations []patch.Operation, exp
 }
 
 func (store *Store) apply(ctx context.Context, snapshot *Snapshot, next Model) (*Snapshot, error) {
-	if snapshot == nil || snapshot.vm == nil || snapshot.binding != store.binding {
+	if snapshot == nil || snapshot.vm == nil || snapshot.vm.Spec.DSGABootstrap == nil || snapshot.binding != store.binding {
 		return nil, fmt.Errorf("snapshot belongs to another journal")
 	}
 	if err := next.Validate(); err != nil {
@@ -234,7 +301,7 @@ func (store *Store) apply(ctx context.Context, snapshot *Snapshot, next Model) (
 }
 
 func (store *Store) checked(snapshot *Snapshot) error {
-	if snapshot == nil || snapshot.vm == nil || snapshot.binding != store.binding {
+	if snapshot == nil || snapshot.vm == nil || snapshot.vm.Spec.DSGABootstrap == nil || snapshot.binding != store.binding {
 		return fmt.Errorf("invalid journal snapshot")
 	}
 	return nil
@@ -243,6 +310,9 @@ func (store *Store) checked(snapshot *Snapshot) error {
 func (store *Store) Takeover(ctx context.Context, snapshot *Snapshot, previous Owner, nextHolder string) (*Snapshot, error) {
 	if err := store.checked(snapshot); err != nil {
 		return nil, err
+	}
+	if !snapshot.vm.Spec.DSGABootstrap.Ready {
+		return nil, fmt.Errorf("bootstrap is held; owner takeover forbidden")
 	}
 	next, err := snapshot.model.Takeover(previous, nextHolder)
 	if err != nil {
@@ -257,6 +327,9 @@ func (store *Store) Begin(ctx context.Context, snapshot *Snapshot, actor Owner, 
 	}
 	if snapshot.vm.DeletionTimestamp != nil {
 		return nil, Stale, fmt.Errorf("cannot begin an operation on a deleting VM")
+	}
+	if !snapshot.vm.Spec.DSGABootstrap.Ready || request.Key.Instance.ComputeInstanceID != snapshot.vm.Spec.DSGABootstrap.ComputeInstanceID {
+		return nil, Stale, fmt.Errorf("operation requires the ready original Compute bootstrap")
 	}
 	next, disposition, err := snapshot.model.Begin(actor, request, now)
 	if err != nil {

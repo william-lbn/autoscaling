@@ -152,17 +152,7 @@ func (owner Owner) Validate() error {
 }
 
 func validIncarnation(value string) bool {
-	if len(value) != 32 {
-		return false
-	}
-	nonzero := false
-	for _, b := range []byte(value) {
-		if (b < '0' || b > '9') && (b < 'a' || b > 'f') {
-			return false
-		}
-		nonzero = nonzero || b != '0'
-	}
-	return nonzero
+	return control.ValidateIncarnation(value) == nil
 }
 
 // 这是账本自己的领域分离摘要，不是PG jsonb canonical context_sha256；不能混用。

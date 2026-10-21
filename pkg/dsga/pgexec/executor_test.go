@@ -122,6 +122,7 @@ func prepareStore(t *testing.T, intent control.Request) (*vmAPI, *journal.Store)
 		ObjectMeta: metav1.ObjectMeta{Namespace: "testing", Name: "vm", UID: types.UID(intent.Key.Instance.VMUID), ResourceVersion: "rv-1"},
 		Spec:       vmv1.VirtualMachineSpec{}, Status: status,
 	}, version: 1, loseNext: false}
+	api.vm.Spec.DSGABootstrap = &vmv1.DSGABootstrap{ProtocolVersion: 1, Incarnation: "1234567890abcdef1234567890abcdef", ComputeInstanceID: intent.Key.Instance.ComputeInstanceID, VMUID: "", ConfigSecretUID: "", Ready: false}
 	server := httptest.NewServer(http.HandlerFunc(api.serve))
 	t.Cleanup(server.Close)
 	config := new(rest.Config)
@@ -130,7 +131,9 @@ func prepareStore(t *testing.T, intent control.Request) (*vmAPI, *journal.Store)
 	require.NoError(t, err)
 	store, err := journal.NewStore(client.NeonvmV1().VirtualMachines("testing"), journal.Binding{Namespace: "testing", Name: "vm", VMUID: api.vm.UID, Incarnation: "1234567890abcdef1234567890abcdef"})
 	require.NoError(t, err)
-	_, err = store.Initialize(context.Background(), "rv-1", "owner-a")
+	initial, err := store.Initialize(context.Background(), "rv-1", "owner-a")
+	require.NoError(t, err)
+	_, err = store.ReleaseBootstrap(context.Background(), initial.ResourceVersion(), "config-uid")
 	require.NoError(t, err)
 	api.mu.Lock()
 	api.vm.Status.Phase = vmv1.VmRunning

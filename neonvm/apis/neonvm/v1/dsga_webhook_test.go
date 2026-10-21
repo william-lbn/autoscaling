@@ -11,6 +11,7 @@ import (
 func TestDSGAIncarnationAndJournalCannotDisappearOrChange(t *testing.T) {
 	var old VirtualMachine
 	old.UID = "vm-uid"
+	old.Spec.DSGABootstrap = &DSGABootstrap{ProtocolVersion: 1, Incarnation: "1234567890abcdef1234567890abcdef", ComputeInstanceID: "compute-1", VMUID: "vm-uid", ConfigSecretUID: "config-uid", Ready: true}
 	old.Annotations = map[string]string{control.ModeAnnotation: "1:1234567890abcdef1234567890abcdef", control.JournalAnnotation: "ledger"}
 	for _, annotations := range []map[string]string{
 		nil,
@@ -31,6 +32,7 @@ func TestDSGAIncarnationAndJournalCannotDisappearOrChange(t *testing.T) {
 func TestDSGAInitializesOnlyAfterUIDAndBeforeRunner(t *testing.T) {
 	var old VirtualMachine
 	old.UID = "vm-uid"
+	old.Spec.DSGABootstrap = &DSGABootstrap{ProtocolVersion: 1, Incarnation: "1234567890abcdef1234567890abcdef", ComputeInstanceID: "compute-1", VMUID: "", ConfigSecretUID: "", Ready: false}
 	next := old.DeepCopy()
 	next.Annotations = map[string]string{control.ModeAnnotation: "1:1234567890abcdef1234567890abcdef", control.JournalAnnotation: "ledger"}
 	require.NoError(t, next.ValidateDSGAUpdate(&old))

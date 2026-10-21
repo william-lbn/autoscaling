@@ -52,6 +52,9 @@ func (r *VirtualMachine) ValidateCreate() (admission.Warnings, error) {
 	if control.Managed(r.Annotations) {
 		return nil, fmt.Errorf("DSGA journal must initialize after the VM UID is assigned")
 	}
+	if held, err := r.DSGABootstrapHeld(); err != nil || (r.Spec.DSGABootstrap != nil && !held) {
+		return nil, fmt.Errorf("DSGA must be created held with an unbound VM and config identity")
+	}
 	// validate .spec.guest.cpus.use and .spec.guest.cpus.max
 	if r.Spec.Guest.CPUs.Use < r.Spec.Guest.CPUs.Min {
 		return nil, fmt.Errorf(".spec.guest.cpus.use (%v) should be greater than or equal to the .spec.guest.cpus.min (%v)",
@@ -199,8 +202,16 @@ func (r *VirtualMachine) ValidateDSGAUpdate(before *VirtualMachine) error {
 	if before == nil {
 		return fmt.Errorf("invalid previous VM object")
 	}
-	initial := before.UID != "" && before.DeletionTimestamp == nil && before.Status.RestartCount == 0 &&
-		before.Status.PodName == "" && before.Status.PodIP == "" && before.Status.Node == "" && (before.Status.Phase == "" || before.Status.Phase == VmPending)
+	// 损坏对象也必须能在删除期间移除finalizer；只豁免完全不改变spec/
+	// journal/status的metadata清理，删除路径不会再启动Runner或释放预算。
+	if before.DeletionTimestamp != nil && r.UID == before.UID && reflect.DeepEqual(r.Spec, before.Spec) && reflect.DeepEqual(r.Annotations, before.Annotations) && reflect.DeepEqual(r.Status, before.Status) {
+		return nil
+	}
+	if err := r.validateDSGABootstrapUpdate(before); err != nil {
+		return err
+	}
+	initial := before.UID != "" && before.DeletionTimestamp == nil && before.DSGAUndispatched() &&
+		before.Spec.DSGABootstrap != nil && !before.Spec.DSGABootstrap.Ready
 	return control.ValidateManagedTransition(before.Annotations, r.Annotations, initial)
 }
 

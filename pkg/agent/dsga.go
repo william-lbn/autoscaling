@@ -56,7 +56,7 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 	if vm == nil || vm.UID != r.vmUID || vm.Name != r.vmName.Name || vm.Namespace != r.vmName.Namespace || vm.DeletionTimestamp != nil {
 		return true, fmt.Errorf("VM identity changed before starting executor")
 	}
-	if !control.Managed(vm.Annotations) {
+	if vm.Spec.DSGABootstrap == nil && !control.Managed(vm.Annotations) {
 		return false, nil
 	}
 	r.status.update(r.global, func(stat podStatus) podStatus {
@@ -66,6 +66,9 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		return stat
 	})
 	r.dsgaState(ctx, DSGARunnerState{Phase: "validating", IssuerEpoch: 0, Instance: control.Instance{VMUID: string(r.vmUID), ComputeInstanceID: "", PGBootID: 0}})
+	if held, err := vm.DSGABootstrapHeld(); err != nil || held {
+		return true, fmt.Errorf("VM bootstrap is held or invalid; legacy fallback forbidden")
+	}
 	if control.ValidateManagedTransition(vm.Annotations, vm.Annotations, false) != nil {
 		return true, fmt.Errorf("DSGA managed marker is malformed; legacy fallback forbidden")
 	}

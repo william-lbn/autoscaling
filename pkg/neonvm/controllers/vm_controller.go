@@ -74,9 +74,11 @@ const (
 // VMReconciler reconciles a VirtualMachine object
 type VMReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
-	Config *ReconcilerConfig
-	IPAM   *ipam.IPAM
+	// 绕过watch cache读取创建屏障/配置，不能把旧ready/同名新UID当当前事实。
+	APIReader client.Reader
+	Scheme    *runtime.Scheme
+	Config    *ReconcilerConfig
+	IPAM      *ipam.IPAM
 
 	Metrics ReconcilerMetrics `exhaustruct:"optional"`
 }
@@ -122,6 +124,9 @@ func (r *VMReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Re
 		log.Error(err, "Unable to fetch VirtualMachine")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
+	if err := r.freshBootstrapVM(ctx, &vm); err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
 
 	// examine DeletionTimestamp to determine if object is under deletion
 	if vm.DeletionTimestamp.IsZero() {
@@ -165,6 +170,13 @@ func (r *VMReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Re
 	}
 
 	// examine for nil values that should be defaulted
+	// 删除finalizer仍按上面的官方流程完成；held/损坏屏障不能进入默认值以外
+	// 的IPAM、Secret或Runner路径，也不借轮询把损坏状态当legacy。
+	if held, err := vm.DSGABootstrapHeld(); err != nil {
+		return ctrl.Result{}, err
+	} else if held {
+		return ctrl.Result{}, nil
+	}
 	// this part is done for values that we want eventually explicitly override in the kube-api storage
 	// to a default value.
 	{
@@ -307,6 +319,16 @@ func (r *VMReconciler) acquireOverlayIP(ctx context.Context, vm *vmv1.VirtualMac
 
 func (r *VMReconciler) doReconcile(ctx context.Context, vm *vmv1.VirtualMachine) error {
 	log := log.FromContext(ctx)
+	if held, err := vm.DSGABootstrapHeld(); err != nil {
+		return err
+	} else if held {
+		return nil
+	}
+	if vm.Spec.DSGABootstrap != nil {
+		if err := readyBootstrapInputs(ctx, r.APIReader, vm, false); err != nil {
+			return err
+		}
+	}
 
 	// Let's check and just set the condition status as Unknown when no status are available
 	if len(vm.Status.Conditions) == 0 {

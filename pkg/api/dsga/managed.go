@@ -28,15 +28,8 @@ func ValidateManagedTransition(before, after map[string]string, canInitialize bo
 	if !present || !strings.HasPrefix(mode, "1:") || len(mode) != 34 || after[JournalAnnotation] == "" {
 		return fmt.Errorf("DSGA mode/journal cannot be missing or malformed")
 	}
-	nonzero := false
-	for _, b := range []byte(mode[2:]) {
-		if (b < '0' || b > '9') && (b < 'a' || b > 'f') {
-			return fmt.Errorf("invalid DSGA incarnation")
-		}
-		nonzero = nonzero || b != '0'
-	}
-	if !nonzero {
-		return fmt.Errorf("zero DSGA incarnation")
+	if err := ValidateIncarnation(mode[2:]); err != nil {
+		return err
 	}
 	if Managed(before) {
 		if before[ModeAnnotation] != mode {
@@ -44,6 +37,25 @@ func ValidateManagedTransition(before, after map[string]string, canInitialize bo
 		}
 	} else if !canInitialize {
 		return fmt.Errorf("DSGA must initialize before any runner execution")
+	}
+	return nil
+}
+
+// ValidateIncarnation统一创建屏障、标记与完整journal的128位身份格式。
+// 全零/大小写别名均拒绝；格式合法仍不是认证或允许重新初始化的证明。
+func ValidateIncarnation(value string) error {
+	if len(value) != 32 {
+		return fmt.Errorf("invalid DSGA incarnation length")
+	}
+	nonzero := false
+	for _, b := range []byte(value) {
+		if (b < '0' || b > '9') && (b < 'a' || b > 'f') {
+			return fmt.Errorf("invalid DSGA incarnation")
+		}
+		nonzero = nonzero || b != '0'
+	}
+	if !nonzero {
+		return fmt.Errorf("zero DSGA incarnation")
 	}
 	return nil
 }

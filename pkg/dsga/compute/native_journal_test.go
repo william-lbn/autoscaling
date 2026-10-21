@@ -38,6 +38,7 @@ func nativeJournal(t *testing.T, intent control.Request) *journal.Store {
 		ObjectMeta: metav1.ObjectMeta{Namespace: "testing", Name: "native-vm", UID: types.UID(intent.Key.Instance.VMUID), ResourceVersion: "rv-1"},
 		Spec:       vmv1.VirtualMachineSpec{}, Status: status,
 	}
+	vm.Spec.DSGABootstrap = &vmv1.DSGABootstrap{ProtocolVersion: 1, Incarnation: "1234567890abcdef1234567890abcdef", ComputeInstanceID: intent.Key.Instance.ComputeInstanceID, VMUID: "", ConfigSecretUID: "", Ready: false}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		defer mu.Unlock()
@@ -72,7 +73,9 @@ func nativeJournal(t *testing.T, intent control.Request) *journal.Store {
 		Namespace: "testing", Name: "native-vm", VMUID: vm.UID, Incarnation: "1234567890abcdef1234567890abcdef",
 	})
 	require.NoError(t, err)
-	_, err = store.Initialize(context.Background(), "rv-1", "native-pg-owner")
+	initial, err := store.Initialize(context.Background(), "rv-1", "native-pg-owner")
+	require.NoError(t, err)
+	_, err = store.ReleaseBootstrap(context.Background(), initial.ResourceVersion(), "config-uid")
 	require.NoError(t, err)
 	mu.Lock()
 	vm.Status.Phase = vmv1.VmRunning
