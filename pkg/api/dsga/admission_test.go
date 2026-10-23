@@ -12,13 +12,16 @@ import (
 func TestAdmissionContextMatchesNativePGVectors(t *testing.T) {
 	raw, err := os.ReadFile("testdata/admission-context-v1.json")
 	require.NoError(t, err)
-	var vectors []struct { Request AdmissionRequest `json:"request"`; ContextSHA256 string `json:"context_sha256"` }
+	var vectors []struct {
+		Request       AdmissionRequest `json:"request"`
+		ContextSHA256 string           `json:"context_sha256"`
+	}
 	require.NoError(t, json.Unmarshal(raw, &vectors))
 	require.Len(t, vectors, 2)
 	for _, v := range vectors {
 		digest, err := v.Request.ContextSHA256()
-		require.NoError(t,err)
-		require.Equal(t,v.ContextSHA256,digest)
+		require.NoError(t, err)
+		require.Equal(t, v.ContextSHA256, digest)
 	}
 }
 
