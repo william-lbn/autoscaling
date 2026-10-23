@@ -2,11 +2,13 @@ package owner
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/admissionexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
@@ -16,9 +18,10 @@ import (
 // 凭据配置来自可信控制面；每次取凭据还检查真实Lease/journal，不能因重新发现
 // 或HTTP失败清空Pending。它不替代预算/Host/Guest/VM领域适配器。
 type PGWorker struct {
-	session  *Session
-	client   *compute.Client
-	executor *pgexec.Executor
+	session   *Session
+	client    *compute.Client
+	executor  *pgexec.Executor
+	admission *admissionexec.Executor
 }
 
 func (session *Session) coupledContext(ctx context.Context) (context.Context, context.CancelFunc) {
@@ -65,13 +68,14 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config) 
 			}
 			config.Instance = known
 		} else {
-			if model.Active != nil || len(model.History) != 0 || model.ExpiredResults != 0 || config.Pending != nil {
+			if model.Active != nil || len(model.History) != 0 || model.ExpiredResults != 0 || config.Pending != nil || config.AdmissionPending != nil || config.AdmissionClose != nil {
 				return nil, fmt.Errorf("PG worker initial discovery requires pristine journal")
 			}
 			initial = true
 		}
 	}
 	var pending *control.Request
+	var admissionPending *control.AdmissionRequest
 	if active := snapshot.State().Active; active != nil {
 		if active.Request.Key.Instance != config.Instance {
 			return nil, fmt.Errorf("PG worker cannot silently replace an old boot")
@@ -80,7 +84,13 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config) 
 			if step.Action == journal.ResizePG && step.Phase != journal.Planned {
 				request := active.Request
 				pending = &request
-				break
+			}
+			if step.Action == journal.ResumeAdmission && step.Phase == journal.Unconfirmed {
+				var original control.AdmissionRequest
+				if json.Unmarshal(step.Command, &original) != nil || !original.Open || original.Instance != active.Request.Key.Instance || original.BudgetCommitmentID != active.Request.BudgetCommitmentID || step.DispatchedBy == nil || original.IssuerEpoch != step.DispatchedBy.Epoch || step.TargetID != original.Instance.ComputeInstanceID {
+					return nil, fmt.Errorf("original admission command differs from journal")
+				}
+				admissionPending = &original
 			}
 		}
 	}
@@ -88,6 +98,10 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config) 
 		return nil, fmt.Errorf("PG worker supplied pending intent differs from journal")
 	}
 	config.Pending = pending
+	if config.AdmissionClose != nil || (config.AdmissionPending != nil && (admissionPending == nil || *config.AdmissionPending != *admissionPending)) {
+		return nil, fmt.Errorf("PG worker supplied admission differs from journal")
+	}
+	config.AdmissionPending = admissionPending
 	config.IssuerEpoch = session.actor.Epoch
 	token := config.Token
 	credentialWait := config.Timeout
@@ -115,7 +129,12 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config) 
 		client.CloseIdleConnections()
 		return nil, err
 	}
-	return &PGWorker{session: session, client: client, executor: executor}, nil
+	admission, err := admissionexec.New(session.store, client, session.actor)
+	if err != nil {
+		client.CloseIdleConnections()
+		return nil, err
+	}
+	return &PGWorker{session: session, client: client, executor: executor, admission: admission}, nil
 }
 
 func (worker *PGWorker) CloseIdleConnections() { worker.client.CloseIdleConnections() }
@@ -142,7 +161,11 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 			return pgexec.AwaitingFact, fmt.Errorf("PG worker original SDK intent still needs explicit reconciliation")
 		}
 	}
-	return worker.executor.Advance(callCtx)
+	progress, err := worker.executor.Advance(callCtx)
+	if err == nil && progress == pgexec.ExternalStep {
+		return worker.admission.Advance(callCtx)
+	}
+	return progress, err
 }
 
 func (worker *PGWorker) ReplayOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {
@@ -161,6 +184,17 @@ func (worker *PGWorker) ReplayOriginal(ctx context.Context, key control.Key) (pg
 	return worker.executor.ReplayOriginal(callCtx)
 }
 
+// 准入重放与PG resize重放分开，不能将同一Key提示误解为另一个领域命令。
+// 仅当前Session且原完整日志匹配时交实际准入执行器复核预算，不自动生成新请求。
+func (worker *PGWorker) ReplayAdmissionOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {
+	if err := worker.session.Check(ctx); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	callCtx, cancel := worker.session.coupledContext(ctx)
+	defer cancel()
+	return worker.admission.ReplayOriginal(callCtx, key)
+}
+
 type Tick struct {
 	Progress pgexec.Progress
 	Err      error
@@ -173,6 +207,8 @@ type PGLoopOptions struct {
 	// Replay只能来自已认证协调入口的显式选择。Key仅用于匹配，实际命令
 	// 始终从原journal取回；普通错误/定时轮询绝不向此通道自动投递。
 	Replay <-chan control.Key
+	// 独立的受信显式准入重放入口；nil时只读对账，错误/轮询不自动投递。
+	AdmissionReplay <-chan control.Key
 	// Observe供状态/指标使用，必须有界返回，不打印凭据或误把Recorded当VM完成。
 	Observe func(Tick)
 }
@@ -190,7 +226,8 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	ticker := time.NewTicker(options.PollInterval)
 	defer ticker.Stop()
 	var replay *control.Key
-	wake, replays := options.Wake, options.Replay
+	var admissionReplay *control.Key
+	wake, replays, admissionReplays := options.Wake, options.Replay, options.AdmissionReplay
 	for {
 		if callCtx.Err() != nil {
 			return callCtx.Err()
@@ -200,6 +237,9 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		if replay != nil {
 			progress, err = worker.ReplayOriginal(callCtx, *replay)
 			replay = nil
+		} else if admissionReplay != nil {
+			progress, err = worker.ReplayAdmissionOriginal(callCtx, *admissionReplay)
+			admissionReplay = nil
 		} else {
 			progress, err = worker.Advance(callCtx)
 		}
@@ -220,6 +260,13 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		case <-callCtx.Done():
 			return callCtx.Err()
 		case <-ticker.C:
+		case key, open := <-admissionReplays:
+			if !open {
+				admissionReplays = nil
+			} else {
+				copy := key
+				admissionReplay = &copy
+			}
 		case _, open := <-wake:
 			if !open {
 				wake = nil

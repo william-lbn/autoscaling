@@ -108,9 +108,9 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		instance, epoch := worker.Binding()
 		r.dsgaState(ownerCtx, DSGARunnerState{Phase: "running", IssuerEpoch: epoch, Instance: instance})
 		logger.Info("DSGA owner PG reconciliation started")
-		// 仅执行原journal中已获外层领域确认的PG步骤；其他领域保持ExternalStep，
-		// 不伪造预算/Guest/VM回执，不自动Begin或隐式重放未知POST。后续完整领域
-		// 规划器接入同一日志，不能重开另一套legacy执行器填补缺失领域。
+		// 同一worker推进PG及已完成完整预算后的恢复准入，先持久原门禁意图，
+		// 丢回复后只读对账。预算生产者/Guest/VM尚未确认的步骤仍保持ExternalStep；
+		// 不自动Begin、伪造外部回执或重发未知POST，也不另开legacy执行器绕过领域。
 		return worker.Run(ownerCtx, owner.PGLoopOptions{PollInterval: time.Duration(config.PollIntervalSeconds) * time.Second, Wake: updated.Recv(), Replay: nil, Observe: func(tick owner.Tick) {
 			if tick.Err == nil {
 				r.status.update(r.global, func(stat podStatus) podStatus { now := time.Now(); stat.dsgaLastSuccessfulCheck = &now; return stat })
