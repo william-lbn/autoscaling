@@ -18,6 +18,12 @@ func (request Request) ContextSHA256() (string, error) {
 	if err := request.Validate(); err != nil {
 		return "", err
 	}
+	return contextSHA256(request)
+}
+
+// 仅供已经完成固定schema校验的控制意图复用；准入增加bool字面量支持，
+// 不改变已有resize对象排序/分隔/字符串和整数规则。
+func contextSHA256(request any) (string, error) {
 	raw, err := json.Marshal(request)
 	if err != nil {
 		return "", err
@@ -63,6 +69,8 @@ func writeContext(output *bytes.Buffer, value any) error {
 		output.WriteByte('}')
 	case string:
 		output.WriteString(strconv.Quote(value))
+	case bool:
+		output.WriteString(strconv.FormatBool(value))
 	case json.Number:
 		if _, err := strconv.ParseUint(string(value), 10, 32); err != nil {
 			return fmt.Errorf("context requires canonical uint32 numbers")

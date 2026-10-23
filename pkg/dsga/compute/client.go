@@ -34,6 +34,10 @@ type Config struct {
 	// Pending由持久日志恢复原意图。可为旧boot/epoch，但VM/Compute归属必须一致；
 	// 新owner不能继续执行旧意图，只能观察/取消并在外层完成实际效果与预算对账。
 	Pending *control.Request
+	// 准入原意图/更高关闭意图由外层在发送前持久保存，重建客户端显式恢复。
+	// 不允许DiscoverInitial抹掉这些历史，也不把新PG boot解释为旧VM动作失效。
+	AdmissionPending *control.AdmissionRequest
+	AdmissionClose   *control.AdmissionRequest
 }
 
 // CallError不回显服务端body、Bearer、凭据提供器错误或完整URL。开始Do后的所有
@@ -48,16 +52,19 @@ func (err *CallError) Error() string {
 }
 
 type Client struct {
-	base       string
-	instance   control.Instance
-	epoch      control.Uint64
-	token      func(context.Context) (string, error)
-	execution  *http.Client
-	observer   *http.Client
-	transports [2]*http.Transport
-	mu         sync.Mutex
-	inFlight   bool
-	pending    *control.Request
+	base              string
+	instance          control.Instance
+	epoch             control.Uint64
+	token             func(context.Context) (string, error)
+	execution         *http.Client
+	observer          *http.Client
+	transports        [2]*http.Transport
+	mu                sync.Mutex
+	inFlight          bool
+	pending           *control.Request
+	admissionPending  *control.AdmissionRequest
+	admissionClose    *control.AdmissionRequest
+	admissionInFlight bool
 }
 
 // New验证固定TLS端点并实时协商ABI/boot。不会在断连后自动新建Client或改变boot，
@@ -70,7 +77,7 @@ func New(ctx context.Context, config Config) (*Client, error) {
 // 协商。不能拿它重造已有未知Client；有Pending或已指定boot时直接拒绝。
 // 新boot在返回Client前固定，此后Capabilities仍严格比较，永不自动改绑。
 func DiscoverInitial(ctx context.Context, config Config) (*Client, error) {
-	if config.Instance.PGBootID != 0 || config.Pending != nil {
+	if config.Instance.PGBootID != 0 || config.Pending != nil || config.AdmissionPending != nil || config.AdmissionClose != nil {
 		return nil, &CallError{MayHaveExecuted: false, Code: "initial_discovery_has_history"}
 	}
 	return newClient(ctx, config, true)
@@ -101,6 +108,23 @@ func newClient(ctx context.Context, config Config, initial bool) (*Client, error
 	client.instance = config.Instance
 	client.epoch = config.IssuerEpoch
 	client.token = config.Token
+	if config.AdmissionClose != nil && config.AdmissionPending == nil {
+		return nil, &CallError{Code: "missing_original_admission"}
+	}
+	if config.AdmissionPending != nil {
+		original := *config.AdmissionPending
+		if original.Validate() != nil || original.Instance != config.Instance || original.IssuerEpoch > config.IssuerEpoch {
+			return nil, &CallError{Code: "invalid_pending_admission"}
+		}
+		client.admissionPending = &original
+		if config.AdmissionClose != nil {
+			closeIntent := *config.AdmissionClose
+			if closeIntent.ClosesOver(original) != nil || closeIntent.IssuerEpoch > config.IssuerEpoch {
+				return nil, &CallError{Code: "invalid_pending_admission_close"}
+			}
+			client.admissionClose = &closeIntent
+		}
+	}
 	if config.Pending != nil {
 		request := *config.Pending
 		if request.Validate() != nil || request.Key.Instance.VMUID != config.Instance.VMUID || request.Key.Instance.ComputeInstanceID != config.Instance.ComputeInstanceID || request.Key.IssuerEpoch > config.IssuerEpoch {
@@ -283,7 +307,7 @@ func (client *Client) Resize(ctx context.Context, intent control.Request) (fact 
 		return fact, err
 	}
 	client.mu.Lock()
-	if client.inFlight || (client.pending != nil && *client.pending != intent) {
+	if client.inFlight || client.admissionInFlight || client.admissionPending != nil || client.admissionClose != nil || (client.pending != nil && *client.pending != intent) {
 		client.mu.Unlock()
 		return fact, &CallError{MayHaveExecuted: false, Code: "unresolved_original_intent"}
 	}
