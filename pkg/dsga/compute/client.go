@@ -276,6 +276,19 @@ func (client *Client) Memory(ctx context.Context) (control.MemoryResponse, error
 	return fact, nil
 }
 
+// SharedCost不修改/清空任何pending，只读核验同一次原生PG快照的去重上界。
+// 成功不表示私有内存/Guest池/Host承诺已核验，更不产生VM许可。
+func (client *Client) SharedCost(ctx context.Context) (control.SharedCostResponse, error) {
+	var fact control.SharedCostResponse
+	if err := client.read(ctx, "/dsg/v1/budget/shared", &fact); err != nil {
+		return fact, err
+	}
+	if err := fact.ValidateFor(client.instance); err != nil {
+		return control.SharedCostResponse{}, &CallError{MayHaveExecuted: true, Code: "invalid_shared_cost_fact"}
+	}
+	return fact, nil
+}
+
 // 接管走独立观察池，旧执行阻塞时仍可推进floor。即使Fenced也不清pending：
 // 外层必须保留原意图/VM预算并实际对账，不能把PG接管事实当成整个操作取消。
 func (client *Client) Fence(ctx context.Context, intent control.FenceRequest) (control.FenceResponse, error) {
