@@ -110,7 +110,19 @@ func UnmarshalObjectBounded(data []byte, into any, maxBytes, maxValues int) erro
 
 // 只检查有界原始JSON/任意层重复键，不把此检查当作领域回执已被核验。
 func ValidateJSON(data []byte, maxBytes, maxValues int) error {
-	if maxBytes < 1 || maxBytes > 1024*1024 || maxValues < 1 || maxValues > 65536 || len(data) > maxBytes || !utf8.Valid(data) {
+	return validateJSONLimits(data, maxBytes, maxValues, 1<<20, 65536)
+}
+
+// ValidateObservationJSON仅供显式的大型只读观测（例如存储控制器全分片聚合）。
+// 保持普通控制请求ValidateJSON原有1MiB/65536值的上限，调用者不能因读聚合
+// 的需要放宽写协议。此入口最多8MiB/262144值，仍使用相同的32层、重复键、
+// UTF-8与尾随数据检查；返回通过不是身份/来源/完整分片的领域证明。
+func ValidateObservationJSON(data []byte, maxBytes, maxValues int) error {
+	return validateJSONLimits(data, maxBytes, maxValues, 8<<20, 262144)
+}
+
+func validateJSONLimits(data []byte, maxBytes, maxValues, byteLimit, valueLimit int) error {
+	if maxBytes < 1 || maxBytes > byteLimit || maxValues < 1 || maxValues > valueLimit || len(data) > maxBytes || !utf8.Valid(data) {
 		return fmt.Errorf("invalid DSGA JSON size or UTF-8")
 	}
 	decoder := json.NewDecoder(bytes.NewReader(data))
