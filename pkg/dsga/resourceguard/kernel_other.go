@@ -12,3 +12,5 @@ func Open(Config) (*Guard, error) {
 func LoadConfig(string) (Config, error) {
 	return Config{}, fmt.Errorf("DSGA resource config requires Linux Guest/root")
 }
+
+func ExecPostgres([]string) error { return fmt.Errorf("managed PG birth requires Linux Guest/root") }

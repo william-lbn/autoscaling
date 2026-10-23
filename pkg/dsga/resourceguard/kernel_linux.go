@@ -24,7 +24,7 @@ type linuxKernel struct{ config Config }
 // 必须root控制。官方旧cgconfig把memory控制权交给postgres，该配置会明确拒绝，
 // 不能把可被被约束方自行放宽的文件当生产预算。调用方须先完成受管启动权限接线。
 func Open(config Config) (*Guard, error) {
-	if os.Geteuid() != 0 || control.ValidateID(config.VMUID, "VM UID") != nil || control.ValidateID(config.ComputeInstanceID, "Compute instance") != nil {
+	if os.Getuid() != 0 || os.Geteuid() != 0 || control.ValidateID(config.VMUID, "VM UID") != nil || control.ValidateID(config.ComputeInstanceID, "Compute instance") != nil {
 		return nil, fmt.Errorf("resource guard requires root and trusted VM binding")
 	}
 	if err := secureParents(config.StateDir); err != nil {
@@ -265,6 +265,20 @@ func allPools() ([]HugePool, error) {
 }
 
 func (k *linuxKernel) Read(c Command) (Evidence, error) {
+	if err := k.postmaster(c); err != nil {
+		return Evidence{}, err
+	}
+	e, err := k.ReadBounds(c.Identity, c.limits())
+	if err != nil {
+		return e, err
+	}
+	if err := k.postmaster(c); err != nil {
+		return e, err
+	}
+	return e, nil
+}
+
+func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (Evidence, error) {
 	e := Evidence{ProtocolVersion: 1}
 	if uint64(c.MemoryMaxBytes)%uint64(os.Getpagesize()) != 0 {
 		return e, fmt.Errorf("memory.max target must be an exact Guest base-page multiple")
@@ -273,12 +287,27 @@ func (k *linuxKernel) Read(c Command) (Evidence, error) {
 	if err != nil {
 		return e, err
 	}
-	if id != c.Identity {
+	if id != expected {
 		return e, fmt.Errorf("Guest/cgroup incarnation differs")
 	}
 	e.Identity = id
-	if err := k.postmaster(c); err != nil {
+	events, err := kernelText(filepath.Join(pgCgroup, "cgroup.events"))
+	if err != nil {
 		return e, err
+	}
+	populatedSeen := false
+	for _, line := range strings.Split(events, "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 2 && fields[0] == "populated" {
+			if populatedSeen || (fields[1] != "0" && fields[1] != "1") {
+				return e, fmt.Errorf("invalid cgroup populated state")
+			}
+			populatedSeen = true
+			e.CgroupPopulated = fields[1] == "1"
+		}
+	}
+	if !populatedSeen {
+		return e, fmt.Errorf("cgroup populated state unavailable")
 	}
 	for _, entry := range []struct {
 		name      string
@@ -346,9 +375,6 @@ func (k *linuxKernel) Read(c Command) (Evidence, error) {
 		p.Pages = control.Uint64(nr)
 		e.HugePools = append(e.HugePools, p)
 	}
-	if err := k.postmaster(c); err != nil {
-		return e, err
-	}
 	return e, nil
 }
 
@@ -356,6 +382,10 @@ func (k *linuxKernel) Apply(c Command) error {
 	if err := k.postmaster(c); err != nil {
 		return err
 	}
+	return k.ApplyBounds(c.limits())
+}
+
+func (k *linuxKernel) ApplyBounds(c Limits) error {
 	// 所有hstate先禁用surplus扩张，再调整持久池。内核可能只能部分完成、将
 	// 在用页转为surplus，或HVO延迟释放；写返回成功也不能作为池已收缩的证明。
 	// 不主动写低于已用+预留的池，避免撤销仍被PG承诺的页；最终Read还要求surplus0。

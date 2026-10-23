@@ -57,6 +57,26 @@ func (k *fixtureKernel) Apply(c Command) error {
 	if r.Applied || r.Original == nil || !reflect.DeepEqual(*r.Original, c) {
 		return fmt.Errorf("external write preceded durable original intent")
 	}
+	return k.applyFixture(c.limits())
+}
+
+func (k *fixtureKernel) ReadBounds(id Identity, l Limits) (Evidence, error) { return k.Read(Command{}) }
+func (k *fixtureKernel) ApplyBounds(l Limits) error {
+	raw, err := os.ReadFile(filepath.Join(k.stateDir, "state.json"))
+	if err != nil {
+		return err
+	}
+	var r record
+	if err := json.Unmarshal(raw, &r); err != nil {
+		return err
+	}
+	if r.Bootstrap == nil || r.Bootstrap.Applied || !reflect.DeepEqual(r.Bootstrap.Original.Limits, l) {
+		return fmt.Errorf("bootstrap external write preceded durable original intent")
+	}
+	return k.applyFixture(l)
+}
+
+func (k *fixtureKernel) applyFixture(c Limits) error {
 	if k.entered != nil {
 		close(k.entered)
 		<-k.release

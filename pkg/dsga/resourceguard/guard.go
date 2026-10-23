@@ -72,6 +72,7 @@ type Evidence struct {
 	WholePoolUpperBytes    control.Uint64 `json:"whole_pool_upper_bytes"`
 	HugeOvercommitDisabled bool           `json:"huge_overcommit_disabled"`
 	HugeSurplusPages       control.Uint64 `json:"huge_surplus_pages"`
+	CgroupPopulated        bool           `json:"cgroup_populated"`
 }
 
 type record struct {
@@ -81,6 +82,8 @@ type record struct {
 	Original *Command       `json:"original"`
 	Held     *Command       `json:"held"`
 	Applied  bool           `json:"applied"`
+	// 可选字段保持旧未启用生产日志可读；有此项的原创建必须先确认真实启动限额。
+	Bootstrap *bootstrapRecord `json:"bootstrap,omitempty"`
 }
 
 // kernel所有写入均同步完成。调用者ctx到期不能把正在内核中执行的写分离成后台
@@ -89,6 +92,8 @@ type kernel interface {
 	Identity() (Identity, error)
 	Read(Command) (Evidence, error)
 	Apply(Command) error
+	ReadBounds(Identity, Limits) (Evidence, error)
+	ApplyBounds(Limits) error
 }
 
 type Guard struct {
@@ -97,21 +102,20 @@ type Guard struct {
 }
 
 func (c Command) Validate() error {
-	if c.ProtocolVersion != 1 || c.IssuerEpoch == 0 || c.Revision == 0 || c.PostmasterPID <= 1 || c.PostmasterStartTicks == 0 || c.MemoryMaxBytes == 0 || c.OutsideUpperBytes == 0 || len(c.HugePools) == 0 || len(c.HugePools) > 32 {
+	if c.ProtocolVersion != 1 || c.Revision == 0 || c.PostmasterPID <= 1 || c.PostmasterStartTicks == 0 {
 		return fmt.Errorf("incomplete resource command")
 	}
-	if control.ValidateID(c.Identity.VMUID, "VM UID") != nil || control.ValidateID(c.Identity.ComputeInstanceID, "Compute instance") != nil || !validGuestBoot(c.Identity.GuestBootID) || c.Identity.CgroupInode == 0 || control.ValidateID(c.BudgetCommitmentID, "budget commitment") != nil {
+	if err := validateResourceContext(c.Identity, c.IssuerEpoch, c.BudgetCommitmentID); err != nil {
+		return err
+	}
+	return c.limits().Validate()
+}
+
+func validateResourceContext(id Identity, epoch control.Uint64, budget string) error {
+	if epoch == 0 || control.ValidateID(id.VMUID, "VM UID") != nil || control.ValidateID(id.ComputeInstanceID, "Compute instance") != nil || !validGuestBoot(id.GuestBootID) || id.CgroupInode == 0 || control.ValidateID(budget, "budget commitment") != nil {
 		return fmt.Errorf("invalid resource identity")
 	}
-	var previous control.Uint64
-	for _, pool := range c.HugePools {
-		if pool.PageSizeKB == 0 || pool.PageSizeKB <= previous || pool.PageSizeKB > control.Uint64(math.MaxUint64/1024) || pool.Pages > control.Uint64(math.MaxUint64)/(pool.PageSizeKB*1024) {
-			return fmt.Errorf("unordered, duplicate or overflowing HugeTLB pool")
-		}
-		previous = pool.PageSizeKB
-	}
-	_, err := c.totalUpper()
-	return err
+	return nil
 }
 
 // Linux boot_id保留内核的规范UUID格式；不能直接套用本项目32字符VM incarnation。
@@ -119,23 +123,12 @@ func validGuestBoot(s string) bool {
 	return len(s) == 36 && s[8] == '-' && s[13] == '-' && s[18] == '-' && s[23] == '-' && control.ValidateIncarnation(strings.ReplaceAll(s, "-", "")) == nil
 }
 
-func (c Command) totalUpper() (uint64, error) {
-	total := uint64(c.MemoryMaxBytes)
-	parts := []uint64{uint64(c.OutsideUpperBytes)}
-	for _, pool := range c.HugePools {
-		parts = append(parts, uint64(pool.PageSizeKB)*1024*uint64(pool.Pages))
-	}
-	for _, part := range parts {
-		if part > math.MaxUint64-total {
-			return 0, fmt.Errorf("Guest resource budget overflows")
-		}
-		total += part
-	}
-	return total, nil
-}
+func (c Command) totalUpper() (uint64, error) { return c.limits().totalUpper() }
 
-func (e Evidence) matches(c Command) error {
-	if e.ProtocolVersion != 1 || e.VMShrinkPermit || e.Identity != c.Identity || e.MemoryMaxBytes != c.MemoryMaxBytes || e.MemoryCurrentBytes > c.MemoryMaxBytes || e.SwapMaxBytes != 0 || e.SwapCurrentBytes != 0 || !e.HugeOvercommitDisabled || e.HugeSurplusPages != 0 || !reflect.DeepEqual(e.HugePools, c.HugePools) {
+func (e Evidence) matches(c Command) error { return e.matchesLimits(c.Identity, c.limits()) }
+
+func (e Evidence) matchesLimits(id Identity, c Limits) error {
+	if e.ProtocolVersion != 1 || e.VMShrinkPermit || e.Identity != id || e.MemoryMaxBytes != c.MemoryMaxBytes || e.MemoryCurrentBytes > c.MemoryMaxBytes || e.SwapMaxBytes != 0 || e.SwapCurrentBytes != 0 || !e.HugeOvercommitDisabled || e.HugeSurplusPages != 0 || !reflect.DeepEqual(e.HugePools, c.HugePools) {
 		return fmt.Errorf("actual resource limits, occupancy or identity differ")
 	}
 	total, err := c.totalUpper()
@@ -174,6 +167,13 @@ func (g *Guard) withRecord(ctx context.Context, fn func(*record, *lockedState) e
 	if r == nil {
 		return fmt.Errorf("resource journal missing; explicit original-bootstrap initialization required")
 	}
+	if err := r.validate(id); err != nil {
+		return err
+	}
+	return fn(r, s)
+}
+
+func (r *record) validate(id Identity) error {
 	if r.Version != 1 || r.Floor == 0 || r.Identity != id || (r.Applied && r.Original == nil) {
 		return fmt.Errorf("resource journal identity changed; controlled recovery required")
 	}
@@ -195,7 +195,10 @@ func (g *Guard) withRecord(ctx context.Context, fn func(*record, *lockedState) e
 			return fmt.Errorf("pending resource command lost held revision")
 		}
 	}
-	return fn(r, s)
+	if r.Bootstrap != nil && (r.Bootstrap.Original.Validate() != nil || r.Bootstrap.Original.Identity != id || r.Bootstrap.Original.IssuerEpoch > r.Floor) {
+		return fmt.Errorf("invalid retained bootstrap constraints")
+	}
+	return nil
 }
 
 // Initialize是原VM创建流程的一次性动作，不是恢复失败后的自动fallback。调用方
@@ -268,6 +271,9 @@ func (g *Guard) apply(ctx context.Context, command Command, replay bool) (Eviden
 		return evidence, err
 	}
 	err := g.withRecord(ctx, func(r *record, s *lockedState) error {
+		if r.Bootstrap != nil && !r.Bootstrap.Applied {
+			return fmt.Errorf("%w: original bootstrap constraints unconfirmed", ErrUnknown)
+		}
 		if command.Identity != r.Identity || command.IssuerEpoch != r.Floor {
 			return fmt.Errorf("resource command is fenced")
 		}

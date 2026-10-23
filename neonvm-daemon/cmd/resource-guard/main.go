@@ -16,7 +16,15 @@ import (
 )
 
 func run() error {
-	configPath := flag.String("config", "/etc/neon-dsga/resource.json", "root-owned immutable VM resource configuration")
+	// SUID场景唯一允许的非root动作必须在flag解析前分流，不能借--config选择
+	// 另一份资源日志，也不能让真实postgres UID以有效root调用bootstrap/apply。
+	if len(os.Args) > 1 && os.Args[1] == "launch-postgres" {
+		return resourceguard.ExecPostgres(os.Args[2:])
+	}
+	if os.Getuid() != 0 {
+		return fmt.Errorf("resource operations require real root")
+	}
+	configPath := flag.String("config", resourceguard.FixedConfigPath, "root-owned immutable VM resource configuration")
 	flag.Parse()
 	args := flag.Args()
 	if len(args) == 0 {
@@ -32,7 +40,9 @@ func run() error {
 	}
 	ctx := context.Background()
 	var result any
-	if args[0] == "fence" || args[0] == "initialize" {
+	if args[0] == "identity" && len(args) == 1 {
+		result, err = guard.InspectIdentity()
+	} else if args[0] == "fence" || args[0] == "initialize" {
 		if len(args) != 2 {
 			return fmt.Errorf("fence requires one canonical nonzero epoch")
 		}
@@ -46,7 +56,7 @@ func run() error {
 			result, err = guard.Fence(ctx, control.Uint64(epoch))
 		}
 	} else {
-		if len(args) != 1 || (args[0] != "apply" && args[0] != "observe" && args[0] != "replay-original") {
+		if len(args) != 1 || (args[0] != "apply" && args[0] != "observe" && args[0] != "replay-original" && args[0] != "bootstrap" && args[0] != "observe-bootstrap" && args[0] != "replay-bootstrap") {
 			return fmt.Errorf("unsupported resource action")
 		}
 		data, readErr := io.ReadAll(io.LimitReader(os.Stdin, 64*1024+1))
@@ -55,6 +65,24 @@ func run() error {
 		}
 		if len(data) > 64*1024 {
 			return fmt.Errorf("resource command exceeds bound")
+		}
+		if args[0] == "bootstrap" || args[0] == "observe-bootstrap" || args[0] == "replay-bootstrap" {
+			var command resourceguard.BootstrapCommand
+			if err := json.Unmarshal(data, &command); err != nil {
+				return err
+			}
+			switch args[0] {
+			case "bootstrap":
+				result, err = guard.Bootstrap(ctx, command)
+			case "observe-bootstrap":
+				result, err = guard.ObserveBootstrap(ctx, command)
+			case "replay-bootstrap":
+				result, err = guard.ReplayBootstrap(ctx, command)
+			}
+			if err != nil {
+				return err
+			}
+			return json.NewEncoder(os.Stdout).Encode(result)
 		}
 		var command resourceguard.Command
 		if err := json.Unmarshal(data, &command); err != nil {
