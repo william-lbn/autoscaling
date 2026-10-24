@@ -1,5 +1,5 @@
-// resource-guard是Guest root执行器；不监听网络，不复用旧neonvmd无认证HTTP端口。
-// 上层Compute受管通道还须完成授权及固定命令接线；本程序不会因被编译就自动启用。
+// resource-guard是Guest root执行器；受管服务只监听固定认证UDS，不复用旧无认证
+// HTTP端口。SUID仍只允许PG出生，普通postgres不能借serve进入root资源操作。
 package main
 
 import (
@@ -23,6 +23,9 @@ func run() error {
 	}
 	if os.Getuid() != 0 {
 		return fmt.Errorf("resource operations require real root")
+	}
+	if len(os.Args) == 2 && os.Args[1] == "serve" {
+		return resourceguard.ServeGuest(context.Background())
 	}
 	if len(os.Args) == 2 && os.Args[1] == "provision-guest" {
 		e, err := resourceguard.ProvisionGuest(context.Background())

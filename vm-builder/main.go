@@ -46,6 +46,8 @@ var (
 	scriptVmShutdown string
 	//go:embed files/vminit
 	scriptVmInit string
+	//go:embed files/dsga-resource-service
+	scriptDSGAResourceService string
 	//go:embed files/udev-init.sh
 	scriptUdevInit string
 	//go:embed files/resize-swap.sh
@@ -427,6 +429,7 @@ func main() {
 		{"inittab", scriptInitTab},
 		{"vmacpi", scriptVmAcpi},
 		{"vminit", scriptVmInit},
+		{"dsga-resource-service", scriptDSGAResourceService},
 		{"vector.yaml", configVector},
 		{"chrony.conf", configChrony},
 		{"sshd_config", configSshd},

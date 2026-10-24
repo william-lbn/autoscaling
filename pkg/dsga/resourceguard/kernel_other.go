@@ -28,3 +28,7 @@ func CheckGuest(context.Context) error {
 func CheckManagementTLSDirectory() error {
 	return fmt.Errorf("management TLS directory requires Linux Guest/root")
 }
+
+func ServeGuest(context.Context) error {
+	return fmt.Errorf("Guest resource service requires Linux Guest/root")
+}

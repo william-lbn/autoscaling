@@ -34,6 +34,8 @@ type Identity struct {
 	CgroupInode       control.Uint64 `json:"cgroup_inode"`
 }
 
+func (id Identity) Validate() error { return validateResourceContext(id, 1, "identity") }
+
 type HugePool struct {
 	PageSizeKB control.Uint64 `json:"page_size_kb"`
 	Pages      control.Uint64 `json:"pages"`
@@ -73,6 +75,18 @@ type Evidence struct {
 	HugeOvercommitDisabled bool           `json:"huge_overcommit_disabled"`
 	HugeSurplusPages       control.Uint64 `json:"huge_surplus_pages"`
 	CgroupPopulated        bool           `json:"cgroup_populated"`
+}
+
+// 网络/持久消费者不能把缺字段/null解释成0占用或false许可。严格别名解码
+// 保证全部必填字段、唯一键和嵌套身份/池约束，不改变既有内核Evidence格式。
+func (v *Evidence) UnmarshalJSON(data []byte) error {
+	type plain Evidence
+	var p plain
+	if err := control.UnmarshalObject(data, &p); err != nil {
+		return err
+	}
+	*v = Evidence(p)
+	return nil
 }
 
 type record struct {
@@ -235,11 +249,24 @@ func (g *Guard) Initialize(ctx context.Context, epoch control.Uint64) (Identity,
 // Fence先持久化更高代次，随后旧进程的任何写都必须在同一锁内重新核验。未知旧
 // 原意图仍保留；新owner只能先读回或进行受控恢复，不能抹掉旧承诺另起revision。
 func (g *Guard) Fence(ctx context.Context, epoch control.Uint64) (Identity, error) {
+	return g.fence(ctx, nil, epoch)
+}
+
+// FenceBound在同一锁内核对原Guest身份再推进floor；不能先Inspect后另一次Fence，
+// 那样两次调用间Guest/cgroup被重建时会把旧接管应用到新资源域。
+func (g *Guard) FenceBound(ctx context.Context, id Identity, epoch control.Uint64) (Identity, error) {
+	return g.fence(ctx, &id, epoch)
+}
+
+func (g *Guard) fence(ctx context.Context, expected *Identity, epoch control.Uint64) (Identity, error) {
 	var id Identity
 	if epoch == 0 {
 		return id, fmt.Errorf("zero resource epoch")
 	}
 	err := g.withRecord(ctx, func(r *record, s *lockedState) error {
+		if expected != nil && *expected != r.Identity {
+			return fmt.Errorf("resource fence Guest identity differs")
+		}
 		if epoch < r.Floor {
 			return fmt.Errorf("stale resource epoch")
 		}

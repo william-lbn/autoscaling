@@ -1,0 +1,8 @@
+#!/neonvm/bin/sh
+
+# BusyBox respawn负责恢复root服务，不在普通Compute内派生SUID服务进程。
+# 未受管Guest沿用官方路径；阻塞等待避免respawn忙循环，也不提供资源socket。
+if /neonvm/bin/test -f /neonvm/runtime/dsga-resource.json || /neonvm/bin/test -e /etc/neon-dsga || /neonvm/bin/test -L /etc/neon-dsga || /neonvm/bin/grep -Fq 'neonvm.dsga=1' /proc/cmdline; then
+    exec /neonvm/bin/dsga-resource-guard serve
+fi
+exec /neonvm/bin/sleep 2147483647

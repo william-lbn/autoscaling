@@ -84,6 +84,7 @@ RUN chmod 4755 /neonvm/bin/dsga-resource-guard
 # init scripts & configs
 COPY inittab     /neonvm/bin/inittab
 COPY vminit      /neonvm/bin/vminit
+COPY dsga-resource-service /neonvm/bin/dsga-resource-service
 COPY vmstart     /neonvm/bin/vmstart
 COPY vmshutdown  /neonvm/bin/vmshutdown
 COPY vmacpi      /neonvm/acpi/vmacpi
