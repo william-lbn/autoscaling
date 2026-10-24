@@ -147,6 +147,19 @@ func (c *Client) InspectIdentity(ctx context.Context) (Identity, error) {
 	return id, nil
 }
 
+// 可信创建/计划者在任何资源写之前读取并持久冻结。后续命令和恢复仍带完整
+// 原PID/starttime，不能因查询得到新PG就改写已有未知命令。
+func (c *Client) InspectProcess(ctx context.Context) (ProcessIdentity, error) {
+	var p ProcessIdentity
+	if err := c.call(ctx, true, "process", nil, &p); err != nil {
+		return p, err
+	}
+	if p.Validate() != nil || p.Identity != c.config.Identity {
+		return ProcessIdentity{}, &ClientError{Code: "postmaster_birth_unconfirmed"}
+	}
+	return p, nil
+}
+
 func (c *Client) Fence(ctx context.Context) error {
 	var id Identity
 	err := c.call(ctx, true, "fence", FenceRequest{ProtocolVersion: 1, Identity: c.config.Identity, IssuerEpoch: c.config.IssuerEpoch}, &id)

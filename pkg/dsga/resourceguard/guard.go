@@ -98,6 +98,9 @@ type record struct {
 	Applied  bool           `json:"applied"`
 	// 可选字段保持旧未启用生产日志可读；有此项的原创建必须先确认真实启动限额。
 	Bootstrap *bootstrapRecord `json:"bootstrap,omitempty"`
+	// root原位exec前持久的出生身份；可缺省以读取旧未启用日志，但生产运行期
+	// 写必须有此来源，绝不能从请求PID或同名新进程补造。
+	Birth *ProcessIdentity `json:"birth,omitempty"`
 }
 
 // kernel所有写入均同步完成。调用者ctx到期不能把正在内核中执行的写分离成后台
@@ -108,6 +111,7 @@ type kernel interface {
 	Apply(Command) error
 	ReadBounds(Identity, Limits) (Evidence, error)
 	ApplyBounds(Limits) error
+	VerifyProcess(ProcessIdentity) error
 }
 
 type Guard struct {
@@ -190,6 +194,9 @@ func (g *Guard) withRecord(ctx context.Context, fn func(*record, *lockedState) e
 func (r *record) validate(id Identity) error {
 	if r.Version != 1 || r.Floor == 0 || r.Identity != id || (r.Applied && r.Original == nil) {
 		return fmt.Errorf("resource journal identity changed; controlled recovery required")
+	}
+	if r.Birth != nil && (r.Birth.Validate() != nil || r.Birth.Identity != id || r.Bootstrap == nil) {
+		return fmt.Errorf("invalid original PG birth record")
 	}
 	if r.Original != nil && (r.Original.Validate() != nil || r.Original.Identity != id || r.Original.IssuerEpoch > r.Floor) {
 		return fmt.Errorf("invalid retained resource command")
@@ -303,6 +310,14 @@ func (g *Guard) apply(ctx context.Context, command Command, replay bool) (Eviden
 		}
 		if command.Identity != r.Identity || command.IssuerEpoch != r.Floor {
 			return fmt.Errorf("resource command is fenced")
+		}
+		if r.Bootstrap != nil {
+			if r.Birth == nil || !r.Birth.matches(command) {
+				return fmt.Errorf("resource command differs from original Postmaster birth")
+			}
+			if err := g.kernel.VerifyProcess(*r.Birth); err != nil {
+				return err
+			}
 		}
 		same := r.Original != nil && reflect.DeepEqual(*r.Original, command)
 		if r.Original != nil && !r.Applied && (!same || !replay) {

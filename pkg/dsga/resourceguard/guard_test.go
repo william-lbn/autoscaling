@@ -28,6 +28,17 @@ type fixtureKernel struct {
 	entered  chan struct{}
 	release  chan struct{}
 	stateDir string
+	process  *ProcessIdentity
+}
+
+// 只模拟出生后exec事实；真实UID/exe/cgroup核验仅在Linux生产实现执行。
+func (k *fixtureKernel) VerifyProcess(p ProcessIdentity) error {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+	if k.process == nil || *k.process != p {
+		return fmt.Errorf("fixture process has not execed")
+	}
+	return nil
 }
 
 func (k *fixtureKernel) Identity() (Identity, error) {

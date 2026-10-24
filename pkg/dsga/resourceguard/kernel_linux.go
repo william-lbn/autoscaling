@@ -7,6 +7,7 @@ import (
 	"io"
 	"math"
 	"os"
+	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -218,6 +219,41 @@ func (k *linuxKernel) postmaster(c Command) error {
 	if group != "0::/neon-postgres" {
 		return fmt.Errorf("Postmaster is not in the guarded cgroup")
 	}
+	account, err := user.Lookup("postgres")
+	if err != nil {
+		return fmt.Errorf("trusted postgres account unavailable")
+	}
+	uid, err := strconv.ParseUint(account.Uid, 10, 32)
+	if err != nil || uid == 0 {
+		return fmt.Errorf("invalid postgres UID")
+	}
+	status, err := read("status")
+	if err != nil {
+		return err
+	}
+	if err := processUID(status, uid); err != nil {
+		return err
+	}
+	// Birth在exec前写，PID/starttime和cgroup尚不足以证明已经执行PG。比较
+	// 实际exe与root提供的固定PG文件，拒绝仍是SUID helper、被替换的程序或
+	// 同组任意进程；前后starttime核验仍不可省略，避免PID复用竞争。
+	program, err := filepath.EvalSymlinks(FixedPostgresPath)
+	if err != nil {
+		return err
+	}
+	trusted, err := rootFile(program, false)
+	if err != nil {
+		return err
+	}
+	installed, err := trusted.Stat()
+	_ = trusted.Close()
+	if err != nil {
+		return err
+	}
+	actual, err := os.Stat(base + "/exe")
+	if err != nil || !os.SameFile(installed, actual) {
+		return fmt.Errorf("original Postmaster has not execed the fixed PG program")
+	}
 	second, err := read("stat")
 	if err != nil {
 		return err
@@ -227,6 +263,20 @@ func (k *linuxKernel) postmaster(c Command) error {
 		return fmt.Errorf("Postmaster changed during membership verification")
 	}
 	return nil
+}
+
+func (k *linuxKernel) VerifyProcess(p ProcessIdentity) error {
+	if err := p.Validate(); err != nil {
+		return err
+	}
+	id, err := k.Identity()
+	if err != nil {
+		return err
+	}
+	if id != p.Identity {
+		return fmt.Errorf("Postmaster birth belongs to another Guest")
+	}
+	return k.postmaster(Command{PostmasterPID: p.PostmasterPID, PostmasterStartTicks: p.PostmasterStartTicks})
 }
 
 func poolDirectory(size control.Uint64) string {

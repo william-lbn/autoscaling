@@ -34,7 +34,8 @@ func TestBoundedBootstrapHoldsActualLimitsBeforePGBirth(t *testing.T) {
 	}
 	called := 0
 	marker := errors.New("fixture exec boundary")
-	if err := g.launch(ctx, func() error { called++; return marker }); !errors.Is(err, marker) || called != 1 {
+	p := ProcessIdentity{ProtocolVersion: 1, Identity: c.Identity, PostmasterPID: c.PostmasterPID, PostmasterStartTicks: c.PostmasterStartTicks}
+	if err := g.launchWithBirth(ctx, nil, &p, func() error { k.mu.Lock(); k.process = &p; k.mu.Unlock(); called++; return marker }); !errors.Is(err, marker) || called != 1 {
 		t.Fatal("confirmed limits did not reach birth boundary", err)
 	}
 	k.e.MemoryMaxBytes++

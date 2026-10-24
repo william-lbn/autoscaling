@@ -21,10 +21,16 @@ func (g *Guard) launch(ctx context.Context, execInGroup func() error) error {
 // 留下旧Config/已完成预算后，被另一个来源的启动路径误用。nil仅供内部已有
 // 资源锁/核验逻辑复用，生产ExecPostgres和CheckGuest始终传已验证原来源。
 func (g *Guard) launchWithSource(ctx context.Context, source *SourceConfig, execInGroup func() error) error {
+	return g.launchWithBirth(ctx, source, nil, execInGroup)
+}
+
+// nil birth仅用于只读check和临时存储同步；正常生产PG必须传root读取的完整出生
+// 身份。旧Birth只在空组/确认Held后替换，原资源Original/Held保留，不因新PG清除。
+func (g *Guard) launchWithBirth(ctx context.Context, source *SourceConfig, birth *ProcessIdentity, execInGroup func() error) error {
 	if source != nil && (source.Validate() != nil || source.Config != g.config) {
 		return fmt.Errorf("PG birth original source differs from fixed configuration")
 	}
-	return g.withRecord(ctx, func(r *record, _ *lockedState) error {
+	return g.withRecord(ctx, func(r *record, state *lockedState) error {
 		if r.Bootstrap == nil || !r.Bootstrap.Applied || (r.Original != nil && !r.Applied) {
 			return fmt.Errorf("PG birth requires confirmed original bootstrap and no unknown resource write")
 		}
@@ -48,6 +54,18 @@ func (g *Guard) launchWithSource(ctx context.Context, source *SourceConfig, exec
 		}
 		if err := ctx.Err(); err != nil {
 			return err
+		}
+		if birth != nil {
+			if birth.Validate() != nil || birth.Identity != r.Identity {
+				return fmt.Errorf("PG birth process belongs to another Guest")
+			}
+			copy := *birth
+			r.Birth = &copy
+			// 必须先fsync再入组/降权/exec；任何后续错误都保留此启动意图，不能
+			// 从“exec未回复”推导没有出生。真实程序由独立只读查询再核验。
+			if err := state.save(r); err != nil {
+				return err
+			}
 		}
 		return execInGroup()
 	})

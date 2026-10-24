@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"syscall"
 
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"golang.org/x/sys/unix"
 )
 
@@ -47,6 +48,10 @@ func ExecPostgres(args []string) error {
 	if bytes > 256*1024 {
 		return fmt.Errorf("PG arguments exceed bound")
 	}
+	server, err := launchInvocation(args)
+	if err != nil {
+		return err
+	}
 	// 固定root配置，不接受调用者指定--config或环境覆盖。解析发生在降权前，但
 	// 只含本VM资源身份与状态目录；不执行配置文本、用户程序或可选shell。
 	source, err := sealedRuntimeSource()
@@ -58,7 +63,26 @@ func ExecPostgres(args []string) error {
 		return err
 	}
 	g := &Guard{config: config, kernel: &linuxKernel{config: config}}
-	return g.launchWithSource(context.Background(), &source, func() error {
+	var birth *ProcessIdentity
+	if server {
+		id, err := g.InspectIdentity()
+		if err != nil {
+			return err
+		}
+		stat, err := os.ReadFile("/proc/self/stat")
+		if err != nil {
+			return err
+		}
+		ticks, err := postmasterTicks(string(stat), os.Getpid())
+		if err != nil {
+			return err
+		}
+		birth = &ProcessIdentity{ProtocolVersion: 1, Identity: id, PostmasterPID: os.Getpid(), PostmasterStartTicks: control.Uint64(ticks)}
+		// Linux6.12 fs/exec.c::de_thread在非leader线程exec时保留原TGID和
+		// leader start_boottime；/proc stat使用此值生成第22字段。这里记录
+		// 进程PID而非当前Go线程TID；真实内核验证仍列入Linux目标验收。
+	}
+	return g.launchWithBirth(context.Background(), &source, birth, func() error {
 		// prctl能力/NO_NEW_PRIVS属于线程属性，降权与exec之间固定当前OS线程；
 		// Setres*仍覆盖全部线程，不能只依赖LockOSThread来完成进程整体降权。
 		runtime.LockOSThread()
