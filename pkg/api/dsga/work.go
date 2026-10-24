@@ -2,7 +2,7 @@ package dsga
 
 import "fmt"
 
-// WorkResponse是同一PG boot/floor/门禁快照里的真实前台登记和进程生存期。
+// WorkResponse的Work2包含Postmaster fork前至PGPROC交接的启动工作，且绑定同一PG实例。
 // ForegroundIdle仅覆盖已登记前台，不认证启动前连接、后台/DSM、预算或VM完成；
 // 背景/辅助存活计数不能解释为后台quiesce应答，也不能据此放行VM缩容。
 type WorkResponse struct {
@@ -27,7 +27,7 @@ func (r WorkResponse) ValidateFor(bound Instance) error {
 	if err := r.Observed.Validate(); err != nil {
 		return err
 	}
-	if r.ProtocolVersion != 1 || r.WorkAPIVersion != 1 || r.VMShrinkPermit || r.Observed.Instance != bound {
+	if r.ProtocolVersion != 1 || r.WorkAPIVersion != 2 || r.VMShrinkPermit || r.Observed.Instance != bound {
 		return fmt.Errorf("work observation native instance or protocol differs")
 	}
 	// 固定五项阶段为互斥集合。先提升uint64求和，不能让uint32回绕伪造总数。

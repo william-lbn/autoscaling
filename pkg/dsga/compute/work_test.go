@@ -12,7 +12,7 @@ import (
 func TestWorkStatePreservesRestoredUnknownAndRejectsContradictions(t *testing.T) {
 	intent, base := fixtures(t)
 	base.Observed.AdmissionOpen = false
-	fact := control.WorkResponse{ProtocolVersion: 1, WorkAPIVersion: 1, ClientProcesses: 1, BoundedInputs: 1, ObserverExcluded: true, ForegroundIdle: true, Observed: base.Observed}
+	fact := control.WorkResponse{ProtocolVersion: 1, WorkAPIVersion: 2, ClientProcesses: 1, BoundedInputs: 1, ObserverExcluded: true, ForegroundIdle: true, Observed: base.Observed}
 	var tamper atomic.Bool
 	_, config := newTLSClient(t, func(w http.ResponseWriter, r *http.Request) {
 		require.Equal(t, "/dsg/v1/work/state", r.URL.Path)

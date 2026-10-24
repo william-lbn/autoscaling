@@ -76,6 +76,8 @@ func TestNativeWorkState(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, fact.ValidateFor(input.Instance))
 	require.True(t, fact.ObserverExcluded)
+	require.EqualValues(t, 2, fact.WorkAPIVersion)
+	require.EqualValues(t, 1, fact.StartupClients, "真实GSS后未发startup包的连接也必须登记")
 	require.False(t, fact.VMShrinkPermit)
 	require.Equal(t, before.Observed, fact.Observed)
 	require.Equal(t, &input.Original, client.Pending(), "只读前台事实不得清未知原请求")
