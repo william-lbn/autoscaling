@@ -12,6 +12,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 )
 
 // PGWorker在一个已经确认的owner Session内长期拥有同一个客户端/原意图栅栏。
@@ -36,7 +37,7 @@ func (session *Session) coupledContext(ctx context.Context) (context.Context, co
 // NewPGWorker从已确认的持久活动意图恢复Pending。epoch只能采用Session已提交
 // 的代次；boot/端点仍采用可信配置而非按PG回复静默改绑。新owner可观察/取消旧
 // epoch，但不能把原意图改为新epoch后执行。nil Token或跨Store/VM直接拒绝。
-func (session *Session) NewPGWorker(ctx context.Context, config compute.Config) (*PGWorker, error) {
+func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, resources ...*ResourceWorker) (*PGWorker, error) {
 	if err := session.Check(ctx); err != nil {
 		return nil, err
 	}
@@ -58,6 +59,9 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config) 
 	}
 	initial := false
 	model := snapshot.State()
+	if model.ResourceIdentity != nil && len(resources) == 0 {
+		return nil, fmt.Errorf("bound resource domain cannot be omitted from PG worker")
+	}
 	if config.Instance.PGBootID == 0 {
 		if model.HighWater != nil {
 			// 包括终态历史被淘汰的情况，HWM仍绑定原boot。不能因Active为空
@@ -124,7 +128,24 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config) 
 	if err != nil {
 		return nil, err
 	}
-	executor, err := pgexec.New(session.store, client, session.actor)
+	var resource *ResourceWorker
+	if len(resources) > 1 {
+		client.CloseIdleConnections()
+		return nil, fmt.Errorf("one original resource worker required")
+	}
+	if len(resources) == 1 {
+		resource = resources[0]
+		if resource == nil || resource.session != session {
+			client.CloseIdleConnections()
+			return nil, fmt.Errorf("resource worker belongs to another owner")
+		}
+	}
+	var executor *pgexec.Executor
+	if resource != nil {
+		executor, err = pgexec.New(session.store, client, session.actor, resource.client)
+	} else {
+		executor, err = pgexec.New(session.store, client, session.actor)
+	}
 	if err != nil {
 		client.CloseIdleConnections()
 		return nil, err
@@ -251,8 +272,9 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		}
 		if err != nil {
 			var call *compute.CallError
+			var resourceCall *resourceguard.ClientError
 			var unknown *journal.UnconfirmedWrite
-			if !errors.As(err, &call) && !errors.As(err, &unknown) {
+			if !errors.As(err, &call) && !errors.As(err, &resourceCall) && !errors.As(err, &unknown) && !errors.Is(err, resourceguard.ErrUnknown) {
 				return err
 			}
 		}

@@ -14,6 +14,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/credential"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/owner"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 	"github.com/neondatabase/autoscaling/pkg/util"
 )
 
@@ -100,7 +101,14 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		if err != nil {
 			return err
 		}
-		worker, err := session.NewPGWorker(ownerCtx, compute.Config{BaseURL: config.GatewayURL, Instance: control.Instance{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID, PGBootID: 0}, IssuerEpoch: session.Actor().Epoch, Timeout: time.Duration(config.ComputeTimeoutSeconds) * time.Second, Transport: credentials.ManagementTransport(), Token: credentials.Token, Pending: nil})
+		// 资源身份先于PG客户端恢复，Root floor不随SQL断连/PG boot变化清空。
+		// 必须同一已确认Session，缺root来源/未知旧Guest时失败关闭，不走legacy。
+		resources, err := session.NewResourceWorker(ownerCtx, resourceguard.ClientConfig{BaseURL: config.GatewayURL, Identity: resourceguard.Identity{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID}, Timeout: time.Duration(config.ComputeTimeoutSeconds) * time.Second, Transport: credentials.ManagementTransport(), Token: credentials.Token})
+		if err != nil {
+			return err
+		}
+		defer resources.CloseIdleConnections()
+		worker, err := session.NewPGWorker(ownerCtx, compute.Config{BaseURL: config.GatewayURL, Instance: control.Instance{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID, PGBootID: 0}, IssuerEpoch: session.Actor().Epoch, Timeout: time.Duration(config.ComputeTimeoutSeconds) * time.Second, Transport: credentials.ManagementTransport(), Token: credentials.Token, Pending: nil}, resources)
 		if err != nil {
 			return err
 		}

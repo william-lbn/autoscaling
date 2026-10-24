@@ -13,6 +13,7 @@ import (
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	vmclient "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned/typed/neonvm/v1"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 	"github.com/neondatabase/autoscaling/pkg/util/patch"
 )
 
@@ -133,6 +134,9 @@ func Inspect(vm *vmv1.VirtualMachine, binding Binding) (*Snapshot, error) {
 	if model.HighWater != nil && model.HighWater.Instance.ComputeInstanceID != vm.Spec.DSGABootstrap.ComputeInstanceID {
 		return nil, fmt.Errorf("journal retained Compute identity differs from bootstrap")
 	}
+	if model.ResourceIdentity != nil && model.ResourceIdentity.ComputeInstanceID != vm.Spec.DSGABootstrap.ComputeInstanceID {
+		return nil, fmt.Errorf("journal resource binding differs from original bootstrap")
+	}
 	return &Snapshot{binding: binding, vm: vm.DeepCopy(), model: model}, nil
 }
 
@@ -223,7 +227,7 @@ func (store *Store) ReleaseBootstrap(ctx context.Context, bootstrapVersion strin
 // PristineBootstrap只供初次启动屏障，不能用来证明运行期没有未知效果。
 // Sequence/owner代次也必须是初始化值，不能把淘汰历史后的空Active误当新日志。
 func PristineBootstrap(model Model) bool {
-	return model.ProtocolVersion == 1 && model.Sequence == 1 && model.Owner.Epoch == 1 && model.HighWater == nil && model.Active == nil && len(model.History) == 0 && model.ExpiredResults == 0 && model.Validate() == nil
+	return model.ProtocolVersion == 1 && model.Sequence == 1 && model.Owner.Epoch == 1 && model.HighWater == nil && model.Active == nil && len(model.History) == 0 && model.ExpiredResults == 0 && model.ResourceIdentity == nil && model.Validate() == nil
 }
 
 func annotationBudget(annotations map[string]string) int {
@@ -315,6 +319,22 @@ func (store *Store) Takeover(ctx context.Context, snapshot *Snapshot, previous O
 		return nil, fmt.Errorf("bootstrap is held; owner takeover forbidden")
 	}
 	next, err := snapshot.model.Takeover(previous, nextHolder)
+	if err != nil {
+		return nil, err
+	}
+	return store.apply(ctx, snapshot, next)
+}
+
+// BindResource沿用完整VM UID/RV CAS，先持久原Guest绑定再向root推进floor。
+// 写回复丢失没有派发许可；重读只确认同一原身份，不能改取新Guest自动重试。
+func (store *Store) BindResource(ctx context.Context, snapshot *Snapshot, actor Owner, id resourceguard.Identity) (*Snapshot, error) {
+	if err := store.checked(snapshot); err != nil {
+		return nil, err
+	}
+	if !snapshot.Dispatchable() || snapshot.vm.Spec.DSGABootstrap == nil || !snapshot.vm.Spec.DSGABootstrap.Ready || snapshot.vm.Spec.DSGABootstrap.ComputeInstanceID != id.ComputeInstanceID {
+		return nil, fmt.Errorf("resource binding requires original ready running VM")
+	}
+	next, err := snapshot.model.BindResource(actor, id)
 	if err != nil {
 		return nil, err
 	}

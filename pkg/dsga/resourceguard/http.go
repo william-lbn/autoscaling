@@ -53,6 +53,7 @@ type resourceClaims struct {
 type resourceBackend interface {
 	InspectIdentity() (Identity, error)
 	InspectProcess(context.Context) (ProcessIdentity, error)
+	InspectState(context.Context) (View, error)
 	FenceBound(context.Context, Identity, control.Uint64) (Identity, error)
 	Apply(context.Context, Command) (Evidence, error)
 	Observe(context.Context, Command) (Evidence, error)
@@ -150,6 +151,8 @@ func (h *resourceHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		result, err = h.guard.InspectIdentity()
 	} else if r.URL.Path == "/dsg/v1/resource/process" && r.Method == http.MethodGet {
 		result, err = h.guard.InspectProcess(r.Context())
+	} else if r.URL.Path == "/dsg/v1/resource/state" && r.Method == http.MethodGet {
+		result, err = h.guard.InspectState(r.Context())
 	} else {
 		if r.Method != http.MethodPost {
 			deny(http.StatusNotFound)

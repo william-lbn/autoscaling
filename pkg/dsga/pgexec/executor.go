@@ -11,6 +11,7 @@ import (
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 )
 
 type Progress string
@@ -28,10 +29,11 @@ const (
 // 本对象不持跨网络本地锁：写前/写后以固定UID/RV的apiserver CAS线性化，同owner
 // 并发Advance也只有一个Start获票据；查询重复不产生resize副作用。
 type Executor struct {
-	store    *journal.Store
-	client   *compute.Client
-	actor    journal.Owner
-	instance control.Instance
+	store     *journal.Store
+	client    *compute.Client
+	actor     journal.Owner
+	instance  control.Instance
+	resources *resourceguard.Client
 }
 
 type executionAudit struct {
@@ -86,6 +88,9 @@ func (executor *Executor) ReplayOriginal(ctx context.Context) (Progress, error) 
 			return AwaitingFact, fmt.Errorf("durable PG outcome cannot be replayed")
 		}
 	}
+	if err := executor.checkResources(ctx); err != nil {
+		return AwaitingFact, err
+	}
 	fence, err := executor.client.Fence(ctx, control.FenceRequest{ProtocolVersion: 1, Instance: executor.instance, IssuerEpoch: executor.actor.Epoch})
 	if err != nil {
 		return AwaitingFact, err
@@ -117,7 +122,7 @@ func (executor *Executor) ReplayOriginal(ctx context.Context) (Progress, error) 
 	return Replayed, nil
 }
 
-func New(store *journal.Store, client *compute.Client, actor journal.Owner) (*Executor, error) {
+func New(store *journal.Store, client *compute.Client, actor journal.Owner, resources ...*resourceguard.Client) (*Executor, error) {
 	if store == nil || client == nil || actor.Validate() != nil {
 		return nil, fmt.Errorf("PG executor requires a journal, client and fixed owner")
 	}
@@ -125,7 +130,21 @@ func New(store *journal.Store, client *compute.Client, actor journal.Owner) (*Ex
 	if actor.Epoch != epoch {
 		return nil, fmt.Errorf("PG executor owner differs from authenticated client epoch")
 	}
-	return &Executor{store: store, client: client, actor: actor, instance: instance}, nil
+	var resource *resourceguard.Client
+	if len(resources) > 1 {
+		return nil, fmt.Errorf("one original resource client required")
+	}
+	if len(resources) == 1 {
+		resource = resources[0]
+		if resource == nil {
+			return nil, fmt.Errorf("nil original resource client")
+		}
+		id, resourceEpoch := resource.Binding()
+		if id.VMUID != instance.VMUID || id.ComputeInstanceID != instance.ComputeInstanceID || resourceEpoch != actor.Epoch {
+			return nil, fmt.Errorf("PG and resource domains differ")
+		}
+	}
+	return &Executor{store: store, client: client, actor: actor, instance: instance, resources: resource}, nil
 }
 
 // Advance每次重读持久状态，仅推进一个PG步骤。返回AwaitingFact表示副作用仍
@@ -172,6 +191,11 @@ func (executor *Executor) Advance(ctx context.Context) (Progress, error) {
 		decoded, err := control.DecodeRequest(step.Command)
 		if err != nil || decoded != intent || step.TargetID != executor.instance.ComputeInstanceID {
 			return AwaitingFact, fmt.Errorf("PG step command differs from complete original intent")
+		}
+	}
+	if step.Phase == journal.Planned {
+		if err := executor.checkResources(ctx); err != nil {
+			return AwaitingFact, err
 		}
 	}
 
@@ -222,6 +246,27 @@ func (executor *Executor) Advance(ctx context.Context) (Progress, error) {
 		return AwaitingFact, err
 	}
 	return executor.record(ctx, snapshot, intent, *step, fence, fact, false)
+}
+
+// 新PG POST的最低门槛，不能替代PrepareBudget/Host/Guest/排空的完整证明。
+// 观察未知PG结果不经过此门槛，避免root不确定时连原查询也被阻塞；显式重放
+// 仍可能形成新效果，所以同样必须核对当前资源floor和持续存在的已确认约束。
+func (executor *Executor) checkResources(ctx context.Context) error {
+	if executor.resources == nil {
+		return nil
+	}
+	if executor.resources.Pending() != nil {
+		return resourceguard.ErrUnknown
+	}
+	view, err := executor.resources.InspectState(ctx)
+	if err != nil {
+		return err
+	}
+	if view.IssuerFloorEpoch != executor.actor.Epoch {
+		return fmt.Errorf("resource owner floor differs before PG dispatch")
+	}
+	_, err = view.ConfirmedLimits()
+	return err
 }
 
 func (executor *Executor) record(ctx context.Context, snapshot *journal.Snapshot, intent control.Request, step journal.Step, fence control.FenceResponse, fact control.ControlResponse, fromResize bool) (Progress, error) {

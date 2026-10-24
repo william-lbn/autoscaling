@@ -48,8 +48,16 @@ type Client struct {
 func cloneCommand(c Command) Command { c.HugePools = append([]HugePool(nil), c.HugePools...); return c }
 
 func NewClient(c ClientConfig) (*Client, error) {
+	return newClient(c, false)
+}
+
+func newClient(c ClientConfig, discovery bool) (*Client, error) {
 	u, err := url.Parse(c.BaseURL)
-	if err != nil || u.Scheme != "https" || u.Hostname() == "" || u.User != nil || u.RawQuery != "" || u.ForceQuery || u.Fragment != "" || u.RawPath != "" || (u.Path != "" && u.Path != "/") || c.Context == nil || c.Context.Err() != nil || c.Token == nil || c.Timeout <= 0 || c.Timeout > 2*time.Minute || validateResourceContext(c.Identity, c.IssuerEpoch, "client") != nil {
+	validIdentity := validateResourceContext(c.Identity, c.IssuerEpoch, "client") == nil
+	if discovery {
+		validIdentity = c.IssuerEpoch != 0 && control.ValidateID(c.Identity.VMUID, "VM") == nil && control.ValidateID(c.Identity.ComputeInstanceID, "Compute") == nil && c.Identity.GuestBootID == "" && c.Identity.CgroupDevice == 0 && c.Identity.CgroupInode == 0 && c.Pending == nil
+	}
+	if err != nil || u.Scheme != "https" || u.Hostname() == "" || u.User != nil || u.RawQuery != "" || u.ForceQuery || u.Fragment != "" || u.RawPath != "" || (u.Path != "" && u.Path != "/") || c.Context == nil || c.Context.Err() != nil || c.Token == nil || c.Timeout <= 0 || c.Timeout > 2*time.Minute || !validIdentity {
 		return nil, &ClientError{Code: "invalid_configuration"}
 	}
 	if c.Transport == nil || (c.Transport.TLSClientConfig != nil && c.Transport.TLSClientConfig.InsecureSkipVerify) {
@@ -74,6 +82,38 @@ func NewClient(c ClientConfig) (*Client, error) {
 		client.http[i] = &http.Client{Transport: transport, Timeout: c.Timeout, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 	}
 	return client, nil
+}
+
+// DiscoverIdentity只提供只读发现，不在Client内部改绑。可信协调器必须先确认外层
+// 从未有过操作/资源绑定，再将原Guest身份持久化；已有历史或未知动作只能恢复
+// 原身份。PG断连不妨碍这个独立资源域，不能借重新发现抹除旧Guest效果。
+func DiscoverIdentity(ctx context.Context, config ClientConfig) (Identity, error) {
+	c, err := newClient(config, true)
+	if err != nil {
+		return Identity{}, err
+	}
+	defer c.CloseIdleConnections()
+	var id Identity
+	if err := c.call(ctx, true, "identity", nil, &id); err != nil {
+		return id, err
+	}
+	if id.Validate() != nil || id.VMUID != config.Identity.VMUID || id.ComputeInstanceID != config.Identity.ComputeInstanceID {
+		return Identity{}, &ClientError{Code: "guest_discovery_unconfirmed"}
+	}
+	return id, nil
+}
+
+func (c *Client) Binding() (Identity, control.Uint64) { return c.config.Identity, c.config.IssuerEpoch }
+
+func (c *Client) InspectState(ctx context.Context) (View, error) {
+	var v View
+	if err := c.call(ctx, true, "state", nil, &v); err != nil {
+		return v, err
+	}
+	if v.Validate() != nil || v.Identity != c.config.Identity {
+		return View{}, &ClientError{Code: "resource_state_unconfirmed"}
+	}
+	return v, nil
 }
 
 func (c *Client) CloseIdleConnections() {

@@ -12,6 +12,7 @@ import (
 	"math"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 )
 
 const (
@@ -131,6 +132,10 @@ type Model struct {
 	Active          *Operation     `json:"active"`
 	History         []Record       `json:"history"`
 	ExpiredResults  control.Uint64 `json:"expired_results"`
+	// Guest资源生命周期独立于PG boot。首次只读发现后永久绑定本incarnation；
+	// 历史淘汰/PG重启/接管不能清空。缺字段兼容旧未启用账本，不允许带旧操作
+	// 的账本自动收养当前Guest；跨Guest恢复须显式证明旧资源/VM效果已经关闭。
+	ResourceIdentity *resourceguard.Identity `json:"resource_identity,omitempty"`
 }
 
 func New(vmUID, incarnation, holder string) (Model, error) {
@@ -355,6 +360,11 @@ func (model Model) Validate() error {
 	if err := model.Owner.Validate(); err != nil {
 		return err
 	}
+	if model.ResourceIdentity != nil {
+		if model.Sequence < 2 || model.ResourceIdentity.Validate() != nil || model.ResourceIdentity.VMUID != model.VMUID || (model.HighWater != nil && model.ResourceIdentity.ComputeInstanceID != model.HighWater.Instance.ComputeInstanceID) {
+			return fmt.Errorf("journal resource identity differs from original Compute")
+		}
+	}
 	if model.History == nil || len(model.History) > HistoryLimit {
 		return fmt.Errorf("invalid journal history")
 	}
@@ -447,6 +457,10 @@ func cloneOperation(operation Operation) Operation {
 }
 
 func (model Model) Clone() Model {
+	if model.ResourceIdentity != nil {
+		copy := *model.ResourceIdentity
+		model.ResourceIdentity = &copy
+	}
 	if model.HighWater != nil {
 		key := *model.HighWater
 		model.HighWater = &key
@@ -462,6 +476,33 @@ func (model Model) Clone() Model {
 	}
 	model.History = history
 	return model
+}
+
+// BindResource只允许没有任何原操作/HWM的账本首次冻结；actor接管可已经推进
+// Sequence，但不能借淘汰历史或新PG boot把有旧效果的账本当成初次创建。
+func (model Model) BindResource(actor Owner, id resourceguard.Identity) (Model, error) {
+	if err := model.Validate(); err != nil {
+		return model, err
+	}
+	if actor != model.Owner || id.Validate() != nil || id.VMUID != model.VMUID {
+		return model, fmt.Errorf("invalid resource binding owner or Guest")
+	}
+	if model.ResourceIdentity != nil {
+		if *model.ResourceIdentity != id {
+			return model, fmt.Errorf("resource Guest cannot be rebound")
+		}
+		return model, nil
+	}
+	if model.HighWater != nil || model.Active != nil || len(model.History) != 0 || model.ExpiredResults != 0 {
+		return model, fmt.Errorf("resource discovery requires no original operations")
+	}
+	next, err := model.next(actor)
+	if err != nil {
+		return model, err
+	}
+	copy := id
+	next.ResourceIdentity = &copy
+	return next, next.Validate()
 }
 
 func (model Model) next(actor Owner) (Model, error) {
