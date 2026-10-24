@@ -3,6 +3,7 @@ package resourceguard
 import (
 	"context"
 	"fmt"
+	"reflect"
 )
 
 const FixedConfigPath = "/etc/neon-dsga/resource.json"
@@ -13,9 +14,24 @@ const FixedPostgresPath = "/usr/local/bin/postgres"
 // 原bootstrap必须已建立硬约束；裸Initialize或旧实验日志不能授权普通SQL出生。
 // 仍有未知资源写时拒绝重启PG，不借新PG PID清空旧VM/资源动作的不确定性。
 func (g *Guard) launch(ctx context.Context, execInGroup func() error) error {
+	return g.launchWithSource(ctx, nil, execInGroup)
+}
+
+// 生产入口另核对原只读来源/封存来源与初始资源记录；不能让失败的provision
+// 留下旧Config/已完成预算后，被另一个来源的启动路径误用。nil仅供内部已有
+// 资源锁/核验逻辑复用，生产ExecPostgres和CheckGuest始终传已验证原来源。
+func (g *Guard) launchWithSource(ctx context.Context, source *SourceConfig, execInGroup func() error) error {
+	if source != nil && (source.Validate() != nil || source.Config != g.config) {
+		return fmt.Errorf("PG birth original source differs from fixed configuration")
+	}
 	return g.withRecord(ctx, func(r *record, _ *lockedState) error {
 		if r.Bootstrap == nil || !r.Bootstrap.Applied || (r.Original != nil && !r.Applied) {
 			return fmt.Errorf("PG birth requires confirmed original bootstrap and no unknown resource write")
+		}
+		if source != nil {
+			if err := sameBootstrapSource(*source, r.Bootstrap.Original); err != nil {
+				return err
+			}
 		}
 		limits := r.Bootstrap.Original.Limits
 		if r.Held != nil {
@@ -35,4 +51,11 @@ func (g *Guard) launch(ctx context.Context, execInGroup func() error) error {
 		}
 		return execInGroup()
 	})
+}
+
+func sameBootstrapSource(source SourceConfig, original BootstrapCommand) error {
+	if original.Identity.VMUID != source.Config.VMUID || original.Identity.ComputeInstanceID != source.Config.ComputeInstanceID || original.IssuerEpoch != source.IssuerEpoch || original.BudgetCommitmentID != source.BudgetCommitmentID || !reflect.DeepEqual(original.Limits, source.Limits) {
+		return fmt.Errorf("PG birth source differs from retained original bootstrap")
+	}
+	return nil
 }

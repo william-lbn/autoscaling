@@ -24,6 +24,16 @@ func run() error {
 	if os.Getuid() != 0 {
 		return fmt.Errorf("resource operations require real root")
 	}
+	if len(os.Args) == 2 && os.Args[1] == "provision-guest" {
+		e, err := resourceguard.ProvisionGuest(context.Background())
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(os.Stdout).Encode(e)
+	}
+	if len(os.Args) == 2 && os.Args[1] == "check-guest" {
+		return resourceguard.CheckGuest(context.Background())
+	}
 	configPath := flag.String("config", resourceguard.FixedConfigPath, "root-owned immutable VM resource configuration")
 	flag.Parse()
 	args := flag.Args()

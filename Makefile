@@ -195,7 +195,8 @@ build: vet bin/vm-builder ## Build all neonvm binaries.
 	GOOS=linux go build -o bin/controller         neonvm-controller/cmd/*.go
 	GOOS=linux go build -o bin/vxlan-controller   neonvm-vxlan-controller/cmd/*.go
 	GOOS=linux go build -o bin/runner             neonvm-runner/cmd/*.go
-	GOOS=linux go build -o bin/daemon             neonvm-daemon/cmd/*.go
+	GOOS=linux go build -o bin/daemon             ./neonvm-daemon/cmd
+	GOOS=linux CGO_ENABLED=0 go build -o bin/dsga-resource-guard ./neonvm-daemon/cmd/resource-guard
 	GOOS=linux go build -o bin/autoscaler-agent   autoscaler-agent/cmd/*.go
 	GOOS=linux go build -o bin/scheduler          autoscale-scheduler/cmd/*.go
 

@@ -28,6 +28,9 @@ func CheckReady(vm *vmv1.VirtualMachine, secret *corev1.Secret, initial bool) er
 	if secret == nil || secret.Namespace != vm.Namespace || secret.Name != vm.Name+"-config" || string(secret.UID) != b.ConfigSecretUID || secret.ResourceVersion == "" || secret.DeletionTimestamp != nil {
 		return fmt.Errorf("DSGA bootstrap config Secret identity differs")
 	}
+	if secret.Immutable == nil || !*secret.Immutable {
+		return fmt.Errorf("DSGA original config must be immutable")
+	}
 	ownerMatches := 0
 	for _, ref := range secret.OwnerReferences {
 		if ref.Controller != nil && *ref.Controller {

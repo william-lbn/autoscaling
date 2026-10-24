@@ -49,15 +49,16 @@ func ExecPostgres(args []string) error {
 	}
 	// 固定root配置，不接受调用者指定--config或环境覆盖。解析发生在降权前，但
 	// 只含本VM资源身份与状态目录；不执行配置文本、用户程序或可选shell。
-	config, err := loadConfig(FixedConfigPath)
+	source, err := sealedRuntimeSource()
 	if err != nil {
 		return err
 	}
+	config := source.Config
 	if err := secureParents(config.StateDir); err != nil {
 		return err
 	}
 	g := &Guard{config: config, kernel: &linuxKernel{config: config}}
-	return g.launch(context.Background(), func() error {
+	return g.launchWithSource(context.Background(), &source, func() error {
 		// prctl能力/NO_NEW_PRIVS属于线程属性，降权与exec之间固定当前OS线程；
 		// Setres*仍覆盖全部线程，不能只依赖LockOSThread来完成进程整体降权。
 		runtime.LockOSThread()

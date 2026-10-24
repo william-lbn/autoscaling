@@ -44,6 +44,8 @@ func controllerBootstrapInputs(t *testing.T) (*vmv1.VirtualMachine, *vmv1.Virtua
 	require.NoError(t, err)
 	controller := true
 	secret := new(corev1.Secret)
+	immutable := true
+	secret.Immutable = &immutable
 	secret.Name, secret.Namespace, secret.UID, secret.ResourceVersion = vm.Name+"-config", vm.Namespace, "config-uid", "1"
 	secret.OwnerReferences = []metav1.OwnerReference{{APIVersion: vmv1.SchemeGroupVersion.String(), Kind: "VirtualMachine", Name: vm.Name, UID: vm.UID, Controller: &controller, BlockOwnerDeletion: nil}}
 	// 只核验身份启动屏障，非预算或实际PG启动夹具。

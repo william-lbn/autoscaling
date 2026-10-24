@@ -424,7 +424,7 @@ func (r *VMReconciler) doReconcile(ctx context.Context, vm *vmv1.VirtualMachine)
 			}
 
 			// Define a new pod
-			pod, err := r.podForVirtualMachine(vm, sshSecret)
+			pod, err := r.podForVirtualMachine(ctx, vm, sshSecret)
 			if err != nil {
 				log.Error(err, "Failed to define new Pod resource for VirtualMachine")
 				return err
@@ -1050,12 +1050,29 @@ func extractVirtualMachineOvercommitSettingsJSON(spec vmv1.VirtualMachineSpec) *
 
 // podForVirtualMachine returns a VirtualMachine Pod object
 func (r *VMReconciler) podForVirtualMachine(
+	ctx context.Context,
 	vm *vmv1.VirtualMachine,
 	sshSecret *corev1.Secret,
 ) (*corev1.Pod, error) {
 	pod, err := podSpec(vm, sshSecret, r.Config)
 	if err != nil {
 		return nil, err
+	}
+	if vm.Spec.DSGABootstrap != nil {
+		raw, err := r.resourceBootstrapRuntime(ctx, vm)
+		if err != nil {
+			return nil, err
+		}
+		found := false
+		for i := range pod.Spec.Containers {
+			if pod.Spec.Containers[i].Name == "neonvm-runner" {
+				pod.Spec.Containers[i].Command = append(pod.Spec.Containers[i].Command, "-dsga-resource", gzip64.Encode(raw))
+				found = true
+			}
+		}
+		if !found {
+			return nil, fmt.Errorf("managed Pod has no original Runner container")
+		}
 	}
 
 	// Set the ownerRef for the Pod

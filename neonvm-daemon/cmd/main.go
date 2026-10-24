@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"go.uber.org/zap"
@@ -18,6 +19,8 @@ import (
 	k8sutil "k8s.io/kubernetes/pkg/volume/util"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 	"github.com/neondatabase/autoscaling/pkg/neonvm/cpuscaling"
 	"github.com/neondatabase/autoscaling/pkg/util"
 )
@@ -130,7 +133,7 @@ type File struct {
 	Data string `json:"data"`
 }
 
-func (s *cpuServer) handleUploadFile(w http.ResponseWriter, r *http.Request, path string) {
+func (s *cpuServer) handleUploadFile(w http.ResponseWriter, r *http.Request, path string, managed bool) {
 	s.fileOperationsMutex.Lock()
 	defer s.fileOperationsMutex.Unlock()
 
@@ -146,6 +149,16 @@ func (s *cpuServer) handleUploadFile(w http.ResponseWriter, r *http.Request, pat
 	}
 	defer r.Body.Close()
 
+	managed = managed || resourceguard.ManagedGuest()
+	if managed {
+		if path != resourceguard.FixedManagementTLSPath {
+			http.NotFound(w, r)
+			return
+		}
+		// 保留官方管理TLS供给/轮转，且仅此固定目录。不能让旧任意路径写接口
+		// 修改root封存输入、sudoers或cgroup；密钥材料不写日志，响应不回传内容。
+		r.Body = http.MaxBytesReader(w, r.Body, 64*1024)
+	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		s.logger.Error("could not ready body", zap.Error(err))
@@ -154,10 +167,26 @@ func (s *cpuServer) handleUploadFile(w http.ResponseWriter, r *http.Request, pat
 	}
 
 	var files map[string]File
+	if managed && control.ValidateJSON(body, 64*1024, 4096) != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	if err := json.Unmarshal(body, &files); err != nil {
 		s.logger.Error("could not ready body", zap.Error(err))
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	}
+	if managed {
+		if len(files) == 0 || len(files) > 3 {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		for name := range files {
+			if name != "tls.crt" && name != "tls.key" && name != "ca.crt" {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+		}
 	}
 
 	payload := make(map[string]k8sutil.FileProjection)
@@ -174,6 +203,12 @@ func (s *cpuServer) handleUploadFile(w http.ResponseWriter, r *http.Request, pat
 			// read-only otherwise
 			Mode:   0o644,
 			FsUser: nil,
+		}
+	}
+	if managed {
+		if err := resourceguard.CheckManagementTLSDirectory(); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 	}
 
@@ -193,9 +228,15 @@ func (s *cpuServer) handleUploadFile(w http.ResponseWriter, r *http.Request, pat
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *cpuServer) run(addr string) {
+func (s *cpuServer) routes(isManaged func() bool) *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/cpu", func(w http.ResponseWriter, r *http.Request) {
+		// 受管Guest的写权限只能来自独立认证且持久fence的资源通道。旧daemon
+		// 没有认证，不能借CPU/任意文件上传路径修改封存配置或重新放宽资源约束。
+		if isManaged() && r.Method != http.MethodGet {
+			http.NotFound(w, r)
+			return
+		}
 		switch r.Method {
 		case http.MethodGet:
 			s.handleGetCPUStatus(w)
@@ -211,18 +252,35 @@ func (s *cpuServer) run(addr string) {
 	})
 	mux.HandleFunc("/files/{path...}", func(w http.ResponseWriter, r *http.Request) {
 		path := fmt.Sprintf("/%s", r.PathValue("path"))
+		if isManaged() && path != resourceguard.FixedManagementTLSPath {
+			http.NotFound(w, r)
+			return
+		}
 		switch r.Method {
 		case http.MethodGet:
 			s.handleGetFileChecksum(w, r, path)
 			return
 		case http.MethodPut:
-			s.handleUploadFile(w, r, path)
+			s.handleUploadFile(w, r, path, isManaged())
 			return
 		default:
 			// unknown method
 			w.WriteHeader(http.StatusNotFound)
 		}
 	})
+
+	return mux
+}
+
+func (s *cpuServer) run(addr string) {
+	var managed atomic.Bool
+	isManaged := func() bool {
+		if resourceguard.ManagedGuest() {
+			managed.Store(true)
+		}
+		return managed.Load()
+	}
+	mux := s.routes(isManaged)
 
 	timeout := 5 * time.Second
 	server := http.Server{

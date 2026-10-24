@@ -32,6 +32,8 @@ func readyInputs(t *testing.T) (*vmv1.VirtualMachine, *corev1.Secret) {
 	require.NoError(t, err)
 	controller := true
 	secret := new(corev1.Secret)
+	immutable := true
+	secret.Immutable = &immutable
 	secret.Name, secret.Namespace, secret.UID, secret.ResourceVersion = "vm-config", "testing", "config-uid", "1"
 	secret.OwnerReferences = []metav1.OwnerReference{{APIVersion: vmv1.SchemeGroupVersion.String(), Kind: "VirtualMachine", Name: vm.Name, UID: vm.UID, Controller: &controller, BlockOwnerDeletion: nil}}
 	secret.Data = map[string][]byte{"config.json": []byte(`{"spec":{"dynamic_shared_buffers":{"protocol_version":2,"vm_uid":"vm-uid","compute_instance_id":"compute-1"}}}`)}
@@ -41,12 +43,17 @@ func readyInputs(t *testing.T) (*vmv1.VirtualMachine, *corev1.Secret) {
 func TestReadyRequiresActualOriginalSecretAndFullPristineJournal(t *testing.T) {
 	vm, secret := readyInputs(t)
 	require.NoError(t, CheckReady(vm, secret, true))
-	for _, scenario := range []string{"no_secret", "secret_uid", "secret_owner", "secret_namespace", "secret_name", "secret_deleted", "secret_labels", "config_ciid", "config_uid", "config_version", "bad_journal", "no_journal", "hold", "no_bootstrap"} {
+	for _, scenario := range []string{"no_secret", "mutable_secret", "unspecified_immutable", "secret_uid", "secret_owner", "secret_namespace", "secret_name", "secret_deleted", "secret_labels", "config_ciid", "config_uid", "config_version", "bad_journal", "no_journal", "hold", "no_bootstrap"} {
 		t.Run(scenario, func(t *testing.T) {
 			next, s := vm.DeepCopy(), secret.DeepCopy()
 			switch scenario {
 			case "no_secret":
 				s = nil
+			case "mutable_secret":
+				f := false
+				s.Immutable = &f
+			case "unspecified_immutable":
+				s.Immutable = nil
 			case "secret_uid":
 				s.UID = "recreated-secret"
 			case "secret_owner":

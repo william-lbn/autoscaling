@@ -28,28 +28,40 @@ mount -t cgroup2 cgroup2 /sys/fs/cgroup
 # change kernel log level to DEBUG
 echo 7 > /proc/sys/kernel/printk
 
-# Allow all users to move processes to/from the root cgroup.
-#
-# This is required in order to be able to 'cgexec' anything, if the entrypoint is not being run as
-# root, because moving tasks between one cgroup and another *requires write access to the
-# cgroup.procs file of the common ancestor*, and because the entrypoint isn't already in a cgroup,
-# any new tasks are automatically placed in the top-level cgroup.
-#
-# This *would* be bad for security, if we relied on cgroups for security; but instead because they
-# are just used for cooperative signaling, this should be mostly ok.
-chmod go+w /sys/fs/cgroup/cgroup.procs
-
 mount -t devpts -o noexec,nosuid       devpts    /dev/pts
 mount -t tmpfs  -o noexec,nosuid,nodev shm-tmpfs /dev/shm
 
 # neonvm runtime params mounted as iso9660 disk
 mount -t iso9660 -o ro,mode=0644 /dev/vdb /neonvm/runtime
 
+if test -f /neonvm/runtime/dsga-resource.json || test -e /etc/neon-dsga || test -L /etc/neon-dsga || grep -Fq 'neonvm.dsga=1' /proc/cmdline; then
+    # 受管模式以硬约束为资源边界。普通postgres不能迁出根共同祖先，也不能通过
+    # 线程入口绕过；PG由固定root程序入组、完整降权后原位exec，不依赖旧cgexec。
+    chmod go-w /sys/fs/cgroup/cgroup.procs /sys/fs/cgroup/cgroup.threads
+else
+    # Allow all users to move processes to/from the root cgroup.
+    #
+    # This is required in order to be able to 'cgexec' anything, if the entrypoint is not being run as
+    # root, because moving tasks between one cgroup and another *requires write access to the
+    # cgroup.procs file of the common ancestor*, and because the entrypoint isn't already in a cgroup,
+    # any new tasks are automatically placed in the top-level cgroup.
+    #
+    # This *would* be bad for security, if we relied on cgroups for security; but instead because they
+    # are just used for cooperative signaling, this should be mostly ok.
+    chmod go+w /sys/fs/cgroup/cgroup.procs
+fi
+
 # mount virtual machine .spec.disks
 test -f /neonvm/runtime/mounts.sh && /neonvm/bin/sh /neonvm/runtime/mounts.sh
 
 # set any user-supplied sysctl settings
 test -f /neonvm/runtime/sysctl.conf && /neonvm/bin/sysctl -p /neonvm/runtime/sysctl.conf
+
+if test -f /neonvm/runtime/dsga-resource.json || test -e /etc/neon-dsga || test -L /etc/neon-dsga || grep -Fq 'neonvm.dsga=1' /proc/cmdline; then
+    # 来源只来自只读runtime ISO。失败不退回legacy；BusyBox即使继续其他init动作，
+    # vmstart仍须独立check-guest，不能凭sysinit退出码/一个ready文件放行普通入口。
+    /neonvm/bin/dsga-resource-guard provision-guest >/dev/null || exit 1
+fi
 
 # try resize filesystem
 resize2fs /dev/vda

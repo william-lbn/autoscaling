@@ -32,6 +32,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
+	"github.com/neondatabase/autoscaling/pkg/dsga/bootstrap"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 	"github.com/neondatabase/autoscaling/pkg/util"
 	"github.com/neondatabase/autoscaling/pkg/util/gzip64"
 	"github.com/neondatabase/autoscaling/pkg/util/taskgroup"
@@ -103,6 +105,7 @@ func runInitScript(logger *zap.Logger, script string) error {
 type Config struct {
 	vmSpecDump           string
 	vmStatusDump         string
+	resourceDump         string
 	kernelPath           string
 	appendKernelCmdline  string
 	skipCgroupManagement bool
@@ -134,6 +137,7 @@ func newConfig(logger *zap.Logger) *Config {
 		"Base64 gzip compressed VirtualMachine json specification")
 	flag.StringVar(&cfg.vmStatusDump, "vmstatus", cfg.vmStatusDump,
 		"Base64 gzip compressed VirtualMachine json status")
+	flag.StringVar(&cfg.resourceDump, "dsga-resource", "", "Original immutable resource source; managed VM only")
 	flag.StringVar(&cfg.kernelPath, "kernelpath", cfg.kernelPath,
 		"Override path for kernel to use")
 	flag.StringVar(&cfg.appendKernelCmdline, "appendKernelCmdline",
@@ -187,6 +191,10 @@ func run(logger *zap.Logger) error {
 	var vmStatus vmv1.VirtualMachineStatus
 	if err := json.Unmarshal(vmStatusJson, &vmStatus); err != nil {
 		return fmt.Errorf("failed to unmarshal VM Status: %w", err)
+	}
+	resourceJSON, err := bootstrap.DecodeRuntime(vmSpec, cfg.resourceDump)
+	if err != nil {
+		return fmt.Errorf("original Guest resource source unavailable: %w", err)
 	}
 
 	var enableSSH bool
@@ -266,6 +274,7 @@ func run(logger *zap.Logger) error {
 			enableSSH,
 			swapSize,
 			shmSize,
+			resourceJSON,
 		)
 	})
 
@@ -437,6 +446,10 @@ const (
 
 func makeKernelCmdline(cfg *Config, logger *zap.Logger, vmSpec *vmv1.VirtualMachineSpec, vmStatus *vmv1.VirtualMachineStatus, hostname string) string {
 	cmdlineParts := []string{baseKernelCmdline}
+	// 仅用于收紧Guest旧入口；配置/日志丢失也不退回legacy。标记本身不授权预算。
+	if vmSpec.DSGABootstrap != nil {
+		cmdlineParts = append(cmdlineParts, resourceguard.ManagedKernelArg)
+	}
 
 	cmdlineParts = append(cmdlineParts, fmt.Sprintf(kernelCmdlineVirtioMemTmpl, cfg.autoMovableRatio))
 

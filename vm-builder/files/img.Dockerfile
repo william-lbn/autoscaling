@@ -76,6 +76,10 @@ RUN set -e \
 	&& /helper.move-bins.sh quota edquota quotacheck quotaoff quotaon quotastats setquota repquota tune2fs
 
 COPY --from=neonvm-daemon-loader /neonvmd /neonvm/bin/neonvmd
+# 仅launch-postgres接受postgres真实UID；资源写仍要求真实root。文件必须由root
+# 拥有且不可由postgres修改，固定程序路径不经环境选择；实际SUID效果留Linux验收。
+COPY --from=neonvm-daemon-loader /dsga-resource-guard /neonvm/bin/dsga-resource-guard
+RUN chmod 4755 /neonvm/bin/dsga-resource-guard
 
 # init scripts & configs
 COPY inittab     /neonvm/bin/inittab

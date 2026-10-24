@@ -1,5 +1,11 @@
 #!/neonvm/bin/sh
 
+if /neonvm/bin/test -f /neonvm/runtime/dsga-resource.json || /neonvm/bin/test -e /etc/neon-dsga || /neonvm/bin/test -L /etc/neon-dsga || /neonvm/bin/grep -Fq 'neonvm.dsga=1' /proc/cmdline; then
+    # 每次入口重启都读回原日志和实际约束；不初始化、不重放未知，不以旧ready
+    # 文件或一次sysinit成功代替当前事实。尚有PG/未知写时留给受控恢复。
+    /neonvm/bin/dsga-resource-guard check-guest || exit 1
+fi
+
 /neonvm/bin/cat <<'EOF' >/neonvm/bin/vmstarter.sh
 {{ range .Env }}
 export {{.}}
