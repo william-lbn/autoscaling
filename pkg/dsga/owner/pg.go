@@ -181,7 +181,7 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 	callCtx, cancel := worker.session.coupledContext(ctx)
 	defer cancel()
 	// 外层关闭/更换意图不能自动清本地SDK未知栅栏。必须在原意图尚处活动时
-	// 显式对账/重放，或由后续受控跨owner关闭协议核验；不能把旧未知当新空闲，
+	// 完整原终态对账/授权显式重放，或由后续受控跨owner关闭协议核验；不能把旧未知当新空闲，
 	// 更不能先Start新PG步骤后才发现客户端拒绝，从而制造另一条虚假Unconfirmed。
 	if pending := worker.client.Pending(); pending != nil {
 		snapshot, err := worker.session.store.Load(callCtx)

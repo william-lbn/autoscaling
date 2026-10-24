@@ -38,8 +38,18 @@ func TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget(t *testing.T) {
 					shared.CurrentMainAndArraysUpperBytes += a.CommittedUpperBytes
 				}
 				var sent atomic.Int32
+				var resizes, terminalReads atomic.Int32
 				var original atomic.Pointer[control.AdmissionRequest]
 				config := pgConfig(t, intent, func(w http.ResponseWriter, r *http.Request) {
+					if r.URL.Path == "/dsg/v1/resize" || r.URL.Path == "/dsg/v1/resize/status" {
+						if r.URL.Path == "/dsg/v1/resize" {
+							resizes.Add(1)
+						} else {
+							terminalReads.Add(1)
+						}
+						pgReply(w, pgResponse(t, intent))
+						return
+					}
 					if r.URL.Path == "/dsg/v1/budget/shared" {
 						pgReply(w, shared)
 						return
@@ -86,6 +96,16 @@ func TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget(t *testing.T) {
 					if s.Action == journal.ResumeAdmission {
 						break
 					}
+					if s.Action == journal.ResizePG {
+						// PG步骤由生产executor/客户端真实写前CAS和落终态，
+						// 不以普通前驱fixture伪造重建worker需要的原生审计。
+						progress, err := worker.Advance(ctx)
+						require.NoError(t, err)
+						require.Equal(t, pgexec.Recorded, progress)
+						snapshot, err = store.Load(ctx)
+						require.NoError(t, err)
+						continue
+					}
 					data := []byte(`{"test_only_prior_domain":true}`)
 					target := "prior-domain"
 					if s.Action == journal.FinalizeBudget {
@@ -122,6 +142,17 @@ func TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget(t *testing.T) {
 					restarted, err := session.NewPGWorker(ctx, config)
 					require.NoError(t, err)
 					defer restarted.CloseIdleConnections()
+					require.Equal(t, &intent, restarted.client.Pending())
+					sequence := after.State().Sequence
+					progress, err = restarted.Advance(ctx)
+					require.NoError(t, err)
+					require.Equal(t, pgexec.Reconciled, progress)
+					require.Nil(t, restarted.client.Pending())
+					after, err = store.Load(ctx)
+					require.NoError(t, err)
+					require.Equal(t, sequence, after.State().Sequence, "只读原终态核对不重写账本")
+					require.EqualValues(t, 1, terminalReads.Load())
+					require.EqualValues(t, 1, resizes.Load(), "恢复不能重发已完成Resize")
 					progress, err = restarted.Advance(ctx)
 					require.NoError(t, err)
 					require.Equal(t, pgexec.Recorded, progress)

@@ -22,6 +22,8 @@ const (
 	AwaitingFact Progress = "awaiting_fact"
 	Recorded     Progress = "recorded"
 	Replayed     Progress = "replayed"
+	// 只解除SDK相同原终态的本地Pending，不代表写journal或任何资源完成。
+	Reconciled Progress = "reconciled"
 )
 
 // Executor固定真实Store、HTTPS客户端、进程owner及boot；没有可注入的“已完成”
@@ -163,6 +165,11 @@ func (executor *Executor) Advance(ctx context.Context) (Progress, error) {
 		return Idle, nil
 	}
 	operation := state.Active
+	if reconciled, err := executor.reconcileSettled(ctx, operation); err != nil {
+		return AwaitingFact, err
+	} else if reconciled {
+		return Reconciled, nil
+	}
 	var step *journal.Step
 	for i := range operation.Steps {
 		candidate := &operation.Steps[i]

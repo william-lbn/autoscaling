@@ -176,7 +176,7 @@ func (client *Client) Binding() (control.Instance, control.Uint64) {
 	return client.instance, client.epoch
 }
 
-// Pending只返回副本，关闭空闲连接/一次查询成功都不会清除此栅栏。它不替代跨
+// Pending只返回副本，关闭空闲连接/普通查询成功都不会清除此栅栏。它不替代跨
 // 进程journal，不能通过重新构造空Client来绕过外层未知动作或资源承诺。
 func (client *Client) Pending() *control.Request {
 	client.mu.Lock()
