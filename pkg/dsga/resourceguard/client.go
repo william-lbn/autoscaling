@@ -213,16 +213,41 @@ func (c *Client) Fence(ctx context.Context) error {
 }
 
 func (c *Client) Apply(ctx context.Context, command Command) (Evidence, error) {
-	return c.command(ctx, command, "apply")
+	return c.command(ctx, command, "apply", false)
 }
 func (c *Client) ReplayOriginal(ctx context.Context, command Command) (Evidence, error) {
-	return c.command(ctx, command, "replay-original")
+	return c.command(ctx, command, "replay-original", true)
 }
 func (c *Client) Observe(ctx context.Context, command Command) (Evidence, error) {
-	return c.command(ctx, command, "observe")
+	return c.command(ctx, command, "observe", false)
 }
 
-func (c *Client) command(ctx context.Context, command Command, action string) (Evidence, error) {
+// RetainOriginal仅从已持久化的外层完整原命令恢复本地栅栏，不发送RPC/清未知。
+// 适用于Start已经落盘但回复丢失、因此本Client尚未开始Apply的情况。它不发
+// 派发票据，调用者仍须核验原journal/owner；旧epoch只可Observe，不能改代次重写。
+func (c *Client) RetainOriginal(command Command) error {
+	command = cloneCommand(command)
+	if command.Validate() != nil || command.Identity != c.config.Identity || command.IssuerEpoch > c.config.IssuerEpoch {
+		return &ClientError{Code: "invalid_original"}
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.busy || (c.pending != nil && !reflect.DeepEqual(*c.pending, command)) {
+		return ErrUnknown
+	}
+	c.pending = &command
+	return nil
+}
+
+// DeliverOriginal只供受信协调器显式选择：外层WAL存在，root尚可能未收到原
+// 命令。它发送固定apply，root仍原子检查floor/连续revision/未知栅栏；若root
+// 已保留未知原命令则拒绝，须显式ReplayOriginal。不能由普通轮询调用，不能
+// 将root未找到解释为NoEffect，也不允许用它覆盖另一个本地Pending。
+func (c *Client) DeliverOriginal(ctx context.Context, command Command) (Evidence, error) {
+	return c.command(ctx, command, "apply", true)
+}
+
+func (c *Client) command(ctx context.Context, command Command, action string, explicit bool) (Evidence, error) {
 	var e Evidence
 	command = cloneCommand(command)
 	observe := action == "observe"
@@ -230,11 +255,11 @@ func (c *Client) command(ctx context.Context, command Command, action string) (E
 		return e, &ClientError{Code: "invalid_command"}
 	}
 	c.mu.Lock()
-	if !observe && (c.busy || (c.pending != nil && (action != "replay-original" || !reflect.DeepEqual(*c.pending, command)))) {
+	if !observe && (c.busy || (c.pending != nil && (!explicit || !reflect.DeepEqual(*c.pending, command)))) {
 		c.mu.Unlock()
 		return e, &ClientError{Code: "original_pending"}
 	}
-	if action == "replay-original" && c.pending == nil {
+	if explicit && c.pending == nil {
 		c.mu.Unlock()
 		return e, &ClientError{Code: "no_original_to_replay"}
 	}

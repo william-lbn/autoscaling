@@ -145,6 +145,15 @@ func (c Command) totalUpper() (uint64, error) { return c.limits().totalUpper() }
 
 func (e Evidence) matches(c Command) error { return e.matchesLimits(c.Identity, c.limits()) }
 
+// ValidateFor供外层GuestReady保存完整回执前复核，仍只证明资源约束读回，
+// 不认证预算/Host/VM。先核验完整命令，避免跨包消费者复制一份较弱的比较逻辑。
+func (e Evidence) ValidateFor(c Command) error {
+	if err := c.Validate(); err != nil {
+		return err
+	}
+	return e.matches(c)
+}
+
 func (e Evidence) matchesLimits(id Identity, c Limits) error {
 	if e.ProtocolVersion != 1 || e.VMShrinkPermit || e.Identity != id || e.MemoryMaxBytes != c.MemoryMaxBytes || e.MemoryCurrentBytes > c.MemoryMaxBytes || e.SwapMaxBytes != 0 || e.SwapCurrentBytes != 0 || !e.HugeOvercommitDisabled || e.HugeSurplusPages != 0 || !reflect.DeepEqual(e.HugePools, c.HugePools) {
 		return fmt.Errorf("actual resource limits, occupancy or identity differ")

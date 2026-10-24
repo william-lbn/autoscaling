@@ -12,6 +12,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 )
 
@@ -23,6 +24,7 @@ type PGWorker struct {
 	client    *compute.Client
 	executor  *pgexec.Executor
 	admission *admissionexec.Executor
+	resources *resourceexec.Executor
 }
 
 func (session *Session) coupledContext(ctx context.Context) (context.Context, context.CancelFunc) {
@@ -155,7 +157,15 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 		client.CloseIdleConnections()
 		return nil, err
 	}
-	return &PGWorker{session: session, client: client, executor: executor, admission: admission}, nil
+	var guest *resourceexec.Executor
+	if resource != nil {
+		guest, err = resourceexec.New(session.store, client, resource.client, session.actor)
+		if err != nil {
+			client.CloseIdleConnections()
+			return nil, err
+		}
+	}
+	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest}, nil
 }
 
 func (worker *PGWorker) CloseIdleConnections() { worker.client.CloseIdleConnections() }
@@ -183,6 +193,9 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 		}
 	}
 	progress, err := worker.executor.Advance(callCtx)
+	if err == nil && progress == pgexec.ExternalStep && worker.resources != nil {
+		progress, err = worker.resources.Advance(callCtx)
+	}
 	if err == nil && progress == pgexec.ExternalStep {
 		return worker.admission.Advance(callCtx)
 	}
@@ -216,6 +229,20 @@ func (worker *PGWorker) ReplayAdmissionOriginal(ctx context.Context, key control
 	return worker.admission.ReplayOriginal(callCtx, key)
 }
 
+// Guest资源原意图重放由独立受信入口选择，不能将PG/准入重放提示复用为
+// 放宽硬约束。执行器仍从原账本取完整命令并复核原预算、PG、Guest和Runner。
+func (worker *PGWorker) ReplayResourceOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {
+	if err := worker.session.Check(ctx); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	if worker.resources == nil {
+		return pgexec.AwaitingFact, fmt.Errorf("original resource executor is unavailable")
+	}
+	callCtx, cancel := worker.session.coupledContext(ctx)
+	defer cancel()
+	return worker.resources.ReplayOriginal(callCtx, key)
+}
+
 type Tick struct {
 	Progress pgexec.Progress
 	Err      error
@@ -230,6 +257,8 @@ type PGLoopOptions struct {
 	Replay <-chan control.Key
 	// 独立的受信显式准入重放入口；nil时只读对账，错误/轮询不自动投递。
 	AdmissionReplay <-chan control.Key
+	// 与PG/准入分开的显式原资源重放；普通轮询只Observe。
+	ResourceReplay <-chan control.Key
 	// Observe供状态/指标使用，必须有界返回，不打印凭据或误把Recorded当VM完成。
 	Observe func(Tick)
 }
@@ -248,7 +277,8 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	defer ticker.Stop()
 	var replay *control.Key
 	var admissionReplay *control.Key
-	wake, replays, admissionReplays := options.Wake, options.Replay, options.AdmissionReplay
+	var resourceReplay *control.Key
+	wake, replays, admissionReplays, resourceReplays := options.Wake, options.Replay, options.AdmissionReplay, options.ResourceReplay
 	for {
 		if callCtx.Err() != nil {
 			return callCtx.Err()
@@ -261,6 +291,9 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		} else if admissionReplay != nil {
 			progress, err = worker.ReplayAdmissionOriginal(callCtx, *admissionReplay)
 			admissionReplay = nil
+		} else if resourceReplay != nil {
+			progress, err = worker.ReplayResourceOriginal(callCtx, *resourceReplay)
+			resourceReplay = nil
 		} else {
 			progress, err = worker.Advance(callCtx)
 		}
@@ -288,6 +321,13 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			} else {
 				copy := key
 				admissionReplay = &copy
+			}
+		case key, open := <-resourceReplays:
+			if !open {
+				resourceReplays = nil
+			} else {
+				copy := key
+				resourceReplay = &copy
 			}
 		case _, open := <-wake:
 			if !open {
