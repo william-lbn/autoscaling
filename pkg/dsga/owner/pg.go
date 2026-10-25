@@ -12,6 +12,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/quiesceexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 )
@@ -25,6 +26,7 @@ type PGWorker struct {
 	executor  *pgexec.Executor
 	admission *admissionexec.Executor
 	resources *resourceexec.Executor
+	quiesce   *quiesceexec.Executor
 }
 
 func (session *Session) coupledContext(ctx context.Context) (context.Context, context.CancelFunc) {
@@ -91,9 +93,12 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 				request := active.Request
 				pending = &request
 			}
-			if step.Action == journal.ResumeAdmission && step.Phase == journal.Unconfirmed {
+			if (step.Action == journal.ResumeAdmission || step.Action == journal.Quiesce) && step.Phase == journal.Unconfirmed {
 				var original control.AdmissionRequest
-				if json.Unmarshal(step.Command, &original) != nil || !original.Open || original.Instance != active.Request.Key.Instance || original.BudgetCommitmentID != active.Request.BudgetCommitmentID || step.DispatchedBy == nil || original.IssuerEpoch != step.DispatchedBy.Epoch || step.TargetID != original.Instance.ComputeInstanceID {
+				// Quiesce关闭与最终Resume开放共用原生独立准入代次；恢复必须由
+				// 原步骤确定方向，不能只恢复Open而丢掉写前/写后未知的关闭命令。
+				wantOpen := step.Action == journal.ResumeAdmission
+				if json.Unmarshal(step.Command, &original) != nil || original.Open != wantOpen || original.Instance != active.Request.Key.Instance || original.BudgetCommitmentID != active.Request.BudgetCommitmentID || step.DispatchedBy == nil || original.IssuerEpoch != step.DispatchedBy.Epoch || original.IssuerEpoch > session.actor.Epoch || step.TargetID != original.Instance.ComputeInstanceID {
 					return nil, fmt.Errorf("original admission command differs from journal")
 				}
 				admissionPending = &original
@@ -158,14 +163,20 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 		return nil, err
 	}
 	var guest *resourceexec.Executor
+	var quiesce *quiesceexec.Executor
 	if resource != nil {
 		guest, err = resourceexec.New(session.store, client, resource.client, session.actor)
 		if err != nil {
 			client.CloseIdleConnections()
 			return nil, err
 		}
+		quiesce, err = quiesceexec.New(session.store, client, resource.client, session.actor)
+		if err != nil {
+			client.CloseIdleConnections()
+			return nil, err
+		}
 	}
-	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest}, nil
+	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest, quiesce: quiesce}, nil
 }
 
 func (worker *PGWorker) CloseIdleConnections() { worker.client.CloseIdleConnections() }
@@ -193,6 +204,9 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 		}
 	}
 	progress, err := worker.executor.Advance(callCtx)
+	if err == nil && progress == pgexec.ExternalStep && worker.quiesce != nil {
+		progress, err = worker.quiesce.Advance(callCtx)
+	}
 	if err == nil && progress == pgexec.ExternalStep && worker.resources != nil {
 		progress, err = worker.resources.Advance(callCtx)
 	}
@@ -200,6 +214,20 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 		return worker.admission.Advance(callCtx)
 	}
 	return progress, err
+}
+
+// ReplayQuiesceOriginal与资源/Resize/最终开放的显式重放分域；选择Key不是新
+// 命令输入，真正发送的关闭参数始终来自原VM账本，不能换epoch/revision。
+func (worker *PGWorker) ReplayQuiesceOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {
+	if err := worker.session.Check(ctx); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	if worker.quiesce == nil {
+		return pgexec.AwaitingFact, fmt.Errorf("original quiesce resource domain is missing")
+	}
+	callCtx, cancel := worker.session.coupledContext(ctx)
+	defer cancel()
+	return worker.quiesce.ReplayOriginal(callCtx, key)
 }
 
 func (worker *PGWorker) ReplayOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {

@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
@@ -92,6 +93,11 @@ func (executor *Executor) ReplayOriginal(ctx context.Context) (Progress, error) 
 	}
 	if err := executor.checkResources(ctx); err != nil {
 		return AwaitingFact, err
+	}
+	if intent.Kind == control.Shrink && step.Phase == journal.Unconfirmed && executor.resources != nil {
+		if err := executor.checkQuiesce(ctx, state.Active); err != nil {
+			return AwaitingFact, err
+		}
 	}
 	fence, err := executor.client.Fence(ctx, control.FenceRequest{ProtocolVersion: 1, Instance: executor.instance, IssuerEpoch: executor.actor.Epoch})
 	if err != nil {
@@ -204,6 +210,11 @@ func (executor *Executor) Advance(ctx context.Context) (Progress, error) {
 		if err := executor.checkResources(ctx); err != nil {
 			return AwaitingFact, err
 		}
+		if intent.Kind == control.Shrink && step.Action == journal.ResizePG && executor.resources != nil {
+			if err := executor.checkQuiesce(ctx, operation); err != nil {
+				return AwaitingFact, err
+			}
+		}
 	}
 
 	// floor先与签名epoch绑定。它只隔离PG执行，不清账本/预算。旧操作已登记
@@ -253,6 +264,54 @@ func (executor *Executor) Advance(ctx context.Context) (Progress, error) {
 		return AwaitingFact, err
 	}
 	return executor.record(ctx, snapshot, intent, *step, fence, fact, false)
+}
+
+// checkQuiesce只在新Shrink派发前消费同账本的原完整Quiesce事实，并重读原
+// root/PG。仅有历史门禁bool、前台idle或任意Completed对象不能推进。未知PG
+// 已派发时仍可只读对账，不因另一领域不可达隐藏旧结果。
+func (executor *Executor) checkQuiesce(ctx context.Context, op *journal.Operation) error {
+	var prepared budget.Prepared
+	var quiesced budget.Quiesced
+	for _, s := range op.Steps {
+		if s.Action != journal.PrepareBudget && s.Action != journal.Quiesce {
+			continue
+		}
+		if s.Phase != journal.Settled || s.Observation == nil || s.Observation.Result != journal.Completed || s.TargetID != executor.instance.ComputeInstanceID {
+			return fmt.Errorf("shrink lacks completed original budget/quiesce")
+		}
+		var err error
+		if s.Action == journal.PrepareBudget {
+			err = json.Unmarshal(s.Observation.Data, &prepared)
+		} else {
+			err = json.Unmarshal(s.Observation.Data, &quiesced)
+		}
+		if err != nil {
+			return fmt.Errorf("shrink budget/quiesce source is incomplete")
+		}
+	}
+	if quiesced.Request != op.Request || quiesced.ValidateFor(prepared, executor.actor.Epoch) != nil {
+		return fmt.Errorf("shrink quiesce differs from retained original budget")
+	}
+	view, err := executor.resources.InspectState(ctx)
+	if err != nil {
+		return err
+	}
+	if err := quiesced.PGAggregate.Match(view); err != nil {
+		return err
+	}
+	process, err := executor.resources.InspectProcess(ctx)
+	if err != nil || process != quiesced.PGAggregate.Birth {
+		return fmt.Errorf("shrink original Postmaster birth changed")
+	}
+	dsm, err := executor.client.DSMState(ctx)
+	if err != nil {
+		return err
+	}
+	// 前台状态会变化，重新核验而不把旧快照覆盖历史审计。2PC/DSM/背景保留
+	// 计数不要求清0；原聚合限额持续持有，不能据此压低normal上限。
+	latest := quiesced
+	latest.DSM = dsm
+	return latest.ValidateFor(prepared, executor.actor.Epoch)
 }
 
 // 新PG POST的最低门槛，不能替代PrepareBudget/Host/Guest/排空的完整证明。

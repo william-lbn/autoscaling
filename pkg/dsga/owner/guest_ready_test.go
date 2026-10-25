@@ -193,10 +193,14 @@ func guestPhase(t *testing.T, store *journal.Store) journal.Step {
 }
 
 func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
-	for _, mode := range []string{"grow", "root-reply-lost", "start-reply-lost", "incomplete-budget", "runner-drift", "pg-drift", "shrink", "shrink-unsupported", "omit-hstate", "root-empty"} {
+	for _, mode := range []string{"grow", "root-reply-lost", "start-reply-lost", "incomplete-budget", "runner-drift", "pg-drift", "shrink", "shrink-unsupported", "omit-hstate", "root-empty", "lower-normal-cap"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			root, resourceConfig := guestRoot(t, store)
+			if mode == "lower-normal-cap" {
+				root.view.Bootstrap.Limits.MemoryMaxBytes = 512 << 20
+				root.view.Actual.MemoryMaxBytes = 512 << 20
+			}
 			elector, err := New(coord, store, testOptions())
 			require.NoError(t, err)
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -206,10 +210,13 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 				require.NoError(t, err)
 				defer resources.CloseIdleConnections()
 				req := pgRequest(t, session.Actor())
-				if mode == "shrink" || mode == "shrink-unsupported" {
+				if mode == "shrink" || mode == "shrink-unsupported" || mode == "lower-normal-cap" {
 					req.Kind, req.TargetBuffers = control.Shrink, 512
 				}
 				p, shared := preparedGuest(t, req, root.view.Identity)
+				if mode == "lower-normal-cap" {
+					p.Limits.MemoryMaxBytes = 256 << 20
+				}
 				var drift atomic.Bool
 				configBase := req
 				configBase.Kind, configBase.TargetBuffers = control.Grow, 1024
@@ -291,9 +298,12 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 					require.NoError(t, json.Unmarshal(step.Command, &saved))
 					require.Equal(t, control.Uint64(8), saved.Revision)
 					require.NotEqual(t, req.Key.Revision, saved.Revision)
-				case "incomplete-budget", "shrink-unsupported", "omit-hstate":
+				case "incomplete-budget", "shrink-unsupported", "omit-hstate", "lower-normal-cap":
 					require.Equal(t, journal.Planned, step.Phase)
 					require.Zero(t, posts)
+					if mode == "lower-normal-cap" {
+						require.ErrorContains(t, err, "memory.max decrease")
+					}
 				case "root-empty":
 					require.Equal(t, journal.Unconfirmed, step.Phase)
 					require.Equal(t, 1, posts)

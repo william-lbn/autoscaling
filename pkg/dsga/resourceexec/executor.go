@@ -128,6 +128,17 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	if view.IssuerFloorEpoch != e.actor.Epoch {
 		return pgexec.AwaitingFact, fmt.Errorf("resource floor differs from current owner")
 	}
+	if op.Request.Kind == control.Shrink && (step.Phase == journal.Planned || replay != nil) {
+		// 未确认Original仍须保留旧Held/Bootstrap的normal额度；显式重放也
+		// 不能越过安全降限缺口。只读原Observe保持可达，不把旧效果藏起来。
+		held := view.Bootstrap.Limits.MemoryMaxBytes
+		if view.Held != nil {
+			held = view.Held.MemoryMaxBytes
+		}
+		if prepared.Limits.MemoryMaxBytes < held {
+			return pgexec.AwaitingFact, fmt.Errorf("continuous aggregate cannot authorize memory.max decrease")
+		}
+	}
 	var command resourceguard.Command
 	planned := step.Phase == journal.Planned
 	if !planned {
