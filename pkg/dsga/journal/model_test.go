@@ -100,7 +100,7 @@ func TestJournalRequiresOrderedWriteAheadAndAllReceipts(t *testing.T) {
 	}
 }
 
-func TestJournalTakeoverPreservesUnknownAndOldIntentAcrossBoot(t *testing.T) {
+func TestJournalTakeoverPreservesUnknownAndRequiresControlledBootRecovery(t *testing.T) {
 	model := testModel(t)
 	request := testRequest(model, 1, control.Shrink)
 	model = beginModel(t, model, request)
@@ -140,6 +140,12 @@ func TestJournalTakeoverPreservesUnknownAndOldIntentAcrossBoot(t *testing.T) {
 	model, err = model.Finish(model.Owner, request.Key)
 	require.NoError(t, err)
 	require.Equal(t, AbortedAfterReconcile, model.History[0].Outcome)
+	// 通用Cleanup成功只结清本操作的领域事实，不证明旧PG/资源/VM的跨boot
+	// 关闭协议已经完成。不得借Begin改HWM后自动收养新boot；同boot新owner
+	// 的下一操作仍可正常开始，旧未知及原回执全部保留。
+	_, _, err = model.Begin(model.Owner, next, 0)
+	require.Error(t, err)
+	next.Key.Instance = request.Key.Instance
 	model = beginModel(t, model, next)
 	require.Equal(t, next, model.Active.Request)
 }

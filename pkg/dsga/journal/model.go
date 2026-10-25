@@ -136,6 +136,11 @@ type Model struct {
 	// 历史淘汰/PG重启/接管不能清空。缺字段兼容旧未启用账本，不允许带旧操作
 	// 的账本自动收养当前Guest；跨Guest恢复须显式证明旧资源/VM效果已经关闭。
 	ResourceIdentity *resourceguard.Identity `json:"resource_identity,omitempty"`
+	// PG首次发现后、任何执行器可用之前即固定完整实例，不等待首个Resize/HWM。
+	// owner接管、空Active和历史淘汰均不能使它消失；否则首次准入之后、尚未
+	// 伸缩时重建worker会把另一个boot收养为新实例。旧缺字段日志只按原HWM
+	// 恢复，不在线补写猜测。受控跨boot须另行关闭旧未知/预算，不能调用BindPG替换。
+	PGInstance *control.Instance `json:"pg_instance,omitempty"`
 }
 
 func New(vmUID, incarnation, holder string) (Model, error) {
@@ -351,8 +356,14 @@ func compareKeys(left, right control.Key) int {
 }
 
 func (model Model) Validate() error {
-	if model.ProtocolVersion != 1 || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
+	if (model.ProtocolVersion != 1 && model.ProtocolVersion != 2) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
 		return fmt.Errorf("invalid journal version/sequence/incarnation")
+	}
+	// 旧Model已有严格字段解码，会拒绝pg_instance；这里另用v2明确标识
+	// 必须保存首次PG身份的新语义。首次固定与格式升级在同一次CAS，旧
+	// 读者即便只收到旧字段投影也仍拒绝版本。创建仍是v1，v2不可缺PG。
+	if (model.ProtocolVersion == 1 && model.PGInstance != nil) || (model.ProtocolVersion == 2 && model.PGInstance == nil) {
+		return fmt.Errorf("journal version does not preserve required PG identity")
 	}
 	if err := control.ValidateID(model.VMUID, "VM"); err != nil {
 		return err
@@ -363,6 +374,13 @@ func (model Model) Validate() error {
 	if model.ResourceIdentity != nil {
 		if model.Sequence < 2 || model.ResourceIdentity.Validate() != nil || model.ResourceIdentity.VMUID != model.VMUID || (model.HighWater != nil && model.ResourceIdentity.ComputeInstanceID != model.HighWater.Instance.ComputeInstanceID) {
 			return fmt.Errorf("journal resource identity differs from original Compute")
+		}
+	}
+	if model.PGInstance != nil {
+		if model.Sequence < 2 || model.PGInstance.Validate() != nil || model.PGInstance.VMUID != model.VMUID ||
+			(model.ResourceIdentity != nil && model.PGInstance.ComputeInstanceID != model.ResourceIdentity.ComputeInstanceID) ||
+			(model.HighWater != nil && model.HighWater.Instance != *model.PGInstance) {
+			return fmt.Errorf("journal PG identity differs from original resource/high water")
 		}
 	}
 	if model.History == nil || len(model.History) > HistoryLimit {
@@ -392,6 +410,9 @@ func (model Model) Validate() error {
 		if record.Outcome != outcome || record.ClosedSequence == 0 || record.ClosedSequence > model.Sequence ||
 			record.Operation.Request.Key.Instance.VMUID != model.VMUID || model.HighWater == nil || compareKeys(record.Operation.Request.Key, *model.HighWater) > 0 {
 			return fmt.Errorf("invalid journal terminal record")
+		}
+		if model.PGInstance != nil && record.Operation.Request.Key.Instance != *model.PGInstance {
+			return fmt.Errorf("journal history differs from retained PG identity")
 		}
 		if previous != nil && (previous.ClosedSequence >= record.ClosedSequence || compareKeys(previous.Operation.Request.Key, record.Operation.Request.Key) >= 0) {
 			return fmt.Errorf("journal history is not monotonic")
@@ -457,6 +478,10 @@ func cloneOperation(operation Operation) Operation {
 }
 
 func (model Model) Clone() Model {
+	if model.PGInstance != nil {
+		copy := *model.PGInstance
+		model.PGInstance = &copy
+	}
 	if model.ResourceIdentity != nil {
 		copy := *model.ResourceIdentity
 		model.ResourceIdentity = &copy
@@ -484,7 +509,7 @@ func (model Model) BindResource(actor Owner, id resourceguard.Identity) (Model, 
 	if err := model.Validate(); err != nil {
 		return model, err
 	}
-	if actor != model.Owner || id.Validate() != nil || id.VMUID != model.VMUID {
+	if actor != model.Owner || id.Validate() != nil || id.VMUID != model.VMUID || (model.PGInstance != nil && id.ComputeInstanceID != model.PGInstance.ComputeInstanceID) {
 		return model, fmt.Errorf("invalid resource binding owner or Guest")
 	}
 	if model.ResourceIdentity != nil {
@@ -502,6 +527,37 @@ func (model Model) BindResource(actor Owner, id resourceguard.Identity) (Model, 
 	}
 	copy := id
 	next.ResourceIdentity = &copy
+	return next, next.Validate()
+}
+
+// BindPG仅在没有原操作/HWM/历史的账本冻结首次实例；相同值只幂等读取。
+// 本函数不认证PG来源，调用者须经固定Compute的能力协商获得真实boot，随后
+// Store以原VM UID/RV CAS落盘。旧有操作但缺此字段时不能从当前PG补齐；它们
+// 已有HWM身份，恢复继续采用原HWM。失败返回原model，不分配新epoch/revision。
+func (model Model) BindPG(actor Owner, instance control.Instance) (Model, error) {
+	if err := model.Validate(); err != nil {
+		return model, err
+	}
+	if actor != model.Owner || instance.Validate() != nil || instance.VMUID != model.VMUID ||
+		(model.ResourceIdentity != nil && instance.ComputeInstanceID != model.ResourceIdentity.ComputeInstanceID) {
+		return model, fmt.Errorf("invalid initial PG binding owner or instance")
+	}
+	if model.PGInstance != nil {
+		if *model.PGInstance != instance {
+			return model, fmt.Errorf("PG boot cannot be rebound without controlled recovery")
+		}
+		return model, nil
+	}
+	if model.HighWater != nil || model.Active != nil || len(model.History) != 0 || model.ExpiredResults != 0 {
+		return model, fmt.Errorf("initial PG binding cannot adopt old operation history")
+	}
+	next, err := model.next(actor)
+	if err != nil {
+		return model, err
+	}
+	copy := instance
+	next.ProtocolVersion = 2
+	next.PGInstance = &copy
 	return next, next.Validate()
 }
 
@@ -580,6 +636,9 @@ func (model Model) Begin(actor Owner, request control.Request, now uint64) (Mode
 	if request.Key.Instance.VMUID != model.VMUID {
 		return model, Stale, fmt.Errorf("request targets another VM")
 	}
+	if model.PGInstance != nil && request.Key.Instance != *model.PGInstance {
+		return model, Stale, fmt.Errorf("request differs from durably bound PG boot")
+	}
 	// 验证当前调用owner后，先查原意图，再校验请求期限/原issuer代次。跨owner重放
 	// 只返回已保存事实，不给旧动作新派发权；actor身份仍需上层认证，不来自请求自报。
 	if disposition := model.Lookup(request); disposition != Stale {
@@ -590,6 +649,12 @@ func (model Model) Begin(actor Owner, request control.Request, now uint64) (Mode
 	}
 	if model.Active != nil {
 		return model, Busy, nil
+	}
+	// 旧v1没有独立PG字段，但已有HWM同样是原实例约束。可读原历史，
+	// 新请求不能先改HWM再使NewPGWorker接受另一boot；受控跨boot关闭协议
+	// 未完成前明确拒绝，既不丢原效果，也不偷偷把v1补成首次发现。
+	if model.HighWater != nil && request.Key.Instance != model.HighWater.Instance {
+		return model, Stale, fmt.Errorf("new request cannot replace retained PG high water")
 	}
 	if _, valid := request.RemainingWaitMillis(now); !valid {
 		return model, DeadlineExpired, nil

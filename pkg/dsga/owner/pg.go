@@ -67,21 +67,35 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 	if model.ResourceIdentity != nil && len(resources) == 0 {
 		return nil, fmt.Errorf("bound resource domain cannot be omitted from PG worker")
 	}
-	if config.Instance.PGBootID == 0 {
-		if model.HighWater != nil {
-			// 包括终态历史被淘汰的情况，HWM仍绑定原boot。不能因Active为空
-			// 或新凭据返回新实例，就悄悄采用新PG boot并丢掉未知效果。
-			known := model.HighWater.Instance
-			if known.VMUID != config.Instance.VMUID || known.ComputeInstanceID != config.Instance.ComputeInstanceID {
-				return nil, fmt.Errorf("PG worker retained Compute binding differs")
-			}
-			config.Instance = known
-		} else {
-			if model.Active != nil || len(model.History) != 0 || model.ExpiredResults != 0 || config.Pending != nil || config.AdmissionPending != nil || config.AdmissionClose != nil {
-				return nil, fmt.Errorf("PG worker initial discovery requires pristine journal")
-			}
-			initial = true
+	var resource *ResourceWorker
+	if len(resources) > 1 {
+		return nil, fmt.Errorf("one original resource worker required")
+	}
+	if len(resources) == 1 {
+		resource = resources[0]
+		if resource == nil || resource.session != session {
+			return nil, fmt.Errorf("resource worker belongs to another owner")
 		}
+	}
+	// 首次发现也有独立持久身份；不能等第一个Resize才依赖HWM。旧日志缺
+	// 新字段时仍只取原HWM，不收养当前boot。显式传入boot同样不能绕过绑定，
+	// 身份不符在凭据/能力HTTP之前拒绝，避免先对错误实例产生认证或fence。
+	known := model.PGInstance
+	if known == nil && model.HighWater != nil {
+		copy := model.HighWater.Instance
+		known = &copy
+	}
+	if known != nil {
+		if known.VMUID != config.Instance.VMUID || known.ComputeInstanceID != config.Instance.ComputeInstanceID ||
+			(config.Instance.PGBootID != 0 && config.Instance != *known) {
+			return nil, fmt.Errorf("PG worker retained instance binding differs")
+		}
+		config.Instance = *known
+	} else if config.Instance.PGBootID == 0 {
+		if model.Active != nil || len(model.History) != 0 || model.ExpiredResults != 0 || config.Pending != nil || config.AdmissionPending != nil || config.AdmissionClose != nil {
+			return nil, fmt.Errorf("PG worker initial discovery requires pristine journal")
+		}
+		initial = true
 	}
 	var pending *control.Request
 	var admissionPending *control.AdmissionRequest
@@ -153,16 +167,14 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 	if err != nil {
 		return nil, err
 	}
-	var resource *ResourceWorker
-	if len(resources) > 1 {
-		client.CloseIdleConnections()
-		return nil, fmt.Errorf("one original resource worker required")
-	}
-	if len(resources) == 1 {
-		resource = resources[0]
-		if resource == nil || resource.session != session {
+	if known == nil {
+		// 到此只有只读能力协商，没有PG写入。必须先固定真实boot、取得原
+		// VM UID/RV CAS确认才返回可用执行器；写回复丢失也关闭本地客户端，
+		// 保留服务器可能已经提交的原绑定。下次重建只读它，不能重新发现。
+		instance, _ := client.Binding()
+		if _, err := session.store.BindPG(callCtx, snapshot, session.actor, instance); err != nil {
 			client.CloseIdleConnections()
-			return nil, fmt.Errorf("resource worker belongs to another owner")
+			return nil, err
 		}
 	}
 	var executor *pgexec.Executor

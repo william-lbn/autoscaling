@@ -227,7 +227,7 @@ func (store *Store) ReleaseBootstrap(ctx context.Context, bootstrapVersion strin
 // PristineBootstrap只供初次启动屏障，不能用来证明运行期没有未知效果。
 // Sequence/owner代次也必须是初始化值，不能把淘汰历史后的空Active误当新日志。
 func PristineBootstrap(model Model) bool {
-	return model.ProtocolVersion == 1 && model.Sequence == 1 && model.Owner.Epoch == 1 && model.HighWater == nil && model.Active == nil && len(model.History) == 0 && model.ExpiredResults == 0 && model.ResourceIdentity == nil && model.Validate() == nil
+	return model.ProtocolVersion == 1 && model.Sequence == 1 && model.Owner.Epoch == 1 && model.HighWater == nil && model.Active == nil && len(model.History) == 0 && model.ExpiredResults == 0 && model.ResourceIdentity == nil && model.PGInstance == nil && model.Validate() == nil
 }
 
 func annotationBudget(annotations map[string]string) int {
@@ -335,6 +335,23 @@ func (store *Store) BindResource(ctx context.Context, snapshot *Snapshot, actor 
 		return nil, fmt.Errorf("resource binding requires original ready running VM")
 	}
 	next, err := snapshot.model.BindResource(actor, id)
+	if err != nil {
+		return nil, err
+	}
+	return store.apply(ctx, snapshot, next)
+}
+
+// BindPG只把已认证的首次只读发现固定到原VM，不能充当预算/首次开放许可。
+// UID/RV CAS与全部操作共享同一账本；写后丢回复返回UnconfirmedWrite而非
+// 可用worker。调用方只能重读原绑定，绝不能换当前boot重试或先派发PG动作。
+func (store *Store) BindPG(ctx context.Context, snapshot *Snapshot, actor Owner, instance control.Instance) (*Snapshot, error) {
+	if err := store.checked(snapshot); err != nil {
+		return nil, err
+	}
+	if !snapshot.Dispatchable() || snapshot.vm.Spec.DSGABootstrap.ComputeInstanceID != instance.ComputeInstanceID {
+		return nil, fmt.Errorf("initial PG binding requires original ready running VM")
+	}
+	next, err := snapshot.model.BindPG(actor, instance)
 	if err != nil {
 		return nil, err
 	}
