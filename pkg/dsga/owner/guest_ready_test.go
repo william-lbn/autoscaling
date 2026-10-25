@@ -193,7 +193,7 @@ func guestPhase(t *testing.T, store *journal.Store) journal.Step {
 }
 
 func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
-	for _, mode := range []string{"grow", "root-reply-lost", "start-reply-lost", "incomplete-budget", "runner-drift", "pg-drift", "shrink", "shrink-unsupported", "omit-hstate"} {
+	for _, mode := range []string{"grow", "root-reply-lost", "start-reply-lost", "incomplete-budget", "runner-drift", "pg-drift", "shrink", "shrink-unsupported", "omit-hstate", "root-empty"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			root, resourceConfig := guestRoot(t, store)
@@ -240,6 +240,8 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 					root.afterApply = func() { api.mu.Lock(); api.vm.Status.RestartCount++; api.mu.Unlock() }
 				} else if mode == "pg-drift" {
 					root.afterApply = func() { drift.Store(true) }
+				} else if mode == "root-empty" {
+					root.afterApply = func() { root.view.Actual.CgroupPopulated = false }
 				}
 				root.mu.Unlock()
 				if mode == "incomplete-budget" {
@@ -273,6 +275,18 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 					require.Equal(t, journal.Settled, step.Phase)
 					require.Equal(t, journal.Completed, step.Observation.Result)
 					require.Equal(t, 1, posts)
+					var result struct {
+						ProtocolVersion uint32               `json:"protocol_version"`
+						Aggregate       budget.RootAggregate `json:"pg_aggregate"`
+					}
+					require.NoError(t, json.Unmarshal(step.Observation.Data, &result))
+					require.EqualValues(t, 2, result.ProtocolVersion)
+					require.NoError(t, result.Aggregate.Validate())
+					root.mu.Lock()
+					require.NoError(t, result.Aggregate.Match(root.view))
+					root.mu.Unlock()
+					require.Equal(t, p.Limits.MemoryMaxBytes+control.Uint64(16<<20), result.Aggregate.Bound.UpperBytes)
+					require.False(t, result.Aggregate.VMShrinkPermit)
 					var saved resourceguard.Command
 					require.NoError(t, json.Unmarshal(step.Command, &saved))
 					require.Equal(t, control.Uint64(8), saved.Revision)
@@ -280,6 +294,28 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 				case "incomplete-budget", "shrink-unsupported", "omit-hstate":
 					require.Equal(t, journal.Planned, step.Phase)
 					require.Zero(t, posts)
+				case "root-empty":
+					require.Equal(t, journal.Unconfirmed, step.Phase)
+					require.Equal(t, 1, posts)
+					require.ErrorContains(t, err, "populated resource domain")
+					// 资源读回缺少活组时不发证；恢复后仅Observe原命令并保存原来源，
+					// 不重新Apply、更换预算ID或伪造此前无效果。
+					root.mu.Lock()
+					root.view.Actual.CgroupPopulated = true
+					root.mu.Unlock()
+					progress, err = worker.Advance(ctx)
+					require.NoError(t, err)
+					require.Equal(t, pgexec.Recorded, progress)
+					var observed struct {
+						ProtocolVersion uint32               `json:"protocol_version"`
+						Aggregate       budget.RootAggregate `json:"pg_aggregate"`
+					}
+					require.NoError(t, json.Unmarshal(guestPhase(t, store).Observation.Data, &observed))
+					root.mu.Lock()
+					require.NoError(t, observed.Aggregate.Match(root.view))
+					require.Equal(t, 1, root.posts)
+					require.Equal(t, 1, root.observes)
+					root.mu.Unlock()
 				case "runner-drift", "pg-drift":
 					require.Equal(t, journal.Unconfirmed, step.Phase)
 					require.Equal(t, 1, posts)

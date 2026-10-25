@@ -29,8 +29,10 @@ type Bound struct {
 // observation。此数据本身不认证生产者，不发VM许可；消费者必须来自同一受信journal。
 // PG主段/四数组只计一次；其余六类明确不含该范围，不能将包含全部PG的cgroup总量
 // 再当private叠加。聚合硬上限需要由生产者先拆解/替换成不重叠的保守成本类别。
-// 也支持Aggregate整体覆盖：SystemOutsidePG此时须排除整个Guest巨页池和PG组，
+// 也支持Aggregate整体覆盖：SystemOutsidePG此时须排除整个Guest巨页池和PG计费域，
 // 不要求对无法独立硬限的私有/DSM强行拆账；聚合约束真实性仍由生产者独立核验。
+// 进程迁入不迁移既有共享/file页收费；其他计费域必须由外部来源持续覆盖，不能
+// 从PG进程当前归组推断所有相关内存都在Aggregate内。硬限额也不证明免OOM。
 type Finalized struct {
 	ProtocolVersion        uint32                     `json:"protocol_version"`
 	VMShrinkPermit         bool                       `json:"vm_shrink_permit"`
@@ -42,7 +44,7 @@ type Finalized struct {
 	GuestUsableMemoryBytes control.Uint64             `json:"guest_usable_memory_bytes"`
 	Shared                 control.SharedCostResponse `json:"shared"`
 	SystemOutsidePG        Bound                      `json:"system_outside_pg"`
-	// Aggregate覆盖全部PG主段/DSG/私有/DSM/LFC及整个Guest HugeTLB池（含空闲池）。
+	// Aggregate覆盖PG计费域中主段/DSG/私有/DSM/LFC及整个Guest HugeTLB池（含空闲池）。
 	// 可由经核验的聚合硬约束组成，不要求把memory.max错误拆成私有硬限额。
 	// 有此项时以下三类必须省略，原生Shared仅核对容量，不再额外相加。
 	Aggregate             *Bound `json:"aggregate,omitempty"`

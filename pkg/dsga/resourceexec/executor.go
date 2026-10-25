@@ -1,5 +1,5 @@
 // Package resourceexec将原VM账本GuestReady步骤接到独立Guest资源执行器。
-// 本域确认目标硬约束，不生成预算承诺、不释放Host、不执行VM/QMP或开放准入。
+// 本域确认目标硬约束并生产PG聚合上界来源；完整外部预算/Host/VM/准入仍分别核验。
 package resourceexec
 
 import (
@@ -34,6 +34,7 @@ type audit struct {
 	Evidence        resourceguard.Evidence     `json:"evidence"`
 	Fence           control.FenceResponse      `json:"issuer_fence"`
 	Shared          control.SharedCostResponse `json:"shared"`
+	PGAggregate     budget.RootAggregate       `json:"pg_aggregate"`
 	RunnerPodName   string                     `json:"runner_pod_name"`
 	RunnerRestarts  int32                      `json:"runner_restarts"`
 	VMMemoryBytes   control.Uint64             `json:"vm_memory_bytes"`
@@ -246,7 +247,14 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
-	data, err := json.Marshal(audit{ProtocolVersion: 1, Query: query, Command: command, Evidence: view.Actual, Fence: fence, Shared: shared, RunnerPodName: prepared.RunnerPodName, RunnerRestarts: prepared.RunnerRestartCount, VMMemoryBytes: control.Uint64(vmBytes)})
+	// 将本次已核验root采样的聚合限额来源随GuestReady一起落账；这不是跨root/
+	// Kube/PG的原子快照，后续预算动作仍须重新Match认证View，不能缓存成永久
+	// 许可。不从声明的Outside或瞬时占用补系统预算；旧审计v1也不升级成新证书。
+	aggregate, err := budget.RootAggregateFromView(view)
+	if err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	data, err := json.Marshal(audit{ProtocolVersion: 2, Query: query, Command: command, Evidence: view.Actual, Fence: fence, Shared: shared, PGAggregate: aggregate, RunnerPodName: prepared.RunnerPodName, RunnerRestarts: prepared.RunnerRestartCount, VMMemoryBytes: control.Uint64(vmBytes)})
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
