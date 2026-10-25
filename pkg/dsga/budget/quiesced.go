@@ -6,6 +6,54 @@ import (
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 )
 
+// QuiesceCommand在关闭前持久完整原意图和当时实际约束来源。不能只记关闭
+// revision而在丢回复后重新选一份root来源，哪怕新来源的数值完全相同。
+type QuiesceCommand struct {
+	ProtocolVersion uint32                   `json:"protocol_version"`
+	VMShrinkPermit  bool                     `json:"vm_shrink_permit"`
+	Request         control.Request          `json:"request"`
+	Close           control.AdmissionRequest `json:"close"`
+	PGAggregate     RootAggregate            `json:"pg_aggregate"`
+}
+
+func (c QuiesceCommand) Validate() error {
+	r := c.Request
+	if c.ProtocolVersion != 1 || c.VMShrinkPermit || r.Validate() != nil || r.Kind != control.Shrink || c.Close.Validate() != nil || c.Close.Open || c.Close.Instance != r.Key.Instance || c.Close.BudgetCommitmentID != r.BudgetCommitmentID || c.Close.ExpectedCapacityGeneration != r.ExpectedCapacityGeneration || c.Close.IssuerEpoch < r.Key.IssuerEpoch || c.PGAggregate.Validate() != nil || c.PGAggregate.Identity.VMUID != r.Key.Instance.VMUID || c.PGAggregate.Identity.ComputeInstanceID != r.Key.Instance.ComputeInstanceID {
+		return fmt.Errorf("invalid complete original quiesce command")
+	}
+	return nil
+}
+
+func (c QuiesceCommand) ValidateFor(p Prepared, epoch control.Uint64) error {
+	if c.Validate() != nil || p.ValidateFor(p.Request, p.Identity) != nil || c.Request != p.Request || c.Close.IssuerEpoch > epoch || c.PGAggregate.Identity != p.Identity {
+		return fmt.Errorf("quiesce differs from original shrink/prepared/closing intent")
+	}
+	// 持续策略不能借一次current/RSS压低原normal承诺；该检查也覆盖显式
+	// 重放，不因当前owner或新资源来源变更而重写原命令中的承诺。
+	normal := c.PGAggregate.Bootstrap.Limits.MemoryMaxBytes
+	if c.PGAggregate.Held != nil {
+		normal = c.PGAggregate.Held.MemoryMaxBytes
+	}
+	if p.Limits.MemoryMaxBytes < normal {
+		return fmt.Errorf("continuous aggregate quiesce cannot authorize memory.max decrease")
+	}
+	return nil
+}
+
+func (c *QuiesceCommand) UnmarshalJSON(data []byte) error {
+	type plain QuiesceCommand
+	var next plain
+	if err := control.UnmarshalObject(data, &next); err != nil {
+		return err
+	}
+	value := QuiesceCommand(next)
+	if err := value.Validate(); err != nil {
+		return err
+	}
+	*c = value
+	return nil
+}
+
 // Quiesced采用持续聚合约束策略：关掉公共新连接/新执行并等前台在途结束，
 // 保留后台、2PC、DSM和会话私有内存的原聚合限额，不假装这些内存已清零。
 // 本事实仅可推进PG数组排水；不能降低memory.max、开放准入、释放Host或缩VM。
@@ -24,10 +72,11 @@ type Quiesced struct {
 // DSM计数可以非零，只有持续原约束覆盖它们时才采用此策略，不能清原未知占用。
 func (q Quiesced) ValidateFor(p Prepared, epoch control.Uint64) error {
 	r := p.Request
-	if p.ValidateFor(r, p.Identity) != nil || r.Kind != control.Shrink || q.ProtocolVersion != 1 || q.VMShrinkPermit || q.Request != r || q.Close.Validate() != nil || q.Close.Open || q.Close.Instance != r.Key.Instance || q.Close.BudgetCommitmentID != r.BudgetCommitmentID || q.Close.ExpectedCapacityGeneration != r.ExpectedCapacityGeneration || q.Close.IssuerEpoch < r.Key.IssuerEpoch || q.Close.IssuerEpoch > epoch {
-		return fmt.Errorf("quiesce differs from original shrink/prepared/closing intent")
+	command := QuiesceCommand{ProtocolVersion: q.ProtocolVersion, VMShrinkPermit: q.VMShrinkPermit, Request: q.Request, Close: q.Close, PGAggregate: q.PGAggregate}
+	if err := command.ValidateFor(p, epoch); err != nil {
+		return err
 	}
-	if q.PGAggregate.Validate() != nil || q.PGAggregate.Identity != p.Identity || q.DSM.ValidateFor(r.Key.Instance) != nil {
+	if q.DSM.ValidateFor(r.Key.Instance) != nil {
 		return fmt.Errorf("quiesce lacks original aggregate or native accounting")
 	}
 	c := q.DSM.Prepared.Connections
@@ -35,15 +84,6 @@ func (q Quiesced) ValidateFor(p Prepared, epoch control.Uint64) error {
 	s := w.Observed
 	if !c.Enabled || !c.PrivateManagementReady || !c.Acknowledged || !c.PublicConnectionsBlocked || !w.ObserverExcluded || !w.ForegroundIdle || s.AdmissionOpen || s.AdmissionRevision != q.Close.Revision || s.IssuerFloorEpoch != epoch || s.CapacityGeneration != r.ExpectedCapacityGeneration || s.LowBuffers != p.Shared.Observed.LowBuffers || s.HighBuffers != s.LowBuffers || s.MaximumBuffers != p.Shared.Observed.MaximumBuffers || (s.Operation != nil && s.Operation.Phase == control.Preparing) {
 		return fmt.Errorf("original close is not continuously acknowledged and foreground idle")
-	}
-	// memory.max只是持续聚合约束，不证明降限免OOM。当前策略必须保留其原
-	// normal额度；未来要降低必须另实现可执行私有/后台预算与安全降限协议。
-	limits := q.PGAggregate.Bootstrap.Limits
-	if q.PGAggregate.Held != nil {
-		limits.MemoryMaxBytes = q.PGAggregate.Held.MemoryMaxBytes
-	}
-	if p.Limits.MemoryMaxBytes < limits.MemoryMaxBytes {
-		return fmt.Errorf("continuous aggregate quiesce cannot authorize memory.max decrease")
 	}
 	for _, a := range s.Arrays {
 		if a.AllocationUnknown {

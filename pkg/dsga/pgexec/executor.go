@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
@@ -272,6 +273,7 @@ func (executor *Executor) Advance(ctx context.Context) (Progress, error) {
 func (executor *Executor) checkQuiesce(ctx context.Context, op *journal.Operation) error {
 	var prepared budget.Prepared
 	var quiesced budget.Quiesced
+	var original budget.QuiesceCommand
 	for _, s := range op.Steps {
 		if s.Action != journal.PrepareBudget && s.Action != journal.Quiesce {
 			continue
@@ -284,12 +286,16 @@ func (executor *Executor) checkQuiesce(ctx context.Context, op *journal.Operatio
 			err = json.Unmarshal(s.Observation.Data, &prepared)
 		} else {
 			err = json.Unmarshal(s.Observation.Data, &quiesced)
+			if err == nil {
+				err = json.Unmarshal(s.Command, &original)
+			}
 		}
 		if err != nil {
 			return fmt.Errorf("shrink budget/quiesce source is incomplete")
 		}
 	}
-	if quiesced.Request != op.Request || quiesced.ValidateFor(prepared, executor.actor.Epoch) != nil {
+	expected := budget.QuiesceCommand{ProtocolVersion: quiesced.ProtocolVersion, VMShrinkPermit: quiesced.VMShrinkPermit, Request: quiesced.Request, Close: quiesced.Close, PGAggregate: quiesced.PGAggregate}
+	if quiesced.Request != op.Request || quiesced.ValidateFor(prepared, executor.actor.Epoch) != nil || original.ValidateFor(prepared, executor.actor.Epoch) != nil || !reflect.DeepEqual(original, expected) {
 		return fmt.Errorf("shrink quiesce differs from retained original budget")
 	}
 	view, err := executor.resources.InspectState(ctx)

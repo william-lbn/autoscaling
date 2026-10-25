@@ -12,6 +12,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -19,7 +20,7 @@ import (
 // 实际Session/TLS/双客户端/写前UID-RV CAS与生产Quiesce/后续Shrink消费者；
 // Kube、PG原生事实和root内核为明确协议模型，不冒充Linux或原生PG端到端。
 func TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts(t *testing.T) {
-	for _, mode := range []string{"retained", "reply-lost-restart", "dispatch-lost-replay", "busy", "ack-pending", "root-drift", "runner-drift", "lower-normal", "post-quiesce-drift", "drain-dispatch", "concurrent", "incomplete-prepared"} {
+	for _, mode := range []string{"retained", "reply-lost-restart", "dispatch-lost-replay", "busy", "ack-pending", "root-drift", "runner-drift", "lower-normal", "post-quiesce-drift", "drain-dispatch", "concurrent", "incomplete-prepared", "unknown-root-replaced", "legacy-close-only"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			root, resourceConfig := guestRoot(t, store)
@@ -69,9 +70,19 @@ func TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts(t *te
 							step := s.State().Active.Steps[1]
 							require.Equal(t, journal.Quiesce, step.Action)
 							require.Equal(t, journal.Unconfirmed, step.Phase)
-							var saved control.AdmissionRequest
-							require.NoError(t, json.Unmarshal(step.Command, &saved))
-							require.Equal(t, saved, closeIntent)
+							if mode == "legacy-close-only" {
+								var saved control.AdmissionRequest
+								require.NoError(t, json.Unmarshal(step.Command, &saved))
+								require.Equal(t, saved, closeIntent)
+							} else {
+								var saved budget.QuiesceCommand
+								require.NoError(t, json.Unmarshal(step.Command, &saved))
+								require.Equal(t, saved.Close, closeIntent)
+								require.Equal(t, req, saved.Request)
+								root.mu.Lock()
+								require.NoError(t, saved.PGAggregate.Match(root.view))
+								root.mu.Unlock()
+							}
 							posts++
 							copy := closeIntent
 							original = &copy
@@ -85,7 +96,7 @@ func TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts(t *te
 								api.vm.Status.RestartCount++
 								api.mu.Unlock()
 							}
-							if mode == "reply-lost-restart" {
+							if mode == "reply-lost-restart" || mode == "unknown-root-replaced" {
 								w.WriteHeader(503)
 								return
 							}
@@ -162,6 +173,39 @@ func TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts(t *te
 				require.NoError(t, err)
 				_, err = store.Record(ctx, s, session.Actor(), req.Key, journal.Observation{Key: req.Key, RequestSHA256: dispatch.RequestSHA256, CommandSHA256: dispatch.Step.CommandSHA256, Ordinal: dispatch.Step.Ordinal, Action: journal.PrepareBudget, Result: journal.Completed, SourceID: req.Key.Instance.ComputeInstanceID, Data: data})
 				require.NoError(t, err)
+				if mode == "legacy-close-only" {
+					// 显式旧版本写入场景：真实WAL/CAS保存只有关闭的旧格式，再经
+					// 真客户端执行其旧setter；新worker必须能只读查询且不能升级来源。
+					old := control.AdmissionRequest{ProtocolVersion: 1, Instance: req.Key.Instance, IssuerEpoch: session.Actor().Epoch, Revision: 1, ExpectedCapacityGeneration: req.ExpectedCapacityGeneration, Open: false, BudgetCommitmentID: req.BudgetCommitmentID}
+					body, e := json.Marshal(old)
+					require.NoError(t, e)
+					s, e = store.Load(ctx)
+					require.NoError(t, e)
+					_, _, e = store.Start(ctx, s, session.Actor(), req.Key, journal.Quiesce, req.Key.Instance.ComputeInstanceID, body)
+					require.NoError(t, e)
+					fact, e := worker.client.SetAdmission(ctx, old)
+					require.NoError(t, e)
+					require.True(t, fact.Confirms())
+					restored, e := session.NewPGWorker(ctx, config, resources)
+					require.NoError(t, e)
+					defer restored.CloseIdleConnections()
+					progress, e := restored.Advance(ctx)
+					require.ErrorContains(t, e, "legacy quiesce lacks durable aggregate source")
+					require.Equal(t, pgexec.AwaitingFact, progress)
+					progress, e = restored.ReplayQuiesceOriginal(ctx, req.Key)
+					require.ErrorContains(t, e, "legacy quiesce lacks durable aggregate source")
+					require.Equal(t, pgexec.AwaitingFact, progress)
+					after, e := store.Load(ctx)
+					require.NoError(t, e)
+					require.Equal(t, journal.Unconfirmed, after.State().Active.Steps[1].Phase)
+					require.Equal(t, body, []byte(after.State().Active.Steps[1].Command))
+					require.Nil(t, after.State().Active.Steps[1].Observation)
+					require.Equal(t, 1, posts)
+					require.Positive(t, queries)
+					require.Zero(t, resizes)
+					cancel()
+					return ctx.Err()
+				}
 				if mode == "dispatch-lost-replay" {
 					api.mu.Lock()
 					api.loseJournalReply = true
@@ -211,6 +255,37 @@ func TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts(t *te
 				if mode == "root-drift" || mode == "runner-drift" {
 					require.Equal(t, journal.Unconfirmed, after.State().Active.Steps[1].Phase)
 					require.Equal(t, 1, posts)
+					cancel()
+					return ctx.Err()
+				}
+				if mode == "unknown-root-replaced" {
+					// 原关闭已发且未知；即使新root命令的所有限额数值相同，也必须
+					// 保留原来源，而不是重建worker后偷偷采用新来源完成旧Quiesce。
+					var saved budget.QuiesceCommand
+					require.NoError(t, json.Unmarshal(after.State().Active.Steps[1].Command, &saved))
+					root.mu.Lock()
+					c := resourceguard.Command{ProtocolVersion: 1, Identity: root.view.Identity, IssuerEpoch: session.Actor().Epoch, Revision: 1, BudgetCommitmentID: "different-root-original", PostmasterPID: 123, PostmasterStartTicks: 456, MemoryMaxBytes: 512 << 20, OutsideUpperBytes: 32 << 20, HugePools: root.view.Bootstrap.Limits.HugePools}
+					root.view.Original, root.view.Held, root.view.Applied = &c, &c, true
+					require.Error(t, saved.PGAggregate.Match(root.view))
+					root.mu.Unlock()
+					restored, e := session.NewPGWorker(ctx, config, resources)
+					require.NoError(t, e)
+					defer restored.CloseIdleConnections()
+					progress, err = restored.Advance(ctx)
+					require.ErrorContains(t, err, "source was replaced")
+					require.Equal(t, pgexec.AwaitingFact, progress)
+					progress, err = restored.ReplayQuiesceOriginal(ctx, req.Key)
+					require.ErrorContains(t, err, "source was replaced")
+					require.Equal(t, pgexec.AwaitingFact, progress)
+					after, e = store.Load(ctx)
+					require.NoError(t, e)
+					require.Equal(t, journal.Unconfirmed, after.State().Active.Steps[1].Phase)
+					var still budget.QuiesceCommand
+					require.NoError(t, json.Unmarshal(after.State().Active.Steps[1].Command, &still))
+					require.Equal(t, saved, still)
+					require.Equal(t, 1, posts)
+					require.Positive(t, queries)
+					require.Zero(t, resizes)
 					cancel()
 					return ctx.Err()
 				}

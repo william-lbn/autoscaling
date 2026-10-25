@@ -40,6 +40,21 @@ func TestContinuousQuiesceKeepsRetainedCostsAndRejectsUnprovedLowerLimit(t *test
 	closeIntent := control.AdmissionRequest{ProtocolVersion: 1, Instance: req.Key.Instance, IssuerEpoch: req.Key.IssuerEpoch, Revision: 1, ExpectedCapacityGeneration: req.ExpectedCapacityGeneration, BudgetCommitmentID: req.BudgetCommitmentID}
 	q := Quiesced{ProtocolVersion: 1, Request: req, Close: closeIntent, PGAggregate: a, DSM: control.DSMResponse{ProtocolVersion: 1, DSMAPIVersion: 1, CurrentBootOnly: true, AccountingValid: true, PageBytes: 4096, ControlUpperBytes: 4096, ExternalSegments: 1, UnknownSegments: 1, ReservedUpperBytes: 4096, Prepared: control.PreparedResponse{ProtocolVersion: 1, PreparedAPIVersion: 1, PreparedSlots: 1, MaximumPreparedSlots: 4, RuntimePreparesBlocked: true, Connections: control.ConnectionResponse{ProtocolVersion: 1, ConnectionAPIVersion: 1, Enabled: true, RequestedSerial: 2, AppliedSerial: 2, Acknowledged: true, PrivateManagementReady: true, PublicConnectionsBlocked: true, Work: control.WorkResponse{ProtocolVersion: 1, WorkAPIVersion: 2, ForegroundIdle: true, ObserverExcluded: true, BackgroundProcesses: 3, AuxiliaryProcesses: 2, Observed: s}}}}}
 	require.NoError(t, q.ValidateFor(p, req.Key.IssuerEpoch), "非零后台/2PC/未知DSM持续保留，不伪造清空")
+	command := QuiesceCommand{ProtocolVersion: 1, Request: req, Close: closeIntent, PGAggregate: a}
+	require.NoError(t, command.ValidateFor(p, req.Key.IssuerEpoch))
+	commandJSON, err := json.Marshal(command)
+	require.NoError(t, err)
+	var commandFields map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(commandJSON, &commandFields))
+	for key := range commandFields {
+		var copy map[string]json.RawMessage
+		require.NoError(t, json.Unmarshal(commandJSON, &copy))
+		delete(copy, key)
+		missing, e := json.Marshal(copy)
+		require.NoError(t, e)
+		var decoded QuiesceCommand
+		require.Error(t, json.Unmarshal(missing, &decoded), key)
+	}
 	raw, err = json.Marshal(q)
 	require.NoError(t, err)
 	for _, change := range []func(*Quiesced){

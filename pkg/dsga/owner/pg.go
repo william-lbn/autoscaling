@@ -9,6 +9,7 @@ import (
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/admissionexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
@@ -98,7 +99,24 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 				// Quiesce关闭与最终Resume开放共用原生独立准入代次；恢复必须由
 				// 原步骤确定方向，不能只恢复Open而丢掉写前/写后未知的关闭命令。
 				wantOpen := step.Action == journal.ResumeAdmission
-				if json.Unmarshal(step.Command, &original) != nil || original.Open != wantOpen || original.Instance != active.Request.Key.Instance || original.BudgetCommitmentID != active.Request.BudgetCommitmentID || step.DispatchedBy == nil || original.IssuerEpoch != step.DispatchedBy.Epoch || original.IssuerEpoch > session.actor.Epoch || step.TargetID != original.Instance.ComputeInstanceID {
+				var decodeErr error
+				if step.Action == journal.Quiesce {
+					var saved budget.QuiesceCommand
+					decodeErr = json.Unmarshal(step.Command, &saved)
+					if decodeErr != nil {
+						// 旧仅关闭格式只能恢复原只读查询。执行器明确拒绝把它补成
+						// 带来源的新证书或进行写重放，不因升级丢掉旧关闭未知。
+						decodeErr = json.Unmarshal(step.Command, &original)
+					} else {
+						original = saved.Close
+					}
+					if decodeErr == nil && saved.ProtocolVersion != 0 && saved.Request != active.Request {
+						decodeErr = fmt.Errorf("original quiesce request changed")
+					}
+				} else {
+					decodeErr = json.Unmarshal(step.Command, &original)
+				}
+				if decodeErr != nil || original.Open != wantOpen || original.Instance != active.Request.Key.Instance || original.BudgetCommitmentID != active.Request.BudgetCommitmentID || step.DispatchedBy == nil || original.IssuerEpoch != step.DispatchedBy.Epoch || original.IssuerEpoch > session.actor.Epoch || step.TargetID != original.Instance.ComputeInstanceID {
 					return nil, fmt.Errorf("original admission command differs from journal")
 				}
 				admissionPending = &original

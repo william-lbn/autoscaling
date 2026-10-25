@@ -9,7 +9,9 @@ a4bce09e完整包含；其他相关维护五线均missing0，未重建/rebase/�
 新增 `budget.Quiesced` 与 `quiesceexec.Executor`，接入实际Agent/PGWorker。
 只接受原VM账本完整Completed PrepareBudget，原Guest/PG boot/Runner/当前owner
 及完整请求必须一致。先核验原root聚合约束与真实出生、fence PG，再以独立准入
-revision构造关闭命令；必须UID/RV CAS写前持久取得票据，才发真实SetAdmission。
+revision构造关闭命令；完整QuiesceCommand包含原请求、关闭及当时原聚合来源，
+必须UID/RV CAS写前持久取得票据，才发真实SetAdmission。丢回复后的查询/重放
+只能Match命令里保留的原来源；即使当前新Held数值相同，也不能刷新旧source。
 
 Setter成功不等于Postmaster ack或前台排空。正式DSM成员内嵌一次原生采样的
 Prepared1/Connection1/Work2；核验原关闭revision、当前floor/容量、私有管理入口、
@@ -26,6 +28,8 @@ Prepared1/Connection1/Work2；核验原关闭revision、当前floor/容量、私
 重发。PGWorker从原步骤恢复关闭方向及SDK Pending；显式ReplayQuiesceOriginal
 与最终开放/资源/Resize重放分开，只发送当前owner原持久命令。新owner只读旧
 关闭，不换epoch/revision。原关闭/资源身份不因PG重连或本地对象重建而消失。
+曾发布的仅关闭格式只能只读查询，外层仍Unconfirmed且需要受控恢复；不补源、
+不写重放。ResizePG还须核回执与完整写前命令的来源完全一致，拒绝借另一来源。
 
 ResizePG新Shrink派发与可能形成新效果的显式重放，必须重新验证原Quiesced、
 当前原root来源/出生和新的同点PG观察。资源替换或门禁重开不能借历史Completed
@@ -35,16 +39,19 @@ Neon SQL1.15不变；未绑定资源的旧测试/非生产路径不据此获得�
 
 ## Mac实际执行
 
-1. 新来源消费和实际执行器/受影响GuestReady、最终准入恢复共5顶层/31含子项
+1. 新来源消费和实际执行器/受影响GuestReady、最终准入恢复最终5顶层/33含子项
    去重PASS，0测试跳过。quiesceexec无独立test文件，初轮1包级skip如实保留；
    实际执行器由owner的真实Session/TLS/双客户端/typed Store与UID/RV CAS调用。
    覆盖非零保留成本、关闭回复丢失重建、写前丢回复/NotFound/显式重放、前台忙、
    Postmaster未ack、root/Runner漂移、预算不完整、降normal拒绝、并发一次派发、
-   关闭后正向ResizePG派发及重开后拒绝。物理释放仍为下一独立Planned步骤。
+   关闭后正向ResizePG派发及重开后拒绝、关闭未知后同数值原资源替换拒绝、旧
+   仅关闭格式只读保留。物理释放仍为下一独立Planned步骤。
 2. 首轮发现新执行器局部err遮蔽：真实关闭503后保持Unconfirmed，但上层误得nil
    错误；已修复。另一个单位fixture把normal提高到512MB却仍用256MB Guest，
    正确被拒，修正仅测试容量。仅替换失败项和增强后的门禁漂移项，再单独增加
    正向/降限/并发/预算拒绝场景；已过等价测试不重复。首轮失败日志完整保留。
+   随后复核发现写前命令缺少完整原来源，新增持久绑定与两个恢复场景；该格式
+   与恢复语义改变后，受影响5顶层/33项重新通过，替换前版5/31证据，不累加。
 3. readonly vet预算/Quiesce/PG/资源/owner/实际Agent退出0；实际Agent Linux
    amd64/arm64交叉编译退出0，未运行ELF，不是Linux或镜像认证。
 4. 新原生门禁1项：Go race→本机TLS→生产Rust Router/JWT→Neon1.15正式SQL→

@@ -101,10 +101,26 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		return pgexec.AwaitingFact, fmt.Errorf("quiesce prepared budget is incomplete")
 	}
 	var closeIntent control.AdmissionRequest
+	var original budget.QuiesceCommand
 	if !planned {
-		if json.Unmarshal(step.Command, &closeIntent) != nil || closeIntent.Open || closeIntent.Instance != e.instance || closeIntent.BudgetCommitmentID != op.Request.BudgetCommitmentID || closeIntent.ExpectedCapacityGeneration != op.Request.ExpectedCapacityGeneration || step.DispatchedBy == nil || closeIntent.IssuerEpoch != step.DispatchedBy.Epoch || closeIntent.IssuerEpoch > e.actor.Epoch || step.TargetID != e.instance.ComputeInstanceID {
+		if json.Unmarshal(step.Command, &original) != nil {
+			var legacy control.AdmissionRequest
+			if json.Unmarshal(step.Command, &legacy) != nil || legacy.Open || legacy.Instance != e.instance || legacy.BudgetCommitmentID != op.Request.BudgetCommitmentID || legacy.ExpectedCapacityGeneration != op.Request.ExpectedCapacityGeneration || step.DispatchedBy == nil || legacy.IssuerEpoch != step.DispatchedBy.Epoch || legacy.IssuerEpoch > e.actor.Epoch || step.TargetID != e.instance.ComputeInstanceID {
+				return pgexec.AwaitingFact, fmt.Errorf("original quiesce closing command differs")
+			}
+			// 旧格式没有写前来源，当前root值绝不能补进旧命令。只允许读取
+			// 原关闭效果，外层仍Unconfirmed；显式重放同样不能授权新写。
+			if replay == nil {
+				if _, err := e.pg.AdmissionStatus(ctx, legacy); err != nil {
+					return pgexec.AwaitingFact, err
+				}
+			}
+			return pgexec.AwaitingFact, fmt.Errorf("legacy quiesce lacks durable aggregate source; controlled recovery required")
+		}
+		if original.ValidateFor(prepared, e.actor.Epoch) != nil || step.DispatchedBy == nil || original.Close.IssuerEpoch != step.DispatchedBy.Epoch || step.TargetID != e.instance.ComputeInstanceID {
 			return pgexec.AwaitingFact, fmt.Errorf("original quiesce closing command differs")
 		}
+		closeIntent = original.Close
 	}
 	// 只读原命令查询先于资源证明；资源暂不可达不能使已经发送的关闭变成
 	// NoEffect。SDK只解除同一准入Pending，外层Unconfirmed仍等待全部事实。
@@ -119,6 +135,14 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	view, aggregate, err := e.aggregate(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, err
+	}
+	if !planned {
+		// 原完整来源在写前命令中持久保留。恢复只能Match该来源，不能把当前
+		// 同数值的新Held当原承诺，更不能在旧关闭回复未知时刷新source ID。
+		if err := original.PGAggregate.Match(view); err != nil {
+			return pgexec.AwaitingFact, err
+		}
+		aggregate = original.PGAggregate
 	}
 	fence, err := e.pg.Fence(ctx, control.FenceRequest{ProtocolVersion: 1, Instance: e.instance, IssuerEpoch: e.actor.Epoch})
 	if err != nil {
@@ -136,12 +160,12 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 			return pgexec.AwaitingFact, fmt.Errorf("closing revision exhausted")
 		}
 		closeIntent = control.AdmissionRequest{ProtocolVersion: 1, Instance: e.instance, IssuerEpoch: e.actor.Epoch, Revision: fence.Observed.AdmissionRevision + 1, ExpectedCapacityGeneration: op.Request.ExpectedCapacityGeneration, Open: false, BudgetCommitmentID: op.Request.BudgetCommitmentID}
-		// 先核对本策略保留normal额度，不能在关门后才发现所选模式无法降限。
-		limits, limitErr := view.ConfirmedLimits()
-		if limitErr != nil || prepared.Limits.MemoryMaxBytes < limits.MemoryMaxBytes {
-			return pgexec.AwaitingFact, fmt.Errorf("continuous aggregate quiesce cannot authorize memory.max decrease")
+		// PG关闭与当时原root来源必须一起写前持久，不能在丢回复后临时补源。
+		original = budget.QuiesceCommand{ProtocolVersion: 1, Request: op.Request, Close: closeIntent, PGAggregate: aggregate}
+		if err := original.ValidateFor(prepared, e.actor.Epoch); err != nil {
+			return pgexec.AwaitingFact, err
 		}
-		body, marshalErr := json.Marshal(closeIntent)
+		body, marshalErr := json.Marshal(original)
 		if marshalErr != nil {
 			return pgexec.AwaitingFact, marshalErr
 		}
