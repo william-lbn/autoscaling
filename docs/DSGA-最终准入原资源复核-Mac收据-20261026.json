@@ -1,0 +1,106 @@
+{
+  "created_at": "2026-10-25T18:58:31.367800+00:00",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "previous_commit": "2c9a26abac1df37207e32525fde6c94ae4b4c402",
+  "scope": "实际最终ResumeAdmission原root持续核验；不是首次准入/完整预算或VM许可",
+  "validation": {
+    "distinct_top": 1,
+    "distinct_including_subcases": 18,
+    "distinct_subcases": 17,
+    "failed": 0,
+    "skipped": 0,
+    "first_candidate": 15,
+    "auditv2_and_new_explicit_replay": "2 focused success/replay; replacementsnotadd",
+    "new_sdk_pending": "success replacement +1new pending; unchanged paths not repeated",
+    "old_overlay_negative": "expected failure: old code sent1 despite equalnumeric replacedsource; initialphaseassert and explicitcounter replacement logs retained",
+    "models": "Kube/root/PG protocolfixtures; actualOwner/Lease/SDK/TLS/typedStore/WAL/CAS",
+    "vet_exit": 0,
+    "agent_linux_crosscompile": [
+      "amd64",
+      "arm64"
+    ],
+    "not_executed": [
+      "actualLinuxkernel",
+      "nativePG/HTTP unchanged",
+      "K8s/VM E2E",
+      "physical/performance"
+    ],
+    "artifact_provenance": "built beforecommit from finalbusiness source; not release VCStag claim"
+  },
+  "maintenance": [
+    {
+      "repo": "neon",
+      "ref": "upstream/main",
+      "sha": "fa504217c61bbcaf5c512d75830564541f917f8f",
+      "missing": 0
+    },
+    {
+      "repo": "autoscaling",
+      "ref": "upstream/main",
+      "sha": "a4bce09e4d6bd7932ea634a1ed79afe26a9cfd1f",
+      "missing": 0
+    },
+    {
+      "repo": "neon/vendor/postgres-v17",
+      "ref": "neon-upstream/REL_17_STABLE_neon",
+      "sha": "56692dfb680281a963c7470fc7f0fec7f65ecfd4",
+      "missing": 0
+    },
+    {
+      "repo": "neon/vendor/postgres-v17",
+      "ref": "pg-upstream/REL_17_STABLE",
+      "sha": "bd807012669ed8573317562b78c1221e4fabe373",
+      "missing": 0
+    },
+    {
+      "repo": "control-plane",
+      "ref": "origin/main",
+      "sha": "f7df93a2dc9443f653d218960536a8e119b45645",
+      "missing": 0
+    }
+  ],
+  "owner_AGENTS_SHA256_preserved": "5c61959674c362ecc4c3709930121304595e8b0bca1ff70ae401f0cf8f2803c1",
+  "source_sha256": {
+    "repos/autoscaling/pkg/dsga/admissionexec/executor.go": "3a05b17527b8cd52556dacb164b5fae7945826f9c299891df16b2cf6a744675d",
+    "repos/autoscaling/pkg/dsga/owner/pg.go": "f4631cf66478125795a7df0fcf96a8a2c2638a10850e3d393842406f8b888dfa",
+    "repos/autoscaling/pkg/dsga/owner/admission_test.go": "194a70bcd98d67f01ca3ecb7529db06189fae21e7c3e5b208d61c7d2c9a29da4",
+    "repos/autoscaling/pkg/dsga/owner/guest_ready_test.go": "0b62c57825265af83bdcdf015234b685f192f9213ef8e709bc3b8b1bd5a00101",
+    "repos/autoscaling/docs/DSGA-最终准入原资源复核-Mac验收-20261026.md": "d97cfa13b648ea8fcf96d48f3a05475039fa115350c1b777b8e5c53038c79ff9"
+  },
+  "artifact_sha256": {
+    "build/dsga-admission-root-agent-linux-amd64": "96e3a032bdf5ecbb2cb5c44ec69938399ca6b44ca5de92011cf9edb1e3058c2f",
+    "build/dsga-admission-root-agent-linux-arm64": "beecc583a61a7a911ddc486fa4e7947123f8097285dd1ecce4d708bd505b4cd7"
+  },
+  "log_and_recipe_sha256": {
+    "build/dsga-admission-root-agent-linux-amd64.log": "781f911e807a42c5d030a46a9d8c889f67d3f18b250287c112eb2e7b299c6cb1",
+    "build/dsga-admission-root-agent-linux-arm64.log": "655f99163873dc30bb2f99268aa71e685e0f0077763d00bf4cbd86cb36e6dc83",
+    "build/dsga-admission-root-final-cases.jsonl": "4f4b26bcff5258886c156e89aac458cfb1e1635feae475ced80c5803f9484a85",
+    "build/dsga-admission-root-final-cases.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/dsga-admission-root-go.jsonl": "a24b77a44af08b91bacf3e2cc3f3ff6900cfdba3f4fdefbc98957f01783a5b16",
+    "build/dsga-admission-root-go.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/dsga-admission-root-old-admission-executor.go": "63d0fc14651bd8570e57fb82393919b27073fd5e5e2af72089154d1e78d55129",
+    "build/dsga-admission-root-old-negative-explicit.jsonl": "22c7eaeba564f06451b861666ca5a588e6432f4b937757dd29ec117335cf45bc",
+    "build/dsga-admission-root-old-negative-explicit.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/dsga-admission-root-old-negative.jsonl": "1482517b2ea77ab740bd37c5b388953b08ecd76a4a27e521f6e79c3a7d921a5e",
+    "build/dsga-admission-root-old-negative.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/dsga-admission-root-old-overlay.json": "37b25b21e7c99013e116f8dadd1586e9a94584cd34233ff2ccf8e636ae36a2f3",
+    "build/dsga-admission-root-old-owner-pg.go": "a09ecf5eacfc51b3458fcd02bdb838ceb1407f972d4be3a7ac830ddd360fe73b",
+    "build/dsga-admission-root-pending-cases.jsonl": "d52ac7d22e90f78db9466523e1cbf77ddb883c1f30428672c9a04923cf3ce2c8",
+    "build/dsga-admission-root-pending-cases.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/dsga-admission-root-vet.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/run-dsga-admission-root-agent-compile.sh": "36348da9dea78c67054e5580f507e29277254bccaf53f28a2924e6095d508881",
+    "build/run-dsga-admission-root-final-cases.sh": "3884e05d38e8f6dbdf0d00a829152fc87513c9504dac035196ac19420ab0f026",
+    "build/run-dsga-admission-root-go.sh": "50c3a36776acf55aed13883974b9762648bf0c9c3754039f59269bfcd6d89f3d",
+    "build/run-dsga-admission-root-old-negative-explicit.sh": "47b493dcb9aeaaf1fbeb0c3dd190daf07e277a43e3600445dbbed16cfbb2f920",
+    "build/run-dsga-admission-root-old-negative.sh": "46a6bd4c27b4cbc6e7f15d01536042e7018ade6007f6d115a126648164562754",
+    "build/run-dsga-admission-root-pending-cases.sh": "39a6aff5a60b99e222c9995b7782a458b94cd9024474625ee4b3c9574d7f03dc",
+    "build/run-dsga-admission-root-vet.sh": "e71e797388ad899eda6227dfd6c76e228626a43280725f1ec339ef46d075f5f3"
+  },
+  "still_code": [
+    "完整可信Prepare/Finalize/SystemOutsidePG来源",
+    "安全降normal/后台私有上界",
+    "首次准入",
+    "Host最终VM/公开worker/受控跨boot"
+  ],
+  "goal": "active/incomplete"
+}

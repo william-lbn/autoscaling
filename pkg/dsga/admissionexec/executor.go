@@ -13,13 +13,15 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 )
 
 type Executor struct {
-	store    *journal.Store
-	client   *compute.Client
-	actor    journal.Owner
-	instance control.Instance
+	store     *journal.Store
+	client    *compute.Client
+	actor     journal.Owner
+	instance  control.Instance
+	resources *resourceguard.Client
 }
 
 type audit struct {
@@ -28,9 +30,11 @@ type audit struct {
 	Fence           control.FenceResponse      `json:"issuer_fence"`
 	Shared          control.SharedCostResponse `json:"shared"`
 	Response        control.AdmissionResponse  `json:"response"`
+	PGAggregate     budget.RootAggregate       `json:"pg_aggregate"`
+	ResourceEpoch   control.Uint64             `json:"resource_issuer_epoch"`
 }
 
-func New(store *journal.Store, client *compute.Client, actor journal.Owner) (*Executor, error) {
+func New(store *journal.Store, client *compute.Client, actor journal.Owner, resources ...*resourceguard.Client) (*Executor, error) {
 	if store == nil || client == nil || actor.Validate() != nil {
 		return nil, fmt.Errorf("admission executor requires fixed journal/client/owner")
 	}
@@ -38,7 +42,22 @@ func New(store *journal.Store, client *compute.Client, actor journal.Owner) (*Ex
 	if actor.Epoch != epoch {
 		return nil, fmt.Errorf("admission owner differs from client")
 	}
-	return &Executor{store: store, client: client, actor: actor, instance: instance}, nil
+	if len(resources) > 1 {
+		return nil, fmt.Errorf("admission requires at most one original resource client")
+	}
+	var root *resourceguard.Client
+	if len(resources) == 1 {
+		root = resources[0]
+	}
+	if root != nil {
+		id, epoch := root.Binding()
+		if id.VMUID != instance.VMUID || id.ComputeInstanceID != instance.ComputeInstanceID || epoch != actor.Epoch {
+			return nil, fmt.Errorf("admission resource domain differs from owner/Compute")
+		}
+	}
+	// nil仅保留历史原命令的只读可达性。任何新开放、显式重放或完成落账
+	// 都必须在下面核验已持久绑定的原root；不能把缺资源域当作兼容放行。
+	return &Executor{store: store, client: client, actor: actor, instance: instance, resources: root}, nil
 }
 
 // Advance只推进已存在操作的ResumeAdmission；预算/VM未确认或旧未知存在时不Start。
@@ -118,6 +137,23 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	if json.Unmarshal(finalized.Observation.Data, &settled) != nil {
 		return pgexec.AwaitingFact, fmt.Errorf("final budget receipt is incomplete")
 	}
+	var request control.AdmissionRequest
+	var fact control.AdmissionResponse
+	query := step.Phase != journal.Planned && replay == nil
+	if step.Phase != journal.Planned {
+		if json.Unmarshal(step.Command, &request) != nil || request.Validate() != nil || !request.Open || request.Instance != e.instance || request.BudgetCommitmentID != op.Request.BudgetCommitmentID || step.DispatchedBy == nil || request.IssuerEpoch != step.DispatchedBy.Epoch || request.ExpectedCapacityGeneration != settled.Shared.Observed.CapacityGeneration || step.TargetID != e.instance.ComputeInstanceID {
+			return pgexec.AwaitingFact, fmt.Errorf("original admission command differs from durable operation")
+		}
+	}
+	if query {
+		// 原开放可能已经生效，先查询完整原命令，即使root/PG此刻失联或约束
+		// 漂移也不能隐藏它。原生确认可解除同一SDK未知，但在全部预算/VM再
+		// 核验前，外层WAL仍是Unconfirmed，绝不重发、释放预算或提前完成。
+		fact, err = e.client.AdmissionStatus(ctx, request)
+		if err != nil || !fact.Confirms() {
+			return pgexec.AwaitingFact, err
+		}
+	}
 	fence, err := e.client.Fence(ctx, control.FenceRequest{ProtocolVersion: 1, Instance: e.instance, IssuerEpoch: e.actor.Epoch})
 	if err != nil {
 		return pgexec.AwaitingFact, err
@@ -140,10 +176,8 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	if !exact || vmMemory <= 0 || settled.ValidateFor(op.Request, shared, e.actor.Epoch, vm.Status.PodName, vm.Status.RestartCount, uint64(vmMemory)) != nil {
 		return pgexec.AwaitingFact, fmt.Errorf("current full budget/PG/Runner/VM fact is not confirmed")
 	}
-	var request control.AdmissionRequest
-	query := step.Phase != journal.Planned && replay == nil
 	if step.Phase != journal.Planned {
-		if json.Unmarshal(step.Command, &request) != nil || !request.Open || request.Instance != e.instance || request.BudgetCommitmentID != op.Request.BudgetCommitmentID || step.DispatchedBy == nil || request.IssuerEpoch != step.DispatchedBy.Epoch || request.ExpectedCapacityGeneration != shared.Observed.CapacityGeneration || step.TargetID != e.instance.ComputeInstanceID {
+		if request.ExpectedCapacityGeneration != shared.Observed.CapacityGeneration {
 			return pgexec.AwaitingFact, fmt.Errorf("original admission command differs from durable operation")
 		}
 	} else {
@@ -155,6 +189,17 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		if pending != nil || closing != nil {
 			return pgexec.AwaitingFact, nil
 		}
+	}
+	if _, err := e.checkRoot(ctx, snapshot, settled); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	// PG/root/Kube不是原子快照；网络等待不持锁。再次直接读取同一VM并
+	// 要求RV未变，封住采样期间Runner/owner/原意图漂移；新写仍需Start
+	// 的UID/RV CAS，显式重放也不得跳过此复核。外部长期承诺不由此补造。
+	if err := e.sameSnapshot(ctx, snapshot); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	if step.Phase == journal.Planned {
 		command, _ := json.Marshal(request)
 		var dispatch *journal.Dispatch
 		snapshot, dispatch, err = e.store.Start(ctx, snapshot, e.actor, op.Request.Key, journal.ResumeAdmission, e.instance.ComputeInstanceID, command)
@@ -163,10 +208,7 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		}
 		step = &dispatch.Step
 	}
-	var fact control.AdmissionResponse
-	if query {
-		fact, err = e.client.AdmissionStatus(ctx, request)
-	} else {
+	if !query {
 		fact, err = e.client.SetAdmission(ctx, request)
 	}
 	if err != nil {
@@ -194,10 +236,85 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	if settled.ValidateFor(op.Request, returned, e.actor.Epoch, vm.Status.PodName, vm.Status.RestartCount, uint64(vmMemory)) != nil {
 		return pgexec.AwaitingFact, fmt.Errorf("admission returned allocation exceeds retained full budget")
 	}
-	data, _ := json.Marshal(audit{ProtocolVersion: 1, Query: query, Fence: fence, Shared: shared, Response: fact})
+	// Setter成功不等于资源仍归原来源：写后重核原root/Birth及同一VM版本。
+	// 相同数值的新Held也会改变来源摘要，不能收养为原完整预算。失败保留
+	// 已派发原命令供下次只读查询，不补发关闭/开放、不改原epoch或预算。
+	aggregate, err := e.checkRoot(ctx, snapshot, settled)
+	if err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	if err := e.sameSnapshot(ctx, snapshot); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	data, _ := json.Marshal(audit{ProtocolVersion: 2, Query: query, Fence: fence, Shared: shared, Response: fact, PGAggregate: aggregate, ResourceEpoch: e.actor.Epoch})
 	_, err = e.store.Record(ctx, snapshot, e.actor, op.Request.Key, journal.Observation{Key: op.Request.Key, RequestSHA256: op.RequestSHA256, CommandSHA256: step.CommandSHA256, Ordinal: step.Ordinal, Action: journal.ResumeAdmission, Result: journal.Completed, SourceID: e.instance.ComputeInstanceID, Data: data})
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
 	return pgexec.Recorded, nil
+}
+
+// checkRoot只确认Finalized中PG聚合这一来源仍真实持续；不把Outside声明升级
+// 为已认证系统上界，也不认证Host承诺/免OOM。后续完整生产者须独立完成那些域。
+// 调用前已经ValidateFor，原总量/去重成立；仍显式检查本函数的Outside求和溢出。
+func (e *Executor) checkRoot(ctx context.Context, snapshot *journal.Snapshot, full budget.Finalized) (budget.RootAggregate, error) {
+	if e.resources == nil || snapshot.State().ResourceIdentity == nil || full.Aggregate == nil {
+		return budget.RootAggregate{}, fmt.Errorf("admission requires original authenticated aggregate resource domain")
+	}
+	id, _ := e.resources.Binding()
+	if *snapshot.State().ResourceIdentity != id {
+		return budget.RootAggregate{}, fmt.Errorf("admission original Guest binding changed")
+	}
+	if e.resources.Pending() != nil {
+		// 原root命令仍待独立Observe，不能拿当前聚合读回清另一个SDK未知。
+		// 外层原准入查询已在本函数之前执行，保持两领域的只读恢复可达。
+		return budget.RootAggregate{}, resourceguard.ErrUnknown
+	}
+	view, err := e.resources.InspectState(ctx)
+	if err != nil {
+		return budget.RootAggregate{}, err
+	}
+	if view.IssuerFloorEpoch != e.actor.Epoch || view.Actual.GuestMemTotalBytes < full.GuestUsableMemoryBytes {
+		return budget.RootAggregate{}, fmt.Errorf("admission resource owner or usable Guest changed")
+	}
+	aggregate, err := budget.RootAggregateFromView(view)
+	if err != nil {
+		return budget.RootAggregate{}, err
+	}
+	if aggregate.Bound != *full.Aggregate {
+		return budget.RootAggregate{}, fmt.Errorf("admission original aggregate source was replaced")
+	}
+	limits, err := view.ConfirmedLimits()
+	if err != nil {
+		return budget.RootAggregate{}, err
+	}
+	outside := uint64(0)
+	for _, b := range []budget.Bound{full.SystemOutsidePG, full.Transition, full.Safety} {
+		if uint64(b.UpperBytes) > math.MaxUint64-outside {
+			return budget.RootAggregate{}, fmt.Errorf("admission outside commitments overflow")
+		}
+		outside += uint64(b.UpperBytes)
+	}
+	if outside != uint64(limits.OutsideUpperBytes) {
+		return budget.RootAggregate{}, fmt.Errorf("admission outside reservation differs from original root source")
+	}
+	process, err := e.resources.InspectProcess(ctx)
+	if err != nil {
+		return budget.RootAggregate{}, err
+	}
+	if process != aggregate.Birth {
+		return budget.RootAggregate{}, fmt.Errorf("admission original Postmaster birth changed")
+	}
+	return aggregate, nil
+}
+
+func (e *Executor) sameSnapshot(ctx context.Context, original *journal.Snapshot) error {
+	latest, err := e.store.Load(ctx)
+	if err != nil {
+		return err
+	}
+	if !latest.Dispatchable() || latest.ResourceVersion() != original.ResourceVersion() || latest.State().Owner != e.actor {
+		return fmt.Errorf("admission VM/Runner/original journal changed during verification")
+	}
+	return nil
 }

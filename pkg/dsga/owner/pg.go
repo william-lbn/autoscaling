@@ -175,7 +175,13 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 		client.CloseIdleConnections()
 		return nil, err
 	}
-	admission, err := admissionexec.New(session.store, client, session.actor)
+	var admissionResources *resourceguard.Client
+	if resource != nil {
+		admissionResources = resource.client
+	}
+	// 最终开放也必须复用同一已认证root客户端，不能只在GuestReady/Quiesce
+	// 核验后就把旧预算当永久许可；nil仅保留旧未知命令的只读恢复。
+	admission, err := admissionexec.New(session.store, client, session.actor, admissionResources)
 	if err != nil {
 		client.CloseIdleConnections()
 		return nil, err

@@ -30,6 +30,9 @@ type guestRootFixture struct {
 	observes   int
 	loseReply  bool
 	afterApply func()
+	// 最终准入测试的独立读取/出生竞态钩子；均在fixture锁内访问。
+	afterProcess    func()
+	processOverride *resourceguard.ProcessIdentity
 }
 
 func guestRoot(t *testing.T, store *journal.Store) (*guestRootFixture, resourceguard.ClientConfig) {
@@ -83,7 +86,14 @@ func guestRoot(t *testing.T, store *journal.Store) (*guestRootFixture, resourceg
 		case "/dsg/v1/resource/state":
 			pgReply(w, f.view)
 		case "/dsg/v1/resource/process":
-			pgReply(w, f.view.Birth)
+			process := f.view.Birth
+			if f.processOverride != nil {
+				process = f.processOverride
+			}
+			if f.afterProcess != nil {
+				f.afterProcess()
+			}
+			pgReply(w, process)
 		case "/dsg/v1/resource/observe":
 			f.observes++
 			if f.view.Original == nil || !reflect.DeepEqual(*f.view.Original, c) {
