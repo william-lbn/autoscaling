@@ -25,6 +25,7 @@ import (
 	kubefake "k8s.io/client-go/kubernetes/fake"
 	kt "k8s.io/client-go/testing"
 
+	"github.com/neondatabase/autoscaling/internal/dsgatest"
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
@@ -129,7 +130,8 @@ func vmCore(t *testing.T) *kubefake.Clientset {
 	t.Helper()
 	controller, mount := true, true
 	pod := &core.Pod{ObjectMeta: metav1.ObjectMeta{Name: "runner", Namespace: binding().Namespace, UID: "runner-uid", ResourceVersion: "pod-rv-1", OwnerReferences: []metav1.OwnerReference{{APIVersion: "vm.neon.tech/v1", Kind: "VirtualMachine", Name: binding().Name, UID: binding().VMUID, Controller: &controller, BlockOwnerDeletion: nil}}}, Spec: core.PodSpec{NodeName: "node-one", ServiceAccountName: "dsga-runner-test", AutomountServiceAccountToken: &mount}, Status: core.PodStatus{Phase: core.PodRunning, PodIP: "127.0.0.1"}}
-	client := kubefake.NewSimpleClientset(pod, &core.Node{ObjectMeta: metav1.ObjectMeta{Name: "node-one", UID: "node-uid", ResourceVersion: "node-rv-1"}})
+	node := dsgatest.InitialNode(&core.Node{ObjectMeta: metav1.ObjectMeta{Name: "node-one", UID: "node-uid", ResourceVersion: "node-rv-1"}}, binding(), "runner", "runner-uid", 2<<30)
+	client := kubefake.NewSimpleClientset(pod, node)
 	var sequence atomic.Int64
 	client.PrependReactor("create", "configmaps", func(action kt.Action) (bool, runtime.Object, error) {
 		cm := action.(kt.CreateAction).GetObject().(*core.ConfigMap).DeepCopy()

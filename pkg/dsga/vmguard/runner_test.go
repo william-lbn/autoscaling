@@ -31,6 +31,7 @@ import (
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims"
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
@@ -49,6 +50,44 @@ type runnerFixture struct {
 	loseStateReply bool
 	nextUID        int
 	badShrink      string
+}
+
+func TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites(t *testing.T) {
+	for _, what := range []string{"missing", "unprotected", "replacement-node", "short-memory"} {
+		t.Run(what, func(t *testing.T) {
+			f := newRunnerFixture(t)
+			ctx := context.Background()
+			node, err := f.core.CoreV1().Nodes().Get(ctx, f.config.NodeName, metav1.GetOptions{})
+			require.NoError(t, err)
+			switch what {
+			case "missing":
+				delete(node.Annotations, hostguard.LedgerAnnotation)
+			case "unprotected":
+				node.Finalizers = nil
+			case "replacement-node":
+				node.UID = "replacement-node-uid"
+			case "short-memory":
+				var m hostguard.Model
+				require.NoError(t, json.Unmarshal([]byte(node.Annotations[hostguard.LedgerAnnotation]), &m))
+				(*m.Placements)[0].MemoryBytes--
+				raw, err := json.Marshal(m)
+				require.NoError(t, err)
+				node.Annotations[hostguard.LedgerAnnotation] = string(raw)
+			}
+			require.NoError(t, f.core.Tracker().Update(core.SchemeGroupVersion.WithResource("nodes"), node, ""))
+			config := f.config
+			config.StateDir = t.TempDir()
+			require.NoError(t, os.Chmod(config.StateDir, 0o700))
+			before := len(f.core.Actions())
+			_, err = Initialize(ctx, f.store, f.core.CoreV1(), f.core.CoordinationV1(), config)
+			require.Error(t, err)
+			_, err = os.Stat(filepath.Join(config.StateDir, "birth-intent.json"))
+			require.True(t, os.IsNotExist(err), "未获原容量时不能分配新的Runner boot身份")
+			for _, action := range f.core.Actions()[before:] {
+				require.NotEqual(t, "create", action.GetVerb(), "拒绝须早于所有原来源CREATE")
+			}
+		})
+	}
 }
 
 func newRunnerFixture(t *testing.T) *runnerFixture {
@@ -77,6 +116,7 @@ func newRunnerFixture(t *testing.T) *runnerFixture {
 	controller, mount := true, true
 	pod := &core.Pod{ObjectMeta: metav1.ObjectMeta{Name: "runner", Namespace: binding.Namespace, UID: "pod-uid", ResourceVersion: "1", OwnerReferences: []metav1.OwnerReference{{APIVersion: "vm.neon.tech/v1", Kind: "VirtualMachine", Name: binding.Name, UID: binding.VMUID, Controller: &controller, BlockOwnerDeletion: nil}}}, Spec: core.PodSpec{NodeName: "node", ServiceAccountName: vm.Spec.ServiceAccountName, AutomountServiceAccountToken: &mount}, Status: core.PodStatus{Phase: core.PodRunning, PodIP: vm.Status.PodIP}}
 	node := &core.Node{ObjectMeta: metav1.ObjectMeta{Name: "node", UID: "node-uid", ResourceVersion: "1"}}
+	node = dsgatest.InitialNode(node, binding, "runner", "pod-uid", 1<<30)
 	f := &runnerFixture{core: kubefake.NewSimpleClientset(pod, node), vms: vms, store: store, actor: s.State().Owner, runner: nil, config: Config{StateDir: "", PodName: "", PodUID: "", NodeName: "", MinimumBytes: 0, MaximumBytes: 0}, loseStateReply: false, nextUID: 0, badShrink: ""}
 	f.core.PrependReactor("create", "configmaps", func(action kt.Action) (bool, runtime.Object, error) {
 		cm := action.(kt.CreateAction).GetObject().(*core.ConfigMap).DeepCopy()

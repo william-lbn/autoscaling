@@ -20,6 +20,7 @@ import (
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims"
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
 
@@ -104,6 +105,16 @@ func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient
 	}
 	if node == nil || node.Name != c.NodeName || node.UID == "" || node.ResourceVersion == "" || node.DeletionTimestamp != nil {
 		return nil, fmt.Errorf("original Runner Node unavailable")
+	}
+	// 必须早于birth-intent/来源创建/QEMU。PG尚未启动不代表首次内存免费；
+	// Scheduler Reserve响应未知时保留容量但不许绑定，最终Runner再以自己
+	// 的API读取核原持有，防止绕过Scheduler直接指定nodeName启动。
+	use := uint64(vm.Spec.Guest.MemorySlots.Use)
+	if use < minSlots || use > maxSlots {
+		return nil, fmt.Errorf("initial Runner use is outside original VM geometry")
+	}
+	if err := hostguard.InspectInitialVM(node, store.Binding(), c.PodName, c.PodUID, control.Uint64(use*uint64(slot))); err != nil {
+		return nil, err
 	}
 	var nonce [16]byte
 	if _, err := rand.Read(nonce[:]); err != nil {

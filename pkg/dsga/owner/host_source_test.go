@@ -12,6 +12,7 @@ import (
 
 	jsonpatch "github.com/evanphx/json-patch/v5"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 
 	coord "k8s.io/api/coordination/v1"
 	core "k8s.io/api/core/v1"
@@ -23,10 +24,12 @@ import (
 	kt "k8s.io/client-go/testing"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
+	vmclient "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
@@ -91,7 +94,7 @@ func actualHostPublisher(t *testing.T, client *kubefake.Clientset, vmCoord coord
 	})
 	allocator, err := hostguard.NewStore(client.CoreV1(), client.CoordinationV1(), b, holder)
 	require.NoError(t, err)
-	_, err = allocator.Initialize(ctx, node.ResourceVersion, 1<<30)
+	_, err = allocator.Load(ctx)
 	require.NoError(t, err)
 	publisher, err := hostexec.New(client.CoreV1(), vmCoord, store, allocator, session.Ownership().LeaseUID, 64<<20)
 	require.NoError(t, err)
@@ -101,7 +104,7 @@ func actualHostPublisher(t *testing.T, client *kubefake.Clientset, vmCoord coord
 // 真实Node/VM存储、Host生产者、Runner出生/文件WAL和Unix QMP读取参与。
 // Kube服务、QEMU peer及资格上界仍为显式fixture，不声称已接生产Scheduler。
 func TestHostPublisherOriginalSourcesAndLostWrites(t *testing.T) {
-	for _, mode := range []string{"complete", "create-lost", "publish-lost", "published-source-missing", "same-name-new-uid", "outside-missing", "before-memory-drift", "VM-intent-changes", "consumer-start-lost", "consumer-record-lost", "consumer-source-gone", "consumer-waits-unpublished"} {
+	for _, mode := range []string{"complete", "create-lost", "publish-lost", "published-source-missing", "same-name-new-uid", "outside-missing", "before-memory-drift", "VM-intent-changes", "consumer-start-lost", "consumer-record-lost", "consumer-source-gone", "consumer-waits-unpublished", "actual-scheduler-loop"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, vmCoord := newAPI(t)
 			client := vmCore(t)
@@ -180,7 +183,12 @@ func TestHostPublisherOriginalSourcesAndLostWrites(t *testing.T) {
 					peer.mu.Unlock()
 					require.NoError(t, runner.Tick(ctx))
 				}
-				ref, err := publisher.Reconcile(ctx)
+				var ref budget.ObjectRef
+				if mode == "actual-scheduler-loop" {
+					ref = schedulerPublishesOriginalHost(t, ctx, api, client, vmCoord, allocator)
+				} else {
+					ref, err = publisher.Reconcile(ctx)
+				}
 				if mode == "outside-missing" || mode == "before-memory-drift" || mode == "VM-intent-changes" {
 					require.Error(t, err)
 					require.Empty(t, ref)
@@ -228,7 +236,9 @@ func TestHostPublisherOriginalSourcesAndLostWrites(t *testing.T) {
 					require.NoError(t, err)
 					beforePublish := node.DeepCopy()
 					model := n.State()
-					model.ProtocolVersion, model.Holds[0].Claim = 1, nil
+					// 本批原域为v3，只撤回Claim模拟发布前窗口，不能把仍含
+					// Placements/Profile的模型伪造为v1而测试错误的损坏来源。
+					model.Holds[0].Claim = nil
 					raw, err := json.Marshal(model)
 					require.NoError(t, err)
 					beforePublish.Annotations[hostguard.LedgerAnnotation] = string(raw)
@@ -293,6 +303,51 @@ func TestHostPublisherOriginalSourcesAndLostWrites(t *testing.T) {
 			peer.mu.Unlock()
 		})
 	}
+}
+
+// 组合实际Service.Run/client-go节点选主→Fence/恢复→Publisher→原CM/Node
+// 发布。Kube/VM HTTP和平台上界仍为fixture，VM Lease在两个测试API中的镜像
+// 显式固定；不把此组合称为真实K8s或物理Host认证。没有手工调用Publisher
+// 来代替本用例的实际Scheduler生产入口。
+func schedulerPublishesOriginalHost(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, vmCoord coordclient.CoordinationV1Interface, allocator *hostguard.Store) budget.ObjectRef {
+	t.Helper()
+	n, err := allocator.Load(ctx)
+	require.NoError(t, err)
+	m := n.State()
+	lease, err := client.CoordinationV1().Leases(m.Binding.Namespace).Get(ctx, m.Binding.LeaseName, metav1.GetOptions{})
+	require.NoError(t, err)
+	lease.Spec = coord.LeaseSpec{HolderIdentity: nil, LeaseDurationSeconds: nil, AcquireTime: nil, RenewTime: nil, LeaseTransitions: nil, Strategy: nil, PreferredHolder: nil}
+	require.NoError(t, client.Tracker().Update(coord.SchemeGroupVersion.WithResource("leases"), lease, lease.Namespace))
+	vmLease, err := vmCoord.Leases(binding().Namespace).Get(ctx, journal.LeaseName(binding()), metav1.GetOptions{})
+	require.NoError(t, err)
+	require.NoError(t, client.Tracker().Add(vmLease))
+	pod, err := client.CoreV1().Pods("testing").Get(ctx, "runner", metav1.GetOptions{})
+	require.NoError(t, err)
+	pod.Spec.SchedulerName = m.Profile.SchedulerName
+	require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("pods"), pod, pod.Namespace))
+	vmClient, err := vmclient.NewForConfig(api.config)
+	require.NoError(t, err)
+	c := hostscheduler.Config{Nodes: []hostscheduler.NodeConfig{{Binding: m.Binding, Profile: *m.Profile, SystemBytes: m.OutsideBytes, InitializeAtResourceVersion: ""}}}
+	scheduler, err := hostscheduler.New(client.CoreV1(), client.CoordinationV1(), vmClient, c, m.Profile.SchedulerName)
+	require.NoError(t, err)
+	runCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	require.NoError(t, scheduler.Run(runCtx, zap.NewNop()))
+	var ref budget.ObjectRef
+	require.Eventually(t, func() bool {
+		snapshot, err := allocator.Load(ctx)
+		if err != nil {
+			return false
+		}
+		for _, h := range snapshot.State().Holds {
+			if h.Claim != nil {
+				ref = *h.Claim
+				return true
+			}
+		}
+		return false
+	}, 5*time.Second, 20*time.Millisecond)
+	return ref
 }
 
 func publishVMHost(t *testing.T, ctx context.Context, client *kubefake.Clientset, vmCoord coordclient.CoordinationV1Interface, store *journal.Store, session *Session) budget.HostReservation {
