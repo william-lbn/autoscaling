@@ -1,0 +1,335 @@
+{
+  "module": "原VM明确未发送后的显式重放传输",
+  "date": "2026-10-27 Asia/Shanghai",
+  "source_repository": "william-lbn/autoscaling",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "code_commit": "9116929577cf0d8aa2fcabd8f563d7267711012e",
+  "base_commit": "29edec63d3939212d8b19fcf79fb368abfbe565e",
+  "source_files_sha256": {
+    "pkg/dsga/journal/vm_replay.go": "415cd263f1763de794921df3420f8602d41c96fb74faf7aa12b08c96a98fff00",
+    "pkg/dsga/journal/vm_replay_test.go": "0b1023c1a7f66337c63e5445164f1a64e1f4ee04a78435498fbced0679991101",
+    "pkg/dsga/owner/pg.go": "538c6add0557e4a22f0015a283c0e13e67e6bde4e72127e1f065396368a7bd00",
+    "pkg/dsga/owner/pg_test.go": "4db4ae73d96dcc94f9985bd4d1a623c03e5ceacb257330b6721faecc21ee4f37",
+    "pkg/dsga/owner/vm_exec_test.go": "48fe2890b01ccb00e9413b69ccf018b7d351860834691071603ed38248cada4c",
+    "pkg/dsga/vmexec/replay.go": "c94ec3922104e624725d0c07b864f3da32c827017b71e8d4678cf31b26374850",
+    "pkg/dsga/vmguard/engine.go": "b1b3ba986090427c5d2c6c38c3fb2aaa64c73b7481628ba2571c4320805f05cd",
+    "pkg/dsga/vmguard/engine_test.go": "cef8883713648d067c82298428a969ffb82d68cef931d822dcfaa21a50ba7a2e",
+    "pkg/dsga/vmguard/reader.go": "90dd108ff7169651e851f37f3d433987574d84ada8638da9a75c2b57e50fa944",
+    "pkg/dsga/vmguard/replay.go": "9067d657bc27c3d6d604e275d0658428c293b5b1cda903812721b80776e81839",
+    "pkg/dsga/vmguard/source.go": "d4384296a8b0149f008d642f83555cf4202e888c45c8d40360754fb7b7de04cd"
+  },
+  "results": {
+    "top_level": 8,
+    "including_subtests": 33,
+    "failed": 0,
+    "skipped": 0
+  },
+  "tests": [
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "test": "TestVMReplaySelectionStrictWireRejectsAmbiguousChoice",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-wire-final-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "test": "TestVMReplaySelectionUsesOriginalCASWithoutRewritingJournal",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-idempotent-cas-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "test": "TestVMReplaySelectionUsesOriginalCASWithoutRewritingJournal/already-settled",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "test": "TestVMReplaySelectionUsesOriginalCASWithoutRewritingJournal/cancelled",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "test": "TestVMReplaySelectionUsesOriginalCASWithoutRewritingJournal/lost-reply",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "test": "TestVMReplaySelectionUsesOriginalCASWithoutRewritingJournal/selected",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-idempotent-cas-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "test": "TestVMReplaySelectionUsesOriginalCASWithoutRewritingJournal/stale-version",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "test": "TestVMReplaySelectionUsesOriginalCASWithoutRewritingJournal/wrong-digest",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "test": "TestVMReplaySelectionUsesOriginalCASWithoutRewritingJournal/wrong-key",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "test": "TestVMReplaySelectionUsesOriginalCASWithoutRewritingJournal/wrong-owner",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "test": "TestClosedWakeAndReplayChannelsDoNotSpin",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-closed-channels-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-idempotent-owner-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-explicit-VM-replay",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-idempotent-owner-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-explicit-VM-replay-host-gone-after",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-idempotent-owner-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-explicit-VM-replay-host-gone-before",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-owner-final-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-explicit-VM-replay-lost-selection",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-idempotent-owner-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/reject-VM-replay-may-have-sent",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-owner-final-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "test": "TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-shrink-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "test": "TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/explicit-original-replay",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-shrink-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestPublished29RunnerIgnoresNewReplayHintAndKeepsNotSent",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-old-29-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerPreparedCrashNeedsExplicitUnchangedReplay",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/baseline",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/expired",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/host",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/journal",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/nonce",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/original-replay",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/owner",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/receipt-uid",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/same-replay",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/target",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/unpublished",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerReplayCannotCycleOldSelectionAfterAnotherNotSent",
+      "action": "pass",
+      "log": "build/dsga-vm-replay-model-20261027.jsonl"
+    }
+  ],
+  "evidence_sha256": {
+    "build/dsga-vm-replay-model-20261027.jsonl": "9d2b877269d5fa7e7d79ff3ede0145da6304b1498bd1044698d8d743f88acd68",
+    "build/dsga-vm-replay-wire-final-20261027.jsonl": "00637d831a6ba5ca00b6a0fe6141f4835b54dc888598af92696d7ccbfb53485b",
+    "build/dsga-vm-replay-owner-final-20261027.jsonl": "9e27208f31640a68525c773805ddbeafe91d4054dd5aa8818d4670bbf35e28f0",
+    "build/dsga-vm-replay-shrink-20261027.jsonl": "ff484a401c7ef12815357b3d0b0656587c134392eff59f3f34a9df7f24e0c193",
+    "build/dsga-vm-replay-closed-channels-20261027.jsonl": "e3d9245371569328c90f3fbdc6bf9561d1abc202eb17841bb3723272ecd9ad85",
+    "build/dsga-vm-replay-old-29-20261027.jsonl": "5f992095ff57f125751168c502dd210cdabbd954238c25593445998393f9871c",
+    "build/dsga-vm-replay-idempotent-cas-20261027.jsonl": "8c6eb50ad95961110fdd4ae67a6b3e6e883e602479860ba34e7a99ce9e6ce144",
+    "build/dsga-vm-replay-idempotent-owner-20261027.jsonl": "1ee1a9c248d2659597b8d742f227ffd67ac8deb8cbafeabe62aaa6bd598ed68c",
+    "build/dsga-vm-replay-owner-20261027.jsonl": "bfa4ab56474777101326d19a7f333aeaba4b750e25064cef7d2a63b9d5561e83",
+    "build/dsga-vm-replay-lint-initial-20261027.log": "a7fe5bae0bb6b5311255c7d99e0e199763bf0e9accd4970ef779fcfaec1bda9a",
+    "build/dsga-vm-replay-lint-final-20261027.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "build/dsga-vm-replay-final-vet-20261027.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/dsga-vm-replay-compile-initial-20261027.log": "51b5b8a3ec64f52fce1a1af0790829e981a6153e9bf87b6c9de0c05506b61912"
+  },
+  "source_protocol": {
+    "vm_model": 4,
+    "runner_record": 1,
+    "pg_abi_unchanged": true,
+    "selection_schema": 1,
+    "selection_max_bytes_including_outer_whitespace": 2048,
+    "selection_annotation": "internal.autoscaling.neon.tech/dsga-vm-original-replay-v1",
+    "additional_CM_write_permissions": false,
+    "ordinary_poll_generates_selection": false,
+    "production_loop_channel_default": "nil; trusted public operation coordinator hookup remains separate lifecycle work"
+  },
+  "quality": {
+    "linter": "golangci-lint 2.4.0; repository rules",
+    "target": "Linux amd64",
+    "new_from_revision": "29edec63d3939212d8b19fcf79fb368abfbe565e",
+    "issues": 0,
+    "native_readonly_vet_packages": 4,
+    "vet_exit_code": 0
+  },
+  "compile_only_artifacts": {
+    "build/dsga-vm-replay-final-agent-linux-amd64": {
+      "sha256": "91776b5b827ed51179f950d4b37c418838d6fd5bb2625dc2fe3e63da1bd070c6",
+      "size_bytes": 79756846,
+      "executed": false,
+      "buildvcs": false
+    },
+    "build/dsga-vm-replay-final-agent-linux-arm64": {
+      "sha256": "b54b71f8dcae1a462e71cb417778b9cac67d6b6b9e6f50b87b66683821ab900e",
+      "size_bytes": 75421231,
+      "executed": false,
+      "buildvcs": false
+    },
+    "build/dsga-vm-replay-final-runner-linux-amd64": {
+      "sha256": "40809bc5d88a69611f70c556808a835c7d5bd86fba1259e25fab0862a9859d10",
+      "size_bytes": 58254715,
+      "executed": false,
+      "buildvcs": false
+    },
+    "build/dsga-vm-replay-final-runner-linux-arm64": {
+      "sha256": "9b101a8d4fb0d226d415749eadec0da4eb21438851445a1eaa7be2c3a095ac01",
+      "size_bytes": 55158004,
+      "executed": false,
+      "buildvcs": false
+    }
+  },
+  "actual_old_runner": {
+    "source_commit": "29edec63d3939212d8b19fcf79fb368abfbe565e",
+    "archive_path": "build/dsga-vm-replay-old-29",
+    "test": "pkg/dsga/vmguard/old_selection_test.go",
+    "test_sha256": "572daeab599d3f35574be5d1fbd886b72eb7625425ce517f1682b3455da06782",
+    "result": "new hint ignored; original not_sent retained; zero memory writes"
+  },
+  "execution_scripts": {
+    "build/run-dsga-vm-replay-20261027.sh": "393c45dce62fdedb90790b536fd286a1d8b2fa766de295de01b8ecf2742c20d7",
+    "build/run-dsga-vm-replay-quality-20261027.sh": "02e00920894e103925a703f79c9355510eb33348f5551ee65c9e28cc74138b0b",
+    "build/run-dsga-vm-replay-final-compile-20261027.sh": "c768372808a0c21158e424138180f6bb95170392bf25fd683477d7af1fc4d559"
+  },
+  "prior_failures_retained": [
+    "initial strict wire whitespace test exposed json.Unmarshal outer whitespace trim; fixed raw annotation parser bounds",
+    "initial owner test assumed explicit channel always chosen before ready ticker; fixture now enqueues only once and permits more original waiting",
+    "initial increment lint reported one predeclared copy variable; renamed selectedKey"
+  ],
+  "reuse_policy": "Last fully named case replaces earlier case, not cumulative. Initial model package had one failed strict case; final strict case replaces it. Only affected selected CAS and 3 owner cases rechecked after read-only idempotency change. Other previously passed cases are retained. No unchanged PG/HTTP/core225 repeats. Source hashes identify delivered tree; no retroactive claim that early test binaries had final formatted sources.",
+  "explicit_fixture_boundary": [
+    "Kube UID/RV HTTP/fake Core and nonce metadata are protocol tests; not real apiserver/RBAC",
+    "actual production Session/Agent/Runner/file lock/Unix QMP protocol executes",
+    "QMP peer replaces QEMU/KVM; Prepare/Host and PG/Root kernel facts are explicit fixtures",
+    "shrink prior PG release/quiesce domain remains explicit fixture"
+  ],
+  "pg17_unchanged": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "control_plane_unchanged": "d84c0b73004a7d8cc3e89f3c3f0e3f06cfa8cba9",
+  "upstream_frozen_at": "2026-10-26T17:29:30+08:00",
+  "new_upstream_fetch": false,
+  "whole_core_complete": false,
+  "linux_runtime_certified": false,
+  "remaining_core": [
+    "trusted complete Prepare and qualified residual/transition/safety producers",
+    "real Host/Scheduler held resource producer and explicit release",
+    "safe normal decrease and continuous private/background constraints",
+    "first budget/admission and policy/Monitor/Agent Begin/public operation lifecycle hookup",
+    "cancelled/unknown settlement and controlled cross-boot closure"
+  ],
+  "deferred_platform": [
+    "Linux apiserver/RBAC/CM source protection",
+    "real QEMU/KVM/private QMP ownership and asynchronous/partial unplug",
+    "kernel cgroup/normal/HugeTLB/physical/Host/migration",
+    "performance and long running validation"
+  ],
+  "excluded": [
+    "control-plane business/SDK/branch changes",
+    "other PG majors",
+    "images/deployments/main merges"
+  ]
+}
