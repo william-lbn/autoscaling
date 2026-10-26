@@ -19,6 +19,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
 
 type Executor struct {
@@ -28,6 +29,7 @@ type Executor struct {
 	instance  control.Instance
 	resources *resourceguard.Client
 	claims    *budgetclaims.Reader
+	runner    *vmguard.Reader
 }
 
 type audit struct {
@@ -63,11 +65,12 @@ func New(store *journal.Store, client *compute.Client, actor journal.Owner, reso
 	}
 	// nil仅保留历史原命令的只读可达性。任何新开放、显式重放或完成落账
 	// 都必须在下面核验已持久绑定的原root；不能把缺资源域当作兼容放行。
-	return &Executor{store: store, client: client, actor: actor, instance: instance, resources: root}, nil
+	return &Executor{store: store, client: client, actor: actor, instance: instance, resources: root, claims: nil, runner: nil}, nil
 }
 
-// NewWithClaims用于实际生产Agent；新开放必须核验持续Outside/Host持有对象。
-// 旧New仅保留已有模块/历史读取，不能消费带新Sources但缺少可信读者的结算。
+// NewWithClaims保留仅含Outside/Host来源的历史领域接线；实际Agent使用下面
+// 的NewWithRunner。旧New仅保留已有模块/历史读取，不能消费带新Sources
+// 但缺少可信读者的结算；本构造器也不能借缺Runner读者降级当前预算。
 func NewWithClaims(store *journal.Store, client *compute.Client, actor journal.Owner, claims *budgetclaims.Reader, resources *resourceguard.Client) (*Executor, error) {
 	if claims == nil {
 		return nil, fmt.Errorf("production admission requires original reservation reader")
@@ -77,6 +80,20 @@ func NewWithClaims(store *journal.Store, client *compute.Client, actor journal.O
 		return nil, err
 	}
 	e.claims = claims
+	return e, nil
+}
+
+// 实际生产入口在预算/Guest来源之外必须核原Runner持久回执。旧构造器保留历史
+// 读取和已有领域测试，不允许无读者消费新Runner来源。
+func NewWithRunner(store *journal.Store, client *compute.Client, actor journal.Owner, claims *budgetclaims.Reader, resources *resourceguard.Client, runner *vmguard.Reader) (*Executor, error) {
+	if runner == nil {
+		return nil, fmt.Errorf("production admission requires original Runner reader")
+	}
+	e, err := NewWithClaims(store, client, actor, claims, resources)
+	if err != nil {
+		return nil, err
+	}
+	e.runner = runner
 	return e, nil
 }
 
@@ -229,7 +246,12 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 			// 仅旧Active原结算的显式在线升级。未知原开放已经先查询；完整来源
 			// 不可用时保留原WAL，不能补写。升级先返回Recorded，由下一轮独立
 			// 准入；绝不能在长期预算CAS尚未确认时发送新的开放。
-			finalizer, err := budgetexec.New(e.store, e.client, e.resources, e.actor, e.claims)
+			var finalizer *budgetexec.Executor
+			if e.runner != nil {
+				finalizer, err = budgetexec.New(e.store, e.client, e.resources, e.actor, e.claims, e.runner)
+			} else {
+				finalizer, err = budgetexec.New(e.store, e.client, e.resources, e.actor, e.claims)
+			}
 			if err != nil {
 				return pgexec.AwaitingFact, err
 			}
@@ -288,6 +310,9 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		if err := e.claims.Recheck(ctx, snapshot, prepared, settled.Sources.HostClaim, claimObservation); err != nil {
 			return pgexec.AwaitingFact, err
 		}
+	}
+	if _, _, err := e.checkClaims(ctx, snapshot, settled, aggregate); err != nil {
+		return pgexec.AwaitingFact, err
 	}
 	if err := e.sameSnapshot(ctx, snapshot); err != nil {
 		return pgexec.AwaitingFact, err
@@ -408,6 +433,32 @@ func (e *Executor) checkClaims(ctx context.Context, s *journal.Snapshot, f budge
 	}
 	if !reflect.DeepEqual(observed.Host, fact.Host) {
 		return nil, p, fmt.Errorf("final VM Host commitment changed")
+	}
+	if e.runner != nil {
+		if f.Sources.Runner == nil || fact.Runner == nil || *f.Sources.Runner != *fact.Runner {
+			return nil, p, fmt.Errorf("production admission lacks original retained Runner sources")
+		}
+		var original budget.FinalizationCommand
+		var final *journal.Step
+		for i := range op.Steps {
+			if op.Steps[i].Action == journal.FinalizeBudget {
+				final = &op.Steps[i]
+				break
+			}
+		}
+		if final == nil || json.Unmarshal(final.Command, &original) != nil || original.Validate() != nil || !reflect.DeepEqual(original.Finalized, f) {
+			return nil, p, fmt.Errorf("original finalization command changed before Runner verification")
+		}
+		proof, err := e.runner.CheckRetained(ctx, *fact.Runner, f.Request, original.PreparedSHA256, original.GuestSHA256, f.Sources.HostClaim, e.actor)
+		if err != nil {
+			return nil, p, err
+		}
+		var cmd vmguard.Command
+		if json.Unmarshal(vmStep.Command, &cmd) != nil || cmd != proof.Receipt.Intent.Command || fact.Runner.JournalSHA256 != vmStep.CommandSHA256 || proof.Actual.ActualBytes != fact.ActualMemoryBytes {
+			return nil, p, fmt.Errorf("admission original VM/Runner command differs")
+		}
+	} else if f.Sources.Runner != nil || fact.Runner != nil {
+		return nil, p, fmt.Errorf("runner-backed admission requires authenticated original reader")
 	}
 	return observed, p, nil
 }

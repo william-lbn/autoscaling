@@ -14,6 +14,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +30,6 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceexec"
-	"github.com/stretchr/testify/require"
 )
 
 func budgetStep(t *testing.T, store *journal.Store, action journal.Action) journal.Step {
@@ -44,6 +45,7 @@ func budgetStep(t *testing.T, store *journal.Store, action journal.Action) journ
 	t.Fatal("missing budget step", action)
 	return journal.Step{}
 }
+
 func priorBudgetDomain(t *testing.T, ctx context.Context, store *journal.Store, actor journal.Owner, req control.Request, action journal.Action, target string, body any) {
 	t.Helper()
 	s, err := store.Load(ctx)
@@ -56,7 +58,9 @@ func priorBudgetDomain(t *testing.T, ctx context.Context, store *journal.Store, 
 	require.NoError(t, err)
 }
 
-// 仅测试夹具：构造先前已发布v2读者实际保存的完整Active，无budget_held字段。
+// 仅测试夹具：构造显式v2无budget_held投影，核对原Active升级/查询顺序。
+// 新增Runner来源完整保留；它不是旧v2已发布读者真实接受此新增来源的证明，
+// 真实旧读者的拒绝另由固定旧源码合约验证。
 // 生产代码严禁降级或改写日志；这里显式重新封装同一旧wire，检验新读者不能在
 // Load时凭猜测升级。完整旧原命令/回执和owner均逐字节保留。
 func legacyFinalizationFixture(t *testing.T, api *ownerAPI, model journal.Model) {
@@ -90,7 +94,7 @@ func legacyFinalizationFixture(t *testing.T, api *ownerAPI, model journal.Model)
 // Core对象、PG/root内核、Prepare/Host/VM生产者是显式协议夹具；不冒充真实
 // apiserver/RBAC/Host分配/QMP/系统上界资格、Linux物理或完整V3端到端验证。
 func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t *testing.T) {
-	for _, mode := range []string{"complete", "outside-uid", "host-releasing", "runner-uid", "node-uid", "vm-qmp", "lost-start", "lost-record", "outside-replaced-after-start", "runner-drift-after-start", "outside-gone-before-open", "outside-replaced-after-open", "legacy-final-without-claims", "root-birth-after-start", "pg-generation-after-start", "shrink-complete", "shrink-unverified", "shrink-observe-mismatch", "unprotected-claim", "protection-lost-after-start", "legacy-v2-upgrade", "legacy-v2-lost-upgrade", "legacy-v2-source-lost", "legacy-v2-unknown-open", "legacy-v2-unknown-source-lost"} {
+	for _, mode := range []string{"complete", "outside-uid", "host-releasing", "runner-uid", "node-uid", "vm-qmp", "lost-start", "lost-record", "outside-replaced-after-start", "runner-drift-after-start", "outside-gone-before-open", "outside-replaced-after-open", "legacy-final-without-claims", "root-birth-after-start", "pg-generation-after-start", "shrink-complete", "shrink-unverified", "shrink-observe-mismatch", "unprotected-claim", "protection-lost-after-start", "legacy-v2-upgrade", "legacy-v2-lost-upgrade", "legacy-v2-source-lost", "legacy-v2-unknown-open", "legacy-v2-unknown-source-lost", "runner-birth-recreated", "runner-state-recreated", "runner-receipt-gone", "runner-receipt-gone-after-start", "runner-receipt-gone-before-open"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			root, resourceConfig := guestRoot(t, store)
@@ -204,7 +208,7 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 				api.mu.Unlock()
 				controller := true
 				owner := metav1.OwnerReference{APIVersion: "vm.neon.tech/v1", Kind: "VirtualMachine", Name: binding().Name, UID: binding().VMUID, Controller: &controller, BlockOwnerDeletion: &controller}
-				h := budget.HostReservation{ProtocolVersion: 1, Request: req, Identity: p.Identity, Incarnation: binding().Incarnation, SourceID: "host-original", RunnerPodName: p.RunnerPodName, RunnerPodUID: "runner-uid", NodeName: "node-one", NodeUID: "node-uid", ReservedMemoryBytes: req.TargetVMMemoryBytes + (4 << 20), HostOverheadBytes: 4 << 20, HoldUntilExplicitSettlement: true}
+				h := budget.HostReservation{ProtocolVersion: 1, Request: req, Identity: p.Identity, Incarnation: binding().Incarnation, SourceID: "host-original", RunnerPodName: p.RunnerPodName, RunnerPodUID: "runner-uid", NodeName: "node-one", NodeUID: "node-uid", ReservedMemoryBytes: max(req.TargetVMMemoryBytes, p.VMBeforeMemoryBytes) + (4 << 20), HostOverheadBytes: 4 << 20, HoldUntilExplicitSettlement: true, VMShrinkPermit: false}
 				outside := budget.OutsideReservation{ProtocolVersion: 1, Request: req, Identity: p.Identity, Incarnation: binding().Incarnation, ResidualProfileID: "test-only-qualified-profile", SystemOutsidePG: p.SystemOutsidePG, Transition: p.Transition, Safety: p.Safety, HoldUntilExplicitSettlement: true}
 				claim := func(name, uid, kind string, body any) *core.ConfigMap {
 					data, err := json.Marshal(body)
@@ -236,7 +240,7 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 					}
 				} else {
 					priorBudgetDomain(t, ctx, store, session.Actor(), req, journal.ReserveHost, h.SourceID, h)
-					priorBudgetDomain(t, ctx, store, session.Actor(), req, journal.ResizeVM, h.RunnerPodUID, vmFact)
+					vmFact = originalRunnerFixture(t, ctx, client, store, session, p, vmFact)
 				}
 				progress, err := worker.Advance(ctx)
 				require.NoError(t, err)
@@ -248,7 +252,7 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 					api.mu.Lock()
 					api.vm.Status.MemorySize = resource.NewQuantity(int64(req.TargetVMMemoryBytes), resource.BinarySI)
 					api.mu.Unlock()
-					priorBudgetDomain(t, ctx, store, session.Actor(), req, journal.ResizeVM, h.RunnerPodUID, vmFact)
+					vmFact = originalRunnerFixture(t, ctx, client, store, session, p, vmFact)
 					observed := vmFact
 					if mode == "shrink-observe-mismatch" {
 						observed.RunnerCommandID = "another-command"
@@ -266,6 +270,18 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 					require.EqualValues(t, 1, resizePosts.Load())
 				}
 				switch mode {
+				case "runner-birth-recreated", "runner-state-recreated":
+					ref := vmFact.Runner.BirthClaim
+					if mode == "runner-state-recreated" {
+						ref = vmFact.Runner.StateClaim
+					}
+					obj, err := client.Tracker().Get(core.SchemeGroupVersion.WithResource("configmaps"), binding().Namespace, ref.Name)
+					require.NoError(t, err)
+					cm := obj.(*core.ConfigMap).DeepCopy()
+					cm.UID = "same-name-new-runner-source"
+					require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("configmaps"), cm, binding().Namespace))
+				case "runner-receipt-gone":
+					require.NoError(t, client.Tracker().Delete(core.SchemeGroupVersion.WithResource("configmaps"), binding().Namespace, vmFact.Runner.ReceiptClaim.Name))
 				case "unprotected-claim":
 					outCM.Finalizers = nil
 					require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("configmaps"), outCM, binding().Namespace))
@@ -302,6 +318,11 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 						return false, nil, nil
 					}
 					reads++
+					if reads == 3 && mode == "runner-receipt-gone-after-start" {
+						// Finalize写前CAS成功后原Runner回执丢失，不能只凭此前采样
+						// 写Completed或持有v4预算；原Finalize保留Unconfirmed。
+						require.NoError(t, client.Tracker().Delete(core.SchemeGroupVersion.WithResource("configmaps"), binding().Namespace, vmFact.Runner.ReceiptClaim.Name))
+					}
 					if reads >= 3 && mode == "protection-lost-after-start" {
 						cm := outCM.DeepCopy()
 						cm.Finalizers = nil
@@ -337,7 +358,7 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 					return false, nil, nil
 				})
 				progress, err = worker.Advance(ctx)
-				if mode == "complete" || mode == "shrink-complete" || mode == "outside-gone-before-open" || mode == "outside-replaced-after-open" || strings.HasPrefix(mode, "legacy-v2-") {
+				if mode == "complete" || mode == "shrink-complete" || mode == "outside-gone-before-open" || mode == "outside-replaced-after-open" || mode == "runner-receipt-gone-before-open" || strings.HasPrefix(mode, "legacy-v2-") {
 					require.NoError(t, err)
 					require.Equal(t, pgexec.Recorded, progress)
 					step := budgetStep(t, store, journal.FinalizeBudget)
@@ -349,7 +370,7 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 					require.NoError(t, full.ValidateFor(req, finalShared, session.Actor().Epoch, p.RunnerPodName, 0, uint64(req.TargetVMMemoryBytes)))
 					settled, err := store.Load(ctx)
 					require.NoError(t, err)
-					require.EqualValues(t, 3, settled.State().ProtocolVersion)
+					require.EqualValues(t, 4, settled.State().ProtocolVersion)
 					require.Equal(t, step, settled.State().BudgetHeld.Finalization, "Completed与长期预算必须同CAS持久")
 					if strings.HasPrefix(mode, "legacy-v2-") {
 						if strings.HasPrefix(mode, "legacy-v2-unknown-") {
@@ -398,7 +419,7 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 						}
 						latest, err := store.Load(ctx)
 						require.NoError(t, err)
-						require.EqualValues(t, 3, latest.State().ProtocolVersion)
+						require.EqualValues(t, 4, latest.State().ProtocolVersion)
 						require.Equal(t, step, latest.State().BudgetHeld.Finalization)
 						require.Equal(t, step, budgetStep(t, store, journal.FinalizeBudget), "升级保持旧完成字节不变")
 						progress, err = worker.Advance(ctx)
@@ -413,6 +434,9 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 					}
 					if mode == "outside-gone-before-open" {
 						require.NoError(t, client.Tracker().Delete(core.SchemeGroupVersion.WithResource("configmaps"), binding().Namespace, outCM.Name))
+					}
+					if mode == "runner-receipt-gone-before-open" {
+						require.NoError(t, client.Tracker().Delete(core.SchemeGroupVersion.WithResource("configmaps"), binding().Namespace, vmFact.Runner.ReceiptClaim.Name))
 					}
 					progress, err = worker.Advance(ctx)
 					if mode == "complete" || mode == "shrink-complete" {
@@ -460,7 +484,7 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 					require.Error(t, err)
 					require.Equal(t, pgexec.AwaitingFact, progress)
 					want := journal.Planned
-					if mode == "outside-replaced-after-start" || mode == "runner-drift-after-start" || mode == "root-birth-after-start" || mode == "pg-generation-after-start" || mode == "protection-lost-after-start" {
+					if mode == "outside-replaced-after-start" || mode == "runner-drift-after-start" || mode == "root-birth-after-start" || mode == "pg-generation-after-start" || mode == "protection-lost-after-start" || mode == "runner-receipt-gone-after-start" {
 						want = journal.Unconfirmed
 					}
 					action := journal.FinalizeBudget

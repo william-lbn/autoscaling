@@ -19,6 +19,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
 
 type Executor struct {
@@ -29,9 +30,10 @@ type Executor struct {
 	instance control.Instance
 	id       resourceguard.Identity
 	claims   *budgetclaims.Reader
+	runner   *vmguard.Reader
 }
 
-func New(store *journal.Store, pg *compute.Client, root *resourceguard.Client, actor journal.Owner, claims *budgetclaims.Reader) (*Executor, error) {
+func New(store *journal.Store, pg *compute.Client, root *resourceguard.Client, actor journal.Owner, claims *budgetclaims.Reader, runners ...*vmguard.Reader) (*Executor, error) {
 	if store == nil || pg == nil || root == nil || claims == nil || actor.Validate() != nil {
 		return nil, fmt.Errorf("budget finalization requires original store/PG/root/claims/owner")
 	}
@@ -40,7 +42,14 @@ func New(store *journal.Store, pg *compute.Client, root *resourceguard.Client, a
 	if epoch != actor.Epoch || resourceEpoch != epoch || instance.VMUID != string(store.Binding().VMUID) || id.VMUID != instance.VMUID || id.ComputeInstanceID != instance.ComputeInstanceID {
 		return nil, fmt.Errorf("budget domains differ")
 	}
-	return &Executor{store: store, pg: pg, root: root, actor: actor, instance: instance, id: id, claims: claims}, nil
+	if len(runners) > 1 || len(runners) == 1 && runners[0] == nil {
+		return nil, fmt.Errorf("one original Runner reader required")
+	}
+	var runner *vmguard.Reader
+	if len(runners) == 1 {
+		runner = runners[0]
+	}
+	return &Executor{store: store, pg: pg, root: root, actor: actor, instance: instance, id: id, claims: claims, runner: runner}, nil
 }
 
 // command固定第一次结算时的完整Finalized与所有原前驱摘要。此步骤只有本地CAS
@@ -128,6 +137,9 @@ func (e *Executor) advance(ctx context.Context, retain bool) (pgexec.Progress, e
 			return pgexec.AwaitingFact, fmt.Errorf("shrink final VM readback differs from original settlement")
 		}
 	}
+	if err := e.checkRunner(ctx, p, preparedStep, guestStep, vmStep, vmFact); err != nil {
+		return pgexec.AwaitingFact, err
+	}
 	observed, err := e.claims.Read(ctx, snapshot, p, vmFact.HostClaim)
 	if err != nil {
 		return pgexec.AwaitingFact, err
@@ -188,7 +200,7 @@ func (e *Executor) advance(ctx context.Context, retain bool) (pgexec.Progress, e
 	if !exact || memory <= 0 || uint64(memory) != uint64(vmFact.ActualMemoryBytes) {
 		return pgexec.AwaitingFact, fmt.Errorf("final VM status differs from verified QMP settlement")
 	}
-	final := budget.Finalized{ProtocolVersion: 1, Request: op.Request, IssuerEpoch: op.Request.Key.IssuerEpoch, RunnerPodName: p.RunnerPodName, RunnerRestartCount: p.RunnerRestartCount, HostReservationID: vmFact.Host.SourceID, GuestUsableMemoryBytes: p.GuestUsableMemoryBytes, Shared: shared, SystemOutsidePG: p.SystemOutsidePG, Aggregate: &guest.PGAggregate.Bound, Transition: p.Transition, Safety: p.Safety, Sources: &budget.SettlementSources{OutsideClaim: *p.OutsideClaim, HostClaim: vmFact.HostClaim, VMReceiptSHA256: digest(vmStep.Observation.Data)}}
+	final := budget.Finalized{ProtocolVersion: 1, Request: op.Request, IssuerEpoch: op.Request.Key.IssuerEpoch, RunnerPodName: p.RunnerPodName, RunnerRestartCount: p.RunnerRestartCount, HostReservationID: vmFact.Host.SourceID, GuestUsableMemoryBytes: p.GuestUsableMemoryBytes, Shared: shared, SystemOutsidePG: p.SystemOutsidePG, Aggregate: &guest.PGAggregate.Bound, Transition: p.Transition, Safety: p.Safety, Sources: &budget.SettlementSources{OutsideClaim: *p.OutsideClaim, HostClaim: vmFact.HostClaim, VMReceiptSHA256: digest(vmStep.Observation.Data), Runner: vmFact.Runner}, VMShrinkPermit: false, PrivateAndDSM: nil, LFCOutsideShared: nil, HugePoolOutsideShared: nil}
 	if step.Phase == journal.Planned && final.ValidateFor(op.Request, shared, e.actor.Epoch, vm.Status.PodName, vm.Status.RestartCount, uint64(memory)) != nil {
 		return pgexec.AwaitingFact, fmt.Errorf("complete final budget does not fit original target")
 	}
@@ -250,6 +262,9 @@ func (e *Executor) advance(ctx context.Context, retain bool) (pgexec.Progress, e
 	if err = e.sameSnapshot(ctx, snapshot); err != nil {
 		return pgexec.AwaitingFact, err
 	}
+	if err := e.checkRunner(ctx, p, preparedStep, guestStep, vmStep, vmFact); err != nil {
+		return pgexec.AwaitingFact, err
+	}
 	data, err := json.Marshal(original.Finalized)
 	if err != nil {
 		return pgexec.AwaitingFact, err
@@ -270,6 +285,7 @@ func (e *Executor) advance(ctx context.Context, retain bool) (pgexec.Progress, e
 	}
 	return pgexec.Recorded, nil
 }
+
 func (e *Executor) sameSnapshot(ctx context.Context, original *journal.Snapshot) error {
 	latest, err := e.store.Load(ctx)
 	if err != nil {

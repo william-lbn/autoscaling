@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"time"
 
+	coreclient "k8s.io/client-go/kubernetes/typed/core/v1"
+
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/admissionexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
@@ -18,7 +20,8 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/quiesceexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
-	coreclient "k8s.io/client-go/kubernetes/typed/core/v1"
+	"github.com/neondatabase/autoscaling/pkg/dsga/vmexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
 
 // PGWorker在一个已经确认的owner Session内长期拥有同一个客户端/原意图栅栏。
@@ -32,6 +35,7 @@ type PGWorker struct {
 	resources *resourceexec.Executor
 	quiesce   *quiesceexec.Executor
 	finalize  *budgetexec.Executor
+	vm        *vmexec.Executor
 }
 
 func (session *Session) coupledContext(ctx context.Context) (context.Context, context.CancelFunc) {
@@ -231,11 +235,18 @@ func (session *Session) NewProductionPGWorker(ctx context.Context, config comput
 		return nil, err
 	}
 	claims, err := budgetclaims.New(core, session.binding)
+	var runner *vmguard.Reader
 	if err == nil {
-		worker.finalize, err = budgetexec.New(session.store, worker.client, resources.client, session.actor, claims)
+		runner, err = vmguard.NewReader(core, session.binding, string(session.leaseUID))
 	}
 	if err == nil {
-		worker.admission, err = admissionexec.NewWithClaims(session.store, worker.client, session.actor, claims, resources.client)
+		worker.vm, err = vmexec.New(session.store, worker.client, resources.client, claims, runner, session.actor)
+	}
+	if err == nil {
+		worker.finalize, err = budgetexec.New(session.store, worker.client, resources.client, session.actor, claims, runner)
+	}
+	if err == nil {
+		worker.admission, err = admissionexec.NewWithRunner(session.store, worker.client, session.actor, claims, resources.client, runner)
 	}
 	if err != nil {
 		worker.CloseIdleConnections()
@@ -274,6 +285,9 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 	}
 	if err == nil && progress == pgexec.ExternalStep && worker.resources != nil {
 		progress, err = worker.resources.Advance(callCtx)
+	}
+	if err == nil && progress == pgexec.ExternalStep && worker.vm != nil {
+		progress, err = worker.vm.Advance(callCtx)
 	}
 	if err == nil && progress == pgexec.ExternalStep && worker.finalize != nil {
 		progress, err = worker.finalize.Advance(callCtx)

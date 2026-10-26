@@ -4,6 +4,8 @@ package budgetclaims
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -13,6 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	coreclient "k8s.io/client-go/kubernetes/typed/core/v1"
 
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
@@ -23,9 +26,11 @@ const ClaimKey = "reservation.json"
 // 只有对应领域核验完整关闭后才能显式移除，普通Agent只读，不能代为清理。
 const ProtectionFinalizer = "autoscaling.neon.tech/dsga-reservation-protection"
 
-const ClaimLabel = "autoscaling.neon.tech/dsga-reservation"
-const OutsideKind = "outside-v1"
-const HostKind = "host-v1"
+const (
+	ClaimLabel  = "autoscaling.neon.tech/dsga-reservation"
+	OutsideKind = "outside-v1"
+	HostKind    = "host-v1"
+)
 
 type Reader struct {
 	core    coreclient.CoreV1Interface
@@ -37,6 +42,40 @@ func New(client coreclient.CoreV1Interface, binding journal.Binding) (*Reader, e
 		return nil, fmt.Errorf("reservation reader requires fixed trusted Kubernetes client/VM")
 	}
 	return &Reader{core: client, binding: binding}, nil
+}
+
+// HostClaimName固定到完整原请求/VM incarnation，供真实Scheduler生产者与Agent
+// 消费者共用。名称仅用于找到原对象；仍须真实GET固定UID并校验完整持有内容，
+// 不允许按同数值标签List任选一份来源，也不在对象缺失时由Agent临时创建。
+func HostClaimName(binding journal.Binding, request control.Request) (string, error) {
+	if request.Validate() != nil || request.Key.Instance.VMUID != string(binding.VMUID) || control.ValidateIncarnation(binding.Incarnation) != nil {
+		return "", fmt.Errorf("invalid original Host claim binding")
+	}
+	raw, err := json.Marshal([]any{binding.Namespace, binding.Name, string(binding.VMUID), binding.Incarnation, request})
+	if err != nil {
+		return "", err
+	}
+	h := sha256.Sum256(append([]byte("neon-dsga-host-reservation-v1\x00"), raw...))
+	return "dsga-h-" + hex.EncodeToString(h[:28]), nil
+}
+
+func (r *Reader) HostReference(ctx context.Context, request control.Request) (budget.ObjectRef, error) {
+	name, err := HostClaimName(r.binding, request)
+	if err != nil {
+		return budget.ObjectRef{}, err
+	}
+	cm, err := r.core.ConfigMaps(r.binding.Namespace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return budget.ObjectRef{}, err
+	}
+	if cm == nil {
+		return budget.ObjectRef{}, fmt.Errorf("original Host reservation unavailable")
+	}
+	ref := budget.ObjectRef{Name: name, UID: string(cm.UID)}
+	if _, err := r.claim(ctx, ref, HostKind); err != nil {
+		return budget.ObjectRef{}, err
+	}
+	return ref, nil
 }
 
 // observed只作跨网络二次复核的本进程事实，不是可由调用者构造的持有票据。
