@@ -2,8 +2,6 @@ package owner
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -20,19 +18,17 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
 
-const leaseBindingAnnotation = "internal.autoscaling.neon.tech/dsga-lease-binding-v1"
+const leaseBindingAnnotation = journal.LeaseBindingAnnotation
 
 // LeaseName仅从可信Store固定绑定派生，包含VM UID/incarnation而非可复用名称。
 // 摘要完整保留256位且总长69超出DNS label，取224位后总长61；原文另作强校验，
 // 即使摘要碰撞也不能把另一个VM的Lease当作本VM领导权。
 func LeaseName(binding journal.Binding) string {
-	value, _ := json.Marshal([]string{binding.Namespace, binding.Name, string(binding.VMUID), binding.Incarnation})
-	hash := sha256.Sum256(append([]byte("neon-dsga-lease-binding-v1\x00"), value...))
-	return "dsga-" + hex.EncodeToString(hash[:28])
+	return journal.LeaseName(binding)
 }
 
 func leaseMarker(binding journal.Binding) string {
-	return "1:" + string(binding.VMUID) + ":" + binding.Incarnation
+	return journal.LeaseMarker(binding)
 }
 
 // boundLease按client-go资源锁接口提供带VM绑定的真实Lease读/创建/条件更新。
@@ -55,24 +51,7 @@ func (lock *boundLease) fixedUID() types.UID {
 }
 
 func validateLease(lease *coordination.Lease, binding journal.Binding, name string, expectedUID types.UID) error {
-	if lease == nil || lease.Name != name || lease.Namespace != binding.Namespace || lease.UID == "" || lease.ResourceVersion == "" ||
-		lease.DeletionTimestamp != nil || (expectedUID != "" && lease.UID != expectedUID) ||
-		lease.Annotations[leaseBindingAnnotation] != leaseMarker(binding) || len(lease.OwnerReferences) != 1 {
-		return fmt.Errorf("DSGA lease VM binding or object identity differs")
-	}
-	ref := lease.OwnerReferences[0]
-	if ref.UID != binding.VMUID || ref.Name != binding.Name || ref.Kind != "VirtualMachine" ||
-		ref.APIVersion != vmv1.SchemeGroupVersion.String() || ref.Controller == nil || !*ref.Controller {
-		return fmt.Errorf("DSGA lease belongs to another VM")
-	}
-	spec := lease.Spec
-	if spec.HolderIdentity == nil || control.ValidateID(*spec.HolderIdentity, "lease holder") != nil ||
-		spec.LeaseDurationSeconds == nil || *spec.LeaseDurationSeconds < 1 || *spec.LeaseDurationSeconds > 86400 ||
-		spec.LeaseTransitions == nil || *spec.LeaseTransitions < 0 || spec.AcquireTime == nil || spec.RenewTime == nil ||
-		spec.PreferredHolder != nil || spec.Strategy != nil {
-		return fmt.Errorf("DSGA lease record is malformed or uses an unsupported election mode")
-	}
-	return nil
+	return journal.ValidateLease(lease, binding, name, expectedUID)
 }
 
 func validRecord(record resourcelock.LeaderElectionRecord) bool {
