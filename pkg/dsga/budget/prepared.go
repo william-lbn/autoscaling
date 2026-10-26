@@ -27,6 +27,8 @@ type Prepared struct {
 	SystemOutsidePG        Bound                      `json:"system_outside_pg"`
 	Transition             Bound                      `json:"transition"`
 	Safety                 Bound                      `json:"safety"`
+	// 新生产结算必须读取原可信持久对象；旧无引用格式仅保留历史读取，不能补造。
+	OutsideClaim *ObjectRef `json:"outside_claim,omitempty"`
 }
 
 // GrowSharedUpper使用ABI6四数组固定元素/前缀分配的不变量给出保守上界。
@@ -57,6 +59,9 @@ func GrowSharedUpper(shared control.SharedCostResponse, target uint32) (control.
 func (p Prepared) ValidateFor(request control.Request, id resourceguard.Identity) error {
 	if request.Validate() != nil || id.Validate() != nil || p.Shared.ValidateFor(request.Key.Instance) != nil || p.Limits.Validate() != nil {
 		return fmt.Errorf("prepared budget contains invalid native/resource context")
+	}
+	if p.OutsideClaim != nil && p.OutsideClaim.Validate() != nil {
+		return fmt.Errorf("invalid prepared outside reservation reference")
 	}
 	s := p.Shared.Observed
 	if p.ProtocolVersion != 1 || p.VMShrinkPermit || p.Request != request || p.Identity != id || id.VMUID != request.Key.Instance.VMUID || id.ComputeInstanceID != request.Key.Instance.ComputeInstanceID || p.RunnerRestartCount < 0 || control.ValidateID(p.RunnerPodName, "Runner") != nil || p.VMBeforeMemoryBytes == 0 || p.GuestUsableMemoryBytes == 0 || p.GuestUsableMemoryBytes > request.TargetVMMemoryBytes || s.IssuerFloorEpoch != request.Key.IssuerEpoch || s.CapacityGeneration != request.ExpectedCapacityGeneration || s.LowBuffers != s.HighBuffers || (s.Operation != nil && s.Operation.Phase == control.Preparing) {

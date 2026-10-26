@@ -53,6 +53,8 @@ type Finalized struct {
 	HugePoolOutsideShared *Bound `json:"huge_pool_outside_shared,omitempty"`
 	Transition            Bound  `json:"transition"`
 	Safety                Bound  `json:"safety"`
+	// 新生产结算固定真实持有对象，开放前须再次读取；旧格式只保留历史兼容。
+	Sources *SettlementSources `json:"sources,omitempty"`
 }
 
 // ValidateFor在恢复准入之前复核原完整请求、同boot/容量代次、原Runner与当前VM
@@ -81,6 +83,9 @@ func (f Finalized) ValidateFor(request control.Request, latest control.SharedCos
 	op := latest.Observed.Operation
 	if err != nil || op == nil || op.Key != request.Key || op.Kind != request.Kind || op.Phase != control.Committed || op.ContextSHA256 != digest || op.ExpectedCapacityGeneration != request.ExpectedCapacityGeneration || op.TargetBuffers != request.TargetBuffers || latest.Observed.HighBuffers != request.TargetBuffers || latest.Observed.LowBuffers != request.TargetBuffers || request.ExpectedCapacityGeneration == control.Uint64(math.MaxUint64) || latest.Observed.CapacityGeneration != request.ExpectedCapacityGeneration+1 {
 		return fmt.Errorf("finalized budget lacks complete original PG commit")
+	}
+	if f.Sources != nil && f.Sources.Validate() != nil {
+		return fmt.Errorf("invalid finalized reservation sources")
 	}
 	if f.SystemOutsidePG.UpperBytes == 0 || f.Safety.UpperBytes == 0 {
 		return fmt.Errorf("required system/safety budget is absent")

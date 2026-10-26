@@ -4,12 +4,16 @@ package admissionexec
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"math"
+	"reflect"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims"
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
@@ -22,6 +26,7 @@ type Executor struct {
 	actor     journal.Owner
 	instance  control.Instance
 	resources *resourceguard.Client
+	claims    *budgetclaims.Reader
 }
 
 type audit struct {
@@ -58,6 +63,20 @@ func New(store *journal.Store, client *compute.Client, actor journal.Owner, reso
 	// nil仅保留历史原命令的只读可达性。任何新开放、显式重放或完成落账
 	// 都必须在下面核验已持久绑定的原root；不能把缺资源域当作兼容放行。
 	return &Executor{store: store, client: client, actor: actor, instance: instance, resources: root}, nil
+}
+
+// NewWithClaims用于实际生产Agent；新开放必须核验持续Outside/Host持有对象。
+// 旧New仅保留已有模块/历史读取，不能消费带新Sources但缺少可信读者的结算。
+func NewWithClaims(store *journal.Store, client *compute.Client, actor journal.Owner, claims *budgetclaims.Reader, resources *resourceguard.Client) (*Executor, error) {
+	if claims == nil {
+		return nil, fmt.Errorf("production admission requires original reservation reader")
+	}
+	e, err := New(store, client, actor, resources)
+	if err != nil {
+		return nil, err
+	}
+	e.claims = claims
+	return e, nil
 }
 
 // Advance只推进已存在操作的ResumeAdmission；预算/VM未确认或旧未知存在时不Start。
@@ -190,7 +209,12 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 			return pgexec.AwaitingFact, nil
 		}
 	}
-	if _, err := e.checkRoot(ctx, snapshot, settled); err != nil {
+	aggregateBefore, err := e.checkRoot(ctx, snapshot, settled)
+	if err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	claimObservation, prepared, err := e.checkClaims(ctx, snapshot, settled, aggregateBefore)
+	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
 	// PG/root/Kube不是原子快照；网络等待不持锁。再次直接读取同一VM并
@@ -242,6 +266,11 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	aggregate, err := e.checkRoot(ctx, snapshot, settled)
 	if err != nil {
 		return pgexec.AwaitingFact, err
+	}
+	if claimObservation != nil {
+		if err := e.claims.Recheck(ctx, snapshot, prepared, settled.Sources.HostClaim, claimObservation); err != nil {
+			return pgexec.AwaitingFact, err
+		}
 	}
 	if err := e.sameSnapshot(ctx, snapshot); err != nil {
 		return pgexec.AwaitingFact, err
@@ -317,4 +346,51 @@ func (e *Executor) sameSnapshot(ctx context.Context, original *journal.Snapshot)
 		return fmt.Errorf("admission VM/Runner/original journal changed during verification")
 	}
 	return nil
+}
+
+// checkClaims不把原Finalize回执当成永久活性证明。Missing/删后重建/正在释放均
+// 在新开放前拒绝；已发送开放的原只读查询在本检查之前仍可达，外层保持Unknown。
+func (e *Executor) checkClaims(ctx context.Context, s *journal.Snapshot, f budget.Finalized, a budget.RootAggregate) (*budgetclaims.Observed, budget.Prepared, error) {
+	var p budget.Prepared
+	if e.claims == nil {
+		if f.Sources != nil {
+			return nil, p, fmt.Errorf("new settlement requires authenticated reservation reader")
+		}
+		return nil, p, nil
+	}
+	if f.Sources == nil || f.Sources.Validate() != nil {
+		return nil, p, fmt.Errorf("production admission requires original persistent budget sources")
+	}
+	op := s.State().Active
+	if op == nil {
+		return nil, p, fmt.Errorf("original budget operation missing")
+	}
+	var vmStep *journal.Step
+	for i := range op.Steps {
+		step := &op.Steps[i]
+		if step.Action == journal.PrepareBudget {
+			if step.Phase != journal.Settled || step.Observation == nil || step.Observation.Result != journal.Completed || json.Unmarshal(step.Observation.Data, &p) != nil {
+				return nil, p, fmt.Errorf("prepared source unavailable")
+			}
+		}
+		if step.Action == journal.ResizeVM {
+			vmStep = step
+		}
+	}
+	if p.ValidateFor(f.Request, a.Identity) != nil || p.OutsideClaim == nil || *p.OutsideClaim != f.Sources.OutsideClaim || p.SystemOutsidePG != f.SystemOutsidePG || p.Transition != f.Transition || p.Safety != f.Safety || p.GuestUsableMemoryBytes != f.GuestUsableMemoryBytes || vmStep == nil || vmStep.Phase != journal.Settled || vmStep.Observation == nil || vmStep.Observation.Result != journal.Completed {
+		return nil, p, fmt.Errorf("final budget differs from retained prepared/VM source")
+	}
+	hash := sha256.Sum256(vmStep.Observation.Data)
+	var fact budget.VMSettlement
+	if hex.EncodeToString(hash[:]) != f.Sources.VMReceiptSHA256 || json.Unmarshal(vmStep.Observation.Data, &fact) != nil || fact.ValidateFor(p, a, s.VirtualMachine().Spec.DSGABootstrap.Incarnation) != nil || fact.HostClaim != f.Sources.HostClaim || fact.Host.SourceID != f.HostReservationID || vmStep.TargetID != fact.Host.RunnerPodUID {
+		return nil, p, fmt.Errorf("original final VM receipt was replaced")
+	}
+	observed, err := e.claims.Read(ctx, s, p, f.Sources.HostClaim)
+	if err != nil {
+		return nil, p, err
+	}
+	if !reflect.DeepEqual(observed.Host, fact.Host) {
+		return nil, p, fmt.Errorf("final VM Host commitment changed")
+	}
+	return observed, p, nil
 }

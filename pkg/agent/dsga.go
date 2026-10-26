@@ -108,7 +108,7 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 			return err
 		}
 		defer resources.CloseIdleConnections()
-		worker, err := session.NewPGWorker(ownerCtx, compute.Config{BaseURL: config.GatewayURL, Instance: control.Instance{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID, PGBootID: 0}, IssuerEpoch: session.Actor().Epoch, Timeout: time.Duration(config.ComputeTimeoutSeconds) * time.Second, Transport: credentials.ManagementTransport(), Token: credentials.Token, Pending: nil}, resources)
+		worker, err := session.NewProductionPGWorker(ownerCtx, compute.Config{BaseURL: config.GatewayURL, Instance: control.Instance{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID, PGBootID: 0}, IssuerEpoch: session.Actor().Epoch, Timeout: time.Duration(config.ComputeTimeoutSeconds) * time.Second, Transport: credentials.ManagementTransport(), Token: credentials.Token, Pending: nil}, resources, r.global.kubeClient.CoreV1())
 		if err != nil {
 			return err
 		}
@@ -116,7 +116,7 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		instance, epoch := worker.Binding()
 		r.dsgaState(ownerCtx, DSGARunnerState{Phase: "running", IssuerEpoch: epoch, Instance: instance})
 		logger.Info("DSGA owner PG reconciliation started")
-		// 同一worker推进PG及已完成完整预算后的恢复准入，先持久原门禁意图，
+		// 同一worker推进PG、最终预算结算和带原持有来源的恢复准入，先持久原门禁意图，
 		// 丢回复后只读对账。预算生产者/Guest/VM尚未确认的步骤仍保持ExternalStep；
 		// 不自动Begin、伪造外部回执或重发未知POST，也不另开legacy执行器绕过领域。
 		return worker.Run(ownerCtx, owner.PGLoopOptions{PollInterval: time.Duration(config.PollIntervalSeconds) * time.Second, Wake: updated.Recv(), Replay: nil, Observe: func(tick owner.Tick) {

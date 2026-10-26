@@ -27,7 +27,9 @@ type Executor struct {
 	id        resourceguard.Identity
 }
 
-type audit struct {
+// Audit保留实际GuestReady完整来源供后续结算核验；JSON格式与既有v2相同。
+// 导出不提供创建Completed的权限，消费者仍必须来自原可信账本和认证root复核。
+type Audit struct {
 	ProtocolVersion uint32                     `json:"protocol_version"`
 	Query           bool                       `json:"query"`
 	Command         resourceguard.Command      `json:"command"`
@@ -38,6 +40,19 @@ type audit struct {
 	RunnerPodName   string                     `json:"runner_pod_name"`
 	RunnerRestarts  int32                      `json:"runner_restarts"`
 	VMMemoryBytes   control.Uint64             `json:"vm_memory_bytes"`
+}
+
+// 保留包内名称，避免改变原写入流程或历史序列化字段。
+type audit = Audit
+
+func (v *Audit) UnmarshalJSON(b []byte) error {
+	type plain Audit
+	var p plain
+	if err := control.UnmarshalObject(b, &p); err != nil {
+		return err
+	}
+	*v = Audit(p)
+	return nil
 }
 
 func New(store *journal.Store, pg *compute.Client, resources *resourceguard.Client, actor journal.Owner) (*Executor, error) {

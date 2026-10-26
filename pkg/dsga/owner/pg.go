@@ -10,12 +10,15 @@ import (
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/admissionexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budgetexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/quiesceexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+	coreclient "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
 // PGWorker在一个已经确认的owner Session内长期拥有同一个客户端/原意图栅栏。
@@ -28,6 +31,7 @@ type PGWorker struct {
 	admission *admissionexec.Executor
 	resources *resourceexec.Executor
 	quiesce   *quiesceexec.Executor
+	finalize  *budgetexec.Executor
 }
 
 func (session *Session) coupledContext(ctx context.Context) (context.Context, context.CancelFunc) {
@@ -215,6 +219,31 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest, quiesce: quiesce}, nil
 }
 
+// NewProductionPGWorker只供具备可信Kube只读客户端的实际Agent创建。完整预算
+// 结算与最终准入共用同一原root及持久对象读者；缺读者不降级为旧无来源路径。
+// 不创建缺失承诺，不自动Begin或更换已有PG/Guest/owner绑定。
+func (session *Session) NewProductionPGWorker(ctx context.Context, config compute.Config, resources *ResourceWorker, core coreclient.CoreV1Interface) (*PGWorker, error) {
+	if resources == nil || core == nil {
+		return nil, fmt.Errorf("production worker requires original root and reservation reader")
+	}
+	worker, err := session.NewPGWorker(ctx, config, resources)
+	if err != nil {
+		return nil, err
+	}
+	claims, err := budgetclaims.New(core, session.binding)
+	if err == nil {
+		worker.finalize, err = budgetexec.New(session.store, worker.client, resources.client, session.actor, claims)
+	}
+	if err == nil {
+		worker.admission, err = admissionexec.NewWithClaims(session.store, worker.client, session.actor, claims, resources.client)
+	}
+	if err != nil {
+		worker.CloseIdleConnections()
+		return nil, err
+	}
+	return worker, nil
+}
+
 func (worker *PGWorker) CloseIdleConnections() { worker.client.CloseIdleConnections() }
 
 // Binding只暴露实际协商/恢复后固定的PG实例，用于后续计划完整原意图；
@@ -245,6 +274,9 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 	}
 	if err == nil && progress == pgexec.ExternalStep && worker.resources != nil {
 		progress, err = worker.resources.Advance(callCtx)
+	}
+	if err == nil && progress == pgexec.ExternalStep && worker.finalize != nil {
+		progress, err = worker.finalize.Advance(callCtx)
 	}
 	if err == nil && progress == pgexec.ExternalStep {
 		return worker.admission.Advance(callCtx)
