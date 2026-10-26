@@ -1,0 +1,614 @@
+{
+  "schema_version": 1,
+  "code_commit": "76f8dc05e6fb18da489ac285cc034e47b125c486",
+  "base_commit": "a305c389618570ae527efcd8a9f7b1e8e55af758",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "official_baseline_frozen": true,
+  "no_image_or_deployment": true,
+  "test_counts": {
+    "top_level": 20,
+    "including_subtests": 98,
+    "final_failed": 0,
+    "final_skipped": 0
+  },
+  "final_test_mapping": {
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestCompletePlacementsMultiWriterCASAndUnknownRecovery": {
+      "test": "TestCompletePlacementsMultiWriterCASAndUnknownRecovery",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestInitialVMRequiresOriginalCompletePlacement/pod": {
+      "test": "TestInitialVMRequiresOriginalCompletePlacement/pod",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestInitialVMRequiresOriginalCompletePlacement/vm": {
+      "test": "TestInitialVMRequiresOriginalCompletePlacement/vm",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestInitialVMRequiresOriginalCompletePlacement/incarnation": {
+      "test": "TestInitialVMRequiresOriginalCompletePlacement/incarnation",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestInitialVMRequiresOriginalCompletePlacement/memory": {
+      "test": "TestInitialVMRequiresOriginalCompletePlacement/memory",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestInitialVMRequiresOriginalCompletePlacement/protection": {
+      "test": "TestInitialVMRequiresOriginalCompletePlacement/protection",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestInitialVMRequiresOriginalCompletePlacement/node": {
+      "test": "TestInitialVMRequiresOriginalCompletePlacement/node",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestInitialVMRequiresOriginalCompletePlacement/legacy": {
+      "test": "TestInitialVMRequiresOriginalCompletePlacement/legacy",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestInitialVMRequiresOriginalCompletePlacement/profile": {
+      "test": "TestInitialVMRequiresOriginalCompletePlacement/profile",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestInitialVMRequiresOriginalCompletePlacement": {
+      "test": "TestInitialVMRequiresOriginalCompletePlacement",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestBoundHostElectionPreservesOriginalUIDAndEpoch": {
+      "test": "TestBoundHostElectionPreservesOriginalUIDAndEpoch",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerRestoresAllWorkloadsAndCanonicalVMBeforeFirstGrant": {
+      "test": "TestSchedulerRestoresAllWorkloadsAndCanonicalVMBeforeFirstGrant",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-unit-fixture-final-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerLegacyApprovalHoldsTargetBeforeOriginalVMCAS": {
+      "test": "TestSchedulerLegacyApprovalHoldsTargetBeforeOriginalVMCAS",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-unit-fixture-final-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/pod-uid": {
+      "test": "TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/pod-uid",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/vm-uid": {
+      "test": "TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/vm-uid",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/node": {
+      "test": "TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/node",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/scheduler": {
+      "test": "TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/scheduler",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/deleted": {
+      "test": "TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/deleted",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/migration": {
+      "test": "TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/migration",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/no-limit": {
+      "test": "TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/no-limit",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/init-no-limit": {
+      "test": "TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/init-no-limit",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/ephemeral": {
+      "test": "TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/ephemeral",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/profile": {
+      "test": "TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/profile",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/lost-ledger": {
+      "test": "TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads/lost-ledger",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads": {
+      "test": "TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerManagedFirstPlacementAndLegacyBypassExclusion": {
+      "test": "TestSchedulerManagedFirstPlacementAndLegacyBypassExclusion",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerActualElectionBootstrapsOriginalNodeAndRetainsOnStop": {
+      "test": "TestSchedulerActualElectionBootstrapsOriginalNodeAndRetainsOnStop",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/plugin::TestActualFrameworkReserveCannotIgnoreHostCASAndUnknownReply": {
+      "test": "TestActualFrameworkReserveCannotIgnoreHostCASAndUnknownReply",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/plugin::TestHostPlanningNeverDiscountsMemoryOrMigratesManagedVM": {
+      "test": "TestHostPlanningNeverDiscountsMemoryOrMigratesManagedVM",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-new-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/first-qmp": {
+      "test": "TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/first-qmp",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/lease-not-yet-pinned": {
+      "test": "TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/lease-not-yet-pinned",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/lagging-floor": {
+      "test": "TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/lagging-floor",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/conflicting-holder": {
+      "test": "TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/conflicting-holder",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/wrong-lease": {
+      "test": "TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/wrong-lease",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/malformed-publication": {
+      "test": "TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/malformed-publication",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor": {
+      "test": "TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestHostPublisherOriginalSourcesAndLostWrites/complete": {
+      "test": "TestHostPublisherOriginalSourcesAndLostWrites/complete",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestHostPublisherOriginalSourcesAndLostWrites/create-lost": {
+      "test": "TestHostPublisherOriginalSourcesAndLostWrites/create-lost",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/complete": {
+      "test": "TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/complete",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestHostPublisherOriginalSourcesAndLostWrites/publish-lost": {
+      "test": "TestHostPublisherOriginalSourcesAndLostWrites/publish-lost",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestHostPublisherOriginalSourcesAndLostWrites/published-source-missing": {
+      "test": "TestHostPublisherOriginalSourcesAndLostWrites/published-source-missing",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/short-host-hold": {
+      "test": "TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/short-host-hold",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestHostPublisherOriginalSourcesAndLostWrites/same-name-new-uid": {
+      "test": "TestHostPublisherOriginalSourcesAndLostWrites/same-name-new-uid",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestHostPublisherOriginalSourcesAndLostWrites/outside-missing": {
+      "test": "TestHostPublisherOriginalSourcesAndLostWrites/outside-missing",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestHostPublisherOriginalSourcesAndLostWrites/before-memory-drift": {
+      "test": "TestHostPublisherOriginalSourcesAndLostWrites/before-memory-drift",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/unverified-pg-release": {
+      "test": "TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/unverified-pg-release",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestHostPublisherOriginalSourcesAndLostWrites/VM-intent-changes": {
+      "test": "TestHostPublisherOriginalSourcesAndLostWrites/VM-intent-changes",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestHostPublisherOriginalSourcesAndLostWrites/consumer-start-lost": {
+      "test": "TestHostPublisherOriginalSourcesAndLostWrites/consumer-start-lost",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/wrong-root-limit": {
+      "test": "TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/wrong-root-limit",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestHostPublisherOriginalSourcesAndLostWrites/consumer-record-lost": {
+      "test": "TestHostPublisherOriginalSourcesAndLostWrites/consumer-record-lost",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/wrong-fence": {
+      "test": "TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/wrong-fence",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources": {
+      "test": "TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestHostPublisherOriginalSourcesAndLostWrites/consumer-source-gone": {
+      "test": "TestHostPublisherOriginalSourcesAndLostWrites/consumer-source-gone",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionPullPublishLostRepliesAndOriginalReceipt": {
+      "test": "TestRunnerProductionPullPublishLostRepliesAndOriginalReceipt",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestHostPublisherOriginalSourcesAndLostWrites/consumer-waits-unpublished": {
+      "test": "TestHostPublisherOriginalSourcesAndLostWrites/consumer-waits-unpublished",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-source-combination-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestHostPublisherOriginalSourcesAndLostWrites": {
+      "test": "TestHostPublisherOriginalSourcesAndLostWrites",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-final-combination-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/outside-uid": {
+      "test": "TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/outside-uid",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/host-releasing": {
+      "test": "TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/host-releasing",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/runner-uid": {
+      "test": "TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/runner-uid",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/node-uid": {
+      "test": "TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/node-uid",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/lease-replaced": {
+      "test": "TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/lease-replaced",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/lease-expired": {
+      "test": "TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/lease-expired",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/birth-replaced": {
+      "test": "TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/birth-replaced",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/state-replaced": {
+      "test": "TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/state-replaced",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite": {
+      "test": "TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/complete": {
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/complete",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/qmp-lost-reply": {
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/qmp-lost-reply",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/start-lost-reply": {
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/start-lost-reply",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/VM-record-lost-reply": {
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/VM-record-lost-reply",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-waits-for-runner": {
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-waits-for-runner",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-holds-not-sent": {
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-holds-not-sent",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-explicit-VM-replay": {
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-explicit-VM-replay",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-explicit-VM-replay-lost-selection": {
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-explicit-VM-replay-lost-selection",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-explicit-VM-replay-host-gone-before": {
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-explicit-VM-replay-host-gone-before",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-explicit-VM-replay-host-gone-after": {
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-explicit-VM-replay-host-gone-after",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/reject-VM-replay-may-have-sent": {
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/reject-VM-replay-may-have-sent",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL": {
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/complete": {
+      "test": "TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/complete",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/gate-reopened-before-VM": {
+      "test": "TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/gate-reopened-before-VM",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/root-drift-after-VM": {
+      "test": "TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/root-drift-after-VM",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/observe-start-lost": {
+      "test": "TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/observe-start-lost",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/explicit-original-replay": {
+      "test": "TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/explicit-original-replay",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve": {
+      "test": "TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-runner-owner-initial-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestHostPublisherOriginalSourcesAndLostWrites/actual-scheduler-loop": {
+      "test": "TestHostPublisherOriginalSourcesAndLostWrites/actual-scheduler-loop",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-final-combination-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites/missing": {
+      "test": "TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites/missing",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites/unprotected": {
+      "test": "TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites/unprotected",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites/replacement-node": {
+      "test": "TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites/replacement-node",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites/short-memory": {
+      "test": "TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites/short-memory",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites": {
+      "test": "TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerBirthRefusesMissingWALOrSameNameNewProcess/same-state": {
+      "test": "TestRunnerBirthRefusesMissingWALOrSameNameNewProcess/same-state",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerBirthRefusesMissingWALOrSameNameNewProcess/missing-state": {
+      "test": "TestRunnerBirthRefusesMissingWALOrSameNameNewProcess/missing-state",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerBirthRefusesMissingWALOrSameNameNewProcess/new-empty-directory": {
+      "test": "TestRunnerBirthRefusesMissingWALOrSameNameNewProcess/new-empty-directory",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerBirthRefusesMissingWALOrSameNameNewProcess": {
+      "test": "TestRunnerBirthRefusesMissingWALOrSameNameNewProcess",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-initial-runner-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestPlacementSchemaBoundsAndRoundTripRemainStrict/folded-profile": {
+      "test": "TestPlacementSchemaBoundsAndRoundTripRemainStrict/folded-profile",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestPlacementSchemaBoundsAndRoundTripRemainStrict/folded-placement": {
+      "test": "TestPlacementSchemaBoundsAndRoundTripRemainStrict/folded-placement",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestPlacementSchemaBoundsAndRoundTripRemainStrict/missing-memory": {
+      "test": "TestPlacementSchemaBoundsAndRoundTripRemainStrict/missing-memory",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestPlacementSchemaBoundsAndRoundTripRemainStrict/unknown-profile": {
+      "test": "TestPlacementSchemaBoundsAndRoundTripRemainStrict/unknown-profile",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostguard::TestPlacementSchemaBoundsAndRoundTripRemainStrict": {
+      "test": "TestPlacementSchemaBoundsAndRoundTripRemainStrict",
+      "outcome": "pass",
+      "log": "dsga-host-scheduler-schema-20261027.jsonl"
+    }
+  },
+  "source_sha256": {
+    "internal/dsgatest/host.go": "5dc9e82d3df10010b3c78d3f659d6b439e53c913f29ba89eb497cc8c9a3c3620",
+    "internal/dsgatest/scheduler_api.go": "df2ce76d219b0a15ad00af0d95d4d952e7d99abf46c772e223037d2e0528fcb2",
+    "pkg/dsga/hostguard/lease.go": "eabf37ab56b4a55da3679a494d4e0910c002a4d1b560637004afedf6f61d34b1",
+    "pkg/dsga/hostguard/model.go": "340c6b8f5675d08ffeef7c85c64a2b434a4733c0f2834802bbea020f263646a5",
+    "pkg/dsga/hostguard/placement.go": "efc20dd69d6fdb36629de7d9e923ab1d960725f06bc7faa060acfc68bff681d4",
+    "pkg/dsga/hostguard/placement_test.go": "f59ec0438e2876275643309ace9a86cda51d5d16416144a4716d3a585d9e01a4",
+    "pkg/dsga/hostguard/store.go": "7b139d9b5efe0e420c011fdab9787c17b31e64db3764bbb37715996540fe4d6b",
+    "pkg/dsga/hostguard/store_test.go": "7c368845b97aa3e9732aa55674fd03a617e912c4851ae2d4219ffcea6585d9ca",
+    "pkg/dsga/hostscheduler/allocation.go": "0bb99928a50c364f8809358e72633ce92be95c7972fb15e1da2edffe037c93a8",
+    "pkg/dsga/hostscheduler/approval.go": "96ae4cbaf5826803b6c824953976b0b3e45749f07bc6047e1651eaf32e299cb5",
+    "pkg/dsga/hostscheduler/config.go": "68c4f5139bafaff68a1ce4edd5e408d58cb36472c6ddd0f7ad57b0662a8c7b93",
+    "pkg/dsga/hostscheduler/service.go": "0db7e85da0501af8dbec7bfc4688a26db297bbd502c400db17b8e32d6e7aad63",
+    "pkg/dsga/hostscheduler/service_test.go": "7e7b24acd9c6e0750d8ffdc6eaf0b4aab2ea75358874794280f10a4bc259db13",
+    "pkg/dsga/owner/host_source_test.go": "00c24e9f0a4083dde39caeba48015cca96731c4f2ffcfefa8f547d81fecb29b5",
+    "pkg/dsga/owner/vm_exec_test.go": "4c5eff8e9a767a4acbea34a1dd35fbb2a8abe1afad25a42fce9b4e9b975b002e",
+    "pkg/dsga/vmguard/runner.go": "eba09bbc54bd3ec73b328fbf1a7f19a197c8766beaa0028f09def44c3d7bd34c",
+    "pkg/dsga/vmguard/runner_test.go": "4d28c3d0c5624600526a2ac774dd601a539cde956769da94265e3cf6663f422e",
+    "pkg/plugin/config.go": "40c8f5cf6088d4282183609244f90f2d8b387e2c5fc4c8b17ff02d3aa7034284",
+    "pkg/plugin/dsga_host.go": "f4f5d26d5d3fca1f36b90b267c614d3199f14fb8a7d8e1fbcb904040317f7d9b",
+    "pkg/plugin/dsga_host_test.go": "c4de93aa358cdf872c803ca24a3b09928dd820e8858e6ba427c03a6089821652",
+    "pkg/plugin/entrypoint.go": "0dc8a0b18d2d4cfd52bf5a88e3f47fec3787ac8c20efa8074f71675621969376",
+    "pkg/plugin/framework_methods.go": "019dfe352544c9915701727eb497ce5d821860192c7b679366b94e0b11182741",
+    "pkg/plugin/globalstate.go": "039a777281c20e5bd1965e759949b3d1afb65e1e3945b0f042f45490e86096c5",
+    "pkg/plugin/handle_pod.go": "e0777d53b3ae424894d4af877b5531d9b96b3119b56cd7c9bb763444ce45afa5"
+  },
+  "log_sha256": {
+    "dsga-host-scheduler-new-initial-20261027.jsonl": "14a9922328cf2f3a293e090ef12d17bde56b891a09f9817e59035a5e37f8decc",
+    "dsga-host-scheduler-replacement-20261027.jsonl": "8f355c55bef1ea5fc8fe76e52d7b175465f2fdd5add8cda8362408bae9d03051",
+    "dsga-host-scheduler-runner-owner-initial-20261027.jsonl": "90616e9d875592aa16e85d8b065e379e48714ed7a92c0c6437d5e406449f6373",
+    "dsga-host-scheduler-source-combination-20261027.jsonl": "d9215616d81b9ff7ac6afe29bae0fca9384a6bade98636e8f60d7bbb2acaacd0",
+    "dsga-host-scheduler-initial-runner-20261027.jsonl": "b290bf0ae27c0d14b6011f3484b6b423cb1e97db46f66860716370af97572bb2",
+    "dsga-host-scheduler-schema-20261027.jsonl": "b69659d27e994da95f03e0d5d75914fea3719200b52a8602f7ad1713eaa85caa",
+    "dsga-host-scheduler-unit-fixture-final-20261027.jsonl": "801f6b4c2bfd61527baee14a0dfb9ef12932ff97062be346fdeec7df831a95ee",
+    "dsga-host-scheduler-final-combination-20261027.jsonl": "c1e775e269e40c808792ee607611e28986d93bb72b4e60b798eca9148794f7e2",
+    "dsga-host-scheduler-lint-schema-20261027.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "dsga-host-scheduler-vet-20261027.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsga-host-scheduler-fmt-initial-20261027.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsga-host-scheduler-compile-initial-20261027.log": "4c0bf1e0b15d80e4ad5c9a947184e253c85d016673d1b1d5042ba7c8dcb4330c",
+    "dsga-host-scheduler-compile-second-20261027.log": "43225f45662aea1a7c4bbc8e81eaa26ebac8205345fb194ead3dd2f5559f74e0",
+    "dsga-host-scheduler-pinned-deps-20261027.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsga-host-scheduler-pinned-deps-replacement-20261027.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsga-host-scheduler-pinned-controller-manager-20261027.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "linux_compile_only_artifacts": {
+    "dsga-host-scheduler-committed-scheduler-linux-amd64": {
+      "sha256": "442bde9002952aafa0c845c5034580d410811597af289331dfe51314ef31ef68",
+      "elf_machine": 62,
+      "executed": false,
+      "go_build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-host-scheduler-committed-scheduler-linux-amd64: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/autoscale-scheduler/cmd\n\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261026232920-76f8dc05e6fb+dirty\t\n\tdep\tgithub.com/NYTimes/gziphandler\tv1.1.1\th1:ZUDjpQae29j0ryrS0u/B8HZfJBtBQHjqw2rQ2cqUQ3I=\n\tdep\tgithub.com/antlr4-go/antlr/v4\tv4.13.0\th1:lxCg3LAv+EUK6t1i0y1V6/SLeUi0eKEKdhQAlS8TVTI=\n\tdep\tgithub.com/asaskevich/govalidator\tv0.0.0-20230301143203-a9d515a09cc2\th1:DklsrG3dyBCFEj5IhUbnKptjxatkF07cF2ak3yi77so=\n\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=\n\tdep\tgithub.com/blang/semver/v4\tv4.0.0\th1:1PFHFE6yCCTv8C1TeyNNarDzntLi7wMI5i/pzqYIsAM=\n\tdep\tgithub.com/cenkalti/backoff/v4\tv4.3.0\th1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=\n\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=\n\tdep\tgithub.com/coreos/go-semver\tv0.3.1\th1:yi21YpKnrx1gt5R+la8n5WgS0kCrsPp33dmEyHReZr4=\n\tdep\tgithub.com/coreos/go-systemd/v22\tv22.5.0\th1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=\n\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=\n\tdep\tgithub.com/distribution/reference\tv0.5.0\th1:/FUIFXtfc/x2gpa5/VGfiGLuOIdYa1t65IKK2OFGvA0=\n\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=\n\tdep\tgithub.com/felixge/httpsnoop\tv1.0.4\th1:NFTV2Zj1bL4mc9sqWACXbQFVBBg2W3GPvqp8/ESS2Wg=\n\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=\n\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=\n\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=\n\tdep\tgithub.com/go-logr/stdr\tv1.2.2\th1:hSWxHoqTgW2S2qGc0LTAI563KZ5YKYRhT3MFKZMbjag=\n\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=\n\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=\n\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=\n\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=\n\tdep\tgithub.com/golang/groupcache\tv0.0.0-20210331224755-41bb18bfe9da\th1:oI5xCqsCo564l8iNU+DwB5epxmsaqB+rhGL0m5jtYqE=\n\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=\n\tdep\tgithub.com/google/cel-go\tv0.20.1\th1:nDx9r8S3L4pE61eDdt8igGj8rf5kjYR3ILxWIpWNi84=\n\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=\n\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=\n\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=\n\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=\n\tdep\tgithub.com/grpc-ecosystem/go-grpc-prometheus\tv1.2.0\th1:Ovs26xHkKqVztRpIrF/92BcuyuQ/YW4NSIpoGtfXNho=\n\tdep\tgithub.com/grpc-ecosystem/grpc-gateway/v2\tv2.20.0\th1:bkypFPDjIYGfCYD5mRBvpqxfYX1YCS1PXdKYWi8FsN0=\n\tdep\tgithub.com/imdario/mergo\tv0.3.16\th1:wwQJbIsHYGMUyLSPrEq1CT16AhnhNJQ51+4fdHUnCl4=\n\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=\n\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=\n\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=\n\tdep\tgithub.com/kylelemons/godebug\tv1.1.0\th1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=\n\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=\n\tdep\tgithub.com/moby/sys/mountinfo\tv0.7.1\th1:/tTvQaSJRr2FshkhXiIpux6fQ2Zvc4j7tAhMTStAG2g=\n\tdep\tgithub.com/moby/term\tv0.5.0\th1:xt8Q1nalod/v7BqbG21f8mQPqH+xAaC9C3N3wfWbVP0=\n\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=\n\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=\n\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=\n\tdep\tgithub.com/opencontainers/go-digest\tv1.0.0\th1:apOUWs51W5PlhuyGyz9FCeeBIOUDA/6nW8Oi/yOhh5U=\n\tdep\tgithub.com/opencontainers/runc\tv1.1.13\th1:98S2srgG9vw0zWcDpFMn5TRrh8kLxa/5OFUstuUhmRs=\n\tdep\tgithub.com/opencontainers/selinux\tv1.11.0\th1:+5Zbo97w3Lbmb3PeqQtpmTkMwsW5nRI3YaLpt7tQ7oU=\n\tdep\tgithub.com/pkg/errors\tv0.9.1\th1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=\n\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=\n\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=\n\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=\n\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=\n\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=\n\tdep\tgithub.com/spf13/cobra\tv1.8.1\th1:e5/vxKd/rZsfSJMUX1agtjeTDf+qv1/JdBF8gg5k9ZM=\n\tdep\tgithub.com/spf13/pflag\tv1.0.5\th1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=\n\tdep\tgithub.com/stoewer/go-strcase\tv1.3.0\th1:g0eASXYtp+yvN9fK8sH94oCIk0fau9uV1/ZdJ0AVEzs=\n\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=\n\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=\n\tdep\tgo.etcd.io/etcd/api/v3\tv3.5.14\th1:vHObSCxyB9zlF60w7qzAdTcGaglbJOpSj1Xj9+WGxq0=\n\tdep\tgo.etcd.io/etcd/client/pkg/v3\tv3.5.14\th1:SaNH6Y+rVEdxfpA2Jr5wkEvN6Zykme5+YnbCkxvuWxQ=\n\tdep\tgo.etcd.io/etcd/client/v3\tv3.5.14\th1:CWfRs4FDaDoSz81giL7zPpZH2Z35tbOrAJkkjMqOupg=\n\tdep\tgo.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc\tv0.54.0\th1:r6I7RJCN86bpD/FQwedZ0vSixDpwuWREjW9oRMsmqDc=\n\tdep\tgo.opentelemetry.io/contrib/instrumentation/net/http/otelhttp\tv0.54.0\th1:TT4fX+nBOA/+LUkobKGW1ydGcn+G3vRw9+g5HwCphpk=\n\tdep\tgo.opentelemetry.io/otel\tv1.29.0\th1:PdomN/Al4q/lN6iBJEN3AwPvUiHPMlt93c8bqTG5Llw=\n\tdep\tgo.opentelemetry.io/otel/exporters/otlp/otlptrace\tv1.28.0\th1:3Q/xZUyC1BBkualc9ROb4G8qkH90LXEIICcs5zv1OYY=\n\tdep\tgo.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc\tv1.27.0\th1:qFffATk0X+HD+f1Z8lswGiOQYKHRlzfmdJm0wEaVrFA=\n\tdep\tgo.opentelemetry.io/otel/metric\tv1.29.0\th1:vPf/HFWTNkPu1aYeIsc98l4ktOQaL6LeSoeV2g+8YLc=\n\tdep\tgo.opentelemetry.io/otel/sdk\tv1.28.0\th1:b9d7hIry8yZsgtbmM0DKyPWMMUMlK9NEKuIG4aBqWyE=\n\tdep\tgo.opentelemetry.io/otel/trace\tv1.29.0\th1:J/8ZNK4XgR7a21DZUAsbF8pZ5Jcw1VhACmnYt39JTi4=\n\tdep\tgo.opentelemetry.io/proto/otlp\tv1.3.1\th1:TrMUixzpM0yuc/znrFTP9MMRh8trP93mkCiDVeXrui0=\n\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=\n\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=\n\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=\n\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=\n\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=\n\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=\n\tdep\tgolang.org/x/sync\tv0.12.0\th1:MHc5BpPuC30uJk597Ri8TV3CNZcTLu6B6z4lJy+g6Jw=\n\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=\n\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=\n\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=\n\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=\n\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=\n\tdep\tgoogle.golang.org/genproto/googleapis/api\tv0.0.0-20240827150818-7e3bb234dfed\th1:3RgNmBoI9MZhsj3QxC+AP/qQhNwpCLOvYDYYsFrhFt0=\n\tdep\tgoogle.golang.org/genproto/googleapis/rpc\tv0.0.0-20240903143218-8af14fe29dc1\th1:pPJltXNxVzT4pK9yD8vR9X75DaWYYmLGMsEvBfFQZzQ=\n\tdep\tgoogle.golang.org/grpc\tv1.66.2\th1:3QdXkuq3Bkh7w+ywLdLvM56cmGvQHUMZpiCzt6Rqaoo=\n\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=\n\tdep\tgopkg.in/evanphx/json-patch.v4\tv4.12.0\th1:n6jtcsulIzXPJaxegRbvFNNrZDjbij7ny3gmSPG+6V4=\n\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=\n\tdep\tgopkg.in/natefinch/lumberjack.v2\tv2.2.1\th1:bBRl1b0OH9s/DuPhuXpNl+VtCaJXFZ5/uEFST95x9zc=\n\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=\n\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=\n\tdep\tk8s.io/api\tv0.31.7\n\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=\n\t\n\tdep\tk8s.io/apiextensions-apiserver\tv0.31.1\n\t=>\tk8s.io/apiextensions-apiserver\tv0.31.7\th1:FujQQl6iKuCF5nX4GIQy3ClvftU8MqadAyi9oQ6ZeAw=\n\t\n\tdep\tk8s.io/apimachinery\tv0.31.7\n\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=\n\t\n\tdep\tk8s.io/apiserver\tv0.31.7\n\t=>\tk8s.io/apiserver\tv0.31.7\th1:L1JQgfdQfvSZNBhXJljv9ekc/JirAZAmR3B2Np5mSKk=\n\t\n\tdep\tk8s.io/client-go\tv0.31.7\n\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=\n\t\n\tdep\tk8s.io/cloud-provider\tv0.0.0\n\t=>\tk8s.io/cloud-provider\tv0.31.7\th1:kg+bkemVEjCI4J+SxHFrOcZznDcPkRTwzAHrUe/FZSw=\n\t\n\tdep\tk8s.io/component-base\tv0.31.7\n\t=>\tk8s.io/component-base\tv0.31.7\th1:HLGy3757F1xfidwYzrsrL6gqAML4jKiT1rfNTRv1vhw=\n\t\n\tdep\tk8s.io/component-helpers\tv0.31.7\n\t=>\tk8s.io/component-helpers\tv0.31.7\th1:THCAAOYffVxAOkeUMW0U86BmxRGXXAXMvlvObUEtMuQ=\n\t\n\tdep\tk8s.io/controller-manager\tv0.31.7\n\t=>\tk8s.io/controller-manager\tv0.31.7\th1:632MEG+zfUcHgOHakggD5EtNLA7cIaBI/gAuUUDk03A=\n\t\n\tdep\tk8s.io/csi-translation-lib\tv0.0.0\n\t=>\tk8s.io/csi-translation-lib\tv0.31.7\th1:9TEzUwiz66fi39DXIvFIuoUgtMm8ksD4vXjLK+7h82k=\n\t\n\tdep\tk8s.io/dynamic-resource-allocation\tv0.0.0\n\t=>\tk8s.io/dynamic-resource-allocation\tv0.31.7\th1:ss0xp/ZODmZPhfIdMGXQszu6IsqY4gYIIWnmR3Iqo5I=\n\t\n\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=\n\tdep\tk8s.io/kms\tv0.31.7\th1:HSlveij+SIcCcDKugh/lFrnaooVgTIX5G6ircyK+e3Q=\n\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38\n\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=\n\t\n\tdep\tk8s.io/kube-scheduler\tv0.0.0\n\t=>\tk8s.io/kube-scheduler\tv0.31.7\th1:ynevLcHn7D985S9s6BMHqOVDAoBVYGDmNA1XzRMJfjw=\n\t\n\tdep\tk8s.io/kubelet\tv0.31.7\n\t=>\tk8s.io/kubelet\tv0.31.7\th1:jGfsRU536pAyXq/hW9P7+a5k200j2BxBX8IjIWasmxY=\n\t\n\tdep\tk8s.io/kubernetes\tv1.31.7\th1:3uCu7kNQxNBVbbqqe0pPjbW+h8L9aT01rD0bg+NdS5I=\n\tdep\tk8s.io/mount-utils\tv0.0.0\n\t=>\tk8s.io/mount-utils\tv0.31.7\th1:wCqAZT3/pQ5OjKuXFOuLxJQYldhVY4+O5/8+L9deJ6w=\n\t\n\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=\n\tdep\tsigs.k8s.io/apiserver-network-proxy/konnectivity-client\tv0.30.3\th1:2770sDpzrjjsAtVhSeUFseziht227YAWYHLGNM8QPwY=\n\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=\n\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=\n\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=\n\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=76f8dc05e6fb18da489ac285cc034e47b125c486\n\tbuild\tvcs.time=2026-10-26T23:29:20Z\n\tbuild\tvcs.modified=true\n"
+    },
+    "dsga-host-scheduler-committed-scheduler-linux-arm64": {
+      "sha256": "ce2b987f53c9c6913c8c4095b3e207426de5f56e65b3a8f4419eb81720e252ec",
+      "elf_machine": 183,
+      "executed": false,
+      "go_build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-host-scheduler-committed-scheduler-linux-arm64: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/autoscale-scheduler/cmd\n\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261026232920-76f8dc05e6fb+dirty\t\n\tdep\tgithub.com/NYTimes/gziphandler\tv1.1.1\th1:ZUDjpQae29j0ryrS0u/B8HZfJBtBQHjqw2rQ2cqUQ3I=\n\tdep\tgithub.com/antlr4-go/antlr/v4\tv4.13.0\th1:lxCg3LAv+EUK6t1i0y1V6/SLeUi0eKEKdhQAlS8TVTI=\n\tdep\tgithub.com/asaskevich/govalidator\tv0.0.0-20230301143203-a9d515a09cc2\th1:DklsrG3dyBCFEj5IhUbnKptjxatkF07cF2ak3yi77so=\n\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=\n\tdep\tgithub.com/blang/semver/v4\tv4.0.0\th1:1PFHFE6yCCTv8C1TeyNNarDzntLi7wMI5i/pzqYIsAM=\n\tdep\tgithub.com/cenkalti/backoff/v4\tv4.3.0\th1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=\n\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=\n\tdep\tgithub.com/coreos/go-semver\tv0.3.1\th1:yi21YpKnrx1gt5R+la8n5WgS0kCrsPp33dmEyHReZr4=\n\tdep\tgithub.com/coreos/go-systemd/v22\tv22.5.0\th1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=\n\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=\n\tdep\tgithub.com/distribution/reference\tv0.5.0\th1:/FUIFXtfc/x2gpa5/VGfiGLuOIdYa1t65IKK2OFGvA0=\n\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=\n\tdep\tgithub.com/felixge/httpsnoop\tv1.0.4\th1:NFTV2Zj1bL4mc9sqWACXbQFVBBg2W3GPvqp8/ESS2Wg=\n\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=\n\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=\n\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=\n\tdep\tgithub.com/go-logr/stdr\tv1.2.2\th1:hSWxHoqTgW2S2qGc0LTAI563KZ5YKYRhT3MFKZMbjag=\n\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=\n\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=\n\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=\n\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=\n\tdep\tgithub.com/golang/groupcache\tv0.0.0-20210331224755-41bb18bfe9da\th1:oI5xCqsCo564l8iNU+DwB5epxmsaqB+rhGL0m5jtYqE=\n\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=\n\tdep\tgithub.com/google/cel-go\tv0.20.1\th1:nDx9r8S3L4pE61eDdt8igGj8rf5kjYR3ILxWIpWNi84=\n\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=\n\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=\n\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=\n\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=\n\tdep\tgithub.com/grpc-ecosystem/go-grpc-prometheus\tv1.2.0\th1:Ovs26xHkKqVztRpIrF/92BcuyuQ/YW4NSIpoGtfXNho=\n\tdep\tgithub.com/grpc-ecosystem/grpc-gateway/v2\tv2.20.0\th1:bkypFPDjIYGfCYD5mRBvpqxfYX1YCS1PXdKYWi8FsN0=\n\tdep\tgithub.com/imdario/mergo\tv0.3.16\th1:wwQJbIsHYGMUyLSPrEq1CT16AhnhNJQ51+4fdHUnCl4=\n\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=\n\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=\n\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=\n\tdep\tgithub.com/kylelemons/godebug\tv1.1.0\th1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=\n\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=\n\tdep\tgithub.com/moby/sys/mountinfo\tv0.7.1\th1:/tTvQaSJRr2FshkhXiIpux6fQ2Zvc4j7tAhMTStAG2g=\n\tdep\tgithub.com/moby/term\tv0.5.0\th1:xt8Q1nalod/v7BqbG21f8mQPqH+xAaC9C3N3wfWbVP0=\n\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=\n\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=\n\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=\n\tdep\tgithub.com/opencontainers/go-digest\tv1.0.0\th1:apOUWs51W5PlhuyGyz9FCeeBIOUDA/6nW8Oi/yOhh5U=\n\tdep\tgithub.com/opencontainers/runc\tv1.1.13\th1:98S2srgG9vw0zWcDpFMn5TRrh8kLxa/5OFUstuUhmRs=\n\tdep\tgithub.com/opencontainers/selinux\tv1.11.0\th1:+5Zbo97w3Lbmb3PeqQtpmTkMwsW5nRI3YaLpt7tQ7oU=\n\tdep\tgithub.com/pkg/errors\tv0.9.1\th1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=\n\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=\n\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=\n\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=\n\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=\n\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=\n\tdep\tgithub.com/spf13/cobra\tv1.8.1\th1:e5/vxKd/rZsfSJMUX1agtjeTDf+qv1/JdBF8gg5k9ZM=\n\tdep\tgithub.com/spf13/pflag\tv1.0.5\th1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=\n\tdep\tgithub.com/stoewer/go-strcase\tv1.3.0\th1:g0eASXYtp+yvN9fK8sH94oCIk0fau9uV1/ZdJ0AVEzs=\n\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=\n\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=\n\tdep\tgo.etcd.io/etcd/api/v3\tv3.5.14\th1:vHObSCxyB9zlF60w7qzAdTcGaglbJOpSj1Xj9+WGxq0=\n\tdep\tgo.etcd.io/etcd/client/pkg/v3\tv3.5.14\th1:SaNH6Y+rVEdxfpA2Jr5wkEvN6Zykme5+YnbCkxvuWxQ=\n\tdep\tgo.etcd.io/etcd/client/v3\tv3.5.14\th1:CWfRs4FDaDoSz81giL7zPpZH2Z35tbOrAJkkjMqOupg=\n\tdep\tgo.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc\tv0.54.0\th1:r6I7RJCN86bpD/FQwedZ0vSixDpwuWREjW9oRMsmqDc=\n\tdep\tgo.opentelemetry.io/contrib/instrumentation/net/http/otelhttp\tv0.54.0\th1:TT4fX+nBOA/+LUkobKGW1ydGcn+G3vRw9+g5HwCphpk=\n\tdep\tgo.opentelemetry.io/otel\tv1.29.0\th1:PdomN/Al4q/lN6iBJEN3AwPvUiHPMlt93c8bqTG5Llw=\n\tdep\tgo.opentelemetry.io/otel/exporters/otlp/otlptrace\tv1.28.0\th1:3Q/xZUyC1BBkualc9ROb4G8qkH90LXEIICcs5zv1OYY=\n\tdep\tgo.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc\tv1.27.0\th1:qFffATk0X+HD+f1Z8lswGiOQYKHRlzfmdJm0wEaVrFA=\n\tdep\tgo.opentelemetry.io/otel/metric\tv1.29.0\th1:vPf/HFWTNkPu1aYeIsc98l4ktOQaL6LeSoeV2g+8YLc=\n\tdep\tgo.opentelemetry.io/otel/sdk\tv1.28.0\th1:b9d7hIry8yZsgtbmM0DKyPWMMUMlK9NEKuIG4aBqWyE=\n\tdep\tgo.opentelemetry.io/otel/trace\tv1.29.0\th1:J/8ZNK4XgR7a21DZUAsbF8pZ5Jcw1VhACmnYt39JTi4=\n\tdep\tgo.opentelemetry.io/proto/otlp\tv1.3.1\th1:TrMUixzpM0yuc/znrFTP9MMRh8trP93mkCiDVeXrui0=\n\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=\n\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=\n\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=\n\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=\n\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=\n\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=\n\tdep\tgolang.org/x/sync\tv0.12.0\th1:MHc5BpPuC30uJk597Ri8TV3CNZcTLu6B6z4lJy+g6Jw=\n\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=\n\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=\n\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=\n\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=\n\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=\n\tdep\tgoogle.golang.org/genproto/googleapis/api\tv0.0.0-20240827150818-7e3bb234dfed\th1:3RgNmBoI9MZhsj3QxC+AP/qQhNwpCLOvYDYYsFrhFt0=\n\tdep\tgoogle.golang.org/genproto/googleapis/rpc\tv0.0.0-20240903143218-8af14fe29dc1\th1:pPJltXNxVzT4pK9yD8vR9X75DaWYYmLGMsEvBfFQZzQ=\n\tdep\tgoogle.golang.org/grpc\tv1.66.2\th1:3QdXkuq3Bkh7w+ywLdLvM56cmGvQHUMZpiCzt6Rqaoo=\n\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=\n\tdep\tgopkg.in/evanphx/json-patch.v4\tv4.12.0\th1:n6jtcsulIzXPJaxegRbvFNNrZDjbij7ny3gmSPG+6V4=\n\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=\n\tdep\tgopkg.in/natefinch/lumberjack.v2\tv2.2.1\th1:bBRl1b0OH9s/DuPhuXpNl+VtCaJXFZ5/uEFST95x9zc=\n\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=\n\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=\n\tdep\tk8s.io/api\tv0.31.7\n\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=\n\t\n\tdep\tk8s.io/apiextensions-apiserver\tv0.31.1\n\t=>\tk8s.io/apiextensions-apiserver\tv0.31.7\th1:FujQQl6iKuCF5nX4GIQy3ClvftU8MqadAyi9oQ6ZeAw=\n\t\n\tdep\tk8s.io/apimachinery\tv0.31.7\n\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=\n\t\n\tdep\tk8s.io/apiserver\tv0.31.7\n\t=>\tk8s.io/apiserver\tv0.31.7\th1:L1JQgfdQfvSZNBhXJljv9ekc/JirAZAmR3B2Np5mSKk=\n\t\n\tdep\tk8s.io/client-go\tv0.31.7\n\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=\n\t\n\tdep\tk8s.io/cloud-provider\tv0.0.0\n\t=>\tk8s.io/cloud-provider\tv0.31.7\th1:kg+bkemVEjCI4J+SxHFrOcZznDcPkRTwzAHrUe/FZSw=\n\t\n\tdep\tk8s.io/component-base\tv0.31.7\n\t=>\tk8s.io/component-base\tv0.31.7\th1:HLGy3757F1xfidwYzrsrL6gqAML4jKiT1rfNTRv1vhw=\n\t\n\tdep\tk8s.io/component-helpers\tv0.31.7\n\t=>\tk8s.io/component-helpers\tv0.31.7\th1:THCAAOYffVxAOkeUMW0U86BmxRGXXAXMvlvObUEtMuQ=\n\t\n\tdep\tk8s.io/controller-manager\tv0.31.7\n\t=>\tk8s.io/controller-manager\tv0.31.7\th1:632MEG+zfUcHgOHakggD5EtNLA7cIaBI/gAuUUDk03A=\n\t\n\tdep\tk8s.io/csi-translation-lib\tv0.0.0\n\t=>\tk8s.io/csi-translation-lib\tv0.31.7\th1:9TEzUwiz66fi39DXIvFIuoUgtMm8ksD4vXjLK+7h82k=\n\t\n\tdep\tk8s.io/dynamic-resource-allocation\tv0.0.0\n\t=>\tk8s.io/dynamic-resource-allocation\tv0.31.7\th1:ss0xp/ZODmZPhfIdMGXQszu6IsqY4gYIIWnmR3Iqo5I=\n\t\n\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=\n\tdep\tk8s.io/kms\tv0.31.7\th1:HSlveij+SIcCcDKugh/lFrnaooVgTIX5G6ircyK+e3Q=\n\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38\n\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=\n\t\n\tdep\tk8s.io/kube-scheduler\tv0.0.0\n\t=>\tk8s.io/kube-scheduler\tv0.31.7\th1:ynevLcHn7D985S9s6BMHqOVDAoBVYGDmNA1XzRMJfjw=\n\t\n\tdep\tk8s.io/kubelet\tv0.31.7\n\t=>\tk8s.io/kubelet\tv0.31.7\th1:jGfsRU536pAyXq/hW9P7+a5k200j2BxBX8IjIWasmxY=\n\t\n\tdep\tk8s.io/kubernetes\tv1.31.7\th1:3uCu7kNQxNBVbbqqe0pPjbW+h8L9aT01rD0bg+NdS5I=\n\tdep\tk8s.io/mount-utils\tv0.0.0\n\t=>\tk8s.io/mount-utils\tv0.31.7\th1:wCqAZT3/pQ5OjKuXFOuLxJQYldhVY4+O5/8+L9deJ6w=\n\t\n\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=\n\tdep\tsigs.k8s.io/apiserver-network-proxy/konnectivity-client\tv0.30.3\th1:2770sDpzrjjsAtVhSeUFseziht227YAWYHLGNM8QPwY=\n\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=\n\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=\n\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=\n\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=arm64\n\tbuild\tGOOS=linux\n\tbuild\tGOARM64=v8.0\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=76f8dc05e6fb18da489ac285cc034e47b125c486\n\tbuild\tvcs.time=2026-10-26T23:29:20Z\n\tbuild\tvcs.modified=true\n"
+    },
+    "dsga-host-scheduler-committed-runner-linux-amd64": {
+      "sha256": "45937c61db15d0a39b099706f78e90cf344b9ad2417567517010147aaa462b6b",
+      "elf_machine": 62,
+      "executed": false,
+      "go_build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-host-scheduler-committed-runner-linux-amd64: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/neonvm-runner/cmd\n\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261026232920-76f8dc05e6fb+dirty\t\n\tdep\tgithub.com/alessio/shellescape\tv1.4.1\th1:V7yhSDDn8LP4lc4jS8pFkt0zCnzVJlG5JXy9BVKJUX0=\n\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=\n\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=\n\tdep\tgithub.com/cilium/cilium\tv1.12.14\th1:8TM2fbVBI7zpOSfyc0YxunPY2QeinlEHqeSfVgnQEog=\n\tdep\tgithub.com/cilium/ebpf\tv0.10.0\th1:nk5HPMeoBXtOzbkZBWym+ZWq1GIiHUsBFXxwewXAHLQ=\n\tdep\tgithub.com/containerd/cgroups/v3\tv3.0.1\th1:4hfGvu8rfGIwVIDd+nLzn/B9ZXx4BcCjzt5ToenJRaE=\n\tdep\tgithub.com/coreos/go-iptables\tv0.6.0\th1:is9qnZMPYjLd8LYqmm/qlE+wwEgJIkTYdhV3rfZo4jk=\n\tdep\tgithub.com/coreos/go-systemd/v22\tv22.5.0\th1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=\n\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=\n\tdep\tgithub.com/digitalocean/go-libvirt\tv0.0.0-20220804181439-8648fbde413e\th1:SCnqm8SjSa0QqRxXbo5YY//S+OryeJioe17nK+iDZpg=\n\tdep\tgithub.com/digitalocean/go-qemu\tv0.0.0-20220826173844-d5f5e3ceed89\th1:2/52ma1zkjfR9aIrAX1F9H24rpj+PkCDkAwhQgqVR/A=\n\tdep\tgithub.com/docker/docker\tv24.0.9+incompatible\th1:HPGzNmwfLZWdxHqK9/II92pyi1EpYKsAqcl4G0Of9v0=\n\tdep\tgithub.com/docker/go-units\tv0.5.0\th1:69rxXcBk27SvSaaxTtLh/8llcHD8vYHT7WSdRZ/jvr4=\n\tdep\tgithub.com/docker/libnetwork\tv0.8.0-dev.2.0.20210525090646-64b7a4574d14\th1:GZvuJOpa10/Yl2EinacWoMqJ+XtNPbikclDZvNXBNO8=\n\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=\n\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=\n\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=\n\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=\n\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=\n\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=\n\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=\n\tdep\tgithub.com/godbus/dbus/v5\tv5.1.0\th1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=\n\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=\n\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=\n\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=\n\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=\n\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=\n\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=\n\tdep\tgithub.com/ishidawataru/sctp\tv0.0.0-20230406120618-7ff4192f6ff2\th1:i2fYnDurfLlJH8AyyMOnkLHnHeP8Ff/DDpuZA/D3bPo=\n\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=\n\tdep\tgithub.com/jpillora/backoff\tv1.0.0\th1:uvFg412JmmHBHw7iwprIxkPMI+sGQ4kzOWsMeHnm2EA=\n\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=\n\tdep\tgithub.com/kdomanski/iso9660\tv0.3.3\th1:cNwM9L2L1Hzc5hZWGy6fPJ92UyWDccaY69DmEPlfDNY=\n\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=\n\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=\n\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=\n\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=\n\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=\n\tdep\tgithub.com/opencontainers/runtime-spec\tv1.0.3-0.20220909204839-494a5a6aca78\th1:R5M2qXZiK/mWPMT4VldCOiSL9HIAMuxQZWdG0CSM5+4=\n\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=\n\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=\n\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=\n\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=\n\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=\n\tdep\tgithub.com/sirupsen/logrus\tv1.9.3\th1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=\n\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=\n\tdep\tgithub.com/vishvananda/netlink\tv1.1.1-0.20220125195016-0639e7e787ba\th1:MU5oPE25XZhDS8Z0xFG0/1ERBEu5rZIw62TImubLusU=\n\tdep\tgithub.com/vishvananda/netns\tv0.0.4\th1:Oeaw1EM2JMxD51g9uhtC0D7erkIjgmj8+JZc26m1YX8=\n\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=\n\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=\n\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=\n\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=\n\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=\n\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=\n\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=\n\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=\n\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=\n\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=\n\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=\n\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=\n\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=\n\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=\n\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=\n\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=\n\tdep\tk8s.io/api\tv0.31.7\n\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=\n\t\n\tdep\tk8s.io/apimachinery\tv0.31.7\n\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=\n\t\n\tdep\tk8s.io/client-go\tv0.31.7\n\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=\n\t\n\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=\n\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38\n\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=\n\t\n\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=\n\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=\n\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=\n\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=\n\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=76f8dc05e6fb18da489ac285cc034e47b125c486\n\tbuild\tvcs.time=2026-10-26T23:29:20Z\n\tbuild\tvcs.modified=true\n"
+    },
+    "dsga-host-scheduler-committed-runner-linux-arm64": {
+      "sha256": "6946afd4174d8d8a0e8bad2ffe0781399e632d748d4a6b39f1bd3e0f7a842748",
+      "elf_machine": 183,
+      "executed": false,
+      "go_build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-host-scheduler-committed-runner-linux-arm64: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/neonvm-runner/cmd\n\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261026232920-76f8dc05e6fb+dirty\t\n\tdep\tgithub.com/alessio/shellescape\tv1.4.1\th1:V7yhSDDn8LP4lc4jS8pFkt0zCnzVJlG5JXy9BVKJUX0=\n\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=\n\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=\n\tdep\tgithub.com/cilium/cilium\tv1.12.14\th1:8TM2fbVBI7zpOSfyc0YxunPY2QeinlEHqeSfVgnQEog=\n\tdep\tgithub.com/cilium/ebpf\tv0.10.0\th1:nk5HPMeoBXtOzbkZBWym+ZWq1GIiHUsBFXxwewXAHLQ=\n\tdep\tgithub.com/containerd/cgroups/v3\tv3.0.1\th1:4hfGvu8rfGIwVIDd+nLzn/B9ZXx4BcCjzt5ToenJRaE=\n\tdep\tgithub.com/coreos/go-iptables\tv0.6.0\th1:is9qnZMPYjLd8LYqmm/qlE+wwEgJIkTYdhV3rfZo4jk=\n\tdep\tgithub.com/coreos/go-systemd/v22\tv22.5.0\th1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=\n\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=\n\tdep\tgithub.com/digitalocean/go-libvirt\tv0.0.0-20220804181439-8648fbde413e\th1:SCnqm8SjSa0QqRxXbo5YY//S+OryeJioe17nK+iDZpg=\n\tdep\tgithub.com/digitalocean/go-qemu\tv0.0.0-20220826173844-d5f5e3ceed89\th1:2/52ma1zkjfR9aIrAX1F9H24rpj+PkCDkAwhQgqVR/A=\n\tdep\tgithub.com/docker/docker\tv24.0.9+incompatible\th1:HPGzNmwfLZWdxHqK9/II92pyi1EpYKsAqcl4G0Of9v0=\n\tdep\tgithub.com/docker/go-units\tv0.5.0\th1:69rxXcBk27SvSaaxTtLh/8llcHD8vYHT7WSdRZ/jvr4=\n\tdep\tgithub.com/docker/libnetwork\tv0.8.0-dev.2.0.20210525090646-64b7a4574d14\th1:GZvuJOpa10/Yl2EinacWoMqJ+XtNPbikclDZvNXBNO8=\n\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=\n\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=\n\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=\n\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=\n\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=\n\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=\n\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=\n\tdep\tgithub.com/godbus/dbus/v5\tv5.1.0\th1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=\n\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=\n\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=\n\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=\n\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=\n\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=\n\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=\n\tdep\tgithub.com/ishidawataru/sctp\tv0.0.0-20230406120618-7ff4192f6ff2\th1:i2fYnDurfLlJH8AyyMOnkLHnHeP8Ff/DDpuZA/D3bPo=\n\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=\n\tdep\tgithub.com/jpillora/backoff\tv1.0.0\th1:uvFg412JmmHBHw7iwprIxkPMI+sGQ4kzOWsMeHnm2EA=\n\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=\n\tdep\tgithub.com/kdomanski/iso9660\tv0.3.3\th1:cNwM9L2L1Hzc5hZWGy6fPJ92UyWDccaY69DmEPlfDNY=\n\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=\n\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=\n\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=\n\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=\n\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=\n\tdep\tgithub.com/opencontainers/runtime-spec\tv1.0.3-0.20220909204839-494a5a6aca78\th1:R5M2qXZiK/mWPMT4VldCOiSL9HIAMuxQZWdG0CSM5+4=\n\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=\n\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=\n\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=\n\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=\n\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=\n\tdep\tgithub.com/sirupsen/logrus\tv1.9.3\th1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=\n\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=\n\tdep\tgithub.com/vishvananda/netlink\tv1.1.1-0.20220125195016-0639e7e787ba\th1:MU5oPE25XZhDS8Z0xFG0/1ERBEu5rZIw62TImubLusU=\n\tdep\tgithub.com/vishvananda/netns\tv0.0.4\th1:Oeaw1EM2JMxD51g9uhtC0D7erkIjgmj8+JZc26m1YX8=\n\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=\n\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=\n\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=\n\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=\n\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=\n\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=\n\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=\n\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=\n\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=\n\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=\n\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=\n\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=\n\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=\n\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=\n\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=\n\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=\n\tdep\tk8s.io/api\tv0.31.7\n\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=\n\t\n\tdep\tk8s.io/apimachinery\tv0.31.7\n\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=\n\t\n\tdep\tk8s.io/client-go\tv0.31.7\n\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=\n\t\n\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=\n\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38\n\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=\n\t\n\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=\n\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=\n\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=\n\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=\n\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=arm64\n\tbuild\tGOOS=linux\n\tbuild\tGOARM64=v8.0\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=76f8dc05e6fb18da489ac285cc034e47b125c486\n\tbuild\tvcs.time=2026-10-26T23:29:20Z\n\tbuild\tvcs.modified=true\n"
+    },
+    "dsga-host-scheduler-committed-agent-linux-amd64": {
+      "sha256": "953fff0eca10efc3eea1eecb7ffb2accc5deb45926a076c91609483ac8e8a768",
+      "elf_machine": 62,
+      "executed": false,
+      "go_build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-host-scheduler-committed-agent-linux-amd64: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/autoscaler-agent/cmd\n\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261026232920-76f8dc05e6fb+dirty\t\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/azcore\tv1.14.0\th1:nyQWyZvwGTvunIMxi1Y9uXkcyr+I7TeNrr/foo4Kpk8=\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/azidentity\tv1.7.0\th1:tfLQ34V6F7tVSwoTf/4lH5sE0o6eCJuNDTmH09nDpbc=\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/internal\tv1.10.0\th1:ywEEhmNahHBihViHepv3xPBn1663uRv2t2q/ESv9seY=\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/storage/azblob\tv1.3.2\th1:YUUxeiOWgdAQE3pXt2H7QXzZs0q8UBjgRbl56qo8GYM=\n\tdep\tgithub.com/AzureAD/microsoft-authentication-library-for-go\tv1.2.2\th1:XHOnouVk1mxXfQidrMEnLlPk9UMeRtyBTnEFtxkV0kU=\n\tdep\tgithub.com/aws/aws-sdk-go-v2\tv1.31.0\th1:3V05LbxTSItI5kUqNwhJrrrY1BAXxXt0sN0l72QmG5U=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/aws/protocol/eventstream\tv1.6.2\th1:x6xsQXGSmW6frevwDA+vi/wqhp1ct18mVXYN08/93to=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/config\tv1.27.36\th1:4IlvHh6Olc7+61O1ktesh0jOcqmq/4WG6C2Aj5SKXy0=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/credentials\tv1.17.34\th1:gmkk1l/cDGSowPRzkdxYi8edw+gN4HmVK151D/pqGNc=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/feature/ec2/imds\tv1.16.14\th1:C/d03NAmh8C4BZXhuRNboF/DqhBkBCeDiJDcaqIT5pA=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/configsources\tv1.3.18\th1:kYQ3H1u0ANr9KEKlGs/jTLrBFPo8P8NaH/w7A01NeeM=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/endpoints/v2\tv2.6.18\th1:Z7IdFUONvTcvS7YuhtVxN99v2cCoHRXOS4mTr0B/pUc=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/ini\tv1.8.1\th1:VaRN3TlFdd6KxX1x3ILT5ynH6HvKgqdiXoTxAF4HQcQ=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/v4a\tv1.3.5\th1:81KE7vaZzrl7yHBYHVEzYB8sypz11NMOZ40YlWvPxsU=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/accept-encoding\tv1.11.5\th1:QFASJGfT8wMXtuP3D5CRmMjARHv9ZmzFUMJznHDOY3w=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/checksum\tv1.3.7\th1:ZMeFZ5yk+Ek+jNr1+uwCd2tG89t6oTS5yVWpa6yy2es=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/presigned-url\tv1.11.20\th1:Xbwbmk44URTiHNx6PNo0ujDE6ERlsCKJD3u1zfnzAPg=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/s3shared\tv1.17.5\th1:f9RyWNtS8oH7cZlbn+/JNPpjUk5+5fLd5lM9M0i49Ys=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/s3\tv1.53.2\th1:rq2hglTQM3yHZvOPVMtNvLS5x6hijx7JvRDgKiTNDGQ=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/sso\tv1.23.0\th1:fHySkG0IGj2nepgGJPmmhZYL9ndnsq1Tvc6MeuVQCaQ=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/ssooidc\tv1.27.0\th1:cU/OeQPNReyMj1JEBgjE29aclYZYtXcsPMXbTkVGMFk=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/sts\tv1.31.0\th1:GNVxIHBTi2EgwCxpNiozhNasMOK+ROUA2Z3X+cSBX58=\n\tdep\tgithub.com/aws/smithy-go\tv1.21.0\th1:H7L8dtDRk0P1Qm6y0ji7MCYMQObJ5R9CRpyPhRUkLYA=\n\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=\n\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=\n\tdep\tgithub.com/coder/websocket\tv1.8.13\th1:f3QZdXy7uGVz+4uCJy2nTZyM0yTBj8yANEHhqlXZ9FE=\n\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=\n\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=\n\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=\n\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=\n\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=\n\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=\n\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=\n\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=\n\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=\n\tdep\tgithub.com/golang-jwt/jwt/v5\tv5.2.2\th1:Rl4B7itRWVtYIHFrSNd7vhTiz9UpLdi6gZhZ3wEeDy8=\n\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=\n\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=\n\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=\n\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=\n\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=\n\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=\n\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=\n\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=\n\tdep\tgithub.com/kylelemons/godebug\tv1.1.0\th1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=\n\tdep\tgithub.com/lithammer/shortuuid\tv3.0.0+incompatible\th1:NcD0xWW/MZYXEHa6ITy6kaXN5nwm/V115vj2YXfhS0w=\n\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=\n\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=\n\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=\n\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=\n\tdep\tgithub.com/pkg/browser\tv0.0.0-20240102092130-5ac0b6a4141c\th1:+mdjkGKdHQG3305AYmdv1U2eRNDiU2ErMBj1gwrq8eQ=\n\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=\n\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=\n\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=\n\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=\n\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=\n\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=\n\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=\n\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=\n\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=\n\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=\n\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=\n\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=\n\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=\n\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=\n\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=\n\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=\n\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=\n\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=\n\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=\n\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=\n\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=\n\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=\n\tdep\tk8s.io/api\tv0.31.7\n\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=\n\t\n\tdep\tk8s.io/apimachinery\tv0.31.7\n\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=\n\t\n\tdep\tk8s.io/client-go\tv0.31.7\n\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=\n\t\n\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=\n\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38\n\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=\n\t\n\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=\n\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=\n\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=\n\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=\n\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=76f8dc05e6fb18da489ac285cc034e47b125c486\n\tbuild\tvcs.time=2026-10-26T23:29:20Z\n\tbuild\tvcs.modified=true\n"
+    },
+    "dsga-host-scheduler-committed-agent-linux-arm64": {
+      "sha256": "a182ce5763b76c1a2e307e3a372298a2556b475ba78455a655f8343fc5a545c8",
+      "elf_machine": 183,
+      "executed": false,
+      "go_build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-host-scheduler-committed-agent-linux-arm64: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/autoscaler-agent/cmd\n\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261026232920-76f8dc05e6fb+dirty\t\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/azcore\tv1.14.0\th1:nyQWyZvwGTvunIMxi1Y9uXkcyr+I7TeNrr/foo4Kpk8=\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/azidentity\tv1.7.0\th1:tfLQ34V6F7tVSwoTf/4lH5sE0o6eCJuNDTmH09nDpbc=\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/internal\tv1.10.0\th1:ywEEhmNahHBihViHepv3xPBn1663uRv2t2q/ESv9seY=\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/storage/azblob\tv1.3.2\th1:YUUxeiOWgdAQE3pXt2H7QXzZs0q8UBjgRbl56qo8GYM=\n\tdep\tgithub.com/AzureAD/microsoft-authentication-library-for-go\tv1.2.2\th1:XHOnouVk1mxXfQidrMEnLlPk9UMeRtyBTnEFtxkV0kU=\n\tdep\tgithub.com/aws/aws-sdk-go-v2\tv1.31.0\th1:3V05LbxTSItI5kUqNwhJrrrY1BAXxXt0sN0l72QmG5U=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/aws/protocol/eventstream\tv1.6.2\th1:x6xsQXGSmW6frevwDA+vi/wqhp1ct18mVXYN08/93to=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/config\tv1.27.36\th1:4IlvHh6Olc7+61O1ktesh0jOcqmq/4WG6C2Aj5SKXy0=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/credentials\tv1.17.34\th1:gmkk1l/cDGSowPRzkdxYi8edw+gN4HmVK151D/pqGNc=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/feature/ec2/imds\tv1.16.14\th1:C/d03NAmh8C4BZXhuRNboF/DqhBkBCeDiJDcaqIT5pA=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/configsources\tv1.3.18\th1:kYQ3H1u0ANr9KEKlGs/jTLrBFPo8P8NaH/w7A01NeeM=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/endpoints/v2\tv2.6.18\th1:Z7IdFUONvTcvS7YuhtVxN99v2cCoHRXOS4mTr0B/pUc=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/ini\tv1.8.1\th1:VaRN3TlFdd6KxX1x3ILT5ynH6HvKgqdiXoTxAF4HQcQ=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/v4a\tv1.3.5\th1:81KE7vaZzrl7yHBYHVEzYB8sypz11NMOZ40YlWvPxsU=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/accept-encoding\tv1.11.5\th1:QFASJGfT8wMXtuP3D5CRmMjARHv9ZmzFUMJznHDOY3w=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/checksum\tv1.3.7\th1:ZMeFZ5yk+Ek+jNr1+uwCd2tG89t6oTS5yVWpa6yy2es=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/presigned-url\tv1.11.20\th1:Xbwbmk44URTiHNx6PNo0ujDE6ERlsCKJD3u1zfnzAPg=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/s3shared\tv1.17.5\th1:f9RyWNtS8oH7cZlbn+/JNPpjUk5+5fLd5lM9M0i49Ys=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/s3\tv1.53.2\th1:rq2hglTQM3yHZvOPVMtNvLS5x6hijx7JvRDgKiTNDGQ=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/sso\tv1.23.0\th1:fHySkG0IGj2nepgGJPmmhZYL9ndnsq1Tvc6MeuVQCaQ=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/ssooidc\tv1.27.0\th1:cU/OeQPNReyMj1JEBgjE29aclYZYtXcsPMXbTkVGMFk=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/sts\tv1.31.0\th1:GNVxIHBTi2EgwCxpNiozhNasMOK+ROUA2Z3X+cSBX58=\n\tdep\tgithub.com/aws/smithy-go\tv1.21.0\th1:H7L8dtDRk0P1Qm6y0ji7MCYMQObJ5R9CRpyPhRUkLYA=\n\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=\n\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=\n\tdep\tgithub.com/coder/websocket\tv1.8.13\th1:f3QZdXy7uGVz+4uCJy2nTZyM0yTBj8yANEHhqlXZ9FE=\n\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=\n\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=\n\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=\n\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=\n\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=\n\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=\n\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=\n\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=\n\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=\n\tdep\tgithub.com/golang-jwt/jwt/v5\tv5.2.2\th1:Rl4B7itRWVtYIHFrSNd7vhTiz9UpLdi6gZhZ3wEeDy8=\n\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=\n\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=\n\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=\n\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=\n\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=\n\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=\n\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=\n\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=\n\tdep\tgithub.com/kylelemons/godebug\tv1.1.0\th1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=\n\tdep\tgithub.com/lithammer/shortuuid\tv3.0.0+incompatible\th1:NcD0xWW/MZYXEHa6ITy6kaXN5nwm/V115vj2YXfhS0w=\n\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=\n\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=\n\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=\n\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=\n\tdep\tgithub.com/pkg/browser\tv0.0.0-20240102092130-5ac0b6a4141c\th1:+mdjkGKdHQG3305AYmdv1U2eRNDiU2ErMBj1gwrq8eQ=\n\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=\n\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=\n\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=\n\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=\n\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=\n\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=\n\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=\n\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=\n\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=\n\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=\n\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=\n\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=\n\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=\n\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=\n\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=\n\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=\n\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=\n\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=\n\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=\n\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=\n\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=\n\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=\n\tdep\tk8s.io/api\tv0.31.7\n\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=\n\t\n\tdep\tk8s.io/apimachinery\tv0.31.7\n\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=\n\t\n\tdep\tk8s.io/client-go\tv0.31.7\n\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=\n\t\n\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=\n\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38\n\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=\n\t\n\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=\n\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=\n\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=\n\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=\n\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=arm64\n\tbuild\tGOOS=linux\n\tbuild\tGOARM64=v8.0\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=76f8dc05e6fb18da489ac285cc034e47b125c486\n\tbuild\tvcs.time=2026-10-26T23:29:20Z\n\tbuild\tvcs.modified=true\n"
+    }
+  },
+  "fixture_boundary": [
+    "Kubernetes API/RBAC simulated",
+    "QEMU protocol peer simulated",
+    "Prepare/PG/Guest/kernel and platform upper bounds explicit fixtures"
+  ],
+  "initial_failures_preserved": [
+    "two test import errors in compile-second",
+    "OwnerReference deep-copy pointer comparison rejected valid VM; fixed API identity comparison",
+    "old unpublished fixture relabeled v3 body as v1; fixed to keep current v3 shape",
+    "lint required explicit structs, go1.24 compatible WaitGroup, lowercase error",
+    "default Go proxy unreachable; only pinned go.sum dependencies cached through reachable proxy; versions unchanged"
+  ],
+  "remaining_code": [
+    "explicit Host release/compaction and migration/cross-boot settlement",
+    "all other allocation writers admission/isolation; managed CPU policy integration",
+    "trusted complete Prepare and residual/transition/safety producers",
+    "first budget/normal SQL admission and safe continuous/private/background constraints",
+    "policy/Monitor/public operations/cancel/controlled cross-boot lifecycle"
+  ],
+  "linux_acceptance_not_executed": [
+    "real apiserver/RBAC and leases",
+    "KVM/NeonVM/QEMU unplug",
+    "HugeTLB and physical memory",
+    "domain qualification/isolation and performance/long-running"
+  ],
+  "whole_core_complete": false
+}
