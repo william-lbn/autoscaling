@@ -312,10 +312,12 @@ func TestClosedWakeAndReplayChannelsDoNotSpin(t *testing.T) {
 		close(replay)
 		admissionReplay := make(chan control.Key)
 		close(admissionReplay)
+		vmReplay := make(chan control.Key)
+		close(vmReplay)
 		loopCtx, stop := context.WithTimeout(ctx, 260*time.Millisecond)
 		defer stop()
 		var ticks int
-		err = worker.Run(loopCtx, PGLoopOptions{PollInterval: 100 * time.Millisecond, Wake: wake, Replay: replay, AdmissionReplay: admissionReplay, Observe: func(tick Tick) { ticks++; require.NoError(t, tick.Err); require.Equal(t, pgexec.Idle, tick.Progress) }})
+		err = worker.Run(loopCtx, PGLoopOptions{PollInterval: 100 * time.Millisecond, Wake: wake, Replay: replay, AdmissionReplay: admissionReplay, ResourceReplay: nil, VMReplay: vmReplay, Observe: func(tick Tick) { ticks++; require.NoError(t, tick.Err); require.Equal(t, pgexec.Idle, tick.Progress) }})
 		require.ErrorIs(t, err, context.DeadlineExceeded)
 		require.LessOrEqual(t, ticks, 7)
 		return nil

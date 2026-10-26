@@ -123,6 +123,11 @@ func (r *Runner) authorize(ctx context.Context) (authorization, error) {
 		a.Denied = err
 		return a, nil
 	}
+	a.ReplayNonce, a.ReplayReceipt, err = r.replaySelection(ctx, s, c, vmStep.CommandSHA256, published)
+	if err != nil {
+		a.Denied = err
+		return a, nil
+	}
 	a.Dispatch = true
 	return a, nil
 }

@@ -35,6 +35,7 @@ type authorization struct {
 	JournalSHA256 string
 	Dispatch      bool
 	ReplayNonce   string
+	ReplayReceipt budget.ObjectRef
 	Denied        error
 }
 
@@ -158,6 +159,12 @@ func (e *engine) advance(ctx context.Context) error {
 				if a.ReplayNonce == "" {
 					return ErrNotSent
 				}
+				// 选择只能消费这一次原not_sent回执。发布滞后、旧选择回灌
+				// 或再一次prepared失败产生了新not_sent时，不得只靠“nonce
+				// 与上次不同”轮换重放；必须再次有明确选择和原真实UID。
+				if r.LastPublished == nil || a.ReplayReceipt != *r.LastPublished {
+					return ErrUnknown
+				}
 				if control.ValidateIncarnation(a.ReplayNonce) != nil || a.ReplayNonce == last.Intent.ReplayNonce {
 					return fmt.Errorf("original replay requires a fresh explicit 128-bit nonce")
 				}
@@ -191,7 +198,7 @@ func (e *engine) advance(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		if latest.Command == nil || *latest.Command != c || latest.Owner != a.Owner || latest.LeaseUID != a.LeaseUID || latest.JournalSHA256 != a.JournalSHA256 || latest.ReplayNonce != a.ReplayNonce || !latest.Dispatch || ctx.Err() != nil || c.Request.DeadlineUnixMillis <= control.Uint64(e.now().UnixMilli()) {
+		if latest.Command == nil || *latest.Command != c || latest.Owner != a.Owner || latest.LeaseUID != a.LeaseUID || latest.JournalSHA256 != a.JournalSHA256 || latest.ReplayNonce != a.ReplayNonce || latest.ReplayReceipt != a.ReplayReceipt || !latest.Dispatch || ctx.Err() != nil || c.Request.DeadlineUnixMillis <= control.Uint64(e.now().UnixMilli()) {
 			return fmt.Errorf("Runner authority changed after original preparation")
 		}
 		if c.BeforeBytes == c.Request.TargetVMMemoryBytes {

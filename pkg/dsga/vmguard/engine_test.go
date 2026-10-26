@@ -88,7 +88,7 @@ func setupEngine(t *testing.T) (*engine, *memoryFixture, *authorization) {
 	require.NoError(t, os.Chmod(dir, 0o700))
 	id := fixtureIdentity()
 	c := fixtureCommand(id)
-	a := &authorization{Owner: journal.Owner{HolderID: "owner-two", Epoch: 2}, LeaseUID: "lease-uid", Command: &c, JournalSHA256: strings.Repeat("d", 64), Dispatch: true, ReplayNonce: "", Denied: nil}
+	a := &authorization{Owner: journal.Owner{HolderID: "owner-two", Epoch: 2}, LeaseUID: "lease-uid", Command: &c, JournalSHA256: strings.Repeat("d", 64), Dispatch: true, ReplayNonce: "", ReplayReceipt: budget.ObjectRef{Name: "", UID: ""}, Denied: nil}
 	f := &memoryFixture{dir: dir, actual: Observation{RequestedBytes: c.BeforeBytes, ActualBytes: c.BeforeBytes}, apply: true, mu: sync.Mutex{}, writes: 0, err: nil, entered: nil, release: nil}
 	e := &engine{dir: dir, id: id, binding: c.BindingClaim, native: f, read: func(context.Context) (authorization, error) { return *a, nil }, now: time.Now}
 	s, err := lockState(context.Background(), dir)
@@ -195,13 +195,14 @@ func TestRunnerPreparedCrashNeedsExplicitUnchangedReplay(t *testing.T) {
 		require.ErrorIs(t, e.advance(context.Background()), ErrNotSent)
 		require.Zero(t, f.writes)
 		a.ReplayNonce = strings.Repeat("2", 32)
+		a.ReplayReceipt = publishEngineReceiptFixture(t, e)
 		require.NoError(t, e.advance(context.Background()))
 		r := readFixtureRecord(t, e)
 		require.Equal(t, a.ReplayNonce, r.Last.Intent.ReplayNonce)
 		require.Equal(t, completed, r.Last.Kind)
 		require.Equal(t, 1, f.writes)
 	})
-	for _, changed := range []string{"target", "nonce", "host", "journal", "owner", "baseline", "expired", "same-replay"} {
+	for _, changed := range []string{"target", "nonce", "host", "journal", "owner", "baseline", "expired", "same-replay", "receipt-uid", "unpublished"} {
 		t.Run(changed, func(t *testing.T) {
 			e, f, a := setupEngine(t)
 			r := preparedFixture(t, e, a)
@@ -209,6 +210,7 @@ func TestRunnerPreparedCrashNeedsExplicitUnchangedReplay(t *testing.T) {
 			writeFixtureRecord(t, e, r)
 			require.ErrorIs(t, e.advance(context.Background()), ErrNotSent)
 			a.ReplayNonce = strings.Repeat("4", 32)
+			a.ReplayReceipt = publishEngineReceiptFixture(t, e)
 			switch changed {
 			case "target":
 				a.Command.Request.TargetVMMemoryBytes -= a.Command.Identity.BlockBytes
@@ -226,11 +228,58 @@ func TestRunnerPreparedCrashNeedsExplicitUnchangedReplay(t *testing.T) {
 				e.now = func() time.Time { return time.UnixMilli(int64(a.Command.Request.DeadlineUnixMillis) + 1) }
 			case "same-replay":
 				a.ReplayNonce = r.Pending.ReplayNonce
+			case "receipt-uid":
+				a.ReplayReceipt.UID = "same-name-new-receipt"
+			case "unpublished":
+				current := readFixtureRecord(t, e)
+				current.LastPublished = nil
+				writeFixtureRecord(t, e, current)
 			}
 			require.Error(t, e.advance(context.Background()))
 			require.Zero(t, f.writes)
 		})
 	}
+}
+
+// 仅本地engine领域夹具：模拟真实Runner另有用例验证的不可变回执发布。
+// 不声明已经运行Kube API；不同原not_sent必须有独立原回执引用。
+func publishEngineReceiptFixture(t *testing.T, e *engine) budget.ObjectRef {
+	t.Helper()
+	r := readFixtureRecord(t, e)
+	require.NotNil(t, r.Last)
+	ref := budget.ObjectRef{Name: fmt.Sprintf("fixture-receipt-%d", r.Sequence), UID: fmt.Sprintf("fixture-uid-%d", r.Sequence)}
+	r.LastPublished = &ref
+	writeFixtureRecord(t, e, r)
+	return ref
+}
+
+func TestRunnerReplayCannotCycleOldSelectionAfterAnotherNotSent(t *testing.T) {
+	e, f, a := setupEngine(t)
+	writeFixtureRecord(t, e, preparedFixture(t, e, a))
+	require.ErrorIs(t, e.advance(context.Background()), ErrNotSent)
+	original := publishEngineReceiptFixture(t, e)
+	a.ReplayReceipt, a.ReplayNonce = original, strings.Repeat("5", 32)
+	calls := 0
+	e.read = func(context.Context) (authorization, error) {
+		calls++
+		v := *a
+		if calls == 2 {
+			v.Dispatch = false
+		}
+		return v, nil
+	}
+	require.Error(t, e.advance(context.Background()), "重放prepared后第二次授权失效")
+	e.read = func(context.Context) (authorization, error) { return *a, nil }
+	require.ErrorIs(t, e.advance(context.Background()), ErrNotSent)
+	a.ReplayNonce = strings.Repeat("6", 32)
+	require.ErrorIs(t, e.advance(context.Background()), ErrUnknown, "新not_sent尚未发布不重放")
+	latest := publishEngineReceiptFixture(t, e)
+	require.NotEqual(t, original, latest)
+	require.ErrorIs(t, e.advance(context.Background()), ErrUnknown, "旧原回执不能授权新的not_sent")
+	require.Zero(t, f.writes)
+	a.ReplayReceipt = latest
+	require.NoError(t, e.advance(context.Background()))
+	require.Equal(t, 1, f.writes)
 }
 
 func TestRunnerSecondAuthorityCheckAndDefinitePrewriteFailure(t *testing.T) {
@@ -271,7 +320,7 @@ func TestRunnerExclusiveLockCoversNativeWriteAndFloor(t *testing.T) {
 	second := *e
 	newOwner := journal.Owner{HolderID: "owner-three", Epoch: 3}
 	second.read = func(context.Context) (authorization, error) {
-		return authorization{Owner: newOwner, LeaseUID: "lease-uid", Command: nil, JournalSHA256: "", Dispatch: false, ReplayNonce: "", Denied: nil}, nil
+		return authorization{Owner: newOwner, LeaseUID: "lease-uid", Command: nil, JournalSHA256: "", Dispatch: false, ReplayNonce: "", ReplayReceipt: budget.ObjectRef{Name: "", UID: ""}, Denied: nil}, nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Millisecond)
 	defer cancel()

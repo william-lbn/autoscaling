@@ -171,7 +171,7 @@ func vmReservation(t *testing.T, client *kubefake.Clientset, name, kind string, 
 }
 
 func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testing.T) {
-	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent"} {
+	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -294,9 +294,28 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				require.Equal(t, journal.Unconfirmed, budgetStep(t, store, journal.ResizeVM).Phase)
 				_, err = worker.Advance(ctx)
 				require.ErrorIs(t, err, vmguard.ErrUnknown, "轮询在原Runner回执之前只能观察，不得重发")
-				loop := mode == "loop-waits-for-runner" || mode == "loop-holds-not-sent"
+				if mode == "reject-VM-replay-may-have-sent" {
+					peer.mu.Lock()
+					peer.lose = true
+					peer.mu.Unlock()
+					require.ErrorIs(t, runner.Tick(ctx), vmguard.ErrUnknown)
+					_, err = worker.ReplayVMOriginal(ctx, req.Key)
+					require.ErrorIs(t, err, vmguard.ErrUnknown)
+					s, err := store.Load(ctx)
+					require.NoError(t, err)
+					require.Empty(t, s.VirtualMachine().Annotations[journal.VMReplayAnnotation])
+					require.Equal(t, journal.Unconfirmed, budgetStep(t, store, journal.ResizeVM).Phase)
+					peer.mu.Lock()
+					require.Equal(t, 1, peer.writes)
+					peer.mu.Unlock()
+					require.Zero(t, resizePosts.Load())
+					require.Zero(t, opens.Load())
+					return nil
+				}
+				replayVM := mode == "loop-explicit-VM-replay" || mode == "loop-explicit-VM-replay-lost-selection" || mode == "loop-explicit-VM-replay-host-gone-before" || mode == "loop-explicit-VM-replay-host-gone-after"
+				loop := mode == "loop-waits-for-runner" || mode == "loop-holds-not-sent" || replayVM
 				if loop {
-					if mode == "loop-holds-not-sent" {
+					if mode == "loop-holds-not-sent" || replayVM {
 						reads := 0
 						client.PrependReactor("get", "configmaps", func(action kt.Action) (bool, runtime.Object, error) {
 							if action.(kt.GetAction).GetName() == outRef.Name {
@@ -312,13 +331,77 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 						require.Error(t, runner.Tick(ctx))
 						require.ErrorIs(t, runner.Tick(ctx), vmguard.ErrNotSent)
 					}
+					if mode == "loop-explicit-VM-replay-host-gone-before" {
+						require.NoError(t, client.Tracker().Delete(core.SchemeGroupVersion.WithResource("configmaps"), binding().Namespace, hostName))
+						_, err = worker.ReplayVMOriginal(ctx, req.Key)
+						require.Error(t, err)
+						s, err := store.Load(ctx)
+						require.NoError(t, err)
+						require.Empty(t, s.VirtualMachine().Annotations[journal.VMReplayAnnotation])
+						require.Equal(t, journal.Unconfirmed, budgetStep(t, store, journal.ResizeVM).Phase)
+						peer.mu.Lock()
+						require.Zero(t, peer.writes)
+						peer.mu.Unlock()
+						require.Zero(t, resizePosts.Load())
+						require.Zero(t, opens.Load())
+						return nil
+					}
 					loopCtx, stop := context.WithCancel(ctx)
 					defer stop()
 					waiting := 0
-					err = worker.Run(loopCtx, PGLoopOptions{PollInterval: 10 * time.Millisecond, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, Observe: func(tick Tick) {
+					var vmSignals chan control.Key
+					if replayVM {
+						vmSignals = make(chan control.Key, 1)
+					}
+					selected := false
+					settleSelection := func() {
+						s, err := store.Load(ctx)
+						require.NoError(t, err)
+						raw := s.VirtualMachine().Annotations[journal.VMReplayAnnotation]
+						originalVersion := s.ResourceVersion()
+						require.NotEmpty(t, raw)
+						original := budgetStep(t, store, journal.ResizeVM)
+						// 显式调用重复/上一次Select丢回复只能复用同一原选择，
+						// 原命令与VM步骤仍逐字段不变，不能换nonce/命令重试。
+						_, err = worker.ReplayVMOriginal(ctx, req.Key)
+						require.NoError(t, err)
+						s, err = store.Load(ctx)
+						require.NoError(t, err)
+						require.Equal(t, raw, s.VirtualMachine().Annotations[journal.VMReplayAnnotation])
+						require.Equal(t, originalVersion, s.ResourceVersion(), "重复选择不再PATCH同一VM")
+						require.Equal(t, original, budgetStep(t, store, journal.ResizeVM))
+						if mode == "loop-explicit-VM-replay-host-gone-after" {
+							require.NoError(t, client.Tracker().Delete(core.SchemeGroupVersion.WithResource("configmaps"), binding().Namespace, hostName))
+							require.ErrorIs(t, runner.Tick(ctx), vmguard.ErrNotSent)
+							stop()
+							return
+						}
+						require.NoError(t, runner.Tick(ctx))
+						require.NoError(t, runner.Tick(ctx), "已消费选择不重复内存写")
+						selected = true
+					}
+					err = worker.Run(loopCtx, PGLoopOptions{PollInterval: 10 * time.Millisecond, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, VMReplay: vmSignals, Observe: func(tick Tick) {
 						if tick.Err != nil {
+							var lost *journal.UnconfirmedWrite
+							if replayVM && errors.As(tick.Err, &lost) {
+								require.Equal(t, "loop-explicit-VM-replay-lost-selection", mode)
+								settleSelection()
+								return
+							}
 							waiting++
-							if mode == "loop-holds-not-sent" {
+							if replayVM {
+								require.ErrorIs(t, tick.Err, vmguard.ErrNotSent)
+								// Tick可能先于已就绪显式通道被select选中；等待可继续，
+								// 只投递一次选择，不把额外轮询当第二次授权。
+								if waiting == 1 {
+									if mode == "loop-explicit-VM-replay-lost-selection" {
+										api.mu.Lock()
+										api.loseJournalReply = true
+										api.mu.Unlock()
+									}
+									vmSignals <- req.Key
+								}
+							} else if mode == "loop-holds-not-sent" {
 								require.ErrorIs(t, tick.Err, vmguard.ErrNotSent)
 								if waiting == 2 {
 									stop()
@@ -328,13 +411,17 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 								require.Equal(t, 1, waiting)
 								require.NoError(t, runner.Tick(ctx))
 							}
+						} else if replayVM && !selected {
+							settleSelection()
 						} else if budgetStep(t, store, journal.ResumeAdmission).Phase == journal.Settled {
 							stop()
 						}
 					}})
 					require.ErrorIs(t, err, context.Canceled, "实际循环不能因原VM仍待读回/显式not_sent而退出owner")
-					if mode == "loop-holds-not-sent" {
-						require.Equal(t, 2, waiting)
+					if mode == "loop-holds-not-sent" || mode == "loop-explicit-VM-replay-host-gone-after" {
+						if mode == "loop-holds-not-sent" {
+							require.Equal(t, 2, waiting)
+						}
 						require.Equal(t, journal.Unconfirmed, budgetStep(t, store, journal.ResizeVM).Phase)
 						peer.mu.Lock()
 						require.Zero(t, peer.writes)
@@ -400,7 +487,7 @@ func vmDSM(s control.Snapshot) control.DSMResponse {
 }
 
 func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T) {
-	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost"} {
+	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost", "explicit-original-replay"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -531,6 +618,25 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 				}
 				require.NoError(t, err)
 				require.Equal(t, pgexec.Recorded, progress)
+				if mode == "explicit-original-replay" {
+					reads := 0
+					client.PrependReactor("get", "configmaps", func(action kt.Action) (bool, runtime.Object, error) {
+						if action.(kt.GetAction).GetName() == outRef.Name {
+							reads++
+							if reads == 3 {
+								return true, nil, fmt.Errorf("explicit shrink fixture source unavailable after prepared")
+							}
+						}
+						return false, nil, nil
+					})
+					require.Error(t, runner.Tick(ctx))
+					require.ErrorIs(t, runner.Tick(ctx), vmguard.ErrNotSent)
+					original := budgetStep(t, store, journal.ResizeVM)
+					progress, err = worker.ReplayVMOriginal(ctx, req.Key)
+					require.NoError(t, err)
+					require.Equal(t, pgexec.Recorded, progress)
+					require.Equal(t, original, budgetStep(t, store, journal.ResizeVM))
+				}
 				require.NoError(t, runner.Tick(ctx))
 				if mode == "root-drift-after-VM" {
 					root.mu.Lock()

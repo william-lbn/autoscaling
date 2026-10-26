@@ -353,6 +353,20 @@ func (worker *PGWorker) ReplayResourceOriginal(ctx context.Context, key control.
 	return worker.resources.ReplayOriginal(callCtx, key)
 }
 
+// 原VM重放使用独立受信选择，与PG/Root重放分开；Session检查和完整原
+// not_sent/预算复核先于持久UID/RV选择。普通轮询永远不调用此入口。
+func (worker *PGWorker) ReplayVMOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {
+	if err := worker.session.Check(ctx); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	if worker.vm == nil {
+		return pgexec.AwaitingFact, fmt.Errorf("original VM executor is unavailable")
+	}
+	callCtx, cancel := worker.session.coupledContext(ctx)
+	defer cancel()
+	return worker.vm.ReplayOriginal(callCtx, key)
+}
+
 type Tick struct {
 	Progress pgexec.Progress
 	Err      error
@@ -369,6 +383,9 @@ type PGLoopOptions struct {
 	AdmissionReplay <-chan control.Key
 	// 与PG/准入分开的显式原资源重放；普通轮询只Observe。
 	ResourceReplay <-chan control.Key
+	// VMReplay只能来自受信显式协调入口，不以HTTP错误、超时或not_sent
+	// 自动投递。选择仅指原Key，完整命令和原回执始终从持久来源读取。
+	VMReplay <-chan control.Key
 	// Observe供状态/指标使用，必须有界返回，不打印凭据或误把Recorded当VM完成。
 	Observe func(Tick)
 }
@@ -388,7 +405,9 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	var replay *control.Key
 	var admissionReplay *control.Key
 	var resourceReplay *control.Key
+	var vmReplay *control.Key
 	wake, replays, admissionReplays, resourceReplays := options.Wake, options.Replay, options.AdmissionReplay, options.ResourceReplay
+	vmReplays := options.VMReplay
 	for {
 		if callCtx.Err() != nil {
 			return callCtx.Err()
@@ -404,6 +423,9 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		} else if resourceReplay != nil {
 			progress, err = worker.ReplayResourceOriginal(callCtx, *resourceReplay)
 			resourceReplay = nil
+		} else if vmReplay != nil {
+			progress, err = worker.ReplayVMOriginal(callCtx, *vmReplay)
+			vmReplay = nil
 		} else {
 			progress, err = worker.Advance(callCtx)
 		}
@@ -442,6 +464,13 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			} else {
 				copy := key
 				resourceReplay = &copy
+			}
+		case key, open := <-vmReplays:
+			if !open {
+				vmReplays = nil
+			} else {
+				selectedKey := key
+				vmReplay = &selectedKey
 			}
 		case _, open := <-wake:
 			if !open {

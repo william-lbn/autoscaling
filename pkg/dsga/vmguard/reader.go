@@ -66,6 +66,10 @@ type Confirmed struct {
 }
 
 func (r *Reader) confirm(ctx context.Context, sources budget.RunnerSources, c Command, actor journal.Owner) (Confirmed, error) {
+	return r.confirmKind(ctx, sources, c, actor, false)
+}
+
+func (r *Reader) confirmKind(ctx context.Context, sources budget.RunnerSources, c Command, actor journal.Owner, unsent bool) (Confirmed, error) {
 	var out Confirmed
 	if sources.Validate() != nil || c.Validate() != nil || c.Identity.VMUID != string(r.binding.VMUID) || c.Identity.Incarnation != r.binding.Incarnation || c.BindingClaim != sources.BirthClaim {
 		return out, fmt.Errorf("Runner original source command differs from fixed VM")
@@ -85,9 +89,12 @@ func (r *Reader) confirm(ctx context.Context, sources budget.RunnerSources, c Co
 		return out, fmt.Errorf("Runner publication and immutable original receipt differ")
 	}
 	if result.NotSent() {
+		if unsent && result.Intent.Owner == actor && p.Actual.RequestedBytes == c.BeforeBytes && p.Actual.ActualBytes == c.BeforeBytes && result.Actual == *p.Actual {
+			return Confirmed{Sources: sources, Birth: birth, Receipt: result, Actual: *p.Actual}, nil
+		}
 		return out, ErrNotSent
 	}
-	if !result.Complete() || p.Actual.RequestedBytes != c.Request.TargetVMMemoryBytes || p.Actual.ActualBytes != c.Request.TargetVMMemoryBytes {
+	if unsent || !result.Complete() || p.Actual.RequestedBytes != c.Request.TargetVMMemoryBytes || p.Actual.ActualBytes != c.Request.TargetVMMemoryBytes {
 		return out, ErrUnknown
 	}
 	return Confirmed{Sources: sources, Birth: birth, Receipt: result, Actual: *p.Actual}, nil
