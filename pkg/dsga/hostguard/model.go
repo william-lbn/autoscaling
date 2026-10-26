@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
 
@@ -93,6 +94,10 @@ func (p *Plan) UnmarshalJSON(raw []byte) error {
 type Hold struct {
 	Plan     Plan   `json:"plan"`
 	SourceID string `json:"source_id"`
+	// Claim在原Node容量已持久保留、原不可变CM已读回后才CAS固定。
+	// nil表示尚未发布，消费者不得据此执行。固定后不收养同名新UID；
+	// CREATE或最终CAS丢回复只读恢复原UID，不因Lease/超时清除此字段。
+	Claim *budget.ObjectRef `json:"claim,omitempty"`
 }
 
 // Model没有TTL/自动释放或通用reset。当前阶段只增加/保留持有；显式释放须
@@ -109,19 +114,23 @@ type Model struct {
 	Holds        []Hold         `json:"holds"`
 }
 
-func sourceID(origin string, p Plan) string {
+// SourceID只给出原完整计划在该分配域中的稳定标识，不是容量持有或发布授权。
+func SourceID(origin string, p Plan) string {
 	raw, _ := json.Marshal([]any{origin, p})
 	h := sha256.Sum256(append([]byte("neon-dsga-node-held-memory-v1\x00"), raw...))
 	return hex.EncodeToString(h[:])
 }
 
 func (m Model) Validate() error {
-	if m.ProtocolVersion != 1 || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
+	if (m.ProtocolVersion != 1 && m.ProtocolVersion != 2) || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
 		return fmt.Errorf("invalid durable Host allocation model")
 	}
 	for i, h := range m.Holds {
-		if _, err := h.Plan.Bytes(); err != nil || h.SourceID != sourceID(m.Origin, h.Plan) {
+		if _, err := h.Plan.Bytes(); err != nil || h.SourceID != SourceID(m.Origin, h.Plan) {
 			return fmt.Errorf("host hold changed original complete plan/source")
+		}
+		if h.Claim != nil && (m.ProtocolVersion != 2 || h.Claim.Validate() != nil) {
+			return fmt.Errorf("published Host hold requires original claim UID and model v2")
 		}
 		for j := range i {
 			old := m.Holds[j].Plan
@@ -185,6 +194,12 @@ func compare(a, b control.Key) int {
 
 func (m Model) Clone() Model {
 	m.Holds = append([]Hold{}, m.Holds...)
+	for i := range m.Holds {
+		if m.Holds[i].Claim != nil {
+			ref := *m.Holds[i].Claim
+			m.Holds[i].Claim = &ref
+		}
+	}
 	return m
 }
 
@@ -218,7 +233,7 @@ func (m Model) reserve(actor journal.Owner, p Plan, capacity control.Uint64) (Mo
 		return m, none, fmt.Errorf("host ledger sequence/hold bound exhausted; explicit settlement required")
 	}
 	next := m.Clone()
-	h := Hold{Plan: p, SourceID: sourceID(m.Origin, p)}
+	h := Hold{Plan: p, SourceID: SourceID(m.Origin, p), Claim: nil}
 	next.Holds = append(next.Holds, h)
 	next.Sequence++
 	if err := next.Validate(); err != nil {

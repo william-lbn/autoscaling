@@ -269,22 +269,24 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				out := budget.OutsideReservation{ProtocolVersion: 1, Request: req, Identity: p.Identity, Incarnation: binding().Incarnation, ResidualProfileID: "explicit-qualified-platform-fixture", SystemOutsidePG: p.SystemOutsidePG, Transition: p.Transition, Safety: p.Safety, HoldUntilExplicitSettlement: true, VMShrinkPermit: false}
 				outRef := vmReservation(t, client, "outside-original", budgetclaims.OutsideKind, out)
 				p.OutsideClaim = &outRef
-				host := budget.HostReservation{ProtocolVersion: 1, Request: req, Identity: p.Identity, Incarnation: binding().Incarnation, SourceID: "actual-host-producer-fixture", RunnerPodName: p.RunnerPodName, RunnerPodUID: "runner-uid", NodeName: "node-one", NodeUID: "node-uid", ReservedMemoryBytes: req.TargetVMMemoryBytes + 64<<20, HostOverheadBytes: 64 << 20, HoldUntilExplicitSettlement: true, VMShrinkPermit: false}
 				hostName, err := budgetclaims.HostClaimName(binding(), req)
 				require.NoError(t, err)
-				vmReservation(t, client, hostName, budgetclaims.HostKind, host)
 				s, err := store.Load(ctx)
 				require.NoError(t, err)
 				_, _, err = store.Begin(ctx, s, session.Actor(), req, 1)
 				require.NoError(t, err)
 				priorBudgetDomain(t, ctx, store, session.Actor(), req, journal.PrepareBudget, req.Key.Instance.ComputeInstanceID, p)
-				priorBudgetDomain(t, ctx, store, session.Actor(), req, journal.ReserveHost, host.SourceID, host)
+				host := publishVMHost(t, ctx, client, coord, store, session)
+				progress, err := worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress, "生产Agent消费Node/CM原持有并结算ReserveHost")
+				require.Equal(t, host.SourceID, budgetStep(t, store, journal.ReserveHost).TargetID)
 				if mode == "start-lost-reply" {
 					api.mu.Lock()
 					api.loseJournalReply = true
 					api.mu.Unlock()
 				}
-				progress, err := worker.Advance(ctx)
+				progress, err = worker.Advance(ctx)
 				if mode == "start-lost-reply" {
 					require.Error(t, err)
 				} else {
@@ -583,15 +585,12 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 				out := budget.OutsideReservation{ProtocolVersion: 1, Request: req, Identity: p.Identity, Incarnation: binding().Incarnation, ResidualProfileID: "explicit-qualified-platform-fixture", SystemOutsidePG: p.SystemOutsidePG, Transition: p.Transition, Safety: p.Safety, HoldUntilExplicitSettlement: true, VMShrinkPermit: false}
 				outRef := vmReservation(t, client, "outside-original", budgetclaims.OutsideKind, out)
 				p.OutsideClaim = &outRef
-				host := budget.HostReservation{ProtocolVersion: 1, Request: req, Identity: p.Identity, Incarnation: binding().Incarnation, SourceID: "actual-held-host-fixture", RunnerPodName: p.RunnerPodName, RunnerPodUID: "runner-uid", NodeName: "node-one", NodeUID: "node-uid", ReservedMemoryBytes: p.VMBeforeMemoryBytes + 64<<20, HostOverheadBytes: 64 << 20, HoldUntilExplicitSettlement: true, VMShrinkPermit: false}
-				name, err := budgetclaims.HostClaimName(binding(), req)
-				require.NoError(t, err)
-				vmReservation(t, client, name, budgetclaims.HostKind, host)
 				s, err := store.Load(ctx)
 				require.NoError(t, err)
 				_, _, err = store.Begin(ctx, s, session.Actor(), req, 1)
 				require.NoError(t, err)
 				priorBudgetDomain(t, ctx, store, session.Actor(), req, journal.PrepareBudget, req.Key.Instance.ComputeInstanceID, p)
+				publishVMHost(t, ctx, client, coord, store, session)
 				root.mu.Lock()
 				aggregate, err := budget.RootAggregateFromView(root.view)
 				root.mu.Unlock()

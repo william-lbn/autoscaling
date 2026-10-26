@@ -24,6 +24,7 @@ import (
 	kubefake "k8s.io/client-go/kubernetes/fake"
 	kt "k8s.io/client-go/testing"
 
+	"github.com/neondatabase/autoscaling/internal/dsgatest"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims"
@@ -208,7 +209,7 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 				api.mu.Unlock()
 				controller := true
 				owner := metav1.OwnerReference{APIVersion: "vm.neon.tech/v1", Kind: "VirtualMachine", Name: binding().Name, UID: binding().VMUID, Controller: &controller, BlockOwnerDeletion: &controller}
-				h := budget.HostReservation{ProtocolVersion: 1, Request: req, Identity: p.Identity, Incarnation: binding().Incarnation, SourceID: "host-original", RunnerPodName: p.RunnerPodName, RunnerPodUID: "runner-uid", NodeName: "node-one", NodeUID: "node-uid", ReservedMemoryBytes: max(req.TargetVMMemoryBytes, p.VMBeforeMemoryBytes) + (4 << 20), HostOverheadBytes: 4 << 20, HoldUntilExplicitSettlement: true, VMShrinkPermit: false}
+				h := dsgatest.Host(binding(), p, budget.HostReservation{ProtocolVersion: 1, Request: req, Identity: p.Identity, Incarnation: binding().Incarnation, SourceID: "host-original", RunnerPodName: p.RunnerPodName, RunnerPodUID: "runner-uid", NodeName: "node-one", NodeUID: "node-uid", ReservedMemoryBytes: max(req.TargetVMMemoryBytes, p.VMBeforeMemoryBytes) + (4 << 20), HostOverheadBytes: 4 << 20, HoldUntilExplicitSettlement: true, VMShrinkPermit: false})
 				outside := budget.OutsideReservation{ProtocolVersion: 1, Request: req, Identity: p.Identity, Incarnation: binding().Incarnation, ResidualProfileID: "test-only-qualified-profile", SystemOutsidePG: p.SystemOutsidePG, Transition: p.Transition, Safety: p.Safety, HoldUntilExplicitSettlement: true}
 				claim := func(name, uid, kind string, body any) *core.ConfigMap {
 					data, err := json.Marshal(body)
@@ -220,6 +221,7 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 				hostCM := claim("host-original", "host-uid", budgetclaims.HostKind, h)
 				pod := &core.Pod{ObjectMeta: metav1.ObjectMeta{Namespace: binding().Namespace, Name: p.RunnerPodName, UID: "runner-uid", ResourceVersion: "pod-rv-1", OwnerReferences: []metav1.OwnerReference{owner}}, Spec: core.PodSpec{NodeName: "node-one"}, Status: core.PodStatus{Phase: core.PodRunning, PodIP: "127.0.0.1"}}
 				node := &core.Node{ObjectMeta: metav1.ObjectMeta{Name: "node-one", UID: "node-uid", ResourceVersion: "node-rv-1"}}
+				node = dsgatest.Node(node, binding(), p, h, budget.ObjectRef{Name: hostCM.Name, UID: string(hostCM.UID)})
 				for _, obj := range []runtime.Object{outCM, hostCM, pod, node} {
 					require.NoError(t, client.Tracker().Add(obj))
 				}

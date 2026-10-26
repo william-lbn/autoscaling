@@ -104,7 +104,9 @@ type HostReservation struct {
 }
 
 func (h HostReservation) ValidateFor(p Prepared, incarnation string) error {
-	if h.ProtocolVersion != 1 || h.VMShrinkPermit || !h.HoldUntilExplicitSettlement || h.Request != p.Request || h.Identity != p.Identity || h.Incarnation != incarnation || control.ValidateIncarnation(h.Incarnation) != nil || h.RunnerPodName != p.RunnerPodName || h.HostOverheadBytes == 0 || uint64(h.HostOverheadBytes) > math.MaxUint64-uint64(p.Request.TargetVMMemoryBytes) || h.ReservedMemoryBytes < p.Request.TargetVMMemoryBytes+h.HostOverheadBytes {
+	// v1仅保留旧历史/纯合同读取。生产Reader另要求v2并真实核Node账本中
+	// 固定的原Claim UID，不能因本结构数字合法就把旧声明当持续持有。
+	if (h.ProtocolVersion != 1 && h.ProtocolVersion != 2) || h.VMShrinkPermit || !h.HoldUntilExplicitSettlement || h.Request != p.Request || h.Identity != p.Identity || h.Incarnation != incarnation || control.ValidateIncarnation(h.Incarnation) != nil || h.RunnerPodName != p.RunnerPodName || h.HostOverheadBytes == 0 || uint64(h.HostOverheadBytes) > math.MaxUint64-uint64(p.Request.TargetVMMemoryBytes) || h.ReservedMemoryBytes < p.Request.TargetVMMemoryBytes+h.HostOverheadBytes {
 		return fmt.Errorf("host reservation differs from original VM/Guest/Runner/target")
 	}
 	for _, s := range []string{h.SourceID, h.RunnerPodName, h.RunnerPodUID, h.NodeName, h.NodeUID} {

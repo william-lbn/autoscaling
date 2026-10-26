@@ -7,17 +7,21 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"slices"
 
 	core "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	coreclient "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 )
 
 const ClaimKey = "reservation.json"
@@ -66,6 +70,9 @@ func (r *Reader) HostReference(ctx context.Context, request control.Request) (bu
 	}
 	cm, err := r.core.ConfigMaps(r.binding.Namespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return budget.ObjectRef{}, fmt.Errorf("%w: original Host source is not yet published", resourceguard.ErrUnknown)
+		}
 		return budget.ObjectRef{}, err
 	}
 	if cm == nil {
@@ -102,6 +109,23 @@ func (r *Reader) claim(ctx context.Context, ref budget.ObjectRef, kind string) (
 		return nil, fmt.Errorf("reservation belongs to another original VM")
 	}
 	return cm, nil
+}
+
+// CheckOutside供Host生产者在分配前核原Prepare引用的持续来源；不创建/认证
+// 自报系统上界。真正的资格、硬约束和寿命由对应可信生产者负责。
+func (r *Reader) CheckOutside(ctx context.Context, p budget.Prepared) error {
+	if p.OutsideClaim == nil {
+		return fmt.Errorf("original outside reservation unavailable")
+	}
+	cm, err := r.claim(ctx, *p.OutsideClaim, OutsideKind)
+	if err != nil {
+		return err
+	}
+	var out budget.OutsideReservation
+	if json.Unmarshal([]byte(cm.Data[ClaimKey]), &out) != nil || out.ValidateFor(p, r.binding.Incarnation) != nil {
+		return fmt.Errorf("outside source differs from original prepared budget")
+	}
+	return nil
 }
 
 // Read只消费已由可信预算/Host生产者落实的持久对象。immutable不是资格证明，
@@ -145,6 +169,20 @@ func (r *Reader) Read(ctx context.Context, s *journal.Snapshot, p budget.Prepare
 	}
 	if node == nil || node.Name != h.NodeName || string(node.UID) != h.NodeUID || node.ResourceVersion == "" || node.DeletionTimestamp != nil {
 		return nil, fmt.Errorf("original Host node changed")
+	}
+	// 来源CM先创建、Node容量后发布；只有原Node账本中固定的完整计划及
+	// 真实CM UID吻合才可消费。标签/immutable/同数值CM不能替代该发布。
+	plan := hostguard.Plan{Namespace: r.binding.Namespace, VMName: r.binding.Name, Incarnation: r.binding.Incarnation, RunnerPodUID: h.RunnerPodUID, Request: p.Request, BeforeBytes: p.VMBeforeMemoryBytes, HostOverheadBytes: h.HostOverheadBytes}
+	if h.ProtocolVersion != 2 {
+		return nil, fmt.Errorf("original Host source has no matching published Node capacity hold")
+	}
+	if err := hostguard.InspectClaim(node, plan, h.SourceID, hostRef); err != nil {
+		if errors.Is(err, hostguard.ErrUnpublished) {
+			// CM存在但Node尚未发布原UID是正常跨对象窗口，只等待、不结束
+			// owner或提前Start；其他丢源/换源/容量错误仍按真实故障拒绝。
+			return nil, fmt.Errorf("%w: original Host Node has not published claim UID", resourceguard.ErrUnknown)
+		}
+		return nil, fmt.Errorf("original Host source has no matching published Node capacity hold: %w", err)
 	}
 	return &Observed{outside: outside, host: host, pod: pod, node: node, Host: h}, nil
 }

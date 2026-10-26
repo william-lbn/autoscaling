@@ -25,6 +25,7 @@ import (
 	kubefake "k8s.io/client-go/kubernetes/fake"
 	kt "k8s.io/client-go/testing"
 
+	"github.com/neondatabase/autoscaling/internal/dsgatest"
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	vmfake "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned/fake"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
@@ -200,11 +201,15 @@ func (f *runnerFixture) beginKind(t *testing.T, kind control.Kind) (Command, str
 	p.OutsideClaim = &outRef
 	require.NoError(t, p.ValidateFor(c.Request, id))
 	f.completePrior(t, c.Request, journal.PrepareBudget, c.Request.Key.Instance.ComputeInstanceID, p)
-	host := budget.HostReservation{ProtocolVersion: 1, Request: c.Request, Identity: id, Incarnation: c.Identity.Incarnation, SourceID: "original-scheduler-hold", RunnerPodName: "runner", RunnerPodUID: c.Identity.RunnerPodUID, NodeName: "node", NodeUID: c.Identity.NodeUID, ReservedMemoryBytes: max(c.Request.TargetVMMemoryBytes, c.BeforeBytes) + 64<<20, HostOverheadBytes: 64 << 20, HoldUntilExplicitSettlement: true, VMShrinkPermit: false}
+	host := dsgatest.Host(f.store.Binding(), p, budget.HostReservation{ProtocolVersion: 1, Request: c.Request, Identity: id, Incarnation: c.Identity.Incarnation, SourceID: "original-scheduler-hold", RunnerPodName: "runner", RunnerPodUID: c.Identity.RunnerPodUID, NodeName: "node", NodeUID: c.Identity.NodeUID, ReservedMemoryBytes: max(c.Request.TargetVMMemoryBytes, c.BeforeBytes) + 64<<20, HostOverheadBytes: 64 << 20, HoldUntilExplicitSettlement: true, VMShrinkPermit: false})
 	if f.badShrink == "short-host-hold" {
 		host.ReservedMemoryBytes = c.Request.TargetVMMemoryBytes + host.HostOverheadBytes
 	}
 	c.HostClaim = f.budgetClaim(t, "host-original", budgetclaims.HostKind, host)
+	node, err := f.core.CoreV1().Nodes().Get(ctx, host.NodeName, metav1.GetOptions{})
+	require.NoError(t, err)
+	_, err = f.core.CoreV1().Nodes().Update(ctx, dsgatest.Node(node, f.store.Binding(), p, host, c.HostClaim), metav1.UpdateOptions{})
+	require.NoError(t, err)
 	if kind == control.Grow {
 		f.completePrior(t, c.Request, journal.ReserveHost, host.SourceID, host)
 	} else {

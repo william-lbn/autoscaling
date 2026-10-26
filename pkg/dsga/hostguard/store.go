@@ -19,6 +19,7 @@ import (
 	coreclient "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/util/patch"
 )
@@ -31,6 +32,8 @@ const (
 )
 
 var ErrUninitialized = errors.New("original Host allocator is not initialized")
+
+var ErrUnpublished = errors.New("original Host capacity is held but claim UID is not yet published")
 
 type Store struct {
 	core    coreclient.CoreV1Interface
@@ -66,10 +69,85 @@ func (s *Snapshot) Hold(p Plan) (Hold, error) {
 			if h.Plan != p {
 				return Hold{}, fmt.Errorf("original Host plan changed")
 			}
+			if h.Claim != nil {
+				ref := *h.Claim
+				h.Claim = &ref
+			}
 			return h, nil
 		}
 	}
 	return Hold{}, fmt.Errorf("original Host hold not found")
+}
+
+func (s *Store) Binding() Binding { return s.binding }
+
+// BindClaim是Host来源第一次生效的线性化点。调用者须先真实GET校验原CM的
+// UID/完整body/保护；本CAS把该UID与完整容量计划一起固定。此前即使CM存在，
+// 消费者也必须因Node尚无匹配Claim而拒绝。因此CREATE丢回复可恢复尚未发布
+// 的原CM；一旦CAS固定UID，来源丢失绝不能用同名新对象替代。
+func (s *Store) BindClaim(ctx context.Context, snapshot *Snapshot, p Plan, ref budget.ObjectRef) (*Snapshot, error) {
+	if snapshot == nil || snapshot.model.Binding != s.binding || ref.Validate() != nil {
+		return nil, fmt.Errorf("host publication requires original Node/plan/claim UID")
+	}
+	actor, err := s.authorize(ctx, snapshot.node)
+	if err != nil || actor != snapshot.model.LeaseFloor {
+		return nil, fmt.Errorf("host publication owner is no longer original fenced holder")
+	}
+	h, err := snapshot.Hold(p)
+	if err != nil {
+		return nil, err
+	}
+	if h.Claim != nil {
+		if *h.Claim != ref {
+			return nil, fmt.Errorf("original published Host claim UID cannot be replaced")
+		}
+		return snapshot, nil
+	}
+	if snapshot.model.Sequence == control.Uint64(math.MaxUint64) {
+		return nil, fmt.Errorf("host ledger publication sequence exhausted")
+	}
+	m := snapshot.model.Clone()
+	for i := range m.Holds {
+		if m.Holds[i].Plan == p {
+			m.Holds[i].Claim = &ref
+		}
+	}
+	m.ProtocolVersion, m.Sequence = 2, m.Sequence+1
+	return s.write(ctx, snapshot.node, m, false)
+}
+
+// InspectClaim只检查本次真实Node读取中的持有，不认证调用者传入的对象。
+// Reader必须用自己的固定可信客户端GET原Node/CM。模型v1仅保留旧账本读取，
+// 无Claim的持有和CM自报SourceID均不构成发布。Lease过期不自动取消原持有。
+func InspectClaim(n *core.Node, p Plan, source string, ref budget.ObjectRef) error {
+	if n == nil || ref.Validate() != nil {
+		return fmt.Errorf("original Host Node/claim unavailable")
+	}
+	var m Model
+	raw := n.Annotations[LedgerAnnotation]
+	if len(raw) > MaxRawBytes || json.Unmarshal([]byte(raw), &m) != nil {
+		return fmt.Errorf("original Host published ledger unavailable")
+	}
+	snapshot, err := inspect(n, m.Binding)
+	if err != nil || n.DeletionTimestamp != nil {
+		return fmt.Errorf("original Host ledger source is not live/protected")
+	}
+	h, err := snapshot.Hold(p)
+	if err != nil || h.SourceID != source {
+		return fmt.Errorf("original Host claim is not the complete published Node hold")
+	}
+	used, usedErr := m.UsedBytes()
+	total, capErr := capacity(n)
+	if usedErr != nil || capErr != nil || used > total {
+		return fmt.Errorf("original Host held domain exceeds current Node capacity")
+	}
+	if h.Claim == nil {
+		return ErrUnpublished
+	}
+	if m.ProtocolVersion != 2 || *h.Claim != ref {
+		return fmt.Errorf("original Host claim UID differs from published Node hold")
+	}
+	return nil
 }
 
 func (s *Store) node(ctx context.Context) (*core.Node, error) {

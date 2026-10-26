@@ -15,6 +15,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budgetexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/quiesceexec"
@@ -36,6 +37,7 @@ type PGWorker struct {
 	quiesce   *quiesceexec.Executor
 	finalize  *budgetexec.Executor
 	vm        *vmexec.Executor
+	host      *hostexec.Consumer
 }
 
 func (session *Session) coupledContext(ctx context.Context) (context.Context, context.CancelFunc) {
@@ -220,7 +222,7 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 			return nil, err
 		}
 	}
-	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest, quiesce: quiesce}, nil
+	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest, quiesce: quiesce, finalize: nil, vm: nil, host: nil}, nil
 }
 
 // NewProductionPGWorker只供具备可信Kube只读客户端的实际Agent创建。完整预算
@@ -238,6 +240,9 @@ func (session *Session) NewProductionPGWorker(ctx context.Context, config comput
 	var runner *vmguard.Reader
 	if err == nil {
 		runner, err = vmguard.NewReader(core, session.binding, string(session.leaseUID))
+	}
+	if err == nil {
+		worker.host, err = hostexec.NewConsumer(session.store, claims, session.actor)
 	}
 	if err == nil {
 		worker.vm, err = vmexec.New(session.store, worker.client, resources.client, claims, runner, session.actor)
@@ -280,6 +285,11 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 		}
 	}
 	progress, err := worker.executor.Advance(callCtx)
+	// ReserveHost由独立Host分配者持有，本Agent只读两端原来源并保存完整
+	// 原命令/回执；不能用手填Completed越过节点账本或给Agent增加写权限。
+	if err == nil && progress == pgexec.ExternalStep && worker.host != nil {
+		progress, err = worker.host.Advance(callCtx)
+	}
 	if err == nil && progress == pgexec.ExternalStep && worker.quiesce != nil {
 		progress, err = worker.quiesce.Advance(callCtx)
 	}
