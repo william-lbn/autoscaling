@@ -95,7 +95,7 @@ func TestReadyBootstrapStillCannotEnterLegacyScalingSideEffects(t *testing.T) {
 	_, vm, secret := controllerBootstrapInputs(t)
 	vm.Status.Phase = vmv1.VmScaling
 	p.r.APIReader = fake.NewClientBuilder().WithScheme(p.r.Scheme).WithObjects(secret).Build()
-	require.ErrorContains(t, p.r.doReconcile(p.ctx, vm), "fenced scaling controller")
+	require.ErrorContains(t, p.r.doReconcile(p.ctx, vm), "sysfs CPU mode")
 }
 
 func TestBootstrapReleaseChecksFullJournalAndSecretOutsideDebugSkip(t *testing.T) {

@@ -27,6 +27,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"slices"
 	"time"
 
 	certv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
@@ -567,7 +568,13 @@ func (r *VMReconciler) doReconcile(ctx context.Context, vm *vmv1.VirtualMachine)
 			r.updateVMStatusCPU(ctx, vm, vmRunner, pluggedCPU, cgroupUsage)
 
 			// get Memory details from hypervisor and update VM status
-			memorySize, err := QmpGetMemorySize(QmpAddr(vm))
+			var memorySize *resource.Quantity
+			managedPending := false
+			if control.Managed(vm.Annotations) {
+				memorySize, managedPending, err = r.dsgaMemory(ctx, vm)
+			} else {
+				memorySize, err = QmpGetMemorySize(QmpAddr(vm))
+			}
 			if err != nil {
 				log.Error(err, "Failed to get Memory details from VirtualMachine", "VirtualMachine", vm.Name)
 				return err
@@ -590,7 +597,7 @@ func (r *VMReconciler) doReconcile(ctx context.Context, vm *vmv1.VirtualMachine)
 			}
 
 			memorySizeFromSpec := resource.NewQuantity(int64(vm.Spec.Guest.MemorySlots.Use)*vm.Spec.Guest.MemorySlotSize.Value(), resource.BinarySI)
-			if !memorySize.Equal(*memorySizeFromSpec) {
+			if managedPending || !control.Managed(vm.Annotations) && !memorySize.Equal(*memorySizeFromSpec) {
 				log.Info("VM goes into scale mode, need to resize Memory",
 					"Memory on board", memorySize,
 					"Memory in spec", memorySizeFromSpec)
@@ -619,10 +626,10 @@ func (r *VMReconciler) doReconcile(ctx context.Context, vm *vmv1.VirtualMachine)
 		}
 
 	case vmv1.VmScaling:
-		// 受管模式不得先执行旧CPU/Pod副作用、再因内存fencing缺失失败。完整新执行链
-		// 尚未接入此分支；默认关闭并明确拒绝降级，不能把旧Revision/Ok当新协议许可。
+		// 受管内存只消费最终Runner的原UID/私有QMP事实。旧spec.Use、公开QMP
+		// 和manual入口都不能代发内存命令；CPU仅保留受支持的sysfs路径。
 		if control.Managed(vm.Annotations) {
-			return fmt.Errorf("DSGA-managed VM requires the fenced scaling controller")
+			return r.managedScaling(ctx, vm)
 		}
 		// Check that runner pod is still ok
 		vmRunner := &corev1.Pod{}
@@ -1054,6 +1061,11 @@ func (r *VMReconciler) podForVirtualMachine(
 	vm *vmv1.VirtualMachine,
 	sshSecret *corev1.Secret,
 ) (*corev1.Pod, error) {
+	// 先核受管启动前提，再进入普通Pod组装，避免nil CPU mode在旧builder
+	// 解引用、或先组出带默认SA/公开QMP的受管Pod后才发现不支持的运行模式。
+	if vm.Spec.DSGABootstrap != nil && (vm.Spec.ServiceAccountName == "" || vm.Spec.ServiceAccountName == "default" || vm.Spec.CpuScalingMode == nil || *vm.Spec.CpuScalingMode != vmv1.CpuScalingModeSysfs) {
+		return nil, fmt.Errorf("managed Runner requires explicit service account and sysfs CPU mode")
+	}
 	pod, err := podSpec(vm, sshSecret, r.Config)
 	if err != nil {
 		return nil, err
@@ -1063,10 +1075,23 @@ func (r *VMReconciler) podForVirtualMachine(
 		if err != nil {
 			return nil, err
 		}
+		// 受管Runner通过自身Kube身份拉取唯一原VM意图、持久发布读回；没有
+		// 新增公开memory HTTP入口。Token/CA只挂载到原Pod；目标环境须给该
+		// 显式SA配置最小权限并保护领域CM，不能借default SA或宽权限回退。
+		pod.Spec.AutomountServiceAccountToken = lo.ToPtr(true)
+		pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{Name: "dsga-runner-state", VolumeSource: corev1.VolumeSource{EmptyDir: &corev1.EmptyDirVolumeSource{}}})
 		found := false
 		for i := range pod.Spec.Containers {
 			if pod.Spec.Containers[i].Name == "neonvm-runner" {
 				pod.Spec.Containers[i].Command = append(pod.Spec.Containers[i].Command, "-dsga-resource", gzip64.Encode(raw))
+				pod.Spec.Containers[i].VolumeMounts = append(pod.Spec.Containers[i].VolumeMounts, corev1.VolumeMount{Name: "dsga-runner-state", MountPath: "/vm/dsga-runner"})
+				for _, field := range []struct{ name, path string }{{"K8S_POD_UID", "metadata.uid"}, {"K8S_NAMESPACE", "metadata.namespace"}, {"K8S_NODE_NAME", "spec.nodeName"}} {
+					pod.Spec.Containers[i].Env = append(pod.Spec.Containers[i].Env, corev1.EnvVar{Name: field.name, ValueFrom: &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{FieldPath: field.path}}})
+				}
+				pod.Spec.Containers[i].Env = append(pod.Spec.Containers[i].Env, corev1.EnvVar{Name: "DSGA_VM_NAME", Value: vm.Name})
+				// 实际QEMU同样不listen TCP。去掉声明端口可防止生成的Service/
+				// 运维工具继续发现一个绕过最终执行者的旧QMP/manual控制入口。
+				pod.Spec.Containers[i].Ports = slices.DeleteFunc(pod.Spec.Containers[i].Ports, func(p corev1.ContainerPort) bool { return p.Name == "qmp" || p.Name == "qmp-manual" })
 				found = true
 			}
 		}

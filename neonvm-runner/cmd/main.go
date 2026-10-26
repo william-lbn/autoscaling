@@ -34,6 +34,7 @@ import (
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/dsga/bootstrap"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 	"github.com/neondatabase/autoscaling/pkg/util"
 	"github.com/neondatabase/autoscaling/pkg/util/gzip64"
 	"github.com/neondatabase/autoscaling/pkg/util/taskgroup"
@@ -103,9 +104,11 @@ func runInitScript(logger *zap.Logger, script string) error {
 }
 
 type Config struct {
-	vmSpecDump           string
-	vmStatusDump         string
-	resourceDump         string
+	vmSpecDump   string
+	vmStatusDump string
+	resourceDump string
+	// 仅ready DSGA VM拥有此实例；Kube完整原意图驱动，不能接旧spec/QMP写路径。
+	managedMemory        *vmguard.Runner
 	kernelPath           string
 	appendKernelCmdline  string
 	skipCgroupManagement bool
@@ -195,6 +198,14 @@ func run(logger *zap.Logger) error {
 	resourceJSON, err := bootstrap.DecodeRuntime(vmSpec, cfg.resourceDump)
 	if err != nil {
 		return fmt.Errorf("original Guest resource source unavailable: %w", err)
+	}
+	if vmSpec.DSGABootstrap != nil {
+		if vmSpec.CpuScalingMode == nil || cfg.cpuScalingMode != *vmSpec.CpuScalingMode || cfg.cpuScalingMode != vmv1.CpuScalingModeSysfs {
+			return fmt.Errorf("managed Runner CPU flags differ from original sysfs VM")
+		}
+		// 私有QMP/终止socket都只能由本容器的可信Runner/QEMU访问。启动任何
+		// QEMU前设置进程umask；不暴露未认证的TCP或manual第二写入口。
+		syscall.Umask(0077)
 	}
 
 	var enableSSH bool
@@ -293,6 +304,13 @@ func run(logger *zap.Logger) error {
 	if err := tg.Wait(); err != nil {
 		return err
 	}
+	cfg.managedMemory, err = initializeManagedMemory(vmSpec)
+	if err != nil {
+		return fmt.Errorf("original Runner memory birth unavailable: %w", err)
+	}
+	if cfg.managedMemory != nil {
+		qemuCmd = append(qemuCmd, cfg.managedMemory.QMPArguments()...)
+	}
 
 	err = runQEMU(cfg, logger, vmSpec, qemuCmd)
 	if err != nil {
@@ -322,12 +340,13 @@ func buildQEMUCmd(
 		"-audiodev", "none,id=noaudio",
 		"-serial", "pty",
 		"-msg", "timestamp=on",
-		"-qmp", fmt.Sprintf("tcp:0.0.0.0:%d,server,wait=off", vmSpec.QMP),
-		"-qmp", fmt.Sprintf("tcp:0.0.0.0:%d,server,wait=off", vmSpec.QMPManual),
 		"-qmp", fmt.Sprintf("unix:%s,server,wait=off", qmpUnixSocketForSigtermHandler),
 		"-device", "virtio-serial",
 		"-chardev", fmt.Sprintf("socket,path=%s,server=on,wait=off,id=log", logSerialSocket),
 		"-device", "virtserialport,chardev=log,name=tech.neon.log.0",
+	}
+	if vmSpec.DSGABootstrap == nil {
+		qemuCmd = append(qemuCmd, "-qmp", fmt.Sprintf("tcp:0.0.0.0:%d,server,wait=off", vmSpec.QMP), "-qmp", fmt.Sprintf("tcp:0.0.0.0:%d,server,wait=off", vmSpec.QMPManual))
 	}
 
 	qemuDiskArgs, err := setupVMDisks(logger, cfg.diskCacheSettings, enableSSH, swapSize, vmSpec.Disks)
@@ -512,7 +531,17 @@ func runQEMU(
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	wg := sync.WaitGroup{}
+	if cfg.managedMemory != nil {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			cfg.managedMemory.Run(ctx, func(err error) {
+				logger.Warn("DSGA original memory action remains blocked or unconfirmed", zap.Error(err))
+			})
+		}()
+	}
 
 	wg.Add(1)
 	go terminateQemuOnSigterm(ctx, logger, &wg)

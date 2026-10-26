@@ -1,7 +1,18 @@
 # DSGA Autoscaling 执行状态与恢复
 
-更新：2026-10-21。分支`codex/dsga-autoscaling-20261019`，只推自有fork，不合main。
+更新：2026-10-26。分支`codex/dsga-autoscaling-20261019`，只推自有fork，不合main。
 本文件是当前入口；初始维护快照仍见[基线](DSGA-上游基线与开发约束.md)。
+
+## 最新接续：冻结基线上的Runner持久消费与私有QMP（2026-10-26）
+
+按所有者17:29:30冻结维护截止，本轮不再fetch/merge新上游。实际Runner出生/
+固定Kube消费/每VM持久floor与完整未知/私有QMP单次set/实际读回/原UID不可变
+回执已接到启动；受管Controller读取该来源，移除旧TCP/manual内存控制入口。
+Mac去重20顶层/110含子项通过，0最终失败/跳过，readonly vet与Runner/Controller
+双Linux架构仅编译通过；准确边界、失败原日志及仍缺核心代码见
+[本模块验收](DSGA-Runner持久执行与私有QMP-Mac验收-20261026.md)。Agent typed
+派发/VM源长期结算、可信Prepare/Host生产者、首次准入/安全降限/受控恢复仍须
+收尾，不能将本模块写成整体封版。控制面/其他PG暂缓，默认关闭，Goal继续。
 
 ## 最新接续：当前预算长期持有与独立核心范围（2026-10-26）
 
