@@ -423,6 +423,19 @@ func (store *Store) Record(ctx context.Context, snapshot *Snapshot, actor Owner,
 	return store.apply(ctx, snapshot, next)
 }
 
+// RetainFinalizedBudget是经执行器完整重新核验后的显式v2升级CAS，绝不是Load
+// 解码时的自动补写。只改同一原Active的长期预算保存，不改动旧原命令和回执。
+func (store *Store) RetainFinalizedBudget(ctx context.Context, snapshot *Snapshot, actor Owner, key control.Key) (*Snapshot, error) {
+	if err := store.checked(snapshot); err != nil {
+		return nil, err
+	}
+	next, err := snapshot.model.RetainFinalizedBudget(actor, key)
+	if err != nil {
+		return nil, err
+	}
+	return store.apply(ctx, snapshot, next)
+}
+
 func (store *Store) RequestAbort(ctx context.Context, snapshot *Snapshot, actor Owner, key control.Key) (*Snapshot, error) {
 	if err := store.checked(snapshot); err != nil {
 		return nil, err

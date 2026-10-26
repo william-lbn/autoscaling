@@ -14,6 +14,7 @@ import (
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budgetexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
@@ -222,6 +223,22 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	// 的UID/RV CAS，显式重放也不得跳过此复核。外部长期承诺不由此补造。
 	if err := e.sameSnapshot(ctx, snapshot); err != nil {
 		return pgexec.AwaitingFact, err
+	}
+	if e.claims != nil {
+		if state.ProtocolVersion == 2 && state.BudgetHeld == nil {
+			// 仅旧Active原结算的显式在线升级。未知原开放已经先查询；完整来源
+			// 不可用时保留原WAL，不能补写。升级先返回Recorded，由下一轮独立
+			// 准入；绝不能在长期预算CAS尚未确认时发送新的开放。
+			finalizer, err := budgetexec.New(e.store, e.client, e.resources, e.actor, e.claims)
+			if err != nil {
+				return pgexec.AwaitingFact, err
+			}
+			return finalizer.RetainOriginal(ctx)
+		}
+		held, err := state.BudgetFor(op.Request)
+		if err != nil || !reflect.DeepEqual(held, settled) {
+			return pgexec.AwaitingFact, fmt.Errorf("production admission requires same atomically retained complete budget")
+		}
 	}
 	if step.Phase == journal.Planned {
 		command, _ := json.Marshal(request)

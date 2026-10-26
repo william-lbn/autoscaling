@@ -1,0 +1,331 @@
+{
+  "schema": "dsga-mac-module-receipt-v1",
+  "module": "current-held-budget-and-atomic-finalization",
+  "recorded_at": "2026-10-26T08:37:56.296517+00:00",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "base_commit": "565410ad37877d60ecbfb474be3d37c95af1c269",
+  "default_disabled": true,
+  "goal_complete": false,
+  "scope": {
+    "active": [
+      "neon",
+      "autoscaling",
+      "PG17"
+    ],
+    "deferred": [
+      "independently developed control-plane integration",
+      "other PG versions",
+      "Linux K8s final E2E"
+    ],
+    "control_plane_frozen": {
+      "branch": "codex/dsga-control-plane-v3-20261020",
+      "head": "d84c0b73004a7d8cc3e89f3c3f0e3f06cfa8cba9",
+      "main_not_imported": "6e0214c227f12721b12db26ab2b8aeb3c7d1610d",
+      "evidence": "build/dsga-control-plane-deferred-merge.json"
+    }
+  },
+  "control_plane_frozen": {
+    "branch": "codex/dsga-control-plane-v3-20261020",
+    "head": "d84c0b73004a7d8cc3e89f3c3f0e3f06cfa8cba9",
+    "main_not_imported": "6e0214c227f12721b12db26ab2b8aeb3c7d1610d",
+    "evidence": "build/dsga-control-plane-deferred-merge.json"
+  },
+  "upstream_maintenance": [
+    {
+      "repo": "neon",
+      "ref": "upstream/main",
+      "sha": "fa504217c61bbcaf5c512d75830564541f917f8f",
+      "missing": 0
+    },
+    {
+      "repo": "autoscaling",
+      "ref": "upstream/main",
+      "sha": "a4bce09e4d6bd7932ea634a1ed79afe26a9cfd1f",
+      "missing": 0
+    },
+    {
+      "repo": "neon/vendor/postgres-v17",
+      "ref": "neon-upstream/REL_17_STABLE_neon",
+      "sha": "56692dfb680281a963c7470fc7f0fec7f65ecfd4",
+      "missing": 0
+    },
+    {
+      "repo": "neon/vendor/postgres-v17",
+      "ref": "pg-upstream/REL_17_STABLE",
+      "sha": "3e914438a3ac4abfde004b8a850cb198f64613f3",
+      "missing": 0
+    }
+  ],
+  "tests": {
+    "distinct_top": 38,
+    "distinct_including_subtests": 111,
+    "failed": 0,
+    "skipped": 0,
+    "journal_full": "35 top / 79 incl; affected legacy case rerun replaces prior result",
+    "production_worker": "1 top / 13 incl (12 scenarios)",
+    "command_contract": "1 top / 14 incl",
+    "actual_old_reader": "1 top / 5 incl (v1/v2 pass, v3/projection reject)",
+    "vet": "exit 0",
+    "agent_crosscompile_only": [
+      "amd64",
+      "arm64"
+    ],
+    "not_business_failure": "contract launcher first exit127 (go PATH); tests did not run, preserved stderr"
+  },
+  "source_files": [
+    {
+      "path": "repos/autoscaling/pkg/dsga/budget/finalization_command.go",
+      "sha256": "94cb684fd5e205ef8d5dbe3ea41eed921d8cb642d54f538c537595d04efda73e",
+      "bytes": 2060
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/budget/finalization_command_test.go",
+      "sha256": "3a0fb7b4f29433bd5ae54faf70caa9f4c2463dc43dddcdcd029bc945100e8d36",
+      "bytes": 3401
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/journal/model.go",
+      "sha256": "4d068a56bcb7c2b9bd08b4fb1b44e08c238f2bc84e547cde431bd5fe9d389a76",
+      "bytes": 32634
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/journal/store.go",
+      "sha256": "c1e617535285fc74311bd29211ee56abdcd7acf80bfb105402d22fb2d1a6efd0",
+      "bytes": 20223
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/journal/held_budget.go",
+      "sha256": "02c687ff56193dbdbe02d07a43b963ef096ef610fc9b95547020877a83b42a28",
+      "bytes": 8125
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/journal/held_budget_test.go",
+      "sha256": "31588770c98a7a163e0b2c23077a7150bb24983be0eae7ecb2f03afddcf16576",
+      "bytes": 15606
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/budgetexec/finalize.go",
+      "sha256": "e7c09b6c5941bb661c4439758da594bf797922aa8c514d8fc623a241f0fe39c7",
+      "bytes": 14582
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/admissionexec/executor.go",
+      "sha256": "f6eb00a035f6142fc7ec69c59e0e637cf1ae519d1d678ea028f865488bd8b484",
+      "bytes": 19274
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/owner/budget_finalize_test.go",
+      "sha256": "229e8f5d109683f2ce9ae7094ccbd842638aa78a83f9b4ec190229b43b47ea7a",
+      "bytes": 22872
+    }
+  ],
+  "documents": [
+    {
+      "path": "repos/autoscaling/docs/DSGA-当前预算长期持有-Mac验收-20261026.md",
+      "sha256": "73a25b046b982ca990f98b5b3a561262e866989a210c17f792c34d89cc958023",
+      "bytes": 6565
+    },
+    {
+      "path": "repos/autoscaling/docs/DSGA-执行状态与恢复.md",
+      "sha256": "def085e920f4e41603b591a492b0ad7421ed547cf8fc70a269d5d4f0e493dd9c",
+      "bytes": 11242
+    }
+  ],
+  "crosscompiled_artifacts": [
+    {
+      "path": "build/dsga-held-budget-agent-linux-amd64",
+      "sha256": "20ef9068f468367392febc6a58f063555c3f60cdec88873a82d55a903695e79e",
+      "bytes": 79576296
+    },
+    {
+      "path": "build/dsga-held-budget-agent-linux-arm64",
+      "sha256": "0c96727429fe44c5b6b80c6df4765412c8bb1154d265aef2d998c265b33d8d01",
+      "bytes": 75229969
+    }
+  ],
+  "logs_and_fixture_evidence": [
+    {
+      "path": "build/dsga-held-budget-agent-linux-amd64.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-held-budget-agent-linux-arm64.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-held-budget-contract-legacy-final.jsonl",
+      "sha256": "f71b4679a74e821d02af546e300e38dbd459695f9fb2a55177b79fcad5aef161",
+      "bytes": 17781
+    },
+    {
+      "path": "build/dsga-held-budget-contract-legacy-final.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-held-budget-contract-legacy.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-held-budget-contract-legacy.stderr",
+      "sha256": "bf958228403dd2a9725bc288a68c234d7e0b98775d3ec085986a76b6fa35720e",
+      "bytes": 29
+    },
+    {
+      "path": "build/dsga-held-budget-fetch-autoscaling-upstream.log",
+      "sha256": "521ef1a0a56ff156e56d0094b483cb38cc869b37d224d3a81a051f5c09f1a3ac",
+      "bytes": 89
+    },
+    {
+      "path": "build/dsga-held-budget-fetch-control-plane-origin.log",
+      "sha256": "b0e303c902bdd5d4f70d44721f802be2a19fd2d176bc51bf61ffba58a5a58d4c",
+      "bytes": 149
+    },
+    {
+      "path": "build/dsga-held-budget-fetch-neon-upstream.log",
+      "sha256": "d4ee5bc2afb44576955d33661a67c390a84f3b9e5be0101aff2fbc66ec1aff17",
+      "bytes": 84
+    },
+    {
+      "path": "build/dsga-held-budget-fetch-neon-vendor-postgres-v17-neon-upstream.log",
+      "sha256": "91328279feef54401f7bb602a2f83bcd66136339a21d809e2b1a71645980f3c2",
+      "bytes": 100
+    },
+    {
+      "path": "build/dsga-held-budget-fetch-neon-vendor-postgres-v17-pg-upstream.log",
+      "sha256": "5e5f5b87433b007b28d73e07f959870cbf203aa7ca10df5d19a6c73342e4bdac",
+      "bytes": 91
+    },
+    {
+      "path": "build/dsga-held-budget-journal.jsonl",
+      "sha256": "bb657b4bc3b36e4bbb952e27ad9d915cba6dd1520a317304aa7ec59990480e21",
+      "bytes": 78676
+    },
+    {
+      "path": "build/dsga-held-budget-journal.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-held-budget-old-reader-final.jsonl",
+      "sha256": "d8c725f1bbfbd4acbef8801fe2bd8644018d83ba6be3b15cd63fb847ee7cdf93",
+      "bytes": 4958
+    },
+    {
+      "path": "build/dsga-held-budget-old-reader-final.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-held-budget-owner.jsonl",
+      "sha256": "2c0fa871a9b15eaf55a1abf72a0fd18831cf381e9481a61d5c9d74f8f53d66b5",
+      "bytes": 26457
+    },
+    {
+      "path": "build/dsga-held-budget-owner.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-held-budget-vet.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-control-plane-deferred-merge.json",
+      "sha256": "4c878b90a62073dc1f8ce71e215354c160610354105d65d3e6c4c09518d10b5f",
+      "bytes": 2058
+    },
+    {
+      "path": "build/run-dsga-held-budget-contract-legacy.sh",
+      "sha256": "c07634c46842c6caf785c7ecbfa191a5056426cdf5b46d26fab72ebc81e35482",
+      "bytes": 856
+    },
+    {
+      "path": "build/run-dsga-held-budget-journal.sh",
+      "sha256": "fd0051fb8b45906ee29a8dff8d0acb66c9e9077d1e8cc78cda04f87e2d3612e8",
+      "bytes": 886
+    },
+    {
+      "path": "build/run-dsga-held-budget-old-reader.sh",
+      "sha256": "178e2426ec5caf3c37740d60bbc118ea7c7af30f29b41a504848d0760ebcb814",
+      "bytes": 835
+    },
+    {
+      "path": "build/run-dsga-held-budget-owner.sh",
+      "sha256": "027d416294cd60ac4ab8b7ffdfb34ca62dc7b20dbfd399015dfa72ebc251d88f",
+      "bytes": 941
+    },
+    {
+      "path": "build/run-dsga-held-budget-vet-agent.sh",
+      "sha256": "84720c02710677de030bfb860c3e1639e2e0b2031c59b18007c467eb3f0de2f9",
+      "bytes": 903
+    },
+    {
+      "path": "build/dsga-held-budget-old-reader/empty.go",
+      "sha256": "aa7be11677fd9ee3e93cbc77319e8ec907258c69fdc3112b4e425627c354aeda",
+      "bytes": 16
+    },
+    {
+      "path": "build/dsga-held-budget-old-reader/model.go",
+      "sha256": "f4c3643d782a91b07a4a76ac53f2cff7f9d0bc46062c1d4c73198dc2ed30fe29",
+      "bytes": 30869
+    },
+    {
+      "path": "build/dsga-held-budget-old-reader/old_reader_test.go",
+      "sha256": "329b4633ba9b95eb7fda1cf622e022c94165b3c05eb94a027667cdc9ff44a649",
+      "bytes": 758
+    },
+    {
+      "path": "build/dsga-held-budget-old-reader/overlay.json",
+      "sha256": "48560632b8b43a0cf8bce0b2ce14260a06d227bdd4aabe9b294f580b8f4746fd",
+      "bytes": 749
+    },
+    {
+      "path": "build/dsga-held-budget-old-reader/source.json",
+      "sha256": "47b3052f918ad80b3792d4d9460512dddbedadbef6d4795d9de2d38862f071a1",
+      "bytes": 279
+    },
+    {
+      "path": "build/dsga-held-budget-old-reader/store.go",
+      "sha256": "cc9747c61f455537d828565c8b3a6e4f17ea4f9178513392588a186049dc61c5",
+      "bytes": 19668
+    },
+    {
+      "path": "build/dsga-held-budget-wire/v1.json",
+      "sha256": "5a99a81d4a7cb6c977b5dbfcf6ccf63da86a0409a865f3d81b3998c6083d1f0a",
+      "bytes": 217
+    },
+    {
+      "path": "build/dsga-held-budget-wire/v2.json",
+      "sha256": "769cb523becf73e6d5adcba30a1be5e93c0de980734d1b306cb536c3d7bd631e",
+      "bytes": 16118
+    },
+    {
+      "path": "build/dsga-held-budget-wire/v3-projection.json",
+      "sha256": "0b50918a178ed6ce2cf5e684acb4e9082e2f4fb064f091ab41356c7ef628126b",
+      "bytes": 16118
+    },
+    {
+      "path": "build/dsga-held-budget-wire/v3.json",
+      "sha256": "17d88bd6320b9e48b8015cb62aa4a18dee00dbf51175526378d695fc41848f40",
+      "bytes": 27394
+    }
+  ],
+  "not_executed": [
+    "Linux/apiserver/etcd/RBAC/GC/finalizer persistence",
+    "real PG/root/Host/QMP/NeonVM in production chain for this module",
+    "KVM/HugeTLB/NUMA/physical/performance",
+    "control-plane port and unified E2E"
+  ],
+  "remaining_core_code": [
+    "trusted Prepare and residual/transition/safety producers",
+    "Host/Scheduler actual reservations and final Controller/Runner/QMP execution",
+    "safe normal decrease and private/background constraints",
+    "first budget/admission",
+    "full lifecycle/cancel/settlement and controlled cross-PG-boot recovery"
+  ]
+}

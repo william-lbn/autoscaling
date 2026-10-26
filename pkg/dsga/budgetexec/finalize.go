@@ -46,23 +46,8 @@ func New(store *journal.Store, pg *compute.Client, root *resourceguard.Client, a
 // command固定第一次结算时的完整Finalized与所有原前驱摘要。此步骤只有本地CAS
 // 副作用，Unknown可以自动重复只读复核，但不重算/替换命令、更换来源或新发资源
 // 请求。CAS回复丢失先重读原账本；不能把Finalize未知扩大成PG/VM重新执行。
-type command struct {
-	ProtocolVersion uint32           `json:"protocol_version"`
-	Finalized       budget.Finalized `json:"finalized"`
-	PreparedSHA256  string           `json:"prepared_sha256"`
-	GuestSHA256     string           `json:"guest_sha256"`
-	VMSHA256        string           `json:"vm_sha256"`
-}
+type command = budget.FinalizationCommand
 
-func (v *command) UnmarshalJSON(b []byte) error {
-	type plain command
-	var p plain
-	if err := control.UnmarshalObject(b, &p); err != nil {
-		return err
-	}
-	*v = command(p)
-	return nil
-}
 func digest(b []byte) string { h := sha256.Sum256(b); return hex.EncodeToString(h[:]) }
 func steps(op *journal.Operation) (map[journal.Action]*journal.Step, *journal.Step) {
 	prior := map[journal.Action]*journal.Step{}
@@ -80,6 +65,17 @@ func steps(op *journal.Operation) (map[journal.Action]*journal.Step, *journal.St
 }
 
 func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) {
+	return e.advance(ctx, false)
+}
+
+// RetainOriginal只显式升级仍在Active中的旧v2完整结算。调用方须先查询未知
+// 原准入，不能让来源失联挡住只读查询。本函数重核所有原前驱/来源，不改旧回执
+// 或外部资源；成功只做一次同VM UID/RV长期预算保存。历史不自动收养。
+func (e *Executor) RetainOriginal(ctx context.Context) (pgexec.Progress, error) {
+	return e.advance(ctx, true)
+}
+
+func (e *Executor) advance(ctx context.Context, retain bool) (pgexec.Progress, error) {
 	snapshot, err := e.store.Load(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, err
@@ -93,7 +89,12 @@ func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) {
 	}
 	op := state.Active
 	prior, step := steps(op)
-	if step == nil || step.Action != journal.FinalizeBudget {
+	if retain {
+		if state.ProtocolVersion != 2 || state.BudgetHeld != nil || prior[journal.FinalizeBudget] == nil {
+			return pgexec.AwaitingFact, fmt.Errorf("only original active v2 settlement may be explicitly retained")
+		}
+		step = prior[journal.FinalizeBudget]
+	} else if step == nil || step.Action != journal.FinalizeBudget {
 		return pgexec.ExternalStep, nil
 	}
 	if !snapshot.Dispatchable() || op.Request.Key.Instance != e.instance {
@@ -199,6 +200,9 @@ func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) {
 		}
 		original = saved
 	}
+	if err = original.Validate(); err != nil {
+		return pgexec.AwaitingFact, err
+	}
 	if err = e.claims.Recheck(ctx, snapshot, p, vmFact.HostClaim, observed); err != nil {
 		return pgexec.AwaitingFact, err
 	}
@@ -250,7 +254,17 @@ func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) {
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
-	_, err = e.store.Record(ctx, snapshot, e.actor, op.Request.Key, journal.Observation{Key: op.Request.Key, RequestSHA256: op.RequestSHA256, CommandSHA256: step.CommandSHA256, Ordinal: step.Ordinal, Action: journal.FinalizeBudget, Result: journal.Completed, SourceID: e.instance.ComputeInstanceID, Data: data})
+	if retain {
+		// 旧Completed必须等于原完整WAL的Finalized。不能用当前较低的Shared成本
+		// 重写旧数据；保留原字节以及当时owner，CAS只增加长期持有字段/版本。
+		var recorded budget.Finalized
+		if step.Observation == nil || json.Unmarshal(step.Observation.Data, &recorded) != nil || !reflect.DeepEqual(recorded, original.Finalized) {
+			return pgexec.AwaitingFact, fmt.Errorf("original completed finalization differs from retained command")
+		}
+		_, err = e.store.RetainFinalizedBudget(ctx, snapshot, e.actor, op.Request.Key)
+	} else {
+		_, err = e.store.Record(ctx, snapshot, e.actor, op.Request.Key, journal.Observation{Key: op.Request.Key, RequestSHA256: op.RequestSHA256, CommandSHA256: step.CommandSHA256, Ordinal: step.Ordinal, Action: journal.FinalizeBudget, Result: journal.Completed, SourceID: e.instance.ComputeInstanceID, Data: data})
+	}
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}

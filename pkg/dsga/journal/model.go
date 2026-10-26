@@ -141,6 +141,11 @@ type Model struct {
 	// 伸缩时重建worker会把另一个boot收养为新实例。旧缺字段日志只按原HWM
 	// 恢复，不在线补写猜测。受控跨boot须另行关闭旧未知/预算，不能调用BindPG替换。
 	PGInstance *control.Instance `json:"pg_instance,omitempty"`
+	// 当前完整预算有独立于Active/终态历史的寿命。结算Completed与替换此字段
+	// 必须同一次VM UID/RV CAS；历史淘汰、取消及owner接管均不能清除。保留完整
+	// 原命令/回执，不能只留下数字、可复用SourceID或当前RSS。本字段首次写入
+	// 同时升级Model v3，旧读者必须拒绝，控制面后续移植时再统一升级读者。
+	BudgetHeld *HeldBudget `json:"budget_held,omitempty"`
 }
 
 func New(vmUID, incarnation, holder string) (Model, error) {
@@ -356,14 +361,17 @@ func compareKeys(left, right control.Key) int {
 }
 
 func (model Model) Validate() error {
-	if (model.ProtocolVersion != 1 && model.ProtocolVersion != 2) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
+	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 3) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
 		return fmt.Errorf("invalid journal version/sequence/incarnation")
 	}
 	// 旧Model已有严格字段解码，会拒绝pg_instance；这里另用v2明确标识
 	// 必须保存首次PG身份的新语义。首次固定与格式升级在同一次CAS，旧
 	// 读者即便只收到旧字段投影也仍拒绝版本。创建仍是v1，v2不可缺PG。
-	if (model.ProtocolVersion == 1 && model.PGInstance != nil) || (model.ProtocolVersion == 2 && model.PGInstance == nil) {
+	if (model.ProtocolVersion == 1 && model.PGInstance != nil) || (model.ProtocolVersion >= 2 && model.PGInstance == nil) {
 		return fmt.Errorf("journal version does not preserve required PG identity")
+	}
+	if (model.ProtocolVersion < 3 && model.BudgetHeld != nil) || (model.ProtocolVersion == 3 && (model.BudgetHeld == nil || model.ResourceIdentity == nil)) {
+		return fmt.Errorf("journal version does not preserve required held budget")
 	}
 	if err := control.ValidateID(model.VMUID, "VM"); err != nil {
 		return err
@@ -433,7 +441,7 @@ func (model Model) Validate() error {
 			return fmt.Errorf("active operation reuses a retired revision")
 		}
 	}
-	return nil
+	return model.validateHeldBudget()
 }
 
 func (model Model) validateOwners(operation Operation) error {
@@ -478,6 +486,11 @@ func cloneOperation(operation Operation) Operation {
 }
 
 func (model Model) Clone() Model {
+	if model.BudgetHeld != nil {
+		copy := *model.BudgetHeld
+		copy.Finalization = cloneStep(copy.Finalization)
+		model.BudgetHeld = &copy
+	}
 	if model.PGInstance != nil {
 		copy := *model.PGInstance
 		model.PGInstance = &copy
@@ -759,6 +772,15 @@ func (model Model) Record(actor Owner, key control.Key, observation Observation)
 	recorded.Data = append([]byte(nil), observation.Data...)
 	step.Observation = &recorded
 	step.Phase = Settled
+	if step.Action == FinalizeBudget && recorded.Result == Completed && next.requiresHeldBudget(*step) {
+		// 外部生产者的活性核验在执行器中完成；这里负责完整原WAL/回执的一致性
+		// 和原子持久不变量。构造失败返回输入model，不能留下仅Completed的半状态。
+		held, err := next.newHeldBudget(*step)
+		if err != nil {
+			return model, err
+		}
+		next.ProtocolVersion, next.BudgetHeld = 3, held
+	}
 	return next, next.Validate()
 }
 
@@ -831,6 +853,15 @@ func (model Model) Finish(actor Owner, key control.Key) (Model, error) {
 	next, err := model.active(actor, key)
 	if err != nil {
 		return model, err
+	}
+	for _, step := range next.Active.Steps {
+		if step.Action == FinalizeBudget && step.Phase == Settled && step.Observation.Result == Completed && next.requiresHeldBudget(step) {
+			// 旧v2生产结算也不能先关闭Active，再靠可淘汰历史推测当前预算。
+			// 必须在原Active仍可认证时显式重核并升级；通用旧领域记录仍可读。
+			if _, err := next.BudgetFor(next.Active.Request); err != nil {
+				return model, err
+			}
+		}
 	}
 	outcome, err := next.Active.closingOutcome()
 	if err != nil {

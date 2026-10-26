@@ -1,7 +1,11 @@
 package owner
 
 import (
+	"bytes"
+	"compress/zlib"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -52,11 +56,41 @@ func priorBudgetDomain(t *testing.T, ctx context.Context, store *journal.Store, 
 	require.NoError(t, err)
 }
 
+// 仅测试夹具：构造先前已发布v2读者实际保存的完整Active，无budget_held字段。
+// 生产代码严禁降级或改写日志；这里显式重新封装同一旧wire，检验新读者不能在
+// Load时凭猜测升级。完整旧原命令/回执和owner均逐字节保留。
+func legacyFinalizationFixture(t *testing.T, api *ownerAPI, model journal.Model) {
+	t.Helper()
+	model.ProtocolVersion, model.BudgetHeld = 2, nil
+	require.NoError(t, model.Validate())
+	raw, err := json.Marshal(model)
+	require.NoError(t, err)
+	var compressed bytes.Buffer
+	w := zlib.NewWriter(&compressed)
+	_, err = w.Write(raw)
+	require.NoError(t, err)
+	require.NoError(t, w.Close())
+	hash := sha256.Sum256(raw)
+	wrapped, err := json.Marshal(struct {
+		Version     uint32 `json:"version"`
+		Encoding    string `json:"encoding"`
+		Incarnation string `json:"incarnation"`
+		SHA256      string `json:"sha256"`
+		Data        []byte `json:"data"`
+	}{1, "zlib-v1", model.Incarnation, hex.EncodeToString(hash[:]), compressed.Bytes()})
+	require.NoError(t, err)
+	api.mu.Lock()
+	defer api.mu.Unlock()
+	api.vm.Annotations[control.JournalAnnotation] = string(wrapped)
+	api.vmVersion++
+	api.vm.ResourceVersion = fmt.Sprintf("vm-rv-%d", api.vmVersion)
+}
+
 // 实际生产构造器、Session、TLS客户端、VM UID/RV CAS及最终结算/准入执行器。
 // Core对象、PG/root内核、Prepare/Host/VM生产者是显式协议夹具；不冒充真实
 // apiserver/RBAC/Host分配/QMP/系统上界资格、Linux物理或完整V3端到端验证。
 func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t *testing.T) {
-	for _, mode := range []string{"complete", "outside-uid", "host-releasing", "runner-uid", "node-uid", "vm-qmp", "lost-start", "lost-record", "outside-replaced-after-start", "runner-drift-after-start", "outside-gone-before-open", "outside-replaced-after-open", "legacy-final-without-claims", "root-birth-after-start", "pg-generation-after-start", "shrink-complete", "shrink-unverified", "shrink-observe-mismatch", "unprotected-claim", "protection-lost-after-start"} {
+	for _, mode := range []string{"complete", "outside-uid", "host-releasing", "runner-uid", "node-uid", "vm-qmp", "lost-start", "lost-record", "outside-replaced-after-start", "runner-drift-after-start", "outside-gone-before-open", "outside-replaced-after-open", "legacy-final-without-claims", "root-birth-after-start", "pg-generation-after-start", "shrink-complete", "shrink-unverified", "shrink-observe-mismatch", "unprotected-claim", "protection-lost-after-start", "legacy-v2-upgrade", "legacy-v2-lost-upgrade", "legacy-v2-source-lost", "legacy-v2-unknown-open", "legacy-v2-unknown-source-lost"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			root, resourceConfig := guestRoot(t, store)
@@ -88,7 +122,8 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 				var outCM *core.ConfigMap
 				var committed atomic.Bool
 				var nativeDrift atomic.Bool
-				var resizePosts, admissionPosts atomic.Int64
+				var resizePosts, admissionPosts, admissionReads atomic.Int64
+				var originalOpen atomic.Pointer[control.AdmissionRequest]
 				wireReq := req
 				if shrink {
 					wireReq.Kind = control.Grow
@@ -117,8 +152,13 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 						pgReply(w, pgResponse(t, req))
 					case "/dsg/v1/resize/status":
 						pgReply(w, pgResponse(t, req))
-					case "/dsg/v1/admission":
-						admissionPosts.Add(1)
+					case "/dsg/v1/admission", "/dsg/v1/admission/status":
+						query := r.URL.Path == "/dsg/v1/admission/status"
+						if query {
+							admissionReads.Add(1)
+						} else {
+							admissionPosts.Add(1)
+						}
 						if mode == "outside-replaced-after-open" {
 							copy := outCM.DeepCopy()
 							copy.UID = "after-open-new-uid"
@@ -126,12 +166,26 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 						}
 						var a control.AdmissionRequest
 						require.NoError(t, json.NewDecoder(r.Body).Decode(&a))
+						if query {
+							require.NotNil(t, originalOpen.Load())
+							require.Equal(t, *originalOpen.Load(), a, "必须查询完整原命令，不能换epoch或revision")
+						} else {
+							originalOpen.Store(&a)
+							if strings.HasPrefix(mode, "legacy-v2-unknown-") {
+								w.WriteHeader(http.StatusServiceUnavailable)
+								return
+							}
+						}
 						hash, err := a.ContextSHA256()
 						require.NoError(t, err)
 						observed := finalShared.Observed
 						observed.AdmissionOpen = true
 						observed.AdmissionRevision = a.Revision
-						pgReply(w, control.AdmissionResponse{ProtocolVersion: 1, Request: a, ContextSHA256: hash, Disposition: control.AdmissionApplied, Observed: observed})
+						disposition := control.AdmissionApplied
+						if query {
+							disposition = control.AdmissionReplayed
+						}
+						pgReply(w, control.AdmissionResponse{ProtocolVersion: 1, Request: a, ContextSHA256: hash, Disposition: disposition, Observed: observed})
 					default:
 						t.Error("unexpected production budget route", r.URL.Path)
 						w.WriteHeader(500)
@@ -283,7 +337,7 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 					return false, nil, nil
 				})
 				progress, err = worker.Advance(ctx)
-				if mode == "complete" || mode == "shrink-complete" || mode == "outside-gone-before-open" || mode == "outside-replaced-after-open" {
+				if mode == "complete" || mode == "shrink-complete" || mode == "outside-gone-before-open" || mode == "outside-replaced-after-open" || strings.HasPrefix(mode, "legacy-v2-") {
 					require.NoError(t, err)
 					require.Equal(t, pgexec.Recorded, progress)
 					step := budgetStep(t, store, journal.FinalizeBudget)
@@ -293,6 +347,70 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 					require.NotNil(t, full.Sources)
 					require.Equal(t, h.SourceID, full.HostReservationID)
 					require.NoError(t, full.ValidateFor(req, finalShared, session.Actor().Epoch, p.RunnerPodName, 0, uint64(req.TargetVMMemoryBytes)))
+					settled, err := store.Load(ctx)
+					require.NoError(t, err)
+					require.EqualValues(t, 3, settled.State().ProtocolVersion)
+					require.Equal(t, step, settled.State().BudgetHeld.Finalization, "Completed与长期预算必须同CAS持久")
+					if strings.HasPrefix(mode, "legacy-v2-") {
+						if strings.HasPrefix(mode, "legacy-v2-unknown-") {
+							a := control.AdmissionRequest{ProtocolVersion: 1, Instance: req.Key.Instance, IssuerEpoch: session.Actor().Epoch, Revision: finalShared.Observed.AdmissionRevision + 1, ExpectedCapacityGeneration: finalShared.Observed.CapacityGeneration, Open: true, BudgetCommitmentID: req.BudgetCommitmentID}
+							raw, err := json.Marshal(a)
+							require.NoError(t, err)
+							settled, _, err = store.Start(ctx, settled, session.Actor(), req.Key, journal.ResumeAdmission, req.Key.Instance.ComputeInstanceID, raw)
+							require.NoError(t, err)
+							_, err = worker.client.SetAdmission(ctx, a)
+							require.Error(t, err, "夹具先实际派发原开放并丢回复，保留SDK未知")
+						}
+						legacyFinalizationFixture(t, api, settled.State())
+						legacy, err := store.Load(ctx)
+						require.NoError(t, err)
+						require.Nil(t, legacy.State().BudgetHeld)
+						if strings.HasSuffix(mode, "source-lost") {
+							require.NoError(t, client.Tracker().Delete(core.SchemeGroupVersion.WithResource("configmaps"), binding().Namespace, outCM.Name))
+						}
+						if mode == "legacy-v2-lost-upgrade" {
+							api.mu.Lock()
+							api.loseJournalReply = true
+							api.mu.Unlock()
+						}
+						progress, err = worker.Advance(ctx)
+						if strings.HasSuffix(mode, "source-lost") {
+							require.Error(t, err)
+							require.Equal(t, pgexec.AwaitingFact, progress)
+							latest, err := store.Load(ctx)
+							require.NoError(t, err)
+							require.EqualValues(t, 2, latest.State().ProtocolVersion)
+							require.Nil(t, latest.State().BudgetHeld, "来源丢失不能补写长期预算")
+							if strings.Contains(mode, "unknown") {
+								require.EqualValues(t, 1, admissionReads.Load(), "原准入查询必须先于失败的预算来源复核")
+								require.EqualValues(t, 1, admissionPosts.Load())
+								require.Equal(t, journal.Unconfirmed, budgetStep(t, store, journal.ResumeAdmission).Phase)
+							} else {
+								require.Zero(t, admissionPosts.Load())
+							}
+							return nil
+						}
+						if mode == "legacy-v2-lost-upgrade" {
+							require.Error(t, err)
+						} else {
+							require.NoError(t, err)
+							require.Equal(t, pgexec.Recorded, progress)
+						}
+						latest, err := store.Load(ctx)
+						require.NoError(t, err)
+						require.EqualValues(t, 3, latest.State().ProtocolVersion)
+						require.Equal(t, step, latest.State().BudgetHeld.Finalization)
+						require.Equal(t, step, budgetStep(t, store, journal.FinalizeBudget), "升级保持旧完成字节不变")
+						progress, err = worker.Advance(ctx)
+						require.NoError(t, err)
+						require.Equal(t, pgexec.Recorded, progress)
+						require.EqualValues(t, 1, admissionPosts.Load(), "升级/恢复不重发原开放或PG动作")
+						require.EqualValues(t, 1, resizePosts.Load())
+						if mode == "legacy-v2-unknown-open" {
+							require.EqualValues(t, 2, admissionReads.Load())
+						}
+						return nil
+					}
 					if mode == "outside-gone-before-open" {
 						require.NoError(t, client.Tracker().Delete(core.SchemeGroupVersion.WithResource("configmaps"), binding().Namespace, outCM.Name))
 					}
@@ -333,6 +451,9 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 						require.NoError(t, err)
 					}
 					require.Equal(t, journal.Settled, budgetStep(t, store, journal.FinalizeBudget).Phase)
+					latest, err := store.Load(ctx)
+					require.NoError(t, err)
+					require.Equal(t, budgetStep(t, store, journal.FinalizeBudget), latest.State().BudgetHeld.Finalization)
 					require.EqualValues(t, 1, resizePosts.Load(), "finalization recovery must not repeat PG resize")
 					require.Zero(t, admissionPosts.Load())
 				} else {
