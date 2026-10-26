@@ -1,0 +1,119 @@
+{
+  "module": "Agent实际循环等待分类修复",
+  "date": "2026-10-27 Asia/Shanghai",
+  "code_commit": "adc614bfb5dcf8aa60ba2baa74ad5e1fab3d98cc",
+  "base_commit": "22f042b50e69bd6c67c38696d3b0783a965a847c",
+  "upstream_frozen_at": "2026-10-26T17:29:30+08:00",
+  "source_files_sha256": {
+    "pkg/dsga/owner/pg.go": "48d53a4c052d28e6b4a592c22aa51abe9ccb90d4b528662321325883a8f6794b",
+    "pkg/dsga/owner/vm_exec_test.go": "b13b01fbb67497cb2b3a6ca381ea1483a5fb305e66798c91011b45865e9553c6",
+    "pkg/dsga/vmguard/reader.go": "92a4132e11bd44525160ac26db6846bfd2f6ee9dd30656fd802b9f46f1537348",
+    "pkg/dsga/vmguard/reader_test.go": "e1d823f8d610aa0cdec2bacdf15a78e51b325c3344a054235f9a963d581d4077"
+  },
+  "results": {
+    "top_level": 3,
+    "including_subtests": 11,
+    "failed": 0,
+    "skipped": 0,
+    "prior_grow_parent_name_reused": true,
+    "prior_164_not_added_again": true
+  },
+  "tests": [
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-waits-for-runner",
+      "log": "build/dsga-vmexec-loop-after-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/loop-holds-not-sent",
+      "log": "build/dsga-vmexec-loop-after-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "test": "TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL",
+      "log": "build/dsga-vmexec-loop-after-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/first-qmp",
+      "log": "build/dsga-vmexec-reader-wait-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/lease-not-yet-pinned",
+      "log": "build/dsga-vmexec-reader-wait-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/lagging-floor",
+      "log": "build/dsga-vmexec-reader-wait-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/conflicting-holder",
+      "log": "build/dsga-vmexec-reader-wait-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/wrong-lease",
+      "log": "build/dsga-vmexec-reader-wait-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/malformed-publication",
+      "log": "build/dsga-vmexec-reader-wait-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor",
+      "log": "build/dsga-vmexec-reader-wait-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "test": "TestClosedWakeAndReplayChannelsDoNotSpin",
+      "log": "build/dsga-vmexec-loop-closed-channels-20261027.jsonl"
+    }
+  ],
+  "logs_sha256": {
+    "build/dsga-vmexec-loop-after-20261027.jsonl": "1c6960bd1bd12ff77fba57876bbeb8e779c9926f6d483c27895122b8a4850cb0",
+    "build/dsga-vmexec-reader-wait-20261027.jsonl": "377be5ff8696dd8ece195f2a41f7f21824e83b208e5bd506b44f9455a2f8f8d8",
+    "build/dsga-vmexec-loop-closed-channels-20261027.jsonl": "4543cae87e2a3501b1dbceabf3eeb8d6357400b4f1e53d19353f1bde1e98cd8e",
+    "build/dsga-vmexec-loop-before-20261027.jsonl": "c7fe71ac66e6d56aa0ba40cfdd31283338edbbf2d5b93bc4709daa0fad01e3f5",
+    "build/dsga-vmexec-loop-lint-20261027.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "build/dsga-vmexec-loop-vet-20261027.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "negative": {
+    "production_source_commit": "22f042b50e69bd6c67c38696d3b0783a965a847c",
+    "test_only_changes": true,
+    "cases_reproduced": 2,
+    "failed_including_parent": 3,
+    "go_exit_code": 1,
+    "reason": "Actual Run returned ErrUnknown or ErrNotSent instead of continuing original owner loop; original diagnostic JSON retained"
+  },
+  "quality": {
+    "incremental_linux_lint_issues": 0,
+    "native_readonly_vet_packages": 2,
+    "exit_code": 0,
+    "quality_script": "build/run-dsga-vmexec-loop-quality-20261027.sh",
+    "quality_script_sha256": "b26b90fcdb8c2e2a2d4a1ea360e03767edd8ff49c7c47d2770c39d56258c98a3"
+  },
+  "compile_only": {
+    "build/dsga-vmexec-loop-agent-linux-amd64": {
+      "sha256": "d0a0379a32caa2a241a2a131025036c94fe3462b6b1d720ab96dcbbbe5028833",
+      "executed": false,
+      "buildvcs": false
+    },
+    "build/dsga-vmexec-loop-agent-linux-arm64": {
+      "sha256": "1ee6e388dd32623fbac1165e643d65bf98e97d441e48c12fef24b6cd35b7ebe6",
+      "executed": false,
+      "buildvcs": false
+    }
+  },
+  "protocol_version_unchanged": 4,
+  "pg17_unchanged": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "control_plane_unchanged": "d84c0b73004a7d8cc3e89f3c3f0e3f06cfa8cba9",
+  "whole_core_complete": false,
+  "production_vm_replay_implemented": false,
+  "linux_runtime_certified": false
+}
