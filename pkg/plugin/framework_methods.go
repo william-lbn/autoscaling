@@ -493,6 +493,14 @@ func (e *AutoscaleEnforcer) Reserve(
 		reconcile.ObjectMetaLogField("Pod", pod),
 	)
 
+	// 持久容量检查必须早于ignored namespace和本地mu。即使后续框架
+	// 拒绝/Unreserve，也不能据此清掉可能已生效但丢回复的原容量持有。
+	canonical, allocation, err := e.state.reserveHost(ctx, pod, nodeName)
+	if err != nil {
+		return framework.NewStatus(framework.Unschedulable, "original Host capacity not confirmed: "+err.Error())
+	}
+	pod = canonical
+
 	if ignored {
 		logger.Info("Skipping Reserve request for ignored namespace", logFieldForNodeName(nodeName))
 		return nil
@@ -512,6 +520,9 @@ func (e *AutoscaleEnforcer) Reserve(
 			framework.UnschedulableAndUnresolvable,
 			fmt.Sprintf("%s: %s", msg, err.Error()),
 		)
+	}
+	if allocation != nil {
+		applyHostAllocation(&podState, *allocation)
 	}
 
 	e.state.mu.Lock()

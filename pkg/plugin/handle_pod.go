@@ -28,6 +28,12 @@ func (s *PluginState) HandlePodEvent(
 	pod *corev1.Pod,
 ) (*reconcile.Result, error) {
 	if s.config.ignoredNamespace(pod.Namespace) {
+		if s.host != nil && s.host.HasNode(pod.Spec.NodeName) && (kind == reconcile.EventKindAdded || kind == reconcile.EventKindModified) {
+			ctx, cancel := s.hostCallContext()
+			defer cancel()
+			_, _, err := s.reserveHost(ctx, pod, pod.Spec.NodeName)
+			return nil, err
+		}
 		// We intentionally don't include ignored pods in the namespace.
 		return nil, nil
 	}
@@ -83,9 +89,20 @@ func (s *PluginState) updatePod(
 	pod *corev1.Pod,
 	expectExists bool,
 ) (*podUpdateResult, error) {
+	// API读取/容量CAS必须在本地mu之前；watch到达先后不是容量权威。
+	ctx, cancel := s.hostCallContext()
+	defer cancel()
+	canonical, allocation, err := s.reserveHost(ctx, pod, pod.Spec.NodeName)
+	if err != nil {
+		return nil, err
+	}
+	pod = canonical
 	newPod, err := state.PodStateFromK8sObj(pod)
 	if err != nil {
 		return nil, fmt.Errorf("could not get state from Pod object: %w", err)
+	}
+	if allocation != nil {
+		applyHostAllocation(&newPod, *allocation)
 	}
 
 	s.mu.Lock()
@@ -379,6 +396,11 @@ func (s *PluginState) patchReservedResourcesForPod(
 	oldPodObj *corev1.Pod,
 	newPod state.Pod,
 ) error {
+	if s.host != nil && s.host.HasNode(oldPodObj.Spec.NodeName) {
+		ctx, cancel := s.hostCallContext()
+		defer cancel()
+		return s.host.ApproveLegacy(ctx, oldPodObj, api.Resources{VCPU: newPod.CPU.Reserved, Mem: newPod.Mem.Reserved})
+	}
 	// Broadly, the idea with the patch is that we only want to update the reserved resources if the
 	// resources that were requested are still current.
 	//

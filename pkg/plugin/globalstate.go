@@ -20,6 +20,7 @@ import (
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	vmclient "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned"
 	"github.com/neondatabase/autoscaling/pkg/api"
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler"
 	"github.com/neondatabase/autoscaling/pkg/plugin/metrics"
 	"github.com/neondatabase/autoscaling/pkg/plugin/state"
 	"github.com/neondatabase/autoscaling/pkg/util"
@@ -32,6 +33,9 @@ type PluginState struct {
 	mu sync.Mutex
 
 	config Config
+
+	host        *hostscheduler.Service
+	hostContext context.Context
 
 	nodes map[string]*nodeState
 
@@ -91,7 +95,9 @@ func NewPluginState(
 	return &PluginState{
 		mu: sync.Mutex{},
 
-		config: config,
+		config:      config,
+		host:        nil,
+		hostContext: context.Background(),
 
 		nodes:                make(map[string]*nodeState),
 		tentativelyScheduled: make(map[types.UID]string),

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"slices"
+
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler"
 )
 
 //////////////////
@@ -75,6 +77,11 @@ type Config struct {
 	// resources from such pods. The reason to do that is so that these overprovisioning pods can be
 	// evicted, which will allow cluster-autoscaler to trigger scale-up.
 	IgnoredNamespaces []string `json:"ignoredNamespaces"`
+
+	// nil保留官方调度行为。启用时固定原Node/Lease UID、开销配置与首次
+	// 引导RV；新容量授予在原Node账本CAS确认后才可成功，不能用本地
+	// OverBudget日志或ignored namespace绕过持久容量检查。
+	DSGAHost *hostscheduler.Config `json:"dsgaHost,omitempty"`
 }
 
 type ScoringConfig struct {
@@ -117,6 +124,11 @@ func (c *Config) validate() (string, error) {
 
 	if c.SchedulerName == "" {
 		return "schedulerName", errors.New("string cannot be empty")
+	}
+	if c.DSGAHost != nil {
+		if err := c.DSGAHost.Validate(c.SchedulerName); err != nil {
+			return "dsgaHost", err
+		}
 	}
 
 	if c.ReconcileWorkers <= 0 {

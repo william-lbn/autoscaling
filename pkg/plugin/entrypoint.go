@@ -16,6 +16,7 @@ import (
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	vmclient "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned"
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler"
 	"github.com/neondatabase/autoscaling/pkg/plugin/initevents"
 	"github.com/neondatabase/autoscaling/pkg/plugin/metrics"
 	"github.com/neondatabase/autoscaling/pkg/plugin/reconcile"
@@ -118,6 +119,16 @@ func NewAutoscaleEnforcerPlugin(
 	}
 
 	pluginState = NewPluginState(*config, vmClient, pluginMetrics, podStore, nodeStore)
+	if config.DSGAHost != nil {
+		host, err := hostscheduler.New(handle.ClientSet().CoreV1(), handle.ClientSet().CoordinationV1(), vmClient, *config.DSGAHost, config.SchedulerName)
+		if err != nil {
+			return nil, fmt.Errorf("could not configure original Host allocation domains: %w", err)
+		}
+		pluginState.host, pluginState.hostContext = host, ctx
+		if err := host.Run(ctx, logger.Named("dsga-host")); err != nil {
+			return nil, err
+		}
+	}
 
 	// Start the workers for the queue. We can't do these earlier because our handlers depend on the
 	// PluginState that only exists now.
