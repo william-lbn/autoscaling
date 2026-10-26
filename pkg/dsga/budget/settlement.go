@@ -18,6 +18,41 @@ type ObjectRef struct {
 	UID  string `json:"uid"`
 }
 
+// RunnerSources独立保存最终执行者的原对象UID与完整命令摘要。只存引用以避免
+// 把整份Runner/Prepare/Guest审计重复塞入8KiB最终命令；受保护immutable回执
+// 自身保存完整原命令。引用寿命至少覆盖当前预算，不能随请求历史淘汰或租约
+// 过期清除。本结构只检查绑定格式，真实性/当前floor和读回由固定Kube读者核验。
+type RunnerSources struct {
+	BirthClaim    ObjectRef `json:"birth_claim"`
+	StateClaim    ObjectRef `json:"state_claim"`
+	ReceiptClaim  ObjectRef `json:"receipt_claim"`
+	CommandSHA256 string    `json:"command_sha256"`
+	JournalSHA256 string    `json:"journal_sha256"`
+}
+
+func (r RunnerSources) Validate() error {
+	if r.BirthClaim.Validate() != nil || r.StateClaim.Validate() != nil || r.ReceiptClaim.Validate() != nil {
+		return fmt.Errorf("invalid original Runner source references")
+	}
+	for _, value := range []string{r.CommandSHA256, r.JournalSHA256} {
+		decoded, err := hex.DecodeString(value)
+		if err != nil || len(decoded) != 32 || hex.EncodeToString(decoded) != value {
+			return fmt.Errorf("invalid original Runner command digest")
+		}
+	}
+	return nil
+}
+
+func (r *RunnerSources) UnmarshalJSON(raw []byte) error {
+	type plain RunnerSources
+	var p plain
+	if err := control.UnmarshalObject(raw, &p); err != nil {
+		return err
+	}
+	*r = RunnerSources(p)
+	return r.Validate()
+}
+
 func (r ObjectRef) Validate() error {
 	if control.ValidateID(r.Name, "reservation object") != nil || control.ValidateID(r.UID, "reservation UID") != nil || strings.Contains(r.Name, "_") {
 		return fmt.Errorf("invalid immutable reservation reference")
@@ -99,14 +134,20 @@ type VMSettlement struct {
 	PGResourceSourceID     string                 `json:"pg_resource_source_id"`
 	NoPendingCommands      bool                   `json:"no_pending_commands"`
 	MigrationBlocked       bool                   `json:"migration_blocked"`
+	// 缺省仅供旧历史读取；新生产VM/预算执行器必须拒绝缺原Runner引用。
+	Runner *RunnerSources `json:"runner,omitempty"`
 }
 
 func (v VMSettlement) ValidateFor(p Prepared, a RootAggregate, incarnation string) error {
+	if v.Runner != nil && (v.Runner.Validate() != nil || v.RunnerCommandID != v.Runner.CommandSHA256) {
+		return fmt.Errorf("VM settlement changed its original Runner sources")
+	}
 	if v.ProtocolVersion != 1 || v.VMShrinkPermit || v.Request != p.Request || v.Identity != p.Identity || v.HostClaim.Validate() != nil || v.Host.ValidateFor(p, incarnation) != nil || v.RunnerRestartCount != p.RunnerRestartCount || v.RunnerFenceEpoch != p.Request.Key.IssuerEpoch || control.ValidateID(v.RunnerCommandID, "original runner command") != nil || v.GuestUsableMemoryBytes != p.GuestUsableMemoryBytes || v.ActualMemoryBytes != p.Request.TargetVMMemoryBytes || v.QMPObservedMemoryBytes != v.ActualMemoryBytes || ((p.Request.Kind == control.Shrink && v.PGResourceSourceID != a.Bound.SourceID) || (p.Request.Kind == control.Grow && v.PGResourceSourceID != "")) || !v.NoPendingCommands || !v.MigrationBlocked {
 		return fmt.Errorf("final VM/Host/Runner settlement is incomplete or replaced")
 	}
 	return a.Validate()
 }
+
 func (r *ObjectRef) UnmarshalJSON(b []byte) error {
 	type plain ObjectRef
 	var p plain
@@ -116,6 +157,7 @@ func (r *ObjectRef) UnmarshalJSON(b []byte) error {
 	*r = ObjectRef(p)
 	return nil
 }
+
 func (r *OutsideReservation) UnmarshalJSON(b []byte) error {
 	type plain OutsideReservation
 	var p plain
@@ -125,6 +167,7 @@ func (r *OutsideReservation) UnmarshalJSON(b []byte) error {
 	*r = OutsideReservation(p)
 	return nil
 }
+
 func (r *HostReservation) UnmarshalJSON(b []byte) error {
 	type plain HostReservation
 	var p plain
@@ -134,6 +177,7 @@ func (r *HostReservation) UnmarshalJSON(b []byte) error {
 	*r = HostReservation(p)
 	return nil
 }
+
 func (r *VMSettlement) UnmarshalJSON(b []byte) error {
 	type plain VMSettlement
 	var p plain
@@ -147,9 +191,10 @@ func (r *VMSettlement) UnmarshalJSON(b []byte) error {
 // SettlementSources绑定持续持有对象及最终执行回执摘要；PG聚合另由Finalized中
 // 原Bound固定。不能按“同数值”换一份新Host/Outside对象。
 type SettlementSources struct {
-	OutsideClaim    ObjectRef `json:"outside_claim"`
-	HostClaim       ObjectRef `json:"host_claim"`
-	VMReceiptSHA256 string    `json:"vm_receipt_sha256"`
+	OutsideClaim    ObjectRef      `json:"outside_claim"`
+	HostClaim       ObjectRef      `json:"host_claim"`
+	VMReceiptSHA256 string         `json:"vm_receipt_sha256"`
+	Runner          *RunnerSources `json:"runner,omitempty"`
 }
 
 func (s *SettlementSources) UnmarshalJSON(b []byte) error {
@@ -163,6 +208,9 @@ func (s *SettlementSources) UnmarshalJSON(b []byte) error {
 }
 
 func (s SettlementSources) Validate() error {
+	if s.Runner != nil && s.Runner.Validate() != nil {
+		return fmt.Errorf("invalid retained Runner sources")
+	}
 	b, err := hex.DecodeString(s.VMReceiptSHA256)
 	if s.OutsideClaim.Validate() != nil || s.HostClaim.Validate() != nil || err != nil || len(b) != 32 || hex.EncodeToString(b) != s.VMReceiptSHA256 {
 		return fmt.Errorf("invalid finalized source references")

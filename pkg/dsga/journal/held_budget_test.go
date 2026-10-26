@@ -42,15 +42,17 @@ func heldCommand(t *testing.T, req control.Request) budget.FinalizationCommand {
 	o.Operation.ContextSHA256, err = req.ContextSHA256()
 	require.NoError(t, err)
 	shared := control.SharedCostResponse{ProtocolVersion: 1, StartupMainUpperBytes: 16 << 20, StartupArraysUpperBytes: 16 << 20, CurrentMainAndArraysUpperBytes: 80 << 20, Observed: o}
-	f := budget.Finalized{ProtocolVersion: 1, Request: req, IssuerEpoch: req.Key.IssuerEpoch, RunnerPodName: "runner", HostReservationID: "host-original", GuestUsableMemoryBytes: 768 << 20, Shared: shared,
+	f := budget.Finalized{
+		ProtocolVersion: 1, Request: req, IssuerEpoch: req.Key.IssuerEpoch, RunnerPodName: "runner", HostReservationID: "host-original", GuestUsableMemoryBytes: 768 << 20, Shared: shared,
 		Aggregate: &budget.Bound{Kind: budget.HardLimit, UpperBytes: 512 << 20, SourceID: "aggregate-original"}, SystemOutsidePG: budget.Bound{Kind: budget.CommittedUpper, UpperBytes: 24 << 20, SourceID: "system-original"}, Transition: budget.Bound{Kind: budget.CommittedUpper, UpperBytes: 4 << 20, SourceID: "transition-original"}, Safety: budget.Bound{Kind: budget.CommittedUpper, UpperBytes: 4 << 20, SourceID: "safety-original"},
-		Sources: &budget.SettlementSources{OutsideClaim: budget.ObjectRef{Name: "outside-original", UID: "outside-uid"}, HostClaim: budget.ObjectRef{Name: "host-original", UID: "host-uid"}, VMReceiptSHA256: strings.Repeat("c", 64)}}
+		Sources: &budget.SettlementSources{OutsideClaim: budget.ObjectRef{Name: "outside-original", UID: "outside-uid"}, HostClaim: budget.ObjectRef{Name: "host-original", UID: "host-uid"}, VMReceiptSHA256: strings.Repeat("c", 64), Runner: nil}, VMShrinkPermit: false, RunnerRestartCount: 0, PrivateAndDSM: nil, LFCOutsideShared: nil, HugePoolOutsideShared: nil,
+	}
 	c := budget.FinalizationCommand{ProtocolVersion: 1, Finalized: f, PreparedSHA256: strings.Repeat("a", 64), GuestSHA256: strings.Repeat("b", 64), VMSHA256: f.Sources.VMReceiptSHA256}
 	require.NoError(t, c.Validate())
 	return c
 }
 
-func heldStart(t *testing.T, m Model, revision uint64) (Model, Observation) {
+func heldStart(t *testing.T, m Model, revision uint64, runners ...budget.RunnerSources) (Model, Observation) {
 	t.Helper()
 	req := testRequest(m, revision, control.Grow)
 	req.TargetBuffers = 1024
@@ -60,6 +62,9 @@ func heldStart(t *testing.T, m Model, revision uint64) (Model, Observation) {
 		if original.Action == FinalizeBudget {
 			var err error
 			c := heldCommand(t, req)
+			if len(runners) == 1 {
+				c.Finalized.Sources.Runner = &runners[0]
+			}
 			cmd, err = json.Marshal(c)
 			require.NoError(t, err)
 			target = req.Key.Instance.ComputeInstanceID
@@ -292,11 +297,11 @@ func TestHeldBudgetLegacyV2RequiresExplicitOriginalActiveUpgrade(t *testing.T) {
 	_, err = oldComplete.RetainFinalizedBudget(oldComplete.Owner, obs.Key)
 	require.Error(t, err, "历史记录不能自动收养为当前持有预算")
 	if dir := os.Getenv("DSGA_HELD_WIRE_DIR"); dir != "" {
-		require.NoError(t, os.MkdirAll(dir, 0700))
+		require.NoError(t, os.MkdirAll(dir, 0o700))
 		for name, model := range map[string]Model{"v1": testModel(t), "v2": legacy, "v3": upgraded} {
 			raw, err := json.Marshal(model)
 			require.NoError(t, err)
-			require.NoError(t, os.WriteFile(filepath.Join(dir, name+".json"), raw, 0600))
+			require.NoError(t, os.WriteFile(filepath.Join(dir, name+".json"), raw, 0o600))
 		}
 		var projection map[string]json.RawMessage
 		raw, err := json.Marshal(upgraded)
@@ -305,7 +310,7 @@ func TestHeldBudgetLegacyV2RequiresExplicitOriginalActiveUpgrade(t *testing.T) {
 		delete(projection, "budget_held")
 		raw, err = json.Marshal(projection)
 		require.NoError(t, err)
-		require.NoError(t, os.WriteFile(filepath.Join(dir, "v3-projection.json"), raw, 0600))
+		require.NoError(t, os.WriteFile(filepath.Join(dir, "v3-projection.json"), raw, 0o600))
 	}
 }
 

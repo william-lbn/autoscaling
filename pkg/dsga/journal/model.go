@@ -361,7 +361,7 @@ func compareKeys(left, right control.Key) int {
 }
 
 func (model Model) Validate() error {
-	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 3) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
+	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 4) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
 		return fmt.Errorf("invalid journal version/sequence/incarnation")
 	}
 	// 旧Model已有严格字段解码，会拒绝pg_instance；这里另用v2明确标识
@@ -370,7 +370,7 @@ func (model Model) Validate() error {
 	if (model.ProtocolVersion == 1 && model.PGInstance != nil) || (model.ProtocolVersion >= 2 && model.PGInstance == nil) {
 		return fmt.Errorf("journal version does not preserve required PG identity")
 	}
-	if (model.ProtocolVersion < 3 && model.BudgetHeld != nil) || (model.ProtocolVersion == 3 && (model.BudgetHeld == nil || model.ResourceIdentity == nil)) {
+	if (model.ProtocolVersion < 3 && model.BudgetHeld != nil) || (model.ProtocolVersion >= 3 && (model.BudgetHeld == nil || model.ResourceIdentity == nil)) {
 		return fmt.Errorf("journal version does not preserve required held budget")
 	}
 	if err := control.ValidateID(model.VMUID, "VM"); err != nil {
@@ -779,7 +779,9 @@ func (model Model) Record(actor Owner, key control.Key, observation Observation)
 		if err != nil {
 			return model, err
 		}
-		next.ProtocolVersion, next.BudgetHeld = 3, held
+		// Runner原UID/完整摘要成为当前预算永久来源时同时升级v4。旧v3读者
+		// 即便收到删掉新字段的投影也必须拒绝版本，不能退回只验数值的旧VM事实。
+		next.ProtocolVersion, next.BudgetHeld = heldBudgetVersion(held), held
 	}
 	return next, next.Validate()
 }

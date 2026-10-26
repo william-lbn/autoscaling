@@ -55,7 +55,7 @@ func finalizedBudget(op Operation, step Step) (budget.Finalized, error) {
 }
 
 func (model Model) requiresHeldBudget(step Step) bool {
-	if model.ProtocolVersion == 3 {
+	if model.ProtocolVersion >= 3 {
 		return true
 	}
 	var c budget.FinalizationCommand
@@ -69,8 +69,12 @@ func (model Model) newHeldBudget(step Step) (*HeldBudget, error) {
 	if model.Active == nil || model.PGInstance == nil || model.ResourceIdentity == nil || model.Active.Request.Key.Instance != *model.PGInstance {
 		return nil, fmt.Errorf("held budget requires original durable PG and Guest bindings")
 	}
-	if _, err := finalizedBudget(*model.Active, step); err != nil {
+	f, err := finalizedBudget(*model.Active, step)
+	if err != nil {
 		return nil, err
+	}
+	if model.ProtocolVersion >= 4 && (f.Sources == nil || f.Sources.Runner == nil) {
+		return nil, fmt.Errorf("runner-backed budget cannot downgrade to legacy VM sources")
 	}
 	return &HeldBudget{ProtocolVersion: 1, Identity: *model.ResourceIdentity, RecordedSequence: model.Sequence, Finalization: cloneStep(step)}, nil
 }
@@ -86,6 +90,9 @@ func (model Model) validateHeldBudget() error {
 	var c budget.FinalizationCommand
 	if json.Unmarshal(h.Finalization.Command, &c) != nil {
 		return fmt.Errorf("invalid retained budget command")
+	}
+	if (model.ProtocolVersion == 4 && (c.Finalized.Sources == nil || c.Finalized.Sources.Runner == nil)) || (model.ProtocolVersion == 3 && c.Finalized.Sources != nil && c.Finalized.Sources.Runner != nil) {
+		return fmt.Errorf("journal version does not preserve original Runner budget sources")
 	}
 	request := c.Finalized.Request
 	hash, err := RequestDigest(request)
@@ -136,7 +143,7 @@ func (model Model) validateHeldBudget() error {
 // 复核各真实来源的持续活性，这个方法本身不生成准入或VM许可。
 func (model Model) BudgetFor(request control.Request) (budget.Finalized, error) {
 	var f budget.Finalized
-	if model.Validate() != nil || model.ProtocolVersion != 3 || model.BudgetHeld == nil {
+	if model.Validate() != nil || model.ProtocolVersion < 3 || model.BudgetHeld == nil {
 		return f, fmt.Errorf("complete current budget is not durably retained")
 	}
 	if err := json.Unmarshal(model.BudgetHeld.Finalization.Observation.Data, &f); err != nil {
@@ -174,11 +181,19 @@ func (model Model) RetainFinalizedBudget(actor Owner, key control.Key) (Model, e
 		if err != nil {
 			return model, err
 		}
-		next.ProtocolVersion, next.BudgetHeld = 3, held
+		next.ProtocolVersion, next.BudgetHeld = heldBudgetVersion(held), held
 		if err := next.Validate(); err != nil {
 			return model, err
 		}
 		return next, nil
 	}
 	return model, fmt.Errorf("legacy original finalization missing")
+}
+
+func heldBudgetVersion(held *HeldBudget) uint32 {
+	var c budget.FinalizationCommand
+	if held != nil && json.Unmarshal(held.Finalization.Command, &c) == nil && c.Finalized.Sources != nil && c.Finalized.Sources.Runner != nil {
+		return 4
+	}
+	return 3
 }
