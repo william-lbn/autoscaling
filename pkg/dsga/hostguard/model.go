@@ -112,6 +112,10 @@ type Model struct {
 	// 认证它覆盖了全部其他Pod/Host系统，也不能把该字段当资格证书。
 	OutsideBytes control.Uint64 `json:"outside_bytes"`
 	Holds        []Hold         `json:"holds"`
+	// v3把首次Pod/VM及其他工作负载纳入同一持久容量域。指针保证空列表
+	// 序列化为[]而不是被omitempty抹掉；旧v1/v2缺字段仅保留原语义读取。
+	Profile    *Profile     `json:"profile,omitempty"`
+	Placements *[]Placement `json:"placements,omitempty"`
 }
 
 // SourceID只给出原完整计划在该分配域中的稳定标识，不是容量持有或发布授权。
@@ -122,14 +126,14 @@ func SourceID(origin string, p Plan) string {
 }
 
 func (m Model) Validate() error {
-	if (m.ProtocolVersion != 1 && m.ProtocolVersion != 2) || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
+	if (m.ProtocolVersion != 1 && m.ProtocolVersion != 2 && m.ProtocolVersion != 3) || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
 		return fmt.Errorf("invalid durable Host allocation model")
 	}
 	for i, h := range m.Holds {
 		if _, err := h.Plan.Bytes(); err != nil || h.SourceID != SourceID(m.Origin, h.Plan) {
 			return fmt.Errorf("host hold changed original complete plan/source")
 		}
-		if h.Claim != nil && (m.ProtocolVersion != 2 || h.Claim.Validate() != nil) {
+		if h.Claim != nil && (m.ProtocolVersion < 2 || h.Claim.Validate() != nil) {
 			return fmt.Errorf("published Host hold requires original claim UID and model v2")
 		}
 		for j := range i {
@@ -150,6 +154,9 @@ func (m Model) Validate() error {
 			}
 		}
 	}
+	if err := m.validatePlacements(); err != nil {
+		return err
+	}
 	_, err := m.UsedBytes()
 	return err
 }
@@ -164,6 +171,16 @@ type allocation struct {
 // 即使VM UID相同也分开相加，避免新Pod出现时把尚未证明退出的旧QEMU成本抹掉。
 func (m Model) UsedBytes() (control.Uint64, error) {
 	peaks := make(map[allocation]control.Uint64)
+	if m.ProtocolVersion == 3 && m.Placements != nil {
+		for _, p := range *m.Placements {
+			b, err := p.Bytes()
+			if err != nil {
+				return 0, err
+			}
+			key := allocation{VMUID: p.VMUID, Incarnation: p.Incarnation, RunnerPodUID: p.PodUID}
+			peaks[key] = b
+		}
+	}
 	for _, h := range m.Holds {
 		b, err := h.Plan.Bytes()
 		if err != nil {
@@ -193,6 +210,11 @@ func compare(a, b control.Key) int {
 }
 
 func (m Model) Clone() Model {
+	if m.Profile != nil {
+		profile := *m.Profile
+		m.Profile = &profile
+	}
+	m.Placements = clonePlacements(m.Placements)
 	m.Holds = append([]Hold{}, m.Holds...)
 	for i := range m.Holds {
 		if m.Holds[i].Claim != nil {

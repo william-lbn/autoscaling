@@ -112,7 +112,10 @@ func (s *Store) BindClaim(ctx context.Context, snapshot *Snapshot, p Plan, ref b
 			m.Holds[i].Claim = &ref
 		}
 	}
-	m.ProtocolVersion, m.Sequence = 2, m.Sequence+1
+	if m.ProtocolVersion < 2 {
+		m.ProtocolVersion = 2
+	}
+	m.Sequence++
 	return s.write(ctx, snapshot.node, m, false)
 }
 
@@ -144,7 +147,7 @@ func InspectClaim(n *core.Node, p Plan, source string, ref budget.ObjectRef) err
 	if h.Claim == nil {
 		return ErrUnpublished
 	}
-	if m.ProtocolVersion != 2 || *h.Claim != ref {
+	if m.ProtocolVersion < 2 || *h.Claim != ref {
 		return fmt.Errorf("original Host claim UID differs from published Node hold")
 	}
 	return nil
@@ -192,6 +195,13 @@ func (s *Store) Load(ctx context.Context) (*Snapshot, error) {
 // Lease只限制新写资格；不因过期清原floor/持有。原UID与Node ownerRef固定，
 // transitions+1给持久floor；同epoch换holder和同名新Lease不自动收养。
 func (s *Store) actor(ctx context.Context) (journal.Owner, error) {
+	return s.leaseActor(ctx, true)
+}
+
+// 多写者只能做单调增加的Pod容量记账，仍须核原Lease UID、当前新鲜holder及
+// Node CAS。只有requireSelf=true的节点owner能发布Host源/抬floor/结算，
+// 不能因为共享容量写入角色而把另一副本的Lease身份当作自己的执行权。
+func (s *Store) leaseActor(ctx context.Context, requireSelf bool) (journal.Owner, error) {
 	var none journal.Owner
 	l, err := s.coord.Leases(s.binding.Namespace).Get(ctx, s.binding.LeaseName, metav1.GetOptions{})
 	if err != nil {
@@ -202,14 +212,14 @@ func (s *Store) actor(ctx context.Context) (journal.Owner, error) {
 	}
 	o := l.OwnerReferences[0]
 	v := l.Spec
-	if o.APIVersion != "v1" || o.Kind != "Node" || o.Name != s.binding.NodeName || o.UID != s.binding.NodeUID || o.Controller == nil || !*o.Controller || v.HolderIdentity == nil || *v.HolderIdentity != s.holder || v.LeaseTransitions == nil || *v.LeaseTransitions < 0 || v.LeaseDurationSeconds == nil || *v.LeaseDurationSeconds < 1 || *v.LeaseDurationSeconds > 86400 || v.RenewTime == nil || v.AcquireTime == nil || v.Strategy != nil || v.PreferredHolder != nil {
+	if o.APIVersion != "v1" || o.Kind != "Node" || o.Name != s.binding.NodeName || o.UID != s.binding.NodeUID || o.Controller == nil || !*o.Controller || v.HolderIdentity == nil || control.ValidateID(*v.HolderIdentity, "Host holder") != nil || requireSelf && *v.HolderIdentity != s.holder || v.LeaseTransitions == nil || *v.LeaseTransitions < 0 || v.LeaseDurationSeconds == nil || *v.LeaseDurationSeconds < 1 || *v.LeaseDurationSeconds > 86400 || v.RenewTime == nil || v.AcquireTime == nil || v.Strategy != nil || v.PreferredHolder != nil {
 		return none, fmt.Errorf("current Host allocator is not original Lease holder")
 	}
 	now := time.Now()
 	if v.RenewTime.After(now.Add(5*time.Second)) || !now.Before(v.RenewTime.Add(time.Duration(*v.LeaseDurationSeconds)*time.Second)) {
 		return none, fmt.Errorf("host allocator Lease expired or timestamp is in future")
 	}
-	return journal.Owner{HolderID: s.holder, Epoch: control.Uint64(uint64(*v.LeaseTransitions) + 1)}, nil
+	return journal.Owner{HolderID: *v.HolderIdentity, Epoch: control.Uint64(uint64(*v.LeaseTransitions) + 1)}, nil
 }
 
 func capacity(n *core.Node) (control.Uint64, error) {
@@ -299,6 +309,21 @@ func (s *Store) write(ctx context.Context, n *core.Node, m Model, initialize boo
 // Initialize是明确的分配域引导，不由Load/Reserve失败调用。域外保留必须由
 // 可信Scheduler/平台另行确定；本方法只原子冻结给定值，不给它认证资格。
 func (s *Store) Initialize(ctx context.Context, expectedVersion string, outside control.Uint64) (*Snapshot, error) {
+	return s.initialize(ctx, expectedVersion, outside, nil, nil)
+}
+
+// InitializeAllocations只供显式引导：expectedVersion来自所有者固定的原Node
+// 快照，不在重试中换成当前RV。域内全部已运行Pod必须先按原API来源恢复入参，
+// 同一CAS写完整v3容量域。旧v1/v2的Outside含义不同，不做隐式在线改义升级。
+func (s *Store) InitializeAllocations(ctx context.Context, expectedVersion string, outside control.Uint64, profile Profile, placements []Placement) (*Snapshot, error) {
+	if profile.Validate() != nil || placements == nil || outside == 0 {
+		return nil, fmt.Errorf("host allocation bootstrap requires complete original profile/Pod snapshot")
+	}
+	rows := slices.Clone(placements)
+	return s.initialize(ctx, expectedVersion, outside, &profile, &rows)
+}
+
+func (s *Store) initialize(ctx context.Context, expectedVersion string, outside control.Uint64, profile *Profile, placements *[]Placement) (*Snapshot, error) {
 	n, err := s.node(ctx)
 	if err != nil {
 		return nil, err
@@ -319,8 +344,53 @@ func (s *Store) Initialize(ctx context.Context, expectedVersion string, outside 
 	if _, err := rand.Read(nonce[:]); err != nil {
 		return nil, err
 	}
-	m := Model{ProtocolVersion: 1, Binding: s.binding, Origin: hex.EncodeToString(nonce[:]), LeaseFloor: actor, Sequence: 1, OutsideBytes: outside, Holds: []Hold{}}
+	m := Model{ProtocolVersion: 1, Binding: s.binding, Origin: hex.EncodeToString(nonce[:]), LeaseFloor: actor, Sequence: 1, OutsideBytes: outside, Holds: []Hold{}, Profile: nil, Placements: nil}
+	if profile != nil {
+		m.ProtocolVersion, m.Profile, m.Placements = 3, profile, placements
+	}
+	used, err := m.UsedBytes()
+	if m.Validate() != nil || err != nil || used > total {
+		return nil, fmt.Errorf("complete initial Host allocation exceeds original Node capacity or is invalid")
+	}
 	return s.write(ctx, n, m, true)
+}
+
+// HoldPlacement是原Node容量的多写者CAS。全局Scheduler leader与Host源的
+// 节点lease holder可以是不同副本；只有“增加/保留容量”可由任一可信Scheduler
+// 写者执行，发布和释放仍要求原holder。网络间无本地锁，任何未知保持原记账。
+func (s *Store) HoldPlacement(ctx context.Context, snapshot *Snapshot, p Placement) (*Snapshot, Placement, error) {
+	var none Placement
+	if snapshot == nil || snapshot.model.Binding != s.binding || snapshot.model.ProtocolVersion != 3 {
+		return nil, none, fmt.Errorf("pod allocation requires original initialized v3 Node snapshot")
+	}
+	first, err := s.leaseActor(ctx, false)
+	if err != nil {
+		return nil, none, err
+	}
+	n, err := s.node(ctx)
+	if err != nil {
+		return nil, none, err
+	}
+	last, err := s.leaseActor(ctx, false)
+	if err != nil || first != last || n.ResourceVersion != snapshot.ResourceVersion() || n.DeletionTimestamp != nil || last.Epoch < snapshot.model.LeaseFloor.Epoch || last.Epoch == snapshot.model.LeaseFloor.Epoch && last != snapshot.model.LeaseFloor {
+		return nil, none, fmt.Errorf("original allocation Node/Lease changed or floor is stale")
+	}
+	total, err := capacity(n)
+	if err != nil {
+		return nil, none, err
+	}
+	m, err := snapshot.model.reservePlacement(p, total)
+	if err != nil {
+		return nil, none, err
+	}
+	if m.Sequence != snapshot.model.Sequence {
+		snapshot, err = s.write(ctx, n, m, false)
+		if err != nil {
+			return nil, none, err
+		}
+	}
+	held, err := snapshot.model.Placement(p.PodUID)
+	return snapshot, held, err
 }
 
 // Fence只抬单调floor，不清旧Key/持有、不改域外预算；新holder必须先确认此

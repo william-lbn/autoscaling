@@ -80,7 +80,20 @@ func (f *nodeAPI) serve(w http.ResponseWriter, r *http.Request) {
 	}
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "/leases/") {
+	if strings.Contains(r.URL.Path, "/leases/") {
+		if r.Method == http.MethodPut {
+			var next coord.Lease
+			if json.NewDecoder(r.Body).Decode(&next) != nil || next.UID != f.lease.UID || next.ResourceVersion != f.lease.ResourceVersion {
+				http.Error(w, "original Lease UID/RV condition failed", http.StatusConflict)
+				return
+			}
+			f.version++
+			next.ResourceVersion = "lease-rv-" + strconv.Itoa(f.version)
+			f.lease = next
+		} else if r.Method != http.MethodGet {
+			http.Error(w, "unsupported original Lease method", http.StatusMethodNotAllowed)
+			return
+		}
 		_ = json.NewEncoder(w).Encode(f.lease)
 		return
 	}
