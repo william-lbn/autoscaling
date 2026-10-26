@@ -6,24 +6,24 @@
   "autoscaling_branch": "codex/dsga-autoscaling-20261019",
   "source_base_commit": "6d59154f69a9d669e8117ed3c1e59ca7ba62ede8",
   "source_files_sha256": {
-    "neonvm-runner/cmd/dsga_memory.go": "87d649012ec37a8e69ff5a04519b01122f2a6bd720a04ab85cb544d56bc87bf0",
-    "neonvm-runner/cmd/main.go": "46588c5837c6a7d62138b84aa10ccd4c110158badbc9a356963bbe39810be8a0",
+    "neonvm-runner/cmd/dsga_memory.go": "1576efc2e7c8d89afd9785fa7515dd7686a2d489239133ea4571fb1c0787060e",
+    "neonvm-runner/cmd/main.go": "d03a87b223bceceef14f694099892669fa6de839a70551eb4faa90e6d98e108a",
     "pkg/dsga/journal/lease_binding.go": "2f08e81cffbc39ddc24532e8f13a702d617f8a68db3c7709104f51c2b6b2859e",
     "pkg/dsga/owner/lease.go": "fb5fe1b4e1b329c56e3c6566844574a04a66eb88a20b73fb97fea603ec80e654",
-    "pkg/dsga/vmguard/engine.go": "bb5f0a4d2609c0e90308ca2d2277510121aa0ac9dc0b575c88a6a93541cb5ecb",
-    "pkg/dsga/vmguard/engine_test.go": "6ae5a345f786f9252c887398a0ab5fb21012386ef268bf4d384ace96a849e94e",
-    "pkg/dsga/vmguard/model.go": "83bfc7f08e24defbcf3517a060acdf4c341de583d52484c3ee8b0f656da09a4b",
-    "pkg/dsga/vmguard/publication.go": "789346b2cd449166a7667712afaf0f01a152a40f0c83cbe4af31870d375c2d36",
-    "pkg/dsga/vmguard/qmp.go": "d025e545d2b22f0a1a4da01bcf2b155d7563b62faf16266663b99291480fc6ad",
-    "pkg/dsga/vmguard/qmp_test.go": "76052140efba05f7a95c5c46d59467d71922abab558f4ee4c654878fa0b311ae",
-    "pkg/dsga/vmguard/runner.go": "4cdfb8a00beb891b41a52148ce71c85f4d55ed1169cedcc0c960b40c5fd86bdf",
-    "pkg/dsga/vmguard/runner_test.go": "d4728ef2b6cfea2d5fed329b7d54034cedc22e2f85cb27d3e80d2d8db2f34684",
-    "pkg/dsga/vmguard/source.go": "0ebdfab72f9adaec208805b9f540b281cc2e7d7b68528fc79e4e36c4a54453ce",
-    "pkg/dsga/vmguard/state_unix.go": "f5fc1aa072d7361d4e187d7be2d9ea904925f6310b4648ee61639c751b7205af",
+    "pkg/dsga/vmguard/engine.go": "50cd09104032f81681e10592d1f9522376d9e7d89f520aeec4f1a7290e39351a",
+    "pkg/dsga/vmguard/engine_test.go": "dc8779fe652154f3c02969b5897f45cf7a09390126b100fd74fc0abd14e5a11b",
+    "pkg/dsga/vmguard/model.go": "579e6444de34608ea7b87fd062fdd416e945948fc6499c953444051521603f48",
+    "pkg/dsga/vmguard/publication.go": "424f15f4c6a07dfe511c80cf553259634e094a66e88cb2bcd23f08b38cad0ab5",
+    "pkg/dsga/vmguard/qmp.go": "70472c353df596eb58f1213d59a618e6ffbcb968f1d6c6456e470d3f71e818f9",
+    "pkg/dsga/vmguard/qmp_test.go": "1224569510eef8fc5d85b8513a50bf3ffeac82658e886c9ee690a817e07ae48b",
+    "pkg/dsga/vmguard/runner.go": "ad4227b67c5b539dab3635019dbf46f0187020151ca2a2c776c172d6889100b6",
+    "pkg/dsga/vmguard/runner_test.go": "eeeba480080986cd57e1836106df70401f19ed23d960b1885709e7b3a40b48b0",
+    "pkg/dsga/vmguard/source.go": "48882db1071ecec36b4c62ce5a2f02504fb56a9f7d7e9ba7710c6950225eaa73",
+    "pkg/dsga/vmguard/state_unix.go": "a92f521113a6f3f780f126da1f9f781c576e22d712d9f1353ccd7371de9004c1",
     "pkg/neonvm/controllers/vm_controller.go": "44d6fb6e372e1a806b36e0ce4db81e6433d6c02999400eedd18aba52fd30eae0",
     "pkg/neonvm/controllers/vm_dsga_bootstrap_test.go": "7a5c7ca6b21e1768eb2882e71eb4704457ac56caa0ba6c97c3b053ff73aa2c0f",
-    "pkg/neonvm/controllers/vm_dsga_memory.go": "f4517fac3f4d963747361526a671208aa1e4aace2371293cbcf7bbf7fe4d3008",
-    "pkg/neonvm/controllers/vm_dsga_memory_test.go": "8fab9cdcbff097d22a213badf69112f857959528beab185cc62a0d1bff21ca33"
+    "pkg/neonvm/controllers/vm_dsga_memory.go": "c1567db66f1b309bba76d90fa767c4497b9dd1d8ccc17e3d564b56cba315b4a9",
+    "pkg/neonvm/controllers/vm_dsga_memory_test.go": "e6496ca497866a43b7de6fbdf407f55ec629e4c52ff2bd112bb82a8a90ae30e6"
   },
   "environment": {
     "system": "Darwin",
@@ -80,6 +80,15 @@
       "passed_including_subtests": 6,
       "failed": 0,
       "skipped": 0
+    },
+    {
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl",
+      "sha256": "8d825e8b23b3ffcbdb3ed03e57a06fa180c2b6b209dc55a0d6fc37b6eac679f2",
+      "passed_top_level": 3,
+      "passed_including_subtests": 21,
+      "failed": 0,
+      "skipped": 0,
+      "replaces_earlier_same_names": true
     }
   ],
   "distinct_passed_top_level": 20,
@@ -195,72 +204,72 @@
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames",
-      "log": "build/dsga-vmguard-production-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/duplicate-field",
-      "log": "build/dsga-vmguard-production-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/endless-events",
-      "log": "build/dsga-vmguard-production-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/extra-device",
-      "log": "build/dsga-vmguard-production-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/missing-size",
-      "log": "build/dsga-vmguard-production-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/numeric-string",
-      "log": "build/dsga-vmguard-production-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/oversized",
-      "log": "build/dsga-vmguard-production-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/return-and-error",
-      "log": "build/dsga-vmguard-production-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/wrong-base",
-      "log": "build/dsga-vmguard-production-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/wrong-block",
-      "log": "build/dsga-vmguard-production-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/wrong-device",
-      "log": "build/dsga-vmguard-production-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/wrong-maximum",
-      "log": "build/dsga-vmguard-production-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/wrong-qemu",
-      "log": "build/dsga-vmguard-production-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/wrong-response-id",
-      "log": "build/dsga-vmguard-production-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
@@ -360,7 +369,7 @@
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestRunnerProductionPullPublishLostRepliesAndOriginalReceipt",
-      "log": "build/dsga-vmguard-receipt-final-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
@@ -410,32 +419,32 @@
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources",
-      "log": "build/dsga-vmguard-receipt-final-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/complete",
-      "log": "build/dsga-vmguard-receipt-final-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/short-host-hold",
-      "log": "build/dsga-vmguard-receipt-final-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/unverified-pg-release",
-      "log": "build/dsga-vmguard-receipt-final-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/wrong-fence",
-      "log": "build/dsga-vmguard-receipt-final-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
       "test": "TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/wrong-root-limit",
-      "log": "build/dsga-vmguard-receipt-final-test-20261026.jsonl"
+      "log": "build/dsga-vmguard-quality-final-test-20261026.jsonl"
     },
     {
       "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
@@ -650,27 +659,27 @@
     "final_controller_log": "build/dsga-vmguard-controller-final-vet-20261026.log"
   },
   "compile_only_artifacts": {
-    "build/dsga-vmguard-runner-linux-amd64": {
-      "sha256": "c59e3bdadf36134cc8e11d95f0bed461bdee1b138a970b244d18028e81489472",
-      "size_bytes": 58222656,
+    "build/dsga-vmguard-quality-runner-linux-amd64": {
+      "sha256": "f4d8b23827c8c0c10c8a3a7ce7427412a6d3922c61d0480b3287c530d3550d73",
+      "size_bytes": 58228227,
       "executed": false,
       "buildvcs": false
     },
-    "build/dsga-vmguard-runner-linux-arm64": {
-      "sha256": "ec42c8dbc606b6c61920e5cf8cc7eba773b28afcaf135337ee883cecfaa40cb6",
-      "size_bytes": 55087201,
+    "build/dsga-vmguard-quality-runner-linux-arm64": {
+      "sha256": "500ad034780e6236718ceed32e0f2cfa463e705ce267324af37c0182bca62610",
+      "size_bytes": 55087140,
       "executed": false,
       "buildvcs": false
     },
-    "build/dsga-vmguard-controller-linux-amd64": {
-      "sha256": "a772c90cc3ea7325b91c0b852a1a08c58805045af65c6e541024829e97659aa9",
-      "size_bytes": 70920257,
+    "build/dsga-vmguard-quality-controller-linux-amd64": {
+      "sha256": "fa401870503e46b4d48f475c464ea32a80ae069b7df07ecde71a3a9de1b7e90d",
+      "size_bytes": 70920697,
       "executed": false,
       "buildvcs": false
     },
-    "build/dsga-vmguard-controller-linux-arm64": {
-      "sha256": "5174c8a77cf77a068cc7f9449f69a2b861c70f2005131a06df3ccc7da2898886",
-      "size_bytes": 67341080,
+    "build/dsga-vmguard-quality-controller-linux-arm64": {
+      "sha256": "45073472a01e331a0067df2f8b90827000a01263aab501a7c495a04b2de24757",
+      "size_bytes": 67341336,
       "executed": false,
       "buildvcs": false
     }
@@ -708,6 +717,73 @@
     "images or deployments or main merges"
   ],
   "execution_scripts": {
-    "build/run-dsga-vmguard-checks-20261026.sh": "f145b2164b2047759e880ce5a229ae8d2b472ad00f2c4808333ddc925f454f0d"
+    "build/run-dsga-vmguard-checks-20261026.sh": "f145b2164b2047759e880ce5a229ae8d2b472ad00f2c4808333ddc925f454f0d",
+    "build/run-dsga-vmguard-quality-final-20261026.sh": "5855518ea7d1457be137dce2280237dd1cb6713451e2146935891eec0c8fe907"
+  },
+  "prior_module_commit": "f367e76e9667e795eaafb2ce1d4a7bdb1305811d",
+  "prior_source_files_sha256": {
+    "neonvm-runner/cmd/dsga_memory.go": "87d649012ec37a8e69ff5a04519b01122f2a6bd720a04ab85cb544d56bc87bf0",
+    "neonvm-runner/cmd/main.go": "46588c5837c6a7d62138b84aa10ccd4c110158badbc9a356963bbe39810be8a0",
+    "pkg/dsga/journal/lease_binding.go": "2f08e81cffbc39ddc24532e8f13a702d617f8a68db3c7709104f51c2b6b2859e",
+    "pkg/dsga/owner/lease.go": "fb5fe1b4e1b329c56e3c6566844574a04a66eb88a20b73fb97fea603ec80e654",
+    "pkg/dsga/vmguard/engine.go": "bb5f0a4d2609c0e90308ca2d2277510121aa0ac9dc0b575c88a6a93541cb5ecb",
+    "pkg/dsga/vmguard/engine_test.go": "6ae5a345f786f9252c887398a0ab5fb21012386ef268bf4d384ace96a849e94e",
+    "pkg/dsga/vmguard/model.go": "83bfc7f08e24defbcf3517a060acdf4c341de583d52484c3ee8b0f656da09a4b",
+    "pkg/dsga/vmguard/publication.go": "789346b2cd449166a7667712afaf0f01a152a40f0c83cbe4af31870d375c2d36",
+    "pkg/dsga/vmguard/qmp.go": "d025e545d2b22f0a1a4da01bcf2b155d7563b62faf16266663b99291480fc6ad",
+    "pkg/dsga/vmguard/qmp_test.go": "76052140efba05f7a95c5c46d59467d71922abab558f4ee4c654878fa0b311ae",
+    "pkg/dsga/vmguard/runner.go": "4cdfb8a00beb891b41a52148ce71c85f4d55ed1169cedcc0c960b40c5fd86bdf",
+    "pkg/dsga/vmguard/runner_test.go": "d4728ef2b6cfea2d5fed329b7d54034cedc22e2f85cb27d3e80d2d8db2f34684",
+    "pkg/dsga/vmguard/source.go": "0ebdfab72f9adaec208805b9f540b281cc2e7d7b68528fc79e4e36c4a54453ce",
+    "pkg/dsga/vmguard/state_unix.go": "f5fc1aa072d7361d4e187d7be2d9ea904925f6310b4648ee61639c751b7205af",
+    "pkg/neonvm/controllers/vm_controller.go": "44d6fb6e372e1a806b36e0ce4db81e6433d6c02999400eedd18aba52fd30eae0",
+    "pkg/neonvm/controllers/vm_dsga_bootstrap_test.go": "7a5c7ca6b21e1768eb2882e71eb4704457ac56caa0ba6c97c3b053ff73aa2c0f",
+    "pkg/neonvm/controllers/vm_dsga_memory.go": "f4517fac3f4d963747361526a671208aa1e4aace2371293cbcf7bbf7fe4d3008",
+    "pkg/neonvm/controllers/vm_dsga_memory_test.go": "8fab9cdcbff097d22a213badf69112f857959528beab185cc62a0d1bff21ca33"
+  },
+  "prior_compile_only_artifacts": {
+    "build/dsga-vmguard-runner-linux-amd64": {
+      "sha256": "c59e3bdadf36134cc8e11d95f0bed461bdee1b138a970b244d18028e81489472",
+      "size_bytes": 58222656,
+      "executed": false,
+      "buildvcs": false
+    },
+    "build/dsga-vmguard-runner-linux-arm64": {
+      "sha256": "ec42c8dbc606b6c61920e5cf8cc7eba773b28afcaf135337ee883cecfaa40cb6",
+      "size_bytes": 55087201,
+      "executed": false,
+      "buildvcs": false
+    },
+    "build/dsga-vmguard-controller-linux-amd64": {
+      "sha256": "a772c90cc3ea7325b91c0b852a1a08c58805045af65c6e541024829e97659aa9",
+      "size_bytes": 70920257,
+      "executed": false,
+      "buildvcs": false
+    },
+    "build/dsga-vmguard-controller-linux-arm64": {
+      "sha256": "5174c8a77cf77a068cc7f9449f69a2b861c70f2005131a06df3ccc7da2898886",
+      "size_bytes": 67341080,
+      "executed": false,
+      "buildvcs": false
+    }
+  },
+  "quality": {
+    "linter": "golangci-lint 2.4.0 / repository config",
+    "target": "linux amd64",
+    "report": "build/dsga-vmguard-quality-final-lint-20261026.log",
+    "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "issues": 0,
+    "scope_new_from_revision": "6d59154f69a9d669e8117ed3c1e59ca7ba62ede8",
+    "rule_suppression_added": false,
+    "changes": "Explicit zero values; IO/error-chain handling; prescribed formatting; no protocol or budget/fence policy changes",
+    "earlier_issue_reports": [
+      "build/dsga-vmguard-lint-loaded-20261026.log",
+      "build/dsga-vmguard-lint-complete-20261026.log",
+      "build/dsga-vmguard-lint-final-20261026.log"
+    ],
+    "tool_start_failures": [
+      "build/dsga-vmguard-lint-initial-20261026.log",
+      "build/dsga-vmguard-lint-current-20261026.log"
+    ]
   }
 }

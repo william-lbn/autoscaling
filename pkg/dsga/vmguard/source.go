@@ -30,7 +30,7 @@ func (r *Runner) readLease(ctx context.Context) (*coordination.Lease, error) {
 	// expiry只限制新的认证观测，不撤销floor/原意图/持有。这里不把系统时钟
 	// 当fence；最终串行fence仍在本地WAL，时钟异常只会拒绝而非放行过期写。
 	now := time.Now()
-	if lease.Spec.RenewTime.Time.After(now.Add(5*time.Second)) || !now.Before(lease.Spec.RenewTime.Add(time.Duration(*lease.Spec.LeaseDurationSeconds)*time.Second)) {
+	if lease.Spec.RenewTime.After(now.Add(5*time.Second)) || !now.Before(lease.Spec.RenewTime.Add(time.Duration(*lease.Spec.LeaseDurationSeconds)*time.Second)) {
 		return nil, fmt.Errorf("Runner owner Lease is expired or timestamp is in the future")
 	}
 	return lease, nil
@@ -147,7 +147,7 @@ func (r *Runner) verifySources(ctx context.Context, s *journal.Snapshot, c Comma
 	}
 	held := max(c.BeforeBytes, c.Request.TargetVMMemoryBytes)
 	if uint64(observed.Host.HostOverheadBytes) > math.MaxUint64-uint64(held) || observed.Host.ReservedMemoryBytes < held+observed.Host.HostOverheadBytes {
-		return fmt.Errorf("Host must retain both original and target memory plus overhead until VM settlement")
+		return fmt.Errorf("host must retain both original and target memory plus overhead until VM settlement")
 	}
 	if c.Request.Kind == control.Grow {
 		step := prior[journal.ReserveHost]

@@ -11,20 +11,22 @@ import (
 	"path/filepath"
 	"time"
 
-	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	coordclient "k8s.io/client-go/kubernetes/typed/coordination/v1"
 	coreclient "k8s.io/client-go/kubernetes/typed/core/v1"
 
+	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
 
-const FixedStateDir = "/vm/dsga-runner/active"
-const VirtioBlockBytes = 8 << 20
+const (
+	FixedStateDir    = "/vm/dsga-runner/active"
+	VirtioBlockBytes = 8 << 20
+)
 
 // Config由Controller原VM快照和Downward API提供，不接受远程请求决定路径、
 // VM UID或Kube端点。Min/Max用真实VM重新核验，防止旧flag启动不同几何QEMU。
@@ -133,15 +135,15 @@ func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient
 		return nil, err
 	}
 	ref := budget.ObjectRef{Name: birthCM.Name, UID: string(birthCM.UID)}
-	if err := s.save(&record{ProtocolVersion: 1, Identity: id, BindingClaim: ref, Sequence: 1, Floor: model.Owner}); err != nil {
+	if err := s.save(&record{ProtocolVersion: 1, Identity: id, BindingClaim: ref, Sequence: 1, Floor: model.Owner, LeaseUID: "", HighWater: nil, Pending: nil, Last: nil, LastPublished: nil}); err != nil {
 		return nil, err
 	}
 	claims, err := budgetclaims.New(coreClient, store.Binding())
 	if err != nil {
 		return nil, err
 	}
-	r := &Runner{store: store, core: coreClient, coord: coord, birth: birth, pod: c.PodName, node: c.NodeName, claims: claims}
-	r.engine = &engine{dir: c.StateDir, id: id, binding: ref, native: &nativeQMP{id: id, path: filepath.Join(c.StateDir, "qmp.sock"), timeout: 2 * time.Second}, now: time.Now}
+	r := &Runner{store: store, core: coreClient, coord: coord, birth: birth, pod: c.PodName, node: c.NodeName, claims: claims, engine: nil}
+	r.engine = &engine{dir: c.StateDir, id: id, binding: ref, native: &nativeQMP{id: id, path: filepath.Join(c.StateDir, "qmp.sock"), timeout: 2 * time.Second}, now: time.Now, read: nil}
 	r.engine.read = r.authorize
 	return r, nil
 }

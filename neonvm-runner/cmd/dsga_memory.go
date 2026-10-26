@@ -49,7 +49,7 @@ func initializeManagedMemory(spec *vmv1.VirtualMachineSpec) (*vmguard.Runner, er
 	}
 	// active是明确的新Runner安装目录，父目录由Controller原Pod emptyDir提供。
 	// 只允许mkdir这个固定子目录；存在时保留原内容，Initialize会拒绝重新出生。
-	if err := os.Mkdir(vmguard.FixedStateDir, 0700); err != nil && !os.IsExist(err) {
+	if err := os.Mkdir(vmguard.FixedStateDir, 0o700); err != nil && !os.IsExist(err) {
 		return nil, err
 	}
 	slot, exact := spec.Guest.MemorySlotSize.AsInt64()

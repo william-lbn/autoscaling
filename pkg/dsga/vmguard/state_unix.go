@@ -27,7 +27,7 @@ func privateFile(fd int, kind uint32) error {
 	if err := unix.Fstat(fd, &st); err != nil {
 		return err
 	}
-	if st.Uid != uint32(os.Geteuid()) || uint32(st.Mode)&unix.S_IFMT != kind || st.Mode&0077 != 0 {
+	if st.Uid != uint32(os.Geteuid()) || uint32(st.Mode)&unix.S_IFMT != kind || st.Mode&0o077 != 0 {
 		return fmt.Errorf("Runner journal requires private original owner and file type")
 	}
 	return nil
@@ -41,12 +41,12 @@ func lockState(ctx context.Context, path string) (*lockedState, error) {
 	if err != nil {
 		return nil, err
 	}
-	s := &lockedState{dir: os.NewFile(uintptr(fd), path)}
+	s := &lockedState{dir: os.NewFile(uintptr(fd), path), lock: nil}
 	if err := privateFile(fd, unix.S_IFDIR); err != nil {
 		s.close()
 		return nil, err
 	}
-	lockfd, err := unix.Openat(fd, "lock", unix.O_RDWR|unix.O_CREAT|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0600)
+	lockfd, err := unix.Openat(fd, "lock", unix.O_RDWR|unix.O_CREAT|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0o600)
 	if err != nil {
 		s.close()
 		return nil, err
@@ -131,12 +131,14 @@ func (s *lockedState) save(r *record) error {
 	}
 	name := "state-" + hex.EncodeToString(nonce[:]) + ".tmp"
 	dirfd := int(s.dir.Fd())
-	fd, err := unix.Openat(dirfd, name, unix.O_WRONLY|unix.O_CREAT|unix.O_EXCL|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0600)
+	fd, err := unix.Openat(dirfd, name, unix.O_WRONLY|unix.O_CREAT|unix.O_EXCL|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0o600)
 	if err != nil {
 		return err
 	}
 	f := os.NewFile(uintptr(fd), name)
-	defer unix.Unlinkat(dirfd, name, 0)
+	// rename成功后临时名已经不存在；此清理只尽力移除失败路径临时文件，
+	// 不覆盖真实写入/fsync错误，也不删除正式状态。
+	defer func() { _ = unix.Unlinkat(dirfd, name, 0) }()
 	if n, err := f.Write(raw); err != nil || n != len(raw) {
 		f.Close()
 		if err != nil {
@@ -167,7 +169,7 @@ func (s *lockedState) birthIntent(id Identity) error {
 	if err != nil {
 		return err
 	}
-	fd, err := unix.Openat(int(s.dir.Fd()), "birth-intent.json", unix.O_WRONLY|unix.O_CREAT|unix.O_EXCL|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0600)
+	fd, err := unix.Openat(int(s.dir.Fd()), "birth-intent.json", unix.O_WRONLY|unix.O_CREAT|unix.O_EXCL|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0o600)
 	if err != nil {
 		return fmt.Errorf("Runner birth is already started or directory unavailable: %w", err)
 	}

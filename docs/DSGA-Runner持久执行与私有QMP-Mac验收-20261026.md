@@ -82,6 +82,10 @@ QEMU/KVM、Prepare/Host资格与PG/Root物理来源是明确协议夹具**。不
 Neon端到端，也不把这些结果外推Linux热拔、Host真实预留或生产可用。
 
 readonly vet覆盖vmguard/journal/owner/Controller，最终Controller补检也通过。
+仓库Linux目标增量golangci-lint v2.4.0最终**0 issues**，未关闭既有规则；补齐
+显式零值、测试IO检查、CREATE/GET错误链、导入/八进制格式和清理说明。质量
+补正后只替换受影响的3顶层/21含子项证据，不扩增20/110。准确源码双架构
+程序重新编译，原产物和原lint问题日志保留；机器收据同时固定前后哈希。
 Runner、Controller的Linux amd64/arm64均编译成功（buildvcs=false，源码逐文件
 哈希固定），未执行ELF。首次默认Go缓存受权限限制，未进入业务；改显式已有
 GOPATH。首次Controller夹具漏注册core Scheme而中止，修夹具后通过；两份原

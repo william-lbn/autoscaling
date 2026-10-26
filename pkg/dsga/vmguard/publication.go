@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"slices"
@@ -19,12 +20,14 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
 
-const ClaimKey = "runner.json"
-const ClaimLabel = "autoscaling.neon.tech/dsga-runner"
-const ProtectionFinalizer = "autoscaling.neon.tech/dsga-runner-protection"
-const bindingKind = "binding-v1"
-const stateKind = "state-v1"
-const receiptKind = "receipt-v1"
+const (
+	ClaimKey            = "runner.json"
+	ClaimLabel          = "autoscaling.neon.tech/dsga-runner"
+	ProtectionFinalizer = "autoscaling.neon.tech/dsga-runner-protection"
+	bindingKind         = "binding-v1"
+	stateKind           = "state-v1"
+	receiptKind         = "receipt-v1"
+)
 
 // Birth是启动QEMU之前一次性创建并读回的不可变来源。原Pod/boot/Node、几何和
 // mutable状态对象UID均固定。同名Runner重启不自动收养此来源，必须另走受控恢复。
@@ -65,7 +68,7 @@ func (r Receipt) Validate() error {
 	key := r.Intent.Command.Request.Key
 	// Receipt不含可变floor/Lease，下面仅复用完整字段关系校验。占位值不被
 	// 序列化/返回，也不是认证来源；真实Lease另由当前View永久固定UID。
-	probe := record{ProtocolVersion: 1, Identity: r.Intent.Command.Identity, BindingClaim: r.Intent.Command.BindingClaim, Sequence: 1, Floor: r.Intent.Owner, LeaseUID: "validation-only", HighWater: &key, Last: (*receipt)(&r)}
+	probe := record{ProtocolVersion: 1, Identity: r.Intent.Command.Identity, BindingClaim: r.Intent.Command.BindingClaim, Sequence: 1, Floor: r.Intent.Owner, LeaseUID: "validation-only", HighWater: &key, Last: (*receipt)(&r), Pending: nil, LastPublished: nil}
 	return probe.validate()
 }
 
@@ -151,7 +154,7 @@ func createClaim(ctx context.Context, coreClient coreclient.CoreV1Interface, bin
 	_, createErr := coreClient.ConfigMaps(binding.Namespace).Create(ctx, expected, metav1.CreateOptions{})
 	got, err := coreClient.ConfigMaps(binding.Namespace).Get(ctx, expected.Name, metav1.GetOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("Runner source CREATE unconfirmed (%v): %w", createErr, err)
+		return nil, fmt.Errorf("Runner source CREATE unconfirmed: %w", errors.Join(createErr, err))
 	}
 	if got == nil {
 		return nil, fmt.Errorf("Runner source CREATE has no actual GET readback")

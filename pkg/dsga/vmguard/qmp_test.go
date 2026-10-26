@@ -37,7 +37,7 @@ func startQMPFixture(t *testing.T, f *qmpFixture) string {
 	// Darwin sockaddr_un长度较短，系统t.TempDir的长路径不适合作socket地址。
 	dir, err := os.MkdirTemp("/private/tmp", "dsga-qmp-")
 	require.NoError(t, err)
-	require.NoError(t, os.Chmod(dir, 0700))
+	require.NoError(t, os.Chmod(dir, 0o700))
 	path := filepath.Join(dir, "qmp.sock")
 	l, err := net.Listen("unix", path)
 	require.NoError(t, err)
@@ -64,9 +64,13 @@ func startQMPFixture(t *testing.T, f *qmpFixture) string {
 }
 
 func (f *qmpFixture) serve(c net.Conn) {
-	c.SetDeadline(time.Now().Add(3 * time.Second))
+	if err := c.SetDeadline(time.Now().Add(3 * time.Second)); err != nil {
+		return
+	}
 	enc := json.NewEncoder(c)
-	enc.Encode(map[string]any{"QMP": map[string]any{"version": map[string]any{}, "capabilities": []string{}}})
+	if err := enc.Encode(map[string]any{"QMP": map[string]any{"version": map[string]any{}, "capabilities": []string{}}}); err != nil {
+		return
+	}
 	scan := bufio.NewScanner(c)
 	for scan.Scan() {
 		var command struct {
@@ -88,7 +92,10 @@ func (f *qmpFixture) serve(c net.Conn) {
 		switch command.Execute {
 		case "qmp_capabilities":
 			if mode == "event" {
-				enc.Encode(map[string]any{"event": "TEST"})
+				if err := enc.Encode(map[string]any{"event": "TEST"}); err != nil {
+					f.mu.Unlock()
+					return
+				}
 			}
 		case "query-uuid":
 			uuid, _ := f.id.QEMUUUID()
@@ -161,12 +168,16 @@ func (f *qmpFixture) serve(c net.Conn) {
 			return
 		}
 		if mode == "return-and-error" {
-			enc.Encode(map[string]any{"id": id, "return": value, "error": map[string]any{}})
+			if err := enc.Encode(map[string]any{"id": id, "return": value, "error": map[string]any{}}); err != nil {
+				return
+			}
 			return
 		}
 		if mode == "endless-events" {
 			for range 66 {
-				enc.Encode(map[string]any{"event": "TEST"})
+				if err := enc.Encode(map[string]any{"event": "TEST"}); err != nil {
+					return
+				}
 			}
 			return
 		}
@@ -184,7 +195,7 @@ func TestPrivateQMPEngineGrowShrinkLostReplyAndExactReadback(t *testing.T) {
 	e, _, a := setupEngine(t)
 	a.Command.Request.Kind = control.Grow
 	a.Command.BeforeBytes, a.Command.Request.TargetVMMemoryBytes, a.Command.GuestSHA256 = 2<<30, 3<<30, ""
-	f := &qmpFixture{id: e.id, actual: Observation{RequestedBytes: 2 << 30, ActualBytes: 2 << 30}, mode: "lost-set-reply", walDir: e.dir}
+	f := &qmpFixture{id: e.id, actual: Observation{RequestedBytes: 2 << 30, ActualBytes: 2 << 30}, mode: "lost-set-reply", walDir: e.dir, mu: sync.Mutex{}, writes: 0, requests: nil}
 	q := &nativeQMP{id: e.id, path: startQMPFixture(t, f), timeout: time.Second}
 	e.native = q
 	require.ErrorIs(t, e.advance(context.Background()), ErrUnknown)
@@ -221,7 +232,7 @@ func TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames(t *testing.T) {
 	for _, mode := range []string{"wrong-qemu", "wrong-device", "wrong-block", "wrong-maximum", "wrong-base", "extra-device", "missing-size", "numeric-string", "wrong-response-id", "return-and-error", "duplicate-field", "oversized", "endless-events"} {
 		t.Run(mode, func(t *testing.T) {
 			id := fixtureIdentity()
-			f := &qmpFixture{id: id, actual: Observation{RequestedBytes: 2 << 30, ActualBytes: 2 << 30}, mode: mode}
+			f := &qmpFixture{id: id, actual: Observation{RequestedBytes: 2 << 30, ActualBytes: 2 << 30}, mode: mode, mu: sync.Mutex{}, writes: 0, requests: nil, walDir: ""}
 			q := &nativeQMP{id: id, path: startQMPFixture(t, f), timeout: time.Second}
 			_, err := q.Read(context.Background())
 			require.Error(t, err)
@@ -242,7 +253,7 @@ func TestPrivateQMPExactLargeIntegersFixedSizeAndDeadlines(t *testing.T) {
 		id.MinimumBytes, id.MaximumBytes = 1<<54, 1<<55
 		id.BlockBytes = 1 // 仅数字协议夹具；实际Runner固定8MiB出生几何。
 		n := id.MinimumBytes + 17
-		f := &qmpFixture{id: id, actual: Observation{RequestedBytes: n, ActualBytes: n}}
+		f := &qmpFixture{id: id, actual: Observation{RequestedBytes: n, ActualBytes: n}, mu: sync.Mutex{}, mode: "", writes: 0, requests: nil, walDir: ""}
 		q := &nativeQMP{id: id, path: startQMPFixture(t, f), timeout: time.Second}
 		o, err := q.Read(context.Background())
 		require.NoError(t, err)
@@ -255,7 +266,7 @@ func TestPrivateQMPExactLargeIntegersFixedSizeAndDeadlines(t *testing.T) {
 	t.Run("no-virtio-device", func(t *testing.T) {
 		id := fixtureIdentity()
 		id.MaximumBytes = id.MinimumBytes
-		f := &qmpFixture{id: id, actual: Observation{RequestedBytes: id.MinimumBytes, ActualBytes: id.MinimumBytes}}
+		f := &qmpFixture{id: id, actual: Observation{RequestedBytes: id.MinimumBytes, ActualBytes: id.MinimumBytes}, mu: sync.Mutex{}, mode: "", writes: 0, requests: nil, walDir: ""}
 		q := &nativeQMP{id: id, path: startQMPFixture(t, f), timeout: time.Second}
 		_, err := q.Read(context.Background())
 		require.NoError(t, err)
@@ -264,7 +275,7 @@ func TestPrivateQMPExactLargeIntegersFixedSizeAndDeadlines(t *testing.T) {
 	})
 	t.Run("deadline-no-background-write", func(t *testing.T) {
 		id := fixtureIdentity()
-		f := &qmpFixture{id: id, actual: Observation{RequestedBytes: id.MinimumBytes, ActualBytes: id.MinimumBytes}, mode: "silent"}
+		f := &qmpFixture{id: id, actual: Observation{RequestedBytes: id.MinimumBytes, ActualBytes: id.MinimumBytes}, mode: "silent", mu: sync.Mutex{}, writes: 0, requests: nil, walDir: ""}
 		q := &nativeQMP{id: id, path: startQMPFixture(t, f), timeout: 100 * time.Millisecond}
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()

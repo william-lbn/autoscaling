@@ -12,8 +12,10 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
 
-var ErrUnknown = errors.New("Runner memory action requires original readback; possible QMP send cannot be replayed")
-var ErrNotSent = errors.New("Runner original action was durably prepared but not sent; explicit original replay required")
+var (
+	ErrUnknown = errors.New("Runner memory action requires original readback; possible QMP send cannot be replayed")
+	ErrNotSent = errors.New("Runner original action was durably prepared but not sent; explicit original replay required")
+)
 
 // nativeMemory只有本包私有Unix QMP适配器和测试夹具实现，不能向HTTP开放通用
 // command/路径，也不能让调用者提供“执行成功”回调。Read是原QEMU的完整读回；

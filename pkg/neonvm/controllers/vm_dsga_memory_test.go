@@ -8,9 +8,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/dsga/bootstrap"
@@ -36,7 +37,7 @@ func TestManagedControllerMemoryConsumesOriginalRunnerPublication(t *testing.T) 
 			id := vmguard.Identity{VMUID: string(vm.UID), Incarnation: binding.Incarnation, RunnerPodUID: "runner-uid", RunnerBootID: "0123456789abcdef0123456789abcdef", NodeUID: "node-uid", MinimumBytes: 1 << 30, MaximumBytes: 4 << 30, BlockBytes: 8 << 20}
 			birthRef, stateRef := budget.ObjectRef{Name: vmguard.BindingName(binding), UID: "birth-uid"}, budget.ObjectRef{Name: "runner-state", UID: "state-uid"}
 			birth := vmguard.Birth{ProtocolVersion: 1, Identity: id, StateClaim: stateRef}
-			view := vmguard.View{ProtocolVersion: 1, Identity: id, BindingClaim: birthRef, Sequence: 1, Floor: snapshot.State().Owner, LeaseUID: "lease-uid"}
+			view := vmguard.View{ProtocolVersion: 1, Identity: id, BindingClaim: birthRef, Sequence: 1, Floor: snapshot.State().Owner, LeaseUID: "lease-uid", HighWater: nil, Pending: nil, Last: nil, LastPublished: nil}
 			publication := vmguard.Publication{ProtocolVersion: 1, Identity: id, BindingClaim: &birthRef, State: &view, Actual: &vmguard.Observation{RequestedBytes: 2 << 30, ActualBytes: 2 << 30}}
 			controller, block, immutable, mutable := true, true, true, false
 			owner := []metav1.OwnerReference{{APIVersion: "vm.neon.tech/v1", Kind: "VirtualMachine", Name: vm.Name, UID: vm.UID, Controller: &controller, BlockOwnerDeletion: &block}}
@@ -99,7 +100,7 @@ func TestManagedRunnerPodBuildsOriginalPrivateMemoryEnvironment(t *testing.T) {
 				vm.Spec.CpuScalingMode = nil
 			}
 			key := base64.RawURLEncoding.EncodeToString(bytes.Repeat([]byte{1}, 32))
-			source := resourceguard.SourceConfig{ProtocolVersion: 1, Config: resourceguard.Config{VMUID: string(vm.UID), ComputeInstanceID: vm.Spec.DSGABootstrap.ComputeInstanceID, StateDir: resourceguard.FixedStateDir}, IssuerEpoch: 1, BudgetCommitmentID: "original-bootstrap-budget", Limits: resourceguard.Limits{MemoryMaxBytes: 64 << 20, OutsideUpperBytes: 32 << 20, HugePools: []resourceguard.HugePool{{PageSizeKB: 2048, Pages: 8}}}, ControlPublicKey: key}
+			source := resourceguard.SourceConfig{ProtocolVersion: 1, Config: resourceguard.Config{VMUID: string(vm.UID), ComputeInstanceID: vm.Spec.DSGABootstrap.ComputeInstanceID, StateDir: resourceguard.FixedStateDir, SystemCgroup: false}, IssuerEpoch: 1, BudgetCommitmentID: "original-bootstrap-budget", Limits: resourceguard.Limits{MemoryMaxBytes: 64 << 20, OutsideUpperBytes: 32 << 20, HugePools: []resourceguard.HugePool{{PageSizeKB: 2048, Pages: 8}}, PidsMaxTasks: 0, SystemMemoryMaxBytes: 0}, ControlPublicKey: key}
 			raw, err := json.Marshal(source)
 			require.NoError(t, err)
 			secret.Data[resourceguard.ResourceSecretKey] = raw

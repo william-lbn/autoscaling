@@ -205,7 +205,7 @@ func run(logger *zap.Logger) error {
 		}
 		// 私有QMP/终止socket都只能由本容器的可信Runner/QEMU访问。启动任何
 		// QEMU前设置进程umask；不暴露未认证的TCP或manual第二写入口。
-		syscall.Umask(0077)
+		syscall.Umask(0o077)
 	}
 
 	var enableSSH bool

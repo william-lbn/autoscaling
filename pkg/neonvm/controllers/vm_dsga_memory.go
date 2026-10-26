@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
@@ -60,7 +61,7 @@ func (r *VMReconciler) dsgaMemory(ctx context.Context, vm *vmv1.VirtualMachine) 
 		}
 	}
 	node := new(core.Node)
-	if err := r.APIReader.Get(ctx, client.ObjectKey{Name: pod.Spec.NodeName}, node); err != nil {
+	if err := r.APIReader.Get(ctx, client.ObjectKey{Name: pod.Spec.NodeName, Namespace: ""}, node); err != nil {
 		return nil, false, err
 	}
 	if string(node.UID) != birth.Identity.NodeUID || node.DeletionTimestamp != nil || p.State.Floor != snapshot.State().Owner {

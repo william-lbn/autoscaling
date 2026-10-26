@@ -140,7 +140,7 @@ func (q *nativeQMP) connect(ctx context.Context) (*qmpConnection, error) {
 	if err != nil {
 		return nil, err
 	}
-	c := &qmpConnection{conn: conn, read: bufio.NewReaderSize(conn, qmpFrameLimit+1)}
+	c := &qmpConnection{conn: conn, read: bufio.NewReaderSize(conn, qmpFrameLimit+1), seq: 0, stop: nil}
 	if err := conn.SetDeadline(deadline); err != nil {
 		c.close()
 		return nil, err

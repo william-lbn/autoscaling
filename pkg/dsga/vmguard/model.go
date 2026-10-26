@@ -254,6 +254,7 @@ func (c *Command) UnmarshalJSON(data []byte) error {
 	*c = Command(p)
 	return nil
 }
+
 func (id *Identity) UnmarshalJSON(data []byte) error {
 	type plain Identity
 	var p plain
@@ -263,6 +264,7 @@ func (id *Identity) UnmarshalJSON(data []byte) error {
 	*id = Identity(p)
 	return nil
 }
+
 func (o *Observation) UnmarshalJSON(data []byte) error {
 	type plain Observation
 	var p plain
@@ -272,6 +274,7 @@ func (o *Observation) UnmarshalJSON(data []byte) error {
 	*o = Observation(p)
 	return nil
 }
+
 func (i *intent) UnmarshalJSON(data []byte) error {
 	type plain intent
 	var p plain
@@ -281,6 +284,7 @@ func (i *intent) UnmarshalJSON(data []byte) error {
 	*i = intent(p)
 	return nil
 }
+
 func (v *receipt) UnmarshalJSON(data []byte) error {
 	type plain receipt
 	var p plain
@@ -290,6 +294,7 @@ func (v *receipt) UnmarshalJSON(data []byte) error {
 	*v = receipt(p)
 	return nil
 }
+
 func (r *record) UnmarshalJSON(data []byte) error {
 	type plain record
 	var p plain

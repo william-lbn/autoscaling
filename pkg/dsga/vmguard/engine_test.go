@@ -85,15 +85,15 @@ func fixtureCommand(id Identity) Command {
 func setupEngine(t *testing.T) (*engine, *memoryFixture, *authorization) {
 	t.Helper()
 	dir := t.TempDir()
-	require.NoError(t, os.Chmod(dir, 0700))
+	require.NoError(t, os.Chmod(dir, 0o700))
 	id := fixtureIdentity()
 	c := fixtureCommand(id)
-	a := &authorization{Owner: journal.Owner{HolderID: "owner-two", Epoch: 2}, LeaseUID: "lease-uid", Command: &c, JournalSHA256: strings.Repeat("d", 64), Dispatch: true}
-	f := &memoryFixture{dir: dir, actual: Observation{RequestedBytes: c.BeforeBytes, ActualBytes: c.BeforeBytes}, apply: true}
+	a := &authorization{Owner: journal.Owner{HolderID: "owner-two", Epoch: 2}, LeaseUID: "lease-uid", Command: &c, JournalSHA256: strings.Repeat("d", 64), Dispatch: true, ReplayNonce: "", Denied: nil}
+	f := &memoryFixture{dir: dir, actual: Observation{RequestedBytes: c.BeforeBytes, ActualBytes: c.BeforeBytes}, apply: true, mu: sync.Mutex{}, writes: 0, err: nil, entered: nil, release: nil}
 	e := &engine{dir: dir, id: id, binding: c.BindingClaim, native: f, read: func(context.Context) (authorization, error) { return *a, nil }, now: time.Now}
 	s, err := lockState(context.Background(), dir)
 	require.NoError(t, err)
-	require.NoError(t, s.save(&record{ProtocolVersion: 1, Identity: id, BindingClaim: c.BindingClaim, Sequence: 1, Floor: journal.Owner{HolderID: "initial-owner", Epoch: 1}}))
+	require.NoError(t, s.save(&record{ProtocolVersion: 1, Identity: id, BindingClaim: c.BindingClaim, Sequence: 1, Floor: journal.Owner{HolderID: "initial-owner", Epoch: 1}, LeaseUID: "", HighWater: nil, Pending: nil, Last: nil, LastPublished: nil}))
 	s.close()
 	return e, f, a
 }
@@ -124,7 +124,7 @@ func preparedFixture(t *testing.T, e *engine, a *authorization) record {
 	r.Floor = a.Owner
 	r.LeaseUID = a.LeaseUID
 	r.HighWater = &key
-	r.Pending = &intent{Command: *a.Command, CommandSHA256: hash, JournalSHA256: a.JournalSHA256, Owner: a.Owner, Stage: prepared, Before: Observation{RequestedBytes: a.Command.BeforeBytes, ActualBytes: a.Command.BeforeBytes}}
+	r.Pending = &intent{Command: *a.Command, CommandSHA256: hash, JournalSHA256: a.JournalSHA256, Owner: a.Owner, Stage: prepared, Before: Observation{RequestedBytes: a.Command.BeforeBytes, ActualBytes: a.Command.BeforeBytes}, ReplayNonce: ""}
 	return r
 }
 
@@ -239,11 +239,11 @@ func TestRunnerSecondAuthorityCheckAndDefinitePrewriteFailure(t *testing.T) {
 		calls := 0
 		e.read = func(context.Context) (authorization, error) {
 			calls++
-			copy := *a
+			observed := *a
 			if calls == 2 {
-				copy.Dispatch = false
+				observed.Dispatch = false
 			}
-			return copy, nil
+			return observed, nil
 		}
 		require.ErrorContains(t, e.advance(context.Background()), "authority changed")
 		require.Zero(t, f.writes)
@@ -271,7 +271,7 @@ func TestRunnerExclusiveLockCoversNativeWriteAndFloor(t *testing.T) {
 	second := *e
 	newOwner := journal.Owner{HolderID: "owner-three", Epoch: 3}
 	second.read = func(context.Context) (authorization, error) {
-		return authorization{Owner: newOwner, LeaseUID: "lease-uid"}, nil
+		return authorization{Owner: newOwner, LeaseUID: "lease-uid", Command: nil, JournalSHA256: "", Dispatch: false, ReplayNonce: "", Denied: nil}, nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Millisecond)
 	defer cancel()
@@ -301,7 +301,7 @@ func TestRunnerRejectsLostOrReplacedStateAndExhaustion(t *testing.T) {
 				require.NoError(t, os.Symlink(e.dir, path))
 				e.dir = path
 			case "permissions":
-				require.NoError(t, os.Chmod(e.dir, 0755))
+				require.NoError(t, os.Chmod(e.dir, 0o755))
 			case "new-runner":
 				e.id.RunnerPodUID = "new-pod-uid"
 			case "new-node":
