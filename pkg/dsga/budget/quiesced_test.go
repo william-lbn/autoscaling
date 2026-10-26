@@ -42,6 +42,10 @@ func TestContinuousQuiesceKeepsRetainedCostsAndRejectsUnprovedLowerLimit(t *test
 	require.NoError(t, q.ValidateFor(p, req.Key.IssuerEpoch), "非零后台/2PC/未知DSM持续保留，不伪造清空")
 	command := QuiesceCommand{ProtocolVersion: 1, Request: req, Close: closeIntent, PGAggregate: a}
 	require.NoError(t, command.ValidateFor(p, req.Key.IssuerEpoch))
+	changedTasks := p
+	changedTasks.Limits.PidsMaxTasks = 64
+	require.ErrorContains(t, command.ValidateFor(changedTasks, req.Key.IssuerEpoch), "immutable task limit")
+
 	commandJSON, err := json.Marshal(command)
 	require.NoError(t, err)
 	var commandFields map[string]json.RawMessage

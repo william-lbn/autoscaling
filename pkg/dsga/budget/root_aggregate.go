@@ -77,10 +77,10 @@ func (a RootAggregate) derive() (Bound, error) {
 	limits := a.Bootstrap.Limits
 	if a.Held != nil {
 		if a.Held.Validate() != nil || a.Held.Identity != a.Identity || a.Held.IssuerEpoch < a.Bootstrap.IssuerEpoch ||
-			a.Held.PostmasterPID != a.Birth.PostmasterPID || a.Held.PostmasterStartTicks != a.Birth.PostmasterStartTicks {
+			a.Held.PidsMaxTasks != a.Bootstrap.Limits.PidsMaxTasks || a.Held.PostmasterPID != a.Birth.PostmasterPID || a.Held.PostmasterStartTicks != a.Birth.PostmasterStartTicks {
 			return Bound{}, fmt.Errorf("PG aggregate held command differs from original identity/birth")
 		}
-		limits = resourceguard.Limits{MemoryMaxBytes: a.Held.MemoryMaxBytes, OutsideUpperBytes: a.Held.OutsideUpperBytes, HugePools: a.Held.HugePools}
+		limits = resourceguard.Limits{MemoryMaxBytes: a.Held.MemoryMaxBytes, PidsMaxTasks: a.Held.PidsMaxTasks, OutsideUpperBytes: a.Held.OutsideUpperBytes, HugePools: a.Held.HugePools}
 	}
 	// TotalUpperBytes先做全部乘加溢出/规范检查。仅扣已明确包含的Outside份额，
 	// HugeTLB reservation/已用/空闲池不相加，全部只用整池的一份持有限额。

@@ -370,6 +370,36 @@ func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (Evidence, error) 
 		}
 		*entry.dest = control.Uint64(n)
 	}
+	if c.PidsMaxTasks != 0 {
+		// pid_max是当前目标内核的可用PID空间，不假定编译配置等于开发机。
+		// 允许启动前pids.max为max，只记录实际值；matchesTasks在写后严格确认。
+		// 任务控制器支持threaded子树，本文实现只接受完整domain。迁移入口与父组
+		// threads同样必须root独占，避免postgres绕过本组有限上限或另造子组。
+		kind, err := kernelText(filepath.Join(pgCgroup, "cgroup.type"))
+		if err != nil || kind != "domain" {
+			return e, fmt.Errorf("finite task limit requires a domain cgroup")
+		}
+		for _, path := range []string{filepath.Join(pgCgroup, "cgroup.threads"), "/sys/fs/cgroup/cgroup.threads"} {
+			f, err := rootFile(path, false)
+			if err != nil {
+				return e, err
+			}
+			f.Close()
+		}
+		pidMax, err := readNumber("/proc/sys/kernel/pid_max", false)
+		if err != nil || uint64(c.PidsMaxTasks) > pidMax {
+			return e, fmt.Errorf("requested task bound exceeds actual Guest PID range")
+		}
+		maximum, err := readNumber(filepath.Join(pgCgroup, "pids.max"), true)
+		if err != nil {
+			return e, err
+		}
+		current, err := readNumber(filepath.Join(pgCgroup, "pids.current"), false)
+		if err != nil {
+			return e, err
+		}
+		e.TaskLimit = &TaskLimitEvidence{MaxTasks: control.Uint64(maximum), CurrentTasks: control.Uint64(current)}
+	}
 	mem, err := kernelText("/proc/meminfo")
 	if err != nil {
 		return e, err
@@ -436,6 +466,14 @@ func (k *linuxKernel) Apply(c Command) error {
 }
 
 func (k *linuxKernel) ApplyBounds(c Limits) error {
+	// 原意图已fsync且持资源锁，有限pids在PG出生前落实。此处不迁入/杀进程，
+	// 也不把写成功当数量证明；后续任一写/读失败保留原Unknown，不放宽N回max。
+	// runtime原N已在Guard写前冻结，重写相同值不会偷改后台任务余量。
+	if c.PidsMaxTasks != 0 {
+		if err := writeNumber(filepath.Join(pgCgroup, "pids.max"), uint64(c.PidsMaxTasks)); err != nil {
+			return err
+		}
+	}
 	// 所有hstate先禁用surplus扩张，再调整持久池。内核可能只能部分完成、将
 	// 在用页转为surplus，或HVO延迟释放；写返回成功也不能作为池已收缩的证明。
 	// 不主动写低于已用+预留的池，避免撤销仍被PG承诺的页；最终Read还要求surplus0。

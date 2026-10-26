@@ -12,7 +12,10 @@ import (
 // Limits是PG出生前也能建立的硬约束范围。不得伪造一个Postmaster PID来套用运行
 // 期命令；初始化时PG尚不存在，真实Guest/cgroup及整组限额仍须独立读回。
 type Limits struct {
-	MemoryMaxBytes    control.Uint64 `json:"memory_max_bytes"`
+	MemoryMaxBytes control.Uint64 `json:"memory_max_bytes"`
+	// 0/缺省保持旧未约束来源，绝不补造默认。有限任务数覆盖线程，原创建后冻结；
+	// 它不是私有字节上界，也不保证后台工作进程仍有出生余量。
+	PidsMaxTasks      control.Uint64 `json:"pids_max_tasks,omitempty"`
 	OutsideUpperBytes control.Uint64 `json:"outside_upper_bytes"`
 	HugePools         []HugePool     `json:"huge_pools"`
 }
@@ -31,17 +34,20 @@ type bootstrapRecord struct {
 }
 
 func bootstrapMatches(e Evidence, id Identity, l Limits) error {
-	if e.CgroupPopulated {
+	if e.CgroupPopulated || (l.PidsMaxTasks != 0 && (e.TaskLimit == nil || e.TaskLimit.CurrentTasks != 0)) {
 		return fmt.Errorf("bootstrap cgroup is not empty")
 	}
 	return e.matchesLimits(id, l)
 }
 
 func (c Command) limits() Limits {
-	return Limits{MemoryMaxBytes: c.MemoryMaxBytes, OutsideUpperBytes: c.OutsideUpperBytes, HugePools: c.HugePools}
+	return Limits{MemoryMaxBytes: c.MemoryMaxBytes, PidsMaxTasks: c.PidsMaxTasks, OutsideUpperBytes: c.OutsideUpperBytes, HugePools: c.HugePools}
 }
 
 func (l Limits) Validate() error {
+	if l.PidsMaxTasks > MaxPidsTasks {
+		return fmt.Errorf("task limit exceeds supported finite Linux range")
+	}
 	if l.MemoryMaxBytes == 0 || l.OutsideUpperBytes == 0 || len(l.HugePools) == 0 || len(l.HugePools) > 32 {
 		return fmt.Errorf("incomplete resource bounds")
 	}
@@ -163,7 +169,7 @@ func (g *Guard) bootstrap(ctx context.Context, c BootstrapCommand, observe, repl
 		return evidence, err
 	}
 	upper, err := c.Limits.totalUpper()
-	if err != nil || upper > uint64(before.GuestMemTotalBytes) || before.MemoryCurrentBytes > c.Limits.MemoryMaxBytes || before.SwapCurrentBytes != 0 || before.CgroupPopulated {
+	if err != nil || upper > uint64(before.GuestMemTotalBytes) || before.MemoryCurrentBytes > c.Limits.MemoryMaxBytes || before.SwapCurrentBytes != 0 || before.CgroupPopulated || (c.Limits.PidsMaxTasks != 0 && (before.TaskLimit == nil || before.TaskLimit.CurrentTasks != 0)) {
 		return evidence, fmt.Errorf("bootstrap target does not fit actual Guest occupancy")
 	}
 	if err := ctx.Err(); err != nil {

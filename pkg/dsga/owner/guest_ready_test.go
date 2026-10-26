@@ -203,10 +203,14 @@ func guestPhase(t *testing.T, store *journal.Store) journal.Step {
 }
 
 func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
-	for _, mode := range []string{"grow", "root-reply-lost", "start-reply-lost", "incomplete-budget", "runner-drift", "pg-drift", "shrink", "shrink-unsupported", "omit-hstate", "root-empty", "lower-normal-cap"} {
+	for _, mode := range []string{"grow", "root-reply-lost", "start-reply-lost", "incomplete-budget", "runner-drift", "pg-drift", "shrink", "shrink-unsupported", "omit-hstate", "root-empty", "lower-normal-cap", "tasks-finite", "tasks-changed", "tasks-reply-lost"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			root, resourceConfig := guestRoot(t, store)
+			if mode == "tasks-finite" || mode == "tasks-changed" || mode == "tasks-reply-lost" {
+				root.view.Bootstrap.Limits.PidsMaxTasks = 64
+				root.view.Actual.TaskLimit = &resourceguard.TaskLimitEvidence{MaxTasks: 64, CurrentTasks: 4}
+			}
 			if mode == "lower-normal-cap" {
 				root.view.Bootstrap.Limits.MemoryMaxBytes = 512 << 20
 				root.view.Actual.MemoryMaxBytes = 512 << 20
@@ -224,6 +228,10 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 					req.Kind, req.TargetBuffers = control.Shrink, 512
 				}
 				p, shared := preparedGuest(t, req, root.view.Identity)
+				p.Limits.PidsMaxTasks = root.view.Bootstrap.Limits.PidsMaxTasks
+				if mode == "tasks-changed" {
+					p.Limits.PidsMaxTasks--
+				}
 				if mode == "lower-normal-cap" {
 					p.Limits.MemoryMaxBytes = 256 << 20
 				}
@@ -250,9 +258,9 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 				api.mu.Unlock()
 				root.mu.Lock()
 				// 资源序号已有7，PG请求序号仍1：新命令必须采用8。
-				old := resourceguard.Command{ProtocolVersion: 1, Identity: root.view.Identity, IssuerEpoch: session.Actor().Epoch, Revision: 7, BudgetCommitmentID: "prior-resource-budget", PostmasterPID: 123, PostmasterStartTicks: 456, MemoryMaxBytes: root.view.Bootstrap.Limits.MemoryMaxBytes, OutsideUpperBytes: root.view.Bootstrap.Limits.OutsideUpperBytes, HugePools: root.view.Bootstrap.Limits.HugePools}
+				old := resourceguard.Command{ProtocolVersion: 1, Identity: root.view.Identity, IssuerEpoch: session.Actor().Epoch, Revision: 7, BudgetCommitmentID: "prior-resource-budget", PostmasterPID: 123, PostmasterStartTicks: 456, MemoryMaxBytes: root.view.Bootstrap.Limits.MemoryMaxBytes, PidsMaxTasks: root.view.Bootstrap.Limits.PidsMaxTasks, OutsideUpperBytes: root.view.Bootstrap.Limits.OutsideUpperBytes, HugePools: root.view.Bootstrap.Limits.HugePools}
 				root.view.Original, root.view.Held, root.view.Applied = &old, &old, true
-				root.loseReply = mode == "root-reply-lost"
+				root.loseReply = mode == "root-reply-lost" || mode == "tasks-reply-lost"
 				if mode == "runner-drift" {
 					root.afterApply = func() { api.mu.Lock(); api.vm.Status.RestartCount++; api.mu.Unlock() }
 				} else if mode == "pg-drift" {
@@ -276,7 +284,7 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 					api.mu.Unlock()
 				}
 				progress, err := worker.Advance(ctx)
-				if mode == "grow" || mode == "shrink" {
+				if mode == "grow" || mode == "shrink" || mode == "tasks-finite" {
 					require.NoError(t, err)
 					require.Equal(t, pgexec.Recorded, progress)
 				} else {
@@ -288,7 +296,7 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 				posts := root.posts
 				root.mu.Unlock()
 				switch mode {
-				case "grow", "shrink":
+				case "grow", "shrink", "tasks-finite":
 					require.Equal(t, journal.Settled, step.Phase)
 					require.Equal(t, journal.Completed, step.Observation.Result)
 					require.Equal(t, 1, posts)
@@ -306,9 +314,10 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 					require.False(t, result.Aggregate.VMShrinkPermit)
 					var saved resourceguard.Command
 					require.NoError(t, json.Unmarshal(step.Command, &saved))
+					require.Equal(t, p.Limits.PidsMaxTasks, saved.PidsMaxTasks)
 					require.Equal(t, control.Uint64(8), saved.Revision)
 					require.NotEqual(t, req.Key.Revision, saved.Revision)
-				case "incomplete-budget", "shrink-unsupported", "omit-hstate", "lower-normal-cap":
+				case "incomplete-budget", "shrink-unsupported", "omit-hstate", "lower-normal-cap", "tasks-changed":
 					require.Equal(t, journal.Planned, step.Phase)
 					require.Zero(t, posts)
 					if mode == "lower-normal-cap" {
@@ -346,7 +355,7 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 						wantPosts = 0
 					}
 					require.Equal(t, wantPosts, posts)
-					if mode == "root-reply-lost" {
+					if mode == "root-reply-lost" || mode == "tasks-reply-lost" {
 						// 完整重建实际Guest/PG worker，Pending必须从原WAL恢复，
 						// 而不是复用旧对象才偶然能恢复。仍只Observe，不派发新命令。
 						restoredResource, err := session.NewResourceWorker(ctx, resourceConfig)

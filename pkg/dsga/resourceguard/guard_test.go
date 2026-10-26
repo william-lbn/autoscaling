@@ -53,6 +53,10 @@ func (k *fixtureKernel) Read(c Command) (Evidence, error) {
 	e.ProtocolVersion = 1
 	e.Identity = k.id
 	e.HugePools = append([]HugePool(nil), e.HugePools...)
+	if e.TaskLimit != nil {
+		tasks := *e.TaskLimit
+		e.TaskLimit = &tasks
+	}
 	return e, nil
 }
 func (k *fixtureKernel) Apply(c Command) error {
@@ -95,6 +99,15 @@ func (k *fixtureKernel) applyFixture(c Limits) error {
 	k.mu.Lock()
 	defer k.mu.Unlock()
 	k.writes++
+	// 仅模拟任务控制器首个可能部分生效的写；仍由上面的真实WAL/fsync检查确认
+	// 完整原意图已存在。此夹具不是Linux fork/clone/迁移行为测试。
+	if c.PidsMaxTasks != 0 {
+		current := control.Uint64(0)
+		if k.e.TaskLimit != nil {
+			current = k.e.TaskLimit.CurrentTasks
+		}
+		k.e.TaskLimit = &TaskLimitEvidence{MaxTasks: c.PidsMaxTasks, CurrentTasks: current}
+	}
 	k.e.MemoryMaxBytes = c.MemoryMaxBytes
 	if k.fail {
 		return fmt.Errorf("fixture failure after first effect")

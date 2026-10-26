@@ -54,8 +54,10 @@ type Command struct {
 	PostmasterPID        int            `json:"postmaster_pid"`
 	PostmasterStartTicks control.Uint64 `json:"postmaster_start_ticks"`
 	MemoryMaxBytes       control.Uint64 `json:"memory_max_bytes"`
-	OutsideUpperBytes    control.Uint64 `json:"outside_upper_bytes"`
-	HugePools            []HugePool     `json:"huge_pools"`
+	// 必须保持原Bootstrap的N；缺省仍是旧未约束来源，运行命令不能新增/取消。
+	PidsMaxTasks      control.Uint64 `json:"pids_max_tasks,omitempty"`
+	OutsideUpperBytes control.Uint64 `json:"outside_upper_bytes"`
+	HugePools         []HugePool     `json:"huge_pools"`
 }
 
 // Evidence只描述当前硬约束与核验时的实际占用，不是物理回收/Host释放或无OOM证明。
@@ -75,6 +77,8 @@ type Evidence struct {
 	HugeOvercommitDisabled bool           `json:"huge_overcommit_disabled"`
 	HugeSurplusPages       control.Uint64 `json:"huge_surplus_pages"`
 	CgroupPopulated        bool           `json:"cgroup_populated"`
+	// 只有原限额显式启用才读/返回，缺省仍是旧未约束协议，不能把缺失当0任务。
+	TaskLimit *TaskLimitEvidence `json:"task_limit,omitempty"`
 }
 
 // 网络/持久消费者不能把缺字段/null解释成0占用或false许可。严格别名解码
@@ -155,6 +159,9 @@ func (e Evidence) ValidateFor(c Command) error {
 }
 
 func (e Evidence) matchesLimits(id Identity, c Limits) error {
+	if err := e.matchesTasks(c.PidsMaxTasks); err != nil {
+		return err
+	}
 	if e.ProtocolVersion != 1 || e.VMShrinkPermit || e.Identity != id || e.MemoryMaxBytes != c.MemoryMaxBytes || e.MemoryCurrentBytes > c.MemoryMaxBytes || e.SwapMaxBytes != 0 || e.SwapCurrentBytes != 0 || !e.HugeOvercommitDisabled || e.HugeSurplusPages != 0 || !reflect.DeepEqual(e.HugePools, c.HugePools) {
 		return fmt.Errorf("actual resource limits, occupancy or identity differ")
 	}
@@ -227,6 +234,13 @@ func (r *record) validate(id Identity) error {
 	}
 	if r.Bootstrap != nil && (r.Bootstrap.Original.Validate() != nil || r.Bootstrap.Original.Identity != id || r.Bootstrap.Original.IssuerEpoch > r.Floor) {
 		return fmt.Errorf("invalid retained bootstrap constraints")
+	}
+	// 任务限额是原Guest资源来源的一部分，PG boot、接管、历史淘汰均不能改变。
+	// 同时检查未知Original和旧Held，损坏/跨版本删字段不能把有限上限降成旧模式。
+	for _, c := range []*Command{r.Original, r.Held} {
+		if c != nil && c.PidsMaxTasks != r.taskLimit() {
+			return fmt.Errorf("retained task limit differs from original bootstrap")
+		}
 	}
 	return nil
 }
@@ -317,6 +331,12 @@ func (g *Guard) apply(ctx context.Context, command Command, replay bool) (Eviden
 		if r.Bootstrap != nil && !r.Bootstrap.Applied {
 			return fmt.Errorf("%w: original bootstrap constraints unconfirmed", ErrUnknown)
 		}
+		// 写前拒绝任何变更，包括有限→0、旧未约束→有限；不为新命令生成部分效应。
+		// bootstrap后只能保持原N；动态更改需要另行证明后台活性与全部预算，不能夹带
+		// 在一次memory.max/HugeTLB调整中完成。
+		if command.PidsMaxTasks != r.taskLimit() {
+			return fmt.Errorf("runtime task limit differs from immutable creation")
+		}
 		if command.Identity != r.Identity || command.IssuerEpoch != r.Floor {
 			return fmt.Errorf("resource command is fenced")
 		}
@@ -356,6 +376,11 @@ func (g *Guard) apply(ctx context.Context, command Command, replay bool) (Eviden
 		// 先关准入并完成V3排空；本层仍在写后独立核验实际占用和全部文件读回。
 		before, err := g.kernel.Read(command)
 		if err != nil {
+			return err
+		}
+		// 原N不会在运行期变化，因此上次有限约束应仍在；迁入/外部改限导致漂移时，
+		// 在新WAL及任何资源写前拒绝。占用超限不是靠重写同一个pids.max即可排空。
+		if err := before.matchesTasks(command.PidsMaxTasks); err != nil {
 			return err
 		}
 		total, err := command.totalUpper()

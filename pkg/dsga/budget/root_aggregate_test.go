@@ -113,3 +113,33 @@ func TestRootAggregateRejectsPartialKernelOrUnboundSourceAndStrictTampering(t *t
 	require.NoError(t, forged.Validate())
 	require.Error(t, forged.Match(original))
 }
+
+// 真实root的读回由resourceguard负责；这里只核原来源摘要和字节去重，不模拟物理内核。
+func TestRootAggregateFiniteTasksBindSourceWithoutAddingBytes(t *testing.T) {
+	view := aggregateView()
+	legacy, err := RootAggregateFromView(view)
+	require.NoError(t, err)
+	view.Bootstrap.Limits.PidsMaxTasks = 64
+	view.Actual.TaskLimit = &resourceguard.TaskLimitEvidence{MaxTasks: 64, CurrentTasks: 4}
+	finite, err := RootAggregateFromView(view)
+	require.NoError(t, err)
+	require.Equal(t, legacy.Bound.UpperBytes, finite.Bound.UpperBytes)
+	require.NotEqual(t, legacy.Bound.SourceID, finite.Bound.SourceID)
+	view.Actual.TaskLimit.CurrentTasks = 5
+	require.NoError(t, finite.Match(view), "瞬时task占用变化不改原来源")
+	view.Bootstrap.Limits.PidsMaxTasks = 65
+	view.Actual.TaskLimit.MaxTasks = 65
+	require.Error(t, finite.Match(view), "相同字节的不同task限额仍是不同来源")
+	view.Bootstrap.Limits.PidsMaxTasks = 64
+	view.Actual.TaskLimit.MaxTasks = 64
+	held := resourceguard.Command{ProtocolVersion: 1, Identity: view.Identity, IssuerEpoch: 1, Revision: 1, BudgetCommitmentID: "held-tasks", PostmasterPID: 123, PostmasterStartTicks: 456, MemoryMaxBytes: view.Bootstrap.Limits.MemoryMaxBytes, PidsMaxTasks: 64, OutsideUpperBytes: view.Bootstrap.Limits.OutsideUpperBytes, HugePools: view.Bootstrap.Limits.HugePools}
+	view.Original, view.Held, view.Applied = &held, &held, true
+	source, err := RootAggregateFromView(view)
+	require.NoError(t, err)
+	require.Equal(t, legacy.Bound.UpperBytes, source.Bound.UpperBytes)
+	source.Held.PidsMaxTasks = 0
+	require.Error(t, source.Validate(), "不能删除Held字段伪造旧未约束来源")
+	view.Actual.TaskLimit.CurrentTasks = 65
+	_, err = RootAggregateFromView(view)
+	require.Error(t, err, "迁入允许超额，不可发证")
+}

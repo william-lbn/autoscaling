@@ -87,6 +87,10 @@ func ExecPostgres(args []string) error {
 		// Setres*仍覆盖全部线程，不能只依赖LockOSThread来完成进程整体降权。
 		runtime.LockOSThread()
 		defer runtime.UnlockOSThread()
+		// Go helper有多个OS线程；cgroup迁移不受pids.max的fork限制，可临时超过N。
+		// 整个入组/降权/exec仍持原资源文件锁，其他root读者不能在此窗口发证。
+		// exec失败不清Birth/原预算；后续InspectProcess必须见真正PG文件，实际
+		// 任务数还须<=原N才可确认，不能将helper迁入当成PG已满足任务上限。
 		if err := writeNumber(pgCgroup+"/cgroup.procs", uint64(os.Getpid())); err != nil {
 			return err
 		}

@@ -11,7 +11,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"golang.org/x/sys/unix"
 )
@@ -150,7 +149,7 @@ func sealedRuntimeSource() (SourceConfig, error) {
 	return s, matchSealedFile(FixedConfigPath, config)
 }
 
-func provisionCgroup() error {
+func provisionCgroup(limits Limits) error {
 	const root = "/sys/fs/cgroup"
 	if err := secureParents(root); err != nil {
 		return err
@@ -175,24 +174,24 @@ func provisionCgroup() error {
 	if err != nil {
 		return err
 	}
-	hasMemory := false
-	for _, c := range strings.Fields(controllers) {
-		hasMemory = hasMemory || c == "memory"
-	}
-	if !hasMemory {
-		return fmt.Errorf("Guest memory controller unavailable")
+	command, err := requiredControllers(controllers, limits)
+	if err != nil {
+		return err
 	}
 	f, err := rootFile(filepath.Join(root, "cgroup.subtree_control"), true)
 	if err != nil {
 		return err
 	}
-	_, writeErr := f.Write([]byte("+memory\n"))
+	written, writeErr := f.Write([]byte(command))
 	closeErr := f.Close()
 	if writeErr != nil {
 		return writeErr
 	}
 	if closeErr != nil {
 		return closeErr
+	}
+	if written != len(command) {
+		return io.ErrShortWrite
 	}
 	// 已有不受信/非root目录明确拒绝；崩溃留下的同一root目录可以继续完成原意图。
 	return rootDirectory(pgCgroup, 0755)
@@ -229,7 +228,7 @@ func ProvisionGuest(ctx context.Context) (Evidence, error) {
 	if err := rootDirectory(FixedStateDir, 0700); err != nil {
 		return evidence, err
 	}
-	if err := provisionCgroup(); err != nil {
+	if err := provisionCgroup(source.Limits); err != nil {
 		return evidence, err
 	}
 	g, err := Open(source.Config)
