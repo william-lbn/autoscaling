@@ -24,14 +24,18 @@ type Config struct {
 	VMUID             string `json:"vm_uid"`
 	ComputeInstanceID string `json:"compute_instance_id"`
 	StateDir          string `json:"state_dir"`
+	// 只由封存来源启用固定系统计费域，不接受请求指定路径或运行期切换。
+	SystemCgroup bool `json:"system_cgroup,omitempty"`
 }
 
 type Identity struct {
-	VMUID             string         `json:"vm_uid"`
-	ComputeInstanceID string         `json:"compute_instance_id"`
-	GuestBootID       string         `json:"guest_boot_id"`
-	CgroupDevice      control.Uint64 `json:"cgroup_device"`
-	CgroupInode       control.Uint64 `json:"cgroup_inode"`
+	VMUID              string         `json:"vm_uid"`
+	ComputeInstanceID  string         `json:"compute_instance_id"`
+	GuestBootID        string         `json:"guest_boot_id"`
+	CgroupDevice       control.Uint64 `json:"cgroup_device"`
+	CgroupInode        control.Uint64 `json:"cgroup_inode"`
+	SystemCgroupDevice control.Uint64 `json:"system_cgroup_device,omitempty"`
+	SystemCgroupInode  control.Uint64 `json:"system_cgroup_inode,omitempty"`
 }
 
 func (id Identity) Validate() error { return validateResourceContext(id, 1, "identity") }
@@ -55,9 +59,11 @@ type Command struct {
 	PostmasterStartTicks control.Uint64 `json:"postmaster_start_ticks"`
 	MemoryMaxBytes       control.Uint64 `json:"memory_max_bytes"`
 	// 必须保持原Bootstrap的N；缺省仍是旧未约束来源，运行命令不能新增/取消。
-	PidsMaxTasks      control.Uint64 `json:"pids_max_tasks,omitempty"`
-	OutsideUpperBytes control.Uint64 `json:"outside_upper_bytes"`
-	HugePools         []HugePool     `json:"huge_pools"`
+	PidsMaxTasks control.Uint64 `json:"pids_max_tasks,omitempty"`
+	// 系统计费域额度包含于OutsideUpperBytes，不能再次相加；0保持旧未约束来源。
+	SystemMemoryMaxBytes control.Uint64 `json:"system_memory_max_bytes,omitempty"`
+	OutsideUpperBytes    control.Uint64 `json:"outside_upper_bytes"`
+	HugePools            []HugePool     `json:"huge_pools"`
 }
 
 // Evidence只描述当前硬约束与核验时的实际占用，不是物理回收/Host释放或无OOM证明。
@@ -79,6 +85,7 @@ type Evidence struct {
 	CgroupPopulated        bool           `json:"cgroup_populated"`
 	// 只有原限额显式启用才读/返回，缺省仍是旧未约束协议，不能把缺失当0任务。
 	TaskLimit *TaskLimitEvidence `json:"task_limit,omitempty"`
+	System    *SystemEvidence    `json:"system,omitempty"`
 }
 
 // 网络/持久消费者不能把缺字段/null解释成0占用或false许可。严格别名解码
@@ -130,12 +137,18 @@ func (c Command) Validate() error {
 	if err := validateResourceContext(c.Identity, c.IssuerEpoch, c.BudgetCommitmentID); err != nil {
 		return err
 	}
+	if err := systemIdentityMatches(c.Identity, c.SystemMemoryMaxBytes); err != nil {
+		return err
+	}
 	return c.limits().Validate()
 }
 
 func validateResourceContext(id Identity, epoch control.Uint64, budget string) error {
 	if epoch == 0 || control.ValidateID(id.VMUID, "VM UID") != nil || control.ValidateID(id.ComputeInstanceID, "Compute instance") != nil || !validGuestBoot(id.GuestBootID) || id.CgroupInode == 0 || control.ValidateID(budget, "budget commitment") != nil {
 		return fmt.Errorf("invalid resource identity")
+	}
+	if id.SystemCgroupInode == 0 && id.SystemCgroupDevice != 0 {
+		return fmt.Errorf("partial system cgroup identity")
 	}
 	return nil
 }
@@ -147,7 +160,12 @@ func validGuestBoot(s string) bool {
 
 func (c Command) totalUpper() (uint64, error) { return c.limits().totalUpper() }
 
-func (e Evidence) matches(c Command) error { return e.matchesLimits(c.Identity, c.limits()) }
+func (e Evidence) matches(c Command) error {
+	if err := e.matchesLimits(c.Identity, c.limits()); err != nil {
+		return err
+	}
+	return e.systemPlacementMatches(c.SystemMemoryMaxBytes)
+}
 
 // ValidateFor供外层GuestReady保存完整回执前复核，仍只证明资源约束读回，
 // 不认证预算/Host/VM。先核验完整命令，避免跨包消费者复制一份较弱的比较逻辑。
@@ -159,6 +177,9 @@ func (e Evidence) ValidateFor(c Command) error {
 }
 
 func (e Evidence) matchesLimits(id Identity, c Limits) error {
+	if err := e.matchesSystem(c.SystemMemoryMaxBytes); err != nil {
+		return err
+	}
 	if err := e.matchesTasks(c.PidsMaxTasks); err != nil {
 		return err
 	}
@@ -191,7 +212,7 @@ func (g *Guard) withRecord(ctx context.Context, fn func(*record, *lockedState) e
 	if err != nil {
 		return err
 	}
-	if id.VMUID != g.config.VMUID || id.ComputeInstanceID != g.config.ComputeInstanceID {
+	if id.VMUID != g.config.VMUID || id.ComputeInstanceID != g.config.ComputeInstanceID || g.config.SystemCgroup != (id.SystemCgroupInode != 0) {
 		return fmt.Errorf("resource config binding differs")
 	}
 	r, err := s.load()
@@ -235,11 +256,20 @@ func (r *record) validate(id Identity) error {
 	if r.Bootstrap != nil && (r.Bootstrap.Original.Validate() != nil || r.Bootstrap.Original.Identity != id || r.Bootstrap.Original.IssuerEpoch > r.Floor) {
 		return fmt.Errorf("invalid retained bootstrap constraints")
 	}
+	if r.Bootstrap != nil {
+		b := r.Bootstrap
+		if b.SystemPlacementObserved && (!b.Applied || b.Original.Limits.SystemMemoryMaxBytes == 0) {
+			return fmt.Errorf("invalid system placement journal")
+		}
+		if b.Original.Limits.SystemMemoryMaxBytes != 0 && !b.SystemPlacementObserved && (r.Birth != nil || r.Original != nil || r.Held != nil) {
+			return fmt.Errorf("runtime started before durable system placement")
+		}
+	}
 	// 任务限额是原Guest资源来源的一部分，PG boot、接管、历史淘汰均不能改变。
 	// 同时检查未知Original和旧Held，损坏/跨版本删字段不能把有限上限降成旧模式。
 	for _, c := range []*Command{r.Original, r.Held} {
-		if c != nil && c.PidsMaxTasks != r.taskLimit() {
-			return fmt.Errorf("retained task limit differs from original bootstrap")
+		if c != nil && (c.PidsMaxTasks != r.taskLimit() || c.SystemMemoryMaxBytes != r.systemLimit()) {
+			return fmt.Errorf("retained task/system limit differs from original bootstrap")
 		}
 	}
 	return nil
@@ -269,7 +299,7 @@ func (g *Guard) Initialize(ctx context.Context, epoch control.Uint64) (Identity,
 	if err != nil {
 		return id, err
 	}
-	if id.VMUID != g.config.VMUID || id.ComputeInstanceID != g.config.ComputeInstanceID {
+	if id.VMUID != g.config.VMUID || id.ComputeInstanceID != g.config.ComputeInstanceID || g.config.SystemCgroup != (id.SystemCgroupInode != 0) {
 		return id, fmt.Errorf("resource initialization binding differs")
 	}
 	err = s.save(&record{Version: 1, Identity: id, Floor: epoch})
@@ -334,8 +364,8 @@ func (g *Guard) apply(ctx context.Context, command Command, replay bool) (Eviden
 		// 写前拒绝任何变更，包括有限→0、旧未约束→有限；不为新命令生成部分效应。
 		// bootstrap后只能保持原N；动态更改需要另行证明后台活性与全部预算，不能夹带
 		// 在一次memory.max/HugeTLB调整中完成。
-		if command.PidsMaxTasks != r.taskLimit() {
-			return fmt.Errorf("runtime task limit differs from immutable creation")
+		if command.PidsMaxTasks != r.taskLimit() || command.SystemMemoryMaxBytes != r.systemLimit() {
+			return fmt.Errorf("runtime task/system limit differs from immutable creation")
 		}
 		if command.Identity != r.Identity || command.IssuerEpoch != r.Floor {
 			return fmt.Errorf("resource command is fenced")
@@ -381,6 +411,9 @@ func (g *Guard) apply(ctx context.Context, command Command, replay bool) (Eviden
 		// 原N不会在运行期变化，因此上次有限约束应仍在；迁入/外部改限导致漂移时，
 		// 在新WAL及任何资源写前拒绝。占用超限不是靠重写同一个pids.max即可排空。
 		if err := before.matchesTasks(command.PidsMaxTasks); err != nil {
+			return err
+		}
+		if err := before.systemPlacementMatches(command.SystemMemoryMaxBytes); err != nil {
 			return err
 		}
 		total, err := command.totalUpper()

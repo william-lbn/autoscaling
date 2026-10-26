@@ -15,9 +15,11 @@ type Limits struct {
 	MemoryMaxBytes control.Uint64 `json:"memory_max_bytes"`
 	// 0/缺省保持旧未约束来源，绝不补造默认。有限任务数覆盖线程，原创建后冻结；
 	// 它不是私有字节上界，也不保证后台工作进程仍有出生余量。
-	PidsMaxTasks      control.Uint64 `json:"pids_max_tasks,omitempty"`
-	OutsideUpperBytes control.Uint64 `json:"outside_upper_bytes"`
-	HugePools         []HugePool     `json:"huge_pools"`
+	PidsMaxTasks control.Uint64 `json:"pids_max_tasks,omitempty"`
+	// 系统计费域额度包含于OutsideUpperBytes，不能再次相加；0保持旧未约束来源。
+	SystemMemoryMaxBytes control.Uint64 `json:"system_memory_max_bytes,omitempty"`
+	OutsideUpperBytes    control.Uint64 `json:"outside_upper_bytes"`
+	HugePools            []HugePool     `json:"huge_pools"`
 }
 
 type BootstrapCommand struct {
@@ -31,6 +33,8 @@ type BootstrapCommand struct {
 type bootstrapRecord struct {
 	Original BootstrapCommand `json:"original"`
 	Applied  bool             `json:"applied"`
+	// 限额确认与启动归组是两个事实；归组未确认时不得出生PG。
+	SystemPlacementObserved bool `json:"system_placement_observed,omitempty"`
 }
 
 func bootstrapMatches(e Evidence, id Identity, l Limits) error {
@@ -41,10 +45,13 @@ func bootstrapMatches(e Evidence, id Identity, l Limits) error {
 }
 
 func (c Command) limits() Limits {
-	return Limits{MemoryMaxBytes: c.MemoryMaxBytes, PidsMaxTasks: c.PidsMaxTasks, OutsideUpperBytes: c.OutsideUpperBytes, HugePools: c.HugePools}
+	return Limits{MemoryMaxBytes: c.MemoryMaxBytes, PidsMaxTasks: c.PidsMaxTasks, SystemMemoryMaxBytes: c.SystemMemoryMaxBytes, OutsideUpperBytes: c.OutsideUpperBytes, HugePools: c.HugePools}
 }
 
 func (l Limits) Validate() error {
+	if l.SystemMemoryMaxBytes > l.OutsideUpperBytes {
+		return fmt.Errorf("system charged-domain cap exceeds retained outside bound")
+	}
 	if l.PidsMaxTasks > MaxPidsTasks {
 		return fmt.Errorf("task limit exceeds supported finite Linux range")
 	}
@@ -84,6 +91,9 @@ func (c BootstrapCommand) Validate() error {
 	if err := validateResourceContext(c.Identity, c.IssuerEpoch, c.BudgetCommitmentID); err != nil {
 		return err
 	}
+	if err := systemIdentityMatches(c.Identity, c.Limits.SystemMemoryMaxBytes); err != nil {
+		return err
+	}
 	return c.Limits.Validate()
 }
 
@@ -94,7 +104,7 @@ func (g *Guard) InspectIdentity() (Identity, error) {
 	if err != nil {
 		return Identity{}, err
 	}
-	if id.VMUID != g.config.VMUID || id.ComputeInstanceID != g.config.ComputeInstanceID {
+	if id.VMUID != g.config.VMUID || id.ComputeInstanceID != g.config.ComputeInstanceID || g.config.SystemCgroup != (id.SystemCgroupInode != 0) {
 		return Identity{}, fmt.Errorf("resource inspection binding differs")
 	}
 	return id, nil
@@ -171,6 +181,9 @@ func (g *Guard) bootstrap(ctx context.Context, c BootstrapCommand, observe, repl
 	upper, err := c.Limits.totalUpper()
 	if err != nil || upper > uint64(before.GuestMemTotalBytes) || before.MemoryCurrentBytes > c.Limits.MemoryMaxBytes || before.SwapCurrentBytes != 0 || before.CgroupPopulated || (c.Limits.PidsMaxTasks != 0 && (before.TaskLimit == nil || before.TaskLimit.CurrentTasks != 0)) {
 		return evidence, fmt.Errorf("bootstrap target does not fit actual Guest occupancy")
+	}
+	if c.Limits.SystemMemoryMaxBytes != 0 && (before.System == nil || before.System.ProcessCount != 0) {
+		return evidence, fmt.Errorf("initial system cap requires empty charged domain")
 	}
 	if err := ctx.Err(); err != nil {
 		return evidence, err

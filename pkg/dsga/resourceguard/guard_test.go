@@ -53,6 +53,10 @@ func (k *fixtureKernel) Read(c Command) (Evidence, error) {
 	e.ProtocolVersion = 1
 	e.Identity = k.id
 	e.HugePools = append([]HugePool(nil), e.HugePools...)
+	if e.System != nil {
+		copy := *e.System
+		e.System = &copy
+	}
 	if e.TaskLimit != nil {
 		tasks := *e.TaskLimit
 		e.TaskLimit = &tasks
@@ -107,6 +111,13 @@ func (k *fixtureKernel) applyFixture(c Limits) error {
 			current = k.e.TaskLimit.CurrentTasks
 		}
 		k.e.TaskLimit = &TaskLimitEvidence{MaxTasks: c.PidsMaxTasks, CurrentTasks: current}
+	}
+	if c.SystemMemoryMaxBytes != 0 {
+		if k.e.System == nil {
+			return fmt.Errorf("fixture missing system domain")
+		}
+		k.e.System.MemoryMaxBytes = c.SystemMemoryMaxBytes
+		k.e.System.SwapMaxBytes = 0
 	}
 	k.e.MemoryMaxBytes = c.MemoryMaxBytes
 	if k.fail {

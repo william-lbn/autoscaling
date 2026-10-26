@@ -34,7 +34,7 @@ func (c QuiesceCommand) ValidateFor(p Prepared, epoch control.Uint64) error {
 	if c.PGAggregate.Held != nil {
 		normal = c.PGAggregate.Held.MemoryMaxBytes
 	}
-	if p.Limits.PidsMaxTasks != c.PGAggregate.Bootstrap.Limits.PidsMaxTasks {
+	if p.Limits.PidsMaxTasks != c.PGAggregate.Bootstrap.Limits.PidsMaxTasks || p.Limits.SystemMemoryMaxBytes != c.PGAggregate.Bootstrap.Limits.SystemMemoryMaxBytes {
 		return fmt.Errorf("quiesce cannot change immutable task limit")
 	}
 	if p.Limits.MemoryMaxBytes < normal {

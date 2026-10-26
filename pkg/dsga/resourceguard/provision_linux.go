@@ -194,7 +194,13 @@ func provisionCgroup(limits Limits) error {
 		return io.ErrShortWrite
 	}
 	// 已有不受信/非root目录明确拒绝；崩溃留下的同一root目录可以继续完成原意图。
-	return rootDirectory(pgCgroup, 0755)
+	if err := rootDirectory(pgCgroup, 0755); err != nil {
+		return err
+	}
+	if limits.SystemMemoryMaxBytes != 0 {
+		return rootDirectory(systemCgroup, 0755)
+	}
+	return nil
 }
 
 // ProvisionGuest只用于产品sysinit，必须在普通进程入口之前执行。来源是Runner
@@ -240,7 +246,12 @@ func ProvisionGuest(ctx context.Context) (Evidence, error) {
 		return evidence, err
 	}
 	command := BootstrapCommand{ProtocolVersion: 1, Identity: id, IssuerEpoch: source.IssuerEpoch, BudgetCommitmentID: source.BudgetCommitmentID, Limits: source.Limits}
-	return g.Bootstrap(ctx, command)
+	if evidence, err = g.Bootstrap(ctx, command); err != nil {
+		return evidence, err
+	}
+	// Bootstrap的原持久记录即归组范围意图。后续归组持同一资源锁，未确认期间
+	// CheckGuest/PG出生拒绝；失败后不删除记录或回迁，sysinit可继续同一范围。
+	return g.placeSystem(ctx, func(ctx context.Context) error { return moveBootUserspace(ctx, g.kernel.(*linuxKernel)) })
 }
 
 // CheckGuest只读原预算与实际约束；不补初始化、不重放未知写。初次vmstart以及

@@ -34,6 +34,9 @@ func (g *Guard) launchWithBirth(ctx context.Context, source *SourceConfig, birth
 		if r.Bootstrap == nil || !r.Bootstrap.Applied || (r.Original != nil && !r.Applied) {
 			return fmt.Errorf("PG birth requires confirmed original bootstrap and no unknown resource write")
 		}
+		if r.systemLimit() != 0 && !r.Bootstrap.SystemPlacementObserved {
+			return fmt.Errorf("PG birth requires durable system placement")
+		}
 		if source != nil {
 			if err := sameBootstrapSource(*source, r.Bootstrap.Original); err != nil {
 				return err
@@ -50,6 +53,9 @@ func (g *Guard) launchWithBirth(ctx context.Context, source *SourceConfig, birth
 		// 不把先前Applied当作当前约束证据。旧PG/helper尚在组内也禁止第二份出生；
 		// 缺限额、私自放宽、Guest变小及池未回收，均在任何exec/入组之前拒绝。
 		if err := bootstrapMatches(e, r.Identity, limits); err != nil {
+			return err
+		}
+		if err := e.systemPlacementMatches(limits.SystemMemoryMaxBytes); err != nil {
 			return err
 		}
 		if err := ctx.Err(); err != nil {

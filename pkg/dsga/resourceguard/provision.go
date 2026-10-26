@@ -88,7 +88,10 @@ func (s SourceConfig) Validate() error {
 		return err
 	}
 	// 发行配置按64KiB对齐，同时可表示Linux4KiB/64KiB Guest，内核仍读真实页大小。
-	if uint64(s.Limits.MemoryMaxBytes)%(64<<10) != 0 {
+	if s.Config.SystemCgroup != (s.Limits.SystemMemoryMaxBytes != 0) {
+		return fmt.Errorf("system cgroup mode differs from original limit")
+	}
+	if uint64(s.Limits.MemoryMaxBytes)%(64<<10) != 0 || uint64(s.Limits.SystemMemoryMaxBytes)%(64<<10) != 0 {
 		return fmt.Errorf("resource source memory.max is not base-page aligned")
 	}
 	key, err := base64.RawURLEncoding.DecodeString(s.ControlPublicKey)

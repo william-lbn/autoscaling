@@ -190,7 +190,16 @@ func (k *linuxKernel) Identity() (Identity, error) {
 		return id, err
 	}
 	f.Close()
-	return Identity{VMUID: k.config.VMUID, ComputeInstanceID: k.config.ComputeInstanceID, GuestBootID: boot, CgroupDevice: control.Uint64(st.Dev), CgroupInode: control.Uint64(st.Ino)}, nil
+	id = Identity{VMUID: k.config.VMUID, ComputeInstanceID: k.config.ComputeInstanceID, GuestBootID: boot, CgroupDevice: control.Uint64(st.Dev), CgroupInode: control.Uint64(st.Ino)}
+	if k.config.SystemCgroup {
+		dev, ino, err := systemCgroupIdentity(uint64(st.Dev))
+		if err != nil {
+			return Identity{}, err
+		}
+		id.SystemCgroupDevice = control.Uint64(dev)
+		id.SystemCgroupInode = control.Uint64(ino)
+	}
+	return id, nil
 }
 
 func (k *linuxKernel) postmaster(c Command) error {
@@ -330,7 +339,7 @@ func (k *linuxKernel) Read(c Command) (Evidence, error) {
 
 func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (Evidence, error) {
 	e := Evidence{ProtocolVersion: 1}
-	if uint64(c.MemoryMaxBytes)%uint64(os.Getpagesize()) != 0 {
+	if uint64(c.MemoryMaxBytes)%uint64(os.Getpagesize()) != 0 || uint64(c.SystemMemoryMaxBytes)%uint64(os.Getpagesize()) != 0 {
 		return e, fmt.Errorf("memory.max target must be an exact Guest base-page multiple")
 	}
 	id, err := k.Identity()
@@ -340,7 +349,16 @@ func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (Evidence, error) 
 	if id != expected {
 		return e, fmt.Errorf("Guest/cgroup incarnation differs")
 	}
+	if err := systemIdentityMatches(id, c.SystemMemoryMaxBytes); err != nil {
+		return e, err
+	}
 	e.Identity = id
+	if c.SystemMemoryMaxBytes != 0 {
+		e.System, err = k.readSystemBound()
+		if err != nil {
+			return e, err
+		}
+	}
 	events, err := kernelText(filepath.Join(pgCgroup, "cgroup.events"))
 	if err != nil {
 		return e, err
@@ -466,6 +484,16 @@ func (k *linuxKernel) Apply(c Command) error {
 }
 
 func (k *linuxKernel) ApplyBounds(c Limits) error {
+	// 原WAL已落盘；系统组尚空时先落实不可变额度，再由独立归组步骤迁入PID1。
+	// 运行期仅重写原值，Guard写前已核原值/占用/归组；不因缩容调低系统额度。
+	if c.SystemMemoryMaxBytes != 0 {
+		if err := writeNumber(filepath.Join(systemCgroup, "memory.swap.max"), 0); err != nil {
+			return err
+		}
+		if err := writeNumber(filepath.Join(systemCgroup, "memory.max"), uint64(c.SystemMemoryMaxBytes)); err != nil {
+			return err
+		}
+	}
 	// 原意图已fsync且持资源锁，有限pids在PG出生前落实。此处不迁入/杀进程，
 	// 也不把写成功当数量证明；后续任一写/读失败保留原Unknown，不放宽N回max。
 	// runtime原N已在Guard写前冻结，重写相同值不会偷改后台任务余量。

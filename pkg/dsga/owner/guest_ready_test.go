@@ -203,13 +203,23 @@ func guestPhase(t *testing.T, store *journal.Store) journal.Step {
 }
 
 func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
-	for _, mode := range []string{"grow", "root-reply-lost", "start-reply-lost", "incomplete-budget", "runner-drift", "pg-drift", "shrink", "shrink-unsupported", "omit-hstate", "root-empty", "lower-normal-cap", "tasks-finite", "tasks-changed", "tasks-reply-lost"} {
+	for _, mode := range []string{"grow", "root-reply-lost", "start-reply-lost", "incomplete-budget", "runner-drift", "pg-drift", "shrink", "shrink-unsupported", "omit-hstate", "root-empty", "lower-normal-cap", "tasks-finite", "tasks-changed", "tasks-reply-lost", "system-finite", "system-changed", "system-reply-lost", "system-drift"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			root, resourceConfig := guestRoot(t, store)
 			if mode == "tasks-finite" || mode == "tasks-changed" || mode == "tasks-reply-lost" {
 				root.view.Bootstrap.Limits.PidsMaxTasks = 64
 				root.view.Actual.TaskLimit = &resourceguard.TaskLimitEvidence{MaxTasks: 64, CurrentTasks: 4}
+			}
+			if mode == "system-finite" || mode == "system-changed" || mode == "system-reply-lost" || mode == "system-drift" {
+				root.view.Identity.SystemCgroupDevice = root.view.Identity.CgroupDevice
+				root.view.Identity.SystemCgroupInode = 99
+				root.view.Bootstrap.Identity = root.view.Identity
+				root.view.Birth.Identity = root.view.Identity
+				root.view.Actual.Identity = root.view.Identity
+				root.view.Bootstrap.Limits.SystemMemoryMaxBytes = 16 << 20
+				root.view.SystemPlacementObserved = true
+				root.view.Actual.System = &resourceguard.SystemEvidence{Scope: resourceguard.SystemChargedScope, MemoryMaxBytes: 16 << 20, MemoryCurrentBytes: 2 << 20, PID1Member: true, ProcessCount: 3}
 			}
 			if mode == "lower-normal-cap" {
 				root.view.Bootstrap.Limits.MemoryMaxBytes = 512 << 20
@@ -229,6 +239,10 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 				}
 				p, shared := preparedGuest(t, req, root.view.Identity)
 				p.Limits.PidsMaxTasks = root.view.Bootstrap.Limits.PidsMaxTasks
+				p.Limits.SystemMemoryMaxBytes = root.view.Bootstrap.Limits.SystemMemoryMaxBytes
+				if mode == "system-changed" {
+					p.Limits.SystemMemoryMaxBytes = 8 << 20
+				}
 				if mode == "tasks-changed" {
 					p.Limits.PidsMaxTasks--
 				}
@@ -258,10 +272,12 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 				api.mu.Unlock()
 				root.mu.Lock()
 				// 资源序号已有7，PG请求序号仍1：新命令必须采用8。
-				old := resourceguard.Command{ProtocolVersion: 1, Identity: root.view.Identity, IssuerEpoch: session.Actor().Epoch, Revision: 7, BudgetCommitmentID: "prior-resource-budget", PostmasterPID: 123, PostmasterStartTicks: 456, MemoryMaxBytes: root.view.Bootstrap.Limits.MemoryMaxBytes, PidsMaxTasks: root.view.Bootstrap.Limits.PidsMaxTasks, OutsideUpperBytes: root.view.Bootstrap.Limits.OutsideUpperBytes, HugePools: root.view.Bootstrap.Limits.HugePools}
+				old := resourceguard.Command{ProtocolVersion: 1, Identity: root.view.Identity, IssuerEpoch: session.Actor().Epoch, Revision: 7, BudgetCommitmentID: "prior-resource-budget", PostmasterPID: 123, PostmasterStartTicks: 456, MemoryMaxBytes: root.view.Bootstrap.Limits.MemoryMaxBytes, PidsMaxTasks: root.view.Bootstrap.Limits.PidsMaxTasks, SystemMemoryMaxBytes: root.view.Bootstrap.Limits.SystemMemoryMaxBytes, OutsideUpperBytes: root.view.Bootstrap.Limits.OutsideUpperBytes, HugePools: root.view.Bootstrap.Limits.HugePools}
 				root.view.Original, root.view.Held, root.view.Applied = &old, &old, true
-				root.loseReply = mode == "root-reply-lost" || mode == "tasks-reply-lost"
-				if mode == "runner-drift" {
+				root.loseReply = mode == "root-reply-lost" || mode == "tasks-reply-lost" || mode == "system-reply-lost"
+				if mode == "system-drift" {
+					root.afterApply = func() { root.view.Actual.System.RootUserspaceCount = 1 }
+				} else if mode == "runner-drift" {
 					root.afterApply = func() { api.mu.Lock(); api.vm.Status.RestartCount++; api.mu.Unlock() }
 				} else if mode == "pg-drift" {
 					root.afterApply = func() { drift.Store(true) }
@@ -284,7 +300,7 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 					api.mu.Unlock()
 				}
 				progress, err := worker.Advance(ctx)
-				if mode == "grow" || mode == "shrink" || mode == "tasks-finite" {
+				if mode == "grow" || mode == "shrink" || mode == "tasks-finite" || mode == "system-finite" {
 					require.NoError(t, err)
 					require.Equal(t, pgexec.Recorded, progress)
 				} else {
@@ -296,7 +312,7 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 				posts := root.posts
 				root.mu.Unlock()
 				switch mode {
-				case "grow", "shrink", "tasks-finite":
+				case "grow", "shrink", "tasks-finite", "system-finite":
 					require.Equal(t, journal.Settled, step.Phase)
 					require.Equal(t, journal.Completed, step.Observation.Result)
 					require.Equal(t, 1, posts)
@@ -315,9 +331,10 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 					var saved resourceguard.Command
 					require.NoError(t, json.Unmarshal(step.Command, &saved))
 					require.Equal(t, p.Limits.PidsMaxTasks, saved.PidsMaxTasks)
+					require.Equal(t, p.Limits.SystemMemoryMaxBytes, saved.SystemMemoryMaxBytes)
 					require.Equal(t, control.Uint64(8), saved.Revision)
 					require.NotEqual(t, req.Key.Revision, saved.Revision)
-				case "incomplete-budget", "shrink-unsupported", "omit-hstate", "lower-normal-cap", "tasks-changed":
+				case "incomplete-budget", "shrink-unsupported", "omit-hstate", "lower-normal-cap", "tasks-changed", "system-changed":
 					require.Equal(t, journal.Planned, step.Phase)
 					require.Zero(t, posts)
 					if mode == "lower-normal-cap" {
@@ -345,7 +362,7 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 					require.Equal(t, 1, root.posts)
 					require.Equal(t, 1, root.observes)
 					root.mu.Unlock()
-				case "runner-drift", "pg-drift":
+				case "runner-drift", "pg-drift", "system-drift":
 					require.Equal(t, journal.Unconfirmed, step.Phase)
 					require.Equal(t, 1, posts)
 				default:
@@ -355,7 +372,7 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 						wantPosts = 0
 					}
 					require.Equal(t, wantPosts, posts)
-					if mode == "root-reply-lost" || mode == "tasks-reply-lost" {
+					if mode == "root-reply-lost" || mode == "tasks-reply-lost" || mode == "system-reply-lost" {
 						// 完整重建实际Guest/PG worker，Pending必须从原WAL恢复，
 						// 而不是复用旧对象才偶然能恢复。仍只Observe，不派发新命令。
 						restoredResource, err := session.NewResourceWorker(ctx, resourceConfig)

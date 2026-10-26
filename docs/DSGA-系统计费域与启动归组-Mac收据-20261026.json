@@ -1,0 +1,272 @@
+{
+  "date": "2026-10-26",
+  "base": "849d84285e9099ae33c3d837a0563ff1f4974aa3",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "scope": "system-cgroup-charged-pages only, not full SystemOutsidePG",
+  "tests": {
+    "dedup_top": 42,
+    "dedup_including_subtests": 70,
+    "failed": 0,
+    "skipped": 0,
+    "quiesce_replacement_not_added": true
+  },
+  "source_files": [
+    {
+      "path": "repos/autoscaling/pkg/dsga/budget/quiesced.go",
+      "sha256": "a92cdf3ace83b7ffa4184d986fa1c32388a54124ef741942c3a8a001078e050f",
+      "bytes": 5188
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/budget/quiesced_test.go",
+      "sha256": "37b54138227ae05cfa3ffe799b003ea2462ac87606b6afe453c871ab9f6769c8",
+      "bytes": 5568
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/budget/root_aggregate.go",
+      "sha256": "1521c0267a4cc7cf8a1ecf4ed26cff1a7e834f41bf0e2cbfc17e38b69b31bd25",
+      "bytes": 6416
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/budget/system_charged.go",
+      "sha256": "bbf15702a44f6f4f6d059fa06c3018af0f07d79b24fb0525bb1632fc96144d5a",
+      "bytes": 3418
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/budget/system_charged_test.go",
+      "sha256": "83ce08bd8ed7bf494f5bf3d8b07cb5e0e766a2c7548927a907a8ceaa8d14d1df",
+      "bytes": 3632
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/owner/guest_ready_test.go",
+      "sha256": "0778ea05f1acb7b8dbbb775afbd36642ce23f65bd79d2934a317a0196d9a871a",
+      "bytes": 21765
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/resourceexec/executor.go",
+      "sha256": "f03b8d30551e57cb24c61975394e70ee14e623024d93c3459b780eccffedaeb0",
+      "bytes": 15553
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/resourceguard/bootstrap.go",
+      "sha256": "a4bfecff1fe1878f2dff656daf17707f3706de77d414a65ec5bb4d1401dd8069",
+      "bytes": 8818
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/resourceguard/guard.go",
+      "sha256": "d9f7e4343840cf213ea5fdcd5fd2b18045199e316eab34fc43c3c58836f5bec2",
+      "bytes": 21305
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/resourceguard/guard_test.go",
+      "sha256": "88c1e6c34f453d10d623015bf7964c150701540ba286aa11d409492d949460df",
+      "bytes": 12412
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/resourceguard/kernel_linux.go",
+      "sha256": "7798d7a898ee4aa59c0279eecb4dafd732591fa36a5354b1cf53ad259b4ae7d0",
+      "bytes": 17710
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/resourceguard/launch.go",
+      "sha256": "6f7180c21989ea7cacf4ad75b5c854289d5723c361f5fd05134754ff67160731",
+      "bytes": 3789
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/resourceguard/provision.go",
+      "sha256": "21edb86424ce1191c7750268b2993a64db2ef6e9a1b19690d09247040657a6ff",
+      "bytes": 5540
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/resourceguard/provision_linux.go",
+      "sha256": "21213ecae41c958b498c6056ffe84b6a38e2b00643cae5ea7630a4349fb26d86",
+      "bytes": 8298
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/resourceguard/system.go",
+      "sha256": "b298cf1f24dd0f76fcd9e1fe4bd5328237311ec5a080a95fc7e8a08ad1af786d",
+      "bytes": 6911
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/resourceguard/system_linux.go",
+      "sha256": "fb851f5491a6539eb429159bb05f41d83d761d9b24f1c16f5beb6e8082bd438e",
+      "bytes": 6838
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/resourceguard/system_test.go",
+      "sha256": "ae35f9d975ab741deddb9bfd8d41e059bab0f31e2958db2907234cf3ab0db515",
+      "bytes": 10335
+    },
+    {
+      "path": "repos/autoscaling/pkg/dsga/resourceguard/view.go",
+      "sha256": "da57f5815cd71869f016e99fbbe53ef7ac989b424cc2bbeaf45218fc2c1dfa87",
+      "bytes": 4016
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "build/dsga-system-domain-resource-guard-linux-amd64",
+      "sha256": "277592616de700512ee5e446f0de654b8bbb70aeb23d9966af83d275cdfb00b9",
+      "bytes": 8956808
+    },
+    {
+      "path": "build/dsga-system-domain-resource-guard-linux-arm64",
+      "sha256": "968d186895ca73ee14fa4bfb274151643ddce2225b6dad296e79fa69553c1f25",
+      "bytes": 8336373
+    },
+    {
+      "path": "build/dsga-system-domain-agent-final-linux-amd64",
+      "sha256": "bca64d702ed3ab827ffb0a459738c2160f608c637305f4d2c8fbfc71b07bbdff",
+      "bytes": 79429713
+    },
+    {
+      "path": "build/dsga-system-domain-agent-final-linux-arm64",
+      "sha256": "b413d1d8f926c687aeed9c9be8afb653154915a8b22a76aabe9c21ab031f7cc5",
+      "bytes": 75070730
+    }
+  ],
+  "logs_and_recipes": [
+    {
+      "path": "build/dsga-system-domain-agent-final-linux-amd64.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-system-domain-agent-final-linux-arm64.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-system-domain-agent-linux-amd64.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-system-domain-agent-linux-arm64.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-system-domain-budget.jsonl",
+      "sha256": "d21b81417285082ff1c469d32fbd3ab5a051818cd5ddf660aa12728fb04ff8b2",
+      "bytes": 7566
+    },
+    {
+      "path": "build/dsga-system-domain-budget.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-system-domain-guard.jsonl",
+      "sha256": "ee2f2c338b3dd136e12ab404e761f5cd632e7d346af680640991fdc42ef57237",
+      "bytes": 51865
+    },
+    {
+      "path": "build/dsga-system-domain-guard.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-system-domain-linux-vet.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-system-domain-mac-vet.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-system-domain-old-reader.jsonl",
+      "sha256": "e580b49c8c321c5d40d4d8ae4f1f8b93dc9c2b091fa8a191e73a40ece4f4a15e",
+      "bytes": 4750
+    },
+    {
+      "path": "build/dsga-system-domain-old-reader.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-system-domain-owner.jsonl",
+      "sha256": "b9bbed4af31f4d322fcbfbc5c12ab0e43d2db01e9f01ace0b0f499f5e6951c36",
+      "bytes": 8751
+    },
+    {
+      "path": "build/dsga-system-domain-owner.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-system-domain-partial-cap.jsonl",
+      "sha256": "68fdcf154b79e1d10463c3ad9024519a99e94211441ee1b3b21d3e28897ca207",
+      "bytes": 1694
+    },
+    {
+      "path": "build/dsga-system-domain-partial-cap.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-system-domain-quiesce-replacement.jsonl",
+      "sha256": "5f301d5244ebfddc2170e232950d060e732b6dedf2fcb5721fd7fc7f55273dad",
+      "bytes": 1638
+    },
+    {
+      "path": "build/dsga-system-domain-quiesce-replacement.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-system-domain-resource-guard-linux-amd64.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-system-domain-resource-guard-linux-arm64.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/run-dsga-system-domain-agent-final.sh",
+      "sha256": "50d5ad92ff369e5aa4611f31046ef81c3a443ef263da09411cca41e939adf966",
+      "bytes": 462
+    },
+    {
+      "path": "build/run-dsga-system-domain-budget.sh",
+      "sha256": "c4770bac9497cb33212bd38def0d91609fc5fa8a9685ea718b720bc1fb204a4a",
+      "bytes": 701
+    },
+    {
+      "path": "build/run-dsga-system-domain-compile.sh",
+      "sha256": "5af26b13e7c80891bc474bc9a33aed37ff96d8ad425a8ecb9452da7a7ad3b8f5",
+      "bytes": 796
+    },
+    {
+      "path": "build/run-dsga-system-domain-guard.sh",
+      "sha256": "ff13c479cf0662fb01a116fa35b5cd5e7ff3f48a98f275c4dede9a1b24b83718",
+      "bytes": 595
+    },
+    {
+      "path": "build/run-dsga-system-domain-old-reader.sh",
+      "sha256": "425539a69ec297d408e8dae8a3085b6b525f3ef11b6c80f1989f8cd2b7d9124a",
+      "bytes": 487
+    },
+    {
+      "path": "build/run-dsga-system-domain-owner.sh",
+      "sha256": "c624944435803d82720cd67e40720b7cee177fd97132345865816ede37f8dfdc",
+      "bytes": 662
+    },
+    {
+      "path": "build/run-dsga-system-domain-partial-cap.sh",
+      "sha256": "33eb9ef0f10e2b2ef281216c2cb7360d029ab72126ffd6add2974c0eed1c3526",
+      "bytes": 685
+    },
+    {
+      "path": "build/run-dsga-system-domain-quiesce-replacement.sh",
+      "sha256": "d44e0ee84b9e6980983d38a26d62ff7ed14c29071cae0bc96bd33b1a6eface69",
+      "bytes": 695
+    }
+  ],
+  "linux_runtime_executed": false,
+  "images_built": false,
+  "preserved_owner_agents_sha256": "5c61959674c362ecc4c3709930121304595e8b0bca1ff70ae401f0cf8f2803c1"
+}
