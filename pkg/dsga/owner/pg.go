@@ -417,7 +417,11 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			var call *compute.CallError
 			var resourceCall *resourceguard.ClientError
 			var unknown *journal.UnconfirmedWrite
-			if !errors.As(err, &call) && !errors.As(err, &resourceCall) && !errors.As(err, &unknown) && !errors.Is(err, resourceguard.ErrUnknown) {
+			// Runner异步执行/发布与Agent轮询没有同步时序。原VM仍待读回、
+			// prepared明确未发送都属于持有原意图的等待，不能退出owner后
+			// 改epoch，也不能为消除错误重发QMP。只有显式原重放/取消入口
+			// 能改变not_sent的推进选择；其他身份/协议/来源错误仍照常退出。
+			if !errors.As(err, &call) && !errors.As(err, &resourceCall) && !errors.As(err, &unknown) && !errors.Is(err, resourceguard.ErrUnknown) && !errors.Is(err, vmguard.ErrUnknown) && !errors.Is(err, vmguard.ErrNotSent) {
 				return err
 			}
 		}

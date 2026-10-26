@@ -34,10 +34,25 @@ func NewReader(core coreclient.CoreV1Interface, binding journal.Binding, leaseUI
 func (r *Reader) Inspect(ctx context.Context, original *budget.ObjectRef, actor journal.Owner) (Birth, budget.ObjectRef, Publication, error) {
 	birth, ref, p, err := ReadPublished(ctx, r.core, r.binding, original)
 	if err != nil {
+		// Initialize先持久真实出生，再启动QEMU和首次完整发布。只有经过
+		// 原Birth/State对象校验、且严格匹配初始化空发布的这一种状态可等待；
+		// 丢对象、换UID、错误几何或畸形/半截发布不降级成暂态。
+		if actor.Validate() == nil && birth.Validate() == nil && ref.Validate() == nil && p.ProtocolVersion == 1 && p.Identity == birth.Identity && p.BindingClaim == nil && p.State == nil && p.Actual == nil {
+			return birth, ref, p, fmt.Errorf("%w: original Runner awaits first QMP publication", ErrUnknown)
+		}
 		return birth, ref, p, err
 	}
-	if actor.Validate() != nil || p.State.Floor != actor || p.State.LeaseUID != r.leaseUID {
+	if actor.Validate() != nil || p.State.LeaseUID != "" && p.State.LeaseUID != r.leaseUID {
 		return birth, ref, p, fmt.Errorf("Runner current durable floor or original Lease UID differs")
+	}
+	// 当前Session先取得新epoch，Runner自己的循环随后持久化它。落后的
+	// floor或首次尚未固定Lease UID只允许等待，绝不赋派发权；同epoch换
+	// holder、较新floor及同名新Lease仍作为真实身份冲突拒绝。
+	if p.State.Floor.Epoch < actor.Epoch || p.State.Floor == actor && p.State.LeaseUID == "" {
+		return birth, ref, p, fmt.Errorf("%w: original Runner has not acknowledged current owner floor", ErrUnknown)
+	}
+	if p.State.Floor != actor {
+		return birth, ref, p, fmt.Errorf("Runner durable owner conflicts with current Session")
 	}
 	return birth, ref, p, nil
 }

@@ -171,7 +171,7 @@ func vmReservation(t *testing.T, client *kubefake.Clientset, name, kind string, 
 }
 
 func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testing.T) {
-	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply"} {
+	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -294,31 +294,83 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				require.Equal(t, journal.Unconfirmed, budgetStep(t, store, journal.ResizeVM).Phase)
 				_, err = worker.Advance(ctx)
 				require.ErrorIs(t, err, vmguard.ErrUnknown, "轮询在原Runner回执之前只能观察，不得重发")
-				err = runner.Tick(ctx)
-				if mode == "qmp-lost-reply" {
-					require.ErrorIs(t, err, vmguard.ErrUnknown)
-					require.NoError(t, runner.Tick(ctx))
-				} else {
-					require.NoError(t, err)
+				loop := mode == "loop-waits-for-runner" || mode == "loop-holds-not-sent"
+				if loop {
+					if mode == "loop-holds-not-sent" {
+						reads := 0
+						client.PrependReactor("get", "configmaps", func(action kt.Action) (bool, runtime.Object, error) {
+							if action.(kt.GetAction).GetName() == outRef.Name {
+								reads++
+								if reads == 3 {
+									// Runner完整prepared已落盘后，第二次授权遇到来源失联；
+									// 不跨may-have-sent屏障，下一Tick必须给出原not_sent。
+									return true, nil, fmt.Errorf("explicit fixture source unavailable after prepared")
+								}
+							}
+							return false, nil, nil
+						})
+						require.Error(t, runner.Tick(ctx))
+						require.ErrorIs(t, runner.Tick(ctx), vmguard.ErrNotSent)
+					}
+					loopCtx, stop := context.WithCancel(ctx)
+					defer stop()
+					waiting := 0
+					err = worker.Run(loopCtx, PGLoopOptions{PollInterval: 10 * time.Millisecond, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, Observe: func(tick Tick) {
+						if tick.Err != nil {
+							waiting++
+							if mode == "loop-holds-not-sent" {
+								require.ErrorIs(t, tick.Err, vmguard.ErrNotSent)
+								if waiting == 2 {
+									stop()
+								}
+							} else {
+								require.ErrorIs(t, tick.Err, vmguard.ErrUnknown)
+								require.Equal(t, 1, waiting)
+								require.NoError(t, runner.Tick(ctx))
+							}
+						} else if budgetStep(t, store, journal.ResumeAdmission).Phase == journal.Settled {
+							stop()
+						}
+					}})
+					require.ErrorIs(t, err, context.Canceled, "实际循环不能因原VM仍待读回/显式not_sent而退出owner")
+					if mode == "loop-holds-not-sent" {
+						require.Equal(t, 2, waiting)
+						require.Equal(t, journal.Unconfirmed, budgetStep(t, store, journal.ResizeVM).Phase)
+						peer.mu.Lock()
+						require.Zero(t, peer.writes)
+						peer.mu.Unlock()
+						require.Zero(t, resizePosts.Load())
+						require.Zero(t, opens.Load())
+						return nil
+					}
 				}
-				if mode == "VM-record-lost-reply" {
-					api.mu.Lock()
-					api.loseJournalReply = true
-					api.mu.Unlock()
-				}
-				progress, err = worker.Advance(ctx)
-				if mode == "VM-record-lost-reply" {
-					require.Error(t, err)
-				} else {
-					require.NoError(t, err)
-					require.Equal(t, pgexec.Recorded, progress)
-				}
-				require.Equal(t, journal.Settled, budgetStep(t, store, journal.ResizeVM).Phase)
-				for _, action := range []journal.Action{journal.GuestReady, journal.ResizePG, journal.FinalizeBudget, journal.ResumeAdmission} {
+				if !loop {
+					err = runner.Tick(ctx)
+					if mode == "qmp-lost-reply" {
+						require.ErrorIs(t, err, vmguard.ErrUnknown)
+						require.NoError(t, runner.Tick(ctx))
+					} else {
+						require.NoError(t, err)
+					}
+					if mode == "VM-record-lost-reply" {
+						api.mu.Lock()
+						api.loseJournalReply = true
+						api.mu.Unlock()
+					}
 					progress, err = worker.Advance(ctx)
-					require.NoError(t, err, string(action))
-					require.Equal(t, pgexec.Recorded, progress, string(action))
-					require.Equal(t, journal.Settled, budgetStep(t, store, action).Phase)
+					if mode == "VM-record-lost-reply" {
+						require.Error(t, err)
+					} else {
+						require.NoError(t, err)
+						require.Equal(t, pgexec.Recorded, progress)
+					}
+					require.Equal(t, journal.Settled, budgetStep(t, store, journal.ResizeVM).Phase)
+					for _, action := range []journal.Action{journal.GuestReady, journal.ResizePG, journal.FinalizeBudget, journal.ResumeAdmission} {
+						progress, err = worker.Advance(ctx)
+						require.NoError(t, err, string(action))
+						require.Equal(t, pgexec.Recorded, progress, string(action))
+						require.Equal(t, journal.Settled, budgetStep(t, store, action).Phase)
+					}
 				}
 				latest, err := store.Load(ctx)
 				require.NoError(t, err)
