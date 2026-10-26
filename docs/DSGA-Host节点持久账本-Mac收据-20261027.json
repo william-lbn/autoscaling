@@ -1,0 +1,242 @@
+{
+  "module": "Host节点持久容量账本原语",
+  "date": "2026-10-27 Asia/Shanghai",
+  "source_repository": "william-lbn/autoscaling",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "code_commit": "6159109676a178c5294d0d78625651e812116714",
+  "base_commit": "a1a2660ff41b2e781431f7ad5db1e3e387411ff1",
+  "source_files_sha256": {
+    "pkg/dsga/hostguard/model.go": "7dfa824972918d42cbbb7545784969a486802b706df177d3ae7c7843d29a2b1c",
+    "pkg/dsga/hostguard/model_test.go": "fbd1c31f14a79d45306bc26847a7c16febfcd305394f74d08038cc5de651434d",
+    "pkg/dsga/hostguard/store.go": "e3e2458c729549343fc19ecd8515785aee68921abc9b5cf0a1a6bb5ec073861a",
+    "pkg/dsga/hostguard/store_test.go": "cd848a2e1b0405ef8b8844776821baa0da7c059550fae98afedea5a4f34119f0"
+  },
+  "results": {
+    "top_level": 7,
+    "including_subtests": 26,
+    "failed": 0,
+    "skipped": 0
+  },
+  "tests": [
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerOriginalHoldLostRepliesAndReadOnlyRetry",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-initial-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerCountsSameVMByPeakAndRetainsOldPod",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-initial-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerConcurrentCASNeverGrantsSameCapacityTwice",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-initial-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerTakeoverPreservesHoldAndFencesLateOldPatch",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-initial-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerNeverResetsLostChangedOrExpiredSources/lost-ledger",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-initial-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerNeverResetsLostChangedOrExpiredSources/lost-origin",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-initial-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerNeverResetsLostChangedOrExpiredSources/empty-ledger",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-initial-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerNeverResetsLostChangedOrExpiredSources/lost-protection",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-initial-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerNeverResetsLostChangedOrExpiredSources/new-node-uid",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-initial-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerNeverResetsLostChangedOrExpiredSources/new-lease-uid",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-initial-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerNeverResetsLostChangedOrExpiredSources/expired-lease",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-initial-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerNeverResetsLostChangedOrExpiredSources/capacity-lowered",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-initial-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerNeverResetsLostChangedOrExpiredSources/node-deleting",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-initial-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerNeverResetsLostChangedOrExpiredSources",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-initial-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerRejectsChangedAliasesBootsAndOverflow/same-key-target",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerRejectsChangedAliasesBootsAndOverflow/same-key-deadline",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerRejectsChangedAliasesBootsAndOverflow/older-key",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerRejectsChangedAliasesBootsAndOverflow/same-slot-new-operation",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerRejectsChangedAliasesBootsAndOverflow/same-pod-new-pg",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerRejectsChangedAliasesBootsAndOverflow/vm-name-alias",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerRejectsChangedAliasesBootsAndOverflow/incarnation-alias",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerRejectsChangedAliasesBootsAndOverflow/zero-overhead",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerRejectsChangedAliasesBootsAndOverflow/overflow",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerRejectsChangedAliasesBootsAndOverflow/bad-direction",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerRejectsChangedAliasesBootsAndOverflow",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-model-20261027.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+      "test": "TestNodeLedgerStrictSourcesAndBoundNeverEvictHeldMemory",
+      "result": "pass",
+      "log": "build/dsga-host-ledger-model-20261027.jsonl"
+    }
+  ],
+  "logs_sha256": {
+    "build/dsga-host-ledger-initial-20261027.jsonl": "af2da0cfe68dbdc2a25a4fcd9258e335bebbcea9ea4a648a06b037dfdb52d359",
+    "build/dsga-host-ledger-model-20261027.jsonl": "5438872b8f732e3b0a4cd6b63717730f3d40f4fa58baf2f77ecd0f7f257dd9e8",
+    "build/dsga-host-ledger-lint-initial-20261027.log": "4864d89ae04dbec06c70131ebe31f2dfb44901460ab9d23d2ebaac2db637d744",
+    "build/dsga-host-ledger-lint-final-20261027.log": "e16603b35cd6a470cf8e1b6f6d7dcdff8fa77bf57d4c87f9774e8fa34289cf99",
+    "build/dsga-host-ledger-quality-lint-20261027.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "build/dsga-host-ledger-vet-20261027.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/dsga-host-ledger-linux-amd64.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/dsga-host-ledger-linux-arm64.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/run-dsga-host-ledger-quality-20261027.sh": "e75778bf0c9f67baa66a4f11d0532795a8982d443052d747a1fad074d1957fba"
+  },
+  "quality": {
+    "native_readonly_vet_exit_code": 0,
+    "linux_incremental_lint_issues": 0,
+    "linter_version": "2.4.0",
+    "initial_lint_issues": 23,
+    "intermediate_lint_issues": 1,
+    "lint_base": "a1a2660ff41b2e781431f7ad5db1e3e387411ff1"
+  },
+  "compile_only_artifacts": {
+    "build/dsga-host-ledger-linux-amd64.test": {
+      "sha256": "332f11ae584a6a4e8f6a75348a4dfeb5c957b400a41b22abf3e0823ddc2dabfe",
+      "size_bytes": 54595017,
+      "executed": false,
+      "kind": "Linux package test program; not a scheduler runtime binary"
+    },
+    "build/dsga-host-ledger-linux-arm64.test": {
+      "sha256": "aa2f3dd2fa17cd26aeb1903ccf1f638f146fa17a2835fbd91985a18a7636b008",
+      "size_bytes": 51697768,
+      "executed": false,
+      "kind": "Linux package test program; not a scheduler runtime binary"
+    }
+  },
+  "fixture_boundaries": [
+    "HTTP RFC6902 fake apiserver, not real Kubernetes/RBAC",
+    "Node/Lease/outside capacity/VM and PG plans are explicit fixtures",
+    "No Scheduler runtime integration or real Host reservation source publication",
+    "Node OutsideBytes is not certified as covering all workloads by this primitive"
+  ],
+  "upstream_frozen_at": "2026-10-26T17:29:30+08:00",
+  "new_upstream_fetch": false,
+  "pg17_unchanged": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "control_plane_unchanged": "d84c0b73004a7d8cc3e89f3c3f0e3f06cfa8cba9",
+  "owner_agents_sha256": "5c61959674c362ecc4c3709930121304595e8b0bca1ff70ae401f0cf8f2803c1",
+  "whole_host_complete": false,
+  "whole_core_complete": false,
+  "linux_runtime_certified": false,
+  "pending_code": [
+    "Scheduler all grants/restoration and election/bootstrap",
+    "Host original identity/source production and explicit release",
+    "Trusted complete Prepare/residual/transition/safety bounds",
+    "Safe normal decrease, continuous private/background constraints",
+    "First budget/admission and policy/Monitor/Agent public operation/cancel/cross-boot closure"
+  ],
+  "deferred_platform": [
+    "Linux apiserver/RBAC/lease/node pressure",
+    "KVM/NeonVM/partial unplug/HugeTLB and physical memory",
+    "Host/migration/performance/long running"
+  ],
+  "excluded": [
+    "control-plane business/SDK/branch changes",
+    "other PG majors",
+    "images/deployments/main merges"
+  ]
+}
