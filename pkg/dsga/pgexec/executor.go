@@ -1,6 +1,7 @@
 // Package pgexec 将持久journal的PG步骤接到正式Compute客户端。
 // 它只负责PG逻辑容量和Provider事实，不认证owner租约、不执行预算/VM动作；
 // 调用方须来自可信协调器。其余步骤必须由各领域适配器核验，不能自动跳过。
+// 唯一跨计划收口是全部领域零派发的取消，只按原WAL关闭，不构造任何原生事实。
 package pgexec
 
 import (
@@ -172,6 +173,12 @@ func (executor *Executor) Advance(ctx context.Context) (Progress, error) {
 		return Idle, nil
 	}
 	operation := state.Active
+	if handled, err := executor.finishUnstartedAbort(ctx, snapshot); handled {
+		if err != nil {
+			return AwaitingFact, err
+		}
+		return Recorded, nil
+	}
 	if reconciled, err := executor.reconcileSettled(ctx, operation); err != nil {
 		return AwaitingFact, err
 	} else if reconciled {

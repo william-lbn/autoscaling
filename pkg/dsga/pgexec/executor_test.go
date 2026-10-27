@@ -116,6 +116,27 @@ func request(t *testing.T, kind control.Kind) control.Request {
 // 非PG前置领域明确为测试夹具；正式预算/Guest回执不能由这些body生成。
 func prepareStore(t *testing.T, intent control.Request) (*vmAPI, *journal.Store) {
 	t.Helper()
+	api, store := prepareUnstartedStore(t, intent)
+	snapshot, err := store.Load(context.Background())
+	require.NoError(t, err)
+	actor := snapshot.State().Owner
+	for _, step := range snapshot.State().Active.Steps {
+		if step.Action == journal.ResizePG {
+			break
+		}
+		var dispatch *journal.Dispatch
+		snapshot, dispatch, err = store.Start(context.Background(), snapshot, actor, intent.Key, step.Action, "non-pg-fixture", []byte(`{"test_only_non_pg_domain":true}`))
+		require.NoError(t, err)
+		snapshot, err = store.Record(context.Background(), snapshot, actor, intent.Key, journal.Observation{Key: intent.Key, RequestSHA256: dispatch.RequestSHA256, CommandSHA256: dispatch.Step.CommandSHA256, Ordinal: dispatch.Step.Ordinal, Action: step.Action, Result: journal.Completed, SourceID: dispatch.Step.TargetID, Data: []byte(`{"test_only_non_pg_domain":true}`)})
+		require.NoError(t, err)
+	}
+	return api, store
+}
+
+// prepareUnstartedStore使用同一真实typed clientset和HTTP UID/RV CAS，但保持
+// 整个原计划Planned；取消用例不能借用已经手工结清非PG前置步骤的旧夹具。
+func prepareUnstartedStore(t *testing.T, intent control.Request) (*vmAPI, *journal.Store) {
+	t.Helper()
 	var status vmv1.VirtualMachineStatus
 	api := &vmAPI{mu: sync.Mutex{}, vm: &vmv1.VirtualMachine{
 		TypeMeta:   metav1.TypeMeta{APIVersion: vmv1.SchemeGroupVersion.String(), Kind: "VirtualMachine"},
@@ -146,16 +167,6 @@ func prepareStore(t *testing.T, intent control.Request) (*vmAPI, *journal.Store)
 	snapshot, disposition, err := store.Begin(context.Background(), snapshot, actor, intent, 0)
 	require.NoError(t, err)
 	require.Equal(t, journal.Accepted, disposition)
-	for _, step := range snapshot.State().Active.Steps {
-		if step.Action == journal.ResizePG {
-			break
-		}
-		var dispatch *journal.Dispatch
-		snapshot, dispatch, err = store.Start(context.Background(), snapshot, actor, intent.Key, step.Action, "non-pg-fixture", []byte(`{"test_only_non_pg_domain":true}`))
-		require.NoError(t, err)
-		snapshot, err = store.Record(context.Background(), snapshot, actor, intent.Key, journal.Observation{Key: intent.Key, RequestSHA256: dispatch.RequestSHA256, CommandSHA256: dispatch.Step.CommandSHA256, Ordinal: dispatch.Step.Ordinal, Action: step.Action, Result: journal.Completed, SourceID: dispatch.Step.TargetID, Data: []byte(`{"test_only_non_pg_domain":true}`)})
-		require.NoError(t, err)
-	}
 	return api, store
 }
 

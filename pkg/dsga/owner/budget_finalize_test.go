@@ -445,6 +445,11 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 						require.NoError(t, err)
 						require.Equal(t, pgexec.Recorded, progress)
 						require.EqualValues(t, 1, admissionPosts.Load())
+						if mode == "complete" {
+							verifyUnstartedAbortRetainsBudget(t, ctx, worker, store, req)
+							require.EqualValues(t, 1, resizePosts.Load(), "later zero-dispatch cancellation must not resend PG resize")
+							require.EqualValues(t, 1, admissionPosts.Load(), "later zero-dispatch cancellation must not reopen admission")
+						}
 					} else {
 						require.Error(t, err)
 						require.Equal(t, pgexec.AwaitingFact, progress)
