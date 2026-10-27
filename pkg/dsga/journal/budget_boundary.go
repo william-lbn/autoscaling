@@ -12,6 +12,8 @@ import (
 // 它绑定当前完整预算的命令摘要、首次落账和成功关闭序列；Through只可被全部
 // Planned的取消推进。Start先撤销此证明，预算替换也清空，因此不能跨过任何
 // 已派发/部分完成/拒绝的后续动作。所有变化都复用原VM UID/RV CAS，不另建锁。
+// v6的SucceededSequence也可指所有容量已完成、原预算准入清理已闭合的取消；
+// 它证明容量结清资格，不把业务结果AbortedAfterReconcile改成Succeeded。
 //
 // 该永久水位解决结果历史淘汰和后续零派发取消导致Host峰值无法结清的问题。
 // Host仍须认证原Runner实际值、当前预算来源与原Node，不能仅凭本结构释放容量。
@@ -89,12 +91,17 @@ func (model *Model) closeBudgetBoundary(outcome Outcome) error {
 			model.BudgetBoundary.ThroughKey, model.BudgetBoundary.ThroughSequence = model.Active.Request.Key, model.Sequence
 		}
 	case AbortedAfterReconcile:
-		// 未实现的完整取消结算不能借用旧成功预算的零派发证明。原完整
-		// BudgetHeld及外部峰值保持，不对已发生效果作“没有变化”的推论。
 		model.BudgetBoundary = nil
+		// 业务取消不回滚已成功容量。只有同原完整预算、所有容量步骤已
+		// 完成且准入恢复原审计闭合，才保留容量关闭资格；其他部分取消
+		// 仍保留峰值。v6防止旧v5在历史淘汰后误解新增的关闭语义。
+		if model.validateCommittedAbort(*model.Active) == nil {
+			model.BudgetBoundary = model.boundaryFor(request, model.Sequence)
+			model.ProtocolVersion = 6
+		}
 	}
 	if model.BudgetBoundary != nil {
-		model.ProtocolVersion = 5
+		model.ProtocolVersion = max(model.ProtocolVersion, 5)
 	}
 	return nil
 }
@@ -104,7 +111,7 @@ func (model Model) validateBudgetBoundary() error {
 	if b == nil {
 		return nil
 	}
-	if model.ProtocolVersion != 5 || model.BudgetHeld == nil || model.HighWater == nil || b.ProtocolVersion != 1 || b.BudgetKey.Validate() != nil || b.ThroughKey.Validate() != nil {
+	if model.ProtocolVersion < 5 || model.BudgetHeld == nil || model.HighWater == nil || b.ProtocolVersion != 1 || b.BudgetKey.Validate() != nil || b.ThroughKey.Validate() != nil {
 		return fmt.Errorf("invalid closed budget boundary version or binding")
 	}
 	request, err := model.retainedRequest()
@@ -128,7 +135,8 @@ func (model Model) validateBudgetBoundary() error {
 			continue
 		}
 		if key == b.BudgetKey {
-			if record.Operation.Request != request || record.Outcome != Succeeded || record.ClosedSequence != b.SucceededSequence {
+			capacityClosed := record.Outcome == Succeeded || (model.ProtocolVersion >= 6 && record.Outcome == AbortedAfterReconcile && model.validateCommittedAbort(record.Operation) == nil)
+			if record.Operation.Request != request || !capacityClosed || record.ClosedSequence != b.SucceededSequence {
 				return fmt.Errorf("closed budget boundary contradicts original successful history")
 			}
 		} else if record.Outcome != AbortedBeforeDispatch || record.ClosedSequence <= b.SucceededSequence || record.ClosedSequence > b.ThroughSequence {

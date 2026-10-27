@@ -146,6 +146,23 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 				admissionPending = &original
 			}
 		}
+		if cleanup := active.Cleanup; cleanup != nil && cleanup.Phase == journal.Unconfirmed {
+			// Cleanup是独立恢复开放，不能只从原Resume步骤恢复后漏掉它的
+			// 写前/写后未知。先核原完整预算、原派发者与命令，再恢复同一SDK
+			// pending；旧owner仅能查询，不得改epoch重新发送。
+			var original budget.CommittedAbortCommand
+			held, budgetErr := model.BudgetFor(active.Request)
+			if budgetErr != nil || cleanup.DispatchedBy == nil || cleanup.TargetID != config.Instance.ComputeInstanceID || json.Unmarshal(cleanup.Command, &original) != nil || original.ValidateFor(held, cleanup.DispatchedBy.Epoch) != nil || original.FinalizationSHA256 != model.BudgetHeld.Finalization.CommandSHA256 {
+				return nil, fmt.Errorf("original abort admission differs from retained complete budget")
+			}
+			if original.MaySend {
+				if admissionPending != nil && *admissionPending != original.Admission {
+					return nil, fmt.Errorf("original abort conflicts with another unknown admission")
+				}
+				originalAdmission := original.Admission
+				admissionPending = &originalAdmission
+			}
+		}
 	}
 	if config.Pending != nil && (pending == nil || *pending != *config.Pending) {
 		return nil, fmt.Errorf("PG worker supplied pending intent differs from journal")
@@ -377,6 +394,17 @@ func (worker *PGWorker) ReplayVMOriginal(ctx context.Context, key control.Key) (
 	return worker.vm.ReplayOriginal(callCtx, key)
 }
 
+// ReplayCommittedAbortOriginal只供已认证协调器明确选择原Cleanup开放命令；
+// 普通轮询绝不自动重发，选择Key不携带可覆盖预算/epoch的新参数。
+func (worker *PGWorker) ReplayCommittedAbortOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {
+	if err := worker.session.Check(ctx); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	callCtx, cancel := worker.session.coupledContext(ctx)
+	defer cancel()
+	return worker.admission.ReplayCommittedAbortOriginal(callCtx, key)
+}
+
 type Tick struct {
 	Progress pgexec.Progress
 	Err      error
@@ -396,6 +424,9 @@ type PGLoopOptions struct {
 	// VMReplay只能来自受信显式协调入口，不以HTTP错误、超时或not_sent
 	// 自动投递。选择仅指原Key，完整命令和原回执始终从持久来源读取。
 	VMReplay <-chan control.Key
+	// AbortReplay只选择原Cleanup的恢复开放，不重放旧PG/VM/资源动作。
+	// nil或关闭时普通循环只读查询；未知/超时不会向此通道自动投递。
+	AbortReplay <-chan control.Key
 	// Observe供状态/指标使用，必须有界返回，不打印凭据或误把Recorded当VM完成。
 	Observe func(Tick)
 }
@@ -416,8 +447,10 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	var admissionReplay *control.Key
 	var resourceReplay *control.Key
 	var vmReplay *control.Key
+	var abortReplay *control.Key
 	wake, replays, admissionReplays, resourceReplays := options.Wake, options.Replay, options.AdmissionReplay, options.ResourceReplay
 	vmReplays := options.VMReplay
+	abortReplays := options.AbortReplay
 	for {
 		if callCtx.Err() != nil {
 			return callCtx.Err()
@@ -436,6 +469,9 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		} else if vmReplay != nil {
 			progress, err = worker.ReplayVMOriginal(callCtx, *vmReplay)
 			vmReplay = nil
+		} else if abortReplay != nil {
+			progress, err = worker.ReplayCommittedAbortOriginal(callCtx, *abortReplay)
+			abortReplay = nil
 		} else {
 			progress, err = worker.Advance(callCtx)
 		}
@@ -481,6 +517,13 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			} else {
 				selectedKey := key
 				vmReplay = &selectedKey
+			}
+		case key, open := <-abortReplays:
+			if !open {
+				abortReplays = nil
+			} else {
+				selectedKey := key
+				abortReplay = &selectedKey
 			}
 		case _, open := <-wake:
 			if !open {

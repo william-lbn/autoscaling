@@ -92,8 +92,14 @@ func verifyClosedHostSettlement(t *testing.T, ctx context.Context, api *ownerAPI
 			return true, nil, errors.New("fixture lost old Host DELETE reply after commit")
 		})
 	}
-	latest, err = store.Finish(ctx, latest, session.Actor(), closed.Request.Key)
-	require.NoError(t, err)
+	if mode == "abort-committed" {
+		finishCommittedAbort(t, ctx, api, store, worker, mode)
+		latest, err = store.Load(ctx)
+		require.NoError(t, err)
+	} else {
+		latest, err = store.Finish(ctx, latest, session.Actor(), closed.Request.Key)
+		require.NoError(t, err)
+	}
 	require.Nil(t, latest.State().Active)
 	if mode == "host-settle-after-cancel-history" {
 		originalBudget := latest.State().BudgetHeld

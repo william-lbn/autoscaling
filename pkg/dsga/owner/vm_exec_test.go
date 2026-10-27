@@ -174,7 +174,7 @@ func vmReservation(t *testing.T, client *kubefake.Clientset, name, kind string, 
 }
 
 func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testing.T) {
-	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late"} {
+	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late", "abort-committed", "abort-after-open", "abort-replies", "abort-original-open-lost"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -218,9 +218,15 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				}, mu: sync.Mutex{}, writes: 0,
 			}
 			vmPeer(t, filepath.Join(dir, "qmp.sock"), peer)
-			elector, err := New(coord, store, testOptions())
+			options, timeout := testOptions(), 20*time.Second
+			if strings.HasPrefix(mode, "abort-") {
+				// 完整取消审计更大，race下使用真实生产选主期限；不把原先
+				// 专测快速失租的400ms期限当作整个生命周期的性能门槛。
+				options, timeout = DefaultOptions(), 45*time.Second
+			}
+			elector, err := New(coord, store, options)
 			require.NoError(t, err)
-			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), timeout)
 			defer cancel()
 			err = elector.Run(ctx, func(ctx context.Context, session *Session) error {
 				resources, err := session.NewResourceWorker(ctx, resourceConfig)
@@ -236,11 +242,23 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				}
 				var committed atomic.Bool
 				var resizePosts, opens atomic.Int64
+				abortPG := new(committedAbortPG)
+				if mode == "abort-replies" {
+					abortPG.loseBefore, abortPG.loseAfter = true, true
+				}
+				if mode == "abort-original-open-lost" {
+					abortPG.loseAfter = true
+				}
+				abortMode := strings.HasPrefix(mode, "abort-")
 				config := pgConfig(t, req, func(w http.ResponseWriter, r *http.Request) {
 					switch r.URL.Path {
 					case "/dsg/v1/budget/shared":
 						if committed.Load() {
-							pgReply(w, final)
+							if abortMode {
+								pgReply(w, abortPG.shared(final))
+							} else {
+								pgReply(w, final)
+							}
 						} else {
 							pgReply(w, baseline)
 						}
@@ -251,6 +269,11 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 					case "/dsg/v1/resize/status":
 						pgReply(w, pgResponse(t, req))
 					case "/dsg/v1/admission":
+						if abortMode {
+							opens.Add(1)
+							abortPG.serve(t, w, r, final.Observed)
+							return
+						}
 						var a control.AdmissionRequest
 						require.NoError(t, json.NewDecoder(r.Body).Decode(&a))
 						hash, err := a.ContextSHA256()
@@ -260,6 +283,9 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 						observed.AdmissionRevision = a.Revision
 						opens.Add(1)
 						pgReply(w, control.AdmissionResponse{ProtocolVersion: 1, Request: a, ContextSHA256: hash, Disposition: control.AdmissionApplied, Observed: observed, VMShrinkPermit: false})
+					case "/dsg/v1/admission/status":
+						require.True(t, abortMode)
+						abortPG.serve(t, w, r, final.Observed)
 					default:
 						t.Errorf("unexpected Agent/PG route %s", r.URL.Path)
 						w.WriteHeader(500)
@@ -391,7 +417,7 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 						require.NoError(t, runner.Tick(ctx), "已消费选择不重复内存写")
 						selected = true
 					}
-					err = worker.Run(loopCtx, PGLoopOptions{PollInterval: 10 * time.Millisecond, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, VMReplay: vmSignals, Observe: func(tick Tick) {
+					err = worker.Run(loopCtx, PGLoopOptions{PollInterval: 10 * time.Millisecond, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, VMReplay: vmSignals, AbortReplay: nil, Observe: func(tick Tick) {
 						if tick.Err != nil {
 							var lost *journal.UnconfirmedWrite
 							if replayVM && errors.As(tick.Err, &lost) {
@@ -464,11 +490,33 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 					}
 					require.Equal(t, journal.Settled, budgetStep(t, store, journal.ResizeVM).Phase)
 					for _, action := range []journal.Action{journal.GuestReady, journal.ResizePG, journal.FinalizeBudget, journal.ResumeAdmission} {
+						if action == journal.ResumeAdmission && abortMode && mode != "abort-after-open" && mode != "abort-original-open-lost" {
+							break
+						}
 						progress, err = worker.Advance(ctx)
+						if action == journal.ResumeAdmission && mode == "abort-original-open-lost" {
+							require.Error(t, err)
+							require.Equal(t, journal.Unconfirmed, budgetStep(t, store, action).Phase)
+							break
+						}
 						require.NoError(t, err, string(action))
 						require.Equal(t, pgexec.Recorded, progress, string(action))
 						require.Equal(t, journal.Settled, budgetStep(t, store, action).Phase)
 					}
+				}
+				if abortMode {
+					restarted := func() *PGWorker {
+						recovered, err := session.NewProductionPGWorker(ctx, config, resources, client.CoreV1())
+						require.NoError(t, err)
+						return recovered
+					}
+					recovered := verifyCommittedAbort(t, ctx, api, store, session, worker, abortPG, root, mode, restarted)
+					finishCommittedAbort(t, ctx, api, store, recovered, mode)
+					require.EqualValues(t, 1, resizePosts.Load())
+					peer.mu.Lock()
+					require.Equal(t, 1, peer.writes)
+					peer.mu.Unlock()
+					return nil
 				}
 				latest, err := store.Load(ctx)
 				require.NoError(t, err)
@@ -498,7 +546,7 @@ func vmDSM(s control.Snapshot) control.DSMResponse {
 }
 
 func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T) {
-	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost", "explicit-original-replay", "host-settle", "host-settle-lost", "host-settle-source-gone", "host-settle-runner-drift", "host-settle-gc-lost", "host-settle-scheduler-loop", "host-settle-after-cancel-history", "cancel-before-runner"} {
+	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost", "explicit-original-replay", "host-settle", "host-settle-lost", "host-settle-source-gone", "host-settle-runner-drift", "host-settle-gc-lost", "host-settle-scheduler-loop", "host-settle-after-cancel-history", "cancel-before-runner", "abort-committed", "abort-root-drift"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -541,9 +589,13 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 				}, mu: sync.Mutex{}, writes: 0, lose: false,
 			}
 			vmPeer(t, filepath.Join(dir, "qmp.sock"), peer)
-			elector, err := New(coord, store, testOptions())
+			options, timeout := testOptions(), 25*time.Second
+			if strings.HasPrefix(mode, "abort-") {
+				options, timeout = DefaultOptions(), 45*time.Second
+			}
+			elector, err := New(coord, store, options)
 			require.NoError(t, err)
-			ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), timeout)
 			defer cancel()
 			err = elector.Run(ctx, func(ctx context.Context, session *Session) error {
 				resources, err := session.NewResourceWorker(ctx, resourceConfig)
@@ -551,7 +603,7 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 				defer resources.CloseIdleConnections()
 				req := pgRequest(t, session.Actor())
 				req.Kind, req.TargetBuffers = control.Shrink, 512
-				if strings.HasPrefix(mode, "host-settle") {
+				if strings.HasPrefix(mode, "host-settle") || mode == "abort-committed" {
 					req.Key.Revision = 2
 				}
 				p, current := preparedGuest(t, req, root.view.Identity)
@@ -562,10 +614,23 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 				base := req
 				base.Kind, base.TargetBuffers = control.Grow, 1024
 				var opens atomic.Int64
+				abortPG := new(committedAbortPG)
+				abortMode := strings.HasPrefix(mode, "abort-")
+				if mode == "abort-root-drift" {
+					abortPG.afterSet = func() {
+						root.mu.Lock()
+						root.view.Actual.MemoryMaxBytes++
+						root.mu.Unlock()
+					}
+				}
 				config := pgConfig(t, base, func(w http.ResponseWriter, r *http.Request) {
 					switch r.URL.Path {
 					case "/dsg/v1/budget/shared":
-						pgReply(w, current)
+						if abortMode {
+							pgReply(w, abortPG.shared(current))
+						} else {
+							pgReply(w, current)
+						}
 					case "/dsg/v1/work/dsm":
 						dsm := vmDSM(current.Observed)
 						if mode == "gate-reopened-before-VM" {
@@ -576,6 +641,11 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 						}
 						pgReply(w, dsm)
 					case "/dsg/v1/admission":
+						if abortMode {
+							opens.Add(1)
+							abortPG.serve(t, w, r, current.Observed)
+							return
+						}
 						var a control.AdmissionRequest
 						require.NoError(t, json.NewDecoder(r.Body).Decode(&a))
 						hash, err := a.ContextSHA256()
@@ -585,6 +655,9 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 						observed.AdmissionRevision = a.Revision
 						opens.Add(1)
 						pgReply(w, control.AdmissionResponse{ProtocolVersion: 1, Request: a, ContextSHA256: hash, Disposition: control.AdmissionApplied, Observed: observed, VMShrinkPermit: false})
+					case "/dsg/v1/admission/status":
+						require.True(t, abortMode)
+						abortPG.serve(t, w, r, current.Observed)
 					default:
 						t.Errorf("unexpected shrink route %s", r.URL.Path)
 						w.WriteHeader(500)
@@ -681,10 +754,23 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 					require.Equal(t, journal.Unconfirmed, budgetStep(t, store, journal.ObserveVM).Phase)
 				}
 				for _, action := range []journal.Action{journal.ObserveVM, journal.FinalizeBudget, journal.ResumeAdmission} {
+					if action == journal.ResumeAdmission && abortMode {
+						break
+					}
 					progress, err = worker.Advance(ctx)
 					require.NoError(t, err, string(action))
 					require.Equal(t, pgexec.Recorded, progress)
 					require.Equal(t, journal.Settled, budgetStep(t, store, action).Phase)
+				}
+				if abortMode {
+					verifyCommittedAbort(t, ctx, api, store, session, worker, abortPG, root, mode, nil)
+					if mode == "abort-committed" {
+						verifyClosedHostSettlement(t, ctx, api, client, coord, store, session, worker, runner, peer, mode)
+					} else {
+						finishCommittedAbort(t, ctx, api, store, worker, mode)
+					}
+					require.EqualValues(t, 1, opens.Load())
+					return nil
 				}
 				require.Equal(t, budgetStep(t, store, journal.ResizeVM).Observation.Data, budgetStep(t, store, journal.ObserveVM).Observation.Data)
 				latest, err := store.Load(ctx)
