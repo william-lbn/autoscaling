@@ -13,8 +13,6 @@ import (
 	"go.uber.org/zap"
 
 	core "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 	coordclient "k8s.io/client-go/kubernetes/typed/coordination/v1"
 	coreclient "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -31,6 +29,7 @@ import (
 type domain struct {
 	config NodeConfig
 	store  *hostguard.Store
+	work   *domainWork
 }
 
 // Service创建后配置/客户端/holder不变。网络请求不持PluginState.mu；所有
@@ -62,7 +61,7 @@ func New(coreClient coreclient.CoreV1Interface, coord coordclient.CoordinationV1
 		if err != nil {
 			return nil, err
 		}
-		s.domains[n.Binding.NodeName] = domain{config: n, store: store}
+		s.domains[n.Binding.NodeName] = domain{config: n, store: store, work: newDomainWork()}
 	}
 	return s, nil
 }
@@ -169,12 +168,13 @@ func (s *Service) ownedLoop(ctx context.Context, logger *zap.Logger, d domain) {
 	}
 }
 
-func (s *Service) assigned(ctx context.Context, node string) ([]core.Pod, error) {
-	// 分页LIST使用同一consistent snapshot；不依赖watch缓存是否已追平。
+func (s *Service) bootstrapAssigned(ctx context.Context, node string) ([]core.Pod, error) {
+	// 仅显式首次引导要求一次取得完整有界快照；不能分批提交初始容量。
+	// 运行期改用有界发现队列，历史已结清Pod不占活动账本256条上限。
 	var pods []core.Pod
-	options := metav1.ListOptions{FieldSelector: fields.OneTermEqualSelector("spec.nodeName", node).String(), Limit: 256}
+	cursor := ""
 	for {
-		list, err := s.core.Pods("").List(ctx, options)
+		list, err := s.assignedPage(ctx, node, cursor)
 		if err != nil {
 			return nil, err
 		}
@@ -185,19 +185,23 @@ func (s *Service) assigned(ctx context.Context, node string) ([]core.Pod, error)
 		if list.Continue == "" {
 			return pods, nil
 		}
-		options.Continue = list.Continue
+		cursor = list.Continue
 	}
 }
 
 func (s *Service) reconcile(ctx context.Context, d domain) error {
-	pods, err := s.assigned(ctx, d.config.Binding.NodeName)
-	if err != nil {
-		return err
+	if d.work == nil || !d.work.running.CompareAndSwap(false, true) {
+		return fmt.Errorf("original Node reconciliation is already running or unconfigured")
 	}
+	defer d.work.running.Store(false)
 	snapshot, err := d.store.Load(ctx)
 	if errors.Is(err, hostguard.ErrUninitialized) {
 		if d.config.InitializeAtResourceVersion == "" {
 			return fmt.Errorf("explicit original Node bootstrap resourceVersion is required")
+		}
+		pods, listErr := s.bootstrapAssigned(ctx, d.config.Binding.NodeName)
+		if listErr != nil {
+			return listErr
 		}
 		rows := make([]hostguard.Placement, 0, len(pods))
 		for i := range pods {
@@ -215,27 +219,11 @@ func (s *Service) reconcile(ctx context.Context, d domain) error {
 	if err := checkProfile(snapshot, d.config); err != nil {
 		return err
 	}
-	if _, err := d.store.Fence(ctx, snapshot); err != nil {
+	snapshot, err = d.store.Fence(ctx, snapshot)
+	if err != nil {
 		return err
 	}
-	// 一项失败不能使其他VM来源无限饥饿；全部错误保留原容量并汇总返回。
-	var failures []error
-	for i := range pods {
-		if pods[i].Status.Phase == core.PodSucceeded || pods[i].Status.Phase == core.PodFailed {
-			if err := s.retirePod(ctx, d, &pods[i]); err != nil {
-				failures = append(failures, err)
-			}
-			continue
-		}
-		pod, held, err := s.Reserve(ctx, d.config.Binding.NodeName, &pods[i], 0)
-		if err == nil && held.Managed {
-			err = s.publish(ctx, d, pod, held)
-		}
-		if err != nil {
-			failures = append(failures, fmt.Errorf("original Pod %s/%s: %w", pods[i].Namespace, pods[i].Name, err))
-		}
-	}
-	return errors.Join(failures...)
+	return s.reconcileWork(ctx, d, snapshot)
 }
 
 func (s *Service) publish(ctx context.Context, d domain, pod *core.Pod, p hostguard.Placement) error {
@@ -265,6 +253,15 @@ func (s *Service) publish(ctx context.Context, d domain, pod *core.Pod, p hostgu
 	if !prepared {
 		return nil
 	}
+	if m.Active == nil {
+		closed, err := hostguard.SettlementFor(m)
+		if err != nil {
+			return err
+		}
+		if d.work.skipSettledScan(p, closed, time.Now()) {
+			return nil
+		}
+	}
 	_, _, view, err := vmguard.ReadPublished(ctx, s.core, b, nil)
 	if err != nil {
 		return err
@@ -280,6 +277,12 @@ func (s *Service) publish(ctx context.Context, d domain, pod *core.Pod, p hostgu
 		// 只有成功原操作闭合后才进入明确结清；普通轮询不会因Lease/
 		// Pod事件清峰值。Publisher独立重读所有事实和原Node快照。
 		_, err = publisher.SettleCurrent(ctx)
+		if err == nil && p.Settled != nil {
+			closed, closedErr := hostguard.SettlementFor(m)
+			if closedErr == nil && *p.Settled == closed {
+				d.work.rememberSettledScan(p, closed, time.Now())
+			}
+		}
 		return err
 	}
 	_, err = publisher.Reconcile(ctx)

@@ -357,6 +357,16 @@ func schedulerPublishesOriginalHost(t *testing.T, ctx context.Context, api *owne
 	if len(garbage) == 1 {
 		logger = zaptest.NewLogger(t)
 	}
+	countLists := func() int {
+		n := 0
+		for _, a := range client.Actions() {
+			if a.GetVerb() == "list" && a.GetResource().Resource == "configmaps" {
+				n++
+			}
+		}
+		return n
+	}
+	beforeLists := countLists()
 	require.NoError(t, scheduler.Run(runCtx, logger))
 	var ref budget.ObjectRef
 	require.Eventually(t, func() bool {
@@ -389,6 +399,11 @@ func schedulerPublishesOriginalHost(t *testing.T, ctx context.Context, api *owne
 		require.NoError(t, err)
 		require.NotNil(t, held.Settled)
 		require.Equal(t, held.Settled.Request.TargetVMMemoryBytes, held.MemoryBytes, "旧spec.Use不能在下一轮恢复中重新抬高峰值")
+		// 首轮建立结清、下一轮确认已结清并记GC节流；再跨一次真实
+		// 两秒ticker，namespace LIST必须稳定，而循环/原容量仍保留。
+		require.Eventually(t, func() bool { return countLists() >= beforeLists+2 }, 5*time.Second, 20*time.Millisecond)
+		require.Equal(t, beforeLists+2, countLists())
+		require.Never(t, func() bool { return countLists() > beforeLists+2 }, 2200*time.Millisecond, 20*time.Millisecond)
 	}
 	return ref
 }
