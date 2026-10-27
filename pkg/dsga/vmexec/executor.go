@@ -196,6 +196,11 @@ func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) {
 	if step.Phase == journal.Planned && (op.AbortRequested || op.Origin != e.actor) {
 		return pgexec.ExternalStep, nil
 	}
+	if op.AbortRequested && step.Phase == journal.Unconfirmed && step.Action == journal.ResizeVM {
+		if handled, progress, err := e.cancelledBeforeSend(ctx, s, *step); handled {
+			return progress, err
+		}
+	}
 	p, err := e.prepared(op, prior)
 	if err != nil {
 		return pgexec.AwaitingFact, err

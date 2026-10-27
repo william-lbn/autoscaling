@@ -63,7 +63,10 @@ func (c *Consumer) Advance(ctx context.Context) (pgexec.Progress, error) {
 			break
 		}
 		if current.Observation == nil || current.Observation.Result != journal.Completed {
-			return pgexec.AwaitingFact, fmt.Errorf("host consumer prior original step did not complete")
+			// 其他域的Rejected/取消NoEffect不能当成Host派发许可，也不属于
+			// 本消费者的致命错误。交取消协调器继续结清；绝不跳过该前驱
+			// 去Start ReserveHost。否则真实VM取消落账后会反复退出owner。
+			return pgexec.ExternalStep, nil
 		}
 		if current.Action == journal.PrepareBudget {
 			preparedStep = current

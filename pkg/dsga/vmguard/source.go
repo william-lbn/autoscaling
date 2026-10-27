@@ -114,6 +114,11 @@ func (r *Runner) authorize(ctx context.Context) (authorization, error) {
 		return a, nil
 	}
 	a.Command, a.JournalSHA256 = &c, vmStep.CommandSHA256
+	if op.AbortRequested && s.Dispatchable() {
+		// 只认证原取消与原派发者，不授予预算/新QMP写。即使Host/PG暂失联，
+		// Runner仍可在原flock内证明该命令未跨发送屏障；不能由Denied推取消。
+		a.Abort = &cancellationAuthority{Origin: *vmStep.DispatchedBy, Witness: Cancellation{ProtocolVersion: 1, Owner: model.Owner, VMSequence: model.Sequence, VMResourceVersion: s.ResourceVersion()}}
+	}
 	if op.AbortRequested || op.Origin != model.Owner || *vmStep.DispatchedBy != model.Owner || !s.Dispatchable() {
 		a.Denied = fmt.Errorf("Runner original ResizeVM is cancelled, old-owner or not dispatchable")
 		return a, nil

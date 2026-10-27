@@ -64,11 +64,18 @@ type Receipt receipt
 func (r Receipt) Complete() bool { return r.Kind == completed }
 func (r Receipt) NotSent() bool  { return r.Kind == notSent }
 
+// CancelledBeforeSend是禁止原命令再重放的原域终态，区别于仍可重放的not_sent。
+// 消费者还须核原State/不可变Receipt及当前实际before，不能单凭此布尔结算。
+func (r Receipt) CancelledBeforeSend() bool { return r.Kind == cancelledBeforeSend }
+
 func (r Receipt) Validate() error {
 	key := r.Intent.Command.Request.Key
 	// Receipt不含可变floor/Lease，下面仅复用完整字段关系校验。占位值不被
 	// 序列化/返回，也不是认证来源；真实Lease另由当前View永久固定UID。
 	probe := record{ProtocolVersion: 1, Identity: r.Intent.Command.Identity, BindingClaim: r.Intent.Command.BindingClaim, Sequence: 1, Floor: r.Intent.Owner, LeaseUID: "validation-only", HighWater: &key, Last: (*receipt)(&r), Pending: nil, LastPublished: nil}
+	if r.Cancellation != nil {
+		probe.ProtocolVersion, probe.Floor = 2, r.Cancellation.Owner
+	}
 	return probe.validate()
 }
 

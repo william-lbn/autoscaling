@@ -88,7 +88,7 @@ func setupEngine(t *testing.T) (*engine, *memoryFixture, *authorization) {
 	require.NoError(t, os.Chmod(dir, 0o700))
 	id := fixtureIdentity()
 	c := fixtureCommand(id)
-	a := &authorization{Owner: journal.Owner{HolderID: "owner-two", Epoch: 2}, LeaseUID: "lease-uid", Command: &c, JournalSHA256: strings.Repeat("d", 64), Dispatch: true, ReplayNonce: "", ReplayReceipt: budget.ObjectRef{Name: "", UID: ""}, Denied: nil}
+	a := &authorization{Owner: journal.Owner{HolderID: "owner-two", Epoch: 2}, LeaseUID: "lease-uid", Command: &c, JournalSHA256: strings.Repeat("d", 64), Dispatch: true, ReplayNonce: "", ReplayReceipt: budget.ObjectRef{Name: "", UID: ""}, Denied: nil, Abort: nil}
 	f := &memoryFixture{dir: dir, actual: Observation{RequestedBytes: c.BeforeBytes, ActualBytes: c.BeforeBytes}, apply: true, mu: sync.Mutex{}, writes: 0, err: nil, entered: nil, release: nil}
 	e := &engine{dir: dir, id: id, binding: c.BindingClaim, native: f, read: func(context.Context) (authorization, error) { return *a, nil }, now: time.Now}
 	s, err := lockState(context.Background(), dir)

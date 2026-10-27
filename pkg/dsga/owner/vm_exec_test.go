@@ -174,7 +174,7 @@ func vmReservation(t *testing.T, client *kubefake.Clientset, name, kind string, 
 }
 
 func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testing.T) {
-	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent"} {
+	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -299,6 +299,12 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				require.Equal(t, journal.Unconfirmed, budgetStep(t, store, journal.ResizeVM).Phase)
 				_, err = worker.Advance(ctx)
 				require.ErrorIs(t, err, vmguard.ErrUnknown, "轮询在原Runner回执之前只能观察，不得重发")
+				if strings.HasPrefix(mode, "cancel-") {
+					verifyVMCancelledBeforeSend(t, ctx, api, client, store, session, worker, runner, peer, req, outRef, mode)
+					require.Zero(t, resizePosts.Load())
+					require.Zero(t, opens.Load())
+					return nil
+				}
 				if mode == "reject-VM-replay-may-have-sent" {
 					peer.mu.Lock()
 					peer.lose = true
@@ -492,7 +498,7 @@ func vmDSM(s control.Snapshot) control.DSMResponse {
 }
 
 func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T) {
-	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost", "explicit-original-replay", "host-settle", "host-settle-lost", "host-settle-source-gone", "host-settle-runner-drift", "host-settle-gc-lost", "host-settle-scheduler-loop", "host-settle-after-cancel-history"} {
+	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost", "explicit-original-replay", "host-settle", "host-settle-lost", "host-settle-source-gone", "host-settle-runner-drift", "host-settle-gc-lost", "host-settle-scheduler-loop", "host-settle-after-cancel-history", "cancel-before-runner"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -623,6 +629,11 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 				}
 				require.NoError(t, err)
 				require.Equal(t, pgexec.Recorded, progress)
+				if mode == "cancel-before-runner" {
+					verifyVMCancelledBeforeSend(t, ctx, api, client, store, session, worker, runner, peer, req, outRef, mode)
+					require.Zero(t, opens.Load())
+					return nil
+				}
 				if mode == "explicit-original-replay" {
 					reads := 0
 					client.PrependReactor("get", "configmaps", func(action kt.Action) (bool, runtime.Object, error) {

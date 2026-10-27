@@ -115,8 +115,9 @@ const (
 type resultKind string
 
 const (
-	completed resultKind = "completed"
-	notSent   resultKind = "not_sent"
+	completed           resultKind = "completed"
+	notSent             resultKind = "not_sent"
+	cancelledBeforeSend resultKind = "cancelled_before_send"
 )
 
 type intent struct {
@@ -133,6 +134,8 @@ type receipt struct {
 	Intent intent      `json:"intent"`
 	Kind   resultKind  `json:"kind"`
 	Actual Observation `json:"actual"`
+	// 仅取消未发送终态存在；普通完成/not_sent不能带此证明。旧读者严格拒绝。
+	Cancellation *Cancellation `json:"cancellation,omitempty"`
 }
 
 type record struct {
@@ -172,7 +175,7 @@ func (i intent) validate(r record) error {
 }
 
 func (r record) validate() error {
-	if r.ProtocolVersion != 1 || r.Sequence == 0 || r.Identity.Validate() != nil || r.BindingClaim.Validate() != nil || r.Floor.Validate() != nil {
+	if (r.ProtocolVersion != 1 && r.ProtocolVersion != 2) || r.Sequence == 0 || r.Identity.Validate() != nil || r.BindingClaim.Validate() != nil || r.Floor.Validate() != nil {
 		return fmt.Errorf("invalid durable Runner record")
 	}
 	if r.HighWater != nil && (r.HighWater.Validate() != nil || r.HighWater.Instance.VMUID != r.Identity.VMUID || r.HighWater.IssuerEpoch > r.Floor.Epoch) {
@@ -194,7 +197,7 @@ func (r record) validate() error {
 	}
 	if r.Last != nil {
 		last := r.Last
-		if last.Intent.validate(r) != nil || last.Actual.validate(r.Identity) != nil || (last.Kind != completed && last.Kind != notSent) || r.HighWater == nil || compareKey(last.Intent.Command.Request.Key, *r.HighWater) > 0 {
+		if last.Intent.validate(r) != nil || last.Actual.validate(r.Identity) != nil || (last.Kind != completed && last.Kind != notSent && last.Kind != cancelledBeforeSend) || r.HighWater == nil || compareKey(last.Intent.Command.Request.Key, *r.HighWater) > 0 {
 			return fmt.Errorf("invalid retained Runner result")
 		}
 		if last.Kind == completed && (last.Actual.RequestedBytes != last.Intent.Command.Request.TargetVMMemoryBytes || last.Actual.ActualBytes != last.Actual.RequestedBytes) {
@@ -205,6 +208,9 @@ func (r record) validate() error {
 		}
 		if last.Kind == notSent && last.Intent.Stage != prepared {
 			return fmt.Errorf("possible QMP send cannot become not-sent")
+		}
+		if err := validateCancellation(r, *last); err != nil {
+			return err
 		}
 		if last.Intent.Command.Request.Key.Instance != r.HighWater.Instance {
 			return fmt.Errorf("Runner result changed the original PG instance")
@@ -220,7 +226,7 @@ func (r record) validate() error {
 	return nil
 }
 
-// 深拷贝仅含值和四个显式指针；完整请求/身份/来源本身均为不可变值，不含切片。
+// 深拷贝值及显式指针（含Last内部取消证明）；请求/身份/来源不含切片。
 func (r record) clone() record {
 	if r.HighWater != nil {
 		v := *r.HighWater
@@ -232,6 +238,10 @@ func (r record) clone() record {
 	}
 	if r.Last != nil {
 		v := *r.Last
+		if v.Cancellation != nil {
+			cancellation := *v.Cancellation
+			v.Cancellation = &cancellation
+		}
 		r.Last = &v
 	}
 	if r.LastPublished != nil {

@@ -66,10 +66,10 @@ type Confirmed struct {
 }
 
 func (r *Reader) confirm(ctx context.Context, sources budget.RunnerSources, c Command, actor journal.Owner) (Confirmed, error) {
-	return r.confirmKind(ctx, sources, c, actor, false)
+	return r.confirmKind(ctx, sources, c, actor, completed)
 }
 
-func (r *Reader) confirmKind(ctx context.Context, sources budget.RunnerSources, c Command, actor journal.Owner, unsent bool) (Confirmed, error) {
+func (r *Reader) confirmKind(ctx context.Context, sources budget.RunnerSources, c Command, actor journal.Owner, wanted resultKind) (Confirmed, error) {
 	var out Confirmed
 	if sources.Validate() != nil || c.Validate() != nil || c.Identity.VMUID != string(r.binding.VMUID) || c.Identity.Incarnation != r.binding.Incarnation || c.BindingClaim != sources.BirthClaim {
 		return out, fmt.Errorf("Runner original source command differs from fixed VM")
@@ -88,13 +88,19 @@ func (r *Reader) confirmKind(ctx context.Context, sources budget.RunnerSources, 
 	if !reflect.DeepEqual(receipt(result), *p.State.Last) {
 		return out, fmt.Errorf("Runner publication and immutable original receipt differ")
 	}
+	if result.CancelledBeforeSend() {
+		if wanted == cancelledBeforeSend && p.State.ProtocolVersion == 2 && result.Actual == *p.Actual && p.Actual.RequestedBytes == c.BeforeBytes && p.Actual.ActualBytes == c.BeforeBytes {
+			return Confirmed{Sources: sources, Birth: birth, Receipt: result, Actual: *p.Actual}, nil
+		}
+		return out, ErrUnknown
+	}
 	if result.NotSent() {
-		if unsent && result.Intent.Owner == actor && p.Actual.RequestedBytes == c.BeforeBytes && p.Actual.ActualBytes == c.BeforeBytes && result.Actual == *p.Actual {
+		if wanted == notSent && result.Intent.Owner == actor && p.Actual.RequestedBytes == c.BeforeBytes && p.Actual.ActualBytes == c.BeforeBytes && result.Actual == *p.Actual {
 			return Confirmed{Sources: sources, Birth: birth, Receipt: result, Actual: *p.Actual}, nil
 		}
 		return out, ErrNotSent
 	}
-	if unsent || !result.Complete() || p.Actual.RequestedBytes != c.Request.TargetVMMemoryBytes || p.Actual.ActualBytes != c.Request.TargetVMMemoryBytes {
+	if wanted != completed || !result.Complete() || p.Actual.RequestedBytes != c.Request.TargetVMMemoryBytes || p.Actual.ActualBytes != c.Request.TargetVMMemoryBytes {
 		return out, ErrUnknown
 	}
 	return Confirmed{Sources: sources, Birth: birth, Receipt: result, Actual: *p.Actual}, nil
@@ -103,6 +109,17 @@ func (r *Reader) confirmKind(ctx context.Context, sources budget.RunnerSources, 
 // ObserveOriginal先只读原域结果，缺PG/root/Host不能诱发重发。只有完整原回执已
 // 发布、当前无pending且实际值吻合才返回；外层仍须重核预算后才能记录Completed。
 func (r *Reader) ObserveOriginal(ctx context.Context, c Command, journalSHA string, actor journal.Owner) (Confirmed, error) {
+	return r.observeOriginal(ctx, c, journalSHA, actor, false)
+}
+
+// ObserveAbortOriginal只供外层已经持久取消的原步骤对账。返回原动作Completed或
+// 新增的不可再重放取消终态，调用方必须区分；普通not_sent仍保持等待，不能按
+// 当前before或VM取消标志升级NoEffect。本读者不写VM/Runner，不取消物理动作。
+func (r *Reader) ObserveAbortOriginal(ctx context.Context, c Command, journalSHA string, actor journal.Owner) (Confirmed, error) {
+	return r.observeOriginal(ctx, c, journalSHA, actor, true)
+}
+
+func (r *Reader) observeOriginal(ctx context.Context, c Command, journalSHA string, actor journal.Owner, abort bool) (Confirmed, error) {
 	var out Confirmed
 	if c.Validate() != nil || !digestValid(journalSHA) {
 		return out, fmt.Errorf("invalid original Runner query")
@@ -115,7 +132,11 @@ func (r *Reader) ObserveOriginal(ctx context.Context, c Command, journalSHA stri
 		return out, ErrUnknown
 	}
 	sources := budget.RunnerSources{BirthClaim: c.BindingClaim, StateClaim: birth.StateClaim, ReceiptClaim: *p.State.LastPublished, CommandSHA256: p.State.Last.Intent.CommandSHA256, JournalSHA256: journalSHA}
-	return r.confirm(ctx, sources, c, actor)
+	wanted := completed
+	if abort && p.State.Last.Kind == cancelledBeforeSend {
+		wanted = cancelledBeforeSend
+	}
+	return r.confirmKind(ctx, sources, c, actor, wanted)
 }
 
 // CheckRetained用于Finalize/准入及长期预算复核。请求历史淘汰后，原不可变回执

@@ -23,7 +23,7 @@ func (r *Reader) UnsentOriginal(ctx context.Context, c Command, journalSHA strin
 		return out, ErrUnknown
 	}
 	sources := budget.RunnerSources{BirthClaim: c.BindingClaim, StateClaim: birth.StateClaim, ReceiptClaim: *p.State.LastPublished, CommandSHA256: p.State.Last.Intent.CommandSHA256, JournalSHA256: journalSHA}
-	return r.confirmKind(ctx, sources, c, actor, true)
+	return r.confirmKind(ctx, sources, c, actor, notSent)
 }
 
 // replaySelection只读取同VM的持久选择。旧Key提示可保留作为审计，但不能

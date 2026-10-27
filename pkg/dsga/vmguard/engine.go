@@ -38,6 +38,8 @@ type authorization struct {
 	ReplayNonce   string
 	ReplayReceipt budget.ObjectRef
 	Denied        error
+	// Abort只来自固定Kube读者确认的同一原VM/步骤取消，不是普通Denied。
+	Abort *cancellationAuthority
 }
 
 type authority func(context.Context) (authorization, error)
@@ -120,7 +122,7 @@ func (e *engine) observe(ctx context.Context, r *record, s *lockedState) error {
 	} else if actual.RequestedBytes != target || actual.ActualBytes != target {
 		return ErrUnknown
 	}
-	r.Last = &receipt{Intent: *i, Kind: kind, Actual: actual}
+	r.Last = &receipt{Intent: *i, Kind: kind, Actual: actual, Cancellation: nil}
 	r.LastPublished = nil
 	r.Pending = nil
 	if err := saveNext(s, r); err != nil {
@@ -147,6 +149,9 @@ func (e *engine) advance(ctx context.Context) error {
 			if err := saveNext(s, r); err != nil {
 				return err
 			}
+		}
+		if handled, err := e.cancelBeforeSend(ctx, r, s, a); handled {
+			return err
 		}
 		// 新owner的floor持久后，旧pending仍先于一切新动作。接管/取消/租约
 		// 过期不能清除它，也不能把旧request改成新epoch后再执行。
@@ -175,7 +180,7 @@ func (e *engine) advance(ctx context.Context) error {
 				if key != *r.HighWater || last == nil || last.Intent.Command != c || last.Intent.CommandSHA256 != hash || last.Intent.JournalSHA256 != a.JournalSHA256 {
 					return fmt.Errorf("same Runner key changed its full original command")
 				}
-				if last.Kind == completed {
+				if last.Kind == completed || last.Kind == cancelledBeforeSend {
 					return nil
 				}
 				if a.ReplayNonce == "" {
