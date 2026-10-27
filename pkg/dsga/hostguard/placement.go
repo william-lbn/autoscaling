@@ -107,7 +107,7 @@ func (m Model) validatePlacements() error {
 		return fmt.Errorf("host allocation ledger requires complete v3 profile/placements")
 	}
 	for i, p := range *m.Placements {
-		if p.Settled != nil && m.ProtocolVersion != 4 {
+		if p.Settled != nil && m.ProtocolVersion < 4 {
 			return fmt.Errorf("settled Host capacity requires explicit v4 semantics")
 		}
 		if _, err := p.Bytes(); err != nil {

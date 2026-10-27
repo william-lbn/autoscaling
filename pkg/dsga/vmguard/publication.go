@@ -138,7 +138,13 @@ func newClaim(binding journal.Binding, name, kind string, immutable bool, raw []
 }
 
 func validClaim(cm *core.ConfigMap, binding journal.Binding, ref budget.ObjectRef, kind string, immutable bool) error {
-	if ref.Validate() != nil || cm == nil || cm.Name != ref.Name || string(cm.UID) != ref.UID || cm.Namespace != binding.Namespace || cm.ResourceVersion == "" || cm.DeletionTimestamp != nil || cm.Immutable == nil || *cm.Immutable != immutable || cm.Labels[ClaimLabel] != kind || !slices.Contains(cm.Finalizers, ProtectionFinalizer) || len(cm.Data) != 1 || len(cm.BinaryData) != 0 || len(cm.Data[ClaimKey]) == 0 || len(cm.Data[ClaimKey]) > journal.MaxObservationBytes {
+	return validClaimState(cm, binding, ref, kind, immutable, false)
+}
+
+// allowDeleting仅供已退出来源的关闭读取；VM进入GC后，原UID且仍受保护的
+// immutable Birth/Exit可以结清原成本。活动执行读取仍严格拒绝DeletionTimestamp。
+func validClaimState(cm *core.ConfigMap, binding journal.Binding, ref budget.ObjectRef, kind string, immutable, allowDeleting bool) error {
+	if ref.Validate() != nil || cm == nil || cm.Name != ref.Name || string(cm.UID) != ref.UID || cm.Namespace != binding.Namespace || cm.ResourceVersion == "" || !allowDeleting && cm.DeletionTimestamp != nil || cm.Immutable == nil || *cm.Immutable != immutable || cm.Labels[ClaimLabel] != kind || !slices.Contains(cm.Finalizers, ProtectionFinalizer) || len(cm.Data) != 1 || len(cm.BinaryData) != 0 || len(cm.Data[ClaimKey]) == 0 || len(cm.Data[ClaimKey]) > journal.MaxObservationBytes {
 		return fmt.Errorf("original Runner source is absent, replaced, malformed or releasing")
 	}
 	owner := metav1.GetControllerOf(cm)
@@ -194,6 +200,11 @@ func ReadPublished(ctx context.Context, client coreclient.CoreV1Interface, bindi
 	if err != nil {
 		return birth, ref, p, err
 	}
+	if _, err := ReadProcessExit(ctx, client, binding, birth, ref); err == nil {
+		return birth, ref, p, ErrStopped
+	} else if !apierrors.IsNotFound(err) {
+		return birth, ref, p, err
+	}
 	state, err := readClaim(ctx, client, binding, birth.StateClaim, stateKind, false)
 	if err != nil {
 		return birth, ref, p, err
@@ -205,6 +216,16 @@ func ReadPublished(ctx context.Context, client coreclient.CoreV1Interface, bindi
 // InspectBirth/InspectPublication供拥有直接APIReader的Controller复用唯一解码
 // 规则。它们只做纯校验，不认证传入对象；生产调用者必须先真实GET相应原对象。
 func InspectBirth(cm *core.ConfigMap, binding journal.Binding, original *budget.ObjectRef) (Birth, budget.ObjectRef, error) {
+	return inspectBirthState(cm, binding, original, false)
+}
+
+// InspectBirthForExit只固定原关闭来源，不能用于活动派发或QMP状态读取。生产
+// 调用者必须真实GET此CM，再以自己的客户端核原Exit/Pod/Node，不信请求自报。
+func InspectBirthForExit(cm *core.ConfigMap, binding journal.Binding, original *budget.ObjectRef) (Birth, budget.ObjectRef, error) {
+	return inspectBirthState(cm, binding, original, true)
+}
+
+func inspectBirthState(cm *core.ConfigMap, binding journal.Binding, original *budget.ObjectRef, allowDeleting bool) (Birth, budget.ObjectRef, error) {
 	var birth Birth
 	if cm == nil {
 		return birth, budget.ObjectRef{}, fmt.Errorf("Runner Birth unavailable")
@@ -213,7 +234,7 @@ func InspectBirth(cm *core.ConfigMap, binding journal.Binding, original *budget.
 	if ref.Name != BindingName(binding) || original != nil && *original != ref {
 		return birth, ref, fmt.Errorf("original Runner Birth name/UID changed")
 	}
-	if validClaim(cm, binding, ref, bindingKind, true) != nil || json.Unmarshal([]byte(cm.Data[ClaimKey]), &birth) != nil || birth.Identity.VMUID != string(binding.VMUID) || birth.Identity.Incarnation != binding.Incarnation {
+	if validClaimState(cm, binding, ref, bindingKind, true, allowDeleting) != nil || json.Unmarshal([]byte(cm.Data[ClaimKey]), &birth) != nil || birth.Identity.VMUID != string(binding.VMUID) || birth.Identity.Incarnation != binding.Incarnation {
 		return birth, ref, fmt.Errorf("original Runner Birth malformed")
 	}
 	return birth, ref, nil

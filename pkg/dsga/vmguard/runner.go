@@ -186,6 +186,9 @@ func (r *Runner) Tick(ctx context.Context) error {
 	callCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	err := r.engine.advance(callCtx)
+	if errors.Is(err, ErrStopped) {
+		return err
+	}
 	return errors.Join(err, r.publish(callCtx))
 }
 
@@ -193,8 +196,13 @@ func (r *Runner) Run(ctx context.Context, report func(error)) {
 	timer := time.NewTicker(time.Second)
 	defer timer.Stop()
 	for {
-		if err := r.Tick(ctx); err != nil && ctx.Err() == nil && report != nil {
-			report(err)
+		if err := r.Tick(ctx); err != nil {
+			if errors.Is(err, ErrStopped) {
+				return
+			}
+			if ctx.Err() == nil && report != nil {
+				report(err)
+			}
 		}
 		select {
 		case <-ctx.Done():

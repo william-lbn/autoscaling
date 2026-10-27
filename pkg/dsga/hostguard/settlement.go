@@ -96,7 +96,7 @@ func (m Model) settle(actor journal.Owner, podUID string, closed Settlement) (Mo
 		return m, nil, fmt.Errorf("host settlement has no original published hold or sequence exhausted")
 	}
 	next, removed := m.Clone(), []Hold{}
-	next.ProtocolVersion, next.Sequence = 4, next.Sequence+1
+	next.ProtocolVersion, next.Sequence = max(m.ProtocolVersion, 4), next.Sequence+1
 	next.Holds = slices.DeleteFunc(next.Holds, func(h Hold) bool {
 		if h.Plan.RunnerPodUID == podUID && compare(h.Plan.Request.Key, closed.Request.Key) < 0 {
 			removed = append(removed, h)

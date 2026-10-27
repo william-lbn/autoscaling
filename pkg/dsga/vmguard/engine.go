@@ -2,6 +2,7 @@ package vmguard
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -51,6 +52,13 @@ type engine struct {
 }
 
 func (e *engine) withRecord(ctx context.Context, fn func(*record, *lockedState) error) error {
+	return e.withRecordState(ctx, false, fn)
+}
+
+// 原子进程退出文件是与原WAL同锁的永久关闭屏障。普通派发/读回/发布都先核
+// 它，不能在QEMU已退出后继续使用旧QMP publication。唯一allowStopped调用
+// 只允许补发已经持久的退出事实，不改变Pending/Last或把未知动作伪造为完成。
+func (e *engine) withRecordState(ctx context.Context, allowStopped bool, fn func(*record, *lockedState) error) error {
 	if e.id.Validate() != nil || e.binding.Validate() != nil || e.native == nil || e.read == nil || e.now == nil {
 		return fmt.Errorf("Runner requires original binding, private native adapter and fixed authority")
 	}
@@ -65,6 +73,20 @@ func (e *engine) withRecord(ctx context.Context, fn func(*record, *lockedState) 
 	}
 	if r == nil || r.Identity != e.id || r.BindingClaim != e.binding {
 		return fmt.Errorf("Runner original journal is missing or belongs to another birth; automatic reset forbidden")
+	}
+	raw, err := s.readProcessFile("process-exit.json")
+	if err != nil {
+		return err
+	}
+	if raw != nil {
+		var exited ProcessExit
+		body, err := json.Marshal(r)
+		if err != nil || json.Unmarshal(raw, &exited) != nil || exited.Identity != e.id || exited.BirthClaim != e.binding || exited.RecordSequence != r.Sequence || exited.RecordSHA256 != SourceDigest(body) {
+			return fmt.Errorf("original process exit file changed identity or retained WAL")
+		}
+		if !allowStopped {
+			return ErrStopped
+		}
 	}
 	return fn(r, s)
 }

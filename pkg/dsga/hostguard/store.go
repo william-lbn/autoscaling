@@ -64,6 +64,9 @@ type Snapshot struct {
 func (s *Snapshot) State() Model            { return s.model.Clone() }
 func (s *Snapshot) ResourceVersion() string { return s.node.ResourceVersion }
 
+// Node返回独立副本，供直接来源校验；不能把它当作后续写入的许可或最新读取。
+func (s *Snapshot) Node() *core.Node { return s.node.DeepCopy() }
+
 // Hold只读查询完整原持有，接管/Lease过期不让它消失。返回值不是Host源对象或
 // VM执行票据；Allocator/Scheduler生产者还须独立核真实当前容量和原VM来源。
 func (s *Snapshot) Hold(p Plan) (Hold, error) {
@@ -387,6 +390,18 @@ func (s *Store) HoldPlacement(ctx context.Context, snapshot *Snapshot, p Placeme
 	var none Placement
 	if snapshot == nil || snapshot.model.Binding != s.binding || snapshot.model.ProtocolVersion < 3 {
 		return nil, none, fmt.Errorf("pod allocation requires original initialized v3 Node snapshot")
+	}
+	if snapshot.model.ProtocolVersion >= 5 {
+		// v5允许已停止Pod的行收敛；所有容量写者必须重读不可复用的
+		// 原Pod UID/终态，不能把旧队列项在释放后重新加回。旧v4读者
+		// 不接受v5账本，不能依赖其尚未实现的关闭语义。
+		pod, err := s.core.Pods(p.Namespace).Get(ctx, p.PodName, metav1.GetOptions{})
+		if err != nil {
+			return nil, none, err
+		}
+		if string(pod.UID) != p.PodUID || pod.ResourceVersion == "" || pod.DeletionTimestamp != nil || pod.Status.Phase == core.PodSucceeded || pod.Status.Phase == core.PodFailed || pod.Spec.NodeName != "" && pod.Spec.NodeName != s.binding.NodeName || !slices.Contains(pod.Finalizers, PodProtectionFinalizer) {
+			return nil, none, fmt.Errorf("original Pod is closed, replaced or lacks allocation protection")
+		}
 	}
 	first, err := s.leaseActor(ctx, false)
 	if err != nil {

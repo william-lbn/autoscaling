@@ -3,6 +3,7 @@
 package vmguard
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"encoding/hex"
@@ -16,6 +17,90 @@ import (
 
 	"golang.org/x/sys/unix"
 )
+
+const processFileLimit = 64 * 1024
+
+func randomProcessNonce() (string, error) {
+	var nonce [16]byte
+	if _, err := rand.Read(nonce[:]); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(nonce[:]), nil
+}
+
+// readProcessFile只在原目录flock内读取两种固定文件，不能把调用方路径变成
+// 任意文件访问。ENOENT保留为“尚无事实”，符号链接/权限/超长或读失败均拒绝。
+func (s *lockedState) readProcessFile(name string) ([]byte, error) {
+	if name != "process-launch.json" && name != "process-exit.json" {
+		return nil, fmt.Errorf("unknown original process file")
+	}
+	fd, err := unix.Openat(int(s.dir.Fd()), name, unix.O_RDONLY|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0)
+	if errors.Is(err, unix.ENOENT) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	f := os.NewFile(uintptr(fd), name)
+	defer f.Close()
+	if err := privateFile(fd, unix.S_IFREG); err != nil {
+		return nil, err
+	}
+	raw, err := io.ReadAll(io.LimitReader(f, processFileLimit+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(raw) == 0 || len(raw) > processFileLimit {
+		return nil, fmt.Errorf("original process file is empty or exceeds bound")
+	}
+	return raw, nil
+}
+
+// writeOnce先同步临时完整文件，再以linkat的“不替换”语义安装并同步目录。
+// 同一原文可恢复丢回复，另一nonce/退出结果永不覆盖。锁序始终先目录flock，
+// 此处不做网络调用；失败留下原事实/临时文件，不删除或重置出生WAL。
+func (s *lockedState) writeOnce(name string, raw []byte) error {
+	old, err := s.readProcessFile(name)
+	if err != nil {
+		return err
+	}
+	if old != nil {
+		if !bytes.Equal(old, raw) {
+			return fmt.Errorf("original process fact already exists with another body")
+		}
+		return s.dir.Sync()
+	}
+	if len(raw) == 0 || len(raw) > processFileLimit {
+		return fmt.Errorf("original process fact exceeds bound")
+	}
+	nonce, err := randomProcessNonce()
+	if err != nil {
+		return err
+	}
+	tmp := "process-" + nonce + ".tmp"
+	dirfd := int(s.dir.Fd())
+	fd, err := unix.Openat(dirfd, tmp, unix.O_WRONLY|unix.O_CREAT|unix.O_EXCL|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0o600)
+	if err != nil {
+		return err
+	}
+	f := os.NewFile(uintptr(fd), tmp)
+	defer func() { _ = unix.Unlinkat(dirfd, tmp, 0) }()
+	if n, err := f.Write(raw); err != nil || n != len(raw) {
+		f.Close()
+		return errOrShortWrite(err)
+	}
+	if err := f.Sync(); err != nil {
+		f.Close()
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	if err := unix.Linkat(dirfd, tmp, dirfd, name, 0); err != nil {
+		return err
+	}
+	return s.dir.Sync()
+}
 
 // 本VM独占锁覆盖floor/完整WAL持久化和一次有期限的私有QMP调用。锁在所有
 // Runner进程间生效，不依赖goroutine或PG boot；不持有Agent/Controller全局锁。
