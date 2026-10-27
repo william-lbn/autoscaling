@@ -73,6 +73,14 @@ func (model Model) newHeldBudget(step Step) (*HeldBudget, error) {
 	if err != nil {
 		return nil, err
 	}
+	if model.CapacityHeld != nil {
+		var prior budget.ReconciledAbortCommand
+		if json.Unmarshal(model.CapacityHeld.Cleanup.Command, &prior) != nil || f.Request.ExpectedCapacityGeneration != prior.Capacity.CapacityGeneration {
+			// 实际预算已经固定当前PG代次。正常后继只能从这一代开始，
+			// 不能用旧expected伪造另一份看似完整的成功回执覆盖永久头。
+			return nil, fmt.Errorf("normal finalization regressed reconciled PG generation")
+		}
+	}
 	if model.ProtocolVersion >= 4 && (f.Sources == nil || f.Sources.Runner == nil) {
 		return nil, fmt.Errorf("runner-backed budget cannot downgrade to legacy VM sources")
 	}

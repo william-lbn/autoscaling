@@ -12,6 +12,7 @@ import (
 	"math"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 )
 
@@ -149,6 +150,9 @@ type Model struct {
 	// 原命令/回执，不能只留下数字、可复用SourceID或当前RSS。本字段首次写入
 	// 同时升级Model v3，旧读者必须拒绝，控制面后续移植时再统一升级读者。
 	BudgetHeld *HeldBudget `json:"budget_held,omitempty"`
+	// 部分效果取消使用独立实际预算，和普通目标成功预算互斥。Cleanup
+	// 完整落账与长期持有同CAS升级v8，禁止旧读者投影为目标已成功。
+	CapacityHeld *HeldCapacity `json:"capacity_held,omitempty"`
 	// BudgetBoundary永久记录当前预算成功关闭后，直到哪条零派发取消仍没有
 	// 后续派发效果。它与Finish同CAS，独立于16条结果缓存；任何Start先撤销
 	// 此证明，新预算也必须重新成功关闭。首次生成升v5，旧读者必须拒绝。
@@ -159,7 +163,7 @@ func New(vmUID, incarnation, holder string) (Model, error) {
 	model := Model{
 		ProtocolVersion: 1, VMUID: vmUID, Incarnation: incarnation, Sequence: 1,
 		Owner: Owner{HolderID: holder, Epoch: 1}, HighWater: nil, Active: nil, History: []Record{}, ExpiredResults: 0,
-		ResourceIdentity: nil, PGInstance: nil, BudgetHeld: nil, BudgetBoundary: nil,
+		ResourceIdentity: nil, PGInstance: nil, BudgetHeld: nil, CapacityHeld: nil, BudgetBoundary: nil,
 	}
 	return model, model.Validate()
 }
@@ -369,7 +373,7 @@ func compareKeys(left, right control.Key) int {
 }
 
 func (model Model) Validate() error {
-	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 7) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
+	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 8) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
 		return fmt.Errorf("invalid journal version/sequence/incarnation")
 	}
 	// 旧Model已有严格字段解码，会拒绝pg_instance；这里另用v2明确标识
@@ -378,7 +382,7 @@ func (model Model) Validate() error {
 	if (model.ProtocolVersion == 1 && model.PGInstance != nil) || (model.ProtocolVersion >= 2 && model.PGInstance == nil) {
 		return fmt.Errorf("journal version does not preserve required PG identity")
 	}
-	if (model.ProtocolVersion < 3 && model.BudgetHeld != nil) || (model.ProtocolVersion >= 3 && (model.BudgetHeld == nil || model.ResourceIdentity == nil)) {
+	if (model.ProtocolVersion < 3 && model.BudgetHeld != nil) || (model.CapacityHeld != nil && (model.ProtocolVersion < 8 || model.BudgetHeld != nil)) || (model.ProtocolVersion >= 3 && ((model.BudgetHeld == nil && model.CapacityHeld == nil) || model.ResourceIdentity == nil)) {
 		return fmt.Errorf("journal version does not preserve required held budget")
 	}
 	if err := control.ValidateID(model.VMUID, "VM"); err != nil {
@@ -452,6 +456,9 @@ func (model Model) Validate() error {
 	if err := model.validateHeldBudget(); err != nil {
 		return err
 	}
+	if err := model.validateHeldCapacity(); err != nil {
+		return err
+	}
 	return model.validateBudgetBoundary()
 }
 
@@ -512,6 +519,11 @@ func (model Model) Clone() Model {
 		copy := *model.BudgetHeld
 		copy.Finalization = cloneStep(copy.Finalization)
 		model.BudgetHeld = &copy
+	}
+	if model.CapacityHeld != nil {
+		held := *model.CapacityHeld
+		held.Cleanup = cloneStep(held.Cleanup)
+		model.CapacityHeld = &held
 	}
 	if model.PGInstance != nil {
 		copy := *model.PGInstance
@@ -812,7 +824,19 @@ func (model Model) Record(actor Owner, key control.Key, observation Observation)
 		// Runner原UID/完整摘要成为当前预算永久来源时同时升级v4。旧v3读者
 		// 即便收到删掉新字段的投影也必须拒绝版本，不能退回只验数值的旧VM事实。
 		next.ProtocolVersion, next.BudgetHeld = max(next.ProtocolVersion, heldBudgetVersion(held)), held
+		next.CapacityHeld = nil
 		next.BudgetBoundary = nil
+	}
+	if step.Action == AbortReconcile && recorded.Result == Completed {
+		var marker map[string]json.RawMessage
+		_ = json.Unmarshal(step.Command, &marker)
+		if _, reconciled := marker["capacity"]; reconciled {
+			held, err := next.heldCapacity(*operation, *step)
+			if err != nil {
+				return model, err
+			}
+			next.ProtocolVersion, next.CapacityHeld, next.BudgetHeld, next.BudgetBoundary = max(next.ProtocolVersion, 8), held, nil, nil
+		}
 	}
 	return next, next.Validate()
 }
@@ -845,6 +869,14 @@ func (model Model) StartCleanup(actor Owner, key control.Key, targetID string, c
 	for _, step := range next.Active.Steps {
 		if step.Phase == Unconfirmed {
 			return model, fmt.Errorf("cleanup cannot erase an unconfirmed effect")
+		}
+	}
+	var marker map[string]json.RawMessage
+	_ = json.Unmarshal(command, &marker)
+	if _, reconciled := marker["capacity"]; reconciled {
+		var original budget.ReconciledAbortCommand
+		if json.Unmarshal(command, &original) != nil || original.ValidateFor(actor.Epoch) != nil || targetID != key.Instance.ComputeInstanceID || next.reconciledPattern(*next.Active, original) != nil {
+			return model, fmt.Errorf("reconciled Cleanup changed original actual capacity or plan")
 		}
 	}
 	owner := actor

@@ -38,7 +38,9 @@ func heldCommand(t *testing.T, req control.Request) budget.FinalizationCommand {
 	o := response.Observed
 	o.Instance, o.IssuerFloorEpoch = req.Key.Instance, req.Key.IssuerEpoch
 	o.LowBuffers, o.HighBuffers = req.TargetBuffers, req.TargetBuffers
+	o.CapacityGeneration = req.ExpectedCapacityGeneration + 1
 	o.Operation.Key, o.Operation.Kind, o.Operation.TargetBuffers = req.Key, req.Kind, req.TargetBuffers
+	o.Operation.ExpectedCapacityGeneration = req.ExpectedCapacityGeneration
 	o.Operation.ContextSHA256, err = req.ContextSHA256()
 	require.NoError(t, err)
 	shared := control.SharedCostResponse{ProtocolVersion: 1, StartupMainUpperBytes: 16 << 20, StartupArraysUpperBytes: 16 << 20, CurrentMainAndArraysUpperBytes: 80 << 20, Observed: o}

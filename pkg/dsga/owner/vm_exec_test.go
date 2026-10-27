@@ -174,7 +174,7 @@ func vmReservation(t *testing.T, client *kubefake.Clientset, name, kind string, 
 }
 
 func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testing.T) {
-	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late", "abort-committed", "abort-after-open", "abort-replies", "abort-original-open-lost"} {
+	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late", "abort-committed", "abort-after-open", "abort-replies", "abort-original-open-lost", "partial-pending-restore"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -219,7 +219,7 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 			}
 			vmPeer(t, filepath.Join(dir, "qmp.sock"), peer)
 			options, timeout := testOptions(), 20*time.Second
-			if strings.HasPrefix(mode, "abort-") {
+			if strings.HasPrefix(mode, "abort-") || mode == "partial-pending-restore" {
 				// 完整取消审计更大，race下使用真实生产选主期限；不把原先
 				// 专测快速失租的400ms期限当作整个生命周期的性能门槛。
 				options, timeout = DefaultOptions(), 45*time.Second
@@ -489,6 +489,12 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 						require.Equal(t, pgexec.Recorded, progress)
 					}
 					require.Equal(t, journal.Settled, budgetStep(t, store, journal.ResizeVM).Phase)
+					if mode == "partial-pending-restore" {
+						verifyPartialCapacityPending(t, ctx, api, store, session, worker, resources, config, client, p, out, outRef, host)
+						require.Zero(t, resizePosts.Load())
+						require.Zero(t, opens.Load())
+						return nil
+					}
 					for _, action := range []journal.Action{journal.GuestReady, journal.ResizePG, journal.FinalizeBudget, journal.ResumeAdmission} {
 						if action == journal.ResumeAdmission && abortMode && mode != "abort-after-open" && mode != "abort-original-open-lost" {
 							break

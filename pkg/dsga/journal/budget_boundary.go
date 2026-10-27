@@ -38,6 +38,13 @@ func (b *ClosedBudgetBoundary) UnmarshalJSON(data []byte) error {
 }
 
 func (model Model) retainedRequest() (control.Request, error) {
+	if model.CapacityHeld != nil {
+		var c budget.ReconciledAbortCommand
+		if json.Unmarshal(model.CapacityHeld.Cleanup.Command, &c) != nil {
+			return control.Request{}, fmt.Errorf("original reconciled budget command unavailable")
+		}
+		return c.Capacity.Request, nil
+	}
 	var command budget.FinalizationCommand
 	if model.BudgetHeld == nil || json.Unmarshal(model.BudgetHeld.Finalization.Command, &command) != nil {
 		return control.Request{}, fmt.Errorf("original retained budget command unavailable")
@@ -45,8 +52,19 @@ func (model Model) retainedRequest() (control.Request, error) {
 	return command.Finalized.Request, nil
 }
 
+func (model Model) budgetRecord() (string, control.Uint64) {
+	if model.CapacityHeld != nil {
+		return model.CapacityHeld.Cleanup.CommandSHA256, model.CapacityHeld.RecordedSequence
+	}
+	if model.BudgetHeld != nil {
+		return model.BudgetHeld.Finalization.CommandSHA256, model.BudgetHeld.RecordedSequence
+	}
+	return "", 0
+}
+
 func (model Model) boundaryFor(request control.Request, sequence control.Uint64) *ClosedBudgetBoundary {
-	return &ClosedBudgetBoundary{ProtocolVersion: 1, BudgetKey: request.Key, FinalizationSHA256: model.BudgetHeld.Finalization.CommandSHA256, RecordedSequence: model.BudgetHeld.RecordedSequence, SucceededSequence: sequence, ThroughKey: request.Key, ThroughSequence: sequence}
+	hash, recorded := model.budgetRecord()
+	return &ClosedBudgetBoundary{ProtocolVersion: 1, BudgetKey: request.Key, FinalizationSHA256: hash, RecordedSequence: recorded, SucceededSequence: sequence, ThroughKey: request.Key, ThroughSequence: sequence}
 }
 
 // legacyBudgetBoundary仅在显式Finish的同一原快照上升级v4：原成功记录必须仍
@@ -70,7 +88,7 @@ func (model Model) legacyBudgetBoundary(request control.Request) *ClosedBudgetBo
 }
 
 func (model *Model) closeBudgetBoundary(outcome Outcome) error {
-	if model.ProtocolVersion < 4 || model.BudgetHeld == nil {
+	if model.ProtocolVersion < 4 || model.BudgetHeld == nil && model.CapacityHeld == nil {
 		return nil
 	}
 	request, err := model.retainedRequest()
@@ -104,6 +122,8 @@ func (model *Model) closeBudgetBoundary(outcome Outcome) error {
 			prior := *model.Active.PriorBudgetBoundary
 			prior.ThroughKey, prior.ThroughSequence = model.Active.Request.Key, model.Sequence
 			model.BudgetBoundary = &prior
+		} else if model.validateReconciledAbort(*model.Active) == nil {
+			model.BudgetBoundary = model.boundaryFor(request, model.Sequence)
 		}
 	}
 	if model.BudgetBoundary != nil {
@@ -117,11 +137,12 @@ func (model Model) validateBudgetBoundary() error {
 	if b == nil {
 		return nil
 	}
-	if model.ProtocolVersion < 5 || model.BudgetHeld == nil || model.HighWater == nil || b.ProtocolVersion != 1 || b.BudgetKey.Validate() != nil || b.ThroughKey.Validate() != nil {
+	if model.ProtocolVersion < 5 || model.BudgetHeld == nil && model.CapacityHeld == nil || model.HighWater == nil || b.ProtocolVersion != 1 || b.BudgetKey.Validate() != nil || b.ThroughKey.Validate() != nil {
 		return fmt.Errorf("invalid closed budget boundary version or binding")
 	}
 	request, err := model.retainedRequest()
-	if err != nil || b.BudgetKey != request.Key || b.FinalizationSHA256 != model.BudgetHeld.Finalization.CommandSHA256 || b.RecordedSequence != model.BudgetHeld.RecordedSequence ||
+	hash, recorded := model.budgetRecord()
+	if err != nil || b.BudgetKey != request.Key || b.FinalizationSHA256 != hash || b.RecordedSequence != recorded ||
 		b.SucceededSequence <= b.RecordedSequence || b.SucceededSequence > b.ThroughSequence || b.ThroughSequence > model.Sequence || b.ThroughKey.Instance != b.BudgetKey.Instance || b.ThroughKey.IssuerEpoch > model.Owner.Epoch ||
 		compareKeys(b.ThroughKey, b.BudgetKey) < 0 || compareKeys(b.ThroughKey, *model.HighWater) > 0 {
 		return fmt.Errorf("closed budget boundary changed original budget or monotonic sequence")
@@ -141,7 +162,7 @@ func (model Model) validateBudgetBoundary() error {
 			continue
 		}
 		if key == b.BudgetKey {
-			capacityClosed := record.Outcome == Succeeded || (model.ProtocolVersion >= 6 && record.Outcome == AbortedAfterReconcile && model.validateCommittedAbort(record.Operation) == nil)
+			capacityClosed := record.Outcome == Succeeded || (model.ProtocolVersion >= 6 && record.Outcome == AbortedAfterReconcile && model.validateCommittedAbort(record.Operation) == nil) || (model.ProtocolVersion >= 8 && record.Outcome == AbortedAfterReconcile && model.validateReconciledAbort(record.Operation) == nil)
 			if record.Operation.Request != request || !capacityClosed || record.ClosedSequence != b.SucceededSequence {
 				return fmt.Errorf("closed budget boundary contradicts original successful history")
 			}
