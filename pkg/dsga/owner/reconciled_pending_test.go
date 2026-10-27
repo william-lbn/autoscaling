@@ -19,7 +19,7 @@ import (
 // 真实VM扩容后、Guest/PG仍未变时固定取消Cleanup，Start已提交但丢回复。
 // 重建生产worker必须从原WAL恢复同一实际代次开放命令；不需要旧Finalized，
 // 不准为简化恢复使用空SDK。此阶段仅测恢复pending，尚不称取消已闭合。
-func verifyPartialCapacityPending(t *testing.T, ctx context.Context, api *ownerAPI, store *journal.Store, session *Session, worker *PGWorker, resources *ResourceWorker, config compute.Config, core *kubefake.Clientset, p budget.Prepared, outside budget.OutsideReservation, outRef budget.ObjectRef, host budget.HostReservation) {
+func verifyPartialCapacityPending(t *testing.T, ctx context.Context, api *ownerAPI, store *journal.Store, session *Session, worker *PGWorker, resources *ResourceWorker, config compute.Config, core *kubefake.Clientset, p budget.Prepared, outside budget.OutsideReservation, outRef budget.ObjectRef, host budget.HostReservation, mode string) {
 	t.Helper()
 	step := budgetStep(t, store, journal.ResizeVM)
 	var native vmguard.Command
@@ -42,6 +42,9 @@ func verifyPartialCapacityPending(t *testing.T, ctx context.Context, api *ownerA
 	require.NoError(t, err)
 	opening := control.AdmissionRequest{ProtocolVersion: 1, Instance: p.Request.Key.Instance, IssuerEpoch: session.Actor().Epoch, Revision: shared.Observed.AdmissionRevision + 1, ExpectedCapacityGeneration: capacity.CapacityGeneration, Open: true, BudgetCommitmentID: p.Request.BudgetCommitmentID}
 	command := budget.ReconciledAbortCommand{ProtocolVersion: 1, Capacity: capacity, PreparedSHA256: source.PreparedSHA256, Admission: &opening}
+	if mode == "partial-host-settle" {
+		command.Admission = nil
+	}
 	raw, err := json.Marshal(command)
 	require.NoError(t, err)
 	api.mu.Lock()
@@ -55,6 +58,11 @@ func verifyPartialCapacityPending(t *testing.T, ctx context.Context, api *ownerA
 	defer restored.CloseIdleConnections()
 	pending, closing := restored.client.PendingAdmission()
 	require.Nil(t, closing)
+	if mode == "partial-host-settle" {
+		require.Nil(t, pending, "只读Cleanup不能恢复成一个未授权的开放请求")
+		verifyActualHostSettlement(t, ctx, api, core, store, session, worker, aggregate, shared, command)
+		return
+	}
 	require.NotNil(t, pending)
 	require.Equal(t, opening, *pending)
 	require.Equal(t, p.Request.ExpectedCapacityGeneration, pending.ExpectedCapacityGeneration, "PG尚未扩，不可误用目标成功后的generation+1")

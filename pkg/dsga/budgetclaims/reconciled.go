@@ -27,11 +27,22 @@ type ReconciledSources struct {
 }
 
 // ReadReconciled只读同Active取消的实际容量来源，不释放/重建原CM。它不是
-// ReadCurrent的降级入口；关闭后的永久预算需独立账本接线。CM必须原UID、
+// ReadCurrent的降级入口；关闭后的永久预算走独立认证分支。CM必须原UID、
 // immutable、protected且同VM，Node还须发布同一Host CM UID对应的峰值。
 func (r *Reader) ReadReconciled(ctx context.Context, s *journal.Snapshot, c budget.ReconciledCapacity) (*ReconciledSources, error) {
-	if s == nil || c.Validate() != nil || !s.Dispatchable() || s.VirtualMachine().UID != r.binding.VMUID || s.State().Incarnation != r.binding.Incarnation || s.State().Active == nil || !s.State().Active.AbortRequested || s.State().Active.Request != c.Request || s.State().PGInstance == nil || *s.State().PGInstance != c.Request.Key.Instance || s.State().ResourceIdentity == nil {
+	return r.readReconciled(ctx, s, c, nil)
+}
+
+func (r *Reader) readReconciled(ctx context.Context, s *journal.Snapshot, c budget.ReconciledCapacity, closed *hostguard.Settlement) (*ReconciledSources, error) {
+	if s == nil || c.Validate() != nil || !s.Dispatchable() || s.VirtualMachine().UID != r.binding.VMUID || s.State().Incarnation != r.binding.Incarnation || s.State().PGInstance == nil || *s.State().PGInstance != c.Request.Key.Instance || s.State().ResourceIdentity == nil {
 		return nil, fmt.Errorf("reconciled sources require original live aborted VM and actual budget")
+	}
+	if closed == nil {
+		if s.State().Active == nil || !s.State().Active.AbortRequested || s.State().Active.Request != c.Request {
+			return nil, fmt.Errorf("reconciled active source reader requires original cancellation")
+		}
+	} else if s.State().CheckClosedCapacity(c.Request) != nil {
+		return nil, fmt.Errorf("reconciled current source reader requires original closed permanent budget")
 	}
 	outside, err := r.claim(ctx, c.OutsideClaim, OutsideKind)
 	if err != nil {
@@ -74,10 +85,39 @@ func (r *Reader) ReadReconciled(ctx context.Context, s *journal.Snapshot, c budg
 	if err != nil || peak != h.ReservedMemoryBytes {
 		return nil, fmt.Errorf("reconciled original Host peak no longer covers actual VM")
 	}
-	if err := hostguard.InspectClaim(node, plan, h.SourceID, c.HostClaim); err != nil {
+	var checked error
+	if closed == nil {
+		checked = hostguard.InspectClaim(node, plan, h.SourceID, c.HostClaim)
+	} else {
+		checked = hostguard.InspectRetainedClaim(node, plan, h.SourceID, c.HostClaim, *closed)
+	}
+	if err := checked; err != nil {
 		return nil, err
 	}
 	return &ReconciledSources{Outside: out, Host: h, outside: outside, host: host, pod: pod, node: node}, nil
+}
+
+// 当前实际预算只从永久头取得，不能由调用者传一份与原VM不同的数值来释放
+// 容量。结清后的来源只供只读维持预算，不恢复已结清的执行权限。
+func (r *Reader) readCurrentCapacity(ctx context.Context, s *journal.Snapshot) (*Current, error) {
+	var command budget.ReconciledAbortCommand
+	m := s.State()
+	if m.CapacityHeld == nil || json.Unmarshal(m.CapacityHeld.Cleanup.Command, &command) != nil {
+		return nil, fmt.Errorf("current actual budget lacks original permanent command")
+	}
+	capacity, err := m.CapacityFor(command.Capacity.Request)
+	if err != nil {
+		return nil, err
+	}
+	closed, err := hostguard.SettlementFor(m)
+	if err != nil {
+		return nil, err
+	}
+	observed, err := r.readReconciled(ctx, s, capacity, &closed)
+	if err != nil {
+		return nil, err
+	}
+	return &Current{Closed: closed, Host: observed.Host, outside: observed.outside, host: observed.host, pod: observed.pod, node: observed.node}, nil
 }
 
 // 重读包围其他域的网络请求。Node其他计划可变化，但原持有必须仍在且原CM

@@ -100,7 +100,7 @@ func (s *Service) allocation(ctx context.Context, n NodeConfig, expected *core.P
 		if err != nil {
 			return nil, none, nil, err
 		}
-		if snapshot.State().BudgetHeld != nil {
+		if snapshot.State().BudgetHeld != nil || snapshot.State().CapacityHeld != nil {
 			closed, err := hostguard.SettlementFor(snapshot.State())
 			if err != nil {
 				return nil, none, nil, err
@@ -115,7 +115,7 @@ func (s *Service) allocation(ctx context.Context, n NodeConfig, expected *core.P
 			// DSGA动作不改写旧spec.Use/传播批准。永久预算存在后必须取
 			// 原Runner实际值与当前预算，不能在结清后一轮又用旧Use重抬
 			// 峰值。仍有pending时只保留最大值，绝不据此释放容量。
-			p.MemoryBytes = max(publication.Actual.RequestedBytes, publication.Actual.ActualBytes, closed.Request.TargetVMMemoryBytes)
+			p.MemoryBytes = max(publication.Actual.RequestedBytes, publication.Actual.ActualBytes, closed.MemoryBytes())
 			currentManaged = true
 		}
 	}

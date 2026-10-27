@@ -22,11 +22,22 @@ type Settlement struct {
 	Runner          budget.RunnerSources `json:"runner"`
 	BudgetSequence  control.Uint64       `json:"budget_sequence"`
 	FinalizationSHA string               `json:"finalization_sha256"`
+	// 实际预算必须显式保留真实VM容量；原Request目标不改写。零值仅
+	// 表示旧普通成功合同，继续取原target；非零需Node v7，不能由旧
+	// 读者忽略后按更小的取消目标退还内存。它仍不是物理空闲证明。
+	ActualMemoryBytes control.Uint64 `json:"actual_memory_bytes,omitempty"`
 	// Through只扩展“之后无容量效果”的关闭水位，不替换当前成功预算。
 	// 两项均零表示旧v4/v5语义；新值必须直接来自VM永久关闭证明，不能
 	// 根据当前before、超时或原请求目标推算。含此证明的Node必须升级v6。
 	ThroughKey      control.Key    `json:"through_key,omitempty"`
 	ThroughSequence control.Uint64 `json:"through_sequence,omitempty"`
+}
+
+func (s Settlement) MemoryBytes() control.Uint64 {
+	if s.ActualMemoryBytes != 0 {
+		return s.ActualMemoryBytes
+	}
+	return s.Request.TargetVMMemoryBytes
 }
 
 func (s Settlement) Validate() error {
@@ -77,13 +88,14 @@ func (s Settlement) MarshalJSON() ([]byte, error) {
 	var emptyKey control.Key
 	if s.ThroughKey == emptyKey && s.ThroughSequence == 0 {
 		type legacy struct {
-			Request         control.Request      `json:"request"`
-			HostClaim       budget.ObjectRef     `json:"host_claim"`
-			Runner          budget.RunnerSources `json:"runner"`
-			BudgetSequence  control.Uint64       `json:"budget_sequence"`
-			FinalizationSHA string               `json:"finalization_sha256"`
+			Request           control.Request      `json:"request"`
+			HostClaim         budget.ObjectRef     `json:"host_claim"`
+			Runner            budget.RunnerSources `json:"runner"`
+			BudgetSequence    control.Uint64       `json:"budget_sequence"`
+			FinalizationSHA   string               `json:"finalization_sha256"`
+			ActualMemoryBytes control.Uint64       `json:"actual_memory_bytes,omitempty"`
 		}
-		return json.Marshal(legacy{Request: s.Request, HostClaim: s.HostClaim, Runner: s.Runner, BudgetSequence: s.BudgetSequence, FinalizationSHA: s.FinalizationSHA})
+		return json.Marshal(legacy{Request: s.Request, HostClaim: s.HostClaim, Runner: s.Runner, BudgetSequence: s.BudgetSequence, FinalizationSHA: s.FinalizationSHA, ActualMemoryBytes: s.ActualMemoryBytes})
 	}
 	type plain Settlement
 	return json.Marshal(plain(s))
@@ -103,8 +115,21 @@ func (s *Settlement) UnmarshalJSON(raw []byte) error {
 // 可用于只读预算来源核对；产生容量释放仍须可信Settler逐项核原外部事实。
 func SettlementFor(m journal.Model) (Settlement, error) {
 	var none Settlement
-	if m.Validate() != nil || m.ProtocolVersion < 4 || m.BudgetHeld == nil {
+	if m.Validate() != nil || m.ProtocolVersion < 4 || m.BudgetHeld == nil && m.CapacityHeld == nil {
 		return none, fmt.Errorf("host settlement requires current complete Runner-backed VM budget")
+	}
+	if m.CapacityHeld != nil {
+		var c budget.ReconciledAbortCommand
+		h := m.CapacityHeld
+		if json.Unmarshal(h.Cleanup.Command, &c) != nil || c.ValidateFor(h.Cleanup.DispatchedBy.Epoch) != nil {
+			return none, fmt.Errorf("host settlement lost original actual-capacity command")
+		}
+		var empty control.Key
+		s := Settlement{Request: c.Capacity.Request, HostClaim: c.Capacity.HostClaim, Runner: c.Capacity.VM.Sources, BudgetSequence: h.RecordedSequence, FinalizationSHA: h.Cleanup.CommandSHA256, ActualMemoryBytes: c.Capacity.VMMemoryBytes, ThroughKey: empty, ThroughSequence: 0}
+		if b := m.BudgetBoundary; b != nil && b.ThroughKey != s.Request.Key {
+			s.ThroughKey, s.ThroughSequence = b.ThroughKey, b.ThroughSequence
+		}
+		return s, s.Validate()
 	}
 	var c budget.FinalizationCommand
 	h := m.BudgetHeld
@@ -112,7 +137,7 @@ func SettlementFor(m journal.Model) (Settlement, error) {
 		return none, fmt.Errorf("host settlement lacks original finalization command and sources")
 	}
 	var emptyKey control.Key
-	s := Settlement{Request: c.Finalized.Request, HostClaim: c.Finalized.Sources.HostClaim, Runner: *c.Finalized.Sources.Runner, BudgetSequence: h.RecordedSequence, FinalizationSHA: h.Finalization.CommandSHA256, ThroughKey: emptyKey, ThroughSequence: 0}
+	s := Settlement{Request: c.Finalized.Request, HostClaim: c.Finalized.Sources.HostClaim, Runner: *c.Finalized.Sources.Runner, BudgetSequence: h.RecordedSequence, FinalizationSHA: h.Finalization.CommandSHA256, ActualMemoryBytes: 0, ThroughKey: emptyKey, ThroughSequence: 0}
 	if b := m.BudgetBoundary; b != nil && b.ThroughKey != s.Request.Key {
 		// Model.Validate已认证原预算/所有可见历史/永久水位；这里不从
 		// HighWater或当前Active自行补造“没有容量效果”的证据。
@@ -152,6 +177,9 @@ func (m Model) settle(actor journal.Owner, podUID string, closed Settlement) (Mo
 	current := false
 	for _, h := range m.Holds {
 		if h.Plan.RunnerPodUID == podUID && h.Plan.Request == closed.Request && h.Claim != nil && *h.Claim == closed.HostClaim {
+			if closed.MemoryBytes() != h.Plan.BeforeBytes && closed.MemoryBytes() != h.Plan.Request.TargetVMMemoryBytes {
+				return m, nil, fmt.Errorf("host actual settlement is outside original before and target")
+			}
 			current = true
 		}
 	}
@@ -162,6 +190,9 @@ func (m Model) settle(actor journal.Owner, podUID string, closed Settlement) (Mo
 	next.ProtocolVersion, next.Sequence = max(m.ProtocolVersion, 4), next.Sequence+1
 	if closed.ThroughSequence != 0 {
 		next.ProtocolVersion = max(next.ProtocolVersion, 6)
+	}
+	if closed.ActualMemoryBytes != 0 {
+		next.ProtocolVersion = max(next.ProtocolVersion, 7)
 	}
 	next.Holds = slices.DeleteFunc(next.Holds, func(h Hold) bool {
 		if h.Plan.RunnerPodUID == podUID && h.Plan.Request != closed.Request && compare(h.Plan.Request.Key, closed.ClosedThrough()) <= 0 {
@@ -175,7 +206,7 @@ func (m Model) settle(actor journal.Owner, podUID string, closed Settlement) (Mo
 		if row.PodUID == podUID {
 			// 目标本身永久保留，其他更晚操作的peak由Holds另计。跨对象
 			// 并发资格由生产者在Node快照之后真实读VM确认，最后Node CAS。
-			row.MemoryBytes, row.Settled = closed.Request.TargetVMMemoryBytes, &closed
+			row.MemoryBytes, row.Settled = closed.MemoryBytes(), &closed
 		}
 	}
 	if err := next.Validate(); err != nil {

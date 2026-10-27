@@ -257,7 +257,8 @@ func TestSchedulerOrdinaryPodRetirementKeepsOtherAllocations(t *testing.T) {
 	require.NoError(t, err)
 	var restored hostguard.Model
 	require.NoError(t, json.Unmarshal(raw, &restored))
-	restored.ProtocolVersion = 7
+	// v7已用于实际容量结清；未知的下一版仍必须拒绝，避免读者忽略新合同。
+	restored.ProtocolVersion = 8
 	raw, err = json.Marshal(restored)
 	require.NoError(t, err)
 	require.Error(t, json.Unmarshal(raw, &restored))

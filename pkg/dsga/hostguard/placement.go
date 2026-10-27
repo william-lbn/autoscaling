@@ -73,7 +73,7 @@ func (p Placement) Bytes() (control.Uint64, error) {
 	if p.MemoryBytes == 0 || p.HostOverheadBytes == 0 || p.HostOverheadBytes > control.Uint64(math.MaxUint64)-p.MemoryBytes {
 		return 0, fmt.Errorf("pod memory plus Host overhead is zero or overflows")
 	}
-	if p.Settled != nil && (!p.Managed || p.Settled.Validate() != nil || p.Settled.Request.Key.Instance.VMUID != p.VMUID || p.MemoryBytes < p.Settled.Request.TargetVMMemoryBytes) {
+	if p.Settled != nil && (!p.Managed || p.Settled.Validate() != nil || p.Settled.Request.Key.Instance.VMUID != p.VMUID || p.MemoryBytes < p.Settled.MemoryBytes()) {
 		return 0, fmt.Errorf("pod placement changed original closed budget watermark")
 	}
 	return p.MemoryBytes + p.HostOverheadBytes, nil
@@ -113,6 +113,9 @@ func (m Model) validatePlacements() error {
 		if p.Settled != nil && p.Settled.ThroughSequence != 0 && m.ProtocolVersion < 6 {
 			return fmt.Errorf("closed-through Host capacity requires explicit v6 semantics")
 		}
+		if p.Settled != nil && p.Settled.ActualMemoryBytes != 0 && m.ProtocolVersion < 7 {
+			return fmt.Errorf("actual-capacity settlement requires Node v7")
+		}
 		if _, err := p.Bytes(); err != nil {
 			return err
 		}
@@ -144,6 +147,9 @@ func (m Model) validatePlacements() error {
 				if order == 0 {
 					if h.Plan.Request != p.Settled.Request || h.Claim == nil || *h.Claim != p.Settled.HostClaim {
 						return fmt.Errorf("settled Host source changed original claim/plan")
+					}
+					if p.Settled.MemoryBytes() != h.Plan.BeforeBytes && p.Settled.MemoryBytes() != h.Plan.Request.TargetVMMemoryBytes {
+						return fmt.Errorf("settled actual memory is outside original Host capacity endpoints")
 					}
 					matched = true
 				}

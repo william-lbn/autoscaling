@@ -18,10 +18,10 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/util/patch"
 )
 
-// SettleCurrent只释放已成功闭合原操作的“峰值分配承诺”，目标与原预算来源继续
+// SettleCurrent只释放已有完整关闭证明的原操作的“峰值分配承诺”，实际容量与原预算来源继续
 // 持有；不是QMP命令，也不认证Host物理空闲。平台仍须认证当前memory-backend-ram/
 // virtio-mem及Host开销上界，不能把任意QMP数字当物理归还。顺序固定为Node
-// 快照/Fence→原VM无Active/当前预算→原Runner持久完成与实际值→两端重读→
+// 快照/Fence→原VM无Active/当前预算→原Runner持久完成或原域取消与实际值→两端重读→
 // 同Node UID/RV结清CAS。新授予在此窗口改变Node RV则冲突，未知不清事实。
 func (p *Publisher) SettleCurrent(ctx context.Context) (bool, error) {
 	n, err := p.node.Load(ctx)
@@ -40,7 +40,7 @@ func (p *Publisher) SettleCurrent(ctx context.Context) (bool, error) {
 		return false, err
 	}
 	m := s.State()
-	if m.Active != nil || m.BudgetHeld == nil {
+	if m.Active != nil || m.BudgetHeld == nil && m.CapacityHeld == nil {
 		return false, nil
 	}
 	closed, err := hostguard.SettlementFor(m)
@@ -50,17 +50,20 @@ func (p *Publisher) SettleCurrent(ctx context.Context) (bool, error) {
 	if !s.Dispatchable() {
 		return false, fmt.Errorf("host settlement requires latest closed dispatchable original VM")
 	}
-	// 完整预算和成功关闭水位有独立永久寿命；后续零派发取消只推进该水位，
-	// 不更改原预算/Runner目标。任何Start已先撤销证明，不能借旧预算结清。
-	if err := m.CheckClosedBudget(closed.Request); err != nil {
+	// 普通/实际预算和关闭水位有独立永久寿命；后续零派发取消只推进水位。
+	// 实际预算必须核独立Capacity关闭合同，不能投影为原目标成功。任何
+	// Start已先撤销关闭证明，不能借旧预算结清。
+	var check error
+	if m.CapacityHeld != nil {
+		check = m.CheckClosedCapacity(closed.Request)
+	} else {
+		check = m.CheckClosedBudget(closed.Request)
+	}
+	if err := check; err != nil {
 		return false, err
 	}
 	if err := p.currentOwner(ctx, s); err != nil {
 		return false, err
-	}
-	var command budget.FinalizationCommand
-	if json.Unmarshal(m.BudgetHeld.Finalization.Command, &command) != nil || command.Validate() != nil {
-		return false, fmt.Errorf("original retained finalization unavailable")
 	}
 	current, err := p.claims.ReadCurrent(ctx, s)
 	if err != nil {
@@ -72,7 +75,7 @@ func (p *Publisher) SettleCurrent(ctx context.Context) (bool, error) {
 	}
 	confirmed := currentVM.Budget
 	id := confirmed.Birth.Identity
-	if current.Closed != closed || id.RunnerPodUID != current.Host.RunnerPodUID || id.NodeUID != string(p.node.Binding().NodeUID) || current.Host.HostOverheadBytes != p.overhead || confirmed.Actual.RequestedBytes != closed.Request.TargetVMMemoryBytes || confirmed.Actual.ActualBytes != closed.Request.TargetVMMemoryBytes {
+	if current.Closed != closed || id.RunnerPodUID != current.Host.RunnerPodUID || id.NodeUID != string(p.node.Binding().NodeUID) || current.Host.HostOverheadBytes != p.overhead || confirmed.Actual.RequestedBytes != closed.MemoryBytes() || confirmed.Actual.ActualBytes != closed.MemoryBytes() {
 		return false, fmt.Errorf("host settlement original Runner/Node/target differs")
 	}
 	if err := p.claims.RecheckCurrent(ctx, s, current); err != nil {

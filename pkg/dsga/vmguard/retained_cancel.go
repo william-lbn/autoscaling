@@ -11,8 +11,9 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
 
-// CurrentBudgetVM保留当前完整预算的原完成与可选的新取消证据。仅封闭原VM
-// 关闭链的消费者可使用，普通执行/Finalize读者仍用严格CheckRetained。
+// CurrentBudgetVM保留当前预算的原生证据；普通预算可另有较新取消尾证据，
+// 实际预算自身也可来自不可再发送的原域取消。仅封闭原VM关闭链的消费者
+// 可使用，普通执行/Finalize读者仍用严格CheckRetained。
 type CurrentBudgetVM struct {
 	Budget       Confirmed
 	Cancellation *Confirmed
@@ -23,6 +24,19 @@ type CurrentBudgetVM struct {
 // 预算、早于关闭序列；不能仅按当前数值或State.Last的文字kind恢复旧来源。
 func (r *Reader) CheckCurrentBudget(ctx context.Context, m journal.Model) (CurrentBudgetVM, error) {
 	var out CurrentBudgetVM
+	if m.CapacityHeld != nil {
+		var command budget.ReconciledAbortCommand
+		if json.Unmarshal(m.CapacityHeld.Cleanup.Command, &command) != nil || m.CheckClosedCapacity(command.Capacity.Request) != nil {
+			return out, fmt.Errorf("current Runner actual capacity lacks original closed permanent budget")
+		}
+		proof, err := r.CheckCapacity(ctx, command.Capacity.VM, m.Owner)
+		if err != nil {
+			return out, err
+		}
+		// 当前实际预算的原生来源本身可以是不可再发送取消，不能标成
+		// 普通Completed。额外Cancellation仅保留旧普通预算的较新尾证据。
+		return CurrentBudgetVM{Budget: proof, Cancellation: nil}, nil
+	}
 	var final budget.FinalizationCommand
 	if m.BudgetHeld == nil || json.Unmarshal(m.BudgetHeld.Finalization.Command, &final) != nil || final.Validate() != nil || final.Finalized.Sources == nil || final.Finalized.Sources.Runner == nil || m.CheckClosedBudget(final.Finalized.Request) != nil {
 		return out, fmt.Errorf("current Runner budget requires original closed VM boundary")

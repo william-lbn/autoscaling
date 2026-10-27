@@ -174,7 +174,7 @@ func vmReservation(t *testing.T, client *kubefake.Clientset, name, kind string, 
 }
 
 func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testing.T) {
-	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late", "abort-committed", "abort-after-open", "abort-replies", "abort-original-open-lost", "partial-pending-restore"} {
+	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late", "abort-committed", "abort-after-open", "abort-replies", "abort-original-open-lost", "partial-pending-restore", "partial-host-settle"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -219,7 +219,7 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 			}
 			vmPeer(t, filepath.Join(dir, "qmp.sock"), peer)
 			options, timeout := testOptions(), 20*time.Second
-			if strings.HasPrefix(mode, "abort-") || mode == "partial-pending-restore" {
+			if strings.HasPrefix(mode, "abort-") || strings.HasPrefix(mode, "partial-") {
 				// 完整取消审计更大，race下使用真实生产选主期限；不把原先
 				// 专测快速失租的400ms期限当作整个生命周期的性能门槛。
 				options, timeout = DefaultOptions(), 45*time.Second
@@ -234,6 +234,11 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				defer resources.CloseIdleConnections()
 				req := pgRequest(t, session.Actor())
 				p, baseline := preparedGuest(t, req, root.view.Identity)
+				if mode == "partial-host-settle" {
+					// 本用例显式模拟已服务的旧PG；VM先扩，Guest/PG尚未改。
+					// 只读Cleanup不发送开放请求，不能把夹具当首次服务生产者。
+					baseline.Observed.AdmissionOpen = true
+				}
 				final := baseline
 				final.Observed = pgResponse(t, req).Observed
 				final.CurrentMainAndArraysUpperBytes = final.StartupMainUpperBytes
@@ -489,8 +494,8 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 						require.Equal(t, pgexec.Recorded, progress)
 					}
 					require.Equal(t, journal.Settled, budgetStep(t, store, journal.ResizeVM).Phase)
-					if mode == "partial-pending-restore" {
-						verifyPartialCapacityPending(t, ctx, api, store, session, worker, resources, config, client, p, out, outRef, host)
+					if strings.HasPrefix(mode, "partial-") {
+						verifyPartialCapacityPending(t, ctx, api, store, session, worker, resources, config, client, p, out, outRef, host, mode)
 						require.Zero(t, resizePosts.Load())
 						require.Zero(t, opens.Load())
 						return nil

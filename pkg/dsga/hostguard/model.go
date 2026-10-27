@@ -104,6 +104,8 @@ type Hold struct {
 // 收敛旧峰值，目标/当前来源与高水位继续持有；整个Pod退出和取消仍需独立
 // 关闭证明，不能把“Pod不见了”当物理归还。v5在终态原Pod/原QEMU Wait
 // 证明后显式移除整Pod持有，并要求容量写者重读终态；旧v4程序拒绝v5。
+// v6保留后续无容量效果操作的Through水位；v7另存部分效果取消后的实际
+// 容量，原请求目标仍不可变，旧读者必须拒绝以免按更小目标错误退还预留。
 type Model struct {
 	ProtocolVersion uint32         `json:"protocol_version"`
 	Binding         Binding        `json:"binding"`
@@ -128,7 +130,7 @@ func SourceID(origin string, p Plan) string {
 }
 
 func (m Model) Validate() error {
-	if (m.ProtocolVersion < 1 || m.ProtocolVersion > 6) || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
+	if (m.ProtocolVersion < 1 || m.ProtocolVersion > 7) || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
 		return fmt.Errorf("invalid durable Host allocation model")
 	}
 	for i, h := range m.Holds {

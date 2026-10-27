@@ -26,8 +26,8 @@ type Current struct {
 	node    *core.Node
 }
 
-// ReadCurrent直接使用永久BudgetHeld，不依赖16条可淘汰操作历史。完整
-// Finalization原命令已由VM模型严格核验；这里独立从可信API重新GET原CM/
+// ReadCurrent直接使用永久BudgetHeld或CapacityHeld，不依赖16条可淘汰
+// 操作历史。原Finalization/Cleanup已由VM模型严格核验；这里独立从可信API重新GET原CM/
 // Pod/Node，逐项匹配持有，不拿旧Finalized成功当当前来源仍存活的证明。
 func (r *Reader) ReadCurrent(ctx context.Context, s *journal.Snapshot) (*Current, error) {
 	return r.readCurrent(ctx, s, false)
@@ -42,6 +42,9 @@ func (r *Reader) ReadPrior(ctx context.Context, s *journal.Snapshot) (*Current, 
 func (r *Reader) readCurrent(ctx context.Context, s *journal.Snapshot, prior bool) (*Current, error) {
 	if s == nil || s.VirtualMachine().UID != r.binding.VMUID || s.State().Incarnation != r.binding.Incarnation {
 		return nil, fmt.Errorf("current budget reader requires original VM snapshot")
+	}
+	if !prior && s.State().CapacityHeld != nil {
+		return r.readCurrentCapacity(ctx, s)
 	}
 	m, vm := s.State(), s.VirtualMachine()
 	closed, err := hostguard.SettlementFor(m)
