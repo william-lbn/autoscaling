@@ -156,7 +156,7 @@ func (r *Reader) CheckRetained(ctx context.Context, sources budget.RunnerSources
 // 新取消终态，不能通过抽出该函数放宽正常完成读者。
 func (r *Reader) retainedReceipt(ctx context.Context, sources budget.RunnerSources, request control.Request, preparedSHA, guestSHA string, host budget.ObjectRef) (Receipt, error) {
 	var out Receipt
-	if sources.Validate() != nil || request.Validate() != nil || !digestValid(preparedSHA) || !digestValid(guestSHA) {
+	if sources.Validate() != nil || request.Validate() != nil || !digestValid(preparedSHA) || (!digestValid(guestSHA) && (request.Kind != control.Grow || guestSHA != "")) {
 		return out, fmt.Errorf("incomplete retained VM source context")
 	}
 	cm, err := readClaim(ctx, r.core, r.binding, sources.ReceiptClaim, receiptKind, true)
