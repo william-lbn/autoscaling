@@ -633,7 +633,16 @@ func runQEMU(
 	}
 
 	logger.Info(fmt.Sprintf("calling %s", bin), zap.Strings("args", cmd))
-	err := execFg(bin, cmd...)
+	var err error
+	if cfg.managedMemory != nil {
+		// 受管启动必须由同一Runner持有原子进程Start/Wait；退出事实先
+		// 关闭原内存WAL再发布，不凭QMP断线或VM.Status推断容量归还。
+		process := exec.Command(bin, cmd...)
+		process.Stdout, process.Stderr = os.Stdout, os.Stderr
+		err = cfg.managedMemory.RunQEMU(ctx, process)
+	} else {
+		err = execFg(bin, cmd...)
+	}
 	if err != nil {
 		msg := "QEMU exited with error" // TODO: technically this might not be accurate. This can also happen if it fails to start.
 		logger.Error(msg, zap.Error(err))

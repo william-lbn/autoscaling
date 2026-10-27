@@ -54,6 +54,7 @@ import (
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/api"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/neonvm/controllers/reqchan"
 	"github.com/neondatabase/autoscaling/pkg/neonvm/ipam"
 	"github.com/neondatabase/autoscaling/pkg/util/gzip64"
@@ -240,6 +241,11 @@ func (r *VMReconciler) doFinalizerOperationsForVirtualMachine(ctx context.Contex
 
 	// The following implementation will raise an event
 	log.Info("Deleting VirtualMachine")
+	if vm.Spec.DSGABootstrap != nil {
+		if err := r.finalizeManagedMemory(ctx, vm); err != nil {
+			return err
+		}
+	}
 
 	// Release overlay IP address
 	if vm.Spec.ExtraNetwork != nil {
@@ -701,6 +707,11 @@ func (r *VMReconciler) doReconcile(ctx context.Context, vm *vmv1.VirtualMachine)
 		}
 
 	case vmv1.VmSucceeded, vmv1.VmFailed:
+		if vm.Spec.DSGABootstrap != nil {
+			// 受管停止保留原VM/PG/WAL身份。旧Cleanup+自动Restart会丢
+			// 原Pod关系并产生跨boot旁路；后续只能显式受控恢复。
+			return r.stopManagedMemoryPod(ctx, vm)
+		}
 		// Always delete runner pod. Otherwise, we could end up with one container succeeded/failed
 		// but the other one still running (meaning that the pod still ends up Running).
 		vmRunner := &corev1.Pod{}
@@ -1071,6 +1082,9 @@ func (r *VMReconciler) podForVirtualMachine(
 		return nil, err
 	}
 	if vm.Spec.DSGABootstrap != nil {
+		// 创建即保护原Pod，避免删除/GC先于Scheduler保留终态与退出
+		// 证据。仅可信节点owner完成容量CAS及VM锚点后移除此保护。
+		pod.Finalizers = append(pod.Finalizers, hostguard.PodProtectionFinalizer)
 		raw, err := r.resourceBootstrapRuntime(ctx, vm)
 		if err != nil {
 			return nil, err

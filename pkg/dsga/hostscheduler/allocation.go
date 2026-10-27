@@ -32,7 +32,7 @@ func (s *Service) allocation(ctx context.Context, n NodeConfig, expected *core.P
 	if err != nil {
 		return nil, none, nil, err
 	}
-	if pod.UID != expected.UID || pod.ResourceVersion == "" || pod.DeletionTimestamp != nil || pod.Spec.NodeName != "" && pod.Spec.NodeName != n.Binding.NodeName || pod.Spec.SchedulerName != n.Profile.SchedulerName {
+	if pod.UID != expected.UID || pod.ResourceVersion == "" || pod.DeletionTimestamp != nil || pod.Status.Phase == core.PodSucceeded || pod.Status.Phase == core.PodFailed || pod.Spec.NodeName != "" && pod.Spec.NodeName != n.Binding.NodeName || pod.Spec.SchedulerName != n.Profile.SchedulerName {
 		return nil, none, nil, fmt.Errorf("original Pod identity/Node/scheduler changed")
 	}
 	if _, _, migrating := vmv1.MigrationOwnerForPod(pod); migrating {

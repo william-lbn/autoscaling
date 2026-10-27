@@ -36,8 +36,10 @@ type SchedulerAPI struct {
 	VMs           map[string]*vmv1.VirtualMachine
 	LoseNodeReply bool
 	LoseVMReply   bool
+	LosePodReply  bool
 	NodeWrites    int
 	VMWrites      int
+	PodWrites     int
 	version       int
 	Core          *kubernetes.Clientset
 	VM            *vmclient.Clientset
@@ -48,7 +50,7 @@ func NewSchedulerAPI(t *testing.T, holder string) (*SchedulerAPI, hostguard.Bind
 	b := hostguard.Binding{NodeName: "node-one", NodeUID: "node-uid", Namespace: "system", LeaseName: "node-one-allocator", LeaseUID: "original-host-lease"}
 	controller, seconds, transitions := true, int32(60), int32(0)
 	stamp := metav1.NewMicroTime(time.Now())
-	f := &SchedulerAPI{mu: sync.Mutex{}, Node: core.Node{ObjectMeta: metav1.ObjectMeta{Name: b.NodeName, UID: b.NodeUID, ResourceVersion: "1"}, Status: core.NodeStatus{Allocatable: core.ResourceList{core.ResourceMemory: resource.MustParse("8Gi")}}}, Lease: coord.Lease{TypeMeta: metav1.TypeMeta{Kind: "Lease", APIVersion: "coordination.k8s.io/v1"}, ObjectMeta: metav1.ObjectMeta{Name: b.LeaseName, Namespace: b.Namespace, UID: b.LeaseUID, ResourceVersion: "1", Annotations: map[string]string{hostguard.LeaseAnnotation: hostguard.LeaseMarker(b)}, OwnerReferences: []metav1.OwnerReference{{APIVersion: "v1", Kind: "Node", Name: b.NodeName, UID: b.NodeUID, Controller: &controller, BlockOwnerDeletion: nil}}}, Spec: coord.LeaseSpec{HolderIdentity: &holder, LeaseDurationSeconds: &seconds, AcquireTime: &stamp, RenewTime: &stamp, LeaseTransitions: &transitions, Strategy: nil, PreferredHolder: nil}}, Pods: make(map[string]*core.Pod), VMs: make(map[string]*vmv1.VirtualMachine), LoseNodeReply: false, LoseVMReply: false, NodeWrites: 0, VMWrites: 0, version: 1, Core: nil, VM: nil}
+	f := &SchedulerAPI{mu: sync.Mutex{}, Node: core.Node{ObjectMeta: metav1.ObjectMeta{Name: b.NodeName, UID: b.NodeUID, ResourceVersion: "1"}, Status: core.NodeStatus{Allocatable: core.ResourceList{core.ResourceMemory: resource.MustParse("8Gi")}}}, Lease: coord.Lease{TypeMeta: metav1.TypeMeta{Kind: "Lease", APIVersion: "coordination.k8s.io/v1"}, ObjectMeta: metav1.ObjectMeta{Name: b.LeaseName, Namespace: b.Namespace, UID: b.LeaseUID, ResourceVersion: "1", Annotations: map[string]string{hostguard.LeaseAnnotation: hostguard.LeaseMarker(b)}, OwnerReferences: []metav1.OwnerReference{{APIVersion: "v1", Kind: "Node", Name: b.NodeName, UID: b.NodeUID, Controller: &controller, BlockOwnerDeletion: nil}}}, Spec: coord.LeaseSpec{HolderIdentity: &holder, LeaseDurationSeconds: &seconds, AcquireTime: &stamp, RenewTime: &stamp, LeaseTransitions: &transitions, Strategy: nil, PreferredHolder: nil}}, Pods: make(map[string]*core.Pod), VMs: make(map[string]*vmv1.VirtualMachine), LoseNodeReply: false, LoseVMReply: false, LosePodReply: false, NodeWrites: 0, VMWrites: 0, PodWrites: 0, version: 1, Core: nil, VM: nil}
 	server := httptest.NewServer(http.HandlerFunc(f.serve))
 	t.Cleanup(server.Close)
 	c := new(rest.Config)
@@ -101,6 +103,7 @@ func (f *SchedulerAPI) serve(w http.ResponseWriter, r *http.Request) {
 	}
 	var object any
 	var vm *vmv1.VirtualMachine
+	var podObject *core.Pod
 	if path == "/api/v1/nodes/node-one" {
 		object = &f.Node
 	} else if strings.HasPrefix(path, "/api/v1/namespaces/") && strings.Contains(path, "/pods/") {
@@ -110,6 +113,7 @@ func (f *SchedulerAPI) serve(w http.ResponseWriter, r *http.Request) {
 			http.NotFound(w, r)
 			return
 		}
+		podObject = object.(*core.Pod)
 	} else if strings.Contains(path, "/virtualmachines/") {
 		parts := strings.Split(path, "/")
 		vm = f.VMs[parts[5]+"/"+parts[7]]
@@ -145,7 +149,17 @@ func (f *SchedulerAPI) serve(w http.ResponseWriter, r *http.Request) {
 		}
 		f.version++
 		lose := false
-		if vm == nil {
+		if podObject != nil {
+			var next core.Pod
+			if json.Unmarshal(raw, &next) != nil {
+				http.Error(w, "invalid Pod", http.StatusBadRequest)
+				return
+			}
+			next.ResourceVersion = fmt.Sprint(f.version)
+			f.Pods[next.Namespace+"/"+next.Name], object = &next, &next
+			f.PodWrites++
+			lose, f.LosePodReply = f.LosePodReply, false
+		} else if vm == nil {
 			var next core.Node
 			if json.Unmarshal(raw, &next) != nil {
 				http.Error(w, "invalid Node", http.StatusBadRequest)

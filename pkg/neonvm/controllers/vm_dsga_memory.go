@@ -7,6 +7,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	core "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -37,6 +38,15 @@ func (r *VMReconciler) dsgaMemory(ctx context.Context, vm *vmv1.VirtualMachine) 
 	}
 	birth, ref, err := vmguard.InspectBirth(cm, binding, nil)
 	if err != nil {
+		return nil, false, err
+	}
+	exitCM := new(core.ConfigMap)
+	if err := r.APIReader.Get(ctx, client.ObjectKey{Namespace: vm.Namespace, Name: vmguard.ExitClaimName(binding, birth)}, exitCM); err == nil {
+		if _, err := vmguard.InspectProcessExit(exitCM, binding, birth, ref); err != nil {
+			return nil, false, err
+		}
+		return nil, false, vmguard.ErrStopped
+	} else if !apierrors.IsNotFound(err) {
 		return nil, false, err
 	}
 	stateCM := new(core.ConfigMap)

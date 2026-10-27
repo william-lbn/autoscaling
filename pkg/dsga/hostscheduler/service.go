@@ -92,6 +92,10 @@ func (s *Service) Reserve(ctx context.Context, node string, pod *core.Pod, targe
 	if err != nil {
 		return nil, none, err
 	}
+	canonical, err = s.protectPod(ctx, canonical)
+	if err != nil {
+		return nil, none, err
+	}
 	snapshot, err := d.store.Load(ctx)
 	if err != nil {
 		return nil, none, err
@@ -217,6 +221,12 @@ func (s *Service) reconcile(ctx context.Context, d domain) error {
 	// 一项失败不能使其他VM来源无限饥饿；全部错误保留原容量并汇总返回。
 	var failures []error
 	for i := range pods {
+		if pods[i].Status.Phase == core.PodSucceeded || pods[i].Status.Phase == core.PodFailed {
+			if err := s.retirePod(ctx, d, &pods[i]); err != nil {
+				failures = append(failures, err)
+			}
+			continue
+		}
 		pod, held, err := s.Reserve(ctx, d.config.Binding.NodeName, &pods[i], 0)
 		if err == nil && held.Managed {
 			err = s.publish(ctx, d, pod, held)

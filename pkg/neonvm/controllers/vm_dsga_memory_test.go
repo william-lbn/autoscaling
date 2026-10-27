@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	core "k8s.io/api/core/v1"
@@ -16,6 +17,7 @@ import (
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/dsga/bootstrap"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
@@ -25,7 +27,7 @@ import (
 // 只验证Controller的实际直接读取/唯一来源解码及状态路径。Kube API/Runner
 // 发布数据是显式夹具，不启动QEMU，也不以此测试声称最终预算/内存热拔完成。
 func TestManagedControllerMemoryConsumesOriginalRunnerPublication(t *testing.T) {
-	for _, what := range []string{"complete", "missing-reader", "pod-uid", "node-uid", "floor-holder", "state-uid", "state-deleting", "birth-unprotected"} {
+	for _, what := range []string{"complete", "missing-reader", "pod-uid", "node-uid", "floor-holder", "state-uid", "state-deleting", "birth-unprotected", "exit", "exit-malformed"} {
 		t.Run(what, func(t *testing.T) {
 			p := newTestParams(t)
 			require.NoError(t, core.AddToScheme(p.r.Scheme))
@@ -67,6 +69,19 @@ func TestManagedControllerMemoryConsumesOriginalRunnerPublication(t *testing.T) 
 			require.NoError(t, err)
 			stateCM.Data = map[string]string{vmguard.ClaimKey: string(b)}
 			p.r.APIReader = fake.NewClientBuilder().WithScheme(p.r.Scheme).WithObjects(vm, birthCM, stateCM, pod, node).Build()
+			if what == "exit" || what == "exit-malformed" {
+				exitCM := birthCM.DeepCopy()
+				exitCM.Name, exitCM.UID, exitCM.ResourceVersion = vmguard.ExitClaimName(binding, birth), "exit-uid", ""
+				exitCM.Labels[vmguard.ClaimLabel] = "process-exit-v1"
+				exited := vmguard.ProcessExit{ProtocolVersion: 1, Identity: id, BirthClaim: birthRef, StateClaim: stateRef, LaunchNonce: id.RunnerBootID, CommandSHA256: vmguard.SourceDigest([]byte("argv")), ProcessID: 123, ExitCode: 0, Signal: 0, RecordSequence: 1, RecordSHA256: vmguard.SourceDigest([]byte("wal")), ContainerID: "containerd://original"}
+				if what == "exit-malformed" {
+					exited.ContainerID = ""
+				}
+				raw, err := json.Marshal(exited)
+				require.NoError(t, err)
+				exitCM.Data = map[string]string{vmguard.ClaimKey: string(raw)}
+				require.NoError(t, p.r.APIReader.(client.Client).Create(context.Background(), exitCM))
+			}
 			if what == "missing-reader" {
 				p.r.APIReader = nil
 			}
@@ -118,6 +133,7 @@ func TestManagedRunnerPodBuildsOriginalPrivateMemoryEnvironment(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, pod.Spec.AutomountServiceAccountToken)
 			require.True(t, *pod.Spec.AutomountServiceAccountToken)
+			require.Contains(t, pod.Finalizers, hostguard.PodProtectionFinalizer)
 			require.Equal(t, vm.Spec.ServiceAccountName, pod.Spec.ServiceAccountName)
 			found := false
 			for _, c := range pod.Spec.Containers {
