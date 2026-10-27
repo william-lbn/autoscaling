@@ -1,0 +1,1344 @@
+{
+  "schema_version": 1,
+  "base_commit": "d1ceae70339687fb19fa5a9df6e22fb1c64c3eee",
+  "code_commit": "1f850453aa4bcc2cf564c193ab6348a7b30139f8",
+  "test_counts": {
+    "top_level": 49,
+    "including_subtests": 237,
+    "pass": 237,
+    "fail": 0,
+    "skip": 0,
+    "package_skip_no_test_files": 1
+  },
+  "package_skips": [
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims",
+      "reason": "no test files",
+      "log": "dsga-reconciled-budget-reader-final.jsonl"
+    }
+  ],
+  "package_skip_observations": [
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims",
+      "reason": "no test files",
+      "log": "dsga-reconciled-budget-domains-third.jsonl"
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims",
+      "reason": "no test files",
+      "log": "dsga-reconciled-budget-reader-final.jsonl"
+    }
+  ],
+  "final_test_mapping": {
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortWireRequiresCompleteOriginalAndStrictFields": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.1
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/target": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/hash": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/budget": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/generation": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/closed": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/old-epoch": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/new-epoch": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/readonly-new-setter": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.03
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/version": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/missing-sources": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/uppercase-digest": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/short-digest": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/different-vm": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/unenforced-aggregate": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/missing-host-uid": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/incomplete-pg": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/missing-protocol_version": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/missing-finalized": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/missing-prepared_sha256": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/missing-guest_sha256": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/missing-vm_sha256": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.11
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizedBudgetRequiresFullBindingsAndDistinctEnforcedBounds": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.08
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/observed_outside": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/outside_mismatch": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/guest_overcommitted": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/unknown_tail": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/old_generation": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/permit": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/underquoted": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/overlapping": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.07
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestContinuousQuiesceKeepsRetainedCostsAndRejectsUnprovedLowerLimit": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.14
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged/VM-drift": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged/new-generation": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged/new-PG-operation": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged/unknown-allocation": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged/floor": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.09
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled/VM-drift": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled/new-generation": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled/new-PG-operation": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled/unknown-allocation": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled/floor": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.1
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.19
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/small-VM-outside": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/short-Host-peak": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/unknown-array": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/partial-Root": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/different-birth": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/overflow": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/same-source": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/oversized-PG": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/wrong-generation": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/prepare-direction": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/PG-prefix-without-generation": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/future-VM": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/future-outside": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.2
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledAbortRequiresOriginalActualBudgetAndStrictWire": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.55
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestRootAggregateUsesConfirmedDomainOnceAndNeverPromotesOutside": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestRootAggregateKeepsOriginalHeldReferenceAcrossUnknownAndReplacement": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestRootAggregateRejectsPartialKernelOrUnboundSourceAndStrictTampering": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestRootAggregateFiniteTasksBindSourceWithoutAddingBytes": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSettlementClaimsKeepLifetimeIdentityAndHostOverhead/no-overhead": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSettlementClaimsKeepLifetimeIdentityAndHostOverhead/guest-only": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSettlementClaimsKeepLifetimeIdentityAndHostOverhead/overflow": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSettlementClaimsKeepLifetimeIdentityAndHostOverhead/new-runner": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSettlementClaimsKeepLifetimeIdentityAndHostOverhead/release-on-expiry": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSettlementClaimsKeepLifetimeIdentityAndHostOverhead": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSettlementStrictSourcesPreserveLegacyAndRejectPartialClaims": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSystemChargedUsesOwnDomainOnceAndSurvivesPGResourceChange": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSystemChargedRejectsUnknownPlacementDriftAndScopeTampering": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only/new-target-budget": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only/same-key": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only/different-source": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only/closed-gate": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only/new-pg-generation": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only/different-epoch": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only/invented-mutation": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.17
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen/new-target-budget": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen/same-key": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen/different-source": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen/closed-gate": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen/new-pg-generation": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen/different-epoch": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen/invented-mutation": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.24
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.41
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancelBeforeSendSealsOriginalAndRejectsLateReplay/unseen": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.12
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancelBeforeSendSealsOriginalAndRejectsLateReplay/prepared": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.12
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancelBeforeSendSealsOriginalAndRejectsLateReplay/not-sent": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.16
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancelBeforeSendSealsOriginalAndRejectsLateReplay/takeover": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.13
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancelBeforeSendSealsOriginalAndRejectsLateReplay/expired": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.09
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancelBeforeSendSealsOriginalAndRejectsLateReplay/noop": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.08
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancelBeforeSendSealsOriginalAndRejectsLateReplay": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.7
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationCannotEraseMayHaveSentOrCompleted": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.08
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationRechecksAuthorityBeforeDurableClosure/removed": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationRechecksAuthorityBeforeDurableClosure/new-owner": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationRechecksAuthorityBeforeDurableClosure/old-sequence": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationRechecksAuthorityBeforeDurableClosure/source-error": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationRechecksAuthorityBeforeDurableClosure/actual-drift": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationRechecksAuthorityBeforeDurableClosure": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.11
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationWaitsForOriginalSendingFileLock": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.15
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationV2RejectsMalformedWitnessAndPreservesVersion/old-record-version": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationV2RejectsMalformedWitnessAndPreservesVersion/missing-witness": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationV2RejectsMalformedWitnessAndPreservesVersion/possible-send": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationV2RejectsMalformedWitnessAndPreservesVersion/wrong-actual": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationV2RejectsMalformedWitnessAndPreservesVersion/wrong-owner": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationV2RejectsMalformedWitnessAndPreservesVersion/empty-sequence": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationV2RejectsMalformedWitnessAndPreservesVersion/ordinary-kind": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerCancellationV2RejectsMalformedWitnessAndPreservesVersion": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.1
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestCapacityReaderKeepsCompletedAndUnsentCancelledDistinct/grow-completed": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-reader-final.jsonl",
+      "elapsed": 0.56
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestCapacityReaderKeepsCompletedAndUnsentCancelledDistinct/shrink-cancelled": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-reader-final.jsonl",
+      "elapsed": 0.91
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestCapacityReaderKeepsCompletedAndUnsentCancelledDistinct/may-have-sent": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-reader-final.jsonl",
+      "elapsed": 0.33
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestCapacityReaderKeepsCompletedAndUnsentCancelledDistinct": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-reader-final.jsonl",
+      "elapsed": 1.8
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerOriginalExecutionDurabilityAndNoop/noop=false": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.06
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerOriginalExecutionDurabilityAndNoop/noop=true": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.05
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerOriginalExecutionDurabilityAndNoop": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.11
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerLostReplyRetainsOriginalAcrossTakeover": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.1
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/original-replay": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.1
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/target": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.05
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/nonce": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.05
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/host": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.06
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/journal": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.05
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/owner": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.06
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/baseline": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.05
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/expired": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.05
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/same-replay": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.06
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/receipt-uid": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.06
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerPreparedCrashNeedsExplicitUnchangedReplay/unpublished": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.07
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerPreparedCrashNeedsExplicitUnchangedReplay": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.67
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerReplayCannotCycleOldSelectionAfterAnotherNotSent": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.15
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerSecondAuthorityCheckAndDefinitePrewriteFailure/authority-changes-after-prepare": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.05
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerSecondAuthorityCheckAndDefinitePrewriteFailure/native-proof-before-qom-set": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.07
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerSecondAuthorityCheckAndDefinitePrewriteFailure": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.12
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerExclusiveLockCoversNativeWriteAndFloor": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.15
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerRejectsLostOrReplacedStateAndExhaustion/missing": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerRejectsLostOrReplacedStateAndExhaustion/symlink-file": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerRejectsLostOrReplacedStateAndExhaustion/symlink-dir": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerRejectsLostOrReplacedStateAndExhaustion/permissions": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerRejectsLostOrReplacedStateAndExhaustion/new-runner": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerRejectsLostOrReplacedStateAndExhaustion/new-node": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerRejectsLostOrReplacedStateAndExhaustion/sequence-exhausted": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerRejectsLostOrReplacedStateAndExhaustion": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.09
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerStrictRecordRejectsChangedOriginalAndDuplicateFields/command-hash": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerStrictRecordRejectsChangedOriginalAndDuplicateFields/journal-hash": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerStrictRecordRejectsChangedOriginalAndDuplicateFields/nonce": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerStrictRecordRejectsChangedOriginalAndDuplicateFields/before": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerStrictRecordRejectsChangedOriginalAndDuplicateFields/identity": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerStrictRecordRejectsChangedOriginalAndDuplicateFields/owner": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerStrictRecordRejectsChangedOriginalAndDuplicateFields/hwm": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerStrictRecordRejectsChangedOriginalAndDuplicateFields/stage": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerStrictRecordRejectsChangedOriginalAndDuplicateFields/unknown-field": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerStrictRecordRejectsChangedOriginalAndDuplicateFields/duplicate-field": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerStrictRecordRejectsChangedOriginalAndDuplicateFields/missing-field": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerStrictRecordRejectsChangedOriginalAndDuplicateFields/null-field": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerStrictRecordRejectsChangedOriginalAndDuplicateFields": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.05
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerWaitChildHelper": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProcessWaitClosesOriginalWAL/success": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 1.13
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProcessWaitClosesOriginalWAL/error": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.11
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProcessWaitClosesOriginalWAL/signal": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.1
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProcessWaitClosesOriginalWAL": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 1.34
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProcessRejectsAlternateCommandBeforeStart/uuid": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProcessRejectsAlternateCommandBeforeStart/monitor": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProcessRejectsAlternateCommandBeforeStart/duplicate": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProcessRejectsAlternateCommandBeforeStart/daemon": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProcessRejectsAlternateCommandBeforeStart/migration": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProcessRejectsAlternateCommandBeforeStart/program": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProcessRejectsAlternateCommandBeforeStart/wrapper": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProcessRejectsAlternateCommandBeforeStart": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.16
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProcessExitLocalFirstAndLostReplyRecovery": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 1.22
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProcessCloseRejectsDamagedFileAndNeverResets": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 1.15
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProcessExitPreservesMayHaveSentAction": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 1.16
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestOriginalProcessFileCannotOverwriteOrFollowLinks/same": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestOriginalProcessFileCannotOverwriteOrFollowLinks/different": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestOriginalProcessFileCannotOverwriteOrFollowLinks/symlink": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestOriginalProcessFileCannotOverwriteOrFollowLinks/public": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestOriginalProcessFileCannotOverwriteOrFollowLinks/oversize": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestOriginalProcessFileCannotOverwriteOrFollowLinks/path": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestOriginalProcessFileCannotOverwriteOrFollowLinks": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.03
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPEngineGrowShrinkLostReplyAndExactReadback": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.15
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/wrong-qemu": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/wrong-device": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/wrong-block": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/wrong-maximum": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/wrong-base": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/extra-device": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/missing-size": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/numeric-string": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/wrong-response-id": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/return-and-error": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/duplicate-field": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/oversized": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames/endless-events": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPRejectsAmbiguousIdentityGeometryAndFrames": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPExactLargeIntegersFixedSizeAndDeadlines/beyond-float64": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPExactLargeIntegersFixedSizeAndDeadlines/no-virtio-device": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPExactLargeIntegersFixedSizeAndDeadlines/deadline-no-background-write": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.25
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestPrivateQMPExactLargeIntegersFixedSizeAndDeadlines": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.26
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/first-qmp": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.04
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/lease-not-yet-pinned": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.03
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/lagging-floor": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.04
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/conflicting-holder": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.04
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/wrong-lease": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.04
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor/malformed-publication": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.04
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerReaderWaitsOnlyForOriginalStartupAndLaggingFloor": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.23
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites/missing": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites/unprotected": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites/replacement-node": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites/short-memory": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.03
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.09
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/complete": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.76
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/short-host-hold": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.59
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/unverified-pg-release": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.61
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/wrong-root-limit": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.61
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources/wrong-fence": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.62
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionShrinkRequiresOriginalCompleteSafetySources": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 3.19
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionPullPublishLostRepliesAndOriginalReceipt": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.46
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/outside-uid": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.25
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/host-releasing": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.25
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/runner-uid": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.24
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/node-uid": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.24
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/lease-replaced": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.26
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/lease-expired": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.22
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/birth-replaced": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.23
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite/state-replaced": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.24
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerProductionRejectsChangedSourcesBeforeNativeWrite": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 1.92
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerBirthRefusesMissingWALOrSameNameNewProcess/same-state": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerBirthRefusesMissingWALOrSameNameNewProcess/missing-state": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerBirthRefusesMissingWALOrSameNameNewProcess/new-empty-directory": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.03
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard::TestRunnerBirthRefusesMissingWALOrSameNameNewProcess": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domains-third.jsonl",
+      "elapsed": 0.08
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledAggregateDoesNotChargeHugePoolToNormalAgain": {
+      "outcome": "pass",
+      "log": "dsga-reconciled-budget-domain-final.jsonl",
+      "elapsed": 0.02
+    }
+  },
+  "source_sha256": {
+    "pkg/dsga/budget/reconcile_inputs.go": "39be554288c1e0ac981ae81ccb746eadb0e7d0898823453d5e87901d72e64d07",
+    "pkg/dsga/budget/reconciled.go": "4b7e14eb25363cc02f3ddfa4d264f7b9579b346a5dcbdcd824e922c3013dccd6",
+    "pkg/dsga/budget/reconciled_abort.go": "5d5cc58aa29acd86a255f3666f6133884d8be73e35ac6b276f268db14b637033",
+    "pkg/dsga/budget/reconciled_test.go": "6ac7947a8c87700cb42fadef56f1f5a8a89121b61991c6e1908469a211c09a6f",
+    "pkg/dsga/budgetclaims/reconciled.go": "29e0d5a732b126f0da58c53d021327f9173c6aa0d6aa93e7b0a5e683e63507c7",
+    "pkg/dsga/vmguard/capacity.go": "e289475826dafe3b93e18e27aa9af73796a53c786f231cdf312716ccfd900ca8",
+    "pkg/dsga/vmguard/capacity_test.go": "5b90e27524fc9b081540d05a19d411447edb8bcda532167534864a5e52c75517",
+    "pkg/dsga/vmguard/reader.go": "118a28cbd8d5f83e80e9de30bf293cdeafd75805d8d5cfb9f8e88cda4b0a4213"
+  },
+  "log_sha256": {
+    "dsga-reconciled-budget-agent-linux-amd64.log": "53517bcb30689b685ba24bf3258fbe69bc932517db0081057d7d845f016d55d6",
+    "dsga-reconciled-budget-agent-linux-arm64.log": "454a26cb1e2fbea64efa904b90243117ad7517c979300d198c8050f8f709ec13",
+    "dsga-reconciled-budget-compile-first.log": "025a9ea6758105b377024abf60f524a90861916794309eba70dfa8ada8291a07",
+    "dsga-reconciled-budget-controller-linux-amd64.log": "d90828a7411527c1bdd8abc2b831929c65c764aeba0bac0a3ee5895c458a2325",
+    "dsga-reconciled-budget-controller-linux-arm64.log": "3df284dbe9ab20b729a4958ea446679f49eef8fcf900286f9029d9de078b354b",
+    "dsga-reconciled-budget-cross-build-results.json": "68e3e233ba3895179949d58d18060b0a831b5a5a63f64d8cdfa7e18f8ce617d3",
+    "dsga-reconciled-budget-cross-build.log": "be9bbbfba57e82325e4da2cc26fd282ff8774bf25603be2bdd27799ae6d4a51e",
+    "dsga-reconciled-budget-domain-final.jsonl": "d6d5fe7538337f792a32eac924b88064b83dc1b5df4c51065d115bdf9879c742",
+    "dsga-reconciled-budget-domain-first.jsonl": "2b85b8fbad45189c1928e6d2aa96b6c9ad4e39b75ac059bc097e675b9cad32fd",
+    "dsga-reconciled-budget-domain-second.jsonl": "4d42ad16eb6c0fb0cd4e001a25b73625f89417728141237f82b5bbb152659b0d",
+    "dsga-reconciled-budget-domains-third.jsonl": "f845ab0cdb7f180b9a6c984549143345cf5b207c669cbd0b442b74eb7a7ef20e",
+    "dsga-reconciled-budget-lint-first.log": "98241db7fc45cd7f6cb45a6e665619d7c49802d3d1e68d80830e4cb3e7232149",
+    "dsga-reconciled-budget-lint-second.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "dsga-reconciled-budget-reader-final.jsonl": "d34122dda1e1ffc2ab0e2b9582708578706003405ae38bf02065313e041423bd",
+    "dsga-reconciled-budget-runner-first.jsonl": "1c85a18c97475e3d5b17988d6e011223e9026bf017597f10308961c7df402d87",
+    "dsga-reconciled-budget-runner-linux-amd64.log": "5caa720daefc89ffdb58817a9a5bcbf015d1dbbcb4bce0416e45d78b543429cd",
+    "dsga-reconciled-budget-runner-linux-arm64.log": "aa6c9b7b947dca55d485761a55d592c58aae566400d809a70bb9ec605deaa7a6",
+    "dsga-reconciled-budget-scheduler-linux-amd64.log": "f19c04854fe0c747d9f73dd46fc90b8c051626dd7b5f8f68a430500297758dfd",
+    "dsga-reconciled-budget-scheduler-linux-arm64.log": "cfb2ae38f8a840fb77aade313740c2cd4910330c3272e7fe1189394b6fc41614",
+    "dsga-reconciled-budget-vet-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsga-reconciled-budget-vet-first.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "compile_only_artifacts": {
+    "dsga-reconciled-budget-agent-linux-amd64": {
+      "sha256": "ffadd2fad1ef3984cb1706b5e7b70a2684218c07a2a413c7facb955faf01f3d5",
+      "elf_machine": 62,
+      "build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-reconciled-budget-agent-linux-amd64: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/autoscaler-agent/cmd\n\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261027162900-1f850453aa4b+dirty\t\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/azcore\tv1.14.0\th1:nyQWyZvwGTvunIMxi1Y9uXkcyr+I7TeNrr/foo4Kpk8=\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/azidentity\tv1.7.0\th1:tfLQ34V6F7tVSwoTf/4lH5sE0o6eCJuNDTmH09nDpbc=\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/internal\tv1.10.0\th1:ywEEhmNahHBihViHepv3xPBn1663uRv2t2q/ESv9seY=\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/storage/azblob\tv1.3.2\th1:YUUxeiOWgdAQE3pXt2H7QXzZs0q8UBjgRbl56qo8GYM=\n\tdep\tgithub.com/AzureAD/microsoft-authentication-library-for-go\tv1.2.2\th1:XHOnouVk1mxXfQidrMEnLlPk9UMeRtyBTnEFtxkV0kU=\n\tdep\tgithub.com/aws/aws-sdk-go-v2\tv1.31.0\th1:3V05LbxTSItI5kUqNwhJrrrY1BAXxXt0sN0l72QmG5U=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/aws/protocol/eventstream\tv1.6.2\th1:x6xsQXGSmW6frevwDA+vi/wqhp1ct18mVXYN08/93to=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/config\tv1.27.36\th1:4IlvHh6Olc7+61O1ktesh0jOcqmq/4WG6C2Aj5SKXy0=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/credentials\tv1.17.34\th1:gmkk1l/cDGSowPRzkdxYi8edw+gN4HmVK151D/pqGNc=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/feature/ec2/imds\tv1.16.14\th1:C/d03NAmh8C4BZXhuRNboF/DqhBkBCeDiJDcaqIT5pA=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/configsources\tv1.3.18\th1:kYQ3H1u0ANr9KEKlGs/jTLrBFPo8P8NaH/w7A01NeeM=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/endpoints/v2\tv2.6.18\th1:Z7IdFUONvTcvS7YuhtVxN99v2cCoHRXOS4mTr0B/pUc=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/ini\tv1.8.1\th1:VaRN3TlFdd6KxX1x3ILT5ynH6HvKgqdiXoTxAF4HQcQ=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/v4a\tv1.3.5\th1:81KE7vaZzrl7yHBYHVEzYB8sypz11NMOZ40YlWvPxsU=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/accept-encoding\tv1.11.5\th1:QFASJGfT8wMXtuP3D5CRmMjARHv9ZmzFUMJznHDOY3w=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/checksum\tv1.3.7\th1:ZMeFZ5yk+Ek+jNr1+uwCd2tG89t6oTS5yVWpa6yy2es=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/presigned-url\tv1.11.20\th1:Xbwbmk44URTiHNx6PNo0ujDE6ERlsCKJD3u1zfnzAPg=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/s3shared\tv1.17.5\th1:f9RyWNtS8oH7cZlbn+/JNPpjUk5+5fLd5lM9M0i49Ys=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/s3\tv1.53.2\th1:rq2hglTQM3yHZvOPVMtNvLS5x6hijx7JvRDgKiTNDGQ=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/sso\tv1.23.0\th1:fHySkG0IGj2nepgGJPmmhZYL9ndnsq1Tvc6MeuVQCaQ=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/ssooidc\tv1.27.0\th1:cU/OeQPNReyMj1JEBgjE29aclYZYtXcsPMXbTkVGMFk=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/sts\tv1.31.0\th1:GNVxIHBTi2EgwCxpNiozhNasMOK+ROUA2Z3X+cSBX58=\n\tdep\tgithub.com/aws/smithy-go\tv1.21.0\th1:H7L8dtDRk0P1Qm6y0ji7MCYMQObJ5R9CRpyPhRUkLYA=\n\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=\n\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=\n\tdep\tgithub.com/coder/websocket\tv1.8.13\th1:f3QZdXy7uGVz+4uCJy2nTZyM0yTBj8yANEHhqlXZ9FE=\n\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=\n\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=\n\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=\n\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=\n\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=\n\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=\n\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=\n\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=\n\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=\n\tdep\tgithub.com/golang-jwt/jwt/v5\tv5.2.2\th1:Rl4B7itRWVtYIHFrSNd7vhTiz9UpLdi6gZhZ3wEeDy8=\n\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=\n\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=\n\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=\n\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=\n\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=\n\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=\n\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=\n\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=\n\tdep\tgithub.com/kylelemons/godebug\tv1.1.0\th1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=\n\tdep\tgithub.com/lithammer/shortuuid\tv3.0.0+incompatible\th1:NcD0xWW/MZYXEHa6ITy6kaXN5nwm/V115vj2YXfhS0w=\n\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=\n\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=\n\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=\n\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=\n\tdep\tgithub.com/pkg/browser\tv0.0.0-20240102092130-5ac0b6a4141c\th1:+mdjkGKdHQG3305AYmdv1U2eRNDiU2ErMBj1gwrq8eQ=\n\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=\n\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=\n\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=\n\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=\n\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=\n\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=\n\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=\n\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=\n\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=\n\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=\n\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=\n\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=\n\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=\n\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=\n\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=\n\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=\n\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=\n\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=\n\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=\n\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=\n\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=\n\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=\n\tdep\tk8s.io/api\tv0.31.7\n\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=\n\t\n\tdep\tk8s.io/apimachinery\tv0.31.7\n\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=\n\t\n\tdep\tk8s.io/client-go\tv0.31.7\n\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=\n\t\n\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=\n\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38\n\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=\n\t\n\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=\n\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=\n\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=\n\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=\n\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=1f850453aa4bcc2cf564c193ab6348a7b30139f8\n\tbuild\tvcs.time=2026-10-27T16:29:00Z\n\tbuild\tvcs.modified=true\n",
+      "executed": false
+    },
+    "dsga-reconciled-budget-scheduler-linux-amd64": {
+      "sha256": "1a4f645bc19bf62bc8ce82d8dd5c53376456835c32e2b011ace01278c47e5aa1",
+      "elf_machine": 62,
+      "build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-reconciled-budget-scheduler-linux-amd64: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/autoscale-scheduler/cmd\n\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261027162900-1f850453aa4b+dirty\t\n\tdep\tgithub.com/NYTimes/gziphandler\tv1.1.1\th1:ZUDjpQae29j0ryrS0u/B8HZfJBtBQHjqw2rQ2cqUQ3I=\n\tdep\tgithub.com/antlr4-go/antlr/v4\tv4.13.0\th1:lxCg3LAv+EUK6t1i0y1V6/SLeUi0eKEKdhQAlS8TVTI=\n\tdep\tgithub.com/asaskevich/govalidator\tv0.0.0-20230301143203-a9d515a09cc2\th1:DklsrG3dyBCFEj5IhUbnKptjxatkF07cF2ak3yi77so=\n\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=\n\tdep\tgithub.com/blang/semver/v4\tv4.0.0\th1:1PFHFE6yCCTv8C1TeyNNarDzntLi7wMI5i/pzqYIsAM=\n\tdep\tgithub.com/cenkalti/backoff/v4\tv4.3.0\th1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=\n\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=\n\tdep\tgithub.com/coreos/go-semver\tv0.3.1\th1:yi21YpKnrx1gt5R+la8n5WgS0kCrsPp33dmEyHReZr4=\n\tdep\tgithub.com/coreos/go-systemd/v22\tv22.5.0\th1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=\n\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=\n\tdep\tgithub.com/distribution/reference\tv0.5.0\th1:/FUIFXtfc/x2gpa5/VGfiGLuOIdYa1t65IKK2OFGvA0=\n\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=\n\tdep\tgithub.com/felixge/httpsnoop\tv1.0.4\th1:NFTV2Zj1bL4mc9sqWACXbQFVBBg2W3GPvqp8/ESS2Wg=\n\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=\n\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=\n\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=\n\tdep\tgithub.com/go-logr/stdr\tv1.2.2\th1:hSWxHoqTgW2S2qGc0LTAI563KZ5YKYRhT3MFKZMbjag=\n\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=\n\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=\n\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=\n\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=\n\tdep\tgithub.com/golang/groupcache\tv0.0.0-20210331224755-41bb18bfe9da\th1:oI5xCqsCo564l8iNU+DwB5epxmsaqB+rhGL0m5jtYqE=\n\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=\n\tdep\tgithub.com/google/cel-go\tv0.20.1\th1:nDx9r8S3L4pE61eDdt8igGj8rf5kjYR3ILxWIpWNi84=\n\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=\n\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=\n\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=\n\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=\n\tdep\tgithub.com/grpc-ecosystem/go-grpc-prometheus\tv1.2.0\th1:Ovs26xHkKqVztRpIrF/92BcuyuQ/YW4NSIpoGtfXNho=\n\tdep\tgithub.com/grpc-ecosystem/grpc-gateway/v2\tv2.20.0\th1:bkypFPDjIYGfCYD5mRBvpqxfYX1YCS1PXdKYWi8FsN0=\n\tdep\tgithub.com/imdario/mergo\tv0.3.16\th1:wwQJbIsHYGMUyLSPrEq1CT16AhnhNJQ51+4fdHUnCl4=\n\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=\n\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=\n\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=\n\tdep\tgithub.com/kylelemons/godebug\tv1.1.0\th1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=\n\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=\n\tdep\tgithub.com/moby/sys/mountinfo\tv0.7.1\th1:/tTvQaSJRr2FshkhXiIpux6fQ2Zvc4j7tAhMTStAG2g=\n\tdep\tgithub.com/moby/term\tv0.5.0\th1:xt8Q1nalod/v7BqbG21f8mQPqH+xAaC9C3N3wfWbVP0=\n\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=\n\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=\n\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=\n\tdep\tgithub.com/opencontainers/go-digest\tv1.0.0\th1:apOUWs51W5PlhuyGyz9FCeeBIOUDA/6nW8Oi/yOhh5U=\n\tdep\tgithub.com/opencontainers/runc\tv1.1.13\th1:98S2srgG9vw0zWcDpFMn5TRrh8kLxa/5OFUstuUhmRs=\n\tdep\tgithub.com/opencontainers/selinux\tv1.11.0\th1:+5Zbo97w3Lbmb3PeqQtpmTkMwsW5nRI3YaLpt7tQ7oU=\n\tdep\tgithub.com/pkg/errors\tv0.9.1\th1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=\n\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=\n\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=\n\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=\n\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=\n\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=\n\tdep\tgithub.com/spf13/cobra\tv1.8.1\th1:e5/vxKd/rZsfSJMUX1agtjeTDf+qv1/JdBF8gg5k9ZM=\n\tdep\tgithub.com/spf13/pflag\tv1.0.5\th1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=\n\tdep\tgithub.com/stoewer/go-strcase\tv1.3.0\th1:g0eASXYtp+yvN9fK8sH94oCIk0fau9uV1/ZdJ0AVEzs=\n\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=\n\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=\n\tdep\tgo.etcd.io/etcd/api/v3\tv3.5.14\th1:vHObSCxyB9zlF60w7qzAdTcGaglbJOpSj1Xj9+WGxq0=\n\tdep\tgo.etcd.io/etcd/client/pkg/v3\tv3.5.14\th1:SaNH6Y+rVEdxfpA2Jr5wkEvN6Zykme5+YnbCkxvuWxQ=\n\tdep\tgo.etcd.io/etcd/client/v3\tv3.5.14\th1:CWfRs4FDaDoSz81giL7zPpZH2Z35tbOrAJkkjMqOupg=\n\tdep\tgo.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc\tv0.54.0\th1:r6I7RJCN86bpD/FQwedZ0vSixDpwuWREjW9oRMsmqDc=\n\tdep\tgo.opentelemetry.io/contrib/instrumentation/net/http/otelhttp\tv0.54.0\th1:TT4fX+nBOA/+LUkobKGW1ydGcn+G3vRw9+g5HwCphpk=\n\tdep\tgo.opentelemetry.io/otel\tv1.29.0\th1:PdomN/Al4q/lN6iBJEN3AwPvUiHPMlt93c8bqTG5Llw=\n\tdep\tgo.opentelemetry.io/otel/exporters/otlp/otlptrace\tv1.28.0\th1:3Q/xZUyC1BBkualc9ROb4G8qkH90LXEIICcs5zv1OYY=\n\tdep\tgo.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc\tv1.27.0\th1:qFffATk0X+HD+f1Z8lswGiOQYKHRlzfmdJm0wEaVrFA=\n\tdep\tgo.opentelemetry.io/otel/metric\tv1.29.0\th1:vPf/HFWTNkPu1aYeIsc98l4ktOQaL6LeSoeV2g+8YLc=\n\tdep\tgo.opentelemetry.io/otel/sdk\tv1.28.0\th1:b9d7hIry8yZsgtbmM0DKyPWMMUMlK9NEKuIG4aBqWyE=\n\tdep\tgo.opentelemetry.io/otel/trace\tv1.29.0\th1:J/8ZNK4XgR7a21DZUAsbF8pZ5Jcw1VhACmnYt39JTi4=\n\tdep\tgo.opentelemetry.io/proto/otlp\tv1.3.1\th1:TrMUixzpM0yuc/znrFTP9MMRh8trP93mkCiDVeXrui0=\n\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=\n\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=\n\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=\n\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=\n\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=\n\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=\n\tdep\tgolang.org/x/sync\tv0.12.0\th1:MHc5BpPuC30uJk597Ri8TV3CNZcTLu6B6z4lJy+g6Jw=\n\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=\n\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=\n\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=\n\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=\n\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=\n\tdep\tgoogle.golang.org/genproto/googleapis/api\tv0.0.0-20240827150818-7e3bb234dfed\th1:3RgNmBoI9MZhsj3QxC+AP/qQhNwpCLOvYDYYsFrhFt0=\n\tdep\tgoogle.golang.org/genproto/googleapis/rpc\tv0.0.0-20240903143218-8af14fe29dc1\th1:pPJltXNxVzT4pK9yD8vR9X75DaWYYmLGMsEvBfFQZzQ=\n\tdep\tgoogle.golang.org/grpc\tv1.66.2\th1:3QdXkuq3Bkh7w+ywLdLvM56cmGvQHUMZpiCzt6Rqaoo=\n\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=\n\tdep\tgopkg.in/evanphx/json-patch.v4\tv4.12.0\th1:n6jtcsulIzXPJaxegRbvFNNrZDjbij7ny3gmSPG+6V4=\n\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=\n\tdep\tgopkg.in/natefinch/lumberjack.v2\tv2.2.1\th1:bBRl1b0OH9s/DuPhuXpNl+VtCaJXFZ5/uEFST95x9zc=\n\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=\n\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=\n\tdep\tk8s.io/api\tv0.31.7\n\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=\n\t\n\tdep\tk8s.io/apiextensions-apiserver\tv0.31.1\n\t=>\tk8s.io/apiextensions-apiserver\tv0.31.7\th1:FujQQl6iKuCF5nX4GIQy3ClvftU8MqadAyi9oQ6ZeAw=\n\t\n\tdep\tk8s.io/apimachinery\tv0.31.7\n\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=\n\t\n\tdep\tk8s.io/apiserver\tv0.31.7\n\t=>\tk8s.io/apiserver\tv0.31.7\th1:L1JQgfdQfvSZNBhXJljv9ekc/JirAZAmR3B2Np5mSKk=\n\t\n\tdep\tk8s.io/client-go\tv0.31.7\n\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=\n\t\n\tdep\tk8s.io/cloud-provider\tv0.0.0\n\t=>\tk8s.io/cloud-provider\tv0.31.7\th1:kg+bkemVEjCI4J+SxHFrOcZznDcPkRTwzAHrUe/FZSw=\n\t\n\tdep\tk8s.io/component-base\tv0.31.7\n\t=>\tk8s.io/component-base\tv0.31.7\th1:HLGy3757F1xfidwYzrsrL6gqAML4jKiT1rfNTRv1vhw=\n\t\n\tdep\tk8s.io/component-helpers\tv0.31.7\n\t=>\tk8s.io/component-helpers\tv0.31.7\th1:THCAAOYffVxAOkeUMW0U86BmxRGXXAXMvlvObUEtMuQ=\n\t\n\tdep\tk8s.io/controller-manager\tv0.31.7\n\t=>\tk8s.io/controller-manager\tv0.31.7\th1:632MEG+zfUcHgOHakggD5EtNLA7cIaBI/gAuUUDk03A=\n\t\n\tdep\tk8s.io/csi-translation-lib\tv0.0.0\n\t=>\tk8s.io/csi-translation-lib\tv0.31.7\th1:9TEzUwiz66fi39DXIvFIuoUgtMm8ksD4vXjLK+7h82k=\n\t\n\tdep\tk8s.io/dynamic-resource-allocation\tv0.0.0\n\t=>\tk8s.io/dynamic-resource-allocation\tv0.31.7\th1:ss0xp/ZODmZPhfIdMGXQszu6IsqY4gYIIWnmR3Iqo5I=\n\t\n\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=\n\tdep\tk8s.io/kms\tv0.31.7\th1:HSlveij+SIcCcDKugh/lFrnaooVgTIX5G6ircyK+e3Q=\n\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38\n\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=\n\t\n\tdep\tk8s.io/kube-scheduler\tv0.0.0\n\t=>\tk8s.io/kube-scheduler\tv0.31.7\th1:ynevLcHn7D985S9s6BMHqOVDAoBVYGDmNA1XzRMJfjw=\n\t\n\tdep\tk8s.io/kubelet\tv0.31.7\n\t=>\tk8s.io/kubelet\tv0.31.7\th1:jGfsRU536pAyXq/hW9P7+a5k200j2BxBX8IjIWasmxY=\n\t\n\tdep\tk8s.io/kubernetes\tv1.31.7\th1:3uCu7kNQxNBVbbqqe0pPjbW+h8L9aT01rD0bg+NdS5I=\n\tdep\tk8s.io/mount-utils\tv0.0.0\n\t=>\tk8s.io/mount-utils\tv0.31.7\th1:wCqAZT3/pQ5OjKuXFOuLxJQYldhVY4+O5/8+L9deJ6w=\n\t\n\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=\n\tdep\tsigs.k8s.io/apiserver-network-proxy/konnectivity-client\tv0.30.3\th1:2770sDpzrjjsAtVhSeUFseziht227YAWYHLGNM8QPwY=\n\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=\n\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=\n\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=\n\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=1f850453aa4bcc2cf564c193ab6348a7b30139f8\n\tbuild\tvcs.time=2026-10-27T16:29:00Z\n\tbuild\tvcs.modified=true\n",
+      "executed": false
+    },
+    "dsga-reconciled-budget-runner-linux-amd64": {
+      "sha256": "1fa8abdf878781955c520c55e75d0dbcda45877f1632500a6113a1a5b77686f6",
+      "elf_machine": 62,
+      "build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-reconciled-budget-runner-linux-amd64: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/neonvm-runner/cmd\n\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261027162900-1f850453aa4b+dirty\t\n\tdep\tgithub.com/alessio/shellescape\tv1.4.1\th1:V7yhSDDn8LP4lc4jS8pFkt0zCnzVJlG5JXy9BVKJUX0=\n\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=\n\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=\n\tdep\tgithub.com/cilium/cilium\tv1.12.14\th1:8TM2fbVBI7zpOSfyc0YxunPY2QeinlEHqeSfVgnQEog=\n\tdep\tgithub.com/cilium/ebpf\tv0.10.0\th1:nk5HPMeoBXtOzbkZBWym+ZWq1GIiHUsBFXxwewXAHLQ=\n\tdep\tgithub.com/containerd/cgroups/v3\tv3.0.1\th1:4hfGvu8rfGIwVIDd+nLzn/B9ZXx4BcCjzt5ToenJRaE=\n\tdep\tgithub.com/coreos/go-iptables\tv0.6.0\th1:is9qnZMPYjLd8LYqmm/qlE+wwEgJIkTYdhV3rfZo4jk=\n\tdep\tgithub.com/coreos/go-systemd/v22\tv22.5.0\th1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=\n\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=\n\tdep\tgithub.com/digitalocean/go-libvirt\tv0.0.0-20220804181439-8648fbde413e\th1:SCnqm8SjSa0QqRxXbo5YY//S+OryeJioe17nK+iDZpg=\n\tdep\tgithub.com/digitalocean/go-qemu\tv0.0.0-20220826173844-d5f5e3ceed89\th1:2/52ma1zkjfR9aIrAX1F9H24rpj+PkCDkAwhQgqVR/A=\n\tdep\tgithub.com/docker/docker\tv24.0.9+incompatible\th1:HPGzNmwfLZWdxHqK9/II92pyi1EpYKsAqcl4G0Of9v0=\n\tdep\tgithub.com/docker/go-units\tv0.5.0\th1:69rxXcBk27SvSaaxTtLh/8llcHD8vYHT7WSdRZ/jvr4=\n\tdep\tgithub.com/docker/libnetwork\tv0.8.0-dev.2.0.20210525090646-64b7a4574d14\th1:GZvuJOpa10/Yl2EinacWoMqJ+XtNPbikclDZvNXBNO8=\n\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=\n\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=\n\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=\n\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=\n\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=\n\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=\n\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=\n\tdep\tgithub.com/godbus/dbus/v5\tv5.1.0\th1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=\n\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=\n\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=\n\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=\n\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=\n\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=\n\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=\n\tdep\tgithub.com/ishidawataru/sctp\tv0.0.0-20230406120618-7ff4192f6ff2\th1:i2fYnDurfLlJH8AyyMOnkLHnHeP8Ff/DDpuZA/D3bPo=\n\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=\n\tdep\tgithub.com/jpillora/backoff\tv1.0.0\th1:uvFg412JmmHBHw7iwprIxkPMI+sGQ4kzOWsMeHnm2EA=\n\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=\n\tdep\tgithub.com/kdomanski/iso9660\tv0.3.3\th1:cNwM9L2L1Hzc5hZWGy6fPJ92UyWDccaY69DmEPlfDNY=\n\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=\n\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=\n\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=\n\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=\n\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=\n\tdep\tgithub.com/opencontainers/runtime-spec\tv1.0.3-0.20220909204839-494a5a6aca78\th1:R5M2qXZiK/mWPMT4VldCOiSL9HIAMuxQZWdG0CSM5+4=\n\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=\n\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=\n\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=\n\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=\n\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=\n\tdep\tgithub.com/sirupsen/logrus\tv1.9.3\th1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=\n\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=\n\tdep\tgithub.com/vishvananda/netlink\tv1.1.1-0.20220125195016-0639e7e787ba\th1:MU5oPE25XZhDS8Z0xFG0/1ERBEu5rZIw62TImubLusU=\n\tdep\tgithub.com/vishvananda/netns\tv0.0.4\th1:Oeaw1EM2JMxD51g9uhtC0D7erkIjgmj8+JZc26m1YX8=\n\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=\n\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=\n\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=\n\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=\n\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=\n\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=\n\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=\n\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=\n\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=\n\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=\n\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=\n\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=\n\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=\n\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=\n\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=\n\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=\n\tdep\tk8s.io/api\tv0.31.7\n\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=\n\t\n\tdep\tk8s.io/apimachinery\tv0.31.7\n\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=\n\t\n\tdep\tk8s.io/client-go\tv0.31.7\n\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=\n\t\n\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=\n\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38\n\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=\n\t\n\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=\n\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=\n\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=\n\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=\n\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=1f850453aa4bcc2cf564c193ab6348a7b30139f8\n\tbuild\tvcs.time=2026-10-27T16:29:00Z\n\tbuild\tvcs.modified=true\n",
+      "executed": false
+    },
+    "dsga-reconciled-budget-controller-linux-amd64": {
+      "sha256": "d5b622472e19343271dd7739f2b22211924c9ba67c1a0df5c0bc55618bb70cd2",
+      "elf_machine": 62,
+      "build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-reconciled-budget-controller-linux-amd64: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/neonvm-controller/cmd\n\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261027162900-1f850453aa4b+dirty\t\n\tdep\tgithub.com/Azure/go-ntlmssp\tv0.0.0-20221128193559-754e69321358\th1:mFRzDkZVAjdal+s7s0MwaRv9igoPqLRdzOLzw/8Xvq8=\n\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=\n\tdep\tgithub.com/blang/semver/v4\tv4.0.0\th1:1PFHFE6yCCTv8C1TeyNNarDzntLi7wMI5i/pzqYIsAM=\n\tdep\tgithub.com/cert-manager/cert-manager\tv1.16.4\th1:LS6I3vr+STXqnyH+aLHNIdoypcqyeelpi4OYmMRxO9M=\n\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=\n\tdep\tgithub.com/containernetworking/cni\tv1.1.1\th1:ky20T7c0MvKvbMOwS/FrlbNwjEoqJEUUYfsL4b0mc4k=\n\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=\n\tdep\tgithub.com/digitalocean/go-libvirt\tv0.0.0-20220804181439-8648fbde413e\th1:SCnqm8SjSa0QqRxXbo5YY//S+OryeJioe17nK+iDZpg=\n\tdep\tgithub.com/digitalocean/go-qemu\tv0.0.0-20220826173844-d5f5e3ceed89\th1:2/52ma1zkjfR9aIrAX1F9H24rpj+PkCDkAwhQgqVR/A=\n\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=\n\tdep\tgithub.com/evanphx/json-patch/v5\tv5.9.0\th1:kcBlZQbplgElYIlo/n1hJbls2z/1awpXxpRi0/FOJfg=\n\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=\n\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=\n\tdep\tgithub.com/go-asn1-ber/asn1-ber\tv1.5.6\th1:CYsqysemXfEaQbyrLJmdsCRuufHoLa3P/gGWGl5TDrM=\n\tdep\tgithub.com/go-ldap/ldap/v3\tv3.4.8\th1:loKJyspcRezt2Q3ZRMq2p/0v8iOurlmeXDPw6fikSvQ=\n\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=\n\tdep\tgithub.com/go-logr/zapr\tv1.3.0\th1:XGdV8XW8zdwFiwOA2Dryh1gj2KRQyOOoNmBy4EplIcQ=\n\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=\n\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=\n\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=\n\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=\n\tdep\tgithub.com/golang/groupcache\tv0.0.0-20210331224755-41bb18bfe9da\th1:oI5xCqsCo564l8iNU+DwB5epxmsaqB+rhGL0m5jtYqE=\n\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=\n\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=\n\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=\n\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=\n\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=\n\tdep\tgithub.com/imdario/mergo\tv0.3.16\th1:wwQJbIsHYGMUyLSPrEq1CT16AhnhNJQ51+4fdHUnCl4=\n\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=\n\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=\n\tdep\tgithub.com/k8snetworkplumbingwg/network-attachment-definition-client\tv1.4.0\th1:VzM3TYHDgqPkettiP6I6q2jOeQFL4nrJM+UcAc4f6Fs=\n\tdep\tgithub.com/k8snetworkplumbingwg/whereabouts\tv0.6.1\th1:3pfShDMF9+/7ijzKUPezoBqN2IvlsI9VbSHYUw+ku6U=\n\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=\n\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=\n\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=\n\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=\n\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=\n\tdep\tgithub.com/pkg/errors\tv0.9.1\th1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=\n\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=\n\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=\n\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=\n\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=\n\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=\n\tdep\tgithub.com/spf13/cobra\tv1.8.1\th1:e5/vxKd/rZsfSJMUX1agtjeTDf+qv1/JdBF8gg5k9ZM=\n\tdep\tgithub.com/spf13/pflag\tv1.0.5\th1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=\n\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=\n\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=\n\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=\n\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=\n\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=\n\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=\n\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=\n\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=\n\tdep\tgolang.org/x/sync\tv0.12.0\th1:MHc5BpPuC30uJk597Ri8TV3CNZcTLu6B6z4lJy+g6Jw=\n\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=\n\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=\n\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=\n\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=\n\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=\n\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=\n\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=\n\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=\n\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=\n\tdep\tk8s.io/api\tv0.31.7\n\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=\n\t\n\tdep\tk8s.io/apiextensions-apiserver\tv0.31.1\n\t=>\tk8s.io/apiextensions-apiserver\tv0.31.7\th1:FujQQl6iKuCF5nX4GIQy3ClvftU8MqadAyi9oQ6ZeAw=\n\t\n\tdep\tk8s.io/apimachinery\tv0.31.7\n\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=\n\t\n\tdep\tk8s.io/apiserver\tv0.31.7\n\t=>\tk8s.io/apiserver\tv0.31.7\th1:L1JQgfdQfvSZNBhXJljv9ekc/JirAZAmR3B2Np5mSKk=\n\t\n\tdep\tk8s.io/client-go\tv0.31.7\n\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=\n\t\n\tdep\tk8s.io/component-base\tv0.31.7\n\t=>\tk8s.io/component-base\tv0.31.7\th1:HLGy3757F1xfidwYzrsrL6gqAML4jKiT1rfNTRv1vhw=\n\t\n\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=\n\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38\n\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=\n\t\n\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=\n\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=\n\tdep\tsigs.k8s.io/gateway-api\tv1.1.0\th1:DsLDXCi6jR+Xz8/xd0Z1PYl2Pn0TyaFMOPPZIj4inDM=\n\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=\n\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=\n\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=1f850453aa4bcc2cf564c193ab6348a7b30139f8\n\tbuild\tvcs.time=2026-10-27T16:29:00Z\n\tbuild\tvcs.modified=true\n",
+      "executed": false
+    },
+    "dsga-reconciled-budget-agent-linux-arm64": {
+      "sha256": "bca8a4f4ab9f97c2c8596ed861d04f6377c6a5fa1eff32d603c803465a116de5",
+      "elf_machine": 183,
+      "build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-reconciled-budget-agent-linux-arm64: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/autoscaler-agent/cmd\n\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261027162900-1f850453aa4b+dirty\t\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/azcore\tv1.14.0\th1:nyQWyZvwGTvunIMxi1Y9uXkcyr+I7TeNrr/foo4Kpk8=\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/azidentity\tv1.7.0\th1:tfLQ34V6F7tVSwoTf/4lH5sE0o6eCJuNDTmH09nDpbc=\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/internal\tv1.10.0\th1:ywEEhmNahHBihViHepv3xPBn1663uRv2t2q/ESv9seY=\n\tdep\tgithub.com/Azure/azure-sdk-for-go/sdk/storage/azblob\tv1.3.2\th1:YUUxeiOWgdAQE3pXt2H7QXzZs0q8UBjgRbl56qo8GYM=\n\tdep\tgithub.com/AzureAD/microsoft-authentication-library-for-go\tv1.2.2\th1:XHOnouVk1mxXfQidrMEnLlPk9UMeRtyBTnEFtxkV0kU=\n\tdep\tgithub.com/aws/aws-sdk-go-v2\tv1.31.0\th1:3V05LbxTSItI5kUqNwhJrrrY1BAXxXt0sN0l72QmG5U=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/aws/protocol/eventstream\tv1.6.2\th1:x6xsQXGSmW6frevwDA+vi/wqhp1ct18mVXYN08/93to=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/config\tv1.27.36\th1:4IlvHh6Olc7+61O1ktesh0jOcqmq/4WG6C2Aj5SKXy0=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/credentials\tv1.17.34\th1:gmkk1l/cDGSowPRzkdxYi8edw+gN4HmVK151D/pqGNc=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/feature/ec2/imds\tv1.16.14\th1:C/d03NAmh8C4BZXhuRNboF/DqhBkBCeDiJDcaqIT5pA=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/configsources\tv1.3.18\th1:kYQ3H1u0ANr9KEKlGs/jTLrBFPo8P8NaH/w7A01NeeM=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/endpoints/v2\tv2.6.18\th1:Z7IdFUONvTcvS7YuhtVxN99v2cCoHRXOS4mTr0B/pUc=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/ini\tv1.8.1\th1:VaRN3TlFdd6KxX1x3ILT5ynH6HvKgqdiXoTxAF4HQcQ=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/internal/v4a\tv1.3.5\th1:81KE7vaZzrl7yHBYHVEzYB8sypz11NMOZ40YlWvPxsU=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/accept-encoding\tv1.11.5\th1:QFASJGfT8wMXtuP3D5CRmMjARHv9ZmzFUMJznHDOY3w=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/checksum\tv1.3.7\th1:ZMeFZ5yk+Ek+jNr1+uwCd2tG89t6oTS5yVWpa6yy2es=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/presigned-url\tv1.11.20\th1:Xbwbmk44URTiHNx6PNo0ujDE6ERlsCKJD3u1zfnzAPg=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/internal/s3shared\tv1.17.5\th1:f9RyWNtS8oH7cZlbn+/JNPpjUk5+5fLd5lM9M0i49Ys=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/s3\tv1.53.2\th1:rq2hglTQM3yHZvOPVMtNvLS5x6hijx7JvRDgKiTNDGQ=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/sso\tv1.23.0\th1:fHySkG0IGj2nepgGJPmmhZYL9ndnsq1Tvc6MeuVQCaQ=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/ssooidc\tv1.27.0\th1:cU/OeQPNReyMj1JEBgjE29aclYZYtXcsPMXbTkVGMFk=\n\tdep\tgithub.com/aws/aws-sdk-go-v2/service/sts\tv1.31.0\th1:GNVxIHBTi2EgwCxpNiozhNasMOK+ROUA2Z3X+cSBX58=\n\tdep\tgithub.com/aws/smithy-go\tv1.21.0\th1:H7L8dtDRk0P1Qm6y0ji7MCYMQObJ5R9CRpyPhRUkLYA=\n\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=\n\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=\n\tdep\tgithub.com/coder/websocket\tv1.8.13\th1:f3QZdXy7uGVz+4uCJy2nTZyM0yTBj8yANEHhqlXZ9FE=\n\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=\n\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=\n\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=\n\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=\n\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=\n\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=\n\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=\n\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=\n\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=\n\tdep\tgithub.com/golang-jwt/jwt/v5\tv5.2.2\th1:Rl4B7itRWVtYIHFrSNd7vhTiz9UpLdi6gZhZ3wEeDy8=\n\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=\n\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=\n\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=\n\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=\n\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=\n\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=\n\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=\n\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=\n\tdep\tgithub.com/kylelemons/godebug\tv1.1.0\th1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=\n\tdep\tgithub.com/lithammer/shortuuid\tv3.0.0+incompatible\th1:NcD0xWW/MZYXEHa6ITy6kaXN5nwm/V115vj2YXfhS0w=\n\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=\n\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=\n\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=\n\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=\n\tdep\tgithub.com/pkg/browser\tv0.0.0-20240102092130-5ac0b6a4141c\th1:+mdjkGKdHQG3305AYmdv1U2eRNDiU2ErMBj1gwrq8eQ=\n\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=\n\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=\n\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=\n\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=\n\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=\n\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=\n\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=\n\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=\n\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=\n\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=\n\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=\n\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=\n\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=\n\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=\n\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=\n\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=\n\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=\n\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=\n\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=\n\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=\n\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=\n\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=\n\tdep\tk8s.io/api\tv0.31.7\n\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=\n\t\n\tdep\tk8s.io/apimachinery\tv0.31.7\n\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=\n\t\n\tdep\tk8s.io/client-go\tv0.31.7\n\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=\n\t\n\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=\n\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38\n\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=\n\t\n\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=\n\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=\n\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=\n\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=\n\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=arm64\n\tbuild\tGOOS=linux\n\tbuild\tGOARM64=v8.0\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=1f850453aa4bcc2cf564c193ab6348a7b30139f8\n\tbuild\tvcs.time=2026-10-27T16:29:00Z\n\tbuild\tvcs.modified=true\n",
+      "executed": false
+    },
+    "dsga-reconciled-budget-scheduler-linux-arm64": {
+      "sha256": "fa9d1409212eeb6c9f2139f520da8ae5128b7fd03e4aac7ef76a99a3895b66cb",
+      "elf_machine": 183,
+      "build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-reconciled-budget-scheduler-linux-arm64: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/autoscale-scheduler/cmd\n\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261027162900-1f850453aa4b+dirty\t\n\tdep\tgithub.com/NYTimes/gziphandler\tv1.1.1\th1:ZUDjpQae29j0ryrS0u/B8HZfJBtBQHjqw2rQ2cqUQ3I=\n\tdep\tgithub.com/antlr4-go/antlr/v4\tv4.13.0\th1:lxCg3LAv+EUK6t1i0y1V6/SLeUi0eKEKdhQAlS8TVTI=\n\tdep\tgithub.com/asaskevich/govalidator\tv0.0.0-20230301143203-a9d515a09cc2\th1:DklsrG3dyBCFEj5IhUbnKptjxatkF07cF2ak3yi77so=\n\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=\n\tdep\tgithub.com/blang/semver/v4\tv4.0.0\th1:1PFHFE6yCCTv8C1TeyNNarDzntLi7wMI5i/pzqYIsAM=\n\tdep\tgithub.com/cenkalti/backoff/v4\tv4.3.0\th1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=\n\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=\n\tdep\tgithub.com/coreos/go-semver\tv0.3.1\th1:yi21YpKnrx1gt5R+la8n5WgS0kCrsPp33dmEyHReZr4=\n\tdep\tgithub.com/coreos/go-systemd/v22\tv22.5.0\th1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=\n\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=\n\tdep\tgithub.com/distribution/reference\tv0.5.0\th1:/FUIFXtfc/x2gpa5/VGfiGLuOIdYa1t65IKK2OFGvA0=\n\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=\n\tdep\tgithub.com/felixge/httpsnoop\tv1.0.4\th1:NFTV2Zj1bL4mc9sqWACXbQFVBBg2W3GPvqp8/ESS2Wg=\n\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=\n\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=\n\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=\n\tdep\tgithub.com/go-logr/stdr\tv1.2.2\th1:hSWxHoqTgW2S2qGc0LTAI563KZ5YKYRhT3MFKZMbjag=\n\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=\n\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=\n\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=\n\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=\n\tdep\tgithub.com/golang/groupcache\tv0.0.0-20210331224755-41bb18bfe9da\th1:oI5xCqsCo564l8iNU+DwB5epxmsaqB+rhGL0m5jtYqE=\n\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=\n\tdep\tgithub.com/google/cel-go\tv0.20.1\th1:nDx9r8S3L4pE61eDdt8igGj8rf5kjYR3ILxWIpWNi84=\n\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=\n\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=\n\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=\n\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=\n\tdep\tgithub.com/grpc-ecosystem/go-grpc-prometheus\tv1.2.0\th1:Ovs26xHkKqVztRpIrF/92BcuyuQ/YW4NSIpoGtfXNho=\n\tdep\tgithub.com/grpc-ecosystem/grpc-gateway/v2\tv2.20.0\th1:bkypFPDjIYGfCYD5mRBvpqxfYX1YCS1PXdKYWi8FsN0=\n\tdep\tgithub.com/imdario/mergo\tv0.3.16\th1:wwQJbIsHYGMUyLSPrEq1CT16AhnhNJQ51+4fdHUnCl4=\n\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=\n\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=\n\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=\n\tdep\tgithub.com/kylelemons/godebug\tv1.1.0\th1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=\n\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=\n\tdep\tgithub.com/moby/sys/mountinfo\tv0.7.1\th1:/tTvQaSJRr2FshkhXiIpux6fQ2Zvc4j7tAhMTStAG2g=\n\tdep\tgithub.com/moby/term\tv0.5.0\th1:xt8Q1nalod/v7BqbG21f8mQPqH+xAaC9C3N3wfWbVP0=\n\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=\n\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=\n\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=\n\tdep\tgithub.com/opencontainers/go-digest\tv1.0.0\th1:apOUWs51W5PlhuyGyz9FCeeBIOUDA/6nW8Oi/yOhh5U=\n\tdep\tgithub.com/opencontainers/runc\tv1.1.13\th1:98S2srgG9vw0zWcDpFMn5TRrh8kLxa/5OFUstuUhmRs=\n\tdep\tgithub.com/opencontainers/selinux\tv1.11.0\th1:+5Zbo97w3Lbmb3PeqQtpmTkMwsW5nRI3YaLpt7tQ7oU=\n\tdep\tgithub.com/pkg/errors\tv0.9.1\th1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=\n\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=\n\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=\n\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=\n\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=\n\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=\n\tdep\tgithub.com/spf13/cobra\tv1.8.1\th1:e5/vxKd/rZsfSJMUX1agtjeTDf+qv1/JdBF8gg5k9ZM=\n\tdep\tgithub.com/spf13/pflag\tv1.0.5\th1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=\n\tdep\tgithub.com/stoewer/go-strcase\tv1.3.0\th1:g0eASXYtp+yvN9fK8sH94oCIk0fau9uV1/ZdJ0AVEzs=\n\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=\n\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=\n\tdep\tgo.etcd.io/etcd/api/v3\tv3.5.14\th1:vHObSCxyB9zlF60w7qzAdTcGaglbJOpSj1Xj9+WGxq0=\n\tdep\tgo.etcd.io/etcd/client/pkg/v3\tv3.5.14\th1:SaNH6Y+rVEdxfpA2Jr5wkEvN6Zykme5+YnbCkxvuWxQ=\n\tdep\tgo.etcd.io/etcd/client/v3\tv3.5.14\th1:CWfRs4FDaDoSz81giL7zPpZH2Z35tbOrAJkkjMqOupg=\n\tdep\tgo.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc\tv0.54.0\th1:r6I7RJCN86bpD/FQwedZ0vSixDpwuWREjW9oRMsmqDc=\n\tdep\tgo.opentelemetry.io/contrib/instrumentation/net/http/otelhttp\tv0.54.0\th1:TT4fX+nBOA/+LUkobKGW1ydGcn+G3vRw9+g5HwCphpk=\n\tdep\tgo.opentelemetry.io/otel\tv1.29.0\th1:PdomN/Al4q/lN6iBJEN3AwPvUiHPMlt93c8bqTG5Llw=\n\tdep\tgo.opentelemetry.io/otel/exporters/otlp/otlptrace\tv1.28.0\th1:3Q/xZUyC1BBkualc9ROb4G8qkH90LXEIICcs5zv1OYY=\n\tdep\tgo.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc\tv1.27.0\th1:qFffATk0X+HD+f1Z8lswGiOQYKHRlzfmdJm0wEaVrFA=\n\tdep\tgo.opentelemetry.io/otel/metric\tv1.29.0\th1:vPf/HFWTNkPu1aYeIsc98l4ktOQaL6LeSoeV2g+8YLc=\n\tdep\tgo.opentelemetry.io/otel/sdk\tv1.28.0\th1:b9d7hIry8yZsgtbmM0DKyPWMMUMlK9NEKuIG4aBqWyE=\n\tdep\tgo.opentelemetry.io/otel/trace\tv1.29.0\th1:J/8ZNK4XgR7a21DZUAsbF8pZ5Jcw1VhACmnYt39JTi4=\n\tdep\tgo.opentelemetry.io/proto/otlp\tv1.3.1\th1:TrMUixzpM0yuc/znrFTP9MMRh8trP93mkCiDVeXrui0=\n\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=\n\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=\n\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=\n\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=\n\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=\n\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=\n\tdep\tgolang.org/x/sync\tv0.12.0\th1:MHc5BpPuC30uJk597Ri8TV3CNZcTLu6B6z4lJy+g6Jw=\n\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=\n\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=\n\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=\n\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=\n\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=\n\tdep\tgoogle.golang.org/genproto/googleapis/api\tv0.0.0-20240827150818-7e3bb234dfed\th1:3RgNmBoI9MZhsj3QxC+AP/qQhNwpCLOvYDYYsFrhFt0=\n\tdep\tgoogle.golang.org/genproto/googleapis/rpc\tv0.0.0-20240903143218-8af14fe29dc1\th1:pPJltXNxVzT4pK9yD8vR9X75DaWYYmLGMsEvBfFQZzQ=\n\tdep\tgoogle.golang.org/grpc\tv1.66.2\th1:3QdXkuq3Bkh7w+ywLdLvM56cmGvQHUMZpiCzt6Rqaoo=\n\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=\n\tdep\tgopkg.in/evanphx/json-patch.v4\tv4.12.0\th1:n6jtcsulIzXPJaxegRbvFNNrZDjbij7ny3gmSPG+6V4=\n\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=\n\tdep\tgopkg.in/natefinch/lumberjack.v2\tv2.2.1\th1:bBRl1b0OH9s/DuPhuXpNl+VtCaJXFZ5/uEFST95x9zc=\n\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=\n\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=\n\tdep\tk8s.io/api\tv0.31.7\n\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=\n\t\n\tdep\tk8s.io/apiextensions-apiserver\tv0.31.1\n\t=>\tk8s.io/apiextensions-apiserver\tv0.31.7\th1:FujQQl6iKuCF5nX4GIQy3ClvftU8MqadAyi9oQ6ZeAw=\n\t\n\tdep\tk8s.io/apimachinery\tv0.31.7\n\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=\n\t\n\tdep\tk8s.io/apiserver\tv0.31.7\n\t=>\tk8s.io/apiserver\tv0.31.7\th1:L1JQgfdQfvSZNBhXJljv9ekc/JirAZAmR3B2Np5mSKk=\n\t\n\tdep\tk8s.io/client-go\tv0.31.7\n\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=\n\t\n\tdep\tk8s.io/cloud-provider\tv0.0.0\n\t=>\tk8s.io/cloud-provider\tv0.31.7\th1:kg+bkemVEjCI4J+SxHFrOcZznDcPkRTwzAHrUe/FZSw=\n\t\n\tdep\tk8s.io/component-base\tv0.31.7\n\t=>\tk8s.io/component-base\tv0.31.7\th1:HLGy3757F1xfidwYzrsrL6gqAML4jKiT1rfNTRv1vhw=\n\t\n\tdep\tk8s.io/component-helpers\tv0.31.7\n\t=>\tk8s.io/component-helpers\tv0.31.7\th1:THCAAOYffVxAOkeUMW0U86BmxRGXXAXMvlvObUEtMuQ=\n\t\n\tdep\tk8s.io/controller-manager\tv0.31.7\n\t=>\tk8s.io/controller-manager\tv0.31.7\th1:632MEG+zfUcHgOHakggD5EtNLA7cIaBI/gAuUUDk03A=\n\t\n\tdep\tk8s.io/csi-translation-lib\tv0.0.0\n\t=>\tk8s.io/csi-translation-lib\tv0.31.7\th1:9TEzUwiz66fi39DXIvFIuoUgtMm8ksD4vXjLK+7h82k=\n\t\n\tdep\tk8s.io/dynamic-resource-allocation\tv0.0.0\n\t=>\tk8s.io/dynamic-resource-allocation\tv0.31.7\th1:ss0xp/ZODmZPhfIdMGXQszu6IsqY4gYIIWnmR3Iqo5I=\n\t\n\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=\n\tdep\tk8s.io/kms\tv0.31.7\th1:HSlveij+SIcCcDKugh/lFrnaooVgTIX5G6ircyK+e3Q=\n\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38\n\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=\n\t\n\tdep\tk8s.io/kube-scheduler\tv0.0.0\n\t=>\tk8s.io/kube-scheduler\tv0.31.7\th1:ynevLcHn7D985S9s6BMHqOVDAoBVYGDmNA1XzRMJfjw=\n\t\n\tdep\tk8s.io/kubelet\tv0.31.7\n\t=>\tk8s.io/kubelet\tv0.31.7\th1:jGfsRU536pAyXq/hW9P7+a5k200j2BxBX8IjIWasmxY=\n\t\n\tdep\tk8s.io/kubernetes\tv1.31.7\th1:3uCu7kNQxNBVbbqqe0pPjbW+h8L9aT01rD0bg+NdS5I=\n\tdep\tk8s.io/mount-utils\tv0.0.0\n\t=>\tk8s.io/mount-utils\tv0.31.7\th1:wCqAZT3/pQ5OjKuXFOuLxJQYldhVY4+O5/8+L9deJ6w=\n\t\n\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=\n\tdep\tsigs.k8s.io/apiserver-network-proxy/konnectivity-client\tv0.30.3\th1:2770sDpzrjjsAtVhSeUFseziht227YAWYHLGNM8QPwY=\n\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=\n\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=\n\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=\n\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=arm64\n\tbuild\tGOOS=linux\n\tbuild\tGOARM64=v8.0\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=1f850453aa4bcc2cf564c193ab6348a7b30139f8\n\tbuild\tvcs.time=2026-10-27T16:29:00Z\n\tbuild\tvcs.modified=true\n",
+      "executed": false
+    },
+    "dsga-reconciled-budget-runner-linux-arm64": {
+      "sha256": "3bf502efa9ef882e1d8d43a01080c3702de506b6653d155ac184a7a339c62f5f",
+      "elf_machine": 183,
+      "build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-reconciled-budget-runner-linux-arm64: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/neonvm-runner/cmd\n\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261027162900-1f850453aa4b+dirty\t\n\tdep\tgithub.com/alessio/shellescape\tv1.4.1\th1:V7yhSDDn8LP4lc4jS8pFkt0zCnzVJlG5JXy9BVKJUX0=\n\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=\n\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=\n\tdep\tgithub.com/cilium/cilium\tv1.12.14\th1:8TM2fbVBI7zpOSfyc0YxunPY2QeinlEHqeSfVgnQEog=\n\tdep\tgithub.com/cilium/ebpf\tv0.10.0\th1:nk5HPMeoBXtOzbkZBWym+ZWq1GIiHUsBFXxwewXAHLQ=\n\tdep\tgithub.com/containerd/cgroups/v3\tv3.0.1\th1:4hfGvu8rfGIwVIDd+nLzn/B9ZXx4BcCjzt5ToenJRaE=\n\tdep\tgithub.com/coreos/go-iptables\tv0.6.0\th1:is9qnZMPYjLd8LYqmm/qlE+wwEgJIkTYdhV3rfZo4jk=\n\tdep\tgithub.com/coreos/go-systemd/v22\tv22.5.0\th1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=\n\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=\n\tdep\tgithub.com/digitalocean/go-libvirt\tv0.0.0-20220804181439-8648fbde413e\th1:SCnqm8SjSa0QqRxXbo5YY//S+OryeJioe17nK+iDZpg=\n\tdep\tgithub.com/digitalocean/go-qemu\tv0.0.0-20220826173844-d5f5e3ceed89\th1:2/52ma1zkjfR9aIrAX1F9H24rpj+PkCDkAwhQgqVR/A=\n\tdep\tgithub.com/docker/docker\tv24.0.9+incompatible\th1:HPGzNmwfLZWdxHqK9/II92pyi1EpYKsAqcl4G0Of9v0=\n\tdep\tgithub.com/docker/go-units\tv0.5.0\th1:69rxXcBk27SvSaaxTtLh/8llcHD8vYHT7WSdRZ/jvr4=\n\tdep\tgithub.com/docker/libnetwork\tv0.8.0-dev.2.0.20210525090646-64b7a4574d14\th1:GZvuJOpa10/Yl2EinacWoMqJ+XtNPbikclDZvNXBNO8=\n\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=\n\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=\n\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=\n\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=\n\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=\n\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=\n\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=\n\tdep\tgithub.com/godbus/dbus/v5\tv5.1.0\th1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=\n\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=\n\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=\n\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=\n\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=\n\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=\n\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=\n\tdep\tgithub.com/ishidawataru/sctp\tv0.0.0-20230406120618-7ff4192f6ff2\th1:i2fYnDurfLlJH8AyyMOnkLHnHeP8Ff/DDpuZA/D3bPo=\n\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=\n\tdep\tgithub.com/jpillora/backoff\tv1.0.0\th1:uvFg412JmmHBHw7iwprIxkPMI+sGQ4kzOWsMeHnm2EA=\n\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=\n\tdep\tgithub.com/kdomanski/iso9660\tv0.3.3\th1:cNwM9L2L1Hzc5hZWGy6fPJ92UyWDccaY69DmEPlfDNY=\n\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=\n\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=\n\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=\n\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=\n\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=\n\tdep\tgithub.com/opencontainers/runtime-spec\tv1.0.3-0.20220909204839-494a5a6aca78\th1:R5M2qXZiK/mWPMT4VldCOiSL9HIAMuxQZWdG0CSM5+4=\n\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=\n\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=\n\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=\n\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=\n\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=\n\tdep\tgithub.com/sirupsen/logrus\tv1.9.3\th1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=\n\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=\n\tdep\tgithub.com/vishvananda/netlink\tv1.1.1-0.20220125195016-0639e7e787ba\th1:MU5oPE25XZhDS8Z0xFG0/1ERBEu5rZIw62TImubLusU=\n\tdep\tgithub.com/vishvananda/netns\tv0.0.4\th1:Oeaw1EM2JMxD51g9uhtC0D7erkIjgmj8+JZc26m1YX8=\n\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=\n\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=\n\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=\n\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=\n\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=\n\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=\n\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=\n\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=\n\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=\n\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=\n\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=\n\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=\n\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=\n\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=\n\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=\n\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=\n\tdep\tk8s.io/api\tv0.31.7\n\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=\n\t\n\tdep\tk8s.io/apimachinery\tv0.31.7\n\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=\n\t\n\tdep\tk8s.io/client-go\tv0.31.7\n\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=\n\t\n\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=\n\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38\n\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=\n\t\n\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=\n\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=\n\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=\n\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=\n\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=arm64\n\tbuild\tGOOS=linux\n\tbuild\tGOARM64=v8.0\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=1f850453aa4bcc2cf564c193ab6348a7b30139f8\n\tbuild\tvcs.time=2026-10-27T16:29:00Z\n\tbuild\tvcs.modified=true\n",
+      "executed": false
+    },
+    "dsga-reconciled-budget-controller-linux-arm64": {
+      "sha256": "cd7a55adeb82c06cc0a71164545aff2872de403c8b20756fdcfb294d35b706c0",
+      "elf_machine": 183,
+      "build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-reconciled-budget-controller-linux-arm64: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/neonvm-controller/cmd\n\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261027162900-1f850453aa4b+dirty\t\n\tdep\tgithub.com/Azure/go-ntlmssp\tv0.0.0-20221128193559-754e69321358\th1:mFRzDkZVAjdal+s7s0MwaRv9igoPqLRdzOLzw/8Xvq8=\n\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=\n\tdep\tgithub.com/blang/semver/v4\tv4.0.0\th1:1PFHFE6yCCTv8C1TeyNNarDzntLi7wMI5i/pzqYIsAM=\n\tdep\tgithub.com/cert-manager/cert-manager\tv1.16.4\th1:LS6I3vr+STXqnyH+aLHNIdoypcqyeelpi4OYmMRxO9M=\n\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=\n\tdep\tgithub.com/containernetworking/cni\tv1.1.1\th1:ky20T7c0MvKvbMOwS/FrlbNwjEoqJEUUYfsL4b0mc4k=\n\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=\n\tdep\tgithub.com/digitalocean/go-libvirt\tv0.0.0-20220804181439-8648fbde413e\th1:SCnqm8SjSa0QqRxXbo5YY//S+OryeJioe17nK+iDZpg=\n\tdep\tgithub.com/digitalocean/go-qemu\tv0.0.0-20220826173844-d5f5e3ceed89\th1:2/52ma1zkjfR9aIrAX1F9H24rpj+PkCDkAwhQgqVR/A=\n\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=\n\tdep\tgithub.com/evanphx/json-patch/v5\tv5.9.0\th1:kcBlZQbplgElYIlo/n1hJbls2z/1awpXxpRi0/FOJfg=\n\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=\n\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=\n\tdep\tgithub.com/go-asn1-ber/asn1-ber\tv1.5.6\th1:CYsqysemXfEaQbyrLJmdsCRuufHoLa3P/gGWGl5TDrM=\n\tdep\tgithub.com/go-ldap/ldap/v3\tv3.4.8\th1:loKJyspcRezt2Q3ZRMq2p/0v8iOurlmeXDPw6fikSvQ=\n\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=\n\tdep\tgithub.com/go-logr/zapr\tv1.3.0\th1:XGdV8XW8zdwFiwOA2Dryh1gj2KRQyOOoNmBy4EplIcQ=\n\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=\n\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=\n\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=\n\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=\n\tdep\tgithub.com/golang/groupcache\tv0.0.0-20210331224755-41bb18bfe9da\th1:oI5xCqsCo564l8iNU+DwB5epxmsaqB+rhGL0m5jtYqE=\n\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=\n\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=\n\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=\n\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=\n\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=\n\tdep\tgithub.com/imdario/mergo\tv0.3.16\th1:wwQJbIsHYGMUyLSPrEq1CT16AhnhNJQ51+4fdHUnCl4=\n\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=\n\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=\n\tdep\tgithub.com/k8snetworkplumbingwg/network-attachment-definition-client\tv1.4.0\th1:VzM3TYHDgqPkettiP6I6q2jOeQFL4nrJM+UcAc4f6Fs=\n\tdep\tgithub.com/k8snetworkplumbingwg/whereabouts\tv0.6.1\th1:3pfShDMF9+/7ijzKUPezoBqN2IvlsI9VbSHYUw+ku6U=\n\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=\n\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=\n\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=\n\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=\n\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=\n\tdep\tgithub.com/pkg/errors\tv0.9.1\th1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=\n\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=\n\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=\n\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=\n\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=\n\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=\n\tdep\tgithub.com/spf13/cobra\tv1.8.1\th1:e5/vxKd/rZsfSJMUX1agtjeTDf+qv1/JdBF8gg5k9ZM=\n\tdep\tgithub.com/spf13/pflag\tv1.0.5\th1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=\n\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=\n\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=\n\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=\n\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=\n\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=\n\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=\n\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=\n\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=\n\tdep\tgolang.org/x/sync\tv0.12.0\th1:MHc5BpPuC30uJk597Ri8TV3CNZcTLu6B6z4lJy+g6Jw=\n\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=\n\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=\n\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=\n\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=\n\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=\n\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=\n\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=\n\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=\n\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=\n\tdep\tk8s.io/api\tv0.31.7\n\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=\n\t\n\tdep\tk8s.io/apiextensions-apiserver\tv0.31.1\n\t=>\tk8s.io/apiextensions-apiserver\tv0.31.7\th1:FujQQl6iKuCF5nX4GIQy3ClvftU8MqadAyi9oQ6ZeAw=\n\t\n\tdep\tk8s.io/apimachinery\tv0.31.7\n\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=\n\t\n\tdep\tk8s.io/apiserver\tv0.31.7\n\t=>\tk8s.io/apiserver\tv0.31.7\th1:L1JQgfdQfvSZNBhXJljv9ekc/JirAZAmR3B2Np5mSKk=\n\t\n\tdep\tk8s.io/client-go\tv0.31.7\n\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=\n\t\n\tdep\tk8s.io/component-base\tv0.31.7\n\t=>\tk8s.io/component-base\tv0.31.7\th1:HLGy3757F1xfidwYzrsrL6gqAML4jKiT1rfNTRv1vhw=\n\t\n\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=\n\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38\n\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=\n\t\n\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=\n\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=\n\tdep\tsigs.k8s.io/gateway-api\tv1.1.0\th1:DsLDXCi6jR+Xz8/xd0Z1PYl2Pn0TyaFMOPPZIj4inDM=\n\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=\n\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=\n\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=arm64\n\tbuild\tGOOS=linux\n\tbuild\tGOARM64=v8.0\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=1f850453aa4bcc2cf564c193ab6348a7b30139f8\n\tbuild\tvcs.time=2026-10-27T16:29:00Z\n\tbuild\tvcs.modified=true\n",
+      "executed": false
+    }
+  },
+  "implemented": [
+    "Independent ReconciledCapacity preserves original desired request separately from actual PG prefix/generation/terminal operation and actual native VM capacity; ordinary Finalized rejects its wire",
+    "Reconciled full budget retains exact original Root aggregate/digest and actual-VM Outside qualification, complete original Host peak, no duplicate Shared/normal/HugeTLB accounting",
+    "Typed original Cleanup command/receipt validates actual-capacity admission generation, explicit nullable read-only case, current native fence/Root/Shared and original query/replay response semantics",
+    "Actual Runner reader exports and re-authenticates completed target vs irreversible cancelled-before-send before; may-have-sent remains unknown, sources/identity/current actual are never replaced by equal numbers",
+    "Actual active-cancellation Host/Outside/Pod/Node reader checks immutable protected original UID/RV/body and Node published complete original Host plan, with readback around other domains"
+  ],
+  "reuse_and_boundaries": [
+    "Full budget/vmguard affected package race run accepted; after equivalent De Morgan lint rewrite and new HugeTLB accounting test only budget suite and new source integration rerun",
+    "237 is de-duplicated adopted cases including subtests, not whole product E2E; duplicate package skip observations retained, unique no-test-files package count one",
+    "Real Runner local WAL/publication/reader and Host/Outside/Node data flow tested; QMP/Kube authorization/native PG/Root/platform qualification remain declared domain fixtures",
+    "No actual permanent Reconciled budget header, automatic Cleanup/admission recovery or final Host actual-capacity settlement wired in this phase; library contract acceptance is not completion of partial cancellation",
+    "Unchanged PG17/Rust/owner/Host/Scheduler suites reused; no unrelated maintenance or control-plane changes"
+  ],
+  "failures_preserved": [
+    "Root fixture increased limit but retained old Guest MemTotal, correctly rejected by real resource validation; corrected current fixture capacity",
+    "Initial lint explicit empty pointer struct fixtures and equivalent boolean expression; fixed without disabling rules",
+    "Compile-only initial invocation is recorded separately and is not a business-test pass"
+  ],
+  "compatibility": {
+    "vm_model": 7,
+    "host_node_model": 6,
+    "runner_record": 2,
+    "new_persistent_header": false,
+    "pg17_abi_changed": false,
+    "control_plane_unchanged": "d84c0b73004a7d8cc3e89f3c3f0e3f06cfa8cba9"
+  },
+  "remaining_code": [
+    "Wire actual Reconciled budget into distinct permanent current-budget header and original Cleanup admission/Finish, Host actual-capacity settlement plus real Agent partial-effect fault/history/restart combinations",
+    "Other partial/unknown PG/Guest/VM effects and complete cancellation lifecycle; never label unknown as NoEffect",
+    "Complete trusted Prepare/residual/transition/safety/first-normal service producers",
+    "No-Wait/Start/init/cross-boot/migration/source lifecycle and continuous all-writer/CPU/Monitor/policy integration"
+  ],
+  "linux_not_executed": [
+    "Real Linux K8s/RBAC/Lease/CAS/GC/CRI and cluster faults",
+    "KVM/QEMU/NeonVM/virtio-mem/cgroup/HugeTLB/physical reclamation/kernel qualification",
+    "Storage/performance/long-running and later independent control-plane integrated E2E"
+  ],
+  "whole_core_complete": false,
+  "whole_partial_cancellation_complete": false,
+  "images_or_deployment": false,
+  "upstream_frozen": true
+}
