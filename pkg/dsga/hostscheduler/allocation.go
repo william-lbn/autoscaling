@@ -14,6 +14,8 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/api"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
+	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
+	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
 
 const observedVMVersion = "internal.autoscaling.neon.tech/dsga-observed-vm-rv"
@@ -36,7 +38,7 @@ func (s *Service) allocation(ctx context.Context, n NodeConfig, expected *core.P
 	if _, _, migrating := vmv1.MigrationOwnerForPod(pod); migrating {
 		return nil, none, nil, fmt.Errorf("migration requires an independent complete Host reservation protocol")
 	}
-	p := hostguard.Placement{Namespace: pod.Namespace, PodName: pod.Name, PodUID: string(pod.UID), VMName: "", VMUID: "", Incarnation: "", Managed: false, MemoryBytes: 0, HostOverheadBytes: n.Profile.PodOverheadBytes}
+	p := hostguard.Placement{Namespace: pod.Namespace, PodName: pod.Name, PodUID: string(pod.UID), VMName: "", VMUID: "", Incarnation: "", Managed: false, MemoryBytes: 0, HostOverheadBytes: n.Profile.PodOverheadBytes, Settled: nil}
 	owner, isVM := vmv1.VirtualMachineOwnerForPod(pod)
 	if !isVM {
 		if target != 0 {
@@ -87,13 +89,37 @@ func (s *Service) allocation(ctx context.Context, n NodeConfig, expected *core.P
 	}
 	p.VMName, p.VMUID, p.HostOverheadBytes = vm.Name, string(vm.UID), n.Profile.VMOverheadBytes
 	p.MemoryBytes = control.Uint64(uint64(slot) * uint64(slots.Use))
+	currentManaged := false
 	if vm.Spec.DSGABootstrap != nil {
 		p.Managed, p.Incarnation = true, vm.Spec.DSGABootstrap.Incarnation
 		if target != 0 {
 			return nil, none, nil, fmt.Errorf("managed VM never uses legacy resource approval")
 		}
+		binding := journal.Binding{Namespace: vm.Namespace, Name: vm.Name, VMUID: vm.UID, Incarnation: p.Incarnation}
+		snapshot, err := journal.Inspect(vm, binding)
+		if err != nil {
+			return nil, none, nil, err
+		}
+		if snapshot.State().BudgetHeld != nil {
+			closed, err := hostguard.SettlementFor(snapshot.State())
+			if err != nil {
+				return nil, none, nil, err
+			}
+			_, _, publication, err := vmguard.ReadPublished(ctx, s.core, binding, &closed.Runner.BirthClaim)
+			if err != nil {
+				return nil, none, nil, err
+			}
+			if publication.Identity.RunnerPodUID != string(pod.UID) || publication.Identity.NodeUID != string(n.Binding.NodeUID) {
+				return nil, none, nil, fmt.Errorf("managed allocation original Runner/Node changed")
+			}
+			// DSGA动作不改写旧spec.Use/传播批准。永久预算存在后必须取
+			// 原Runner实际值与当前预算，不能在结清后一轮又用旧Use重抬
+			// 峰值。仍有pending时只保留最大值，绝不据此释放容量。
+			p.MemoryBytes = max(publication.Actual.RequestedBytes, publication.Actual.ActualBytes, closed.Request.TargetVMMemoryBytes)
+			currentManaged = true
+		}
 	}
-	if vm.Status.MemorySize != nil {
+	if !currentManaged && vm.Status.MemorySize != nil {
 		actual, exact := vm.Status.MemorySize.AsInt64()
 		if !exact || actual <= 0 {
 			return nil, none, nil, fmt.Errorf("original VM actual memory is invalid")
@@ -104,7 +130,7 @@ func (s *Service) allocation(ctx context.Context, n NodeConfig, expected *core.P
 	if err != nil {
 		return nil, none, nil, err
 	}
-	if approved != nil {
+	if !currentManaged && approved != nil {
 		p.MemoryBytes = max(p.MemoryBytes, control.Uint64(approved.Mem))
 	}
 	p.MemoryBytes = max(p.MemoryBytes, target)

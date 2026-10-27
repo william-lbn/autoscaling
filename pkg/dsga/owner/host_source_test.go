@@ -13,9 +13,11 @@ import (
 	jsonpatch "github.com/evanphx/json-patch/v5"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 
 	coord "k8s.io/api/coordination/v1"
 	core "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -54,6 +56,7 @@ func actualHostPublisher(t *testing.T, client *kubefake.Clientset, vmCoord coord
 	var mu sync.Mutex
 	version := 1
 	losePublication := len(faults) == 1 && faults[0] == "publish-lost"
+	loseSettlement := len(faults) == 1 && faults[0] == "host-settle-lost"
 	client.PrependReactor("patch", "nodes", func(action kt.Action) (bool, runtime.Object, error) {
 		mu.Lock()
 		defer mu.Unlock()
@@ -88,6 +91,13 @@ func actualHostPublisher(t *testing.T, client *kubefake.Clientset, vmCoord coord
 			if json.Unmarshal([]byte(next.Annotations[hostguard.LedgerAnnotation]), &m) == nil && len(m.Holds) == 1 && m.Holds[0].Claim != nil {
 				losePublication = false
 				return true, nil, fmt.Errorf("fixture lost publication CAS reply after commit")
+			}
+		}
+		if loseSettlement {
+			var m hostguard.Model
+			if json.Unmarshal([]byte(next.Annotations[hostguard.LedgerAnnotation]), &m) == nil && m.ProtocolVersion == 4 {
+				loseSettlement = false
+				return true, nil, fmt.Errorf("fixture lost Host settlement CAS reply after commit")
 			}
 		}
 		return true, &next, nil
@@ -309,7 +319,7 @@ func TestHostPublisherOriginalSourcesAndLostWrites(t *testing.T) {
 // 发布。Kube/VM HTTP和平台上界仍为fixture，VM Lease在两个测试API中的镜像
 // 显式固定；不把此组合称为真实K8s或物理Host认证。没有手工调用Publisher
 // 来代替本用例的实际Scheduler生产入口。
-func schedulerPublishesOriginalHost(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, vmCoord coordclient.CoordinationV1Interface, allocator *hostguard.Store) budget.ObjectRef {
+func schedulerPublishesOriginalHost(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, vmCoord coordclient.CoordinationV1Interface, allocator *hostguard.Store, garbage ...string) budget.ObjectRef {
 	t.Helper()
 	n, err := allocator.Load(ctx)
 	require.NoError(t, err)
@@ -321,6 +331,17 @@ func schedulerPublishesOriginalHost(t *testing.T, ctx context.Context, api *owne
 	vmLease, err := vmCoord.Leases(binding().Namespace).Get(ctx, journal.LeaseName(binding()), metav1.GetOptions{})
 	require.NoError(t, err)
 	require.NoError(t, client.Tracker().Add(vmLease))
+	// 两个测试API分开：必须从真实选主HTTP夹具读取持续续约的原Lease，
+	// 不能拿一次性镜像假装一直新鲜。这里只转发另一个客户端，不递归调用
+	// 当前fake（其reactor持锁），避免制造夹具死锁；UID等校验仍在生产层。
+	client.PrependReactor("get", "leases", func(action kt.Action) (bool, runtime.Object, error) {
+		a := action.(kt.GetAction)
+		if a.GetNamespace() != binding().Namespace || a.GetName() != journal.LeaseName(binding()) {
+			return false, nil, nil
+		}
+		lease, err := vmCoord.Leases(binding().Namespace).Get(ctx, a.GetName(), metav1.GetOptions{})
+		return true, lease, err
+	})
 	pod, err := client.CoreV1().Pods("testing").Get(ctx, "runner", metav1.GetOptions{})
 	require.NoError(t, err)
 	pod.Spec.SchedulerName = m.Profile.SchedulerName
@@ -332,7 +353,11 @@ func schedulerPublishesOriginalHost(t *testing.T, ctx context.Context, api *owne
 	require.NoError(t, err)
 	runCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	require.NoError(t, scheduler.Run(runCtx, zap.NewNop()))
+	logger := zap.NewNop()
+	if len(garbage) == 1 {
+		logger = zaptest.NewLogger(t)
+	}
+	require.NoError(t, scheduler.Run(runCtx, logger))
 	var ref budget.ObjectRef
 	require.Eventually(t, func() bool {
 		snapshot, err := allocator.Load(ctx)
@@ -341,18 +366,36 @@ func schedulerPublishesOriginalHost(t *testing.T, ctx context.Context, api *owne
 		}
 		for _, h := range snapshot.State().Holds {
 			if h.Claim != nil {
+				if len(garbage) == 1 {
+					row, err := snapshot.State().Placement(h.Plan.RunnerPodUID)
+					if err != nil || row.Settled == nil {
+						return false
+					}
+					// 结清CAS与旧来源GC是两个阶段，不能只看到水位就取消
+					// 实际循环，再把尚在执行的清理误判成实现失败。
+					_, err = client.CoreV1().ConfigMaps(binding().Namespace).Get(ctx, garbage[0], metav1.GetOptions{})
+					if !apierrors.IsNotFound(err) {
+						return false
+					}
+				}
 				ref = *h.Claim
 				return true
 			}
 		}
 		return false
 	}, 5*time.Second, 20*time.Millisecond)
+	if len(garbage) == 1 {
+		_, held, err := scheduler.Reserve(ctx, m.Binding.NodeName, pod, 0)
+		require.NoError(t, err)
+		require.NotNil(t, held.Settled)
+		require.Equal(t, held.Settled.Request.TargetVMMemoryBytes, held.MemoryBytes, "旧spec.Use不能在下一轮恢复中重新抬高峰值")
+	}
 	return ref
 }
 
-func publishVMHost(t *testing.T, ctx context.Context, client *kubefake.Clientset, vmCoord coordclient.CoordinationV1Interface, store *journal.Store, session *Session) budget.HostReservation {
+func publishVMHost(t *testing.T, ctx context.Context, client *kubefake.Clientset, vmCoord coordclient.CoordinationV1Interface, store *journal.Store, session *Session, faults ...string) budget.HostReservation {
 	t.Helper()
-	publisher, _ := actualHostPublisher(t, client, vmCoord, store, session)
+	publisher, _ := actualHostPublisher(t, client, vmCoord, store, session, faults...)
 	ref, err := publisher.Reconcile(ctx)
 	require.NoError(t, err)
 	cm, err := client.CoreV1().ConfigMaps(binding().Namespace).Get(ctx, ref.Name, metav1.GetOptions{})

@@ -74,7 +74,7 @@ func (s *Service) HasNode(name string) bool {
 
 func checkProfile(snapshot *hostguard.Snapshot, n NodeConfig) error {
 	m := snapshot.State()
-	if m.ProtocolVersion != 3 || m.Profile == nil || *m.Profile != n.Profile || m.OutsideBytes != n.SystemBytes || m.Binding != n.Binding {
+	if m.ProtocolVersion < 3 || m.Profile == nil || *m.Profile != n.Profile || m.OutsideBytes != n.SystemBytes || m.Binding != n.Binding {
 		return fmt.Errorf("original complete Host domain differs from fixed startup configuration")
 	}
 	return nil
@@ -239,15 +239,17 @@ func (s *Service) publish(ctx context.Context, d domain, pod *core.Pod, p hostgu
 		return err
 	}
 	m := snapshot.State()
-	if m.Active == nil || m.Active.AbortRequested {
+	if m.Active == nil && m.BudgetHeld == nil || m.Active != nil && m.Active.AbortRequested {
 		return nil
 	}
 	// 等Prepare真实完成后再请求发布，不制造替代预算。Runner已发布的原
 	// Lease UID作为固定来源；启动初期尚无Lease绑定时等待其第一次原fence。
-	prepared := false
-	for _, step := range m.Active.Steps {
-		if step.Action == journal.PrepareBudget && step.Phase == journal.Settled && step.Observation != nil && step.Observation.Result == journal.Completed {
-			prepared = true
+	prepared := m.Active == nil
+	if m.Active != nil {
+		for _, step := range m.Active.Steps {
+			if step.Action == journal.PrepareBudget && step.Phase == journal.Settled && step.Observation != nil && step.Observation.Result == journal.Completed {
+				prepared = true
+			}
 		}
 	}
 	if !prepared {
@@ -262,6 +264,12 @@ func (s *Service) publish(ctx context.Context, d domain, pod *core.Pod, p hostgu
 	}
 	publisher, err := hostexec.New(s.core, s.coord, store, d.store, types.UID(view.State.LeaseUID), d.config.Profile.VMOverheadBytes)
 	if err != nil {
+		return err
+	}
+	if m.Active == nil {
+		// 只有成功原操作闭合后才进入明确结清；普通轮询不会因Lease/
+		// Pod事件清峰值。Publisher独立重读所有事实和原Node快照。
+		_, err = publisher.SettleCurrent(ctx)
 		return err
 	}
 	_, err = publisher.Reconcile(ctx)

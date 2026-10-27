@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -491,7 +492,7 @@ func vmDSM(s control.Snapshot) control.DSMResponse {
 }
 
 func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T) {
-	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost", "explicit-original-replay"} {
+	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost", "explicit-original-replay", "host-settle", "host-settle-lost", "host-settle-source-gone", "host-settle-runner-drift", "host-settle-gc-lost", "host-settle-scheduler-loop"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -544,6 +545,9 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 				defer resources.CloseIdleConnections()
 				req := pgRequest(t, session.Actor())
 				req.Kind, req.TargetBuffers = control.Shrink, 512
+				if strings.HasPrefix(mode, "host-settle") {
+					req.Key.Revision = 2
+				}
 				p, current := preparedGuest(t, req, root.view.Identity)
 				p.Shared.Observed.AdmissionOpen = false
 				p.Shared.Observed.AdmissionRevision = 5
@@ -592,7 +596,7 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 				_, _, err = store.Begin(ctx, s, session.Actor(), req, 1)
 				require.NoError(t, err)
 				priorBudgetDomain(t, ctx, store, session.Actor(), req, journal.PrepareBudget, req.Key.Instance.ComputeInstanceID, p)
-				publishVMHost(t, ctx, client, coord, store, session)
+				publishVMHost(t, ctx, client, coord, store, session, mode)
 				root.mu.Lock()
 				aggregate, err := budget.RootAggregateFromView(root.view)
 				root.mu.Unlock()
@@ -680,6 +684,9 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 				peer.mu.Unlock()
 				require.Equal(t, 1, writes)
 				require.EqualValues(t, 1, opens.Load())
+				if strings.HasPrefix(mode, "host-settle") {
+					verifyClosedHostSettlement(t, ctx, api, client, coord, store, session, runner, peer, mode)
+				}
 				return nil
 			})
 			require.NoError(t, err)
