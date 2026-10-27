@@ -492,7 +492,7 @@ func vmDSM(s control.Snapshot) control.DSMResponse {
 }
 
 func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T) {
-	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost", "explicit-original-replay", "host-settle", "host-settle-lost", "host-settle-source-gone", "host-settle-runner-drift", "host-settle-gc-lost", "host-settle-scheduler-loop"} {
+	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost", "explicit-original-replay", "host-settle", "host-settle-lost", "host-settle-source-gone", "host-settle-runner-drift", "host-settle-gc-lost", "host-settle-scheduler-loop", "host-settle-after-cancel-history"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -685,7 +685,7 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 				require.Equal(t, 1, writes)
 				require.EqualValues(t, 1, opens.Load())
 				if strings.HasPrefix(mode, "host-settle") {
-					verifyClosedHostSettlement(t, ctx, api, client, coord, store, session, runner, peer, mode)
+					verifyClosedHostSettlement(t, ctx, api, client, coord, store, session, worker, runner, peer, mode)
 				}
 				return nil
 			})

@@ -146,12 +146,17 @@ type Model struct {
 	// 原命令/回执，不能只留下数字、可复用SourceID或当前RSS。本字段首次写入
 	// 同时升级Model v3，旧读者必须拒绝，控制面后续移植时再统一升级读者。
 	BudgetHeld *HeldBudget `json:"budget_held,omitempty"`
+	// BudgetBoundary永久记录当前预算成功关闭后，直到哪条零派发取消仍没有
+	// 后续派发效果。它与Finish同CAS，独立于16条结果缓存；任何Start先撤销
+	// 此证明，新预算也必须重新成功关闭。首次生成升v5，旧读者必须拒绝。
+	BudgetBoundary *ClosedBudgetBoundary `json:"budget_boundary,omitempty"`
 }
 
 func New(vmUID, incarnation, holder string) (Model, error) {
 	model := Model{
 		ProtocolVersion: 1, VMUID: vmUID, Incarnation: incarnation, Sequence: 1,
 		Owner: Owner{HolderID: holder, Epoch: 1}, HighWater: nil, Active: nil, History: []Record{}, ExpiredResults: 0,
+		ResourceIdentity: nil, PGInstance: nil, BudgetHeld: nil, BudgetBoundary: nil,
 	}
 	return model, model.Validate()
 }
@@ -361,7 +366,7 @@ func compareKeys(left, right control.Key) int {
 }
 
 func (model Model) Validate() error {
-	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 4) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
+	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 5) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
 		return fmt.Errorf("invalid journal version/sequence/incarnation")
 	}
 	// 旧Model已有严格字段解码，会拒绝pg_instance；这里另用v2明确标识
@@ -441,7 +446,10 @@ func (model Model) Validate() error {
 			return fmt.Errorf("active operation reuses a retired revision")
 		}
 	}
-	return model.validateHeldBudget()
+	if err := model.validateHeldBudget(); err != nil {
+		return err
+	}
+	return model.validateBudgetBoundary()
 }
 
 func (model Model) validateOwners(operation Operation) error {
@@ -486,6 +494,10 @@ func cloneOperation(operation Operation) Operation {
 }
 
 func (model Model) Clone() Model {
+	if model.BudgetBoundary != nil {
+		boundary := *model.BudgetBoundary
+		model.BudgetBoundary = &boundary
+	}
 	if model.BudgetHeld != nil {
 		copy := *model.BudgetHeld
 		copy.Finalization = cloneStep(copy.Finalization)
@@ -732,6 +744,9 @@ func (model Model) Start(actor Owner, key control.Key, action Action, targetID s
 				return model, err
 			}
 			step.CommandSHA256 = hash
+			// 写前票据一旦可能生效，旧预算的“之后无派发”证明立即在同CAS
+			// 失效；不能等真正HTTP/QMP回复后再撤销。完整预算本身继续持有。
+			next.BudgetBoundary = nil
 			return next, next.Validate()
 		}
 		if !successful(*step) {
@@ -781,7 +796,8 @@ func (model Model) Record(actor Owner, key control.Key, observation Observation)
 		}
 		// Runner原UID/完整摘要成为当前预算永久来源时同时升级v4。旧v3读者
 		// 即便收到删掉新字段的投影也必须拒绝版本，不能退回只验数值的旧VM事实。
-		next.ProtocolVersion, next.BudgetHeld = heldBudgetVersion(held), held
+		next.ProtocolVersion, next.BudgetHeld = max(next.ProtocolVersion, heldBudgetVersion(held)), held
+		next.BudgetBoundary = nil
 	}
 	return next, next.Validate()
 }
@@ -823,6 +839,7 @@ func (model Model) StartCleanup(actor Owner, key control.Key, targetID string, c
 		return model, err
 	}
 	next.Active.Cleanup.CommandSHA256 = hash
+	next.BudgetBoundary = nil
 	return next, next.Validate()
 }
 
@@ -867,6 +884,9 @@ func (model Model) Finish(actor Owner, key control.Key) (Model, error) {
 	}
 	outcome, err := next.Active.closingOutcome()
 	if err != nil {
+		return model, err
+	}
+	if err := next.closeBudgetBoundary(outcome); err != nil {
 		return model, err
 	}
 	next.History = append(next.History, Record{Operation: cloneOperation(*next.Active), Outcome: outcome, ClosedSequence: next.Sequence})

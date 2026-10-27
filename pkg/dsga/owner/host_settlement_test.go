@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -17,23 +19,31 @@ import (
 	coordclient "k8s.io/client-go/kubernetes/typed/coordination/v1"
 	kt "k8s.io/client-go/testing"
 
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
+	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
 
 // 复用实际Agent/Runner缩容组合后的事实，新增真正Publisher结清/当前预算只读/
 // 垃圾源恢复以及实际Scheduler循环。PG/root/资格及Kube/QMP peer仍是原用例
 // 明确夹具，尤其不能把承诺归还写成Mac已证明Linux物理内存回收。
-func verifyClosedHostSettlement(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, coord coordclient.CoordinationV1Interface, store *journal.Store, session *Session, runner *vmguard.Runner, peer *vmQMPPeer, mode string) {
+func verifyClosedHostSettlement(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, coord coordclient.CoordinationV1Interface, store *journal.Store, session *Session, worker *PGWorker, runner *vmguard.Runner, peer *vmQMPPeer, mode string) {
 	t.Helper()
 	latest, err := store.Load(ctx)
 	require.NoError(t, err)
 	closed, err := hostguard.SettlementFor(latest.State())
 	require.NoError(t, err)
+	var prepared budget.Prepared
+	for _, step := range latest.State().Active.Steps {
+		if step.Action == journal.PrepareBudget {
+			require.NoError(t, json.Unmarshal(step.Observation.Data, &prepared))
+		}
+	}
 	node, err := client.CoreV1().Nodes().Get(ctx, "node-one", metav1.GetOptions{})
 	require.NoError(t, err)
 	var initial hostguard.Model
@@ -85,6 +95,55 @@ func verifyClosedHostSettlement(t *testing.T, ctx context.Context, api *ownerAPI
 	latest, err = store.Finish(ctx, latest, session.Actor(), closed.Request.Key)
 	require.NoError(t, err)
 	require.Nil(t, latest.State().Active)
+	if mode == "host-settle-after-cancel-history" {
+		originalBudget := latest.State().BudgetHeld
+		// 数量上限/18次取消已由真实Model/codec测试覆盖；此处用无关注释
+		// 占用真实256KiB预算，一次Begin就迫使生产codec淘汰旧成功结果。
+		// 不手填历史、不注入关闭水位；随后实际worker取消、读回及Publisher
+		// 认证仍全走生产路径，避免18轮重复整套HTTP/CAS拖慢组合验证。
+		annotations := latest.VirtualMachine().Annotations
+		room := 256*1024 - len(control.JournalAnnotation)
+		for key, value := range annotations {
+			if key != control.JournalAnnotation {
+				room -= len(key) + len(value)
+			}
+		}
+		paddingKey := "test-only.example/annotation-budget"
+		// Active需预留4096字节；净预算比原完整历史少1字节，迫使淘汰。
+		paddingBytes := room - len(paddingKey) - (len(annotations[control.JournalAnnotation]) + 4095)
+		require.Positive(t, paddingBytes)
+		api.mu.Lock()
+		api.vm.Annotations[paddingKey] = strings.Repeat("x", paddingBytes)
+		api.vmVersion++
+		api.vm.ResourceVersion = fmt.Sprintf("vm-rv-%d", api.vmVersion)
+		api.mu.Unlock()
+		latest, err = store.Load(ctx)
+		require.NoError(t, err)
+		next := closed.Request
+		next.Kind = control.Grow
+		next.Key.Revision = latest.State().HighWater.Revision + 1
+		next.Key.OperationID.Low += next.Key.Revision
+		next.BudgetCommitmentID += "-unstarted-cancel"
+		var disposition journal.Disposition
+		latest, disposition, err = store.Begin(ctx, latest, session.Actor(), next, 0)
+		require.NoError(t, err)
+		require.Equal(t, journal.Accepted, disposition)
+		_, err = store.RequestAbort(ctx, latest, session.Actor(), next.Key)
+		require.NoError(t, err)
+		progress, err := worker.Advance(ctx)
+		require.NoError(t, err)
+		require.Equal(t, pgexec.Recorded, progress)
+		latest, err = store.Load(ctx)
+		require.NoError(t, err)
+		require.NotZero(t, latest.State().ExpiredResults)
+		require.Equal(t, originalBudget, latest.State().BudgetHeld)
+		require.EqualValues(t, 5, latest.State().ProtocolVersion)
+		require.NoError(t, latest.State().CheckClosedBudget(closed.Request))
+		for _, record := range latest.State().History {
+			require.NotEqual(t, closed.Request.Key, record.Operation.Request.Key, "原成功已真正淘汰，后续结清不能借短期历史")
+		}
+		require.Equal(t, paddingBytes, len(latest.VirtualMachine().Annotations[paddingKey]), "journal CAS must preserve unrelated annotations")
+	}
 	if mode == "host-settle-source-gone" {
 		full, err := latest.State().BudgetFor(closed.Request)
 		require.NoError(t, err)
@@ -135,12 +194,6 @@ func verifyClosedHostSettlement(t *testing.T, ctx context.Context, api *ownerAPI
 	require.NoError(t, err)
 	_, err = claims.ReadCurrent(ctx, latest)
 	require.NoError(t, err, "已结清来源继续维持永久当前预算")
-	var prepared budget.Prepared
-	for _, step := range latest.State().History[len(latest.State().History)-1].Operation.Steps {
-		if step.Action == journal.PrepareBudget {
-			require.NoError(t, json.Unmarshal(step.Observation.Data, &prepared))
-		}
-	}
 	_, err = claims.Read(ctx, latest, prepared, closed.HostClaim)
 	require.ErrorIs(t, err, hostguard.ErrSettled, "同一Host旧回执不再提供新的执行授权")
 	_, _, err = allocator.Reserve(ctx, snapshot, snapshot.State().Holds[0].Plan)

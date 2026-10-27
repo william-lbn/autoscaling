@@ -57,7 +57,12 @@ func TestRunnerBudgetV4RetainsOriginalSourcesBeyondHistory(t *testing.T) {
 	require.Equal(t, sources, *again.Sources.Runner)
 	if dir := os.Getenv("DSGA_VM_WIRE_DIR"); dir != "" {
 		require.NoError(t, os.MkdirAll(dir, 0o700))
-		body, err := json.Marshal(restored)
+		// 这是旧v4读者兼容夹具，不是生产降级入口；新永久关闭水位另由
+		// v5用例输出。旧格式本来没有此证明，不能据此结清较新取消。
+		legacy := restored.Clone()
+		legacy.ProtocolVersion, legacy.BudgetBoundary = 4, nil
+		require.NoError(t, legacy.Validate())
+		body, err := json.Marshal(legacy)
 		require.NoError(t, err)
 		require.NoError(t, os.WriteFile(filepath.Join(dir, "model-v4.json"), body, 0o600))
 	}
@@ -98,6 +103,6 @@ func TestRunnerBudgetV4RejectsProjectionAndLegacyReplacement(t *testing.T) {
 	next, pending := heldStart(t, m, 2)
 	_, err = next.Record(next.Owner, pending.Key, pending)
 	require.ErrorContains(t, err, "cannot downgrade")
-	require.EqualValues(t, 4, next.ProtocolVersion)
+	require.EqualValues(t, 5, next.ProtocolVersion, "new operation cannot downgrade persistent closure semantics")
 	require.Equal(t, m.BudgetHeld, next.BudgetHeld)
 }

@@ -47,17 +47,13 @@ func (p *Publisher) SettleCurrent(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if m.HighWater == nil || *m.HighWater != closed.Request.Key || !s.Dispatchable() {
+	if !s.Dispatchable() {
 		return false, fmt.Errorf("host settlement requires latest closed dispatchable original VM")
 	}
-	succeeded := false
-	for _, record := range m.History {
-		if record.Operation.Request == closed.Request && record.Outcome == journal.Succeeded && record.ClosedSequence > m.BudgetHeld.RecordedSequence {
-			succeeded = true
-		}
-	}
-	if !succeeded {
-		return false, fmt.Errorf("host settlement has no original successful terminal operation")
+	// 完整预算和成功关闭水位有独立永久寿命；后续零派发取消只推进该水位，
+	// 不更改原预算/Runner目标。任何Start已先撤销证明，不能借旧预算结清。
+	if err := m.CheckClosedBudget(closed.Request); err != nil {
+		return false, err
 	}
 	if err := p.currentOwner(ctx, s); err != nil {
 		return false, err

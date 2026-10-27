@@ -91,7 +91,7 @@ func (model Model) validateHeldBudget() error {
 	if json.Unmarshal(h.Finalization.Command, &c) != nil {
 		return fmt.Errorf("invalid retained budget command")
 	}
-	if (model.ProtocolVersion == 4 && (c.Finalized.Sources == nil || c.Finalized.Sources.Runner == nil)) || (model.ProtocolVersion == 3 && c.Finalized.Sources != nil && c.Finalized.Sources.Runner != nil) {
+	if (model.ProtocolVersion >= 4 && (c.Finalized.Sources == nil || c.Finalized.Sources.Runner == nil)) || (model.ProtocolVersion == 3 && c.Finalized.Sources != nil && c.Finalized.Sources.Runner != nil) {
 		return fmt.Errorf("journal version does not preserve original Runner budget sources")
 	}
 	request := c.Finalized.Request
