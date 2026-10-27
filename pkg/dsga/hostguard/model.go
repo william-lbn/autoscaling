@@ -128,7 +128,7 @@ func SourceID(origin string, p Plan) string {
 }
 
 func (m Model) Validate() error {
-	if (m.ProtocolVersion < 1 || m.ProtocolVersion > 5) || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
+	if (m.ProtocolVersion < 1 || m.ProtocolVersion > 6) || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
 		return fmt.Errorf("invalid durable Host allocation model")
 	}
 	for i, h := range m.Holds {

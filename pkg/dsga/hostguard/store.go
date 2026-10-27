@@ -174,7 +174,7 @@ func inspectClaim(n *core.Node, p Plan, source string, ref budget.ObjectRef, exp
 		if expected == nil {
 			return ErrSettled
 		}
-		if *expected != *closed {
+		if !expected.covers(*closed) {
 			return fmt.Errorf("retained Host budget differs from current settlement")
 		}
 	}

@@ -114,11 +114,24 @@ func retiredRunnerFixture(t *testing.T) (*Service, *dsgatest.SchedulerAPI, NodeC
 }
 
 func TestSchedulerWholePodRetirementRecoversOriginalUnknownWrites(t *testing.T) {
-	for _, what := range []string{"complete", "node-reply", "pod-intent-reply", "vm-anchor-reply"} {
+	for _, what := range []string{"complete", "node-reply", "pod-intent-reply", "vm-anchor-reply", "node-v6"} {
 		t.Run(what, func(t *testing.T) {
 			s, f, n, _, pod := retiredRunnerFixture(t)
 			ctx := context.Background()
 			d := s.domains[n.Binding.NodeName]
+			if what == "node-v6" {
+				// 已使用关闭Through语义的Node不能在另一个Pod退出时被降级。
+				// 这是既有Node版本输入夹具；真正的Through生产由owner组合覆盖。
+				f.Mutate(func(f *dsgatest.SchedulerAPI) {
+					var model hostguard.Model
+					require.NoError(t, json.Unmarshal([]byte(f.Node.Annotations[hostguard.LedgerAnnotation]), &model))
+					model.ProtocolVersion = 6
+					raw, err := json.Marshal(model)
+					require.NoError(t, err)
+					f.Node.Annotations[hostguard.LedgerAnnotation] = string(raw)
+					f.Node.ResourceVersion += "-v6"
+				})
+			}
 			before, err := d.store.Load(ctx)
 			require.NoError(t, err)
 			original, err := before.State().Placement(string(pod.UID))
@@ -147,7 +160,11 @@ func TestSchedulerWholePodRetirementRecoversOriginalUnknownWrites(t *testing.T) 
 			}
 			after, err := d.store.Load(ctx)
 			require.NoError(t, err)
-			require.EqualValues(t, 5, after.State().ProtocolVersion)
+			if what == "node-v6" {
+				require.EqualValues(t, 6, after.State().ProtocolVersion)
+			} else {
+				require.EqualValues(t, 5, after.State().ProtocolVersion)
+			}
 			require.Empty(t, *after.State().Placements)
 			require.Empty(t, after.State().Holds)
 			used, err := after.State().UsedBytes()
@@ -240,7 +257,7 @@ func TestSchedulerOrdinaryPodRetirementKeepsOtherAllocations(t *testing.T) {
 	require.NoError(t, err)
 	var restored hostguard.Model
 	require.NoError(t, json.Unmarshal(raw, &restored))
-	restored.ProtocolVersion = 6
+	restored.ProtocolVersion = 7
 	raw, err = json.Marshal(restored)
 	require.NoError(t, err)
 	require.Error(t, json.Unmarshal(raw, &restored))

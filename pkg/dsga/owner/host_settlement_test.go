@@ -62,6 +62,10 @@ func verifyClosedHostSettlement(t *testing.T, ctx context.Context, api *ownerAPI
 	snapshot, err := allocator.Load(ctx)
 	require.NoError(t, err)
 	waiting := hostguard.Placement{Namespace: "testing", PodName: "waiting", PodUID: "waiting-uid", VMName: "", VMUID: "", Incarnation: "", Managed: false, MemoryBytes: 1 << 30, HostOverheadBytes: 16 << 20, Settled: nil}
+	// 新Node包含v5的终态回收约束，授予前须核真实原Pod/保护标记；不能让
+	// 旧v4夹具里根本不存在的Pod越过该验证，也不为通过测试放宽生产检查。
+	_, err = client.CoreV1().Pods("testing").Create(ctx, &core.Pod{ObjectMeta: metav1.ObjectMeta{Namespace: "testing", Name: "waiting", UID: "waiting-uid", ResourceVersion: "waiting-rv-1", Finalizers: []string{hostguard.PodProtectionFinalizer}}, Status: core.PodStatus{Phase: core.PodPending}}, metav1.CreateOptions{})
+	require.NoError(t, err)
 	_, _, err = allocator.HoldPlacement(ctx, snapshot, waiting)
 	require.Error(t, err, "峰值未结清前不能授予等待Pod")
 	before, err := snapshot.State().UsedBytes()
@@ -101,6 +105,8 @@ func verifyClosedHostSettlement(t *testing.T, ctx context.Context, api *ownerAPI
 		require.NoError(t, err)
 	}
 	require.Nil(t, latest.State().Active)
+	var cancelledPlan *hostguard.Plan
+	var cancelledSource *budget.ObjectRef
 	if mode == "host-settle-after-cancel-history" {
 		originalBudget := latest.State().BudgetHeld
 		// 数量上限/18次取消已由真实Model/codec测试覆盖；此处用无关注释
@@ -148,6 +154,20 @@ func verifyClosedHostSettlement(t *testing.T, ctx context.Context, api *ownerAPI
 		for _, record := range latest.State().History {
 			require.NotEqual(t, closed.Request.Key, record.Operation.Request.Key, "原成功已真正淘汰，后续结清不能借短期历史")
 		}
+		closed, err = hostguard.SettlementFor(latest.State())
+		require.NoError(t, err)
+		require.Equal(t, next.Key, closed.ThroughKey, "Host必须接收永久关闭水位，不能只持旧预算Key")
+		cancelledPlan = &hostguard.Plan{Namespace: "testing", VMName: binding().Name, Incarnation: binding().Incarnation, RunnerPodUID: host.RunnerPodUID, Request: next, BeforeBytes: closed.Request.TargetVMMemoryBytes, HostOverheadBytes: host.HostOverheadBytes}
+		// 模拟旧分配者已经创建、但尚无Node执行授权的迟到Host CM。原VM
+		// 已证明该Key关闭，GC须涵盖Through本身，同时保留当前预算来源。
+		cancelledHost := host
+		cancelledHost.Request, cancelledHost.SourceID = next, hostguard.SourceID(initial.Origin, *cancelledPlan)
+		cancelledHost.ReservedMemoryBytes, err = cancelledPlan.Bytes()
+		require.NoError(t, err)
+		cancelledName, err := budgetclaims.HostClaimName(binding(), next)
+		require.NoError(t, err)
+		ref := vmReservation(t, client, cancelledName, budgetclaims.HostKind, cancelledHost)
+		cancelledSource = &ref
 		require.Equal(t, paddingBytes, len(latest.VirtualMachine().Annotations[paddingKey]), "journal CAS must preserve unrelated annotations")
 	}
 	if mode == "host-settle-source-gone" {
@@ -188,7 +208,13 @@ func verifyClosedHostSettlement(t *testing.T, ctx context.Context, api *ownerAPI
 	}
 	snapshot, err = allocator.Load(ctx)
 	require.NoError(t, err)
-	require.EqualValues(t, 4, snapshot.State().ProtocolVersion)
+	if cancelledPlan == nil {
+		require.EqualValues(t, 4, snapshot.State().ProtocolVersion)
+	} else {
+		require.EqualValues(t, 6, snapshot.State().ProtocolVersion)
+		_, _, err = allocator.Reserve(ctx, snapshot, *cancelledPlan)
+		require.Error(t, err, "历史已淘汰的较新取消Key不能重新占用Host容量")
+	}
 	row, err := snapshot.State().Placement(host.RunnerPodUID)
 	require.NoError(t, err)
 	require.Equal(t, &closed, row.Settled)
@@ -210,6 +236,10 @@ func verifyClosedHostSettlement(t *testing.T, ctx context.Context, api *ownerAPI
 	require.True(t, apierrors.IsNotFound(err), "同原Pod的旧失效Host来源可回收")
 	_, err = client.CoreV1().ConfigMaps("testing").Get(ctx, otherRef.Name, metav1.GetOptions{})
 	require.NoError(t, err, "不能删除另一Pod/迁移域的Host来源")
+	if cancelledSource != nil {
+		_, err = client.CoreV1().ConfigMaps("testing").Get(ctx, cancelledSource.Name, metav1.GetOptions{})
+		require.True(t, apierrors.IsNotFound(err), "关闭水位本身的迟到Host CM可清理，当前原预算CM仍持有")
+	}
 	peer.mu.Lock()
 	writes := peer.writes
 	peer.mu.Unlock()

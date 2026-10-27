@@ -186,7 +186,7 @@ func (s *Store) Retire(ctx context.Context, snapshot *Snapshot, r Retirement) (*
 		return nil, fmt.Errorf("host retirement changed original allocation or sequence exhausted")
 	}
 	next := snapshot.model.Clone()
-	next.ProtocolVersion, next.Sequence = 5, next.Sequence+1
+	next.ProtocolVersion, next.Sequence = max(next.ProtocolVersion, 5), next.Sequence+1
 	next.Holds = slices.DeleteFunc(next.Holds, func(h Hold) bool { return h.Plan.RunnerPodUID == row.PodUID })
 	*next.Placements = slices.DeleteFunc(*next.Placements, func(p Placement) bool { return p.PodUID == row.PodUID })
 	return s.write(ctx, snapshot.node, next, false)

@@ -153,8 +153,8 @@ func (p *Publisher) oldClaim(cm *core.ConfigMap, closed hostguard.Settlement, po
 	if json.Unmarshal([]byte(cm.Data[budgetclaims.ClaimKey]), &h) != nil || h.ProtocolVersion != 2 || h.Request.Validate() != nil || h.VMShrinkPermit || !h.HoldUntilExplicitSettlement || h.Request.Key.Instance != closed.Request.Key.Instance || h.Incarnation != b.Incarnation || h.RunnerPodUID != podUID || h.NodeName != p.node.Binding().NodeName || h.NodeUID != string(p.node.Binding().NodeUID) || h.HostOverheadBytes != p.overhead {
 		return false
 	}
-	a, last := h.Request.Key, closed.Request.Key
-	return a.IssuerEpoch < last.IssuerEpoch || a.IssuerEpoch == last.IssuerEpoch && a.Revision < last.Revision
+	a, last := h.Request.Key, closed.ClosedThrough()
+	return a.IssuerEpoch < last.IssuerEpoch || a.IssuerEpoch == last.IssuerEpoch && a.Revision < last.Revision || a == last && closed.ThroughSequence != 0
 }
 
 func (p *Publisher) deleteOldClaim(ctx context.Context, expected *core.ConfigMap, closed hostguard.Settlement, podUID string) error {

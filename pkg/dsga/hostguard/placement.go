@@ -110,6 +110,9 @@ func (m Model) validatePlacements() error {
 		if p.Settled != nil && m.ProtocolVersion < 4 {
 			return fmt.Errorf("settled Host capacity requires explicit v4 semantics")
 		}
+		if p.Settled != nil && p.Settled.ThroughSequence != 0 && m.ProtocolVersion < 6 {
+			return fmt.Errorf("closed-through Host capacity requires explicit v6 semantics")
+		}
 		if _, err := p.Bytes(); err != nil {
 			return err
 		}
@@ -135,7 +138,7 @@ func (m Model) validatePlacements() error {
 					continue
 				}
 				order := compare(h.Plan.Request.Key, p.Settled.Request.Key)
-				if order < 0 {
+				if order < 0 || order > 0 && compare(h.Plan.Request.Key, p.Settled.ClosedThrough()) <= 0 {
 					return fmt.Errorf("settled Host ledger retains a stale executable hold")
 				}
 				if order == 0 {
