@@ -28,6 +28,10 @@ type committedAbortPG struct {
 	loseBefore bool
 	loseAfter  bool
 	afterSet   func()
+	// 仅原预算恢复组合用：显式模拟两次请求之间的原生关闭事实，允许
+	// 下一条合法开放代次，随后又回到只能重放完整原命令的规则。
+	closedOverride bool
+	allowNext      bool
 }
 
 func (p *committedAbortPG) shared(s control.SharedCostResponse) control.SharedCostResponse {
@@ -36,6 +40,10 @@ func (p *committedAbortPG) shared(s control.SharedCostResponse) control.SharedCo
 	if p.last != nil {
 		s.Observed.AdmissionOpen = p.last.Open
 		s.Observed.AdmissionRevision = p.last.Revision
+	}
+	if p.closedOverride {
+		s.Observed.AdmissionOpen = false
+		s.Observed.AdmissionRevision++
 	}
 	return s
 }
@@ -52,9 +60,10 @@ func (p *committedAbortPG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 	if query {
 		p.queries++
 		disposition = control.AdmissionNotFound
-		if p.last != nil {
-			require.Equal(t, request, *p.last)
+		if p.last != nil && *p.last == request && !p.closedOverride {
 			disposition = control.AdmissionReplayed
+		} else if p.last != nil && !p.allowNext {
+			require.Equal(t, request, *p.last)
 		}
 	} else {
 		p.posts++
@@ -64,14 +73,25 @@ func (p *committedAbortPG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
-		if p.last != nil {
+		if p.last != nil && p.allowNext {
+			require.True(t, p.closedOverride)
+			require.Equal(t, p.last.Revision+2, request.Revision)
+			require.Equal(t, p.last.Instance, request.Instance)
+			require.Equal(t, p.last.BudgetCommitmentID, request.BudgetCommitmentID)
+			require.Equal(t, p.last.ExpectedCapacityGeneration, request.ExpectedCapacityGeneration)
+		} else if p.last != nil {
 			require.Equal(t, request, *p.last, "只允许完整原命令重放")
 		}
 		original := request
 		p.last = &original
+		p.closedOverride, p.allowNext = false, false
 	}
 	if p.last != nil {
 		s.AdmissionOpen, s.AdmissionRevision = p.last.Open, p.last.Revision
+	}
+	if p.closedOverride {
+		s.AdmissionOpen = false
+		s.AdmissionRevision++
 	}
 	after := p.afterSet
 	lose := !query && p.loseAfter
@@ -148,7 +168,7 @@ func verifyCommittedAbort(t *testing.T, ctx context.Context, api *ownerAPI, stor
 		selections <- req.Key
 		loopCtx, stop := context.WithCancel(ctx)
 		defer stop()
-		err = worker.Run(loopCtx, PGLoopOptions{PollInterval: time.Second, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, VMReplay: nil, AbortReplay: selections, Observe: func(tick Tick) {
+		err = worker.Run(loopCtx, PGLoopOptions{PollInterval: time.Second, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, VMReplay: nil, AbortReplay: selections, UnchangedAdmissionRecovery: nil, Observe: func(tick Tick) {
 			pg.mu.Lock()
 			sent := pg.posts
 			pg.mu.Unlock()

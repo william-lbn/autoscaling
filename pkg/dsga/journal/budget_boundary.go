@@ -97,7 +97,13 @@ func (model *Model) closeBudgetBoundary(outcome Outcome) error {
 		// 仍保留峰值。v6防止旧v5在历史淘汰后误解新增的关闭语义。
 		if model.validateCommittedAbort(*model.Active) == nil {
 			model.BudgetBoundary = model.boundaryFor(request, model.Sequence)
-			model.ProtocolVersion = 6
+			model.ProtocolVersion = max(model.ProtocolVersion, 6)
+		} else if model.validateUnchangedAbort(*model.Active) == nil {
+			// 只有完整清理和捕获的原关闭链均核实，才恢复同一原预算的
+			// 无容量效果证明。不是由NoEffect标签或当前数值自动补造。
+			prior := *model.Active.PriorBudgetBoundary
+			prior.ThroughKey, prior.ThroughSequence = model.Active.Request.Key, model.Sequence
+			model.BudgetBoundary = &prior
 		}
 	}
 	if model.BudgetBoundary != nil {
@@ -139,7 +145,7 @@ func (model Model) validateBudgetBoundary() error {
 			if record.Operation.Request != request || !capacityClosed || record.ClosedSequence != b.SucceededSequence {
 				return fmt.Errorf("closed budget boundary contradicts original successful history")
 			}
-		} else if record.Outcome != AbortedBeforeDispatch || record.ClosedSequence <= b.SucceededSequence || record.ClosedSequence > b.ThroughSequence {
+		} else if (record.Outcome != AbortedBeforeDispatch && (record.Outcome != AbortedAfterReconcile || model.validateUnchangedAbort(record.Operation) != nil)) || record.ClosedSequence <= b.SucceededSequence || record.ClosedSequence > b.ThroughSequence {
 			return fmt.Errorf("closed budget boundary crosses a dispatched or contradictory history")
 		}
 		if compareKeys(key, b.ThroughKey) == 0 && (key != b.ThroughKey || record.ClosedSequence != b.ThroughSequence) {

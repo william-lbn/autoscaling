@@ -27,7 +27,10 @@ func (e *Executor) ReplayCommittedAbortOriginal(ctx context.Context, key control
 	}
 	handled, progress, err := e.advanceCommittedAbort(ctx, s, &key)
 	if !handled {
-		return pgexec.AwaitingFact, fmt.Errorf("no original complete-budget abort cleanup to replay")
+		handled, progress, err = e.advanceUnchangedAbort(ctx, s, &key, false)
+		if !handled {
+			return pgexec.AwaitingFact, fmt.Errorf("no original complete-budget abort cleanup to replay")
+		}
 	}
 	return progress, err
 }

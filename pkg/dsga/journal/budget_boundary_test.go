@@ -85,7 +85,7 @@ func TestClosedBudgetBoundaryInvalidatesBeforeDispatchAndCannotRevive(t *testing
 				var err error
 				next, err = next.Record(next.Owner, obs.Key, obs)
 				require.NoError(t, err)
-				require.EqualValues(t, 5, next.ProtocolVersion, "recording a new complete budget cannot downgrade v5")
+				require.EqualValues(t, 7, next.ProtocolVersion, "新派发已捕获原关闭链，结算不能降级v7")
 				require.Nil(t, next.BudgetBoundary)
 				nextRequest := next.Active.Request
 				next = heldFinish(t, next)

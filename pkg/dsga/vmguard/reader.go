@@ -144,6 +144,18 @@ func (r *Reader) observeOriginal(ctx context.Context, c Command, journalSHA stri
 // 换另一份完成。Grow没有未来GuestReady摘要，Shrink必须原前驱Guest摘要完全相同。
 func (r *Reader) CheckRetained(ctx context.Context, sources budget.RunnerSources, request control.Request, preparedSHA, guestSHA string, host budget.ObjectRef, actor journal.Owner) (Confirmed, error) {
 	var out Confirmed
+	result, err := r.retainedReceipt(ctx, sources, request, preparedSHA, guestSHA, host)
+	if err != nil {
+		return out, err
+	}
+	return r.confirm(ctx, sources, result.Intent.Command, actor)
+}
+
+// retainedReceipt只认证不可变原回执及其完整来源，不能单独证明当前VM仍处于
+// 原目标。正常CheckRetained还须当前State.Last完全相同；取消恢复另须同时核
+// 新取消终态，不能通过抽出该函数放宽正常完成读者。
+func (r *Reader) retainedReceipt(ctx context.Context, sources budget.RunnerSources, request control.Request, preparedSHA, guestSHA string, host budget.ObjectRef) (Receipt, error) {
+	var out Receipt
 	if sources.Validate() != nil || request.Validate() != nil || !digestValid(preparedSHA) || !digestValid(guestSHA) {
 		return out, fmt.Errorf("incomplete retained VM source context")
 	}
@@ -156,8 +168,10 @@ func (r *Reader) CheckRetained(ctx context.Context, sources budget.RunnerSources
 		return out, fmt.Errorf("retained immutable Runner receipt malformed")
 	}
 	c := result.Intent.Command
-	if c.Request != request || c.PreparedSHA256 != preparedSHA || c.HostClaim != host || result.Intent.CommandSHA256 != sources.CommandSHA256 || result.Intent.JournalSHA256 != sources.JournalSHA256 || (request.Kind == control.Shrink && c.GuestSHA256 != guestSHA) || (request.Kind == control.Grow && c.GuestSHA256 != "") {
+	if c.Validate() != nil || c.BindingClaim != sources.BirthClaim || c.Identity.VMUID != string(r.binding.VMUID) || c.Identity.Incarnation != r.binding.Incarnation || c.Request != request || c.PreparedSHA256 != preparedSHA || c.HostClaim != host || result.Intent.CommandSHA256 != sources.CommandSHA256 || result.Intent.JournalSHA256 != sources.JournalSHA256 || (request.Kind == control.Shrink && c.GuestSHA256 != guestSHA) || (request.Kind == control.Grow && c.GuestSHA256 != "") {
 		return out, fmt.Errorf("retained Runner receipt belongs to another original intent/source")
 	}
-	return r.confirm(ctx, sources, c, actor)
+	// 再用正式回执读者核内容寻址名和同一原UID，不能把标签正确但非原
+	// 回执名称的对象用于取消恢复。普通路径也保持相同的完整认证。
+	return ReadReceipt(ctx, r.core, r.binding, sources.ReceiptClaim, c, sources.JournalSHA256)
 }

@@ -103,6 +103,6 @@ func TestRunnerBudgetV4RejectsProjectionAndLegacyReplacement(t *testing.T) {
 	next, pending := heldStart(t, m, 2)
 	_, err = next.Record(next.Owner, pending.Key, pending)
 	require.ErrorContains(t, err, "cannot downgrade")
-	require.EqualValues(t, 5, next.ProtocolVersion, "new operation cannot downgrade persistent closure semantics")
+	require.EqualValues(t, 7, next.ProtocolVersion, "新派发捕获原关闭链后不得降级持久语义")
 	require.Equal(t, m.BudgetHeld, next.BudgetHeld)
 }

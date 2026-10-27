@@ -66,10 +66,11 @@ func (p *Publisher) SettleCurrent(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	confirmed, err := p.runner.CheckRetained(ctx, closed.Runner, closed.Request, command.PreparedSHA256, command.GuestSHA256, closed.HostClaim, m.Owner)
+	currentVM, err := p.runner.CheckCurrentBudget(ctx, m)
 	if err != nil {
 		return false, err
 	}
+	confirmed := currentVM.Budget
 	id := confirmed.Birth.Identity
 	if current.Closed != closed || id.RunnerPodUID != current.Host.RunnerPodUID || id.NodeUID != string(p.node.Binding().NodeUID) || current.Host.HostOverheadBytes != p.overhead || confirmed.Actual.RequestedBytes != closed.Request.TargetVMMemoryBytes || confirmed.Actual.ActualBytes != closed.Request.TargetVMMemoryBytes {
 		return false, fmt.Errorf("host settlement original Runner/Node/target differs")

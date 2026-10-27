@@ -30,6 +30,16 @@ type Current struct {
 // Finalization原命令已由VM模型严格核验；这里独立从可信API重新GET原CM/
 // Pod/Node，逐项匹配持有，不拿旧Finalized成功当当前来源仍存活的证明。
 func (r *Reader) ReadCurrent(ctx context.Context, s *journal.Snapshot) (*Current, error) {
+	return r.readCurrent(ctx, s, false)
+}
+
+// ReadPrior只供无容量效果取消恢复读取首次派发前捕获的原关闭链。不能按请求
+// 自报水位，也不改变普通ReadCurrent的前进规则；真实VM取消来源另须独立认证。
+func (r *Reader) ReadPrior(ctx context.Context, s *journal.Snapshot) (*Current, error) {
+	return r.readCurrent(ctx, s, true)
+}
+
+func (r *Reader) readCurrent(ctx context.Context, s *journal.Snapshot, prior bool) (*Current, error) {
 	if s == nil || s.VirtualMachine().UID != r.binding.VMUID || s.State().Incarnation != r.binding.Incarnation {
 		return nil, fmt.Errorf("current budget reader requires original VM snapshot")
 	}
@@ -37,6 +47,23 @@ func (r *Reader) ReadCurrent(ctx context.Context, s *journal.Snapshot) (*Current
 	closed, err := hostguard.SettlementFor(m)
 	if err != nil {
 		return nil, err
+	}
+	if prior {
+		if _, err := m.UnchangedAbortBudget(); err != nil {
+			return nil, err
+		}
+		b := m.Active.PriorBudgetBoundary
+		if b.BudgetKey != closed.Request.Key || b.FinalizationSHA256 != closed.FinalizationSHA || b.RecordedSequence != closed.BudgetSequence {
+			return nil, fmt.Errorf("original prior Host boundary changed retained budget")
+		}
+		var empty control.Key
+		closed.ThroughKey, closed.ThroughSequence = empty, 0
+		if b.ThroughKey != closed.Request.Key {
+			closed.ThroughKey, closed.ThroughSequence = b.ThroughKey, b.ThroughSequence
+		}
+		if err := closed.Validate(); err != nil {
+			return nil, err
+		}
 	}
 	f, err := m.BudgetFor(closed.Request)
 	if err != nil || f.Sources == nil || m.ResourceIdentity == nil {
@@ -101,10 +128,18 @@ func (r *Reader) ReadCurrent(ctx context.Context, s *journal.Snapshot) (*Current
 }
 
 func (r *Reader) RecheckCurrent(ctx context.Context, s *journal.Snapshot, original *Current) error {
+	return r.recheckCurrent(ctx, s, original, false)
+}
+
+func (r *Reader) RecheckPrior(ctx context.Context, s *journal.Snapshot, original *Current) error {
+	return r.recheckCurrent(ctx, s, original, true)
+}
+
+func (r *Reader) recheckCurrent(ctx context.Context, s *journal.Snapshot, original *Current, prior bool) error {
 	if original == nil {
 		return fmt.Errorf("original current budget observation missing")
 	}
-	next, err := r.ReadCurrent(ctx, s)
+	next, err := r.readCurrent(ctx, s, prior)
 	if err != nil {
 		return err
 	}

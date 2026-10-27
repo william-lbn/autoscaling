@@ -133,6 +133,9 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		if handled, progress, err := e.advanceCommittedAbort(ctx, snapshot, nil); handled {
 			return progress, err
 		}
+		if handled, progress, err := e.advanceUnchangedAbort(ctx, snapshot, nil, false); handled {
+			return progress, err
+		}
 	}
 	if replay != nil && (*replay != op.Request.Key || op.Origin != e.actor || op.AbortRequested) {
 		return pgexec.AwaitingFact, fmt.Errorf("original admission is not eligible for replay")

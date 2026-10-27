@@ -417,7 +417,7 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 						require.NoError(t, runner.Tick(ctx), "已消费选择不重复内存写")
 						selected = true
 					}
-					err = worker.Run(loopCtx, PGLoopOptions{PollInterval: 10 * time.Millisecond, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, VMReplay: vmSignals, AbortReplay: nil, Observe: func(tick Tick) {
+					err = worker.Run(loopCtx, PGLoopOptions{PollInterval: 10 * time.Millisecond, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, VMReplay: vmSignals, AbortReplay: nil, UnchangedAdmissionRecovery: nil, Observe: func(tick Tick) {
 						if tick.Err != nil {
 							var lost *journal.UnconfirmedWrite
 							if replayVM && errors.As(tick.Err, &lost) {
@@ -546,7 +546,7 @@ func vmDSM(s control.Snapshot) control.DSMResponse {
 }
 
 func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T) {
-	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost", "explicit-original-replay", "host-settle", "host-settle-lost", "host-settle-source-gone", "host-settle-runner-drift", "host-settle-gc-lost", "host-settle-scheduler-loop", "host-settle-after-cancel-history", "cancel-before-runner", "abort-committed", "abort-root-drift"} {
+	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost", "explicit-original-replay", "host-settle", "host-settle-lost", "host-settle-source-gone", "host-settle-runner-drift", "host-settle-gc-lost", "host-settle-scheduler-loop", "host-settle-after-cancel-history", "cancel-before-runner", "abort-committed", "abort-root-drift", "restore-prior", "restore-prior-replies", "restore-prior-negative"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -593,6 +593,9 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 			if strings.HasPrefix(mode, "abort-") {
 				options, timeout = DefaultOptions(), 45*time.Second
 			}
+			if strings.HasPrefix(mode, "restore-prior") {
+				options, timeout = DefaultOptions(), 2*time.Minute
+			}
 			elector, err := New(coord, store, options)
 			require.NoError(t, err)
 			ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -616,6 +619,8 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 				var opens atomic.Int64
 				abortPG := new(committedAbortPG)
 				abortMode := strings.HasPrefix(mode, "abort-")
+				restoreMode := strings.HasPrefix(mode, "restore-prior")
+				trackGate := abortMode || restoreMode
 				if mode == "abort-root-drift" {
 					abortPG.afterSet = func() {
 						root.mu.Lock()
@@ -626,7 +631,7 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 				config := pgConfig(t, base, func(w http.ResponseWriter, r *http.Request) {
 					switch r.URL.Path {
 					case "/dsg/v1/budget/shared":
-						if abortMode {
+						if trackGate {
 							pgReply(w, abortPG.shared(current))
 						} else {
 							pgReply(w, current)
@@ -641,7 +646,7 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 						}
 						pgReply(w, dsm)
 					case "/dsg/v1/admission":
-						if abortMode {
+						if trackGate {
 							opens.Add(1)
 							abortPG.serve(t, w, r, current.Observed)
 							return
@@ -656,7 +661,7 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 						opens.Add(1)
 						pgReply(w, control.AdmissionResponse{ProtocolVersion: 1, Request: a, ContextSHA256: hash, Disposition: control.AdmissionApplied, Observed: observed, VMShrinkPermit: false})
 					case "/dsg/v1/admission/status":
-						require.True(t, abortMode)
+						require.True(t, trackGate)
 						abortPG.serve(t, w, r, current.Observed)
 					default:
 						t.Errorf("unexpected shrink route %s", r.URL.Path)
@@ -770,6 +775,10 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 						finishCommittedAbort(t, ctx, api, store, worker, mode)
 					}
 					require.EqualValues(t, 1, opens.Load())
+					return nil
+				}
+				if restoreMode {
+					verifyUnchangedBudgetAbort(t, ctx, api, store, session, worker, resources, config, client, coord, runner, peer, root, abortPG, current, mode)
 					return nil
 				}
 				require.Equal(t, budgetStep(t, store, journal.ResizeVM).Observation.Data, budgetStep(t, store, journal.ObserveVM).Observation.Data)

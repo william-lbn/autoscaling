@@ -114,6 +114,9 @@ type Operation struct {
 	AbortRequested bool            `json:"abort_requested"`
 	Steps          []Step          `json:"steps"`
 	Cleanup        *Step           `json:"cleanup"`
+	// 首次Start与撤销顶层关闭证明同CAS保存。它不是当前许可；只供后续
+	// 完整取消核验“本操作之前”的原预算关闭链，历史淘汰后也不能猜测补造。
+	PriorBudgetBoundary *ClosedBudgetBoundary `json:"prior_budget_boundary,omitempty"`
 }
 
 type Record struct {
@@ -366,7 +369,7 @@ func compareKeys(left, right control.Key) int {
 }
 
 func (model Model) Validate() error {
-	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 6) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
+	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 7) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
 		return fmt.Errorf("invalid journal version/sequence/incarnation")
 	}
 	// 旧Model已有严格字段解码，会拒绝pg_instance；这里另用v2明确标识
@@ -420,7 +423,7 @@ func (model Model) Validate() error {
 		if err != nil {
 			return err
 		}
-		if record.Outcome != outcome || record.ClosedSequence == 0 || record.ClosedSequence > model.Sequence ||
+		if record.Outcome != outcome || record.ClosedSequence == 0 || record.ClosedSequence > model.Sequence || record.Operation.PriorBudgetBoundary != nil && record.Operation.PriorBudgetBoundary.ThroughSequence >= record.ClosedSequence ||
 			record.Operation.Request.Key.Instance.VMUID != model.VMUID || model.HighWater == nil || compareKeys(record.Operation.Request.Key, *model.HighWater) > 0 {
 			return fmt.Errorf("invalid journal terminal record")
 		}
@@ -453,6 +456,9 @@ func (model Model) Validate() error {
 }
 
 func (model Model) validateOwners(operation Operation) error {
+	if err := model.validatePriorBoundary(operation); err != nil {
+		return err
+	}
 	if operation.Origin.Epoch > model.Owner.Epoch || (operation.Origin.Epoch == model.Owner.Epoch && operation.Origin != model.Owner) {
 		return fmt.Errorf("operation owner conflicts with journal epoch")
 	}
@@ -481,6 +487,10 @@ func cloneStep(step Step) Step {
 }
 
 func cloneOperation(operation Operation) Operation {
+	if operation.PriorBudgetBoundary != nil {
+		prior := *operation.PriorBudgetBoundary
+		operation.PriorBudgetBoundary = &prior
+	}
 	steps := make([]Step, len(operation.Steps))
 	for i, step := range operation.Steps {
 		steps[i] = cloneStep(step)
@@ -697,7 +707,7 @@ func (model Model) Begin(actor Owner, request control.Request, now uint64) (Mode
 	for i, action := range actions {
 		steps[i] = Step{Ordinal: control.Uint64(i + 1), Action: action, TargetID: "", Command: nil, CommandSHA256: "", Phase: Planned, DispatchedBy: nil, Observation: nil}
 	}
-	next.Active = &Operation{Request: request, RequestSHA256: hash, Origin: actor, AbortRequested: false, Steps: steps, Cleanup: nil}
+	next.Active = &Operation{Request: request, RequestSHA256: hash, Origin: actor, AbortRequested: false, Steps: steps, Cleanup: nil, PriorBudgetBoundary: nil}
 	key := request.Key
 	next.HighWater = &key
 	return next, Accepted, next.Validate()
@@ -746,6 +756,11 @@ func (model Model) Start(actor Owner, key control.Key, action Action, targetID s
 			step.CommandSHA256 = hash
 			// 写前票据一旦可能生效，旧预算的“之后无派发”证明立即在同CAS
 			// 失效；不能等真正HTTP/QMP回复后再撤销。完整预算本身继续持有。
+			if next.BudgetBoundary != nil && next.Active.PriorBudgetBoundary == nil {
+				prior := *next.BudgetBoundary
+				next.Active.PriorBudgetBoundary = &prior
+				next.ProtocolVersion = max(next.ProtocolVersion, 7)
+			}
 			next.BudgetBoundary = nil
 			return next, next.Validate()
 		}

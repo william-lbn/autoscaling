@@ -150,16 +150,15 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 			// Cleanup是独立恢复开放，不能只从原Resume步骤恢复后漏掉它的
 			// 写前/写后未知。先核原完整预算、原派发者与命令，再恢复同一SDK
 			// pending；旧owner仅能查询，不得改epoch重新发送。
-			var original budget.CommittedAbortCommand
-			held, budgetErr := model.BudgetFor(active.Request)
-			if budgetErr != nil || cleanup.DispatchedBy == nil || cleanup.TargetID != config.Instance.ComputeInstanceID || json.Unmarshal(cleanup.Command, &original) != nil || original.ValidateFor(held, cleanup.DispatchedBy.Epoch) != nil || original.FinalizationSHA256 != model.BudgetHeld.Finalization.CommandSHA256 {
-				return nil, fmt.Errorf("original abort admission differs from retained complete budget")
+			original, restoreErr := originalAbortAdmission(model, *cleanup, config.Instance)
+			if restoreErr != nil {
+				return nil, restoreErr
 			}
-			if original.MaySend {
-				if admissionPending != nil && *admissionPending != original.Admission {
+			if original != nil {
+				if admissionPending != nil && *admissionPending != *original {
 					return nil, fmt.Errorf("original abort conflicts with another unknown admission")
 				}
-				originalAdmission := original.Admission
+				originalAdmission := *original
 				admissionPending = &originalAdmission
 			}
 		}
@@ -427,6 +426,10 @@ type PGLoopOptions struct {
 	// AbortReplay只选择原Cleanup的恢复开放，不重放旧PG/VM/资源动作。
 	// nil或关闭时普通循环只读查询；未知/超时不会向此通道自动投递。
 	AbortReplay <-chan control.Key
+	// UnchangedAdmissionRecovery是可信策略确认仍应服务后的独立恢复选择。
+	// 它可在旧预算下新建开放Cleanup，与重放原命令不同；nil时普通取消
+	// 不覆盖任何当前关闭意图，不由错误/超时向此通道自动投递。
+	UnchangedAdmissionRecovery <-chan control.Key
 	// Observe供状态/指标使用，必须有界返回，不打印凭据或误把Recorded当VM完成。
 	Observe func(Tick)
 }
@@ -448,9 +451,11 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	var resourceReplay *control.Key
 	var vmReplay *control.Key
 	var abortReplay *control.Key
+	var unchangedAdmission *control.Key
 	wake, replays, admissionReplays, resourceReplays := options.Wake, options.Replay, options.AdmissionReplay, options.ResourceReplay
 	vmReplays := options.VMReplay
 	abortReplays := options.AbortReplay
+	unchangedAdmissions := options.UnchangedAdmissionRecovery
 	for {
 		if callCtx.Err() != nil {
 			return callCtx.Err()
@@ -472,6 +477,9 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		} else if abortReplay != nil {
 			progress, err = worker.ReplayCommittedAbortOriginal(callCtx, *abortReplay)
 			abortReplay = nil
+		} else if unchangedAdmission != nil {
+			progress, err = worker.RecoverUnchangedAdmission(callCtx, *unchangedAdmission)
+			unchangedAdmission = nil
 		} else {
 			progress, err = worker.Advance(callCtx)
 		}
@@ -489,7 +497,10 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			// prepared明确未发送都属于持有原意图的等待，不能退出owner后
 			// 改epoch，也不能为消除错误重发QMP。只有显式原重放/取消入口
 			// 能改变not_sent的推进选择；其他身份/协议/来源错误仍照常退出。
-			if !errors.As(err, &call) && !errors.As(err, &resourceCall) && !errors.As(err, &unknown) && !errors.Is(err, resourceguard.ErrUnknown) && !errors.Is(err, vmguard.ErrUnknown) && !errors.Is(err, vmguard.ErrNotSent) {
+			// 原预算无容量变化的取消，可能仍在等待可信策略确认是否恢复
+			// 服务。保持owner并等待独立通道，不把拒绝自动开放当作致命
+			// 错误退出，也不根据此等待状态自行生成恢复选择。
+			if !errors.As(err, &call) && !errors.As(err, &resourceCall) && !errors.As(err, &unknown) && !errors.Is(err, resourceguard.ErrUnknown) && !errors.Is(err, vmguard.ErrUnknown) && !errors.Is(err, vmguard.ErrNotSent) && !errors.Is(err, admissionexec.ErrRecoverySelectionRequired) {
 				return err
 			}
 		}
@@ -524,6 +535,13 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			} else {
 				selectedKey := key
 				abortReplay = &selectedKey
+			}
+		case key, open := <-unchangedAdmissions:
+			if !open {
+				unchangedAdmissions = nil
+			} else {
+				selectedKey := key
+				unchangedAdmission = &selectedKey
 			}
 		case _, open := <-wake:
 			if !open {
