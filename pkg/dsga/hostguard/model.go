@@ -100,8 +100,9 @@ type Hold struct {
 	Claim *budget.ObjectRef `json:"claim,omitempty"`
 }
 
-// Model没有TTL/自动释放或通用reset。当前阶段只增加/保留持有；显式释放须
-// 后续核原VM未知、当前预算和实际Runner关闭，不能把“Pod不见了”当物理归还。
+// Model没有TTL/自动释放或通用reset。v4仅在原owner核原VM/Runner成功结清后
+// 收敛旧峰值，目标/当前来源与高水位继续持有；整个Pod退出和取消仍需独立
+// 关闭证明，不能把“Pod不见了”当物理归还。
 type Model struct {
 	ProtocolVersion uint32         `json:"protocol_version"`
 	Binding         Binding        `json:"binding"`
@@ -126,7 +127,7 @@ func SourceID(origin string, p Plan) string {
 }
 
 func (m Model) Validate() error {
-	if (m.ProtocolVersion != 1 && m.ProtocolVersion != 2 && m.ProtocolVersion != 3) || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
+	if (m.ProtocolVersion < 1 || m.ProtocolVersion > 4) || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
 		return fmt.Errorf("invalid durable Host allocation model")
 	}
 	for i, h := range m.Holds {
@@ -171,7 +172,7 @@ type allocation struct {
 // 即使VM UID相同也分开相加，避免新Pod出现时把尚未证明退出的旧QEMU成本抹掉。
 func (m Model) UsedBytes() (control.Uint64, error) {
 	peaks := make(map[allocation]control.Uint64)
-	if m.ProtocolVersion == 3 && m.Placements != nil {
+	if m.ProtocolVersion >= 3 && m.Placements != nil {
 		for _, p := range *m.Placements {
 			b, err := p.Bytes()
 			if err != nil {
@@ -182,6 +183,9 @@ func (m Model) UsedBytes() (control.Uint64, error) {
 		}
 	}
 	for _, h := range m.Holds {
+		if _, closed := m.settledPlacement(h.Plan); closed {
+			continue
+		}
 		b, err := h.Plan.Bytes()
 		if err != nil {
 			return 0, err
@@ -242,6 +246,9 @@ func (m Model) reserve(actor journal.Owner, p Plan, capacity control.Uint64) (Mo
 	}
 	if _, err := p.Bytes(); err != nil {
 		return m, none, err
+	}
+	if _, closed := m.settledPlacement(p); closed {
+		return m, none, fmt.Errorf("original Host request has been settled; execution reservation cannot reopen")
 	}
 	for _, h := range m.Holds {
 		if h.Plan.Request.Key == p.Request.Key {

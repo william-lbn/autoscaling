@@ -33,7 +33,10 @@ const (
 
 var ErrUninitialized = errors.New("original Host allocator is not initialized")
 
-var ErrUnpublished = errors.New("original Host capacity is held but claim UID is not yet published")
+var (
+	ErrUnpublished = errors.New("original Host capacity is held but claim UID is not yet published")
+	ErrSettled     = errors.New("original Host peak is settled; only current budget reads are permitted")
+)
 
 type Store struct {
 	core    coreclient.CoreV1Interface
@@ -123,6 +126,20 @@ func (s *Store) BindClaim(ctx context.Context, snapshot *Snapshot, p Plan, ref b
 // Reader必须用自己的固定可信客户端GET原Node/CM。模型v1仅保留旧账本读取，
 // 无Claim的持有和CM自报SourceID均不构成发布。Lease过期不自动取消原持有。
 func InspectClaim(n *core.Node, p Plan, source string, ref budget.ObjectRef) error {
+	return inspectClaim(n, p, source, ref, nil)
+}
+
+// InspectRetainedClaim只允许原VM当前永久预算继续消费已结清的目标持有，绝不
+// 返回执行授权。调用者必须从自己的原VM GET派生expected，并重核来源；旧
+// 目标、另一原预算/CM、被淘汰历史仍拒绝，不能把只读接口交给Runner派发路径。
+func InspectRetainedClaim(n *core.Node, p Plan, source string, ref budget.ObjectRef, expected Settlement) error {
+	if expected.Validate() != nil || expected.Request != p.Request || expected.HostClaim != ref {
+		return fmt.Errorf("retained Host reader changed original current budget")
+	}
+	return inspectClaim(n, p, source, ref, &expected)
+}
+
+func inspectClaim(n *core.Node, p Plan, source string, ref budget.ObjectRef, expected *Settlement) error {
 	if n == nil || ref.Validate() != nil {
 		return fmt.Errorf("original Host Node/claim unavailable")
 	}
@@ -149,6 +166,14 @@ func InspectClaim(n *core.Node, p Plan, source string, ref budget.ObjectRef) err
 	}
 	if m.ProtocolVersion < 2 || *h.Claim != ref {
 		return fmt.Errorf("original Host claim UID differs from published Node hold")
+	}
+	if closed, settled := m.settledPlacement(p); settled {
+		if expected == nil {
+			return ErrSettled
+		}
+		if *expected != *closed {
+			return fmt.Errorf("retained Host budget differs from current settlement")
+		}
 	}
 	return nil
 }
@@ -360,7 +385,7 @@ func (s *Store) initialize(ctx context.Context, expectedVersion string, outside 
 // 写者执行，发布和释放仍要求原holder。网络间无本地锁，任何未知保持原记账。
 func (s *Store) HoldPlacement(ctx context.Context, snapshot *Snapshot, p Placement) (*Snapshot, Placement, error) {
 	var none Placement
-	if snapshot == nil || snapshot.model.Binding != s.binding || snapshot.model.ProtocolVersion != 3 {
+	if snapshot == nil || snapshot.model.Binding != s.binding || snapshot.model.ProtocolVersion < 3 {
 		return nil, none, fmt.Errorf("pod allocation requires original initialized v3 Node snapshot")
 	}
 	first, err := s.leaseActor(ctx, false)
@@ -391,6 +416,32 @@ func (s *Store) HoldPlacement(ctx context.Context, snapshot *Snapshot, p Placeme
 	}
 	held, err := snapshot.model.Placement(p.PodUID)
 	return snapshot, held, err
+}
+
+// Settle是明确的节点owner结清CAS，不由超时/删除事件/Lease过期触发。生产者
+// 必须在本Node快照之后验证原VM无未知/Active及实际Runner和当前预算，再使用
+// 同一RV提交；并发新授予改变RV会拒绝。未知回复只读恢复，目标容量与完整
+// 当前来源继续保留；返回旧Hold列表仅供已结清源的后续安全清理。
+func (s *Store) Settle(ctx context.Context, snapshot *Snapshot, podUID string, closed Settlement) (*Snapshot, []Hold, error) {
+	if snapshot == nil || snapshot.model.Binding != s.binding {
+		return nil, nil, fmt.Errorf("host settlement requires original Node snapshot")
+	}
+	actor, err := s.authorize(ctx, snapshot.node)
+	if err != nil {
+		return nil, nil, err
+	}
+	next, retired, err := snapshot.model.settle(actor, podUID, closed)
+	if err != nil {
+		return nil, nil, err
+	}
+	if next.Sequence == snapshot.model.Sequence {
+		return snapshot, retired, nil
+	}
+	result, err := s.write(ctx, snapshot.node, next, false)
+	if err != nil {
+		return nil, nil, err
+	}
+	return result, retired, nil
 }
 
 // Fence只抬单调floor，不清旧Key/持有、不改域外预算；新holder必须先确认此

@@ -54,6 +54,8 @@ type Placement struct {
 	Managed           bool           `json:"managed"`
 	MemoryBytes       control.Uint64 `json:"memory_bytes"`
 	HostOverheadBytes control.Uint64 `json:"host_overhead_bytes"`
+	// 仅v4原owner结清时设置；普通容量写者不可构造或清除它。
+	Settled *Settlement `json:"settled,omitempty"`
 }
 
 func (p Placement) Bytes() (control.Uint64, error) {
@@ -71,6 +73,9 @@ func (p Placement) Bytes() (control.Uint64, error) {
 	if p.MemoryBytes == 0 || p.HostOverheadBytes == 0 || p.HostOverheadBytes > control.Uint64(math.MaxUint64)-p.MemoryBytes {
 		return 0, fmt.Errorf("pod memory plus Host overhead is zero or overflows")
 	}
+	if p.Settled != nil && (!p.Managed || p.Settled.Validate() != nil || p.Settled.Request.Key.Instance.VMUID != p.VMUID || p.MemoryBytes < p.Settled.Request.TargetVMMemoryBytes) {
+		return 0, fmt.Errorf("pod placement changed original closed budget watermark")
+	}
 	return p.MemoryBytes + p.HostOverheadBytes, nil
 }
 
@@ -87,11 +92,12 @@ func (p *Placement) UnmarshalJSON(raw []byte) error {
 
 func (p Placement) sameOriginal(q Placement) bool {
 	p.MemoryBytes, q.MemoryBytes = 0, 0
+	p.Settled, q.Settled = nil, nil
 	return p == q
 }
 
 func (m Model) validatePlacements() error {
-	if m.ProtocolVersion != 3 {
+	if m.ProtocolVersion < 3 {
 		if m.Profile != nil || m.Placements != nil {
 			return fmt.Errorf("legacy Host ledger cannot project new allocation domains")
 		}
@@ -101,6 +107,9 @@ func (m Model) validatePlacements() error {
 		return fmt.Errorf("host allocation ledger requires complete v3 profile/placements")
 	}
 	for i, p := range *m.Placements {
+		if p.Settled != nil && m.ProtocolVersion != 4 {
+			return fmt.Errorf("settled Host capacity requires explicit v4 semantics")
+		}
 		if _, err := p.Bytes(); err != nil {
 			return err
 		}
@@ -119,6 +128,27 @@ func (m Model) validatePlacements() error {
 				return fmt.Errorf("original VM allocation changed name/domain/incarnation")
 			}
 		}
+		if p.Settled != nil {
+			matched := false
+			for _, h := range m.Holds {
+				if h.Plan.RunnerPodUID != p.PodUID {
+					continue
+				}
+				order := compare(h.Plan.Request.Key, p.Settled.Request.Key)
+				if order < 0 {
+					return fmt.Errorf("settled Host ledger retains a stale executable hold")
+				}
+				if order == 0 {
+					if h.Plan.Request != p.Settled.Request || h.Claim == nil || *h.Claim != p.Settled.HostClaim {
+						return fmt.Errorf("settled Host source changed original claim/plan")
+					}
+					matched = true
+				}
+			}
+			if !matched {
+				return fmt.Errorf("settled Pod has no original current Host claim")
+			}
+		}
 	}
 	for _, h := range m.Holds {
 		p, err := m.Placement(h.Plan.RunnerPodUID)
@@ -130,9 +160,13 @@ func (m Model) validatePlacements() error {
 }
 
 func (m Model) Placement(podUID string) (Placement, error) {
-	if m.ProtocolVersion == 3 && m.Placements != nil {
+	if m.ProtocolVersion >= 3 && m.Placements != nil {
 		for _, p := range *m.Placements {
 			if p.PodUID == podUID {
+				if p.Settled != nil {
+					copySettlement := *p.Settled
+					p.Settled = &copySettlement
+				}
 				return p, nil
 			}
 		}
@@ -144,7 +178,7 @@ func (m Model) Placement(podUID string) (Placement, error) {
 // 来源发布/释放资格；因此不借全局Scheduler leader和节点owner恰好同副本才能
 // 调度。Actor/Node由Store跨网络核验，只有原UID/RV写确认后才能返回调度成功。
 func (m Model) reservePlacement(p Placement, capacity control.Uint64) (Model, error) {
-	if m.Validate() != nil || m.ProtocolVersion != 3 {
+	if m.Validate() != nil || m.ProtocolVersion < 3 || p.Settled != nil {
 		return m, fmt.Errorf("pod allocation requires original complete v3 Host domain")
 	}
 	if _, err := p.Bytes(); err != nil {
@@ -194,6 +228,12 @@ func clonePlacements(p *[]Placement) *[]Placement {
 		return nil
 	}
 	copyRows := slices.Clone(*p)
+	for i := range copyRows {
+		if copyRows[i].Settled != nil {
+			copySettlement := *copyRows[i].Settled
+			copyRows[i].Settled = &copySettlement
+		}
+	}
 	return &copyRows
 }
 
@@ -208,7 +248,7 @@ func InspectInitialVM(node *core.Node, vm journal.Binding, podName, podUID strin
 	if err := json.Unmarshal([]byte(node.Annotations[LedgerAnnotation]), &m); err != nil {
 		return fmt.Errorf("initial Runner Host ledger is unavailable: %w", err)
 	}
-	if _, err := inspect(node, m.Binding); err != nil || m.ProtocolVersion != 3 || node.DeletionTimestamp != nil {
+	if _, err := inspect(node, m.Binding); err != nil || m.ProtocolVersion < 3 || node.DeletionTimestamp != nil {
 		return fmt.Errorf("initial Runner requires protected complete v3 Host domain")
 	}
 	p, err := m.Placement(podUID)
