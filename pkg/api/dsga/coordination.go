@@ -12,6 +12,7 @@ type CoordinationAction string
 
 const (
 	CoordinationState            CoordinationAction = "state"
+	CoordinationResourceState    CoordinationAction = "resource_state"
 	CoordinationBegin            CoordinationAction = "begin"
 	CoordinationCancel           CoordinationAction = "cancel"
 	CoordinationReplayPG         CoordinationAction = "replay_pg"
@@ -24,6 +25,8 @@ const (
 	CoordinationReplayAbort      CoordinationAction = "replay_abort"
 	CoordinationRecoverUnchanged CoordinationAction = "recover_unchanged_admission"
 	CoordinationRecoverCapacity  CoordinationAction = "recover_capacity_admission"
+	CoordinationRepairHeld       CoordinationAction = "repair_held_resources"
+	CoordinationObserveHeld      CoordinationAction = "observe_held_resources"
 )
 
 // CoordinationCommand固定接收方完整实例及预期当前owner代次。Key保留原操作代次，
@@ -45,7 +48,7 @@ func (c CoordinationCommand) Validate() error {
 		return fmt.Errorf("invalid coordination binding")
 	}
 	switch c.Action {
-	case CoordinationState:
+	case CoordinationState, CoordinationResourceState:
 		if c.Request != nil || c.Key != nil || c.Selector != "" {
 			return fmt.Errorf("state command has execution parameters")
 		}
@@ -53,10 +56,10 @@ func (c CoordinationCommand) Validate() error {
 		if c.Request == nil || c.Request.Validate() != nil || c.Request.Key.Instance != c.Instance || c.Request.Key.IssuerEpoch > c.ExpectedOwnerEpoch || c.Key != nil || c.Selector != "" {
 			return fmt.Errorf("begin requires one complete request for the selected owner")
 		}
-	case CoordinationReplayInitial:
+	case CoordinationReplayInitial, CoordinationRepairHeld, CoordinationObserveHeld:
 		decoded, err := hex.DecodeString(c.Selector)
 		if err != nil || len(decoded) != 32 || hex.EncodeToString(decoded) != c.Selector || c.Request != nil || c.Key != nil {
-			return fmt.Errorf("initial replay requires the original command SHA256")
+			return fmt.Errorf("source selection requires the original SHA256")
 		}
 	case CoordinationCancel, CoordinationReplayPG, CoordinationReplayQuiesce, CoordinationReplayAdmission,
 		CoordinationReplayResource, CoordinationReplayPrepare, CoordinationReplayVM, CoordinationReplayAbort,

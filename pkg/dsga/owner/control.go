@@ -10,6 +10,7 @@ import (
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 )
 
 var ErrControlUnavailable = errors.New("coordination owner or loop unavailable; inspect original journal")
@@ -24,6 +25,12 @@ type CoordinationResult struct {
 	Progress        pgexec.Progress     `json:"progress"`
 	Disposition     journal.Disposition `json:"disposition,omitempty"`
 	State           *journal.Model      `json:"state,omitempty"`
+	// 资源状态/来源摘要只用于选择原Root持有；实际修复仍由Root在
+	// 文件锁内重新认证floor/出生/原日志和逐维单调条件。Evidence不证明
+	// GuestReady、完整预算、VM或Host完成，不改变外层业务步骤。
+	ResourceState    *resourceguard.View     `json:"resource_state,omitempty"`
+	HeldSourceSHA256 string                  `json:"held_source_sha256,omitempty"`
+	ResourceEvidence *resourceguard.Evidence `json:"resource_evidence,omitempty"`
 }
 
 type controlCall struct {
@@ -93,7 +100,7 @@ func (e *ControlEndpoint) Submit(ctx context.Context, command control.Coordinati
 // 注册表/HTTP锁跨网络。错误返回不会清Pending，也不把坏请求变成owner退出。
 func (worker *PGWorker) executeControl(ctx context.Context, command control.CoordinationCommand) (CoordinationResult, error) {
 	instance, epoch := worker.Binding()
-	result := CoordinationResult{ProtocolVersion: 1, Instance: instance, OwnerEpoch: epoch, Progress: pgexec.AwaitingFact, Disposition: "", State: nil}
+	result := CoordinationResult{ProtocolVersion: 1, Instance: instance, OwnerEpoch: epoch, Progress: pgexec.AwaitingFact, Disposition: "", State: nil, ResourceState: nil, HeldSourceSHA256: "", ResourceEvidence: nil}
 	if err := command.Validate(); err != nil {
 		return result, err
 	}
@@ -112,6 +119,35 @@ func (worker *PGWorker) executeControl(ctx context.Context, command control.Coor
 	switch command.Action {
 	case control.CoordinationState:
 		result.Progress = pgexec.Idle
+	case control.CoordinationResourceState, control.CoordinationRepairHeld, control.CoordinationObserveHeld:
+		if worker.resourceOwner == nil {
+			return result, fmt.Errorf("original resource owner is unavailable")
+		}
+		if command.Action == control.CoordinationResourceState {
+			view, viewErr := worker.resourceOwner.Inspect(callCtx)
+			if viewErr != nil {
+				return result, viewErr
+			}
+			result.ResourceState = &view
+			// 未知Original依然可以检查完整状态，但不产生可修复选择。
+			// 不把“没有selector”转换成允许替换命令/来源的默认值。
+			result.HeldSourceSHA256, _ = resourceguard.HeldSourceSHA256(view)
+			result.Progress = pgexec.Idle
+		} else {
+			var evidence resourceguard.Evidence
+			if command.Action == control.CoordinationRepairHeld {
+				evidence, err = worker.resourceOwner.RepairHeld(callCtx, command.Selector)
+			} else {
+				evidence, err = worker.resourceOwner.ObserveHeldRepair(callCtx, command.Selector)
+			}
+			if err == nil {
+				result.ResourceEvidence = &evidence
+				result.HeldSourceSHA256 = command.Selector
+				// 仅Root原修复栅栏已对账；不写外层GuestReady/预算/VM
+				// 终态，后继普通协调仍须消费各自完整原来源。
+				result.Progress = pgexec.Reconciled
+			}
+		}
 	case control.CoordinationBegin, control.CoordinationCancel:
 		var snapshot *journal.Snapshot
 		snapshot, err = worker.session.store.Load(callCtx)

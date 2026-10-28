@@ -43,6 +43,9 @@ type PGWorker struct {
 	host      *hostexec.Consumer
 	prepare   *prepareexec.Executor
 	initial   *initialexec.Executor
+	// 管理恢复复用创建本worker时的原资源owner/SDK，不另建空客户端以
+	// 绕过GuestReady或修复未知。生命周期仍由Agent同一Session持有。
+	resourceOwner *ResourceWorker
 	// Run期间独占SDK/控制入口，避免重复启动两个轮询goroutine竞争Pending。
 	// Run返回后可由旧的测试/嵌入调用重新进入；ControlEndpoint本身不可复用。
 	running atomic.Bool
@@ -258,7 +261,7 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 			return nil, err
 		}
 	}
-	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest, quiesce: quiesce, finalize: nil, vm: nil, host: nil, prepare: nil, initial: nil, running: atomic.Bool{}}, nil
+	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest, quiesce: quiesce, finalize: nil, vm: nil, host: nil, prepare: nil, initial: nil, resourceOwner: resource, running: atomic.Bool{}}, nil
 }
 
 // NewProductionPGWorker只供具备可信Kube客户端的实际Agent创建。完整预算

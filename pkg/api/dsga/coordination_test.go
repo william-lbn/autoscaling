@@ -16,7 +16,7 @@ func coordinationFixture(t *testing.T) CoordinationCommand {
 
 func TestCoordinationSelectorsCannotReplaceOriginalCommands(t *testing.T) {
 	original := coordinationFixture(t)
-	for _, action := range []CoordinationAction{CoordinationState, CoordinationBegin, CoordinationCancel, CoordinationReplayPG, CoordinationReplayQuiesce, CoordinationReplayAdmission, CoordinationReplayResource, CoordinationReplayPrepare, CoordinationReplayInitial, CoordinationReplayVM, CoordinationReplayAbort, CoordinationRecoverUnchanged, CoordinationRecoverCapacity} {
+	for _, action := range []CoordinationAction{CoordinationState, CoordinationResourceState, CoordinationBegin, CoordinationCancel, CoordinationReplayPG, CoordinationReplayQuiesce, CoordinationReplayAdmission, CoordinationReplayResource, CoordinationReplayPrepare, CoordinationReplayInitial, CoordinationReplayVM, CoordinationReplayAbort, CoordinationRecoverUnchanged, CoordinationRecoverCapacity, CoordinationRepairHeld, CoordinationObserveHeld} {
 		t.Run(string(action), func(t *testing.T) {
 			command := original.Clone()
 			command.Action = action
@@ -24,8 +24,8 @@ func TestCoordinationSelectorsCannotReplaceOriginalCommands(t *testing.T) {
 				command.Request = nil
 			}
 			switch action {
-			case CoordinationBegin, CoordinationState:
-			case CoordinationReplayInitial:
+			case CoordinationBegin, CoordinationState, CoordinationResourceState:
+			case CoordinationReplayInitial, CoordinationRepairHeld, CoordinationObserveHeld:
 				command.Selector = strings.Repeat("ab", 32)
 			default:
 				key := original.Request.Key
@@ -42,7 +42,7 @@ func TestCoordinationSelectorsCannotReplaceOriginalCommands(t *testing.T) {
 			require.Error(t, bad.Validate())
 			bad = command.Clone()
 			bad.Instance.PGBootID--
-			if action != CoordinationState && action != CoordinationReplayInitial {
+			if command.Key != nil || command.Request != nil {
 				require.Error(t, bad.Validate(), "Key/Request cannot be rebound to a new boot")
 			}
 			if command.Request == nil {
