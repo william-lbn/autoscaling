@@ -302,6 +302,19 @@ func (e *Executor) advance(ctx context.Context, selector string) (pgexec.Progres
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
+	if query {
+		// 新owner第一次Status可能仍看到旧floor，随后observe中的Fence
+		// 才推进到当前epoch。必须再只读原命令，不能拿旧回复拼当前审计，
+		// 更不能因这次正常时序差换owner或重发setter。若维护门禁已前进，
+		// 新Status不再确认原开放就保留未知，不能自动覆盖维护选择。
+		fact, err = e.pg.AdmissionStatus(ctx, c.Request)
+		if err != nil {
+			return pgexec.AwaitingFact, err
+		}
+		if !fact.Confirms() {
+			return pgexec.AwaitingFact, resourceguard.ErrUnknown
+		}
+	}
 	if err := e.claims.RecheckInitialBudget(ctx, s, i, o.sources); err != nil {
 		return pgexec.AwaitingFact, err
 	}
