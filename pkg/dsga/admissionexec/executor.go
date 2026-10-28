@@ -149,10 +149,14 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	}
 	var step *journal.Step
 	var finalized *journal.Step
+	var admitted *journal.Step
 	for i := range op.Steps {
 		s := &op.Steps[i]
 		if s.Action == journal.FinalizeBudget {
 			finalized = s
+		}
+		if s.Action == journal.ResumeAdmission {
+			admitted = s
 		}
 		if s.Phase == journal.Settled {
 			if s.Observation.Result != journal.Completed && s.Observation.Result != journal.NoEffect {
@@ -162,6 +166,17 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		}
 		step = s
 		break
+	}
+	// 正常完成不能停在所有步骤Settled、Active却永久占槽的状态。只有正式
+	// Runner/来源读者齐全的生产执行器承担结案；旧领域构造器保留原边界。
+	// 结案独立一轮，复用下面完整原开放查询和PG/Root/Host/Runner双重核验，
+	// 绝不从历史Completed直接Finish，更不重发setter或释放任何资源承诺。
+	finishing := step == nil && !op.AbortRequested && replay == nil && e.runner != nil && e.claims != nil
+	if finishing {
+		step = admitted
+		if step == nil || step.Phase != journal.Settled || step.Observation == nil || step.Observation.Result != journal.Completed {
+			return pgexec.AwaitingFact, fmt.Errorf("normal completion lacks original completed admission")
+		}
 	}
 	if step == nil || step.Action != journal.ResumeAdmission {
 		if replay != nil {
@@ -195,6 +210,11 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	if step.Phase != journal.Planned {
 		if json.Unmarshal(step.Command, &request) != nil || request.Validate() != nil || !request.Open || request.Instance != e.instance || request.BudgetCommitmentID != op.Request.BudgetCommitmentID || step.DispatchedBy == nil || request.IssuerEpoch != step.DispatchedBy.Epoch || request.ExpectedCapacityGeneration != settled.Shared.Observed.CapacityGeneration || step.TargetID != e.instance.ComputeInstanceID {
 			return pgexec.AwaitingFact, fmt.Errorf("original admission command differs from durable operation")
+		}
+	}
+	if finishing {
+		if err := validateCompletionAudit(*step, request, settled); err != nil {
+			return pgexec.AwaitingFact, err
 		}
 	}
 	if query {
@@ -331,6 +351,16 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	}
 	if err := e.sameSnapshot(ctx, snapshot); err != nil {
 		return pgexec.AwaitingFact, err
+	}
+	if finishing {
+		// 只关闭完整原操作，并同CAS建立永久预算关闭边界供Host结清。CAS
+		// 丢回复时不补写回执、不重造Key；下轮Load若Active已空即读取原结果。
+		// 若失败未提交，仍保留原Active，必须重新核验后才可再尝试同一Finish。
+		_, err = e.store.Finish(ctx, snapshot, e.actor, op.Request.Key)
+		if err != nil {
+			return pgexec.AwaitingFact, err
+		}
+		return pgexec.Recorded, nil
 	}
 	data, _ := json.Marshal(audit{ProtocolVersion: 2, Query: query, Fence: fence, Shared: shared, Response: fact, PGAggregate: aggregate, ResourceEpoch: e.actor.Epoch})
 	_, err = e.store.Record(ctx, snapshot, e.actor, op.Request.Key, journal.Observation{Key: op.Request.Key, RequestSHA256: op.RequestSHA256, CommandSHA256: step.CommandSHA256, Ordinal: step.Ordinal, Action: journal.ResumeAdmission, Result: journal.Completed, SourceID: e.instance.ComputeInstanceID, Data: data})

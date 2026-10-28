@@ -211,6 +211,10 @@ func TestProductionInitialServiceThenGrowUsesOriginalSourcesAndUnknownRecovery(t
 	productionInitialService(t, "grow")
 }
 
+func TestProductionNormalCompletionRechecksSourcesAndRecoversLostFinish(t *testing.T) {
+	productionInitialService(t, "auto-finish")
+}
+
 func TestProductionInitialHostAndUndispatchedCancelKeepOriginalPlacement(t *testing.T) {
 	productionInitialService(t, "host")
 }
@@ -361,7 +365,7 @@ func productionInitialService(t *testing.T, mode string) {
 			return nil
 		}
 		var successorHost *hostexec.Publisher
-		if pgTakeover || guestTakeover {
+		if pgTakeover || guestTakeover || mode == "auto-finish" {
 			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -508,7 +512,7 @@ func productionInitialService(t *testing.T, mode string) {
 		require.NotNil(t, s.State().BudgetHeld)
 		require.EqualValues(t, 9, s.State().ProtocolVersion)
 		posts, _, resizes := pg.counts()
-		if cancelled {
+		if cancelled || mode == "auto-finish" {
 			require.Equal(t, 2, posts, "取消时已开放不新增setter，后继正常扩容只再开放一次")
 		} else {
 			require.Equal(t, 3, posts, "首次setter发送前/后各丢一次，正常后继只再开放一次")
@@ -517,6 +521,9 @@ func productionInitialService(t *testing.T, mode string) {
 		qmp.mu.Lock()
 		require.Equal(t, 1, qmp.writes)
 		qmp.mu.Unlock()
+		if mode == "auto-finish" {
+			worker = verifyAutomaticNormalFinish(t, ctx, api, client, store, session, resources, worker, config, source, pg, root)
+		}
 		finishTrustedPrepareHost(t, ctx, api, client, store, session, worker, prepared, mode == "cancel-before-vm")
 		return nil
 	})

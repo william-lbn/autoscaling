@@ -142,10 +142,12 @@ func finishTrustedPrepareHost(t *testing.T, ctx context.Context, api *ownerAPI, 
 	t.Helper()
 	s, err := store.Load(ctx)
 	require.NoError(t, err)
-	// 正常关闭仍由既有协调入口显式调用Store.Finish；PG worker只结算各域，
-	// 不能把ExternalStep误当它已承担外层请求/策略生命周期。
-	s, err = store.Finish(ctx, s, session.Actor(), p.Request.Key)
-	require.NoError(t, err)
+	// 旧组合保留显式结案的历史验证范围。新增自动结案组合已经由正式
+	// worker完成，不再重复Finish；后续Host读取/结清与下一Prepare复用。
+	if s.State().Active != nil {
+		s, err = store.Finish(ctx, s, session.Actor(), p.Request.Key)
+		require.NoError(t, err)
+	}
 	require.Nil(t, s.State().Active)
 	claims, err := budgetclaims.New(client.CoreV1(), binding())
 	require.NoError(t, err)
