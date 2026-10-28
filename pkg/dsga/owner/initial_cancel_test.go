@@ -29,7 +29,7 @@ import (
 // 完整首次生产后，用真实Prepare/Host/WAL派发VM，再由原Runner在QMP
 // 发送前不可重发取消。目标1GiB、真实仍512MiB，不能改写原目标或注入旧
 // Resize成功。PG/root/资格/Kube/QMP仍为显式协议夹具，不外推Linux效果。
-func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, coord coordclient.CoordinationV1Interface, store *journal.Store, session *Session, worker *PGWorker, resources *ResourceWorker, config compute.Config, source budget.QualificationSource, runner *vmguard.Runner, qmp *vmQMPPeer, request control.Request) (*PGWorker, control.Request, *hostexec.Publisher) {
+func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, coord coordclient.CoordinationV1Interface, store *journal.Store, session *Session, worker *PGWorker, resources *ResourceWorker, config compute.Config, source budget.QualificationSource, runner *vmguard.Runner, qmp *vmQMPPeer, request control.Request, beforeVM bool) (*PGWorker, control.Request, *hostexec.Publisher) {
 	t.Helper()
 	s, err := store.Load(ctx)
 	require.NoError(t, err)
@@ -47,7 +47,11 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 	keepInitialHostOwner(t, ctx, client, allocator)
 	_, err = publisher.Reconcile(ctx)
 	require.NoError(t, err)
-	for range 2 {
+	advances := 2
+	if beforeVM {
+		advances = 1 // 只确认Host；不Start VM，不给原Runner登记取消命令。
+	}
+	for range advances {
 		progress, err = worker.Advance(ctx)
 		require.NoError(t, err)
 		require.Equal(t, pgexec.Recorded, progress)
@@ -56,13 +60,18 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 	require.NoError(t, err)
 	_, err = store.RequestAbort(ctx, s, session.Actor(), request.Key)
 	require.NoError(t, err)
-	_, err = worker.Advance(ctx)
-	require.ErrorIs(t, err, vmguard.ErrUnknown, "Abort标记本身不是VM无效果回执")
-	require.NoError(t, runner.Tick(ctx))
-	progress, err = worker.Advance(ctx)
-	require.NoError(t, err)
-	require.Equal(t, pgexec.Recorded, progress)
-	require.Equal(t, journal.NoEffect, budgetStep(t, store, journal.ResizeVM).Observation.Result)
+	if beforeVM {
+		require.Equal(t, journal.Planned, budgetStep(t, store, journal.ResizeVM).Phase)
+		verifyInitialVMSourceRejection(t, ctx, client, store, session, initial)
+	} else {
+		_, err = worker.Advance(ctx)
+		require.ErrorIs(t, err, vmguard.ErrUnknown, "Abort标记本身不是VM无效果回执")
+		require.NoError(t, runner.Tick(ctx))
+		progress, err = worker.Advance(ctx)
+		require.NoError(t, err)
+		require.Equal(t, pgexec.Recorded, progress)
+		require.Equal(t, journal.NoEffect, budgetStep(t, store, journal.ResizeVM).Observation.Result)
+	}
 	qmp.mu.Lock()
 	require.Zero(t, qmp.writes)
 	qmp.mu.Unlock()
@@ -80,7 +89,9 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 	require.Nil(t, s.State().CapacityHeld)
 	originalCleanup := s.State().Active.Cleanup
 	require.NotNil(t, originalCleanup)
-	require.Greater(t, len(originalCleanup.Command), journal.MaxCommandBytes, "真实完整初始合同覆盖专用扩界路径")
+	if !beforeVM {
+		require.Greater(t, len(originalCleanup.Command), journal.MaxCommandBytes, "真实完整初始合同覆盖专用扩界路径")
+	}
 	require.LessOrEqual(t, len(originalCleanup.Command), journal.MaxInitialCapacityCommandBytes)
 	oversized := append([]byte(nil), originalCleanup.Command...)
 	oversized = append(oversized, []byte(strings.Repeat(" ", journal.MaxInitialCapacityCommandBytes-len(oversized)+1))...)
@@ -91,7 +102,15 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 	require.Error(t, err, "普通Cleanup不能借新合同扩界超过8KiB")
 	var command budget.ReconciledAbortCommand
 	require.NoError(t, json.Unmarshal(originalCleanup.Command, &command))
-	require.EqualValues(t, 2, command.Capacity.ProtocolVersion)
+	if beforeVM {
+		require.EqualValues(t, 3, command.Capacity.ProtocolVersion)
+		require.NotNil(t, command.Capacity.InitialVM)
+		require.Empty(t, command.Capacity.VM, "启动容量没有Resize/NoEffect回执")
+		require.NotContains(t, string(originalCleanup.Command), "native_vm")
+		require.Equal(t, journal.Planned, budgetStep(t, store, journal.ResizeVM).Phase)
+	} else {
+		require.EqualValues(t, 2, command.Capacity.ProtocolVersion)
+	}
 	require.Equal(t, initial, *command.Capacity.InitialOutside)
 	require.Equal(t, request, command.Capacity.Request)
 	require.Empty(t, command.Capacity.OutsideClaim)
@@ -164,6 +183,13 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 	require.Equal(t, initial.VMMemoryBytes, placement.MemoryBytes)
 	require.Equal(t, request.TargetVMMemoryBytes, placement.Settled.Request.TargetVMMemoryBytes)
 	require.Equal(t, initial.VMMemoryBytes, placement.Settled.ActualMemoryBytes)
+	if beforeVM {
+		require.EqualValues(t, 8, n.State().ProtocolVersion)
+		require.Equal(t, *command.Capacity.InitialVM, placement.Settled.InitialVM)
+		require.Empty(t, placement.Settled.Runner)
+		// 结清后同一读者仍必须认证原无命令状态，不能只依赖Node v8。
+		verifyInitialVMSourceRejection(t, ctx, client, store, session, initial)
+	}
 	_, err = claims.ReadCurrent(ctx, s)
 	require.NoError(t, err, "初始头已被替换且Host已结清，原资格仍可持续核验")
 	// 后继普通成功用新真实Key，原取消请求和实际预算不重命名。

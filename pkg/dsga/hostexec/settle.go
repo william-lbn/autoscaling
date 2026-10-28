@@ -78,9 +78,13 @@ func (p *Publisher) SettleCurrent(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	confirmed := currentVM.Budget
-	id := confirmed.Birth.Identity
-	if current.Closed != closed || id.RunnerPodUID != current.Host.RunnerPodUID || id.NodeUID != string(p.node.Binding().NodeUID) || current.Host.HostOverheadBytes != p.overhead || confirmed.Actual.RequestedBytes != closed.MemoryBytes() || confirmed.Actual.ActualBytes != closed.MemoryBytes() {
+	id, actual := currentVM.Budget.Birth.Identity, currentVM.Budget.Actual
+	if currentVM.Initial != nil {
+		// 启动来源从未有命令，不读取零值Budget的Receipt，更不为
+		// 复用结清路径合成Completed；仍核原真实requested/actual。
+		id, actual = currentVM.Initial.Birth.Identity, currentVM.Initial.Actual
+	}
+	if current.Closed != closed || id.RunnerPodUID != current.Host.RunnerPodUID || id.NodeUID != string(p.node.Binding().NodeUID) || current.Host.HostOverheadBytes != p.overhead || actual.RequestedBytes != closed.MemoryBytes() || actual.ActualBytes != closed.MemoryBytes() {
 		return false, fmt.Errorf("host settlement original Runner/Node/target differs")
 	}
 	if err := p.claims.RecheckCurrent(ctx, s, current); err != nil {

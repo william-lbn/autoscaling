@@ -190,8 +190,15 @@ func TestProductionInitialCancelledGrowRecoversActualBudgetAndSuccessor(t *testi
 	productionInitialService(t, "cancel")
 }
 
+// Prepare与Host已有真实持久效果，但VM从未Start。复用后续故障/重建/
+// Host结清/完整Grow/下一Prepare组合，不能靠制造NoEffect来走旧恢复路径。
+func TestProductionInitialCancelBeforeVMRecoversActualBudgetAndSuccessor(t *testing.T) {
+	productionInitialService(t, "cancel-before-vm")
+}
+
 func productionInitialService(t *testing.T, mode string) {
 	t.Helper()
+	cancelled := mode == "cancel" || mode == "cancel-before-vm"
 	api, store, coord := newAPI(t)
 	client := vmCore(t)
 	api.mu.Lock()
@@ -231,7 +238,7 @@ func productionInitialService(t *testing.T, mode string) {
 	elector, err := New(coord, store, DefaultOptions())
 	require.NoError(t, err)
 	deadline := 2 * time.Minute
-	if mode == "cancel" {
+	if cancelled {
 		// 本组合串联首次服务、取消回收、后继Grow和下一次Prepare，
 		// -race下已实测到最后Prepare才触及原两分钟总期限；扩大的是
 		// 整个测试的上限，各生产请求/租约/单轮deadline均保持原值。
@@ -278,13 +285,13 @@ func productionInitialService(t *testing.T, mode string) {
 			return nil
 		}
 		var successorHost *hostexec.Publisher
-		if mode == "cancel" {
+		if cancelled {
 			for range 2 {
 				progress, err := worker.Advance(ctx)
 				require.NoError(t, err)
 				require.Equal(t, pgexec.Recorded, progress)
 			}
-			worker, request, successorHost = verifyInitialCancelledGrow(t, ctx, api, client, coord, store, session, worker, resources, config, source, runner, qmp, request)
+			worker, request, successorHost = verifyInitialCancelledGrow(t, ctx, api, client, coord, store, session, worker, resources, config, source, runner, qmp, request, mode == "cancel-before-vm")
 			pg.mu.Lock()
 			pg.request = request
 			pg.after.Observed = pgResponse(t, request).Observed
@@ -324,13 +331,13 @@ func productionInitialService(t *testing.T, mode string) {
 			s, err = store.Load(ctx)
 			require.NoError(t, err)
 			if action == journal.FinalizeBudget {
-				if mode == "cancel" {
+				if cancelled {
 					require.NotNil(t, s.State().CapacityHeld)
 				} else {
 					require.NotNil(t, s.State().InitialHeld)
 				}
 			}
-			if mode == "cancel" && action == journal.GuestReady {
+			if cancelled && action == journal.GuestReady {
 				// 后继操作再覆盖一次真实root setter丢回复；外层WAL和
 				// 资源SDK必须保留未知。不能要求本机响应总在1秒内，
 				// 也不能把失败改成成功；恢复只能查询同一原命令。
@@ -339,7 +346,7 @@ func productionInitialService(t *testing.T, mode string) {
 				root.mu.Unlock()
 			}
 			progress, err = worker.Advance(ctx)
-			if mode == "cancel" && action == journal.GuestReady {
+			if cancelled && action == journal.GuestReady {
 				var responseErr *resourceguard.ClientError
 				require.ErrorAs(t, err, &responseErr)
 				require.True(t, responseErr.MayHaveExecuted)
@@ -379,7 +386,7 @@ func productionInitialService(t *testing.T, mode string) {
 		require.NotNil(t, s.State().BudgetHeld)
 		require.EqualValues(t, 9, s.State().ProtocolVersion)
 		posts, _, resizes := pg.counts()
-		if mode == "cancel" {
+		if cancelled {
 			require.Equal(t, 2, posts, "取消时已开放不新增setter，后继正常扩容只再开放一次")
 		} else {
 			require.Equal(t, 3, posts, "首次setter发送前/后各丢一次，正常后继只再开放一次")

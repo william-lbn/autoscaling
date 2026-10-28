@@ -17,6 +17,8 @@ import (
 type CurrentBudgetVM struct {
 	Budget       Confirmed
 	Cancellation *Confirmed
+	// 与Budget互斥；原启动从未有命令时不能冒充普通Completed。
+	Initial *InitialConfirmed
 }
 
 // CheckCurrentBudget读取已关闭VM的永久预算。历史淘汰后仍从当前原State找到
@@ -28,6 +30,17 @@ func (r *Reader) CheckCurrentBudget(ctx context.Context, m journal.Model) (Curre
 		var command budget.ReconciledAbortCommand
 		if json.Unmarshal(m.CapacityHeld.Cleanup.Command, &command) != nil || m.CheckClosedCapacity(command.Capacity.Request) != nil {
 			return out, fmt.Errorf("current Runner actual capacity lacks original closed permanent budget")
+		}
+		if command.Capacity.InitialVM != nil {
+			if command.Capacity.InitialOutside == nil {
+				return out, fmt.Errorf("initial VM capacity lost complete original boot budget")
+			}
+			proof, err := r.CheckInitialCapacity(ctx, *command.Capacity.InitialVM, *command.Capacity.InitialOutside, m.Owner)
+			if err != nil {
+				return out, err
+			}
+			out.Initial = &proof
+			return out, nil
 		}
 		proof, err := r.CheckCapacity(ctx, command.Capacity.VM, m.Owner)
 		if err != nil {

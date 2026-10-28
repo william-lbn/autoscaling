@@ -15,41 +15,59 @@ import (
 
 // 原VM已派发必须从原完整命令和外层SHA读回；未派发只能借仍被永久预算
 // 持有、且当前原State仍确认的旧来源。当前数值相同不替代原回执，不写QMP。
-func (e *Executor) reconciledNative(ctx context.Context, m journal.Model) (budget.NativeCapacity, error) {
+// 两种返回来源互斥；首次从未有命令时返回独立启动证明，不合成NativeCapacity。
+func (e *Executor) reconciledNative(ctx context.Context, m journal.Model) (budget.NativeCapacity, *budget.InitialVMSources, error) {
 	var none budget.NativeCapacity
 	vm := unchangedVM(m.Active)
 	if vm == nil {
-		return none, fmt.Errorf("actual recovery lost original VM step")
+		return none, nil, fmt.Errorf("actual recovery lost original VM step")
 	}
 	if vm.Phase != journal.Planned {
 		var command vmguard.Command
 		if vm.Phase != journal.Settled || vm.Observation == nil || vm.DispatchedBy == nil || json.Unmarshal(vm.Command, &command) != nil || command.Validate() != nil || command.Request != m.Active.Request || command.Request.Key.IssuerEpoch != vm.DispatchedBy.Epoch || vm.TargetID != command.Identity.RunnerPodUID {
-			return none, fmt.Errorf("actual recovery original VM remains unconfirmed or changed")
+			return none, nil, fmt.Errorf("actual recovery original VM remains unconfirmed or changed")
 		}
 		source, _, err := e.runner.CapacityForOriginal(ctx, command, vm.CommandSHA256, e.actor)
-		return source, err
+		return source, nil, err
 	}
 	if m.CapacityHeld != nil {
 		var saved budget.ReconciledAbortCommand
 		if m.CapacityHeld.Cleanup.DispatchedBy == nil || json.Unmarshal(m.CapacityHeld.Cleanup.Command, &saved) != nil || saved.ValidateFor(m.CapacityHeld.Cleanup.DispatchedBy.Epoch) != nil {
-			return none, fmt.Errorf("actual recovery lost retained native capacity")
+			return none, nil, fmt.Errorf("actual recovery lost retained native capacity")
+		}
+		if saved.Capacity.InitialVM != nil {
+			initial, err := m.RetainedInitialOutside()
+			if err != nil {
+				return none, nil, err
+			}
+			proof, err := e.runner.CheckInitialCapacity(ctx, *saved.Capacity.InitialVM, initial, e.actor)
+			return none, &proof.Sources, err
 		}
 		_, err := e.runner.CheckCapacity(ctx, saved.Capacity.VM, e.actor)
-		return saved.Capacity.VM, err
+		return saved.Capacity.VM, nil, err
 	}
 	if m.BudgetHeld != nil {
 		var saved budget.FinalizationCommand
 		if json.Unmarshal(m.BudgetHeld.Finalization.Command, &saved) != nil || saved.Validate() != nil || saved.Finalized.Sources == nil || saved.Finalized.Sources.Runner == nil {
-			return none, fmt.Errorf("actual recovery lost retained complete VM sources")
+			return none, nil, fmt.Errorf("actual recovery lost retained complete VM sources")
 		}
 		f := saved.Finalized
 		proof, err := e.runner.CheckRetained(ctx, *f.Sources.Runner, f.Request, saved.PreparedSHA256, saved.GuestSHA256, f.Sources.HostClaim, e.actor)
 		if err != nil {
-			return none, err
+			return none, nil, err
 		}
-		return vmguard.CapacitySource(proof)
+		source, err := vmguard.CapacitySource(proof)
+		return source, nil, err
 	}
-	return none, fmt.Errorf("undispatched VM has no retained authenticated capacity source")
+	if m.InitialHeld != nil {
+		initial, err := m.RetainedInitialOutside()
+		if err != nil {
+			return none, nil, err
+		}
+		proof, err := e.runner.InitialCapacityFor(ctx, initial, e.actor)
+		return none, &proof.Sources, err
+	}
+	return none, nil, fmt.Errorf("undispatched VM has no retained authenticated capacity source")
 }
 
 // 每次均核原Root身份、floor、持久约束与Postmaster出生；不降低任何限额。
@@ -108,18 +126,25 @@ func (e *Executor) checkReconciled(ctx context.Context, s *journal.Snapshot, p b
 		return capacity, fence, shared, root, err
 	}
 	if existing == nil {
-		source, sourceErr := e.reconciledNative(ctx, s.State())
+		source, initialVM, sourceErr := e.reconciledNative(ctx, s.State())
 		if sourceErr != nil {
 			return capacity, fence, shared, root, sourceErr
 		}
-		outside, selectErr := reconciledOutside(s.State(), p, source.MemoryBytes())
-		if selectErr != nil {
-			// 首次VM命令已不可重发取消、实际仍为启动容量时，没有
+		memory := source.MemoryBytes()
+		if initialVM != nil {
+			memory = initialVM.MemoryBytes
+		}
+		outside, selectErr := reconciledOutside(s.State(), p, memory)
+		if selectErr != nil || initialVM != nil {
+			// 首次VM从未派发，或原命令已不可重发取消且实际仍为启动容量时，没有
 			// “旧Resize Outside CM”。只可消费永久头中完整原Initial，
 			// 不能改写原目标或按当前配置临时创建一份替代声明。
 			initial, initialErr := s.State().RetainedInitialOutside()
-			if initialErr != nil || initial.VMMemoryBytes != source.MemoryBytes() {
-				return capacity, fence, shared, root, selectErr
+			if initialErr != nil {
+				return capacity, fence, shared, root, initialErr
+			}
+			if initial.VMMemoryBytes != memory {
+				return capacity, fence, shared, root, fmt.Errorf("actual recovery VM differs from original initial outside budget")
 			}
 			host, hostRef, readErr := e.claims.ReconcileInitialReservations(ctx, s, p, initial)
 			if readErr != nil {
@@ -127,7 +152,7 @@ func (e *Executor) checkReconciled(ctx context.Context, s *journal.Snapshot, p b
 			}
 			var noOutside budget.OutsideReservation
 			var noRef budget.ObjectRef
-			capacity, err = budget.ReconcileInitial(budget.ReconcileInputs{Prepared: p, Shared: shared, Root: root, Outside: noOutside, OutsideClaim: noRef, Host: host, HostClaim: hostRef, VM: source, GuestUsableMemoryBytes: usable, IssuerEpoch: e.actor.Epoch}, initial)
+			capacity, err = budget.ReconcileInitial(budget.ReconcileInputs{Prepared: p, Shared: shared, Root: root, Outside: noOutside, OutsideClaim: noRef, Host: host, HostClaim: hostRef, VM: source, InitialVM: initialVM, GuestUsableMemoryBytes: usable, IssuerEpoch: e.actor.Epoch}, initial)
 		} else {
 			out, host, hostRef, readErr := e.claims.ReconcileReservations(ctx, s, p, outside)
 			if readErr != nil {
@@ -154,11 +179,21 @@ func (e *Executor) checkReconciled(ctx context.Context, s *journal.Snapshot, p b
 	if err != nil {
 		return capacity, fence, shared, root, err
 	}
-	native, err := e.runner.CheckCapacity(ctx, capacity.VM, e.actor)
-	if err != nil {
-		return capacity, fence, shared, root, err
+	var nativeID vmguard.Identity
+	if capacity.InitialVM != nil {
+		proof, readErr := e.runner.CheckInitialCapacity(ctx, *capacity.InitialVM, *capacity.InitialOutside, e.actor)
+		if readErr != nil {
+			return capacity, fence, shared, root, readErr
+		}
+		nativeID = proof.Birth.Identity
+	} else {
+		proof, readErr := e.runner.CheckCapacity(ctx, capacity.VM, e.actor)
+		if readErr != nil {
+			return capacity, fence, shared, root, readErr
+		}
+		nativeID = proof.Birth.Identity
 	}
-	if native.Birth.Identity.RunnerPodUID != claims.Host.RunnerPodUID || native.Birth.Identity.NodeUID != claims.Host.NodeUID {
+	if nativeID.RunnerPodUID != claims.Host.RunnerPodUID || nativeID.NodeUID != claims.Host.NodeUID {
 		return capacity, fence, shared, root, fmt.Errorf("actual recovery native VM and Host domains differ")
 	}
 	if err := e.claims.RecheckReconciled(ctx, s, capacity, claims); err != nil {
