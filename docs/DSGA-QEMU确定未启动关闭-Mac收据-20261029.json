@@ -1,0 +1,388 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Mac Darwin arm64",
+  "phase": "原QEMU确定未启动的停止屏障、来源及Host结清",
+  "phase_completed": true,
+  "overall_core_complete": false,
+  "previous_autoscaling": "59b668472b087f1d35c8f13ac526df7d0f9bd22e",
+  "runtime_commit": "0710d8cdc1a7c956742c9706076732cecf190416",
+  "autoscaling_branch": "codex/dsga-autoscaling-20261019",
+  "neon_branch": "codex/dsga-neon-v3-20261019",
+  "pg17_unchanged": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "source_sha256": {
+    "pkg/dsga/hostscheduler/retirement.go": "fca8c104da484efff96deffaba062dbac6b38e26ceaee27fa453d5f651057867",
+    "pkg/dsga/hostscheduler/retirement_test.go": "999b322c2c31e360b75105b0098b33ec0931e5a91581aa8dee10474599f98730",
+    "pkg/dsga/vmguard/process.go": "80877fbe304b24a41aa924d32ed86c36f081e98527cb8d47378d33753bb35e15",
+    "pkg/dsga/vmguard/process_start_test.go": "903f7afcee38e39745045977e3861469c13e9b18763a6836fa958cfcb806e416",
+    "pkg/neonvm/controllers/vm_dsga_memory_test.go": "fa16035649c71cc5840c6e0992ffbe4c4d25809a06b995c318f295f314ff7b84"
+  },
+  "adopted_tests": {
+    "log": "dsga-qemu-nostart-final.jsonl",
+    "process_exit_code": 0,
+    "top_level_tests": 12,
+    "passed_records_including_parents": 54,
+    "failed": 0,
+    "skipped": 0,
+    "packages": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "elapsed_seconds": 2.582
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "elapsed_seconds": 7.951
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+        "elapsed_seconds": 53.946
+      }
+    ],
+    "test_mapping": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/complete",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/missing-reader",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/pod-uid",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/node-uid",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerFailedStartClosesOriginalBirthWithoutInventingWait/missing-executable",
+        "elapsed_seconds": 0.09
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/floor-holder",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/state-uid",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/state-deleting",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/birth-unprotected",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/exit",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/exit-malformed",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/never-started",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/never-started-with-pid",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication",
+        "elapsed_seconds": 0.1
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerFailedStartClosesOriginalBirthWithoutInventingWait/not-executable",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerFailedStartClosesOriginalBirthWithoutInventingWait/invalid-format",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerFailedStartClosesOriginalBirthWithoutInventingWait/cancelled-command",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerFailedStartClosesOriginalBirthWithoutInventingWait/lost-publish-reply",
+        "elapsed_seconds": 0.17
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerFailedStartClosesOriginalBirthWithoutInventingWait",
+        "elapsed_seconds": 0.43
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerLaunchPersistenceFailureNeverStartsOrPublishesNoStart",
+        "elapsed_seconds": 0.03
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerProcessWaitClosesOriginalWAL/success",
+        "elapsed_seconds": 1.12
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerProcessWaitClosesOriginalWAL/error",
+        "elapsed_seconds": 0.11
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerProcessWaitClosesOriginalWAL/signal",
+        "elapsed_seconds": 0.1
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerProcessWaitClosesOriginalWAL",
+        "elapsed_seconds": 1.33
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerProcessRejectsAlternateCommandBeforeStart/uuid",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerProcessRejectsAlternateCommandBeforeStart/monitor",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerProcessRejectsAlternateCommandBeforeStart/duplicate",
+        "elapsed_seconds": 0.03
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerProcessRejectsAlternateCommandBeforeStart/daemon",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerProcessRejectsAlternateCommandBeforeStart/migration",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerProcessRejectsAlternateCommandBeforeStart/program",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerProcessRejectsAlternateCommandBeforeStart/wrapper",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerProcessRejectsAlternateCommandBeforeStart",
+        "elapsed_seconds": 0.17
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerProcessExitLocalFirstAndLostReplyRecovery",
+        "elapsed_seconds": 1.23
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerProcessCloseRejectsDamagedFileAndNeverResets",
+        "elapsed_seconds": 1.14
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestRunnerProcessExitPreservesMayHaveSentAction",
+        "elapsed_seconds": 1.16
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestOriginalProcessFileCannotOverwriteOrFollowLinks/same",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestOriginalProcessFileCannotOverwriteOrFollowLinks/different",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestOriginalProcessFileCannotOverwriteOrFollowLinks/symlink",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestOriginalProcessFileCannotOverwriteOrFollowLinks/public",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestOriginalProcessFileCannotOverwriteOrFollowLinks/oversize",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestOriginalProcessFileCannotOverwriteOrFollowLinks/path",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+        "test": "TestOriginalProcessFileCannotOverwriteOrFollowLinks",
+        "elapsed_seconds": 0.03
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+        "test": "TestSchedulerNeverStartedRunnerRetiresOnlyAfterCompletePodTermination",
+        "elapsed_seconds": 6.43
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+        "test": "TestSchedulerWholePodRetirementRecoversOriginalUnknownWrites/complete",
+        "elapsed_seconds": 6.63
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+        "test": "TestSchedulerWholePodRetirementRecoversOriginalUnknownWrites/node-reply",
+        "elapsed_seconds": 7.62
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+        "test": "TestSchedulerWholePodRetirementRecoversOriginalUnknownWrites/pod-intent-reply",
+        "elapsed_seconds": 6.62
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+        "test": "TestSchedulerWholePodRetirementRecoversOriginalUnknownWrites/vm-anchor-reply",
+        "elapsed_seconds": 6.63
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+        "test": "TestSchedulerWholePodRetirementRecoversOriginalUnknownWrites/node-v6",
+        "elapsed_seconds": 6.63
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+        "test": "TestSchedulerWholePodRetirementRecoversOriginalUnknownWrites",
+        "elapsed_seconds": 34.14
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+        "test": "TestSchedulerWholePodRetirementRejectsIncompleteProofs/missing-exit",
+        "elapsed_seconds": 2.37
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+        "test": "TestSchedulerWholePodRetirementRejectsIncompleteProofs/running-sidecar",
+        "elapsed_seconds": 2.36
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+        "test": "TestSchedulerWholePodRetirementRejectsIncompleteProofs/wrong-container",
+        "elapsed_seconds": 2.35
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+        "test": "TestSchedulerWholePodRetirementRejectsIncompleteProofs/replacement-after-cas",
+        "elapsed_seconds": 3.82
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+        "test": "TestSchedulerWholePodRetirementRejectsIncompleteProofs",
+        "elapsed_seconds": 10.9
+      }
+    ]
+  },
+  "vet": {
+    "packages": 3,
+    "exit_code": 0
+  },
+  "incremental_lint": {
+    "relative_to": "59b668472b087f1d35c8f13ac526df7d0f9bd22e",
+    "exit_code": 0,
+    "issues": 0,
+    "whole_repository_clean_claim": false
+  },
+  "logs": {
+    "dsga-qemu-nostart-final.jsonl": {
+      "sha256": "acbb1f944906e19c4aebb16d0ebef749d9dd06d898c0c7ad50e9f64a078e03c6"
+    },
+    "dsga-qemu-nostart-vet-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "dsga-qemu-nostart-lint-final.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47"
+    },
+    "dsga-qemu-nostart-linux-amd64-build.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "dsga-qemu-nostart-linux-arm64-build.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "retained_first_failure": {
+    "log": "dsga-qemu-nostart-initial.jsonl",
+    "sha256": "3d8e2ab99039fd6fd12ad22befac6d6bcda5e0e17e0ce75e33edc4fef81d118e",
+    "reason": "sandbox denied local httptest bind; vmguard tests passed, Scheduler panic before logic; final explicitly allowed only loopback listeners",
+    "counted_as_success": false
+  },
+  "linux_cross_compilation": [
+    {
+      "file": "dsga-qemu-nostart-linux-amd64.test",
+      "sha256": "96c74d83ea3ffd3d540f0933d873a6e9b9d50fd75431a6ff70ce12a1e46ab0c9",
+      "architecture": "amd64",
+      "elf_machine": 62,
+      "executed": false,
+      "kind": "vmguard test binary, not service/image"
+    },
+    {
+      "file": "dsga-qemu-nostart-linux-arm64.test",
+      "sha256": "80e8e64cfd27d980ba846122a16db1724368c559066c80f6111c085f2224052e",
+      "architecture": "arm64",
+      "elf_machine": 183,
+      "executed": false,
+      "kind": "vmguard test binary, not service/image"
+    }
+  ],
+  "protocols": {
+    "process_exit_v1": "original authoritative Start/Wait; unchanged wire body",
+    "process_exit_v2": "original invocation proves Start not attempted or failed without Process/ProcessState; PID/exit/signal all zero; old validator rejects",
+    "runner_memory_record": 2,
+    "vm_model": 9,
+    "node_model": 8,
+    "unchanged_cm_kind": "process-exit-v1 (typed payload distinguishes version)"
+  },
+  "boundaries": [
+    "actual Mac exec.Start failure, file lock/fsync, Go SDK sources, typed HTTP Node/Pod/VM CAS",
+    "process executable is a test child, not QEMU/KVM",
+    "Kube/Lease/container status are explicit fixtures, not real CRI or physical memory proof",
+    "Start failure returns original error even after close/publish succeeds",
+    "no resetting memory WAL, no inferred resize Completed/NoEffect",
+    "prelaunch init failures without retained launch, runner killed/no Wait, cross-boot/migration still require controlled recovery",
+    "no new PG17/Rust/full8-service matrix, no image or deployment"
+  ],
+  "commands_for_reproduction": [
+    "GOCACHE=<workspace>/build/go-cache GOPROXY=off GOSUMDB=off go test -race -count=1 -json ./pkg/dsga/vmguard ./pkg/dsga/hostscheduler ./pkg/neonvm/controllers -run \"^Test(RunnerFailedStart|RunnerLaunchPersistenceFailure|RunnerProcess|OriginalProcessFile|SchedulerNeverStarted|SchedulerWholePodRetirement|ManagedControllerMemoryConsumesOriginalRunnerPublication)\"",
+    "same offline cache: go vet ./pkg/dsga/vmguard ./pkg/dsga/hostscheduler ./pkg/neonvm/controllers",
+    "same cache: golangci-lint run --new-from-rev=59b66847 ./pkg/dsga/vmguard ./pkg/dsga/hostscheduler ./pkg/neonvm/controllers",
+    "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 (then arm64) go test -c ./pkg/dsga/vmguard -o <test ELF>"
+  ]
+}
