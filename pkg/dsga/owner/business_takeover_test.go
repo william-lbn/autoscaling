@@ -165,6 +165,9 @@ func (f *businessOwnerTransfer) takeover(t *testing.T, ctx context.Context, old 
 	if f.takeoverAction == journal.ResizePG {
 		_, err = worker.ReplayOriginal(ctx, before.State().Active.Request.Key)
 		require.ErrorIs(t, err, ErrLeadershipLost, "旧Session不能迟到重新派发原PG")
+	} else if f.takeoverAction == journal.GuestReady {
+		_, err = worker.ReplayResourceOriginal(ctx, before.State().Active.Request.Key)
+		require.ErrorIs(t, err, ErrLeadershipLost, "旧Session不能迟到重新派发原Root设置")
 	}
 	resources.CloseIdleConnections()
 	worker.CloseIdleConnections()

@@ -239,11 +239,16 @@ func TestProductionInitialOwnerTransferObservesLostPGReplyAndSettlesActualBudget
 	productionInitialService(t, "owner-transfer-after-pg")
 }
 
+func TestProductionInitialOwnerTransferObservesLostGuestReplyWithoutSendingPG(t *testing.T) {
+	productionInitialService(t, "owner-transfer-after-guest")
+}
+
 func productionInitialService(t *testing.T, mode string) {
 	t.Helper()
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
 	pgTakeover := mode == "owner-transfer-after-pg"
-	cancelled := mode == "cancel" || mode == "cancel-before-vm" || ownerTransfer && !pgTakeover
+	guestTakeover := mode == "owner-transfer-after-guest"
+	cancelled := mode == "cancel" || mode == "cancel-before-vm" || ownerTransfer && !pgTakeover && !guestTakeover
 	api, store, coord := newAPI(t)
 	client := vmCore(t)
 	api.mu.Lock()
@@ -300,9 +305,11 @@ func productionInitialService(t *testing.T, mode string) {
 	var transfer *businessOwnerTransfer
 	if ownerTransfer {
 		transfer = newBusinessOwnerTransfer(t, api, coord, store, resourceConfig)
-		transfer.effectBeforeTakeover = mode == "owner-transfer-after-vm" || pgTakeover
+		transfer.effectBeforeTakeover = mode == "owner-transfer-after-vm" || pgTakeover || guestTakeover
 		if pgTakeover {
 			transfer.takeoverAction = journal.ResizePG
+		} else if guestTakeover {
+			transfer.takeoverAction = journal.GuestReady
 		}
 		run = transfer.run
 	}
@@ -349,7 +356,7 @@ func productionInitialService(t *testing.T, mode string) {
 			return nil
 		}
 		var successorHost *hostexec.Publisher
-		if pgTakeover {
+		if pgTakeover || guestTakeover {
 			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -388,7 +395,7 @@ func productionInitialService(t *testing.T, mode string) {
 			require.NoError(t, err)
 		} else {
 			publishVMHost(t, ctx, client, coord, store, session)
-			if pgTakeover {
+			if pgTakeover || guestTakeover {
 				keepPGTakeoverHostOwner(t, ctx, client)
 			}
 		}
@@ -411,7 +418,7 @@ func productionInitialService(t *testing.T, mode string) {
 					require.NotNil(t, s.State().InitialHeld)
 				}
 			}
-			if cancelled && action == journal.GuestReady {
+			if (cancelled || guestTakeover) && action == journal.GuestReady {
 				// 后继操作再覆盖一次真实root setter丢回复；外层WAL和
 				// 资源SDK必须保留未知。不能要求本机响应总在1秒内，
 				// 也不能把失败改成成功；恢复只能查询同一原命令。
@@ -425,6 +432,13 @@ func productionInitialService(t *testing.T, mode string) {
 				pg.mu.Unlock()
 			}
 			progress, err = worker.Advance(ctx)
+			if guestTakeover && action == journal.GuestReady {
+				var lost *resourceguard.ClientError
+				require.ErrorAs(t, err, &lost)
+				require.True(t, lost.MayHaveExecuted)
+				verifyLostGuestTakeoverSettlement(t, ctx, api, client, store, session, resources, worker, config, source, runner, qmp, pg, root, prepared, transfer)
+				return nil
+			}
 			if pgTakeover && action == journal.ResizePG {
 				var lost *compute.CallError
 				require.ErrorAs(t, err, &lost)
