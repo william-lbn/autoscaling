@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync/atomic"
 	"time"
 
 	coreclient "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -42,6 +43,9 @@ type PGWorker struct {
 	host      *hostexec.Consumer
 	prepare   *prepareexec.Executor
 	initial   *initialexec.Executor
+	// Run期间独占SDK/控制入口，避免重复启动两个轮询goroutine竞争Pending。
+	// Run返回后可由旧的测试/嵌入调用重新进入；ControlEndpoint本身不可复用。
+	running atomic.Bool
 }
 
 func (session *Session) coupledContext(ctx context.Context) (context.Context, context.CancelFunc) {
@@ -254,7 +258,7 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 			return nil, err
 		}
 	}
-	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest, quiesce: quiesce, finalize: nil, vm: nil, host: nil, prepare: nil, initial: nil}, nil
+	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest, quiesce: quiesce, finalize: nil, vm: nil, host: nil, prepare: nil, initial: nil, running: atomic.Bool{}}, nil
 }
 
 // NewProductionPGWorker只供具备可信Kube客户端的实际Agent创建。完整预算
@@ -487,6 +491,9 @@ type Tick struct {
 
 type PGLoopOptions struct {
 	PollInterval time.Duration
+	// Control只接受当前worker的受信管理选择，执行仍在本Run串行goroutine。
+	// 与旧领域通道并存，普通轮询不会生成管理命令或自动重放。
+	Control *ControlEndpoint
 	// Wake只是重读持久状态的提示，不携带可覆盖原请求的新参数。
 	Wake <-chan struct{}
 	// Replay只能来自已认证协调入口的显式选择。Key仅用于匹配，实际命令
@@ -524,6 +531,21 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	if options.PollInterval <= 0 || options.PollInterval > time.Minute {
 		return fmt.Errorf("invalid PG loop polling interval")
 	}
+	if !worker.running.CompareAndSwap(false, true) {
+		return fmt.Errorf("PG worker loop already running")
+	}
+	defer worker.running.Store(false)
+	var controls <-chan controlCall
+	if options.Control != nil {
+		if options.Control.worker != worker {
+			return fmt.Errorf("control endpoint belongs to another PG worker")
+		}
+		if !options.Control.started.CompareAndSwap(false, true) {
+			return fmt.Errorf("control endpoint cannot be reused")
+		}
+		controls = options.Control.calls
+		defer close(options.Control.done)
+	}
 	callCtx, cancel := worker.session.coupledContext(ctx)
 	defer cancel()
 	defer worker.CloseIdleConnections()
@@ -538,6 +560,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	var abortReplay *control.Key
 	var unchangedAdmission *control.Key
 	var capacityAdmission *control.Key
+	var pendingControl *controlCall
 	wake, replays, admissionReplays, resourceReplays := options.Wake, options.Replay, options.AdmissionReplay, options.ResourceReplay
 	vmReplays := options.VMReplay
 	prepareReplays := options.PrepareReplay
@@ -548,6 +571,25 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	for {
 		if callCtx.Err() != nil {
 			return callCtx.Err()
+		}
+		if pendingControl != nil {
+			// 调用方可能已在等待队列中取消；executeControl在任何WAL/SDK
+			// 写前核ctx。单容量回复通道允许HTTP先离开，循环不会阻塞发送。
+			// 管理错误只回复本次调用，不能用坏Key/旧epoch终止健康owner。
+			// 管理调用同时受Run、Session和HTTP调用者约束。不能只采用
+			// HTTP ctx：Agent循环先停止而调用者仍在线时，旧管理读/写也必须
+			// 被取消并join，不能一直执行到HTTP期限后才归还owner。
+			controlCtx, cancelControl := context.WithCancel(callCtx)
+			stopCaller := context.AfterFunc(pendingControl.ctx, cancelControl)
+			if pendingControl.ctx.Err() != nil {
+				cancelControl()
+			}
+			value, controlErr := worker.executeControl(controlCtx, pendingControl.command)
+			stopCaller()
+			cancelControl()
+			pendingControl.result <- controlReply{value: value, err: controlErr}
+			pendingControl = nil
+			continue
 		}
 		var progress pgexec.Progress
 		var err error
@@ -605,6 +647,8 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		select {
 		case <-callCtx.Done():
 			return callCtx.Err()
+		case call := <-controls:
+			pendingControl = &call
 		case <-ticker.C:
 		case key, open := <-admissionReplays:
 			if !open {

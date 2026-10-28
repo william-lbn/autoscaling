@@ -33,18 +33,19 @@ import (
 // 仅本机HTTP/RFC6902和Lease UID/RV语义夹具，不是apiserver/etcd、真实RBAC或
 // VM许可。选主循环使用锁定版本的生产client-go，journal走真实生成clientset。
 type ownerAPI struct {
-	mu               sync.Mutex
-	vm               *vmv1.VirtualMachine
-	lease            *coordination.Lease
-	vmVersion        int
-	leaseVersion     int
-	denyLeaseWrites  bool
-	denyLeaseHolder  string
-	loseJournalReply bool
-	loseLeaseReply   bool
-	calls            int
-	config           *rest.Config
-	blockVMGet       bool
+	mu                sync.Mutex
+	vm                *vmv1.VirtualMachine
+	lease             *coordination.Lease
+	vmVersion         int
+	leaseVersion      int
+	denyLeaseWrites   bool
+	denyLeaseHolder   string
+	loseJournalReply  bool
+	loseLeaseReply    bool
+	calls             int
+	config            *rest.Config
+	blockVMGet        bool
+	blockVMGetStarted chan<- struct{}
 }
 
 func binding() journal.Binding {
@@ -68,8 +69,15 @@ func (api *ownerAPI) serve(w http.ResponseWriter, r *http.Request) {
 	// 不持fixture锁阻塞VM读，让Lease续约仍正常，避免靠失租掩盖检查自身没期限。
 	api.mu.Lock()
 	blocked := api.blockVMGet && r.Method == http.MethodGet && strings.HasPrefix(r.URL.Path, "/apis/vm.neon.tech/")
+	blockedStarted := api.blockVMGetStarted
 	api.mu.Unlock()
 	if blocked {
+		// 管理入口取消组合用此只读通知确定阻塞已进入真实HTTP服务；旧
+		// 测试不配置通道，原语义不变，不靠固定sleep猜请求已经执行。
+		select {
+		case blockedStarted <- struct{}{}:
+		default:
+		}
 		<-r.Context().Done()
 		return
 	}
