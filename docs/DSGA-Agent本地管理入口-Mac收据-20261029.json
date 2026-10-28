@@ -1,0 +1,476 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Mac Darwin arm64",
+  "phase": "Agent私有管理入口与同一owner串行业务接线",
+  "phase_completed": true,
+  "overall_core_complete": false,
+  "previous_autoscaling": "909756fe4f7407b86edfa4d4830a397d20591771",
+  "core_code_commit": "f94d4e86d27f2b43f45d51ab374abd5b5591f576",
+  "code_commit": "12a993e7677817e9d936c79f072df98be9670afe",
+  "runtime_behavior_changed": true,
+  "enabled_by_default": false,
+  "autoscaling_branch": "codex/dsga-autoscaling-20261019",
+  "neon_branch": "codex/dsga-neon-v3-20261019",
+  "pg17_unchanged": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "source_sha256": {
+    "pkg/agent/config.go": "f8c3b75fbc8161bcf995977da37452ca636953209f802f05783cb40d46f0e7f8",
+    "pkg/agent/dsga.go": "023b97f503c25edfa08a062386a1a1f0b41348d779e0888260b8695eec86cce8",
+    "pkg/agent/dsga_control_test.go": "b1702f53e5aa96a8f309420b5063854ba99709e9441fb6f6728ce3cee4bc4ac5",
+    "pkg/agent/entrypoint.go": "161c856b56d2e846748aec02b6107380e2fc250ee05d9fc5d526149c935f0ab8",
+    "pkg/agent/globalstate.go": "53543b145e63d72c91637b3ffd7975f6fcd3bf4dc9ff3bae2ebd82e9f481c0d1",
+    "pkg/api/dsga/coordination.go": "7b37cae11839dec58270fc3ba565152976cfdb45862d9fb5ea96e46569bdbc6b",
+    "pkg/api/dsga/coordination_test.go": "6af4045c294904a08a52863bd89973a0ac3e57fcbfe42895a5f25d7a74828eda",
+    "pkg/dsga/localcontrol/server.go": "6ef586e268ef0bf3e77de10675340ca3e6e1eb5d4e251b6867c18fe48dbd5f29",
+    "pkg/dsga/localcontrol/server_test.go": "ec01c77fab676a52754dbaea2f2b2e436a20432b48eff0e107b4e84e67784ef6",
+    "pkg/dsga/owner/control.go": "ae463403b0634a1aa367708d029bc6ccef7fbe4b870fa5943d393da9dff552db",
+    "pkg/dsga/owner/control_test.go": "aac4ffe18103e016d762b362e1e172a35245ee0edc2b0c3d844fca19a8753265",
+    "pkg/dsga/owner/control_transport_test.go": "220ca6d2ba9e4569155f6e2020100d158ac07b949e40e75597dafa9aae90630d",
+    "pkg/dsga/owner/owner_test.go": "6ea61db27b25e29cabe6fbe1bb31b1e9a13d35ba1e06e203511150992600c965",
+    "pkg/dsga/owner/pg.go": "29119fe681ddc6bd9a2a2f20b7611d6020662d8d929fde500d9316863176b5fa"
+  },
+  "adopted_tests": {
+    "deduplication": "later logs supersede the same whole test subtree; old final runs not added again",
+    "top_level_tests": 16,
+    "passed_records_including_parents": 43,
+    "failed": 0,
+    "skipped": 0,
+    "different_packages": 4,
+    "test_mapping": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/state",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/begin",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/cancel",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_pg",
+        "elapsed_seconds": 0.01,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_quiesce",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_admission",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_resource",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_prepare",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_initial_admission",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_vm",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_abort",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/recover_unchanged_admission",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/recover_capacity_admission",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands",
+        "elapsed_seconds": 0.02,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationStrictDecodeAndIndependentCopies",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+        "test": "TestLocalControlAdmissionIsBoundedAndCancellationReleasesWaiters",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+        "test": "TestPrivateUnixSocketLifecycleAndFilesystemBoundary",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestOwnedPGLoopKeepsClientAndRequiresExplicitReplayAfterLostReply",
+        "elapsed_seconds": 0.74,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/agent",
+        "test": "TestManagedRunnerNeverStartsLegacyOnMissingOrMalformedConfiguration",
+        "elapsed_seconds": 0.02,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/agent",
+        "test": "TestModeReadCannotAdoptRecreatedVMOrUnknownAPIState",
+        "elapsed_seconds": 0.01,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestOwnedLoopCancelsActualHTTPOnLeaseLossAndPreservesWriteAhead",
+        "elapsed_seconds": 0.73,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestClosedWakeAndReplayChannelsDoNotSpin",
+        "elapsed_seconds": 0.32,
+        "source_log": "dsga-local-control-combined-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+        "test": "TestLocalControlStrictRoutingAndBoundedBody/valid",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-discovery-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+        "test": "TestLocalControlStrictRoutingAndBoundedBody/get",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-discovery-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+        "test": "TestLocalControlStrictRoutingAndBoundedBody/route",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-discovery-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+        "test": "TestLocalControlStrictRoutingAndBoundedBody/query",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-discovery-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+        "test": "TestLocalControlStrictRoutingAndBoundedBody/bare-query",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-discovery-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+        "test": "TestLocalControlStrictRoutingAndBoundedBody/encoded-route",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-discovery-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+        "test": "TestLocalControlStrictRoutingAndBoundedBody/type",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-discovery-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+        "test": "TestLocalControlStrictRoutingAndBoundedBody/duplicate",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-discovery-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+        "test": "TestLocalControlStrictRoutingAndBoundedBody/unknown-field",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-discovery-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+        "test": "TestLocalControlStrictRoutingAndBoundedBody/missing-instance",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-discovery-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+        "test": "TestLocalControlStrictRoutingAndBoundedBody/oversized-whitespace",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-discovery-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+        "test": "TestLocalControlStrictRoutingAndBoundedBody/unknown-vm",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-discovery-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+        "test": "TestLocalControlStrictRoutingAndBoundedBody",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-discovery-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestOwnedControlLoopPersistsBeginCancelAndLostReply/normal",
+        "elapsed_seconds": 0.91,
+        "source_log": "dsga-local-control-owner-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestOwnedControlLoopPersistsBeginCancelAndLostReply/lost-begin-reply",
+        "elapsed_seconds": 0.74,
+        "source_log": "dsga-local-control-owner-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestOwnedControlLoopPersistsBeginCancelAndLostReply",
+        "elapsed_seconds": 1.65,
+        "source_log": "dsga-local-control-owner-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestOwnedControlLoopCancellationAndSerialExecution",
+        "elapsed_seconds": 0.07,
+        "source_log": "dsga-local-control-owner-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestOwnedControlLoopReplaysOnlyExplicitOriginalPG",
+        "elapsed_seconds": 1.23,
+        "source_log": "dsga-local-control-owner-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestPrivateControlSocketToRealOwnerWAL",
+        "elapsed_seconds": 0.19,
+        "source_log": "dsga-local-control-owner-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestOwnedControlLoopCancellationStopsActiveManagementRead",
+        "elapsed_seconds": 0.07,
+        "source_log": "dsga-local-control-loop-cancel-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/agent",
+        "test": "TestDSGALocalControlConfigKeepsDefaultOffAndRejectsUnsafePaths",
+        "elapsed_seconds": 0,
+        "source_log": "dsga-local-control-config-final.jsonl"
+      }
+    ],
+    "runs": [
+      {
+        "log": "dsga-local-control-combined-final.jsonl",
+        "exit_code": 0,
+        "packages": [
+          {
+            "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+            "elapsed_seconds": 2.91
+          },
+          {
+            "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+            "elapsed_seconds": 1.681
+          },
+          {
+            "package": "github.com/neondatabase/autoscaling/pkg/agent",
+            "elapsed_seconds": 1.804
+          },
+          {
+            "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+            "elapsed_seconds": 7.033
+          }
+        ]
+      },
+      {
+        "log": "dsga-local-control-discovery-final.jsonl",
+        "exit_code": 0,
+        "packages": [
+          {
+            "package": "github.com/neondatabase/autoscaling/pkg/dsga/localcontrol",
+            "elapsed_seconds": 2.498
+          },
+          {
+            "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+            "elapsed_seconds": 2.757
+          }
+        ]
+      },
+      {
+        "log": "dsga-local-control-owner-final.jsonl",
+        "exit_code": 0,
+        "packages": [
+          {
+            "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+            "elapsed_seconds": 4.853
+          }
+        ]
+      },
+      {
+        "log": "dsga-local-control-loop-cancel-final.jsonl",
+        "exit_code": 0,
+        "packages": [
+          {
+            "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+            "elapsed_seconds": 2.503
+          }
+        ]
+      },
+      {
+        "log": "dsga-local-control-config-final.jsonl",
+        "exit_code": 0,
+        "packages": [
+          {
+            "package": "github.com/neondatabase/autoscaling/pkg/agent",
+            "elapsed_seconds": 2.698
+          }
+        ]
+      }
+    ]
+  },
+  "vet": {
+    "packages": 4,
+    "exit_code": 0,
+    "log": "dsga-local-control-vet-final3.log"
+  },
+  "incremental_lint": {
+    "relative_to": "909756fe4f7407b86edfa4d4830a397d20591771",
+    "packages": 4,
+    "includes_staged_new_files": true,
+    "exit_code": 0,
+    "issues": 0,
+    "log": "dsga-local-control-lint-final3.log",
+    "whole_repository_clean_claim": false
+  },
+  "linux_cross_build": {
+    "amd64": {
+      "artifact": "dsga-local-control-agent-final-linux-amd64",
+      "sha256": "93f3a3c2ad5909a75aabf786f01d327f10fb7009cd93b4ec35bee7f6ba24e031",
+      "size": 80646150,
+      "build_log": "dsga-local-control-linux-amd64-final.log",
+      "build_info": "dsga-local-control-agent-final-linux-amd64.buildinfo",
+      "vcs_revision": "12a993e7677817e9d936c79f072df98be9670afe",
+      "vcs_modified": true,
+      "only_uncommitted_file_during_build": "AGENTS.md",
+      "executed": false,
+      "exit_code": 0
+    },
+    "arm64": {
+      "artifact": "dsga-local-control-agent-final-linux-arm64",
+      "sha256": "254dcf892f72aefe617be510c19f13395ace5b59f027ea8abc5198ffee44e59f",
+      "size": 76249935,
+      "build_log": "dsga-local-control-linux-arm64-final.log",
+      "build_info": "dsga-local-control-agent-final-linux-arm64.buildinfo",
+      "vcs_revision": "12a993e7677817e9d936c79f072df98be9670afe",
+      "vcs_modified": true,
+      "only_uncommitted_file_during_build": "AGENTS.md",
+      "executed": false,
+      "exit_code": 0
+    }
+  },
+  "logs": {
+    "dsga-local-control-combined-final.jsonl": {
+      "sha256": "11d3baeeb3a891b02aef1c906638666214c463b19055d8ca0955bbe56e1fd603"
+    },
+    "dsga-local-control-discovery-final.jsonl": {
+      "sha256": "e8a2394fbee492a39b4c8d049d8c20ed93d4799bcd1d25ff770e551ab7cf8c9d"
+    },
+    "dsga-local-control-owner-final.jsonl": {
+      "sha256": "0ccc7e4e0bd26ff4c9b628074cf6795e1a9831dd0f21c62904ca1564315087c8"
+    },
+    "dsga-local-control-loop-cancel-final.jsonl": {
+      "sha256": "6b64ea73035a032ac5a3e51a054b9e057cf6b68786f269977a09428adb468b9b"
+    },
+    "dsga-local-control-config-final.jsonl": {
+      "sha256": "916c276fc0fb85a4861df3d75be8160c8da5e8f82649988759eb99f20c6d6ae4"
+    },
+    "dsga-local-control-vet-final3.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "dsga-local-control-lint-final3.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47"
+    },
+    "dsga-local-control-linux-amd64-final.log": {
+      "sha256": "ecc019da7e9bd4009a05501579c45f0bc712656b3c397666bf7b05d6826de0fa"
+    },
+    "dsga-local-control-agent-final-linux-amd64.buildinfo": {
+      "sha256": "55328ed4b7e91d86b9ac549c7bae6e6c52eada8b2e122e31259636ba637387e8"
+    },
+    "dsga-local-control-linux-arm64-final.log": {
+      "sha256": "14d09f5cb3afb7143f7408974d3d8e8956c02f0d7ce619b4496379ea3e6e41be"
+    },
+    "dsga-local-control-agent-final-linux-arm64.buildinfo": {
+      "sha256": "1b5df9fa86717627398f47052b6d4ec2a0442dc8542d0b73fcf448c6a34348dd"
+    }
+  },
+  "intermediate_not_counted": {
+    "earlier_state_and_transport_passes": [
+      "dsga-local-control-state-first.jsonl",
+      "dsga-local-control-transport-first.jsonl"
+    ],
+    "lint_failures": [
+      "dsga-local-control-lint-first.log",
+      "dsga-local-control-lint-final.log"
+    ],
+    "reason": "initial explicit-struct/predeclared and formatting issues fixed; earlier equivalent test runs superseded, not added",
+    "candidate_cross_builds_not_adopted": [
+      "dsga-local-control-agent-linux-amd64",
+      "dsga-local-control-agent-linux-arm64"
+    ]
+  },
+  "boundaries": [
+    "private UDS only, service UID/root trusted; no TCP/tenant API, no independent control-plane or deployment changes",
+    "real UDS -> HTTP -> real registered owner endpoint -> same Run -> Lease/journal UID-RV Begin/replay/cancel -> zero-dispatch history; PG/root/VM physical actions are not executed in that test",
+    "separate original PG replay combination uses explicit TLS/native and non-PG predecessor fixtures, not a full budget/VM E2E",
+    "Run stop cancels and joins active management HTTP while Session and caller remain alive; rejected commands do not kill owner; no polling-generated replay",
+    "shared API/owner/VM/PG protocol versions unchanged; optional Agent controlSocketPath defaults disabled",
+    "two exact-revision Linux Agent ELFs compile only; vcs.modified is caused solely by retained owner AGENTS.md; module-stat cache write warnings can occur despite exit 0",
+    "overall PG17 core not complete: normal/private/background, other abnormal lifecycle/recovery and Monitor/automatic policy remain code work; PG18 then PG16 after PG17 complete archive",
+    "Linux/K8s/NeonVM/HugeTLB/physical reclaim and performance still require target environment"
+  ],
+  "commands_for_reproduction": [
+    "offline Go cache: go test -race -count=1 -json ./pkg/api/dsga ./pkg/dsga/owner ./pkg/dsga/localcontrol ./pkg/agent -run \"^(TestCoordination|TestOwnedControl|TestPrivateControl|TestLocalControl|TestPrivateUnix|TestOwnedPGLoopKeepsClientAndRequiresExplicitReplayAfterLostReply$|TestOwnedLoopCancelsActualHTTPOnLeaseLossAndPreservesWriteAhead$|TestClosedWakeAndReplayChannelsDoNotSpin$|TestManagedRunnerNeverStartsLegacyOnMissingOrMalformedConfiguration$|TestModeReadCannotAdoptRecreatedVMOrUnknownAPIState$)\"",
+    "later targeted runs exactly identified by adopted test_mapping and log names; do not add duplicate test subtrees",
+    "go test -race -count=1 -json ./pkg/agent -run \"^TestDSGALocalControlConfigKeepsDefaultOffAndRejectsUnsafePaths$\"",
+    "go vet ./pkg/api/dsga ./pkg/dsga/owner ./pkg/dsga/localcontrol ./pkg/agent",
+    "golangci-lint run --new-from-rev=909756fe4f7407b86edfa4d4830a397d20591771 ./pkg/api/dsga ./pkg/dsga/owner ./pkg/dsga/localcontrol ./pkg/agent",
+    "CGO_ENABLED=0 GOOS=linux GOARCH={amd64,arm64} go build -o <artifact> ./autoscaler-agent/cmd; inspect with go version -m, never execute on Mac"
+  ]
+}
