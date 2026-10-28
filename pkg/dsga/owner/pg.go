@@ -111,6 +111,18 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 	}
 	var pending *control.Request
 	var admissionPending *control.AdmissionRequest
+	if held := model.InitialHeld; held != nil && held.Admission != nil && held.Admission.Phase == journal.Unconfirmed {
+		// 首次开放没有Resize Active，仍可能已经执行但未获回复。必须先从
+		// 原永久预算及独立WAL恢复同一SDK pending；不能把空Active当空闲，
+		// 不能换budget/epoch或借能力发现悄悄重发首次开放。
+		initial, restoreErr := model.InitialBudgetFor()
+		var command budget.InitialAdmissionCommand
+		if restoreErr != nil || json.Unmarshal(held.Admission.Command, &command) != nil || command.ValidateFor(initial) != nil || command.Request.Instance != config.Instance || command.Request.IssuerEpoch != held.Admission.Origin.Epoch || command.Request.IssuerEpoch > session.actor.Epoch {
+			return nil, fmt.Errorf("original first admission command differs from permanent initial budget")
+		}
+		original := command.Request
+		admissionPending = &original
+	}
 	if active := snapshot.State().Active; active != nil {
 		if active.Request.Key.Instance != config.Instance {
 			return nil, fmt.Errorf("PG worker cannot silently replace an old boot")

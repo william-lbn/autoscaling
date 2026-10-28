@@ -13,6 +13,7 @@ import (
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	vmclient "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned/typed/neonvm/v1"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 	"github.com/neondatabase/autoscaling/pkg/util/patch"
 )
@@ -417,6 +418,64 @@ func (store *Store) Record(ctx context.Context, snapshot *Snapshot, actor Owner,
 		return nil, err
 	}
 	next, err := snapshot.model.Record(actor, key, observation)
+	if err != nil {
+		return nil, err
+	}
+	return store.apply(ctx, snapshot, next)
+}
+
+// 首次预算/开放与Resize共享同一个VM UID/RV线性化点。保存成功不是外部
+// 开放回执；尤其Start失败不返回票据，调用者不得继续发送native setter。
+func (store *Store) BindInitialBudget(ctx context.Context, snapshot *Snapshot, actor Owner, initial budget.Initial) (*Snapshot, error) {
+	if err := store.checked(snapshot); err != nil {
+		return nil, err
+	}
+	if !snapshot.Dispatchable() {
+		return nil, fmt.Errorf("VM cannot publish initial budget in this lifecycle")
+	}
+	next, err := snapshot.model.BindInitialBudget(actor, initial)
+	if err != nil {
+		return nil, err
+	}
+	return store.apply(ctx, snapshot, next)
+}
+
+// InitialDispatch不包含伪造的Resize Key；命令摘要及StartedSequence固定这次
+// 原首次开放。只能在Start的UID/RV CAS回复完整确认后取得本票据。
+type InitialDispatch struct {
+	Binding         Binding
+	Owner           Owner
+	JournalSequence control.Uint64
+	Admission       InitialAdmission
+}
+
+func (store *Store) StartInitialAdmission(ctx context.Context, snapshot *Snapshot, actor Owner, command budget.InitialAdmissionCommand) (*Snapshot, *InitialDispatch, error) {
+	if err := store.checked(snapshot); err != nil {
+		return nil, nil, err
+	}
+	if !snapshot.Dispatchable() {
+		return nil, nil, fmt.Errorf("VM cannot start first admission in this lifecycle")
+	}
+	next, err := snapshot.model.StartInitialAdmission(actor, command)
+	if err != nil {
+		return nil, nil, err
+	}
+	result, err := store.apply(ctx, snapshot, next)
+	if err != nil {
+		return nil, nil, err
+	}
+	if result.model.InitialHeld == nil || result.model.InitialHeld.Admission == nil || result.model.InitialHeld.Admission.Phase != Unconfirmed {
+		return nil, nil, &UnconfirmedWrite{Err: fmt.Errorf("first admission dispatch record is missing")}
+	}
+	original := *cloneInitial(result.model.InitialHeld).Admission
+	return result, &InitialDispatch{Binding: store.binding, Owner: actor, JournalSequence: result.model.Sequence, Admission: original}, nil
+}
+
+func (store *Store) RecordInitialAdmission(ctx context.Context, snapshot *Snapshot, actor Owner, receipt budget.InitialAdmissionReceipt) (*Snapshot, error) {
+	if err := store.checked(snapshot); err != nil {
+		return nil, err
+	}
+	next, err := snapshot.model.RecordInitialAdmission(actor, receipt)
 	if err != nil {
 		return nil, err
 	}

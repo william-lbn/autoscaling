@@ -153,6 +153,9 @@ type Model struct {
 	// 部分效果取消使用独立实际预算，和普通目标成功预算互斥。Cleanup
 	// 完整落账与长期持有同CAS升级v8，禁止旧读者投影为目标已成功。
 	CapacityHeld *HeldCapacity `json:"capacity_held,omitempty"`
+	// 首次服务预算独立于任何Resize/HWM。v9显式保留完整预算及首次开放
+	// 原WAL；未知开放不能因为Active为空而消失，普通预算完成后同CAS替换。
+	InitialHeld *HeldInitialBudget `json:"initial_held,omitempty"`
 	// BudgetBoundary永久记录当前预算成功关闭后，直到哪条零派发取消仍没有
 	// 后续派发效果。它与Finish同CAS，独立于16条结果缓存；任何Start先撤销
 	// 此证明，新预算也必须重新成功关闭。首次生成升v5，旧读者必须拒绝。
@@ -163,7 +166,7 @@ func New(vmUID, incarnation, holder string) (Model, error) {
 	model := Model{
 		ProtocolVersion: 1, VMUID: vmUID, Incarnation: incarnation, Sequence: 1,
 		Owner: Owner{HolderID: holder, Epoch: 1}, HighWater: nil, Active: nil, History: []Record{}, ExpiredResults: 0,
-		ResourceIdentity: nil, PGInstance: nil, BudgetHeld: nil, CapacityHeld: nil, BudgetBoundary: nil,
+		ResourceIdentity: nil, PGInstance: nil, BudgetHeld: nil, CapacityHeld: nil, InitialHeld: nil, BudgetBoundary: nil,
 	}
 	return model, model.Validate()
 }
@@ -373,7 +376,7 @@ func compareKeys(left, right control.Key) int {
 }
 
 func (model Model) Validate() error {
-	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 8) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
+	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 9) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
 		return fmt.Errorf("invalid journal version/sequence/incarnation")
 	}
 	// 旧Model已有严格字段解码，会拒绝pg_instance；这里另用v2明确标识
@@ -382,7 +385,7 @@ func (model Model) Validate() error {
 	if (model.ProtocolVersion == 1 && model.PGInstance != nil) || (model.ProtocolVersion >= 2 && model.PGInstance == nil) {
 		return fmt.Errorf("journal version does not preserve required PG identity")
 	}
-	if (model.ProtocolVersion < 3 && model.BudgetHeld != nil) || (model.CapacityHeld != nil && (model.ProtocolVersion < 8 || model.BudgetHeld != nil)) || (model.ProtocolVersion >= 3 && ((model.BudgetHeld == nil && model.CapacityHeld == nil) || model.ResourceIdentity == nil)) {
+	if (model.ProtocolVersion < 3 && model.BudgetHeld != nil) || (model.CapacityHeld != nil && (model.ProtocolVersion < 8 || model.BudgetHeld != nil || model.InitialHeld != nil)) || (model.InitialHeld != nil && (model.ProtocolVersion < 9 || model.BudgetHeld != nil)) || (model.ProtocolVersion >= 3 && ((model.BudgetHeld == nil && model.CapacityHeld == nil && model.InitialHeld == nil) || model.ResourceIdentity == nil)) {
 		return fmt.Errorf("journal version does not preserve required held budget")
 	}
 	if err := control.ValidateID(model.VMUID, "VM"); err != nil {
@@ -459,6 +462,9 @@ func (model Model) Validate() error {
 	if err := model.validateHeldCapacity(); err != nil {
 		return err
 	}
+	if err := model.validateInitialBudget(); err != nil {
+		return err
+	}
 	return model.validateBudgetBoundary()
 }
 
@@ -511,6 +517,7 @@ func cloneOperation(operation Operation) Operation {
 }
 
 func (model Model) Clone() Model {
+	model.InitialHeld = cloneInitial(model.InitialHeld)
 	if model.BudgetBoundary != nil {
 		boundary := *model.BudgetBoundary
 		model.BudgetBoundary = &boundary
@@ -697,6 +704,19 @@ func (model Model) Begin(actor Owner, request control.Request, now uint64) (Mode
 	if model.Active != nil {
 		return model, Busy, nil
 	}
+	if model.InitialHeld != nil {
+		// 首次门禁未知必须先在独立WAL对账，不能以没有Active Resize为由
+		// 开始新动作。完成后首个请求仍固定原初始容量代次，不借过期请求
+		// 或外部自报generation覆盖当前预算。
+		a := model.InitialHeld.Admission
+		if a == nil || a.Phase != Settled {
+			return model, Busy, nil
+		}
+		var initial budget.Initial
+		if json.Unmarshal(model.InitialHeld.Budget, &initial) != nil || request.ExpectedCapacityGeneration != initial.Shared.Observed.CapacityGeneration {
+			return model, Stale, fmt.Errorf("resize differs from retained initial capacity generation")
+		}
+	}
 	// 旧v1没有独立PG字段，但已有HWM同样是原实例约束。可读原历史，
 	// 新请求不能先改HWM再使NewPGWorker接受另一boot；受控跨boot关闭协议
 	// 未完成前明确拒绝，既不丢原效果，也不偷偷把v1补成首次发现。
@@ -825,6 +845,7 @@ func (model Model) Record(actor Owner, key control.Key, observation Observation)
 		// 即便收到删掉新字段的投影也必须拒绝版本，不能退回只验数值的旧VM事实。
 		next.ProtocolVersion, next.BudgetHeld = max(next.ProtocolVersion, heldBudgetVersion(held)), held
 		next.CapacityHeld = nil
+		next.InitialHeld = nil
 		next.BudgetBoundary = nil
 	}
 	if step.Action == AbortReconcile && recorded.Result == Completed {
@@ -836,6 +857,7 @@ func (model Model) Record(actor Owner, key control.Key, observation Observation)
 				return model, err
 			}
 			next.ProtocolVersion, next.CapacityHeld, next.BudgetHeld, next.BudgetBoundary = max(next.ProtocolVersion, 8), held, nil, nil
+			next.InitialHeld = nil
 		}
 	}
 	return next, next.Validate()
