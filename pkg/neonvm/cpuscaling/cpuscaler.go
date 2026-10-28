@@ -2,6 +2,7 @@ package cpuscaling
 
 import (
 	"errors"
+	"fmt"
 	"slices"
 )
 
@@ -29,6 +30,12 @@ func NewCPUScaler() *CPUScaler {
 }
 
 func (c *CPUScaler) ReconcileOnlineCPU(targetCount int) error {
+	// CPU0必须持续在线；非法目标在任何sysfs读写之前拒绝，不能先关闭
+	// 其他CPU再发现无法达到0/负数。此门禁不授予受管Guest的写权限，
+	// 调用者仍负责认证、原实例fence及CPU操作串行化。
+	if targetCount < 1 {
+		return fmt.Errorf("target CPU count must be positive")
+	}
 	online, err := c.cpuState.OnlineCPUs()
 	if err != nil {
 		return err
@@ -43,19 +50,35 @@ func (c *CPUScaler) ReconcileOnlineCPU(targetCount int) error {
 		// offline 'diff' CPUs that are currently online
 		// reverse online slice so that we offline in the reverse order of onlining.
 		slices.Reverse(online)
-		return c.setStateTo(cpuOffline, diff, online)
+		if err := c.setStateTo(cpuOffline, diff, online); err != nil {
+			return err
+		}
 
 	} else if len(online) < targetCount {
 		offline, err := c.cpuState.OfflineCPUs()
 		if err != nil {
-			return nil
+			// 原实现吞掉此错误，导致daemon回200、Runner记住目标，实际
+			// 却未扩任何CPU。读取失败不是无操作成功，必须保留原错误。
+			return err
 		}
 
 		diff := targetCount - len(online)
 		// online 'diff' CPUs that are currently offline
-		return c.setStateTo(cpuOnline, diff, offline)
+		if err := c.setStateTo(cpuOnline, diff, offline); err != nil {
+			return err
+		}
 	}
 
+	// sysfs写被接受不替代完成读回。包含部分写后失败、读回错误或数量
+	// 未匹配时均返回错误，不自动回滚已经发生的CPU状态；下次协调先读
+	// 当前事实再决定差值。该读回不证明内存、预算或Host已经结清。
+	actual, err := c.ActiveCPUsCount()
+	if err != nil {
+		return err
+	}
+	if actual != targetCount {
+		return fmt.Errorf("CPU target remains unconfirmed: target %d, online %d", targetCount, actual)
+	}
 	return nil
 }
 
