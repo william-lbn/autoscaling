@@ -49,7 +49,7 @@ const (
 	architectureAmd64 = "amd64"
 	defaultKernelPath = "/vm/kernel/vmlinuz"
 
-	qmpUnixSocketForSigtermHandler = "/vm/qmp-sigterm.sock"
+	qmpUnixSocketForSigtermHandler = vmguard.FixedPowerdownSocket
 	logSerialSocket                = "/vm/log.sock"
 	bufferedReaderSize             = 4096
 )
@@ -175,7 +175,7 @@ func main() {
 	}
 }
 
-func run(logger *zap.Logger) error {
+func run(logger *zap.Logger) (runErr error) {
 	cfg := newConfig(logger)
 
 	vmSpecJson, err := gzip64.Decode(cfg.vmSpecDump)
@@ -195,10 +195,6 @@ func run(logger *zap.Logger) error {
 	if err := json.Unmarshal(vmStatusJson, &vmStatus); err != nil {
 		return fmt.Errorf("failed to unmarshal VM Status: %w", err)
 	}
-	resourceJSON, err := bootstrap.DecodeRuntime(vmSpec, cfg.resourceDump)
-	if err != nil {
-		return fmt.Errorf("original Guest resource source unavailable: %w", err)
-	}
 	if vmSpec.DSGABootstrap != nil {
 		if vmSpec.CpuScalingMode == nil || cfg.cpuScalingMode != *vmSpec.CpuScalingMode || cfg.cpuScalingMode != vmv1.CpuScalingModeSysfs {
 			return fmt.Errorf("managed Runner CPU flags differ from original sysfs VM")
@@ -206,6 +202,37 @@ func run(logger *zap.Logger) error {
 		// 私有QMP/终止socket都只能由本容器的可信Runner/QEMU访问。启动任何
 		// QEMU前设置进程umask；不暴露未认证的TCP或manual第二写入口。
 		syscall.Umask(0o077)
+	}
+	// 在任何init脚本、磁盘/网络及命令生成前固定唯一出生。失败后如果尚无
+	// 原launch，延迟清理用同目录flock持久关闭，防容量和来源永久遗留。
+	// 已有launch只返回未关闭，不能借清理推断QEMU没有运行或代替真实Wait。
+	cfg.managedMemory, err = initializeManagedMemory(vmSpec)
+	if err != nil {
+		return fmt.Errorf("original Runner memory birth unavailable: %w", err)
+	}
+	if cfg.managedMemory != nil {
+		defer func() {
+			if runErr == nil {
+				return
+			}
+			closeCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			closed, closeErr := cfg.managedMemory.CloseUnlaunched(closeCtx)
+			// 只有本地关闭已经同步、外部发布未知时才有界重试原文。
+			// 缺来源/原launch已存在均不能靠循环补造NoStart或重新启动。
+			for closed && closeErr != nil && closeCtx.Err() == nil {
+				select {
+				case <-closeCtx.Done():
+				case <-time.After(100 * time.Millisecond):
+				}
+				closed, closeErr = cfg.managedMemory.CloseUnlaunched(closeCtx)
+			}
+			runErr = errors.Join(runErr, closeErr)
+		}()
+	}
+	resourceJSON, err := bootstrap.DecodeRuntime(vmSpec, cfg.resourceDump)
+	if err != nil {
+		return fmt.Errorf("original Guest resource source unavailable: %w", err)
 	}
 
 	var enableSSH bool
@@ -303,10 +330,6 @@ func run(logger *zap.Logger) error {
 
 	if err := tg.Wait(); err != nil {
 		return err
-	}
-	cfg.managedMemory, err = initializeManagedMemory(vmSpec)
-	if err != nil {
-		return fmt.Errorf("original Runner memory birth unavailable: %w", err)
 	}
 	if cfg.managedMemory != nil {
 		qemuCmd = append(qemuCmd, cfg.managedMemory.QMPArguments()...)

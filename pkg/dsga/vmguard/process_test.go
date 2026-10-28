@@ -116,7 +116,7 @@ func (n *exitForbiddenNative) Set(context.Context, control.Uint64) error {
 }
 
 func TestRunnerProcessRejectsAlternateCommandBeforeStart(t *testing.T) {
-	for _, what := range []string{"uuid", "monitor", "duplicate", "daemon", "migration", "program", "wrapper"} {
+	for _, what := range []string{"uuid", "monitor", "duplicate", "powerdown-duplicate", "powerdown-options", "daemon", "migration", "program", "wrapper"} {
 		t.Run(what, func(t *testing.T) {
 			f := newRunnerFixture(t)
 			cmd := processCommand(t, f, "success")
@@ -127,6 +127,12 @@ func TestRunnerProcessRejectsAlternateCommandBeforeStart(t *testing.T) {
 				cmd.Args[len(cmd.Args)-1] = "tcp:127.0.0.1:4444"
 			case "duplicate":
 				cmd.Args = append(cmd.Args, f.runner.QMPArguments()...)
+			case "powerdown-duplicate":
+				for range 2 {
+					cmd.Args = append(cmd.Args, "-qmp", "unix:"+FixedPowerdownSocket+",server,wait=off")
+				}
+			case "powerdown-options":
+				cmd.Args = append(cmd.Args, "-qmp", "unix:"+FixedPowerdownSocket+",server,wait=off,websocket=on")
 			case "daemon":
 				cmd.Args = append(cmd.Args, "-daemonize")
 			case "migration":
@@ -144,6 +150,25 @@ func TestRunnerProcessRejectsAlternateCommandBeforeStart(t *testing.T) {
 			require.True(t, os.IsNotExist(err))
 		})
 	}
+}
+
+// 生产生成器保留原SIGTERM私有socket并追加内存socket；此前最终校验只
+// 接受一个-qmp，导致受管命令即使配置正确也在Start之前被自己拒绝。这里
+// 用完整双socket形状实际Start/Wait，既不放宽任意路径，也不只测字符串。
+func TestRunnerProcessAcceptsFixedPowerdownAlongsideOriginalMemoryMonitor(t *testing.T) {
+	f := newRunnerFixture(t)
+	readyProcessContainer(t, f)
+	cmd := processCommand(t, f, "success")
+	// QEMU参数留在测试子程序的--之后，不交给Go test自身的flag解析器。
+	cmd.Args = append(cmd.Args, "-qmp", "unix:"+FixedPowerdownSocket+",server,wait=off")
+	require.NoError(t, f.runner.RunQEMU(context.Background(), cmd))
+	exited, err := ReadProcessExit(context.Background(), f.core.CoreV1(), f.store.Binding(), f.runner.birth, f.runner.engine.binding)
+	require.NoError(t, err)
+	require.EqualValues(t, 1, exited.ProtocolVersion)
+	require.EqualValues(t, cmd.ProcessState.Pid(), exited.ProcessID)
+	closed, err := f.runner.CloseUnlaunched(context.Background())
+	require.NoError(t, err)
+	require.False(t, closed, "原launch存在时不能改写真实Wait事实为v3")
 }
 
 func TestRunnerProcessExitLocalFirstAndLostReplyRecovery(t *testing.T) {

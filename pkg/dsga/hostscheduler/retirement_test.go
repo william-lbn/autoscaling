@@ -56,6 +56,17 @@ func retiredRunnerFixture(t *testing.T) (*Service, *dsgatest.SchedulerAPI, NodeC
 // 仍走同一生产路径。不存在QEMU的结论来自实际exec.Start错误，而非构造退出CM。
 func retiredRunnerStartFixture(t *testing.T, failedStart bool) (*Service, *dsgatest.SchedulerAPI, NodeConfig, *kubefake.Clientset, *core.Pod) {
 	t.Helper()
+	mode := "wait"
+	if failedStart {
+		mode = "failed-start"
+	}
+	return retiredRunnerExitFixture(t, mode)
+}
+
+// 三种来源分别由真实Wait、Start错误或原launch缺失时的同锁关闭生产。
+// unlaunched不制造exec.Cmd/launch/Wait；其后整Pod终态与Node CAS消费保持一致。
+func retiredRunnerExitFixture(t *testing.T, exitMode string) (*Service, *dsgatest.SchedulerAPI, NodeConfig, *kubefake.Clientset, *core.Pod) {
+	t.Helper()
 	s, f, n := schedulerFixture(t)
 	pod := legacyVM(t, f)
 	mode, mount := vmv1.CpuScalingModeSysfs, true
@@ -107,7 +118,15 @@ func retiredRunnerStartFixture(t *testing.T, failedStart bool) (*Service, *dsgat
 	args := append([]string{"-test.run=^TestSchedulerExitWaitChildHelper$", "--"}, runner.QMPArguments()...)
 	cmd := exec.Command(program, args...)
 	cmd.Env = append(os.Environ(), "DSGA_SCHEDULER_WAIT_CHILD=1")
-	if failedStart {
+	switch exitMode {
+	case "unlaunched":
+		closed, err := runner.CloseUnlaunched(context.Background())
+		require.NoError(t, err)
+		require.True(t, closed)
+		require.Nil(t, cmd.Process)
+		_, err = os.Stat(filepath.Join(dir, "process-launch.json"))
+		require.True(t, os.IsNotExist(err))
+	case "failed-start":
 		require.NoError(t, os.Remove(program))
 		err = runner.RunQEMU(context.Background(), cmd)
 		require.Error(t, err)
@@ -119,7 +138,7 @@ func retiredRunnerStartFixture(t *testing.T, failedStart bool) (*Service, *dsgat
 		exited, exitErr := vmguard.ReadProcessExit(context.Background(), combined, store.Binding(), birth, ref)
 		require.NoError(t, exitErr)
 		require.EqualValues(t, 2, exited.ProtocolVersion)
-	} else {
+	default:
 		require.NoError(t, runner.RunQEMU(context.Background(), cmd))
 	}
 	f.Mutate(func(f *dsgatest.SchedulerAPI) {
@@ -136,6 +155,16 @@ func retiredRunnerStartFixture(t *testing.T, failedStart bool) (*Service, *dsgat
 
 func TestSchedulerNeverStartedRunnerRetiresOnlyAfterCompletePodTermination(t *testing.T) {
 	s, f, n, _, pod := retiredRunnerStartFixture(t, true)
+	verifyNeverStartedRunnerRetirement(t, s, f, n, pod)
+}
+
+func TestSchedulerUnlaunchedRunnerRetiresOnlyAfterCompletePodTermination(t *testing.T) {
+	s, f, n, _, pod := retiredRunnerExitFixture(t, "unlaunched")
+	verifyNeverStartedRunnerRetirement(t, s, f, n, pod)
+}
+
+func verifyNeverStartedRunnerRetirement(t *testing.T, s *Service, f *dsgatest.SchedulerAPI, n NodeConfig, pod *core.Pod) {
+	t.Helper()
 	ctx := context.Background()
 	d := s.domains[n.Binding.NodeName]
 	before, err := d.store.Load(ctx)

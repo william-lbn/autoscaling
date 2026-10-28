@@ -26,10 +26,17 @@ var ErrStopped = errors.New("original QEMU child has exited; new memory actions 
 
 const exitKind = "process-exit-v1"
 
+// FixedPowerdownSocket仅供Runner原信号处理器发送固定system_powerdown。
+// 它与内存执行器的独占QMP不同，但都在可信Runner容器的私有目录，不能
+// 挂给Guest/租户或暴露TCP。启动生成器与最终校验共用常量，避免路径漂移。
+const FixedPowerdownSocket = "/vm/qmp-sigterm.sock"
+
 // ProcessExit只由同一Runner自己执行原QEMU的启动/等待流程产生，不接受远程
 // 自报“进程已死”。v1是同一Start/Wait取得的退出事实；v2只表示已持久原启动
 // 意图，但本调用尚未执行Start，或Start失败且没有返回任何Process/ProcessState。
-// v2不伪造PID、退出码或信号；旧读者因不识别版本而拒绝，不把它当作v1的Wait。
+// v2不伪造PID、退出码或信号；v3是在同一文件锁内确认原启动意图尚不存在，
+// 并先持久关闭屏障阻止任何后继Start。v3没有launch nonce/argv摘要，不能
+// 将init失败包装成曾启动的QEMU退出。旧读者因版本未知而拒绝这些新来源。
 // 原Birth/State UID、随机launch nonce、argv摘要和最后本地WAL摘要保留；
 // 不将QMP断开、Pod404、某个可复用PID消失或没有Wait解释为此事实。
 // 它只证明这个Guest进程已经退出，不结算原未知步骤或整Pod的其他Host开销。
@@ -49,8 +56,17 @@ type ProcessExit struct {
 }
 
 func (e ProcessExit) Validate() error {
-	if e.Identity.Validate() != nil || e.BirthClaim.Validate() != nil || e.StateClaim.Validate() != nil || control.ValidateIncarnation(e.LaunchNonce) != nil || !digestValid(e.CommandSHA256) || e.RecordSequence == 0 || !digestValid(e.RecordSHA256) || control.ValidateID(e.ContainerID, "original Runner container") != nil {
+	if e.Identity.Validate() != nil || e.BirthClaim.Validate() != nil || e.StateClaim.Validate() != nil || e.RecordSequence == 0 || !digestValid(e.RecordSHA256) || control.ValidateID(e.ContainerID, "original Runner container") != nil {
 		return fmt.Errorf("invalid original QEMU process exit")
+	}
+	if e.ProtocolVersion == 3 {
+		if e.LaunchNonce != "" || e.CommandSHA256 != "" || e.ProcessID != 0 || e.ExitCode != 0 || e.Signal != 0 {
+			return fmt.Errorf("unlaunched QEMU cannot carry a launch or wait result")
+		}
+		return nil
+	}
+	if control.ValidateIncarnation(e.LaunchNonce) != nil || !digestValid(e.CommandSHA256) {
+		return fmt.Errorf("original QEMU launch identity is incomplete")
 	}
 	if e.ProtocolVersion == 2 {
 		if e.ProcessID != 0 || e.ExitCode != 0 || e.Signal != 0 {
@@ -85,7 +101,9 @@ type processLaunch struct {
 	ContainerID   string           `json:"container_id"`
 }
 
-// validateProcessCommand拒绝daemonize/迁移接收和第二套QMP/UUID。cgexec必须
+// validateProcessCommand拒绝daemonize/迁移接收和任意第二套内存QMP/UUID；
+// 只额外允许一次固定私有powerdown socket，生产原信号处理器需要它。
+// cgexec必须
 // 是实际启动流程的exec式CPU组包装；只允许固定QEMU程序名。可执行文件/镜像
 // 的资格来自可信部署，不把basename或此摘要当作任意文件的安全认证。
 func (r *Runner) validateProcessCommand(cmd *exec.Cmd) (string, error) {
@@ -104,7 +122,8 @@ func (r *Runner) validateProcessCommand(cmd *exec.Cmd) (string, error) {
 	}
 	uuid, _ := r.birth.Identity.QEMUUUID()
 	wantedQMP := "unix:" + filepath.Join(r.engine.dir, "qmp.sock") + ",server,wait=off"
-	seenUUID, seenQMP := false, false
+	wantedPowerdown := "unix:" + FixedPowerdownSocket + ",server,wait=off"
+	seenUUID, seenQMP, seenPowerdown := false, false, false
 	for i := 0; i < len(args); i++ {
 		switch args[i] {
 		case "-daemonize", "-incoming":
@@ -116,10 +135,23 @@ func (r *Runner) validateProcessCommand(cmd *exec.Cmd) (string, error) {
 			seenUUID = true
 			i++
 		case "-qmp":
-			if seenQMP || i+1 >= len(args) || args[i+1] != wantedQMP {
+			if i+1 >= len(args) {
 				return "", fmt.Errorf("QEMU child private monitor differs")
 			}
-			seenQMP = true
+			switch args[i+1] {
+			case wantedQMP:
+				if seenQMP {
+					return "", fmt.Errorf("QEMU child repeats original memory monitor")
+				}
+				seenQMP = true
+			case wantedPowerdown:
+				if seenPowerdown {
+					return "", fmt.Errorf("QEMU child repeats fixed powerdown monitor")
+				}
+				seenPowerdown = true
+			default:
+				return "", fmt.Errorf("QEMU child private monitor differs")
+			}
 			i++
 		}
 	}
@@ -137,6 +169,13 @@ func (r *Runner) validateProcessCommand(cmd *exec.Cmd) (string, error) {
 // 有界等待只读取同一原Pod，绝不在退出后靠同名新容器补身份。退出本地落盘
 // 不再依赖API可用性；Pod正在删除、容器已重启/终止时拒绝新启动。
 func (r *Runner) launchContainer(ctx context.Context) (string, error) {
+	return r.originalContainer(ctx, false)
+}
+
+// closing只用于尚未登记launch的关闭。原Pod删除不允许新Start，但不能
+// 因删除标记阻塞原容器保存关闭屏障；UID/owner/node/restart及Running状态
+// 仍完整校验。此参数不允许用于RunQEMU，关闭后再Start还会被文件锁拒绝。
+func (r *Runner) originalContainer(ctx context.Context, closing bool) (string, error) {
 	callCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 	for {
@@ -144,7 +183,12 @@ func (r *Runner) launchContainer(ctx context.Context) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if err := originalPod(pod, r.store.Binding(), r.pod, r.birth.Identity.RunnerPodUID, r.node); err != nil {
+		candidate := pod
+		if closing && pod != nil && pod.DeletionTimestamp != nil {
+			candidate = pod.DeepCopy()
+			candidate.DeletionTimestamp = nil
+		}
+		if err := originalPod(candidate, r.store.Binding(), r.pod, r.birth.Identity.RunnerPodUID, r.node); err != nil {
 			return "", err
 		}
 		for _, status := range pod.Status.ContainerStatuses {

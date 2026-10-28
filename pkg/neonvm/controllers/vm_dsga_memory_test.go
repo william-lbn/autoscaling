@@ -27,7 +27,7 @@ import (
 // 只验证Controller的实际直接读取/唯一来源解码及状态路径。Kube API/Runner
 // 发布数据是显式夹具，不启动QEMU，也不以此测试声称最终预算/内存热拔完成。
 func TestManagedControllerMemoryConsumesOriginalRunnerPublication(t *testing.T) {
-	for _, what := range []string{"complete", "missing-reader", "pod-uid", "node-uid", "floor-holder", "state-uid", "state-deleting", "birth-unprotected", "exit", "exit-malformed", "never-started", "never-started-with-pid"} {
+	for _, what := range []string{"complete", "missing-reader", "pod-uid", "node-uid", "floor-holder", "state-uid", "state-deleting", "birth-unprotected", "exit", "exit-malformed", "never-started", "never-started-with-pid", "unlaunched", "unlaunched-with-launch"} {
 		t.Run(what, func(t *testing.T) {
 			p := newTestParams(t)
 			require.NoError(t, core.AddToScheme(p.r.Scheme))
@@ -69,7 +69,7 @@ func TestManagedControllerMemoryConsumesOriginalRunnerPublication(t *testing.T) 
 			require.NoError(t, err)
 			stateCM.Data = map[string]string{vmguard.ClaimKey: string(b)}
 			p.r.APIReader = fake.NewClientBuilder().WithScheme(p.r.Scheme).WithObjects(vm, birthCM, stateCM, pod, node).Build()
-			if what == "exit" || what == "exit-malformed" || what == "never-started" || what == "never-started-with-pid" {
+			if what == "exit" || what == "exit-malformed" || what == "never-started" || what == "never-started-with-pid" || what == "unlaunched" || what == "unlaunched-with-launch" {
 				exitCM := birthCM.DeepCopy()
 				exitCM.Name, exitCM.UID, exitCM.ResourceVersion = vmguard.ExitClaimName(binding, birth), "exit-uid", ""
 				exitCM.Labels[vmguard.ClaimLabel] = "process-exit-v1"
@@ -83,6 +83,12 @@ func TestManagedControllerMemoryConsumesOriginalRunnerPublication(t *testing.T) 
 						exited.ProcessID = 0
 					}
 				}
+				if what == "unlaunched" || what == "unlaunched-with-launch" {
+					exited.ProtocolVersion, exited.ProcessID = 3, 0
+					if what == "unlaunched" {
+						exited.LaunchNonce, exited.CommandSHA256 = "", ""
+					}
+				}
 				raw, err := json.Marshal(exited)
 				require.NoError(t, err)
 				exitCM.Data = map[string]string{vmguard.ClaimKey: string(raw)}
@@ -92,7 +98,7 @@ func TestManagedControllerMemoryConsumesOriginalRunnerPublication(t *testing.T) 
 				p.r.APIReader = nil
 			}
 			memory, pending, err := p.r.dsgaMemory(context.Background(), vm)
-			if what == "exit" || what == "never-started" {
+			if what == "exit" || what == "never-started" || what == "unlaunched" {
 				require.ErrorIs(t, err, vmguard.ErrStopped, "原终结屏障必须早于旧QMP实际值读取")
 				return
 			}
