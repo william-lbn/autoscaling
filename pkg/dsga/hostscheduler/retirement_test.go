@@ -64,7 +64,7 @@ func retiredRunnerStartFixture(t *testing.T, failedStart bool) (*Service, *dsgat
 }
 
 // 三种来源分别由真实Wait、Start错误或原launch缺失时的同锁关闭生产。
-// unlaunched不制造exec.Cmd/launch/Wait；其后整Pod终态与Node CAS消费保持一致。
+// unlaunched不执行Start或制造launch/Wait；其后整Pod终态与Node CAS消费保持一致。
 func retiredRunnerExitFixture(t *testing.T, exitMode string) (*Service, *dsgatest.SchedulerAPI, NodeConfig, *kubefake.Clientset, *core.Pod) {
 	t.Helper()
 	s, f, n := schedulerFixture(t)

@@ -77,8 +77,8 @@ func (s *Service) terminalRunner(ctx context.Context, d domain, pod *core.Pod, p
 	if err != nil {
 		return none, none, "", err
 	}
-	// 来源可以是同一Start/Wait的v1，也可以是Runner原调用证实未启动的v2；
-	// 校验器逐版拒绝伪造PID。两者都只涉及QEMU，不能跳过整Pod终态核验，
+	// 来源可以是同一Start/Wait的v1、原调用证实未Start的v2或同flock
+	// 阻止尚未登记launch的v3。校验器逐版拒绝伪造PID/启动，均不能跳过整Pod终态，
 	// 也不能收养另一个容器/重启代次来归还原Node成本。
 	matched := false
 	for _, status := range pod.Status.ContainerStatuses {
