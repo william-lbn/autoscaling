@@ -377,6 +377,27 @@ func (store *Store) Begin(ctx context.Context, snapshot *Snapshot, actor Owner, 
 	return result, disposition, err
 }
 
+// FenceUnacceptedBegin只关闭未被接收且已经过期的原Begin投递窗口。
+// Begin和本屏障共用VM UID/RV CAS：若原Begin先提交，本CAS失败，调用者须
+// 读回原WAL；若屏障先提交，全部延迟旧RV的Begin均失败。屏障只推进日志
+// 序列，不新增操作/效果/预算/NoEffect，不影响其他域的执行未知或历史。
+// 回复丢失仍是UnconfirmedWrite；调用者保留最后发送的原RV，重读新RV及
+// 完整Lookup方可关闭本地投递栅栏，不能仅凭期限或404证明未接收。
+func (store *Store) FenceUnacceptedBegin(ctx context.Context, snapshot *Snapshot, actor Owner, request control.Request, now uint64) (*Snapshot, error) {
+	if err := store.checked(snapshot); err != nil {
+		return nil, err
+	}
+	m := snapshot.model
+	if actor != m.Owner || request.Validate() != nil || request.Key.IssuerEpoch != actor.Epoch || m.PGInstance == nil || request.Key.Instance != *m.PGInstance || m.Active != nil || m.Lookup(request) != Stale || now < uint64(request.DeadlineUnixMillis) {
+		return nil, fmt.Errorf("Begin fence requires original owner and expired unaccepted bound request")
+	}
+	next, err := m.next(actor)
+	if err != nil {
+		return nil, err
+	}
+	return store.apply(ctx, snapshot, next)
+}
+
 func (store *Store) Start(ctx context.Context, snapshot *Snapshot, actor Owner, key control.Key, action Action, target string, command []byte) (*Snapshot, *Dispatch, error) {
 	if err := store.checked(snapshot); err != nil {
 		return nil, nil, err
