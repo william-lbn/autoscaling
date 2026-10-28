@@ -419,11 +419,12 @@ func schedulerPublishesOriginalHost(t *testing.T, ctx context.Context, api *owne
 		require.NoError(t, err)
 		require.NotNil(t, held.Settled)
 		require.Equal(t, held.Settled.Request.TargetVMMemoryBytes, held.MemoryBytes, "旧spec.Use不能在下一轮恢复中重新抬高峰值")
-		// 首轮建立结清、下一轮确认已结清并记GC节流；再跨一次真实
-		// 两秒ticker，namespace LIST必须稳定，而循环/原容量仍保留。
-		require.Eventually(t, func() bool { return countLists() >= beforeLists+2 }, 5*time.Second, 20*time.Millisecond)
-		require.Equal(t, beforeLists+2, countLists())
-		require.Never(t, func() bool { return countLists() > beforeLists+2 }, 2200*time.Millisecond, 20*time.Millisecond)
+		// 首轮建立结清、下一轮确认已结清并记GC节流；每轮分别扫
+		// Host/Outside/Runner三类。等待两轮全部六次LIST再跨真实
+		// 两秒ticker，不能把新增两类扫描的中间状态误判成重复扫描。
+		require.Eventually(t, func() bool { return countLists() >= beforeLists+6 }, 5*time.Second, 20*time.Millisecond)
+		require.Equal(t, beforeLists+6, countLists())
+		require.Never(t, func() bool { return countLists() > beforeLists+6 }, 2200*time.Millisecond, 20*time.Millisecond)
 	}
 	return ref
 }

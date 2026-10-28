@@ -232,3 +232,18 @@ func TestSettledScanCacheRequiresExactWatermarkAndRemainsBounded(t *testing.T) {
 	}
 	require.LessOrEqual(t, len(w.gc), hostguard.MaxPlacements)
 }
+
+func TestSourceCollectionProgressSurvivesPublisherRebuildAndRemainsBounded(t *testing.T) {
+	w := newDomainWork()
+	first := w.collectionFor("original-pod")
+	require.Same(t, first, w.collectionFor("original-pod"))
+	require.NotSame(t, first, w.collectionFor("another-pod"))
+	for i := 0; i < 2*hostguard.MaxPlacements; i++ {
+		w.collectionFor(fmt.Sprintf("pod-%d", i))
+	}
+	require.LessOrEqual(t, len(w.collections), hostguard.MaxPlacements)
+	// 发现缓存冷启动只重建游标，不继承另一进程的许可/关闭缓存。
+	other := newDomainWork()
+	require.NotSame(t, first, other.collectionFor("original-pod"))
+	require.Empty(t, other.gc)
+}

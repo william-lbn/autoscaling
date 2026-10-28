@@ -24,6 +24,17 @@ import (
 // 快照/Fence→原VM无Active/当前预算→原Runner持久完成或原域取消与实际值→两端重读→
 // 同Node UID/RV结清CAS。新授予在此窗口改变Node RV则冲突，未知不清事实。
 func (p *Publisher) SettleCurrent(ctx context.Context) (bool, error) {
+	return p.SettleCurrentWithCollection(ctx, p.collection)
+}
+
+// SettleCurrentWithCollection允许Scheduler在重建Publisher时保留有界发现
+// 游标。progress不是容量或许可事实，丢失只会重新扫描；每次仍完整认证原
+// VM/Runner/预算/Lease并核Node结清水位。单个游标不可并发使用。
+func (p *Publisher) SettleCurrentWithCollection(ctx context.Context, progress *CollectionProgress) (bool, error) {
+	if progress == nil || !progress.running.CompareAndSwap(false, true) {
+		return false, fmt.Errorf("original source collection progress is absent or already in use")
+	}
+	defer progress.running.Store(false)
 	n, err := p.node.Load(ctx)
 	if err != nil {
 		return false, err
@@ -108,7 +119,10 @@ func (p *Publisher) SettleCurrent(ctx context.Context) (bool, error) {
 	if err := p.collectOldClaims(ctx, s, closed, id.RunnerPodUID); err != nil {
 		return false, err
 	}
-	return result.State().Sequence != n.State().Sequence, nil
+	changed := result.State().Sequence != n.State().Sequence
+	// Host水位已经持久化后，才清不再被永久预算/有界恢复历史/Runner
+	// 引用的旧Outside及回执。未扫完只请求下轮继续，不撤销已完成结清。
+	return changed, p.collectSettledSources(ctx, s, closed, progress)
 }
 
 // collectOldClaims可在结清CAS丢回复/进程重启后重新扫描恢复，不依赖丢失的本地

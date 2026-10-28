@@ -395,7 +395,7 @@ func productionInitialService(t *testing.T, mode string) {
 		qmp.mu.Lock()
 		require.Equal(t, 1, qmp.writes)
 		qmp.mu.Unlock()
-		finishTrustedPrepareHost(t, ctx, api, client, store, session, worker, prepared)
+		finishTrustedPrepareHost(t, ctx, api, client, store, session, worker, prepared, mode == "cancel-before-vm")
 		return nil
 	})
 	require.NoError(t, err)

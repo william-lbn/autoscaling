@@ -13,6 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 )
 
@@ -41,10 +42,29 @@ type domainWork struct {
 	end          bool
 	pending      []core.Pod
 	gc           map[string]settledScan
+	collections  map[string]*hostexec.CollectionProgress
 }
 
 func newDomainWork() *domainWork {
-	return &domainWork{running: atomic.Bool{}, continuation: "", end: false, pending: nil, gc: make(map[string]settledScan)}
+	return &domainWork{running: atomic.Bool{}, continuation: "", end: false, pending: nil, gc: make(map[string]settledScan), collections: make(map[string]*hostexec.CollectionProgress)}
+}
+
+// 来源分页进度只属于当前串行发现循环；重建Publisher不能把它清零，
+// 否则大量保留/其他VM来源排在前面时会永久饿死尾页。数量受活动账本
+// 上限约束，淘汰只使下次重扫，不释放任何来源或改变Node/VM事实。
+func (w *domainWork) collectionFor(podUID string) *hostexec.CollectionProgress {
+	if progress, ok := w.collections[podUID]; ok {
+		return progress
+	}
+	if len(w.collections) >= hostguard.MaxPlacements {
+		for key := range w.collections {
+			delete(w.collections, key)
+			break
+		}
+	}
+	progress := hostexec.NewCollectionProgress()
+	w.collections[podUID] = progress
+	return progress
 }
 
 func (s *Service) assignedPage(ctx context.Context, node, cursor string) (*core.PodList, error) {

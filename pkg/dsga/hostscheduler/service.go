@@ -276,7 +276,12 @@ func (s *Service) publish(ctx context.Context, d domain, pod *core.Pod, p hostgu
 	if m.Active == nil {
 		// 只有成功原操作闭合后才进入明确结清；普通轮询不会因Lease/
 		// Pod事件清峰值。Publisher独立重读所有事实和原Node快照。
-		_, err = publisher.SettleCurrent(ctx)
+		_, err = publisher.SettleCurrentWithCollection(ctx, d.work.collectionFor(string(pod.UID)))
+		if err == hostexec.ErrCollectionPending { //nolint:errorlint // 只有裸调度信号可静默；Join内真实API错误必须继续报告。
+			// 本轮只到达分页/写入上限；保留进度，下轮继续，不记
+			// 完整扫描缓存。若同时含真实API错误则仍交原告警路径。
+			return nil
+		}
 		if err == nil && p.Settled != nil {
 			closed, closedErr := hostguard.SettlementFor(m)
 			if closedErr == nil && *p.Settled == closed {

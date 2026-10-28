@@ -138,7 +138,7 @@ func runTrustedPrepareReplies(t *testing.T, ctx context.Context, api *ownerAPI, 
 
 // 正常全链完成后再经永久预算读者、真实Publisher结清，检查资格释放中会
 // 阻断长期消费；恢复原来源后才能继续。此处不重复其他取消/历史淘汰场景。
-func finishTrustedPrepareHost(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, store *journal.Store, session *Session, worker *PGWorker, p budget.Prepared) {
+func finishTrustedPrepareHost(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, store *journal.Store, session *Session, worker *PGWorker, p budget.Prepared, collectSources ...bool) {
 	t.Helper()
 	s, err := store.Load(ctx)
 	require.NoError(t, err)
@@ -177,6 +177,9 @@ func finishTrustedPrepareHost(t *testing.T, ctx context.Context, api *ownerAPI, 
 	require.True(t, settled)
 	_, err = claims.ReadCurrent(ctx, s)
 	require.NoError(t, err)
+	if len(collectSources) == 1 && collectSources[0] {
+		verifyClosedSourceCollection(t, ctx, client, coord, store, session, allocator, s)
+	}
 	// 后继Shrink复用同一确切1GiB资格：普通Start确认后实际Create成功，
 	// 覆盖前一请求因丢回复只走显式Create重放的另一条生产路径。仅执行
 	// 新Prepare，不重复整套缩容；后续动作均须保持Planned。

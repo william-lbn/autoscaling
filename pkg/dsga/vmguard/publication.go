@@ -27,6 +27,9 @@ const (
 	bindingKind         = "binding-v1"
 	stateKind           = "state-v1"
 	receiptKind         = "receipt-v1"
+	// ReceiptKind供原Host结清后的来源清理选择已知版本；标签本身不
+	// 认证回执，仍须严格解码、核原VM/出生/完整命令和内容寻址名。
+	ReceiptKind = receiptKind
 )
 
 // Birth是启动QEMU之前一次性创建并读回的不可变来源。原Pod/boot/Node、几何和
@@ -135,6 +138,10 @@ func sourceName(binding journal.Binding, prefix string) string {
 func BindingName(binding journal.Binding) string { return sourceName(binding, "dsga-b-") }
 func stateName(binding journal.Binding) string   { return sourceName(binding, "dsga-s-") }
 func receiptName(raw []byte) string              { return "dsga-r-" + SourceDigest(raw)[:56] }
+
+// ReceiptSourceName只复用原始回执字节的内容寻址规则，避免GC与生产者
+// 各维护一套名称算法。它不校验JSON、不确认UID，也不赋予任何执行/回收许可。
+func ReceiptSourceName(raw []byte) string { return receiptName(raw) }
 
 func newClaim(binding journal.Binding, name, kind string, immutable bool, raw []byte) *core.ConfigMap {
 	controller, block := true, true

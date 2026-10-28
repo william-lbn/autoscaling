@@ -26,14 +26,15 @@ import (
 )
 
 type Publisher struct {
-	core     coreclient.CoreV1Interface
-	coord    coordclient.CoordinationV1Interface
-	vm       *journal.Store
-	node     *hostguard.Store
-	runner   *vmguard.Reader
-	claims   *budgetclaims.Reader
-	overhead control.Uint64
-	leaseUID types.UID
+	core       coreclient.CoreV1Interface
+	coord      coordclient.CoordinationV1Interface
+	vm         *journal.Store
+	node       *hostguard.Store
+	runner     *vmguard.Reader
+	claims     *budgetclaims.Reader
+	overhead   control.Uint64
+	leaseUID   types.UID
+	collection *CollectionProgress
 }
 
 // New的VM/Node客户端、原Lease UID和Host开销只能来自可信启动配置。
@@ -51,7 +52,7 @@ func New(coreClient coreclient.CoreV1Interface, coord coordclient.CoordinationV1
 	if err != nil {
 		return nil, err
 	}
-	return &Publisher{core: coreClient, coord: coord, vm: vm, node: node, runner: runner, claims: claims, overhead: overhead, leaseUID: vmLeaseUID}, nil
+	return &Publisher{core: coreClient, coord: coord, vm: vm, node: node, runner: runner, claims: claims, overhead: overhead, leaseUID: vmLeaseUID, collection: NewCollectionProgress()}, nil
 }
 
 func (p *Publisher) currentOwner(ctx context.Context, s *journal.Snapshot) error {
