@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "base_commit": "87c9133754d46c6409bac000ded777808ef2c6f1",
+  "test_commit": "eb8a89ac1014663e0947488905bf9d2c359dc2e4",
+  "runtime_code_commit": "c8cc47a710c1c7fb00444fb574fada1e74a77602",
+  "runtime_unchanged": true,
+  "source_sha256": {
+    "pkg/dsga/owner/partial_shrink_test.go": "03eb1e0398006633f882018566cf264988487be1ae0c70099de74c9fc8f742a6",
+    "pkg/dsga/owner/pg_test.go": "9678dbbe26cbb25cf0b51ea2af35efa723522043358bfd18fb26fdc57b0d8be2",
+    "pkg/dsga/owner/vm_exec_test.go": "c47a8b72d7c46cfd7a61d66a2d00edd9720aeeb4bb098f887a7ac552f78b6e2e"
+  },
+  "test_counts": {
+    "combined_scenarios": 1,
+    "including_parent_pass_records": 2,
+    "skip": 0,
+    "fail": 0
+  },
+  "final_test_mapping": {
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/shrink-partial-after-grow": {
+      "outcome": "pass",
+      "log": "dsga-partial-shrink-second.jsonl",
+      "elapsed": 131.91
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL": {
+      "outcome": "pass",
+      "log": "dsga-partial-shrink-second.jsonl",
+      "elapsed": 131.91
+    }
+  },
+  "milestones": [
+    "actual original Grow to2GiB and normal permanent budget/Host closure",
+    "real production Quiesce/ResizePG/ReleasePG/GuestReady on next Shrink,with declared PG/Root protocol peers",
+    "native VM cancelled-before-send,PG generation3/prefix512 while actual VM2GiB,target1GiB",
+    "old exact2GiB Outside qualification retained; replacement UID/root drift rejected before Cleanup",
+    "own original admission close automatically restored under actual generation3",
+    "actual annotation budget expires history;current actual budget/native/oldOutside survive,closed-through covers new unstarted abort",
+    "Host remembers actual2GiB,does not credit cancelled1GiB target",
+    "subsequent normal Grow uses generation3->4 and atomically replaces actual header,then normal Host settlement"
+  ],
+  "log_sha256": {
+    "dsga-partial-shrink-first.jsonl": "74660c328732e4bd364127e67ac67c5763a2a57f9a7026d12431eaacfe1bb844",
+    "dsga-partial-shrink-lint-first.log": "df374ee020fa22403b0dd25d1cb1ab37d7d17c91af671f91b6831569006ca008",
+    "dsga-partial-shrink-lint-second.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "dsga-partial-shrink-second.jsonl": "ffd46f932dd758c381941ea67779f41b13a65d64a2b9294954272b3f1efe96b4",
+    "dsga-partial-shrink-vet-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsga-partial-shrink-vet.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "failure_preserved": "first invocation failed because new PG peer decoded status Query as full Request; fixture corrected to formal protocol without production relaxation. staticcheck unused fixture assignment corrected",
+  "reused_compile_evidence": {
+    "receipt": "DSGA-自动实际预算恢复-开发收据-20261028.json",
+    "runtime_code_commit": "c8cc47a710c1c7fb00444fb574fada1e74a77602",
+    "compile_only_artifacts": {
+      "dsga-auto-capacity-release-agent-linux-amd64": {
+        "sha256": "478a3ff9c9c14d35eae831d86e3206f2994edad3a89b48cc20d9be12560de0e7",
+        "elf_machine": 62,
+        "executed": false
+      },
+      "dsga-auto-capacity-release-scheduler-linux-amd64": {
+        "sha256": "784b71c0fbb85fa971133ada117657ae9711167ec7a8bb11d5b336c52c8fd747",
+        "elf_machine": 62,
+        "executed": false
+      },
+      "dsga-auto-capacity-release-runner-linux-amd64": {
+        "sha256": "20d5afca62b81b81fc4fbf25266148afceb038d1cefee7323107e6dde6413a10",
+        "elf_machine": 62,
+        "executed": false
+      },
+      "dsga-auto-capacity-release-controller-linux-amd64": {
+        "sha256": "ab62b1da817d6a5c4315b5c25a4c5c90a679005d6cdcc81315491ec20bb8b726",
+        "elf_machine": 62,
+        "executed": false
+      },
+      "dsga-auto-capacity-release-agent-linux-arm64": {
+        "sha256": "8098726c10b40b9c4ff1e9ab9c9f0c285566021057b729b413714be39f2aef59",
+        "elf_machine": 183,
+        "executed": false
+      },
+      "dsga-auto-capacity-release-scheduler-linux-arm64": {
+        "sha256": "b126461d4069030561d1fb84ee0dee5372bca1f16331ea4974f242fc5dfeb955",
+        "elf_machine": 183,
+        "executed": false
+      },
+      "dsga-auto-capacity-release-runner-linux-arm64": {
+        "sha256": "ec8d73c82d6cf17d96921cc9aafaee3f50e12bb68245224690d1a0d773f49abd",
+        "elf_machine": 183,
+        "executed": false
+      },
+      "dsga-auto-capacity-release-controller-linux-arm64": {
+        "sha256": "893b245692ea75fc3a3ee03610dca052ec9f4aa53657054945f7280b908f7ea6",
+        "elf_machine": 183,
+        "executed": false
+      }
+    },
+    "rebuilt": false,
+    "reason": "only3testfiles changed,all production unchanged; previous8accurateLinuxELFs compile-only are reused,not relabelled as test commit artifacts",
+    "receipt_sha256": "f0b65075848d9aeca44d5b4da28dbd5d153630f8dcd0d8209baa3a00189396e1"
+  },
+  "fixture_boundaries": [
+    "Prepare/PG/Provider/Root/qualification and Kube/QMP peers are explicit domain/protocol fixtures",
+    "Actual Go production Agent/Runner/clients/WAL/CAS/Publisher execute on real local TLS/UDS",
+    "normal memory.max remains512MiB;safe normal lowering not proven or implemented by this test",
+    "No real PG kernel/Provider/Linux physical effect certified by these mocked responses"
+  ],
+  "pending": [
+    "actual owner takeover and other partial/unknown effects",
+    "missingHost/Outside/Root mismatch production recovery, trustedPrepare/first budget/service producers",
+    "No-Wait/Start/init/crossboot/migration/full source lifecycle, allwriters/CPU/Monitor/policy/public request wiring"
+  ],
+  "whole_core_complete": false,
+  "whole_partial_cancellation_complete": false,
+  "upstream_frozen": true,
+  "images_or_deployment": false,
+  "linux_runtime_executed": false
+}
