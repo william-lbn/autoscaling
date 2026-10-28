@@ -17,10 +17,10 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
 
-// ErrRecoverySelectionRequired表示原预算仍有效，但关闭状态的服务是否应重新
+// ErrRecoverySelectionRequired表示预算可恢复，但关闭状态的服务是否应重新
 // 开放必须由可信策略决定。它是等待授权的状态，不是owner丢失或可自动重发的
 // 网络错误；循环保留原Session与全部承诺，直到收到独立选择或被取消。
-var ErrRecoverySelectionRequired = errors.New("unchanged abort reopening requires explicit trusted recovery selection")
+var ErrRecoverySelectionRequired = errors.New("abort admission reopening requires explicit trusted recovery selection")
 
 func unchangedVM(op *journal.Operation) *journal.Step {
 	for i := range op.Steps {

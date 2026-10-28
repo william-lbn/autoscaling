@@ -174,7 +174,7 @@ func vmReservation(t *testing.T, client *kubefake.Clientset, name, kind string, 
 }
 
 func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testing.T) {
-	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late", "abort-committed", "abort-after-open", "abort-replies", "abort-original-open-lost", "partial-pending-restore", "partial-host-settle"} {
+	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late", "abort-committed", "abort-after-open", "abort-replies", "abort-original-open-lost", "partial-pending-restore", "partial-host-settle", "partial-auto", "partial-auto-start-lost", "partial-auto-record-lost", "partial-auto-source-gone", "partial-auto-selected-replies"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -224,6 +224,11 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				// 专测快速失租的400ms期限当作整个生命周期的性能门槛。
 				options, timeout = DefaultOptions(), 45*time.Second
 			}
+			if mode == "partial-auto-selected-replies" {
+				// 同一次真实资源链串联四次丢回复与worker重建；只放大组合
+				// 总期限，不改变生产Lease/客户端超时，也不声称性能认证。
+				timeout = 120 * time.Second
+			}
 			elector, err := New(coord, store, options)
 			require.NoError(t, err)
 			ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -234,7 +239,8 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				defer resources.CloseIdleConnections()
 				req := pgRequest(t, session.Actor())
 				p, baseline := preparedGuest(t, req, root.view.Identity)
-				if mode == "partial-host-settle" {
+				selectedActual := mode == "partial-auto-selected-replies"
+				if mode == "partial-host-settle" || strings.HasPrefix(mode, "partial-auto") && !selectedActual {
 					// 本用例显式模拟已服务的旧PG；VM先扩，Guest/PG尚未改。
 					// 只读Cleanup不发送开放请求，不能把夹具当首次服务生产者。
 					baseline.Observed.AdmissionOpen = true
@@ -265,7 +271,11 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 								pgReply(w, final)
 							}
 						} else {
-							pgReply(w, baseline)
+							if selectedActual {
+								pgReply(w, abortPG.shared(baseline))
+							} else {
+								pgReply(w, baseline)
+							}
 						}
 					case "/dsg/v1/resize":
 						resizePosts.Add(1)
@@ -274,6 +284,11 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 					case "/dsg/v1/resize/status":
 						pgReply(w, pgResponse(t, req))
 					case "/dsg/v1/admission":
+						if selectedActual {
+							opens.Add(1)
+							abortPG.serve(t, w, r, baseline.Observed)
+							return
+						}
 						if abortMode {
 							opens.Add(1)
 							abortPG.serve(t, w, r, final.Observed)
@@ -289,8 +304,12 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 						opens.Add(1)
 						pgReply(w, control.AdmissionResponse{ProtocolVersion: 1, Request: a, ContextSHA256: hash, Disposition: control.AdmissionApplied, Observed: observed, VMShrinkPermit: false})
 					case "/dsg/v1/admission/status":
-						require.True(t, abortMode)
-						abortPG.serve(t, w, r, final.Observed)
+						require.True(t, abortMode || selectedActual)
+						if selectedActual {
+							abortPG.serve(t, w, r, baseline.Observed)
+						} else {
+							abortPG.serve(t, w, r, final.Observed)
+						}
 					default:
 						t.Errorf("unexpected Agent/PG route %s", r.URL.Path)
 						w.WriteHeader(500)
@@ -422,7 +441,7 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 						require.NoError(t, runner.Tick(ctx), "已消费选择不重复内存写")
 						selected = true
 					}
-					err = worker.Run(loopCtx, PGLoopOptions{PollInterval: 10 * time.Millisecond, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, VMReplay: vmSignals, AbortReplay: nil, UnchangedAdmissionRecovery: nil, Observe: func(tick Tick) {
+					err = worker.Run(loopCtx, PGLoopOptions{PollInterval: 10 * time.Millisecond, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, VMReplay: vmSignals, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, Observe: func(tick Tick) {
 						if tick.Err != nil {
 							var lost *journal.UnconfirmedWrite
 							if replayVM && errors.As(tick.Err, &lost) {
@@ -495,9 +514,13 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 					}
 					require.Equal(t, journal.Settled, budgetStep(t, store, journal.ResizeVM).Phase)
 					if strings.HasPrefix(mode, "partial-") {
-						verifyPartialCapacityPending(t, ctx, api, store, session, worker, resources, config, client, p, out, outRef, host, mode)
+						verifyPartialCapacityPending(t, ctx, api, store, session, worker, resources, config, client, p, out, outRef, host, mode, abortPG)
 						require.Zero(t, resizePosts.Load())
-						require.Zero(t, opens.Load())
+						if selectedActual {
+							require.EqualValues(t, 2, opens.Load(), "只由两次显式原重放触发setter")
+						} else {
+							require.Zero(t, opens.Load())
+						}
 						return nil
 					}
 					for _, action := range []journal.Action{journal.GuestReady, journal.ResizePG, journal.FinalizeBudget, journal.ResumeAdmission} {

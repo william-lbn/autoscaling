@@ -404,6 +404,18 @@ func (worker *PGWorker) ReplayCommittedAbortOriginal(ctx context.Context, key co
 	return worker.admission.ReplayCommittedAbortOriginal(callCtx, key)
 }
 
+// RecoverCapacityAdmission是可信服务策略的独立恢复选择；只有原Key，没有
+// 用户可改写的预算/限额。普通轮询不会自动选择覆盖外部门禁，已有Cleanup
+// 则只能查询/显式原重放，不能通过本入口新建替代命令。
+func (worker *PGWorker) RecoverCapacityAdmission(ctx context.Context, key control.Key) (pgexec.Progress, error) {
+	if err := worker.session.Check(ctx); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	callCtx, cancel := worker.session.coupledContext(ctx)
+	defer cancel()
+	return worker.admission.RecoverCapacityAdmission(callCtx, key)
+}
+
 type Tick struct {
 	Progress pgexec.Progress
 	Err      error
@@ -430,6 +442,9 @@ type PGLoopOptions struct {
 	// 它可在旧预算下新建开放Cleanup，与重放原命令不同；nil时普通取消
 	// 不覆盖任何当前关闭意图，不由错误/超时向此通道自动投递。
 	UnchangedAdmissionRecovery <-chan control.Key
+	// CapacityAdmissionRecovery对部分效果取消独立确认当前仍应服务。选择
+	// 只能来自可信策略；参数由原预算导出，错误/超时不向该通道自动投递。
+	CapacityAdmissionRecovery <-chan control.Key
 	// Observe供状态/指标使用，必须有界返回，不打印凭据或误把Recorded当VM完成。
 	Observe func(Tick)
 }
@@ -452,10 +467,12 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	var vmReplay *control.Key
 	var abortReplay *control.Key
 	var unchangedAdmission *control.Key
+	var capacityAdmission *control.Key
 	wake, replays, admissionReplays, resourceReplays := options.Wake, options.Replay, options.AdmissionReplay, options.ResourceReplay
 	vmReplays := options.VMReplay
 	abortReplays := options.AbortReplay
 	unchangedAdmissions := options.UnchangedAdmissionRecovery
+	capacityAdmissions := options.CapacityAdmissionRecovery
 	for {
 		if callCtx.Err() != nil {
 			return callCtx.Err()
@@ -480,6 +497,9 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		} else if unchangedAdmission != nil {
 			progress, err = worker.RecoverUnchangedAdmission(callCtx, *unchangedAdmission)
 			unchangedAdmission = nil
+		} else if capacityAdmission != nil {
+			progress, err = worker.RecoverCapacityAdmission(callCtx, *capacityAdmission)
+			capacityAdmission = nil
 		} else {
 			progress, err = worker.Advance(callCtx)
 		}
@@ -542,6 +562,13 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			} else {
 				selectedKey := key
 				unchangedAdmission = &selectedKey
+			}
+		case key, open := <-capacityAdmissions:
+			if !open {
+				capacityAdmissions = nil
+			} else {
+				selectedKey := key
+				capacityAdmission = &selectedKey
 			}
 		case _, open := <-wake:
 			if !open {

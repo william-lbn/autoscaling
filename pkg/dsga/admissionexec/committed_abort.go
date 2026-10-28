@@ -25,6 +25,10 @@ func (e *Executor) ReplayCommittedAbortOriginal(ctx context.Context, key control
 	if key.Validate() != nil || s.State().Owner != e.actor || s.State().Active == nil || s.State().Active.Request.Key != key {
 		return pgexec.AwaitingFact, fmt.Errorf("committed abort replay changed original key or owner")
 	}
+	if reconciledCleanup(s.State().Active) {
+		_, progress, err := e.advanceReconciledAbort(ctx, s, &key, false)
+		return progress, err
+	}
 	handled, progress, err := e.advanceCommittedAbort(ctx, s, &key)
 	if !handled {
 		handled, progress, err = e.advanceUnchangedAbort(ctx, s, &key, false)

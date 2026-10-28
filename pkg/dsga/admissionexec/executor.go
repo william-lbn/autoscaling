@@ -130,10 +130,17 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	}
 	op := state.Active
 	if replay == nil && op.AbortRequested {
+		if reconciledCleanup(op) {
+			_, progress, err := e.advanceReconciledAbort(ctx, snapshot, nil, false)
+			return progress, err
+		}
 		if handled, progress, err := e.advanceCommittedAbort(ctx, snapshot, nil); handled {
 			return progress, err
 		}
 		if handled, progress, err := e.advanceUnchangedAbort(ctx, snapshot, nil, false); handled {
+			return progress, err
+		}
+		if handled, progress, err := e.advanceReconciledAbort(ctx, snapshot, nil, false); handled {
 			return progress, err
 		}
 	}

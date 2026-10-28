@@ -1,0 +1,411 @@
+{
+  "prepared": {
+    "protocol_version": 1,
+    "vm_shrink_permit": false,
+    "request": {
+      "protocol_version": 1,
+      "key": {
+        "instance": {
+          "vm_uid": "vm-uid",
+          "compute_instance_id": "compute-1",
+          "pg_boot_id": "3"
+        },
+        "issuer_epoch": "1",
+        "revision": "2",
+        "operation_id": {
+          "high": "123",
+          "low": "2"
+        }
+      },
+      "kind": "grow",
+      "expected_capacity_generation": "2",
+      "target_buffers": 2048,
+      "target_vm_memory_bytes": "2147483648",
+      "budget_commitment_id": "commitment-1",
+      "deadline_unix_ms": "1000"
+    },
+    "identity": {
+      "vm_uid": "vm-uid",
+      "compute_instance_id": "compute-1",
+      "guest_boot_id": "12345678-1234-1234-1234-123456789abc",
+      "cgroup_device": "2",
+      "cgroup_inode": "3"
+    },
+    "runner_pod_name": "runner",
+    "runner_restart_count": 0,
+    "vm_before_memory_bytes": "1073741824",
+    "guest_usable_memory_bytes": "1879048192",
+    "shared": {
+      "protocol_version": 1,
+      "vm_shrink_permit": false,
+      "startup_main_upper_bytes": "16777216",
+      "startup_arrays_upper_bytes": "16777216",
+      "current_main_and_arrays_upper_bytes": "83886080",
+      "observed": {
+        "instance": {
+          "vm_uid": "vm-uid",
+          "compute_instance_id": "compute-1",
+          "pg_boot_id": "3"
+        },
+        "issuer_floor_epoch": "1",
+        "capacity_generation": "2",
+        "low_buffers": 1024,
+        "high_buffers": 1024,
+        "maximum_buffers": 8192,
+        "admission_open": true,
+        "admission_revision": "1",
+        "startup_shared_upper_bytes": "33554432",
+        "operation": {
+          "key": {
+            "instance": {
+              "vm_uid": "vm-uid",
+              "compute_instance_id": "compute-1",
+              "pg_boot_id": "3"
+            },
+            "issuer_epoch": "1",
+            "revision": "1",
+            "operation_id": {
+              "high": "123",
+              "low": "1"
+            }
+          },
+          "kind": "grow",
+          "phase": "committed",
+          "reason": "none",
+          "target_buffers": 1024,
+          "expected_capacity_generation": "1",
+          "context_sha256": "4ff83f81f55d8bc8b90dc8d880801eb026203075d0195a548ee7ae180723f972",
+          "cancel_requested": false,
+          "cancel_closed": true,
+          "replayed": true
+        },
+        "arrays": [
+          {
+            "array": "descriptors",
+            "committed_upper_bytes": "16777216",
+            "allocation_unknown": false,
+            "release_state": "none",
+            "release_key": null,
+            "release_capacity_generation": "0",
+            "provider": {
+              "has_result": false,
+              "status": "unknown",
+              "system_errno": 0,
+              "requested_offset": "0",
+              "requested_bytes": "0",
+              "affected_offset": "0",
+              "affected_bytes": "0",
+              "physical_release_verified": false,
+              "allocation_may_be_partial": false,
+              "release_may_be_partial": false
+            }
+          },
+          {
+            "array": "blocks",
+            "committed_upper_bytes": "16777216",
+            "allocation_unknown": false,
+            "release_state": "none",
+            "release_key": null,
+            "release_capacity_generation": "0",
+            "provider": {
+              "has_result": false,
+              "status": "unknown",
+              "system_errno": 0,
+              "requested_offset": "0",
+              "requested_bytes": "0",
+              "affected_offset": "0",
+              "affected_bytes": "0",
+              "physical_release_verified": false,
+              "allocation_may_be_partial": false,
+              "release_may_be_partial": false
+            }
+          },
+          {
+            "array": "iocv",
+            "committed_upper_bytes": "16777216",
+            "allocation_unknown": false,
+            "release_state": "none",
+            "release_key": null,
+            "release_capacity_generation": "0",
+            "provider": {
+              "has_result": false,
+              "status": "unknown",
+              "system_errno": 0,
+              "requested_offset": "0",
+              "requested_bytes": "0",
+              "affected_offset": "0",
+              "affected_bytes": "0",
+              "physical_release_verified": false,
+              "allocation_may_be_partial": false,
+              "release_may_be_partial": false
+            }
+          },
+          {
+            "array": "checkpoint",
+            "committed_upper_bytes": "16777216",
+            "allocation_unknown": false,
+            "release_state": "none",
+            "release_key": null,
+            "release_capacity_generation": "0",
+            "provider": {
+              "has_result": false,
+              "status": "unknown",
+              "system_errno": 0,
+              "requested_offset": "0",
+              "requested_bytes": "0",
+              "affected_offset": "0",
+              "affected_bytes": "0",
+              "physical_release_verified": false,
+              "allocation_may_be_partial": false,
+              "release_may_be_partial": false
+            }
+          }
+        ]
+      }
+    },
+    "target_shared_upper_bytes": "150994944",
+    "limits": {
+      "memory_max_bytes": "536870912",
+      "outside_upper_bytes": "33554432",
+      "huge_pools": [
+        {
+          "page_size_kb": "2048",
+          "pages": "0"
+        }
+      ]
+    },
+    "system_outside_pg": {
+      "kind": "committed_upper",
+      "upper_bytes": "25165824",
+      "source_id": "system-original"
+    },
+    "transition": {
+      "kind": "committed_upper",
+      "upper_bytes": "4194304",
+      "source_id": "transition-original"
+    },
+    "safety": {
+      "kind": "committed_upper",
+      "upper_bytes": "4194304",
+      "source_id": "safety-original"
+    },
+    "outside_claim": {
+      "name": "outside-partial",
+      "uid": "outside-uid"
+    }
+  },
+  "root": {
+    "protocol_version": 1,
+    "vm_shrink_permit": false,
+    "scope": "pg-cgroup-and-entire-guest-huge-pool",
+    "identity": {
+      "vm_uid": "vm-uid",
+      "compute_instance_id": "compute-1",
+      "guest_boot_id": "12345678-1234-1234-1234-123456789abc",
+      "cgroup_device": "2",
+      "cgroup_inode": "3"
+    },
+    "bootstrap": {
+      "protocol_version": 1,
+      "identity": {
+        "vm_uid": "vm-uid",
+        "compute_instance_id": "compute-1",
+        "guest_boot_id": "12345678-1234-1234-1234-123456789abc",
+        "cgroup_device": "2",
+        "cgroup_inode": "3"
+      },
+      "issuer_epoch": "1",
+      "budget_commitment_id": "fixture-bootstrap",
+      "limits": {
+        "memory_max_bytes": "536870912",
+        "outside_upper_bytes": "33554432",
+        "huge_pools": [
+          {
+            "page_size_kb": "2048",
+            "pages": "0"
+          }
+        ]
+      }
+    },
+    "birth": {
+      "protocol_version": 1,
+      "identity": {
+        "vm_uid": "vm-uid",
+        "compute_instance_id": "compute-1",
+        "guest_boot_id": "12345678-1234-1234-1234-123456789abc",
+        "cgroup_device": "2",
+        "cgroup_inode": "3"
+      },
+      "postmaster_pid": 123,
+      "postmaster_start_ticks": "456"
+    },
+    "bound": {
+      "kind": "hard_limit",
+      "upper_bytes": "536870912",
+      "source_id": "root-pg-aggregate-4b93bf86ed12734ba36e6a13510c2afa14cdb87596950d2d29bd5c62cdbe6d4b"
+    }
+  },
+  "capacity": {
+    "protocol_version": 1,
+    "vm_shrink_permit": false,
+    "request": {
+      "protocol_version": 1,
+      "key": {
+        "instance": {
+          "vm_uid": "vm-uid",
+          "compute_instance_id": "compute-1",
+          "pg_boot_id": "3"
+        },
+        "issuer_epoch": "1",
+        "revision": "2",
+        "operation_id": {
+          "high": "123",
+          "low": "2"
+        }
+      },
+      "kind": "grow",
+      "expected_capacity_generation": "2",
+      "target_buffers": 2048,
+      "target_vm_memory_bytes": "2147483648",
+      "budget_commitment_id": "commitment-1",
+      "deadline_unix_ms": "1000"
+    },
+    "issuer_epoch": "1",
+    "runner_pod_name": "runner",
+    "runner_restart_count": 0,
+    "vm_before_memory_bytes": "1073741824",
+    "vm_memory_bytes": "2147483648",
+    "guest_usable_memory_bytes": "1879048192",
+    "capacity_generation": "2",
+    "buffers": 1024,
+    "maximum_buffers": 8192,
+    "startup_main_upper_bytes": "16777216",
+    "startup_arrays_upper_bytes": "16777216",
+    "retained_shared_upper_bytes": "83886080",
+    "pg_operation": {
+      "key": {
+        "instance": {
+          "vm_uid": "vm-uid",
+          "compute_instance_id": "compute-1",
+          "pg_boot_id": "3"
+        },
+        "issuer_epoch": "1",
+        "revision": "1",
+        "operation_id": {
+          "high": "123",
+          "low": "1"
+        }
+      },
+      "kind": "grow",
+      "phase": "committed",
+      "reason": "none",
+      "target_buffers": 1024,
+      "expected_capacity_generation": "1",
+      "context_sha256": "4ff83f81f55d8bc8b90dc8d880801eb026203075d0195a548ee7ae180723f972",
+      "cancel_requested": false,
+      "cancel_closed": true,
+      "replayed": true
+    },
+    "pg_aggregate": {
+      "kind": "hard_limit",
+      "upper_bytes": "536870912",
+      "source_id": "root-pg-aggregate-4b93bf86ed12734ba36e6a13510c2afa14cdb87596950d2d29bd5c62cdbe6d4b"
+    },
+    "root_sha256": "06787f090e14ccb78b69dea68648cf949049e0f36768f8c9ba4eeca400b376d2",
+    "outside_claim": {
+      "name": "outside-partial",
+      "uid": "outside-uid"
+    },
+    "outside_request": {
+      "protocol_version": 1,
+      "key": {
+        "instance": {
+          "vm_uid": "vm-uid",
+          "compute_instance_id": "compute-1",
+          "pg_boot_id": "3"
+        },
+        "issuer_epoch": "1",
+        "revision": "2",
+        "operation_id": {
+          "high": "123",
+          "low": "2"
+        }
+      },
+      "kind": "grow",
+      "expected_capacity_generation": "2",
+      "target_buffers": 2048,
+      "target_vm_memory_bytes": "2147483648",
+      "budget_commitment_id": "commitment-1",
+      "deadline_unix_ms": "1000"
+    },
+    "residual_profile_id": "explicit-qualified-domain-fixture",
+    "system_outside_pg": {
+      "kind": "committed_upper",
+      "upper_bytes": "25165824",
+      "source_id": "system-original"
+    },
+    "transition": {
+      "kind": "committed_upper",
+      "upper_bytes": "4194304",
+      "source_id": "transition-original"
+    },
+    "safety": {
+      "kind": "committed_upper",
+      "upper_bytes": "4194304",
+      "source_id": "safety-original"
+    },
+    "host_claim": {
+      "name": "host-partial",
+      "uid": "host-uid"
+    },
+    "host_reservation_id": "host-partial-source",
+    "native_vm": {
+      "sources": {
+        "birth_claim": {
+          "name": "original-birth",
+          "uid": "birth-uid"
+        },
+        "state_claim": {
+          "name": "original-state",
+          "uid": "state-uid"
+        },
+        "receipt_claim": {
+          "name": "original-receipt",
+          "uid": "receipt-uid"
+        },
+        "command_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "journal_sha256": "21f51b4565757753c39066432fbac0bbfd8a7847ad5339f339fbef8e04862ef4"
+      },
+      "request": {
+        "protocol_version": 1,
+        "key": {
+          "instance": {
+            "vm_uid": "vm-uid",
+            "compute_instance_id": "compute-1",
+            "pg_boot_id": "3"
+          },
+          "issuer_epoch": "1",
+          "revision": "2",
+          "operation_id": {
+            "high": "123",
+            "low": "2"
+          }
+        },
+        "kind": "grow",
+        "expected_capacity_generation": "2",
+        "target_buffers": 2048,
+        "target_vm_memory_bytes": "2147483648",
+        "budget_commitment_id": "commitment-1",
+        "deadline_unix_ms": "1000"
+      },
+      "before_bytes": "1073741824",
+      "cancelled_before_send": false,
+      "prepared_sha256": "a5c54552d1a38a606e123ba24fce0f46d9a03cfd327b5d010cd0f958c2de2408",
+      "guest_sha256": "",
+      "host_claim": {
+        "name": "host-partial",
+        "uid": "host-uid"
+      }
+    }
+  }
+}
