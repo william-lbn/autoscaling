@@ -18,6 +18,11 @@ import (
 
 var ErrUnknown = errors.New("resource command requires original readback or explicit replay")
 
+// ErrUnsafeNormalDecrease表示生产运行命令缺少安全降低normal内存的证明。
+// memory.current只是采样，不能阻止下一次私有/后台分配；关普通SQL准入也不等于
+// 全部写者已经排空。本错误不撤销旧WAL或否认旧命令已产生的效果，原Observe仍可达。
+var ErrUnsafeNormalDecrease = errors.New("normal memory decrease requires a proven quiescence protocol")
+
 // Config必须来自原VM的可信只读配置，不能从远程请求构造路径。StateDir位于Guest
 // 持久盘，独占本VM incarnation；不得放/tmp、重启即清空的/run或PG数据目录内。
 type Config struct {
@@ -402,11 +407,34 @@ func (g *Guard) apply(ctx context.Context, command Command, replay bool) (Eviden
 				return fmt.Errorf("resource revision is not consecutive")
 			}
 		}
-		// 内核预检可以拒绝明显不安全的缩小，但采样不是排空/预算证明。调用者必须
-		// 先关准入并完成V3排空；本层仍在写后独立核验实际占用和全部文件读回。
+		// 最终写者与上层resourceexec保持同一安全边界：生产Bootstrap后的运行命令
+		// 尚不具备normal安全降限协议。锁内先核原Held（没有运行命令时为Bootstrap），
+		// 在新WAL及任何内核写之前拒绝缩小。已完成原命令的上方幂等分支只读，不能
+		// 因升级本检查隐藏其历史事实；旧未知降限命令则只允许下方独立Observe确认，
+		// 不允许Replay再写。无Bootstrap的旧独立协议夹具不新增生产出生权限。
+		decreaseErr := ErrUnsafeNormalDecrease
+		if same && !r.Applied {
+			decreaseErr = errors.Join(ErrUnknown, decreaseErr)
+		}
+		if r.Bootstrap != nil {
+			heldNormal := r.Bootstrap.Original.Limits.MemoryMaxBytes
+			if r.Held != nil {
+				heldNormal = r.Held.MemoryMaxBytes
+			}
+			if command.MemoryMaxBytes < heldNormal {
+				return fmt.Errorf("%w: target is below original held normal limit", decreaseErr)
+			}
+		}
+		// 后续采样仍用于拒绝明显不安全的目标，不作为排空或未来预算证明。
 		before, err := g.kernel.Read(command)
 		if err != nil {
 			return err
+		}
+		// 原Held不足以覆盖外部把实际memory.max调大的漂移。即使目标较Held增加，
+		// 若低于当前实际值仍是一次真实降限，不能借“Grow”标签绕过最终写者保护。
+		// 本VM文件锁串行本服务写者；特权外部修改仍是目标环境须隔离/验收的边界。
+		if r.Bootstrap != nil && command.MemoryMaxBytes < before.MemoryMaxBytes {
+			return fmt.Errorf("%w: target is below actual normal limit", decreaseErr)
 		}
 		// 原N不会在运行期变化，因此上次有限约束应仍在；迁入/外部改限导致漂移时，
 		// 在新WAL及任何资源写前拒绝。占用超限不是靠重写同一个pids.max即可排空。

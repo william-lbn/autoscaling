@@ -34,7 +34,8 @@ func TestResourceViewPreservesUnknownInsteadOfBorrowingHeldCompletion(t *testing
 	}
 	next := cloneCommand(c)
 	next.Revision++
-	next.MemoryMaxBytes -= 1 << 20
+	// 以normal增加模拟部分写，保留未知/旧Held断言；本用例不证明安全降限。
+	next.MemoryMaxBytes += 1 << 20
 	k.mu.Lock()
 	k.fail = true
 	k.mu.Unlock()

@@ -48,8 +48,9 @@ func TestBoundedBootstrapHoldsActualLimitsBeforePGBirth(t *testing.T) {
 		t.Fatal("nonempty group allowed another birth")
 	}
 	k.e.CgroupPopulated = false
-	// 运行期已改变额度后，下一次出生必须核验当前Held，而不是原较大启动额度。
-	c.MemoryMaxBytes = 48 << 20
+	// 运行期增加额度后，下一次出生必须核验当前Held，而不是原较小启动额度。
+	// 本用例验证来源推进，不以normal降限采样冒充安全排空协议。
+	c.MemoryMaxBytes = 80 << 20
 	if _, err := g.Apply(ctx, c); err != nil {
 		t.Fatal(err)
 	}
@@ -61,7 +62,7 @@ func TestBoundedBootstrapHoldsActualLimitsBeforePGBirth(t *testing.T) {
 	}
 	next := c
 	next.Revision++
-	next.MemoryMaxBytes = 40 << 20
+	next.MemoryMaxBytes = 96 << 20
 	next.HugePools = append([]HugePool(nil), c.HugePools...)
 	next.HugePools[0].Pages = 4
 	k.fail = true
