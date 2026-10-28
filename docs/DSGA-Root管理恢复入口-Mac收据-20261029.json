@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Darwin arm64",
+  "repository": "william-lbn/autoscaling",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "source_commit": "463c1ad8031de4d15bc6e7c8ced6b165ff13ca40",
+  "source_sha256": {
+    "pkg/api/dsga/coordination.go": "a24f5c5d90614ab005d3a11b3443251cdfcbed8d1661a1d077232c7a101d17bd",
+    "pkg/api/dsga/coordination_test.go": "5ebb0a42a48ddf3857aa2e8cb88c8e336f70c84c11fab9b6e8da91930e1913fc",
+    "pkg/dsga/owner/control.go": "03cad3841dc0b39ef1f132cb804336b2bc18025f47467ecc2c0a6a1ede9c19fd",
+    "pkg/dsga/owner/pg.go": "f0bcc527d8d8e35a194e9b86d3ba8d39ccc1f02d4e31457a9e25aad88822848a",
+    "pkg/dsga/owner/control_resource_test.go": "7144604fe2cb25e3347cc9815da30f53a8055221bba54c41d543324aa7863e9a"
+  },
+  "pg17_unchanged": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "mac_race": {
+    "exit_code": 0,
+    "top_level_tests": 4,
+    "test_records_including_subtests": 20,
+    "fail": 0,
+    "skip": 0,
+    "mapping": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/state",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/resource_state",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/begin",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/cancel",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_pg",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_quiesce",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_admission",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_resource",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_prepare",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_initial_admission",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_vm",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_abort",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/recover_unchanged_admission",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/recover_capacity_admission",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/repair_held_resources",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/observe_held_resources",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "test": "TestCoordinationStrictDecodeAndIndependentCopies",
+        "elapsed_seconds": 0
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestOwnedControlRepairsOriginalHeldAndObservesLostReply",
+        "elapsed_seconds": 0.28
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestResourceOwnerRepairsHeldOnlyAfterExplicitSourceSelectionAndObservesLostReply",
+        "elapsed_seconds": 0.14
+      }
+    ],
+    "packages": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "elapsed_seconds": 2.54
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "elapsed_seconds": 2.234
+      }
+    ]
+  },
+  "vet": {
+    "packages": 4,
+    "exit_code": 0,
+    "log": "dsga-local-control-root-vet-final.log"
+  },
+  "incremental_lint": {
+    "relative_to": "b9f9ab7fbb4f79bc8ee5f607a51a5900a4d00a85",
+    "packages": 4,
+    "includes_new_files": true,
+    "issues": 0,
+    "exit_code": 0,
+    "log": "dsga-local-control-root-lint-final.log"
+  },
+  "logs": {
+    "dsga-local-control-root-final.jsonl": {
+      "sha256": "4f57e6c02c9f17b9ceba06a6233c297f6727839ffb5d81818f58e1a03bf8c490"
+    },
+    "dsga-local-control-root-vet-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "dsga-local-control-root-lint-final.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47"
+    }
+  },
+  "linux_cross_build": {
+    "new_artifacts": false,
+    "previous_agent_revision": "12a993e7677817e9d936c79f072df98be9670afe",
+    "applies_to_this_source": false
+  },
+  "boundaries": [
+    "Uses actual Elector, Session, ResourceWorker and same PGWorker.Run management endpoint; Root kernel actions are explicit TLS fixtures, not real cgroup writes.",
+    "resource_state may expose drift; repair/observe require original Held source SHA256 and existing ResourceWorker checks.",
+    "Lost repair reply preserves PendingHeldRepair; explicit observe clears only that fence; exactly one repair POST and outer VM/budget/GuestReady/Host WAL unchanged.",
+    "Requires PGWorker construction to have succeeded. Root recovery before that construction remains code work.",
+    "No safe normal-memory decrease implementation; original repair can only restore the held bounds without decreasing any actual dimension.",
+    "No Linux/K8s/KVM/NeonVM/HugeTLB/physical-reclaim or performance execution; PG17 core and PG18/PG16 still incomplete."
+  ],
+  "commands": [
+    "go test -race -count=1 -json ./pkg/api/dsga ./pkg/dsga/owner -run ^(TestCoordination|TestOwnedControlRepairsOriginalHeldAndObservesLostReply$|TestResourceOwnerRepairsHeldOnlyAfterExplicitSourceSelectionAndObservesLostReply$)",
+    "go vet ./pkg/api/dsga ./pkg/dsga/owner ./pkg/dsga/localcontrol ./pkg/agent",
+    "golangci-lint run --new-from-rev=b9f9ab7fbb4f79bc8ee5f607a51a5900a4d00a85 ./pkg/api/dsga ./pkg/dsga/owner ./pkg/dsga/localcontrol ./pkg/agent"
+  ]
+}
