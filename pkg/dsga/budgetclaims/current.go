@@ -77,8 +77,11 @@ func (r *Reader) readCurrent(ctx context.Context, s *journal.Snapshot, prior boo
 		return nil, err
 	}
 	var outside budget.OutsideReservation
-	if json.Unmarshal([]byte(out.Data[ClaimKey]), &outside) != nil || outside.ProtocolVersion != 1 || outside.VMShrinkPermit || !outside.HoldUntilExplicitSettlement || outside.Request != closed.Request || outside.Identity != *m.ResourceIdentity || outside.Incarnation != r.binding.Incarnation || control.ValidateID(outside.ResidualProfileID, "qualified residual profile") != nil || outside.SystemOutsidePG != f.SystemOutsidePG || outside.Transition != f.Transition || outside.Safety != f.Safety {
+	if json.Unmarshal([]byte(out.Data[ClaimKey]), &outside) != nil || outside.ValidateSource() != nil || outside.VMShrinkPermit || !outside.HoldUntilExplicitSettlement || outside.Request != closed.Request || outside.Identity != *m.ResourceIdentity || outside.Incarnation != r.binding.Incarnation || control.ValidateID(outside.ResidualProfileID, "qualified residual profile") != nil || outside.SystemOutsidePG != f.SystemOutsidePG || outside.Transition != f.Transition || outside.Safety != f.Safety {
 		return nil, fmt.Errorf("current outside source differs from original retained budget")
+	}
+	if err := r.checkOutsideQualification(ctx, outside); err != nil {
+		return nil, err
 	}
 	cm, err := r.claim(ctx, closed.HostClaim, HostKind)
 	if err != nil {

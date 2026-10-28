@@ -24,8 +24,11 @@ func (r *Reader) ReconcileReservations(ctx context.Context, s *journal.Snapshot,
 	if err != nil {
 		return out, host, ref, err
 	}
-	if json.Unmarshal([]byte(outCM.Data[ClaimKey]), &out) != nil || out.ProtocolVersion != 1 || out.VMShrinkPermit || !out.HoldUntilExplicitSettlement || out.Identity != p.Identity || out.Incarnation != r.binding.Incarnation || out.Request.Key.Instance != p.Request.Key.Instance {
+	if json.Unmarshal([]byte(outCM.Data[ClaimKey]), &out) != nil || out.ValidateSource() != nil || out.VMShrinkPermit || !out.HoldUntilExplicitSettlement || out.Identity != p.Identity || out.Incarnation != r.binding.Incarnation || out.Request.Key.Instance != p.Request.Key.Instance {
 		return out, host, ref, fmt.Errorf("actual budget outside declaration changed original domain")
+	}
+	if err := r.checkOutsideQualification(ctx, out); err != nil {
+		return out, host, ref, err
 	}
 	ref, err = r.HostReference(ctx, p.Request)
 	if err != nil {

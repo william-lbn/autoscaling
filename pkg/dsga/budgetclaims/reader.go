@@ -125,7 +125,7 @@ func (r *Reader) CheckOutside(ctx context.Context, p budget.Prepared) error {
 	if json.Unmarshal([]byte(cm.Data[ClaimKey]), &out) != nil || out.ValidateFor(p, r.binding.Incarnation) != nil {
 		return fmt.Errorf("outside source differs from original prepared budget")
 	}
-	return nil
+	return r.checkOutsideQualification(ctx, out)
 }
 
 // Read只消费已由可信预算/Host生产者落实的持久对象。immutable不是资格证明，
@@ -142,6 +142,9 @@ func (r *Reader) Read(ctx context.Context, s *journal.Snapshot, p budget.Prepare
 	var o budget.OutsideReservation
 	if json.Unmarshal([]byte(outside.Data[ClaimKey]), &o) != nil || o.ValidateFor(p, r.binding.Incarnation) != nil {
 		return nil, fmt.Errorf("outside object differs from original prepared budget")
+	}
+	if err := r.checkOutsideQualification(ctx, o); err != nil {
+		return nil, err
 	}
 	host, err := r.claim(ctx, hostRef, HostKind)
 	if err != nil {

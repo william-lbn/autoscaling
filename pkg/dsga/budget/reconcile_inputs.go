@@ -31,7 +31,7 @@ func Reconcile(i ReconcileInputs) (ReconciledCapacity, error) {
 	p, s, root, out, host := i.Prepared, i.Shared, i.Root, i.Outside, i.Host
 	if p.ValidateFor(p.Request, p.Identity) != nil || s.ValidateFor(p.Request.Key.Instance) != nil || root.Validate() != nil || root.Identity != p.Identity ||
 		i.IssuerEpoch < p.Request.Key.IssuerEpoch || s.Observed.IssuerFloorEpoch != i.IssuerEpoch || s.Observed.LowBuffers != s.Observed.HighBuffers ||
-		out.ProtocolVersion != 1 || out.VMShrinkPermit || !out.HoldUntilExplicitSettlement || out.Identity != p.Identity || control.ValidateIncarnation(out.Incarnation) != nil || host.ValidateFor(p, out.Incarnation) != nil || host.ProtocolVersion != 2 || host.HostOverheadBytes == 0 ||
+		out.ValidateSource() != nil || out.VMShrinkPermit || !out.HoldUntilExplicitSettlement || out.Identity != p.Identity || control.ValidateIncarnation(out.Incarnation) != nil || host.ValidateFor(p, out.Incarnation) != nil || host.ProtocolVersion != 2 || host.HostOverheadBytes == 0 ||
 		i.VM.Validate() != nil || i.VM.Request.Key.Instance != p.Request.Key.Instance || s.Observed.MaximumBuffers != p.Shared.Observed.MaximumBuffers || s.StartupMainUpperBytes != p.Shared.StartupMainUpperBytes || s.StartupArraysUpperBytes != p.Shared.StartupArraysUpperBytes {
 		return c, fmt.Errorf("reconciled inputs lost original native, Guest or reservation context")
 	}

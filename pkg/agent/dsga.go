@@ -10,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/credential"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
@@ -29,6 +30,9 @@ type DSGAConfig struct {
 	// 的30秒上限复用于执行而固定制造未知结果。90..120秒覆盖网关总期限。
 	ComputeTimeoutSeconds uint `json:"computeTimeoutSeconds"`
 	PollIntervalSeconds   uint `json:"pollIntervalSeconds"`
+	// 仅可信配置可按VM UID选择原平台资格。跨Pod/boot不会自动收养新资格；
+	// 未配置时不生产Prepare。值没有平台默认数，也不从VM普通注解读取。
+	PrepareQualifications map[string]budget.QualificationSource `json:"prepareQualifications,omitempty"`
 }
 
 type DSGARunnerState struct {
@@ -108,7 +112,11 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 			return err
 		}
 		defer resources.CloseIdleConnections()
-		worker, err := session.NewProductionPGWorker(ownerCtx, compute.Config{BaseURL: config.GatewayURL, Instance: control.Instance{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID, PGBootID: 0}, IssuerEpoch: session.Actor().Epoch, Timeout: time.Duration(config.ComputeTimeoutSeconds) * time.Second, Transport: credentials.ManagementTransport(), Token: credentials.Token, Pending: nil}, resources, r.global.kubeClient.CoreV1())
+		var qualifications []budget.QualificationSource
+		if source, ok := config.PrepareQualifications[string(r.vmUID)]; ok {
+			qualifications = append(qualifications, source)
+		}
+		worker, err := session.NewProductionPGWorker(ownerCtx, compute.Config{BaseURL: config.GatewayURL, Instance: control.Instance{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID, PGBootID: 0}, IssuerEpoch: session.Actor().Epoch, Timeout: time.Duration(config.ComputeTimeoutSeconds) * time.Second, Transport: credentials.ManagementTransport(), Token: credentials.Token, Pending: nil, AdmissionPending: nil, AdmissionClose: nil}, resources, r.global.kubeClient.CoreV1(), qualifications...)
 		if err != nil {
 			return err
 		}

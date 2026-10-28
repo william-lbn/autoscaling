@@ -75,10 +75,11 @@ type OutsideReservation struct {
 	Transition                  Bound                  `json:"transition"`
 	Safety                      Bound                  `json:"safety"`
 	HoldUntilExplicitSettlement bool                   `json:"hold_until_explicit_settlement"`
+	Qualification               *QualificationSource   `json:"qualification,omitempty"`
 }
 
 func (r OutsideReservation) ValidateFor(p Prepared, incarnation string) error {
-	if r.ProtocolVersion != 1 || r.VMShrinkPermit || !r.HoldUntilExplicitSettlement || r.Request != p.Request || r.Identity != p.Identity || r.Incarnation != incarnation || control.ValidateIncarnation(r.Incarnation) != nil || control.ValidateID(r.ResidualProfileID, "qualified residual profile") != nil || r.SystemOutsidePG != p.SystemOutsidePG || r.Transition != p.Transition || r.Safety != p.Safety {
+	if r.ValidateSource() != nil || r.VMShrinkPermit || !r.HoldUntilExplicitSettlement || r.Request != p.Request || r.Identity != p.Identity || r.Incarnation != incarnation || control.ValidateIncarnation(r.Incarnation) != nil || control.ValidateID(r.ResidualProfileID, "qualified residual profile") != nil || r.SystemOutsidePG != p.SystemOutsidePG || r.Transition != p.Transition || r.Safety != p.Safety {
 		return fmt.Errorf("outside reservation differs from original prepared commitment")
 	}
 	return p.ValidateFor(p.Request, p.Identity)

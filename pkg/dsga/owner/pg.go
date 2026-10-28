@@ -18,6 +18,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/prepareexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/quiesceexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
@@ -38,6 +39,7 @@ type PGWorker struct {
 	finalize  *budgetexec.Executor
 	vm        *vmexec.Executor
 	host      *hostexec.Consumer
+	prepare   *prepareexec.Executor
 }
 
 func (session *Session) coupledContext(ctx context.Context) (context.Context, context.CancelFunc) {
@@ -238,14 +240,15 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 			return nil, err
 		}
 	}
-	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest, quiesce: quiesce, finalize: nil, vm: nil, host: nil}, nil
+	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest, quiesce: quiesce, finalize: nil, vm: nil, host: nil, prepare: nil}, nil
 }
 
-// NewProductionPGWorker只供具备可信Kube只读客户端的实际Agent创建。完整预算
+// NewProductionPGWorker只供具备可信Kube客户端的实际Agent创建。完整预算
 // 结算与最终准入共用同一原root及持久对象读者；缺读者不降级为旧无来源路径。
-// 不创建缺失承诺，不自动Begin或更换已有PG/Guest/owner绑定。
-func (session *Session) NewProductionPGWorker(ctx context.Context, config compute.Config, resources *ResourceWorker, core coreclient.CoreV1Interface) (*PGWorker, error) {
-	if resources == nil || core == nil {
+// 可选资格仅取可信配置，提供时接预算域的Outside创建；无配置维持ExternalStep，
+// 不造默认资格。不创建Host/Node承诺，不自动Begin或更换已有身份。
+func (session *Session) NewProductionPGWorker(ctx context.Context, config compute.Config, resources *ResourceWorker, core coreclient.CoreV1Interface, qualification ...budget.QualificationSource) (*PGWorker, error) {
+	if resources == nil || core == nil || len(qualification) > 1 {
 		return nil, fmt.Errorf("production worker requires original root and reservation reader")
 	}
 	worker, err := session.NewPGWorker(ctx, config, resources)
@@ -268,6 +271,9 @@ func (session *Session) NewProductionPGWorker(ctx context.Context, config comput
 	}
 	if err == nil {
 		worker.admission, err = admissionexec.NewWithRunner(session.store, worker.client, session.actor, claims, resources.client, runner)
+	}
+	if err == nil && len(qualification) == 1 {
+		worker.prepare, err = prepareexec.New(session.store, worker.client, resources.client, claims, runner, core, session.actor, qualification[0])
 	}
 	if err != nil {
 		worker.CloseIdleConnections()
@@ -301,6 +307,9 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 		}
 	}
 	progress, err := worker.executor.Advance(callCtx)
+	if err == nil && progress == pgexec.ExternalStep && worker.prepare != nil {
+		progress, err = worker.prepare.Advance(callCtx)
+	}
 	// ReserveHost由独立Host分配者持有，本Agent只读两端原来源并保存完整
 	// 原命令/回执；不能用手填Completed越过节点账本或给Agent增加写权限。
 	if err == nil && progress == pgexec.ExternalStep && worker.host != nil {
@@ -336,6 +345,20 @@ func (worker *PGWorker) ReplayQuiesceOriginal(ctx context.Context, key control.K
 	callCtx, cancel := worker.session.coupledContext(ctx)
 	defer cancel()
 	return worker.quiesce.ReplayOriginal(callCtx, key)
+}
+
+// 预算来源创建的显式原重放与PG/限额/VM重放分开，不接受新预算参数。首次
+// Start丢回复、原Create未发送时，普通循环只查询；只有可信选择可进入这里。
+func (worker *PGWorker) ReplayPrepareOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {
+	if err := worker.session.Check(ctx); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	if worker.prepare == nil {
+		return pgexec.AwaitingFact, fmt.Errorf("trusted prepare producer is unavailable")
+	}
+	callCtx, cancel := worker.session.coupledContext(ctx)
+	defer cancel()
+	return worker.prepare.ReplayOriginal(callCtx, key)
 }
 
 func (worker *PGWorker) ReplayOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {
@@ -432,6 +455,8 @@ type PGLoopOptions struct {
 	AdmissionReplay <-chan control.Key
 	// 与PG/准入分开的显式原资源重放；普通轮询只Observe。
 	ResourceReplay <-chan control.Key
+	// 仅可信原预算恢复选择；nil与普通轮询都不会自动重试Outside创建。
+	PrepareReplay <-chan control.Key
 	// VMReplay只能来自受信显式协调入口，不以HTTP错误、超时或not_sent
 	// 自动投递。选择仅指原Key，完整命令和原回执始终从持久来源读取。
 	VMReplay <-chan control.Key
@@ -464,12 +489,14 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	var replay *control.Key
 	var admissionReplay *control.Key
 	var resourceReplay *control.Key
+	var prepareReplay *control.Key
 	var vmReplay *control.Key
 	var abortReplay *control.Key
 	var unchangedAdmission *control.Key
 	var capacityAdmission *control.Key
 	wake, replays, admissionReplays, resourceReplays := options.Wake, options.Replay, options.AdmissionReplay, options.ResourceReplay
 	vmReplays := options.VMReplay
+	prepareReplays := options.PrepareReplay
 	abortReplays := options.AbortReplay
 	unchangedAdmissions := options.UnchangedAdmissionRecovery
 	capacityAdmissions := options.CapacityAdmissionRecovery
@@ -488,6 +515,9 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		} else if resourceReplay != nil {
 			progress, err = worker.ReplayResourceOriginal(callCtx, *resourceReplay)
 			resourceReplay = nil
+		} else if prepareReplay != nil {
+			progress, err = worker.ReplayPrepareOriginal(callCtx, *prepareReplay)
+			prepareReplay = nil
 		} else if vmReplay != nil {
 			progress, err = worker.ReplayVMOriginal(callCtx, *vmReplay)
 			vmReplay = nil
@@ -541,6 +571,13 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			} else {
 				copy := key
 				resourceReplay = &copy
+			}
+		case key, open := <-prepareReplays:
+			if !open {
+				prepareReplays = nil
+			} else {
+				selectedKey := key
+				prepareReplay = &selectedKey
 			}
 		case key, open := <-vmReplays:
 			if !open {

@@ -174,8 +174,9 @@ func vmReservation(t *testing.T, client *kubefake.Clientset, name, kind string, 
 }
 
 func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testing.T) {
-	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late", "abort-committed", "abort-after-open", "abort-replies", "abort-original-open-lost", "partial-pending-restore", "partial-host-settle", "partial-auto", "partial-auto-start-lost", "partial-auto-record-lost", "partial-auto-source-gone", "partial-auto-selected-replies", "shrink-partial-after-grow"} {
+	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late", "abort-committed", "abort-after-open", "abort-replies", "abort-original-open-lost", "partial-pending-restore", "partial-host-settle", "partial-auto", "partial-auto-start-lost", "partial-auto-record-lost", "partial-auto-source-gone", "partial-auto-selected-replies", "shrink-partial-after-grow", "trusted-prepare-replies"} {
 		t.Run(mode, func(t *testing.T) {
+			trustedPrepare := mode == "trusted-prepare-replies"
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
 			api.mu.Lock()
@@ -199,6 +200,9 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 			root.mu.Lock()
 			root.view.Actual.GuestMemTotalBytes = 480 << 20
 			root.mu.Unlock()
+			if trustedPrepare {
+				qualifiedRootFixture(root)
+			}
 			args := runner.QMPArguments()
 			peer := &vmQMPPeer{
 				uuid: args[1], minimum: 512 << 20, maximum: 2 << 30, actual: 512 << 20, lose: mode == "qmp-lost-reply", onResize: func(actual uint64) {
@@ -232,6 +236,9 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 			if mode == "shrink-partial-after-grow" {
 				options, timeout = DefaultOptions(), 3*time.Minute
 			}
+			if trustedPrepare {
+				options, timeout = DefaultOptions(), 2*time.Minute
+			}
 			elector, err := New(coord, store, options)
 			require.NoError(t, err)
 			ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -245,6 +252,9 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 					req.TargetVMMemoryBytes = 2 << 30
 				}
 				p, baseline := preparedGuest(t, req, root.view.Identity)
+				if trustedPrepare {
+					p.Limits.PidsMaxTasks, p.Limits.SystemMemoryMaxBytes = 128, 16<<20
+				}
 				selectedActual := mode == "partial-auto-selected-replies"
 				if mode == "partial-host-settle" || strings.HasPrefix(mode, "partial-auto") && !selectedActual {
 					// 本用例显式模拟已服务的旧PG；VM先扩，Guest/PG尚未改。
@@ -267,6 +277,15 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 					abortPG.loseAfter = true
 				}
 				abortMode := strings.HasPrefix(mode, "abort-")
+				var pgViews []func() control.Snapshot
+				if trustedPrepare {
+					pgViews = append(pgViews, func() control.Snapshot {
+						if committed.Load() {
+							return final.Observed
+						}
+						return baseline.Observed
+					})
+				}
 				config := pgConfig(t, req, func(w http.ResponseWriter, r *http.Request) {
 					switch r.URL.Path {
 					case "/dsg/v1/budget/shared":
@@ -320,21 +339,36 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 						t.Errorf("unexpected Agent/PG route %s", r.URL.Path)
 						w.WriteHeader(500)
 					}
-				})
+				}, pgViews...)
 				worker, err := session.NewProductionPGWorker(ctx, config, resources, client.CoreV1())
 				require.NoError(t, err)
 				defer worker.CloseIdleConnections()
 				require.NoError(t, runner.Tick(ctx))
 				out := budget.OutsideReservation{ProtocolVersion: 1, Request: req, Identity: p.Identity, Incarnation: binding().Incarnation, ResidualProfileID: "explicit-qualified-platform-fixture", SystemOutsidePG: p.SystemOutsidePG, Transition: p.Transition, Safety: p.Safety, HoldUntilExplicitSettlement: true, VMShrinkPermit: false}
-				outRef := vmReservation(t, client, "outside-original", budgetclaims.OutsideKind, out)
-				p.OutsideClaim = &outRef
+				var outRef budget.ObjectRef
+				var qualification budget.QualificationSource
+				if trustedPrepare {
+					qualification = trustedQualificationFixture(t, ctx, client, root, p)
+					worker.CloseIdleConnections()
+					worker, err = session.NewProductionPGWorker(ctx, config, resources, client.CoreV1(), qualification)
+					require.NoError(t, err)
+					defer worker.CloseIdleConnections()
+				} else {
+					outRef = vmReservation(t, client, "outside-original", budgetclaims.OutsideKind, out)
+					p.OutsideClaim = &outRef
+				}
 				hostName, err := budgetclaims.HostClaimName(binding(), req)
 				require.NoError(t, err)
 				s, err := store.Load(ctx)
 				require.NoError(t, err)
 				_, _, err = store.Begin(ctx, s, session.Actor(), req, 1)
 				require.NoError(t, err)
-				priorBudgetDomain(t, ctx, store, session.Actor(), req, journal.PrepareBudget, req.Key.Instance.ComputeInstanceID, p)
+				if trustedPrepare {
+					worker, p, outRef = runTrustedPrepareReplies(t, ctx, api, client, store, session, resources, worker, config, qualification, req)
+					defer worker.CloseIdleConnections()
+				} else {
+					priorBudgetDomain(t, ctx, store, session.Actor(), req, journal.PrepareBudget, req.Key.Instance.ComputeInstanceID, p)
+				}
 				host := publishVMHost(t, ctx, client, coord, store, session)
 				progress, err := worker.Advance(ctx)
 				require.NoError(t, err)
@@ -572,6 +606,9 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				require.EqualValues(t, 1, opens.Load())
 				if mode == "shrink-partial-after-grow" {
 					verifyShrinkPartialAfterGrow(t, ctx, api, client, coord, store, session, worker, resources, root, p, runner, peer)
+				}
+				if trustedPrepare {
+					finishTrustedPrepareHost(t, ctx, api, client, store, session, worker, p)
 				}
 				return nil
 			})
