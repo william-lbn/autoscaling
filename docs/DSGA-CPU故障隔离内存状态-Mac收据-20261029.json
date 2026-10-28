@@ -1,0 +1,324 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Darwin arm64",
+  "source_commit": "4d8033b298bf88b9e101cabd1a799f2517274af1",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "source_sha256": {
+    "pkg/neonvm/controllers/runner_cpu_limits.go": "ae4edec215a6ae4458dddf503bf1ed6ed8df6d9445fe043b9c868a73bbfe5082",
+    "pkg/neonvm/controllers/vm_controller.go": "83ec88d35f874626981077202e0f9bee74eb358bbbe4da3c891096bbcd465194",
+    "pkg/neonvm/controllers/vm_dsga_cpu_isolation_test.go": "4c0e9fa375e6896884cfe3389df275444a4936633ae132b29f86a4d9fd15e945",
+    "pkg/neonvm/controllers/vm_dsga_memory.go": "0a01216866f37bf1b99d48371361846992fd34dbeb89e5eac6a6fac8dd5c31a6"
+  },
+  "mac_race_adopted": {
+    "packages": 1,
+    "top_level_tests": 4,
+    "test_records": 27,
+    "fail": 0,
+    "skip": 0,
+    "mapping": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestReconcile",
+        "outcome": "pass",
+        "elapsed_seconds": 0.02,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestRunningPod",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus/scaling-read-error",
+        "outcome": "pass",
+        "elapsed_seconds": 0.03,
+        "log": "dsga-cpu-memory-isolation-second.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus/running-read-error",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-second.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus/scaling-write-error",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-second.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus/running-write-error",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-second.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus/scaling-write-accepted",
+        "outcome": "pass",
+        "elapsed_seconds": 0.02,
+        "log": "dsga-cpu-memory-isolation-second.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus/running-ready",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-second.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus/scaling-bad-source",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-second.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus/running-bad-source",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-second.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus",
+        "outcome": "pass",
+        "elapsed_seconds": 0.13,
+        "log": "dsga-cpu-memory-isolation-second.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/complete",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/missing-reader",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/pod-uid",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/node-uid",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/floor-holder",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/state-uid",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/state-deleting",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/birth-unprotected",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/exit",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/exit-malformed",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/never-started",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/never-started-with-pid",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/unlaunched",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication/unlaunched-with-launch",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedControllerMemoryConsumesOriginalRunnerPublication",
+        "outcome": "pass",
+        "elapsed_seconds": 0.1,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "test": "TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus/running-oversized-cpu",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-cpu-memory-isolation-second.jsonl"
+      }
+    ],
+    "package_executions": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "outcome": "fail",
+        "elapsed_seconds": 1.7069999999999999,
+        "log": "dsga-cpu-memory-isolation-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+        "outcome": "pass",
+        "elapsed_seconds": 2.6870000000000003,
+        "log": "dsga-cpu-memory-isolation-second.jsonl"
+      }
+    ],
+    "adoption": "first只采用未变来源与legacy已通过子树；新增整组以second替换。first包整体失败因8个新增夹具Create带resourceVersion，不能声称first包通过。合法小回包语义未变，新增4KiB上界在second的合法JSON加超量空白场景实测。"
+  },
+  "scope": "正式Controller Reconcile/Status().Update、直接APIReader原Pod/Node/Runner来源、真实本地HTTP。Kube/Runner内存发布与CPU效果均为peer，不是Linux/K8s/CPU/sysfs/物理认证。",
+  "quality": {
+    "vet": {
+      "exit_code": 0,
+      "log": "dsga-cpu-memory-isolation-vet-final.log"
+    },
+    "incremental_lint": {
+      "relative_to": "b90afa0de50f5001782252a6925b33706ae0cb7d",
+      "packages": [
+        "./pkg/neonvm/controllers"
+      ],
+      "exit_code": 0,
+      "issues": 0,
+      "log": "dsga-cpu-memory-isolation-lint-final.log"
+    },
+    "diff_check_exit_code": 0
+  },
+  "linux_controller_cross_build": {
+    "amd64": {
+      "artifact": "dsga-cpu-memory-isolation-controller-linux-amd64",
+      "sha256": "8929ccca6bced77fc71ec98f8fc1453753711a195d59c6061b96d883d9006eb0",
+      "size": 71442556,
+      "elf_machine": 62,
+      "build_log": "dsga-cpu-memory-isolation-build-amd64.log",
+      "build_info": "dsga-cpu-memory-isolation-controller-linux-amd64.buildinfo",
+      "vcs_revision": "4d8033b298bf88b9e101cabd1a799f2517274af1",
+      "vcs_modified": true,
+      "only_uncommitted_file_at_build": "AGENTS.md",
+      "exit_code": 0,
+      "executed": false,
+      "warning": "离线模块stat缓存权限警告，退出0，原日志保留。"
+    },
+    "arm64": {
+      "artifact": "dsga-cpu-memory-isolation-controller-linux-arm64",
+      "sha256": "1437d4d112ff1d7a72e1a14efab48f3d581cf44a93a90cb0fefa93975eb0467d",
+      "size": 67749691,
+      "elf_machine": 183,
+      "build_log": "dsga-cpu-memory-isolation-build-arm64.log",
+      "build_info": "dsga-cpu-memory-isolation-controller-linux-arm64.buildinfo",
+      "vcs_revision": "4d8033b298bf88b9e101cabd1a799f2517274af1",
+      "vcs_modified": true,
+      "only_uncommitted_file_at_build": "AGENTS.md",
+      "exit_code": 0,
+      "executed": false,
+      "warning": "离线模块stat缓存权限警告，退出0，原日志保留。"
+    }
+  },
+  "log_sha256": {
+    "dsga-cpu-memory-isolation-first.jsonl": {
+      "sha256": "c9932d36daba42ec5164df25d94442002e0ebbf016a49b64aa23bf9ac495f79f",
+      "size": 132868
+    },
+    "dsga-cpu-memory-isolation-second.jsonl": {
+      "sha256": "83b36aba2c00d7df338fa9f9841729eeeb368db46947d1d981a07830d170cb1d",
+      "size": 61198
+    },
+    "dsga-cpu-memory-isolation-lint-first.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "size": 10
+    },
+    "dsga-cpu-memory-isolation-lint-final.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "size": 10
+    },
+    "dsga-cpu-memory-isolation-vet-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "dsga-cpu-memory-isolation-build-amd64.log": {
+      "sha256": "ffd1a5cccdaaeff4d6aa458b96640e75c61cca05f3d5fb5884e4cb6796b79c67",
+      "size": 197
+    },
+    "dsga-cpu-memory-isolation-controller-linux-amd64.buildinfo": {
+      "sha256": "3c2f401e59a47d3659a0aa99f141518ceb4d633ae20df2bbf55e1f32b864091d",
+      "size": 7865
+    },
+    "dsga-cpu-memory-isolation-build-arm64.log": {
+      "sha256": "6e22d635f4b4ed0ddf1ff50c07898c69954b1d3d16ecb31feb3477fe1077676e",
+      "size": 197
+    },
+    "dsga-cpu-memory-isolation-controller-linux-arm64.buildinfo": {
+      "sha256": "9225bb77fc5f65d4bde142d77ab3ca58f4bd853ed8582c955890d0f94a6d2ecb",
+      "size": 7867
+    }
+  },
+  "fixed_pg17": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "not_covered": [
+    "受管Guest可信CPU写通道尚未实现；旧daemon无认证PUT继续拒绝，禁止据本阶段称CPU自动伸缩已完成",
+    "安全降低normal及后台/私有持续上界",
+    "缺坏Root/资格/日志和异常约束的受控关闭",
+    "分区旧进程、完整出生前失败、Runner无Wait、跨boot/迁移",
+    "Monitor/自动策略、全部最终写者接线",
+    "PG18与PG16自身内核/扩展/发行验证",
+    "真实Linux/K8s/KVM/NeonVM/HugeTLB/物理回收/性能"
+  ],
+  "images_built": false,
+  "deployed": false,
+  "default_enabled": false
+}
