@@ -72,12 +72,15 @@ type ReconciledCapacity struct {
 	Safety                   Bound                  `json:"safety"`
 	HostClaim                ObjectRef              `json:"host_claim"`
 	HostReservationID        string                 `json:"host_reservation_id"`
-	VM                       NativeCapacity         `json:"native_vm"`
+	VM                       NativeCapacity         `json:"native_vm,omitempty"`
 	// v2只供准确仍处原启动容量的取消：Outside来自原Initial中的
 	// 完整资格，而非伪造一条目标等于before的Resize/OutsideRequest。
 	// 与OutsideClaim/OutsideRequest互斥；原Initial随实际预算永久保留。
 	// v1省略此字段，旧读者须因capacity协议v2拒绝而不能按空来源放行。
 	InitialOutside *Initial `json:"initial_outside,omitempty"`
+	// v3在VM尚未派发且原Runner从未有内存命令时使用真实启动来源。
+	// 与VM互斥，不给原启动状态伪造Resize/NoEffect或普通完成回执。
+	InitialVM *InitialVMSources `json:"initial_vm,omitempty"`
 }
 
 // ValidateCurrent不要求原目标已全部完成；要求当前PG是准确同代次、稳定前缀和
@@ -103,9 +106,12 @@ func (c ReconciledCapacity) Validate() error {
 		c.VMBeforeMemoryBytes == 0 || (c.VMMemoryBytes != c.VMBeforeMemoryBytes && c.VMMemoryBytes != r.TargetVMMemoryBytes) || c.GuestUsableMemoryBytes == 0 || c.GuestUsableMemoryBytes > c.VMMemoryBytes || c.CapacityGeneration == 0 || c.Buffers == 0 || c.Buffers > c.MaximumBuffers ||
 		c.StartupMainUpperBytes == 0 || c.StartupArraysUpperBytes == 0 || c.RetainedSharedUpperBytes < c.StartupMainUpperBytes || c.PGAggregate.Kind != HardLimit || c.PGAggregate.UpperBytes < c.RetainedSharedUpperBytes || !unchangedDigest(c.RootSHA256) ||
 		control.ValidateID(c.ResidualProfileID, "qualified residual profile") != nil ||
-		c.HostClaim.Validate() != nil || control.ValidateID(c.HostReservationID, "host reservation") != nil || c.VM.Validate() != nil || c.VM.Request.Key.Instance != r.Key.Instance || c.VM.MemoryBytes() != c.VMMemoryBytes ||
+		c.HostClaim.Validate() != nil || control.ValidateID(c.HostReservationID, "host reservation") != nil ||
 		c.SystemOutsidePG.UpperBytes == 0 || c.Safety.UpperBytes == 0 {
 		return fmt.Errorf("incomplete original reconciled capacity budget")
+	}
+	if err := c.validateVMSource(); err != nil {
+		return err
 	}
 	if c.InitialOutside == nil {
 		if c.ProtocolVersion != 1 || c.OutsideClaim.Validate() != nil || c.OutsideRequest.Validate() != nil || c.OutsideRequest.Key.Instance != r.Key.Instance || c.OutsideRequest.TargetVMMemoryBytes != c.VMMemoryBytes {
@@ -117,10 +123,10 @@ func (c ReconciledCapacity) Validate() error {
 	if r.Kind == control.Grow && r.TargetVMMemoryBytes < c.VMBeforeMemoryBytes || r.Kind == control.Shrink && r.TargetVMMemoryBytes > c.VMBeforeMemoryBytes {
 		return fmt.Errorf("reconciled original VM direction changed")
 	}
-	if compareCapacityKey(c.VM.Request.Key, r.Key) > 0 || c.InitialOutside == nil && compareCapacityKey(c.OutsideRequest.Key, r.Key) > 0 {
+	if c.InitialVM == nil && compareCapacityKey(c.VM.Request.Key, r.Key) > 0 || c.InitialOutside == nil && compareCapacityKey(c.OutsideRequest.Key, r.Key) > 0 {
 		return fmt.Errorf("reconciled budget cannot borrow a future or aliased source")
 	}
-	if c.VM.Request.Key == r.Key && (c.VM.Request != r || c.VM.HostClaim != c.HostClaim) || c.InitialOutside == nil && c.OutsideRequest.Key == r.Key && c.OutsideRequest != r {
+	if c.InitialVM == nil && c.VM.Request.Key == r.Key && (c.VM.Request != r || c.VM.HostClaim != c.HostClaim) || c.InitialOutside == nil && c.OutsideRequest.Key == r.Key && c.OutsideRequest != r {
 		return fmt.Errorf("reconciled budget changed same-key original request or Host source")
 	}
 	op := c.PGOperation

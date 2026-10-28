@@ -9,6 +9,7 @@ import (
 	core "k8s.io/api/core/v1"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
 
@@ -107,6 +108,10 @@ func (m Model) validatePlacements() error {
 		return fmt.Errorf("host allocation ledger requires complete v3 profile/placements")
 	}
 	for i, p := range *m.Placements {
+		var noInitial budget.InitialVMSources
+		if p.Settled != nil && p.Settled.InitialVM != noInitial && m.ProtocolVersion < 8 {
+			return fmt.Errorf("initial-source settlement requires Node v8")
+		}
 		if p.Settled != nil && m.ProtocolVersion < 4 {
 			return fmt.Errorf("settled Host capacity requires explicit v4 semantics")
 		}

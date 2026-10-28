@@ -19,6 +19,7 @@ type ReconcileInputs struct {
 	Host                   HostReservation
 	HostClaim              ObjectRef
 	VM                     NativeCapacity
+	InitialVM              *InitialVMSources
 	GuestUsableMemoryBytes control.Uint64
 	IssuerEpoch            control.Uint64
 }
@@ -33,6 +34,16 @@ func Reconcile(i ReconcileInputs) (ReconciledCapacity, error) {
 func reconcile(i ReconcileInputs, initial *Initial) (ReconciledCapacity, error) {
 	var c ReconciledCapacity
 	p, s, root, out, host := i.Prepared, i.Shared, i.Root, i.Outside, i.Host
+	vmBytes, instance := i.VM.MemoryBytes(), i.VM.Request.Key.Instance
+	var noNative NativeCapacity
+	if i.InitialVM != nil {
+		if initial == nil || i.VM != noNative || i.InitialVM.MatchInitial(*initial) != nil {
+			return c, fmt.Errorf("initial VM inputs cannot mix native commands or lose boot budget")
+		}
+		vmBytes, instance = i.InitialVM.MemoryBytes, i.InitialVM.Instance
+	} else if i.VM.Validate() != nil {
+		return c, fmt.Errorf("reconciled original native capacity is invalid")
+	}
 	incarnation := out.Incarnation
 	system, transition, safety := out.SystemOutsidePG, out.Transition, out.Safety
 	profile := out.ResidualProfileID
@@ -45,7 +56,7 @@ func reconcile(i ReconcileInputs, initial *Initial) (ReconciledCapacity, error) 
 	} else {
 		// 固定仍被原Initial实际覆盖的Guest，不以同数值root上限猜测
 		// 原出生/命令相同；MatchCurrent逐项绑定完整原聚合与PG容量。
-		if out != noOutside || i.OutsideClaim != noRef || initial.PGAggregate.Identity != p.Identity || initial.MatchCurrent(s, root, i.IssuerEpoch, i.VM.MemoryBytes(), i.GuestUsableMemoryBytes) != nil {
+		if out != noOutside || i.OutsideClaim != noRef || initial.PGAggregate.Identity != p.Identity || initial.MatchCurrent(s, root, i.IssuerEpoch, vmBytes, i.GuestUsableMemoryBytes) != nil {
 			return c, fmt.Errorf("reconciled initial inputs differ from original live boot budget")
 		}
 		incarnation = initial.Incarnation
@@ -55,7 +66,7 @@ func reconcile(i ReconcileInputs, initial *Initial) (ReconciledCapacity, error) 
 	if p.ValidateFor(p.Request, p.Identity) != nil || s.ValidateFor(p.Request.Key.Instance) != nil || root.Validate() != nil || root.Identity != p.Identity ||
 		i.IssuerEpoch < p.Request.Key.IssuerEpoch || s.Observed.IssuerFloorEpoch != i.IssuerEpoch || s.Observed.LowBuffers != s.Observed.HighBuffers ||
 		host.ValidateFor(p, incarnation) != nil || host.ProtocolVersion != 2 || host.HostOverheadBytes == 0 ||
-		i.VM.Validate() != nil || i.VM.Request.Key.Instance != p.Request.Key.Instance || s.Observed.MaximumBuffers != p.Shared.Observed.MaximumBuffers || s.StartupMainUpperBytes != p.Shared.StartupMainUpperBytes || s.StartupArraysUpperBytes != p.Shared.StartupArraysUpperBytes {
+		instance != p.Request.Key.Instance || s.Observed.MaximumBuffers != p.Shared.Observed.MaximumBuffers || s.StartupMainUpperBytes != p.Shared.StartupMainUpperBytes || s.StartupArraysUpperBytes != p.Shared.StartupArraysUpperBytes {
 		return c, fmt.Errorf("reconciled inputs lost original native, Guest or reservation context")
 	}
 	if s.Observed.CapacityGeneration == p.Request.ExpectedCapacityGeneration && s.Observed.HighBuffers != p.Shared.Observed.HighBuffers {
@@ -78,7 +89,7 @@ func reconcile(i ReconcileInputs, initial *Initial) (ReconciledCapacity, error) 
 	// Shared可能含由Guest HugeTLB池承担的数组，不把整份Shared再压入
 	// normal memory.max。最终以Root聚合上界覆盖并只计整池一次；真实
 	// 内核归属仍由Root确认，不能靠这里的预算运算证明物理行为。
-	peak := max(p.VMBeforeMemoryBytes, p.Request.TargetVMMemoryBytes, i.VM.MemoryBytes())
+	peak := max(p.VMBeforeMemoryBytes, p.Request.TargetVMMemoryBytes, vmBytes)
 	if uint64(host.HostOverheadBytes) > math.MaxUint64-uint64(peak) || host.ReservedMemoryBytes < peak+host.HostOverheadBytes {
 		return c, fmt.Errorf("reconciled Host hold does not cover original peak and actual capacity")
 	}
@@ -89,15 +100,19 @@ func reconcile(i ReconcileInputs, initial *Initial) (ReconciledCapacity, error) 
 	c = ReconciledCapacity{
 		ProtocolVersion: 1, VMShrinkPermit: false, Request: p.Request, IssuerEpoch: i.IssuerEpoch,
 		RunnerPodName: p.RunnerPodName, RunnerRestartCount: p.RunnerRestartCount,
-		VMBeforeMemoryBytes: p.VMBeforeMemoryBytes, VMMemoryBytes: i.VM.MemoryBytes(), GuestUsableMemoryBytes: i.GuestUsableMemoryBytes,
+		VMBeforeMemoryBytes: p.VMBeforeMemoryBytes, VMMemoryBytes: vmBytes, GuestUsableMemoryBytes: i.GuestUsableMemoryBytes,
 		CapacityGeneration: s.Observed.CapacityGeneration, Buffers: s.Observed.HighBuffers, MaximumBuffers: s.Observed.MaximumBuffers,
 		StartupMainUpperBytes: s.StartupMainUpperBytes, StartupArraysUpperBytes: s.StartupArraysUpperBytes, RetainedSharedUpperBytes: s.CurrentMainAndArraysUpperBytes, PGOperation: nil,
 		PGAggregate: root.Bound, RootSHA256: digest, OutsideClaim: i.OutsideClaim, OutsideRequest: out.Request, ResidualProfileID: profile,
-		SystemOutsidePG: system, Transition: transition, Safety: safety, HostClaim: i.HostClaim, HostReservationID: host.SourceID, VM: i.VM, InitialOutside: initial,
+		SystemOutsidePG: system, Transition: transition, Safety: safety, HostClaim: i.HostClaim, HostReservationID: host.SourceID, VM: i.VM, InitialOutside: initial, InitialVM: nil,
 	}
 	if initial != nil {
 		c.ProtocolVersion = 2
 		c.GuestUsableMemoryBytes = initial.GuestUsableMemoryBytes
+	}
+	if i.InitialVM != nil {
+		owned := *i.InitialVM
+		c.ProtocolVersion, c.InitialVM = 3, &owned
 	}
 	if s.Observed.Operation != nil {
 		operation := *s.Observed.Operation

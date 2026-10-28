@@ -20,9 +20,9 @@ const (
 	HistoryLimit        = 16
 	MaxObservationBytes = 32 * 1024
 	MaxCommandBytes     = 8 * 1024
-	// 只有v2实际预算Cleanup携带完整原Initial时需要双份来源上下文。
+	// 只有v2/v3实际预算Cleanup携带完整原Initial时需要双份来源上下文。
 	// 此独立上限不能用于普通命令，选择前先核有界JSON及完整typed合同；
-	// 整体VM注解/Observation/值节点上限不变，旧读者明确拒绝v2。
+	// 整体VM注解/Observation/值节点上限不变，旧读者明确拒绝新capacity版本。
 	MaxInitialCapacityCommandBytes = 16 * 1024
 	MaxRawBytes                    = 1024 * 1024
 )
@@ -928,7 +928,7 @@ func commandDigest(requestHash string, step Step) (string, error) {
 			return "", err
 		}
 		var c budget.ReconciledAbortCommand
-		if json.Unmarshal(step.Command, &c) == nil && c.Capacity.ProtocolVersion == 2 && c.Capacity.InitialOutside != nil && c.ValidateFor(step.DispatchedBy.Epoch) == nil {
+		if json.Unmarshal(step.Command, &c) == nil && (c.Capacity.ProtocolVersion == 2 || c.Capacity.ProtocolVersion == 3) && c.Capacity.InitialOutside != nil && c.ValidateFor(step.DispatchedBy.Epoch) == nil {
 			limit = MaxInitialCapacityCommandBytes
 		}
 	}

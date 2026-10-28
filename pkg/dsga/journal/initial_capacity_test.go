@@ -15,6 +15,10 @@ import (
 // 领域夹具当作真实Runner取消证明。真实生产组合单独执行；这里专门覆盖
 // InitialHeld被替换后原资格仍永久保留、历史淘汰/接管不丢来源的独立边界。
 func initialCapacityModel(t *testing.T) (Model, budget.ReconciledAbortCommand, budget.ReconciledAbortReceipt) {
+	return initialCapacityDomain(t, false)
+}
+
+func initialCapacityDomain(t *testing.T, beforeVM bool) (Model, budget.ReconciledAbortCommand, budget.ReconciledAbortReceipt) {
 	t.Helper()
 	i, first, opened := initialDomain(t)
 	m := initialBoundModel(t)
@@ -35,7 +39,11 @@ func initialCapacityModel(t *testing.T) (Model, budget.ReconciledAbortCommand, b
 	host := budget.HostReservation{ProtocolVersion: 2, VMShrinkPermit: false, Request: r, Identity: p.Identity, Incarnation: m.Incarnation, SourceID: "initial-capacity-host-source", RunnerPodName: i.RunnerPodName, RunnerPodUID: i.RunnerPodUID, NodeName: i.NodeName, NodeUID: i.NodeUID, ReservedMemoryBytes: r.TargetVMMemoryBytes + i.HostOverheadBytes, HostOverheadBytes: i.HostOverheadBytes, HoldUntilExplicitSettlement: true}
 	prepareRaw, err := json.Marshal(p)
 	require.NoError(t, err)
-	for _, action := range []Action{PrepareBudget, ReserveHost, ResizeVM} {
+	actions := []Action{PrepareBudget, ReserveHost}
+	if !beforeVM {
+		actions = append(actions, ResizeVM)
+	}
+	for _, action := range actions {
 		target, body, result := r.Key.Instance.ComputeInstanceID, any(p), Completed
 		switch action {
 		case ReserveHost:
@@ -68,7 +76,13 @@ func initialCapacityModel(t *testing.T) (Model, budget.ReconciledAbortCommand, b
 	native := budget.NativeCapacity{Sources: sources, Request: r, BeforeBytes: i.VMMemoryBytes, Cancelled: true, PreparedSHA256: rawDigest(prepareRaw), GuestSHA256: "", HostClaim: hostRef}
 	var noOutside budget.OutsideReservation
 	var noRef budget.ObjectRef
-	capacity, err := budget.ReconcileInitial(budget.ReconcileInputs{Prepared: p, Shared: shared, Root: i.PGAggregate, Outside: noOutside, OutsideClaim: noRef, Host: host, HostClaim: hostRef, VM: native, GuestUsableMemoryBytes: i.GuestUsableMemoryBytes, IssuerEpoch: m.Owner.Epoch}, i)
+	inputs := budget.ReconcileInputs{Prepared: p, Shared: shared, Root: i.PGAggregate, Outside: noOutside, OutsideClaim: noRef, Host: host, HostClaim: hostRef, VM: native, InitialVM: nil, GuestUsableMemoryBytes: i.GuestUsableMemoryBytes, IssuerEpoch: m.Owner.Epoch}
+	if beforeVM {
+		var noNative budget.NativeCapacity
+		inputs.VM = noNative
+		inputs.InitialVM = &budget.InitialVMSources{Instance: i.Instance, BirthClaim: i.RunnerBirth, StateClaim: sources.StateClaim, IdentitySHA256: i.RunnerIdentitySHA256, MemoryBytes: i.VMMemoryBytes}
+	}
+	capacity, err := budget.ReconcileInitial(inputs, i)
 	require.NoError(t, err)
 	m, err = m.RequestAbort(m.Owner, r.Key)
 	require.NoError(t, err)
@@ -76,6 +90,51 @@ func initialCapacityModel(t *testing.T) (Model, budget.ReconciledAbortCommand, b
 	receipt := budget.ReconciledAbortReceipt{ProtocolVersion: 1, Command: c, Query: true, Fence: control.FenceResponse{ProtocolVersion: 1, RequestedInstance: i.Instance, RequestedEpoch: m.Owner.Epoch, Disposition: control.Fenced, Observed: shared.Observed, VMShrinkPermit: false}, Shared: shared, Response: nil, PGAggregate: i.PGAggregate, ResourceEpoch: m.Owner.Epoch}
 	require.NoError(t, receipt.ValidateFor(c, m.Owner.Epoch, m.Owner.Epoch))
 	return m, c, receipt
+}
+
+// 领域夹具只证明WAL合同，不认证Runner；原始VM步骤必须一直是Planned，
+// 任何Start/NoEffect都不能借相同容量回退成原启动来源。完整Initial与独立
+// 启动来源必须同CAS永久保留，较新零派发取消只能推进关闭水位。
+func TestInitialVMActualCapacityRejectsDispatchAndSurvivesClosedThrough(t *testing.T) {
+	m, command, receipt := initialCapacityDomain(t, true)
+	require.NoError(t, m.CheckReconciledPlan(command))
+	changed := m.Clone()
+	changed.Active.AbortRequested = false
+	changed, err := changed.Start(changed.Owner, command.Capacity.Request.Key, ResizeVM, "runner-fixture", testCommand)
+	require.NoError(t, err)
+	changed, err = changed.RequestAbort(changed.Owner, command.Capacity.Request.Key)
+	require.NoError(t, err)
+	require.Error(t, changed.CheckReconciledPlan(command), "曾派发的VM不能重新解释为启动来源")
+	raw, err := json.Marshal(command)
+	require.NoError(t, err)
+	if len(raw) <= MaxCommandBytes {
+		raw = append(raw, []byte(strings.Repeat(" ", MaxCommandBytes+1-len(raw)))...)
+	}
+	m, err = m.StartCleanup(m.Owner, command.Capacity.Request.Key, command.Capacity.Request.Key.Instance.ComputeInstanceID, raw)
+	require.NoError(t, err)
+	fact := observation(m, *m.Active.Cleanup, Completed)
+	fact.Data, err = json.Marshal(receipt)
+	require.NoError(t, err)
+	m, err = m.Record(m.Owner, fact.Key, fact)
+	require.NoError(t, err)
+	require.Nil(t, m.InitialHeld)
+	m, err = m.Finish(m.Owner, fact.Key)
+	require.NoError(t, err)
+	r := testRequest(m, 2, control.Grow)
+	m = beginModel(t, m, r)
+	m, err = m.RequestAbort(m.Owner, r.Key)
+	require.NoError(t, err)
+	m, err = m.Finish(m.Owner, r.Key)
+	require.NoError(t, err)
+	require.NoError(t, m.CheckClosedCapacity(command.Capacity.Request))
+	require.Equal(t, r.Key, m.BudgetBoundary.ThroughKey)
+	_, encoded, err := encode(m, MaxEncodedBytes)
+	require.NoError(t, err)
+	restored, err := decode(encoded, m.VMUID, m.Incarnation)
+	require.NoError(t, err)
+	capacity, err := restored.CapacityFor(command.Capacity.Request)
+	require.NoError(t, err)
+	require.Equal(t, command.Capacity, capacity)
 }
 
 func TestInitialActualCapacityRetainsOriginalAcrossAtomicReplacementHistoryAndTakeover(t *testing.T) {

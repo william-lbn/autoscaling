@@ -99,7 +99,13 @@ func (model Model) reconciledPattern(op Operation, command budget.ReconciledAbor
 	if vm == nil {
 		return fmt.Errorf("reconciled original VM step missing")
 	}
-	if c.VM.Request.Key == op.Request.Key {
+	if c.InitialVM != nil {
+		// 原启动来源与原VM命令是互斥的事实。任何派发、未知或已结算
+		// 的VM步骤都不能退回“从未派发”；完整Initial摘要已在上面核对。
+		if vm.Phase != Planned || c.VMMemoryBytes != p.VMBeforeMemoryBytes {
+			return fmt.Errorf("initial VM source cannot cross a dispatched original VM action")
+		}
+	} else if c.VM.Request.Key == op.Request.Key {
 		if vm.Phase != Settled || vm.Observation == nil || c.VM.Sources.JournalSHA256 != vm.CommandSHA256 || c.VM.PreparedSHA256 != command.PreparedSHA256 || (c.VM.Cancelled && vm.Observation.Result != NoEffect) || (!c.VM.Cancelled && vm.Observation.Result != Completed) {
 			return fmt.Errorf("reconciled current native VM differs from original terminal WAL")
 		}

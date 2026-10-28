@@ -17,11 +17,14 @@ import (
 // Host重发。节点owner还须实际核原VM无Active、原Runner完成/无pending/实际
 // 值及来源活性；本结构和纯模型不替代这些认证读取或平台物理回收资格。
 type Settlement struct {
-	Request         control.Request      `json:"request"`
-	HostClaim       budget.ObjectRef     `json:"host_claim"`
-	Runner          budget.RunnerSources `json:"runner"`
-	BudgetSequence  control.Uint64       `json:"budget_sequence"`
-	FinalizationSHA string               `json:"finalization_sha256"`
+	Request   control.Request      `json:"request"`
+	HostClaim budget.ObjectRef     `json:"host_claim"`
+	Runner    budget.RunnerSources `json:"runner,omitempty"`
+	// 原启动从未有内存命令时使用独立来源；与Runner互斥。值类型
+	// 保持永久水位按内容可比较，不让指针地址影响重放/结清判断。
+	InitialVM       budget.InitialVMSources `json:"initial_vm,omitempty"`
+	BudgetSequence  control.Uint64          `json:"budget_sequence"`
+	FinalizationSHA string                  `json:"finalization_sha256"`
 	// 实际预算必须显式保留真实VM容量；原Request目标不改写。零值仅
 	// 表示旧普通成功合同，继续取原target；非零需Node v7，不能由旧
 	// 读者忽略后按更小的取消目标退还内存。它仍不是物理空闲证明。
@@ -43,8 +46,17 @@ func (s Settlement) MemoryBytes() control.Uint64 {
 func (s Settlement) Validate() error {
 	var emptyKey control.Key
 	digest, err := hex.DecodeString(s.FinalizationSHA)
-	if s.Request.Validate() != nil || s.HostClaim.Validate() != nil || s.Runner.Validate() != nil || s.BudgetSequence == 0 || err != nil || len(digest) != 32 || hex.EncodeToString(digest) != s.FinalizationSHA {
+	if s.Request.Validate() != nil || s.HostClaim.Validate() != nil || s.BudgetSequence == 0 || err != nil || len(digest) != 32 || hex.EncodeToString(digest) != s.FinalizationSHA {
 		return fmt.Errorf("invalid original Host settlement watermark")
+	}
+	var noInitial budget.InitialVMSources
+	var noRunner budget.RunnerSources
+	if s.InitialVM != noInitial {
+		if s.InitialVM.Validate() != nil || s.Runner != noRunner || s.InitialVM.Instance != s.Request.Key.Instance || s.ActualMemoryBytes == 0 || s.InitialVM.MemoryBytes != s.ActualMemoryBytes {
+			return fmt.Errorf("initial Host settlement requires exclusive original boot capacity")
+		}
+	} else if s.Runner.Validate() != nil {
+		return fmt.Errorf("host settlement lacks original Runner receipt sources")
 	}
 	if s.ThroughKey == emptyKey {
 		if s.ThroughSequence != 0 {
@@ -86,6 +98,21 @@ func (s Settlement) covers(prior Settlement) bool {
 // 零Key也输出，从而使原v4/v5账本无故写出新字段。新关闭证明不允许删字段降级。
 func (s Settlement) MarshalJSON() ([]byte, error) {
 	var emptyKey control.Key
+	var noInitial budget.InitialVMSources
+	if s.InitialVM != noInitial {
+		// 不序列化空RunnerSources/空ThroughKey：严格DTO会拒绝它们，
+		// 更不能让旧读者把原启动来源误认成一份缺字段的Resize回执。
+		var through *control.Key
+		if s.ThroughKey != emptyKey {
+			through = &s.ThroughKey
+		}
+		type plain Settlement
+		return json.Marshal(struct {
+			plain
+			Runner     *budget.RunnerSources `json:"runner,omitempty"`
+			ThroughKey *control.Key          `json:"through_key,omitempty"`
+		}{plain: plain(s), Runner: nil, ThroughKey: through})
+	}
 	if s.ThroughKey == emptyKey && s.ThroughSequence == 0 {
 		type legacy struct {
 			Request           control.Request      `json:"request"`
@@ -98,7 +125,10 @@ func (s Settlement) MarshalJSON() ([]byte, error) {
 		return json.Marshal(legacy{Request: s.Request, HostClaim: s.HostClaim, Runner: s.Runner, BudgetSequence: s.BudgetSequence, FinalizationSHA: s.FinalizationSHA, ActualMemoryBytes: s.ActualMemoryBytes})
 	}
 	type plain Settlement
-	return json.Marshal(plain(s))
+	return json.Marshal(struct {
+		plain
+		InitialVM *budget.InitialVMSources `json:"initial_vm,omitempty"`
+	}{plain: plain(s), InitialVM: nil})
 }
 
 func (s *Settlement) UnmarshalJSON(raw []byte) error {
@@ -126,6 +156,9 @@ func SettlementFor(m journal.Model) (Settlement, error) {
 		}
 		var empty control.Key
 		s := Settlement{Request: c.Capacity.Request, HostClaim: c.Capacity.HostClaim, Runner: c.Capacity.VM.Sources, BudgetSequence: h.RecordedSequence, FinalizationSHA: h.Cleanup.CommandSHA256, ActualMemoryBytes: c.Capacity.VMMemoryBytes, ThroughKey: empty, ThroughSequence: 0}
+		if c.Capacity.InitialVM != nil {
+			s.InitialVM = *c.Capacity.InitialVM
+		}
 		if b := m.BudgetBoundary; b != nil && b.ThroughKey != s.Request.Key {
 			s.ThroughKey, s.ThroughSequence = b.ThroughKey, b.ThroughSequence
 		}
@@ -193,6 +226,12 @@ func (m Model) settle(actor journal.Owner, podUID string, closed Settlement) (Mo
 	}
 	if closed.ActualMemoryBytes != 0 {
 		next.ProtocolVersion = max(next.ProtocolVersion, 7)
+	}
+	var noInitial budget.InitialVMSources
+	if closed.InitialVM != noInitial {
+		// v8读者明确理解“无Resize回执”的来源，旧v7不能忽略新字段
+		// 后继续按原目标算账。后继普通结清也不得把Node版本降回去。
+		next.ProtocolVersion = max(next.ProtocolVersion, 8)
 	}
 	next.Holds = slices.DeleteFunc(next.Holds, func(h Hold) bool {
 		if h.Plan.RunnerPodUID == podUID && h.Plan.Request != closed.Request && compare(h.Plan.Request.Key, closed.ClosedThrough()) <= 0 {

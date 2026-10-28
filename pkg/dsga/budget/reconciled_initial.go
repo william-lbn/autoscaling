@@ -8,15 +8,19 @@ import (
 )
 
 // 初始来源只覆盖原启动容量/PG代次及原root，不能拿原启动证书覆盖一次
-// 已改变的Guest限额、较大VM或另一boot。NativeCapacity仍须是真实原VM命令
-// 的完成/不可重发取消，不在此伪造“初始化VM完成”。网络认证另由Reader执行。
+// 已改变的Guest限额、较大VM或另一boot。v2保留真实原VM终态，v3独立保留
+// 从未执行命令的原Runner启动来源，不伪造“初始化VM完成”。网络认证由Reader执行。
 func (c ReconciledCapacity) validateInitialOutside() error {
 	i := c.InitialOutside
 	var noRef ObjectRef
 	var noRequest control.Request
-	if i == nil || i.Validate() != nil || c.ProtocolVersion != 2 || c.OutsideClaim != noRef || c.OutsideRequest != noRequest ||
+	birth := c.VM.Sources.BirthClaim
+	if c.InitialVM != nil {
+		birth = c.InitialVM.BirthClaim
+	}
+	if i == nil || i.Validate() != nil || (c.ProtocolVersion != 2 && c.ProtocolVersion != 3) || c.OutsideClaim != noRef || c.OutsideRequest != noRequest ||
 		i.Instance != c.Request.Key.Instance || i.IssuerEpoch > c.IssuerEpoch || i.VMMemoryBytes != c.VMMemoryBytes || i.VMMemoryBytes != c.VMBeforeMemoryBytes ||
-		i.RunnerPodName != c.RunnerPodName || i.RunnerRestartCount != c.RunnerRestartCount || i.RunnerBirth != c.VM.Sources.BirthClaim ||
+		i.RunnerPodName != c.RunnerPodName || i.RunnerRestartCount != c.RunnerRestartCount || i.RunnerBirth != birth ||
 		i.Shared.Observed.CapacityGeneration != c.CapacityGeneration || i.Shared.Observed.HighBuffers != c.Buffers || i.Shared.Observed.MaximumBuffers != c.MaximumBuffers ||
 		i.Shared.StartupMainUpperBytes != c.StartupMainUpperBytes || i.Shared.StartupArraysUpperBytes != c.StartupArraysUpperBytes ||
 		i.PGAggregate.Bound != c.PGAggregate || c.RetainedSharedUpperBytes > i.PGAggregate.Bound.UpperBytes || c.GuestUsableMemoryBytes != i.GuestUsableMemoryBytes ||
@@ -53,6 +57,17 @@ func (c ReconciledCapacity) MarshalJSON() ([]byte, error) {
 	type plain ReconciledCapacity
 	var noRef ObjectRef
 	var noRequest control.Request
+	var noNative NativeCapacity
+	if c.ProtocolVersion == 3 && c.InitialVM != nil && c.VM == noNative && c.InitialOutside != nil && c.OutsideClaim == noRef && c.OutsideRequest == noRequest {
+		// 缺失native_vm字段才表示没有Resize来源；空NativeCapacity内的
+		// Request也是严格类型，不能输出一条零值“原命令”再期待读者忽略。
+		return json.Marshal(struct {
+			plain
+			OutsideClaim   *ObjectRef       `json:"outside_claim,omitempty"`
+			OutsideRequest *control.Request `json:"outside_request,omitempty"`
+			VM             *NativeCapacity  `json:"native_vm,omitempty"`
+		}{plain: plain(c), OutsideClaim: nil, OutsideRequest: nil, VM: nil})
+	}
 	if c.ProtocolVersion == 2 && c.InitialOutside != nil && c.OutsideClaim == noRef && c.OutsideRequest == noRequest {
 		return json.Marshal(struct {
 			plain
