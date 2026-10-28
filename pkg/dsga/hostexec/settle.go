@@ -40,6 +40,11 @@ func (p *Publisher) SettleCurrent(ctx context.Context) (bool, error) {
 		return false, err
 	}
 	m := s.State()
+	if m.Active == nil && m.InitialHeld != nil {
+		// 首次预算持续消费原placement而无Resize结清格式。只读认证
+		// 原域；不能因无Active直接跳过，也不能凭初始容量清后继峰值。
+		return false, p.checkInitial(ctx, s)
+	}
 	if m.Active != nil || m.BudgetHeld == nil && m.CapacityHeld == nil {
 		return false, nil
 	}

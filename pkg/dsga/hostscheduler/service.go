@@ -237,7 +237,7 @@ func (s *Service) publish(ctx context.Context, d domain, pod *core.Pod, p hostgu
 		return err
 	}
 	m := snapshot.State()
-	if m.Active == nil && m.BudgetHeld == nil && m.CapacityHeld == nil || m.Active != nil && m.Active.AbortRequested {
+	if m.Active == nil && m.BudgetHeld == nil && m.CapacityHeld == nil && m.InitialHeld == nil || m.Active != nil && m.Active.AbortRequested {
 		return nil
 	}
 	// 等Prepare真实完成后再请求发布，不制造替代预算。Runner已发布的原
@@ -253,7 +253,7 @@ func (s *Service) publish(ctx context.Context, d domain, pod *core.Pod, p hostgu
 	if !prepared {
 		return nil
 	}
-	if m.Active == nil {
+	if m.Active == nil && m.InitialHeld == nil {
 		closed, err := hostguard.SettlementFor(m)
 		if err != nil {
 			return err

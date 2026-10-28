@@ -141,6 +141,55 @@ func TestInitialBudgetReplacedOnlyByAtomicCompleteNormalFinalization(t *testing.
 	require.NoError(t, m.Validate())
 }
 
+// 零派发取消只关闭真实请求，不改首次预算或造普通成功水位。经过历史
+// 淘汰仍可恢复原Initial，之后的请求继续受原容量代次和新HWM约束。
+func TestInitialBudgetSurvivesUndispatchedCancellationsBeyondHistory(t *testing.T) {
+	_, command, receipt := initialDomain(t)
+	m := initialBoundModel(t)
+	var err error
+	m, err = m.StartInitialAdmission(m.Owner, command)
+	require.NoError(t, err)
+	m, err = m.RecordInitialAdmission(m.Owner, receipt)
+	require.NoError(t, err)
+	original := cloneInitial(m.InitialHeld)
+	var first control.Request
+	for revision := range HistoryLimit + 2 {
+		r := testRequest(m, uint64(revision+1), control.Grow)
+		if revision == 0 {
+			first = r
+		}
+		var disposition Disposition
+		m, disposition, err = m.Begin(m.Owner, r, 0)
+		require.NoError(t, err)
+		require.Equal(t, Accepted, disposition)
+		m, err = m.RequestAbort(m.Owner, r.Key)
+		require.NoError(t, err)
+		m, err = m.Finish(m.Owner, r.Key)
+		require.NoError(t, err)
+		require.Equal(t, original, m.InitialHeld)
+		require.Nil(t, m.BudgetBoundary)
+	}
+	require.Equal(t, ResultExpired, m.Lookup(first))
+	require.EqualValues(t, 2, m.ExpiredResults)
+	_, encoded, err := encode(m, MaxEncodedBytes)
+	require.NoError(t, err)
+	restored, err := decode(encoded, m.VMUID, m.Incarnation)
+	require.NoError(t, err)
+	require.Equal(t, original, restored.InitialHeld)
+	r := testRequest(restored, uint64(HistoryLimit+3), control.Grow)
+	restored, disposition, err := restored.Begin(restored.Owner, r, 0)
+	require.NoError(t, err)
+	require.Equal(t, Accepted, disposition)
+	// 一旦存在真实写前派发，不能再借相同Initial把它关闭为零效果。
+	restored, err = restored.Start(restored.Owner, r.Key, PrepareBudget, r.Key.Instance.ComputeInstanceID, []byte(`{"original":"pending"}`))
+	require.NoError(t, err)
+	restored, err = restored.RequestAbort(restored.Owner, r.Key)
+	require.NoError(t, err)
+	_, err = restored.Finish(restored.Owner, r.Key)
+	require.Error(t, err)
+	require.Equal(t, original, restored.InitialHeld)
+}
+
 func TestStoreInitialUnknownWritesNeverReturnDispatchOrLosePermanentState(t *testing.T) {
 	i, c, receipt := initialDomain(t)
 	for _, mode := range []string{"lost-budget", "lost-start", "lost-record"} {

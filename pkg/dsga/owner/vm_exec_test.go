@@ -676,6 +676,13 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 			if strings.HasPrefix(mode, "restore-prior") {
 				options, timeout = DefaultOptions(), 2*time.Minute
 			}
+			if mode == "host-settle-scheduler-loop" {
+				// 此组合额外等待真实2秒Scheduler轮询与2.2秒GC节流观察，
+				// 25秒外层夹具期限会在全部业务断言后抢先取消Session。
+				// 使用现有生产选主参数及45秒测试总期限；不改任何
+				// 业务deadline、单轮10秒上限或未知/来源校验。
+				options, timeout = DefaultOptions(), 45*time.Second
+			}
 			elector, err := New(coord, store, options)
 			require.NoError(t, err)
 			ctx, cancel := context.WithTimeout(context.Background(), timeout)

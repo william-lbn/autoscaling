@@ -20,6 +20,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	kubefake "k8s.io/client-go/kubernetes/fake"
 	coordclient "k8s.io/client-go/kubernetes/typed/coordination/v1"
@@ -346,6 +347,25 @@ func schedulerPublishesOriginalHost(t *testing.T, ctx context.Context, api *owne
 	require.NoError(t, err)
 	pod.Spec.SchedulerName = m.Profile.SchedulerName
 	require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("pods"), pod, pod.Namespace))
+	// 默认fake只过滤label，不执行真实API的fieldSelector。组合还含
+	// 未调度waiting Pod，不能把它返回给node-one查询并误报生产校验失败。
+	// 按请求选择器过滤夹具列表；生产assignedPage的严格节点检查不放宽。
+	client.PrependReactor("list", "pods", func(action kt.Action) (bool, runtime.Object, error) {
+		list, err := client.Tracker().List(core.SchemeGroupVersion.WithResource("pods"), core.SchemeGroupVersion.WithKind("Pod"), action.GetNamespace())
+		if err != nil {
+			return true, nil, err
+		}
+		pods := list.(*core.PodList)
+		selected := pods.DeepCopy()
+		selected.Items = nil
+		selector := action.(kt.ListAction).GetListRestrictions().Fields
+		for _, candidate := range pods.Items {
+			if selector.Matches(fields.Set{"spec.nodeName": candidate.Spec.NodeName}) {
+				selected.Items = append(selected.Items, candidate)
+			}
+		}
+		return true, selected, nil
+	})
 	vmClient, err := vmclient.NewForConfig(api.config)
 	require.NoError(t, err)
 	c := hostscheduler.Config{Nodes: []hostscheduler.NodeConfig{{Binding: m.Binding, Profile: *m.Profile, SystemBytes: m.OutsideBytes, InitializeAtResourceVersion: ""}}}

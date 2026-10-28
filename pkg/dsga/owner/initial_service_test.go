@@ -178,6 +178,15 @@ func initialAndGrowQualification(t *testing.T, ctx context.Context, client *kube
 }
 
 func TestProductionInitialServiceThenGrowUsesOriginalSourcesAndUnknownRecovery(t *testing.T) {
+	productionInitialService(t, false)
+}
+
+func TestProductionInitialHostAndUndispatchedCancelKeepOriginalPlacement(t *testing.T) {
+	productionInitialService(t, true)
+}
+
+func productionInitialService(t *testing.T, hostOnly bool) {
+	t.Helper()
 	api, store, coord := newAPI(t)
 	client := vmCore(t)
 	api.mu.Lock()
@@ -247,6 +256,15 @@ func TestProductionInitialServiceThenGrowUsesOriginalSourcesAndUnknownRecovery(t
 			return next
 		}
 		worker = rebuild()
+		if hostOnly {
+			for range 2 {
+				progress, err := worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress)
+			}
+			verifyInitialHostAndCancel(t, ctx, api, client, coord, store, session, worker, source, pg, request)
+			return nil
+		}
 		worker = verifyInitialServiceReplies(t, ctx, api, client, store, session, resources, worker, config, source, pg, root)
 		// 后继完整Grow使用实际Prepare/Host/Guest/VM/PG/预算/准入，首次永久
 		// 头只能在完整Finalize的同CAS被替换；不注入领域Completed。
