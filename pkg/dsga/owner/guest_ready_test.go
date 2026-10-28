@@ -373,6 +373,12 @@ func TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder(t *testing.T) {
 					}
 					require.Equal(t, wantPosts, posts)
 					if mode == "root-reply-lost" || mode == "tasks-reply-lost" || mode == "system-reply-lost" {
+						// setter回复丢失必须保留准确的执行不确定错误，
+						// 不能被发送分支的局部err遮蔽成零值Evidence不符。
+						var responseErr *resourceguard.ClientError
+						require.ErrorAs(t, err, &responseErr)
+						require.True(t, responseErr.MayHaveExecuted)
+						require.Equal(t, "response_unconfirmed", responseErr.Code)
 						// 完整重建实际Guest/PG worker，Pending必须从原WAL恢复，
 						// 而不是复用旧对象才偶然能恢复。仍只Observe，不派发新命令。
 						restoredResource, err := session.NewResourceWorker(ctx, resourceConfig)

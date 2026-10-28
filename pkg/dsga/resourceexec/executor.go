@@ -192,9 +192,9 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		if err := checkGuest(view, prepared); err != nil {
 			return pgexec.AwaitingFact, err
 		}
-		process, err := e.resources.InspectProcess(ctx)
-		if err != nil {
-			return pgexec.AwaitingFact, err
+		process, processErr := e.resources.InspectProcess(ctx)
+		if processErr != nil {
+			return pgexec.AwaitingFact, processErr
 		}
 		if view.Birth == nil || process != *view.Birth {
 			return pgexec.AwaitingFact, fmt.Errorf("original Postmaster birth changed")
@@ -209,10 +209,15 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		// 独立资源代次取自原root WAL，绝不借PG revision/gen生成。完整命令
 		// 先经原VM UID/RV CAS持久化；丢回复没有票据，绝不调用下面Apply。
 		command = resourceguard.Command{ProtocolVersion: 1, Identity: e.id, IssuerEpoch: e.actor.Epoch, Revision: revision, BudgetCommitmentID: op.Request.BudgetCommitmentID, PostmasterPID: process.PostmasterPID, PostmasterStartTicks: process.PostmasterStartTicks, MemoryMaxBytes: prepared.Limits.MemoryMaxBytes, PidsMaxTasks: prepared.Limits.PidsMaxTasks, SystemMemoryMaxBytes: prepared.Limits.SystemMemoryMaxBytes, OutsideUpperBytes: prepared.Limits.OutsideUpperBytes, HugePools: append([]resourceguard.HugePool(nil), prepared.Limits.HugePools...)}
-		body, err := json.Marshal(command)
-		if err != nil || command.Validate() != nil {
+		body, marshalErr := json.Marshal(command)
+		if marshalErr != nil || command.Validate() != nil {
 			return pgexec.AwaitingFact, fmt.Errorf("invalid complete resource command")
 		}
+		// Start及Apply必须写入外层err，供下方统一处理。上面的出生查询和
+		// 序列化分别用processErr/marshalErr；任一处用“新变量, err :=”都会
+		// 在本分支遮蔽外层err，使真实发送失败被零值Evidence掩盖为预算
+		// 不符。未知仍须保留原WAL/SDK Pending，并把准确ClientError交给
+		// 协调器决定只读恢复，不能因此将本次动作落成成功或自动重发。
 		var dispatch *journal.Dispatch
 		snapshot, dispatch, err = e.store.Start(ctx, snapshot, e.actor, op.Request.Key, journal.GuestReady, e.instance.ComputeInstanceID, body)
 		if err != nil {
