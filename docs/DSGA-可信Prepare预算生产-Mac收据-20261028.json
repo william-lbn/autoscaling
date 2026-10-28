@@ -1,0 +1,895 @@
+{
+  "schema_version": 1,
+  "state": "Mac trusted Prepare module accepted; whole core still open",
+  "base_commit": "961fbe46467956af8e23f77e308e5ebeca78f1c5",
+  "code_commit": "da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+  "source_sha256": {
+    "pkg/agent/config.go": "2652de7a7455d2992a8919720062828bd215f817a930bae6120b0095e1b91666",
+    "pkg/agent/dsga.go": "0b785426cbc543bf3715b5d3488c9c06169ad2aeca76e81de5976e5c0e6fa6de",
+    "pkg/dsga/budget/qualification.go": "ca938dff56ea89616b4f892ffbd8b773398716bce67dff7744842246083e5851",
+    "pkg/dsga/budget/qualification_test.go": "35fcebcae50d4bd831437ae88802a3ba36b52a5a763c7c8866c63bfa52b298a4",
+    "pkg/dsga/budget/reconcile_inputs.go": "eff8b52c16d991e3354ba81fd468adc23ee41518aa6c04139153caa1ed968f0b",
+    "pkg/dsga/budget/settlement.go": "294ae21f9184d1c0d564157edad5ef43eae50501c5abe1e3fcbbaf988a166601",
+    "pkg/dsga/budgetclaims/current.go": "94cba6d6cc29da6d66f75491ed65a13a9a623acfa776d803b1e9a2066104db8a",
+    "pkg/dsga/budgetclaims/qualification.go": "bc1df986c0149920096ccaf1100e9680efd50aebba8c72920648c8cba80a6030",
+    "pkg/dsga/budgetclaims/qualification_test.go": "9eda24001cf0b7fcdab690c82fc8bfa6d871d21a9e7f68f3845b82d7f886e7d3",
+    "pkg/dsga/budgetclaims/reader.go": "8cc5b8e693a00dc43b71b1f39043973f2d7ae2b516c483946624876f71818a87",
+    "pkg/dsga/budgetclaims/reconcile_seed.go": "90be09b95149fe5c8c9c2796ef562c6a04838610618e23b0db0758044dd878c0",
+    "pkg/dsga/budgetclaims/reconciled.go": "a85eb9c5657e09e62ab3101508fbfce92c0006b5aad5c88619469f6da70fd3f2",
+    "pkg/dsga/owner/pg.go": "e6f54d2b116c4f16aa461ea559d4c23da19118dde210f48037fc273251530219",
+    "pkg/dsga/owner/trusted_prepare_test.go": "e0bb877832fd2b58de6950c5be4e37d61d7edd4f67a1d4595de035f5fe13700a",
+    "pkg/dsga/owner/vm_exec_test.go": "482106ff12e2a2b5221eae85ee5d72706e8a6575b37cfb380d5ae4c54b55e9e9",
+    "pkg/dsga/prepareexec/executor.go": "2d145c2fb704e310872bb5a91e1ad5820304f538174e273d6655b2936a4e9c6b"
+  },
+  "source_go_files": 16,
+  "runtime_go_files": 12,
+  "test_go_files": 4,
+  "test_counts": {
+    "top_level": 23,
+    "including_subtests": 117,
+    "adopted_fail": 0,
+    "skip": 0,
+    "new_combined_scenarios": 1,
+    "combined_pass_records_with_parent": 2
+  },
+  "final_test_mapping": {
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortWireRequiresCompleteOriginalAndStrictFields": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.13
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/target": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/hash": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/budget": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/generation": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/closed": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/old-epoch": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/new-epoch": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch/readonly-new-setter": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestCommittedAbortCommandRejectsChangedContextOrReboundEpoch": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.03
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/version": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/missing-sources": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/uppercase-digest": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/short-digest": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/different-vm": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/unenforced-aggregate": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/missing-host-uid": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/incomplete-pg": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/missing-guest_sha256": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/missing-vm_sha256": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/missing-protocol_version": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/missing-finalized": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources/missing-prepared_sha256": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizationCommandPreservesOriginalWireAndRejectsPartialSources": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.12
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestFinalizedBudgetRequiresFullBindingsAndDistinctEnforcedBounds": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.07
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/permit": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/underquoted": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/overlapping": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/observed_outside": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/outside_mismatch": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/guest_overcommitted": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/unknown_tail": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/old_generation": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.06
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestQualificationRejectsUnqualifiedOrUnderfundedTargets/repeated-size": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestQualificationRejectsUnqualifiedOrUnderfundedTargets/legacy-pids": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestQualificationRejectsUnqualifiedOrUnderfundedTargets/overflow": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestQualificationRejectsUnqualifiedOrUnderfundedTargets/unknown-bootstrap": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestQualificationRejectsUnqualifiedOrUnderfundedTargets/no-held-lifetime": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestQualificationRejectsUnqualifiedOrUnderfundedTargets/legacy-system": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestQualificationRejectsUnqualifiedOrUnderfundedTargets/system-not-covered": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestQualificationRejectsUnqualifiedOrUnderfundedTargets/sum-mismatch": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestQualificationRejectsUnqualifiedOrUnderfundedTargets/usable-exceeded": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestQualificationRejectsUnqualifiedOrUnderfundedTargets": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestOutsideV2RequiresExactRetainedQualification": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestContinuousQuiesceKeepsRetainedCostsAndRejectsUnprovedLowerLimit": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.15
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged/VM-drift": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged/new-generation": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged/new-PG-operation": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged/unknown-allocation": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged/floor": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.1
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled/VM-drift": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled/new-generation": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled/new-PG-operation": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.03
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled/unknown-allocation": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled/floor": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.12
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.23
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/small-VM-outside": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/short-Host-peak": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.03
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/unknown-array": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/partial-Root": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/different-birth": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/overflow": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/same-source": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/oversized-PG": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/wrong-generation": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/prepare-direction": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/PG-prefix-without-generation": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/future-VM": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/future-outside": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.22
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledAggregateDoesNotChargeHugePoolToNormalAgain": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestReconciledAbortRequiresOriginalActualBudgetAndStrictWire": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.57
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestRootAggregateUsesConfirmedDomainOnceAndNeverPromotesOutside": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestRootAggregateKeepsOriginalHeldReferenceAcrossUnknownAndReplacement": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestRootAggregateRejectsPartialKernelOrUnboundSourceAndStrictTampering": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.03
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestRootAggregateFiniteTasksBindSourceWithoutAddingBytes": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSettlementClaimsKeepLifetimeIdentityAndHostOverhead/no-overhead": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSettlementClaimsKeepLifetimeIdentityAndHostOverhead/guest-only": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSettlementClaimsKeepLifetimeIdentityAndHostOverhead/overflow": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSettlementClaimsKeepLifetimeIdentityAndHostOverhead/new-runner": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSettlementClaimsKeepLifetimeIdentityAndHostOverhead/release-on-expiry": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSettlementClaimsKeepLifetimeIdentityAndHostOverhead": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSettlementStrictSourcesPreserveLegacyAndRejectPartialClaims": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSystemChargedUsesOwnDomainOnceAndSurvivesPGResourceChange": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestSystemChargedRejectsUnknownPlacementDriftAndScopeTampering": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only/new-target-budget": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only/same-key": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only/different-source": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only/closed-gate": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only/new-pg-generation": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only/different-epoch": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only/invented-mutation": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/read-only": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.18
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen/new-target-budget": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen/same-key": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen/different-source": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen/closed-gate": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen/new-pg-generation": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen/different-epoch": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen/invented-mutation": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources/reopen": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.25
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestUnchangedAbortRequiresOldBudgetAndOriginalCancellationSources": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.43
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims::TestOutsideQualificationReaderRejectsReplacementAndLifetimeDrift/valid": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims::TestOutsideQualificationReaderRejectsReplacementAndLifetimeDrift/wrong-uid": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims::TestOutsideQualificationReaderRejectsReplacementAndLifetimeDrift/changed-body": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims::TestOutsideQualificationReaderRejectsReplacementAndLifetimeDrift/releasing": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims::TestOutsideQualificationReaderRejectsReplacementAndLifetimeDrift/mutable": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims::TestOutsideQualificationReaderRejectsReplacementAndLifetimeDrift/unprotected": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims::TestOutsideQualificationReaderRejectsReplacementAndLifetimeDrift/missing": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims::TestOutsideQualificationReaderRejectsReplacementAndLifetimeDrift/wrong-pod": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims::TestOutsideQualificationReaderRejectsReplacementAndLifetimeDrift/wrong-node": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims::TestOutsideQualificationReaderRejectsReplacementAndLifetimeDrift": {
+      "outcome": "pass",
+      "log": "dsga-prepare-budget-regression.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/trusted-prepare-replies": {
+      "outcome": "pass",
+      "log": "dsga-prepare-owner-final.jsonl",
+      "elapsed": 20.21
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL": {
+      "outcome": "pass",
+      "log": "dsga-prepare-owner-final.jsonl",
+      "elapsed": 20.21
+    }
+  },
+  "checks": {
+    "lint_packages": 5,
+    "lint": "0 issues",
+    "vet_packages": 5,
+    "vet": "passed",
+    "linux_binaries": 8,
+    "linux_executed": false
+  },
+  "linux_artifacts": [
+    {
+      "service": "agent",
+      "arch": "amd64",
+      "exit_code": 0,
+      "source_commit": "da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+      "executed": false,
+      "path": "build/dsga-prepare-release-agent-linux-amd64",
+      "sha256": "702d67f2ff376c37bdfdddafc73648fa1a94421fa776c7642d3ad60cafe216be",
+      "bytes": 80324555,
+      "elf_machine": 62,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=linux",
+        "build\tGOAMD64=v1",
+        "build\tvcs=git",
+        "build\tvcs.revision=da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+        "build\tvcs.time=2026-10-28T09:52:38Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "scheduler",
+      "arch": "amd64",
+      "exit_code": 0,
+      "source_commit": "da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+      "executed": false,
+      "path": "build/dsga-prepare-release-scheduler-linux-amd64",
+      "sha256": "14d285260e430ae662b0700f4fdc494ca62da9e1162d9a0d2d7bac54998bac0c",
+      "bytes": 96950781,
+      "elf_machine": 62,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=linux",
+        "build\tGOAMD64=v1",
+        "build\tvcs=git",
+        "build\tvcs.revision=da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+        "build\tvcs.time=2026-10-28T09:52:38Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "runner",
+      "arch": "amd64",
+      "exit_code": 0,
+      "source_commit": "da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+      "executed": false,
+      "path": "build/dsga-prepare-release-runner-linux-amd64",
+      "sha256": "0e70b28cda603c461f1d6d9235877f86e15b5915b5b17a581cd5e9c3af8958cf",
+      "bytes": 58589960,
+      "elf_machine": 62,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=linux",
+        "build\tGOAMD64=v1",
+        "build\tvcs=git",
+        "build\tvcs.revision=da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+        "build\tvcs.time=2026-10-28T09:52:38Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "controller",
+      "arch": "amd64",
+      "exit_code": 0,
+      "source_commit": "da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+      "executed": false,
+      "path": "build/dsga-prepare-release-controller-linux-amd64",
+      "sha256": "4b2671591c0a491e17a4c95a9773314ae10c68b2a77c671a30a1beaed3eee6ad",
+      "bytes": 71316117,
+      "elf_machine": 62,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=linux",
+        "build\tGOAMD64=v1",
+        "build\tvcs=git",
+        "build\tvcs.revision=da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+        "build\tvcs.time=2026-10-28T09:52:38Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "agent",
+      "arch": "arm64",
+      "exit_code": 0,
+      "source_commit": "da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+      "executed": false,
+      "path": "build/dsga-prepare-release-agent-linux-arm64",
+      "sha256": "a132244a22812bed875c93152f2b01c0d8bdedbd36ec4c4f2db972648ae5a800",
+      "bytes": 75904180,
+      "elf_machine": 183,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=arm64",
+        "build\tGOOS=linux",
+        "build\tGOARM64=v8.0",
+        "build\tvcs=git",
+        "build\tvcs.revision=da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+        "build\tvcs.time=2026-10-28T09:52:38Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "scheduler",
+      "arch": "arm64",
+      "exit_code": 0,
+      "source_commit": "da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+      "executed": false,
+      "path": "build/dsga-prepare-release-scheduler-linux-arm64",
+      "sha256": "d23c430acc9ef78dbfe8b31821ebe01301d494964a2e95836ec369ef3b09bf56",
+      "bytes": 92141135,
+      "elf_machine": 183,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=arm64",
+        "build\tGOOS=linux",
+        "build\tGOARM64=v8.0",
+        "build\tvcs=git",
+        "build\tvcs.revision=da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+        "build\tvcs.time=2026-10-28T09:52:38Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "runner",
+      "arch": "arm64",
+      "exit_code": 0,
+      "source_commit": "da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+      "executed": false,
+      "path": "build/dsga-prepare-release-runner-linux-arm64",
+      "sha256": "93a5bbedf8cedf3b22dd9dd73cca63af8bc8d444b55696a3ccd4958f61f34ef4",
+      "bytes": 55421161,
+      "elf_machine": 183,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=arm64",
+        "build\tGOOS=linux",
+        "build\tGOARM64=v8.0",
+        "build\tvcs=git",
+        "build\tvcs.revision=da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+        "build\tvcs.time=2026-10-28T09:52:38Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "controller",
+      "arch": "arm64",
+      "exit_code": 0,
+      "source_commit": "da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+      "executed": false,
+      "path": "build/dsga-prepare-release-controller-linux-arm64",
+      "sha256": "ae156f5d41b0c49f30703495456a8cd1d2fc47e5b3e677c6484e2e0cd3430e82",
+      "bytes": 67663044,
+      "elf_machine": 183,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=arm64",
+        "build\tGOOS=linux",
+        "build\tGOARM64=v8.0",
+        "build\tvcs=git",
+        "build\tvcs.revision=da291ce8f8549f5c225a3b6b00ce2efbf6dcd9ec",
+        "build\tvcs.time=2026-10-28T09:52:38Z",
+        "build\tvcs.modified=true"
+      ]
+    }
+  ],
+  "vcs_modified_explanation": "Go/module sources exactly match code commit; owner AGENTS.md dirty and evidence documents cause vcs.modified=true; never executed Linux artifacts",
+  "preserved_owner_agents_sha256": "5c61959674c362ecc4c3709930121304595e8b0bca1ff70ae401f0cf8f2803c1",
+  "log_sha256": {
+    "dsga-prepare-budget-regression.jsonl": "88f1a43069db90b07f6fe3e1d010ccbd2e4d3476824cd9463067adf6da718bc5",
+    "dsga-prepare-lint-first.log": "2e897ef24af125eb7fb25fe8d0e34e9fdaeabfe2a5a51972516e01cfc80e9479",
+    "dsga-prepare-lint-second.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "dsga-prepare-linux-build-summary.log": "ca0ca55e904fd64379e9fdb0a4e67d49702226f3e0dcec0c7e2f31f265dd8071",
+    "dsga-prepare-owner-final.jsonl": "b418e366ca0c0dcc1f305b8e3d549f98a6cc6f71be44ac67542522b68c591b52",
+    "dsga-prepare-owner-first.jsonl": "ad2c23052d125112e99ff984aee70d4f81e5992fba064a268ac393327f3f3e1b",
+    "dsga-prepare-owner-fourth.jsonl": "838a9abd5210327ff48a81d68f27872c35dfcbdf6c08b99254a9b574357f3cf9",
+    "dsga-prepare-owner-second.jsonl": "a2d5340d4b158cdd750f6ab16355b6465c09d5489ad004799e8d65f2f49072ab",
+    "dsga-prepare-owner-third.jsonl": "b7af76bf343f1f17ec155dcaafe016c083742c333e13d25deb8a0a1d525101bd",
+    "dsga-prepare-pure-first.log": "f69b92b2bb90002172eec16a9c589f8b5bf59a35d1a3e658a5a2dbb07696c77c",
+    "dsga-prepare-pure-second.jsonl": "aa79e710f7699344ceecb189ca12424c856a65855da78e7dc0c5ea22610a5ffa",
+    "dsga-prepare-release-agent-linux-amd64.log": "626783d6d71dd47213dcfe186783edc7872b49408a4d6bc7fbca3c3b1769624d",
+    "dsga-prepare-release-agent-linux-arm64.log": "fb3fb54f04ed481b1d8dfda57eaa472aba919876b92aba1661f0a30d86b810b3",
+    "dsga-prepare-release-controller-linux-amd64.log": "5b17e32f640a48f21c075a3f775662615875ace2a1edaa7886298388c80572f8",
+    "dsga-prepare-release-controller-linux-arm64.log": "f9778a9e534f13b020f8b4b0c43ca0ae0677dc10ef5bc8e92d2751cadc5967c8",
+    "dsga-prepare-release-runner-linux-amd64.log": "0e11f1fed683cece9b391e6230238a5c468b02c7dfd72ed8bb8cf9ac95afdf5c",
+    "dsga-prepare-release-runner-linux-arm64.log": "dd12ee80bb3a288389cae18a7a0db28c324b7bb823bd02335178271d0457f518",
+    "dsga-prepare-release-scheduler-linux-amd64.log": "ffe33019a3827d944a23b7b870046838c9b3c115aab0d5327837b1c8334d098e",
+    "dsga-prepare-release-scheduler-linux-arm64.log": "26ed40861e95922b63382142d115b780ff74d7269c31a95ddd0a45d26827a211",
+    "dsga-prepare-vet.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "failed_attempts": {
+    "dsga-prepare-pure-first.log": "undefined test helper name; corrected before tests executed",
+    "dsga-prepare-owner-first.jsonl": "new production observation SourceID differed from original dispatch target",
+    "dsga-prepare-owner-second.jsonl": "explicit error-type assertion identified the same SourceID error; corrected in runtime",
+    "dsga-prepare-owner-third.jsonl": "fixture assumed worker auto-Finish; existing explicit Store.Finish used",
+    "dsga-prepare-lint-first.log": "error wrapping, explicit zero fields, imports and unused fixture values fixed"
+  },
+  "test_adoption_note": "budget regression reused after only explicit zero fields/import-format test edits; final owner test covers final runtime including error wrapping; final comment-only constructor wording has no behavioral effect",
+  "fixtures": [
+    "Kubernetes/Lease server and fake core objects",
+    "PG shared cost/control/admission peer",
+    "root/cgroup/kernel peer",
+    "independent platform qualification values",
+    "QEMU QMP peer"
+  ],
+  "actual_components": [
+    "owner Session",
+    "generated VM client and UID/RV journal CAS",
+    "PGWorker typed executors",
+    "Prepare Outside creation and original-UID reads",
+    "persistent Runner and real local TLS/UDS transport",
+    "Host publisher and current budget readers"
+  ],
+  "remaining_code": [
+    "initial full budget and first service opening",
+    "safe normal cap decrease and background/private liveness",
+    "missing-source/root-drift production recovery",
+    "true owner takeover and no-Wait/Start/init recovery",
+    "cross-boot/migration and all source lifecycle",
+    "trusted request/cancel/replay entry and Monitor/automatic policy/CPU"
+  ],
+  "linux_not_executed": [
+    "platform qualification and exact numerical bounds",
+    "cgroup v2/all HugeTLB states/physical release",
+    "NeonVM/KVM/QEMU",
+    "Kubernetes RBAC/admission/takeover/etcd",
+    "storage/load/performance/long-run"
+  ],
+  "scope": {
+    "upstream_frozen": true,
+    "other_pg_deferred": true,
+    "independent_control_plane_untouched": true,
+    "images_built": false,
+    "deployed": false,
+    "main_merged": false,
+    "default_off": true
+  }
+}
