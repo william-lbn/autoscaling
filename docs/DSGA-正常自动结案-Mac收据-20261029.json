@@ -1,0 +1,469 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Darwin arm64",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "source_commit": "7cca3f1cc088aed8e512d94b3e5e22c5c23af887",
+  "source_sha256": {
+    "pkg/dsga/admissionexec/executor.go": "2e4a6a704e83307f58a3d87be0d92cad13cac01c5a0a80769d46fb69bae0a008",
+    "pkg/dsga/admissionexec/completion.go": "747b1272dc75a7f748dfa88759583e86f086c206734acea83f2015949d7ca180",
+    "pkg/dsga/admissionexec/completion_test.go": "e6e2697bf89a16c6a3d604613083c76aaa9b462856c911ef5d24f3a05ae5f8fa",
+    "pkg/dsga/owner/initial_service_test.go": "c27af296213d43a0f0e59ce77db0401be03fc61f4eb0ce013dde41be5c4dfc3e",
+    "pkg/dsga/owner/trusted_prepare_test.go": "5f3f24c963d0b22956bf3afab693ce464144c12e3d4f6660f4b64334a85bf0ec",
+    "pkg/dsga/owner/normal_completion_test.go": "ba534357c298d958d6208156c08db548a9513e3e415c95eb262dbbacc264e7a2"
+  },
+  "mac_race": [
+    {
+      "log": "dsga-normal-finish-final.jsonl",
+      "top_level_tests": 1,
+      "test_records": 6,
+      "fail": 0,
+      "skip": 0,
+      "mapping": [
+        {
+          "test": "TestProductionNormalCompletionRechecksSourcesAndRecoversLostFinish/root-limit-drift",
+          "outcome": "pass",
+          "elapsed_seconds": 3.13
+        },
+        {
+          "test": "TestProductionNormalCompletionRechecksSourcesAndRecoversLostFinish/qualification-releasing",
+          "outcome": "pass",
+          "elapsed_seconds": 3.37
+        },
+        {
+          "test": "TestProductionNormalCompletionRechecksSourcesAndRecoversLostFinish/postmaster-replaced",
+          "outcome": "pass",
+          "elapsed_seconds": 3.36
+        },
+        {
+          "test": "TestProductionNormalCompletionRechecksSourcesAndRecoversLostFinish/admission-superseded",
+          "outcome": "pass",
+          "elapsed_seconds": 2.5
+        },
+        {
+          "test": "TestProductionNormalCompletionRechecksSourcesAndRecoversLostFinish/vm-rv-changed-during-check",
+          "outcome": "pass",
+          "elapsed_seconds": 3.62
+        },
+        {
+          "test": "TestProductionNormalCompletionRechecksSourcesAndRecoversLostFinish",
+          "outcome": "pass",
+          "elapsed_seconds": 53.99
+        }
+      ],
+      "package_executions": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "outcome": "pass",
+          "elapsed_seconds": 55.733
+        }
+      ]
+    },
+    {
+      "log": "dsga-normal-finish-audit-final.jsonl",
+      "top_level_tests": 5,
+      "test_records": 32,
+      "fail": 0,
+      "skip": 0,
+      "mapping": [
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer/applied",
+          "outcome": "pass",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer/queried-after-takeover",
+          "outcome": "pass",
+          "elapsed_seconds": 0.03
+        },
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer/generic-completed",
+          "outcome": "pass",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer/old-format",
+          "outcome": "pass",
+          "elapsed_seconds": 0.03
+        },
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer/different-command",
+          "outcome": "pass",
+          "elapsed_seconds": 0.03
+        },
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer/wrong-root-bound",
+          "outcome": "pass",
+          "elapsed_seconds": 0.03
+        },
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer/missing-floor",
+          "outcome": "pass",
+          "elapsed_seconds": 0.03
+        },
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer/different-floor",
+          "outcome": "pass",
+          "elapsed_seconds": 0.03
+        },
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer/unconfirmed",
+          "outcome": "pass",
+          "elapsed_seconds": 0.03
+        },
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer/pending-fence",
+          "outcome": "pass",
+          "elapsed_seconds": 0.03
+        },
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer/new-generation",
+          "outcome": "pass",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer/unknown-field",
+          "outcome": "pass",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer/missing-query",
+          "outcome": "pass",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer/null-query",
+          "outcome": "pass",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer/duplicate-query",
+          "outcome": "pass",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestCompletionAuditRequiresOriginalCommandBudgetAndIssuer",
+          "outcome": "pass",
+          "elapsed_seconds": 0.46
+        },
+        {
+          "test": "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization/prepare_budget",
+          "outcome": "pass",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization/reserve_host",
+          "outcome": "pass",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization/resize_vm",
+          "outcome": "pass",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization/guest_ready",
+          "outcome": "pass",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization/resize_pg",
+          "outcome": "pass",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization/finalize_budget",
+          "outcome": "pass",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization/resume_admission",
+          "outcome": "pass",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization",
+          "outcome": "pass",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestReconciledOutsideSelectsExactActualVMAndRetainsOriginalReference",
+          "outcome": "pass",
+          "elapsed_seconds": 0.03
+        },
+        {
+          "test": "TestReconciledOpeningRequiresServiceSelectionAndUsesActualGeneration",
+          "outcome": "pass",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestReconciledOwnQuiesceDoesNotOverrideNewerOrChangedClosure/newer-close",
+          "outcome": "pass",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestReconciledOwnQuiesceDoesNotOverrideNewerOrChangedClosure/changed-budget",
+          "outcome": "pass",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestReconciledOwnQuiesceDoesNotOverrideNewerOrChangedClosure/changed-root",
+          "outcome": "pass",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestReconciledOwnQuiesceDoesNotOverrideNewerOrChangedClosure/unconfirmed",
+          "outcome": "pass",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestReconciledOwnQuiesceDoesNotOverrideNewerOrChangedClosure/wrong-target",
+          "outcome": "pass",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestReconciledOwnQuiesceDoesNotOverrideNewerOrChangedClosure",
+          "outcome": "pass",
+          "elapsed_seconds": 0.05
+        }
+      ],
+      "package_executions": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/admissionexec",
+          "outcome": "pass",
+          "elapsed_seconds": 3.006
+        }
+      ]
+    },
+    {
+      "log": "dsga-normal-finish-admission-regression.jsonl",
+      "top_level_tests": 1,
+      "test_records": 18,
+      "fail": 0,
+      "skip": 0,
+      "mapping": [
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/reply-lost-restart",
+          "outcome": "pass",
+          "elapsed_seconds": 2.49
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/dispatch-write-lost",
+          "outcome": "pass",
+          "elapsed_seconds": 2.5
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/replay-source-replaced",
+          "outcome": "pass",
+          "elapsed_seconds": 2.84
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/incomplete-budget",
+          "outcome": "pass",
+          "elapsed_seconds": 0.93
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/success",
+          "outcome": "pass",
+          "elapsed_seconds": 1.41
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/root-replaced-before",
+          "outcome": "pass",
+          "elapsed_seconds": 0.97
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/root-floor-before",
+          "outcome": "pass",
+          "elapsed_seconds": 0.96
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/root-birth-before",
+          "outcome": "pass",
+          "elapsed_seconds": 0.97
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/root-unknown-before",
+          "outcome": "pass",
+          "elapsed_seconds": 1
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/root-sdk-pending-before",
+          "outcome": "pass",
+          "elapsed_seconds": 0.94
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/root-actual-drift-before",
+          "outcome": "pass",
+          "elapsed_seconds": 1.02
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/root-process-before",
+          "outcome": "pass",
+          "elapsed_seconds": 1.04
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/no-resource-before",
+          "outcome": "pass",
+          "elapsed_seconds": 0.77
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/outside-mismatch-before",
+          "outcome": "pass",
+          "elapsed_seconds": 0.98
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/vm-before-write",
+          "outcome": "pass",
+          "elapsed_seconds": 1.06
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/root-after-write",
+          "outcome": "pass",
+          "elapsed_seconds": 2.48
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget/vm-after-write",
+          "outcome": "pass",
+          "elapsed_seconds": 2.53
+        },
+        {
+          "test": "TestPGWorkerFinalAdmissionUsesDurableOriginalAndFullBudget",
+          "outcome": "pass",
+          "elapsed_seconds": 24.9
+        }
+      ],
+      "package_executions": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "outcome": "pass",
+          "elapsed_seconds": 26.698
+        }
+      ]
+    }
+  ],
+  "total_adopted": {
+    "top_level_tests": 7,
+    "test_records": 56,
+    "fail": 0,
+    "skip": 0,
+    "meaning": "含父子记录；仅采用最终受影响组，非56次独立产品E2E，不累计首轮重复组合。"
+  },
+  "quality": {
+    "vet_exit": 0,
+    "incremental_lint_exit": 0,
+    "incremental_lint_relative_to": "8c4e482cd3afbaab18cdc759b7bf5b2bc8e485de",
+    "diff_check_exit": 0
+  },
+  "initial_failures": [
+    "首轮静态审计夹具遗漏Committed所需CancelClosed，夹具Validate失败；修正后再验证，不算业务负向或通过。",
+    "夹具修正后unknown-field负向真实失败：原宽松json.Unmarshal接受未知字段。采用严格UnmarshalObject后，未知/缺失/null/重复字段及原上下文负向全部通过。",
+    "正式组合首轮54.16秒通过；随后严格解码修改影响结案，最终仅重跑该新增组合53.99秒，不重复未变失租矩阵。"
+  ],
+  "cross_build": [
+    {
+      "service": "agent",
+      "arch": "amd64",
+      "source_commit": "7cca3f1cc088aed8e512d94b3e5e22c5c23af887",
+      "exit_code": 0,
+      "executed": false,
+      "artifact": "dsga-normal-finish-agent-linux-amd64",
+      "sha256": "515e961d1e9120b5b657409843aabb05e5698cc933905c19534e4293658dc043",
+      "size": 80714509,
+      "elf_machine": 62,
+      "vcs_modified": true,
+      "only_uncommitted_file": "AGENTS.md"
+    },
+    {
+      "service": "agent",
+      "arch": "arm64",
+      "source_commit": "7cca3f1cc088aed8e512d94b3e5e22c5c23af887",
+      "exit_code": 0,
+      "executed": false,
+      "artifact": "dsga-normal-finish-agent-linux-arm64",
+      "sha256": "d345f3c112a9a3fb4d5213d1b3aeab0adfe0449a6dd49b60f00e5e74d10f9f1f",
+      "size": 76268694,
+      "elf_machine": 183,
+      "vcs_modified": true,
+      "only_uncommitted_file": "AGENTS.md"
+    }
+  ],
+  "build_notes": "准确7cca3f1c Agent Linux amd64/arm64 ELF仅编译未执行；核VCS/架构/摘要。构建时唯一所有者AGENTS未提交造成modified=true；离线模块缓存stat警告保留。",
+  "log_sha256": {
+    "dsga-normal-finish-admission-regression.jsonl": {
+      "sha256": "58f6d9e1fb51d07253ddb4a4efe7d4806d66bc2028e38b2eb949d034f8910a48",
+      "size": 33928
+    },
+    "dsga-normal-finish-agent-linux-amd64.buildinfo": {
+      "sha256": "da6a4d7daf1b3e303abf1eb363e266f83ac9475b8148ef21c0d77b1de56fe2b3",
+      "size": 8597
+    },
+    "dsga-normal-finish-agent-linux-amd64.log": {
+      "sha256": "588a9be37a16cd3bbdccd229daab605ec1bb6c7c6c3cba59e4c1fe4175f8d252",
+      "size": 197
+    },
+    "dsga-normal-finish-agent-linux-arm64.buildinfo": {
+      "sha256": "65dfc108a0d5966d355f20e99f031e6f4ad90c52e995554bf9905dedb5fa1698",
+      "size": 8599
+    },
+    "dsga-normal-finish-agent-linux-arm64.log": {
+      "sha256": "09eb5e8e1b8b43d27cb7a14ce0bb02b556c2f9d466d0b98bef9cab7b3671e208",
+      "size": 197
+    },
+    "dsga-normal-finish-audit-final.jsonl": {
+      "sha256": "12ac387a29fa95ed5127207775e3a8e83d9e32c2f55d084afb66b2989e44ee13",
+      "size": 35049
+    },
+    "dsga-normal-finish-audit-first.jsonl": {
+      "sha256": "8e69db543d80773f8a7b5496b63293748669e11826676d932d9da99e2816257a",
+      "size": 38699
+    },
+    "dsga-normal-finish-audit-negative.jsonl": {
+      "sha256": "81ef76a6d2051f7fae68c62fa97f784ab4f1a229bbfdca04921d1811149588ba",
+      "size": 15678
+    },
+    "dsga-normal-finish-final.jsonl": {
+      "sha256": "80f44a45e616252566bdf10de0f3a709bf5f4995fbde30c5c17744cdf6eb7f21",
+      "size": 9491
+    },
+    "dsga-normal-finish-first.jsonl": {
+      "sha256": "0f44fca71044322d5c9cd6eaab4efd7d0dc25e00979d84ccd25d6821e2046d63",
+      "size": 9484
+    },
+    "dsga-normal-finish-lint-final.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "size": 10
+    },
+    "dsga-normal-finish-lint-first.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "size": 10
+    },
+    "dsga-normal-finish-linux-results.json": {
+      "sha256": "fffadbf70983876773d73844dcc29592c76d1b3d7a7cd3e84cb119f18de12642",
+      "size": 828
+    },
+    "dsga-normal-finish-vet-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "dsga-normal-finish-vet.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    }
+  },
+  "semantics": "正式owner Run在全步骤Settled后查询原准入，双重认证PG/Root/Outside/Host/Runner和同VM RV，再Finish CAS；提交后丢回复从原WAL恢复。无新setter、Key、开放或反向缩容；原预算头/回执不变，Host结清和下一Prepare真实接线通过。",
+  "scope": "SDK/owner/Lease/UID-RV WAL/预算/Host和本地UDS实际执行；PG/Root/Kube/QMP为显式协议peer，不是Linux PG、内核、K8s API/RBAC或物理内存认证。",
+  "compatibility": "不改wire、Root/PG内核或默认开关。仅Runner及来源读者齐全的生产执行器自动正常结案，旧领域构造器和取消恢复保留；缺完整历史审计不自动重造。",
+  "fixed_pg17": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "not_covered": [
+    "安全降低normal memory.max与后台/私有持续上界及活性",
+    "异常Root/资格/日志及越界的受控关闭",
+    "分区旧进程、出生不完整、Runner无Wait、外层跨boot及迁移",
+    "Monitor自动策略、全部最终写者与可信CPU全链",
+    "PG18及PG16独立内核/扩展/发行与受影响验证",
+    "Linux/K8s/NeonVM/HugeTLB/物理回收/性能和独立控制面后续统一E2E"
+  ],
+  "images_built": false,
+  "deployed": false,
+  "default_enabled": false
+}
