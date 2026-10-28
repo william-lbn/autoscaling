@@ -1,0 +1,317 @@
+{
+  "schema_version": 1,
+  "state": "Actual first budget/admission producer and original replay wired; initial-to-grow combination accepted; core lifecycle NOT complete",
+  "base_commit": "24990294ecc8926312e8b8de67524001ab4bcd55",
+  "implementation_commit": "3d363028e98aa36a02e8b36f537edf12165d4680",
+  "code_commit": "b9d274accbb94b1f6fd595014c5f10e420da8184",
+  "source_sha256": {
+    "pkg/agent/dsga.go": "5b30758b5ab0a3f1ffcc04e2a6b448474c7138f5188ccc1d1e3c068bad766c13",
+    "pkg/dsga/initialexec/executor.go": "ef68ba0e815c6c02a050059f414b5c90be4b3af916b39700fc1f44b88c92d235",
+    "pkg/dsga/owner/initial_service_test.go": "b59e3e5125500d77ac5d1d806101e31b0cedaffdee6dbd7b5735f43bd30685ca",
+    "pkg/dsga/owner/pg.go": "75ecff5cef62b82d1f0837fc5f9e25b28cf32c6fed57b24b5c762317234776a2"
+  },
+  "source_go_files": 4,
+  "runtime_go_files": 3,
+  "test_go_files": 1,
+  "test_counts": {
+    "combined_scenarios": 2,
+    "top_level_tests": 2,
+    "including_parent_records": 3,
+    "adopted_fail": 0,
+    "skip": 0
+  },
+  "test_mapping": {
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionInitialServiceThenGrowUsesOriginalSourcesAndUnknownRecovery": {
+      "outcome": "pass",
+      "log": "dsga-initial-exec-fenced-query-final.jsonl",
+      "elapsed": 42.9
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/trusted-prepare-replies": {
+      "outcome": "pass",
+      "log": "dsga-initial-exec-combined-final.jsonl",
+      "elapsed": 27.13
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL": {
+      "outcome": "pass",
+      "log": "dsga-initial-exec-combined-final.jsonl",
+      "elapsed": 27.14
+    }
+  },
+  "log_sha256": {
+    "dsga-initial-exec-combined-final.jsonl": "6f7b0dac46be4deb0f581f57f238d1fdc12977d137aab541202d27299353b85b",
+    "dsga-initial-exec-combined-first.jsonl": "1d4dcbaf19efb4aafd941ccf1fb1247496f2b39a4392c7694e4a805439f0db2f",
+    "dsga-initial-exec-compile-first.log": "67cd8eea276342543ac734e6ebb174046fab4761b5e7443d77d4b5cb1b6c41b2",
+    "dsga-initial-exec-fenced-linux-build-summary.log": "38c6e397fdc8f6d5d31d262f294a7bc62be70a71b6b6168097d044ec881fbc33",
+    "dsga-initial-exec-fenced-query-final.jsonl": "72d7ad0a8fcf0038ee862245165354de8899e323c6adaa1a3fb5e7d7fc15c0bf",
+    "dsga-initial-exec-fenced-release-agent-linux-amd64.log": "80a4f5664e69f86bc67f8ab2f4c10bb95692421309613714c49ce7082e056853",
+    "dsga-initial-exec-fenced-release-agent-linux-arm64.log": "29825cf738d67e7d41222f206491412923790c77c0c952253a1903da49d5982b",
+    "dsga-initial-exec-fenced-release-controller-linux-amd64.log": "c170752288eab7c6d2ca8874ba9d34b9461cd601b15ad06b6879204b6ea998fe",
+    "dsga-initial-exec-fenced-release-controller-linux-arm64.log": "04bba1754e08755a2840a03f12be6e4ec5ad11e1d42bc12131c5fcced16f607a",
+    "dsga-initial-exec-fenced-release-runner-linux-amd64.log": "9cea257d54fdc984f4e9d113f1708d5cf29f453e0255416752e9326790be9c7b",
+    "dsga-initial-exec-fenced-release-runner-linux-arm64.log": "928078d8a832a5699edd5cd4edfd11aa666d7806f61bed76f01929fbe779e49f",
+    "dsga-initial-exec-fenced-release-scheduler-linux-amd64.log": "a3c4de25358e2474be090c37eedfb55d577fd5e531db16677ed93858579ef8c1",
+    "dsga-initial-exec-fenced-release-scheduler-linux-arm64.log": "e017da2bde903f113cd3886900a824f36b25812ecaff9aae035ec5bb476aeee9",
+    "dsga-initial-exec-lint-accepted.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "dsga-initial-exec-lint-fenced-query.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "dsga-initial-exec-lint-final.log": "2b9717a425bb668d566ba875463e0dbff666da4272869594e79786c441bc1234",
+    "dsga-initial-exec-lint-first.log": "88d670e6eb42657229d5f57312bf740151736154da19eed15a0803379f7ba174",
+    "dsga-initial-exec-linux-build-summary.log": "1df488fe87bb13e36b61045bfa6323935b803d7d54932a1276a4a8b761d568c9",
+    "dsga-initial-exec-release-agent-linux-amd64.log": "78ce9650037f6000f3a6a3d41da1ce43c55e83aec73135c0a7bea712887e2da5",
+    "dsga-initial-exec-release-agent-linux-arm64.log": "2288443f63d57f10df489638efe8b6cdc3615cd2782de0f24d324732f795c8ae",
+    "dsga-initial-exec-release-controller-linux-amd64.log": "f313856cf6381563211b37c7d72ed17b87aff5748a27061fa26b9c8e81174851",
+    "dsga-initial-exec-release-controller-linux-arm64.log": "abff28b070ff5ca68601c4494680edcce7ef636050ad7512b2abbd2e1868ad77",
+    "dsga-initial-exec-release-runner-linux-amd64.log": "644091383f60e07a8212ed7a30a4f2df931bfe58e4b3d10ca51426dce1c016ea",
+    "dsga-initial-exec-release-runner-linux-arm64.log": "850c781ae9f2affbf850b1cd032326711275d604aefade862a51eeea41c72737",
+    "dsga-initial-exec-release-scheduler-linux-amd64.log": "5b35f4bb2e9c7e73005591f385636f9deb3fe97116c78368ac7b48531ba1ee2b",
+    "dsga-initial-exec-release-scheduler-linux-arm64.log": "c68f92b9ffad5941408ba501ef168da11d8c73b8b1a6fd382719914262997fd2",
+    "dsga-initial-exec-vet-accepted.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsga-initial-exec-vet-fenced-query.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsga-initial-exec-vet-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsga-initial-exec-vet-first.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "checks": {
+    "lint_packages": 3,
+    "lint": "0 issues",
+    "vet_packages": 3,
+    "vet": "passed",
+    "linux_cli_binaries": 8,
+    "linux_executed": false
+  },
+  "linux_artifacts": [
+    {
+      "service": "agent",
+      "arch": "amd64",
+      "exit_code": 0,
+      "source_commit": "b9d274accbb94b1f6fd595014c5f10e420da8184",
+      "executed": false,
+      "path": "build/dsga-initial-exec-fenced-release-agent-linux-amd64",
+      "sha256": "fd35f094ddff9ee0d42fe41eb9a4754a854285aea08a76a0d46a7ead37bafe51",
+      "bytes": 80467353,
+      "elf_machine": 62,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=linux",
+        "build\tGOAMD64=v1",
+        "build\tvcs=git",
+        "build\tvcs.revision=b9d274accbb94b1f6fd595014c5f10e420da8184",
+        "build\tvcs.time=2026-10-28T13:03:47Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "scheduler",
+      "arch": "amd64",
+      "exit_code": 0,
+      "source_commit": "b9d274accbb94b1f6fd595014c5f10e420da8184",
+      "executed": false,
+      "path": "build/dsga-initial-exec-fenced-release-scheduler-linux-amd64",
+      "sha256": "7a55e462351f3c37f0eb4795d48ab800aded3f4b2cbc72254201485485dfc627",
+      "bytes": 97020108,
+      "elf_machine": 62,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=linux",
+        "build\tGOAMD64=v1",
+        "build\tvcs=git",
+        "build\tvcs.revision=b9d274accbb94b1f6fd595014c5f10e420da8184",
+        "build\tvcs.time=2026-10-28T13:03:47Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "runner",
+      "arch": "amd64",
+      "exit_code": 0,
+      "source_commit": "b9d274accbb94b1f6fd595014c5f10e420da8184",
+      "executed": false,
+      "path": "build/dsga-initial-exec-fenced-release-runner-linux-amd64",
+      "sha256": "e44400717fbcb8b3e8091df50e5ea7a5528bb3a1442d12a20c2e90e4c724f5e3",
+      "bytes": 58653583,
+      "elf_machine": 62,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=linux",
+        "build\tGOAMD64=v1",
+        "build\tvcs=git",
+        "build\tvcs.revision=b9d274accbb94b1f6fd595014c5f10e420da8184",
+        "build\tvcs.time=2026-10-28T13:03:47Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "controller",
+      "arch": "amd64",
+      "exit_code": 0,
+      "source_commit": "b9d274accbb94b1f6fd595014c5f10e420da8184",
+      "executed": false,
+      "path": "build/dsga-initial-exec-fenced-release-controller-linux-amd64",
+      "sha256": "1a94ee6aaeb1a4e35e8b2f41869696b1a4dacc4efa9b63cf140795b236eee7ca",
+      "bytes": 71409635,
+      "elf_machine": 62,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=linux",
+        "build\tGOAMD64=v1",
+        "build\tvcs=git",
+        "build\tvcs.revision=b9d274accbb94b1f6fd595014c5f10e420da8184",
+        "build\tvcs.time=2026-10-28T13:03:47Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "agent",
+      "arch": "arm64",
+      "exit_code": 0,
+      "source_commit": "b9d274accbb94b1f6fd595014c5f10e420da8184",
+      "executed": false,
+      "path": "build/dsga-initial-exec-fenced-release-agent-linux-arm64",
+      "sha256": "e1200243ca4ca78b00e59737421c043894b80a3e3414476a7623e17e9803dee0",
+      "bytes": 76057378,
+      "elf_machine": 183,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=arm64",
+        "build\tGOOS=linux",
+        "build\tGOARM64=v8.0",
+        "build\tvcs=git",
+        "build\tvcs.revision=b9d274accbb94b1f6fd595014c5f10e420da8184",
+        "build\tvcs.time=2026-10-28T13:03:47Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "scheduler",
+      "arch": "arm64",
+      "exit_code": 0,
+      "source_commit": "b9d274accbb94b1f6fd595014c5f10e420da8184",
+      "executed": false,
+      "path": "build/dsga-initial-exec-fenced-release-scheduler-linux-arm64",
+      "sha256": "2d7f867f2e12d6fe26559b4781a4ccb7ccac9ac51db4304e2c1ba7718217f351",
+      "bytes": 92212326,
+      "elf_machine": 183,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=arm64",
+        "build\tGOOS=linux",
+        "build\tGOARM64=v8.0",
+        "build\tvcs=git",
+        "build\tvcs.revision=b9d274accbb94b1f6fd595014c5f10e420da8184",
+        "build\tvcs.time=2026-10-28T13:03:47Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "runner",
+      "arch": "arm64",
+      "exit_code": 0,
+      "source_commit": "b9d274accbb94b1f6fd595014c5f10e420da8184",
+      "executed": false,
+      "path": "build/dsga-initial-exec-fenced-release-runner-linux-arm64",
+      "sha256": "83c58855a6b4d312c990c7b1a253a277269bf0da1f2ff2766219f7629c9fe03c",
+      "bytes": 55496520,
+      "elf_machine": 183,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=arm64",
+        "build\tGOOS=linux",
+        "build\tGOARM64=v8.0",
+        "build\tvcs=git",
+        "build\tvcs.revision=b9d274accbb94b1f6fd595014c5f10e420da8184",
+        "build\tvcs.time=2026-10-28T13:03:47Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "controller",
+      "arch": "arm64",
+      "exit_code": 0,
+      "source_commit": "b9d274accbb94b1f6fd595014c5f10e420da8184",
+      "executed": false,
+      "path": "build/dsga-initial-exec-fenced-release-controller-linux-arm64",
+      "sha256": "56f7116449a661bde52798a3bc06f9f97eda8c94e2af5f21428868f1a35e4c03",
+      "bytes": 67741666,
+      "elf_machine": 183,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=arm64",
+        "build\tGOOS=linux",
+        "build\tGOARM64=v8.0",
+        "build\tvcs=git",
+        "build\tvcs.revision=b9d274accbb94b1f6fd595014c5f10e420da8184",
+        "build\tvcs.time=2026-10-28T13:03:47Z",
+        "build\tvcs.modified=true"
+      ]
+    }
+  ],
+  "preserved_owner_agents_sha256": "5c61959674c362ecc4c3709930121304595e8b0bca1ff70ae401f0cf8f2803c1",
+  "vcs_modified_explanation": "Owner AGENTS.md dirty; Go/module source equals code commit; ELF never executed",
+  "adoption_note": "Final 42.90s initial-to-grow scenario includes query-after-fence fix; existing trusted-prepare-replies 27.13s reused from combined run because final change only affects InitialHeld query path. One parent pass record is not a third scenario. Prior package/model/PG/Rust results reused, not rerun.",
+  "failed_attempts": {
+    "dsga-initial-exec-lint-first.log": "gofumpt local blank line fixed",
+    "dsga-initial-exec-lint-final.log": "test PGLoopOptions explicit nil fields completed; no behavior change"
+  },
+  "versions": {
+    "vm_model_max": 9,
+    "node_model": 7
+  },
+  "production_initial_loop_wired": true,
+  "true_owner_takeover_combination_verified": false,
+  "actual_components": [
+    "Session/generated VM HTTP client/UID-RV WAL",
+    "production PGWorker.Run and independent original selector",
+    "authenticated compute/resource clients and complete initial budget producer",
+    "persistent Runner/QMP protocol",
+    "Host publisher and normal successor complete budget/admission chain"
+  ],
+  "fixtures": [
+    "PG native protocol peer",
+    "root/kernel/platform qualification facts",
+    "Kube/Lease peer",
+    "local TLS/UDS QMP peer; no real KVM or physical hotplug"
+  ],
+  "remaining_code": [
+    "initial cancellation/current Host consumption and source lifecycle",
+    "missing original sources/root mismatch recovery",
+    "safe normal cap decrease/background-private liveness",
+    "true takeover/start/noWait/init/boot/migration recovery",
+    "all writers/CPU/trusted request-cancel-replay ingress and Monitor/automatic policy"
+  ],
+  "scope": {
+    "upstream_frozen": true,
+    "other_pg_deferred": true,
+    "control_plane_untouched": true,
+    "default_off": true,
+    "images_built": false,
+    "deployed": false,
+    "main_merged": false,
+    "linux_runtime_verified": false
+  }
+}
