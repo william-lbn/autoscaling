@@ -11,7 +11,7 @@ import (
 func coordinationFixture(t *testing.T) CoordinationCommand {
 	t.Helper()
 	_, request := goldenRequest(t)
-	return CoordinationCommand{ProtocolVersion: 1, Instance: request.Key.Instance, ExpectedOwnerEpoch: request.Key.IssuerEpoch, Action: CoordinationBegin, Request: &request, Key: nil, Selector: ""}
+	return CoordinationCommand{ProtocolVersion: 1, Instance: CoordinationBinding(request.Key.Instance), ExpectedOwnerEpoch: request.Key.IssuerEpoch, Action: CoordinationBegin, Request: &request, Key: nil, Selector: ""}
 }
 
 func TestCoordinationSelectorsCannotReplaceOriginalCommands(t *testing.T) {
@@ -90,4 +90,39 @@ func TestCoordinationStrictDecodeAndIndependentCopies(t *testing.T) {
 		cloned.Action, cloned.Key, cloned.Selector = CoordinationReplayInitial, nil, selector
 		require.Error(t, cloned.Validate())
 	}
+}
+
+func TestResourceOnlyZeroBootCannotAuthorizePGOrBusiness(t *testing.T) {
+	base := coordinationFixture(t)
+	base.Instance.PGBootID = 0
+	base.Request = nil
+	encoded, err := json.Marshal(base.Instance)
+	require.NoError(t, err)
+	var native Instance
+	require.Error(t, json.Unmarshal(encoded, &native), "管理阶段身份不得放宽原PG协议的非零boot")
+	for _, action := range []CoordinationAction{CoordinationResourceState, CoordinationRepairHeld, CoordinationObserveHeld} {
+		command := base.Clone()
+		command.Action = action
+		if action != CoordinationResourceState {
+			command.Selector = strings.Repeat("ab", 32)
+		}
+		require.NoError(t, command.Validate())
+		data, err := json.Marshal(command)
+		require.NoError(t, err)
+		var decoded CoordinationCommand
+		require.NoError(t, json.Unmarshal(data, &decoded))
+		require.Equal(t, command, decoded)
+		command.Instance.ComputeInstanceID = ""
+		require.Error(t, command.Validate())
+	}
+	for _, action := range []CoordinationAction{CoordinationState, CoordinationBegin, CoordinationCancel, CoordinationReplayPG, CoordinationReplayInitial, CoordinationReplayResource} {
+		base.Action = action
+		require.Error(t, base.Validate(), "零boot不能作为PG/业务动作的通配实例")
+	}
+	base.Action = CoordinationResourceState
+	key := coordinationFixture(t).Request.Key
+	base.Key = &key
+	base.Key.Instance = Instance(base.Instance)
+	base.Selector = strings.Repeat("ab", 32)
+	require.Error(t, base.Validate(), "Root状态不得夹带Key/目标/其他来源")
 }

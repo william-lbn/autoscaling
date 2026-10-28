@@ -34,7 +34,7 @@ func (e *transportEndpoint) Done() <-chan struct{} { return e.done }
 
 func (e *transportEndpoint) Binding() (control.Instance, control.Uint64) {
 	c := commandFixture()
-	return c.Instance, c.ExpectedOwnerEpoch
+	return control.Instance(c.Instance), c.ExpectedOwnerEpoch
 }
 
 func (e *transportEndpoint) Submit(ctx context.Context, c control.CoordinationCommand) (owner.CoordinationResult, error) {
@@ -42,7 +42,7 @@ func (e *transportEndpoint) Submit(ctx context.Context, c control.CoordinationCo
 }
 
 func commandFixture() control.CoordinationCommand {
-	return control.CoordinationCommand{ProtocolVersion: 1, Instance: control.Instance{VMUID: "vm-local", ComputeInstanceID: "compute-local", PGBootID: 3}, ExpectedOwnerEpoch: 7, Action: control.CoordinationState, Request: nil, Key: nil, Selector: ""}
+	return control.CoordinationCommand{ProtocolVersion: 1, Instance: control.CoordinationBinding{VMUID: "vm-local", ComputeInstanceID: "compute-local", PGBootID: 3}, ExpectedOwnerEpoch: 7, Action: control.CoordinationState, Request: nil, Key: nil, Selector: ""}
 }
 
 func TestLocalControlStrictRoutingAndBoundedBody(t *testing.T) {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sync/atomic"
 
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
@@ -16,9 +17,25 @@ import (
 type ResourceWorker struct {
 	session *Session
 	client  *resourceguard.Client
+	// 启动恢复和正式PG循环共用原Root SDK，只允许一个循环持有执行槽。
+	// 槽不跨网络持锁；原子位仅拒绝重复启动，实际取消/join仍由各循环完成。
+	running atomic.Bool
 }
 
 func (session *Session) NewResourceWorker(ctx context.Context, config resourceguard.ClientConfig) (*ResourceWorker, error) {
+	return session.newResourceWorker(ctx, config, false)
+}
+
+// NewResourceRecoveryWorker供Agent在PG发现前建立仅Root恢复的持有者。首次原
+// Bootstrap已确认、没有孤立运行命令且有完整可修复来源时，允许把漂移中的原
+// Guest身份先写入同一VM账本，然后fence；绑定不代表资源确认或准入开放。调用者
+// 必须先完成RunResourceRecovery，再构造PGWorker，不能从本方法直接开始业务。
+// 缺/坏日志、未知Bootstrap、孤立Original一律拒绝，不以恢复名义生成新来源。
+func (session *Session) NewResourceRecoveryWorker(ctx context.Context, config resourceguard.ClientConfig) (*ResourceWorker, error) {
+	return session.newResourceWorker(ctx, config, true)
+}
+
+func (session *Session) newResourceWorker(ctx context.Context, config resourceguard.ClientConfig, recovery bool) (*ResourceWorker, error) {
 	if err := session.Check(ctx); err != nil {
 		return nil, err
 	}
@@ -99,12 +116,19 @@ func (session *Session) NewResourceWorker(ctx context.Context, config resourcegu
 	}
 	if initial {
 		// 发现初始Guest之前必须没有任何原操作；root也必须没有运行期原命令。
-		// 不能把孤立root效果收养为干净起点。这里仅核验初始约束，并不开放准入。
+		// 普通构造要求实际约束确认；专用恢复构造只固化已确认Bootstrap的
+		// 完整来源/身份，随后仍须实际恢复门槛。不收养孤立效果，不开放准入。
 		if view.Original != nil {
 			return nil, fmt.Errorf("unbound resource domain retains original effects")
 		}
-		if _, err := view.ConfirmedLimits(); err != nil {
-			return nil, err
+		if recovery {
+			if _, err := resourceguard.HeldSourceSHA256(view); err != nil {
+				return nil, err
+			}
+		} else {
+			if _, err := view.ConfirmedLimits(); err != nil {
+				return nil, err
+			}
 		}
 		if _, err := session.store.BindResource(callCtx, snapshot, session.actor, config.Identity); err != nil {
 			return nil, err
@@ -123,7 +147,7 @@ func (session *Session) NewResourceWorker(ctx context.Context, config resourcegu
 		return nil, fmt.Errorf("resource issuer floor was superseded")
 	}
 	success = true
-	return &ResourceWorker{session: session, client: client}, nil
+	return &ResourceWorker{session: session, client: client, running: atomic.Bool{}}, nil
 }
 
 func (w *ResourceWorker) CloseIdleConnections() { w.client.CloseIdleConnections() }

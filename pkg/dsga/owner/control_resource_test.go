@@ -41,7 +41,7 @@ func TestOwnedControlRepairsOriginalHeldAndObservesLostReply(t *testing.T) {
 			done <- worker.Run(loopCtx, PGLoopOptions{PollInterval: 5 * time.Millisecond, Control: endpoint, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, Observe: nil})
 		}()
 		defer func() { stop(); require.ErrorIs(t, <-done, context.Canceled) }()
-		command := control.CoordinationCommand{ProtocolVersion: 1, Instance: request.Key.Instance, ExpectedOwnerEpoch: session.Actor().Epoch, Action: control.CoordinationResourceState, Request: nil, Key: nil, Selector: ""}
+		command := control.CoordinationCommand{ProtocolVersion: 1, Instance: control.CoordinationBinding(request.Key.Instance), ExpectedOwnerEpoch: session.Actor().Epoch, Action: control.CoordinationResourceState, Request: nil, Key: nil, Selector: ""}
 		initial, err := endpoint.Submit(ctx, command)
 		require.NoError(t, err)
 		require.NotNil(t, initial.ResourceState)

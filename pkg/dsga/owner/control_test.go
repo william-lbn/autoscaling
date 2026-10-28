@@ -41,7 +41,7 @@ func TestOwnedControlLoopPersistsBeginCancelAndLostReply(t *testing.T) {
 				go func() {
 					loopDone <- worker.Run(loopCtx, PGLoopOptions{PollInterval: 5 * time.Millisecond, Control: endpoint, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, Observe: func(Tick) { ticks.Add(1) }})
 				}()
-				command := control.CoordinationCommand{ProtocolVersion: 1, Instance: request.Key.Instance, ExpectedOwnerEpoch: session.Actor().Epoch, Action: control.CoordinationState, Request: nil, Key: nil, Selector: ""}
+				command := control.CoordinationCommand{ProtocolVersion: 1, Instance: control.CoordinationBinding(request.Key.Instance), ExpectedOwnerEpoch: session.Actor().Epoch, Action: control.CoordinationState, Request: nil, Key: nil, Selector: ""}
 				value, err := endpoint.Submit(ctx, command)
 				require.NoError(t, err)
 				require.NotNil(t, value.State)
@@ -134,7 +134,7 @@ func TestOwnedControlLoopCancellationAndSerialExecution(t *testing.T) {
 		require.NoError(t, err)
 		defer worker.CloseIdleConnections()
 		endpoint := worker.NewControlEndpoint()
-		command := control.CoordinationCommand{ProtocolVersion: 1, Instance: request.Key.Instance, ExpectedOwnerEpoch: session.Actor().Epoch, Action: control.CoordinationBegin, Request: &request, Key: nil, Selector: ""}
+		command := control.CoordinationCommand{ProtocolVersion: 1, Instance: control.CoordinationBinding(request.Key.Instance), ExpectedOwnerEpoch: session.Actor().Epoch, Action: control.CoordinationBegin, Request: &request, Key: nil, Selector: ""}
 		cancelled, stopCall := context.WithCancel(ctx)
 		stopCall()
 		_, err = endpoint.Submit(cancelled, command)
@@ -245,7 +245,7 @@ func TestOwnedControlLoopReplaysOnlyExplicitOriginalPG(t *testing.T) {
 		}
 		require.EqualValues(t, 1, posts.Load(), "normal polling must not replay POST")
 		require.Equal(t, &request, worker.client.Pending())
-		command := control.CoordinationCommand{ProtocolVersion: 1, Instance: request.Key.Instance, ExpectedOwnerEpoch: session.Actor().Epoch, Action: control.CoordinationReplayPG, Request: nil, Key: &request.Key, Selector: ""}
+		command := control.CoordinationCommand{ProtocolVersion: 1, Instance: control.CoordinationBinding(request.Key.Instance), ExpectedOwnerEpoch: session.Actor().Epoch, Action: control.CoordinationReplayPG, Request: nil, Key: &request.Key, Selector: ""}
 		wrong := command.Clone()
 		wrong.Key.OperationID.Low++
 		_, err = endpoint.Submit(ctx, wrong)
@@ -281,7 +281,7 @@ func TestOwnedControlLoopCancellationStopsActiveManagementRead(t *testing.T) {
 			done <- worker.Run(loopCtx, PGLoopOptions{PollInterval: time.Minute, Control: endpoint, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, Observe: func(Tick) { idle <- struct{}{} }})
 		}()
 		<-idle
-		command := control.CoordinationCommand{ProtocolVersion: 1, Instance: request.Key.Instance, ExpectedOwnerEpoch: session.Actor().Epoch, Action: control.CoordinationState, Request: nil, Key: nil, Selector: ""}
+		command := control.CoordinationCommand{ProtocolVersion: 1, Instance: control.CoordinationBinding(request.Key.Instance), ExpectedOwnerEpoch: session.Actor().Epoch, Action: control.CoordinationState, Request: nil, Key: nil, Selector: ""}
 		_, err = endpoint.Submit(ctx, command)
 		require.NoError(t, err)
 		<-idle // State后的一次普通Advance已返回，下一次网络调用只能来自管理命令。

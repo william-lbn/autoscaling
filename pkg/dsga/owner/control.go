@@ -19,12 +19,12 @@ var ErrControlUnavailable = errors.New("coordination owner or loop unavailable; 
 // State取调用后的原VM持久日志；没有PG/Guest/VM/Host回执时不补造终态。
 // 客户端丢回复必须先读此日志，尤其不能因HTTP错误重新生成Begin身份。
 type CoordinationResult struct {
-	ProtocolVersion uint32              `json:"protocol_version"`
-	Instance        control.Instance    `json:"instance"`
-	OwnerEpoch      control.Uint64      `json:"owner_epoch"`
-	Progress        pgexec.Progress     `json:"progress"`
-	Disposition     journal.Disposition `json:"disposition,omitempty"`
-	State           *journal.Model      `json:"state,omitempty"`
+	ProtocolVersion uint32                      `json:"protocol_version"`
+	Instance        control.CoordinationBinding `json:"instance"`
+	OwnerEpoch      control.Uint64              `json:"owner_epoch"`
+	Progress        pgexec.Progress             `json:"progress"`
+	Disposition     journal.Disposition         `json:"disposition,omitempty"`
+	State           *journal.Model              `json:"state,omitempty"`
 	// 资源状态/来源摘要只用于选择原Root持有；实际修复仍由Root在
 	// 文件锁内重新认证floor/出生/原日志和逐维单调条件。Evidence不证明
 	// GuestReady、完整预算、VM或Host完成，不改变外层业务步骤。
@@ -44,21 +44,28 @@ type controlReply struct {
 	err   error
 }
 
-// ControlEndpoint是当前PGWorker唯一串行循环的入口。请求通道无缓冲，不另建
+// ControlEndpoint是当前PG或启动Root恢复唯一串行循环的入口。请求通道无缓冲，不另建
 // 后台执行队列；HTTP结束只取消该次调用，已持久的原意图/未知效果继续由WAL保存。
 // 端点不跨Session复用，旧owner退出后其Done关闭，旧注册不可投递到新owner。
 type ControlEndpoint struct {
-	worker  *PGWorker
-	calls   chan controlCall
-	done    chan struct{}
-	started atomic.Bool
+	worker *PGWorker
+	// 启动恢复没有PG客户端；完整VM/Compute及0 boot是独立的只Root绑定。
+	// 两种端点共用投递/取消边界，但从不同时运行或复用一次端点跨阶段。
+	resource *ResourceWorker
+	session  *Session
+	instance control.Instance
+	epoch    control.Uint64
+	calls    chan controlCall
+	done     chan struct{}
+	started  atomic.Bool
 }
 
 func (worker *PGWorker) NewControlEndpoint() *ControlEndpoint {
-	return &ControlEndpoint{worker: worker, calls: make(chan controlCall), done: make(chan struct{}), started: atomic.Bool{}}
+	instance, epoch := worker.Binding()
+	return &ControlEndpoint{worker: worker, resource: nil, session: worker.session, instance: instance, epoch: epoch, calls: make(chan controlCall), done: make(chan struct{}), started: atomic.Bool{}}
 }
 
-func (e *ControlEndpoint) Binding() (control.Instance, control.Uint64) { return e.worker.Binding() }
+func (e *ControlEndpoint) Binding() (control.Instance, control.Uint64) { return e.instance, e.epoch }
 func (e *ControlEndpoint) Done() <-chan struct{}                       { return e.done }
 
 func (e *ControlEndpoint) Submit(ctx context.Context, command control.CoordinationCommand) (CoordinationResult, error) {
@@ -67,7 +74,7 @@ func (e *ControlEndpoint) Submit(ctx context.Context, command control.Coordinati
 		return empty, err
 	}
 	instance, epoch := e.Binding()
-	if command.Instance != instance || command.ExpectedOwnerEpoch != epoch {
+	if control.Instance(command.Instance) != instance || command.ExpectedOwnerEpoch != epoch {
 		return empty, ErrControlUnavailable
 	}
 	if err := ctx.Err(); err != nil {
@@ -79,7 +86,7 @@ func (e *ControlEndpoint) Submit(ctx context.Context, command control.Coordinati
 		return empty, ctx.Err()
 	case <-e.done:
 		return empty, ErrControlUnavailable
-	case <-e.worker.session.Context().Done():
+	case <-e.session.Context().Done():
 		return empty, ErrLeadershipLost
 	case e.calls <- call:
 	}
@@ -90,7 +97,7 @@ func (e *ControlEndpoint) Submit(ctx context.Context, command control.Coordinati
 		return empty, ctx.Err()
 	case <-e.done:
 		return empty, ErrControlUnavailable
-	case <-e.worker.session.Context().Done():
+	case <-e.session.Context().Done():
 		return empty, ErrLeadershipLost
 	}
 }
@@ -100,11 +107,11 @@ func (e *ControlEndpoint) Submit(ctx context.Context, command control.Coordinati
 // 注册表/HTTP锁跨网络。错误返回不会清Pending，也不把坏请求变成owner退出。
 func (worker *PGWorker) executeControl(ctx context.Context, command control.CoordinationCommand) (CoordinationResult, error) {
 	instance, epoch := worker.Binding()
-	result := CoordinationResult{ProtocolVersion: 1, Instance: instance, OwnerEpoch: epoch, Progress: pgexec.AwaitingFact, Disposition: "", State: nil, ResourceState: nil, HeldSourceSHA256: "", ResourceEvidence: nil}
+	result := CoordinationResult{ProtocolVersion: 1, Instance: control.CoordinationBinding(instance), OwnerEpoch: epoch, Progress: pgexec.AwaitingFact, Disposition: "", State: nil, ResourceState: nil, HeldSourceSHA256: "", ResourceEvidence: nil}
 	if err := command.Validate(); err != nil {
 		return result, err
 	}
-	if command.Instance != instance || command.ExpectedOwnerEpoch != epoch {
+	if control.Instance(command.Instance) != instance || command.ExpectedOwnerEpoch != epoch {
 		return result, ErrControlUnavailable
 	}
 	callCtx, cancel := worker.session.coupledContext(ctx)
@@ -123,31 +130,7 @@ func (worker *PGWorker) executeControl(ctx context.Context, command control.Coor
 		if worker.resourceOwner == nil {
 			return result, fmt.Errorf("original resource owner is unavailable")
 		}
-		if command.Action == control.CoordinationResourceState {
-			view, viewErr := worker.resourceOwner.Inspect(callCtx)
-			if viewErr != nil {
-				return result, viewErr
-			}
-			result.ResourceState = &view
-			// 未知Original依然可以检查完整状态，但不产生可修复选择。
-			// 不把“没有selector”转换成允许替换命令/来源的默认值。
-			result.HeldSourceSHA256, _ = resourceguard.HeldSourceSHA256(view)
-			result.Progress = pgexec.Idle
-		} else {
-			var evidence resourceguard.Evidence
-			if command.Action == control.CoordinationRepairHeld {
-				evidence, err = worker.resourceOwner.RepairHeld(callCtx, command.Selector)
-			} else {
-				evidence, err = worker.resourceOwner.ObserveHeldRepair(callCtx, command.Selector)
-			}
-			if err == nil {
-				result.ResourceEvidence = &evidence
-				result.HeldSourceSHA256 = command.Selector
-				// 仅Root原修复栅栏已对账；不写外层GuestReady/预算/VM
-				// 终态，后继普通协调仍须消费各自完整原来源。
-				result.Progress = pgexec.Reconciled
-			}
-		}
+		return worker.resourceOwner.executeResourceControl(callCtx, command)
 	case control.CoordinationBegin, control.CoordinationCancel:
 		var snapshot *journal.Snapshot
 		snapshot, err = worker.session.store.Load(callCtx)

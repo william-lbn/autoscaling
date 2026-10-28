@@ -28,7 +28,9 @@ type resourceOwnerFixture struct {
 	fences      int
 	repairs     int
 	dropRepair  bool
-	store       *journal.Store
+	// 仅新启动恢复测试阻塞真实修复HTTP，便于核验Run单独取消/join。
+	repairStarted chan struct{}
+	store         *journal.Store
 }
 
 func newResourceOwnerFixture(t *testing.T, store *journal.Store) (*resourceOwnerFixture, resourceguard.ClientConfig) {
@@ -81,6 +83,14 @@ func newResourceOwnerFixture(t *testing.T, store *journal.Store) (*resourceOwner
 			digest, err := resourceguard.HeldSourceSHA256(f.view)
 			if json.NewDecoder(r.Body).Decode(&request) != nil || err != nil || request.SourceSHA256 != digest || request.Identity != f.view.Identity || request.IssuerEpoch != f.view.IssuerFloorEpoch {
 				w.WriteHeader(http.StatusConflict)
+				return
+			}
+			if f.repairStarted != nil {
+				started := f.repairStarted
+				f.mu.Unlock()
+				close(started)
+				<-r.Context().Done()
+				f.mu.Lock()
 				return
 			}
 			f.repairs++

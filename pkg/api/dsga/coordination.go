@@ -10,6 +10,38 @@ import (
 // 受信管理主体，普通轮询不得生成这些选择。
 type CoordinationAction string
 
+// CoordinationBinding只用于Agent管理协议的端点发现/选择，不能传给PG执行器。
+// boot为0时只表示Root恢复阶段；CoordinationCommand再按动作限制其用途。
+// 单独定义此类型，保留原Instance对非零PG boot的严格解码，不放宽原生协议。
+type CoordinationBinding Instance
+
+func (b CoordinationBinding) Validate() error {
+	if err := ValidateID(b.VMUID, "VM"); err != nil {
+		return err
+	}
+	return ValidateID(b.ComputeInstanceID, "Compute")
+}
+
+func (b *CoordinationBinding) UnmarshalJSON(data []byte) error {
+	type plain CoordinationBinding
+	var value plain
+	if err := UnmarshalObject(data, &value); err != nil {
+		return err
+	}
+	next := CoordinationBinding(value)
+	if err := next.Validate(); err != nil {
+		return err
+	}
+	*b = next
+	return nil
+}
+
+// ResourceOnly在PG发现之前也可处理，但只准选择原Root事实。零PG boot只表示
+// 尚未建立PG执行端点，不能当作任何PG原生命令的通配身份或新出生。
+func (a CoordinationAction) ResourceOnly() bool {
+	return a == CoordinationResourceState || a == CoordinationRepairHeld || a == CoordinationObserveHeld
+}
+
 const (
 	CoordinationState            CoordinationAction = "state"
 	CoordinationResourceState    CoordinationAction = "resource_state"
@@ -33,18 +65,20 @@ const (
 // 因此取消旧操作时可与ExpectedOwnerEpoch不同；重放资格仍由各领域原WAL决定。
 // expected代次用于拒绝网络中排队至接管后的旧管理决定，不能从该数字获得执行权。
 // Begin携带完整不可变Request，其余操作只可选择Key或原首次开放命令摘要。
+// 只有ResourceOnly允许PG boot为0；该端点仍固定原VM/Compute、当前owner和
+// 原Root摘要，不允许Begin/取消/PG重放，正式PG端点不能接受0代替其实际boot。
 type CoordinationCommand struct {
-	ProtocolVersion    uint32             `json:"protocol_version"`
-	Instance           Instance           `json:"instance"`
-	ExpectedOwnerEpoch Uint64             `json:"expected_owner_epoch"`
-	Action             CoordinationAction `json:"action"`
-	Request            *Request           `json:"request,omitempty"`
-	Key                *Key               `json:"key,omitempty"`
-	Selector           string             `json:"selector,omitempty"`
+	ProtocolVersion    uint32              `json:"protocol_version"`
+	Instance           CoordinationBinding `json:"instance"`
+	ExpectedOwnerEpoch Uint64              `json:"expected_owner_epoch"`
+	Action             CoordinationAction  `json:"action"`
+	Request            *Request            `json:"request,omitempty"`
+	Key                *Key                `json:"key,omitempty"`
+	Selector           string              `json:"selector,omitempty"`
 }
 
 func (c CoordinationCommand) Validate() error {
-	if c.ProtocolVersion != 1 || c.ExpectedOwnerEpoch == 0 || c.Instance.Validate() != nil {
+	if c.ProtocolVersion != 1 || c.ExpectedOwnerEpoch == 0 || c.Instance.Validate() != nil || c.Instance.PGBootID == 0 && !c.Action.ResourceOnly() {
 		return fmt.Errorf("invalid coordination binding")
 	}
 	switch c.Action {
@@ -53,7 +87,7 @@ func (c CoordinationCommand) Validate() error {
 			return fmt.Errorf("state command has execution parameters")
 		}
 	case CoordinationBegin:
-		if c.Request == nil || c.Request.Validate() != nil || c.Request.Key.Instance != c.Instance || c.Request.Key.IssuerEpoch > c.ExpectedOwnerEpoch || c.Key != nil || c.Selector != "" {
+		if c.Request == nil || c.Request.Validate() != nil || c.Request.Key.Instance != Instance(c.Instance) || c.Request.Key.IssuerEpoch > c.ExpectedOwnerEpoch || c.Key != nil || c.Selector != "" {
 			return fmt.Errorf("begin requires one complete request for the selected owner")
 		}
 	case CoordinationReplayInitial, CoordinationRepairHeld, CoordinationObserveHeld:
@@ -64,7 +98,7 @@ func (c CoordinationCommand) Validate() error {
 	case CoordinationCancel, CoordinationReplayPG, CoordinationReplayQuiesce, CoordinationReplayAdmission,
 		CoordinationReplayResource, CoordinationReplayPrepare, CoordinationReplayVM, CoordinationReplayAbort,
 		CoordinationRecoverUnchanged, CoordinationRecoverCapacity:
-		if c.Key == nil || c.Key.Validate() != nil || c.Key.Instance != c.Instance || c.Key.IssuerEpoch > c.ExpectedOwnerEpoch || c.Request != nil || c.Selector != "" {
+		if c.Key == nil || c.Key.Validate() != nil || c.Key.Instance != Instance(c.Instance) || c.Key.IssuerEpoch > c.ExpectedOwnerEpoch || c.Request != nil || c.Selector != "" {
 			return fmt.Errorf("coordination action requires only its original operation key")
 		}
 	default:

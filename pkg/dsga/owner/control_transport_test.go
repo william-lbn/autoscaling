@@ -62,7 +62,7 @@ func TestPrivateControlSocketToRealOwnerWAL(t *testing.T) {
 		require.NoError(t, response.Body.Close())
 		require.NoError(t, decodeErr)
 		require.Equal(t, http.StatusOK, response.StatusCode)
-		require.Equal(t, request.Key.Instance, binding.Instance)
+		require.Equal(t, control.CoordinationBinding(request.Key.Instance), binding.Instance)
 		submit := func(command control.CoordinationCommand) owner.CoordinationResult {
 			t.Helper()
 			body, err := json.Marshal(command)
@@ -83,7 +83,7 @@ func TestPrivateControlSocketToRealOwnerWAL(t *testing.T) {
 		}
 		_, epoch := endpoint.Binding()
 		require.Equal(t, epoch, binding.OwnerEpoch)
-		command := control.CoordinationCommand{ProtocolVersion: 1, Instance: request.Key.Instance, ExpectedOwnerEpoch: epoch, Action: control.CoordinationBegin, Request: &request, Key: nil, Selector: ""}
+		command := control.CoordinationCommand{ProtocolVersion: 1, Instance: control.CoordinationBinding(request.Key.Instance), ExpectedOwnerEpoch: epoch, Action: control.CoordinationBegin, Request: &request, Key: nil, Selector: ""}
 		value := submit(command)
 		require.Equal(t, journal.Accepted, value.Disposition)
 		require.Equal(t, request, value.State.Active.Request)

@@ -97,6 +97,9 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 		if resource == nil || resource.session != session {
 			return nil, fmt.Errorf("resource worker belongs to another owner")
 		}
+		if resource.running.Load() {
+			return nil, fmt.Errorf("resource recovery or PG loop is already running")
+		}
 	}
 	// 首次发现也有独立持久身份；不能等第一个Resize才依赖HWM。旧日志缺
 	// 新字段时仍只取原HWM，不收养当前boot。显式传入boot同样不能绕过绑定，
@@ -538,6 +541,12 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		return fmt.Errorf("PG worker loop already running")
 	}
 	defer worker.running.Store(false)
+	if worker.resourceOwner != nil {
+		if !worker.resourceOwner.running.CompareAndSwap(false, true) {
+			return fmt.Errorf("resource execution loop already running")
+		}
+		defer worker.resourceOwner.running.Store(false)
+	}
 	var controls <-chan controlCall
 	if options.Control != nil {
 		if options.Control.worker != worker {

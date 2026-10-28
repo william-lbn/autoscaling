@@ -48,10 +48,11 @@ type endpoint interface {
 
 // OwnerBinding只是本Agent注册端点的发现信息，不能代替Session.Check或最终
 // 领域fence。调用者据此选择完整绑定，接管竞争仍由Submit保守拒绝。
+// PG boot为0是启动Root恢复阶段，只接受Root状态/修复/观察，不是PG通配身份。
 type OwnerBinding struct {
-	ProtocolVersion uint32           `json:"protocol_version"`
-	Instance        control.Instance `json:"instance"`
-	OwnerEpoch      control.Uint64   `json:"owner_epoch"`
+	ProtocolVersion uint32                      `json:"protocol_version"`
+	Instance        control.CoordinationBinding `json:"instance"`
+	OwnerEpoch      control.Uint64              `json:"owner_epoch"`
 }
 
 func NewRegistry() *Registry {
@@ -222,7 +223,7 @@ func newHandler(registry *Registry) http.Handler {
 			instance, epoch := selected.Binding()
 			w.Header().Set("Content-Type", "application/json")
 			w.Header().Set("Cache-Control", "no-store")
-			_ = json.NewEncoder(w).Encode(OwnerBinding{ProtocolVersion: 1, Instance: instance, OwnerEpoch: epoch})
+			_ = json.NewEncoder(w).Encode(OwnerBinding{ProtocolVersion: 1, Instance: control.CoordinationBinding(instance), OwnerEpoch: epoch})
 			return
 		}
 		if r.URL.Path != CommandPath || r.URL.RawQuery != "" || r.URL.ForceQuery || r.URL.RawPath != "" {
