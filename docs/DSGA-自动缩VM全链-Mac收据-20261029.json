@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Darwin arm64",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "test_source_commit": "72d8a4208267d935b29c5ea0a2e7d1aeb237bffe",
+  "unchanged_production_source_commit": "ef3b331309de703c62a273ba8e64d5a060972340",
+  "source_sha256": {
+    "pkg/dsga/owner/automatic_test.go": "9a77ffd624686ae3118aec926c93e0ca40050e59cc118f16ee91c84b3cb1edef",
+    "pkg/dsga/owner/initial_service_test.go": "2ebfc4b223f66255c477c24dc1076c102f25c383fef4b7943440e362eb30ae43"
+  },
+  "mac_race": {
+    "log": "dsga-automatic-shrink-final.jsonl",
+    "top_level_tests": 1,
+    "test_records": 5,
+    "fail": 0,
+    "skip": 0,
+    "mapping": [
+      {
+        "test": "TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain/root-limit-drift-no-begin",
+        "outcome": "pass",
+        "elapsed_seconds": 0.16
+      },
+      {
+        "test": "TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain/qualification-releasing-no-begin",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08
+      },
+      {
+        "test": "TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain/unqualified-target-no-begin",
+        "outcome": "pass",
+        "elapsed_seconds": 0.32
+      },
+      {
+        "test": "TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain/expired-unaccepted-begin-lost-fence-reply",
+        "outcome": "pass",
+        "elapsed_seconds": 0.49
+      },
+      {
+        "test": "TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain",
+        "outcome": "pass",
+        "elapsed_seconds": 120.28
+      }
+    ],
+    "package_executions": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 123.025
+      }
+    ]
+  },
+  "quality": {
+    "vet_exit": 0,
+    "incremental_lint_exit": 0,
+    "incremental_lint_relative_to": "f631f2c3945b5b8229f992d910c2865dbe9db194",
+    "diff_check_exit": 0
+  },
+  "log_sha256": {
+    "dsga-automatic-shrink-final.jsonl": {
+      "sha256": "9c37e7488569986f7ae10219bd958a703687a3d455fa8a2364cb826c4fe78953",
+      "size": 8101
+    },
+    "dsga-automatic-shrink-first.jsonl": {
+      "sha256": "36285989b4f1d5011eb779c60cbf0fd230b70b69594365703625c22d40c71a75",
+      "size": 1315
+    },
+    "dsga-automatic-shrink-lint-final.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "size": 10
+    },
+    "dsga-automatic-shrink-lint.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "size": 10
+    },
+    "dsga-automatic-shrink-second.jsonl": {
+      "sha256": "048d8bc9740682d84260f5a6c242a93ec7f25a2d3841e674aa55b631c4264e3e",
+      "size": 7134
+    },
+    "dsga-automatic-shrink-vet-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "dsga-automatic-shrink-vet.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    }
+  },
+  "initial_failures": [
+    "首轮新增测试引用不存在的Finalized.VMMemoryBytes导致编译失败；改为独立读取正式ObserveVM回执的Actual/QMPObserved及最终Request后通过",
+    "第二轮完整组合119.86秒通过，接近原两分钟测试总期限；仅将自动组合测试上限调至三分钟并补阶段日志，生产请求期限/租约不变，最终重新采用本收据记录"
+  ],
+  "semantics": "同一原owner首次开放后自动Grow至2GiB、预算和正常Finish/Host结清；策略重建重新累计低压无客户端窗口，自动生成1GiB Shrink，再正式Prepare/Host/Quiesce/ResizePG/ReleasePG/GuestReady/ResizeVM/ObserveVM/FinalizeBudget/ResumeAdmission/Finish及Host结清。原WAL恢复，无手填领域完成或测试手动Finish。",
+  "scope": "Mac SDK/owner/日志/预算/Host/Runner逻辑与本机TLS/UDS实际执行；PG/Root/Kube/QMP和Provider物理释放事实为显式peer，非Linux内核、K8s权限、真实QEMU或物理内存验收。",
+  "profile": "2GiB和1GiB使用独立明确资格且normal均512MiB；后台/DSM/2PC保留非零并由既有聚合约束覆盖。未实现安全降normal，未凭采样减小该上界。",
+  "no_new_cross_build": "本批仅两个_test.go，正式源码与ef3b3313相同，复用上一阶段准确Agent双Linux交叉编译证据，未重复编译或执行Linux。",
+  "not_covered": [
+    "normal安全降限与私有后台持续上界/活性",
+    "异常Root/资格/日志/约束越界受控关闭",
+    "分区旧进程、出生不完整、Runner无Wait、外层跨boot/迁移",
+    "Monitor缓存/WSS/组配额/RW-RO完整策略、全部写者、可信CPU全链",
+    "PG18及PG16独立实现与验证",
+    "Linux/K8s/NeonVM/HugeTLB/物理回收/性能和独立控制面后续统一E2E"
+  ],
+  "fixed_pg17": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "images_built": false,
+  "deployed": false,
+  "default_enabled": false
+}
