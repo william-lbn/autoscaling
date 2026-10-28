@@ -1,0 +1,499 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Darwin arm64",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "cpu_source_commit": "5181b364958928316385f0675529a1894c5d8d69",
+  "birth_source_commit": "a009521f1d84af3920aebc8d21e652bcf14650a8",
+  "source_sha256": {
+    "pkg/neonvm/cpuscaling/cpuscaler.go": "73b709862a41985a48dc75296d7044dc6fec00b0b0bb3880eeb31af3831f5a5f",
+    "pkg/neonvm/cpuscaling/completion_test.go": "982152dd48446eb44c38bb3ae6605de065fc6a89116126c8163a005f5de96620",
+    "pkg/dsga/resourceguard/guard.go": "11557bfa90441e8252ff479136b7cbd00587a75a2499645cd1e081f81fa43afc",
+    "pkg/dsga/resourceguard/launch.go": "a2166432da3e0644f8f8396661c274dfa77f9c146d0789fa59e0f0fae4796b86",
+    "pkg/dsga/resourceguard/cancel_birth_test.go": "a61eba6a147c7a3782a759f863fd9cbf0901c627d98944b2a35d99a0451ea523"
+  },
+  "mac_cpu_race": {
+    "log": "dsga-cpu-completion-first.jsonl",
+    "top_level_tests": 6,
+    "test_records": 15,
+    "fail": 0,
+    "skip": 0,
+    "mapping": [
+      {
+        "test": "TestCPUReconcileRejectsInvalidBeforeIO",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "test": "TestCPUReconcilePreservesReadAndPartialWriteFailures/online",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "test": "TestCPUReconcilePreservesReadAndPartialWriteFailures/offline",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "test": "TestCPUReconcilePreservesReadAndPartialWriteFailures/readback",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "test": "TestCPUReconcilePreservesReadAndPartialWriteFailures/partial-write",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "test": "TestCPUReconcilePreservesReadAndPartialWriteFailures",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "test": "TestCPUReconcileRequiresActualCompletionReadback/grow",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "test": "TestCPUReconcileRequiresActualCompletionReadback/shrink",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "test": "TestCPUReconcileRequiresActualCompletionReadback",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "test": "TestReconcileCPU/multiple_cpu_available",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "test": "TestReconcileCPU/scale_to_the_current_value_does_nothing",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "test": "TestReconcileCPU/gradually_test_scaling_up_and_down",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "test": "TestReconcileCPU",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "test": "TestParseCPURange",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "test": "TestParseMultipleCPURange",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      }
+    ],
+    "package_executions": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/neonvm/cpuscaling",
+        "outcome": "pass",
+        "elapsed_seconds": 2.222
+      }
+    ]
+  },
+  "mac_birth_race": {
+    "log": "dsga-cancel-birth-authorized.jsonl",
+    "top_level_tests": 14,
+    "test_records": 33,
+    "fail": 0,
+    "skip": 0,
+    "mapping": [
+      {
+        "test": "TestBoundedBootstrapHoldsActualLimitsBeforePGBirth",
+        "outcome": "pass",
+        "elapsed_seconds": 0.13
+      },
+      {
+        "test": "TestCancellationBarrierSurvivesLaterPGBirth/bootstrap",
+        "outcome": "pass",
+        "elapsed_seconds": 0.13
+      },
+      {
+        "test": "TestCancellationBarrierSurvivesLaterPGBirth/held",
+        "outcome": "pass",
+        "elapsed_seconds": 0.16
+      },
+      {
+        "test": "TestCancellationBarrierSurvivesLaterPGBirth/pid-reused",
+        "outcome": "pass",
+        "elapsed_seconds": 0.11
+      },
+      {
+        "test": "TestCancellationBarrierSurvivesLaterPGBirth",
+        "outcome": "pass",
+        "elapsed_seconds": 0.4
+      },
+      {
+        "test": "TestResourceCancellationClientRetainsLostReplyAndOnlyReadsOriginalBarrier/same-owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.12
+      },
+      {
+        "test": "TestResourceCancellationClientRetainsLostReplyAndOnlyReadsOriginalBarrier/new-owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.11
+      },
+      {
+        "test": "TestResourceCancellationClientRetainsLostReplyAndOnlyReadsOriginalBarrier",
+        "outcome": "pass",
+        "elapsed_seconds": 0.23
+      },
+      {
+        "test": "TestResourceCancellationClientDoesNotAcceptAbsenceOrAnotherOriginal",
+        "outcome": "pass",
+        "elapsed_seconds": 0.07
+      },
+      {
+        "test": "TestResourceCancellationDurablyRejectsLateApplyAndAdvancesRevision/bootstrap",
+        "outcome": "pass",
+        "elapsed_seconds": 0.11
+      },
+      {
+        "test": "TestResourceCancellationDurablyRejectsLateApplyAndAdvancesRevision/held",
+        "outcome": "pass",
+        "elapsed_seconds": 0.15
+      },
+      {
+        "test": "TestResourceCancellationDurablyRejectsLateApplyAndAdvancesRevision/takeover",
+        "outcome": "pass",
+        "elapsed_seconds": 0.16
+      },
+      {
+        "test": "TestResourceCancellationDurablyRejectsLateApplyAndAdvancesRevision/consecutive-cancel",
+        "outcome": "pass",
+        "elapsed_seconds": 0.16
+      },
+      {
+        "test": "TestResourceCancellationDurablyRejectsLateApplyAndAdvancesRevision",
+        "outcome": "pass",
+        "elapsed_seconds": 0.58
+      },
+      {
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/received",
+        "outcome": "pass",
+        "elapsed_seconds": 0.07
+      },
+      {
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/partial",
+        "outcome": "pass",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/birth-drift",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/held-drift",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/epoch",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/revision-gap",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/wrong-guest",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/changed-tasks",
+        "outcome": "pass",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/no-bootstrap",
+        "outcome": "pass",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/cancelled-context",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects",
+        "outcome": "pass",
+        "elapsed_seconds": 0.56
+      },
+      {
+        "test": "TestResourceCancellationPersistenceFailureDoesNotIssueNoEffect",
+        "outcome": "pass",
+        "elapsed_seconds": 0.07
+      },
+      {
+        "test": "TestResourceCancellationWaitsForInFlightApplyInsteadOfDeclaringNoEffect",
+        "outcome": "pass",
+        "elapsed_seconds": 0.14
+      },
+      {
+        "test": "TestResourceCancellationHTTPAuthenticatesCurrentOwnerAndOriginalEpoch",
+        "outcome": "pass",
+        "elapsed_seconds": 0.12
+      },
+      {
+        "test": "TestProcessBirthPersistsBeforeExecAndNeverAdoptsCallerPID",
+        "outcome": "pass",
+        "elapsed_seconds": 0.11
+      },
+      {
+        "test": "TestProcessBirthHTTPAndClientUseOriginalRecord",
+        "outcome": "pass",
+        "elapsed_seconds": 0.11
+      },
+      {
+        "test": "TestProcessBirthUIDAndInvocationRejectSpecialOrPrivilegedProcess",
+        "outcome": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "test": "TestResourceSourceBirthBindsOriginalBudget",
+        "outcome": "pass",
+        "elapsed_seconds": 0.03
+      },
+      {
+        "test": "TestSystemPlacementDurableBeforeBirthAndImmutableThroughRuntime",
+        "outcome": "pass",
+        "elapsed_seconds": 0.11
+      }
+    ],
+    "package_executions": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 4.045
+      }
+    ]
+  },
+  "total_adopted": {
+    "top_level_tests": 20,
+    "test_records": 48,
+    "fail": 0,
+    "skip": 0,
+    "meaning": "两个受影响模块，计数含父子；不是48次独立产品E2E，不和上一阶段重复累计。"
+  },
+  "quality": {
+    "cpu_vet_exit": 0,
+    "cpu_incremental_lint_exit": 0,
+    "cpu_lint_relative_to": "959465096970031ba633902a7636f93b8991e1e4",
+    "birth_vet_exit": 0,
+    "birth_incremental_lint_exit": 0,
+    "birth_lint_relative_to": "5181b364958928316385f0675529a1894c5d8d69",
+    "diff_check_exit": 0
+  },
+  "initial_failures": [
+    "CPU新增测试结构字面量首轮gofumpt1项，修格式后lint0，未重复语义未变测试。",
+    "取消后出生新回归在旧实现真实复现bootstrap/held/pid-reused三类失败；旧代码保存后exec成功，但下一Inspect因历史取消出生校验失败。",
+    "修复后普通沙箱运行的受影响组在httptest回环listen被拒而panic，不是业务失败或通过；授权后完整受影响组4.045秒通过，未弱化测试。"
+  ],
+  "cpu_cross_build": [
+    {
+      "service": "daemon",
+      "arch": "amd64",
+      "source_commit": "5181b364958928316385f0675529a1894c5d8d69",
+      "exit_code": 0,
+      "executed": false,
+      "artifact": "dsga-cpu-completion-daemon-linux-amd64",
+      "sha256": "66db31f1cdefacff2beeda65e48eb5f472ff0da81e2355e719509811080992c3",
+      "size": 51906449,
+      "elf_machine": 62,
+      "vcs_modified": true,
+      "only_uncommitted_file": "AGENTS.md"
+    },
+    {
+      "service": "daemon",
+      "arch": "arm64",
+      "source_commit": "5181b364958928316385f0675529a1894c5d8d69",
+      "exit_code": 0,
+      "executed": false,
+      "artifact": "dsga-cpu-completion-daemon-linux-arm64",
+      "sha256": "a46ff10e7db2a046b0c6a0ac0af3942285ad96df7cb62f0046adf0df9f8d6778",
+      "size": 49031685,
+      "elf_machine": 183,
+      "vcs_modified": true,
+      "only_uncommitted_file": "AGENTS.md"
+    }
+  ],
+  "birth_cross_build": [
+    {
+      "service": "agent",
+      "arch": "amd64",
+      "source_commit": "a009521f1d84af3920aebc8d21e652bcf14650a8",
+      "exit_code": 0,
+      "executed": false,
+      "artifact": "dsga-cancel-birth-agent-linux-amd64",
+      "sha256": "d0c2ddc7f940208e988c1a5f1efbfd34077fab332ccadd42a3a7c75185aa4146",
+      "size": 80704602,
+      "elf_machine": 62,
+      "vcs_modified": true,
+      "only_uncommitted_file": "AGENTS.md"
+    },
+    {
+      "service": "guard",
+      "arch": "amd64",
+      "source_commit": "a009521f1d84af3920aebc8d21e652bcf14650a8",
+      "exit_code": 0,
+      "executed": false,
+      "artifact": "dsga-cancel-birth-guard-linux-amd64",
+      "sha256": "5aae3cc3b4d079a8c758b231f5572e1241ee4aab006e0848c6b2dbfd89a0cfc3",
+      "size": 9005400,
+      "elf_machine": 62,
+      "vcs_modified": true,
+      "only_uncommitted_file": "AGENTS.md"
+    },
+    {
+      "service": "agent",
+      "arch": "arm64",
+      "source_commit": "a009521f1d84af3920aebc8d21e652bcf14650a8",
+      "exit_code": 0,
+      "executed": false,
+      "artifact": "dsga-cancel-birth-agent-linux-arm64",
+      "sha256": "4aca1a405aa55ec7bea12e87f26d7e4747751e4cda5dfe0791cf1508e05d7f27",
+      "size": 76266611,
+      "elf_machine": 183,
+      "vcs_modified": true,
+      "only_uncommitted_file": "AGENTS.md"
+    },
+    {
+      "service": "guard",
+      "arch": "arm64",
+      "source_commit": "a009521f1d84af3920aebc8d21e652bcf14650a8",
+      "exit_code": 0,
+      "executed": false,
+      "artifact": "dsga-cancel-birth-guard-linux-arm64",
+      "sha256": "7298c5840867456695f9bf5acbe135202396cdc1c99ebb8ed017794f681c761d",
+      "size": 8412037,
+      "elf_machine": 183,
+      "vcs_modified": true,
+      "only_uncommitted_file": "AGENTS.md"
+    }
+  ],
+  "build_notes": "CPU daemon双架构对应准确5181b364；Agent/Guard四ELF对应准确a009521f。仅交叉编译，均未执行。各构建开始只剩所有者AGENTS修改导致modified=true；VCS/ELF架构/摘要已核，离线模块缓存stat权限警告保留。",
+  "log_sha256": {
+    "dsga-cpu-completion-daemon-linux-amd64.buildinfo": {
+      "sha256": "c0fc8b54745ec2aeb785a0599b44eafad2affdb84861f56e42fffb676e7a20c8",
+      "size": 6812
+    },
+    "dsga-cpu-completion-daemon-linux-amd64.log": {
+      "sha256": "38d0b6580e385ca43b36d2f59b444c938bbd32a9e00017aaef81551f291790b1",
+      "size": 197
+    },
+    "dsga-cpu-completion-daemon-linux-arm64.buildinfo": {
+      "sha256": "83a0ab73c6e21f8e925f9f002290804ce75c0fa84d914b7a1551cf87a0ab8532",
+      "size": 6814
+    },
+    "dsga-cpu-completion-daemon-linux-arm64.log": {
+      "sha256": "30f36b827ecee1eafa17ac6e839d0b536ac5b72320fc62937fbb42ac41d65202",
+      "size": 197
+    },
+    "dsga-cpu-completion-first.jsonl": {
+      "sha256": "9f57438b187c353a77fa9231cdd98f38df33b49aaed4f964511310f75405ff10",
+      "size": 14283
+    },
+    "dsga-cpu-completion-lint-final.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "size": 10
+    },
+    "dsga-cpu-completion-lint-first.log": {
+      "sha256": "da1aab2fd2a67c374eb6cec36a60d941ab9586d6387335e4dd5dba6ae2214b07",
+      "size": 188
+    },
+    "dsga-cpu-completion-linux-results.json": {
+      "sha256": "5e92569a3d40e471d7a785e80fbc8540411396c6f3c108775ba58dcd56b5a1c9",
+      "size": 834
+    },
+    "dsga-cpu-completion-vet.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "dsga-cancel-birth-agent-linux-amd64.buildinfo": {
+      "sha256": "57275918498d399c459c58adde056b55a00433c7148daae34be21fe1cae4c344",
+      "size": 8596
+    },
+    "dsga-cancel-birth-agent-linux-amd64.log": {
+      "sha256": "49f967ad289b71af6f8c498550b719eb5cde1d820c27284766390781e4f45023",
+      "size": 197
+    },
+    "dsga-cancel-birth-agent-linux-arm64.buildinfo": {
+      "sha256": "eb84eb4294d783a45472000d55ab95d0d5bdf88d2ddb1de9e488be75bc9ad5e0",
+      "size": 8598
+    },
+    "dsga-cancel-birth-agent-linux-arm64.log": {
+      "sha256": "2f014116a83dff40f629bdc11b449078ec61b879b380cd9f954caec04f0eb2a9",
+      "size": 197
+    },
+    "dsga-cancel-birth-authorized.jsonl": {
+      "sha256": "24174e3a72f1494bea67794d5fb33f18bbca3cba7ead241264663d628d7d091c",
+      "size": 35012
+    },
+    "dsga-cancel-birth-final.jsonl": {
+      "sha256": "81c779e41a1250098204b17324fe90ed824d6e4d78d97db82c22a4bd8f48b922",
+      "size": 14197
+    },
+    "dsga-cancel-birth-first.jsonl": {
+      "sha256": "3f226e56ec5b2117560fba5f02397172381501f7856d1803de34b309617145ac",
+      "size": 9441
+    },
+    "dsga-cancel-birth-guard-linux-amd64.buildinfo": {
+      "sha256": "16dc09cfab9a13b538beea4fa5c35236ad53163c13c3282b1b9b5a9d63b5240a",
+      "size": 771
+    },
+    "dsga-cancel-birth-guard-linux-amd64.log": {
+      "sha256": "12ddf0c13e1533997b59867a361d70b6bd4236381a7760a130709b2ccb7fc735",
+      "size": 197
+    },
+    "dsga-cancel-birth-guard-linux-arm64.buildinfo": {
+      "sha256": "13b536d9e9a08b0fbbf93805dc39c75491a0c3ec0d499b1ef5ea1b3103b038d2",
+      "size": 773
+    },
+    "dsga-cancel-birth-guard-linux-arm64.log": {
+      "sha256": "464d04cceb61c5c2b958032a11b0066e960d5f5ba984621baacf741406ba0205",
+      "size": 197
+    },
+    "dsga-cancel-birth-lint.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "size": 10
+    },
+    "dsga-cancel-birth-linux-results.json": {
+      "sha256": "cf49a4830b3a83d502e1b72f0362ad52306c630aed6a06cfb59139385b3e4dba",
+      "size": 1647
+    },
+    "dsga-cancel-birth-vet.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    }
+  },
+  "scope": "CPU正式Scaler通过sysfs状态peer注入失败；Root真实本地文件锁/rename/fsync和正式Guard，kernel/exec/空组仍为peer。不证明Linux热插拔/PG跨boot/物理回收。",
+  "compatibility": "CPU调用成功条件更严格；受管旧CPU PUT继续拒绝。Root日志v2结构不变；历史Cancelled保留旧PID和资源水位，当前Birth可在原启动门槛后推进，当前取消签发/回执仍要求同原出生。",
+  "fixed_pg17": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "not_covered": [
+    "安全降低normal与后台/私有持续上界",
+    "异常Root/资格/日志和越界约束的受控关闭",
+    "分区旧进程、出生不完整、Runner无Wait、外层跨boot/迁移",
+    "可信CPU全链及调度/Monitor/自动策略和全部最终写者",
+    "PG18和PG16独立内核/扩展/发行与受影响验证",
+    "真实Linux/K8s/NeonVM/HugeTLB/物理回收和性能"
+  ],
+  "images_built": false,
+  "deployed": false,
+  "default_enabled": false
+}
