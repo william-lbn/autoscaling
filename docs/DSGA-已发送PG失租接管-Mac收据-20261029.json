@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Darwin arm64",
+  "source_commit": "ebf064ac0d411662bc6f6086a85d4ff1f034adc1",
+  "source_sha256": {
+    "pkg/dsga/owner/business_takeover_test.go": "7a3621760c5fd16d11646945c0ebafac674fe8478c70e25856b2fd68b022c1ec",
+    "pkg/dsga/owner/initial_service_test.go": "a6f241a5a8c25ad78848274d90da9806bd508cf3351f6fdcfdf7a9a61470ab28",
+    "pkg/dsga/owner/pg_business_takeover_test.go": "572bed281a475252f6d04b2bad2552ca2abd17c651a00438802cde8b7f539a9d"
+  },
+  "branch": "codex/dsga-autoscaling-20261019",
+  "production_changes": false,
+  "mac_race": {
+    "test": "TestProductionInitialOwnerTransferObservesLostPGReplyAndSettlesActualBudget",
+    "top_level_tests": 1,
+    "test_records": 1,
+    "elapsed_seconds": 73.58,
+    "package_elapsed_seconds": 76.167,
+    "fail": 0,
+    "skip": 0,
+    "exit_code": 0,
+    "log": "dsga-pg-sent-takeover-second.jsonl"
+  },
+  "vet": {
+    "packages": 1,
+    "exit_code": 0,
+    "log": "dsga-pg-sent-takeover-vet-first.log"
+  },
+  "incremental_lint": {
+    "relative_to": "69f302488371aad9441ef17c8c3044874f3499cd",
+    "packages": 1,
+    "issues": 0,
+    "exit_code": 0,
+    "log": "dsga-pg-sent-takeover-lint-final.log"
+  },
+  "logs": {
+    "dsga-pg-sent-takeover-second.jsonl": {
+      "sha256": "9f65526e3d28fdb2e527a714da15df48be4b300d0fa5ca9ad60a9441d495d02e"
+    },
+    "dsga-pg-sent-takeover-vet-first.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "dsga-pg-sent-takeover-lint-final.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47"
+    }
+  },
+  "intermediate_not_adopted": {
+    "dsga-pg-sent-takeover-first.jsonl": "test compile failed: Prepared has no RunnerPodUID; use original published Runner birth, not weaken verification",
+    "dsga-pg-sent-takeover-lint-first.log": "ineffectual assignment and always-nil test helper return removed; no business semantics changed, equivalent test not rerun"
+  },
+  "boundaries": [
+    "Real Elector renewal failure and same Lease UID takeover, CAS reply lost; production Session/SDK/WAL/budget/Host readers, explicit PG/root/qualification/Kube/QMP peers.",
+    "PG effect committed before lost reply; old Session late writes and new-owner old Resize replay denied. Original Cancel TooLate receipt recorded, Record reply lost, then terminal Status reconciliation clears only original SDK fence.",
+    "Actual VM1GiB and committed PG growth retained in current budget/Host; original Request/command unchanged, Resize and QMP each exactly once; new owner next Shrink Prepare works.",
+    "Only necessary initial-success predecessors, not repeated initial fault or full successor Grow matrix.",
+    "No production code or protocol change, new Linux ELF/build/execution, images or deployment. Existing 23d455fb Agent/Root compile evidence applies to unchanged production code only.",
+    "Does not close Guest-dispatched, partition-old-process, missing-launch/no-Wait/boot-migration, safe-normal/private-background, Monitor/automatic/all-writers/CPU core gaps; PG17 incomplete then PG18/PG16."
+  ],
+  "commands": [
+    "go test -race -count=1 -json ./pkg/dsga/owner -run ^TestProductionInitialOwnerTransferObservesLostPGReplyAndSettlesActualBudget$",
+    "go vet ./pkg/dsga/owner",
+    "golangci-lint run --new-from-rev=69f302488371aad9441ef17c8c3044874f3499cd ./pkg/dsga/owner"
+  ]
+}
