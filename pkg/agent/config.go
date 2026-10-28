@@ -13,6 +13,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/agent/scalingevents"
 	"github.com/neondatabase/autoscaling/pkg/api"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/localcontrol"
 	"github.com/neondatabase/autoscaling/pkg/reporting"
 )
 
@@ -177,6 +178,9 @@ func (c *Config) validate() error {
 		erc.Whenf(ec, c.DSGA.ComputeTimeoutSeconds < 90 || c.DSGA.ComputeTimeoutSeconds > 120, "DSGA Compute timeout must cover the 60-second PG wait and bounded gateway checks")
 		for vmUID, source := range c.DSGA.PrepareQualifications {
 			erc.Whenf(ec, control.ValidateID(vmUID, "qualified VM UID") != nil || source.Validate() != nil, "invalid trusted DSGA platform qualification selection")
+		}
+		if c.DSGA.ControlSocketPath != "" {
+			erc.Whenf(ec, localcontrol.ValidateSocketPath(c.DSGA.ControlSocketPath) != nil, "invalid private DSGA coordination socket path")
 		}
 	}
 

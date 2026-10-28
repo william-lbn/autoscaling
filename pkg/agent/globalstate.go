@@ -19,6 +19,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/agent/scalingevents"
 	"github.com/neondatabase/autoscaling/pkg/agent/schedwatch"
 	"github.com/neondatabase/autoscaling/pkg/api"
+	"github.com/neondatabase/autoscaling/pkg/dsga/localcontrol"
 	"github.com/neondatabase/autoscaling/pkg/util"
 )
 
@@ -44,6 +45,8 @@ type agentState struct {
 	vmMetrics    *PerVMMetrics
 
 	scalingReporter *scalingevents.Reporter
+	// 端点注册使用独立小锁；不依赖全局pods锁/Runner锁，不跨网络持锁。
+	dsgaControls *localcontrol.Registry
 }
 
 func (r MainRunner) newAgentState(
@@ -68,6 +71,7 @@ func (r MainRunner) newAgentState(
 		vmMetrics:    perVMMetrics,
 
 		scalingReporter: scalingReporter,
+		dsgaControls:    localcontrol.NewRegistry(),
 	}
 }
 

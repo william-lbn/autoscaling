@@ -13,6 +13,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/agent/billing"
 	"github.com/neondatabase/autoscaling/pkg/agent/scalingevents"
 	"github.com/neondatabase/autoscaling/pkg/agent/schedwatch"
+	"github.com/neondatabase/autoscaling/pkg/dsga/localcontrol"
 	"github.com/neondatabase/autoscaling/pkg/util"
 	"github.com/neondatabase/autoscaling/pkg/util/taskgroup"
 	"github.com/neondatabase/autoscaling/pkg/util/watch"
@@ -70,6 +71,14 @@ func (r MainRunner) Run(logger *zap.Logger, ctx context.Context) error {
 		globalMetrics,
 		perVMMetrics,
 	)
+	var controlServer *localcontrol.Server
+	if r.Config.DSGA != nil && r.Config.DSGA.ControlSocketPath != "" {
+		controlServer, err = localcontrol.Listen(r.Config.DSGA.ControlSocketPath, globalState.dsgaControls)
+		if err != nil {
+			return fmt.Errorf("starting private DSGA control socket: %w", err)
+		}
+		defer controlServer.Close()
+	}
 
 	logger.Info("Starting billing metrics collector")
 	storeForNode := watch.NewIndexedStore(vmWatchStore, billing.NewVMNodeIndex(r.EnvArgs.K8sNodeName))
@@ -97,6 +106,9 @@ func (r MainRunner) Run(logger *zap.Logger, ctx context.Context) error {
 	}
 
 	tg := taskgroup.NewGroup(logger, taskgroup.WithParentContext(ctx))
+	if controlServer != nil {
+		tg.Go("dsga-local-control", func(_ *zap.Logger) error { return controlServer.Run(tg.Ctx()) })
+	}
 	tg.Go("scalingevents-run", func(logger *zap.Logger) error {
 		return scalingReporter.Run(tg.Ctx())
 	})

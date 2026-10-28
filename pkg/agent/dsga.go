@@ -30,6 +30,9 @@ type DSGAConfig struct {
 	// 的30秒上限复用于执行而固定制造未知结果。90..120秒覆盖网关总期限。
 	ComputeTimeoutSeconds uint `json:"computeTimeoutSeconds"`
 	PollIntervalSeconds   uint `json:"pollIntervalSeconds"`
+	// 可选的受信本地管理UDS；专用目录仅Agent服务UID/root可访问。调用者
+	// 仍须选择完整实例和当前owner，不能把此路径挂给Guest或普通租户。
+	ControlSocketPath string `json:"controlSocketPath,omitempty"`
 	// 仅可信配置可按VM UID选择原平台资格。跨Pod/boot不会自动收养新资格；
 	// 未配置时不生产Prepare。值没有平台默认数，也不从VM普通注解读取。
 	// 首次服务同样使用该原资格，必须包含真实启动VM的独立认证规格；
@@ -126,10 +129,19 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		instance, epoch := worker.Binding()
 		r.dsgaState(ownerCtx, DSGARunnerState{Phase: "running", IssuerEpoch: epoch, Instance: instance})
 		logger.Info("DSGA owner PG reconciliation started")
+		var endpoint *owner.ControlEndpoint
+		if config.ControlSocketPath != "" {
+			endpoint = worker.NewControlEndpoint()
+			unregister, err := r.global.dsgaControls.Register(endpoint)
+			if err != nil {
+				return err
+			}
+			defer unregister()
+		}
 		// 同一worker推进PG、最终预算结算和带原持有来源的恢复准入，先持久原门禁意图，
 		// 丢回复后只读对账。预算生产者/Guest/VM尚未确认的步骤仍保持ExternalStep；
 		// 不自动Begin、伪造外部回执或重发未知POST，也不另开legacy执行器绕过领域。
-		return worker.Run(ownerCtx, owner.PGLoopOptions{PollInterval: time.Duration(config.PollIntervalSeconds) * time.Second, Wake: updated.Recv(), Replay: nil, Observe: func(tick owner.Tick) {
+		return worker.Run(ownerCtx, owner.PGLoopOptions{PollInterval: time.Duration(config.PollIntervalSeconds) * time.Second, Control: endpoint, Wake: updated.Recv(), Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, Observe: func(tick owner.Tick) {
 			if tick.Err == nil {
 				r.status.update(r.global, func(stat podStatus) podStatus { now := time.Now(); stat.dsgaLastSuccessfulCheck = &now; return stat })
 			}
