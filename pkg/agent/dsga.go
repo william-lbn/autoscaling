@@ -112,11 +112,17 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		}
 		// 资源身份先于PG客户端恢复，Root floor不随SQL断连/PG boot变化清空。
 		// 必须同一已确认Session，缺root来源/未知旧Guest时失败关闭，不走legacy。
-		resources, err := session.NewResourceWorker(ownerCtx, resourceguard.ClientConfig{BaseURL: config.GatewayURL, Identity: resourceguard.Identity{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID}, Timeout: time.Duration(config.ComputeTimeoutSeconds) * time.Second, Transport: credentials.ManagementTransport(), Token: credentials.Token})
+		resources, err := session.NewResourceRecoveryWorker(ownerCtx, resourceguard.ClientConfig{Context: nil, BaseURL: config.GatewayURL, Identity: resourceguard.Identity{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID, GuestBootID: "", CgroupDevice: 0, CgroupInode: 0, SystemCgroupDevice: 0, SystemCgroupInode: 0}, IssuerEpoch: 0, Timeout: time.Duration(config.ComputeTimeoutSeconds) * time.Second, Transport: credentials.ManagementTransport(), Token: credentials.Token, Pending: nil})
 		if err != nil {
 			return err
 		}
 		defer resources.CloseIdleConnections()
+		// PG客户端尚未发现/建立时也保留同一Session及原Root SDK的显式恢复
+		// 入口。此阶段只读轮询，原约束漂移不发PG请求、不自动修复或开放；
+		// 修复回复丢失须显式Observe，完成后注销0 boot端点再建真实PG端点。
+		if err := r.awaitDSGAResources(ownerCtx, config, resources); err != nil {
+			return err
+		}
 		var qualifications []budget.QualificationSource
 		if source, ok := config.PrepareQualifications[string(r.vmUID)]; ok {
 			qualifications = append(qualifications, source)
@@ -148,4 +154,18 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		}})
 	})
 	return true, err
+}
+
+func (r *Runner) awaitDSGAResources(ctx context.Context, config *DSGAConfig, resources *owner.ResourceWorker) error {
+	endpoint := resources.NewRecoveryControlEndpoint()
+	instance, epoch := endpoint.Binding()
+	r.dsgaState(ctx, DSGARunnerState{Phase: "recovering-resources", IssuerEpoch: epoch, Instance: instance})
+	if config.ControlSocketPath != "" {
+		unregister, err := r.global.dsgaControls.Register(endpoint)
+		if err != nil {
+			return err
+		}
+		defer unregister()
+	}
+	return endpoint.RunResourceRecovery(ctx, time.Duration(config.PollIntervalSeconds)*time.Second)
 }
