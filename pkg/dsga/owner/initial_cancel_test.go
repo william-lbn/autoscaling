@@ -29,7 +29,7 @@ import (
 // 完整首次生产后，用真实Prepare/Host/WAL派发VM，再由原Runner在QMP
 // 发送前不可重发取消。目标1GiB、真实仍512MiB，不能改写原目标或注入旧
 // Resize成功。PG/root/资格/Kube/QMP仍为显式协议夹具，不外推Linux效果。
-func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, coord coordclient.CoordinationV1Interface, store *journal.Store, session *Session, worker *PGWorker, resources *ResourceWorker, config compute.Config, source budget.QualificationSource, runner *vmguard.Runner, qmp *vmQMPPeer, request control.Request, beforeVM bool) (*PGWorker, control.Request, *hostexec.Publisher) {
+func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, coord coordclient.CoordinationV1Interface, store *journal.Store, session *Session, worker *PGWorker, resources *ResourceWorker, config compute.Config, source budget.QualificationSource, runner *vmguard.Runner, qmp *vmQMPPeer, request control.Request, beforeVM bool, transfer *businessOwnerTransfer) (*PGWorker, control.Request, *hostexec.Publisher, *Session, *ResourceWorker) {
 	t.Helper()
 	s, err := store.Load(ctx)
 	require.NoError(t, err)
@@ -55,6 +55,12 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 		progress, err = worker.Advance(ctx)
 		require.NoError(t, err)
 		require.Equal(t, pgexec.Recorded, progress)
+	}
+	if transfer != nil {
+		// 切换发生在真实ResizeVM WAL已经Start、Runner尚未发送QMP的
+		// 窗口。原Key/command/Initial/Host持有必须原样跨代次保存；
+		// 新owner只可对账/取消，不能把旧目标重新包装为新epoch派发。
+		session, resources, worker = transfer.takeover(t, ctx, session, resources, worker, config, client, source, runner)
 	}
 	s, err = store.Load(ctx)
 	require.NoError(t, err)
@@ -195,8 +201,9 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 	// 后继普通成功用新真实Key，原取消请求和实际预算不重命名。
 	request.Key.Revision++
 	request.Key.OperationID.Low++
+	request.Key.IssuerEpoch = session.Actor().Epoch
 	request.BudgetCommitmentID = "initial-cancel-successor"
-	return worker, request, publisher
+	return worker, request, publisher, session, resources
 }
 
 // 多操作组合超过原单操作夹具的60秒静态Lease寿命。直接复用正式Host

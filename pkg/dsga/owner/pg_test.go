@@ -80,6 +80,12 @@ func pgReply(w http.ResponseWriter, value any) {
 
 // TLS仅提供协议事实夹具，真实验签/SQL/PG在跨仓native门禁另验。
 func pgConfig(t *testing.T, request control.Request, handler http.HandlerFunc, views ...func() control.Snapshot) compute.Config {
+	return pgConfigWithFence(t, request, handler, nil, views...)
+}
+
+// 只有跨真实选主代次的组合提供有状态fence。旧单owner用例保留原快照和
+// 原响应语义，不为了新组合让所有静态peer自动接受任意epoch。
+func pgConfigWithFence(t *testing.T, request control.Request, handler, fence http.HandlerFunc, views ...func() control.Snapshot) compute.Config {
 	t.Helper()
 	require.LessOrEqual(t, len(views), 1)
 	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -90,6 +96,10 @@ func pgConfig(t *testing.T, request control.Request, handler http.HandlerFunc, v
 			boot := request.Key.Instance.PGBootID
 			pgReply(w, control.Capabilities{ProtocolVersion: 1, ProductionReady: false, VMShrinkPermit: false, Supported: true, BufferAPIVersion: 6, Enabled: true, InstanceBound: true, HistoryCapacity: &history, ProviderCanRelease: &provider, Instance: &control.DiscoveryIdentity{VMUID: request.Key.Instance.VMUID, ComputeInstanceID: request.Key.Instance.ComputeInstanceID, PGBootID: &boot}})
 		case "/dsg/v1/issuer/fence":
+			if fence != nil {
+				fence(w, r)
+				return
+			}
 			var observed control.Snapshot
 			if len(views) == 1 {
 				// 多操作组合返回同点实际状态，不能把第二/三次请求仍固定为

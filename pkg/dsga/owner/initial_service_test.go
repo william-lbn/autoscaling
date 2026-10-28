@@ -196,9 +196,15 @@ func TestProductionInitialCancelBeforeVMRecoversActualBudgetAndSuccessor(t *test
 	productionInitialService(t, "cancel-before-vm")
 }
 
+// 不是手改Model.Owner：旧Session必须真正退出选主循环，另一Elector经
+// 同一Lease UID/RV接管；全部后续领域调用使用其正式创建的新Session。
+func TestProductionInitialOwnerTransferCancelsOriginalVMAndCompletesSuccessor(t *testing.T) {
+	productionInitialService(t, "owner-transfer")
+}
+
 func productionInitialService(t *testing.T, mode string) {
 	t.Helper()
-	cancelled := mode == "cancel" || mode == "cancel-before-vm"
+	cancelled := mode == "cancel" || mode == "cancel-before-vm" || mode == "owner-transfer"
 	api, store, coord := newAPI(t)
 	client := vmCore(t)
 	api.mu.Lock()
@@ -244,9 +250,20 @@ func productionInitialService(t *testing.T, mode string) {
 		// 整个测试的上限，各生产请求/租约/单轮deadline均保持原值。
 		deadline = 3 * time.Minute
 	}
+	if mode == "owner-transfer" {
+		// 实测包含原30秒Lease失效等待的完整组合为175.53秒，
+		// 总期限留出race调度余量；不改各生产请求或30/20/2秒租约。
+		deadline = 4 * time.Minute
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), deadline)
 	defer cancel()
-	err = elector.Run(ctx, func(ctx context.Context, session *Session) error {
+	run := elector.Run
+	var transfer *businessOwnerTransfer
+	if mode == "owner-transfer" {
+		transfer = newBusinessOwnerTransfer(t, api, coord, store, resourceConfig)
+		run = transfer.run
+	}
+	err = run(ctx, func(ctx context.Context, session *Session) error {
 		resources, err := session.NewResourceWorker(ctx, resourceConfig)
 		require.NoError(t, err)
 		defer resources.CloseIdleConnections()
@@ -261,7 +278,11 @@ func productionInitialService(t *testing.T, mode string) {
 			after.CurrentMainAndArraysUpperBytes += a.CommittedUpperBytes
 		}
 		pg := &initialServicePG{mu: sync.Mutex{}, request: request, before: before, after: after, resized: false, gate: nil, posts: 0, queries: 0, resizePosts: 0, loseBefore: false, loseAfter: false, store: store}
-		config := pgConfig(t, request, func(w http.ResponseWriter, r *http.Request) { pg.serve(t, w, r) }, func() control.Snapshot { return pg.shared().Observed })
+		var nativeFence http.HandlerFunc
+		if transfer != nil {
+			nativeFence = pg.ownerFence(t)
+		}
+		config := pgConfigWithFence(t, request, func(w http.ResponseWriter, r *http.Request) { pg.serve(t, w, r) }, nativeFence, func() control.Snapshot { return pg.shared().Observed })
 		worker, err := session.NewProductionPGWorker(ctx, config, resources, client.CoreV1())
 		require.NoError(t, err)
 		defer worker.CloseIdleConnections()
@@ -291,7 +312,7 @@ func productionInitialService(t *testing.T, mode string) {
 				require.NoError(t, err)
 				require.Equal(t, pgexec.Recorded, progress)
 			}
-			worker, request, successorHost = verifyInitialCancelledGrow(t, ctx, api, client, coord, store, session, worker, resources, config, source, runner, qmp, request, mode == "cancel-before-vm")
+			worker, request, successorHost, session, resources = verifyInitialCancelledGrow(t, ctx, api, client, coord, store, session, worker, resources, config, source, runner, qmp, request, mode == "cancel-before-vm", transfer)
 			pg.mu.Lock()
 			pg.request = request
 			pg.after.Observed = pgResponse(t, request).Observed

@@ -39,6 +39,7 @@ type ownerAPI struct {
 	vmVersion        int
 	leaseVersion     int
 	denyLeaseWrites  bool
+	denyLeaseHolder  string
 	loseJournalReply bool
 	loseLeaseReply   bool
 	calls            int
@@ -92,6 +93,12 @@ func (api *ownerAPI) serve(w http.ResponseWriter, r *http.Request) {
 			var next coordination.Lease
 			if json.NewDecoder(r.Body).Decode(&next) != nil {
 				status(w, http.StatusBadRequest)
+				return
+			}
+			// 仅让指定旧进程的真实续约请求失败；竞争者仍使用同一
+			// UID/RV API。不能全局停写后手工换holder来模拟接管。
+			if api.denyLeaseHolder != "" && next.Spec.HolderIdentity != nil && *next.Spec.HolderIdentity == api.denyLeaseHolder {
+				status(w, http.StatusServiceUnavailable)
 				return
 			}
 			if r.Method == http.MethodPost {
@@ -163,7 +170,7 @@ func (api *ownerAPI) serve(w http.ResponseWriter, r *http.Request) {
 func newAPI(t *testing.T) (*ownerAPI, *journal.Store, coordclient.CoordinationV1Interface) {
 	t.Helper()
 	var vmStatus vmv1.VirtualMachineStatus
-	api := &ownerAPI{mu: sync.Mutex{}, vm: &vmv1.VirtualMachine{TypeMeta: metav1.TypeMeta{APIVersion: vmv1.SchemeGroupVersion.String(), Kind: "VirtualMachine"}, ObjectMeta: metav1.ObjectMeta{Namespace: "testing", Name: "vm", UID: binding().VMUID, ResourceVersion: "vm-rv-1"}, Spec: vmv1.VirtualMachineSpec{}, Status: vmStatus}, lease: nil, vmVersion: 1, leaseVersion: 0, denyLeaseWrites: false, loseJournalReply: false, loseLeaseReply: false, calls: 0, config: nil, blockVMGet: false}
+	api := &ownerAPI{mu: sync.Mutex{}, vm: &vmv1.VirtualMachine{TypeMeta: metav1.TypeMeta{APIVersion: vmv1.SchemeGroupVersion.String(), Kind: "VirtualMachine"}, ObjectMeta: metav1.ObjectMeta{Namespace: "testing", Name: "vm", UID: binding().VMUID, ResourceVersion: "vm-rv-1"}, Spec: vmv1.VirtualMachineSpec{}, Status: vmStatus}, lease: nil, vmVersion: 1, leaseVersion: 0, denyLeaseWrites: false, denyLeaseHolder: "", loseJournalReply: false, loseLeaseReply: false, calls: 0, config: nil, blockVMGet: false}
 	api.vm.Spec.DSGABootstrap = &vmv1.DSGABootstrap{ProtocolVersion: 1, Incarnation: binding().Incarnation, ComputeInstanceID: "compute-1", VMUID: "", ConfigSecretUID: "", Ready: false}
 	server := httptest.NewServer(http.HandlerFunc(api.serve))
 	t.Cleanup(server.Close)
