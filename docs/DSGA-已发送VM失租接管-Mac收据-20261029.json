@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Mac Darwin arm64",
+  "phase": "QMP已生效丢回复后的真实失租接管与实际容量恢复",
+  "phase_completed": true,
+  "overall_core_complete": false,
+  "previous_autoscaling": "5c8a1bd1b284beb397c1110c6a2994d48b359dd4",
+  "code_commit": "a6a2e7616c07f82a33d30fcc11d0722784d1b577",
+  "runtime_behavior_changed": false,
+  "autoscaling_branch": "codex/dsga-autoscaling-20261019",
+  "neon_branch": "codex/dsga-neon-v3-20261019",
+  "pg17_unchanged": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "source_sha256": {
+    "pkg/dsga/owner/business_takeover_test.go": "61f84d46116687b913620ac7a5dd1d83af75910bf600aa65d648e29e099b596e",
+    "pkg/dsga/owner/initial_cancel_test.go": "a5271b9bcd6d47a3b8b039a9507277d8a93245123a1f29ee8cc9f2d8ee681fd9",
+    "pkg/dsga/owner/initial_service_test.go": "20ae53b95851c08a2d7311d724ec1a6e994b543154227e1f7a4461d193c3cf6c"
+  },
+  "adopted_tests": {
+    "log": "dsga-business-takeover-sent-final.jsonl",
+    "process_exit_code": 0,
+    "top_level_tests": 1,
+    "passed_records_including_parents": 1,
+    "failed": 0,
+    "skipped": 0,
+    "test_mapping": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestProductionInitialOwnerTransferObservesLostVMReplyAndRecoversActualCapacity",
+        "elapsed_seconds": 113.4
+      }
+    ],
+    "packages": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "elapsed_seconds": 116.312
+      }
+    ]
+  },
+  "vet": {
+    "packages": 1,
+    "exit_code": 0
+  },
+  "incremental_lint": {
+    "relative_to": "5c8a1bd1b284beb397c1110c6a2994d48b359dd4",
+    "exit_code": 0,
+    "issues": 0,
+    "whole_repository_clean_claim": false
+  },
+  "logs": {
+    "dsga-business-takeover-sent-final.jsonl": {
+      "sha256": "ebefc81fe3843674075918b6f732857e1a1c879489d1a34fb7b9b797d93603b6"
+    },
+    "dsga-business-takeover-sent-vet-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "dsga-business-takeover-sent-lint-final.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47"
+    }
+  },
+  "intermediate_not_counted": {
+    "log": "dsga-business-takeover-sent-first.jsonl",
+    "sha256": "e90dd43902259133eaa54a4104231363ae4b052676f91f3837c08cecca8b3fc3",
+    "result": "failed 45.29s: fixture wrongly expected pure Model to authenticate external CM UID; corrected to budgetclaims.Reader without production changes",
+    "counted_as_final_success": false
+  },
+  "lease_timings_seconds": {
+    "duration": 30,
+    "renew_deadline": 20,
+    "retry": 2,
+    "unchanged_from_production_defaults": true
+  },
+  "test_total_deadline_seconds": 240,
+  "boundaries": [
+    "QMP peer changed 512MiB to 1GiB once and lost response before real renewal-loss takeover",
+    "same Lease UID/RV; original WAL/Initial and holds preserved; lost takeover CAS response resolved by reads",
+    "new owner observes original Completed; no QMP replay or fabricated NoEffect; old epoch replay denied",
+    "actual budget uses original Prepare Outside/qualification v1, not old Initial v2; external CM UID authenticated by Reader",
+    "Cleanup lost Start/Record responses, missing/releasing qualification and SDK reconstruction -> actual 1GiB Host settlement -> successor VM no-op/PG grow -> next Shrink Prepare",
+    "formal Go clients/Electors/persistence run with explicit PG/root/Kube/QMP/qualification fixtures; not Linux/physical E2E",
+    "no runtime protocol/PG/Rust changes, no new Linux run/cross-compile/images/deployment",
+    "overall core remains incomplete; PG18 then PG16 follow PG17 complete archive"
+  ],
+  "commands_for_reproduction": [
+    "GOCACHE=<workspace>/build/go-cache GOPROXY=off GOSUMDB=off go test -race -count=1 -json ./pkg/dsga/owner -run \"^TestProductionInitialOwnerTransferObservesLostVMReplyAndRecoversActualCapacity$\"",
+    "same offline cache: go vet ./pkg/dsga/owner",
+    "same cache: golangci-lint run --new-from-rev=5c8a1bd1b284beb397c1110c6a2994d48b359dd4 ./pkg/dsga/owner"
+  ]
+}
