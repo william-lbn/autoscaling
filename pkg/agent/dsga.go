@@ -15,6 +15,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/credential"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/owner"
+	"github.com/neondatabase/autoscaling/pkg/dsga/policy"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 	"github.com/neondatabase/autoscaling/pkg/util"
 )
@@ -38,6 +39,9 @@ type DSGAConfig struct {
 	// 首次服务同样使用该原资格，必须包含真实启动VM的独立认证规格；
 	// 只有未来变配目标的资格不能按比例外推成启动预算或提前开放准入。
 	PrepareQualifications map[string]budget.QualificationSource `json:"prepareQualifications,omitempty"`
+	// 明确按VM UID选择的自动策略；只读采样和新Begin进入原owner串行
+	// 循环。未配置维持手动入口，不由旧LFC/公共metrics猜测执行权。
+	AutomaticMemory map[string]policy.Config `json:"automaticMemory,omitempty"`
 }
 
 type DSGARunnerState struct {
@@ -133,6 +137,11 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 			return err
 		}
 		defer worker.CloseIdleConnections()
+		if automatic, ok := config.AutomaticMemory[string(r.vmUID)]; ok {
+			if err := worker.ConfigureAutomaticMemory(automatic, r.global.kubeClient.CoreV1()); err != nil {
+				return err
+			}
+		}
 		instance, epoch := worker.Binding()
 		r.dsgaState(ownerCtx, DSGARunnerState{Phase: "running", IssuerEpoch: epoch, Instance: instance})
 		logger.Info("DSGA owner PG reconciliation started")
@@ -147,7 +156,8 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		}
 		// 同一worker推进PG、最终预算结算和带原持有来源的恢复准入，先持久原门禁意图，
 		// 丢回复后只读对账。预算生产者/Guest/VM尚未确认的步骤仍保持ExternalStep；
-		// 不自动Begin、伪造外部回执或重发未知POST，也不另开legacy执行器绕过领域。
+		// 显式配置自动策略时仅空闲轮次生成持久Begin；不伪造外部回执或
+		// 重发未知PG/Root/VM POST，也不另开legacy执行器绕过领域。
 		return worker.Run(ownerCtx, owner.PGLoopOptions{PollInterval: time.Duration(config.PollIntervalSeconds) * time.Second, Control: endpoint, Wake: updated.Recv(), Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, Observe: func(tick owner.Tick) {
 			if tick.Err == nil {
 				r.status.update(r.global, func(stat podStatus) podStatus { now := time.Now(); stat.dsgaLastSuccessfulCheck = &now; return stat })

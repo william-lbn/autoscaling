@@ -341,7 +341,13 @@ func productionInitialService(t *testing.T, mode string) {
 		if transfer != nil {
 			nativeFence = pg.ownerFence(t)
 		}
-		config := pgConfigWithFence(t, request, func(w http.ResponseWriter, r *http.Request) { pg.serve(t, w, r) }, nativeFence, func() control.Snapshot { return pg.shared().Observed })
+		config := pgConfigWithFence(t, request, func(w http.ResponseWriter, r *http.Request) {
+			if mode == "automatic-policy" && r.URL.Path == "/dsg/v1/work/state" {
+				serveAutomaticWork(w, pg)
+				return
+			}
+			pg.serve(t, w, r)
+		}, nativeFence, func() control.Snapshot { return pg.shared().Observed })
 		worker, err := session.NewProductionPGWorker(ctx, config, resources, client.CoreV1())
 		require.NoError(t, err)
 		defer worker.CloseIdleConnections()
@@ -365,7 +371,7 @@ func productionInitialService(t *testing.T, mode string) {
 			return nil
 		}
 		var successorHost *hostexec.Publisher
-		if pgTakeover || guestTakeover || mode == "auto-finish" {
+		if pgTakeover || guestTakeover || mode == "auto-finish" || mode == "automatic-policy" {
 			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -390,8 +396,12 @@ func productionInitialService(t *testing.T, mode string) {
 		// 头只能在完整Finalize的同CAS被替换；不注入领域Completed。
 		s, err := store.Load(ctx)
 		require.NoError(t, err)
-		_, _, err = store.Begin(ctx, s, session.Actor(), request, 1)
-		require.NoError(t, err)
+		if mode == "automatic-policy" {
+			verifyProductionAutomaticBegin(t, ctx, api, client, store, worker, source, pg, root)
+		} else {
+			_, _, err = store.Begin(ctx, s, session.Actor(), request, 1)
+			require.NoError(t, err)
+		}
 		progress, err := worker.Advance(ctx)
 		require.NoError(t, err)
 		require.Equal(t, pgexec.Recorded, progress)
@@ -512,7 +522,7 @@ func productionInitialService(t *testing.T, mode string) {
 		require.NotNil(t, s.State().BudgetHeld)
 		require.EqualValues(t, 9, s.State().ProtocolVersion)
 		posts, _, resizes := pg.counts()
-		if cancelled || mode == "auto-finish" {
+		if cancelled || mode == "auto-finish" || mode == "automatic-policy" {
 			require.Equal(t, 2, posts, "取消时已开放不新增setter，后继正常扩容只再开放一次")
 		} else {
 			require.Equal(t, 3, posts, "首次setter发送前/后各丢一次，正常后继只再开放一次")
@@ -523,6 +533,10 @@ func productionInitialService(t *testing.T, mode string) {
 		qmp.mu.Unlock()
 		if mode == "auto-finish" {
 			worker = verifyAutomaticNormalFinish(t, ctx, api, client, store, session, resources, worker, config, source, pg, root)
+		}
+		if mode == "automatic-policy" {
+			verifyProductionAutomaticSuccessor(t, ctx, client, coord, store, session, resources, worker, config, source, pg)
+			return nil
 		}
 		finishTrustedPrepareHost(t, ctx, api, client, store, session, worker, prepared, mode == "cancel-before-vm")
 		return nil

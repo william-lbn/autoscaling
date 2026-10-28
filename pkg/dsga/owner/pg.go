@@ -46,6 +46,8 @@ type PGWorker struct {
 	// 管理恢复复用创建本worker时的原资源owner/SDK，不另建空客户端以
 	// 绕过GuestReady或修复未知。生命周期仍由Agent同一Session持有。
 	resourceOwner *ResourceWorker
+	automatic     *automaticMemory
+	qualification *budget.QualificationSource
 	// Run期间独占SDK/控制入口，避免重复启动两个轮询goroutine竞争Pending。
 	// Run返回后可由旧的测试/嵌入调用重新进入；ControlEndpoint本身不可复用。
 	running atomic.Bool
@@ -264,7 +266,7 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 			return nil, err
 		}
 	}
-	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest, quiesce: quiesce, finalize: nil, vm: nil, host: nil, prepare: nil, initial: nil, resourceOwner: resource, running: atomic.Bool{}}, nil
+	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest, quiesce: quiesce, finalize: nil, vm: nil, host: nil, prepare: nil, initial: nil, resourceOwner: resource, automatic: nil, qualification: nil, running: atomic.Bool{}}, nil
 }
 
 // NewProductionPGWorker只供具备可信Kube客户端的实际Agent创建。完整预算
@@ -298,6 +300,12 @@ func (session *Session) NewProductionPGWorker(ctx context.Context, config comput
 	}
 	if err == nil && len(qualification) == 1 {
 		worker.prepare, err = prepareexec.New(session.store, worker.client, resources.client, claims, runner, core, session.actor, qualification[0])
+		if err == nil {
+			// 固定创建Prepare时的原资格；自动策略不能传入另一份来源，
+			// 避免建议集合和真正生产预算使用不同认证规格。
+			source := qualification[0]
+			worker.qualification = &source
+		}
 	}
 	if err == nil {
 		var source *budget.QualificationSource
@@ -633,7 +641,16 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			progress, err = worker.RecoverCapacityAdmission(callCtx, *capacityAdmission)
 			capacityAdmission = nil
 		} else {
-			progress, err = worker.Advance(callCtx)
+			if worker.automatic != nil && worker.automatic.pending != nil {
+				// Begin投递未知先读原WAL/旧RV屏障；未闭合前不采样，也不
+				// 让后续物理步骤掩盖本地尚未确认的投递状态。
+				progress, err = worker.advanceAutomatic(callCtx)
+			} else {
+				progress, err = worker.Advance(callCtx)
+			}
+			if err == nil && progress == pgexec.Idle && worker.automatic != nil {
+				progress, err = worker.advanceAutomatic(callCtx)
+			}
 		}
 		if options.Observe != nil {
 			options.Observe(Tick{Progress: progress, Err: err})
@@ -652,7 +669,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			// 原预算无容量变化的取消，可能仍在等待可信策略确认是否恢复
 			// 服务。保持owner并等待独立通道，不把拒绝自动开放当作致命
 			// 错误退出，也不根据此等待状态自行生成恢复选择。
-			if !errors.As(err, &call) && !errors.As(err, &resourceCall) && !errors.As(err, &unknown) && !errors.Is(err, resourceguard.ErrUnknown) && !errors.Is(err, vmguard.ErrUnknown) && !errors.Is(err, vmguard.ErrNotSent) && !errors.Is(err, admissionexec.ErrRecoverySelectionRequired) {
+			if !errors.As(err, &call) && !errors.As(err, &resourceCall) && !errors.As(err, &unknown) && !errors.Is(err, resourceguard.ErrUnknown) && !errors.Is(err, vmguard.ErrUnknown) && !errors.Is(err, vmguard.ErrNotSent) && !errors.Is(err, admissionexec.ErrRecoverySelectionRequired) && !errors.Is(err, ErrPolicyObservation) {
 				return err
 			}
 		}

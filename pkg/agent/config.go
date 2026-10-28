@@ -179,6 +179,10 @@ func (c *Config) validate() error {
 		for vmUID, source := range c.DSGA.PrepareQualifications {
 			erc.Whenf(ec, control.ValidateID(vmUID, "qualified VM UID") != nil || source.Validate() != nil, "invalid trusted DSGA platform qualification selection")
 		}
+		for vmUID, automatic := range c.DSGA.AutomaticMemory {
+			source, ok := c.DSGA.PrepareQualifications[vmUID]
+			erc.Whenf(ec, control.ValidateID(vmUID, "automatic VM UID") != nil || automatic.Validate() != nil || !ok || source.Validate() != nil, "automatic DSGA memory policy requires valid explicit targets and original qualification")
+		}
 		if c.DSGA.ControlSocketPath != "" {
 			erc.Whenf(ec, localcontrol.ValidateSocketPath(c.DSGA.ControlSocketPath) != nil, "invalid private DSGA coordination socket path")
 		}
