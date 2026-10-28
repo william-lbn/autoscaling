@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Darwin arm64",
+  "source_commit": "96ca5c2adcef82fd2abd9819f5401d872971e70f",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "production_changes": false,
+  "source_sha256": {
+    "pkg/dsga/owner/business_takeover_test.go": "ab385cdadb0dc3ea6083b73054a87fa0f20b758e6f646b76e7144c90dc1d7e2d",
+    "pkg/dsga/owner/initial_service_test.go": "3c7473c7d135524b9c074b7e413bc0a5aadcf0ca874b1d2bee02cb11123b02c2",
+    "pkg/dsga/owner/guest_business_takeover_test.go": "463d10902eb181416594c81e95574e8c6317f806cc943e35585ead49011ee18a"
+  },
+  "mac_race": {
+    "test": "TestProductionInitialOwnerTransferObservesLostGuestReplyWithoutSendingPG",
+    "top_level_tests": 1,
+    "test_records": 1,
+    "elapsed_seconds": 67.77,
+    "package_elapsed_seconds": 70.407,
+    "fail": 0,
+    "skip": 0,
+    "exit_code": 0,
+    "log": "dsga-guest-sent-takeover-first.jsonl"
+  },
+  "vet": {
+    "packages": 1,
+    "exit_code": 0,
+    "log": "dsga-guest-sent-takeover-vet-first.log"
+  },
+  "incremental_lint": {
+    "relative_to": "d8594166517fdc44053fe9118fdfaf8faa2344b8",
+    "packages": 1,
+    "issues": 0,
+    "exit_code": 0,
+    "log": "dsga-guest-sent-takeover-lint-first.log"
+  },
+  "logs": {
+    "dsga-guest-sent-takeover-first.jsonl": {
+      "sha256": "78b244256ceb64d814a2991e85dafcaaeef58e7da64759dbff846db1abafe897"
+    },
+    "dsga-guest-sent-takeover-vet-first.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "dsga-guest-sent-takeover-lint-first.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47"
+    }
+  },
+  "boundaries": [
+    "Production Elector, SDK, UID/RV journal, budget and Host readers; explicit Root/kernel, PG, qualification, Kube and QMP peers.",
+    "Root Apply took effect before lost reply; original GuestReady and SDK Pending retained across real renewal loss and same Lease takeover; no manual Owner mutation or shortened production lease.",
+    "New owner cannot replay old Root; Observe original once, Record reply lost, then original Key abort settles current 1GiB budget and Host; Root setter and QMP each once, PG Resize zero.",
+    "Following new owner/new Key Prepare succeeds with unchanged actual PG generation and current 1GiB VM; no repeated full successor Grow.",
+    "Only new test/fixture changes; no production Go, Rust, PG17, Linux build/execution, image or deployment changes. Existing exact 23d455fb builds apply only to unchanged production code.",
+    "Partitioned old processes, abnormal/missing-source closure, early-init/no-Wait/boot migration, safe-normal/private-background, Monitor/automatic/all-writers/CPU remain core gaps; then PG18/PG16."
+  ],
+  "commands": [
+    "go test -race -count=1 -json ./pkg/dsga/owner -run ^TestProductionInitialOwnerTransferObservesLostGuestReplyWithoutSendingPG$",
+    "go vet ./pkg/dsga/owner",
+    "golangci-lint run --new-from-rev=d8594166517fdc44053fe9118fdfaf8faa2344b8 ./pkg/dsga/owner"
+  ]
+}
