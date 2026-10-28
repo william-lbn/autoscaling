@@ -1,0 +1,337 @@
+{
+  "schema_version": 1,
+  "state": "Initial Host/Scheduler observation and zero-dispatch cancellation accepted; no initial peak release/source GC; full core NOT complete",
+  "base_commit": "a4aa0b2ad9b98ae01cbcaf18c05750ffa0df1cd6",
+  "code_commit": "1e7826557b79592f4dac853913e404f7f9054f25",
+  "source_sha256": {
+    "pkg/dsga/hostexec/initial.go": "203e3c566055c1fb87c360f9293d32284e98e3c2a535ab4fe841bb894b6eecf3",
+    "pkg/dsga/hostexec/settle.go": "d9e7dbc39beb2dbfbb1858070039ed21d773ed248b66a12d02a86ef67bfebb55",
+    "pkg/dsga/hostscheduler/service.go": "ad0b0204bddfd437a1f7880243ad724b4ca25684989991b8d93e9e8b82e2e2d8",
+    "pkg/dsga/journal/initial_budget_test.go": "fa4f88565a6684056e3fa1847054784cb3c6c827433bae62193b01160ceedb0a",
+    "pkg/dsga/owner/host_source_test.go": "bb556e878ce2136108787a89117861931ec83e359515b9563f40d92c9bfc517c",
+    "pkg/dsga/owner/initial_host_test.go": "5e13e05969cdb1e376db72c07cd32aea13303d985490242aa1bbe49a896a0003",
+    "pkg/dsga/owner/initial_service_test.go": "a738aa46232fc66de22ad47731a7341fff7f07eae3274ea5e802cd86f49ba30a",
+    "pkg/dsga/owner/vm_exec_test.go": "46ab59d433326cec7c655e824f7176ffb8cfb4f98b72466017c06db06fb57b24"
+  },
+  "source_go_files": 8,
+  "runtime_go_files": 3,
+  "test_go_files": 5,
+  "test_counts": {
+    "top_level_tests": 6,
+    "including_parent_records": 8,
+    "adopted_fail": 0,
+    "skip": 0
+  },
+  "test_mapping": {
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionInitialHostAndUndispatchedCancelKeepOriginalPlacement": {
+      "outcome": "pass",
+      "log": "dsga-initial-host-new-first.jsonl",
+      "elapsed": 4.06
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestInitialBudgetSurvivesUndispatchedCancellationsBeyondHistory": {
+      "outcome": "pass",
+      "log": "dsga-initial-host-new-first.jsonl",
+      "elapsed": 5.65
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerRestoresAllWorkloadsAndCanonicalVMBeforeFirstGrant": {
+      "outcome": "pass",
+      "log": "dsga-initial-host-affected-first.jsonl",
+      "elapsed": 4.61
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler::TestSchedulerManagedFirstPlacementAndLegacyBypassExclusion": {
+      "outcome": "pass",
+      "log": "dsga-initial-host-affected-first.jsonl",
+      "elapsed": 1.42
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL/partial-host-settle": {
+      "outcome": "pass",
+      "log": "dsga-initial-host-actual-settlement.jsonl",
+      "elapsed": 9.72
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL": {
+      "outcome": "pass",
+      "log": "dsga-initial-host-actual-settlement.jsonl",
+      "elapsed": 9.73
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/host-settle-scheduler-loop": {
+      "outcome": "pass",
+      "log": "dsga-initial-host-ordinary-scheduler-accepted.jsonl",
+      "elapsed": 26.27
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve": {
+      "outcome": "pass",
+      "log": "dsga-initial-host-ordinary-scheduler-accepted.jsonl",
+      "elapsed": 26.28
+    }
+  },
+  "log_sha256": {
+    "dsga-initial-host-actual-settlement.jsonl": "72d04d4b25a69ef77fdfbb7b787d40ef6d99bff85dcbd1a3c9abeedf6f450e3c",
+    "dsga-initial-host-affected-first.jsonl": "e2bb2c1aec0a7506896c46bc129e70e5dd972b308a1d19baf9e44375619b7e4a",
+    "dsga-initial-host-lint-accepted.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "dsga-initial-host-lint-final.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "dsga-initial-host-lint-first.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "dsga-initial-host-linux-build-summary.log": "890dfb6e0f80ef1cd1b0ba7e0e82abb1b7a7b93f8c1f13fc79672326932ee36f",
+    "dsga-initial-host-new-first.jsonl": "5afdda02c354e22ba5d0021242d97d38001459170f88e5b17e6b9b06b6f84e62",
+    "dsga-initial-host-ordinary-scheduler-accepted.jsonl": "370a4e24026460867b08d005a93945c235c2dc65ce837f1e896cbaf9787fc245",
+    "dsga-initial-host-ordinary-scheduler-final.jsonl": "3ffbc55425ff43681135a0fbb120ecb8424a32028850e9ea716b689f7eca608b",
+    "dsga-initial-host-ordinary-scheduler.jsonl": "44f65a4fc21860d0a424278997d14e153c8890050f3d2273100c8dae82deb1ea",
+    "dsga-initial-host-release-agent-linux-amd64.log": "633af539a9fa4c7d9ab84f8409627f62e7fb2888d7e2f98497339ac65a0675d8",
+    "dsga-initial-host-release-agent-linux-arm64.log": "74cbf2998d13c6c63e239bbb3cd1f7bad269b0ae5628a125b8699ed43744cdad",
+    "dsga-initial-host-release-controller-linux-amd64.log": "f31a18460dfbf217175c23dede6f49a38bc63fa5d3905dd3346db07de864ddc3",
+    "dsga-initial-host-release-controller-linux-arm64.log": "532531e20c6aea985ee275fd4802c85743a0ae77b02e5411ea6aef66d4a722be",
+    "dsga-initial-host-release-runner-linux-amd64.log": "ddc0978355ed48c940e82f6c4602127a3ee4b9c4fb14199e2d51745ada3059b2",
+    "dsga-initial-host-release-runner-linux-arm64.log": "43a6dbb4cdf726c9840bc7dfca48783179231f26fe1dfdb9cf1a525c38fd370f",
+    "dsga-initial-host-release-scheduler-linux-amd64.log": "2bf70937ac7bac6fa37920d1429ecf42c77f60f85f3418c3618182be78118f2d",
+    "dsga-initial-host-release-scheduler-linux-arm64.log": "89fab941c650ae092d67c1b47a60afb90708fd1e5e81db3e5a94826aa95361fb",
+    "dsga-initial-host-vet-accepted.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsga-initial-host-vet-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsga-initial-host-vet-first.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "checks": {
+    "lint_packages": 4,
+    "lint": "0 issues",
+    "vet_packages": 4,
+    "vet": "passed",
+    "linux_cli_binaries": 8,
+    "linux_executed": false
+  },
+  "linux_artifacts": [
+    {
+      "service": "agent",
+      "arch": "amd64",
+      "exit_code": 0,
+      "source_commit": "1e7826557b79592f4dac853913e404f7f9054f25",
+      "executed": false,
+      "path": "build/dsga-initial-host-release-agent-linux-amd64",
+      "sha256": "ff1b3c8019b123b65c47351d626878fd23f20a99d9ccaa432459184f950834b8",
+      "bytes": 80467353,
+      "elf_machine": 62,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=linux",
+        "build\tGOAMD64=v1",
+        "build\tvcs=git",
+        "build\tvcs.revision=1e7826557b79592f4dac853913e404f7f9054f25",
+        "build\tvcs.time=2026-10-28T13:24:50Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "scheduler",
+      "arch": "amd64",
+      "exit_code": 0,
+      "source_commit": "1e7826557b79592f4dac853913e404f7f9054f25",
+      "executed": false,
+      "path": "build/dsga-initial-host-release-scheduler-linux-amd64",
+      "sha256": "b94ad315cc7031839c7eb00c726c8e7bbee6e9d6abe37e7988cb606c5a01c321",
+      "bytes": 97041148,
+      "elf_machine": 62,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=linux",
+        "build\tGOAMD64=v1",
+        "build\tvcs=git",
+        "build\tvcs.revision=1e7826557b79592f4dac853913e404f7f9054f25",
+        "build\tvcs.time=2026-10-28T13:24:50Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "runner",
+      "arch": "amd64",
+      "exit_code": 0,
+      "source_commit": "1e7826557b79592f4dac853913e404f7f9054f25",
+      "executed": false,
+      "path": "build/dsga-initial-host-release-runner-linux-amd64",
+      "sha256": "aae3be48da5daf47b7dfcc1cec7faa3aaa51791be30299a47a2d9c845b136582",
+      "bytes": 58653583,
+      "elf_machine": 62,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=linux",
+        "build\tGOAMD64=v1",
+        "build\tvcs=git",
+        "build\tvcs.revision=1e7826557b79592f4dac853913e404f7f9054f25",
+        "build\tvcs.time=2026-10-28T13:24:50Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "controller",
+      "arch": "amd64",
+      "exit_code": 0,
+      "source_commit": "1e7826557b79592f4dac853913e404f7f9054f25",
+      "executed": false,
+      "path": "build/dsga-initial-host-release-controller-linux-amd64",
+      "sha256": "f0e9cf997ec7caabc9220a4e7bf66d03027ef7ddac3a557ebc040b18368ed14f",
+      "bytes": 71409635,
+      "elf_machine": 62,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=amd64",
+        "build\tGOOS=linux",
+        "build\tGOAMD64=v1",
+        "build\tvcs=git",
+        "build\tvcs.revision=1e7826557b79592f4dac853913e404f7f9054f25",
+        "build\tvcs.time=2026-10-28T13:24:50Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "agent",
+      "arch": "arm64",
+      "exit_code": 0,
+      "source_commit": "1e7826557b79592f4dac853913e404f7f9054f25",
+      "executed": false,
+      "path": "build/dsga-initial-host-release-agent-linux-arm64",
+      "sha256": "a615865c9f7dc24e9ae0f04fe6fc34a89b44bc766801e45eae6af0c53d606802",
+      "bytes": 76057634,
+      "elf_machine": 183,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=arm64",
+        "build\tGOOS=linux",
+        "build\tGOARM64=v8.0",
+        "build\tvcs=git",
+        "build\tvcs.revision=1e7826557b79592f4dac853913e404f7f9054f25",
+        "build\tvcs.time=2026-10-28T13:24:50Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "scheduler",
+      "arch": "arm64",
+      "exit_code": 0,
+      "source_commit": "1e7826557b79592f4dac853913e404f7f9054f25",
+      "executed": false,
+      "path": "build/dsga-initial-host-release-scheduler-linux-arm64",
+      "sha256": "f510d4334aec44446bd0c01f8ddd790d6bd52b569916e78ee61293900b991d9a",
+      "bytes": 92215190,
+      "elf_machine": 183,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=arm64",
+        "build\tGOOS=linux",
+        "build\tGOARM64=v8.0",
+        "build\tvcs=git",
+        "build\tvcs.revision=1e7826557b79592f4dac853913e404f7f9054f25",
+        "build\tvcs.time=2026-10-28T13:24:50Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "runner",
+      "arch": "arm64",
+      "exit_code": 0,
+      "source_commit": "1e7826557b79592f4dac853913e404f7f9054f25",
+      "executed": false,
+      "path": "build/dsga-initial-host-release-runner-linux-arm64",
+      "sha256": "87c0a817ec5282eddecea3b49874e49acfebec2342512af3ddd5bdc2a9d1d8d1",
+      "bytes": 55496520,
+      "elf_machine": 183,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=arm64",
+        "build\tGOOS=linux",
+        "build\tGOARM64=v8.0",
+        "build\tvcs=git",
+        "build\tvcs.revision=1e7826557b79592f4dac853913e404f7f9054f25",
+        "build\tvcs.time=2026-10-28T13:24:50Z",
+        "build\tvcs.modified=true"
+      ]
+    },
+    {
+      "service": "controller",
+      "arch": "arm64",
+      "exit_code": 0,
+      "source_commit": "1e7826557b79592f4dac853913e404f7f9054f25",
+      "executed": false,
+      "path": "build/dsga-initial-host-release-controller-linux-arm64",
+      "sha256": "23db1c34c3b5b96cd00e7f11451bb34387a7e2cafb2dc1c6ff0cce536ce0816c",
+      "bytes": 67741666,
+      "elf_machine": 183,
+      "build_settings": [
+        "build\t-buildmode=exe",
+        "build\t-compiler=gc",
+        "build\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "build\tCGO_ENABLED=0",
+        "build\tGOARCH=arm64",
+        "build\tGOOS=linux",
+        "build\tGOARM64=v8.0",
+        "build\tvcs=git",
+        "build\tvcs.revision=1e7826557b79592f4dac853913e404f7f9054f25",
+        "build\tvcs.time=2026-10-28T13:24:50Z",
+        "build\tvcs.modified=true"
+      ]
+    }
+  ],
+  "preserved_owner_agents_sha256": "5c61959674c362ecc4c3709930121304595e8b0bca1ff70ae401f0cf8f2803c1",
+  "vcs_modified_explanation": "Owner AGENTS.md dirty; Go/module source equals code commit; ELF never executed",
+  "adoption_note": "New first/Host production combination4.06s and history model5.65s; actual-capacity Host9.72s, ordinary Host/Scheduler/GC26.27s, and two Scheduler allocation tests reused from successful selective run. Empty owner package pass in first combined selector is NOT a business case. Final test-only field-selector/total-harness-deadline fixes do not affect other adopted runtime branches. Unchanged PG/Rust/format/full first-to-grow fault chain not rerun.",
+  "failed_attempts": {
+    "dsga-initial-host-ordinary-scheduler.jsonl": "old fake LIST ignored spec.nodeName fieldSelector and included unassigned waiting Pod; repaired fixture filter, production strict check unchanged",
+    "dsga-initial-host-ordinary-scheduler-final.jsonl": "after all internal assertions passed, 25s test total context expired; only this actual ticker/GC case uses existing DefaultOptions and45s total. Business deadlines and10s round bound unchanged"
+  },
+  "versions": {
+    "vm_model_max": 9,
+    "node_model": 7
+  },
+  "production_initial_loop_wired": true,
+  "true_owner_takeover_combination_verified": false,
+  "actual_components": [
+    "production initial budget/admission worker",
+    "Host Publisher original qualification/Runner/Node observation",
+    "actual Scheduler owner/reconcile loop",
+    "generated VM HTTP/UID-RV cancel/Finish",
+    "Model/codec/history retention and unknown-dispatch refusal"
+  ],
+  "fixtures": [
+    "PG native protocol peer",
+    "root/kernel/platform qualification facts",
+    "Kube/Lease peer",
+    "local TLS/UDS QMP peer; no real KVM or physical hotplug"
+  ],
+  "remaining_code": [
+    "initial partial-effect cancellation/peak settlement and source lifecycle",
+    "missing original sources/root mismatch recovery",
+    "safe normal cap decrease/background-private liveness",
+    "true takeover/start/noWait/init/boot/migration recovery",
+    "all writers/CPU/trusted request-cancel-replay ingress and Monitor/automatic policy"
+  ],
+  "scope": {
+    "upstream_frozen": true,
+    "other_pg_deferred": true,
+    "control_plane_untouched": true,
+    "default_off": true,
+    "images_built": false,
+    "deployed": false,
+    "main_merged": false,
+    "linux_runtime_verified": false
+  },
+  "initial_host_observation_wired": true,
+  "initial_peak_release_or_source_gc_implemented": false
+}
