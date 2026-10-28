@@ -16,6 +16,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/budgetexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/initialexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/prepareexec"
@@ -40,6 +41,7 @@ type PGWorker struct {
 	vm        *vmexec.Executor
 	host      *hostexec.Consumer
 	prepare   *prepareexec.Executor
+	initial   *initialexec.Executor
 }
 
 func (session *Session) coupledContext(ctx context.Context) (context.Context, context.CancelFunc) {
@@ -252,7 +254,7 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 			return nil, err
 		}
 	}
-	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest, quiesce: quiesce, finalize: nil, vm: nil, host: nil, prepare: nil}, nil
+	return &PGWorker{session: session, client: client, executor: executor, admission: admission, resources: guest, quiesce: quiesce, finalize: nil, vm: nil, host: nil, prepare: nil, initial: nil}, nil
 }
 
 // NewProductionPGWorker只供具备可信Kube客户端的实际Agent创建。完整预算
@@ -287,6 +289,13 @@ func (session *Session) NewProductionPGWorker(ctx context.Context, config comput
 	if err == nil && len(qualification) == 1 {
 		worker.prepare, err = prepareexec.New(session.store, worker.client, resources.client, claims, runner, core, session.actor, qualification[0])
 	}
+	if err == nil {
+		var source *budget.QualificationSource
+		if len(qualification) == 1 {
+			source = &qualification[0]
+		}
+		worker.initial, err = initialexec.New(session.store, worker.client, resources.client, claims, runner, session.actor, source)
+	}
 	if err != nil {
 		worker.CloseIdleConnections()
 		return nil, err
@@ -306,6 +315,12 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 	}
 	callCtx, cancel := worker.session.coupledContext(ctx)
 	defer cancel()
+	if worker.initial != nil {
+		progress, err := worker.initial.Advance(callCtx)
+		if err != nil || progress != pgexec.ExternalStep {
+			return progress, err
+		}
+	}
 	// 外层关闭/更换意图不能自动清本地SDK未知栅栏。必须在原意图尚处活动时
 	// 完整原终态对账/授权显式重放，或由后续受控跨owner关闭协议核验；不能把旧未知当新空闲，
 	// 更不能先Start新PG步骤后才发现客户端拒绝，从而制造另一条虚假Unconfirmed。
@@ -371,6 +386,20 @@ func (worker *PGWorker) ReplayPrepareOriginal(ctx context.Context, key control.K
 	callCtx, cancel := worker.session.coupledContext(ctx)
 	defer cancel()
 	return worker.prepare.ReplayOriginal(callCtx, key)
+}
+
+// 首次开放原重放独立于Resize Key与最终开放；selector仅指已持久命令摘要。
+// 当前Session检查及执行器原派发者检查都通过后，才可能原样发送同一setter。
+func (worker *PGWorker) ReplayInitialAdmission(ctx context.Context, selector string) (pgexec.Progress, error) {
+	if err := worker.session.Check(ctx); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	if worker.initial == nil {
+		return pgexec.AwaitingFact, fmt.Errorf("initial producer is unavailable")
+	}
+	callCtx, cancel := worker.session.coupledContext(ctx)
+	defer cancel()
+	return worker.initial.ReplayOriginal(callCtx, selector)
 }
 
 func (worker *PGWorker) ReplayOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {
@@ -469,6 +498,8 @@ type PGLoopOptions struct {
 	ResourceReplay <-chan control.Key
 	// 仅可信原预算恢复选择；nil与普通轮询都不会自动重试Outside创建。
 	PrepareReplay <-chan control.Key
+	// 受信协调入口明确选择原首次开放命令摘要；nil时普通循环只读恢复。
+	InitialAdmissionReplay <-chan string
 	// VMReplay只能来自受信显式协调入口，不以HTTP错误、超时或not_sent
 	// 自动投递。选择仅指原Key，完整命令和原回执始终从持久来源读取。
 	VMReplay <-chan control.Key
@@ -502,6 +533,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	var admissionReplay *control.Key
 	var resourceReplay *control.Key
 	var prepareReplay *control.Key
+	var initialReplay *string
 	var vmReplay *control.Key
 	var abortReplay *control.Key
 	var unchangedAdmission *control.Key
@@ -509,6 +541,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	wake, replays, admissionReplays, resourceReplays := options.Wake, options.Replay, options.AdmissionReplay, options.ResourceReplay
 	vmReplays := options.VMReplay
 	prepareReplays := options.PrepareReplay
+	initialReplays := options.InitialAdmissionReplay
 	abortReplays := options.AbortReplay
 	unchangedAdmissions := options.UnchangedAdmissionRecovery
 	capacityAdmissions := options.CapacityAdmissionRecovery
@@ -530,6 +563,9 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		} else if prepareReplay != nil {
 			progress, err = worker.ReplayPrepareOriginal(callCtx, *prepareReplay)
 			prepareReplay = nil
+		} else if initialReplay != nil {
+			progress, err = worker.ReplayInitialAdmission(callCtx, *initialReplay)
+			initialReplay = nil
 		} else if vmReplay != nil {
 			progress, err = worker.ReplayVMOriginal(callCtx, *vmReplay)
 			vmReplay = nil
@@ -590,6 +626,13 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			} else {
 				selectedKey := key
 				prepareReplay = &selectedKey
+			}
+		case selector, open := <-initialReplays:
+			if !open {
+				initialReplays = nil
+			} else {
+				selected := selector
+				initialReplay = &selected
 			}
 		case key, open := <-vmReplays:
 			if !open {

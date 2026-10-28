@@ -32,6 +32,8 @@ type DSGAConfig struct {
 	PollIntervalSeconds   uint `json:"pollIntervalSeconds"`
 	// 仅可信配置可按VM UID选择原平台资格。跨Pod/boot不会自动收养新资格；
 	// 未配置时不生产Prepare。值没有平台默认数，也不从VM普通注解读取。
+	// 首次服务同样使用该原资格，必须包含真实启动VM的独立认证规格；
+	// 只有未来变配目标的资格不能按比例外推成启动预算或提前开放准入。
 	PrepareQualifications map[string]budget.QualificationSource `json:"prepareQualifications,omitempty"`
 }
 
