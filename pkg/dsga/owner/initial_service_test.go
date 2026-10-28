@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -185,7 +186,7 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 	}
 }
 
-func initialAndGrowQualification(t *testing.T, ctx context.Context, client *kubefake.Clientset, root *guestRootFixture, p budget.Prepared) budget.QualificationSource {
+func initialAndGrowQualification(t *testing.T, ctx context.Context, client *kubefake.Clientset, root *guestRootFixture, p budget.Prepared, extra ...budget.QualifiedTarget) budget.QualificationSource {
 	t.Helper()
 	birth, ref, _, err := vmguard.ReadPublished(ctx, client.CoreV1(), binding(), nil)
 	require.NoError(t, err)
@@ -200,6 +201,12 @@ func initialAndGrowQualification(t *testing.T, ctx context.Context, client *kube
 		{VMMemoryBytes: 512 << 20, GuestUsableMemoryBytes: 480 << 20, Limits: bootstrap.Limits, SystemOutsidePGBytes: 24 << 20, TransitionBytes: 4 << 20, SafetyBytes: 4 << 20},
 		{VMMemoryBytes: p.Request.TargetVMMemoryBytes, GuestUsableMemoryBytes: p.GuestUsableMemoryBytes, Limits: p.Limits, SystemOutsidePGBytes: 24 << 20, TransitionBytes: 4 << 20, SafetyBytes: 4 << 20},
 	}}
+	if len(extra) > 0 {
+		// 仅新自动缩VM组合显式加入中间规格；这些数字仍是独立平台peer
+		// 输入，不按占用/比例在运行时补资格，也不改变旧组合的目标集合。
+		q.Targets = append(q.Targets, extra...)
+		sort.Slice(q.Targets, func(i, j int) bool { return q.Targets[i].VMMemoryBytes < q.Targets[j].VMMemoryBytes })
+	}
 	require.NoError(t, q.Validate())
 	raw, err := json.Marshal(q)
 	require.NoError(t, err)
@@ -297,7 +304,9 @@ func productionInitialService(t *testing.T, mode string) {
 	elector, err := New(coord, store, DefaultOptions())
 	require.NoError(t, err)
 	deadline := 2 * time.Minute
-	if cancelled {
+	if cancelled || mode == "automatic-policy" {
+		// 自动完整Grow→Shrink组合已在原两分钟上限内119.86秒通过，
+		// 同样留出race调度余量；只扩测试总期限，不改生产请求或租约。
 		// 本组合串联首次服务、取消回收、后继Grow和下一次Prepare，
 		// -race下已实测到最后Prepare才触及原两分钟总期限；扩大的是
 		// 整个测试的上限，各生产请求/租约/单轮deadline均保持原值。
@@ -327,6 +336,9 @@ func productionInitialService(t *testing.T, mode string) {
 		require.NoError(t, err)
 		defer resources.CloseIdleConnections()
 		request := pgRequest(t, session.Actor())
+		if mode == "automatic-policy" {
+			request.TargetVMMemoryBytes = 2 << 30
+		}
 		p, before := preparedGuest(t, request, root.view.Identity)
 		p.Limits.PidsMaxTasks = 128
 		p.Limits.SystemMemoryMaxBytes = 16 << 20
@@ -352,7 +364,11 @@ func productionInitialService(t *testing.T, mode string) {
 		require.NoError(t, err)
 		defer worker.CloseIdleConnections()
 		require.NoError(t, runner.Tick(ctx))
-		source := initialAndGrowQualification(t, ctx, client, root, p)
+		var extra []budget.QualifiedTarget
+		if mode == "automatic-policy" {
+			extra = []budget.QualifiedTarget{{VMMemoryBytes: 1 << 30, GuestUsableMemoryBytes: 768 << 20, Limits: p.Limits, SystemOutsidePGBytes: 24 << 20, TransitionBytes: 4 << 20, SafetyBytes: 4 << 20}}
+		}
+		source := initialAndGrowQualification(t, ctx, client, root, p, extra...)
 		rebuild := func() *PGWorker {
 			worker.CloseIdleConnections()
 			next, err := session.NewProductionPGWorker(ctx, config, resources, client.CoreV1(), source)
@@ -535,7 +551,8 @@ func productionInitialService(t *testing.T, mode string) {
 			worker = verifyAutomaticNormalFinish(t, ctx, api, client, store, session, resources, worker, config, source, pg, root)
 		}
 		if mode == "automatic-policy" {
-			verifyProductionAutomaticSuccessor(t, ctx, client, coord, store, session, resources, worker, config, source, pg)
+			t.Log("自动Grow全部领域确认，开始生产结案与自动Shrink")
+			verifyProductionAutomaticSuccessor(t, ctx, client, coord, store, session, resources, worker, config, source, pg, runner, qmp)
 			return nil
 		}
 		finishTrustedPrepareHost(t, ctx, api, client, store, session, worker, prepared, mode == "cancel-before-vm")

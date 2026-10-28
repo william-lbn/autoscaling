@@ -22,6 +22,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/policy"
+	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
 
 func automaticConfig(targets ...policy.Target) policy.Config {
@@ -42,7 +43,7 @@ func TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain(t *testi
 func verifyProductionAutomaticBegin(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, store *journal.Store, worker *PGWorker, source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture) {
 	t.Helper()
 	current := pg.shared().Observed
-	c := automaticConfig(policy.Target{VMMemoryBytes: 512 << 20, Buffers: current.HighBuffers}, policy.Target{VMMemoryBytes: 1 << 30, Buffers: 1024})
+	c := automaticConfig(policy.Target{VMMemoryBytes: 512 << 20, Buffers: current.HighBuffers}, policy.Target{VMMemoryBytes: pg.request.TargetVMMemoryBytes, Buffers: 1024})
 	require.NoError(t, worker.ConfigureAutomaticMemory(c, client.CoreV1()))
 	require.Error(t, worker.ConfigureAutomaticMemory(c, client.CoreV1()), "不能另开策略或换原资格")
 	s, err := store.Load(ctx)
@@ -83,8 +84,8 @@ func verifyProductionAutomaticBegin(t *testing.T, ctx context.Context, api *owne
 		unchanged(t)
 	}))
 	require.True(t, t.Run("unqualified-target-no-begin", func(t *testing.T) {
-		worker.automatic.config.Targets[1].VMMemoryBytes = 2 << 30
-		defer func() { worker.automatic.config.Targets[1].VMMemoryBytes = 1 << 30 }()
+		worker.automatic.config.Targets[1].VMMemoryBytes = 768 << 20
+		defer func() { worker.automatic.config.Targets[1].VMMemoryBytes = c.Targets[1].VMMemoryBytes }()
 		unchanged(t)
 	}))
 	require.True(t, t.Run("expired-unaccepted-begin-lost-fence-reply", func(t *testing.T) {
@@ -140,7 +141,7 @@ func verifyProductionAutomaticBegin(t *testing.T, ctx context.Context, api *owne
 	request := latest.State().Active.Request
 	require.Equal(t, *original, request)
 	require.Equal(t, control.Grow, request.Kind)
-	require.EqualValues(t, 1<<30, request.TargetVMMemoryBytes)
+	require.Equal(t, c.Targets[1].VMMemoryBytes, request.TargetVMMemoryBytes)
 	require.EqualValues(t, 1024, request.TargetBuffers)
 	require.Equal(t, current.CapacityGeneration, request.ExpectedCapacityGeneration)
 	require.Nil(t, worker.automatic.pending)
@@ -152,10 +153,11 @@ func verifyProductionAutomaticBegin(t *testing.T, ctx context.Context, api *owne
 	pg.mu.Unlock()
 }
 
-// 正式Finish和Host结清后，重建策略必须重新累计缩容窗口。后继选择同VM
-// 较小Buffer且保持normal硬上界的真实支持目标；安全降normal仍是独立缺口，
-// 不在peer中改小约束来绕过Prepare拒绝。这里核到正式Prepare，后续仍Planned。
-func verifyProductionAutomaticSuccessor(t *testing.T, ctx context.Context, client *kubefake.Clientset, coord coordclient.CoordinationV1Interface, store *journal.Store, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, source budget.QualificationSource, pg *initialServicePG) {
+// 正式Finish和Host结清后，重建策略必须重新累计缩容窗口。后继选择原资格
+// 明确支持的2GiB→1GiB，保持normal硬上界；安全降normal仍是独立缺口。
+// PG/Root/QMP只提供协议事实，实际Prepare/Quiesce/Runner/预算/准入/Finish
+// 必须由生产代码顺序推进，不手填领域Completed，也不手动Store.Finish。
+func verifyProductionAutomaticSuccessor(t *testing.T, ctx context.Context, client *kubefake.Clientset, coord coordclient.CoordinationV1Interface, store *journal.Store, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, source budget.QualificationSource, pg *initialServicePG, runner *vmguard.Runner, qmp *vmQMPPeer) {
 	t.Helper()
 	progress, err := worker.Advance(ctx)
 	require.NoError(t, err)
@@ -169,6 +171,8 @@ func verifyProductionAutomaticSuccessor(t *testing.T, ctx context.Context, clien
 	require.NoError(t, err)
 	var ledger hostguard.Model
 	require.NoError(t, json.Unmarshal([]byte(node.Annotations[hostguard.LedgerAnnotation]), &ledger))
+	stopHost := keepUnchangedHostLease(t, ctx, client, ledger.Binding)
+	defer stopHost()
 	allocator, err := hostguard.NewStore(client.CoreV1(), client.CoordinationV1(), ledger.Binding, "host-fixture-holder")
 	require.NoError(t, err)
 	publisher, err := hostexec.New(client.CoreV1(), coord, store, allocator, session.Ownership().LeaseUID, 64<<20)
@@ -180,7 +184,7 @@ func verifyProductionAutomaticSuccessor(t *testing.T, ctx context.Context, clien
 	worker, err = session.NewProductionPGWorker(ctx, config, resources, client.CoreV1(), source)
 	require.NoError(t, err)
 	defer worker.CloseIdleConnections()
-	c := automaticConfig(policy.Target{VMMemoryBytes: 1 << 30, Buffers: 512}, policy.Target{VMMemoryBytes: 1 << 30, Buffers: 1024})
+	c := automaticConfig(policy.Target{VMMemoryBytes: 1 << 30, Buffers: 512}, policy.Target{VMMemoryBytes: 2 << 30, Buffers: 1024})
 	require.NoError(t, worker.ConfigureAutomaticMemory(c, client.CoreV1()))
 	loopCtx, stop := context.WithCancel(ctx)
 	defer stop()
@@ -207,11 +211,65 @@ func verifyProductionAutomaticSuccessor(t *testing.T, ctx context.Context, clien
 	require.NoError(t, json.Unmarshal(budgetStep(t, store, journal.PrepareBudget).Observation.Data, &prepared))
 	require.Equal(t, r, prepared.Request)
 	require.EqualValues(t, 512<<20, prepared.Limits.MemoryMaxBytes, "自动缩容不得偷偷降低normal上界")
+	// 下一轮切换同一PG实例的有状态协议peer，只替代原生响应；SDK重建
+	// 必须从原完整WAL继续。Prepare已经是生产者真实生成的原预算/资格，
+	// 不能重新注入它的Completed来跳过本轮预算或Host持有。
+	pg.mu.Lock()
+	opening := *pg.gate
+	pg.mu.Unlock()
+	var shrinkPG partialPGPeer
+	shrinkPG.admission = opening
+	shrinkPG.configure(t, prepared)
+	shrinkConfig := pgConfig(t, r, func(w http.ResponseWriter, req *http.Request) {
+		shrinkPG.serve(t, w, req)
+	}, func() control.Snapshot { return shrinkPG.shared().Observed })
+	worker.CloseIdleConnections()
+	worker, err = session.NewProductionPGWorker(ctx, shrinkConfig, resources, client.CoreV1(), source)
+	require.NoError(t, err)
+	defer worker.CloseIdleConnections()
+	_, err = publisher.Reconcile(ctx)
+	require.NoError(t, err)
+	t.Log("自动Shrink原Prepare与Host保留已确认，继续排空/PG/Guest/Runner")
+	for _, action := range []journal.Action{journal.Quiesce, journal.ResizePG, journal.ReleasePG, journal.GuestReady} {
+		advancePartialStep(t, ctx, store, worker, action, journal.Settled)
+	}
+	progress, err = worker.Advance(ctx)
+	require.NoError(t, err)
+	require.Equal(t, pgexec.Recorded, progress)
+	require.Equal(t, journal.Unconfirmed, budgetStep(t, store, journal.ResizeVM).Phase)
+	require.NoError(t, runner.Tick(ctx))
+	for _, action := range []journal.Action{journal.ResizeVM, journal.ObserveVM, journal.FinalizeBudget, journal.ResumeAdmission} {
+		advancePartialStep(t, ctx, store, worker, action, journal.Settled)
+	}
+	var vmResult budget.VMSettlement
+	require.NoError(t, json.Unmarshal(budgetStep(t, store, journal.ObserveVM).Observation.Data, &vmResult))
+	require.EqualValues(t, 1<<30, vmResult.ActualMemoryBytes)
+	require.EqualValues(t, 1<<30, vmResult.QMPObservedMemoryBytes)
+	progress, err = worker.Advance(ctx)
+	require.NoError(t, err)
+	require.Equal(t, pgexec.Recorded, progress, "Shrink必须由生产执行器正常Finish")
 	s, err = store.Load(ctx)
 	require.NoError(t, err)
-	for _, step := range s.State().Active.Steps[1:] {
-		require.Equal(t, journal.Planned, step.Phase)
-	}
+	require.Nil(t, s.State().Active)
+	require.Len(t, s.State().History, 2)
+	require.Equal(t, journal.Succeeded, s.State().History[1].Outcome)
+	require.Equal(t, r, s.State().History[1].Operation.Request)
+	finalized, err := s.State().BudgetFor(r)
+	require.NoError(t, err)
+	require.EqualValues(t, 1<<30, finalized.Request.TargetVMMemoryBytes)
+	require.True(t, shrinkPG.shared().Observed.AdmissionOpen)
+	settled, err = publisher.SettleCurrent(ctx)
+	require.NoError(t, err)
+	require.True(t, settled)
+	qmp.mu.Lock()
+	require.Equal(t, uint64(1<<30), qmp.actual)
+	require.Equal(t, 2, qmp.writes, "整组扩一次、缩一次，不重复QMP写")
+	qmp.mu.Unlock()
+	shrinkPG.mu.Lock()
+	require.Equal(t, 1, shrinkPG.resizePosts)
+	require.Equal(t, 2, shrinkPG.admissionPosts, "Shrink只关闭和重新开放各一次")
+	shrinkPG.mu.Unlock()
+	t.Log("自动Shrink全领域、正常Finish和Host结清已确认，QMP实际读回1GiB")
 }
 
 // Pending恢复不能借持久owner字段尚未变而绕过原Session失效。用已取消
