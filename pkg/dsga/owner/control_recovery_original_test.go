@@ -144,6 +144,8 @@ func TestResourceRecoveryRejectsSDKPendingWithoutOuterDispatch(t *testing.T) {
 		require.NoError(t, resources.client.RetainOriginal(command))
 		before, err := store.Load(ctx)
 		require.NoError(t, err)
+		_, err = resources.PrepareRetainedPGRecovery(ctx)
+		require.ErrorContains(t, err, "lacks complete original PG recovery binding", "不能为绕过gate收养孤立Pending")
 		err = resources.NewRecoveryControlEndpoint().RunResourceRecovery(ctx, time.Millisecond)
 		require.ErrorContains(t, err, "no matching original GuestReady dispatch")
 		require.Equal(t, &command, resources.client.Pending())
@@ -154,6 +156,31 @@ func TestResourceRecoveryRejectsSDKPendingWithoutOuterDispatch(t *testing.T) {
 		require.Zero(t, root.posts)
 		require.Zero(t, root.observes)
 		root.mu.Unlock()
+		return nil
+	})
+	require.NoError(t, err)
+}
+
+func TestRetainedPGRecoveryCannotRaceAnExistingExecutionLoop(t *testing.T) {
+	_, store, coord := newAPI(t)
+	_, config := guestRoot(t, store)
+	elector, err := New(coord, store, testOptions())
+	require.NoError(t, err)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err = elector.Run(ctx, func(ctx context.Context, session *Session) error {
+		resources, err := session.NewResourceRecoveryWorker(ctx, config)
+		require.NoError(t, err)
+		defer resources.CloseIdleConnections()
+		pending, err := resources.PrepareRetainedPGRecovery(ctx)
+		require.NoError(t, err)
+		require.False(t, pending, "初始原约束仍由只Root gate核验")
+		// 与Run持有同一原子槽；即使没有Pending，启动选择也不能与现有
+		// PG/资源循环并行调用SDK。只核排他门禁，不假造外层回执或效果。
+		resources.running.Store(true)
+		defer resources.running.Store(false)
+		_, err = resources.PrepareRetainedPGRecovery(ctx)
+		require.ErrorContains(t, err, "already running")
 		return nil
 	})
 	require.NoError(t, err)

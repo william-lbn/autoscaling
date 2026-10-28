@@ -7,7 +7,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math"
 	"reflect"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
@@ -167,6 +166,15 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	var evidence resourceguard.Evidence
 	query := !planned && replay == nil
 	if query {
+		if op.AbortRequested {
+			// 原取消是外层已持久的选择。先查Root自己的持久取消屏障，
+			// 有完整回执才可NoEffect；没有屏障时若Root确实未接收，
+			// 在其最终文件锁内创建屏障。部分效果/另一未知命令仍拒绝。
+			// 本分支不需要PG瞬时采样，也不改变PG/VM/Host事实。
+			if view.Original == nil || view.Original.Revision < command.Revision {
+				return e.cancelUnreceived(ctx, snapshot, command, view)
+			}
+		}
 		// 必须先观察原root意图，即使PG暂不可达也不能自动重发或替换PID。
 		// Observe成功只解除SDK相同Pending；下面全套预算/PG/VM检查尚未成功
 		// 时外层仍保留Unconfirmed，不会提前落成GuestReady或VM完成。
@@ -199,12 +207,9 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		if view.Birth == nil || process != *view.Birth {
 			return pgexec.AwaitingFact, fmt.Errorf("original Postmaster birth changed")
 		}
-		revision := control.Uint64(1)
-		if view.Original != nil {
-			if view.Original.Revision == control.Uint64(math.MaxUint64) {
-				return pgexec.AwaitingFact, fmt.Errorf("resource revision exhausted")
-			}
-			revision = view.Original.Revision + 1
+		revision, revisionErr := view.NextRevision()
+		if revisionErr != nil {
+			return pgexec.AwaitingFact, revisionErr
 		}
 		// 独立资源代次取自原root WAL，绝不借PG revision/gen生成。完整命令
 		// 先经原VM UID/RV CAS持久化；丢回复没有票据，绝不调用下面Apply。

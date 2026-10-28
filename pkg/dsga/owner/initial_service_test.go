@@ -243,11 +243,16 @@ func TestProductionInitialOwnerTransferObservesLostGuestReplyWithoutSendingPG(t 
 	productionInitialService(t, "owner-transfer-after-guest")
 }
 
+func TestProductionInitialOwnerTransferCancelsUnreceivedGuestAndSettlesActualBudget(t *testing.T) {
+	productionInitialService(t, "owner-transfer-before-guest-delivery")
+}
+
 func productionInitialService(t *testing.T, mode string) {
 	t.Helper()
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
 	pgTakeover := mode == "owner-transfer-after-pg"
-	guestTakeover := mode == "owner-transfer-after-guest"
+	unreceivedGuest := mode == "owner-transfer-before-guest-delivery"
+	guestTakeover := mode == "owner-transfer-after-guest" || unreceivedGuest
 	cancelled := mode == "cancel" || mode == "cancel-before-vm" || ownerTransfer && !pgTakeover && !guestTakeover
 	api, store, coord := newAPI(t)
 	client := vmCore(t)
@@ -418,7 +423,7 @@ func productionInitialService(t *testing.T, mode string) {
 					require.NotNil(t, s.State().InitialHeld)
 				}
 			}
-			if (cancelled || guestTakeover) && action == journal.GuestReady {
+			if (cancelled || guestTakeover) && action == journal.GuestReady && !unreceivedGuest {
 				// 后继操作再覆盖一次真实root setter丢回复；外层WAL和
 				// 资源SDK必须保留未知。不能要求本机响应总在1秒内，
 				// 也不能把失败改成成功；恢复只能查询同一原命令。
@@ -436,12 +441,24 @@ func productionInitialService(t *testing.T, mode string) {
 				pg.loseResize = true
 				pg.mu.Unlock()
 			}
+			if unreceivedGuest && action == journal.GuestReady {
+				// 完整首次/Prepare/Host/VM均由正式执行器推进；原GuestReady
+				// 写前CAS已经持久但回复丢失，Root尚未接收，不能补造NoEffect。
+				api.mu.Lock()
+				api.loseJournalReply = true
+				api.mu.Unlock()
+			}
 			progress, err = worker.Advance(ctx)
 			if guestTakeover && action == journal.GuestReady {
-				var lost *resourceguard.ClientError
-				require.ErrorAs(t, err, &lost)
-				require.True(t, lost.MayHaveExecuted)
-				verifyLostGuestTakeoverSettlement(t, ctx, api, client, store, session, resources, worker, config, source, runner, qmp, pg, root, prepared, transfer)
+				if unreceivedGuest {
+					var lost *journal.UnconfirmedWrite
+					require.ErrorAs(t, err, &lost)
+				} else {
+					var lost *resourceguard.ClientError
+					require.ErrorAs(t, err, &lost)
+					require.True(t, lost.MayHaveExecuted)
+				}
+				verifyLostGuestTakeoverSettlement(t, ctx, api, client, store, session, resources, worker, config, source, runner, qmp, pg, root, prepared, transfer, unreceivedGuest)
 				return nil
 			}
 			if pgTakeover && action == journal.ResizePG {

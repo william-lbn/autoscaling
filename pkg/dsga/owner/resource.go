@@ -3,6 +3,7 @@ package owner
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"sync/atomic"
@@ -30,7 +31,8 @@ func (session *Session) NewResourceWorker(ctx context.Context, config resourcegu
 // NewResourceRecoveryWorker供Agent在PG发现前建立仅Root恢复的持有者。首次原
 // Bootstrap已确认、没有孤立运行命令且有完整可修复来源时，允许把漂移中的原
 // Guest身份先写入同一VM账本，然后fence；绑定不代表资源确认或准入开放。调用者
-// 必须先完成RunResourceRecovery，再构造PGWorker，不能从本方法直接开始业务。
+// 须先完成RunResourceRecovery，或由PrepareRetainedPGRecovery核完整原PG/
+// GuestReady后交接同一Pending；本构造本身不授权任何业务或新资源写。
 // 缺/坏日志、未知Bootstrap、孤立Original一律拒绝，不以恢复名义生成新来源。
 func (session *Session) NewResourceRecoveryWorker(ctx context.Context, config resourceguard.ClientConfig) (*ResourceWorker, error) {
 	return session.newResourceWorker(ctx, config, true)
@@ -210,6 +212,46 @@ func (w *ResourceWorker) observeRetainedOriginal(ctx context.Context) error {
 }
 
 func (w *ResourceWorker) CloseIdleConnections() { w.client.CloseIdleConnections() }
+
+// PrepareRetainedPGRecovery只选择启动顺序，不授予写权限。有完整原
+// PG绑定和GuestReady写前命令时，必须把同一个Pending SDK交给正式PGWorker，
+// 才能到达已有的显式原重放/取消入口；一直等Observe会使“Root尚未收到”窗口
+// 永久卡在PGWorker建立之前。首次绑定或无完整原PG身份仍走只Root恢复gate。
+//
+// 先只读Observe原命令；成功时仍由只Root gate核实际约束，未知时将同一
+// Pending交正式执行器，不清未知、不发送Root/PG写、不改epoch/出生/预算。
+// 正式执行器仍核原Prepare、PG、VM、Guest及Session；旧owner只能查/取消。
+func (w *ResourceWorker) PrepareRetainedPGRecovery(ctx context.Context) (bool, error) {
+	if w.running.Load() {
+		return false, fmt.Errorf("resource recovery or PG loop is already running")
+	}
+	pending := w.client.Pending()
+	if pending == nil {
+		return false, nil
+	}
+	if err := w.session.Check(ctx); err != nil {
+		return false, err
+	}
+	snapshot, err := w.session.store.Load(ctx)
+	if err != nil {
+		return false, err
+	}
+	id, epoch := w.client.Binding()
+	model := snapshot.State()
+	original, err := retainedResourceCommand(model, id, epoch)
+	if err != nil || !snapshot.Dispatchable() || model.Owner != w.session.Actor() || model.ResourceIdentity == nil || *model.ResourceIdentity != id || original == nil || !reflect.DeepEqual(*original, *pending) || model.Active == nil || model.PGInstance == nil || *model.PGInstance != model.Active.Request.Key.Instance || model.PGInstance.Validate() != nil || w.client.PendingHeldRepair() != nil {
+		return false, fmt.Errorf("pending GuestReady lacks complete original PG recovery binding")
+	}
+	if err := w.observeRetainedOriginal(ctx); err == nil {
+		return false, nil
+	} else {
+		var network *resourceguard.ClientError
+		if !errors.Is(err, resourceguard.ErrUnknown) && !errors.As(err, &network) {
+			return false, err
+		}
+	}
+	return true, w.session.Check(ctx)
+}
 
 // Inspect不清未知原命令，也不要求原PID还活着；日志和当前约束用于独立资源域
 // 恢复。具体原命令完成仍须原Observe，不能从这个metadata读回推导NoEffect。

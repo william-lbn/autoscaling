@@ -118,8 +118,9 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		}
 		defer resources.CloseIdleConnections()
 		// PG客户端尚未发现/建立时也保留同一Session及原Root SDK的显式恢复
-		// 入口。此阶段只读轮询，原约束漂移不发PG请求、不自动修复或开放；
-		// 修复回复丢失须显式Observe，完成后注销0 boot端点再建真实PG端点。
+		// 入口。首次约束漂移只读轮询，不发PG业务或自动修复/开放；已有
+		// 完整原PG/GuestReady未知则交正式恢复入口处理原重放/取消，避免
+		// Root未收到时无限等Observe。0 boot端点不与正式端点并存。
 		if err := r.awaitDSGAResources(ownerCtx, config, resources); err != nil {
 			return err
 		}
@@ -157,6 +158,12 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 }
 
 func (r *Runner) awaitDSGAResources(ctx context.Context, config *DSGAConfig, resources *owner.ResourceWorker) error {
+	// 已绑定原PG且有完整GuestReady写前未知时，直接交同一SDK给正式恢复
+	// 循环。它先Observe，写入仍须可信显式选择和全套领域检查；新owner只
+	// 能查询/取消旧epoch。这里不把NotFound当成功，也不清原Pending。
+	if pending, err := resources.PrepareRetainedPGRecovery(ctx); err != nil || pending {
+		return err
+	}
 	endpoint := resources.NewRecoveryControlEndpoint()
 	instance, epoch := endpoint.Binding()
 	r.dsgaState(ctx, DSGARunnerState{Phase: "recovering-resources", IssuerEpoch: epoch, Instance: instance})

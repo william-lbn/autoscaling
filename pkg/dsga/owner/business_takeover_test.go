@@ -173,12 +173,16 @@ func (f *businessOwnerTransfer) takeover(t *testing.T, ctx context.Context, old 
 	worker.CloseIdleConnections()
 	var nextResources *ResourceWorker
 	if f.takeoverAction == journal.GuestReady {
-		// 与Agent真实启动顺序相同：先恢复Root，再建立PG执行器。Root完成
-		// WAL未知时不能绕过此gate直接构造PGWorker，否则会漏掉恢复环依赖。
+		// 与Agent真实启动顺序相同：先查完整原GuestReady；Root已经生效
+		// 则只读确认再过gate，根本未接收则保留Pending交正式恢复入口。
 		nextResources, err = next.NewResourceRecoveryWorker(ctx, f.resourceConfig)
 		require.NoError(t, err)
 		require.NotNil(t, nextResources.client.Pending(), "新SDK必须先恢复原GuestReady未知")
-		require.NoError(t, nextResources.NewRecoveryControlEndpoint().RunResourceRecovery(ctx, 5*time.Millisecond))
+		pending, recoveryErr := nextResources.PrepareRetainedPGRecovery(ctx)
+		require.NoError(t, recoveryErr)
+		if !pending {
+			require.NoError(t, nextResources.NewRecoveryControlEndpoint().RunResourceRecovery(ctx, 5*time.Millisecond))
+		}
 	} else {
 		nextResources, err = next.NewResourceWorker(ctx, f.resourceConfig)
 	}

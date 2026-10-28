@@ -32,6 +32,10 @@ type guestRootFixture struct {
 	afterApply func()
 	// 仅用于启动恢复在Root Observe到达时同步测试，不替代外层原WAL。
 	afterObserve func()
+	// 取消peer只模拟协议屏障，真实文件锁/fsync/防迟到由resourceguard独立验证。
+	cancellations   int
+	loseCancelReply bool
+	afterCancel     func()
 	// 最终准入测试的独立读取/出生竞态钩子；均在fixture锁内访问。
 	afterProcess    func()
 	processOverride *resourceguard.ProcessIdentity
@@ -61,14 +65,24 @@ func guestRoot(t *testing.T, store *journal.Store) (*guestRootFixture, resourceg
 			return
 		}
 		var c resourceguard.Command
+		var cancellation resourceguard.CancelRequest
 		write := r.URL.Path == "/dsg/v1/resource/apply" || r.URL.Path == "/dsg/v1/resource/replay-original"
 		observe := r.URL.Path == "/dsg/v1/resource/observe"
-		if write || observe {
-			require.NoError(t, json.NewDecoder(r.Body).Decode(&c))
+		cancelOriginal := r.URL.Path == "/dsg/v1/resource/cancel-original"
+		if write || observe || cancelOriginal {
+			if cancelOriginal {
+				require.NoError(t, json.NewDecoder(r.Body).Decode(&cancellation))
+				c = cancellation.Command
+			} else {
+				require.NoError(t, json.NewDecoder(r.Body).Decode(&c))
+			}
 			snapshot, err := store.Load(r.Context())
 			require.NoError(t, err)
 			op := snapshot.State().Active
 			require.NotNil(t, op)
+			if cancelOriginal {
+				require.True(t, op.AbortRequested, "Root取消必须来自持久原取消选择")
+			}
 			var found bool
 			for _, step := range op.Steps {
 				if step.Action == journal.GuestReady && step.Phase == journal.Unconfirmed {
@@ -111,7 +125,35 @@ func guestRoot(t *testing.T, store *journal.Store) (*guestRootFixture, resourceg
 				f.view.Held, f.view.Applied = f.view.Original, true
 			}
 			pgReply(w, f.view.Actual)
+		case "/dsg/v1/resource/cancel-original":
+			f.cancellations++
+			require.Equal(t, f.view.IssuerFloorEpoch, cancellation.IssuerEpoch)
+			if f.view.Original != nil && (!f.view.Applied || f.view.Original.Revision >= c.Revision) {
+				w.WriteHeader(http.StatusConflict)
+				return
+			}
+			if f.view.Cancelled == nil || !reflect.DeepEqual(*f.view.Cancelled, c) {
+				next, err := f.view.NextRevision()
+				require.NoError(t, err)
+				require.Equal(t, next, c.Revision)
+				f.view.Cancelled = &c
+			}
+			receipt := resourceguard.Cancellation{ProtocolVersion: 1, VMShrinkPermit: false, Command: c, State: f.view}
+			require.NoError(t, receipt.ValidateFor(c, cancellation.IssuerEpoch))
+			if f.afterCancel != nil {
+				f.afterCancel()
+			}
+			if f.loseCancelReply {
+				f.loseCancelReply = false
+				w.WriteHeader(http.StatusServiceUnavailable)
+				return
+			}
+			pgReply(w, receipt)
 		case "/dsg/v1/resource/apply", "/dsg/v1/resource/replay-original":
+			if f.view.Cancelled != nil && c.Revision <= f.view.Cancelled.Revision {
+				w.WriteHeader(http.StatusConflict)
+				return
+			}
 			f.posts++
 			require.Equal(t, f.view.IssuerFloorEpoch, c.IssuerEpoch)
 			f.view.Original, f.view.Held, f.view.Applied = &c, &c, true
