@@ -1,0 +1,176 @@
+{
+  "state": "Original Initial outside persistent MODEL lifecycle accepted LOCALLY; readers/automatic cancellation combination not complete or pushed",
+  "base_commit": "6e570dcb6797442e9ebfff0bfbfeb6ef946081d9",
+  "code_commit": "f3af51a3fd6d9ccad0a2fb2d05029d36f877865c",
+  "source_sha256": {
+    "pkg/dsga/journal/initial_capacity_test.go": "60713bd2c29a88f8ae7dce2754b777aaf4227032554392398ad8771c28c96dab",
+    "pkg/dsga/journal/initial_outside.go": "8bb6b9bfabbbe6ecb5bdf2f8e430883f71af8038d1ccbf5adc4f2da3520a5d0b",
+    "pkg/dsga/journal/model.go": "6c7e3d2b1e0117d94f8d4d726862ff38d544df0f6bbd864ba1cd7bfd42707058",
+    "pkg/dsga/journal/reconciled_held.go": "348fefdf21099b117929080b0473fd1f294f1b814f7671a09e1d45630774d9a4"
+  },
+  "source_go_files": 4,
+  "runtime_go_files": 3,
+  "test_go_files": 1,
+  "test_counts": {
+    "top_level_tests": 9,
+    "including_parent_records": 26,
+    "adopted_fail": 0,
+    "skip": 0
+  },
+  "test_mapping": {
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestInitialWALSurvivesCodecTakeoverWithoutResizeAndRetainsOriginalCommand": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.52
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestInitialWALRejectsProjectionTamperingAndIncompleteOpening/old-version": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestInitialWALRejectsProjectionTamperingAndIncompleteOpening/no-budget": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestInitialWALRejectsProjectionTamperingAndIncompleteOpening/raw-budget": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestInitialWALRejectsProjectionTamperingAndIncompleteOpening/command-sha": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestInitialWALRejectsProjectionTamperingAndIncompleteOpening/no-receipt": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestInitialWALRejectsProjectionTamperingAndIncompleteOpening/bad-sequence": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestInitialWALRejectsProjectionTamperingAndIncompleteOpening/wrong-owner": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestInitialWALRejectsProjectionTamperingAndIncompleteOpening": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.25
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestInitialBudgetReplacedOnlyByAtomicCompleteNormalFinalization": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 1.33
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestInitialBudgetSurvivesUndispatchedCancellationsBeyondHistory": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 5.63
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestJournalRetainsFullHTTPResponseWithinSeparateCommandLimit": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.08
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestActualCapacityBudgetIsAtomicPermanentAndNeverOrdinarySuccess": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 11.91
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/unknown-VM": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.04
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/changed-Prepare": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.06
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/wrong-VM-outer": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.06
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/same-generation-other-prefix": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.06
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/new-finalization": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.05
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/old-version": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.25
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/missing-header": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.25
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/both-headers": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.25
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/bad-origin": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.26
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/changed-audit": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 0.26
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 2.71
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestNormalFinalizationAtomicallyReplacesActualCapacityBudget": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-affected-regression.jsonl",
+      "elapsed": 3.76
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/journal::TestInitialActualCapacityRetainsOriginalAcrossAtomicReplacementHistoryAndTakeover": {
+      "outcome": "pass",
+      "log": "dsga-initial-cancel-model-lifetime-final.jsonl",
+      "elapsed": 26.24
+    }
+  },
+  "log_sha256": {
+    "dsga-initial-cancel-affected-regression.jsonl": "522104219a4e731b64fb70bea2d1c9e4cad10b6918d72ae9a07819f30a36dc15",
+    "dsga-initial-cancel-model-lifetime-final.jsonl": "7aa439bfd101df23a7c9a8c3f8fe56b2162cbbe29dc3727ae39bc989ba82204b",
+    "dsga-initial-cancel-model-owner-lint-final.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "dsga-initial-cancel-model-owner-vet-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsga-initial-cancel-model-lint.log": "de0b385b6f1611ff427cdbd1a11824ea08574e97b2c1fc528de538aa4ce32b88"
+  },
+  "checks": {
+    "lint_packages": 3,
+    "lint": "0 issues",
+    "vet_packages": 3,
+    "vet": "passed",
+    "source_diff_check": "passed"
+  },
+  "adoption_note": "8/25 existing journal cases reuse unchanged runtime; one NEW pure Model lifetime case executed on final source26.24s. Initial lint failed7 style/exhaustive-zero issues, then corrected and final case rerun; failure retained, not a business fail. No HTTP/VM/PG/source authentication is claimed by pure Model fixture. Pending network owner combination remains unadopted.",
+  "full_network_combination_pass": false,
+  "linux_binaries_claimed_for_this_stage": 0,
+  "remote_pushed": false,
+  "default_off": true,
+  "upstream_frozen": true,
+  "goal_active": true,
+  "images_built": false,
+  "deployed": false,
+  "main_merged": false
+}
