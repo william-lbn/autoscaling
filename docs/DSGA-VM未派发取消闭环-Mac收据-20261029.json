@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Mac Darwin arm64",
+  "go_version": "go version go1.25.13 darwin/arm64",
+  "phase": "VM尚未派发时首次取消实际预算及Host结清",
+  "phase_completed": true,
+  "overall_core_complete": false,
+  "branch": "codex/dsga-autoscaling-20261019",
+  "prior_autoscaling": "657372870bd8c48ce6ab39489940cb6be5639e03",
+  "contract_commit": "33b762100b5b96b405aa56c1247105fa51537440",
+  "runtime_commit": "91b84273deea8d6cc87467f6a43b295839d12a5d",
+  "pg17_unchanged": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "protocols": {
+    "capacity": 3,
+    "vm_model": 9,
+    "node_model": 8,
+    "runner_record": 2
+  },
+  "source_sha256": {
+    "pkg/dsga/admissionexec/reconciled_abort.go": "db7e99b844d9800c11d1917448e7731aa3a1d5481639149a0b421b98145f9eb1",
+    "pkg/dsga/budget/initial_vm.go": "7f3cd897ac1cf856b42266a79bc197bbd87535a564cbb3fd27d4fc121d50520b",
+    "pkg/dsga/budget/initial_vm_test.go": "fd38f8e714d2d9d5eca39bf6de76b7987a114b21aecc564a4ac1aa9b07fcb693",
+    "pkg/dsga/budget/reconcile_inputs.go": "2a489b443f5c40c06234ed34a04c0ad501530dd5411b0c2743317265f56f8acc",
+    "pkg/dsga/budget/reconciled.go": "f1cef69e5d86d542d7df2474debbf053753a47b1c8822bcdfdd1371a00aec070",
+    "pkg/dsga/budget/reconciled_initial.go": "50ba60d9697584914a86db034e729be0ad16fe05d10e6765b7f4580e2d08095b",
+    "pkg/dsga/hostexec/settle.go": "3dcfd2f328e9880cd798917359f982df0a4d830ee452308ae98c7e51b6a5bd47",
+    "pkg/dsga/hostguard/initial_settlement_test.go": "7dcff9f741ffdc5549db3a7893848dc5dbabd04087c8fff0092fb21d3778c96e",
+    "pkg/dsga/hostguard/model.go": "d2f755794fe18cd6815c617f68c958799badbfd905b43f51e2d77bb7d5ff87a3",
+    "pkg/dsga/hostguard/placement.go": "3ec2ea612ed6f211819f24432b91cc2ff1b1dbf16f459ae129e81b21de5adb4a",
+    "pkg/dsga/hostguard/settlement.go": "09613001a93b586f01260d7821ef55a09068cd7efe41e683887b32df9f53c512",
+    "pkg/dsga/journal/initial_capacity_test.go": "3dca7f4b834d139abda29ca98fb3da716e59052ae7135547d990835434cb3434",
+    "pkg/dsga/journal/model.go": "259814b57418a1bfa54774efd85d8e3c1383c2adac7ed71752f2a713aea4423b",
+    "pkg/dsga/journal/reconciled_held.go": "3cb87a1fa0c068deb6fb5f66b0f55fe03536cb59c4e009a0be04049d778e6b6b",
+    "pkg/dsga/owner/initial_cancel_test.go": "2298dd0fc79978979a1a5daba4a1fdef2e12be47e963363aef9ee981b837bbc3",
+    "pkg/dsga/owner/initial_service_test.go": "cc04ce95dbd33442bd035e8cfed9c35e5b98f48d87f2f084995ba608b500f87c",
+    "pkg/dsga/owner/initial_vm_sources_test.go": "dde34ee269685e57337d6facbf87eb96123eda3260d3eceef61b0d1b7cb07d5e",
+    "pkg/dsga/vmguard/initial_capacity.go": "bfce4d496d8f7c1f594c49588462bb358770e329fb77c4083a4046f8a741d362",
+    "pkg/dsga/vmguard/retained_cancel.go": "7ea89723c8d43332c5e30c0e6a49e22f8a146b94608cfad0dba88001eeef44e7"
+  },
+  "source_go_files": 19,
+  "test_go_files": 6,
+  "adopted_tests": [
+    {
+      "log": "dsga-initial-vm-production-final.jsonl",
+      "sha256": "c2d1c3ef42e68d0ca10c6dd1ac7a1246edb1db3641e3f067000d4897bd1681f2",
+      "top_level_tests": 10,
+      "passed_records_including_parents": 20,
+      "failed": 0,
+      "skipped": 0,
+      "packages": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+          "elapsed_seconds": 20.386
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "elapsed_seconds": 104.024
+        }
+      ],
+      "test_mapping": {
+        "TestHostActualCapacitySettlementRetainsCancelledShrinkBefore": 1.21,
+        "TestHostActualCapacityCannotRegressOrLoseUnknownSettlement": 2.8,
+        "TestInitialHostSettlementRequiresV8AndPreservesComparableSource": 0.42,
+        "TestHostSettlementDropsOnlyClosedPeakAndCannotReopenExecution": 1.61,
+        "TestHostSettlementUnknownCASAndNewGrantRemainConservative/budget": 0,
+        "TestHostSettlementUnknownCASAndNewGrantRemainConservative/claim": 0,
+        "TestHostSettlementUnknownCASAndNewGrantRemainConservative/target": 0,
+        "TestHostSettlementUnknownCASAndNewGrantRemainConservative/owner": 0,
+        "TestHostSettlementUnknownCASAndNewGrantRemainConservative": 1.61,
+        "TestHostSettlementCompactsBeyondOperationBoundButKeepsWatermark": 0.33,
+        "TestHostClosedThroughSettlesCancelledPeakAndRejectsDelayedReserve": 4.01,
+        "TestHostClosedThroughRejectsForgedOrNonMonotonicWitness/missing-key": 0.19,
+        "TestHostClosedThroughRejectsForgedOrNonMonotonicWitness/same-key": 0.4,
+        "TestHostClosedThroughRejectsForgedOrNonMonotonicWitness/other-boot": 0.4,
+        "TestHostClosedThroughRejectsForgedOrNonMonotonicWitness/old-sequence": 0.4,
+        "TestHostClosedThroughRejectsForgedOrNonMonotonicWitness/changed-budget": 0.4,
+        "TestHostClosedThroughRejectsForgedOrNonMonotonicWitness/alias-key": 0.4,
+        "TestHostClosedThroughRejectsForgedOrNonMonotonicWitness": 2.8,
+        "TestHostClosedThroughUnknownCASPreservesFenceAndFutureBudget": 2.81,
+        "TestProductionInitialCancelBeforeVMRecoversActualBudgetAndSuccessor": 101.2
+      }
+    },
+    {
+      "log": "dsga-initial-vm-domain-final.jsonl",
+      "sha256": "4567fa4dfd464cabb4ea7d90f8a17ed137f28d1bc5df1a21ea912f1989ca8635",
+      "top_level_tests": 13,
+      "passed_records_including_parents": 78,
+      "failed": 0,
+      "skipped": 0,
+      "packages": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/admissionexec",
+          "elapsed_seconds": 1.8010000000000002
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/budget",
+          "elapsed_seconds": 3.718
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+          "elapsed_seconds": 7.702
+        }
+      ],
+      "test_mapping": {
+        "TestReconciledInitialVMUsesExclusiveBootSourceAndStrictWire/legacy-protocol": 0.01,
+        "TestReconciledInitialVMUsesExclusiveBootSourceAndStrictWire/missing-boot": 0.01,
+        "TestReconciledInitialVMUsesExclusiveBootSourceAndStrictWire/missing-initial": 0.01,
+        "TestReconciledInitialVMUsesExclusiveBootSourceAndStrictWire/mixed-native": 0.01,
+        "TestReconciledInitialVMUsesExclusiveBootSourceAndStrictWire/wrong-instance": 0.01,
+        "TestReconciledInitialVMUsesExclusiveBootSourceAndStrictWire/wrong-birth": 0.01,
+        "TestReconciledInitialVMUsesExclusiveBootSourceAndStrictWire/wrong-identity": 0.01,
+        "TestReconciledInitialVMUsesExclusiveBootSourceAndStrictWire/wrong-memory": 0.01,
+        "TestReconciledInitialVMUsesExclusiveBootSourceAndStrictWire/missing-state": 0.01,
+        "TestReconciledInitialVMUsesExclusiveBootSourceAndStrictWire": 0.29,
+        "TestReconciledInitialOutsidePreservesOriginalWithoutSyntheticRequest": 0.07,
+        "TestReconciledInitialOutsideRejectsProjectionAndChangedOriginal/legacy-protocol": 0.02,
+        "TestReconciledInitialOutsideRejectsProjectionAndChangedOriginal/missing-initial": 0.01,
+        "TestReconciledInitialOutsideRejectsProjectionAndChangedOriginal/mixed-outside": 0.01,
+        "TestReconciledInitialOutsideRejectsProjectionAndChangedOriginal/VM-drift": 0.01,
+        "TestReconciledInitialOutsideRejectsProjectionAndChangedOriginal/Guest-too-small": 0.01,
+        "TestReconciledInitialOutsideRejectsProjectionAndChangedOriginal/changed-root": 0.01,
+        "TestReconciledInitialOutsideRejectsProjectionAndChangedOriginal/different-birth": 0.01,
+        "TestReconciledInitialOutsideRejectsProjectionAndChangedOriginal/changed-generation": 0.01,
+        "TestReconciledInitialOutsideRejectsProjectionAndChangedOriginal/invented-before": 0.01,
+        "TestReconciledInitialOutsideRejectsProjectionAndChangedOriginal": 0.19,
+        "TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged/VM-drift": 0.02,
+        "TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged/new-generation": 0.01,
+        "TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged/new-PG-operation": 0.01,
+        "TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged/unknown-allocation": 0.01,
+        "TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged/floor": 0.01,
+        "TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/VM-grown-PG-unchanged": 0.09,
+        "TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled/VM-drift": 0.01,
+        "TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled/new-generation": 0.01,
+        "TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled/new-PG-operation": 0.01,
+        "TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled/unknown-allocation": 0.01,
+        "TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled/floor": 0.01,
+        "TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget/PG-shrunk-VM-cancelled": 0.09,
+        "TestReconciledBudgetRetainsActualCapacityInsteadOfOriginalTarget": 0.19,
+        "TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/small-VM-outside": 0.01,
+        "TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/short-Host-peak": 0.01,
+        "TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/unknown-array": 0.01,
+        "TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/partial-Root": 0.01,
+        "TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/different-birth": 0.01,
+        "TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/overflow": 0.01,
+        "TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/same-source": 0.01,
+        "TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/oversized-PG": 0.01,
+        "TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/wrong-generation": 0.01,
+        "TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/prepare-direction": 0.01,
+        "TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/PG-prefix-without-generation": 0.01,
+        "TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/future-VM": 0.01,
+        "TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs/future-outside": 0.01,
+        "TestReconciledBudgetRejectsUnqualifiedOrIncompleteInputs": 0.19,
+        "TestReconciledAggregateDoesNotChargeHugePoolToNormalAgain": 0.01,
+        "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization/prepare_budget": 0,
+        "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization/reserve_host": 0,
+        "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization/resize_vm": 0,
+        "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization/guest_ready": 0,
+        "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization/resize_pg": 0,
+        "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization/finalize_budget": 0,
+        "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization/resume_admission": 0,
+        "TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization": 0,
+        "TestReconciledOutsideSelectsExactActualVMAndRetainsOriginalReference": 0.03,
+        "TestReconciledOpeningRequiresServiceSelectionAndUsesActualGeneration": 0.02,
+        "TestReconciledOwnQuiesceDoesNotOverrideNewerOrChangedClosure/newer-close": 0.02,
+        "TestReconciledOwnQuiesceDoesNotOverrideNewerOrChangedClosure/changed-budget": 0,
+        "TestReconciledOwnQuiesceDoesNotOverrideNewerOrChangedClosure/changed-root": 0,
+        "TestReconciledOwnQuiesceDoesNotOverrideNewerOrChangedClosure/unconfirmed": 0,
+        "TestReconciledOwnQuiesceDoesNotOverrideNewerOrChangedClosure/wrong-target": 0,
+        "TestReconciledOwnQuiesceDoesNotOverrideNewerOrChangedClosure": 0.05,
+        "TestReconciledAbortRequiresOriginalActualBudgetAndStrictWire": 0.57,
+        "TestInitialVMActualCapacityRejectsDispatchAndSurvivesClosedThrough": 3.87,
+        "TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/unknown-VM": 0.03,
+        "TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/changed-Prepare": 0.05,
+        "TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/wrong-VM-outer": 0.05,
+        "TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/same-generation-other-prefix": 0.05,
+        "TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/new-finalization": 0.04,
+        "TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/old-version": 0.19,
+        "TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/missing-header": 0.19,
+        "TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/both-headers": 0.19,
+        "TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/bad-origin": 0.2,
+        "TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget/changed-audit": 0.2,
+        "TestReconciledCapacityCannotCrossUnknownOrInventAnotherBudget": 2.1
+      }
+    }
+  ],
+  "static_checks": {
+    "vet": {
+      "packages": [
+        "budget",
+        "journal",
+        "admissionexec",
+        "vmguard",
+        "hostguard",
+        "hostexec",
+        "owner"
+      ],
+      "exit_code": 0,
+      "log": "dsga-initial-vm-vet-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "lint": {
+      "scope": "seven affected packages, incremental relative to prior_autoscaling; not whole-repository lint clean",
+      "exit_code": 0,
+      "issues": 0,
+      "log": "dsga-initial-vm-incremental-lint-fixed.log",
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47"
+    }
+  },
+  "reproduce": {
+    "production": "GOPROXY=off GOSUMDB=off go test -json -race ./pkg/dsga/owner ./pkg/dsga/hostguard -run '^TestProductionInitialCancelBeforeVMRecoversActualBudgetAndSuccessor$|^TestInitialHostSettlementRequiresV8AndPreservesComparableSource$|^TestHost(ActualCapacity|Settlement|ClosedThrough)' -count=1 -timeout=4m",
+    "domain": "GOPROXY=off GOSUMDB=off go test -json -race ./pkg/dsga/budget ./pkg/dsga/journal ./pkg/dsga/admissionexec -run 'TestReconciled|TestInitialVMActual' -count=1"
+  },
+  "explicit_fixtures": [
+    "Kube/Lease API",
+    "PG native responses",
+    "root/cgroup platform qualification",
+    "UDS QMP peer"
+  ],
+  "not_executed": [
+    "Linux/K8s/RBAC/etcd",
+    "NeonVM/KVM/QEMU real hotplug",
+    "HugeTLB and physical memory reclaim",
+    "storage/performance/soak",
+    "unchanged PG17/Rust full matrices not repeated",
+    "no new Linux ELF compilation"
+  ],
+  "remaining_core_code": [
+    "missing original sources/root mismatch controlled recovery and complete source GC",
+    "safe normal decrease and continuous private/background bounds/liveness",
+    "real owner takeover/start-init failure/no-Wait/cross-boot-migration recovery",
+    "Monitor/automatic policy/trusted request-cancel-replay production ingress/all writers and CPU isolation",
+    "PG18 then PG16 after PG17 core archive"
+  ],
+  "earlier_attempts": [
+    {
+      "log": "dsga-initial-vm-budget.jsonl",
+      "sha256": "71deeec52b4e613ac44ba8155fa8d33c5fa95d39cc1599284fedd9daf21c9e22",
+      "reason": "strict v3 decode still required native_vm; fixed",
+      "adopted": false
+    },
+    {
+      "log": "dsga-initial-vm-host.jsonl",
+      "sha256": "b9f9ace1058d79d938bcbf41ba326a50823d6ab7b2e98ccc3c2c999b583a44ac",
+      "reason": "new boot settlement strict decode still required runner; fixed; old tests passing not counted again",
+      "adopted": false
+    },
+    {
+      "log": "dsga-initial-vm-production.jsonl",
+      "sha256": "78e5029e98f409318b2f2d4df564c360942b072c73ec3b47521e68342f77360d",
+      "reason": "test incorrectly looked for owner Lease in independent Core fixture; fixed",
+      "adopted": false
+    },
+    {
+      "log": "dsga-initial-vm-production-fixed.jsonl",
+      "sha256": "bfd05a42bbc0bdb3c1b3c29e013d6ab96b8407810ec730acb173368058c10015",
+      "reason": "owner fixture UID type build error; Node passed but mixed failed log is not adopted",
+      "adopted": false
+    },
+    {
+      "log": "dsga-initial-vm-incremental-lint.log",
+      "sha256": "1b7d537b21961b2c8bef22f068737ece0725b429bd01de071a68fe7bbf443c57",
+      "reason": "7 incremental issues fixed",
+      "adopted": false
+    },
+    {
+      "log": "dsga-initial-vm-production-session-fixed.jsonl",
+      "sha256": "bfe1227a3b68126179afbccdcd9ae4a632076fce3fe55766f1859a3ca51719f7",
+      "reason": "intermediate production pass 102.30s; superseded by final 101.20s, not added as another independent E2E",
+      "adopted": false
+    }
+  ]
+}
