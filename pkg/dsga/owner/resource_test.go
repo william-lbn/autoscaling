@@ -26,6 +26,8 @@ type resourceOwnerFixture struct {
 	view        resourceguard.View
 	discoveries int
 	fences      int
+	repairs     int
+	dropRepair  bool
 	store       *journal.Store
 }
 
@@ -72,6 +74,22 @@ func newResourceOwnerFixture(t *testing.T, store *journal.Store) (*resourceOwner
 			pgReply(w, f.view.Identity)
 		case "/dsg/v1/resource/state":
 			pgReply(w, f.view)
+		case "/dsg/v1/resource/repair-held":
+			// 这里只验证真实Owner/SDK的选择和未知回复恢复，不把此
+			// HTTP夹具的赋值当内核修复。Guard文件锁/单调门槛另有实测。
+			var request resourceguard.HeldRepairRequest
+			digest, err := resourceguard.HeldSourceSHA256(f.view)
+			if json.NewDecoder(r.Body).Decode(&request) != nil || err != nil || request.SourceSHA256 != digest || request.Identity != f.view.Identity || request.IssuerEpoch != f.view.IssuerFloorEpoch {
+				w.WriteHeader(http.StatusConflict)
+				return
+			}
+			f.repairs++
+			f.view.Actual.MemoryMaxBytes = f.view.Bootstrap.Limits.MemoryMaxBytes
+			if f.dropRepair {
+				w.WriteHeader(http.StatusBadGateway)
+				return
+			}
+			pgReply(w, f.view.Actual)
 		default:
 			t.Error("unexpected resource action", r.URL.Path)
 			w.WriteHeader(404)
@@ -295,6 +313,60 @@ func TestResourceOwnerRestoresFullUnknownFromJournalInsteadOfClearing(t *testing
 		require.NoError(t, err)
 		defer restored.CloseIdleConnections()
 		require.Equal(t, &original, restored.client.Pending(), "unknown original must survive worker reconstruction")
+		cancel()
+		return nil
+	})
+	require.ErrorIs(t, err, context.Canceled)
+}
+
+func TestResourceOwnerRepairsHeldOnlyAfterExplicitSourceSelectionAndObservesLostReply(t *testing.T) {
+	_, store, coord := newAPI(t)
+	f, config := newResourceOwnerFixture(t, store)
+	elector, err := New(coord, store, testOptions())
+	require.NoError(t, err)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err = elector.Run(ctx, func(ctx context.Context, session *Session) error {
+		worker, err := session.NewResourceWorker(ctx, config)
+		require.NoError(t, err)
+		defer worker.CloseIdleConnections()
+		view, err := worker.Inspect(ctx)
+		require.NoError(t, err)
+		selector, err := resourceguard.HeldSourceSHA256(view)
+		require.NoError(t, err)
+		before, err := store.Load(ctx)
+		require.NoError(t, err)
+		f.mu.Lock()
+		f.view.Actual.MemoryMaxBytes /= 2
+		f.dropRepair = true
+		f.mu.Unlock()
+		_, err = worker.ObserveHeldRepair(ctx, selector)
+		require.ErrorIs(t, err, resourceguard.ErrUnknown)
+		_, err = worker.RepairHeld(ctx, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+		require.Error(t, err)
+		f.mu.Lock()
+		require.Zero(t, f.repairs, "普通查询/错误选择不能自动修复")
+		f.mu.Unlock()
+		_, err = worker.RepairHeld(ctx, selector)
+		var call *resourceguard.ClientError
+		require.ErrorAs(t, err, &call)
+		require.True(t, call.MayHaveExecuted)
+		require.NotNil(t, worker.client.PendingHeldRepair())
+		_, err = worker.ObserveHeldRepair(ctx, selector)
+		require.NoError(t, err)
+		require.Nil(t, worker.client.PendingHeldRepair())
+		after, err := store.Load(ctx)
+		require.NoError(t, err)
+		require.Equal(t, before.State(), after.State(), "修复不创建预算/结清或推进原操作")
+		f.mu.Lock()
+		require.Equal(t, 1, f.repairs)
+		f.view.IssuerFloorEpoch++
+		f.mu.Unlock()
+		_, err = worker.RepairHeld(ctx, selector)
+		require.Error(t, err)
+		f.mu.Lock()
+		require.Equal(t, 1, f.repairs)
+		f.mu.Unlock()
 		cancel()
 		return nil
 	})

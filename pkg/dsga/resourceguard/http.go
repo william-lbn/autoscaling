@@ -58,6 +58,7 @@ type resourceBackend interface {
 	Apply(context.Context, Command) (Evidence, error)
 	Observe(context.Context, Command) (Evidence, error)
 	ReplayOriginal(context.Context, Command) (Evidence, error)
+	RepairHeld(context.Context, HeldRepairRequest) (Evidence, error)
 }
 
 type resourceHTTP struct {
@@ -159,7 +160,7 @@ func (h *resourceHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		switch r.URL.Path {
-		case "/dsg/v1/resource/fence", "/dsg/v1/resource/apply", "/dsg/v1/resource/observe", "/dsg/v1/resource/replay-original":
+		case "/dsg/v1/resource/fence", "/dsg/v1/resource/apply", "/dsg/v1/resource/observe", "/dsg/v1/resource/replay-original", "/dsg/v1/resource/repair-held":
 		default:
 			deny(http.StatusNotFound)
 			return
@@ -180,6 +181,15 @@ func (h *resourceHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			result, err = h.guard.FenceBound(r.Context(), request.Identity, request.IssuerEpoch)
+		} else if r.URL.Path == "/dsg/v1/resource/repair-held" {
+			// 新owner只能用自身短期签名/floor选择完整原持有来源；正文
+			// 没有限额/PID/路径，root锁内再次核摘要，不能借网关认证改绑。
+			var request HeldRepairRequest
+			if json.Unmarshal(raw, &request) != nil || request.IssuerEpoch != claims.IssuerEpoch || request.Identity.VMUID != claims.VMUID || request.Identity.ComputeInstanceID != claims.ComputeInstanceID {
+				deny(http.StatusForbidden)
+				return
+			}
+			result, err = h.guard.RepairHeld(r.Context(), request)
 		} else {
 			var command Command
 			observe := r.URL.Path == "/dsg/v1/resource/observe"

@@ -145,3 +145,61 @@ func (w *ResourceWorker) Inspect(ctx context.Context) (resourceguard.View, error
 	}
 	return view, nil
 }
+
+// RepairHeld只供可信恢复入口显式选择原Root持有摘要。参数不能携带新限额、
+// PID或boot；普通协调轮询不调用。修复只恢复到已承诺上界，既不新建预算，
+// 也不把原未知GuestReady/PG/VM步骤落成完成。Root日志继续是此原约束的
+// 写前持久事实；外层检查当前Lease/VM/资源绑定，Root文件锁内最终核floor。
+// 丢回复后先ObserveHeldRepair，显式重试仍由Root逐维拒绝任何实际降限。
+func (w *ResourceWorker) RepairHeld(ctx context.Context, selector string) (resourceguard.Evidence, error) {
+	if err := w.session.Check(ctx); err != nil {
+		return resourceguard.Evidence{}, err
+	}
+	callCtx, cancel := w.session.coupledContext(ctx)
+	defer cancel()
+	s, err := w.session.store.Load(callCtx)
+	if err != nil {
+		return resourceguard.Evidence{}, err
+	}
+	id, epoch := w.client.Binding()
+	if !s.Dispatchable() || s.State().Owner != w.session.actor || s.State().ResourceIdentity == nil || *s.State().ResourceIdentity != id || epoch != w.session.actor.Epoch {
+		return resourceguard.Evidence{}, fmt.Errorf("held repair original VM/Guest/owner changed")
+	}
+	view, err := w.Inspect(callCtx)
+	if err != nil {
+		return resourceguard.Evidence{}, err
+	}
+	digest, err := resourceguard.HeldSourceSHA256(view)
+	if err != nil || digest != selector {
+		return resourceguard.Evidence{}, fmt.Errorf("held repair must select the complete original root source")
+	}
+	if _, err := w.client.RepairHeld(callCtx, view, selector); err != nil {
+		return resourceguard.Evidence{}, err
+	}
+	// 原效果读回与外层活跃执行权再次认证；不把POST成功缓存成后续
+	// 请求许可。任何后继动作仍由各自领域重新认证完整预算及来源。
+	return w.ObserveHeldRepair(callCtx, selector)
+}
+
+func (w *ResourceWorker) ObserveHeldRepair(ctx context.Context, selector string) (resourceguard.Evidence, error) {
+	if err := w.session.Check(ctx); err != nil {
+		return resourceguard.Evidence{}, err
+	}
+	callCtx, cancel := w.session.coupledContext(ctx)
+	defer cancel()
+	evidence, err := w.client.ObserveHeldRepair(callCtx, selector)
+	if err != nil {
+		return resourceguard.Evidence{}, err
+	}
+	s, err := w.session.store.Load(callCtx)
+	if err != nil {
+		return resourceguard.Evidence{}, err
+	}
+	if !s.Dispatchable() || s.State().Owner != w.session.actor || s.State().ResourceIdentity == nil || *s.State().ResourceIdentity != evidence.Identity {
+		return resourceguard.Evidence{}, fmt.Errorf("held repair observation original owner/Guest changed")
+	}
+	if err := w.session.Check(callCtx); err != nil {
+		return resourceguard.Evidence{}, err
+	}
+	return evidence, nil
+}

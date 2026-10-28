@@ -43,6 +43,7 @@ type Client struct {
 	mu        sync.Mutex
 	busy      bool
 	pending   *Command
+	repair    *HeldRepairRequest
 }
 
 func cloneCommand(c Command) Command { c.HugePools = append([]HugePool(nil), c.HugePools...); return c }
@@ -255,7 +256,7 @@ func (c *Client) command(ctx context.Context, command Command, action string, ex
 		return e, &ClientError{Code: "invalid_command"}
 	}
 	c.mu.Lock()
-	if !observe && (c.busy || (c.pending != nil && (!explicit || !reflect.DeepEqual(*c.pending, command)))) {
+	if !observe && (c.busy || c.repair != nil || (c.pending != nil && (!explicit || !reflect.DeepEqual(*c.pending, command)))) {
 		c.mu.Unlock()
 		return e, &ClientError{Code: "original_pending"}
 	}
