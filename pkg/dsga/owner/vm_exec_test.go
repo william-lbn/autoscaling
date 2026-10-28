@@ -174,7 +174,7 @@ func vmReservation(t *testing.T, client *kubefake.Clientset, name, kind string, 
 }
 
 func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testing.T) {
-	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late", "abort-committed", "abort-after-open", "abort-replies", "abort-original-open-lost", "partial-pending-restore", "partial-host-settle", "partial-auto", "partial-auto-start-lost", "partial-auto-record-lost", "partial-auto-source-gone", "partial-auto-selected-replies"} {
+	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late", "abort-committed", "abort-after-open", "abort-replies", "abort-original-open-lost", "partial-pending-restore", "partial-host-settle", "partial-auto", "partial-auto-start-lost", "partial-auto-record-lost", "partial-auto-source-gone", "partial-auto-selected-replies", "shrink-partial-after-grow"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -229,6 +229,9 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				// 总期限，不改变生产Lease/客户端超时，也不声称性能认证。
 				timeout = 120 * time.Second
 			}
+			if mode == "shrink-partial-after-grow" {
+				options, timeout = DefaultOptions(), 3*time.Minute
+			}
 			elector, err := New(coord, store, options)
 			require.NoError(t, err)
 			ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -238,6 +241,9 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				require.NoError(t, err)
 				defer resources.CloseIdleConnections()
 				req := pgRequest(t, session.Actor())
+				if mode == "shrink-partial-after-grow" {
+					req.TargetVMMemoryBytes = 2 << 30
+				}
 				p, baseline := preparedGuest(t, req, root.view.Identity)
 				selectedActual := mode == "partial-auto-selected-replies"
 				if mode == "partial-host-settle" || strings.HasPrefix(mode, "partial-auto") && !selectedActual {
@@ -564,6 +570,9 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				require.Equal(t, 1, writes)
 				require.EqualValues(t, 1, resizePosts.Load())
 				require.EqualValues(t, 1, opens.Load())
+				if mode == "shrink-partial-after-grow" {
+					verifyShrinkPartialAfterGrow(t, ctx, api, client, coord, store, session, worker, resources, root, p, runner, peer)
+				}
 				return nil
 			})
 			require.NoError(t, err)

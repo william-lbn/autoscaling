@@ -79,8 +79,9 @@ func pgReply(w http.ResponseWriter, value any) {
 }
 
 // TLS仅提供协议事实夹具，真实验签/SQL/PG在跨仓native门禁另验。
-func pgConfig(t *testing.T, request control.Request, handler http.HandlerFunc) compute.Config {
+func pgConfig(t *testing.T, request control.Request, handler http.HandlerFunc, views ...func() control.Snapshot) compute.Config {
 	t.Helper()
+	require.LessOrEqual(t, len(views), 1)
 	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/dsg/v1/capabilities":
@@ -89,10 +90,17 @@ func pgConfig(t *testing.T, request control.Request, handler http.HandlerFunc) c
 			boot := request.Key.Instance.PGBootID
 			pgReply(w, control.Capabilities{ProtocolVersion: 1, ProductionReady: false, VMShrinkPermit: false, Supported: true, BufferAPIVersion: 6, Enabled: true, InstanceBound: true, HistoryCapacity: &history, ProviderCanRelease: &provider, Instance: &control.DiscoveryIdentity{VMUID: request.Key.Instance.VMUID, ComputeInstanceID: request.Key.Instance.ComputeInstanceID, PGBootID: &boot}})
 		case "/dsg/v1/issuer/fence":
-			fact := pgResponse(t, request)
-			fact.Observed.Operation = nil
-			fact.Observed.CapacityGeneration = 1
-			pgReply(w, control.FenceResponse{ProtocolVersion: 1, VMShrinkPermit: false, RequestedInstance: request.Key.Instance, RequestedEpoch: request.Key.IssuerEpoch, Disposition: control.Fenced, Observed: fact.Observed})
+			var observed control.Snapshot
+			if len(views) == 1 {
+				// 多操作组合返回同点实际状态，不能把第二/三次请求仍固定为
+				// generation1；旧单操作夹具不传此入口，行为维持原样。
+				observed = views[0]()
+			} else {
+				observed = pgResponse(t, request).Observed
+				observed.Operation = nil
+				observed.CapacityGeneration = 1
+			}
+			pgReply(w, control.FenceResponse{ProtocolVersion: 1, VMShrinkPermit: false, RequestedInstance: request.Key.Instance, RequestedEpoch: request.Key.IssuerEpoch, Disposition: control.Fenced, Observed: observed})
 		default:
 			handler(w, r)
 		}
