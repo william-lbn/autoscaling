@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "state": "Initial budget contract and original initial placement reader accepted; first service production NOT complete",
+  "base_commit": "905930300ddf7bdf37141dc30621882ee1b155a0",
+  "code_commit": "34814dfa08b84b1b9a6daa7c064f15cffd83f0f0",
+  "source_sha256": {
+    "pkg/dsga/budget/initial.go": "2a2069c6f74418df19421d7f1e278f359e0e944a1ec64645788391e8142dbad2",
+    "pkg/dsga/budget/initial_test.go": "cbb2c45697f41161f7c669a78349a4d3d2481e23740aac5e3a39243178701b59",
+    "pkg/dsga/budgetclaims/initial.go": "7991ab54967957be819eab5ebef3afe18ff32d18af461d42c38cd75ec2904df5",
+    "pkg/dsga/owner/initial_sources_test.go": "62cf20d05deb70681298f5fdc5258da4f87b897547434417adb69438447d6012"
+  },
+  "source_go_files": 4,
+  "runtime_go_files": 2,
+  "test_go_files": 2,
+  "test_counts": {
+    "top_level": 3,
+    "including_subtests": 23,
+    "adopted_fail": 0,
+    "skip": 0
+  },
+  "test_mapping": {
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetContainsStartupAndOutsideWithoutSyntheticResize": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.02
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetRejectsRestartGrowthUnknownAndIncompleteCommitments/unknown-allocation": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetRejectsRestartGrowthUnknownAndIncompleteCommitments/stale-floor": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetRejectsRestartGrowthUnknownAndIncompleteCommitments/guest-too-small": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetRejectsRestartGrowthUnknownAndIncompleteCommitments/outside-missing": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetRejectsRestartGrowthUnknownAndIncompleteCommitments/outside-duplicate": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetRejectsRestartGrowthUnknownAndIncompleteCommitments/outside-is-rss": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetRejectsRestartGrowthUnknownAndIncompleteCommitments/host-too-small": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetRejectsRestartGrowthUnknownAndIncompleteCommitments/host-overflow": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetRejectsRestartGrowthUnknownAndIncompleteCommitments/not-first-generation": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetRejectsRestartGrowthUnknownAndIncompleteCommitments/already-open": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetRejectsRestartGrowthUnknownAndIncompleteCommitments/external-gate-revision": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetRejectsRestartGrowthUnknownAndIncompleteCommitments/unstable-prefix": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetRejectsRestartGrowthUnknownAndIncompleteCommitments/missing-qualification": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetRejectsRestartGrowthUnknownAndIncompleteCommitments/vm-permit": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/budget::TestInitialBudgetRejectsRestartGrowthUnknownAndIncompleteCommitments": {
+      "outcome": "pass",
+      "log": "dsga-initial-budget-first.jsonl",
+      "elapsed": 0.17
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestInitialBudgetSourcesRequireOriginalPlacementAndQualification/same-name-qualification": {
+      "outcome": "pass",
+      "log": "dsga-initial-sources-first.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestInitialBudgetSourcesRequireOriginalPlacementAndQualification/new-pod": {
+      "outcome": "pass",
+      "log": "dsga-initial-sources-first.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestInitialBudgetSourcesRequireOriginalPlacementAndQualification/new-node": {
+      "outcome": "pass",
+      "log": "dsga-initial-sources-first.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestInitialBudgetSourcesRequireOriginalPlacementAndQualification/underheld": {
+      "outcome": "pass",
+      "log": "dsga-initial-sources-first.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestInitialBudgetSourcesRequireOriginalPlacementAndQualification/missing-placement": {
+      "outcome": "pass",
+      "log": "dsga-initial-sources-first.jsonl",
+      "elapsed": 0
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestInitialBudgetSourcesRequireOriginalPlacementAndQualification/changed-profile": {
+      "outcome": "pass",
+      "log": "dsga-initial-sources-first.jsonl",
+      "elapsed": 0.01
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner::TestInitialBudgetSourcesRequireOriginalPlacementAndQualification": {
+      "outcome": "pass",
+      "log": "dsga-initial-sources-first.jsonl",
+      "elapsed": 0.17
+    }
+  },
+  "log_sha256": {
+    "dsga-initial-budget-first.jsonl": "aa0b3720236f84a0cef9249b9a0235ccfacb6aa612c6053b3f13f54f921d9f43",
+    "dsga-initial-sources-first.jsonl": "b841c4a595d354346711185417767d10fbaf0fb8e606f11a1edd65bb20de68f2",
+    "dsga-initial-source-compile.log": "99c78a090be5795d26d45433e414ff1e0aeaa224c4f362c140ad1d6ee3e45b3a",
+    "dsga-initial-foundation-lint-first.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "dsga-initial-foundation-vet.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsga-initial-foundation-linux-amd64-compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsga-initial-foundation-linux-arm64-compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "checks": {
+    "lint_packages": 3,
+    "lint": "0 issues",
+    "vet_packages": 3,
+    "vet": "passed",
+    "linux_package_builds": [
+      {
+        "arch": "amd64",
+        "packages": [
+          "budget",
+          "budgetclaims"
+        ],
+        "exit_code": 0,
+        "executed": false
+      },
+      {
+        "arch": "arm64",
+        "packages": [
+          "budget",
+          "budgetclaims"
+        ],
+        "exit_code": 0,
+        "executed": false
+      }
+    ],
+    "new_linux_cli_elfs": 0
+  },
+  "source_adoption_note": "Only final explanatory comment/error wording changed after these passed checks; no branch, contract, assertion or arithmetic changed",
+  "approval_incident": {
+    "local_source_test_executed_on_rejection": false,
+    "reason": "automatic approval review quota, retry after 19:35",
+    "resolved": "normal reviewed retry after clock confirmed 19:36:57 succeeded; actual local TLS test passed",
+    "bypassed": false
+  },
+  "preserved_owner_agents_sha256": "5c61959674c362ecc4c3709930121304595e8b0bca1ff70ae401f0cf8f2803c1",
+  "current_runtime_version": {
+    "vm_model": 8,
+    "node_model": 7
+  },
+  "production_wiring": false,
+  "remaining_code": [
+    "persistent initial full budget and initial admission WAL with old-reader version barrier",
+    "first service producer/native admission/SDK recovery and initial-to-normal budget replacement",
+    "initial-budget cancellation/current Host lifecycle integration",
+    "existing normal-cap decrease and other source/takeover/start/boot/migration/policy gaps"
+  ],
+  "scope": {
+    "upstream_frozen": true,
+    "pg17_unchanged": true,
+    "independent_control_plane_untouched": true,
+    "new_images": false,
+    "deployed": false,
+    "merged_main": false,
+    "linux_executed": false
+  }
+}
