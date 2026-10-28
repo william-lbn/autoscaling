@@ -112,6 +112,10 @@ type record struct {
 	Original *Command       `json:"original"`
 	Held     *Command       `json:"held"`
 	Applied  bool           `json:"applied"`
+	// Cancelled只保存最近一个“Root从未接收”的完整原命令。它是fsync后的
+	// 防迟到屏障，消耗独立资源revision，但不替换Original/Held、不写内核。
+	// 后续revision继续单调增加，因此不需要随请求历史无限保存取消正文。
+	Cancelled *Command `json:"cancelled,omitempty"`
 	// 可选字段保持旧未启用生产日志可读；有此项的原创建必须先确认真实启动限额。
 	Bootstrap *bootstrapRecord `json:"bootstrap,omitempty"`
 	// root原位exec前持久的出生身份；可缺省以读取旧未启用日志，但生产运行期
@@ -234,7 +238,10 @@ func (g *Guard) withRecord(ctx context.Context, fn func(*record, *lockedState) e
 }
 
 func (r *record) validate(id Identity) error {
-	if r.Version != 1 || r.Floor == 0 || r.Identity != id || (r.Applied && r.Original == nil) {
+	// 一旦有取消屏障即升级v2。旧Guard只接受v1，因此回滚旧二进制必须
+	// 失败关闭，不能忽略可选Cancelled后重新执行那个已取消revision。
+	validVersion := r.Version == 1 && r.Cancelled == nil || r.Version == 2 && r.Cancelled != nil
+	if !validVersion || r.Floor == 0 || r.Identity != id || (r.Applied && r.Original == nil) {
 		return fmt.Errorf("resource journal identity changed; controlled recovery required")
 	}
 	if r.Birth != nil && (r.Birth.Validate() != nil || r.Birth.Identity != id || r.Bootstrap == nil) {
@@ -250,13 +257,19 @@ func (r *record) validate(id Identity) error {
 		return fmt.Errorf("applied resource journal lacks original held constraint")
 	}
 	if !r.Applied && r.Original != nil {
-		if r.Held == nil {
-			if r.Original.Revision != 1 {
-				return fmt.Errorf("first resource command revision differs")
-			}
-		} else if r.Held.Revision == control.Uint64(math.MaxUint64) || r.Original.Revision != r.Held.Revision+1 {
+		previous := control.Uint64(0)
+		if r.Held != nil {
+			previous = r.Held.Revision
+		}
+		if r.Cancelled != nil && r.Cancelled.Revision > previous {
+			previous = r.Cancelled.Revision
+		}
+		if previous == control.Uint64(math.MaxUint64) || r.Original.Revision != previous+1 {
 			return fmt.Errorf("pending resource command lost held revision")
 		}
+	}
+	if r.Cancelled != nil && (r.Cancelled.Validate() != nil || r.Cancelled.Identity != id || r.Cancelled.IssuerEpoch > r.Floor || r.Bootstrap == nil || !r.Bootstrap.Applied || r.Birth == nil || !r.Birth.matches(*r.Cancelled) || r.Original != nil && (r.Cancelled.Revision == r.Original.Revision || r.Cancelled.Revision > r.Original.Revision && !r.Applied)) {
+		return fmt.Errorf("invalid retained resource cancellation barrier")
 	}
 	if r.Bootstrap != nil && (r.Bootstrap.Original.Validate() != nil || r.Bootstrap.Original.Identity != id || r.Bootstrap.Original.IssuerEpoch > r.Floor) {
 		return fmt.Errorf("invalid retained bootstrap constraints")
@@ -272,7 +285,7 @@ func (r *record) validate(id Identity) error {
 	}
 	// 任务限额是原Guest资源来源的一部分，PG boot、接管、历史淘汰均不能改变。
 	// 同时检查未知Original和旧Held，损坏/跨版本删字段不能把有限上限降成旧模式。
-	for _, c := range []*Command{r.Original, r.Held} {
+	for _, c := range []*Command{r.Original, r.Held, r.Cancelled} {
 		if c != nil && (c.PidsMaxTasks != r.taskLimit() || c.SystemMemoryMaxBytes != r.systemLimit()) {
 			return fmt.Errorf("retained task/system limit differs from original bootstrap")
 		}
@@ -399,11 +412,8 @@ func (g *Guard) apply(ctx context.Context, command Command, replay bool) (Eviden
 			if replay {
 				return fmt.Errorf("replay differs from retained original")
 			}
-			previous := control.Uint64(0)
-			if r.Original != nil {
-				previous = r.Original.Revision
-			}
-			if previous == control.Uint64(math.MaxUint64) || command.Revision != previous+1 {
+			next, err := r.nextRevision()
+			if err != nil || command.Revision != next {
 				return fmt.Errorf("resource revision is not consecutive")
 			}
 		}

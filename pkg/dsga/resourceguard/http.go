@@ -59,6 +59,7 @@ type resourceBackend interface {
 	Observe(context.Context, Command) (Evidence, error)
 	ReplayOriginal(context.Context, Command) (Evidence, error)
 	RepairHeld(context.Context, HeldRepairRequest) (Evidence, error)
+	CancelOriginal(context.Context, CancelRequest) (Cancellation, error)
 }
 
 type resourceHTTP struct {
@@ -160,7 +161,7 @@ func (h *resourceHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		switch r.URL.Path {
-		case "/dsg/v1/resource/fence", "/dsg/v1/resource/apply", "/dsg/v1/resource/observe", "/dsg/v1/resource/replay-original", "/dsg/v1/resource/repair-held":
+		case "/dsg/v1/resource/fence", "/dsg/v1/resource/apply", "/dsg/v1/resource/observe", "/dsg/v1/resource/replay-original", "/dsg/v1/resource/repair-held", "/dsg/v1/resource/cancel-original":
 		default:
 			deny(http.StatusNotFound)
 			return
@@ -181,6 +182,15 @@ func (h *resourceHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			result, err = h.guard.FenceBound(r.Context(), request.Identity, request.IssuerEpoch)
+		} else if r.URL.Path == "/dsg/v1/resource/cancel-original" {
+			// 当前签名只授权取消原WAL，不授权把旧命令epoch改成当前值。
+			// Root持同一文件锁核缺席并fsync屏障；not-found回包本身不发NoEffect。
+			var request CancelRequest
+			if json.Unmarshal(raw, &request) != nil || request.IssuerEpoch != claims.IssuerEpoch || request.Command.Identity.VMUID != claims.VMUID || request.Command.Identity.ComputeInstanceID != claims.ComputeInstanceID {
+				deny(http.StatusForbidden)
+				return
+			}
+			result, err = h.guard.CancelOriginal(r.Context(), request)
 		} else if r.URL.Path == "/dsg/v1/resource/repair-held" {
 			// 新owner只能用自身短期签名/floor选择完整原持有来源；正文
 			// 没有限额/PID/路径，root锁内再次核摘要，不能借网关认证改绑。

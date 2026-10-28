@@ -21,6 +21,7 @@ type View struct {
 	Original                *Command         `json:"original"`
 	Held                    *Command         `json:"held"`
 	Applied                 bool             `json:"applied"`
+	Cancelled               *Command         `json:"cancelled,omitempty"`
 	Birth                   *ProcessIdentity `json:"birth"`
 	Actual                  Evidence         `json:"actual"`
 }
@@ -29,7 +30,10 @@ func (v View) Validate() error {
 	if v.ProtocolVersion != 1 || v.VMShrinkPermit || v.Actual.ProtocolVersion != 1 || v.Actual.VMShrinkPermit || v.Actual.Identity != v.Identity {
 		return fmt.Errorf("invalid resource journal observation")
 	}
-	r := record{Version: 1, Identity: v.Identity, Floor: v.IssuerFloorEpoch, Original: v.Original, Held: v.Held, Applied: v.Applied, Bootstrap: &bootstrapRecord{Original: v.Bootstrap, Applied: v.BootstrapApplied, SystemPlacementObserved: v.SystemPlacementObserved}, Birth: v.Birth}
+	r := record{Version: 1, Identity: v.Identity, Floor: v.IssuerFloorEpoch, Original: v.Original, Held: v.Held, Applied: v.Applied, Cancelled: v.Cancelled, Bootstrap: &bootstrapRecord{Original: v.Bootstrap, Applied: v.BootstrapApplied, SystemPlacementObserved: v.SystemPlacementObserved}, Birth: v.Birth}
+	if v.Cancelled != nil {
+		r.Version = 2
+	}
 	return r.validate(v.Identity)
 }
 func (v *View) UnmarshalJSON(b []byte) error {
@@ -86,8 +90,23 @@ func (g *Guard) InspectState(ctx context.Context) (View, error) {
 		if err != nil {
 			return err
 		}
-		v = View{ProtocolVersion: 1, Identity: r.Identity, IssuerFloorEpoch: r.Floor, Bootstrap: r.Bootstrap.Original, BootstrapApplied: r.Bootstrap.Applied, SystemPlacementObserved: r.Bootstrap.SystemPlacementObserved, Original: r.Original, Held: r.Held, Applied: r.Applied, Birth: r.Birth, Actual: actual}
+		v = r.view(actual)
 		return v.Validate()
 	})
 	return v, err
+}
+
+// view只能在原文件锁内、实际约束读回后调用。取消屏障不改变已持有上界，
+// 所以RootAggregate仍引用相同Held/Bootstrap；屏障只控制未来命令的revision。
+func (r *record) view(actual Evidence) View {
+	return View{ProtocolVersion: 1, VMShrinkPermit: false, Identity: r.Identity, IssuerFloorEpoch: r.Floor, Bootstrap: r.Bootstrap.Original, BootstrapApplied: r.Bootstrap.Applied, SystemPlacementObserved: r.Bootstrap.SystemPlacementObserved, Original: r.Original, Held: r.Held, Applied: r.Applied, Cancelled: r.Cancelled, Birth: r.Birth, Actual: actual}
+}
+
+// NextRevision同时越过已接收命令和已持久取消屏障。不能在取消后重用那个
+// revision，否则同owner已在网络排队的旧Apply可能被误认为下一条合法命令。
+func (v View) NextRevision() (control.Uint64, error) {
+	if err := v.Validate(); err != nil {
+		return 0, err
+	}
+	return nextResourceRevision(v.Original, v.Cancelled)
 }
