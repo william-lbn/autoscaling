@@ -157,7 +157,10 @@ func memorySourceFinalizer(cm *core.ConfigMap, vm *vmv1.VirtualMachine) (string,
 	}
 	if kind := cm.Labels[budgetclaims.ClaimLabel]; kind != "" {
 		switch kind {
-		case budgetclaims.OutsideKind, budgetclaims.HostKind:
+		case budgetclaims.OutsideKind, budgetclaims.HostKind, budgetclaims.QualificationKind:
+			// 平台资格与Outside共用原VM保护协议。活动VM期间它仍是
+			// 可信配置/当前预算的根，不能随历史淘汰；只有上面的原
+			// Pod退出、VM关闭锚点和全部Node结清同时成立才能清理。
 			return budgetclaims.ProtectionFinalizer, nil
 		default:
 			return "", fmt.Errorf("unknown original budget source version blocks finalization")

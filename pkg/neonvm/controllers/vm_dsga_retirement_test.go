@@ -54,6 +54,7 @@ func controllerRetirementFixture(t *testing.T) (*testParams, *vmv1.VirtualMachin
 		{ObjectMeta: metav1.ObjectMeta{Name: "birth", Namespace: vm.Namespace, UID: "birth-uid", ResourceVersion: "1", OwnerReferences: owner, Labels: map[string]string{vmguard.ClaimLabel: "binding-v1"}, Finalizers: []string{vmguard.ProtectionFinalizer}}, Immutable: &immutable},
 		{ObjectMeta: metav1.ObjectMeta{Name: "host", Namespace: vm.Namespace, UID: "host-uid", ResourceVersion: "1", OwnerReferences: owner, Labels: map[string]string{budgetclaims.ClaimLabel: budgetclaims.HostKind}, Finalizers: []string{budgetclaims.ProtectionFinalizer}}, Immutable: &immutable},
 		{ObjectMeta: metav1.ObjectMeta{Name: "outside", Namespace: vm.Namespace, UID: "outside-uid", ResourceVersion: "1", OwnerReferences: owner, Labels: map[string]string{budgetclaims.ClaimLabel: budgetclaims.OutsideKind}, Finalizers: []string{budgetclaims.ProtectionFinalizer}}, Immutable: &immutable},
+		{ObjectMeta: metav1.ObjectMeta{Name: "qualification", Namespace: vm.Namespace, UID: "qualification-uid", ResourceVersion: "1", OwnerReferences: owner, Labels: map[string]string{budgetclaims.ClaimLabel: budgetclaims.QualificationKind}, Finalizers: []string{budgetclaims.ProtectionFinalizer}}, Immutable: &immutable},
 	}
 	return p, vm, node, sources
 }
