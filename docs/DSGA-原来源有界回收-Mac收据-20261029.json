@@ -1,0 +1,463 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Mac Darwin arm64",
+  "go_version": "go version go1.25.13 darwin/arm64",
+  "phase": "原Host结清后的旧Outside与Runner来源有界回收及VM关闭后的资格终结",
+  "phase_completed": true,
+  "overall_core_complete": false,
+  "branch": "codex/dsga-autoscaling-20261019",
+  "prior_autoscaling": "c2bb86a9a0a8d60fdf8b97c40031273fcf96da87",
+  "retirement_commit": "c09798ea8880f40b925cc9d63fe66609670db76f",
+  "runtime_commit": "66e8eee20186f349be130ad3dadfe492fddb3aca",
+  "pg17_unchanged": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "protocols": {
+    "vm_model": 9,
+    "node_model": 8,
+    "runner_record": 2
+  },
+  "source_sha256": {
+    "pkg/dsga/hostexec/publisher.go": "a4e67fbc112ee80bccb1df4535f7c694d9b894c2ca2f5a0ad90529e3a7414a0c",
+    "pkg/dsga/hostexec/settle.go": "bde45c0ed5ba0d314e82fddb1965620f8a2f49e7884fe20f5bafd7539fcc9ac7",
+    "pkg/dsga/hostexec/source_gc.go": "39dd021aa82a4ed53e3bd31efaeb064b308509521f3594ec27811a7d6b8cc652",
+    "pkg/dsga/hostexec/source_gc_test.go": "c9aaa3a83b5e5d3a182def0e7bbdaef4865761da2efcd4181ad68599d0a0b102",
+    "pkg/dsga/hostscheduler/service.go": "9e8633192558048a08ffa15196f923ec91cc3970185b3f815d9755d9d98fe0ff",
+    "pkg/dsga/hostscheduler/work.go": "5ff0e4c71f5cc324a76cbe066432c799becdea6d13429de2805e3584a6f60946",
+    "pkg/dsga/hostscheduler/work_test.go": "a95a0c1cabeabc908e1a32745a17b4659fc27856f9b86ad77045f027b6a09f95",
+    "pkg/dsga/owner/host_source_test.go": "ada29e0b0db3fe97ec098d71048c04624fa93749bdaf20ac20b2e99f9a9e7c53",
+    "pkg/dsga/owner/initial_service_test.go": "424e64d9e87ae63eac53418e69c363825207d58fda999aefa0ba458628073c7a",
+    "pkg/dsga/owner/source_gc_test.go": "1f2597367ab2209aa7556ac8cc98f85ce752e2eaae95583f6d246e19f9532170",
+    "pkg/dsga/owner/trusted_prepare_test.go": "92080ce5395a0354d78d7096715c7a954b9d061f4b6f8c24b4a70683ac70e7a2",
+    "pkg/dsga/vmguard/publication.go": "ae38ae096f7b472c8bf9d5c9fdaa18a16faed5cd3dfe9a678011d1df246bb637",
+    "pkg/neonvm/controllers/vm_dsga_retirement.go": "ef0ed82e9568b55898ca10c0197326cec5fec3f77dfac379043465dbb556065e",
+    "pkg/neonvm/controllers/vm_dsga_retirement_test.go": "b63049da6b4a024bd10a5691bfe844171f607bd1a54913ab60b3457eaaa7ac08"
+  },
+  "source_go_files": 14,
+  "test_go_files": 7,
+  "adopted_tests": [
+    {
+      "log": "dsga-source-gc-production-final.jsonl",
+      "sha256": "dc92f10d487169f73235835e4fb89f0dbef04402eab5a1b1961968f36b304153",
+      "process_exit_code": 0,
+      "top_level_tests": 2,
+      "passed_records_including_parents": 5,
+      "failed": 0,
+      "skipped": 0,
+      "packages": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "elapsed_seconds": 175.757
+        }
+      ],
+      "test_mapping": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "test": "TestProductionInitialCancelBeforeVMRecoversActualBudgetAndSuccessor",
+          "elapsed_seconds": 117.08
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "test": "TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/host-settle-gc-lost",
+          "elapsed_seconds": 17.22
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "test": "TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/host-settle-scheduler-loop",
+          "elapsed_seconds": 20.98
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "test": "TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/host-settle-after-cancel-history",
+          "elapsed_seconds": 17.95
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "test": "TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve",
+          "elapsed_seconds": 56.15
+        }
+      ]
+    },
+    {
+      "log": "dsga-source-gc-domain-final2.jsonl",
+      "sha256": "64c0e425490de7efdd7b9f02d6d167ea01703b8178f37e56a1c0023787449ca5",
+      "process_exit_code": 0,
+      "top_level_tests": 9,
+      "passed_records_including_parents": 48,
+      "failed": 0,
+      "skipped": 0,
+      "packages": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+          "elapsed_seconds": 1.733
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "elapsed_seconds": 1.794
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+          "elapsed_seconds": 1.865
+        }
+      ],
+      "test_mapping": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestRetainedSourceNamesWalksRawHeadsAndHistory",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledRunnerReceiptCollectionRequiresOriginalBirthAndContentName/old",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledRunnerReceiptCollectionRequiresOriginalBirthAndContentName/not-sent",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledRunnerReceiptCollectionRequiresOriginalBirthAndContentName/retained-name",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledRunnerReceiptCollectionRequiresOriginalBirthAndContentName/another-pod",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledRunnerReceiptCollectionRequiresOriginalBirthAndContentName/another-node",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledRunnerReceiptCollectionRequiresOriginalBirthAndContentName/another-runner-boot",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledRunnerReceiptCollectionRequiresOriginalBirthAndContentName/another-birth",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledRunnerReceiptCollectionRequiresOriginalBirthAndContentName/same-position-other-id",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledRunnerReceiptCollectionRequiresOriginalBirthAndContentName/wrong-content-name",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledRunnerReceiptCollectionRequiresOriginalBirthAndContentName",
+          "elapsed_seconds": 0.06
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSourceCollectionThroughKeyNeverOrdersConflictingOperationID",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/old",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/retained-name",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/foreign-owner",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/foreign-guest",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/foreign-pg",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/future-key",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+          "test": "TestSettledScanCacheRequiresExactWatermarkAndRemainsBounded/same",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+          "test": "TestSettledScanCacheRequiresExactWatermarkAndRemainsBounded/cold",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+          "test": "TestSettledScanCacheRequiresExactWatermarkAndRemainsBounded/expired",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+          "test": "TestSettledScanCacheRequiresExactWatermarkAndRemainsBounded/clock-backwards",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+          "test": "TestSettledScanCacheRequiresExactWatermarkAndRemainsBounded/new-budget",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+          "test": "TestSettledScanCacheRequiresExactWatermarkAndRemainsBounded/different-source",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+          "test": "TestSettledScanCacheRequiresExactWatermarkAndRemainsBounded/unsettled",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/same-position-other-id",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+          "test": "TestSettledScanCacheRequiresExactWatermarkAndRemainsBounded",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/missing-uid",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+          "test": "TestSourceCollectionProgressSurvivesPublisherRebuildAndRemainsBounded",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/mutable",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/double-kind",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/unknown-version",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/original-deleting",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/finalizer-already-removed",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/hostexec",
+          "test": "TestCollectionProgressDiscardsOnlyDiscoveryOnWatermarkOrVMChange",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+          "test": "TestManagedVMFinalizationCollectsOnlyClosedOriginalSources/complete",
+          "elapsed_seconds": 0.03
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+          "test": "TestManagedVMFinalizationCollectsOnlyClosedOriginalSources/patch-reply-lost",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+          "test": "TestManagedVMFinalizationCollectsOnlyClosedOriginalSources/delete-reply-lost",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+          "test": "TestManagedVMFinalizationCollectsOnlyClosedOriginalSources/cold-bootstrap",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+          "test": "TestManagedVMFinalizationCollectsOnlyClosedOriginalSources",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+          "test": "TestManagedVMFinalizationKeepsUnknownAndStillHeldSources/missing-anchor",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+          "test": "TestManagedVMFinalizationKeepsUnknownAndStillHeldSources/ready-flag-reverted",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+          "test": "TestManagedVMFinalizationKeepsUnknownAndStillHeldSources/replacement-node",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+          "test": "TestManagedVMFinalizationKeepsUnknownAndStillHeldSources/held-row",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+          "test": "TestManagedVMFinalizationKeepsUnknownAndStillHeldSources/unknown-source",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+          "test": "TestManagedVMFinalizationKeepsUnknownAndStillHeldSources/live-pod",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/neonvm/controllers",
+          "test": "TestManagedVMFinalizationKeepsUnknownAndStillHeldSources",
+          "elapsed_seconds": 0.04
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "top_level_tests": 11,
+    "passed_records_including_parents": 53,
+    "failed": 0,
+    "skipped": 0,
+    "distinct_packages": 4
+  },
+  "checks": [
+    {
+      "check": "go vet",
+      "scope": [
+        "pkg/dsga/hostexec",
+        "pkg/dsga/hostscheduler",
+        "pkg/dsga/owner",
+        "pkg/dsga/vmguard",
+        "pkg/neonvm/controllers"
+      ],
+      "log": "dsga-source-gc-vet-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "process_exit_code": 0
+    },
+    {
+      "check": "incremental golangci-lint",
+      "new_from_rev": "c2bb86a9a0a8d60fdf8b97c40031273fcf96da87",
+      "scope": [
+        "pkg/dsga/hostexec",
+        "pkg/dsga/hostscheduler",
+        "pkg/dsga/owner",
+        "pkg/dsga/vmguard",
+        "pkg/neonvm/controllers"
+      ],
+      "log": "dsga-source-gc-lint-final.log",
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "process_exit_code": 0,
+      "issues": 0,
+      "full_repository_clean_claimed": false
+    }
+  ],
+  "commands_for_reproduction": [
+    "GOCACHE=/Users/williamlee/github/neon-self-dev/build/go-cache GOPROXY=off GOSUMDB=off /Users/williamlee/go/bin/go test -race -count=1 -json -timeout=8m ./pkg/dsga/owner -run \"^(TestProductionInitialCancelBeforeVMRecoversActualBudgetAndSuccessor|TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve)$/(host-settle-gc-lost|host-settle-scheduler-loop|host-settle-after-cancel-history)$\"",
+    "GOCACHE=/Users/williamlee/github/neon-self-dev/build/go-cache GOPROXY=off GOSUMDB=off /Users/williamlee/go/bin/go test -race -count=1 -json ./pkg/dsga/hostexec ./pkg/dsga/hostscheduler ./pkg/neonvm/controllers -run \"^(TestRetainedSourceNamesWalksRawHeadsAndHistory|TestSettledRunnerReceiptCollectionRequiresOriginalBirthAndContentName|TestSourceCollectionThroughKeyNeverOrdersConflictingOperationID|TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects|TestCollectionProgressDiscardsOnlyDiscoveryOnWatermarkOrVMChange|TestSettledScanCacheRequiresExactWatermarkAndRemainsBounded|TestSourceCollectionProgressSurvivesPublisherRebuildAndRemainsBounded|TestManagedVMFinalizationCollectsOnlyClosedOriginalSources|TestManagedVMFinalizationKeepsUnknownAndStillHeldSources)$\"",
+    "GOCACHE=/Users/williamlee/github/neon-self-dev/build/go-cache GOPROXY=off GOSUMDB=off /Users/williamlee/go/bin/go vet ./pkg/dsga/hostexec ./pkg/dsga/hostscheduler ./pkg/dsga/owner ./pkg/dsga/vmguard ./pkg/neonvm/controllers",
+    "GOCACHE=/Users/williamlee/github/neon-self-dev/build/go-cache GOLANGCI_LINT_CACHE=/Users/williamlee/github/neon-self-dev/build/golangci-lint-cache GOPROXY=off GOSUMDB=off /Users/williamlee/github/neon-self-dev/build/tools/golangci-lint run --new-from-rev=c2bb86a9a0a8d60fdf8b97c40031273fcf96da87 ./pkg/dsga/hostexec ./pkg/dsga/hostscheduler ./pkg/dsga/owner ./pkg/dsga/vmguard ./pkg/neonvm/controllers"
+  ],
+  "command_note": "以上是与采用日志逐用例映射对应的复现命令，不将未保存在JSON流内的原shell包装/总超时参数伪称为原始命令；HTTP/UDS本机组合需允许loopback。",
+  "fixture_boundaries": [
+    "Kube/Lease与LIST分页快照为夹具，不是真实apiserver/etcd",
+    "PG/root/平台资格/QMP peer为明确夹具，不证明真实Linux/KVM动作",
+    "20个旧Outside及3个旧Runner回执是自洽批量领域夹具，不是23次物理resize",
+    "同名换UID后仅测试恢复准确原对象，生产清理不能收养替代来源"
+  ],
+  "failed_or_intermediate_logs": [
+    {
+      "log": "dsga-source-gc-domain.jsonl",
+      "sha256": "e51426c521a8ff7149075da654b585dad2e5bec898e52d95922fd5d65c32c0b3",
+      "reason": "Guest boot夹具误用32位incarnation，改为Linux UUID；未放宽生产规则",
+      "adopted_as_success": false,
+      "failed_records": [
+        "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/old",
+        "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/retained-name",
+        "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/foreign-owner",
+        "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/foreign-guest",
+        "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/foreign-pg",
+        "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/future-key",
+        "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/same-position-other-id",
+        "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/missing-uid",
+        "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/mutable",
+        "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/double-kind",
+        "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/unknown-version",
+        "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/original-deleting",
+        "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects/finalizer-already-removed",
+        "TestSettledSourceCandidatesKeepReferencedUnknownAndForeignObjects",
+        "TestCollectionProgressDiscardsOnlyDiscoveryOnWatermarkOrVMChange",
+        "github.com/neondatabase/autoscaling/pkg/dsga/hostexec"
+      ]
+    },
+    {
+      "log": "dsga-source-gc-affected.jsonl",
+      "sha256": "94c6f8ed813426e4070493ea2e5baaa2a5938e864eb99efa0ab16835cd00b6e5",
+      "reason": "旧Scheduler LIST计数断言expected2/actual3；按三类两轮六次修正",
+      "adopted_as_success": false,
+      "failed_records": [
+        "TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve/host-settle-scheduler-loop",
+        "TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve",
+        "github.com/neondatabase/autoscaling/pkg/dsga/owner"
+      ]
+    },
+    {
+      "log": "dsga-source-gc-lint.log",
+      "sha256": "73a041acdca57470e2c4c2b2549d7c51abd4df774dfd545bbb0e918199231976",
+      "reason": "初轮18项exhaustruct/errorlint均修正，最终增量lint0",
+      "adopted_as_success": false
+    },
+    {
+      "log": "dsga-source-gc-production.jsonl",
+      "sha256": "d3eaba413407e28cca30f5701117e45bbdb8f0f7a958982cdb0179db5f98e965",
+      "reason": "中间完整组合117.95秒通过；队列缩为小引用后最终准确实现重跑，不重复计数",
+      "adopted_as_success": false,
+      "failed_records": []
+    }
+  ],
+  "not_run": [
+    "Linux运行或新增ELF重编",
+    "真实K8s RBAC/Lease/分页/GC/finalizer/UID-RV竞争",
+    "真实Linux cgroup/HugeTLB/NeonVM/KVM热插拔及物理回收",
+    "未变PG17/Rust/GuestReady完整矩阵（复用既有源码范围证据）",
+    "PG18与PG16内核/扩展/发行/专属回归"
+  ],
+  "remaining_core_code": [
+    "缺原来源/资格和Root不一致受控恢复、异常跨boot来源闭合",
+    "安全降低normal与后台/私有持续上界",
+    "真正VM owner切换、Start/init失败及无Wait、迁移/跨boot受控恢复",
+    "Monitor/自动策略、可信请求取消重放入口和全部写者/CPU隔离",
+    "PG17完整阶段归档后PG18再PG16独立适配与测试"
+  ],
+  "production_release": false,
+  "goal_status": "active"
+}
