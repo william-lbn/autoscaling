@@ -424,6 +424,11 @@ func productionInitialService(t *testing.T, mode string) {
 				// 也不能把失败改成成功；恢复只能查询同一原命令。
 				root.mu.Lock()
 				root.loseReply = true
+				if guestTakeover {
+					// 资源效果已经发生，但Root自身完成落账未确认。后继须先
+					// 经正式启动gate Observe原命令，不能靠直接建PG绕过它。
+					root.afterApply = func() { root.view.Applied, root.view.Held = false, nil }
+				}
 				root.mu.Unlock()
 			}
 			if pgTakeover && action == journal.ResizePG {

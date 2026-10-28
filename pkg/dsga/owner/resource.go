@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"sync/atomic"
 
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 )
@@ -83,18 +84,9 @@ func (session *Session) newResourceWorker(ctx context.Context, config resourcegu
 		}
 		config.Identity = *model.ResourceIdentity
 	}
-	var pending *resourceguard.Command
-	if model.Active != nil {
-		for _, step := range model.Active.Steps {
-			if step.Action != journal.GuestReady || step.Phase != journal.Unconfirmed {
-				continue
-			}
-			var original resourceguard.Command
-			if json.Unmarshal(step.Command, &original) != nil || original.Validate() != nil || original.Identity != config.Identity || original.BudgetCommitmentID != model.Active.Request.BudgetCommitmentID || step.TargetID != original.Identity.ComputeInstanceID || step.DispatchedBy == nil || original.IssuerEpoch != step.DispatchedBy.Epoch || original.IssuerEpoch > session.actor.Epoch {
-				return nil, fmt.Errorf("retained resource command differs from journal")
-			}
-			pending = &original
-		}
+	pending, err := retainedResourceCommand(model, config.Identity, session.actor.Epoch)
+	if err != nil {
+		return nil, err
 	}
 	if config.Pending != nil && (pending == nil || !reflect.DeepEqual(*pending, *config.Pending)) {
 		return nil, fmt.Errorf("supplied resource pending differs from complete journal")
@@ -148,6 +140,73 @@ func (session *Session) newResourceWorker(ctx context.Context, config resourcegu
 	}
 	success = true
 	return &ResourceWorker{session: session, client: client, running: atomic.Bool{}}, nil
+}
+
+// retainedResourceCommand只从完整外层GuestReady写前票据恢复原资源命令。
+// 资源revision独立于PG Key，epoch/PID/限额不能由当前发现或新owner改写。
+// 构造SDK和启动期只读恢复共用此校验，避免一个入口接受另一个入口拒绝的来源。
+func retainedResourceCommand(model journal.Model, id resourceguard.Identity, epoch control.Uint64) (*resourceguard.Command, error) {
+	if model.Active == nil {
+		return nil, nil
+	}
+	for _, step := range model.Active.Steps {
+		if step.Action != journal.GuestReady || step.Phase != journal.Unconfirmed {
+			continue
+		}
+		var original resourceguard.Command
+		if json.Unmarshal(step.Command, &original) != nil || original.Validate() != nil || original.Identity != id || original.BudgetCommitmentID != model.Active.Request.BudgetCommitmentID || step.TargetID != original.Identity.ComputeInstanceID || step.DispatchedBy == nil || original.IssuerEpoch != step.DispatchedBy.Epoch || original.IssuerEpoch > epoch {
+			return nil, fmt.Errorf("retained resource command differs from journal")
+		}
+		return &original, nil
+	}
+	return nil, nil
+}
+
+// observeRetainedOriginal解除“外层已持久GuestReady，Root仍待原Observe”的
+// 启动环依赖。仅串行Root恢复循环调用；普通轮询允许查询完整原命令，但
+// 绝不Apply/Replay/换epoch或记录外层GuestReady成功。Root Observe可按真实
+// 读回补其自身完成落账；正式PG阶段仍须独立核PG/VM/预算后才Record外层。
+//
+// SDK Pending必须与当前UID/RV WAL逐字段一致，不能从Root自报Original收养
+// 孤立命令。缺原来源/NotFound/部分效果继续未知；HeldRepair另有显式栅栏，
+// 本查询不能替代其Observe或清它。调用前后重核原owner/绑定/活动请求。
+func (w *ResourceWorker) observeRetainedOriginal(ctx context.Context) error {
+	pending := w.client.Pending()
+	if pending == nil {
+		return nil
+	}
+	if w.client.PendingHeldRepair() != nil {
+		return resourceguard.ErrUnknown
+	}
+	if err := w.session.Check(ctx); err != nil {
+		return err
+	}
+	id, epoch := w.client.Binding()
+	before, err := w.session.store.Load(ctx)
+	if err != nil {
+		return err
+	}
+	model := before.State()
+	if !before.Dispatchable() || model.Owner != w.session.Actor() || model.ResourceIdentity == nil || *model.ResourceIdentity != id {
+		return fmt.Errorf("retained resource observation changed original owner or Guest")
+	}
+	original, err := retainedResourceCommand(model, id, epoch)
+	if err != nil || original == nil || !reflect.DeepEqual(*pending, *original) {
+		return fmt.Errorf("resource SDK pending has no matching original GuestReady dispatch")
+	}
+	if _, err := w.client.Observe(ctx, *original); err != nil {
+		return err
+	}
+	after, err := w.session.store.Load(ctx)
+	if err != nil {
+		return err
+	}
+	current := after.State()
+	retained, err := retainedResourceCommand(current, id, epoch)
+	if err != nil || !after.Dispatchable() || current.Owner != model.Owner || current.ResourceIdentity == nil || *current.ResourceIdentity != id || current.Active == nil || current.Active.Request != model.Active.Request || retained == nil || !reflect.DeepEqual(*retained, *original) {
+		return fmt.Errorf("original GuestReady changed during resource observation")
+	}
+	return w.session.Check(ctx)
 }
 
 func (w *ResourceWorker) CloseIdleConnections() { w.client.CloseIdleConnections() }

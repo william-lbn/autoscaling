@@ -21,7 +21,8 @@ func (w *ResourceWorker) NewRecoveryControlEndpoint() *ControlEndpoint {
 }
 
 // RunResourceRecovery只处理原Root恢复，不推进首次开放或任何业务步骤。普通轮询
-// 只读；实际约束确认且没有本地修复未知后返回，调用者才可初始化正式PGWorker。
+// 只读；外层已持久的原GuestReady可先Observe，解除Root自身完成未知，外层
+// 步骤仍Unconfirmed。实际约束确认且没有本地修复未知后才交接正式PGWorker。
 // HTTP/Run/Session三方取消必须同步join原调用，不另起后台写者或清原WAL。
 // 错误管理决定只回复；资源未知/网络错误保持owner及端点，坏来源/身份则退出。
 func (e *ControlEndpoint) RunResourceRecovery(ctx context.Context, interval time.Duration) error {
@@ -44,9 +45,13 @@ func (e *ControlEndpoint) RunResourceRecovery(ctx context.Context, interval time
 		if err := callCtx.Err(); err != nil {
 			return err
 		}
-		view, err := e.resource.Inspect(callCtx)
+		err := e.resource.observeRetainedOriginal(callCtx)
 		if err == nil {
-			_, err = view.ConfirmedLimits()
+			var view resourceguard.View
+			view, err = e.resource.Inspect(callCtx)
+			if err == nil {
+				_, err = view.ConfirmedLimits()
+			}
 			if err == nil && e.resource.client.PendingHeldRepair() == nil {
 				// 最后再次确认租约/VM，不能把较早读回缓存成越过失租的许可。
 				return e.session.Check(callCtx)

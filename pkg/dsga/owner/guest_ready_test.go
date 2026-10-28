@@ -30,6 +30,8 @@ type guestRootFixture struct {
 	observes   int
 	loseReply  bool
 	afterApply func()
+	// 仅用于启动恢复在Root Observe到达时同步测试，不替代外层原WAL。
+	afterObserve func()
 	// 最终准入测试的独立读取/出生竞态钩子；均在fixture锁内访问。
 	afterProcess    func()
 	processOverride *resourceguard.ProcessIdentity
@@ -96,9 +98,17 @@ func guestRoot(t *testing.T, store *journal.Store) (*guestRootFixture, resourceg
 			pgReply(w, process)
 		case "/dsg/v1/resource/observe":
 			f.observes++
+			if f.afterObserve != nil {
+				f.afterObserve()
+			}
 			if f.view.Original == nil || !reflect.DeepEqual(*f.view.Original, c) {
 				w.WriteHeader(409)
 				return
+			}
+			// 与生产Guard.Observe一致：仅实际完整匹配才确认Root自身WAL，
+			// 不触发内核写；外层GuestReady仍须执行器另行核全套来源。
+			if f.view.Actual.ValidateFor(c) == nil {
+				f.view.Held, f.view.Applied = f.view.Original, true
 			}
 			pgReply(w, f.view.Actual)
 		case "/dsg/v1/resource/apply", "/dsg/v1/resource/replay-original":
