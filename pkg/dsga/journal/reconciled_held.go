@@ -46,6 +46,9 @@ func (model Model) reconciledPattern(op Operation, command budget.ReconciledAbor
 	if !op.AbortRequested || c.Request != op.Request || model.ResourceIdentity == nil || model.PGInstance == nil || *model.PGInstance != op.Request.Key.Instance || c.Validate() != nil {
 		return fmt.Errorf("reconciled capacity changed original aborted operation")
 	}
+	if err := model.checkInitialOutside(c); err != nil {
+		return err
+	}
 	var prepare, vm *Step
 	for i := range op.Steps {
 		s := &op.Steps[i]
@@ -129,6 +132,9 @@ func (model Model) validateHeldCapacity() error {
 		return fmt.Errorf("permanent reconciled capacity changed original budget context")
 	}
 	r := c.Capacity.Request
+	if err := model.checkInitialOutside(c.Capacity); err != nil {
+		return err
+	}
 	hash, err := RequestDigest(r)
 	if err != nil {
 		return err

@@ -20,7 +20,11 @@ const (
 	HistoryLimit        = 16
 	MaxObservationBytes = 32 * 1024
 	MaxCommandBytes     = 8 * 1024
-	MaxRawBytes         = 1024 * 1024
+	// 只有v2实际预算Cleanup携带完整原Initial时需要双份来源上下文。
+	// 此独立上限不能用于普通命令，选择前先核有界JSON及完整typed合同；
+	// 整体VM注解/Observation/值节点上限不变，旧读者明确拒绝v2。
+	MaxInitialCapacityCommandBytes = 16 * 1024
+	MaxRawBytes                    = 1024 * 1024
 )
 
 type Owner struct {
@@ -915,7 +919,20 @@ func (model Model) StartCleanup(actor Owner, key control.Key, targetID string, c
 // 完整业务DTO（含CPU/目标/预算等实际动作参数）在派发前固化，不保存鉴权头。
 // 原始字节不可改，来源实例和派发owner也绑定摘要。这里不认证业务DTO的领域语义。
 func commandDigest(requestHash string, step Step) (string, error) {
-	if err := control.ValidateJSON(step.Command, MaxCommandBytes, 2048); err != nil {
+	limit := MaxCommandBytes
+	if len(step.Command) > MaxCommandBytes && len(step.Command) <= MaxInitialCapacityCommandBytes && step.Action == AbortReconcile && step.DispatchedBy != nil {
+		// 先限字节/深度/节点/重复键，之后才能做typed解码；不因请求
+		// 自报protocol_version就给任意大命令扩界。畸形或普通合同
+		// 仍走8KiB拒绝路径，只有完整初始来源合同可使用16KiB。
+		if err := control.ValidateJSON(step.Command, MaxInitialCapacityCommandBytes, 2048); err != nil {
+			return "", err
+		}
+		var c budget.ReconciledAbortCommand
+		if json.Unmarshal(step.Command, &c) == nil && c.Capacity.ProtocolVersion == 2 && c.Capacity.InitialOutside != nil && c.ValidateFor(step.DispatchedBy.Epoch) == nil {
+			limit = MaxInitialCapacityCommandBytes
+		}
+	}
+	if err := control.ValidateJSON(step.Command, limit, 2048); err != nil {
 		return "", err
 	}
 	if data := bytes.TrimSpace(step.Command); len(data) == 0 || data[0] != '{' {
