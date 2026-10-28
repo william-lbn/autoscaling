@@ -268,7 +268,12 @@ func (r *record) validate(id Identity) error {
 			return fmt.Errorf("pending resource command lost held revision")
 		}
 	}
-	if r.Cancelled != nil && (r.Cancelled.Validate() != nil || r.Cancelled.Identity != id || r.Cancelled.IssuerEpoch > r.Floor || r.Bootstrap == nil || !r.Bootstrap.Applied || r.Birth == nil || !r.Birth.matches(*r.Cancelled) || r.Original != nil && (r.Cancelled.Revision == r.Original.Revision || r.Cancelled.Revision > r.Original.Revision && !r.Applied)) {
+	// Cancelled是资源域的历史防迟到水位，完整旧PID/starttime留在命令中；
+	// Birth则允许在空组及确认旧约束后推进到下一Postmaster。二者不能永久
+	// 要求同一PID，否则合法新出生会使已经fsync的日志无法读取。安装屏障
+	// 和签发当前取消回执仍分别由CancelOriginal/ValidateFor核相同原出生，
+	// 此处仅验证历史结构，绝不为新进程补造旧命令无效果的当前证明。
+	if r.Cancelled != nil && (r.Cancelled.Validate() != nil || r.Cancelled.Identity != id || r.Cancelled.IssuerEpoch > r.Floor || r.Bootstrap == nil || !r.Bootstrap.Applied || r.Birth == nil || r.Original != nil && (r.Cancelled.Revision == r.Original.Revision || r.Cancelled.Revision > r.Original.Revision && !r.Applied)) {
 		return fmt.Errorf("invalid retained resource cancellation barrier")
 	}
 	if r.Bootstrap != nil && (r.Bootstrap.Original.Validate() != nil || r.Bootstrap.Original.Identity != id || r.Bootstrap.Original.IssuerEpoch > r.Floor) {

@@ -67,6 +67,12 @@ func (g *Guard) launchWithBirth(ctx context.Context, source *SourceConfig, birth
 			}
 			copy := *birth
 			r.Birth = &copy
+			// 改变当前出生后先复核整个待持久结构，再保存和exec，不能
+			// 返回出生成功却留下下一次Inspect无法加载的资源日志。历史
+			// Original/Held/Cancelled保留旧出生和水位，不随本次启动清除。
+			if err := r.validate(r.Identity); err != nil {
+				return err
+			}
 			// 必须先fsync再入组/降权/exec；任何后续错误都保留此启动意图，不能
 			// 从“exec未回复”推导没有出生。真实程序由独立只读查询再核验。
 			if err := state.save(r); err != nil {
