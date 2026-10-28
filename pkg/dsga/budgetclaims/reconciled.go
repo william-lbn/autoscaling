@@ -24,6 +24,7 @@ type ReconciledSources struct {
 	host    *core.ConfigMap
 	pod     *core.Pod
 	node    *core.Node
+	initial *InitialSources
 }
 
 // ReadReconciled只读同Active取消的实际容量来源，不释放/重建原CM。它不是
@@ -44,18 +45,11 @@ func (r *Reader) readReconciled(ctx context.Context, s *journal.Snapshot, c budg
 	} else if s.State().CheckClosedCapacity(c.Request) != nil {
 		return nil, fmt.Errorf("reconciled current source reader requires original closed permanent budget")
 	}
-	outside, err := r.claim(ctx, c.OutsideClaim, OutsideKind)
+	out, outside, initial, err := r.readCapacityOutside(ctx, s, c)
 	if err != nil {
 		return nil, err
 	}
-	var out budget.OutsideReservation
 	id := *s.State().ResourceIdentity
-	if json.Unmarshal([]byte(outside.Data[ClaimKey]), &out) != nil || out.ValidateSource() != nil || out.VMShrinkPermit || !out.HoldUntilExplicitSettlement || out.Request != c.OutsideRequest || out.Request.TargetVMMemoryBytes != c.VMMemoryBytes || out.Identity != id || out.Incarnation != r.binding.Incarnation || out.ResidualProfileID != c.ResidualProfileID || out.SystemOutsidePG != c.SystemOutsidePG || out.Transition != c.Transition || out.Safety != c.Safety {
-		return nil, fmt.Errorf("reconciled outside source does not cover original actual VM")
-	}
-	if err := r.checkOutsideQualification(ctx, out); err != nil {
-		return nil, err
-	}
 	host, err := r.claim(ctx, c.HostClaim, HostKind)
 	if err != nil {
 		return nil, err
@@ -63,6 +57,9 @@ func (r *Reader) readReconciled(ctx context.Context, s *journal.Snapshot, c budg
 	var h budget.HostReservation
 	if json.Unmarshal([]byte(host.Data[ClaimKey]), &h) != nil || h.ProtocolVersion != 2 || h.VMShrinkPermit || !h.HoldUntilExplicitSettlement || h.Request != c.Request || h.Identity != id || h.Incarnation != r.binding.Incarnation || h.SourceID != c.HostReservationID || h.RunnerPodName != c.RunnerPodName || h.HostOverheadBytes == 0 {
 		return nil, fmt.Errorf("reconciled Host source changed original peak hold")
+	}
+	if i := c.InitialOutside; i != nil && (h.RunnerPodUID != i.RunnerPodUID || h.NodeName != i.NodeName || h.NodeUID != i.NodeUID || h.HostOverheadBytes != i.HostOverheadBytes) {
+		return nil, fmt.Errorf("reconciled initial and current Host domains differ")
 	}
 	pod, err := r.core.Pods(r.binding.Namespace).Get(ctx, h.RunnerPodName, metav1.GetOptions{})
 	if err != nil {
@@ -97,7 +94,7 @@ func (r *Reader) readReconciled(ctx context.Context, s *journal.Snapshot, c budg
 	if err := checked; err != nil {
 		return nil, err
 	}
-	return &ReconciledSources{Outside: out, Host: h, outside: outside, host: host, pod: pod, node: node}, nil
+	return &ReconciledSources{Outside: out, Host: h, outside: outside, host: host, pod: pod, node: node, initial: initial}, nil
 }
 
 // 当前实际预算只从永久头取得，不能由调用者传一份与原VM不同的数值来释放
@@ -120,7 +117,7 @@ func (r *Reader) readCurrentCapacity(ctx context.Context, s *journal.Snapshot) (
 	if err != nil {
 		return nil, err
 	}
-	return &Current{Closed: closed, Host: observed.Host, outside: observed.outside, host: observed.host, pod: observed.pod, node: observed.node}, nil
+	return &Current{Closed: closed, Host: observed.Host, outside: observed.outside, host: observed.host, pod: observed.pod, node: observed.node, initial: observed.initial}, nil
 }
 
 // 重读包围其他域的网络请求。Node其他计划可变化，但原持有必须仍在且原CM
@@ -133,7 +130,7 @@ func (r *Reader) RecheckReconciled(ctx context.Context, s *journal.Snapshot, c b
 	if err != nil {
 		return err
 	}
-	if !reflect.DeepEqual(next.Outside, original.Outside) || next.Host != original.Host || next.outside.UID != original.outside.UID || next.outside.ResourceVersion != original.outside.ResourceVersion || !reflect.DeepEqual(next.outside.Data, original.outside.Data) || next.host.UID != original.host.UID || next.host.ResourceVersion != original.host.ResourceVersion || !reflect.DeepEqual(next.host.Data, original.host.Data) || next.pod.UID != original.pod.UID || next.node.UID != original.node.UID {
+	if !reflect.DeepEqual(next.Outside, original.Outside) || next.Host != original.Host || !sameClaimSnapshot(next.outside, original.outside) || !sameInitialSources(next.initial, original.initial) || next.host.UID != original.host.UID || next.host.ResourceVersion != original.host.ResourceVersion || !reflect.DeepEqual(next.host.Data, original.host.Data) || next.pod.UID != original.pod.UID || next.node.UID != original.node.UID {
 		return fmt.Errorf("reconciled original source changed during verification")
 	}
 	return nil

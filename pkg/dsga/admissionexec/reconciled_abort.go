@@ -114,13 +114,27 @@ func (e *Executor) checkReconciled(ctx context.Context, s *journal.Snapshot, p b
 		}
 		outside, selectErr := reconciledOutside(s.State(), p, source.MemoryBytes())
 		if selectErr != nil {
-			return capacity, fence, shared, root, selectErr
+			// 首次VM命令已不可重发取消、实际仍为启动容量时，没有
+			// “旧Resize Outside CM”。只可消费永久头中完整原Initial，
+			// 不能改写原目标或按当前配置临时创建一份替代声明。
+			initial, initialErr := s.State().RetainedInitialOutside()
+			if initialErr != nil || initial.VMMemoryBytes != source.MemoryBytes() {
+				return capacity, fence, shared, root, selectErr
+			}
+			host, hostRef, readErr := e.claims.ReconcileInitialReservations(ctx, s, p, initial)
+			if readErr != nil {
+				return capacity, fence, shared, root, readErr
+			}
+			var noOutside budget.OutsideReservation
+			var noRef budget.ObjectRef
+			capacity, err = budget.ReconcileInitial(budget.ReconcileInputs{Prepared: p, Shared: shared, Root: root, Outside: noOutside, OutsideClaim: noRef, Host: host, HostClaim: hostRef, VM: source, GuestUsableMemoryBytes: usable, IssuerEpoch: e.actor.Epoch}, initial)
+		} else {
+			out, host, hostRef, readErr := e.claims.ReconcileReservations(ctx, s, p, outside)
+			if readErr != nil {
+				return capacity, fence, shared, root, readErr
+			}
+			capacity, err = budget.Reconcile(budget.ReconcileInputs{Prepared: p, Shared: shared, Root: root, Outside: out, OutsideClaim: outside, Host: host, HostClaim: hostRef, VM: source, GuestUsableMemoryBytes: usable, IssuerEpoch: e.actor.Epoch})
 		}
-		out, host, hostRef, readErr := e.claims.ReconcileReservations(ctx, s, p, outside)
-		if readErr != nil {
-			return capacity, fence, shared, root, readErr
-		}
-		capacity, err = budget.Reconcile(budget.ReconcileInputs{Prepared: p, Shared: shared, Root: root, Outside: out, OutsideClaim: outside, Host: host, HostClaim: hostRef, VM: source, GuestUsableMemoryBytes: usable, IssuerEpoch: e.actor.Epoch})
 		if err != nil {
 			return capacity, fence, shared, root, err
 		}

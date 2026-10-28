@@ -24,6 +24,7 @@ type Current struct {
 	host    *core.ConfigMap
 	pod     *core.Pod
 	node    *core.Node
+	initial *InitialSources
 }
 
 // ReadCurrent直接使用永久BudgetHeld或CapacityHeld，不依赖16条可淘汰
@@ -130,7 +131,7 @@ func (r *Reader) readCurrent(ctx context.Context, s *journal.Snapshot, prior boo
 	if err := hostguard.InspectRetainedClaim(node, *plan, host.SourceID, closed.HostClaim, closed); err != nil {
 		return nil, err
 	}
-	return &Current{Closed: closed, Host: host, outside: out, host: cm, pod: pod, node: node}, nil
+	return &Current{Closed: closed, Host: host, outside: out, host: cm, pod: pod, node: node, initial: nil}, nil
 }
 
 func (r *Reader) RecheckCurrent(ctx context.Context, s *journal.Snapshot, original *Current) error {
@@ -149,7 +150,7 @@ func (r *Reader) recheckCurrent(ctx context.Context, s *journal.Snapshot, origin
 	if err != nil {
 		return err
 	}
-	if next.Closed != original.Closed || next.Host != original.Host || next.outside.UID != original.outside.UID || next.outside.ResourceVersion != original.outside.ResourceVersion || !reflect.DeepEqual(next.outside.Data, original.outside.Data) || next.host.UID != original.host.UID || next.host.ResourceVersion != original.host.ResourceVersion || !reflect.DeepEqual(next.host.Data, original.host.Data) || next.pod.UID != original.pod.UID || next.node.UID != original.node.UID {
+	if next.Closed != original.Closed || next.Host != original.Host || !sameClaimSnapshot(next.outside, original.outside) || !sameInitialSources(next.initial, original.initial) || next.host.UID != original.host.UID || next.host.ResourceVersion != original.host.ResourceVersion || !reflect.DeepEqual(next.host.Data, original.host.Data) || next.pod.UID != original.pod.UID || next.node.UID != original.node.UID {
 		return fmt.Errorf("original current budget source changed across verification")
 	}
 	return nil

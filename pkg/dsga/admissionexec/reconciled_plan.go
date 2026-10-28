@@ -52,7 +52,7 @@ func reconciledOutside(m journal.Model, p budget.Prepared, memory control.Uint64
 	}
 	if m.CapacityHeld != nil && m.CapacityHeld.Cleanup.DispatchedBy != nil {
 		var c budget.ReconciledAbortCommand
-		if json.Unmarshal(m.CapacityHeld.Cleanup.Command, &c) == nil && c.ValidateFor(m.CapacityHeld.Cleanup.DispatchedBy.Epoch) == nil && c.Capacity.Request.Key.Instance == p.Request.Key.Instance && c.Capacity.VMMemoryBytes == memory {
+		if json.Unmarshal(m.CapacityHeld.Cleanup.Command, &c) == nil && c.ValidateFor(m.CapacityHeld.Cleanup.DispatchedBy.Epoch) == nil && c.Capacity.Request.Key.Instance == p.Request.Key.Instance && c.Capacity.VMMemoryBytes == memory && c.Capacity.InitialOutside == nil {
 			return c.Capacity.OutsideClaim, nil
 		}
 	}

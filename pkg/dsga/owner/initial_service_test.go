@@ -24,6 +24,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims"
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
@@ -178,20 +179,24 @@ func initialAndGrowQualification(t *testing.T, ctx context.Context, client *kube
 }
 
 func TestProductionInitialServiceThenGrowUsesOriginalSourcesAndUnknownRecovery(t *testing.T) {
-	productionInitialService(t, false)
+	productionInitialService(t, "grow")
 }
 
 func TestProductionInitialHostAndUndispatchedCancelKeepOriginalPlacement(t *testing.T) {
-	productionInitialService(t, true)
+	productionInitialService(t, "host")
 }
 
-func productionInitialService(t *testing.T, hostOnly bool) {
+func TestProductionInitialCancelledGrowRecoversActualBudgetAndSuccessor(t *testing.T) {
+	productionInitialService(t, "cancel")
+}
+
+func productionInitialService(t *testing.T, mode string) {
 	t.Helper()
 	api, store, coord := newAPI(t)
 	client := vmCore(t)
 	api.mu.Lock()
-	mode := vmv1.CpuScalingModeSysfs
-	api.vm.Spec.CpuScalingMode = &mode
+	cpuMode := vmv1.CpuScalingModeSysfs
+	api.vm.Spec.CpuScalingMode = &cpuMode
 	api.vm.Spec.ServiceAccountName = "dsga-runner-test"
 	api.vm.Spec.Guest.MemorySlotSize = *resource.NewQuantity(256<<20, resource.BinarySI)
 	api.vm.Spec.Guest.MemorySlots.Min = 2
@@ -225,7 +230,14 @@ func productionInitialService(t *testing.T, hostOnly bool) {
 	vmPeer(t, filepath.Join(dir, "qmp.sock"), qmp)
 	elector, err := New(coord, store, DefaultOptions())
 	require.NoError(t, err)
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	deadline := 2 * time.Minute
+	if mode == "cancel" {
+		// 本组合串联首次服务、取消回收、后继Grow和下一次Prepare，
+		// -race下已实测到最后Prepare才触及原两分钟总期限；扩大的是
+		// 整个测试的上限，各生产请求/租约/单轮deadline均保持原值。
+		deadline = 3 * time.Minute
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), deadline)
 	defer cancel()
 	err = elector.Run(ctx, func(ctx context.Context, session *Session) error {
 		resources, err := session.NewResourceWorker(ctx, resourceConfig)
@@ -256,7 +268,7 @@ func productionInitialService(t *testing.T, hostOnly bool) {
 			return next
 		}
 		worker = rebuild()
-		if hostOnly {
+		if mode == "host" {
 			for range 2 {
 				progress, err := worker.Advance(ctx)
 				require.NoError(t, err)
@@ -265,7 +277,21 @@ func productionInitialService(t *testing.T, hostOnly bool) {
 			verifyInitialHostAndCancel(t, ctx, api, client, coord, store, session, worker, source, pg, request)
 			return nil
 		}
-		worker = verifyInitialServiceReplies(t, ctx, api, client, store, session, resources, worker, config, source, pg, root)
+		var successorHost *hostexec.Publisher
+		if mode == "cancel" {
+			for range 2 {
+				progress, err := worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress)
+			}
+			worker, request, successorHost = verifyInitialCancelledGrow(t, ctx, api, client, coord, store, session, worker, resources, config, source, runner, qmp, request)
+			pg.mu.Lock()
+			pg.request = request
+			pg.after.Observed = pgResponse(t, request).Observed
+			pg.mu.Unlock()
+		} else {
+			worker = verifyInitialServiceReplies(t, ctx, api, client, store, session, resources, worker, config, source, pg, root)
+		}
 		// 后继完整Grow使用实际Prepare/Host/Guest/VM/PG/预算/准入，首次永久
 		// 头只能在完整Finalize的同CAS被替换；不注入领域Completed。
 		s, err := store.Load(ctx)
@@ -277,7 +303,14 @@ func productionInitialService(t *testing.T, hostOnly bool) {
 		require.Equal(t, pgexec.Recorded, progress)
 		var prepared budget.Prepared
 		require.NoError(t, json.Unmarshal(budgetStep(t, store, journal.PrepareBudget).Observation.Data, &prepared))
-		publishVMHost(t, ctx, client, coord, store, session)
+		if successorHost != nil {
+			// 取消到后继操作复用同一真实Host owner/Lease/Node账本，
+			// 不重复初始化夹具或重建同名Lease来掩盖生命周期。
+			_, err = successorHost.Reconcile(ctx)
+			require.NoError(t, err)
+		} else {
+			publishVMHost(t, ctx, client, coord, store, session)
+		}
 		for _, action := range []journal.Action{journal.ReserveHost, journal.ResizeVM} {
 			progress, err = worker.Advance(ctx)
 			require.NoError(t, err, string(action))
@@ -291,19 +324,66 @@ func productionInitialService(t *testing.T, hostOnly bool) {
 			s, err = store.Load(ctx)
 			require.NoError(t, err)
 			if action == journal.FinalizeBudget {
-				require.NotNil(t, s.State().InitialHeld)
+				if mode == "cancel" {
+					require.NotNil(t, s.State().CapacityHeld)
+				} else {
+					require.NotNil(t, s.State().InitialHeld)
+				}
+			}
+			if mode == "cancel" && action == journal.GuestReady {
+				// 后继操作再覆盖一次真实root setter丢回复；外层WAL和
+				// 资源SDK必须保留未知。不能要求本机响应总在1秒内，
+				// 也不能把失败改成成功；恢复只能查询同一原命令。
+				root.mu.Lock()
+				root.loseReply = true
+				root.mu.Unlock()
 			}
 			progress, err = worker.Advance(ctx)
+			if mode == "cancel" && action == journal.GuestReady {
+				var responseErr *resourceguard.ClientError
+				require.ErrorAs(t, err, &responseErr)
+				require.True(t, responseErr.MayHaveExecuted)
+				original := budgetStep(t, store, action)
+				require.Equal(t, journal.Unconfirmed, original.Phase)
+				restored, restoreErr := session.NewResourceWorker(ctx, resourceConfig)
+				require.NoError(t, restoreErr)
+				t.Cleanup(restored.CloseIdleConnections)
+				worker.CloseIdleConnections()
+				worker, restoreErr = session.NewProductionPGWorker(ctx, config, restored, client.CoreV1(), source)
+				require.NoError(t, restoreErr)
+				t.Cleanup(worker.CloseIdleConnections)
+				progress, err = worker.Advance(ctx)
+				require.Equal(t, original.CommandSHA256, budgetStep(t, store, action).CommandSHA256)
+				root.mu.Lock()
+				posts, observes := root.posts, root.observes
+				root.mu.Unlock()
+				require.Equal(t, 1, posts, "重建后只读原命令，不重发setter")
+				require.Equal(t, 1, observes)
+			}
+			if err != nil && action == journal.GuestReady {
+				// 保留严格生产校验；错误时区分夹具实际约束不符与
+				// Guest可用容量不足，不通过改断言掩盖来源问题。
+				var c resourceguard.Command
+				require.NoError(t, json.Unmarshal(budgetStep(t, store, action).Command, &c))
+				root.mu.Lock()
+				t.Logf("Guest事实：actual=%+v command=%+v validation=%v qualified=%d", root.view.Actual, c, root.view.Actual.ValidateFor(c), prepared.GuestUsableMemoryBytes)
+				root.mu.Unlock()
+			}
 			require.NoError(t, err, string(action))
 			require.Equal(t, pgexec.Recorded, progress)
 		}
 		s, err = store.Load(ctx)
 		require.NoError(t, err)
 		require.Nil(t, s.State().InitialHeld)
+		require.Nil(t, s.State().CapacityHeld)
 		require.NotNil(t, s.State().BudgetHeld)
 		require.EqualValues(t, 9, s.State().ProtocolVersion)
 		posts, _, resizes := pg.counts()
-		require.Equal(t, 3, posts, "首次setter发送前/后各丢一次，正常后继只再开放一次")
+		if mode == "cancel" {
+			require.Equal(t, 2, posts, "取消时已开放不新增setter，后继正常扩容只再开放一次")
+		} else {
+			require.Equal(t, 3, posts, "首次setter发送前/后各丢一次，正常后继只再开放一次")
+		}
 		require.Equal(t, 1, resizes)
 		qmp.mu.Lock()
 		require.Equal(t, 1, qmp.writes)
