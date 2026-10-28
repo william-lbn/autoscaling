@@ -26,9 +26,9 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
 
-// 完整首次生产后，用真实Prepare/Host/WAL派发VM，再由原Runner在QMP
-// 发送前不可重发取消。目标1GiB、真实仍512MiB，不能改写原目标或注入旧
-// Resize成功。PG/root/资格/Kube/QMP仍为显式协议夹具，不外推Linux效果。
+// 完整首次生产后，以真实Prepare/Host/WAL覆盖两个取消窗口：VM未发送时
+// 封为不可重发NoEffect；已经发送时只读原Completed，不把1GiB实际值改成
+// 512MiB初始值。PG/root/资格/Kube/QMP仍为显式协议夹具，不外推Linux效果。
 func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, coord coordclient.CoordinationV1Interface, store *journal.Store, session *Session, worker *PGWorker, resources *ResourceWorker, config compute.Config, source budget.QualificationSource, runner *vmguard.Runner, qmp *vmQMPPeer, request control.Request, beforeVM bool, transfer *businessOwnerTransfer) (*PGWorker, control.Request, *hostexec.Publisher, *Session, *ResourceWorker) {
 	t.Helper()
 	s, err := store.Load(ctx)
@@ -56,9 +56,20 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 		require.NoError(t, err)
 		require.Equal(t, pgexec.Recorded, progress)
 	}
+	vmEffect := transfer != nil && transfer.effectBeforeTakeover
+	if vmEffect {
+		// 原Runner真正越过may_have_sent屏障并发送一次QMP，peer已经
+		// 改变实际容量却丢回复。外层仍Unconfirmed，不能靠相同当前
+		// 数值取消原动作，也不能新造一个VM完成命令来代替原来源。
+		qmp.mu.Lock()
+		qmp.lose = true
+		qmp.mu.Unlock()
+		require.ErrorIs(t, runner.Tick(ctx), vmguard.ErrUnknown)
+		require.Equal(t, journal.Unconfirmed, budgetStep(t, store, journal.ResizeVM).Phase)
+	}
 	if transfer != nil {
-		// 切换发生在真实ResizeVM WAL已经Start、Runner尚未发送QMP的
-		// 窗口。原Key/command/Initial/Host持有必须原样跨代次保存；
+		// 切换时真实ResizeVM WAL已经Start；是否发送由原Runner记录
+		// 决定。原Key/command/Initial/Host持有必须原样跨代次保存；
 		// 新owner只可对账/取消，不能把旧目标重新包装为新epoch派发。
 		session, resources, worker = transfer.takeover(t, ctx, session, resources, worker, config, client, source, runner)
 	}
@@ -69,6 +80,11 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 	if beforeVM {
 		require.Equal(t, journal.Planned, budgetStep(t, store, journal.ResizeVM).Phase)
 		verifyInitialVMSourceRejection(t, ctx, client, store, session, initial)
+	} else if vmEffect {
+		progress, err = worker.Advance(ctx)
+		require.NoError(t, err, "已发生的原VM动作只能读回Completed，不能写NoEffect")
+		require.Equal(t, pgexec.Recorded, progress)
+		require.Equal(t, journal.Completed, budgetStep(t, store, journal.ResizeVM).Observation.Result)
 	} else {
 		_, err = worker.Advance(ctx)
 		require.ErrorIs(t, err, vmguard.ErrUnknown, "Abort标记本身不是VM无效果回执")
@@ -79,7 +95,11 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 		require.Equal(t, journal.NoEffect, budgetStep(t, store, journal.ResizeVM).Observation.Result)
 	}
 	qmp.mu.Lock()
-	require.Zero(t, qmp.writes)
+	if vmEffect {
+		require.Equal(t, 1, qmp.writes, "新owner没有重发已可能发送的旧QMP")
+	} else {
+		require.Zero(t, qmp.writes)
+	}
 	qmp.mu.Unlock()
 	beforeCleanup, err := store.Load(ctx)
 	require.NoError(t, err)
@@ -95,7 +115,7 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 	require.Nil(t, s.State().CapacityHeld)
 	originalCleanup := s.State().Active.Cleanup
 	require.NotNil(t, originalCleanup)
-	if !beforeVM {
+	if !beforeVM && !vmEffect {
 		require.Greater(t, len(originalCleanup.Command), journal.MaxCommandBytes, "真实完整初始合同覆盖专用扩界路径")
 	}
 	require.LessOrEqual(t, len(originalCleanup.Command), journal.MaxInitialCapacityCommandBytes)
@@ -114,19 +134,42 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 		require.Empty(t, command.Capacity.VM, "启动容量没有Resize/NoEffect回执")
 		require.NotContains(t, string(originalCleanup.Command), "native_vm")
 		require.Equal(t, journal.Planned, budgetStep(t, store, journal.ResizeVM).Phase)
+	} else if vmEffect {
+		require.EqualValues(t, 1, command.Capacity.ProtocolVersion)
+		require.Nil(t, command.Capacity.InitialOutside, "旧512MiB初始预算不能覆盖已长到1GiB的VM")
+		require.Equal(t, *prepared.OutsideClaim, command.Capacity.OutsideClaim)
+		require.Equal(t, request, command.Capacity.OutsideRequest)
 	} else {
 		require.EqualValues(t, 2, command.Capacity.ProtocolVersion)
 	}
-	require.Equal(t, initial, *command.Capacity.InitialOutside)
+	if !vmEffect {
+		require.Equal(t, initial, *command.Capacity.InitialOutside)
+		require.Empty(t, command.Capacity.OutsideClaim)
+		require.Empty(t, command.Capacity.OutsideRequest)
+	}
 	require.Equal(t, request, command.Capacity.Request)
-	require.Empty(t, command.Capacity.OutsideClaim)
-	require.Empty(t, command.Capacity.OutsideRequest)
 	require.Nil(t, command.Admission, "首次服务仍开放，不制造新开放选择")
 	var substituted budget.ReconciledAbortCommand
 	require.NoError(t, json.Unmarshal(originalCleanup.Command, &substituted))
-	substituted.Capacity.InitialOutside.HostProfileID = "replacement-initial-host-profile"
+	if vmEffect {
+		substituted.Capacity.OutsideClaim.UID = "replacement-prepared-outside-uid"
+	} else {
+		substituted.Capacity.InitialOutside.HostProfileID = "replacement-initial-host-profile"
+	}
 	require.NoError(t, substituted.ValidateFor(session.Actor().Epoch), "数值自洽不能代替原完整预算绑定")
-	require.Error(t, s.State().CheckReconciledPlan(substituted), "写前原Initial摘要拒绝同数值来源替换")
+	if vmEffect {
+		// 外部CM的实际UID不是纯Model可认证的事实。必须走真实Reader，
+		// 先确认原来源可读，再证明同名换UID被拒绝；不能放松生产校验，
+		// 也不能把静态格式校验错误当成Kube来源已经认证。
+		reader, readErr := budgetclaims.New(client.CoreV1(), binding())
+		require.NoError(t, readErr)
+		_, readErr = reader.ReadReconciled(ctx, s, command.Capacity)
+		require.NoError(t, readErr)
+		_, readErr = reader.ReadReconciled(ctx, s, substituted.Capacity)
+		require.Error(t, readErr, "外部原Outside的真实UID拒绝来源替换")
+	} else {
+		require.Error(t, s.State().CheckReconciledPlan(substituted), "写前原Initial摘要拒绝同数值来源替换")
+	}
 	rebuild := func() *PGWorker {
 		worker.CloseIdleConnections()
 		next, err := session.NewProductionPGWorker(ctx, config, resources, client.CoreV1(), source)
@@ -163,8 +206,12 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 	require.Equal(t, journal.AbortedAfterReconcile, s.State().History[0].Outcome)
 	require.NoError(t, s.State().CheckClosedCapacity(request))
 	retained, err := s.State().RetainedInitialOutside()
-	require.NoError(t, err)
-	require.Equal(t, initial, retained)
+	if vmEffect {
+		require.Error(t, err, "新实际预算使用新容量资格，不能保留旧Initial当完整证明")
+	} else {
+		require.NoError(t, err)
+		require.Equal(t, initial, retained)
+	}
 	claims, err := budgetclaims.New(client.CoreV1(), binding())
 	require.NoError(t, err)
 	current, err := claims.ReadCurrent(ctx, s)
@@ -177,8 +224,9 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 	_, err = claims.ReadCurrent(ctx, s)
 	require.Error(t, err, "原Initial头替换后也不能忽略资格已进入释放")
 	require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("configmaps"), qualification, qualification.Namespace))
-	// 用真实原Host发布者结清取消峰值；原native receipt继续保存，
-	// 512MiB来自取消命令before，绝不能用1GiB原目标当完成。
+	// 用真实原Host发布者结清取消峰值；原native receipt继续保存。
+	// 未发送取before=512MiB，已发送取原Completed=1GiB；不能按原目标
+	// 推断未发生的VM效果，也不能因PG尚未变化把已发生效果回写成初始值。
 	changed, err := publisher.SettleCurrent(ctx)
 	require.NoError(t, err)
 	require.True(t, changed)
@@ -186,9 +234,13 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 	require.NoError(t, err)
 	placement, err := n.State().Placement(initial.RunnerPodUID)
 	require.NoError(t, err)
-	require.Equal(t, initial.VMMemoryBytes, placement.MemoryBytes)
+	actualMemory := initial.VMMemoryBytes
+	if vmEffect {
+		actualMemory = request.TargetVMMemoryBytes
+	}
+	require.Equal(t, actualMemory, placement.MemoryBytes)
 	require.Equal(t, request.TargetVMMemoryBytes, placement.Settled.Request.TargetVMMemoryBytes)
-	require.Equal(t, initial.VMMemoryBytes, placement.Settled.ActualMemoryBytes)
+	require.Equal(t, actualMemory, placement.Settled.ActualMemoryBytes)
 	if beforeVM {
 		require.EqualValues(t, 8, n.State().ProtocolVersion)
 		require.Equal(t, *command.Capacity.InitialVM, placement.Settled.InitialVM)

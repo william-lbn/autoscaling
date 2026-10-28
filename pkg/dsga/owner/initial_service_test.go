@@ -202,9 +202,14 @@ func TestProductionInitialOwnerTransferCancelsOriginalVMAndCompletesSuccessor(t 
 	productionInitialService(t, "owner-transfer")
 }
 
+func TestProductionInitialOwnerTransferObservesLostVMReplyAndRecoversActualCapacity(t *testing.T) {
+	productionInitialService(t, "owner-transfer-after-vm")
+}
+
 func productionInitialService(t *testing.T, mode string) {
 	t.Helper()
-	cancelled := mode == "cancel" || mode == "cancel-before-vm" || mode == "owner-transfer"
+	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
+	cancelled := mode == "cancel" || mode == "cancel-before-vm" || ownerTransfer
 	api, store, coord := newAPI(t)
 	client := vmCore(t)
 	api.mu.Lock()
@@ -250,7 +255,7 @@ func productionInitialService(t *testing.T, mode string) {
 		// 整个测试的上限，各生产请求/租约/单轮deadline均保持原值。
 		deadline = 3 * time.Minute
 	}
-	if mode == "owner-transfer" {
+	if ownerTransfer {
 		// 实测包含原30秒Lease失效等待的完整组合为175.53秒，
 		// 总期限留出race调度余量；不改各生产请求或30/20/2秒租约。
 		deadline = 4 * time.Minute
@@ -259,8 +264,9 @@ func productionInitialService(t *testing.T, mode string) {
 	defer cancel()
 	run := elector.Run
 	var transfer *businessOwnerTransfer
-	if mode == "owner-transfer" {
+	if ownerTransfer {
 		transfer = newBusinessOwnerTransfer(t, api, coord, store, resourceConfig)
+		transfer.effectBeforeTakeover = mode == "owner-transfer-after-vm"
 		run = transfer.run
 	}
 	err = run(ctx, func(ctx context.Context, session *Session) error {

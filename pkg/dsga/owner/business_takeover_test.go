@@ -31,6 +31,8 @@ type businessOwnerTransfer struct {
 	store          *journal.Store
 	resourceConfig resourceguard.ClientConfig
 	active         *businessOwnerRun
+	// 仅第二个窗口：QMP已产生效果且回复丢失，不能走未发送NoEffect。
+	effectBeforeTakeover bool
 }
 
 type businessOwnerRun struct {
@@ -42,7 +44,7 @@ type businessOwnerRun struct {
 
 func newBusinessOwnerTransfer(t *testing.T, api *ownerAPI, coord coordclient.CoordinationV1Interface, store *journal.Store, resources resourceguard.ClientConfig) *businessOwnerTransfer {
 	t.Helper()
-	return &businessOwnerTransfer{t: t, api: api, coord: coord, store: store, resourceConfig: resources, active: nil}
+	return &businessOwnerTransfer{t: t, api: api, coord: coord, store: store, resourceConfig: resources, active: nil, effectBeforeTakeover: false}
 }
 
 func (f *businessOwnerTransfer) start(ctx context.Context) *businessOwnerRun {
@@ -168,9 +170,14 @@ func (f *businessOwnerTransfer) takeover(t *testing.T, ctx context.Context, old 
 	t.Cleanup(nextWorker.CloseIdleConnections)
 	_, err = nextWorker.ReplayVMOriginal(ctx, before.State().Active.Request.Key)
 	require.Error(t, err, "新owner不可把旧epoch原ResizeVM派发重放")
-	// 推进正式Runner的独立floor；旧命令未有取消证明时仍不得发送。
-	// 是否返回等待/拒绝由Runner决定，不能从其返回推导NoEffect。
-	require.Error(t, runner.Tick(ctx), "旧epoch命令尚未取消，不能因新owner而派发")
+	// 推进正式Runner的独立floor。尚未发送的旧命令不得发送；已越过
+	// may_have_sent只读回原结果。Tick返回不能独自推导NoEffect，后续
+	// 外层仍须以完整原不可变来源确认Completed或封住的取消终态。
+	if f.effectBeforeTakeover {
+		require.NoError(t, runner.Tick(ctx), "新owner只读原may_have_sent结果，不能重发QMP")
+	} else {
+		require.Error(t, runner.Tick(ctx), "旧epoch命令尚未取消，不能因新owner而派发")
+	}
 	after, err = f.store.Load(ctx)
 	require.NoError(t, err)
 	require.Equal(t, before.State().Active, after.State().Active)
