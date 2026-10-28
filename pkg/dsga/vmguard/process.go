@@ -26,9 +26,12 @@ var ErrStopped = errors.New("original QEMU child has exited; new memory actions 
 
 const exitKind = "process-exit-v1"
 
-// ProcessExit只由同一Runner自己Start/Wait的原QEMU子进程产生，不接受远程
-// 自报“进程已死”。原Birth/State UID、随机launch nonce、argv摘要和最后本地
-// WAL摘要保留；不将QMP断开、Pod404或某个可复用PID消失解释为此事实。
+// ProcessExit只由同一Runner自己执行原QEMU的启动/等待流程产生，不接受远程
+// 自报“进程已死”。v1是同一Start/Wait取得的退出事实；v2只表示已持久原启动
+// 意图，但本调用尚未执行Start，或Start失败且没有返回任何Process/ProcessState。
+// v2不伪造PID、退出码或信号；旧读者因不识别版本而拒绝，不把它当作v1的Wait。
+// 原Birth/State UID、随机launch nonce、argv摘要和最后本地WAL摘要保留；
+// 不将QMP断开、Pod404、某个可复用PID消失或没有Wait解释为此事实。
 // 它只证明这个Guest进程已经退出，不结算原未知步骤或整Pod的其他Host开销。
 type ProcessExit struct {
 	ProtocolVersion uint32           `json:"protocol_version"`
@@ -46,8 +49,17 @@ type ProcessExit struct {
 }
 
 func (e ProcessExit) Validate() error {
-	if e.ProtocolVersion != 1 || e.Identity.Validate() != nil || e.BirthClaim.Validate() != nil || e.StateClaim.Validate() != nil || control.ValidateIncarnation(e.LaunchNonce) != nil || !digestValid(e.CommandSHA256) || e.ProcessID == 0 || e.RecordSequence == 0 || !digestValid(e.RecordSHA256) || control.ValidateID(e.ContainerID, "original Runner container") != nil {
+	if e.Identity.Validate() != nil || e.BirthClaim.Validate() != nil || e.StateClaim.Validate() != nil || control.ValidateIncarnation(e.LaunchNonce) != nil || !digestValid(e.CommandSHA256) || e.RecordSequence == 0 || !digestValid(e.RecordSHA256) || control.ValidateID(e.ContainerID, "original Runner container") != nil {
 		return fmt.Errorf("invalid original QEMU process exit")
+	}
+	if e.ProtocolVersion == 2 {
+		if e.ProcessID != 0 || e.ExitCode != 0 || e.Signal != 0 {
+			return fmt.Errorf("never-started QEMU cannot carry a child wait result")
+		}
+		return nil
+	}
+	if e.ProtocolVersion != 1 || e.ProcessID == 0 {
+		return fmt.Errorf("invalid original QEMU wait version or PID")
 	}
 	if e.Signal == 0 && (e.ExitCode < 0 || e.ExitCode > 255) || e.Signal != 0 && (e.Signal < 1 || e.Signal > 127 || e.ExitCode != -1) {
 		return fmt.Errorf("invalid original child wait result")
@@ -157,6 +169,7 @@ func (r *Runner) launchContainer(ctx context.Context) (string, error) {
 // RunQEMU由实际Runner入口使用，完整持有Start/Wait的同一个exec.Cmd。启动
 // 意图先fsync再Start；Wait期间不持VM文件锁，不阻塞正常内存串行执行。父进程
 // 被杀或Wait未得到原ProcessState时不补造退出证据，容量继续保留供受控恢复。
+// 调用方须独占cmd，不能另行Start/Wait或并发修改；该对象只交给此函数使用。
 func (r *Runner) RunQEMU(ctx context.Context, cmd *exec.Cmd) error {
 	digest, err := r.validateProcessCommand(cmd)
 	if err != nil {
@@ -180,10 +193,18 @@ func (r *Runner) RunQEMU(ctx context.Context, cmd *exec.Cmd) error {
 		return err
 	}
 	if err := ctx.Err(); err != nil {
-		return err
+		// 原启动意图已同步，但本调用明确还没进入Start。即使调用者已取消，
+		// 仍用独立有界上下文先保存关闭屏障；不能只退出并遗留永久容量持有。
+		return r.finishProcess(launch, 2, 0, 0, 0, err)
 	}
 	if err := cmd.Start(); err != nil {
-		return err
+		// os/exec在Start成功时才返回Process；仍显式核两项防止以后封装或
+		// Go实现变化把“可能已启动”写成NoStart。绝不调用远程PID/CRI猜测。
+		// fork/exec失败由os.StartProcess同步处理，不留下可运行的QEMU。
+		if cmd.Process != nil || cmd.ProcessState != nil {
+			return errors.Join(err, fmt.Errorf("failed QEMU Start retained a process; controlled recovery required"))
+		}
+		return r.finishProcess(launch, 2, 0, 0, 0, err)
 	}
 	waitErr := cmd.Wait()
 	if cmd.ProcessState == nil || cmd.ProcessState.Pid() != cmd.Process.Pid || cmd.Process.Pid <= 0 || uint64(cmd.Process.Pid) > math.MaxUint32 {
@@ -193,15 +214,22 @@ func (r *Runner) RunQEMU(ctx context.Context, cmd *exec.Cmd) error {
 	if !ok || !wait.Exited() && !wait.Signaled() {
 		return errors.Join(waitErr, fmt.Errorf("original QEMU child was not reaped"))
 	}
-	// 本地关闭先于网络且独立于调用者取消。原pending/结果一字不改；信号
-	// 退出仍是退出事实，不能据它把原resize标成Completed/NoEffect。
-	closeCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 	signal := int32(0)
 	if wait.Signaled() {
 		signal = int32(wait.Signal())
 	}
-	exited, closeErr := r.recordProcessExit(closeCtx, launch, uint32(cmd.Process.Pid), int32(wait.ExitStatus()), signal)
+	return r.finishProcess(launch, 1, uint32(cmd.Process.Pid), int32(wait.ExitStatus()), signal, waitErr)
+}
+
+// finishProcess只接收本地同步启动/Wait流程的结论，不对外暴露“上报已停止”入口。
+// 锁序为原Runner文件锁→完整启动来源/原WAL→关闭文件fsync，释放文件锁后才
+// 发布原不可变CM。关闭文件是执行屏障，不改内存Pending/Last/Sequence；启动
+// 失败也不能把尚未查明的旧resize伪造为Completed/NoEffect。文件失败不发布，
+// API失败只重发同一原文；即使调用者取消也不重启QEMU或删除来源。
+func (r *Runner) finishProcess(launch processLaunch, version uint32, pid uint32, code, signal int32, cause error) error {
+	closeCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	exited, closeErr := r.recordProcessExit(closeCtx, launch, version, pid, code, signal)
 	if closeErr == nil {
 		// 只重发同一不可变退出事实，绝不重启QEMU或重发内存动作。API
 		// 短暂故障/CREATE丢回复可在退出宽限内恢复，超时保留本地事实。
@@ -216,10 +244,10 @@ func (r *Runner) RunQEMU(ctx context.Context, cmd *exec.Cmd) error {
 			}
 		}
 	}
-	return errors.Join(waitErr, closeErr)
+	return errors.Join(cause, closeErr)
 }
 
-func (r *Runner) recordProcessExit(ctx context.Context, launch processLaunch, pid uint32, code, signal int32) (ProcessExit, error) {
+func (r *Runner) recordProcessExit(ctx context.Context, launch processLaunch, version uint32, pid uint32, code, signal int32) (ProcessExit, error) {
 	var exited ProcessExit
 	err := r.engine.withRecordState(ctx, true, func(state *record, s *lockedState) error {
 		actual, err := s.readProcessFile("process-launch.json")
@@ -231,7 +259,7 @@ func (r *Runner) recordProcessExit(ctx context.Context, launch processLaunch, pi
 		if err != nil {
 			return err
 		}
-		exited = ProcessExit{ProtocolVersion: 1, Identity: r.birth.Identity, BirthClaim: r.engine.binding, StateClaim: r.birth.StateClaim, LaunchNonce: launch.Nonce, CommandSHA256: launch.CommandSHA256, ProcessID: pid, ExitCode: code, Signal: signal, RecordSequence: state.Sequence, RecordSHA256: SourceDigest(raw), ContainerID: launch.ContainerID}
+		exited = ProcessExit{ProtocolVersion: version, Identity: r.birth.Identity, BirthClaim: r.engine.binding, StateClaim: r.birth.StateClaim, LaunchNonce: launch.Nonce, CommandSHA256: launch.CommandSHA256, ProcessID: pid, ExitCode: code, Signal: signal, RecordSequence: state.Sequence, RecordSHA256: SourceDigest(raw), ContainerID: launch.ContainerID}
 		if err := exited.Validate(); err != nil {
 			return err
 		}

@@ -77,6 +77,9 @@ func (s *Service) terminalRunner(ctx context.Context, d domain, pod *core.Pod, p
 	if err != nil {
 		return none, none, "", err
 	}
+	// 来源可以是同一Start/Wait的v1，也可以是Runner原调用证实未启动的v2；
+	// 校验器逐版拒绝伪造PID。两者都只涉及QEMU，不能跳过整Pod终态核验，
+	// 也不能收养另一个容器/重启代次来归还原Node成本。
 	matched := false
 	for _, status := range pod.Status.ContainerStatuses {
 		if status.Name == "neonvm-runner" && status.RestartCount == 0 && status.ContainerID == exited.ContainerID {
@@ -84,7 +87,7 @@ func (s *Service) terminalRunner(ctx context.Context, d domain, pod *core.Pod, p
 		}
 	}
 	if !matched {
-		return none, none, "", fmt.Errorf("original stopped Runner container differs from child wait proof")
+		return none, none, "", fmt.Errorf("original stopped Runner container differs from launch/termination proof")
 	}
 	exitRef := budget.ObjectRef{Name: exitCM.Name, UID: string(exitCM.UID)}
 	digest := vmguard.SourceDigest([]byte(exitCM.Data[vmguard.ClaimKey]))

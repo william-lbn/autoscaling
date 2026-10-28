@@ -49,6 +49,13 @@ func TestSchedulerExitWaitChildHelper(t *testing.T) {
 // Kube夹具提供；不是QEMU/KVM、真实apiserver/RBAC或物理Host回收验收。
 func retiredRunnerFixture(t *testing.T) (*Service, *dsgatest.SchedulerAPI, NodeConfig, *kubefake.Clientset, *core.Pod) {
 	t.Helper()
+	return retiredRunnerStartFixture(t, false)
+}
+
+// failedStart只替代进程创建结果：Runner/关闭文件/来源发布/Scheduler/Node CAS
+// 仍走同一生产路径。不存在QEMU的结论来自实际exec.Start错误，而非构造退出CM。
+func retiredRunnerStartFixture(t *testing.T, failedStart bool) (*Service, *dsgatest.SchedulerAPI, NodeConfig, *kubefake.Clientset, *core.Pod) {
+	t.Helper()
 	s, f, n := schedulerFixture(t)
 	pod := legacyVM(t, f)
 	mode, mount := vmv1.CpuScalingModeSysfs, true
@@ -100,7 +107,21 @@ func retiredRunnerFixture(t *testing.T) (*Service, *dsgatest.SchedulerAPI, NodeC
 	args := append([]string{"-test.run=^TestSchedulerExitWaitChildHelper$", "--"}, runner.QMPArguments()...)
 	cmd := exec.Command(program, args...)
 	cmd.Env = append(os.Environ(), "DSGA_SCHEDULER_WAIT_CHILD=1")
-	require.NoError(t, runner.RunQEMU(context.Background(), cmd))
+	if failedStart {
+		require.NoError(t, os.Remove(program))
+		err = runner.RunQEMU(context.Background(), cmd)
+		require.Error(t, err)
+		require.Nil(t, cmd.Process)
+		birthCM, birthErr := combined.ConfigMaps(store.Binding().Namespace).Get(context.Background(), vmguard.BindingName(store.Binding()), metav1.GetOptions{})
+		require.NoError(t, birthErr)
+		birth, ref, birthErr := vmguard.InspectBirthForExit(birthCM, store.Binding(), nil)
+		require.NoError(t, birthErr)
+		exited, exitErr := vmguard.ReadProcessExit(context.Background(), combined, store.Binding(), birth, ref)
+		require.NoError(t, exitErr)
+		require.EqualValues(t, 2, exited.ProtocolVersion)
+	} else {
+		require.NoError(t, runner.RunQEMU(context.Background(), cmd))
+	}
 	f.Mutate(func(f *dsgatest.SchedulerAPI) {
 		p := f.Pods["testing/runner"]
 		started := p.Status.ContainerStatuses[0].State.Running.StartedAt
@@ -111,6 +132,47 @@ func retiredRunnerFixture(t *testing.T) (*Service, *dsgatest.SchedulerAPI, NodeC
 		pod = p.DeepCopy()
 	})
 	return s, f, n, claims, pod
+}
+
+func TestSchedulerNeverStartedRunnerRetiresOnlyAfterCompletePodTermination(t *testing.T) {
+	s, f, n, _, pod := retiredRunnerStartFixture(t, true)
+	ctx := context.Background()
+	d := s.domains[n.Binding.NodeName]
+	before, err := d.store.Load(ctx)
+	require.NoError(t, err)
+	f.Mutate(func(f *dsgatest.SchedulerAPI) {
+		// Runner的NoStart只能结论QEMU没有出生，不能代替其他容器终态。
+		p := f.Pods["testing/runner"]
+		p.Spec.Containers = append(p.Spec.Containers, core.Container{Name: "remaining-sidecar"})
+		p.Status.ContainerStatuses = append(p.Status.ContainerStatuses, core.ContainerStatus{Name: "remaining-sidecar", ContainerID: "containerd://sidecar", State: core.ContainerState{Running: &core.ContainerStateRunning{StartedAt: metav1.Now()}}})
+	})
+	require.Error(t, s.retirePod(ctx, d, pod))
+	after, err := d.store.Load(ctx)
+	require.NoError(t, err)
+	require.Equal(t, before.State(), after.State(), "NoStart不能提前释放整Pod成本")
+	f.Mutate(func(f *dsgatest.SchedulerAPI) {
+		p := f.Pods["testing/runner"]
+		sidecar := &p.Status.ContainerStatuses[1]
+		started := sidecar.State.Running.StartedAt
+		sidecar.State = core.ContainerState{Terminated: &core.ContainerStateTerminated{ContainerID: sidecar.ContainerID, StartedAt: started, FinishedAt: metav1.Now()}}
+		f.LoseNodeReply = true
+	})
+	require.Error(t, s.retirePod(ctx, d, pod), "Node CAS丢回复不能直接移除保护")
+	f.Mutate(func(f *dsgatest.SchedulerAPI) {
+		require.Contains(t, f.Pods["testing/runner"].Finalizers, hostguard.PodProtectionFinalizer)
+	})
+	require.NoError(t, s.retirePod(ctx, d, pod))
+	after, err = d.store.Load(ctx)
+	require.NoError(t, err)
+	require.Empty(t, *after.State().Placements)
+	require.Empty(t, after.State().Holds)
+	f.Mutate(func(f *dsgatest.SchedulerAPI) {
+		p := f.Pods["testing/runner"]
+		require.NotContains(t, p.Finalizers, hostguard.PodProtectionFinalizer)
+		require.Equal(t, p.Annotations[hostguard.RetirementAnnotation], f.VMs["testing/vm"].Annotations[hostguard.VMRetirementAnnotation])
+		require.NoError(t, hostguard.InspectRetiredPod(&f.Node, p))
+	})
+	require.NoError(t, s.retirePod(ctx, d, pod), "原NoStart关闭幂等，不增加墓碑或重复退还")
 }
 
 func TestSchedulerWholePodRetirementRecoversOriginalUnknownWrites(t *testing.T) {
