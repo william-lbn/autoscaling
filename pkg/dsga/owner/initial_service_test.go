@@ -43,6 +43,10 @@ type initialServicePG struct {
 	posts, queries, resizePosts int
 	loseBefore, loseAfter       bool
 	store                       *journal.Store
+	// 新PG已派发接管窗口单独启用；旧首次/取消矩阵保持原响应行为。
+	loseResize    bool
+	resizeReceipt *control.ControlResponse
+	resizeQueries int
 }
 
 func (p *initialServicePG) shared() control.SharedCostResponse {
@@ -93,6 +97,31 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 		p.mu.Unlock()
 		response.Observed = s
 		*response.Receipt.Result = s
+		p.mu.Lock()
+		p.resizeReceipt = &response
+		lose := p.loseResize
+		p.loseResize = false
+		p.mu.Unlock()
+		if lose {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		pgReply(w, response)
+		return
+	case "/dsg/v1/resize/status", "/dsg/v1/resize/cancel":
+		var query control.Query
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&query))
+		p.mu.Lock()
+		defer p.mu.Unlock()
+		require.Equal(t, p.request.Key, query.Key)
+		require.NotNil(t, p.resizeReceipt, "查询不能凭当前数值补造原PG终态")
+		response := *p.resizeReceipt
+		response.Observed = p.current().Observed
+		response.Receipt.Disposition = control.ReceiptReplayed
+		if r.URL.Path == "/dsg/v1/resize/cancel" {
+			response.Receipt.Disposition = control.ReceiptTooLate
+		}
+		p.resizeQueries++
 		pgReply(w, response)
 		return
 	case "/dsg/v1/admission", "/dsg/v1/admission/status":
@@ -206,10 +235,15 @@ func TestProductionInitialOwnerTransferObservesLostVMReplyAndRecoversActualCapac
 	productionInitialService(t, "owner-transfer-after-vm")
 }
 
+func TestProductionInitialOwnerTransferObservesLostPGReplyAndSettlesActualBudget(t *testing.T) {
+	productionInitialService(t, "owner-transfer-after-pg")
+}
+
 func productionInitialService(t *testing.T, mode string) {
 	t.Helper()
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
-	cancelled := mode == "cancel" || mode == "cancel-before-vm" || ownerTransfer
+	pgTakeover := mode == "owner-transfer-after-pg"
+	cancelled := mode == "cancel" || mode == "cancel-before-vm" || ownerTransfer && !pgTakeover
 	api, store, coord := newAPI(t)
 	client := vmCore(t)
 	api.mu.Lock()
@@ -266,7 +300,10 @@ func productionInitialService(t *testing.T, mode string) {
 	var transfer *businessOwnerTransfer
 	if ownerTransfer {
 		transfer = newBusinessOwnerTransfer(t, api, coord, store, resourceConfig)
-		transfer.effectBeforeTakeover = mode == "owner-transfer-after-vm"
+		transfer.effectBeforeTakeover = mode == "owner-transfer-after-vm" || pgTakeover
+		if pgTakeover {
+			transfer.takeoverAction = journal.ResizePG
+		}
 		run = transfer.run
 	}
 	err = run(ctx, func(ctx context.Context, session *Session) error {
@@ -283,7 +320,7 @@ func productionInitialService(t *testing.T, mode string) {
 		for _, a := range after.Observed.Arrays {
 			after.CurrentMainAndArraysUpperBytes += a.CommittedUpperBytes
 		}
-		pg := &initialServicePG{mu: sync.Mutex{}, request: request, before: before, after: after, resized: false, gate: nil, posts: 0, queries: 0, resizePosts: 0, loseBefore: false, loseAfter: false, store: store}
+		pg := &initialServicePG{mu: sync.Mutex{}, request: request, before: before, after: after, resized: false, gate: nil, posts: 0, queries: 0, resizePosts: 0, loseBefore: false, loseAfter: false, store: store, loseResize: false, resizeReceipt: nil, resizeQueries: 0}
 		var nativeFence http.HandlerFunc
 		if transfer != nil {
 			nativeFence = pg.ownerFence(t)
@@ -312,7 +349,14 @@ func productionInitialService(t *testing.T, mode string) {
 			return nil
 		}
 		var successorHost *hostexec.Publisher
-		if cancelled {
+		if pgTakeover {
+			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
+			for range 2 {
+				progress, err := worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress)
+			}
+		} else if cancelled {
 			for range 2 {
 				progress, err := worker.Advance(ctx)
 				require.NoError(t, err)
@@ -344,6 +388,9 @@ func productionInitialService(t *testing.T, mode string) {
 			require.NoError(t, err)
 		} else {
 			publishVMHost(t, ctx, client, coord, store, session)
+			if pgTakeover {
+				keepPGTakeoverHostOwner(t, ctx, client)
+			}
 		}
 		for _, action := range []journal.Action{journal.ReserveHost, journal.ResizeVM} {
 			progress, err = worker.Advance(ctx)
@@ -372,7 +419,19 @@ func productionInitialService(t *testing.T, mode string) {
 				root.loseReply = true
 				root.mu.Unlock()
 			}
+			if pgTakeover && action == journal.ResizePG {
+				pg.mu.Lock()
+				pg.loseResize = true
+				pg.mu.Unlock()
+			}
 			progress, err = worker.Advance(ctx)
+			if pgTakeover && action == journal.ResizePG {
+				var lost *compute.CallError
+				require.ErrorAs(t, err, &lost)
+				require.True(t, lost.MayHaveExecuted)
+				verifyLostPGTakeoverSettlement(t, ctx, api, client, store, session, resources, worker, config, source, runner, qmp, pg, prepared, transfer)
+				return nil
+			}
 			if cancelled && action == journal.GuestReady {
 				var responseErr *resourceguard.ClientError
 				require.ErrorAs(t, err, &responseErr)

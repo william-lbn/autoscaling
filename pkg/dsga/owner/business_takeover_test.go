@@ -33,6 +33,8 @@ type businessOwnerTransfer struct {
 	active         *businessOwnerRun
 	// 仅第二个窗口：QMP已产生效果且回复丢失，不能走未发送NoEffect。
 	effectBeforeTakeover bool
+	// 同一选主故障入口可在不同真实已派发领域停住；默认仍是既有VM窗口。
+	takeoverAction journal.Action
 }
 
 type businessOwnerRun struct {
@@ -44,7 +46,7 @@ type businessOwnerRun struct {
 
 func newBusinessOwnerTransfer(t *testing.T, api *ownerAPI, coord coordclient.CoordinationV1Interface, store *journal.Store, resources resourceguard.ClientConfig) *businessOwnerTransfer {
 	t.Helper()
-	return &businessOwnerTransfer{t: t, api: api, coord: coord, store: store, resourceConfig: resources, active: nil, effectBeforeTakeover: false}
+	return &businessOwnerTransfer{t: t, api: api, coord: coord, store: store, resourceConfig: resources, active: nil, effectBeforeTakeover: false, takeoverAction: journal.ResizeVM}
 }
 
 func (f *businessOwnerTransfer) start(ctx context.Context) *businessOwnerRun {
@@ -111,7 +113,7 @@ func (f *businessOwnerTransfer) takeover(t *testing.T, ctx context.Context, old 
 	t.Helper()
 	before, err := f.store.Load(ctx)
 	require.NoError(t, err)
-	require.Equal(t, journal.Unconfirmed, budgetStep(t, f.store, journal.ResizeVM).Phase)
+	require.Equal(t, journal.Unconfirmed, budgetStep(t, f.store, f.takeoverAction).Phase)
 	nextRun := f.start(ctx)
 	// 两Elector先真实竞争同一租约；旧owner仍续约时后继不能拿到Session。
 	select {
@@ -160,6 +162,10 @@ func (f *businessOwnerTransfer) takeover(t *testing.T, ctx context.Context, old 
 	require.ErrorIs(t, err, ErrLeadershipLost)
 	_, err = worker.ReplayVMOriginal(ctx, before.State().Active.Request.Key)
 	require.ErrorIs(t, err, ErrLeadershipLost, "旧Session迟到重放不能写原Runner选择")
+	if f.takeoverAction == journal.ResizePG {
+		_, err = worker.ReplayOriginal(ctx, before.State().Active.Request.Key)
+		require.ErrorIs(t, err, ErrLeadershipLost, "旧Session不能迟到重新派发原PG")
+	}
 	resources.CloseIdleConnections()
 	worker.CloseIdleConnections()
 	nextResources, err := next.NewResourceWorker(ctx, f.resourceConfig)
