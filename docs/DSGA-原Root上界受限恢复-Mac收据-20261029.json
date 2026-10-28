@@ -1,0 +1,531 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Mac Darwin arm64",
+  "go_version": "go version go1.25.13 darwin/arm64",
+  "rust_toolchain": "1.88.0-aarch64-apple-darwin",
+  "sdkroot": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.4.sdk",
+  "phase": "显式单调恢复Root原已持有约束，覆盖原来源、SDK未知和Neon正式路由",
+  "phase_completed": true,
+  "overall_core_complete": false,
+  "prior_autoscaling": "17d7c744a5a2cc11b34b600c8c3f7cac7c504929",
+  "source": {
+    "autoscaling": {
+      "runtime_commit": "81a4a2b3255fa032dc6743a69a2e7e7fb9baf608",
+      "source_sha256": {
+        "pkg/dsga/owner/resource.go": "63335dda1c246b1469b1062b8720e12477eb199404839dd3c90a7be749b1890f",
+        "pkg/dsga/owner/resource_test.go": "7f58389239138028d1263250014cd2034cfa110e64eb51ef9bd7c6b5e13974d2",
+        "pkg/dsga/resourceguard/client.go": "998f96422e08b5611f73fce6da3397e7f3cd98e50559fada833c11a610593a5a",
+        "pkg/dsga/resourceguard/http.go": "64062c8c6fe6f8706fb34a1316dee825eda047d5006b66a32a7a0fe80f8968e8",
+        "pkg/dsga/resourceguard/repair.go": "986e87f747484473c2890371ad5b2be2b07c2a11f4cb7c0a02058644649beb02",
+        "pkg/dsga/resourceguard/repair_client.go": "c1912313d691b3aedc8dc0332989f559055f3008ee5745a8aa0213bb7b700ce7",
+        "pkg/dsga/resourceguard/repair_http_test.go": "fa443b8589985338f53bba03a865cc37eeb72211257600d16e928224d261b252",
+        "pkg/dsga/resourceguard/repair_test.go": "e19dabea8bdb6159999eaf7eafac731cc34b129bb183abe5fe5f8f308e93cd17"
+      }
+    },
+    "neon": {
+      "runtime_commit": "6d71ad239dfa038adbcd26e659a1ee6ae665f23b",
+      "source_sha256": {
+        "compute_tools/src/http/routes/dsg.rs": "a44a00f44b1c5af38efe811020e41595264b8df2b5a5a9bde1467a5ca3260a8e",
+        "compute_tools/src/http/routes/dsg_resource.rs": "8a11077a3930d5e888a1cb30d4c5a7981a3b7f0b6dfb455887cae5c3287d3c8a",
+        "compute_tools/tests/dsg_http.rs": "86b5caf5a4d3b1021eb1e80ae333c621aea954f52ac769c503bd6bef199b6219"
+      }
+    }
+  },
+  "autoscaling_branch": "codex/dsga-autoscaling-20261019",
+  "neon_branch": "codex/dsga-neon-v3-20261019",
+  "pg17_unchanged": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "protocols_unchanged": {
+    "vm_model": 9,
+    "node_model": 8,
+    "runner_record": 2,
+    "resource_record_and_view": 1
+  },
+  "go_source_files": 8,
+  "rust_source_files": 3,
+  "adopted_go_tests": [
+    {
+      "log": "dsga-held-repair-final.jsonl",
+      "sha256": "191710e8b25e88e82b7212b210423cadede10d91245727b2a76df91dc1f21016",
+      "process_exit_code": 0,
+      "adoption_scope": "全部新修复/Owner选择范围",
+      "top_level_tests": 13,
+      "passed_records_including_parents": 39,
+      "failed": 0,
+      "skipped": 0,
+      "packages": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "elapsed_seconds": 5.516
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "elapsed_seconds": 1.935
+        }
+      ],
+      "test_mapping": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairHTTPRejectsChangedScopeAndStrictSelectionBeforeWrites",
+          "elapsed_seconds": 0.15
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairClientLostReplyObservesOriginalWithoutResending",
+          "elapsed_seconds": 0.18
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairClientKeepsSameOriginalPendingForItsOwnObserve",
+          "elapsed_seconds": 0.15
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairHTTPNewOwnerSelectsSameSourceWithoutRewritingOldCommand",
+          "elapsed_seconds": 0.18
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairClientFreezesOriginalLimitSliceBeforeRPC",
+          "elapsed_seconds": 0.13
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRestoresOnlyOriginalUpperAndKeepsSourceAcrossOwner/false",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRestoresOnlyOriginalUpperAndKeepsSourceAcrossOwner/true",
+          "elapsed_seconds": 0.14
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRestoresOnlyOriginalUpperAndKeepsSourceAcrossOwner",
+          "elapsed_seconds": 0.22
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/memory-decrease",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/pool-decrease",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/hstate",
+          "elapsed_seconds": 0.09
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/swap-limit",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/swap-current",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/surplus",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/overcommit",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/occupancy",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/guest-small",
+          "elapsed_seconds": 0.07
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/task-drift",
+          "elapsed_seconds": 0.09
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/tasks-exceeded",
+          "elapsed_seconds": 0.09
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/pool-accounting",
+          "elapsed_seconds": 0.07
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/foreign-guest",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/foreign-process",
+          "elapsed_seconds": 0.07
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/wrong-floor",
+          "elapsed_seconds": 0.07
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/wrong-source",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/unknown-next",
+          "elapsed_seconds": 0.09
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/same-values-new-source",
+          "elapsed_seconds": 0.09
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/missing-state",
+          "elapsed_seconds": 0.07
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite",
+          "elapsed_seconds": 1.53
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairPartialFailureRetainsSameUpperAndRestartsExplicitly",
+          "elapsed_seconds": 0.11
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairBootstrapCannotAdoptUnrecordedProcess",
+          "elapsed_seconds": 0.07
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairPersistenceFailureCannotReachKernelWrite",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairKeepsFileLockAcrossKernelAndOwnerFence",
+          "elapsed_seconds": 0.15
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairNeverRepairsImmutableSystemPlacementOrLimits/system-max",
+          "elapsed_seconds": 0.09
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairNeverRepairsImmutableSystemPlacementOrLimits/system-current",
+          "elapsed_seconds": 0.1
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairNeverRepairsImmutableSystemPlacementOrLimits/system-swap",
+          "elapsed_seconds": 0.09
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairNeverRepairsImmutableSystemPlacementOrLimits/pid1",
+          "elapsed_seconds": 0.09
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairNeverRepairsImmutableSystemPlacementOrLimits/root-userspace",
+          "elapsed_seconds": 0.1
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestHeldRepairNeverRepairsImmutableSystemPlacementOrLimits",
+          "elapsed_seconds": 0.46
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "test": "TestResourceOwnerRepairsHeldOnlyAfterExplicitSourceSelectionAndObservesLostReply",
+          "elapsed_seconds": 0.15
+        }
+      ]
+    },
+    {
+      "log": "dsga-held-repair-affected-final.jsonl",
+      "sha256": "4187d68d88e2cec8a3186eea615de21a338d5218ef357d7b84dff603386567bf",
+      "process_exit_code": 0,
+      "adoption_scope": "仅未变ResourceHTTP/Owner，排除TestHeldRepair和新增Owner修复项，避免重复累计",
+      "top_level_tests": 9,
+      "passed_records_including_parents": 17,
+      "failed": 0,
+      "skipped": 0,
+      "packages": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "elapsed_seconds": 4.822
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "elapsed_seconds": 2.996
+        }
+      ],
+      "test_mapping": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/zero_epoch",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/foreign_vm",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/foreign_instance",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/initialization_scope",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/wrong_audience",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/expired",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/future",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/overlong_lifetime",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites",
+          "elapsed_seconds": 0.09
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestResourceHTTPBoundFenceRetainsOriginalAcrossLargeEpoch",
+          "elapsed_seconds": 0.06
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestResourceHTTPClientUnknownHasNoAutomaticReplayAndRestoresOriginal",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+          "test": "TestResourceHTTPClientLostCompletionUsesReadbackAndRejectsIncompleteEvidence",
+          "elapsed_seconds": 0.06
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "test": "TestResourceOwnerPersistsGuestBeforeFenceAndNeverRediscoversBound",
+          "elapsed_seconds": 0.17
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "test": "TestResourceOwnerRejectsOrphanEffectsBeforeBindingOrFence",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "test": "TestResourceOwnerPGDispatchRequiresKnownCapsButOriginalQueryRemainsReachable",
+          "elapsed_seconds": 0.47
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "test": "TestResourceOwnerLostBindingReplyDoesNotDispatchFenceOrRediscover",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "test": "TestResourceOwnerRestoresFullUnknownFromJournalInsteadOfClearing",
+          "elapsed_seconds": 0.25
+        }
+      ]
+    }
+  ],
+  "go_totals": {
+    "top_level_tests": 22,
+    "passed_records_including_parents": 56,
+    "failed": 0,
+    "skipped": 0,
+    "distinct_packages": 2
+  },
+  "adopted_rust_tests": [
+    {
+      "log": "dsga-held-repair-rust-router-sdk.log",
+      "sha256": "7def7aa9946df4eb35133f475ede7358e10cead1abc1fb6088b6666a896be279",
+      "process_exit_code": 0,
+      "test": "resource_routes_require_control_scope_and_frozen_instance_before_uds",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "log": "dsga-held-repair-rust-uds.log",
+      "sha256": "7bfb972e8653d292ffe7640992b8d3803418935ded4b3a27bb7d79c3e683a203",
+      "process_exit_code": 0,
+      "test": "http::routes::dsg_resource::tests::fixed_resource_proxy_preserves_original_and_closes_connection",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    }
+  ],
+  "checks": [
+    {
+      "check": "go vet resourceguard/owner",
+      "log": "dsga-held-repair-vet-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "process_exit_code": 0
+    },
+    {
+      "check": "incremental golangci-lint relative to 17d7c744a5a2cc11b34b600c8c3f7cac7c504929",
+      "log": "dsga-held-repair-lint-final2.log",
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "process_exit_code": 0,
+      "issues": 0,
+      "full_repository_clean_claimed": false
+    },
+    {
+      "check": "cargo clippy compute_tools --lib --test dsg_http --no-deps",
+      "log": "dsga-held-repair-rust-clippy.log",
+      "sha256": "69c4c1b5b7a56fd0513a9d04b2a20124255bbff6cfc705ce7832d50f7ba0171f",
+      "process_exit_code": 0,
+      "warnings_in_changed_rust_files": 0,
+      "existing_remote_storage_warnings": 27,
+      "all_dependencies_warning_free_claimed": false
+    },
+    {
+      "check": "rustfmt --edition 2024 --config skip_children=true --check on three changed Rust files",
+      "process_exit_code": 0
+    }
+  ],
+  "linux_compile_only": [
+    {
+      "file": "dsga-held-repair-linux-amd64.test",
+      "sha256": "fd8a72227d6361acb3a951cc4fe27c4d1a86486700eb020c81797731721487dc",
+      "bytes": 11740555,
+      "file_description": "ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, BuildID[sha1]=ea915db3f9a0fed6d65271a5378f09207ef20b0c, with debug_info, not stripped",
+      "build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-held-repair-linux-amd64.test: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/pkg/dsga/resourceguard.test\n\tmod\tgithub.com/neondatabase/autoscaling\t(devel)\t\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n",
+      "compile_log": "dsga-held-repair-linux-amd64-final-build.log",
+      "compile_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compile_exit_code": 0,
+      "executed": false,
+      "source_bytes_match_runtime_commit": "81a4a2b3255fa032dc6743a69a2e7e7fb9baf608",
+      "note": "go test -c交叉编译测试ELF，无VCS revision stamp；编译前后源码逐文件对本准确提交核验。不是镜像或Linux执行。"
+    },
+    {
+      "file": "dsga-held-repair-linux-arm64.test",
+      "sha256": "c06c8e92191b469ed487b16c207da7e5fedba2f7f6cc41d70a8dae8b4fa5b92c",
+      "bytes": 10996118,
+      "file_description": "ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=f7342391766fddeb4da4402069d3aa345dec7755, with debug_info, not stripped",
+      "build_info": "/Users/williamlee/github/neon-self-dev/build/dsga-held-repair-linux-arm64.test: go1.25.13\n\tpath\tgithub.com/neondatabase/autoscaling/pkg/dsga/resourceguard.test\n\tmod\tgithub.com/neondatabase/autoscaling\t(devel)\t\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=arm64\n\tbuild\tGOOS=linux\n\tbuild\tGOARM64=v8.0\n",
+      "compile_log": "dsga-held-repair-linux-arm64-final-build.log",
+      "compile_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compile_exit_code": 0,
+      "executed": false,
+      "source_bytes_match_runtime_commit": "81a4a2b3255fa032dc6743a69a2e7e7fb9baf608",
+      "note": "go test -c交叉编译测试ELF，无VCS revision stamp；编译前后源码逐文件对本准确提交核验。不是镜像或Linux执行。"
+    }
+  ],
+  "failed_attempts": [
+    {
+      "log": "dsga-held-repair-initial.jsonl",
+      "sha256": "ad0c61bbba21b489776212c617fd9a0b051585a67bce1ee6bb44b4249d6709fe",
+      "reason": "测试未用import导致初次build失败，移除后重新编译",
+      "adopted_as_success": false
+    },
+    {
+      "log": "dsga-held-repair-domain.jsonl",
+      "sha256": "0eaa40d3a7e2505b5ba28c397c5efbceeeec288bb12e2ae8b2d8153bab22e20e",
+      "reason": "新有限pids夹具缺启动前任务观测，先在Bootstrap被拒，改用已有taskFixture，未放宽生产规则",
+      "adopted_as_success": false
+    },
+    {
+      "log": "dsga-held-repair-affected.jsonl",
+      "sha256": "21127f9d6717dfbea83e8e9f3b8fe9c2ae67a59a5e756f56b555c2bfca206d17",
+      "reason": "含同一有限pids夹具错误及合法请求校验标签错误；不采用成功",
+      "adopted_as_success": false
+    },
+    {
+      "log": "dsga-held-repair-affected-fixed.jsonl",
+      "sha256": "e6b3d7eb90bdef959b438cec68a9977a37a71106631f2fb0216ccaf03e6dc988",
+      "reason": "修复请求校验标签误含空格，被ValidateID拒绝；正向用例失败后改为held-repair",
+      "adopted_as_success": false
+    },
+    {
+      "log": "dsga-held-repair-lint.log",
+      "sha256": "16fa3c64447cadb00b9d4061742fdb64b768050efc5bc01e4e992020f0ce232e",
+      "reason": "初轮7项errorlint/exhaustruct/predeclared修正",
+      "adopted_as_success": false
+    },
+    {
+      "log": "dsga-held-repair-lint-extra.log",
+      "sha256": "139e0acb7167498c43d856867ebee5eed12c6209a7d6d64eb589ca59f33a0ab5",
+      "reason": "新增故障夹具octal格式修正为0o700",
+      "adopted_as_success": false
+    },
+    {
+      "log": "dsga-held-repair-rust-router.log",
+      "sha256": "5f8d17c54d63b67bdf28864d18ad71b57fd06adc1f85c97c005a90684951811f",
+      "reason": "旧链接器不能解析系统SDK27的arm64e.x1，显式Xcode14.4 SDK后通过",
+      "adopted_as_success": false
+    }
+  ],
+  "intermediate_results_not_added": [
+    "dsga-held-repair-extra.jsonl",
+    "dsga-held-repair-lint-fixed.log",
+    "dsga-held-repair-lint-final.log",
+    "dsga-held-repair-vet.log",
+    "未采用范围的dsga-held-repair-affected-final.jsonl记录"
+  ],
+  "commands_for_reproduction": [
+    "GOCACHE=/Users/williamlee/github/neon-self-dev/build/go-cache GOPROXY=off GOSUMDB=off /Users/williamlee/go/bin/go test -race -count=1 -json ./pkg/dsga/resourceguard ./pkg/dsga/owner -run \"^Test(HeldRepair|ResourceOwnerRepairsHeldOnlyAfterExplicitSourceSelectionAndObservesLostReply)\"",
+    "GOCACHE=/Users/williamlee/github/neon-self-dev/build/go-cache GOPROXY=off GOSUMDB=off /Users/williamlee/go/bin/go test -race -count=1 -json ./pkg/dsga/resourceguard ./pkg/dsga/owner -run \"^Test(ResourceHTTP|ResourceOwner)\"",
+    "GOCACHE=/Users/williamlee/github/neon-self-dev/build/go-cache GOPROXY=off GOSUMDB=off /Users/williamlee/go/bin/go vet ./pkg/dsga/resourceguard ./pkg/dsga/owner",
+    "GOCACHE=/Users/williamlee/github/neon-self-dev/build/go-cache GOLANGCI_LINT_CACHE=/Users/williamlee/github/neon-self-dev/build/golangci-lint-cache GOPROXY=off GOSUMDB=off /Users/williamlee/github/neon-self-dev/build/tools/golangci-lint run --new-from-rev=17d7c744a5a2cc11b34b600c8c3f7cac7c504929 ./pkg/dsga/resourceguard ./pkg/dsga/owner",
+    "CARGO_HOME=/Users/williamlee/github/neon-self-dev/build/cargo CARGO_NET_OFFLINE=true CARGO_BUILD_JOBS=4 SDKROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.4.sdk RUSTC=/Users/williamlee/.rustup/toolchains/1.88.0-aarch64-apple-darwin/bin/rustc RUSTDOC=/Users/williamlee/.rustup/toolchains/1.88.0-aarch64-apple-darwin/bin/rustdoc /Users/williamlee/.rustup/toolchains/1.88.0-aarch64-apple-darwin/bin/cargo test --locked --offline -p compute_tools resource_routes_require_control_scope_and_frozen_instance_before_uds --test dsg_http",
+    "同上Rust环境：cargo test --locked --offline -p compute_tools --lib fixed_resource_proxy_preserves_original_and_closes_connection",
+    "同上Rust环境：cargo clippy --locked --offline --no-deps -p compute_tools --lib --test dsg_http",
+    "CGO_ENABLED=0 GOOS=linux GOARCH=amd64（及arm64）GOCACHE=/Users/williamlee/github/neon-self-dev/build/go-cache GOPROXY=off GOSUMDB=off /Users/williamlee/go/bin/go test -c ./pkg/dsga/resourceguard -o <对应测试ELF>"
+  ],
+  "fixture_boundaries": [
+    "生产Root/SDK/Owner、Mac文件锁/fsync、Ed25519/TLS与Rust Router/UDS实际执行",
+    "Linux内核、PG进程、Kube/Lease、UDS peer有明确夹具，不是真实Linux或产品E2E",
+    "两个Linux ELF只编译，不构建镜像、不执行K8s"
+  ],
+  "remaining_core_code": [
+    "缺原来源/资格/Root日志、无法单调恢复的Root/系统漂移以及异常/跨boot来源闭合",
+    "安全降低normal与后台/私有持续上界",
+    "真正owner切换的完整业务组合、Start/init失败及无Wait、迁移/跨boot受控恢复",
+    "Monitor/自动策略、可信请求取消重放和全部写者/CPU隔离",
+    "PG17核心完整归档后PG18再PG16独立移植/发行接入及专属测试"
+  ],
+  "goal_status": "active",
+  "production_release": false
+}
