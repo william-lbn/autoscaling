@@ -27,11 +27,34 @@ type ReconcileInputs struct {
 // 真正协调器须在Start/发送/Record/Finish前后重读原来源，并由同VM UID/RV
 // CAS线性化；此纯函数不跨网络加锁，也不将结构验证冒充平台资格认证。
 func Reconcile(i ReconcileInputs) (ReconciledCapacity, error) {
+	return reconcile(i, nil)
+}
+
+func reconcile(i ReconcileInputs, initial *Initial) (ReconciledCapacity, error) {
 	var c ReconciledCapacity
 	p, s, root, out, host := i.Prepared, i.Shared, i.Root, i.Outside, i.Host
+	incarnation := out.Incarnation
+	system, transition, safety := out.SystemOutsidePG, out.Transition, out.Safety
+	profile := out.ResidualProfileID
+	var noOutside OutsideReservation
+	var noRef ObjectRef
+	if initial == nil {
+		if out.ValidateSource() != nil || out.VMShrinkPermit || !out.HoldUntilExplicitSettlement || out.Identity != p.Identity || control.ValidateIncarnation(incarnation) != nil {
+			return c, fmt.Errorf("reconciled outside lost original qualified operation")
+		}
+	} else {
+		// 固定仍被原Initial实际覆盖的Guest，不以同数值root上限猜测
+		// 原出生/命令相同；MatchCurrent逐项绑定完整原聚合与PG容量。
+		if out != noOutside || i.OutsideClaim != noRef || initial.PGAggregate.Identity != p.Identity || initial.MatchCurrent(s, root, i.IssuerEpoch, i.VM.MemoryBytes(), i.GuestUsableMemoryBytes) != nil {
+			return c, fmt.Errorf("reconciled initial inputs differ from original live boot budget")
+		}
+		incarnation = initial.Incarnation
+		system, transition, safety = initial.SystemOutsidePG, initial.Transition, initial.Safety
+		profile = "qualified-" + initial.Qualification.SHA256
+	}
 	if p.ValidateFor(p.Request, p.Identity) != nil || s.ValidateFor(p.Request.Key.Instance) != nil || root.Validate() != nil || root.Identity != p.Identity ||
 		i.IssuerEpoch < p.Request.Key.IssuerEpoch || s.Observed.IssuerFloorEpoch != i.IssuerEpoch || s.Observed.LowBuffers != s.Observed.HighBuffers ||
-		out.ValidateSource() != nil || out.VMShrinkPermit || !out.HoldUntilExplicitSettlement || out.Identity != p.Identity || control.ValidateIncarnation(out.Incarnation) != nil || host.ValidateFor(p, out.Incarnation) != nil || host.ProtocolVersion != 2 || host.HostOverheadBytes == 0 ||
+		host.ValidateFor(p, incarnation) != nil || host.ProtocolVersion != 2 || host.HostOverheadBytes == 0 ||
 		i.VM.Validate() != nil || i.VM.Request.Key.Instance != p.Request.Key.Instance || s.Observed.MaximumBuffers != p.Shared.Observed.MaximumBuffers || s.StartupMainUpperBytes != p.Shared.StartupMainUpperBytes || s.StartupArraysUpperBytes != p.Shared.StartupArraysUpperBytes {
 		return c, fmt.Errorf("reconciled inputs lost original native, Guest or reservation context")
 	}
@@ -43,7 +66,7 @@ func Reconcile(i ReconcileInputs) (ReconciledCapacity, error) {
 		limits.MemoryMaxBytes, limits.OutsideUpperBytes, limits.HugePools = root.Held.MemoryMaxBytes, root.Held.OutsideUpperBytes, root.Held.HugePools
 	}
 	outside := uint64(0)
-	for _, b := range []Bound{out.SystemOutsidePG, out.Transition, out.Safety} {
+	for _, b := range []Bound{system, transition, safety} {
 		if uint64(b.UpperBytes) > math.MaxUint64-outside {
 			return c, fmt.Errorf("reconciled outside commitments overflow")
 		}
@@ -69,8 +92,12 @@ func Reconcile(i ReconcileInputs) (ReconciledCapacity, error) {
 		VMBeforeMemoryBytes: p.VMBeforeMemoryBytes, VMMemoryBytes: i.VM.MemoryBytes(), GuestUsableMemoryBytes: i.GuestUsableMemoryBytes,
 		CapacityGeneration: s.Observed.CapacityGeneration, Buffers: s.Observed.HighBuffers, MaximumBuffers: s.Observed.MaximumBuffers,
 		StartupMainUpperBytes: s.StartupMainUpperBytes, StartupArraysUpperBytes: s.StartupArraysUpperBytes, RetainedSharedUpperBytes: s.CurrentMainAndArraysUpperBytes, PGOperation: nil,
-		PGAggregate: root.Bound, RootSHA256: digest, OutsideClaim: i.OutsideClaim, OutsideRequest: out.Request, ResidualProfileID: out.ResidualProfileID,
-		SystemOutsidePG: out.SystemOutsidePG, Transition: out.Transition, Safety: out.Safety, HostClaim: i.HostClaim, HostReservationID: host.SourceID, VM: i.VM,
+		PGAggregate: root.Bound, RootSHA256: digest, OutsideClaim: i.OutsideClaim, OutsideRequest: out.Request, ResidualProfileID: profile,
+		SystemOutsidePG: system, Transition: transition, Safety: safety, HostClaim: i.HostClaim, HostReservationID: host.SourceID, VM: i.VM, InitialOutside: initial,
+	}
+	if initial != nil {
+		c.ProtocolVersion = 2
+		c.GuestUsableMemoryBytes = initial.GuestUsableMemoryBytes
 	}
 	if s.Observed.Operation != nil {
 		operation := *s.Observed.Operation
