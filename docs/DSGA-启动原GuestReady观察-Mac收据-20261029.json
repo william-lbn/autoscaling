@@ -1,0 +1,387 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Darwin arm64",
+  "source_commit": "4f85588c5f29c822a91917d89a99e3605243b145",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "source_sha256": {
+    "pkg/dsga/owner/business_takeover_test.go": "2ce4226802403406604ead9aeac8b3504321635159c3615047ef32b5838e8c1c",
+    "pkg/dsga/owner/control_recovery_original_test.go": "1773c22e355d1250536bafcb3b5611b2595629227f6fc60159e97df37ee75ca1",
+    "pkg/dsga/owner/control_resource.go": "08b77e292d8084660ac851ff51789084084ecbebd813dc9298607fc2cd33bcec",
+    "pkg/dsga/owner/guest_business_takeover_test.go": "3d3fe94e4c20149d6c5365a7ca36714d9a0b1c204bb68ab3c96416573a4fa993",
+    "pkg/dsga/owner/guest_ready_test.go": "113fce82d6dc342a2fbec5cab4d7ca6c3a80a7bd719bc2125e785f66f9427951",
+    "pkg/dsga/owner/initial_service_test.go": "20b5b89e07d53e1be72a3c6e178036cc480e8e28b8b61e050e98a73e0e2bbf5f",
+    "pkg/dsga/owner/resource.go": "a3601734243c0f008b3818e9b0d6441d120f0a32e813b3b9b69a029a61f59021",
+    "pkg/agent/dsga.go": "b44a137495cd5ad0d9c9f9016c254968763e7488f64edfb7092789c99e4b77d3",
+    "pkg/dsga/hostscheduler/retirement.go": "6b383af18a629d2c08332f27121c527de26cb690663ed61ceb4667438b0b0b32",
+    "pkg/dsga/hostscheduler/retirement_test.go": "2a4afcab6fb9bbe390262900f8a90671a210b0a31bee9a3e9daafaa65cc3a7cd"
+  },
+  "mac_race_adopted": {
+    "packages": 1,
+    "top_level_tests": 10,
+    "test_records": 33,
+    "fail": 0,
+    "skip": 0,
+    "mapping": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestResourceRecoveryObservesOnlyRetainedGuestReadyBeforePG/complete",
+        "outcome": "pass",
+        "elapsed_seconds": 1.47,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestResourceRecoveryObservesOnlyRetainedGuestReadyBeforePG/root-original-missing",
+        "outcome": "pass",
+        "elapsed_seconds": 0.93,
+        "log": "dsga-startup-original-negative-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestResourceRecoveryObservesOnlyRetainedGuestReadyBeforePG/partial-effect",
+        "outcome": "pass",
+        "elapsed_seconds": 0.91,
+        "log": "dsga-startup-original-negative-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestResourceRecoveryObservesOnlyRetainedGuestReadyBeforePG",
+        "outcome": "pass",
+        "elapsed_seconds": 1.84,
+        "log": "dsga-startup-original-negative-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestResourceRecoveryRejectsSDKPendingWithoutOuterDispatch",
+        "outcome": "pass",
+        "elapsed_seconds": 0.07,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestResourceRecoveryBeforePGPreservesLostReplyAndHandsOff",
+        "outcome": "pass",
+        "elapsed_seconds": 0.29,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestResourceRecoveryCancellationKeepsOriginalBindingAndNeverRepairs",
+        "outcome": "pass",
+        "elapsed_seconds": 0.1,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestResourceRecoveryCannotAdoptUnknownOrOrphanBootstrap/unknown-bootstrap",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestResourceRecoveryCannotAdoptUnknownOrOrphanBootstrap/orphan-command",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestResourceRecoveryCannotAdoptUnknownOrOrphanBootstrap",
+        "outcome": "pass",
+        "elapsed_seconds": 0.1,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestResourceRecoveryRunStopCancelsActiveManagementAndRetainsUnknown",
+        "outcome": "pass",
+        "elapsed_seconds": 0.12,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/grow",
+        "outcome": "pass",
+        "elapsed_seconds": 0.73,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/root-reply-lost",
+        "outcome": "pass",
+        "elapsed_seconds": 1.22,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/start-reply-lost",
+        "outcome": "pass",
+        "elapsed_seconds": 1.24,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/incomplete-budget",
+        "outcome": "pass",
+        "elapsed_seconds": 0.39,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/runner-drift",
+        "outcome": "pass",
+        "elapsed_seconds": 0.67,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/pg-drift",
+        "outcome": "pass",
+        "elapsed_seconds": 0.61,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/shrink",
+        "outcome": "pass",
+        "elapsed_seconds": 0.85,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/shrink-unsupported",
+        "outcome": "pass",
+        "elapsed_seconds": 0.54,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/omit-hstate",
+        "outcome": "pass",
+        "elapsed_seconds": 0.45,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/root-empty",
+        "outcome": "pass",
+        "elapsed_seconds": 1.1,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/lower-normal-cap",
+        "outcome": "pass",
+        "elapsed_seconds": 0.45,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/tasks-finite",
+        "outcome": "pass",
+        "elapsed_seconds": 0.76,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/tasks-changed",
+        "outcome": "pass",
+        "elapsed_seconds": 0.45,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/tasks-reply-lost",
+        "outcome": "pass",
+        "elapsed_seconds": 1.19,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/system-finite",
+        "outcome": "pass",
+        "elapsed_seconds": 0.75,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/system-changed",
+        "outcome": "pass",
+        "elapsed_seconds": 0.45,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/system-reply-lost",
+        "outcome": "pass",
+        "elapsed_seconds": 1.23,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/system-drift",
+        "outcome": "pass",
+        "elapsed_seconds": 0.55,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder",
+        "outcome": "pass",
+        "elapsed_seconds": 13.63,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestGuestReadyConcurrentOwnerCallsDispatchOnlyOneCompleteCommand",
+        "outcome": "pass",
+        "elapsed_seconds": 0.76,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestPrivateControlSocketRecoversRootBeforePGExists",
+        "outcome": "pass",
+        "elapsed_seconds": 0.14,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestProductionInitialOwnerTransferObservesLostGuestReplyWithoutSendingPG",
+        "outcome": "pass",
+        "elapsed_seconds": 69.31,
+        "log": "dsga-startup-original-takeover-first.jsonl"
+      }
+    ],
+    "package_executions": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 21.087,
+        "log": "dsga-startup-original-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 4.335,
+        "log": "dsga-startup-original-negative-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 71.049,
+        "log": "dsga-startup-original-takeover-first.jsonl"
+      }
+    ],
+    "deduplication": "按包/测试名采用最新记录；final仅增强两个负向子场景，complete保留first。父记录是测试树元数据，不是独立E2E，分段执行不宣称一次完整重跑。"
+  },
+  "scope": "Session/原SDK/UID-RV WAL/Root启动恢复/正式领域执行器/真实client-go失租时限。Root内核、Kube、PG、QMP为显式peer，beginGuest前驱为领域夹具。",
+  "quality": {
+    "vet": {
+      "command": "go vet ./pkg/dsga/owner",
+      "exit_code": 0,
+      "log": "dsga-startup-original-vet-final.log"
+    },
+    "incremental_lint": {
+      "relative_to": "45c88cdb0987390536ec7e680aea4908b86f34ca",
+      "packages": [
+        "./pkg/dsga/owner"
+      ],
+      "exit_code": 0,
+      "issues": 0,
+      "log": "dsga-startup-original-lint-final2.log"
+    },
+    "first_lint": "2项测试格式/等价switch建议已修；未将失败计通过。首次业务测试全部通过。",
+    "semantic_equivalence": "最终import/if-switch仅语法；已有未改场景不重跑。负向场景增加完整首轮响应断言后单独实测。"
+  },
+  "linux_agent_cross_build": {
+    "amd64": {
+      "artifact": "dsga-startup-original-agent-linux-amd64",
+      "sha256": "031a04c88d049731135349e39e4e0f024cfe468a4dbdb71d680c1cbd71d6e250",
+      "size": 80678650,
+      "elf_machine": 62,
+      "build_log": "dsga-startup-original-build-amd64.log",
+      "build_info": "dsga-startup-original-agent-linux-amd64.buildinfo",
+      "vcs_revision": "4f85588c5f29c822a91917d89a99e3605243b145",
+      "vcs_modified": true,
+      "only_uncommitted_file_at_build": "AGENTS.md",
+      "exit_code": 0,
+      "executed": false,
+      "warning": "离线模块stat缓存写入权限警告；退出0，保留原日志，不称无警告构建。"
+    },
+    "arm64": {
+      "artifact": "dsga-startup-original-agent-linux-arm64",
+      "sha256": "bc6dc58d4a4135280e3d88e0fb88a1ec21e0cfb8baaffb24400fb6ebe27b6fb7",
+      "size": 76262043,
+      "elf_machine": 183,
+      "build_log": "dsga-startup-original-build-arm64.log",
+      "build_info": "dsga-startup-original-agent-linux-arm64.buildinfo",
+      "vcs_revision": "4f85588c5f29c822a91917d89a99e3605243b145",
+      "vcs_modified": true,
+      "only_uncommitted_file_at_build": "AGENTS.md",
+      "exit_code": 0,
+      "executed": false,
+      "warning": "离线模块stat缓存写入权限警告；退出0，保留原日志，不称无警告构建。"
+    }
+  },
+  "log_sha256": {
+    "dsga-startup-original-first.jsonl": {
+      "sha256": "3106e0c8b96af6d20271fc30632d4c30178046385fa249fcecb798e9cdf9913f",
+      "size": 55987
+    },
+    "dsga-startup-original-negative-final.jsonl": {
+      "sha256": "c907f64bb05fb719914fb551972b8a0aa6d49ac92b258a27df7f429e9fed340c",
+      "size": 5214
+    },
+    "dsga-startup-original-takeover-first.jsonl": {
+      "sha256": "d3637219e2480bb5601da862893f8b1676cd381cad102c4f864832edff04261a",
+      "size": 11036
+    },
+    "dsga-startup-original-lint-first.log": {
+      "sha256": "7f2f1afa33208c6a6aab0f130e50e782db654f4958a7fad40611865e5af20b28",
+      "size": 326
+    },
+    "dsga-startup-original-lint-final.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "size": 10
+    },
+    "dsga-startup-original-lint-final2.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "size": 10
+    },
+    "dsga-startup-original-vet-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "dsga-startup-original-build-amd64.log": {
+      "sha256": "ab32c6ab58de2903a3316aaaf752968c277beded836154ee59cd15a65a208d18",
+      "size": 197
+    },
+    "dsga-startup-original-agent-linux-amd64.buildinfo": {
+      "sha256": "75fee1b0459b2b774d10d6212d71682be7d942a944a8b5f950a2a8c6154fa7f5",
+      "size": 8561
+    },
+    "dsga-startup-original-build-arm64.log": {
+      "sha256": "3f7a814da0699633e5d08c9cbdc798cfd41df04cdcb2646aa160092bce60f572",
+      "size": 197
+    },
+    "dsga-startup-original-agent-linux-arm64.buildinfo": {
+      "sha256": "d5373712b8ea4703fafc30705cf8e97b36d68eb8a452fb4e88d5fd66c1dca0e3",
+      "size": 8563
+    }
+  },
+  "fixed_pg17": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "not_covered": [
+    "Linux/K8s/KVM/NeonVM/HugeTLB/真实物理回收/性能",
+    "缺坏Root来源、孤立效果或异常限额的受控关闭",
+    "安全降低normal及后台/私有持续上界",
+    "分区旧进程、完整出生前失败、Runner无Wait及跨boot/迁移",
+    "Monitor/自动策略、全部写者与CPU隔离",
+    "PG18及PG16内核、Neon扩展、构建发行及各自受影响验证"
+  ],
+  "default_enabled": false,
+  "images_built": false,
+  "deployed": false
+}
