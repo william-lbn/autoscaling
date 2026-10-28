@@ -59,15 +59,21 @@ func getRunnerCPULimits(ctx context.Context, vm *vmv1.VirtualMachine) (*api.VCPU
 	if err != nil {
 		return nil, err
 	}
+	// CPU失败会持续重查，错误状态也必须关闭body，避免每轮泄漏连接。
+	// 回包只有一个CPU数值，4KiB为协议防御上界，不能对故障peer无限读入。
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("getRunnerCgroup: unexpected status %s", resp.Status)
 	}
 
-	body, err := io.ReadAll(resp.Body)
-	defer resp.Body.Close()
+	const maxCPUResponseBytes = 4 * 1024
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxCPUResponseBytes+1))
 	if err != nil {
 		return nil, err
+	}
+	if len(body) > maxCPUResponseBytes {
+		return nil, fmt.Errorf("getRunnerCgroup: CPU response exceeds limit")
 	}
 	var result api.VCPUCgroup
 	err = json.Unmarshal(body, &result)

@@ -540,6 +540,13 @@ func (r *VMReconciler) doReconcile(ctx context.Context, vm *vmv1.VirtualMachine)
 			// update Node name where runner working
 			vm.Status.Node = vmRunner.Spec.NodeName
 
+			// 受管Running和Scaling必须共用原Runner内存来源及分域状态处理。
+			// 不能在下面legacy CPU查询失败时提前退出，丢掉已确认的内存更新；
+			// CPU失败仍保留专属未确认Condition，绝不据此宣布整个VM已完成。
+			if control.Managed(vm.Annotations) {
+				return r.managedScaling(ctx, vm)
+			}
+
 			// get cgroups CPU details from runner pod
 			cgroupUsage, err := getRunnerCPULimits(ctx, vm)
 			if err != nil {
