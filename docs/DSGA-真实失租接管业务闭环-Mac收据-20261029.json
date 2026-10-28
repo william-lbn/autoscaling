@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Mac Darwin arm64",
+  "phase": "真实失租接管后的原VM取消、实际预算、Host结清和后继业务链",
+  "phase_completed": true,
+  "overall_core_complete": false,
+  "previous_autoscaling": "aebb209a327692c85d048362f48f64d18299e212",
+  "code_commit": "2501160db2524aacd1daa09f9311ce5250032ed6",
+  "runtime_behavior_changed": false,
+  "autoscaling_branch": "codex/dsga-autoscaling-20261019",
+  "neon_branch": "codex/dsga-neon-v3-20261019",
+  "pg17_unchanged": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "source_sha256": {
+    "pkg/dsga/owner/business_takeover_test.go": "193ea569032a557a011cbc4e6192affb5819250fec560508dece46e7e75ec0cd",
+    "pkg/dsga/owner/owner_test.go": "b33f85aa89659f6deff8bb88e47a994ffa34bf0fc0d34ff2c71c9fe47bc76c9f",
+    "pkg/dsga/owner/pg_test.go": "a778c979c781b15881ee0342a845d343e7dccf46e6d9fd2c698e181623ae229a",
+    "pkg/dsga/owner/initial_service_test.go": "ed414edd90a5268ac85f6c685e1b9bbcd52aeda67ecd6870ec3ecc603484ebfc",
+    "pkg/dsga/owner/initial_cancel_test.go": "92a0568d897020888415176b8eb689bbf5864f2aab33b12d7d0155e6c59a0f7a"
+  },
+  "adopted_tests": {
+    "log": "dsga-business-takeover-final.jsonl",
+    "process_exit_code": 0,
+    "top_level_tests": 4,
+    "passed_records_including_parents": 4,
+    "failed": 0,
+    "skipped": 0,
+    "test_mapping": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestProductionInitialOwnerTransferCancelsOriginalVMAndCompletesSuccessor",
+        "elapsed_seconds": 175.02
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestRenewalLossCancelsAndJoinsRegisteredWorker",
+        "elapsed_seconds": 0.61
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestContendingElectorsTransferMonotonicEpochWithoutReset",
+        "elapsed_seconds": 1.2
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "test": "TestPGWorkerInitialDiscoveryOrRetainedHighWaterBinding",
+        "elapsed_seconds": 0.31
+      }
+    ],
+    "packages": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "elapsed_seconds": 179.587
+      }
+    ]
+  },
+  "vet": {
+    "packages": 1,
+    "exit_code": 0
+  },
+  "incremental_lint": {
+    "relative_to": "aebb209a327692c85d048362f48f64d18299e212",
+    "includes_new_staged_test": true,
+    "exit_code": 0,
+    "issues": 0,
+    "whole_repository_clean_claim": false
+  },
+  "logs": {
+    "dsga-business-takeover-final.jsonl": {
+      "sha256": "b3e867d51e28f2d82db24c67a8b3988af1c81cc8ff4e2751e48214ca33878aa2"
+    },
+    "dsga-business-takeover-vet-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "dsga-business-takeover-lint-staged.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47"
+    }
+  },
+  "intermediate_not_counted": {
+    "log": "dsga-business-takeover-first.jsonl",
+    "sha256": "96a6cba0966b967624591a13d6ff9f07fae342c765cfbab851c9f8f9810ee66f",
+    "result": "passed 175.53s using explicit old Session cancellation; final version strengthens to actual renew failures and lost takeover CAS reply",
+    "counted_as_final_success": false
+  },
+  "lease_timings_seconds": {
+    "duration": 30,
+    "renew_deadline": 20,
+    "retry": 2,
+    "unchanged_from_production_defaults": true
+  },
+  "test_total_deadline_seconds": 240,
+  "boundaries": [
+    "two production Electors and client-go over typed HTTP Lease UID/RV fixture; only old holder renewals fail, no Lease deletion/manual Owner edits",
+    "initial admission -> old ResizeVM Start unknown -> renew loss -> same Lease takeover and lost CAS response -> new Session cancels old Key -> actual budget/Host settlement -> successor full Grow -> next Shrink Prepare",
+    "old Active/InitialHeld/HighWater/BudgetHeld/CapacityHeld survive takeover; old Session and new-owner old-epoch replay rejected",
+    "root and PG floors advance through authenticated production clients, PG/root/QMP/Kube/qualification peers remain explicit fixtures",
+    "business calls sequential in test goroutine using real registered Sessions; callback joins independently covered by existing renewal test",
+    "only this owner transition window is closed, not all PG/Guest unknown, partitioned process, early-init/no-Wait/cross-boot/migration combinations",
+    "no runtime protocol/PG/Rust modification, no new Linux execution/cross-compile/images/deployment",
+    "overall PG17 core remains incomplete; PG18 then PG16 follow its complete archive"
+  ],
+  "commands_for_reproduction": [
+    "GOCACHE=<workspace>/build/go-cache GOPROXY=off GOSUMDB=off go test -race -count=1 -json ./pkg/dsga/owner -run \"^Test(ProductionInitialOwnerTransferCancelsOriginalVMAndCompletesSuccessor|ContendingElectorsTransferMonotonicEpochWithoutReset|RenewalLossCancelsAndJoinsRegisteredWorker|PGWorkerInitialDiscoveryOrRetainedHighWaterBinding)$\"",
+    "same offline cache: go vet ./pkg/dsga/owner",
+    "same cache: golangci-lint run --new-from-rev=aebb209a327692c85d048362f48f64d18299e212 ./pkg/dsga/owner (include new test in index)"
+  ]
+}
