@@ -1,0 +1,1357 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "platform": "Darwin arm64",
+  "source_commit": "371949821689adf6012d93d4c13d0cecaab99069",
+  "root_primitive_commit": "a463acb5edae60f5ec6ef2cc226fe6c6f073b416",
+  "neon_route_commit": "b2a3eb131237f8ab6f589bf80da7cc829187e633",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "source_sha256": {
+    "pkg/agent/dsga.go": "185092672a613249a821d3b19a8a59cd9b2724e5c7b757e25d0bc18ef0672fb4",
+    "pkg/dsga/owner/business_takeover_test.go": "2dd2baa3eb199f057c329ffff1cb3ad36d8e2ec6c4a3d506653278eff4ec7892",
+    "pkg/dsga/owner/control_recovery_original_test.go": "bb71d24905fbdaf1dfd1df7df3ad476619e6cbba02a4112e25d9a75a5d14a528",
+    "pkg/dsga/owner/guest_business_takeover_test.go": "2de412d4c0ea26c11cd717b9e79ef3a9b03a857845330644189001bce15c1066",
+    "pkg/dsga/owner/guest_ready_test.go": "68d9729f491ea32b552ea8358d1926acd2b4f5a0ae36047bd50dd11a4ae5efef",
+    "pkg/dsga/owner/guest_unreceived_test.go": "a9c356007389e2383fb54d64901cb145daf36233ab5d2efb598b30dd9b6c26b0",
+    "pkg/dsga/owner/initial_service_test.go": "bc4faa1d8c7b1d32343dfe9e92d6d0f1fe3d8dc427fa09a2069581d8cc4f2a67",
+    "pkg/dsga/owner/resource.go": "ce019ed2a869316485be1e99dd9e59a74ff127ce92d131bb068b4373279c8321",
+    "pkg/dsga/resourceexec/cancel.go": "7a67e32f801f71327c6dd43397e43d75009dfe8b0b15912271ad520f4753fd84",
+    "pkg/dsga/resourceexec/executor.go": "c5ff50c49cae21576865e47cccfb3b0832a75e34a8ba264019c34608ddd5ccb7",
+    "pkg/dsga/resourceguard/cancel.go": "91d58286e85371eebe726973c98c77005575c553a6a4e2654bd01e5e7582a07e",
+    "pkg/dsga/resourceguard/cancel_client.go": "a1f9ebc71f58ffa1adfdc1de1b34ee51b792fefc8363bb93a916ab10d21a0184",
+    "pkg/dsga/resourceguard/cancel_http_test.go": "fae6bcd4ee7a2021c43b2c5a5c08a886fc5aa2dd5ab624886c9efb8bfff86878",
+    "pkg/dsga/resourceguard/cancel_test.go": "5f3eb8577687c172206264580a6b93dadacdfc23f3d5da93d791305fc068938b",
+    "pkg/dsga/resourceguard/guard.go": "c19d876b9db33f9b8b4a0d7d41f3417d5caaf8717f33a658531c1f6b8c8d92a5",
+    "pkg/dsga/resourceguard/http.go": "bbdb019e9d5e5a02e178873aa086a5a4f190e85be303add8421fa7af1ab8aa56",
+    "pkg/dsga/resourceguard/view.go": "97f8e5b0b348c9693de56704765afc68df5f289b8c065aed967b888712c1f936"
+  },
+  "neon_source_sha256": {
+    "compute_tools/src/http/routes/dsg.rs": "3c552bfcd284a97d12b04fb259133dc82e0abc413b37841cd25c468c748e2717",
+    "compute_tools/src/http/routes/dsg_resource.rs": "dbd9f911fb25d0d107330ad1cfd1abe991ee10ee36cc7517895889b96e4c0aaf",
+    "compute_tools/tests/dsg_http.rs": "8cf610c860d1532effd867a38b6ecab549c586ad1190dd88737202141d93f435"
+  },
+  "mac_race_adopted": {
+    "top_level_tests": 59,
+    "test_records": 146,
+    "fail": 0,
+    "skip": 0,
+    "mapping": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.14,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestBoundedBootstrapHoldsActualLimitsBeforePGBirth"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.09,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestBoundedBootstrapUnknownRequiresOriginalReadbackOrReplay"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.02,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestBoundedBootstrapRefusesExistingPGOrBareJournal"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.12,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationClientRetainsLostReplyAndOnlyReadsOriginalBarrier/same-owner"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.12,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationClientRetainsLostReplyAndOnlyReadsOriginalBarrier/new-owner"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.24,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationClientRetainsLostReplyAndOnlyReadsOriginalBarrier"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.07,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationClientDoesNotAcceptAbsenceOrAnotherOriginal"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.11,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationDurablyRejectsLateApplyAndAdvancesRevision/bootstrap"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.15,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationDurablyRejectsLateApplyAndAdvancesRevision/held"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.16,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationDurablyRejectsLateApplyAndAdvancesRevision/takeover"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.16,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationDurablyRejectsLateApplyAndAdvancesRevision/consecutive-cancel"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.57,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationDurablyRejectsLateApplyAndAdvancesRevision"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.07,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/received"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.06,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/partial"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/birth-drift"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/held-drift"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/epoch"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/revision-gap"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/wrong-guest"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/changed-tasks"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.06,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/no-bootstrap"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects/cancelled-context"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.54,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.06,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationPersistenceFailureDoesNotIssueNoEffect"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.12,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationWaitsForInFlightApplyInsteadOfDeclaringNoEffect"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.12,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceCancellationHTTPAuthenticatesCurrentOwnerAndOriginalEpoch"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.1,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceRecordedDeliveryKeepsUnknownAndRequiresExplicitChoice"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.09,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceGuardDurableUnknownAndExplicitOriginalReplay"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.1,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceGuardNewOwnerRetainsOriginalReadback"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.1,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceGuardInFlightWriteKeepsCrossProcessFence"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.02,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceGuardBoundsIdentityAndStrictPersistence"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceGuardRejectsStateSymlinkAndPublicPermissions"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceGuardMissingStateCannotResetFloor"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceGuardProcIdentityParsing"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/foreign_instance"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/initialization_scope"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/wrong_audience"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/expired"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/future"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/overlong_lifetime"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/zero_epoch"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites/foreign_vm"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.06,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.06,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceHTTPBoundFenceRetainsOriginalAcrossLargeEpoch"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceHTTPClientUnknownHasNoAutomaticReplayAndRestoresOriginal"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.06,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceHTTPClientLostCompletionUsesReadbackAndRejectsIncompleteEvidence"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/bootstrap"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.07,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/runtime-held"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/actual-drift"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.17,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.14,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestLegacyPendingNormalDecreaseRemainsObservableWithoutReplay"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestProcessBirthPersistsBeforeExecAndNeverAdoptsCallerPID"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.11,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestProcessBirthHTTPAndClientUseOriginalRecord"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestProcessBirthUIDAndInvocationRejectSpecialOrPrivilegedProcess"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.01,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceSourceStrictBytesAndBounds"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceSourceManagedModeCannotFallBackOnResidualState"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.03,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceSourceBirthBindsOriginalBudget"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.12,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairHTTPRejectsChangedScopeAndStrictSelectionBeforeWrites"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.18,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairClientLostReplyObservesOriginalWithoutResending"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.14,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairClientKeepsSameOriginalPendingForItsOwnObserve"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.17,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairHTTPNewOwnerSelectsSameSourceWithoutRewritingOldCommand"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.12,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairClientFreezesOriginalLimitSliceBeforeRPC"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRestoresOnlyOriginalUpperAndKeepsSourceAcrossOwner/false"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.14,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRestoresOnlyOriginalUpperAndKeepsSourceAcrossOwner/true"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.22,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRestoresOnlyOriginalUpperAndKeepsSourceAcrossOwner"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/memory-decrease"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/pool-decrease"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/hstate"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/swap-limit"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/swap-current"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/surplus"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/overcommit"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/occupancy"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/guest-small"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/task-drift"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/tasks-exceeded"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/pool-accounting"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/foreign-guest"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/foreign-process"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.1,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/wrong-floor"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.09,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/wrong-source"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.16,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/unknown-next"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.15,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/same-values-new-source"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.08,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite/missing-state"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 1.69,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairRejectsUnknownDriftAndChangedOriginalBeforeWrite"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.13,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairPartialFailureRetainsSameUpperAndRestartsExplicitly"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.07,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairBootstrapCannotAdoptUnrecordedProcess"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.09,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairPersistenceFailureCannotReachKernelWrite"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.15,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairKeepsFileLockAcrossKernelAndOwnerFence"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.1,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairNeverRepairsImmutableSystemPlacementOrLimits/system-max"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.1,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairNeverRepairsImmutableSystemPlacementOrLimits/system-current"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.1,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairNeverRepairsImmutableSystemPlacementOrLimits/system-swap"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.1,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairNeverRepairsImmutableSystemPlacementOrLimits/pid1"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.1,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairNeverRepairsImmutableSystemPlacementOrLimits/root-userspace"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.49,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestHeldRepairNeverRepairsImmutableSystemPlacementOrLimits"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.12,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestSystemPlacementDurableBeforeBirthAndImmutableThroughRuntime"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestSystemPlacementPartialAndPersistenceFailureKeepOriginalIntent/partial"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestSystemPlacementPartialAndPersistenceFailureKeepOriginalIntent/persistence"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.05,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestSystemPlacementPartialAndPersistenceFailureKeepOriginalIntent/readback"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.15,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestSystemPlacementPartialAndPersistenceFailureKeepOriginalIntent"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.04,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestSystemScopeStrictLegacyAndUnsupportedSources"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestSystemBootPlacementOrdersDeduplicatesAndBoundsCancellation"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestSystemBootStatDistinguishesKernelThreadsAndZeroTickInit"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.07,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestSystemBootstrapPartialCapRetainsUnknownAndRequiresOriginalReplay"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.04,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestFiniteTasksBootstrapWALUnknownAndOriginalReadback"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.15,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestFiniteTasksFreezeAcrossRuntimeAndRecovery"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestFiniteTasksStrictEvidenceAndLegacyEncoding/absent"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestFiniteTasksStrictEvidenceAndLegacyEncoding/zero-max"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestFiniteTasksStrictEvidenceAndLegacyEncoding/unlimited"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestFiniteTasksStrictEvidenceAndLegacyEncoding/drift"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestFiniteTasksStrictEvidenceAndLegacyEncoding/exceeded"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.03,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestFiniteTasksStrictEvidenceAndLegacyEncoding"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestFiniteTasksControllerSelection/legacy"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestFiniteTasksControllerSelection/finite"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestFiniteTasksControllerSelection/missing-pids"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestFiniteTasksControllerSelection/missing-memory"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestFiniteTasksControllerSelection"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.1,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceViewPreservesUnknownInsteadOfBorrowingHeldCompletion"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 0.07,
+        "log": "dsga-resource-cancel-guard-final.jsonl",
+        "test": "TestResourceViewDiscoveryAndClientDoNotSilentlyRebind"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 1.36,
+        "log": "dsga-resource-cancel-handoff-first.jsonl",
+        "test": "TestUnreceivedGuestStartupHandoffReplaysOrCancelsOriginal/replay"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 1.65,
+        "log": "dsga-resource-cancel-handoff-first.jsonl",
+        "test": "TestUnreceivedGuestStartupHandoffReplaysOrCancelsOriginal/cancel"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 1.79,
+        "log": "dsga-resource-cancel-handoff-first.jsonl",
+        "test": "TestUnreceivedGuestStartupHandoffReplaysOrCancelsOriginal/cancel-reply-lost"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 1.62,
+        "log": "dsga-resource-cancel-handoff-first.jsonl",
+        "test": "TestUnreceivedGuestStartupHandoffReplaysOrCancelsOriginal/cancel-record-lost"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 6.42,
+        "log": "dsga-resource-cancel-handoff-first.jsonl",
+        "test": "TestUnreceivedGuestStartupHandoffReplaysOrCancelsOriginal"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 65.14,
+        "log": "dsga-resource-cancel-takeover-first.jsonl",
+        "test": "TestProductionInitialOwnerTransferCancelsUnreceivedGuestAndSettlesActualBudget"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.09,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestResourceRecoveryRejectsSDKPendingWithoutOuterDispatch"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.06,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestRetainedPGRecoveryCannotRaceAnExistingExecutionLoop"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.76,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/grow"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 1.23,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/root-reply-lost"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 1.1,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/start-reply-lost"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.36,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/incomplete-budget"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.68,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/runner-drift"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.62,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/pg-drift"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.87,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/shrink"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.54,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/shrink-unsupported"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.45,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/omit-hstate"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 1.12,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/root-empty"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.47,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/lower-normal-cap"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.75,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/tasks-finite"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.45,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/tasks-changed"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 1.23,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/tasks-reply-lost"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.78,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/system-finite"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.47,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/system-changed"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 1.33,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/system-reply-lost"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 0.62,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder/system-drift"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 13.84,
+        "log": "dsga-resource-cancel-owner-regression.jsonl",
+        "test": "TestGuestReadyWorkerUsesOriginalBudgetAndActualDomainOrder"
+      }
+    ],
+    "package_executions": [
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 9.731,
+        "log": "dsga-resource-cancel-guard-final.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "outcome": "pass",
+        "elapsed_seconds": 2.785,
+        "log": "dsga-resource-cancel-handoff-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 9.224,
+        "log": "dsga-resource-cancel-handoff-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 66.908,
+        "log": "dsga-resource-cancel-takeover-first.jsonl"
+      },
+      {
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "outcome": "pass",
+        "elapsed_seconds": 15.769,
+        "log": "dsga-resource-cancel-owner-regression.jsonl"
+      }
+    ],
+    "adoption": "Guard采用最终v2整包；handoff只采用owner，SDK由Guard最终整包覆盖；takeover和owner-regression完整采用。早期等价子树不重复累计；记录数含父子，不是146次完整产品E2E。最终规范修正、等价抽取和方法重命名后只复核vet/lint，不重复长租约组合。"
+  },
+  "quality": {
+    "vet": {
+      "exit_code": 0,
+      "log": "dsga-resource-cancel-vet-final.log"
+    },
+    "incremental_lint": {
+      "exit_code": 0,
+      "issues": 0,
+      "relative_to": "c7855907e6cd1e1c5d6f0bc11714a440ba3ef3a3",
+      "log": "dsga-resource-cancel-lint-final2.log"
+    },
+    "diff_check_exit_code": 0
+  },
+  "rust": {
+    "commands": [
+      {
+        "name": "fmt",
+        "command": [
+          "/Users/williamlee/.rustup/toolchains/1.88.0-aarch64-apple-darwin/bin/rustfmt",
+          "--edition",
+          "2024",
+          "--config",
+          "skip_children=true",
+          "--check",
+          "compute_tools/src/http/routes/dsg.rs",
+          "compute_tools/src/http/routes/dsg_resource.rs",
+          "compute_tools/tests/dsg_http.rs"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "uds",
+        "command": [
+          "/Users/williamlee/.rustup/toolchains/1.88.0-aarch64-apple-darwin/bin/cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-p",
+          "compute_tools",
+          "--lib",
+          "http::routes::dsg_resource::tests::fixed_resource_proxy_preserves_original_and_closes_connection",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "http",
+        "command": [
+          "/Users/williamlee/.rustup/toolchains/1.88.0-aarch64-apple-darwin/bin/cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-p",
+          "compute_tools",
+          "--test",
+          "dsg_http",
+          "resource_routes_require_control_scope_and_frozen_instance_before_uds",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "exit": 0
+      }
+    ],
+    "tests_passed": 2,
+    "clippy": {
+      "exit_code": 0,
+      "scope": "-p compute_tools --lib",
+      "log": "dsga-resource-cancel-rust-clippy.log",
+      "existing_warnings_preserved": true
+    }
+  },
+  "initial_failures": [
+    "首次lint 11项：errorlint1/exhaustruct9/gci1，已修；最终0 issues。",
+    "首次rustfmt递归命中未改support子模块既有格式，测试尚未启动；最终skip_children=true只核3修改文件通过，两个真实目标测试通过。"
+  ],
+  "linux_cross_build": [
+    {
+      "service": "agent",
+      "arch": "amd64",
+      "source_commit": "371949821689adf6012d93d4c13d0cecaab99069",
+      "exit_code": 0,
+      "executed": false,
+      "artifact": "dsga-resource-cancel-agent-linux-amd64",
+      "sha256": "4d68c230c68070f567adb3e505c0b655adb6c8ef77c3b3241672b96a5ee00c3b",
+      "size": 80705146,
+      "elf_machine": 62,
+      "vcs_modified": true,
+      "only_uncommitted_file": "AGENTS.md"
+    },
+    {
+      "service": "guard",
+      "arch": "amd64",
+      "source_commit": "371949821689adf6012d93d4c13d0cecaab99069",
+      "exit_code": 0,
+      "executed": false,
+      "artifact": "dsga-resource-cancel-guard-linux-amd64",
+      "sha256": "19d9efe03c07d3fa4031fbde59b789b15a260a4fcc0eb10266d2d574e7e14e04",
+      "size": 9005248,
+      "elf_machine": 62,
+      "vcs_modified": true,
+      "only_uncommitted_file": "AGENTS.md"
+    },
+    {
+      "service": "agent",
+      "arch": "arm64",
+      "source_commit": "371949821689adf6012d93d4c13d0cecaab99069",
+      "exit_code": 0,
+      "executed": false,
+      "artifact": "dsga-resource-cancel-agent-linux-arm64",
+      "sha256": "9dba1dfa980e0d9c4576a6d986dfdcb5ec2c14c221d35088e4007f27b2a9104a",
+      "size": 76267899,
+      "elf_machine": 183,
+      "vcs_modified": true,
+      "only_uncommitted_file": "AGENTS.md"
+    },
+    {
+      "service": "guard",
+      "arch": "arm64",
+      "source_commit": "371949821689adf6012d93d4c13d0cecaab99069",
+      "exit_code": 0,
+      "executed": false,
+      "artifact": "dsga-resource-cancel-guard-linux-arm64",
+      "sha256": "e93b8afe6b3bdc2b5c1b6b9dbb4532ac32fdadd637d1bf92640bea7b2fc2445a",
+      "size": 8411861,
+      "elf_machine": 183,
+      "vcs_modified": true,
+      "only_uncommitted_file": "AGENTS.md"
+    }
+  ],
+  "build_notes": "Agent/Root Guard各amd64/arm64共4个ELF仅交叉编译未执行；核ELF架构/VCS/SHA256，唯一所有者AGENTS未提交导致modified=true；离线模块缓存stat权限警告保留。Controller/Runner未改不重编。",
+  "log_sha256": {
+    "dsga-resource-cancel-agent-linux-amd64.buildinfo": {
+      "sha256": "49a0482b7d038d827e3a9326a6228945142d4be05f0e9a9be655b6d10d8a44b7",
+      "size": 8599
+    },
+    "dsga-resource-cancel-agent-linux-amd64.log": {
+      "sha256": "1b01ed3df73ac2b10e783a8fe936230e8b097bd0f26330ae9ed1baa8236d4ab2",
+      "size": 197
+    },
+    "dsga-resource-cancel-agent-linux-arm64.buildinfo": {
+      "sha256": "0cea5c2033d572ed424088f3a909d6ef5c6efa09a6e97f13648e5202475623c3",
+      "size": 8601
+    },
+    "dsga-resource-cancel-agent-linux-arm64.log": {
+      "sha256": "41b603ed75cea776e9fa03cfcc63ee0928b24cb2a7ff4606775ee9aa2adc2cf7",
+      "size": 197
+    },
+    "dsga-resource-cancel-compile-first.jsonl": {
+      "sha256": "a89f3b3732725d008aa78789aa7a7c6902b05df9b75d9bb80236c874c4faacdb",
+      "size": 2912
+    },
+    "dsga-resource-cancel-guard-all.jsonl": {
+      "sha256": "da3fe453cf60f5308809c3f2bdd51b7f1dae384ed3e7967cda3a045dfcb341cb",
+      "size": 123030
+    },
+    "dsga-resource-cancel-guard-final.jsonl": {
+      "sha256": "74356d586dce54ffa46a5f1b26020ba1685a53093344c980cc294bf74ab8de52",
+      "size": 123035
+    },
+    "dsga-resource-cancel-guard-first.jsonl": {
+      "sha256": "28de5501ca30213fcfdc650f475f854541110a66004d28f38dad855f61ebbaa1",
+      "size": 21137
+    },
+    "dsga-resource-cancel-guard-linux-amd64.buildinfo": {
+      "sha256": "c2ec431af21fa7a01485aa47a1901047ead1de760739d53a91e97fd8a77623b2",
+      "size": 774
+    },
+    "dsga-resource-cancel-guard-linux-amd64.log": {
+      "sha256": "30e2c1ddbc429248b83b1f29e8a05f8fee91f52cef8a8d1693c9858f1a787f81",
+      "size": 197
+    },
+    "dsga-resource-cancel-guard-linux-arm64.buildinfo": {
+      "sha256": "2078bf048a71159d6a518cac382723bc2f04ff708a5ff5cd1c11fa1900e00497",
+      "size": 776
+    },
+    "dsga-resource-cancel-guard-linux-arm64.log": {
+      "sha256": "01ff894412f0fc6519a0fc2137c36d7f5306d884bc5a5e8bd5ebc06fc94ede97",
+      "size": 197
+    },
+    "dsga-resource-cancel-handoff-first.jsonl": {
+      "sha256": "3d84e32dbe0827c62fc9f90022f18de7022daf9cce7242a38ba65bc28800fe83",
+      "size": 13680
+    },
+    "dsga-resource-cancel-lint-final.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "size": 10
+    },
+    "dsga-resource-cancel-lint-final2.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "size": 10
+    },
+    "dsga-resource-cancel-lint-first.log": {
+      "sha256": "aa6224f92ae4ffb945a32250a1a6f7f28bca60d91ce341991ccba235b5138abf",
+      "size": 3010
+    },
+    "dsga-resource-cancel-linux-results.json": {
+      "sha256": "074c50788838a26c696d31f0d23d52f8f75e1c99b5156bd577d271fe686b5d85",
+      "size": 1659
+    },
+    "dsga-resource-cancel-owner-regression.jsonl": {
+      "sha256": "770c875bdd2ae031b18326e9beac451f04f5284ad031d7072385448fdc2f0882",
+      "size": 37063
+    },
+    "dsga-resource-cancel-rust-clippy.log": {
+      "sha256": "eec85d993621448d78394c89da502d048df556ff8949b38267495da51b3990cd",
+      "size": 19950
+    },
+    "dsga-resource-cancel-rust-fmt-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "dsga-resource-cancel-rust-fmt.log": {
+      "sha256": "e0f408d03fd7fa9db4407c9c79b968cb18597c3ce9819e44e7e1979ff1b73414",
+      "size": 6214
+    },
+    "dsga-resource-cancel-rust-http-final.log": {
+      "sha256": "069831c9ec9a8b7393015fd8c60db0f3dbe1949789f437b1d1c2450d747de2e4",
+      "size": 8023
+    },
+    "dsga-resource-cancel-rust-results-final.json": {
+      "sha256": "eb06d178f06872fa114303c2d85584e9c20d6c50a17ca7e09326d7a9df4878cb",
+      "size": 1195
+    },
+    "dsga-resource-cancel-rust-results.json": {
+      "sha256": "38d6c041855aaba5f5ce80642080fbb45ac89d6474cdbf08f776da127434d850",
+      "size": 345
+    },
+    "dsga-resource-cancel-rust-uds-final.log": {
+      "sha256": "1971afda963f8fe3e3a0dbfd3615d833300c7b569d7a2eb40bc793e0eb7ae737",
+      "size": 12392
+    },
+    "dsga-resource-cancel-takeover-first.jsonl": {
+      "sha256": "8a82501e24fb94363ed729873f051a5f7c5e520f7ed2f4d0a241007c89cd08a7",
+      "size": 11228
+    },
+    "dsga-resource-cancel-vet-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "dsga-resource-cancel-vet-first.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    }
+  },
+  "compatibility": "首次原取消屏障和格式v1→v2同次rename/fsync；旧Guard不支持v2，回滚失败关闭，禁止删除日志或降格式绕过屏障。外层完整原命令与epoch/出生/目标保持。",
+  "scope": "Root真实文件锁/持久化/HTTP独立验证；owner正式Elector/Session/SDK/CAS WAL/预算/Host执行，PG/root/Kube/QMP为明确协议peer，不是Linux物理认证。",
+  "fixed_pg17": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "not_covered": [
+    "缺坏Root/资格/日志或高于原上界、swap/任务/系统异常的受控关闭",
+    "安全降低normal及后台/私有持续上界",
+    "分区旧进程、出生不完整、Runner被杀无Wait、跨boot/迁移",
+    "Monitor/自动策略、全部最终写者及可信CPU写通道",
+    "PG18与PG16独立内核/扩展/发行及受影响验证",
+    "真实Linux/K8s/KVM/NeonVM/HugeTLB/物理回收/性能"
+  ],
+  "images_built": false,
+  "deployed": false,
+  "default_enabled": false
+}
