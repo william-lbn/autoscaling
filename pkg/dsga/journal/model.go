@@ -573,6 +573,7 @@ func (model Model) Clone() Model {
 				reopen.Receipt = cloneAdmissionResponse(reopen.Receipt)
 			}
 			reopen.Closing = cloneServiceReopenClosure(reopen.Closing)
+			reopen.Rearm = cloneReopenLeaseRecovery(reopen.Rearm)
 			closure.Reopen = &reopen
 		}
 		if closure.Rearm != nil {

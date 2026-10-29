@@ -95,10 +95,10 @@ func (p *initialServicePG) counts() (int, int, int) {
 
 func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Request) {
 	t.Helper()
-	if p.serveReopenFixture(t, w, r) {
+	if p.serveRearmFixture(t, w, r) {
 		return
 	}
-	if p.serveRearmFixture(t, w, r) {
+	if p.serveReopenFixture(t, w, r) {
 		return
 	}
 	switch r.URL.Path {
@@ -345,7 +345,8 @@ func productionInitialService(t *testing.T, mode string) {
 	if finiteAddressSpace {
 		mode = "automatic-policy"
 	}
-	automaticMode := mode == "automatic-policy" || mode == "service-lifecycle-first-unknown-automatic" || mode == "service-retry-first-unknown-automatic"
+	expiredRetry := strings.HasPrefix(mode, "service-retry-expired-")
+	automaticMode := mode == "service-retry-expired-automatic" || mode == "automatic-policy" || mode == "service-lifecycle-first-unknown-automatic" || mode == "service-retry-first-unknown-automatic"
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
 	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
 	pgSafety := strings.HasPrefix(mode, "active-safety-pg-")
@@ -421,7 +422,7 @@ func productionInitialService(t *testing.T, mode string) {
 		// 仅扩大测试总期限；生产请求、Kube限流和选主期限不变。
 		deadline = 7 * time.Minute
 	}
-	if ownerTransfer || closureTransfer {
+	if ownerTransfer || closureTransfer || expiredRetry {
 		// 实测包含原30秒Lease失效等待的完整组合为175.53秒，
 		// 总期限留出race调度余量；不改各生产请求或30/20/2秒租约。
 		deadline = 4 * time.Minute
@@ -430,7 +431,7 @@ func productionInitialService(t *testing.T, mode string) {
 	defer cancel()
 	run := elector.Run
 	var transfer *businessOwnerTransfer
-	if ownerTransfer || closureTransfer {
+	if ownerTransfer || closureTransfer || expiredRetry {
 		transfer = newBusinessOwnerTransfer(t, api, coord, store, resourceConfig)
 		transfer.effectBeforeTakeover = mode == "owner-transfer-after-vm" || pgTakeover || guestTakeover
 		if pgTakeover {
@@ -510,7 +511,11 @@ func productionInitialService(t *testing.T, mode string) {
 			}
 			if retryMode {
 				verifyProductionServiceReopen(t, ctx, "source-after-unknown-setter", api, store, session, resources, worker, config, client, source, pg, root)
-				worker = verifyProductionServiceReopenRetry(t, ctx, strings.TrimPrefix(mode, "service-retry-"), api, store, session, resources, worker, config, client, source, pg, root)
+				if expiredRetry {
+					session, resources, worker = verifyProductionReopenLeaseRecovery(t, ctx, strings.TrimPrefix(mode, "service-retry-expired-"), transfer, session, resources, worker, config, client, source, pg, root, runner)
+				} else {
+					worker = verifyProductionServiceReopenRetry(t, ctx, strings.TrimPrefix(mode, "service-retry-"), api, store, session, resources, worker, config, client, source, pg, root)
+				}
 			} else {
 				verifyProductionServiceReopen(t, ctx, predecessor, api, store, session, resources, worker, config, client, source, pg, root)
 				worker = verifyProductionServiceLifecycle(t, ctx, strings.TrimPrefix(mode, "service-lifecycle-"), api, store, session, resources, worker, config, client, source, pg, root)

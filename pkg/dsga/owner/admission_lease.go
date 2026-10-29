@@ -20,7 +20,8 @@ func expiredAdmissionControlAllowed(action control.CoordinationAction) bool {
 	case control.CoordinationState, control.CoordinationReplayServiceClosure, control.CoordinationContinueServiceClosure,
 		control.CoordinationRearmService, control.CoordinationObserveServiceRearm, control.CoordinationReplayServiceRearm,
 		control.CoordinationReopenService, control.CoordinationObserveServiceReopen, control.CoordinationReplayServiceReopen,
-		control.CoordinationCloseServiceReopen, control.CoordinationReplayServiceReopenClosure, control.CoordinationContinueServiceReopenClosure, control.CoordinationCompleteServiceReopen, control.CoordinationRetryServiceReopen:
+		control.CoordinationCloseServiceReopen, control.CoordinationReplayServiceReopenClosure, control.CoordinationContinueServiceReopenClosure, control.CoordinationCompleteServiceReopen, control.CoordinationRetryServiceReopen,
+		control.CoordinationRearmServiceReopen, control.CoordinationObserveServiceReopenRearm, control.CoordinationReplayServiceReopenRearm:
 		// 新开放入口自身必须检查有效期限/完整来源；进入管理通道不
 		// 表示已获开门许可，更不能清 Run 本地过期 latch。
 		return true

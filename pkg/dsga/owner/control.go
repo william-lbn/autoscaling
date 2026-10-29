@@ -202,6 +202,12 @@ func (worker *PGWorker) executeControl(ctx context.Context, command control.Coor
 		result.Progress, err = worker.closeServiceReopen(callCtx, command.Selector, true)
 	case control.CoordinationCompleteServiceReopen:
 		result.Progress, err = worker.completeServiceReopen(callCtx, command.Selector)
+	case control.CoordinationRearmServiceReopen:
+		result.Progress, err = worker.rearmServiceReopen(callCtx, command.Selector)
+	case control.CoordinationObserveServiceReopenRearm:
+		result.Progress, err = worker.advanceReopenLeaseRecovery(callCtx, command.Selector, false)
+	case control.CoordinationReplayServiceReopenRearm:
+		result.Progress, err = worker.advanceReopenLeaseRecovery(callCtx, command.Selector, true)
 	case control.CoordinationRetryServiceReopen:
 		result.Progress, err = worker.retryServiceReopen(callCtx, command.Selector)
 	case control.CoordinationReplayVM:

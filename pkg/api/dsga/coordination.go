@@ -89,6 +89,10 @@ const (
 	CoordinationCompleteServiceReopen        CoordinationAction = "complete_service_reopen"
 	// 再关闭确认后重新选择开放，必须引用最新关闭摘要；普通查询不调用。
 	CoordinationRetryServiceReopen CoordinationAction = "retry_service_reopen"
+	// 再关闭后期限恢复；只接收最近关闭/恢复摘要，不接收原生CAS参数。
+	CoordinationRearmServiceReopen        CoordinationAction = "rearm_service_reopen"
+	CoordinationObserveServiceReopenRearm CoordinationAction = "observe_service_reopen_rearm"
+	CoordinationReplayServiceReopenRearm  CoordinationAction = "replay_service_reopen_rearm"
 )
 
 // CoordinationCommand固定接收方完整实例及预期当前owner代次。Key保留原操作代次，
@@ -121,7 +125,7 @@ func (c CoordinationCommand) Validate() error {
 			return fmt.Errorf("begin requires one complete request for the selected owner")
 		}
 	case CoordinationReplayInitial, CoordinationRepairHeld, CoordinationObserveHeld, CoordinationReplayServiceClosure, CoordinationContinueServiceClosure, CoordinationRearmService, CoordinationObserveServiceRearm, CoordinationReplayServiceRearm,
-		CoordinationReopenService, CoordinationObserveServiceReopen, CoordinationReplayServiceReopen, CoordinationCloseServiceReopen, CoordinationReplayServiceReopenClosure, CoordinationContinueServiceReopenClosure, CoordinationCompleteServiceReopen, CoordinationRetryServiceReopen:
+		CoordinationReopenService, CoordinationObserveServiceReopen, CoordinationReplayServiceReopen, CoordinationCloseServiceReopen, CoordinationReplayServiceReopenClosure, CoordinationContinueServiceReopenClosure, CoordinationCompleteServiceReopen, CoordinationRetryServiceReopen, CoordinationRearmServiceReopen, CoordinationObserveServiceReopenRearm, CoordinationReplayServiceReopenRearm:
 		decoded, err := hex.DecodeString(c.Selector)
 		if err != nil || len(decoded) != 32 || hex.EncodeToString(decoded) != c.Selector || c.Request != nil || c.Key != nil {
 			return fmt.Errorf("source selection requires the original SHA256")

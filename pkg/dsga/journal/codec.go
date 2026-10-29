@@ -38,6 +38,10 @@ func encode(model Model, budget int) (Model, string, error) {
 		r := model.ServiceClosure.Reopen
 		window := MaxObservationBytes + 4096
 		switch {
+		case r.Rearm != nil && r.Rearm.Phase == Unconfirmed:
+			// 再关闭后的期限恢复仍需完整原生历史/当前回执；不能沿用
+			// 已完成关闭仅4KiB的默认余量，先发送再发现无法保存事实。
+			budget -= window
 		case r.Closing == nil && r.Phase == Unconfirmed:
 			// 原开放回执 + 再关闭观察 + 更高 owner 接续观察 + 最后回执。
 			budget -= 4 * window

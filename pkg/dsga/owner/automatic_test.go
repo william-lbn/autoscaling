@@ -90,6 +90,10 @@ func verifyProductionAutomaticBegin(t *testing.T, ctx context.Context, api *owne
 	}))
 	require.True(t, t.Run("expired-unaccepted-begin-lost-fence-reply", func(t *testing.T) {
 		request := pg.request
+		// 本前置是当前owner尚未提交的新Begin，不能复用首次服务前的
+		// issuer。期限恢复组合经过真实选主接管；沿用旧epoch会正确地被
+		// 生产屏障拒绝，根本没有覆盖此处要验证的CAS丢回复窗口。
+		request.Key.IssuerEpoch = s.State().Owner.Epoch
 		request.DeadlineUnixMillis = control.Uint64(time.Now().Add(-time.Second).UnixMilli())
 		worker.automatic.pending, worker.automatic.pendingRV = &request, s.ResourceVersion()
 		api.mu.Lock()

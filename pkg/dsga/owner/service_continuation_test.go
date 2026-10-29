@@ -89,7 +89,8 @@ func (f *businessOwnerTransfer) takeoverClosure(t *testing.T, ctx context.Contex
 	t.Helper()
 	before, err := f.store.Load(ctx)
 	require.NoError(t, err)
-	require.True(t, before.State().ServiceClosure.Pending())
+	c := before.State().ServiceClosure
+	require.True(t, c.Pending() || c.Reopen != nil && c.Reopen.Closing != nil, "接管前必须存在原关闭或独立再关闭WAL")
 	nextRun := f.start(ctx)
 	select {
 	case <-nextRun.ready:

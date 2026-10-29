@@ -9,7 +9,8 @@ import (
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 )
 
-// ServiceReopenRetirement仅归档已经被准确成功再关闭封住的新开放准入。
+// ServiceReopenRetirement在业务重试时归档已被完整再关闭封住的新开放；
+// 期限恢复亦复用此有界证据载体，其原Unknown不会因此被改成NoEffect。
 // Context保存直接前驱的全部原意图、未知/回执、Before、独立关闭及接续，
 // 去掉更早Retired以保持空间与故障次数无关。PreviousSHA256累积更早证据，
 // 不把被退休Unknown改成成功或NoEffect；资源Active及原预算不能被退休。
@@ -75,6 +76,18 @@ func (m Model) validateServiceReopenRetirement(archived bool) error {
 	if closed != *p || closedAt != r.PriorClosedAt || previous.ClosureVersion != r.ClosureVersion || previous.ClosureSHA256 != r.ClosureSHA256 || previous.HeldSHA256 != r.HeldSHA256 {
 		return fmt.Errorf("reopen retry differs from full original closure and held budget")
 	}
+	if err := liveAfterReopenRearm(previous.Rearm, r.Before, r.StartedSequence); err != nil {
+		return err
+	}
+	return nil
+}
+
+// 新业务重试须严格晚于最近原生恢复的完整确认。有效布尔不能代替准确
+// 应用回执；期限/epoch不可回退，原恢复未知也不能被后继开放隐式抹掉。
+func liveAfterReopenRearm(rearm *ReopenLeaseRecovery, b control.AdmissionLeaseResponse, sequence control.Uint64) error {
+	if rearm != nil && (rearm.Phase != Settled || rearm.Receipt == nil || b.DeadlineNS < rearm.Receipt.AppliedDeadlineNS || b.LeaseEpoch < rearm.Origin.Epoch || sequence <= rearm.RecordedSequence) {
+		return fmt.Errorf("reopen retry predates exact confirmed latest rearm")
+	}
 	return nil
 }
 
@@ -97,6 +110,9 @@ func (m Model) RetryServiceReopen(actor Owner, selector string, before control.A
 	}
 	next, err := m.next(actor)
 	if err != nil {
+		return m, err
+	}
+	if err := liveAfterReopenRearm(r.Rearm, before, next.Sequence); err != nil {
 		return m, err
 	}
 	// 旧Retired只累积摘要，完整当前前驱仍逐字冻结；它所有原命令/

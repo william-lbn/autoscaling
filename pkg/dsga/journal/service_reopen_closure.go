@@ -49,14 +49,26 @@ func reopenCloseBefore(b control.AdmissionLeaseResponse, owner Owner, original c
 
 func (m Model) validateServiceReopenClosure() error {
 	r := m.ServiceClosure.Reopen
+	stage := r.SafetyStage
+	if r.Rearm != nil {
+		if stage != "rearming" || r.Closing == nil || r.Closing.Close == nil || r.Closing.Close.Pending() {
+			return fmt.Errorf("reopen lease recovery lost complete reclosure or required safety stage")
+		}
+		// 期限恢复叠加在已完成的关闭上；局部判别符只复用原关闭校验，
+		// 不改原记录，更不把 rearming 投影为可开放的 opening。
+		stage = "closing"
+		if r.Closing.Close.Continuation != nil {
+			stage = "continuing"
+		}
+	}
 	if r.Closing == nil {
-		if r.SafetyStage != "opening" {
+		if stage != "opening" {
 			return fmt.Errorf("reopen recovery lost selected safety closure")
 		}
 		return nil
 	}
 	a, c := r.Closing, r.Closing.Close
-	if c == nil || r.SafetyStage != "closing" && r.SafetyStage != "continuing" || c.Rearm != nil || c.Reopen != nil || c.OperationSHA256 != "" || c.Original == nil || *c.Original != r.Request || c.Reason != "reopen_source_unconfirmed" || c.Origin.Validate() != nil || c.Origin.Epoch < r.Origin.Epoch || c.Origin.Epoch == r.Origin.Epoch && c.Origin != r.Origin || c.Origin.Epoch > m.Owner.Epoch || c.Origin.Epoch == m.Owner.Epoch && c.Origin != m.Owner || c.StartedSequence <= max(r.StartedSequence, r.RecordedSequence) || c.StartedSequence > m.Sequence || c.Request.ClosesOver(r.Request) != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Request.ExpectedCapacityGeneration != r.Request.ExpectedCapacityGeneration || c.Request.BudgetCommitmentID != r.Request.BudgetCommitmentID || c.Receipt != nil {
+	if c == nil || stage != "closing" && stage != "continuing" || c.Rearm != nil || c.Reopen != nil || c.OperationSHA256 != "" || c.Original == nil || *c.Original != r.Request || c.Reason != "reopen_source_unconfirmed" || c.Origin.Validate() != nil || c.Origin.Epoch < r.Origin.Epoch || c.Origin.Epoch == r.Origin.Epoch && c.Origin != r.Origin || c.Origin.Epoch > m.Owner.Epoch || c.Origin.Epoch == m.Owner.Epoch && c.Origin != m.Owner || c.StartedSequence <= max(r.StartedSequence, r.RecordedSequence) || c.StartedSequence > m.Sequence || c.Request.ClosesOver(r.Request) != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Request.ExpectedCapacityGeneration != r.Request.ExpectedCapacityGeneration || c.Request.BudgetCommitmentID != r.Request.BudgetCommitmentID || c.Receipt != nil {
 		return fmt.Errorf("reopen closure changed original opening or stable service boundary")
 	}
 	digest, err := c.Request.ContextSHA256()
@@ -77,13 +89,13 @@ func (m Model) validateServiceReopenClosure() error {
 		return fmt.Errorf("invalid reopen closure phase")
 	}
 	if c.Continuation == nil {
-		if a.LatestBefore != nil || r.SafetyStage != "closing" {
+		if a.LatestBefore != nil || stage != "closing" {
 			return fmt.Errorf("reopen closure invented continuation observation")
 		}
 		return nil
 	}
 	n := c.Continuation
-	if r.SafetyStage != "continuing" || a.LatestBefore == nil || reopenCloseBefore(*a.LatestBefore, n.Origin, r.Request) != nil || max(a.LatestBefore.Observed.AdmissionRevision, n.Request.PreviousClose.Revision) == control.Uint64(math.MaxUint64) || n.Request.Close.Revision != max(a.LatestBefore.Observed.AdmissionRevision, n.Request.PreviousClose.Revision)+1 || n.Receipt != nil && n.Receipt.ClosedBy.Observed.CapacityGeneration != r.Request.ExpectedCapacityGeneration {
+	if stage != "continuing" || a.LatestBefore == nil || reopenCloseBefore(*a.LatestBefore, n.Origin, r.Request) != nil || max(a.LatestBefore.Observed.AdmissionRevision, n.Request.PreviousClose.Revision) == control.Uint64(math.MaxUint64) || n.Request.Close.Revision != max(a.LatestBefore.Observed.AdmissionRevision, n.Request.PreviousClose.Revision)+1 || n.Receipt != nil && n.Receipt.ClosedBy.Observed.CapacityGeneration != r.Request.ExpectedCapacityGeneration {
 		return fmt.Errorf("reopen closure continuation lost original native selection")
 	}
 	// 只复用独立接续校验器：它认证原意图、完整直接前驱、严格更高

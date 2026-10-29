@@ -154,6 +154,9 @@ func (w *PGWorker) observeServiceReopen(ctx context.Context, selector string) (p
 	if r.Closing != nil {
 		_, _, _, selected = r.Closing.Close.Selection()
 	}
+	if r.Rearm != nil {
+		selected = r.Rearm.CommandSHA256
+	}
 	if selector != selected {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}

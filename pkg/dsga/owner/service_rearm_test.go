@@ -38,6 +38,7 @@ type serviceRearmPG struct {
 	loseRecord   bool
 	api          *ownerAPI
 	afterObserve func()
+	afterApply   func()
 }
 
 func (p *initialServicePG) serveRearmFixture(t *testing.T, w http.ResponseWriter, request *http.Request) bool {
@@ -58,10 +59,17 @@ func (p *initialServicePG) serveRearmFixture(t *testing.T, w http.ResponseWriter
 	if query {
 		f.queries++
 	} else if q.Action == "rearm" {
-		r := s.State().ServiceClosure.Rearm
-		require.NotNil(t, r, "真实写前WAL必须先于rearm")
-		require.Equal(t, q, r.Request)
-		require.Equal(t, journal.Unconfirmed, r.Phase)
+		c := s.State().ServiceClosure
+		if c.Reopen != nil && c.Reopen.Rearm != nil {
+			r := c.Reopen.Rearm
+			require.Equal(t, q, r.Request, "再关闭恢复必须先确认完整写前WAL")
+			require.Equal(t, journal.Unconfirmed, r.Phase)
+		} else {
+			r := c.Rearm
+			require.NotNil(t, r, "真实写前WAL必须先于rearm")
+			require.Equal(t, q, r.Request)
+			require.Equal(t, journal.Unconfirmed, r.Phase)
+		}
 		f.posts++
 		if f.loseBefore {
 			f.loseBefore = false
@@ -77,6 +85,11 @@ func (p *initialServicePG) serveRearmFixture(t *testing.T, w http.ResponseWriter
 		p.leaseExpired = false
 		p.leaseDeadline++
 		f.applied = p.leaseDeadline
+		if f.afterApply != nil {
+			hook := f.afterApply
+			f.afterApply = nil
+			hook()
+		}
 	}
 	if !query && q.Action == "rearm" && f.loseAfter {
 		f.loseAfter = false
@@ -121,7 +134,7 @@ func verifyServiceRearm(t *testing.T, ctx context.Context, mode string, api *own
 	_, _, _, selector := closure.Selection()
 	pg.mu.Lock()
 	pg.leaseDeadline, pg.leaseExpired = 100, true
-	pg.rearmFixture = &serviceRearmPG{epoch: session.Actor().Epoch - 1, original: nil, applied: 0, posts: 0, queries: 0, loseBefore: mode == "setter-before", loseAfter: mode == "setter-after", loseRecord: mode == "lost-record", api: api, afterObserve: nil}
+	pg.rearmFixture = &serviceRearmPG{epoch: session.Actor().Epoch - 1, original: nil, applied: 0, posts: 0, queries: 0, loseBefore: mode == "setter-before", loseAfter: mode == "setter-after", loseRecord: mode == "lost-record", api: api, afterObserve: nil, afterApply: nil}
 	if mode == "source-after-selection" {
 		pg.rearmFixture.afterObserve = func() { root.mu.Lock(); root.view.Actual.MemoryMaxBytes++; root.mu.Unlock() }
 	}

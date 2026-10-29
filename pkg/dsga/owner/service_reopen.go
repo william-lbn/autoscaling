@@ -30,6 +30,9 @@ func (w *PGWorker) advanceServiceReopen(ctx context.Context) (pgexec.Progress, e
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
 	r := m.ServiceClosure.Reopen
+	if r.Rearm != nil {
+		return w.advanceReopenLeaseRecovery(ctx, r.Rearm.CommandSHA256, false)
+	}
 	if r.Closing != nil {
 		c := r.Closing.Close
 		if !c.Pending() {

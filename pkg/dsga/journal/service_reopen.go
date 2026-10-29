@@ -42,6 +42,9 @@ type ServiceReopen struct {
 	PriorClose    *control.AdmissionRequest `json:"prior_close,omitempty"`
 	PriorClosedAt control.Uint64            `json:"prior_closed_at,omitempty"`
 	Retired       *ServiceReopenRetirement  `json:"retired,omitempty"`
+	// 再关闭后期限过期的独立恢复。它不覆盖外层首次 Rearm，也不改变
+	// 原开放/关闭未知；SafetyStage 必须同时为 rearming，防止字段丢失。
+	Rearm *ReopenLeaseRecovery `json:"rearm,omitempty"`
 }
 
 func serviceReopenClosureDigest(c ServiceClosure) (string, error) {
@@ -129,6 +132,9 @@ func (m Model) validateServiceReopenRecord(archived bool) error {
 		return fmt.Errorf("invalid service reopen phase")
 	}
 	if err := m.validateServiceReopenClosure(); err != nil {
+		return err
+	}
+	if err := m.validateReopenLeaseRecovery(r.Rearm, false); err != nil {
 		return err
 	}
 	return m.validateServiceReopenRetirement(archived)
