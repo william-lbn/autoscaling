@@ -31,7 +31,26 @@ func encode(model Model, budget int) (Model, string, error) {
 	// 服务关闭有独立WAL，即使无Resize Active，也必须为原生关闭回执及
 	// owner接管保留既有4KiB余量。不能先发出关闭、再发现注解只能保存
 	// 写前命令而无法落账；淘汰规则仍只处理历史，不裁掉未知或原预算。
-	if model.ServiceClosure != nil && model.ServiceClosure.Rearm != nil && model.ServiceClosure.Rearm.Phase == Unconfirmed {
+	if model.ServiceClosure != nil && model.ServiceClosure.Reopen != nil {
+		// 开放后可能立即发现来源异常，必须在发送前就预留原回执与
+		// 独立再关闭的完整空间。关闭也须保留原命令和未知，不能为了
+		// 落账压掉旧预算/关闭。已确认开放仍保留紧急关闭窗口。
+		r := model.ServiceClosure.Reopen
+		window := MaxObservationBytes + 4096
+		switch {
+		case r.Closing == nil && r.Phase == Unconfirmed:
+			// 原开放回执 + 再关闭观察 + 更高 owner 接续观察 + 最后回执。
+			budget -= 4 * window
+		case r.Closing == nil:
+			budget -= 3 * window
+		case r.Closing.Close == nil || r.Closing.Close.Pending() && r.Closing.LatestBefore == nil:
+			budget -= 2 * window
+		case r.Closing.Close.Pending():
+			budget -= window
+		default:
+			budget -= 4096
+		}
+	} else if model.ServiceClosure != nil && model.ServiceClosure.Rearm != nil && model.ServiceClosure.Rearm.Phase == Unconfirmed {
 		// rearm回执同时携带历史应用和独立当前快照，不能只给已持有的
 		// 原关闭增加4KiB。按完整HTTP观察上限另留空间，保证写前票据不会
 		// 消耗原回执/接管所需容量；不裁原预算、关闭或期限未知。

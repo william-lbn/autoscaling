@@ -35,6 +35,8 @@ func cloneLeaseResponse(original control.AdmissionLeaseResponse) control.Admissi
 
 func serviceClosureDigest(c ServiceClosure) (string, error) {
 	c.Rearm = nil
+	// 后继开放不属于更早 rearm 选择时的关闭摘要，不能因此改写原摘要。
+	c.Reopen = nil
 	raw, err := json.Marshal(c)
 	return rawDigest(raw), err
 }
@@ -64,7 +66,8 @@ func (m Model) validateServiceRearm() error {
 	if c.Continuation != nil {
 		closedAt = c.Continuation.RecordedSequence
 	}
-	if m.ProtocolVersion != 19 || r.ClosureVersion < 10 || r.ClosureVersion > 12 || m.Active != nil || c.Pending() || closureErr != nil || heldErr != nil || commandErr != nil || r.ClosureSHA256 != closureHash || r.HeldSHA256 != heldHash || r.CommandSHA256 != rawDigest(raw) || r.Origin.Validate() != nil || r.Origin.Epoch > m.Owner.Epoch || r.Origin.Epoch == m.Owner.Epoch && r.Origin != m.Owner || r.StartedSequence <= closedAt || r.StartedSequence > m.Sequence {
+	rearmVersion := m.ProtocolVersion == 19 || m.ProtocolVersion == 20 && c.Reopen != nil && c.Reopen.ClosureVersion == 19
+	if !rearmVersion || r.ClosureVersion < 10 || r.ClosureVersion > 12 || m.Active != nil || c.Pending() || closureErr != nil || heldErr != nil || commandErr != nil || r.ClosureSHA256 != closureHash || r.HeldSHA256 != heldHash || r.CommandSHA256 != rawDigest(raw) || r.Origin.Validate() != nil || r.Origin.Epoch > m.Owner.Epoch || r.Origin.Epoch == m.Owner.Epoch && r.Origin != m.Owner || r.StartedSequence <= closedAt || r.StartedSequence > m.Sequence {
 		return fmt.Errorf("service rearm changed original closed service, held budget or owner")
 	}
 	b := r.Before

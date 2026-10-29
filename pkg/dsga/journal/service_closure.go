@@ -44,6 +44,9 @@ type ServiceClosure struct {
 	OperationSHA256 string `json:"operation_sha256,omitempty"`
 	// 原生期限恢复与业务重开分域；该记录不能撤销本关闭或改变旧开放未知。
 	Rearm *ServiceRearm `json:"rearm,omitempty"`
+	// 新开放有独立写前/回执，不改旧关闭或任何原开放未知；完成该原生
+	// 事实仍须后继来源复核及生命周期归档，本字段本身不解除关闭。
+	Reopen *ServiceReopen `json:"reopen,omitempty"`
 }
 
 // ProtectedAdmission返回本关闭保护的最初意图。v10/11原意图就是关闭；
@@ -105,10 +108,7 @@ func (model Model) ServiceBudgetID() (string, error) {
 
 func (model Model) validateServiceClosure() error {
 	c := model.ServiceClosure
-	version := model.ProtocolVersion
-	if version == 19 && c != nil && c.Rearm != nil {
-		version = c.Rearm.ClosureVersion
-	}
+	version := model.serviceClosureVersion()
 	if c == nil {
 		if model.ProtocolVersion >= 10 {
 			return fmt.Errorf("service closure cannot disappear from v10 journal")
@@ -200,7 +200,10 @@ func (model Model) validateServiceClosure() error {
 	if err := model.validateServiceClosureContinuation(); err != nil {
 		return err
 	}
-	return model.validateServiceRearm()
+	if err := model.validateServiceRearm(); err != nil {
+		return err
+	}
+	return model.validateServiceReopen()
 }
 
 func (model Model) StartServiceClosure(actor Owner, request control.AdmissionRequest) (Model, error) {
