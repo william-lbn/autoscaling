@@ -213,7 +213,14 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 		if err != nil {
 			f, plannedErr := m.PlannedResumeBudgetForClosure()
 			if plannedErr != nil {
-				return false, pgexec.Idle, nil
+				generation, pendingErr := m.PendingFinalizationGenerationForClosure()
+				if pendingErr != nil || w.finalize == nil {
+					return false, pgexec.Idle, nil
+				}
+				if err := w.finalize.CheckBeforeFinalization(ctx, s); err == nil {
+					return false, pgexec.Idle, nil
+				}
+				return w.closePlannedResumeService(ctx, s, generation)
 			}
 			if err := w.admission.CheckRetainedService(ctx, s); err == nil {
 				return false, pgexec.Idle, nil
@@ -286,10 +293,13 @@ func (w *PGWorker) closePlannedResumeService(ctx context.Context, s *journal.Sna
 		return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
 	pg := shared.Observed
-	budgetID, err := s.State().ServiceBudgetID()
-	if err != nil || pg.Instance != instance || pg.IssuerFloorEpoch != epoch || pg.CapacityGeneration != generation || pg.AdmissionRevision == control.Uint64(math.MaxUint64) {
+	m := s.State()
+	if m.Active == nil || pg.Instance != instance || pg.IssuerFloorEpoch != epoch || pg.CapacityGeneration != generation || pg.AdmissionRevision == control.Uint64(math.MaxUint64) {
 		return true, pgexec.AwaitingFact, ErrServiceSafety
 	}
+	// 资源前驱已完成但Finalize尚未落账时，只引用原Active的目标承诺ID，
+	// 不以当前永久头的旧ID冒充新容量已结算；Start会固定完整原Active。
+	budgetID := m.Active.Request.BudgetCommitmentID
 	request := control.AdmissionRequest{ProtocolVersion: 1, Instance: instance, IssuerEpoch: epoch, Revision: pg.AdmissionRevision + 1, ExpectedCapacityGeneration: generation, Open: false, BudgetCommitmentID: budgetID}
 	s, dispatch, err := w.session.store.StartServiceClosure(ctx, s, w.session.Actor(), request)
 	if err != nil {

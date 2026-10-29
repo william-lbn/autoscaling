@@ -407,6 +407,14 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 	}
 	if err == nil && progress == pgexec.ExternalStep && worker.finalize != nil {
 		progress, err = worker.finalize.Advance(callCtx)
+		if err != nil {
+			// Finalize只有外层CAS效果；若来源在本轮预审之后或写前
+			// CAS期间失效，立即按完整资源前驱的独立边界关闭旧准入。
+			// CAS已完成且来源仍健康时保留原错误，不能伪造关闭或成功。
+			if handled, safetyProgress, safetyErr := worker.advanceServiceSafety(callCtx, ""); handled {
+				return safetyProgress, safetyErr
+			}
+		}
 	}
 	if err == nil && progress == pgexec.ExternalStep {
 		progress, err = worker.admission.Advance(callCtx)

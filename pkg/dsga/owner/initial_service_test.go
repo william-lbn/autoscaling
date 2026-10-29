@@ -274,7 +274,7 @@ func TestProductionInitialOwnerTransferCancelsUnreceivedGuestAndSettlesActualBud
 func productionInitialService(t *testing.T, mode string) {
 	t.Helper()
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
-	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer"
+	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer"
 	pgTakeover := mode == "owner-transfer-after-pg"
 	unreceivedGuest := mode == "owner-transfer-before-guest-delivery"
 	guestTakeover := mode == "owner-transfer-after-guest" || unreceivedGuest
@@ -423,7 +423,7 @@ func productionInitialService(t *testing.T, mode string) {
 			return nil
 		}
 		var successorHost *hostexec.Publisher
-		if pgTakeover || guestTakeover || mode == "auto-finish" || mode == "automatic-policy" || strings.HasPrefix(mode, "resume-safety-") {
+		if pgTakeover || guestTakeover || mode == "auto-finish" || mode == "automatic-policy" || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") {
 			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -480,6 +480,10 @@ func productionInitialService(t *testing.T, mode string) {
 		require.NoError(t, err)
 		require.Equal(t, pgexec.Recorded, progress)
 		for _, action := range []journal.Action{journal.GuestReady, journal.ResizePG, journal.FinalizeBudget, journal.ResumeAdmission} {
+			if action == journal.FinalizeBudget && strings.HasPrefix(mode, "finalize-safety-") {
+				verifyPendingFinalizationSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
+				return nil
+			}
 			if action == journal.ResumeAdmission && strings.HasPrefix(mode, "resume-safety-") {
 				verifyResumeServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
 				return nil

@@ -102,7 +102,9 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 			client := kubefake.NewSimpleClientset()
 			elector, err := New(coord, store, testOptions())
 			require.NoError(t, err)
-			ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+			// 完整来源重核及旧v2升级组合实测超过旧15秒测试总限；只为
+			// race调度留出总时间，生产RPC、凭据和选主期限均保持原值。
+			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 			defer cancel()
 			err = elector.Run(ctx, func(ctx context.Context, session *Session) error {
 				resources, err := session.NewResourceWorker(ctx, resourceConfig)
@@ -127,8 +129,9 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 				var outCM *core.ConfigMap
 				var committed atomic.Bool
 				var nativeDrift atomic.Bool
-				var resizePosts, admissionPosts, admissionReads atomic.Int64
+				var resizePosts, admissionPosts, admissionReads, closePosts atomic.Int64
 				var originalOpen atomic.Pointer[control.AdmissionRequest]
+				var currentGate atomic.Pointer[control.AdmissionRequest]
 				wireReq := req
 				if shrink {
 					wireReq.Kind = control.Grow
@@ -139,6 +142,9 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 					case "/dsg/v1/budget/shared":
 						if committed.Load() {
 							next := finalShared
+							if gate := currentGate.Load(); gate != nil {
+								next.Observed.AdmissionOpen, next.Observed.AdmissionRevision = gate.Open, gate.Revision
+							}
 							if nativeDrift.Load() {
 								if mode == "shrink-unverified" {
 									next.Observed.Arrays = append([]control.ArrayFact(nil), next.Observed.Arrays...)
@@ -159,23 +165,33 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 						pgReply(w, pgResponse(t, req))
 					case "/dsg/v1/admission", "/dsg/v1/admission/status":
 						query := r.URL.Path == "/dsg/v1/admission/status"
+						var a control.AdmissionRequest
+						require.NoError(t, json.NewDecoder(r.Body).Decode(&a))
 						if query {
 							admissionReads.Add(1)
-						} else {
+						} else if a.Open {
 							admissionPosts.Add(1)
+						} else {
+							closePosts.Add(1)
+							wal, err := store.Load(r.Context())
+							require.NoError(t, err)
+							require.NotNil(t, wal.State().ServiceClosure)
+							require.Equal(t, journal.Unconfirmed, wal.State().ServiceClosure.Phase)
+							require.Equal(t, a, wal.State().ServiceClosure.Request, "关闭前须有完整UID/RV写前记录")
 						}
 						if mode == "outside-replaced-after-open" {
 							copy := outCM.DeepCopy()
 							copy.UID = "after-open-new-uid"
 							require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("configmaps"), copy, binding().Namespace))
 						}
-						var a control.AdmissionRequest
-						require.NoError(t, json.NewDecoder(r.Body).Decode(&a))
 						if query {
 							require.NotNil(t, originalOpen.Load())
 							require.Equal(t, *originalOpen.Load(), a, "必须查询完整原命令，不能换epoch或revision")
 						} else {
-							originalOpen.Store(&a)
+							currentGate.Store(&a)
+							if a.Open {
+								originalOpen.Store(&a)
+							}
 							if strings.HasPrefix(mode, "legacy-v2-unknown-") {
 								w.WriteHeader(http.StatusServiceUnavailable)
 								return
@@ -184,13 +200,31 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 						hash, err := a.ContextSHA256()
 						require.NoError(t, err)
 						observed := finalShared.Observed
-						observed.AdmissionOpen = true
+						observed.AdmissionOpen = a.Open
 						observed.AdmissionRevision = a.Revision
 						disposition := control.AdmissionApplied
 						if query {
 							disposition = control.AdmissionReplayed
 						}
 						pgReply(w, control.AdmissionResponse{ProtocolVersion: 1, Request: a, ContextSHA256: hash, Disposition: disposition, Observed: observed})
+					case "/dsg/v1/admission/close-original":
+						var selection control.AdmissionCloseRequest
+						require.NoError(t, json.NewDecoder(r.Body).Decode(&selection))
+						require.NotNil(t, originalOpen.Load())
+						require.Equal(t, *originalOpen.Load(), selection.Original)
+						wal, err := store.Load(r.Context())
+						require.NoError(t, err)
+						require.NotNil(t, wal.State().ServiceClosure)
+						require.Equal(t, journal.Unconfirmed, wal.State().ServiceClosure.Phase)
+						require.Equal(t, selection.Close, wal.State().ServiceClosure.Request)
+						require.Equal(t, selection.Original, *wal.State().ServiceClosure.Original)
+						closePosts.Add(1)
+						currentGate.Store(&selection.Close)
+						hash, err := selection.Close.ContextSHA256()
+						require.NoError(t, err)
+						observed := finalShared.Observed
+						observed.AdmissionOpen, observed.AdmissionRevision = false, selection.Close.Revision
+						pgReply(w, control.AdmissionClosure{ProtocolVersion: 1, Original: selection.Original, ClosedBy: control.AdmissionResponse{ProtocolVersion: 1, Request: selection.Close, ContextSHA256: hash, Disposition: control.AdmissionApplied, Observed: observed, VMShrinkPermit: false}, PriorMayHaveApplied: true, VMShrinkPermit: false})
 					default:
 						t.Error("unexpected production budget route", r.URL.Path)
 						w.WriteHeader(500)
@@ -451,13 +485,27 @@ func TestProductionBudgetFinalizationUsesOriginalClaimsAndRecoversOnlyReadback(t
 							require.EqualValues(t, 1, admissionPosts.Load(), "later zero-dispatch cancellation must not reopen admission")
 						}
 					} else {
-						require.Error(t, err)
-						require.Equal(t, pgexec.AwaitingFact, progress)
+						// 来源失效必须真实关闭，不能再沿用旧测试中“拒绝新开放
+						// 即安全”的断言。原Finalize/预算和Resume未知全部保留。
+						require.NoError(t, err)
+						require.Equal(t, pgexec.Recorded, progress)
+						closed, err := store.Load(ctx)
+						require.NoError(t, err)
+						require.NotNil(t, closed.State().ServiceClosure)
+						require.False(t, closed.State().ServiceClosure.Pending())
+						require.Equal(t, settled.State().BudgetHeld, closed.State().BudgetHeld)
+						require.Equal(t, settled.State().History, closed.State().History)
+						require.Equal(t, step, budgetStep(t, store, journal.FinalizeBudget))
+						require.EqualValues(t, 1, closePosts.Load())
+						require.False(t, currentGate.Load().Open)
 						want := journal.Planned
 						posts := int64(0)
 						if mode == "outside-replaced-after-open" {
 							want = journal.Unconfirmed
 							posts = 1
+							require.Equal(t, *originalOpen.Load(), *closed.State().ServiceClosure.Original)
+						} else {
+							require.Nil(t, closed.State().ServiceClosure.Original)
 						}
 						require.Equal(t, want, budgetStep(t, store, journal.ResumeAdmission).Phase)
 						require.Equal(t, posts, admissionPosts.Load())

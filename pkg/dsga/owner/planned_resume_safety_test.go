@@ -27,20 +27,37 @@ func verifyPlannedResumeServiceSafety(t *testing.T, ctx context.Context, mode st
 	t.Helper()
 	before, err := store.Load(ctx)
 	require.NoError(t, err)
-	require.NotNil(t, before.State().BudgetHeld)
+	originalActive := before.State().Active
+	require.True(t, before.State().BudgetHeld != nil || before.State().InitialHeld != nil || before.State().CapacityHeld != nil)
 	step := budgetStep(t, store, journal.ResumeAdmission)
 	require.Equal(t, journal.Planned, step.Phase)
 	require.Empty(t, step.Command)
 	require.True(t, pg.shared().Observed.AdmissionOpen, "首次准入在Grow终段仍可能开放")
 	root.mu.Lock()
-	root.view.Actual.MemoryMaxBytes++
+	drifted := mode != "post-start-drift"
+	if drifted {
+		root.view.Actual.MemoryMaxBytes++
+	} else {
+		// 本轮预审先读一次出生；实际Finalize的第二次出生观察之后
+		// 改约束，让写前CAS后读回失败。回调已持fixture锁，不再取锁；
+		// 产品代码不使用该回调，也不改变任何生产请求/租约期限。
+		reads := 0
+		root.afterProcess = func() {
+			reads++
+			if reads == 2 {
+				root.view.Actual.MemoryMaxBytes++
+				drifted = true
+				root.afterProcess = nil
+			}
+		}
+	}
 	root.mu.Unlock()
-	drifted := true
 	restoreSource := func() {
+		root.mu.Lock()
+		defer root.mu.Unlock()
+		root.afterProcess = nil
 		if drifted {
-			root.mu.Lock()
 			root.view.Actual.MemoryMaxBytes--
-			root.mu.Unlock()
 			drifted = false
 		}
 	}
@@ -60,8 +77,23 @@ func verifyPlannedResumeServiceSafety(t *testing.T, ctx context.Context, mode st
 	require.NotNil(t, s.State().ServiceClosure, "最终开放尚未Start时，来源异常也必须持久关闭已有准入")
 	c := s.State().ServiceClosure
 	require.Nil(t, c.Original, "没有派发过开放，不能补造原开放命令或未知")
-	require.Equal(t, before.State().Active, s.State().Active)
+	if mode == "post-start-drift" {
+		after := s.State().Active
+		require.Equal(t, originalActive.Request, after.Request)
+		for i, step := range originalActive.Steps {
+			if step.Action == journal.FinalizeBudget {
+				require.Equal(t, journal.Planned, step.Phase)
+				require.Equal(t, journal.Unconfirmed, after.Steps[i].Phase, "本轮必须真实Start后失败，不能跳过写后窗口")
+			} else {
+				require.Equal(t, step, after.Steps[i])
+			}
+		}
+		originalActive = after
+	}
+	require.Equal(t, originalActive, s.State().Active)
 	require.Equal(t, before.State().BudgetHeld, s.State().BudgetHeld)
+	require.Equal(t, before.State().InitialHeld, s.State().InitialHeld)
+	require.Equal(t, before.State().CapacityHeld, s.State().CapacityHeld)
 	require.Equal(t, before.State().History, s.State().History)
 	switch mode {
 	case "lost-start", "transfer":
@@ -97,8 +129,10 @@ func verifyPlannedResumeServiceSafety(t *testing.T, ctx context.Context, mode st
 	require.NoError(t, err)
 	require.False(t, s.State().ServiceClosure.Pending())
 	require.False(t, pg.shared().Observed.AdmissionOpen)
-	require.Equal(t, before.State().Active, s.State().Active)
+	require.Equal(t, originalActive, s.State().Active)
 	require.Equal(t, before.State().BudgetHeld, s.State().BudgetHeld)
+	require.Equal(t, before.State().InitialHeld, s.State().InitialHeld)
+	require.Equal(t, before.State().CapacityHeld, s.State().CapacityHeld)
 	restoreSource()
 	worker.CloseIdleConnections()
 	worker, err = session.NewProductionPGWorker(ctx, config, resources, client.CoreV1(), source)

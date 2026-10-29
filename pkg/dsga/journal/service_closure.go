@@ -18,6 +18,8 @@ import (
 // Resize阶段仍须独立关闭/对账，不能用本终段规则收养合法中间态。
 // v14支持同一完整结算边界上尚未Start的Resume：只记录真实关闭，Original
 // 保持nil，Active仍保留空Planned；旧v13读者不得误读成无Active空闲关闭。
+// v15保护资源前驱已完成但Finalize仍未落账的稳定边界。预算ID仅引用
+// Active的原目标承诺，不代表它已成为当前永久头；原永久预算全部保留。
 type ServiceClosure struct {
 	Origin           Owner                      `json:"origin"`
 	StartedSequence  control.Uint64             `json:"started_sequence"`
@@ -33,13 +35,13 @@ type ServiceClosure struct {
 	Continuation   *ServiceClosureContinuation `json:"continuation,omitempty"`
 	Original       *control.AdmissionRequest   `json:"original,omitempty"`
 	ClosureReceipt *control.AdmissionClosure   `json:"closure_receipt,omitempty"`
-	// v13/v14只保存完整原Active的SHA256；完整原文仍在Active中，防止关闭
+	// v13～v15只保存完整原Active的SHA256；完整原文仍在Active中，防止关闭
 	// 后借普通Record/RequestAbort/Finish重写原步骤或丢失未知效果。
 	OperationSHA256 string `json:"operation_sha256,omitempty"`
 }
 
 // ProtectedAdmission返回本关闭保护的最初意图。v10/11原意图就是关闭；
-// v12/v13为原首次/最终开放；v14为没有原开放的真实关闭。返回副本，
+// v12/v13为原首次/最终开放；v14/v15为没有原开放的真实关闭。返回副本，
 // 不能由后继选择覆盖持久原意图。
 func (c *ServiceClosure) ProtectedAdmission() control.AdmissionRequest {
 	if c.Original != nil {
@@ -64,9 +66,13 @@ func cloneAdmissionResponse(original *control.AdmissionResponse) *control.Admiss
 	return &cloned
 }
 
-// 只引用永久完整预算的原ID，不能由错误文字、RSS或当前资格派生新承诺。
+// 通常只引用永久完整预算的原ID；v15关闭则只引用完整Active的原目标ID，
+// 不将其补成已结算预算。不能由错误文字、RSS或当前资格派生新承诺。
 // 本函数不认证外部对象，也不向Root/Host发出释放许可。
 func (model Model) ServiceBudgetID() (string, error) {
+	if model.ProtocolVersion == 15 && model.Active != nil {
+		return model.Active.Request.BudgetCommitmentID, nil
+	}
 	switch {
 	case model.InitialHeld != nil:
 		var initial budget.Initial
@@ -97,7 +103,7 @@ func (model Model) validateServiceClosure() error {
 	}
 	budgetID, err := model.ServiceBudgetID()
 	digest, hashErr := c.Request.ContextSHA256()
-	if model.ProtocolVersion < 10 || model.ProtocolVersion > 14 || model.ProtocolVersion < 12 && ((model.ProtocolVersion == 11) != (c.Continuation != nil)) || model.PGInstance == nil || err != nil || hashErr != nil || c.Request.Open || c.Request.Instance != *model.PGInstance || c.Request.BudgetCommitmentID != budgetID || c.CommandSHA256 != digest || c.Origin.Validate() != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Origin.Epoch > model.Owner.Epoch || c.Origin.Epoch == model.Owner.Epoch && c.Origin != model.Owner || c.StartedSequence == 0 || c.StartedSequence > model.Sequence {
+	if model.ProtocolVersion < 10 || model.ProtocolVersion > 15 || model.ProtocolVersion < 12 && ((model.ProtocolVersion == 11) != (c.Continuation != nil)) || model.PGInstance == nil || err != nil || hashErr != nil || c.Request.Open || c.Request.Instance != *model.PGInstance || c.Request.BudgetCommitmentID != budgetID || c.CommandSHA256 != digest || c.Origin.Validate() != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Origin.Epoch > model.Owner.Epoch || c.Origin.Epoch == model.Owner.Epoch && c.Origin != model.Owner || c.StartedSequence == 0 || c.StartedSequence > model.Sequence {
 		return fmt.Errorf("service closure differs from original retained PG, budget or owner")
 	}
 	switch {
@@ -114,6 +120,10 @@ func (model Model) validateServiceClosure() error {
 		}
 	case c.Original == nil && model.ProtocolVersion == 14:
 		if err := model.validatePlannedResumeServiceClosure(); err != nil {
+			return err
+		}
+	case c.Original == nil && model.ProtocolVersion == 15:
+		if err := model.validatePendingFinalizationServiceClosure(); err != nil {
 			return err
 		}
 	case c.Original == nil && model.ProtocolVersion < 12:
@@ -195,6 +205,10 @@ func (model Model) StartServiceClosure(actor Owner, request control.AdmissionReq
 		next.ProtocolVersion = 14
 		next.ServiceClosure.Reason = "planned_resume_source_unconfirmed"
 		next.ServiceClosure.OperationSHA256 = opDigest
+		if _, err := model.plannedResumeBudget(); err != nil {
+			next.ProtocolVersion = 15
+			next.ServiceClosure.Reason = "finalize_source_unconfirmed"
+		}
 	}
 	return next, next.Validate()
 }

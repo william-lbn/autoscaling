@@ -146,12 +146,17 @@ func TestPlannedResumeClosureContinuationRetainsUnsentStep(t *testing.T) {
 }
 
 func TestPlannedResumeClosureStoreRequiresConfirmedCAS(t *testing.T) {
+	serviceClosureStoreContract(t, plannedResumeClosureModel)
+}
+
+func serviceClosureStoreContract(t *testing.T, factory func(*testing.T) (Model, control.AdmissionRequest, control.AdmissionResponse)) {
+	t.Helper()
 	for _, mode := range []string{"ok", "lost-start", "lost-record", "stale-rv", "recreated-vm"} {
 		t.Run(mode, func(t *testing.T) {
 			ctx := context.Background()
 			api, store := newStoreAPI(t)
 			_ = initializeStore(t, api, store)
-			m, request, fact := plannedResumeClosureModel(t)
+			m, request, fact := factory(t)
 			_, wire, err := encode(m, MaxEncodedBytes)
 			require.NoError(t, err)
 			api.change(func(vm *vmv1.VirtualMachine) { vm.Annotations[control.JournalAnnotation] = wire })

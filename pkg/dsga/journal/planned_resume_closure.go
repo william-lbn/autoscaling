@@ -3,7 +3,9 @@ package journal
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 )
 
@@ -30,6 +32,51 @@ func (model Model) plannedResumeBudget() (budget.Finalized, error) {
 		}
 	}
 	return f, nil
+}
+
+// Finalize只会写外层账本，不会新增资源效果。所有资源前驱已经Completed、
+// Finalize尚Planned/Unconfirmed而Resume仍为空Planned时，允许独立关闭已有
+// 准入，但不能把新预算提前长期持有。容量仍须由生产PG原生观察独立核验；
+// 此处的expected+1仅固定原操作允许的代次，溢出或任何其他中间态均拒绝。
+func (model Model) pendingFinalizationGeneration() (control.Uint64, error) {
+	op := model.Active
+	if op == nil || op.Cleanup != nil || len(op.Steps) < 2 || op.Request.ExpectedCapacityGeneration == control.Uint64(math.MaxUint64) {
+		return 0, fmt.Errorf("pending finalization lacks original resource operation")
+	}
+	for i, step := range op.Steps {
+		switch i {
+		case len(op.Steps) - 1:
+			if step.Action != ResumeAdmission || step.Phase != Planned {
+				return 0, fmt.Errorf("pending finalization already changed final admission")
+			}
+		case len(op.Steps) - 2:
+			if step.Action != FinalizeBudget || step.Phase != Planned && step.Phase != Unconfirmed {
+				return 0, fmt.Errorf("finalization is not the original unsettled boundary")
+			}
+		default:
+			if step.Phase != Settled || step.Observation == nil || step.Observation.Result != Completed {
+				return 0, fmt.Errorf("pending finalization cannot adopt unfinished resources")
+			}
+		}
+	}
+	return op.Request.ExpectedCapacityGeneration + 1, nil
+}
+
+func (model Model) PendingFinalizationGenerationForClosure() (control.Uint64, error) {
+	if err := model.Validate(); err != nil {
+		return 0, err
+	}
+	return model.pendingFinalizationGeneration()
+}
+
+func (model Model) validatePendingFinalizationServiceClosure() error {
+	c := model.ServiceClosure
+	generation, err := model.pendingFinalizationGeneration()
+	digest, hashErr := operationClosureDigest(model.Active)
+	if err != nil || hashErr != nil || c.Reason != "finalize_source_unconfirmed" || c.OperationSHA256 != digest || c.Original != nil || c.ClosureReceipt != nil || c.Request.ExpectedCapacityGeneration != generation {
+		return fmt.Errorf("pending finalization closure lost original resource boundary")
+	}
+	return nil
 }
 
 // 返回完整预算的值副本供独立关闭核验容量；不授予开放、Finish或释放许可。

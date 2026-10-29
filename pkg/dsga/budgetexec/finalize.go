@@ -74,17 +74,37 @@ func steps(op *journal.Operation) (map[journal.Action]*journal.Step, *journal.St
 }
 
 func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) {
-	return e.advance(ctx, false)
+	return e.advance(ctx, false, false)
+}
+
+// CheckBeforeFinalization只复核完整资源前驱和当前Root/PG/Host/Outside/Runner，
+// 不Start/Record、不替换永久预算。用于最终结算前异常关闭；已持久的Finalize
+// 未知仍逐字核验。原生fence是唯一允许的PG写，不能据此推导目标预算已完成。
+func (e *Executor) CheckBeforeFinalization(ctx context.Context, s *journal.Snapshot) error {
+	if s == nil {
+		return fmt.Errorf("pending finalization check requires original snapshot")
+	}
+	if _, err := s.State().PendingFinalizationGenerationForClosure(); err != nil {
+		return err
+	}
+	if err := e.sameSnapshot(ctx, s); err != nil {
+		return err
+	}
+	progress, err := e.advance(ctx, false, true)
+	if err == nil && progress != pgexec.Idle {
+		err = fmt.Errorf("pending finalization check did not verify original resource boundary")
+	}
+	return err
 }
 
 // RetainOriginal只显式升级仍在Active中的旧v2完整结算。调用方须先查询未知
 // 原准入，不能让来源失联挡住只读查询。本函数重核所有原前驱/来源，不改旧回执
 // 或外部资源；成功只做一次同VM UID/RV长期预算保存。历史不自动收养。
 func (e *Executor) RetainOriginal(ctx context.Context) (pgexec.Progress, error) {
-	return e.advance(ctx, true)
+	return e.advance(ctx, true, false)
 }
 
-func (e *Executor) advance(ctx context.Context, retain bool) (pgexec.Progress, error) {
+func (e *Executor) advance(ctx context.Context, retain, inspect bool) (pgexec.Progress, error) {
 	snapshot, err := e.store.Load(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, err
@@ -109,7 +129,7 @@ func (e *Executor) advance(ctx context.Context, retain bool) (pgexec.Progress, e
 	if !snapshot.Dispatchable() || op.Request.Key.Instance != e.instance {
 		return pgexec.AwaitingFact, fmt.Errorf("budget original VM/PG not dispatchable")
 	}
-	if step.Phase == journal.Planned && (op.AbortRequested || op.Origin != e.actor) {
+	if !inspect && step.Phase == journal.Planned && (op.AbortRequested || op.Origin != e.actor) {
 		return pgexec.ExternalStep, nil
 	}
 	// 接管不能新派发旧owner的结算，但可只读完成已持久原结算。原Finalized的
@@ -220,6 +240,9 @@ func (e *Executor) advance(ctx context.Context, retain bool) (pgexec.Progress, e
 	}
 	if err = e.sameSnapshot(ctx, snapshot); err != nil {
 		return pgexec.AwaitingFact, err
+	}
+	if inspect {
+		return pgexec.Idle, nil
 	}
 	if step.Phase == journal.Planned {
 		data, err := json.Marshal(original)
