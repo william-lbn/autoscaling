@@ -38,6 +38,9 @@ type Config struct {
 	// 不允许DiscoverInitial抹掉这些历史，也不把新PG boot解释为旧VM动作失效。
 	AdmissionPending *control.AdmissionRequest
 	AdmissionClose   *control.AdmissionRequest
+	// 接续关闭必须同时恢复完整原始/前驱/当前选择；不能仅恢复最新Close
+	// 后用旧close-original路径丢掉前驱。此字段与上面两份请求须逐字一致。
+	AdmissionContinuation *control.AdmissionContinuationRequest
 }
 
 // CallError不回显服务端body、Bearer、凭据提供器错误或完整URL。开始Do后的所有
@@ -52,19 +55,20 @@ func (err *CallError) Error() string {
 }
 
 type Client struct {
-	base              string
-	instance          control.Instance
-	epoch             control.Uint64
-	token             func(context.Context) (string, error)
-	execution         *http.Client
-	observer          *http.Client
-	transports        [2]*http.Transport
-	mu                sync.Mutex
-	inFlight          bool
-	pending           *control.Request
-	admissionPending  *control.AdmissionRequest
-	admissionClose    *control.AdmissionRequest
-	admissionInFlight bool
+	base                  string
+	instance              control.Instance
+	epoch                 control.Uint64
+	token                 func(context.Context) (string, error)
+	execution             *http.Client
+	observer              *http.Client
+	transports            [2]*http.Transport
+	mu                    sync.Mutex
+	inFlight              bool
+	pending               *control.Request
+	admissionPending      *control.AdmissionRequest
+	admissionClose        *control.AdmissionRequest
+	admissionInFlight     bool
+	admissionContinuation *control.AdmissionContinuationRequest
 }
 
 // New验证固定TLS端点并实时协商ABI/boot。不会在断连后自动新建Client或改变boot，
@@ -77,7 +81,7 @@ func New(ctx context.Context, config Config) (*Client, error) {
 // 协商。不能拿它重造已有未知Client；有Pending或已指定boot时直接拒绝。
 // 新boot在返回Client前固定，此后Capabilities仍严格比较，永不自动改绑。
 func DiscoverInitial(ctx context.Context, config Config) (*Client, error) {
-	if config.Instance.PGBootID != 0 || config.Pending != nil || config.AdmissionPending != nil || config.AdmissionClose != nil {
+	if config.Instance.PGBootID != 0 || config.Pending != nil || config.AdmissionPending != nil || config.AdmissionClose != nil || config.AdmissionContinuation != nil {
 		return nil, &CallError{MayHaveExecuted: false, Code: "initial_discovery_has_history"}
 	}
 	return newClient(ctx, config, true)
@@ -124,6 +128,14 @@ func newClient(ctx context.Context, config Config, initial bool) (*Client, error
 			}
 			client.admissionClose = &closeIntent
 		}
+	}
+	if config.AdmissionContinuation != nil {
+		selection := *config.AdmissionContinuation
+		if selection.Validate() != nil || config.AdmissionPending == nil || config.AdmissionClose == nil ||
+			selection.Original != *config.AdmissionPending || selection.Close != *config.AdmissionClose || selection.Close.IssuerEpoch > config.IssuerEpoch {
+			return nil, &CallError{MayHaveExecuted: false, Code: "invalid_pending_admission_continuation"}
+		}
+		client.admissionContinuation = &selection
 	}
 	if config.Pending != nil {
 		request := *config.Pending

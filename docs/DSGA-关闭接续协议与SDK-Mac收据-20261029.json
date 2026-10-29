@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "stage": "关闭接续协议、SDK与Compute路由；非完整Agent接管验收",
+  "date": "2026-10-29",
+  "pg17_frozen_sha": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "bases": {
+    "autoscaling": "e773bb004ad2e35d56f2628b035e0677b6419995",
+    "neon": "5067b56d1f385c556b9042c96097e3c4c220cc03"
+  },
+  "source_sha256": {
+    "autoscaling": {
+      "pkg/api/dsga/admission_continuation.go": "a963670a679a5bda4af6e602026ba564d90b0dbb69956cec6b2aa41eb193d803",
+      "pkg/api/dsga/admission_continuation_test.go": "e55c9a4c3bc2cb60ad1ab2ed9887743f3e1d14d09d85107da47126829982840c",
+      "pkg/api/dsga/testdata/admission-continuation-v1.json": "3e324f153ed82b1c8df77868804929d889c0c1875a2a99482d70617458a9e8a1",
+      "pkg/dsga/compute/client.go": "97a419ae12c59065b4e6d7e19d6eac00dee00d2b06c35964913a73553bb810ea",
+      "pkg/dsga/compute/admission.go": "4dc6ce205cb4c7ba31fc263e883ef64b990fe24e97b7a37dcd1eeadc71ac8d66",
+      "pkg/dsga/compute/admission_continuation.go": "df038f64cc42496156ee13f556b78297fc7d79f1c904e70dbfc2c92afa761c0d",
+      "pkg/dsga/compute/admission_continuation_test.go": "ba94ee81104fc72bfde231dbd5aeccd74c34fe95595d6578c61ab7c31b42ce19"
+    },
+    "neon": {
+      "ci/test-dsg-rust-client.sh": "c411273f4319e5c0753c0e9012e801b4db79d9892981d015e49d9bee6f4908bf",
+      "libs/compute_api/src/dsg_admission.rs": "643b9c8c58ccbb8d75611c3072260a035c4f53a1ed95c84dcc31dc9d1eed9e53",
+      "libs/compute_api/src/dsg_client.rs": "2d3e2cc97a06372e8c37809206f0a30915fdc8437c9947470b30ca1177c157a3",
+      "libs/compute_api/testdata/dsg_admission_continuation_v1.json": "3e324f153ed82b1c8df77868804929d889c0c1875a2a99482d70617458a9e8a1",
+      "libs/compute_api/tests/dsg_admission_continuation.rs": "d928438d5de5b13288090ee449addc511245b5e4a9faac2aec81350d90ffaf63",
+      "libs/compute_api/tests/dsg_admission_continuation_native.rs": "ff3ee4439526c57511c9820f2f6b2d95f9f239bd7baeb9cf74cbfaaf61ec4b03",
+      "compute_tools/src/http/routes/dsg.rs": "470d7563896f8fea0f6eb58dbcdc7d865f699326405766ae20fed82a47f40a89",
+      "compute_tools/src/http/dsg_openapi.yaml": "b953c71b90a55afcf5231e42f1d4c1844720b1b1ef80d5bc1ad7c90b304fc3a5",
+      "compute_tools/tests/dsg_http.rs": "249986c3ff1348d7ff9207deabe9efd580327cbbd6ccded10e20fb3ec60f1cbe"
+    }
+  },
+  "logs_sha256": {
+    "dsga-admission-continuation-go-first.jsonl": "c078cb23ba8b68cb92054bf6ffa01efe3ccbe07ffbba600e2aa4786e2370adef",
+    "dsga-admission-continuation-go-protocol-race.jsonl": "b0534f91e7fc42be02e85dde53dae7ab2b44ff25d79e5fba26e9ca5e467c9de5",
+    "dsga-admission-continuation-go-sdk.jsonl": "baff3dade35ddbd47f8a62437b2c0d539c080da49995c7c44016dba05519a7a6",
+    "dsga-admission-continuation-rust-protocol.log": "1833d8a3c484b568e993b4a9e82bccd6be8a56211c3cff30df51c58fb21242a9",
+    "dsga-admission-continuation-native/native-sdk.log": "bec44e5b4bd76997574c9856d8952186c94c7c9a166bd6886142018acabd9fbf",
+    "dsga-admission-continuation-native-stale-final/http.log": "4fd78b8aba9ae8665acd29eeff24bfd62d91405d39b05738d14a5391e073e079",
+    "dsga-admission-continuation-native-stale-final/affected-sdk.log": "8928299723ab9059a20649284b07ebffd175e1c6702bfff6c4556b26d024bc8f",
+    "dsga-admission-continuation-native-oracle.log": "53df8cd88fbb438daaf22acc7763e68577876f688d73cace3932e8772d7c5497",
+    "dsga-admission-continuation-clippy-final.log": "e04aeddc1b61795ca743bd14cf0d92745e5df4687bc2b9cd66dc859f2ea94819",
+    "dsga-admission-continuation-go-vet.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsga-admission-continuation-go-lint-final.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "dsga-admission-continuation-go-consumers-compile.log": "f527ca940d76b8c6a2834aef6b2457952a7bf933d800159dcf72c01f6b0f4e39"
+  },
+  "tests": {
+    "go_api": {
+      "top_level_pass": 5,
+      "pass_including_subtests": 43,
+      "fail": 0,
+      "skip": 0,
+      "race": true
+    },
+    "go_sdk": {
+      "top_level_pass": 3,
+      "pass_including_subtests": 3,
+      "fail": 0,
+      "skip": 0,
+      "race": true
+    },
+    "rust_protocol": {
+      "pass": 6,
+      "fail": 0,
+      "ignored": 0
+    },
+    "native_sdk": {
+      "pass": 1,
+      "fail": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "seconds": 1.31
+    },
+    "http": {
+      "pass": 3,
+      "fail": 0,
+      "ignored": 0,
+      "filtered": 24
+    },
+    "affected_resize_observer": {
+      "pass": 1,
+      "fail": 0,
+      "ignored": 0,
+      "filtered": 11
+    }
+  },
+  "limitations": [
+    "Go网络端为明确协议peer，未验证真实Lease/Agent写前CAS",
+    "本阶段外层Journal/Worker/管理接续恢复尚未实现",
+    "原生PG为Mac冻结版本，非Linux/K8s/NeonVM/HugeTLB/物理回收或性能认证",
+    "Go测试后仅格式化、显式零值字段和局部变量改名，未重跑相同行为",
+    "Rust原生SDK初次SQL参数text/jsonb夹具失败已修；日志保留",
+    "首次向量生成器误用紧凑字典序，已修为PG JSONB规范并由真实PG核四个摘要；首轮四个失败保留",
+    "原native-stale-final SDK通过后增加四向量oracle，最终采用native-oracle日志；不累计重复",
+    "依赖remote_storage历史27warnings保留，本包Clippy -D warnings通过",
+    "无新Linux交叉编译或执行；未变PG内核不重编；默认关闭"
+  ]
+}

@@ -124,7 +124,7 @@ func (client *Client) AdmissionClosureStatus(ctx context.Context, intent control
 	}
 	client.mu.Lock()
 	defer client.mu.Unlock()
-	if client.admissionInFlight || (client.admissionPending != nil && *client.admissionPending != intent.Original) || (client.admissionClose != nil && *client.admissionClose != intent.Close) {
+	if client.admissionContinuation != nil || client.admissionInFlight || (client.admissionPending != nil && *client.admissionPending != intent.Original) || (client.admissionClose != nil && *client.admissionClose != intent.Close) {
 		return control.AdmissionClosure{}, &CallError{Code: "unresolved_other_admission"}
 	}
 	client.admissionPending, client.admissionClose = nil, nil
@@ -134,7 +134,7 @@ func (client *Client) AdmissionClosureStatus(ctx context.Context, intent control
 func (client *Client) reserveAdmission(original control.AdmissionRequest, closeIntent *control.AdmissionRequest) error {
 	client.mu.Lock()
 	defer client.mu.Unlock()
-	if client.admissionInFlight || (client.admissionPending != nil && *client.admissionPending != original) || (client.admissionClose != nil && (closeIntent == nil || *client.admissionClose != *closeIntent)) || (closeIntent == nil && original.Open && (client.inFlight || client.pending != nil)) {
+	if client.admissionContinuation != nil || client.admissionInFlight || (client.admissionPending != nil && *client.admissionPending != original) || (client.admissionClose != nil && (closeIntent == nil || *client.admissionClose != *closeIntent)) || (closeIntent == nil && original.Open && (client.inFlight || client.pending != nil)) {
 		return &CallError{Code: "unresolved_original_admission_or_resize"}
 	}
 	retained := original
@@ -153,5 +153,6 @@ func (client *Client) finishAdmission(resolved bool) {
 	client.admissionInFlight = false
 	if resolved {
 		client.admissionPending, client.admissionClose = nil, nil
+		client.admissionContinuation = nil
 	}
 }
