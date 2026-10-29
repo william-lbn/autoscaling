@@ -210,6 +210,9 @@ func (e *Executor) checkReconciled(ctx context.Context, s *journal.Snapshot, p b
 // 完整预算落账和Finish分轮完成；任何失败保留原意图/峰值，不自动反向伸缩。
 func (e *Executor) advanceReconciledAbort(ctx context.Context, s *journal.Snapshot, replay *control.Key, selected bool) (bool, pgexec.Progress, error) {
 	m := s.State()
+	if m.ServiceClosure != nil {
+		return true, pgexec.AwaitingFact, fmt.Errorf("actual recovery blocked by retained service closure")
+	}
 	op := m.Active
 	if !reconciledEligible(op) {
 		return false, pgexec.ExternalStep, nil

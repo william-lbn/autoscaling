@@ -90,6 +90,9 @@ func (e *Executor) checkUnchangedBudget(ctx context.Context, s *journal.Snapshot
 // 独立Cleanup完整落账并再次复核后，Finish才恢复原预算关闭链供Host结清。
 func (e *Executor) advanceUnchangedAbort(ctx context.Context, s *journal.Snapshot, replay *control.Key, allowNewOpening bool) (bool, pgexec.Progress, error) {
 	m := s.State()
+	if m.ServiceClosure != nil {
+		return true, pgexec.AwaitingFact, fmt.Errorf("unchanged recovery blocked by retained service closure")
+	}
 	f, err := m.UnchangedAbortBudget()
 	if err != nil {
 		return false, pgexec.ExternalStep, nil

@@ -160,6 +160,32 @@ func verifyUnchangedBudgetAbort(t *testing.T, ctx context.Context, api *ownerAPI
 		require.NoError(t, runner.Tick(ctx))
 	}
 
+	if strings.HasPrefix(mode, "restore-prior-safety-") {
+		readonly, settled := strings.Contains(mode, "readonly"), strings.HasSuffix(mode, "-settled")
+		if readonly && !settled {
+			api.mu.Lock()
+			api.loseJournalReply = true
+			api.mu.Unlock()
+		}
+		if readonly {
+			_, err = worker.Advance(ctx)
+		} else {
+			pg.mu.Lock()
+			pg.closedOverride, pg.allowNext, pg.loseAfter = true, true, !settled
+			pg.mu.Unlock()
+			_, err = worker.RecoverUnchangedAdmission(ctx, req.Key)
+		}
+		if settled {
+			require.NoError(t, err)
+		} else {
+			require.Error(t, err)
+		}
+		verifyCapacityCleanupSourceFailure(t, ctx, store, session, resources, worker, config, client, root, pg, shared, priorRequest.BudgetCommitmentID, readonly, settled)
+		peer.mu.Lock()
+		require.Equal(t, 1, peer.writes, "取消未发送，安全关闭不增加VM反向写")
+		peer.mu.Unlock()
+		return
+	}
 	losses := mode == "restore-prior-replies"
 	if losses {
 		pg.mu.Lock()

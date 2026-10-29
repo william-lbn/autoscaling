@@ -119,6 +119,11 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		return pgexec.AwaitingFact, err
 	}
 	state := snapshot.State()
+	// 独立服务关闭优先于原开放/取消恢复，即使嵌入调用者直接使用Executor
+	// 或公开Replay，也不能仅靠owner管理路由的门禁保护最后一个setter。
+	if state.ServiceClosure != nil {
+		return pgexec.AwaitingFact, fmt.Errorf("admission blocked by retained service closure")
+	}
 	if state.Owner != e.actor {
 		return pgexec.AwaitingFact, fmt.Errorf("admission owner changed")
 	}

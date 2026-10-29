@@ -181,7 +181,9 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 			if err != nil {
 				return w.recoverServiceClosureCapacity(ctx, m, err)
 			}
-			if m.ProtocolVersion == 16 || m.ProtocolVersion == 17 {
+			if m.ProtocolVersion == 18 {
+				_, err = w.session.store.RecordCleanupServiceClosure(ctx, s, m.Owner, fact, replay == "")
+			} else if m.ProtocolVersion == 16 || m.ProtocolVersion == 17 {
 				_, err = w.session.store.RecordActiveServiceClosure(ctx, s, m.Owner, fact, replay == "")
 			} else if c.OperationSHA256 != "" {
 				_, err = w.session.store.RecordResumeServiceClosure(ctx, s, m.Owner, fact, replay == "")
@@ -205,10 +207,22 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 	if replay != "" {
 		return true, pgexec.AwaitingFact, fmt.Errorf("service closure WAL is absent")
 	}
-	if w.safety == nil || m.InitialHeld == nil && m.BudgetHeld == nil && m.CapacityHeld == nil {
+	// 原实际容量Cleanup在首次完整预算之前也可能已写前持久；不能因没有
+	// 永久头跳过其来源检查。边界从原Cleanup取，绝不补造Initial/Finalized。
+	if w.safety == nil || m.InitialHeld == nil && m.BudgetHeld == nil && m.CapacityHeld == nil && (m.Active == nil || m.Active.Cleanup == nil) {
 		return false, pgexec.Idle, nil
 	}
 	if m.Active != nil {
+		if m.Active.Cleanup != nil {
+			boundary, err := m.CleanupServiceForClosure()
+			if err != nil {
+				return false, pgexec.Idle, nil
+			}
+			if err := w.inspectCleanupService(ctx, s); err == nil {
+				return false, pgexec.Idle, nil
+			}
+			return w.closeCleanupService(ctx, s, boundary)
+		}
 		// 仅在所有先前领域完整结算、最后开放前后的稳定边界复用
 		// 完整预算审计。其他Resize中间态不能按旧永久预算误判来源漂移。
 		original, err := m.ResumeAdmissionForClosure()

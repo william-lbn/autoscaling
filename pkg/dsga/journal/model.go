@@ -383,7 +383,7 @@ func compareKeys(left, right control.Key) int {
 }
 
 func (model Model) Validate() error {
-	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 17) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
+	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 18) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
 		return fmt.Errorf("invalid journal version/sequence/incarnation")
 	}
 	// 旧Model已有严格字段解码，会拒绝pg_instance；这里另用v2明确标识
@@ -392,7 +392,11 @@ func (model Model) Validate() error {
 	if (model.ProtocolVersion == 1 && model.PGInstance != nil) || (model.ProtocolVersion >= 2 && model.PGInstance == nil) {
 		return fmt.Errorf("journal version does not preserve required PG identity")
 	}
-	if (model.ProtocolVersion < 3 && model.BudgetHeld != nil) || (model.CapacityHeld != nil && (model.ProtocolVersion < 8 || model.BudgetHeld != nil || model.InitialHeld != nil)) || (model.InitialHeld != nil && (model.ProtocolVersion < 9 || model.BudgetHeld != nil)) || (model.ProtocolVersion >= 3 && ((model.BudgetHeld == nil && model.CapacityHeld == nil && model.InitialHeld == nil) || model.ResourceIdentity == nil)) {
+	// 旧v2实际容量Cleanup可能尚无永久头。v18仅允许其独立安全关闭：完整
+	// 原Cleanup及实际预算由validateCleanupServiceClosure继续严格验证，
+	// 不把无头状态升级成已持有预算，也不放宽其他格式的永久头要求。
+	cleanupClosureOnly := model.ProtocolVersion == 18 && model.ServiceClosure != nil
+	if (model.ProtocolVersion < 3 && model.BudgetHeld != nil) || (model.CapacityHeld != nil && (model.ProtocolVersion < 8 || model.BudgetHeld != nil || model.InitialHeld != nil)) || (model.InitialHeld != nil && (model.ProtocolVersion < 9 || model.BudgetHeld != nil)) || (model.ProtocolVersion >= 3 && ((model.BudgetHeld == nil && model.CapacityHeld == nil && model.InitialHeld == nil && !cleanupClosureOnly) || model.ResourceIdentity == nil)) {
 		return fmt.Errorf("journal version does not preserve required held budget")
 	}
 	if err := control.ValidateID(model.VMUID, "VM"); err != nil {

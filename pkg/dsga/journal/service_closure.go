@@ -22,6 +22,8 @@ import (
 // Active的原目标承诺，不代表它已成为当前永久头；原永久预算全部保留。
 // v16固定PG未派发的资源在途；v17保护完整原PG已派发的在途操作，只允许
 // 原容量/提交后下一代。新代关闭不结清原Resize，也不授予原资源动作重发。
+// v18固定原取消Cleanup及其完整服务边界；原实际/目标/旧容量预算分别认证，
+// 不因关闭把原Cleanup的未知、完成或永久头改写成另一次恢复。
 type ServiceClosure struct {
 	Origin           Owner                      `json:"origin"`
 	StartedSequence  control.Uint64             `json:"started_sequence"`
@@ -37,7 +39,7 @@ type ServiceClosure struct {
 	Continuation   *ServiceClosureContinuation `json:"continuation,omitempty"`
 	Original       *control.AdmissionRequest   `json:"original,omitempty"`
 	ClosureReceipt *control.AdmissionClosure   `json:"closure_receipt,omitempty"`
-	// v13～v17只保存完整原Active的SHA256；完整原文仍在Active中，防止关闭
+	// v13～v18只保存完整原Active的SHA256；完整原文仍在Active中，防止关闭
 	// 后借普通Record/RequestAbort/Finish重写原步骤或丢失未知效果。
 	OperationSHA256 string `json:"operation_sha256,omitempty"`
 }
@@ -72,6 +74,10 @@ func cloneAdmissionResponse(original *control.AdmissionResponse) *control.Admiss
 // 不将其补成已结算预算。不能由错误文字、RSS或当前资格派生新承诺。
 // 本函数不认证外部对象，也不向Root/Host发出释放许可。
 func (model Model) ServiceBudgetID() (string, error) {
+	if model.ProtocolVersion == 18 {
+		boundary, err := model.cleanupServiceBoundary()
+		return boundary.BudgetCommitmentID, err
+	}
 	if model.ProtocolVersion >= 15 && model.Active != nil {
 		return model.Active.Request.BudgetCommitmentID, nil
 	}
@@ -105,10 +111,14 @@ func (model Model) validateServiceClosure() error {
 	}
 	budgetID, err := model.ServiceBudgetID()
 	digest, hashErr := c.Request.ContextSHA256()
-	if model.ProtocolVersion < 10 || model.ProtocolVersion > 17 || model.ProtocolVersion < 12 && ((model.ProtocolVersion == 11) != (c.Continuation != nil)) || model.PGInstance == nil || err != nil || hashErr != nil || c.Request.Open || c.Request.Instance != *model.PGInstance || c.Request.BudgetCommitmentID != budgetID || c.CommandSHA256 != digest || c.Origin.Validate() != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Origin.Epoch > model.Owner.Epoch || c.Origin.Epoch == model.Owner.Epoch && c.Origin != model.Owner || c.StartedSequence == 0 || c.StartedSequence > model.Sequence {
+	if model.ProtocolVersion < 10 || model.ProtocolVersion > 18 || model.ProtocolVersion < 12 && ((model.ProtocolVersion == 11) != (c.Continuation != nil)) || model.PGInstance == nil || err != nil || hashErr != nil || c.Request.Open || c.Request.Instance != *model.PGInstance || c.Request.BudgetCommitmentID != budgetID || c.CommandSHA256 != digest || c.Origin.Validate() != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Origin.Epoch > model.Owner.Epoch || c.Origin.Epoch == model.Owner.Epoch && c.Origin != model.Owner || c.StartedSequence == 0 || c.StartedSequence > model.Sequence {
 		return fmt.Errorf("service closure differs from original retained PG, budget or owner")
 	}
 	switch {
+	case model.ProtocolVersion == 18:
+		if err := model.validateCleanupServiceClosure(); err != nil {
+			return err
+		}
 	case c.Original != nil && model.ProtocolVersion == 12:
 		if model.Active != nil || c.OperationSHA256 != "" {
 			return fmt.Errorf("initial service closure cannot adopt active resize")

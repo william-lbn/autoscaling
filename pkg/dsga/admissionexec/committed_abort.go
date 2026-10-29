@@ -102,6 +102,9 @@ func (e *Executor) checkCommittedBudget(ctx context.Context, s *journal.Snapshot
 // 回复丢失均重读原WAL，不把业务取消伪装成容量回滚或NoEffect。
 func (e *Executor) advanceCommittedAbort(ctx context.Context, s *journal.Snapshot, replay *control.Key) (bool, pgexec.Progress, error) {
 	m := s.State()
+	if m.ServiceClosure != nil {
+		return true, pgexec.AwaitingFact, fmt.Errorf("cleanup blocked by retained service closure")
+	}
 	op := m.Active
 	if op == nil || !op.AbortRequested {
 		return false, pgexec.ExternalStep, nil

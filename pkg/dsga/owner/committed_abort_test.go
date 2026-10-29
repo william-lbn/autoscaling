@@ -118,6 +118,7 @@ func verifyCommittedAbort(t *testing.T, ctx context.Context, api *ownerAPI, stor
 	req := s.State().Active.Request
 	held := s.State().BudgetHeld
 	require.NotNil(t, held)
+	require.NoError(t, worker.admission.CheckRetainedService(ctx, s), "取消前完整原预算必须真实健康")
 	_, err = store.RequestAbort(ctx, s, session.Actor(), req.Key)
 	require.NoError(t, err)
 	losses := mode == "abort-replies"
@@ -188,16 +189,28 @@ func verifyCommittedAbort(t *testing.T, ctx context.Context, api *ownerAPI, stor
 		require.Equal(t, original.CommandSHA256, s.State().Active.Cleanup.CommandSHA256)
 		require.Equal(t, original.DispatchedBy, s.State().Active.Cleanup.DispatchedBy)
 	} else if mode == "abort-root-drift" {
-		require.Error(t, err, "setter后真实Root漂移不得记录清理完成")
+		require.NoError(t, err, "setter后真实Root漂移同轮独立关闭，不能记录清理完成")
+		require.Equal(t, pgexec.Recorded, progress)
 		s, err = store.Load(ctx)
 		require.NoError(t, err)
 		require.Equal(t, journal.Unconfirmed, s.State().Active.Cleanup.Phase)
+		require.NotNil(t, s.State().ServiceClosure)
+		require.False(t, s.State().ServiceClosure.Pending())
+		require.Equal(t, held, s.State().BudgetHeld)
+		pg.mu.Lock()
+		posts := pg.posts
+		require.NotNil(t, pg.last)
+		require.False(t, pg.last.Open)
+		pg.mu.Unlock()
 		root.mu.Lock()
 		root.view.Actual.MemoryMaxBytes--
 		root.mu.Unlock()
-		progress, err = worker.Advance(ctx)
-		require.NoError(t, err)
-		require.Equal(t, pgexec.Recorded, progress, "恢复原真实约束后只能status对账")
+		_, err = worker.Advance(ctx)
+		require.ErrorIs(t, err, ErrServiceSafety, "来源恢复不能清除独立关闭并重开旧Cleanup")
+		pg.mu.Lock()
+		require.Equal(t, posts, pg.posts)
+		pg.mu.Unlock()
+		return worker
 	} else {
 		require.NoError(t, err)
 		require.Equal(t, pgexec.Recorded, progress)
@@ -205,6 +218,7 @@ func verifyCommittedAbort(t *testing.T, ctx context.Context, api *ownerAPI, stor
 	s, err = store.Load(ctx)
 	require.NoError(t, err)
 	require.Equal(t, held, s.State().BudgetHeld, "不能因业务取消替换完整容量预算")
+	require.NotNil(t, s.State().Active.Cleanup, "正常取消必须创建Cleanup，不能把安全关闭Recorded当业务完成：%+v", s.State().ServiceClosure)
 	require.NoError(t, s.State().CheckCommittedAbort())
 	require.Equal(t, journal.Settled, s.State().Active.Cleanup.Phase)
 	var audit budget.CommittedAbortReceipt

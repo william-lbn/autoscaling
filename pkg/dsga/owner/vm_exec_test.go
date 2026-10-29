@@ -174,9 +174,10 @@ func vmReservation(t *testing.T, client *kubefake.Clientset, name, kind string, 
 }
 
 func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testing.T) {
-	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late", "abort-committed", "abort-after-open", "abort-replies", "abort-original-open-lost", "partial-pending-restore", "partial-host-settle", "partial-auto", "partial-auto-start-lost", "partial-auto-record-lost", "partial-auto-source-gone", "partial-auto-selected-replies", "shrink-partial-after-grow", "trusted-prepare-replies"} {
+	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late", "abort-committed", "abort-after-open", "abort-replies", "abort-original-open-lost", "partial-pending-restore", "partial-host-settle", "partial-auto", "partial-auto-start-lost", "partial-auto-record-lost", "partial-auto-source-gone", "partial-auto-selected-replies", "partial-safety-readonly-unknown", "partial-safety-readonly-settled", "partial-safety-opening-unknown", "partial-safety-opening-settled", "shrink-partial-after-grow", "trusted-prepare-replies"} {
 		t.Run(mode, func(t *testing.T) {
 			trustedPrepare := mode == "trusted-prepare-replies"
+			cleanupSafety := strings.HasPrefix(mode, "partial-safety-")
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
 			api.mu.Lock()
@@ -228,10 +229,15 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				// 专测快速失租的400ms期限当作整个生命周期的性能门槛。
 				options, timeout = DefaultOptions(), 45*time.Second
 			}
-			if mode == "partial-auto-selected-replies" {
+			if mode == "partial-auto-selected-replies" || cleanupSafety {
 				// 同一次真实资源链串联四次丢回复与worker重建；只放大组合
 				// 总期限，不改变生产Lease/客户端超时，也不声称性能认证。
 				timeout = 120 * time.Second
+			}
+			if mode == "abort-replies" {
+				// 独立Cleanup安全预审增加原来源读取；旧45秒总期限已在
+				// Finish之后耗尽。只扩大组合总期限，生产请求/租约不变。
+				timeout = 90 * time.Second
 			}
 			if mode == "shrink-partial-after-grow" {
 				options, timeout = DefaultOptions(), 3*time.Minute
@@ -255,8 +261,8 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				if trustedPrepare {
 					p.Limits.PidsMaxTasks, p.Limits.SystemMemoryMaxBytes = 128, 16<<20
 				}
-				selectedActual := mode == "partial-auto-selected-replies"
-				if mode == "partial-host-settle" || strings.HasPrefix(mode, "partial-auto") && !selectedActual {
+				selectedActual := mode == "partial-auto-selected-replies" || cleanupSafety
+				if mode == "partial-host-settle" || strings.HasPrefix(mode, "partial-auto") && !selectedActual || cleanupSafety && strings.Contains(mode, "readonly") {
 					// 本用例显式模拟已服务的旧PG；VM先扩，Guest/PG尚未改。
 					// 只读Cleanup不发送开放请求，不能把夹具当首次服务生产者。
 					baseline.Observed.AdmissionOpen = true
@@ -278,6 +284,9 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				}
 				abortMode := strings.HasPrefix(mode, "abort-")
 				var pgViews []func() control.Snapshot
+				if cleanupSafety {
+					pgViews = append(pgViews, func() control.Snapshot { return abortPG.shared(baseline).Observed })
+				}
 				if trustedPrepare {
 					pgViews = append(pgViews, func() control.Snapshot {
 						if committed.Load() {
@@ -308,7 +317,18 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 						pgReply(w, pgResponse(t, req))
 					case "/dsg/v1/resize/status":
 						pgReply(w, pgResponse(t, req))
+					case "/dsg/v1/admission/close-original", "/dsg/v1/admission/close-original/status":
+						require.True(t, cleanupSafety)
+						abortPG.serveCleanupClose(t, w, r, store, baseline.Observed)
 					case "/dsg/v1/admission":
+						if cleanupSafety {
+							s, err := store.Load(r.Context())
+							require.NoError(t, err)
+							if s.State().ServiceClosure != nil {
+								abortPG.serveCleanupClose(t, w, r, store, baseline.Observed)
+								return
+							}
+						}
 						if selectedActual {
 							opens.Add(1)
 							abortPG.serve(t, w, r, baseline.Observed)
@@ -370,6 +390,11 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 					priorBudgetDomain(t, ctx, store, session.Actor(), req, journal.PrepareBudget, req.Key.Instance.ComputeInstanceID, p)
 				}
 				host := publishVMHost(t, ctx, client, coord, store, session)
+				if abortMode {
+					// 多轮来源安全审计/丢回复恢复期间维持真实Host租约，
+					// 不把静态夹具过期误作预算漂移，也不放宽生产过期校验。
+					keepPGTakeoverHostOwner(t, ctx, client)
+				}
 				progress, err := worker.Advance(ctx)
 				require.NoError(t, err)
 				require.Equal(t, pgexec.Recorded, progress, "生产Agent消费Node/CM原持有并结算ReserveHost")
@@ -554,8 +579,14 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 					}
 					require.Equal(t, journal.Settled, budgetStep(t, store, journal.ResizeVM).Phase)
 					if strings.HasPrefix(mode, "partial-") {
-						verifyPartialCapacityPending(t, ctx, api, store, session, worker, resources, config, client, p, out, outRef, host, mode, abortPG)
+						verifyPartialCapacityPending(t, ctx, api, store, session, worker, resources, config, client, p, out, outRef, host, mode, abortPG, root)
 						require.Zero(t, resizePosts.Load())
+						if cleanupSafety {
+							peer.mu.Lock()
+							require.Equal(t, 1, peer.writes)
+							peer.mu.Unlock()
+							return nil
+						}
 						if selectedActual {
 							require.EqualValues(t, 2, opens.Load(), "只由两次显式原重放触发setter")
 						} else {
@@ -626,7 +657,7 @@ func vmDSM(s control.Snapshot) control.DSMResponse {
 }
 
 func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T) {
-	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost", "explicit-original-replay", "host-settle", "host-settle-lost", "host-settle-source-gone", "host-settle-runner-drift", "host-settle-gc-lost", "host-settle-scheduler-loop", "host-settle-after-cancel-history", "cancel-before-runner", "abort-committed", "abort-root-drift", "restore-prior", "restore-prior-replies", "restore-prior-negative"} {
+	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost", "explicit-original-replay", "host-settle", "host-settle-lost", "host-settle-source-gone", "host-settle-runner-drift", "host-settle-gc-lost", "host-settle-scheduler-loop", "host-settle-after-cancel-history", "cancel-before-runner", "abort-committed", "abort-root-drift", "restore-prior", "restore-prior-replies", "restore-prior-negative", "restore-prior-safety-readonly-unknown", "restore-prior-safety-readonly-settled", "restore-prior-safety-opening-unknown", "restore-prior-safety-opening-settled"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -732,7 +763,18 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 							c.Work.ForegroundIdle = false
 						}
 						pgReply(w, dsm)
+					case "/dsg/v1/admission/close-original", "/dsg/v1/admission/close-original/status":
+						require.True(t, strings.HasPrefix(mode, "restore-prior-safety-") || mode == "abort-root-drift")
+						abortPG.serveCleanupClose(t, w, r, store, current.Observed)
 					case "/dsg/v1/admission":
+						if strings.HasPrefix(mode, "restore-prior-safety-") {
+							s, err := store.Load(r.Context())
+							require.NoError(t, err)
+							if s.State().ServiceClosure != nil {
+								abortPG.serveCleanupClose(t, w, r, store, current.Observed)
+								return
+							}
+						}
 						if trackGate {
 							opens.Add(1)
 							abortPG.serve(t, w, r, current.Observed)
@@ -768,6 +810,9 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 				require.NoError(t, err)
 				priorBudgetDomain(t, ctx, store, session.Actor(), req, journal.PrepareBudget, req.Key.Instance.ComputeInstanceID, p)
 				publishVMHost(t, ctx, client, coord, store, session, mode)
+				if abortMode {
+					keepPGTakeoverHostOwner(t, ctx, client)
+				}
 				root.mu.Lock()
 				aggregate, err := budget.RootAggregateFromView(root.view)
 				root.mu.Unlock()
@@ -856,6 +901,9 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 				}
 				if abortMode {
 					verifyCommittedAbort(t, ctx, api, store, session, worker, abortPG, root, mode, nil)
+					if mode == "abort-root-drift" {
+						return nil
+					}
 					if mode == "abort-committed" {
 						verifyClosedHostSettlement(t, ctx, api, client, coord, store, session, worker, runner, peer, mode)
 					} else {

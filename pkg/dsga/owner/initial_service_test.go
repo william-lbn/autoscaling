@@ -151,6 +151,11 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 				var c budget.InitialAdmissionCommand
 				require.NoError(t, json.Unmarshal(a.Command, &c))
 				require.Equal(t, c.Request, request, "真实首次setter之前必须有原完整WAL")
+			} else if active := s.State().Active; active != nil && active.Cleanup != nil {
+				boundary, err := s.State().CleanupServiceForClosure()
+				require.NoError(t, err)
+				require.Equal(t, journal.Unconfirmed, active.Cleanup.Phase)
+				require.Equal(t, &request, boundary.Admission, "原Cleanup独立开放必须先于setter写前持久")
 			} else if s.State().Active != nil && s.State().Active.Request.Kind == control.Shrink && !request.Open {
 				step := budgetStep(t, p.store, journal.Quiesce)
 				require.Equal(t, journal.Unconfirmed, step.Phase)
@@ -296,7 +301,7 @@ func TestProductionInitialOwnerTransferCancelsUnreceivedGuestAndSettlesActualBud
 func productionInitialService(t *testing.T, mode string) {
 	t.Helper()
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
-	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer"
+	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
 	pgSafety := strings.HasPrefix(mode, "active-safety-pg-")
 	pgTakeover := mode == "owner-transfer-after-pg"
 	unreceivedGuest := mode == "owner-transfer-before-guest-delivery"
@@ -457,7 +462,7 @@ func productionInitialService(t *testing.T, mode string) {
 			return nil
 		}
 		var successorHost *hostexec.Publisher
-		if pgTakeover || guestTakeover || mode == "auto-finish" || mode == "automatic-policy" || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") {
+		if pgTakeover || guestTakeover || mode == "auto-finish" || mode == "automatic-policy" || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
 			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -524,7 +529,7 @@ func productionInitialService(t *testing.T, mode string) {
 			// 完整结案/自动Grow→Shrink会经过多次正式来源预审，race运行
 			// 可能超过静态夹具Lease的60秒寿命。用原UID/holder的真实
 			// 选主续租维持Host，不放宽生产过期校验，也不重建同名来源。
-			if pgTakeover || guestTakeover || mode == "auto-finish" || mode == "automatic-policy" || pgSafety {
+			if pgTakeover || guestTakeover || mode == "auto-finish" || mode == "automatic-policy" || pgSafety || strings.HasPrefix(mode, "cleanup-safety-") {
 				keepPGTakeoverHostOwner(t, ctx, client)
 			}
 		}
@@ -552,6 +557,10 @@ func productionInitialService(t *testing.T, mode string) {
 			}
 			if action == journal.ResumeAdmission && strings.HasPrefix(mode, "resume-safety-") {
 				verifyResumeServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
+				return nil
+			}
+			if action == journal.ResumeAdmission && strings.HasPrefix(mode, "cleanup-safety-") {
+				verifyCleanupServiceSafety(t, ctx, strings.TrimPrefix(mode, "cleanup-safety-"), api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
 				return nil
 			}
 			s, err = store.Load(ctx)

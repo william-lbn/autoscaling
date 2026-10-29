@@ -173,7 +173,9 @@ func serviceClosureStoreContract(t *testing.T, factory func(*testing.T) (Model, 
 			api.mu.Unlock()
 			var started *Snapshot
 			var ticket *ServiceClosure
-			if len(active) == 1 && active[0] {
+			if m.Active != nil && m.Active.Cleanup != nil {
+				started, ticket, err = store.StartCleanupServiceClosure(ctx, s, m.Owner, request)
+			} else if len(active) == 1 && active[0] {
 				started, ticket, err = store.StartActiveServiceClosure(ctx, s, m.Owner, request)
 			} else {
 				started, ticket, err = store.StartServiceClosure(ctx, s, m.Owner, request)
@@ -190,7 +192,12 @@ func serviceClosureStoreContract(t *testing.T, factory func(*testing.T) (Model, 
 				api.mu.Lock()
 				api.failAfterCommit = mode == "lost-record"
 				api.mu.Unlock()
-				_, err = store.RecordServiceClosure(ctx, started, m.Owner, fact, false)
+				if ticket.Original != nil {
+					proof := control.AdmissionClosure{ProtocolVersion: 1, Original: *ticket.Original, ClosedBy: fact, PriorMayHaveApplied: true, VMShrinkPermit: false}
+					_, err = store.RecordCleanupServiceClosure(ctx, started, m.Owner, proof, false)
+				} else {
+					_, err = store.RecordServiceClosure(ctx, started, m.Owner, fact, false)
+				}
 				if mode == "lost-record" {
 					require.Error(t, err)
 				} else {

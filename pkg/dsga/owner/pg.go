@@ -175,10 +175,11 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 				admissionPending = &original
 			}
 		}
-		if cleanup := active.Cleanup; cleanup != nil && cleanup.Phase == journal.Unconfirmed {
+		if cleanup := active.Cleanup; cleanup != nil && cleanup.Phase == journal.Unconfirmed && (model.ServiceClosure == nil || model.ServiceClosure.Pending()) {
 			// Cleanup是独立恢复开放，不能只从原Resume步骤恢复后漏掉它的
 			// 写前/写后未知。先核原完整预算、原派发者与命令，再恢复同一SDK
-			// pending；旧owner仅能查询，不得改epoch重新发送。
+			// pending；旧owner仅能查询，不得改epoch重新发送。独立关闭已确认
+			// 后保留原Cleanup未知供审计，但不能把它重新恢复成可开放的SDK栅栏。
 			original, restoreErr := originalAbortAdmission(model, *cleanup, config.Instance)
 			if restoreErr != nil {
 				return nil, restoreErr
