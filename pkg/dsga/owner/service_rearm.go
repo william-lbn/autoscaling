@@ -19,7 +19,7 @@ func (w *PGWorker) rearmServiceLease(ctx context.Context, selector string) (pgex
 		return pgexec.AwaitingFact, err
 	}
 	m := s.State()
-	if m.Owner != w.session.Actor() || m.ServiceClosure == nil || m.ServiceClosure.Rearm != nil || m.ServiceClosure.Reopen != nil || m.ServiceClosure.Pending() || m.Active != nil || w.safety == nil {
+	if m.Owner != w.session.Actor() || m.ServiceClosure == nil || m.ServiceClosure.Rearm != nil || m.ServiceClosure.Reopen != nil || m.ServiceClosure.Pending() || m.CheckStableServiceRecovery() != nil || w.safety == nil {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
 	_, _, _, selected := m.ServiceClosure.Selection()

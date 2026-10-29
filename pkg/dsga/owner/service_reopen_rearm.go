@@ -19,7 +19,7 @@ func (w *PGWorker) rearmServiceReopen(ctx context.Context, selector string) (pge
 		return pgexec.AwaitingFact, err
 	}
 	m := s.State()
-	if m.Owner != w.session.Actor() || m.ServiceClosure == nil || m.ServiceClosure.Reopen == nil || m.ServiceClosure.Reopen.Closing == nil || m.ServiceClosure.Reopen.Closing.Close.Pending() || m.Active != nil || !w.reopenSourcesAvailable() {
+	if m.Owner != w.session.Actor() || m.ServiceClosure == nil || m.ServiceClosure.Reopen == nil || m.ServiceClosure.Reopen.Closing == nil || m.ServiceClosure.Reopen.Closing.Close.Pending() || m.CheckStableServiceRecovery() != nil || !w.reopenSourcesAvailable() {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
 	r := m.ServiceClosure.Reopen

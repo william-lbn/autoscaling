@@ -14,6 +14,8 @@ import (
 // 已派发/部分完成/拒绝的后续动作。所有变化都复用原VM UID/RV CAS，不另建锁。
 // v6的SucceededSequence也可指所有容量已完成、原预算准入清理已闭合的取消；
 // 它证明容量结清资格，不把业务结果AbortedAfterReconcile改成Succeeded。
+// 13/14恢复的SucceededSequence则指独立准入覆盖完成点，原Operation和
+// Resume未知逐字保留；只有该覆盖和完整资源预算同CAS才取得结清资格。
 //
 // 该永久水位解决结果历史淘汰和后续零派发取消导致Host峰值无法结清的问题。
 // Host仍须认证原Runner实际值、当前预算来源与原Node，不能仅凭本结构释放容量。
@@ -96,7 +98,7 @@ func (model *Model) closeBudgetBoundary(outcome Outcome) error {
 		return err
 	}
 	switch outcome {
-	case Succeeded:
+	case Succeeded, RecoveredAfterResourceCommit:
 		if request != model.Active.Request {
 			return fmt.Errorf("successful closure does not match current complete budget")
 		}
@@ -162,7 +164,7 @@ func (model Model) validateBudgetBoundary() error {
 			continue
 		}
 		if key == b.BudgetKey {
-			capacityClosed := record.Outcome == Succeeded || (model.ProtocolVersion >= 6 && record.Outcome == AbortedAfterReconcile && model.validateCommittedAbort(record.Operation) == nil) || (model.ProtocolVersion >= 8 && record.Outcome == AbortedAfterReconcile && model.validateReconciledAbort(record.Operation) == nil)
+			capacityClosed := record.Outcome == Succeeded || (record.Outcome == RecoveredAfterResourceCommit && record.ServiceCoverage != nil) || (model.ProtocolVersion >= 6 && record.Outcome == AbortedAfterReconcile && model.validateCommittedAbort(record.Operation) == nil) || (model.ProtocolVersion >= 8 && record.Outcome == AbortedAfterReconcile && model.validateReconciledAbort(record.Operation) == nil)
 			if record.Operation.Request != request || !capacityClosed || record.ClosedSequence != b.SucceededSequence {
 				return fmt.Errorf("closed budget boundary contradicts original successful history")
 			}

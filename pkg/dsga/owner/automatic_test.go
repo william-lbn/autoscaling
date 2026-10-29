@@ -163,14 +163,26 @@ func verifyProductionAutomaticBegin(t *testing.T, ctx context.Context, api *owne
 // 必须由生产代码顺序推进，不手填领域Completed，也不手动Store.Finish。
 func verifyProductionAutomaticSuccessor(t *testing.T, ctx context.Context, client *kubefake.Clientset, coord coordclient.CoordinationV1Interface, store *journal.Store, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, source budget.QualificationSource, pg *initialServicePG, runner *vmguard.Runner, qmp *vmQMPPeer) {
 	t.Helper()
-	progress, err := worker.Advance(ctx)
-	require.NoError(t, err)
-	require.Equal(t, pgexec.Recorded, progress)
 	s, err := store.Load(ctx)
 	require.NoError(t, err)
+	var progress pgexec.Progress
+	if s.State().Active != nil {
+		progress, err = worker.Advance(ctx)
+		require.NoError(t, err)
+		require.Equal(t, pgexec.Recorded, progress)
+		s, err = store.Load(ctx)
+		require.NoError(t, err)
+		require.Equal(t, journal.Succeeded, s.State().History[0].Outcome)
+	} else {
+		// 新恢复组合已在独立完成CAS结案，原Resume结果保持未知。
+		// 不调用普通Finish再把它投影成Succeeded；后继Shrink与Host
+		// 仍走相同生产协议，不能通过手填资源Completed继续。
+		require.Len(t, s.State().History, 1)
+		require.Equal(t, journal.RecoveredAfterResourceCommit, s.State().History[0].Outcome)
+		require.NotNil(t, s.State().History[0].ServiceCoverage)
+	}
 	require.Nil(t, s.State().Active)
 	require.Len(t, s.State().History, 1)
-	require.Equal(t, journal.Succeeded, s.State().History[0].Outcome)
 	node, err := client.CoreV1().Nodes().Get(ctx, "node-one", metav1.GetOptions{})
 	require.NoError(t, err)
 	var ledger hostguard.Model

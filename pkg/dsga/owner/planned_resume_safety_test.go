@@ -2,6 +2,7 @@ package owner
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -25,6 +26,7 @@ func TestProductionPlannedResumeSourceFailureClosesWithoutInventingOpen(t *testi
 
 func verifyPlannedResumeServiceSafety(t *testing.T, ctx context.Context, mode string, api *ownerAPI, store *journal.Store, client *kubefake.Clientset, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture, qmp *vmQMPPeer, transfer *businessOwnerTransfer) {
 	t.Helper()
+	mode = strings.TrimPrefix(mode, "recover-")
 	before, err := store.Load(ctx)
 	require.NoError(t, err)
 	originalActive := before.State().Active

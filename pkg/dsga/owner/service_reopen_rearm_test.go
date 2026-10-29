@@ -172,7 +172,17 @@ func verifyProductionReopenLeaseRecovery(t *testing.T, ctx context.Context, mode
 	require.NoError(t, err)
 	require.Nil(t, complete.State().ServiceClosure)
 	require.NotNil(t, complete.State().ServiceLifecycle)
-	require.Equal(t, original.InitialHeld.Admission, complete.State().InitialHeld.Admission)
+	if original.Active != nil {
+		// 13/14已有完整资源预算；期限恢复同样不能改写原Active，
+		// 独立业务完成才在同CAS归档原操作与覆盖，永久预算逐字保留。
+		require.Nil(t, complete.State().Active)
+		require.Equal(t, original.BudgetHeld, complete.State().BudgetHeld)
+		record := complete.State().History[len(complete.State().History)-1]
+		require.Equal(t, *original.Active, record.Operation)
+		require.Equal(t, journal.RecoveredAfterResourceCommit, record.Outcome)
+	} else {
+		require.Equal(t, original.InitialHeld.Admission, complete.State().InitialHeld.Admission)
+	}
 	pg.mu.Lock()
 	require.Equal(t, 1, pg.reopenFixture.posts)
 	require.Zero(t, pg.reopenFixture.closes)

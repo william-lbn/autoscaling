@@ -185,11 +185,21 @@ func (p *initialServicePG) serveReopenFixture(t *testing.T, w http.ResponseWrite
 		require.NoError(t, json.NewDecoder(req.Body).Decode(&q))
 		p.mu.Lock()
 		defer p.mu.Unlock()
+		if p.leaseDeadline == 0 {
+			// 直接Advance到最终关闭的组合此前未经过Run首次期限观察；
+			// 与普通peer相同，首次原生observe建立有限期限，不能返回
+			// armed=true而deadline=0的无效事实来掩盖业务恢复入口。
+			p.leaseDeadline = 1000000000
+		}
 		if q.Action != "observe" {
 			f.renewals++
 			t.Errorf("新开放仍保留业务关闭时出现续租/rearm：%s", q.Action)
 		}
-		fact := control.AdmissionLeaseResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: q, Armed: true, Renewed: false, Expired: p.leaseExpired, DeadlineNS: p.leaseDeadline, LeaseEpoch: q.IssuerEpoch, TimeoutMS: 30000, Observed: p.current().Observed}
+		// 与普通peer一样从当前原生快照返回epoch，不能把新查询者的
+		// epoch伪装成旧floor已接受的事实；新owner第一次观察发生在
+		// 后续完整原PG终态对账的fence之前，生产校验必须仍严格拒绝矛盾。
+		observed := p.current().Observed
+		fact := control.AdmissionLeaseResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: q, Armed: true, Renewed: false, Expired: p.leaseExpired, DeadlineNS: p.leaseDeadline, LeaseEpoch: observed.IssuerFloorEpoch, TimeoutMS: 30000, Observed: observed}
 		if !f.selectionFault {
 			switch {
 			case r != nil && r.Attempt == 0 && r.Closing != nil && !r.Closing.Close.Pending() && f.mode == "retry-source-after-selection":

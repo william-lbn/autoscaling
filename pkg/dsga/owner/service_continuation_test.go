@@ -83,14 +83,14 @@ func (p *initialServicePG) serveClosureContinuation(t *testing.T, w http.Respons
 	pgReply(w, control.AdmissionContinuationResponse{ProtocolVersion: request.ProtocolVersion, VMShrinkPermit: false, Request: request, ContextSHA256: digest, ClosedBy: closed, PriorMayHaveApplied: true})
 }
 
-// 空闲关闭没有Resize Active。独立调度真实失租/接管窗口，原关闭和
-// 全部永久预算必须逐字保留；接管CAS丢回复仍由Elector原决定重读确认。
+// 独立调度关闭/恢复期间的真实失租接管窗口，包含13/14已结算资源的
+// 冻结Active。原关闭、Active和全部预算逐字保留，CAS丢回复仅重读确认。
 func (f *businessOwnerTransfer) takeoverClosure(t *testing.T, ctx context.Context, old *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, core *kubefake.Clientset, source budget.QualificationSource) (*Session, *ResourceWorker, *PGWorker) {
 	t.Helper()
 	before, err := f.store.Load(ctx)
 	require.NoError(t, err)
 	c := before.State().ServiceClosure
-	require.True(t, c.Pending() || c.Reopen != nil && c.Reopen.Closing != nil, "接管前必须存在原关闭或独立再关闭WAL")
+	require.True(t, c.Pending() || c.Reopen != nil, "接管前必须存在原关闭或独立恢复WAL")
 	nextRun := f.start(ctx)
 	select {
 	case <-nextRun.ready:
@@ -120,6 +120,8 @@ func (f *businessOwnerTransfer) takeoverClosure(t *testing.T, ctx context.Contex
 	require.Equal(t, before.State().Sequence+1, after.State().Sequence)
 	require.Equal(t, before.State().ServiceClosure, after.State().ServiceClosure)
 	require.Equal(t, before.State().InitialHeld, after.State().InitialHeld)
+	require.Equal(t, before.State().Active, after.State().Active)
+	require.Equal(t, before.State().BudgetHeld, after.State().BudgetHeld)
 	_, err = worker.Advance(ctx)
 	require.ErrorIs(t, err, ErrLeadershipLost)
 	_, err = resources.Inspect(ctx)

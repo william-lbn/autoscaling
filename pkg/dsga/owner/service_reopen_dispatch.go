@@ -22,14 +22,14 @@ func (w *PGWorker) reopenService(ctx context.Context, selector string) (pgexec.P
 	}
 	m := s.State()
 	c := m.ServiceClosure
-	if m.Owner != w.session.Actor() || c == nil || c.Reopen != nil || c.Pending() || m.Active != nil || !w.reopenSourcesAvailable() {
+	if m.Owner != w.session.Actor() || c == nil || c.Reopen != nil || c.Pending() || m.CheckStableServiceRecovery() != nil || !w.reopenSourcesAvailable() {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
 	_, _, _, selected := c.Selection()
 	if selector != selected {
 		return pgexec.AwaitingFact, fmt.Errorf("reopen requires latest complete closure selector")
 	}
-	if err := w.inspectIdleService(ctx, s); err != nil {
+	if err := w.inspectServiceRecovery(ctx, s); err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
 	before, err := w.observeAdmissionLease(ctx)
@@ -50,6 +50,21 @@ func (w *PGWorker) reopenService(ctx context.Context, selector string) (pgexec.P
 
 func (w *PGWorker) reopenSourcesAvailable() bool {
 	return w.safety != nil && w.safety.claims != nil && w.safety.runner != nil
+}
+
+// 稳定资源恢复比普通空闲服务多一项原PG终态对账。先审完整来源，再以
+// 当前owner隔离并只读核验原终态，最后由调用方检查相同UID/RV。这个顺序
+// 不修改原Unknown，也不允许资源仍在途的15～18借当前容量绕过原账本。
+func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapshot) error {
+	if err := w.inspectIdleService(ctx, s); err != nil {
+		return err
+	}
+	if s.State().Active != nil {
+		if err := w.executor.ReconcileServiceRecovery(ctx); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // 不持本地锁跨网络。当前 Session 及相同 VM UID/RV 是每次外部发送/落账
@@ -85,10 +100,10 @@ func (w *PGWorker) auditServiceReopenCurrent(ctx context.Context, s *journal.Sna
 		return control.AdmissionLeaseResponse{}, ErrServiceSafety
 	}
 	r := m.ServiceClosure.Reopen
-	if r.Closing != nil || m.Active != nil {
+	if r.Closing != nil || m.CheckStableServiceRecovery() != nil {
 		return control.AdmissionLeaseResponse{}, ErrServiceSafety
 	}
-	if err := w.inspectIdleService(ctx, s); err != nil {
+	if err := w.inspectServiceRecovery(ctx, s); err != nil {
 		return control.AdmissionLeaseResponse{}, errors.Join(ErrServiceSafety, err)
 	}
 	b, err := w.observeAdmissionLease(ctx)

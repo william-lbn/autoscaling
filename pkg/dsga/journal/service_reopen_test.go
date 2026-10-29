@@ -224,13 +224,13 @@ func TestServiceReopenRejectsUnsettledBoundariesAndOverflow(t *testing.T) {
 	_, err = unrearmed.StartServiceReopen(unrearmed.Owner, unrearmed.ServiceClosure.CommandSHA256, before)
 	require.Error(t, err, "原 rearm 未知不能跳过")
 
-	active, activeClose, activeFact := plannedResumeClosureModel(t)
+	active, activeClose, activeFact := pendingFinalizeClosureModel(t, false)
 	active, err = active.StartServiceClosure(active.Owner, activeClose)
 	require.NoError(t, err)
 	active, err = active.RecordServiceClosure(active.Owner, activeFact, false)
 	require.NoError(t, err)
 	_, err = active.StartServiceReopen(active.Owner, active.ServiceClosure.CommandSHA256, before)
-	require.Error(t, err, "已确认在途关闭仍须原资源对账，不能套用空闲重开")
+	require.Error(t, err, "原Finalize尚未知，已确认关闭仍须完整资源对账")
 }
 
 func TestServiceReopenStoreNeverDispatchesUnconfirmedCAS(t *testing.T) {

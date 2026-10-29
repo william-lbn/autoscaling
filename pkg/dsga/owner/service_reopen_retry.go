@@ -17,14 +17,14 @@ func (w *PGWorker) retryServiceReopen(ctx context.Context, selector string) (pge
 		return pgexec.AwaitingFact, err
 	}
 	m := s.State()
-	if m.Owner != w.session.Actor() || m.Active != nil || m.ServiceClosure == nil || m.ServiceClosure.Reopen == nil || m.ServiceClosure.Reopen.Closing == nil || m.ServiceClosure.Reopen.Closing.Close.Pending() || !w.reopenSourcesAvailable() {
+	if m.Owner != w.session.Actor() || m.CheckStableServiceRecovery() != nil || m.ServiceClosure == nil || m.ServiceClosure.Reopen == nil || m.ServiceClosure.Reopen.Closing == nil || m.ServiceClosure.Reopen.Closing.Close.Pending() || !w.reopenSourcesAvailable() {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
 	_, _, _, selected := m.ServiceClosure.Reopen.Closing.Close.Selection()
 	if selector != selected {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
-	if err := w.inspectIdleService(ctx, s); err != nil {
+	if err := w.inspectServiceRecovery(ctx, s); err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
 	before, err := w.observeAdmissionLease(ctx)

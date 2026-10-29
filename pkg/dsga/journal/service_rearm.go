@@ -8,7 +8,7 @@ import (
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 )
 
-// ServiceRearm固定已关闭空闲服务的一次原生期限恢复选择。外层版本19显式
+// ServiceRearm固定已稳定关闭服务的一次原生期限恢复选择。外层版本19显式
 // 拒绝旧读者，ClosureVersion保留原关闭格式，不能把所有旧类别投影为同一种。
 // 期限恢复不等于业务重开：完整原关闭/预算/首次开放未知全部保留，Begin和
 // 普通开放仍被原ServiceClosure拒绝。只保留一次原命令，失败不换deadline。
@@ -43,10 +43,16 @@ func serviceClosureDigest(c ServiceClosure) (string, error) {
 }
 
 func serviceRearmHeldDigest(m Model) (string, error) {
-	// 固定完整永久来源/预算及关闭水位，不仅固定可复用ID。只允许无Active
-	// 的稳定边界；既有终态历史仍按原规则淘汰，不能牵连永久预算/原未知。
+	// 固定完整永久来源/预算及关闭水位，不仅固定可复用ID。稳定边界包括
+	// 无Active及资源已结算的13/14；既有终态历史按原规则有界淘汰。
 	// owner/Sequence允许接管推进；任何资源/原未知变化都使此选择失效。
-	raw, err := json.Marshal([]any{m.PGInstance, m.ResourceIdentity, m.InitialHeld, m.BudgetHeld, m.CapacityHeld, m.BudgetBoundary, m.HighWater})
+	parts := []any{m.PGInstance, m.ResourceIdentity, m.InitialHeld, m.BudgetHeld, m.CapacityHeld, m.BudgetBoundary, m.HighWater}
+	if m.Active != nil {
+		// 只在新增13/14稳定恢复时纳入完整原Active；无Active旧记录
+		// 保持原摘要字节形状，不能让兼容改动使历史恢复选择失效。
+		parts = append(parts, m.Active)
+	}
+	raw, err := json.Marshal(parts)
 	return rawDigest(raw), err
 }
 
@@ -68,7 +74,7 @@ func (m Model) validateServiceRearm() error {
 		closedAt = c.Continuation.RecordedSequence
 	}
 	rearmVersion := m.ClosureFormatVersion() == 19 || m.ClosureFormatVersion() == 20 && c.Reopen != nil && c.Reopen.ClosureVersion == 19
-	if !rearmVersion || r.ClosureVersion < 10 || r.ClosureVersion > 12 || m.Active != nil || c.Pending() || closureErr != nil || heldErr != nil || commandErr != nil || r.ClosureSHA256 != closureHash || r.HeldSHA256 != heldHash || r.CommandSHA256 != rawDigest(raw) || r.Origin.Validate() != nil || r.Origin.Epoch > m.Owner.Epoch || r.Origin.Epoch == m.Owner.Epoch && r.Origin != m.Owner || r.StartedSequence <= closedAt || r.StartedSequence > m.Sequence {
+	if !rearmVersion || r.ClosureVersion < 10 || r.ClosureVersion > 14 || m.stableServiceRecovery() != nil || c.Pending() || closureErr != nil || heldErr != nil || commandErr != nil || r.ClosureSHA256 != closureHash || r.HeldSHA256 != heldHash || r.CommandSHA256 != rawDigest(raw) || r.Origin.Validate() != nil || r.Origin.Epoch > m.Owner.Epoch || r.Origin.Epoch == m.Owner.Epoch && r.Origin != m.Owner || r.StartedSequence <= closedAt || r.StartedSequence > m.Sequence {
 		return fmt.Errorf("service rearm changed original closed service, held budget or owner")
 	}
 	b := r.Before
@@ -96,8 +102,8 @@ func (m Model) StartServiceRearm(actor Owner, selector string, before control.Ad
 		return m, err
 	}
 	c := m.ServiceClosure
-	if c == nil || c.Rearm != nil || c.Pending() || m.Active != nil || m.ClosureFormatVersion() < 10 || m.ClosureFormatVersion() > 12 {
-		return m, fmt.Errorf("rearm requires original confirmed idle closure without another selection")
+	if c == nil || c.Rearm != nil || c.Pending() || m.stableServiceRecovery() != nil || m.ClosureFormatVersion() < 10 || m.ClosureFormatVersion() > 14 {
+		return m, fmt.Errorf("rearm requires original confirmed stable closure without another selection")
 	}
 	_, _, _, selected := c.Selection()
 	if selector != selected {

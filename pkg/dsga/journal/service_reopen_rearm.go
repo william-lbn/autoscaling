@@ -53,7 +53,7 @@ func (m Model) validateReopenLeaseRecovery(r *ReopenLeaseRecovery, archived bool
 		return nil // 必填SafetyStage由完整再关闭校验器独立认证。
 	}
 	a := m.ServiceClosure.Reopen
-	if a.Closing == nil || a.Closing.Close == nil || a.Closing.Close.Pending() || m.Active != nil || m.PGInstance == nil {
+	if a.Closing == nil || a.Closing.Close == nil || a.Closing.Close.Pending() || m.stableServiceRecovery() != nil || m.PGInstance == nil {
 		return fmt.Errorf("reopen lease recovery requires complete stable reclosure")
 	}
 	c := a.Closing.Close
@@ -121,7 +121,7 @@ func (m Model) StartReopenLeaseRecovery(actor Owner, selector string, before con
 		return m, err
 	}
 	c := m.ServiceClosure
-	if c == nil || c.Reopen == nil || c.Reopen.Closing == nil || c.Reopen.Closing.Close == nil || c.Reopen.Closing.Close.Pending() || m.Active != nil {
+	if c == nil || c.Reopen == nil || c.Reopen.Closing == nil || c.Reopen.Closing.Close == nil || c.Reopen.Closing.Close.Pending() || m.stableServiceRecovery() != nil {
 		return m, fmt.Errorf("reopen rearm requires complete original reclosure")
 	}
 	a := c.Reopen

@@ -72,6 +72,8 @@ const (
 	Succeeded             Outcome = "succeeded"
 	AbortedBeforeDispatch Outcome = "aborted_before_dispatch"
 	AbortedAfterReconcile Outcome = "aborted_after_reconcile"
+	// 全部资源已完整提交，最后准入由独立更高revision覆盖；原步骤不改。
+	RecoveredAfterResourceCommit Outcome = "recovered_after_resource_commit"
 )
 
 type Disposition string
@@ -125,9 +127,10 @@ type Operation struct {
 }
 
 type Record struct {
-	Operation      Operation      `json:"operation"`
-	Outcome        Outcome        `json:"outcome"`
-	ClosedSequence control.Uint64 `json:"closed_sequence"`
+	Operation       Operation                 `json:"operation"`
+	Outcome         Outcome                   `json:"outcome"`
+	ClosedSequence  control.Uint64            `json:"closed_sequence"`
+	ServiceCoverage *CommittedServiceCoverage `json:"service_coverage,omitempty"`
 }
 
 type Model struct {
@@ -450,7 +453,10 @@ func (model Model) validateCore() error {
 		if err := record.Operation.Validate(); err != nil {
 			return err
 		}
-		outcome, err := record.Operation.closingOutcome()
+		if p := record.ServiceCoverage; p != nil && (p.Origin.Epoch > model.Owner.Epoch || p.Origin.Epoch == model.Owner.Epoch && p.Origin != model.Owner) {
+			return fmt.Errorf("covered resource completion lost lifecycle or original owner")
+		}
+		outcome, err := record.closingOutcome()
 		if err != nil {
 			return err
 		}
@@ -645,6 +651,7 @@ func (model Model) Clone() Model {
 	history := make([]Record, len(model.History))
 	for i, record := range model.History {
 		record.Operation = cloneOperation(record.Operation)
+		record.ServiceCoverage = cloneCommittedCoverage(record.ServiceCoverage)
 		history[i] = record
 	}
 	model.History = history

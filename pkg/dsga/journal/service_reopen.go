@@ -15,8 +15,8 @@ import (
 //
 // 本记录只确认新开放的原生事实，不能自行解除外层关闭：后继还必须完成
 // setter 后来源复核、异常再关闭和生命周期归档。这里绝不清 ServiceClosure，
-// 不把 Settled 当成 Begin/VM/预算释放许可。无 Active 的原关闭类别才适用；
-// 在途资源未知须先由各自完整协议恢复，不能借本结构绕过结清。
+// 不把 Settled 当成 Begin/VM/预算释放许可。无Active沿用原规则；有Active
+// 仅接受13/14完整资源结算及永久预算，15～18须由完整资源协议先恢复。
 type ServiceReopen struct {
 	ClosureVersion   uint32                         `json:"closure_version"`
 	Origin           Owner                          `json:"origin"`
@@ -55,7 +55,7 @@ func serviceReopenClosureDigest(c ServiceClosure) (string, error) {
 }
 
 func serviceReopenVersionAllowed(version uint32) bool {
-	return version >= 10 && version <= 12 || version == 19
+	return version >= 10 && version <= 14 || version == 19
 }
 
 // serviceClosureVersion 只解开明确保存的外层恢复格式，不能降级外层
@@ -103,7 +103,7 @@ func (m Model) validateServiceReopenRecord(archived bool) error {
 		closedAt = r.PriorClosedAt
 	}
 	version := r.ClosureVersion
-	if m.ClosureFormatVersion() != 20 || !serviceReopenVersionAllowed(version) || (version == 19) != (c.Rearm != nil) || m.Active != nil || c.Pending() || c.Rearm != nil && c.Rearm.Phase != Settled || closureErr != nil || heldErr != nil || commandErr != nil || r.ClosureSHA256 != closureHash || r.HeldSHA256 != heldHash || r.CommandSHA256 != digest || r.Origin.Validate() != nil || r.Origin.Epoch > m.Owner.Epoch || r.Origin.Epoch == m.Owner.Epoch && r.Origin != m.Owner || r.StartedSequence <= closedAt || r.StartedSequence > m.Sequence {
+	if m.ClosureFormatVersion() != 20 || !serviceReopenVersionAllowed(version) || (version == 19) != (c.Rearm != nil) || m.stableServiceRecovery() != nil || c.Pending() || c.Rearm != nil && c.Rearm.Phase != Settled || closureErr != nil || heldErr != nil || commandErr != nil || r.ClosureSHA256 != closureHash || r.HeldSHA256 != heldHash || r.CommandSHA256 != digest || r.Origin.Validate() != nil || r.Origin.Epoch > m.Owner.Epoch || r.Origin.Epoch == m.Owner.Epoch && r.Origin != m.Owner || r.StartedSequence <= closedAt || r.StartedSequence > m.Sequence {
 		return fmt.Errorf("service reopen changed original stable closure, budget or owner")
 	}
 	b, q := r.Before, r.Request
@@ -148,7 +148,7 @@ func (m Model) StartServiceReopen(actor Owner, selector string, before control.A
 		return m, err
 	}
 	c := m.ServiceClosure
-	if c == nil || c.Reopen != nil || c.Pending() || m.Active != nil || !serviceReopenVersionAllowed(m.ClosureFormatVersion()) {
+	if c == nil || c.Reopen != nil || c.Pending() || m.stableServiceRecovery() != nil || !serviceReopenVersionAllowed(m.ClosureFormatVersion()) {
 		return m, fmt.Errorf("reopen requires original confirmed idle closure without another selection")
 	}
 	_, _, closed, selected := c.Selection()

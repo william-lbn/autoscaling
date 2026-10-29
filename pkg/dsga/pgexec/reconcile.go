@@ -8,6 +8,29 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
 
+// ReconcileServiceRecovery仅在13/14已结算资源的独立关闭边界核验原PG终态。
+// SDK重建仍须恢复原Resize栅栏，不能只凭WAL中的Settled省略它；这里复用
+// 当前owner fence及完整原Key只读查询，解除完全相同的本地Resize pending。
+// 不调用Advance、不发送Resize/开放、不修改原WAL或预算。任何缺失、矛盾、
+// 并发在途均保留栅栏；调用方仍须在后续开放前重新核来源、Session和UID/RV。
+func (e *Executor) ReconcileServiceRecovery(ctx context.Context) error {
+	s, err := e.store.Load(ctx)
+	if err != nil {
+		return err
+	}
+	m := s.State()
+	if !s.Dispatchable() || m.Owner != e.actor || m.Active == nil || m.ServiceClosure == nil || m.ServiceClosure.Pending() || m.CheckStableServiceRecovery() != nil {
+		return fmt.Errorf("PG service recovery requires exact committed resource closure")
+	}
+	if _, err := e.reconcileSettled(ctx, m.Active); err != nil {
+		return err
+	}
+	if e.client.Pending() != nil {
+		return fmt.Errorf("PG service recovery retains unresolved original resize")
+	}
+	return nil
+}
+
 // reconcileSettled解决恢复客户端时已落账ResizePG重新成为Pending的问题。
 // 外层WAL始终保留，不能在构造器仅看Settled布尔就省略SDK栅栏；先核对完整原
 // 命令/审计/结果，再隔离当前owner并只读查询同原终态。旧epoch允许查询，绝不

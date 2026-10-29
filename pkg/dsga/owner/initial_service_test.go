@@ -46,6 +46,8 @@ type initialServicePG struct {
 	loseResize    bool
 	resizeReceipt *control.ControlResponse
 	resizeQueries int
+	// 仅终态恢复组合注入历史查询不可达，原写入及WAL证据保持不变。
+	rejectResizeQuery bool
 	// 只在新增安全组合中安排原开放已发送、审计前来源漂移。
 	// hook在peer锁外运行，不伪造生产WAL/关闭结果。
 	afterOpen func()
@@ -165,6 +167,11 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 		p.mu.Lock()
 		defer p.mu.Unlock()
 		require.Equal(t, p.request.Key, query.Key)
+		if p.rejectResizeQuery {
+			p.resizeQueries++
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
 		require.NotNil(t, p.resizeReceipt, "查询不能凭当前数值补造原PG终态")
 		response := *p.resizeReceipt
 		response.Observed = p.current().Observed
@@ -346,9 +353,11 @@ func productionInitialService(t *testing.T, mode string) {
 		mode = "automatic-policy"
 	}
 	expiredRetry := strings.HasPrefix(mode, "service-retry-expired-")
-	automaticMode := mode == "service-retry-expired-automatic" || mode == "automatic-policy" || mode == "service-lifecycle-first-unknown-automatic" || mode == "service-retry-first-unknown-automatic"
+	committedExpiry := mode == "resume-safety-recover-expired"
+	automaticMode := mode == "resume-safety-recover-automatic" || mode == "service-retry-expired-automatic" || mode == "automatic-policy" || mode == "service-lifecycle-first-unknown-automatic" || mode == "service-retry-first-unknown-automatic"
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
-	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
+	committedCompletionTransfer := mode == "resume-safety-recover-complete-takeover"
+	closureTransfer := committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
 	pgSafety := strings.HasPrefix(mode, "active-safety-pg-")
 	pgTakeover := mode == "owner-transfer-after-pg"
 	unreceivedGuest := mode == "owner-transfer-before-guest-delivery"
@@ -651,7 +660,7 @@ func productionInitialService(t *testing.T, mode string) {
 			// 完整结案/自动Grow→Shrink会经过多次正式来源预审，race运行
 			// 可能超过静态夹具Lease的60秒寿命。用原UID/holder的真实
 			// 选主续租维持Host，不放宽生产过期校验，也不重建同名来源。
-			if pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || strings.HasPrefix(mode, "cleanup-safety-") {
+			if pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "cleanup-safety-") {
 				keepPGTakeoverHostOwner(t, ctx, client)
 			}
 		}
@@ -679,6 +688,12 @@ func productionInitialService(t *testing.T, mode string) {
 			}
 			if action == journal.ResumeAdmission && strings.HasPrefix(mode, "resume-safety-") {
 				verifyResumeServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
+				if strings.HasPrefix(mode, "resume-safety-recover-") || strings.HasPrefix(mode, "resume-safety-planned-recover-") {
+					worker = verifyProductionCommittedServiceRecovery(t, ctx, mode, api, store, client, session, resources, config, source, pg, root, transfer, runner)
+					if automaticMode {
+						verifyProductionAutomaticSuccessor(t, ctx, client, coord, store, session, resources, worker, config, source, pg, runner, qmp)
+					}
+				}
 				return nil
 			}
 			if action == journal.ResumeAdmission && strings.HasPrefix(mode, "cleanup-safety-") {

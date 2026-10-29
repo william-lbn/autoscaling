@@ -2,6 +2,7 @@ package journal
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -20,7 +21,8 @@ import (
 // 下一轮完成时只退休已经被严格更高原生revision覆盖的旧准入选择，保存
 // Previous水位与完整原生边界；不把旧Unknown改成成功、NoEffect或资源释放。
 // 首次未知另在InitialHeld.Covered保存覆盖证明，直到正常预算协议原子替换
-// 原预算。资源在途关闭不适用本协议，不能用有界归档裁掉资源未知。
+// 原预算。13/14仅在全部资源已结算时独立覆盖最后准入，并在同CAS保留原
+// Operation和覆盖终态；15～18资源仍在途/取消不能用本归档裁掉资源未知。
 type ServiceLifecycle struct {
 	// 必填门禁阶段独立于可选当前关闭，防止删除新关闭字段后投影为
 	// 上一周期已经恢复服务。只有新关闭写前或完整完成CAS可以改变。
@@ -103,6 +105,15 @@ func (m Model) reopenCompletionCapacity() error {
 	if len(raw)+MaxObservationBytes+4096 > MaxRawBytes/2 {
 		return fmt.Errorf("service reopen cannot retain complete bounded lifecycle evidence")
 	}
+	if m.Active != nil {
+		// 新13/14完成CAS同时保留完整冻结上下文、原Operation终态和
+		// 独立覆盖。按未来原回执上限预留JSON及base64膨胀，不能只看
+		// 可压缩字节，或先开放再发现完整原Unknown无法永久归档。
+		future := len(raw) + MaxObservationBytes + 4096
+		if future+base64.StdEncoding.EncodedLen(future)+2*MaxObservationBytes+4096 > MaxRawBytes {
+			return fmt.Errorf("committed service cannot retain atomic operation coverage")
+		}
+	}
 	return nil
 }
 
@@ -118,6 +129,11 @@ func (m Model) validateServiceLifecycle() error {
 		return fmt.Errorf("journal must retain required service lifecycle evidence")
 	}
 	if l == nil {
+		for _, record := range m.History {
+			if record.ServiceCoverage != nil {
+				return fmt.Errorf("covered resource completion requires retained service lifecycle")
+			}
+		}
 		if m.ServiceClosure != nil && m.ServiceClosure.FormatVersion != 0 || m.InitialHeld != nil && m.InitialHeld.Covered != nil {
 			return fmt.Errorf("legacy journal cannot project lifecycle fields")
 		}
@@ -131,8 +147,11 @@ func (m Model) validateServiceLifecycle() error {
 		return err
 	}
 	r := c.ServiceClosure.Reopen
-	if l.Cycle == 0 || l.Origin.Validate() != nil || l.Origin != c.Owner || l.Origin.Epoch > m.Owner.Epoch || l.Origin.Epoch == m.Owner.Epoch && l.Origin != m.Owner || l.RecordedSequence <= c.Sequence || l.RecordedSequence > m.Sequence || l.ContextSHA256 != rawDigest(l.Context) || c.VMUID != m.VMUID || c.Incarnation != m.Incarnation || c.PGInstance == nil || m.PGInstance == nil || *c.PGInstance != *m.PGInstance || !reflect.DeepEqual(c.ResourceIdentity, m.ResourceIdentity) || c.Active != nil || r == nil || r.Phase != Settled || r.Closing != nil || !validLiveReopen(l.Current, r.Request, l.Origin) || l.Current.DeadlineNS < r.Before.DeadlineNS || l.Current.LeaseEpoch < r.Before.LeaseEpoch {
+	if l.Cycle == 0 || l.Origin.Validate() != nil || l.Origin != c.Owner || l.Origin.Epoch > m.Owner.Epoch || l.Origin.Epoch == m.Owner.Epoch && l.Origin != m.Owner || l.RecordedSequence <= c.Sequence || l.RecordedSequence > m.Sequence || l.ContextSHA256 != rawDigest(l.Context) || c.VMUID != m.VMUID || c.Incarnation != m.Incarnation || c.PGInstance == nil || m.PGInstance == nil || *c.PGInstance != *m.PGInstance || !reflect.DeepEqual(c.ResourceIdentity, m.ResourceIdentity) || c.stableServiceRecovery() != nil || r == nil || r.Phase != Settled || r.Closing != nil || !validLiveReopen(l.Current, r.Request, l.Origin) || l.Current.DeadlineNS < r.Before.DeadlineNS || l.Current.LeaseEpoch < r.Before.LeaseEpoch {
 		return fmt.Errorf("service lifecycle lacks exact audited original completion")
+	}
+	if err := m.validateCommittedLifecycle(c, l); err != nil {
+		return err
 	}
 	if p := l.Previous; p != nil {
 		// 完整旧原生边界与累积摘要保留，较新成功关闭/开放才可退休旧
@@ -212,16 +231,17 @@ func (m Model) InitialAdmissionReady() bool {
 	return h != nil && h.Admission != nil && (h.Admission.Phase == Settled || h.Covered != nil && m.validateInitialCoverage() == nil)
 }
 
-// CompleteServiceReopen只处理无Active、原新开放已确认且未再关闭的稳定
-// 边界。调用方必须刚完成全部生产来源审计，再提供当前准确observe；这里
-// 同一UID/RV原子保存完整证据、首次覆盖和撤销当前关闭。失败原输入不变。
+// CompleteServiceReopen只处理原新开放已确认且未再关闭的稳定边界：无
+// Active沿用既有规则，有Active仅接受资源及Finalize完整结算的13/14。
+// 调用方必须刚完成全部生产来源审计，再提供当前准确observe；同一UID/RV
+// 原子保存完整证据、独立覆盖/预算水位并撤销关闭。失败原输入不变。
 // 只读查询不会调用本入口，完成写丢回复只能重读，不能再次开放或续租。
 func (m Model) CompleteServiceReopen(actor Owner, selector string, current control.AdmissionLeaseResponse) (Model, error) {
 	if err := m.Validate(); err != nil {
 		return m, err
 	}
 	c := m.ServiceClosure
-	if c == nil || c.Reopen == nil || c.Reopen.CommandSHA256 != selector || c.Reopen.Phase != Settled || c.Reopen.Closing != nil || m.Active != nil || !validLiveReopen(current, c.Reopen.Request, actor) {
+	if c == nil || c.Reopen == nil || c.Reopen.CommandSHA256 != selector || c.Reopen.Phase != Settled || c.Reopen.Closing != nil || m.stableServiceRecovery() != nil || !validLiveReopen(current, c.Reopen.Request, actor) {
 		return m, fmt.Errorf("service completion requires exact confirmed live original reopen")
 	}
 	next, err := m.next(actor)
@@ -249,6 +269,22 @@ func (m Model) CompleteServiceReopen(actor Owner, selector string, current contr
 		l.Previous = &ServiceRetirement{Cycle: old.Cycle, RecordedSequence: old.RecordedSequence, EvidenceSHA256: rawDigest(prior), Current: cloneLeaseResponse(old.Current)}
 	}
 	next.ProtocolVersion, next.ServiceLifecycle, next.ServiceClosure = 21, l, nil
+	if record, err := m.committedCompletionRecord(actor, current, next.Sequence); err != nil {
+		return m, err
+	} else if record != nil {
+		// 完整原Active、独立覆盖、永久预算关闭水位和业务完成必须同CAS。
+		// 不调用普通Finish去伪造原Resume成功，失败也不清原关闭或预算。
+		if err := next.closeBudgetBoundary(RecoveredAfterResourceCommit); err != nil {
+			return m, err
+		}
+		next.History = append(next.History, *record)
+		next.Active = nil
+		for len(next.History) > HistoryLimit {
+			if err := next.expireOldest(); err != nil {
+				return m, err
+			}
+		}
+	}
 	if next.InitialHeld != nil && next.InitialHeld.Admission.Phase == Unconfirmed && next.InitialHeld.Covered == nil {
 		r := c.Reopen
 		next.InitialHeld.Covered = &InitialCoverage{RecordedSequence: next.Sequence, Request: r.Request, Receipt: *cloneAdmissionResponse(r.Receipt), Query: r.Query}

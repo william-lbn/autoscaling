@@ -20,7 +20,7 @@ func (w *PGWorker) completeServiceReopen(ctx context.Context, selector string) (
 		return pgexec.AwaitingFact, err
 	}
 	m := s.State()
-	if m.Owner != w.session.Actor() || m.Active != nil {
+	if m.Owner != w.session.Actor() || m.CheckStableServiceRecovery() != nil {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
 	if m.ServiceClosure == nil {

@@ -31,6 +31,11 @@ func TestProductionResumeSourceFailureClosesAndRetainsActive(t *testing.T) {
 func verifyResumeServiceSafety(t *testing.T, ctx context.Context, mode string, api *ownerAPI, store *journal.Store, client *kubefake.Clientset, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture, qmp *vmQMPPeer, transfer *businessOwnerTransfer) {
 	t.Helper()
 	mode = strings.TrimPrefix(mode, "resume-safety-")
+	recovery := strings.HasPrefix(mode, "recover-")
+	mode = strings.TrimPrefix(mode, "recover-")
+	if recovery && mode != "unreceived" && mode != "settled" && !strings.HasPrefix(mode, "planned-") {
+		mode = "applied"
+	}
 	if strings.HasPrefix(mode, "planned-") {
 		verifyPlannedResumeServiceSafety(t, ctx, strings.TrimPrefix(mode, "planned-"), api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
 		return
