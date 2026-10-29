@@ -83,7 +83,12 @@ func (p *initialServicePG) serveRearmFixture(t *testing.T, w http.ResponseWriter
 		w.WriteHeader(http.StatusServiceUnavailable)
 		return true
 	}
-	fact := control.AdmissionLeaseResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: q, Renewed: renewed, Armed: true, Expired: p.leaseExpired, DeadlineNS: p.leaseDeadline, LeaseEpoch: f.epoch, TimeoutMS: 30000, Observed: p.current().Observed}
+	leaseRenewed := !query && q.Action == "renew" && !p.leaseExpired && q.ExpectedDeadlineNS == p.leaseDeadline && q.ExpectedCapacityGeneration == current.CapacityGeneration && q.ExpectedAdmissionRevision == current.AdmissionRevision && q.IssuerEpoch == current.IssuerFloorEpoch
+	if leaseRenewed {
+		p.leaseDeadline++
+		p.leaseRenewals++
+	}
+	fact := control.AdmissionLeaseResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: q, Renewed: renewed || leaseRenewed, Armed: true, Expired: p.leaseExpired, DeadlineNS: p.leaseDeadline, LeaseEpoch: f.epoch, TimeoutMS: 30000, Observed: p.current().Observed}
 	if !query && q.Action == "observe" && f.afterObserve != nil {
 		hook := f.afterObserve
 		f.afterObserve = nil
@@ -121,6 +126,10 @@ func verifyServiceRearm(t *testing.T, ctx context.Context, mode string, api *own
 		pg.rearmFixture.afterObserve = func() { root.mu.Lock(); root.view.Actual.MemoryMaxBytes++; root.mu.Unlock() }
 	}
 	pg.mu.Unlock()
+	if mode == "complete-lifecycle" {
+		verifyExpiredServiceLifecycle(t, ctx, api, session, resources, worker, config, core, source, pg, root)
+		return
+	}
 	if mode == "lost-start" {
 		api.mu.Lock()
 		api.loseJournalReply = true

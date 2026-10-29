@@ -126,7 +126,7 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 	}
 	var pending *control.Request
 	var admissionPending *control.AdmissionRequest
-	if held := model.InitialHeld; held != nil && held.Admission != nil && held.Admission.Phase == journal.Unconfirmed && (model.ServiceClosure == nil || model.ServiceClosure.Pending()) {
+	if held := model.InitialHeld; held != nil && held.Admission != nil && held.Admission.Phase == journal.Unconfirmed && !model.InitialAdmissionReady() && (model.ServiceClosure == nil || model.ServiceClosure.Pending()) {
 		// 首次开放没有Resize Active，仍可能已经执行但未获回复。必须先从
 		// 原永久预算及独立WAL恢复同一SDK pending；不能把空Active当空闲，
 		// 不能换budget/epoch或借能力发现悄悄重发首次开放。
@@ -650,6 +650,8 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	defer worker.CloseIdleConnections()
 	leaseReady := false
 	leaseExpired := false
+	var expiredThrough control.Uint64
+	expiryKnown := false
 	var nextLeaseRenew time.Time
 	var leaseRenewInterval time.Duration
 	ensureLease := func(allowLocalAbort bool) error {
@@ -678,8 +680,12 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		leaseReady = true
 		// 过期不是owner/协议失败。保留同Session的串行管理入口，下面
 		// 只允许查询和关闭恢复，绝不调用普通Advance、原重放或自动策略。
-		// 该标志在本Run内不可因只读观察或来源恢复而清除。
+		// 只读观察或来源恢复不能清标志；只有过期之后新完成的完整
+		// 生命周期，再经独立当前来源审计，才可走下面的明确解除分支。
 		leaseExpired = fact.Expired
+		if leaseExpired {
+			expiredThrough, expiryKnown = m.Sequence, true
+		}
 		leaseRenewInterval = time.Duration(fact.TimeoutMS) * time.Millisecond / 3
 		return nil
 	}
@@ -708,6 +714,15 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		}
 		if err := ensureLease(true); err != nil {
 			return err
+		}
+		if leaseExpired && !expiryKnown {
+			// 续租发现过期后的下一轮，先固定过期时已经存在的完成水位，
+			// 再接收任何管理动作；不能让旧完成或只读open清除本次等待。
+			s, err := worker.session.store.Load(callCtx)
+			if err != nil {
+				return err
+			}
+			expiredThrough, expiryKnown = s.State().Sequence, true
 		}
 		if pendingControl != nil {
 			// 调用方可能已在等待队列中取消；executeControl在任何WAL/SDK
@@ -738,6 +753,13 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 				fact, controlErr = worker.observeAdmissionLease(controlCtx)
 				if controlErr == nil {
 					leaseExpired = fact.Expired
+					if leaseExpired {
+						s, loadErr := worker.session.store.Load(controlCtx)
+						controlErr = loadErr
+						if loadErr == nil {
+							expiredThrough, expiryKnown = s.State().Sequence, true
+						}
+					}
 				}
 			}
 			if controlErr == nil {
@@ -762,6 +784,18 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			snapshot, loadErr := worker.session.store.Load(callCtx)
 			if loadErr != nil {
 				err = loadErr
+			} else if m := snapshot.State(); m.ServiceClosure == nil && m.ServiceLifecycle != nil && m.ServiceLifecycle.RecordedSequence > expiredThrough {
+				// 只有本次过期之后明确完成的新生命周期才可能解除latch。
+				// 即使完成CAS丢回复，也要重新审来源/准确当前open/有限期限和
+				// 同RV；此处零setter、零rearm。失败保留latch，PG期限独立关闭。
+				var current control.AdmissionLeaseResponse
+				current, err = worker.auditCompletedService(callCtx, snapshot, "")
+				if err == nil {
+					leaseExpired, expiryKnown = false, false
+					leaseRenewInterval = time.Duration(current.TimeoutMS) * time.Millisecond / 3
+					nextLeaseRenew = time.Time{}
+					progress = pgexec.Recorded
+				}
 			} else if c := snapshot.State().ServiceClosure; c != nil {
 				if c.Reopen != nil {
 					progress, err = worker.advanceServiceReopen(callCtx)
@@ -817,6 +851,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 				nextLeaseRenew = time.Now().Add(leaseRenewInterval)
 			} else if errors.Is(err, errNativeAdmissionExpired) {
 				leaseExpired = true
+				expiryKnown = false
 			}
 		}
 		if options.Observe != nil {

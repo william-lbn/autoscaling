@@ -194,9 +194,9 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 			if err != nil {
 				return w.recoverServiceClosureCapacity(ctx, m, err)
 			}
-			if m.ProtocolVersion == 18 {
+			if m.ClosureFormatVersion() == 18 {
 				_, err = w.session.store.RecordCleanupServiceClosure(ctx, s, m.Owner, fact, replay == "")
-			} else if m.ProtocolVersion == 16 || m.ProtocolVersion == 17 {
+			} else if m.ClosureFormatVersion() == 16 || m.ClosureFormatVersion() == 17 {
 				_, err = w.session.store.RecordActiveServiceClosure(ctx, s, m.Owner, fact, replay == "")
 			} else if c.OperationSHA256 != "" {
 				_, err = w.session.store.RecordResumeServiceClosure(ctx, s, m.Owner, fact, replay == "")
@@ -274,7 +274,7 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 		if h.Admission == nil {
 			return false, pgexec.Idle, nil
 		}
-		if h.Admission.Phase == journal.Unconfirmed {
+		if h.Admission.Phase == journal.Unconfirmed && !m.InitialAdmissionReady() {
 			return w.advanceInitialServiceSafety(ctx, s)
 		}
 	}
@@ -317,7 +317,7 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 // CAS；同代次/网络未知原样等待，不自动重放原setter，也不等待被迫换owner。
 // 单个原Resize最多前进一次，因此该自动恢复有界，不会无穷消耗revision。
 func (w *PGWorker) recoverServiceClosureCapacity(ctx context.Context, m journal.Model, originalErr error) (bool, pgexec.Progress, error) {
-	if m.ProtocolVersion == 17 && m.ServiceClosure != nil && m.ServiceClosure.Pending() {
+	if m.ClosureFormatVersion() == 17 && m.ServiceClosure != nil && m.ServiceClosure.Pending() {
 		origin, _, _, digest := m.ServiceClosure.Selection()
 		if origin == m.Owner {
 			progress, err := w.continueServiceClosure(ctx, digest)
@@ -403,18 +403,18 @@ func (w *PGWorker) continueServiceClosure(ctx context.Context, selector string) 
 	}
 	pg := shared.Observed
 	allowed := pg.CapacityGeneration == c.Request.ExpectedCapacityGeneration
-	if m.ProtocolVersion == 17 {
+	if m.ClosureFormatVersion() == 17 {
 		allowed = m.ActiveServiceCapacityAllowed(pg.CapacityGeneration) && pg.CapacityGeneration >= previous.ExpectedCapacityGeneration
 	}
 	if pg.Instance != instance || pg.IssuerFloorEpoch != epoch || !allowed || pg.AdmissionRevision == control.Uint64(math.MaxUint64) {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
 	request := control.AdmissionContinuationRequest{ProtocolVersion: 1, Original: c.ProtectedAdmission(), PreviousClose: previous, Close: c.Request}
-	if m.ProtocolVersion == 17 {
+	if m.ClosureFormatVersion() == 17 {
 		request.ProtocolVersion = 2
 		request.Close.ExpectedCapacityGeneration = pg.CapacityGeneration
 	}
-	if m.Owner == origin && (m.ProtocolVersion != 17 || pg.CapacityGeneration <= previous.ExpectedCapacityGeneration || previous.Revision == control.Uint64(math.MaxUint64)) {
+	if m.Owner == origin && (m.ClosureFormatVersion() != 17 || pg.CapacityGeneration <= previous.ExpectedCapacityGeneration || previous.Revision == control.Uint64(math.MaxUint64)) {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
 	// 原首次开放及关闭都未投递时，PG水位可能仍为0；新关闭必须

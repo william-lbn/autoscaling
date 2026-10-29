@@ -20,7 +20,7 @@ func (p *Publisher) checkInitial(ctx context.Context, s *journal.Snapshot) error
 	if err != nil {
 		return err
 	}
-	if !s.Dispatchable() || m.Active != nil || m.InitialHeld.Admission == nil || m.InitialHeld.Admission.Phase != journal.Settled || i.NodeName != p.node.Binding().NodeName || i.NodeUID != string(p.node.Binding().NodeUID) || i.HostOverheadBytes != p.overhead {
+	if !s.Dispatchable() || m.Active != nil || !m.InitialAdmissionReady() || i.NodeName != p.node.Binding().NodeName || i.NodeUID != string(p.node.Binding().NodeUID) || i.HostOverheadBytes != p.overhead {
 		return fmt.Errorf("initial Host observation lacks settled original VM/Node binding")
 	}
 	if err := p.currentOwner(ctx, s); err != nil {

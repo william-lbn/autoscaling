@@ -19,6 +19,7 @@ type HeldInitialBudget struct {
 	Budget           []byte            `json:"budget"`
 	BudgetSHA256     string            `json:"budget_sha256"`
 	Admission        *InitialAdmission `json:"admission"`
+	Covered          *InitialCoverage  `json:"covered,omitempty"`
 }
 
 // InitialAdmission只有首次开放这一动作，不复用带Resize Key的通用Step。
@@ -45,6 +46,11 @@ func cloneInitial(h *HeldInitialBudget) *HeldInitialBudget {
 		a.Receipt = append([]byte(nil), a.Receipt...)
 		cloned.Admission = &a
 	}
+	if h.Covered != nil {
+		p := *h.Covered
+		p.Receipt = *cloneAdmissionResponse(&p.Receipt)
+		cloned.Covered = &p
+	}
 	return &cloned
 }
 
@@ -59,6 +65,9 @@ func (model Model) validateInitialBudget() error {
 	var i budget.Initial
 	if json.Unmarshal(h.Budget, &i) != nil || i.Instance != *model.PGInstance || i.PGAggregate.Identity != *model.ResourceIdentity || i.Incarnation != model.Incarnation || i.IssuerEpoch != h.Origin.Epoch {
 		return fmt.Errorf("initial budget differs from durable original PG/Guest/owner")
+	}
+	if err := model.validateInitialCoverage(); err != nil {
+		return err
 	}
 	a := h.Admission
 	if a == nil {
@@ -76,7 +85,7 @@ func (model Model) validateInitialBudget() error {
 	}
 	switch a.Phase {
 	case Unconfirmed:
-		if a.RecordedSequence != 0 || a.Receipt != nil || model.HighWater != nil || model.Active != nil || len(model.History) != 0 || model.ExpiredResults != 0 {
+		if a.RecordedSequence != 0 || a.Receipt != nil || !model.InitialAdmissionReady() && (model.HighWater != nil || model.Active != nil || len(model.History) != 0 || model.ExpiredResults != 0) {
 			return fmt.Errorf("unknown first admission cannot contain receipt or resize history")
 		}
 	case Settled:
@@ -84,32 +93,40 @@ func (model Model) validateInitialBudget() error {
 		if a.RecordedSequence <= a.StartedSequence || a.RecordedSequence > model.Sequence || control.ValidateJSON(a.Receipt, MaxObservationBytes, 2048) != nil || json.Unmarshal(a.Receipt, &receipt) != nil || receipt.ResourceEpoch > model.Owner.Epoch || receipt.ValidateFor(i, c, receipt.ResourceEpoch) != nil {
 			return fmt.Errorf("first admission lacks exact original completed audit")
 		}
-		check := func(op Operation) error {
-			if op.Request.ExpectedCapacityGeneration != i.Shared.Observed.CapacityGeneration {
-				return fmt.Errorf("operation changed retained initial capacity baseline")
-			}
-			for _, step := range op.Steps {
-				if step.Action == FinalizeBudget && step.Phase == Settled && step.Observation.Result == Completed {
-					return fmt.Errorf("completed normal budget did not atomically replace initial budget")
-				}
-			}
-			return nil
-		}
-		for _, record := range model.History {
-			if record.ClosedSequence <= a.RecordedSequence {
-				return fmt.Errorf("resize history predates completed first admission")
-			}
-			if err := check(record.Operation); err != nil {
-				return err
-			}
-		}
-		if model.Active != nil {
-			if err := check(*model.Active); err != nil {
-				return err
-			}
-		}
+
 	default:
 		return fmt.Errorf("invalid first admission phase")
+	}
+	if !model.InitialAdmissionReady() {
+		return nil
+	}
+	admittedAt := a.RecordedSequence
+	if a.Phase == Unconfirmed {
+		admittedAt = h.Covered.RecordedSequence
+	}
+	check := func(op Operation) error {
+		if op.Request.ExpectedCapacityGeneration != i.Shared.Observed.CapacityGeneration {
+			return fmt.Errorf("operation changed retained initial capacity baseline")
+		}
+		for _, step := range op.Steps {
+			if step.Action == FinalizeBudget && step.Phase == Settled && step.Observation.Result == Completed {
+				return fmt.Errorf("completed normal budget did not atomically replace initial budget")
+			}
+		}
+		return nil
+	}
+	for _, record := range model.History {
+		if record.ClosedSequence <= admittedAt {
+			return fmt.Errorf("resize history predates completed first admission")
+		}
+		if err := check(record.Operation); err != nil {
+			return err
+		}
+	}
+	if model.Active != nil {
+		if err := check(*model.Active); err != nil {
+			return err
+		}
 	}
 	return nil
 }

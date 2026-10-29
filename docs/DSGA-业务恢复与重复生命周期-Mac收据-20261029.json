@@ -1,0 +1,2797 @@
+{
+  "schema": 1,
+  "date": "2026-10-29",
+  "scope": "PG17 无Active受控新开放业务完成、原首次未知覆盖、Run过期等待解除与有界重复生命周期；整体未完成",
+  "baseline_autoscaling": "72ae4e7081b555266fe1747e162d9d544994405e",
+  "pg17_sha": "79367196a74eef82e67cac917877d2e6271d3e70",
+  "execution": {
+    "working_directory": "/Users/williamlee/github/neon-self-dev/repos/autoscaling",
+    "go_executable": "/Users/williamlee/go/bin/go",
+    "command_note": "argv按阶段执行记录补录；package/test实际选择与退出状态以对应原始JSON日志为准。",
+    "quality_environment": {
+      "PATH": "/Users/williamlee/go/bin:/opt/homebrew/bin:/usr/bin:/bin",
+      "GOLANGCI_LINT_CACHE": "/Users/williamlee/github/neon-self-dev/build/golangci-lint-cache"
+    },
+    "platform": "darwin/arm64",
+    "go": "go1.25.13",
+    "race": true,
+    "mod": "readonly",
+    "count": 1,
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GOCACHE": "/Users/williamlee/github/neon-self-dev/build/go-cache",
+    "network_tests": "已授权require_escalated本机HTTP/TLS/Unix socket",
+    "strategy": "受影响完整批与最终变更定向替换，不重复未变原生PG/Rust/HTTP"
+  },
+  "totals": {
+    "top_level": 73,
+    "records_with_parents": 473,
+    "fail": 0,
+    "skip": 0
+  },
+  "adopted_logs": [
+    {
+      "go_args": [
+        "test",
+        "-race",
+        "-mod=readonly",
+        "-count=1",
+        "-json",
+        "./pkg/dsga/journal",
+        "-run",
+        "^Test(Service|Initial|StoreInitial|ResumeService|CleanupService|ActiveService|PGActiveService|PlannedResume|PendingFinalization|HeldBudget|ClosedBudget|LegacyClosedBudget)",
+        "-timeout",
+        "12m"
+      ],
+      "path": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "sha256": "0ed93a4901048b6b5489f64bfcc47647614d8f09997fbff1928823ef48390639",
+      "top_level": 59,
+      "records_with_parents": 371,
+      "package_elapsed_seconds": 243.746,
+      "exit_code": 0,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "go_args": [
+        "test",
+        "-race",
+        "-mod=readonly",
+        "-count=1",
+        "-json",
+        "./pkg/dsga/journal",
+        "-run",
+        "^TestServiceLifecycle|^TestServiceReopenRetainsOriginalClosureBudgetAndUnknown$",
+        "-timeout",
+        "12m"
+      ],
+      "path": "build/dsga-service-lifecycle-model-reserve-final.jsonl",
+      "sha256": "31d1528cdc531df8c7bb8a68f4b04c4d22d07b942d49cb88091a03a16956de72",
+      "top_level": 7,
+      "records_with_parents": 34,
+      "package_elapsed_seconds": 52.174,
+      "exit_code": 0,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "go_args": [
+        "test",
+        "-race",
+        "-mod=readonly",
+        "-count=1",
+        "-json",
+        "./pkg/dsga/journal",
+        "-run",
+        "^TestServiceLifecycle(PreservesRetiredRequestIdentityAndExpirationWatermark|ReopenReservesRawCompletionContext|RepeatedCyclesRetireOnlySupersededAdmission)$",
+        "-timeout",
+        "12m"
+      ],
+      "path": "build/dsga-service-lifecycle-watermark-final.jsonl",
+      "sha256": "1eef7c15072a683d165b46a74ddd43d74d7d8525ff04d908302f349c41197a62",
+      "top_level": 3,
+      "records_with_parents": 3,
+      "package_elapsed_seconds": 36.853,
+      "exit_code": 0,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "go_args": [
+        "test",
+        "-race",
+        "-mod=readonly",
+        "-count=1",
+        "-json",
+        "./pkg/api/dsga",
+        "-run",
+        "^TestCoordination|^TestResourceOnlyZeroBoot",
+        "-timeout",
+        "12m"
+      ],
+      "path": "build/dsga-service-lifecycle-api.jsonl",
+      "sha256": "8b24873051f0e95735cde9e3c09da2153f73141cdd7d7f237595f639ca82b6b3",
+      "top_level": 3,
+      "records_with_parents": 31,
+      "package_elapsed_seconds": 1.119,
+      "exit_code": 0,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "go_args": [
+        "test",
+        "-race",
+        "-mod=readonly",
+        "-count=1",
+        "-json",
+        "./pkg/dsga/owner",
+        "-run",
+        "^(TestProductionExpiredNativeLeaseRetainsRestrictedManagement|TestProductionLocalAbortHistoryCannotBypassLeaseForNewBegin|TestExpiredRunReadsReopenWALWithoutRenewOrSetter|TestOwnedControlLoopCancellationAndSerialExecution|TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries)$",
+        "-timeout",
+        "6m"
+      ],
+      "path": "build/dsga-service-lifecycle-owner-affected.jsonl",
+      "sha256": "fe93dcbf1d5f0508c42dad9ad3031eb92752a16c1efb97511ce73127f235f571",
+      "top_level": 5,
+      "records_with_parents": 56,
+      "package_elapsed_seconds": 58.801,
+      "exit_code": 0,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "go_args": [
+        "test",
+        "-race",
+        "-mod=readonly",
+        "-count=1",
+        "-json",
+        "./pkg/dsga/owner",
+        "-run",
+        "^TestProductionServiceLifecycle",
+        "-timeout",
+        "10m"
+      ],
+      "path": "build/dsga-service-lifecycle-production-final.jsonl",
+      "sha256": "e71a80876e42c70c114956881fe2fffdc2d60fd354be083f511ff8750b5fa866",
+      "top_level": 2,
+      "records_with_parents": 7,
+      "package_elapsed_seconds": 418.218,
+      "exit_code": 0,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "go_args": [
+        "test",
+        "-race",
+        "-mod=readonly",
+        "-count=1",
+        "-json",
+        "./pkg/dsga/owner",
+        "-run",
+        "^TestProductionServiceLifecycleRecoversUnknownThenAutomaticGrowShrink$",
+        "-timeout",
+        "8m"
+      ],
+      "path": "build/dsga-service-lifecycle-automatic.jsonl",
+      "sha256": "d83a60fadc232211a2eb91c0af2acd183433d8be0fd179240b6f35c31346a0cc",
+      "top_level": 1,
+      "records_with_parents": 5,
+      "package_elapsed_seconds": 274.788,
+      "exit_code": 0,
+      "fail": 0,
+      "skip": 0
+    }
+  ],
+  "adopted_trees": [
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestClosedBudgetBoundarySurvivesTakeoverAndExpiredHistory",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestClosedBudgetBoundarySurvivesTakeoverAndExpiredHistory",
+          "elapsed_seconds": 7
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestClosedBudgetBoundaryInvalidatesBeforeDispatchAndCannotRevive",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestClosedBudgetBoundaryInvalidatesBeforeDispatchAndCannotRevive/unknown",
+          "elapsed_seconds": 0.73
+        },
+        {
+          "test": "TestClosedBudgetBoundaryInvalidatesBeforeDispatchAndCannotRevive/rejected-cleanup",
+          "elapsed_seconds": 1.24
+        },
+        {
+          "test": "TestClosedBudgetBoundaryInvalidatesBeforeDispatchAndCannotRevive/new-success",
+          "elapsed_seconds": 1.69
+        },
+        {
+          "test": "TestClosedBudgetBoundaryInvalidatesBeforeDispatchAndCannotRevive",
+          "elapsed_seconds": 3.65
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestClosedBudgetBoundaryRejectsCorruptWitnessAndOldProjection",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestClosedBudgetBoundaryRejectsCorruptWitnessAndOldProjection/old-version",
+          "elapsed_seconds": 0.06
+        },
+        {
+          "test": "TestClosedBudgetBoundaryRejectsCorruptWitnessAndOldProjection/wrong-command",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestClosedBudgetBoundaryRejectsCorruptWitnessAndOldProjection/wrong-recorded",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestClosedBudgetBoundaryRejectsCorruptWitnessAndOldProjection/success-before-record",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestClosedBudgetBoundaryRejectsCorruptWitnessAndOldProjection/future-sequence",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestClosedBudgetBoundaryRejectsCorruptWitnessAndOldProjection/future-key",
+          "elapsed_seconds": 0.09
+        },
+        {
+          "test": "TestClosedBudgetBoundaryRejectsCorruptWitnessAndOldProjection/same-revision-alias",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestClosedBudgetBoundaryRejectsCorruptWitnessAndOldProjection",
+          "elapsed_seconds": 1.02
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestLegacyClosedBudgetBoundaryUpgradeRequiresOriginalSuccessChain",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestLegacyClosedBudgetBoundaryUpgradeRequiresOriginalSuccessChain/contiguous",
+          "elapsed_seconds": 0.72
+        },
+        {
+          "test": "TestLegacyClosedBudgetBoundaryUpgradeRequiresOriginalSuccessChain/history-expired",
+          "elapsed_seconds": 0.66
+        },
+        {
+          "test": "TestLegacyClosedBudgetBoundaryUpgradeRequiresOriginalSuccessChain/dispatched-abort",
+          "elapsed_seconds": 1.17
+        },
+        {
+          "test": "TestLegacyClosedBudgetBoundaryUpgradeRequiresOriginalSuccessChain",
+          "elapsed_seconds": 2.55
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestCleanupServiceClosureRetainsThreeOriginalBudgetBoundaries",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestCleanupServiceClosureRetainsThreeOriginalBudgetBoundaries/committed/opening-false/settled-false",
+          "elapsed_seconds": 1.21
+        },
+        {
+          "test": "TestCleanupServiceClosureRetainsThreeOriginalBudgetBoundaries/committed/opening-false/settled-true",
+          "elapsed_seconds": 2.15
+        },
+        {
+          "test": "TestCleanupServiceClosureRetainsThreeOriginalBudgetBoundaries/committed/opening-true/settled-false",
+          "elapsed_seconds": 1.07
+        },
+        {
+          "test": "TestCleanupServiceClosureRetainsThreeOriginalBudgetBoundaries/committed/opening-true/settled-true",
+          "elapsed_seconds": 2.01
+        },
+        {
+          "test": "TestCleanupServiceClosureRetainsThreeOriginalBudgetBoundaries/actual/opening-false/settled-false",
+          "elapsed_seconds": 1.71
+        },
+        {
+          "test": "TestCleanupServiceClosureRetainsThreeOriginalBudgetBoundaries/actual/opening-false/settled-true",
+          "elapsed_seconds": 2.28
+        },
+        {
+          "test": "TestCleanupServiceClosureRetainsThreeOriginalBudgetBoundaries/actual/opening-true/settled-false",
+          "elapsed_seconds": 1.72
+        },
+        {
+          "test": "TestCleanupServiceClosureRetainsThreeOriginalBudgetBoundaries/actual/opening-true/settled-true",
+          "elapsed_seconds": 2.41
+        },
+        {
+          "test": "TestCleanupServiceClosureRetainsThreeOriginalBudgetBoundaries/unchanged/opening-false/settled-false",
+          "elapsed_seconds": 1.61
+        },
+        {
+          "test": "TestCleanupServiceClosureRetainsThreeOriginalBudgetBoundaries/unchanged/opening-false/settled-true",
+          "elapsed_seconds": 2.17
+        },
+        {
+          "test": "TestCleanupServiceClosureRetainsThreeOriginalBudgetBoundaries/unchanged/opening-true/settled-false",
+          "elapsed_seconds": 1.62
+        },
+        {
+          "test": "TestCleanupServiceClosureRetainsThreeOriginalBudgetBoundaries/unchanged/opening-true/settled-true",
+          "elapsed_seconds": 2.32
+        },
+        {
+          "test": "TestCleanupServiceClosureRetainsThreeOriginalBudgetBoundaries",
+          "elapsed_seconds": 22.29
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal/committed/generation",
+          "elapsed_seconds": 0.16
+        },
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal/committed/target-budget",
+          "elapsed_seconds": 0.14
+        },
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal/committed/open",
+          "elapsed_seconds": 0.14
+        },
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal/committed/instance",
+          "elapsed_seconds": 0.14
+        },
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal/committed/revision",
+          "elapsed_seconds": 0.16
+        },
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal/actual/generation",
+          "elapsed_seconds": 0.14
+        },
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal/actual/target-budget",
+          "elapsed_seconds": 0.13
+        },
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal/actual/open",
+          "elapsed_seconds": 0.13
+        },
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal/actual/instance",
+          "elapsed_seconds": 0.13
+        },
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal/actual/revision",
+          "elapsed_seconds": 0.15
+        },
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal/unchanged/generation",
+          "elapsed_seconds": 0.13
+        },
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal/unchanged/target-budget",
+          "elapsed_seconds": 0.12
+        },
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal/unchanged/open",
+          "elapsed_seconds": 0.12
+        },
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal/unchanged/instance",
+          "elapsed_seconds": 0.12
+        },
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal/unchanged/revision",
+          "elapsed_seconds": 0.13
+        },
+        {
+          "test": "TestCleanupServiceClosureRejectsChangedCapacityBudgetAndOriginal",
+          "elapsed_seconds": 4.45
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestCleanupServiceClosureContinuationKeepsOriginalCapacityAndUnknown",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestCleanupServiceClosureContinuationKeepsOriginalCapacityAndUnknown/committed",
+          "elapsed_seconds": 1.12
+        },
+        {
+          "test": "TestCleanupServiceClosureContinuationKeepsOriginalCapacityAndUnknown/actual",
+          "elapsed_seconds": 1.79
+        },
+        {
+          "test": "TestCleanupServiceClosureContinuationKeepsOriginalCapacityAndUnknown/unchanged",
+          "elapsed_seconds": 1.68
+        },
+        {
+          "test": "TestCleanupServiceClosureContinuationKeepsOriginalCapacityAndUnknown",
+          "elapsed_seconds": 4.58
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestCleanupServiceClosureStoreRequiresConfirmedCAS",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestCleanupServiceClosureStoreRequiresConfirmedCAS/opening-false/ok",
+          "elapsed_seconds": 2.43
+        },
+        {
+          "test": "TestCleanupServiceClosureStoreRequiresConfirmedCAS/opening-false/lost-start",
+          "elapsed_seconds": 1.74
+        },
+        {
+          "test": "TestCleanupServiceClosureStoreRequiresConfirmedCAS/opening-false/lost-record",
+          "elapsed_seconds": 2.21
+        },
+        {
+          "test": "TestCleanupServiceClosureStoreRequiresConfirmedCAS/opening-false/stale-rv",
+          "elapsed_seconds": 1.54
+        },
+        {
+          "test": "TestCleanupServiceClosureStoreRequiresConfirmedCAS/opening-false/recreated-vm",
+          "elapsed_seconds": 1.55
+        },
+        {
+          "test": "TestCleanupServiceClosureStoreRequiresConfirmedCAS/opening-false",
+          "elapsed_seconds": 9.48
+        },
+        {
+          "test": "TestCleanupServiceClosureStoreRequiresConfirmedCAS/opening-true/ok",
+          "elapsed_seconds": 2.45
+        },
+        {
+          "test": "TestCleanupServiceClosureStoreRequiresConfirmedCAS/opening-true/lost-start",
+          "elapsed_seconds": 1.75
+        },
+        {
+          "test": "TestCleanupServiceClosureStoreRequiresConfirmedCAS/opening-true/lost-record",
+          "elapsed_seconds": 2.22
+        },
+        {
+          "test": "TestCleanupServiceClosureStoreRequiresConfirmedCAS/opening-true/stale-rv",
+          "elapsed_seconds": 1.55
+        },
+        {
+          "test": "TestCleanupServiceClosureStoreRequiresConfirmedCAS/opening-true/recreated-vm",
+          "elapsed_seconds": 1.55
+        },
+        {
+          "test": "TestCleanupServiceClosureStoreRequiresConfirmedCAS/opening-true",
+          "elapsed_seconds": 9.52
+        },
+        {
+          "test": "TestCleanupServiceClosureStoreRequiresConfirmedCAS",
+          "elapsed_seconds": 19
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestCleanupServiceClosureWithoutPermanentHeaderStaysSafetyOnly",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestCleanupServiceClosureWithoutPermanentHeaderStaysSafetyOnly/opening-false",
+          "elapsed_seconds": 1.32
+        },
+        {
+          "test": "TestCleanupServiceClosureWithoutPermanentHeaderStaysSafetyOnly/opening-true",
+          "elapsed_seconds": 1.46
+        },
+        {
+          "test": "TestCleanupServiceClosureWithoutPermanentHeaderStaysSafetyOnly",
+          "elapsed_seconds": 2.79
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestHeldBudgetAtomicRecordSurvivesHistoryAndTakeover",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestHeldBudgetAtomicRecordSurvivesHistoryAndTakeover",
+          "elapsed_seconds": 4.34
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence/changed-bound",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence/missing-sources",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence/wrong-vm-digest",
+          "elapsed_seconds": 0.03
+        },
+        {
+          "test": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence/wrong-request",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence/missing-held",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence/downgrade-v2",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence/held-version",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence/sequence-future",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence/sequence-zero",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence/different-guest",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence/wrong-command",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence/changed-observation",
+          "elapsed_seconds": 0.07
+        },
+        {
+          "test": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence/missing-pg",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence/wrong-original-owner",
+          "elapsed_seconds": 0.06
+        },
+        {
+          "test": "TestHeldBudgetRejectsPartialReplacementAndCorruptPersistence",
+          "elapsed_seconds": 0.67
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestHeldBudgetRetainsOldThroughAbortAndReplacesOnlyCompleteNewBudget",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestHeldBudgetRetainsOldThroughAbortAndReplacesOnlyCompleteNewBudget",
+          "elapsed_seconds": 2.34
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestHeldBudgetLegacyV2RequiresExplicitOriginalActiveUpgrade",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestHeldBudgetLegacyV2RequiresExplicitOriginalActiveUpgrade",
+          "elapsed_seconds": 0.66
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestHeldBudgetStoreOneCASAndUnknownReplyRetainFullState",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestHeldBudgetStoreOneCASAndUnknownReplyRetainFullState/complete",
+          "elapsed_seconds": 0.52
+        },
+        {
+          "test": "TestHeldBudgetStoreOneCASAndUnknownReplyRetainFullState/lost-record",
+          "elapsed_seconds": 0.42
+        },
+        {
+          "test": "TestHeldBudgetStoreOneCASAndUnknownReplyRetainFullState/stale-rv",
+          "elapsed_seconds": 0.21
+        },
+        {
+          "test": "TestHeldBudgetStoreOneCASAndUnknownReplyRetainFullState/recreated-vm",
+          "elapsed_seconds": 0.21
+        },
+        {
+          "test": "TestHeldBudgetStoreOneCASAndUnknownReplyRetainFullState/legacy-upgrade",
+          "elapsed_seconds": 0.59
+        },
+        {
+          "test": "TestHeldBudgetStoreOneCASAndUnknownReplyRetainFullState/legacy-lost-upgrade",
+          "elapsed_seconds": 0.5
+        },
+        {
+          "test": "TestHeldBudgetStoreOneCASAndUnknownReplyRetainFullState",
+          "elapsed_seconds": 2.45
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestInitialWALSurvivesCodecTakeoverWithoutResizeAndRetainsOriginalCommand",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestInitialWALSurvivesCodecTakeoverWithoutResizeAndRetainsOriginalCommand",
+          "elapsed_seconds": 0.42
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestInitialWALRejectsProjectionTamperingAndIncompleteOpening",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestInitialWALRejectsProjectionTamperingAndIncompleteOpening/old-version",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestInitialWALRejectsProjectionTamperingAndIncompleteOpening/no-budget",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestInitialWALRejectsProjectionTamperingAndIncompleteOpening/raw-budget",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestInitialWALRejectsProjectionTamperingAndIncompleteOpening/command-sha",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "test": "TestInitialWALRejectsProjectionTamperingAndIncompleteOpening/no-receipt",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "test": "TestInitialWALRejectsProjectionTamperingAndIncompleteOpening/bad-sequence",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "test": "TestInitialWALRejectsProjectionTamperingAndIncompleteOpening/wrong-owner",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestInitialWALRejectsProjectionTamperingAndIncompleteOpening",
+          "elapsed_seconds": 0.2
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestInitialBudgetReplacedOnlyByAtomicCompleteNormalFinalization",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestInitialBudgetReplacedOnlyByAtomicCompleteNormalFinalization",
+          "elapsed_seconds": 1.09
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestInitialBudgetSurvivesUndispatchedCancellationsBeyondHistory",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestInitialBudgetSurvivesUndispatchedCancellationsBeyondHistory",
+          "elapsed_seconds": 4.55
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestStoreInitialUnknownWritesNeverReturnDispatchOrLosePermanentState",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestStoreInitialUnknownWritesNeverReturnDispatchOrLosePermanentState/lost-budget",
+          "elapsed_seconds": 0.56
+        },
+        {
+          "test": "TestStoreInitialUnknownWritesNeverReturnDispatchOrLosePermanentState/lost-start",
+          "elapsed_seconds": 0.57
+        },
+        {
+          "test": "TestStoreInitialUnknownWritesNeverReturnDispatchOrLosePermanentState/lost-record",
+          "elapsed_seconds": 0.48
+        },
+        {
+          "test": "TestStoreInitialUnknownWritesNeverReturnDispatchOrLosePermanentState",
+          "elapsed_seconds": 1.64
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestInitialVMActualCapacityRejectsDispatchAndSurvivesClosedThrough",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestInitialVMActualCapacityRejectsDispatchAndSurvivesClosedThrough",
+          "elapsed_seconds": 4.14
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestInitialActualCapacityRetainsOriginalAcrossAtomicReplacementHistoryAndTakeover",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestInitialActualCapacityRetainsOriginalAcrossAtomicReplacementHistoryAndTakeover",
+          "elapsed_seconds": 27.45
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestInitialServiceClosurePreservesUnknownBudgetAndFullProof",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestInitialServiceClosurePreservesUnknownBudgetAndFullProof",
+          "elapsed_seconds": 0.45
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestInitialServiceClosureRejectsProjectionAndFalseHistory",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/v11",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/v10",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/original-missing",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/original-boot",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/original-revision",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/original-closed",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/close-open",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/close-budget",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/close-capacity",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/close-revision",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/predated",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/initial-settled",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/false-receipt",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/reason",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/no-prior",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/wrong-original",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/open-observed",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/future-floor",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/no-proof",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory",
+          "elapsed_seconds": 0.58
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestInitialServiceClosureContinuationRetainsOpenAndVersion",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestInitialServiceClosureContinuationRetainsOpenAndVersion",
+          "elapsed_seconds": 0.36
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies/ok",
+          "elapsed_seconds": 0.51
+        },
+        {
+          "test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies/lost-start",
+          "elapsed_seconds": 0.29
+        },
+        {
+          "test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies/lost-record",
+          "elapsed_seconds": 0.46
+        },
+        {
+          "test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies/stale-rv",
+          "elapsed_seconds": 0.25
+        },
+        {
+          "test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies/recreated-vm",
+          "elapsed_seconds": 0.24
+        },
+        {
+          "test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies",
+          "elapsed_seconds": 1.76
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestPlannedResumeClosurePreservesUnsentStepAndFullBudget",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestPlannedResumeClosurePreservesUnsentStepAndFullBudget",
+          "elapsed_seconds": 1.05
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestPlannedResumeClosureRejectsProjectionAndIntermediateEffects",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestPlannedResumeClosureRejectsProjectionAndIntermediateEffects/v13",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestPlannedResumeClosureRejectsProjectionAndIntermediateEffects/v11",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestPlannedResumeClosureRejectsProjectionAndIntermediateEffects/no-active",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestPlannedResumeClosureRejectsProjectionAndIntermediateEffects/no-budget",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestPlannedResumeClosureRejectsProjectionAndIntermediateEffects/no-hash",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestPlannedResumeClosureRejectsProjectionAndIntermediateEffects/wrong-hash",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestPlannedResumeClosureRejectsProjectionAndIntermediateEffects/original-open",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestPlannedResumeClosureRejectsProjectionAndIntermediateEffects/wrong-capacity",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestPlannedResumeClosureRejectsProjectionAndIntermediateEffects/wrong-budget",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestPlannedResumeClosureRejectsProjectionAndIntermediateEffects/reason",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestPlannedResumeClosureRejectsProjectionAndIntermediateEffects/abort",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestPlannedResumeClosureRejectsProjectionAndIntermediateEffects/prior-no-effect",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestPlannedResumeClosureRejectsProjectionAndIntermediateEffects/predated",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestPlannedResumeClosureRejectsProjectionAndIntermediateEffects",
+          "elapsed_seconds": 1.12
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestPlannedResumeClosureContinuationRetainsUnsentStep",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestPlannedResumeClosureContinuationRetainsUnsentStep",
+          "elapsed_seconds": 1.03
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestPlannedResumeClosureStoreRequiresConfirmedCAS",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestPlannedResumeClosureStoreRequiresConfirmedCAS/ok",
+          "elapsed_seconds": 1.15
+        },
+        {
+          "test": "TestPlannedResumeClosureStoreRequiresConfirmedCAS/lost-start",
+          "elapsed_seconds": 0.67
+        },
+        {
+          "test": "TestPlannedResumeClosureStoreRequiresConfirmedCAS/lost-record",
+          "elapsed_seconds": 1.05
+        },
+        {
+          "test": "TestPlannedResumeClosureStoreRequiresConfirmedCAS/stale-rv",
+          "elapsed_seconds": 0.52
+        },
+        {
+          "test": "TestPlannedResumeClosureStoreRequiresConfirmedCAS/recreated-vm",
+          "elapsed_seconds": 0.54
+        },
+        {
+          "test": "TestPlannedResumeClosureStoreRequiresConfirmedCAS",
+          "elapsed_seconds": 3.93
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestResumeServiceClosureRetainsFullActiveAndUnknownAcrossCodec",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestResumeServiceClosureRetainsFullActiveAndUnknownAcrossCodec/unknown",
+          "elapsed_seconds": 1.12
+        },
+        {
+          "test": "TestResumeServiceClosureRetainsFullActiveAndUnknownAcrossCodec/completed-before-finish",
+          "elapsed_seconds": 1.14
+        },
+        {
+          "test": "TestResumeServiceClosureRetainsFullActiveAndUnknownAcrossCodec",
+          "elapsed_seconds": 2.26
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/v12",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/v11",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/no-original",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/no-active",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/no-hash",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/wrong-hash",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/abort-active",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/rewrite-prior",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/initial-reason",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/wrong-original",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/wrong-capacity",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/wrong-budget",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/predated",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation",
+          "elapsed_seconds": 1.16
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestResumeServiceClosureContinuationRetainsActiveAndVersion",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestResumeServiceClosureContinuationRetainsActiveAndVersion",
+          "elapsed_seconds": 1.05
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies/ok",
+          "elapsed_seconds": 1.19
+        },
+        {
+          "test": "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies/lost-start",
+          "elapsed_seconds": 0.69
+        },
+        {
+          "test": "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies/lost-record",
+          "elapsed_seconds": 1.89
+        },
+        {
+          "test": "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies/stale-rv",
+          "elapsed_seconds": 1.28
+        },
+        {
+          "test": "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies/recreated-vm",
+          "elapsed_seconds": 0.94
+        },
+        {
+          "test": "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies",
+          "elapsed_seconds": 5.99
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceContinuationRetainsOriginalAndRepeatedPredecessors",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceContinuationRetainsOriginalAndRepeatedPredecessors",
+          "elapsed_seconds": 1.5
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceContinuationRejectsChangedSelectionAndProjection",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/selector",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/original",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/predecessor",
+          "elapsed_seconds": 0.06
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/budget",
+          "elapsed_seconds": 0.07
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/boot",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/capacity",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/epoch",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/actor",
+          "elapsed_seconds": 0.12
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/version",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/no-closure",
+          "elapsed_seconds": 0.03
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/no-continuation",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/original-settled",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/previous-holder",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/previous-sequence",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/started-sequence",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/origin",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/digest",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/unknown-receipt",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection/future-floor",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestServiceContinuationRejectsChangedSelectionAndProjection",
+          "elapsed_seconds": 1.63
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceContinuationStrictCodecAndCompletionSpace",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-request",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-command_sha256",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-phase",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-recorded_sequence",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-receipt",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-origin",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-started_sequence",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-previous_origin",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-query",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-previous_sequence",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestServiceContinuationStrictCodecAndCompletionSpace",
+          "elapsed_seconds": 0.72
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceContinuationStoreRequiresConfirmedUIDRV",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceContinuationStoreRequiresConfirmedUIDRV/complete",
+          "elapsed_seconds": 1.16
+        },
+        {
+          "test": "TestServiceContinuationStoreRequiresConfirmedUIDRV/lost-start",
+          "elapsed_seconds": 0.82
+        },
+        {
+          "test": "TestServiceContinuationStoreRequiresConfirmedUIDRV/stale-rv",
+          "elapsed_seconds": 0.73
+        },
+        {
+          "test": "TestServiceContinuationStoreRequiresConfirmedUIDRV/recreated-vm",
+          "elapsed_seconds": 0.69
+        },
+        {
+          "test": "TestServiceContinuationStoreRequiresConfirmedUIDRV/lost-record",
+          "elapsed_seconds": 1.07
+        },
+        {
+          "test": "TestServiceContinuationStoreRequiresConfirmedUIDRV",
+          "elapsed_seconds": 4.46
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceClosureKeepsNormalAndReconciledPermanentBudgets",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceClosureKeepsNormalAndReconciledPermanentBudgets/normal",
+          "elapsed_seconds": 0.83
+        },
+        {
+          "test": "TestServiceClosureKeepsNormalAndReconciledPermanentBudgets/actual-capacity",
+          "elapsed_seconds": 2
+        },
+        {
+          "test": "TestServiceClosureKeepsNormalAndReconciledPermanentBudgets",
+          "elapsed_seconds": 2.83
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceClosureRetainsBudgetUnknownAndOriginalOwnerAcrossCodec",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceClosureRetainsBudgetUnknownAndOriginalOwnerAcrossCodec",
+          "elapsed_seconds": 0.8
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/old-version",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/missing",
+          "elapsed_seconds": 0.03
+        },
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/open",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/boot",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/budget",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/owner",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/sequence",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/digest",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/reason",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/false-receipt",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/initial-unknown",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/active",
+          "elapsed_seconds": 0.13
+        },
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/wrong-request",
+          "elapsed_seconds": 0.07
+        },
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/open-observed",
+          "elapsed_seconds": 0.07
+        },
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/not-found",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion",
+          "elapsed_seconds": 1.01
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceClosureRejectsPredatedBoundaryAndFutureOwnerReceipt",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceClosureRejectsPredatedBoundaryAndFutureOwnerReceipt/before-budget",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceClosureRejectsPredatedBoundaryAndFutureOwnerReceipt/before-first-open",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceClosureRejectsPredatedBoundaryAndFutureOwnerReceipt/future-owner-receipt",
+          "elapsed_seconds": 0.07
+        },
+        {
+          "test": "TestServiceClosureRejectsPredatedBoundaryAndFutureOwnerReceipt",
+          "elapsed_seconds": 0.41
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceClosureCodecReservesSpaceForNativeReceipt",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceClosureCodecReservesSpaceForNativeReceipt",
+          "elapsed_seconds": 0.61
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceLifecycleCompletionPreservesUnknownAndAllowsNextOperation",
+      "log": "build/dsga-service-lifecycle-model-reserve-final.jsonl",
+      "records": [
+        {
+          "test": "TestServiceLifecycleCompletionPreservesUnknownAndAllowsNextOperation/idle",
+          "elapsed_seconds": 2.03
+        },
+        {
+          "test": "TestServiceLifecycleCompletionPreservesUnknownAndAllowsNextOperation/initial-unknown",
+          "elapsed_seconds": 1.5
+        },
+        {
+          "test": "TestServiceLifecycleCompletionPreservesUnknownAndAllowsNextOperation/continuation",
+          "elapsed_seconds": 2.65
+        },
+        {
+          "test": "TestServiceLifecycleCompletionPreservesUnknownAndAllowsNextOperation/rearm",
+          "elapsed_seconds": 2.39
+        },
+        {
+          "test": "TestServiceLifecycleCompletionPreservesUnknownAndAllowsNextOperation",
+          "elapsed_seconds": 8.58
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceLifecycleRejectsProjectedOrStaleCompletion",
+      "log": "build/dsga-service-lifecycle-model-reserve-final.jsonl",
+      "records": [
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion/newer-open",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion/capacity",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion/deadline-regressed",
+          "elapsed_seconds": 0.09
+        },
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion/old-floor",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion/expired",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion/closed",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion/context-erased",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion/counter",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion/current-newer",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion/coverage-old",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion/coverage-lost",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion/stage-erased",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion/false-original",
+          "elapsed_seconds": 0.05
+        },
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion/lost-evidence",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion/downgrade",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestServiceLifecycleRejectsProjectedOrStaleCompletion",
+          "elapsed_seconds": 1.3
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceLifecycleStoreCompletionIsAtomicAndUnknownReplyReadOnly",
+      "log": "build/dsga-service-lifecycle-model-reserve-final.jsonl",
+      "records": [
+        {
+          "test": "TestServiceLifecycleStoreCompletionIsAtomicAndUnknownReplyReadOnly/normal",
+          "elapsed_seconds": 1.42
+        },
+        {
+          "test": "TestServiceLifecycleStoreCompletionIsAtomicAndUnknownReplyReadOnly/lost-record",
+          "elapsed_seconds": 1.22
+        },
+        {
+          "test": "TestServiceLifecycleStoreCompletionIsAtomicAndUnknownReplyReadOnly/stale-rv",
+          "elapsed_seconds": 1.05
+        },
+        {
+          "test": "TestServiceLifecycleStoreCompletionIsAtomicAndUnknownReplyReadOnly/recreated-vm",
+          "elapsed_seconds": 1.06
+        },
+        {
+          "test": "TestServiceLifecycleStoreCompletionIsAtomicAndUnknownReplyReadOnly",
+          "elapsed_seconds": 4.75
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceLifecycleRepeatedCyclesRetireOnlySupersededAdmission",
+      "log": "build/dsga-service-lifecycle-watermark-final.jsonl",
+      "records": [
+        {
+          "test": "TestServiceLifecycleRepeatedCyclesRetireOnlySupersededAdmission",
+          "elapsed_seconds": 25.95
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceRearmRetainsClosureBudgetUnknownAndExactHistoricalReceipt",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceRearmRetainsClosureBudgetUnknownAndExactHistoricalReceipt/idle",
+          "elapsed_seconds": 1.18
+        },
+        {
+          "test": "TestServiceRearmRetainsClosureBudgetUnknownAndExactHistoricalReceipt/initial-unknown",
+          "elapsed_seconds": 1
+        },
+        {
+          "test": "TestServiceRearmRetainsClosureBudgetUnknownAndExactHistoricalReceipt/continuation",
+          "elapsed_seconds": 1.54
+        },
+        {
+          "test": "TestServiceRearmRetainsClosureBudgetUnknownAndExactHistoricalReceipt",
+          "elapsed_seconds": 3.73
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceRearmRejectsChangedClosedSourcesAndFalseApplication",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceRearmRejectsChangedClosedSourcesAndFalseApplication/same-epoch",
+          "elapsed_seconds": 0.12
+        },
+        {
+          "test": "TestServiceRearmRejectsChangedClosedSourcesAndFalseApplication/future-floor",
+          "elapsed_seconds": 0.13
+        },
+        {
+          "test": "TestServiceRearmRejectsChangedClosedSourcesAndFalseApplication/old-revision",
+          "elapsed_seconds": 0.11
+        },
+        {
+          "test": "TestServiceRearmRejectsChangedClosedSourcesAndFalseApplication/capacity",
+          "elapsed_seconds": 0.12
+        },
+        {
+          "test": "TestServiceRearmRejectsChangedClosedSourcesAndFalseApplication/live",
+          "elapsed_seconds": 0.12
+        },
+        {
+          "test": "TestServiceRearmRejectsChangedClosedSourcesAndFalseApplication/closure",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceRearmRejectsChangedClosedSourcesAndFalseApplication/held",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestServiceRearmRejectsChangedClosedSourcesAndFalseApplication/deadline",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceRearmRejectsChangedClosedSourcesAndFalseApplication/origin",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceRearmRejectsChangedClosedSourcesAndFalseApplication/erase",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceRearmRejectsChangedClosedSourcesAndFalseApplication/downgrade",
+          "elapsed_seconds": 0.03
+        },
+        {
+          "test": "TestServiceRearmRejectsChangedClosedSourcesAndFalseApplication/format",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceRearmRejectsChangedClosedSourcesAndFalseApplication",
+          "elapsed_seconds": 1.5
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceRearmStoreNeverDispatchesUnconfirmedCAS",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceRearmStoreNeverDispatchesUnconfirmedCAS/lost-start",
+          "elapsed_seconds": 0.89
+        },
+        {
+          "test": "TestServiceRearmStoreNeverDispatchesUnconfirmedCAS/lost-record",
+          "elapsed_seconds": 1.18
+        },
+        {
+          "test": "TestServiceRearmStoreNeverDispatchesUnconfirmedCAS/stale-rv",
+          "elapsed_seconds": 0.78
+        },
+        {
+          "test": "TestServiceRearmStoreNeverDispatchesUnconfirmedCAS/recreated-vm",
+          "elapsed_seconds": 0.79
+        },
+        {
+          "test": "TestServiceRearmStoreNeverDispatchesUnconfirmedCAS/normal",
+          "elapsed_seconds": 1.31
+        },
+        {
+          "test": "TestServiceRearmStoreNeverDispatchesUnconfirmedCAS",
+          "elapsed_seconds": 4.94
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceReopenClosureRetainsUnknownAndCompletionSpace",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceReopenClosureRetainsUnknownAndCompletionSpace/unknown-before",
+          "elapsed_seconds": 0.98
+        },
+        {
+          "test": "TestServiceReopenClosureRetainsUnknownAndCompletionSpace/unknown-after",
+          "elapsed_seconds": 0.96
+        },
+        {
+          "test": "TestServiceReopenClosureRetainsUnknownAndCompletionSpace/settled",
+          "elapsed_seconds": 1.03
+        },
+        {
+          "test": "TestServiceReopenClosureRetainsUnknownAndCompletionSpace/expired",
+          "elapsed_seconds": 0.99
+        },
+        {
+          "test": "TestServiceReopenClosureRetainsUnknownAndCompletionSpace",
+          "elapsed_seconds": 3.95
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceReopenClosureRepeatedTakeoverPreservesOriginalAndPredecessor",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceReopenClosureRepeatedTakeoverPreservesOriginalAndPredecessor",
+          "elapsed_seconds": 1.25
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery/floor",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery/capacity",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery/max-revision",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery/observer",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery/selector",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery/missing",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery/borrowed-open",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery/budget",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery/rearm",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery/operation",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery/predated",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery/phantom-latest",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery/revision",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery/reopen",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery/false-complete",
+          "elapsed_seconds": 0.02
+        },
+        {
+          "test": "TestServiceReopenClosureRejectsBorrowedFactsAndRecursiveRecovery",
+          "elapsed_seconds": 1.13
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceReopenClosureStoreNeverDispatchesUnconfirmedCAS",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceReopenClosureStoreNeverDispatchesUnconfirmedCAS/lost-start",
+          "elapsed_seconds": 1.77
+        },
+        {
+          "test": "TestServiceReopenClosureStoreNeverDispatchesUnconfirmedCAS/lost-record",
+          "elapsed_seconds": 1.65
+        },
+        {
+          "test": "TestServiceReopenClosureStoreNeverDispatchesUnconfirmedCAS/stale-rv",
+          "elapsed_seconds": 1.17
+        },
+        {
+          "test": "TestServiceReopenClosureStoreNeverDispatchesUnconfirmedCAS/recreated-vm",
+          "elapsed_seconds": 1.54
+        },
+        {
+          "test": "TestServiceReopenClosureStoreNeverDispatchesUnconfirmedCAS/normal",
+          "elapsed_seconds": 1.64
+        },
+        {
+          "test": "TestServiceReopenClosureStoreNeverDispatchesUnconfirmedCAS/continuation-lost-start",
+          "elapsed_seconds": 1.13
+        },
+        {
+          "test": "TestServiceReopenClosureStoreNeverDispatchesUnconfirmedCAS/continuation-lost-record",
+          "elapsed_seconds": 1.58
+        },
+        {
+          "test": "TestServiceReopenClosureStoreNeverDispatchesUnconfirmedCAS/continuation-stale-rv",
+          "elapsed_seconds": 1.05
+        },
+        {
+          "test": "TestServiceReopenClosureStoreNeverDispatchesUnconfirmedCAS/continuation-recreated-vm",
+          "elapsed_seconds": 1.08
+        },
+        {
+          "test": "TestServiceReopenClosureStoreNeverDispatchesUnconfirmedCAS/continuation-normal",
+          "elapsed_seconds": 1.4
+        },
+        {
+          "test": "TestServiceReopenClosureStoreNeverDispatchesUnconfirmedCAS",
+          "elapsed_seconds": 14
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceReopenRetainsOriginalClosureBudgetAndUnknown",
+      "log": "build/dsga-service-lifecycle-model-reserve-final.jsonl",
+      "records": [
+        {
+          "test": "TestServiceReopenRetainsOriginalClosureBudgetAndUnknown/idle",
+          "elapsed_seconds": 1.09
+        },
+        {
+          "test": "TestServiceReopenRetainsOriginalClosureBudgetAndUnknown/initial-unknown",
+          "elapsed_seconds": 0.95
+        },
+        {
+          "test": "TestServiceReopenRetainsOriginalClosureBudgetAndUnknown/continuation",
+          "elapsed_seconds": 1.63
+        },
+        {
+          "test": "TestServiceReopenRetainsOriginalClosureBudgetAndUnknown/rearm",
+          "elapsed_seconds": 1.31
+        },
+        {
+          "test": "TestServiceReopenRetainsOriginalClosureBudgetAndUnknown",
+          "elapsed_seconds": 4.98
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/wrong-observer",
+          "elapsed_seconds": 0.12
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/open",
+          "elapsed_seconds": 0.11
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/capacity",
+          "elapsed_seconds": 0.12
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/old-revision",
+          "elapsed_seconds": 0.12
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/future-floor",
+          "elapsed_seconds": 0.11
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/future-lease",
+          "elapsed_seconds": 0.12
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/expired",
+          "elapsed_seconds": 0.12
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/unarmed",
+          "elapsed_seconds": 0.12
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/other-closed",
+          "elapsed_seconds": 0.11
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/max-revision",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/renew-result",
+          "elapsed_seconds": 0.12
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/sequence",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/downgrade",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/rearm-lost",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/old-close",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/false-done",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/erase",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/format",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/held",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/budget",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/revision",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals/owner",
+          "elapsed_seconds": 0.04
+        },
+        {
+          "test": "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals",
+          "elapsed_seconds": 2.23
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceReopenCannotAdoptCurrentOpenOrExpiredOriginal",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceReopenCannotAdoptCurrentOpenOrExpiredOriginal/newer-open",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestServiceReopenCannotAdoptCurrentOpenOrExpiredOriginal/expired",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestServiceReopenCannotAdoptCurrentOpenOrExpiredOriginal/wrong-budget",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestServiceReopenCannotAdoptCurrentOpenOrExpiredOriginal/future-floor",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestServiceReopenCannotAdoptCurrentOpenOrExpiredOriginal/wrong-capacity",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestServiceReopenCannotAdoptCurrentOpenOrExpiredOriginal/closed",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestServiceReopenCannotAdoptCurrentOpenOrExpiredOriginal",
+          "elapsed_seconds": 1.24
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceReopenRejectsUnsettledBoundariesAndOverflow",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceReopenRejectsUnsettledBoundariesAndOverflow",
+          "elapsed_seconds": 1.98
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceReopenStoreNeverDispatchesUnconfirmedCAS",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceReopenStoreNeverDispatchesUnconfirmedCAS/lost-start",
+          "elapsed_seconds": 0.9
+        },
+        {
+          "test": "TestServiceReopenStoreNeverDispatchesUnconfirmedCAS/lost-record",
+          "elapsed_seconds": 1.27
+        },
+        {
+          "test": "TestServiceReopenStoreNeverDispatchesUnconfirmedCAS/stale-rv",
+          "elapsed_seconds": 0.79
+        },
+        {
+          "test": "TestServiceReopenStoreNeverDispatchesUnconfirmedCAS/recreated-vm",
+          "elapsed_seconds": 0.78
+        },
+        {
+          "test": "TestServiceReopenStoreNeverDispatchesUnconfirmedCAS/normal",
+          "elapsed_seconds": 1.3
+        },
+        {
+          "test": "TestServiceReopenStoreNeverDispatchesUnconfirmedCAS",
+          "elapsed_seconds": 5.03
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestStoreInitializationRejectsRunningAndRestartedVMs",
+      "log": "build/dsga-service-lifecycle-journal-affected.jsonl",
+      "records": [
+        {
+          "test": "TestStoreInitializationRejectsRunningAndRestartedVMs",
+          "elapsed_seconds": 0.01
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceLifecycleNextActiveClosureKeepsIndependentFormatAndUnknown",
+      "log": "build/dsga-service-lifecycle-model-reserve-final.jsonl",
+      "records": [
+        {
+          "test": "TestServiceLifecycleNextActiveClosureKeepsIndependentFormatAndUnknown",
+          "elapsed_seconds": 1.81
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceLifecycleReopenReservesRawCompletionContext",
+      "log": "build/dsga-service-lifecycle-watermark-final.jsonl",
+      "records": [
+        {
+          "test": "TestServiceLifecycleReopenReservesRawCompletionContext",
+          "elapsed_seconds": 6.93
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+      "root": "TestServiceLifecyclePreservesRetiredRequestIdentityAndExpirationWatermark",
+      "log": "build/dsga-service-lifecycle-watermark-final.jsonl",
+      "records": [
+        {
+          "test": "TestServiceLifecyclePreservesRetiredRequestIdentityAndExpirationWatermark",
+          "elapsed_seconds": 2.24
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+      "root": "TestCoordinationSelectorsCannotReplaceOriginalCommands",
+      "log": "build/dsga-service-lifecycle-api.jsonl",
+      "records": [
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/state",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/resource_state",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/begin",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/cancel",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_pg",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_quiesce",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_admission",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_resource",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_prepare",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_initial_admission",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_vm",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_abort",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/recover_unchanged_admission",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/recover_capacity_admission",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/repair_held_resources",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/observe_held_resources",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_service_closure",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/continue_service_closure",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/rearm_service_lease",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/observe_service_rearm",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_service_rearm",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/reopen_service",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/observe_service_reopen",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_service_reopen",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/close_service_reopen",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/replay_service_reopen_closure",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/continue_service_reopen_closure",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands/complete_service_reopen",
+          "elapsed_seconds": 0
+        },
+        {
+          "test": "TestCoordinationSelectorsCannotReplaceOriginalCommands",
+          "elapsed_seconds": 0.02
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+      "root": "TestCoordinationStrictDecodeAndIndependentCopies",
+      "log": "build/dsga-service-lifecycle-api.jsonl",
+      "records": [
+        {
+          "test": "TestCoordinationStrictDecodeAndIndependentCopies",
+          "elapsed_seconds": 0
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+      "root": "TestResourceOnlyZeroBootCannotAuthorizePGOrBusiness",
+      "log": "build/dsga-service-lifecycle-api.jsonl",
+      "records": [
+        {
+          "test": "TestResourceOnlyZeroBootCannotAuthorizePGOrBusiness",
+          "elapsed_seconds": 0
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "root": "TestProductionLocalAbortHistoryCannotBypassLeaseForNewBegin",
+      "log": "build/dsga-service-lifecycle-owner-affected.jsonl",
+      "records": [
+        {
+          "test": "TestProductionLocalAbortHistoryCannotBypassLeaseForNewBegin",
+          "elapsed_seconds": 0.38
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "root": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement",
+      "log": "build/dsga-service-lifecycle-owner-affected.jsonl",
+      "records": [
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/startup/begin",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/startup/cancel",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/startup/replay_pg",
+          "elapsed_seconds": 0.23
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/startup/replay_quiesce",
+          "elapsed_seconds": 0.15
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/startup/replay_admission",
+          "elapsed_seconds": 0.31
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/startup/replay_resource",
+          "elapsed_seconds": 0.47
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/startup/replay_prepare",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/startup/replay_vm",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/startup/replay_abort",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/startup/recover_unchanged_admission",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/startup/recover_capacity_admission",
+          "elapsed_seconds": 0.16
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/startup/replay_initial_admission",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/startup",
+          "elapsed_seconds": 4.04
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/running/begin",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/running/cancel",
+          "elapsed_seconds": 0.31
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/running/replay_pg",
+          "elapsed_seconds": 0.24
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/running/replay_quiesce",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/running/replay_admission",
+          "elapsed_seconds": 0.16
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/running/replay_resource",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/running/replay_prepare",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/running/replay_vm",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/running/replay_abort",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/running/recover_unchanged_admission",
+          "elapsed_seconds": 0.16
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/running/recover_capacity_admission",
+          "elapsed_seconds": 0.16
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/running/replay_initial_admission",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/running",
+          "elapsed_seconds": 7.64
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/queued/begin",
+          "elapsed_seconds": 0.24
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/queued/cancel",
+          "elapsed_seconds": 0.15
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/queued/replay_pg",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/queued/replay_quiesce",
+          "elapsed_seconds": 0.16
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/queued/replay_admission",
+          "elapsed_seconds": 0.15
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/queued/replay_resource",
+          "elapsed_seconds": 0.16
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/queued/replay_prepare",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/queued/replay_vm",
+          "elapsed_seconds": 0.47
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/queued/replay_abort",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/queued/recover_unchanged_admission",
+          "elapsed_seconds": 0.08
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/queued/recover_capacity_admission",
+          "elapsed_seconds": 0.16
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/queued/replay_initial_admission",
+          "elapsed_seconds": 0.16
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement/queued",
+          "elapsed_seconds": 7.35
+        },
+        {
+          "test": "TestProductionExpiredNativeLeaseRetainsRestrictedManagement",
+          "elapsed_seconds": 19.03
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "root": "TestOwnedControlLoopCancellationAndSerialExecution",
+      "log": "build/dsga-service-lifecycle-owner-affected.jsonl",
+      "records": [
+        {
+          "test": "TestOwnedControlLoopCancellationAndSerialExecution",
+          "elapsed_seconds": 0.07
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "root": "TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries",
+      "log": "build/dsga-service-lifecycle-owner-affected.jsonl",
+      "records": [
+        {
+          "test": "TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries/open-notfound",
+          "elapsed_seconds": 2.42
+        },
+        {
+          "test": "TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries/open-newer",
+          "elapsed_seconds": 2.26
+        },
+        {
+          "test": "TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries/open-applied",
+          "elapsed_seconds": 2.51
+        },
+        {
+          "test": "TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries/open-lost-record",
+          "elapsed_seconds": 2.5
+        },
+        {
+          "test": "TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries/open-settled",
+          "elapsed_seconds": 2.51
+        },
+        {
+          "test": "TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries/close-notfound",
+          "elapsed_seconds": 2.67
+        },
+        {
+          "test": "TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries/close-applied",
+          "elapsed_seconds": 2.99
+        },
+        {
+          "test": "TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries/close-lost-record",
+          "elapsed_seconds": 2.89
+        },
+        {
+          "test": "TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries/close-settled",
+          "elapsed_seconds": 3.09
+        },
+        {
+          "test": "TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries/continuation-notfound",
+          "elapsed_seconds": 3.11
+        },
+        {
+          "test": "TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries/continuation-applied",
+          "elapsed_seconds": 3.44
+        },
+        {
+          "test": "TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries/continuation-lost-record",
+          "elapsed_seconds": 3.34
+        },
+        {
+          "test": "TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries",
+          "elapsed_seconds": 33.71
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "root": "TestExpiredRunReadsReopenWALWithoutRenewOrSetter",
+      "log": "build/dsga-service-lifecycle-owner-affected.jsonl",
+      "records": [
+        {
+          "test": "TestExpiredRunReadsReopenWALWithoutRenewOrSetter",
+          "elapsed_seconds": 3.38
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "root": "TestProductionServiceLifecycleCompletionAndSuccessor",
+      "log": "build/dsga-service-lifecycle-production-final.jsonl",
+      "records": [
+        {
+          "test": "TestProductionServiceLifecycleCompletionAndSuccessor/normal",
+          "elapsed_seconds": 55.22
+        },
+        {
+          "test": "TestProductionServiceLifecycleCompletionAndSuccessor/lost-record",
+          "elapsed_seconds": 60.37
+        },
+        {
+          "test": "TestProductionServiceLifecycleCompletionAndSuccessor/source-unavailable",
+          "elapsed_seconds": 20.6
+        },
+        {
+          "test": "TestProductionServiceLifecycleCompletionAndSuccessor/first-unknown-grow",
+          "elapsed_seconds": 90.21
+        },
+        {
+          "test": "TestProductionServiceLifecycleCompletionAndSuccessor/repeated",
+          "elapsed_seconds": 109.25
+        },
+        {
+          "test": "TestProductionServiceLifecycleCompletionAndSuccessor",
+          "elapsed_seconds": 335.65
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "root": "TestProductionServiceLifecycleClearsExpiredRunOnlyAfterDurableCompletion",
+      "log": "build/dsga-service-lifecycle-production-final.jsonl",
+      "records": [
+        {
+          "test": "TestProductionServiceLifecycleClearsExpiredRunOnlyAfterDurableCompletion",
+          "elapsed_seconds": 79.95
+        }
+      ]
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+      "root": "TestProductionServiceLifecycleRecoversUnknownThenAutomaticGrowShrink",
+      "log": "build/dsga-service-lifecycle-automatic.jsonl",
+      "records": [
+        {
+          "test": "TestProductionServiceLifecycleRecoversUnknownThenAutomaticGrowShrink/root-limit-drift-no-begin",
+          "elapsed_seconds": 0.32
+        },
+        {
+          "test": "TestProductionServiceLifecycleRecoversUnknownThenAutomaticGrowShrink/qualification-releasing-no-begin",
+          "elapsed_seconds": 0.16
+        },
+        {
+          "test": "TestProductionServiceLifecycleRecoversUnknownThenAutomaticGrowShrink/unqualified-target-no-begin",
+          "elapsed_seconds": 0.66
+        },
+        {
+          "test": "TestProductionServiceLifecycleRecoversUnknownThenAutomaticGrowShrink/expired-unaccepted-begin-lost-fence-reply",
+          "elapsed_seconds": 1
+        },
+        {
+          "test": "TestProductionServiceLifecycleRecoversUnknownThenAutomaticGrowShrink",
+          "elapsed_seconds": 272.92
+        }
+      ]
+    }
+  ],
+  "quality": [
+    {
+      "argv": [
+        "../../build/tools/golangci-lint",
+        "run",
+        "--new-from-rev=HEAD",
+        "--timeout=4m",
+        "./pkg/dsga/journal/...",
+        "./pkg/dsga/owner/...",
+        "./pkg/dsga/hostexec/...",
+        "./pkg/dsga/initialexec/...",
+        "./pkg/api/dsga/..."
+      ],
+      "path": "build/dsga-service-lifecycle-lint-release-final.log",
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "exit_code": 0,
+      "meaning": "增量lint 0 issues"
+    },
+    {
+      "argv": [
+        "/Users/williamlee/go/bin/go",
+        "vet",
+        "-mod=readonly",
+        "./pkg/dsga/journal/...",
+        "./pkg/dsga/owner/...",
+        "./pkg/dsga/hostexec/...",
+        "./pkg/dsga/initialexec/...",
+        "./pkg/api/dsga/..."
+      ],
+      "path": "build/dsga-service-lifecycle-vet-release.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "meaning": "五包vet"
+    },
+    {
+      "argv": [
+        "/Users/williamlee/go/bin/go",
+        "test",
+        "-mod=readonly",
+        "-run",
+        "^$",
+        "./pkg/dsga/...",
+        "./pkg/agent/...",
+        "./pkg/api/...",
+        "./pkg/neonvm/controllers"
+      ],
+      "path": "build/dsga-service-lifecycle-consumers-final.log",
+      "sha256": "6cb392aeeb9a2a6cadda5a54636ba2b1fe5c6242a16c0a2e8e79882292ac230a",
+      "exit_code": 0,
+      "meaning": "仅编译33消费者"
+    }
+  ],
+  "failed_preserved": [
+    {
+      "path": "build/dsga-service-lifecycle-first.jsonl",
+      "sha256": "d95a82268f5a19fe20ba3a6188a6e895bc81655e709debe38ef16e0e5ffddde6",
+      "adopted": false,
+      "reason": "Finish辅助测试返回值个数写错导致编译失败"
+    },
+    {
+      "path": "build/dsga-service-lifecycle-lint-first.log",
+      "sha256": "454a318ad03e378b615ad8eef81281e03a865cb7aa54a309e5661ae5b9a4f6ad",
+      "adopted": false,
+      "reason": "字段/import/预定义名称/未使用参数lint失败，随后修复"
+    }
+  ],
+  "sources": [
+    {
+      "path": "pkg/api/dsga/coordination.go",
+      "sha256": "6423368b63f11d539bc9f26b25e0a0eff2267f8a377fae7f5b108b89628e0dbe"
+    },
+    {
+      "path": "pkg/api/dsga/coordination_test.go",
+      "sha256": "16e1773ed6a31d3529583e48ee71f6dcbe64a6001f400509193c1c445df41b85"
+    },
+    {
+      "path": "pkg/dsga/hostexec/initial.go",
+      "sha256": "e10018549d7594883082ef2c537465d3b32261bdab8eb353f4fbf282d86ecb2c"
+    },
+    {
+      "path": "pkg/dsga/initialexec/executor.go",
+      "sha256": "c0365bbb4d3f12ba1162eb6506f8ef172c785f8562fc336bbdfebf4b8454aaef"
+    },
+    {
+      "path": "pkg/dsga/journal/active_service_closure.go",
+      "sha256": "96fe79c6ccd795610d3b3c1234ed480e93aceb9fb8bc4fc436201bba9453096c"
+    },
+    {
+      "path": "pkg/dsga/journal/cleanup_service_closure.go",
+      "sha256": "28a42e59e946f7dc7eb647f2015c73bcc95137ed87a7f4297d797b1c2ae2e50f"
+    },
+    {
+      "path": "pkg/dsga/journal/initial_budget.go",
+      "sha256": "d949a135c7f484834f0d8fe47a7d36e142f8bd0ed3c528ba42f5a0be61168efd"
+    },
+    {
+      "path": "pkg/dsga/journal/initial_outside.go",
+      "sha256": "5a7850aa79a0eb4892d81bb1b5806f4871ac0b976cdcf1fbdb764c243c038588"
+    },
+    {
+      "path": "pkg/dsga/journal/initial_service_closure.go",
+      "sha256": "8636658e9086494f0d3607028bef0b93a63842ccd9cee6bec8e584dee4770016"
+    },
+    {
+      "path": "pkg/dsga/journal/model.go",
+      "sha256": "440a59dd08683ccfa9363a8e931a53b6e43f28e0fcc1c96bf1e50497d23fd489"
+    },
+    {
+      "path": "pkg/dsga/journal/resume_service_closure.go",
+      "sha256": "6cb712908ba705f5c45c6ea021ff009dbfc79d62086613bacb80e635f0433c0b"
+    },
+    {
+      "path": "pkg/dsga/journal/service_closure.go",
+      "sha256": "e9b35624644dc4ec3449b196c0af057237380722a5fedabcf71535f9c248a886"
+    },
+    {
+      "path": "pkg/dsga/journal/service_closure_continuation.go",
+      "sha256": "e8dafc6431dd4f177e843028c19c061b22ca140b7f26d2f8e327c9eb930ba06b"
+    },
+    {
+      "path": "pkg/dsga/journal/service_lifecycle.go",
+      "sha256": "455d5cbec1603a0aa3f5ad909f318e91ec76971d9a004a2c20e8f6f1d5eaf426"
+    },
+    {
+      "path": "pkg/dsga/journal/service_lifecycle_test.go",
+      "sha256": "f089ff52e708f56e1d941d9922bdc06bbc83a214f8c01ad628c8eb1ab004b453"
+    },
+    {
+      "path": "pkg/dsga/journal/service_rearm.go",
+      "sha256": "6561909efbc45dec029d902c2e113ca8ea7102672d2093b11940b9f33b2504b1"
+    },
+    {
+      "path": "pkg/dsga/journal/service_reopen.go",
+      "sha256": "5e3fbc1458dcac5f7c0a5d0f73681ba62117f4299c0f3d86519c3aa69414338c"
+    },
+    {
+      "path": "pkg/dsga/owner/admission_lease.go",
+      "sha256": "6fe4cf0ceaad5f0af71e6433616f1d2ff6f69b6b60b2605f2eadd3f0689813c5"
+    },
+    {
+      "path": "pkg/dsga/owner/control.go",
+      "sha256": "9ce95954451002fe672ad676dabc8f0a99de73d84df030c3a5e3d24790216b2e"
+    },
+    {
+      "path": "pkg/dsga/owner/initial_service_test.go",
+      "sha256": "113cb3b4ef0fdf297e1a43fc9e5dc496b9ce50b46ca58016e644aeccef670fe5"
+    },
+    {
+      "path": "pkg/dsga/owner/pg.go",
+      "sha256": "9f17f595860f84bb7aa6d8606c6ee245ad137b3261fe901027fbb1f126297989"
+    },
+    {
+      "path": "pkg/dsga/owner/service_lifecycle.go",
+      "sha256": "8a6f310b297bd18d23b2ac55260a4201f8178c0dc9824908fc9fe0f722a568ed"
+    },
+    {
+      "path": "pkg/dsga/owner/service_lifecycle_test.go",
+      "sha256": "3b7cc37cc2ae8a01f73e088c901e413ab0e4edc79689599419e21f1973240b63"
+    },
+    {
+      "path": "pkg/dsga/owner/service_rearm_test.go",
+      "sha256": "8136c90876af45e79d123e44f124e4d62a7bd2aa620b7348ab787fc0d4434cf9"
+    },
+    {
+      "path": "pkg/dsga/owner/service_reopen_dispatch.go",
+      "sha256": "c912322b876a18998f36e54f47e49442565659b407bfa20c88e5cee73c83f5b9"
+    },
+    {
+      "path": "pkg/dsga/owner/service_reopen_dispatch_test.go",
+      "sha256": "8379e34272b16f04c280d6a7b594b25192d2c72ed1292938a32344d8f50d243f"
+    },
+    {
+      "path": "pkg/dsga/owner/service_safety.go",
+      "sha256": "ded0ef31f7bcd81e2a5e97e5b63bf4475cf64295642b95a0cf8c320517170500"
+    }
+  ],
+  "production_chain": {
+    "automatic_grow_shrink_seconds": 0.32,
+    "qmp_peer_final_bytes": 1073741824,
+    "qmp_writes": 2,
+    "meaning": "PG/Root/Kube/QMP明确peer，真实生产者/Session/SDK/Store/Runner/预算/Host链，不是Linux物理验收"
+  },
+  "not_validated": [
+    "Linux/K8s/KVM/NeonVM/CRI/cgroup/HugeTLB/真实物理返还/性能",
+    "旧二进制实际降级运行本批未重跑"
+  ],
+  "remaining_code": [
+    "新开放异常再关闭后的再次业务恢复",
+    "活动关闭13～18完整原资源恢复",
+    "安全降normal",
+    "私有/后台持续预算与活性",
+    "分区/跨boot",
+    "Monitor/WSS/总配额/RW-RO/可信CPU/全部写者"
+  ],
+  "goal_status": "active",
+  "owner_agents_change": "保留未提交7行，不stage",
+  "constraints": [
+    "不追上游",
+    "不改独立控制面",
+    "不构建镜像",
+    "不部署",
+    "不合main",
+    "PG17全面完成后才暂停，不进入PG18/16"
+  ]
+}

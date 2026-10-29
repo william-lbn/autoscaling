@@ -175,6 +175,9 @@ func (p *initialServicePG) serveReopenFixture(t *testing.T, w http.ResponseWrite
 	s, err := p.store.Load(req.Context())
 	require.NoError(t, err)
 	c := s.State().ServiceClosure
+	if c == nil {
+		return false
+	}
 	require.NotNil(t, c)
 	r := c.Reopen
 	if req.URL.Path == "/dsg/v1/admission/lease" {

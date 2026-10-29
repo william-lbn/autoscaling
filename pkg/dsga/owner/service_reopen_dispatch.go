@@ -75,28 +75,33 @@ func (w *PGWorker) checkReopenSnapshot(ctx context.Context, s *journal.Snapshot)
 // setter 确认成功后必须看到本次 open；普通错误仍可能尚未执行，因此
 // requireOpen=false 时保留原关闭边界，不把未找到补成 NoEffect。
 func (w *PGWorker) auditServiceReopen(ctx context.Context, s *journal.Snapshot, requireOpen bool) error {
+	_, err := w.auditServiceReopenCurrent(ctx, s, requireOpen)
+	return err
+}
+
+func (w *PGWorker) auditServiceReopenCurrent(ctx context.Context, s *journal.Snapshot, requireOpen bool) (control.AdmissionLeaseResponse, error) {
 	m := s.State()
 	if m.Owner != w.session.Actor() || m.ServiceClosure == nil || m.ServiceClosure.Reopen == nil || !w.reopenSourcesAvailable() {
-		return ErrServiceSafety
+		return control.AdmissionLeaseResponse{}, ErrServiceSafety
 	}
 	r := m.ServiceClosure.Reopen
 	if r.Closing != nil || m.Active != nil {
-		return ErrServiceSafety
+		return control.AdmissionLeaseResponse{}, ErrServiceSafety
 	}
 	if err := w.inspectIdleService(ctx, s); err != nil {
-		return errors.Join(ErrServiceSafety, err)
+		return control.AdmissionLeaseResponse{}, errors.Join(ErrServiceSafety, err)
 	}
 	b, err := w.observeAdmissionLease(ctx)
 	if err != nil {
-		return errors.Join(ErrServiceSafety, err)
+		return control.AdmissionLeaseResponse{}, errors.Join(ErrServiceSafety, err)
 	}
 	q, pg := r.Request, b.Observed
 	opened := pg.AdmissionOpen && pg.AdmissionRevision == q.Revision
 	closed := !pg.AdmissionOpen && pg.AdmissionRevision == r.Before.Observed.AdmissionRevision
 	if !b.Armed || b.Expired || b.DeadlineNS < r.Before.DeadlineNS || b.LeaseEpoch < r.Before.LeaseEpoch || pg.IssuerFloorEpoch != m.Owner.Epoch || pg.CapacityGeneration != q.ExpectedCapacityGeneration || !opened && (!closed || requireOpen) {
-		return ErrServiceSafety
+		return control.AdmissionLeaseResponse{}, ErrServiceSafety
 	}
-	return w.checkReopenSnapshot(ctx, s)
+	return b, w.checkReopenSnapshot(ctx, s)
 }
 
 func (w *PGWorker) sendServiceReopen(ctx context.Context, s *journal.Snapshot) (pgexec.Progress, error) {

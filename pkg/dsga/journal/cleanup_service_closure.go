@@ -152,6 +152,7 @@ func (model Model) StartCleanupServiceClosure(actor Owner, request control.Admis
 	}
 	next.ProtocolVersion = 18
 	next.ServiceClosure = &ServiceClosure{Origin: actor, StartedSequence: next.Sequence, Reason: "cleanup_source_unconfirmed", Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, Continuation: nil, Original: b.Admission, ClosureReceipt: nil, OperationSHA256: opDigest}
+	next.setClosureFormatVersion(next.ProtocolVersion)
 	return next, next.Validate()
 }
 

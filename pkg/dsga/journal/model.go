@@ -164,16 +164,20 @@ type Model struct {
 	// 后续派发效果。它与Finish同CAS，独立于16条结果缓存；任何Start先撤销
 	// 此证明，新预算也必须重新成功关闭。首次生成升v5，旧读者必须拒绝。
 	BudgetBoundary *ClosedBudgetBoundary `json:"budget_boundary,omitempty"`
-	// 异常服务关闭独立于Resize和预算终态，永久保留原命令及未知。v10旧
-	// 读者必须拒绝；关门不证明旧连接排空，也不解除任何资源持有。
+	// 异常服务关闭独立于Resize和预算终态，保留原命令及未知。v10旧
+	// 读者必须拒绝；只有完整业务完成CAS才能将它移入ServiceLifecycle，
+	// 关门本身不证明旧连接排空，也不解除任何资源持有。
 	ServiceClosure *ServiceClosure `json:"service_closure,omitempty"`
+	// 完成一次受控重开后永久保留最近完整恢复证据和退休水位。外层格式21
+	// 必须包含此字段；当前关闭类别独立保存，不能删除关闭后降回旧格式。
+	ServiceLifecycle *ServiceLifecycle `json:"service_lifecycle,omitempty"`
 }
 
 func New(vmUID, incarnation, holder string) (Model, error) {
 	model := Model{
 		ProtocolVersion: 1, VMUID: vmUID, Incarnation: incarnation, Sequence: 1,
 		Owner: Owner{HolderID: holder, Epoch: 1}, HighWater: nil, Active: nil, History: []Record{}, ExpiredResults: 0,
-		ResourceIdentity: nil, PGInstance: nil, BudgetHeld: nil, CapacityHeld: nil, InitialHeld: nil, BudgetBoundary: nil, ServiceClosure: nil,
+		ResourceIdentity: nil, PGInstance: nil, BudgetHeld: nil, CapacityHeld: nil, InitialHeld: nil, BudgetBoundary: nil, ServiceClosure: nil, ServiceLifecycle: nil,
 	}
 	return model, model.Validate()
 }
@@ -383,7 +387,16 @@ func compareKeys(left, right control.Key) int {
 }
 
 func (model Model) Validate() error {
-	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 20) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
+	if err := model.validateServiceLifecycle(); err != nil {
+		return err
+	}
+	return model.validateCore()
+}
+
+// validateCore只供顶层和已去除生命周期嵌套的冻结上下文调用。上下文不赋
+// 当前许可；其字节摘要、归属和有界性必须先由validateServiceLifecycle核验。
+func (model Model) validateCore() error {
+	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 21) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
 		return fmt.Errorf("invalid journal version/sequence/incarnation")
 	}
 	// 旧Model已有严格字段解码，会拒绝pg_instance；这里另用v2明确标识
@@ -395,7 +408,7 @@ func (model Model) Validate() error {
 	// 旧v2实际容量Cleanup可能尚无永久头。v18仅允许其独立安全关闭：完整
 	// 原Cleanup及实际预算由validateCleanupServiceClosure继续严格验证，
 	// 不把无头状态升级成已持有预算，也不放宽其他格式的永久头要求。
-	cleanupClosureOnly := model.ProtocolVersion == 18 && model.ServiceClosure != nil
+	cleanupClosureOnly := model.ClosureFormatVersion() == 18 && model.ServiceClosure != nil
 	if (model.ProtocolVersion < 3 && model.BudgetHeld != nil) || (model.CapacityHeld != nil && (model.ProtocolVersion < 8 || model.BudgetHeld != nil || model.InitialHeld != nil)) || (model.InitialHeld != nil && (model.ProtocolVersion < 9 || model.BudgetHeld != nil)) || (model.ProtocolVersion >= 3 && ((model.BudgetHeld == nil && model.CapacityHeld == nil && model.InitialHeld == nil && !cleanupClosureOnly) || model.ResourceIdentity == nil)) {
 		return fmt.Errorf("journal version does not preserve required held budget")
 	}
@@ -531,6 +544,17 @@ func cloneOperation(operation Operation) Operation {
 }
 
 func (model Model) Clone() Model {
+	if model.ServiceLifecycle != nil {
+		lifecycle := *model.ServiceLifecycle
+		lifecycle.Context = append([]byte(nil), lifecycle.Context...)
+		lifecycle.Current = cloneLeaseResponse(lifecycle.Current)
+		if lifecycle.Previous != nil {
+			previous := *lifecycle.Previous
+			previous.Current = cloneLeaseResponse(previous.Current)
+			lifecycle.Previous = &previous
+		}
+		model.ServiceLifecycle = &lifecycle
+	}
 	if model.ServiceClosure != nil {
 		closure := *model.ServiceClosure
 		if closure.Reopen != nil {
@@ -772,7 +796,7 @@ func (model Model) Begin(actor Owner, request control.Request, now uint64) (Mode
 		// 开始新动作。完成后首个请求仍固定原初始容量代次，不借过期请求
 		// 或外部自报generation覆盖当前预算。
 		a := model.InitialHeld.Admission
-		if a == nil || a.Phase != Settled {
+		if a == nil || !model.InitialAdmissionReady() {
 			return model, Busy, nil
 		}
 		var initial budget.Initial

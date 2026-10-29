@@ -96,6 +96,7 @@ func (model Model) StartResumeServiceClosure(actor Owner, request control.Admiss
 	original := request.Original
 	next.ProtocolVersion = 13
 	next.ServiceClosure = &ServiceClosure{Origin: actor, StartedSequence: next.Sequence, Reason: "resume_source_unconfirmed", Request: request.Close, CommandSHA256: digest, Phase: Unconfirmed, Original: &original, RecordedSequence: 0, Query: false, Receipt: nil, Continuation: nil, ClosureReceipt: nil, OperationSHA256: opDigest}
+	next.setClosureFormatVersion(next.ProtocolVersion)
 	return next, next.Validate()
 }
 

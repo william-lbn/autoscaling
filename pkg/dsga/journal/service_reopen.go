@@ -40,6 +40,7 @@ type ServiceReopen struct {
 
 func serviceReopenClosureDigest(c ServiceClosure) (string, error) {
 	c.Reopen = nil
+	c.FormatVersion = 0
 	raw, err := json.Marshal(c)
 	return rawDigest(raw), err
 }
@@ -51,7 +52,7 @@ func serviceReopenVersionAllowed(version uint32) bool {
 // serviceClosureVersion 只解开明确保存的外层恢复格式，不能降级外层
 // ProtocolVersion。原关闭的类别继续由它自己的校验器认证，未知类别拒绝。
 func (m Model) serviceClosureVersion() uint32 {
-	version := m.ProtocolVersion
+	version := m.ClosureFormatVersion()
 	if c := m.ServiceClosure; c != nil {
 		if version == 20 && c.Reopen != nil {
 			version = c.Reopen.ClosureVersion
@@ -66,7 +67,7 @@ func (m Model) serviceClosureVersion() uint32 {
 func (m Model) validateServiceReopen() error {
 	c := m.ServiceClosure
 	if c.Reopen == nil {
-		if m.ProtocolVersion == 20 {
+		if m.ClosureFormatVersion() == 20 {
 			return fmt.Errorf("reopen journal lost original opening selection")
 		}
 		return nil
@@ -84,7 +85,7 @@ func (m Model) validateServiceReopen() error {
 		closedAt = max(closedAt, c.Rearm.RecordedSequence)
 	}
 	version := r.ClosureVersion
-	if m.ProtocolVersion != 20 || !serviceReopenVersionAllowed(version) || (version == 19) != (c.Rearm != nil) || m.Active != nil || c.Pending() || c.Rearm != nil && c.Rearm.Phase != Settled || closureErr != nil || heldErr != nil || commandErr != nil || r.ClosureSHA256 != closureHash || r.HeldSHA256 != heldHash || r.CommandSHA256 != digest || r.Origin.Validate() != nil || r.Origin.Epoch > m.Owner.Epoch || r.Origin.Epoch == m.Owner.Epoch && r.Origin != m.Owner || r.StartedSequence <= closedAt || r.StartedSequence > m.Sequence {
+	if m.ClosureFormatVersion() != 20 || !serviceReopenVersionAllowed(version) || (version == 19) != (c.Rearm != nil) || m.Active != nil || c.Pending() || c.Rearm != nil && c.Rearm.Phase != Settled || closureErr != nil || heldErr != nil || commandErr != nil || r.ClosureSHA256 != closureHash || r.HeldSHA256 != heldHash || r.CommandSHA256 != digest || r.Origin.Validate() != nil || r.Origin.Epoch > m.Owner.Epoch || r.Origin.Epoch == m.Owner.Epoch && r.Origin != m.Owner || r.StartedSequence <= closedAt || r.StartedSequence > m.Sequence {
 		return fmt.Errorf("service reopen changed original stable closure, budget or owner")
 	}
 	b, q := r.Before, r.Request
@@ -120,7 +121,7 @@ func (m Model) StartServiceReopen(actor Owner, selector string, before control.A
 		return m, err
 	}
 	c := m.ServiceClosure
-	if c == nil || c.Reopen != nil || c.Pending() || m.Active != nil || !serviceReopenVersionAllowed(m.ProtocolVersion) {
+	if c == nil || c.Reopen != nil || c.Pending() || m.Active != nil || !serviceReopenVersionAllowed(m.ClosureFormatVersion()) {
 		return m, fmt.Errorf("reopen requires original confirmed idle closure without another selection")
 	}
 	_, _, closed, selected := c.Selection()
@@ -144,8 +145,11 @@ func (m Model) StartServiceReopen(actor Owner, selector string, before control.A
 	if err != nil {
 		return m, err
 	}
-	next.ProtocolVersion = 20
-	next.ServiceClosure.Reopen = &ServiceReopen{ClosureVersion: m.ProtocolVersion, Origin: actor, StartedSequence: next.Sequence, ClosureSHA256: closureHash, HeldSHA256: heldHash, Before: cloneLeaseResponse(before), Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, SafetyStage: "opening", Closing: nil}
+	next.setClosureFormatVersion(20)
+	next.ServiceClosure.Reopen = &ServiceReopen{ClosureVersion: m.ClosureFormatVersion(), Origin: actor, StartedSequence: next.Sequence, ClosureSHA256: closureHash, HeldSHA256: heldHash, Before: cloneLeaseResponse(before), Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, SafetyStage: "opening", Closing: nil}
+	if err := next.reopenCompletionCapacity(); err != nil {
+		return m, err
+	}
 	return next, next.Validate()
 }
 

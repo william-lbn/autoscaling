@@ -52,14 +52,14 @@ func (model Model) validateServiceClosureContinuation() error {
 	// 只有已派发PG的v17模型可消费跨容量协议。即使SDK接受单调多代次，
 	// Journal仍只接受原Resize的前后两代，且原始关闭/直接前驱不能倒退。
 	version := uint32(1)
-	if model.ProtocolVersion == 17 {
+	if model.ClosureFormatVersion() == 17 {
 		version = 2
 	}
-	if n.Request.ProtocolVersion != version || model.ProtocolVersion == 17 &&
+	if n.Request.ProtocolVersion != version || model.ClosureFormatVersion() == 17 &&
 		(!model.activeServiceCapacityAllowed(n.Request.PreviousClose.ExpectedCapacityGeneration) || !model.activeServiceCapacityAllowed(n.Request.Close.ExpectedCapacityGeneration) || n.Request.PreviousClose.ExpectedCapacityGeneration < c.Request.ExpectedCapacityGeneration) {
 		return fmt.Errorf("service continuation changes original resize capacity boundary")
 	}
-	sameOwnerProgress := model.ProtocolVersion == 17 && n.PreviousOrigin == n.Origin && n.Request.Close.ExpectedCapacityGeneration > n.Request.PreviousClose.ExpectedCapacityGeneration
+	sameOwnerProgress := model.ClosureFormatVersion() == 17 && n.PreviousOrigin == n.Origin && n.Request.Close.ExpectedCapacityGeneration > n.Request.PreviousClose.ExpectedCapacityGeneration
 	// 身份、序列及完整请求共同固定直接前驱，不能只凭epoch大小收养
 	// 任意关闭。原始WAL始终Unconfirmed，证明的是新关闭已确认，而
 	// 非旧关闭未执行。所有序列均来自同一外层CAS，不借PG快照补写。
@@ -75,7 +75,7 @@ func (model Model) validateServiceClosureContinuation() error {
 		if n.PreviousOrigin != c.Origin || n.PreviousSequence != c.StartedSequence {
 			return fmt.Errorf("first continuation lost original predecessor")
 		}
-	} else if n.PreviousOrigin.Epoch < c.Origin.Epoch || n.PreviousOrigin.Epoch == c.Origin.Epoch && (model.ProtocolVersion != 17 || n.PreviousOrigin != c.Origin) || n.PreviousSequence <= c.StartedSequence {
+	} else if n.PreviousOrigin.Epoch < c.Origin.Epoch || n.PreviousOrigin.Epoch == c.Origin.Epoch && (model.ClosureFormatVersion() != 17 || n.PreviousOrigin != c.Origin) || n.PreviousSequence <= c.StartedSequence {
 		return fmt.Errorf("later continuation lost higher predecessor")
 	}
 	switch n.Phase {
@@ -84,7 +84,7 @@ func (model Model) validateServiceClosureContinuation() error {
 			return fmt.Errorf("unknown continuation contains completion")
 		}
 	case Settled:
-		if model.ProtocolVersion == 17 && n.Receipt != nil && !model.activeServiceCapacityAllowed(n.Receipt.ClosedBy.Observed.CapacityGeneration) {
+		if model.ClosureFormatVersion() == 17 && n.Receipt != nil && !model.activeServiceCapacityAllowed(n.Receipt.ClosedBy.Observed.CapacityGeneration) {
 			return fmt.Errorf("service continuation proof exceeds original resize capacity")
 		}
 		// 查询可由后来的owner完成，但原生floor不得超出外层当前
@@ -112,7 +112,7 @@ func (model Model) StartServiceClosureContinuation(actor Owner, selector string,
 		return model, fmt.Errorf("original service closure is not unknown")
 	}
 	origin, sequence, previous, digest := c.Selection()
-	sameOwnerProgress := model.ProtocolVersion == 17 && actor == origin && request.Close.ExpectedCapacityGeneration > previous.ExpectedCapacityGeneration
+	sameOwnerProgress := model.ClosureFormatVersion() == 17 && actor == origin && request.Close.ExpectedCapacityGeneration > previous.ExpectedCapacityGeneration
 	if actor.Epoch < origin.Epoch || actor.Epoch == origin.Epoch && !sameOwnerProgress || selector != digest || request.Validate() != nil || request.Original != c.ProtectedAdmission() || request.PreviousClose != previous || request.Close.IssuerEpoch != actor.Epoch {
 		return model, fmt.Errorf("continuation is not exact explicit successor selection")
 	}
@@ -124,7 +124,7 @@ func (model Model) StartServiceClosureContinuation(actor Owner, selector string,
 	if err != nil {
 		return model, err
 	}
-	next.ProtocolVersion = max(next.ProtocolVersion, 11)
+	next.setClosureFormatVersion(max(model.ClosureFormatVersion(), 11))
 	next.ServiceClosure.Continuation = &ServiceClosureContinuation{
 		Origin: actor, StartedSequence: next.Sequence, PreviousOrigin: origin, PreviousSequence: sequence,
 		Request: request, CommandSHA256: commandDigest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil,

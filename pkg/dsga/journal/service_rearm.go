@@ -37,6 +37,7 @@ func serviceClosureDigest(c ServiceClosure) (string, error) {
 	c.Rearm = nil
 	// 后继开放不属于更早 rearm 选择时的关闭摘要，不能因此改写原摘要。
 	c.Reopen = nil
+	c.FormatVersion = 0
 	raw, err := json.Marshal(c)
 	return rawDigest(raw), err
 }
@@ -52,7 +53,7 @@ func serviceRearmHeldDigest(m Model) (string, error) {
 func (m Model) validateServiceRearm() error {
 	c := m.ServiceClosure
 	if c.Rearm == nil {
-		if m.ProtocolVersion == 19 {
+		if m.ClosureFormatVersion() == 19 {
 			return fmt.Errorf("rearm journal lost original recovery selection")
 		}
 		return nil
@@ -66,7 +67,7 @@ func (m Model) validateServiceRearm() error {
 	if c.Continuation != nil {
 		closedAt = c.Continuation.RecordedSequence
 	}
-	rearmVersion := m.ProtocolVersion == 19 || m.ProtocolVersion == 20 && c.Reopen != nil && c.Reopen.ClosureVersion == 19
+	rearmVersion := m.ClosureFormatVersion() == 19 || m.ClosureFormatVersion() == 20 && c.Reopen != nil && c.Reopen.ClosureVersion == 19
 	if !rearmVersion || r.ClosureVersion < 10 || r.ClosureVersion > 12 || m.Active != nil || c.Pending() || closureErr != nil || heldErr != nil || commandErr != nil || r.ClosureSHA256 != closureHash || r.HeldSHA256 != heldHash || r.CommandSHA256 != rawDigest(raw) || r.Origin.Validate() != nil || r.Origin.Epoch > m.Owner.Epoch || r.Origin.Epoch == m.Owner.Epoch && r.Origin != m.Owner || r.StartedSequence <= closedAt || r.StartedSequence > m.Sequence {
 		return fmt.Errorf("service rearm changed original closed service, held budget or owner")
 	}
@@ -95,7 +96,7 @@ func (m Model) StartServiceRearm(actor Owner, selector string, before control.Ad
 		return m, err
 	}
 	c := m.ServiceClosure
-	if c == nil || c.Rearm != nil || c.Pending() || m.Active != nil || m.ProtocolVersion < 10 || m.ProtocolVersion > 12 {
+	if c == nil || c.Rearm != nil || c.Pending() || m.Active != nil || m.ClosureFormatVersion() < 10 || m.ClosureFormatVersion() > 12 {
 		return m, fmt.Errorf("rearm requires original confirmed idle closure without another selection")
 	}
 	_, _, _, selected := c.Selection()
@@ -123,8 +124,8 @@ func (m Model) StartServiceRearm(actor Owner, selector string, before control.Ad
 	if err != nil {
 		return m, err
 	}
-	next.ProtocolVersion = 19
-	next.ServiceClosure.Rearm = &ServiceRearm{ClosureVersion: m.ProtocolVersion, Origin: actor, StartedSequence: next.Sequence, ClosureSHA256: closureHash, HeldSHA256: heldHash, Before: cloneLeaseResponse(before), Request: request, CommandSHA256: rawDigest(raw), Phase: Unconfirmed, RecordedSequence: 0, Receipt: nil}
+	next.setClosureFormatVersion(19)
+	next.ServiceClosure.Rearm = &ServiceRearm{ClosureVersion: m.ClosureFormatVersion(), Origin: actor, StartedSequence: next.Sequence, ClosureSHA256: closureHash, HeldSHA256: heldHash, Before: cloneLeaseResponse(before), Request: request, CommandSHA256: rawDigest(raw), Phase: Unconfirmed, RecordedSequence: 0, Receipt: nil}
 	return next, next.Validate()
 }
 

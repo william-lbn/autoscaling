@@ -9,9 +9,10 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 )
 
-// ServiceClosure是空闲服务发现来源异常后的独立、不可撤销关闭WAL。它只
+// ServiceClosure是空闲服务发现来源异常后的独立关闭WAL。它只
 // 阻止新连接；原预算、历史及已存在的连接全部保留。没有受控重开协议前，
-// 不允许因来源重新可达就清除此字段。旧版本必须因v10拒绝，不能忽略门禁。
+// 不允许因来源重新可达就清除此字段；完整业务完成另以CAS归档全部原文。
+// 旧版本必须因v10拒绝，不能忽略门禁。
 // v12另支持无Active的首次开放未知：Original逐字引用原开放，关闭回执
 // 单独保存，绝不把首次开放改成Settled/NoEffect。v13保护已完整结算但
 // 尚未结案的最终开放，以完整Active摘要冻结所有原领域事实；其他在途
@@ -25,6 +26,9 @@ import (
 // v18固定原取消Cleanup及其完整服务边界；原实际/目标/旧容量预算分别认证，
 // 不因关闭把原Cleanup的未知、完成或永久头改写成另一次恢复。
 type ServiceClosure struct {
+	// 外层21以后独立保留当前关闭类别；旧账本此字段必须为零。它不会
+	// 随预算/历史变化推测，关闭与重开写前CAS只能按各自严格规则推进。
+	FormatVersion    uint32                     `json:"format_version,omitempty"`
 	Origin           Owner                      `json:"origin"`
 	StartedSequence  control.Uint64             `json:"started_sequence"`
 	Reason           string                     `json:"reason"`
@@ -79,11 +83,11 @@ func cloneAdmissionResponse(original *control.AdmissionResponse) *control.Admiss
 // 不将其补成已结算预算。不能由错误文字、RSS或当前资格派生新承诺。
 // 本函数不认证外部对象，也不向Root/Host发出释放许可。
 func (model Model) ServiceBudgetID() (string, error) {
-	if model.ProtocolVersion == 18 {
+	if model.ClosureFormatVersion() == 18 {
 		boundary, err := model.cleanupServiceBoundary()
 		return boundary.BudgetCommitmentID, err
 	}
-	if model.ProtocolVersion >= 15 && model.Active != nil {
+	if model.ClosureFormatVersion() >= 15 && model.Active != nil {
 		return model.Active.Request.BudgetCommitmentID, nil
 	}
 	switch {
@@ -110,7 +114,7 @@ func (model Model) validateServiceClosure() error {
 	c := model.ServiceClosure
 	version := model.serviceClosureVersion()
 	if c == nil {
-		if model.ProtocolVersion >= 10 {
+		if model.ProtocolVersion >= 10 && model.ProtocolVersion != 21 {
 			return fmt.Errorf("service closure cannot disappear from v10 journal")
 		}
 		return nil
@@ -121,7 +125,7 @@ func (model Model) validateServiceClosure() error {
 		return fmt.Errorf("service closure differs from original retained PG, budget or owner")
 	}
 	switch {
-	case model.ProtocolVersion == 18:
+	case version == 18:
 		if err := model.validateCleanupServiceClosure(); err != nil {
 			return err
 		}
@@ -132,19 +136,19 @@ func (model Model) validateServiceClosure() error {
 		if err := model.validateInitialServiceClosure(); err != nil {
 			return err
 		}
-	case c.Original != nil && model.ProtocolVersion == 13:
+	case c.Original != nil && version == 13:
 		if err := model.validateResumeServiceClosure(); err != nil {
 			return err
 		}
-	case c.Original == nil && model.ProtocolVersion == 14:
+	case c.Original == nil && version == 14:
 		if err := model.validatePlannedResumeServiceClosure(); err != nil {
 			return err
 		}
-	case c.Original == nil && model.ProtocolVersion == 15:
+	case c.Original == nil && version == 15:
 		if err := model.validatePendingFinalizationServiceClosure(); err != nil {
 			return err
 		}
-	case model.ProtocolVersion == 16 || model.ProtocolVersion == 17:
+	case version == 16 || version == 17:
 		if err := model.validateActiveServiceClosure(); err != nil {
 			return err
 		}
@@ -152,7 +156,7 @@ func (model Model) validateServiceClosure() error {
 		if model.Active != nil || c.OperationSHA256 != "" || c.Reason != "idle_source_unconfirmed" || c.ClosureReceipt != nil {
 			return fmt.Errorf("idle service closure changed reason or original proof")
 		}
-		if h := model.InitialHeld; h != nil && (h.Admission == nil || h.Admission.Phase != Settled) {
+		if model.InitialHeld != nil && !model.InitialAdmissionReady() {
 			return fmt.Errorf("idle service closure cannot hide first admission unknown")
 		}
 	default:
@@ -238,6 +242,7 @@ func (model Model) StartServiceClosure(actor Owner, request control.AdmissionReq
 			next.ServiceClosure.Reason = "finalize_source_unconfirmed"
 		}
 	}
+	next.setClosureFormatVersion(next.ProtocolVersion)
 	return next, next.Validate()
 }
 

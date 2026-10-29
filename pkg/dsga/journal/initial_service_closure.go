@@ -51,6 +51,7 @@ func (model Model) StartInitialServiceClosure(actor Owner, request control.Admis
 	original := request.Original
 	next.ProtocolVersion = 12
 	next.ServiceClosure = &ServiceClosure{Origin: actor, StartedSequence: next.Sequence, Reason: "initial_source_unconfirmed", Request: request.Close, CommandSHA256: digest, Phase: Unconfirmed, Original: &original, RecordedSequence: 0, Query: false, Receipt: nil, Continuation: nil, ClosureReceipt: nil, OperationSHA256: ""}
+	next.setClosureFormatVersion(next.ProtocolVersion)
 	return next, next.Validate()
 }
 

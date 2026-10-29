@@ -86,6 +86,7 @@ const (
 	CoordinationCloseServiceReopen           CoordinationAction = "close_service_reopen"
 	CoordinationReplayServiceReopenClosure   CoordinationAction = "replay_service_reopen_closure"
 	CoordinationContinueServiceReopenClosure CoordinationAction = "continue_service_reopen_closure"
+	CoordinationCompleteServiceReopen        CoordinationAction = "complete_service_reopen"
 )
 
 // CoordinationCommand固定接收方完整实例及预期当前owner代次。Key保留原操作代次，
@@ -118,7 +119,7 @@ func (c CoordinationCommand) Validate() error {
 			return fmt.Errorf("begin requires one complete request for the selected owner")
 		}
 	case CoordinationReplayInitial, CoordinationRepairHeld, CoordinationObserveHeld, CoordinationReplayServiceClosure, CoordinationContinueServiceClosure, CoordinationRearmService, CoordinationObserveServiceRearm, CoordinationReplayServiceRearm,
-		CoordinationReopenService, CoordinationObserveServiceReopen, CoordinationReplayServiceReopen, CoordinationCloseServiceReopen, CoordinationReplayServiceReopenClosure, CoordinationContinueServiceReopenClosure:
+		CoordinationReopenService, CoordinationObserveServiceReopen, CoordinationReplayServiceReopen, CoordinationCloseServiceReopen, CoordinationReplayServiceReopenClosure, CoordinationContinueServiceReopenClosure, CoordinationCompleteServiceReopen:
 		decoded, err := hex.DecodeString(c.Selector)
 		if err != nil || len(decoded) != 32 || hex.EncodeToString(decoded) != c.Selector || c.Request != nil || c.Key != nil {
 			return fmt.Errorf("source selection requires the original SHA256")

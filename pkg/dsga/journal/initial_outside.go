@@ -13,7 +13,7 @@ import (
 func (model Model) retainedInitialOutside() (budget.Initial, error) {
 	var i budget.Initial
 	if h := model.InitialHeld; h != nil {
-		if h.Admission == nil || h.Admission.Phase != Settled || json.Unmarshal(h.Budget, &i) != nil {
+		if !model.InitialAdmissionReady() || json.Unmarshal(h.Budget, &i) != nil {
 			return i, fmt.Errorf("initial outside has no settled original first admission")
 		}
 		return i, nil

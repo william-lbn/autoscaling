@@ -234,7 +234,7 @@ func (e *Executor) advance(ctx context.Context, selector string) (pgexec.Progres
 		return pgexec.AwaitingFact, err
 	}
 	a := m.InitialHeld.Admission
-	if a != nil && a.Phase == journal.Settled {
+	if m.InitialAdmissionReady() {
 		if selector != "" {
 			return pgexec.AwaitingFact, fmt.Errorf("first admission already settled")
 		}

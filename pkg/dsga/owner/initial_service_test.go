@@ -345,6 +345,7 @@ func productionInitialService(t *testing.T, mode string) {
 	if finiteAddressSpace {
 		mode = "automatic-policy"
 	}
+	automaticMode := mode == "automatic-policy" || mode == "service-lifecycle-first-unknown-automatic"
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
 	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
 	pgSafety := strings.HasPrefix(mode, "active-safety-pg-")
@@ -409,7 +410,7 @@ func productionInitialService(t *testing.T, mode string) {
 		// 整个测试的上限，各生产请求/租约/单轮deadline均保持原值。
 		deadline = 3 * time.Minute
 	}
-	if mode == "automatic-policy" {
+	if automaticMode || strings.HasPrefix(mode, "service-lifecycle-") {
 		// 在途永久头/Prepare/Host的正式来源预审增加了受Kube客户端
 		// 限流的只读请求；完整Grow→Shrink曾在原三分钟总期限耗尽。
 		// 仅扩大组合测试总期限，保留生产限流、请求期限和选主续租。
@@ -439,7 +440,7 @@ func productionInitialService(t *testing.T, mode string) {
 		require.NoError(t, err)
 		defer resources.CloseIdleConnections()
 		request := pgRequest(t, session.Actor())
-		if mode == "automatic-policy" {
+		if automaticMode {
 			request.TargetVMMemoryBytes = 2 << 30
 		}
 		p, before := preparedGuest(t, request, root.view.Identity)
@@ -458,7 +459,7 @@ func productionInitialService(t *testing.T, mode string) {
 			nativeFence = pg.ownerFence(t)
 		}
 		config := pgConfigWithFence(t, request, func(w http.ResponseWriter, r *http.Request) {
-			if mode == "automatic-policy" && r.URL.Path == "/dsg/v1/work/state" {
+			if automaticMode && r.URL.Path == "/dsg/v1/work/state" {
 				serveAutomaticWork(w, pg)
 				return
 			}
@@ -469,7 +470,7 @@ func productionInitialService(t *testing.T, mode string) {
 		defer worker.CloseIdleConnections()
 		require.NoError(t, runner.Tick(ctx))
 		var extra []budget.QualifiedTarget
-		if mode == "automatic-policy" {
+		if automaticMode {
 			extra = []budget.QualifiedTarget{{VMMemoryBytes: 1 << 30, GuestUsableMemoryBytes: 768 << 20, Limits: p.Limits, SystemOutsidePGBytes: 24 << 20, TransitionBytes: 4 << 20, SafetyBytes: 4 << 20}}
 		}
 		source := initialAndGrowQualification(t, ctx, client, root, p, extra...)
@@ -481,6 +482,33 @@ func productionInitialService(t *testing.T, mode string) {
 			return next
 		}
 		worker = rebuild()
+		lifecycleMode := strings.HasPrefix(mode, "service-lifecycle-")
+		lifecyclePosts := 0
+		if lifecycleMode {
+			progress, err := worker.Advance(ctx)
+			require.NoError(t, err)
+			require.Equal(t, pgexec.Recorded, progress)
+			unknown := strings.Contains(mode, "first-unknown")
+			if unknown {
+				pg.faults(false, true)
+			}
+			_, err = worker.Advance(ctx)
+			if unknown {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			predecessor := "normal"
+			if unknown {
+				predecessor = "first-unknown"
+			}
+			verifyProductionServiceReopen(t, ctx, predecessor, api, store, session, resources, worker, config, client, source, pg, root)
+			worker = verifyProductionServiceLifecycle(t, ctx, strings.TrimPrefix(mode, "service-lifecycle-"), api, store, session, resources, worker, config, client, source, pg, root)
+			if mode != "service-lifecycle-first-unknown-grow" && !automaticMode {
+				return nil
+			}
+			lifecyclePosts, _, _ = pg.counts()
+		}
 		if strings.HasPrefix(mode, "service-reopen-") {
 			progress, err := worker.Advance(ctx)
 			require.NoError(t, err)
@@ -538,7 +566,9 @@ func productionInitialService(t *testing.T, mode string) {
 			return nil
 		}
 		var successorHost *hostexec.Publisher
-		if pgTakeover || guestTakeover || mode == "auto-finish" || mode == "automatic-policy" || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
+		if lifecycleMode {
+			// 已由完整生产恢复链完成首次服务；继续原预算Grow，无重复初开。
+		} else if pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
 			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -571,7 +601,7 @@ func productionInitialService(t *testing.T, mode string) {
 		// 头只能在完整Finalize的同CAS被替换；不注入领域Completed。
 		s, err := store.Load(ctx)
 		require.NoError(t, err)
-		if mode == "automatic-policy" {
+		if automaticMode {
 			verifyProductionAutomaticBegin(t, ctx, api, client, store, worker, source, pg, root)
 		} else {
 			_, _, err = store.Begin(ctx, s, session.Actor(), request, 1)
@@ -605,7 +635,7 @@ func productionInitialService(t *testing.T, mode string) {
 			// 完整结案/自动Grow→Shrink会经过多次正式来源预审，race运行
 			// 可能超过静态夹具Lease的60秒寿命。用原UID/holder的真实
 			// 选主续租维持Host，不放宽生产过期校验，也不重建同名来源。
-			if pgTakeover || guestTakeover || mode == "auto-finish" || mode == "automatic-policy" || pgSafety || strings.HasPrefix(mode, "cleanup-safety-") {
+			if pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || strings.HasPrefix(mode, "cleanup-safety-") {
 				keepPGTakeoverHostOwner(t, ctx, client)
 			}
 		}
@@ -747,9 +777,16 @@ func productionInitialService(t *testing.T, mode string) {
 		require.Nil(t, s.State().InitialHeld)
 		require.Nil(t, s.State().CapacityHeld)
 		require.NotNil(t, s.State().BudgetHeld)
-		require.EqualValues(t, 9, s.State().ProtocolVersion)
+		if lifecycleMode {
+			require.EqualValues(t, 21, s.State().ProtocolVersion)
+			require.NotNil(t, s.State().ServiceLifecycle)
+		} else {
+			require.EqualValues(t, 9, s.State().ProtocolVersion)
+		}
 		posts, _, resizes := pg.counts()
-		if cancelled || mode == "auto-finish" || mode == "automatic-policy" {
+		if lifecycleMode {
+			require.Equal(t, lifecyclePosts+1, posts)
+		} else if cancelled || mode == "auto-finish" || automaticMode {
 			require.Equal(t, 2, posts, "取消时已开放不新增setter，后继正常扩容只再开放一次")
 		} else {
 			require.Equal(t, 3, posts, "首次setter发送前/后各丢一次，正常后继只再开放一次")
@@ -761,7 +798,7 @@ func productionInitialService(t *testing.T, mode string) {
 		if mode == "auto-finish" {
 			worker = verifyAutomaticNormalFinish(t, ctx, api, client, store, session, resources, worker, config, source, pg, root)
 		}
-		if mode == "automatic-policy" {
+		if automaticMode {
 			t.Log("自动Grow全部领域确认，开始生产结案与自动Shrink")
 			verifyProductionAutomaticSuccessor(t, ctx, client, coord, store, session, resources, worker, config, source, pg, runner, qmp)
 			return nil

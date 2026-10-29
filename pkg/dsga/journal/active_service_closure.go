@@ -91,7 +91,7 @@ func (model Model) validateActiveServiceClosure() error {
 	if model.activePGDispatched() {
 		reason, version = "active_pg_source_unconfirmed", 17
 	}
-	if err != nil || hashErr != nil || model.ProtocolVersion != version || c.Reason != reason || c.OperationSHA256 != digest || (original == nil) != (c.Original == nil) || original != nil && *original != *c.Original {
+	if err != nil || hashErr != nil || model.ClosureFormatVersion() != version || c.Reason != reason || c.OperationSHA256 != digest || (original == nil) != (c.Original == nil) || original != nil && *original != *c.Original {
 		return fmt.Errorf("active closure changed original operation or admission unknown")
 	}
 	if !model.activeServiceCapacityAllowed(c.Request.ExpectedCapacityGeneration) {
@@ -148,6 +148,7 @@ func (model Model) StartActiveServiceClosure(actor Owner, request control.Admiss
 	if model.activePGDispatched() {
 		next.ProtocolVersion, next.ServiceClosure.Reason = 17, "active_pg_source_unconfirmed"
 	}
+	next.setClosureFormatVersion(next.ProtocolVersion)
 	return next, next.Validate()
 }
 
@@ -176,7 +177,7 @@ func (store *Store) RecordActiveServiceClosure(ctx context.Context, s *Snapshot,
 		return nil, err
 	}
 	reason := "active_source_unconfirmed"
-	if s.model.ProtocolVersion == 17 {
+	if s.model.ClosureFormatVersion() == 17 {
 		reason = "active_pg_source_unconfirmed"
 	}
 	next, err := s.model.recordOriginalServiceClosure(actor, fact, query, reason)
