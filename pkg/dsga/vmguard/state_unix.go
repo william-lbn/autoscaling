@@ -246,29 +246,15 @@ func (s *lockedState) save(r *record) error {
 	return s.dir.Sync()
 }
 
-// 出生nonce在第一次Kube CREATE之前固化。存在此文件而state缺失意味着出生
-// 已经开始但结论未知，Initialize不得删掉它再生成新身份。只有新VM/受控恢复
-// 的专门流程能处理该状态，本正常启动路径不提供重置/覆盖入口。
-func (s *lockedState) birthIntent(id Identity) error {
-	raw, err := json.Marshal(id)
+// 出生nonce、原owner及Pod/Node选择必须一起、原子地先于第一次Kube CREATE
+// 固化。只写Identity会在进程直接退出、没有机会执行失败defer时丢失原选择。
+// 新入口只恢复为不可撤销的NoStart关闭，不能拿这份原文重新获得启动许可。
+// writeOnce先同步完整临时文件再link，避免半份JSON被当作完整出生意图；已有
+// 原文不可替换。旧版只有Identity的文件仍由关闭校验器读取，但不补造原owner。
+func (s *lockedState) birthIntent(original failedBirth) error {
+	raw, err := json.Marshal(original)
 	if err != nil {
 		return err
 	}
-	fd, err := unix.Openat(int(s.dir.Fd()), "birth-intent.json", unix.O_WRONLY|unix.O_CREAT|unix.O_EXCL|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0o600)
-	if err != nil {
-		return fmt.Errorf("Runner birth is already started or directory unavailable: %w", err)
-	}
-	f := os.NewFile(uintptr(fd), "runner-birth-intent")
-	if n, err := f.Write(raw); err != nil || n != len(raw) {
-		f.Close()
-		return errOrShortWrite(err)
-	}
-	if err := f.Sync(); err != nil {
-		f.Close()
-		return err
-	}
-	if err := f.Close(); err != nil {
-		return err
-	}
-	return s.dir.Sync()
+	return s.writeOnce("birth-intent.json", raw)
 }

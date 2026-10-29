@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "base_autoscaling_sha": "6671622b0e4db681b97a1106af8a3748c0fe6fad",
+  "pg17_unchanged_sha": "0d2be6c8ec965e47abc873bab17806e3f6b9197f",
+  "accepted_race": [
+    {
+      "log": "build/dsga-crashed-birth-vmguard-accepted.jsonl",
+      "top_level": 46,
+      "passed_records": 201,
+      "fail": 0,
+      "skip": 0,
+      "sha256": "dd7eb8099b287f60c60555d353d54d2c2b4c2a29aff8c2ab4ecc60b67c49383f"
+    },
+    {
+      "log": "build/dsga-crashed-birth-scheduler.jsonl",
+      "top_level": 6,
+      "passed_records": 15,
+      "fail": 0,
+      "skip": 0,
+      "sha256": "de9fcb83e337916817512dcef6fd548ea55c51c6bb7943401f16639a236a05cb"
+    },
+    {
+      "log": "build/dsga-crashed-birth-owner.jsonl",
+      "top_level": 1,
+      "passed_records": 1,
+      "fail": 0,
+      "skip": 0,
+      "sha256": "7aa420d157d052f0a4431dd5473423596f731c0d3f457b05773f634d90abe222"
+    }
+  ],
+  "sources": {
+    "pkg/dsga/vmguard/runner.go": "b3ecabd25eeabc189dc10ecdf67c987bdaa055f13e03b3f98729bd4e3950d8e4",
+    "pkg/dsga/vmguard/failed_birth.go": "0951206f04f32c1e70e8b208eee7ec55a3dcf1665430f469dc4e210eefb7cc15",
+    "pkg/dsga/vmguard/state_unix.go": "fef09921a0b4a5159f4619581344f9918563188566216a9decc55220a7371ab7",
+    "pkg/dsga/vmguard/crashed_birth_test.go": "7f823ecc76b843a9a98ad1b2f6e24434fafaf41f8669699ef3b50e2ba87df070",
+    "pkg/dsga/vmguard/failed_birth_test.go": "cb0993eb6e841804467841f23d36f711bd1201b3cbbf5b908f1ba7d29689cc0b"
+  },
+  "artifacts_and_logs": {
+    "build/dsga-crashed-birth-affected.jsonl": "6f7d7f60e9ac6095662198f96427f7368e0529eebd1d8c037ad85fc47f4f1c74",
+    "build/dsga-crashed-birth-baseline-fixed.jsonl": "7fbf06881a7971b5ad2aff6773127843fd16d9a96012b26f8875c2313fef112d",
+    "build/dsga-crashed-birth-baseline.jsonl": "7ecee036dba79478e9742661e09b4383224bf559a5af08ae211138f7d6fbddb9",
+    "build/dsga-crashed-birth-consumers.log": "6920d728ad08795160f819b2bdeccdbed7e61b2245ae987972a94dba87ed0f97",
+    "build/dsga-crashed-birth-lint-accepted.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "build/dsga-crashed-birth-lint-final.log": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+    "build/dsga-crashed-birth-lint.log": "2fb67c80f8c242fb46153068f25e945bf992a5af51c4a91d423b695cb0af5026",
+    "build/dsga-crashed-birth-linux-amd64.test": "98c5fc8c4bd59ac3c2ba928a4982a9f7ff48b748e2cda623f6b381159b56d730",
+    "build/dsga-crashed-birth-linux-arm64.test": "bdcd7caaf30f96a118f64f76c4df9a141e7f0cd093c13faadff095c3f2ebbfd9",
+    "build/dsga-crashed-birth-negative.jsonl": "336116d03475359e6986dc94806a6b84a52aeb5dcb59e4eea109fb0940cfb6a2",
+    "build/dsga-crashed-birth-owner.jsonl": "7aa420d157d052f0a4431dd5473423596f731c0d3f457b05773f634d90abe222",
+    "build/dsga-crashed-birth-runner-linux-amd64.log": "458cca17b4313f7d321329220a8ecc033163608594388fe765e7f8bc186aad64",
+    "build/dsga-crashed-birth-scheduler.jsonl": "de9fcb83e337916817512dcef6fd548ea55c51c6bb7943401f16639a236a05cb",
+    "build/dsga-crashed-birth-vet-accepted.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/dsga-crashed-birth-vet-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/dsga-crashed-birth-vet.log": "a6fe1406cea3d8021bd6089bab97a8e831e3248050764d118c06b5a3ffd2f7f6",
+    "build/dsga-crashed-birth-vmguard-accepted.jsonl": "dd7eb8099b287f60c60555d353d54d2c2b4c2a29aff8c2ab4ecc60b67c49383f",
+    "build/dsga-crashed-birth-vmguard.jsonl": "075e1a2140fd69d9c4dcc1b852d7fd365250e68a46b6d92803eed2c42be7d5f7"
+  },
+  "limitations": [
+    "Mac子进程真实退出/fsync/flock/Start/Wait；Kube是明确fake和本地HTTP peer",
+    "Linux amd64/arm64 ELF仅交叉编译，不执行",
+    "Runner入口Linux包仅编译，无测试文件",
+    "neonvm-runner/cmd在Mac vet因Linux专属依赖失败，原日志保留；采用vmguard vet成功",
+    "原完整包一次错误文字断言失败；修正文案后完整包重跑0fail/skip",
+    "该模块不是PG17整体封版；normal安全降限、持续预算和其他核心业务继续"
+  ]
+}

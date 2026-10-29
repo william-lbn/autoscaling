@@ -17,10 +17,11 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
 
-// failedBirth只记录同一次Initialize在返回任何可执行Runner之前的失败。
+// failedBirth记录完整的原出生选择以及同一次Initialize已确认的来源。
 // 原nonce已先fsync，已确认的CM UID逐字保留；未知CREATE只能用原nonce/
 // 原文取得首次确认。它不是已有运行实例缺日志、无Wait或跨boot的恢复许可。
-// 本地屏障不可撤销；补齐的来源只有关闭用途，不能返回给正常启动调用方。
+// 原始无ref选择先原子fsync为birth-intent，直接崩溃后也只允许转为NoStart
+// 关闭；已确认ref再独立fsync。本地屏障不可撤销，补齐来源不能返回为可执行Runner。
 type failedBirth struct {
 	ProtocolVersion uint32            `json:"protocol_version"`
 	Identity        Identity          `json:"identity"`
@@ -57,7 +58,19 @@ func (f failedBirth) validate(b journal.Binding, c Config) error {
 func sealFailedBirth(s *lockedState, f failedBirth) error {
 	raw, err := s.readProcessFile("birth-intent.json")
 	var original Identity
-	if err != nil || raw == nil || json.Unmarshal(raw, &original) != nil || original != f.Identity {
+	var selected failedBirth
+	if err != nil || raw == nil {
+		return fmt.Errorf("failed birth lacks its exact original nonce")
+	}
+	if json.Unmarshal(raw, &selected) == nil {
+		// 原选择没有已确认ref；它们只能来自后续独立检查点或原失败屏障。
+		// 不接受另一个owner/Pod/Node借相同nonce封存本出生。
+		if selected.ProtocolVersion != 1 || selected.Identity != f.Identity || selected.Owner != f.Owner || selected.PodName != f.PodName || selected.NodeName != f.NodeName || selected.StateClaim != nil || selected.BindingClaim != nil {
+			return fmt.Errorf("failed birth differs from original durable selection")
+		}
+	} else if json.Unmarshal(raw, &original) != nil || original != f.Identity {
+		// 旧完整失败屏障仍可补发原关闭；仅有旧Identity的孤立出生不能从
+		// 当前VM/Lease猜回原owner，因此Initialize不会为它创建新屏障。
 		return fmt.Errorf("failed birth lacks its exact original nonce")
 	}
 	launch, err := s.readProcessFile("process-launch.json")
@@ -74,6 +87,12 @@ func sealFailedBirth(s *lockedState, f failedBirth) error {
 type failedBirthSources struct {
 	State   budget.ObjectRef `json:"state"`
 	Binding budget.ObjectRef `json:"binding"`
+}
+
+// 仅出生记录的初始态可转NoStart；任何floor接管、派发、结果或发布都说明
+// 已进入执行生命周期。不能将它们归零后补关闭，更不能覆盖缺损的已有记录。
+func pristineBirthRecord(prior *record, original failedBirth) bool {
+	return prior.validate() == nil && prior.ProtocolVersion == 1 && prior.Sequence == 1 && prior.Identity == original.Identity && prior.Floor == original.Owner && prior.LeaseUID == "" && prior.HighWater == nil && prior.Pending == nil && prior.Last == nil && prior.LastPublished == nil
 }
 
 // 该恢复只从封存失败的原目录进入；补齐来源期间持同一VM flock，网络均有
@@ -117,13 +136,18 @@ func recoverFailedBirth(ctx context.Context, store *journal.Store, coreClient co
 	if err != nil {
 		return nil, err
 	}
-	if prior != nil && (prior.validate() != nil || prior.ProtocolVersion != 1 || prior.Sequence != 1 || prior.Identity != original.Identity || prior.Floor != original.Owner || prior.LeaseUID != "" || prior.HighWater != nil || prior.Pending != nil || prior.Last != nil || prior.LastPublished != nil) {
+	if prior != nil && !pristineBirthRecord(prior, original) {
 		return nil, fmt.Errorf("failed birth cannot replace an existing execution journal")
 	}
 	if sources != nil {
 		stateRef, bindingRef = &sources.State, &sources.Binding
 	}
 	if prior != nil {
+		// 正式state只能后于两个真实UID的检查点。缺State检查点时不能
+		// 把已存在记录当作首次未知CREATE，再创建/收养另一个State来源。
+		if stateRef == nil {
+			return nil, fmt.Errorf("failed birth existing journal lost its confirmed state UID")
+		}
 		if bindingRef != nil && *bindingRef != prior.BindingClaim {
 			return nil, fmt.Errorf("failed birth changed original local binding UID")
 		}

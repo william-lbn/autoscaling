@@ -54,7 +54,8 @@ type Runner struct {
 // Initialize只用于一次明确的原Runner出生，必须在QEMU启动之前。目录由启动
 // 入口显式安装，不在丢日志后补建；本地birth-intent先fsync，再创建受保护CM，
 // 最后持久固定真实UID。任何已有birth/state都拒绝自动重启/重新发放首次身份。
-// 同调用的出生失败先封存不可撤销屏障；后继只可补齐同nonce的关闭来源，
+// 出生选择与nonce一起持久；同调用失败或无defer的直接崩溃都只允许后继
+// 在原flock内封存不可撤销屏障，再补齐同nonce的关闭来源，
 // 始终返回错误，不把完整关闭来源转换为可启动Runner。既有运行WAL不走此分支。
 func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient.CoreV1Interface, coord coordclient.CoordinationV1Interface, c Config) (result *Runner, initErr error) {
 	if store == nil || coreClient == nil || coord == nil || !filepath.IsAbs(c.StateDir) || control.ValidateID(c.PodName, "Runner Pod name") != nil || control.ValidateID(c.PodUID, "Runner Pod UID") != nil || control.ValidateID(c.NodeName, "Node") != nil {
@@ -88,6 +89,27 @@ func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient
 		var original failedBirth
 		if json.Unmarshal(raw, &original) != nil || original.validate(store.Binding(), c) != nil {
 			return nil, fmt.Errorf("original failed Runner birth is malformed or replaced")
+		}
+		failed = &original
+		return nil, ErrStopped
+	}
+	if raw, err := s.readProcessFile("birth-intent.json"); err != nil {
+		return nil, err
+	} else if raw != nil {
+		var original failedBirth
+		if json.Unmarshal(raw, &original) != nil || original.validate(store.Binding(), c) != nil || original.StateClaim != nil || original.BindingClaim != nil {
+			return nil, fmt.Errorf("interrupted Runner birth lacks its complete original selection; controlled recovery required")
+		}
+		// 先检查原WAL与launch，不以“没有当前进程”猜NoStart。持有同一
+		// flock的旧RunQEMU必须先写launch；它若先获得许可，此处拒绝，
+		// 它若后到，则会看到defer封存的abort并被拒绝。绝不返回Runner。
+		prior, err := s.load()
+		if err != nil || prior != nil && !pristineBirthRecord(prior, original) {
+			return nil, fmt.Errorf("interrupted Runner birth has unreadable or nonpristine execution history; controlled recovery required")
+		}
+		launch, err := s.readProcessFile("process-launch.json")
+		if err != nil || launch != nil {
+			return nil, fmt.Errorf("interrupted Runner birth already has an existing or unknown launch; controlled recovery required")
 		}
 		failed = &original
 		return nil, ErrStopped
@@ -151,10 +173,11 @@ func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient
 	if err := id.Validate(); err != nil {
 		return nil, err
 	}
-	if err := s.birthIntent(id); err != nil {
+	original := failedBirth{ProtocolVersion: 1, Identity: id, Owner: model.Owner, PodName: c.PodName, NodeName: c.NodeName, StateClaim: nil, BindingClaim: nil}
+	if err := s.birthIntent(original); err != nil {
 		return nil, err
 	}
-	failed = &failedBirth{ProtocolVersion: 1, Identity: id, Owner: model.Owner, PodName: c.PodName, NodeName: c.NodeName, StateClaim: nil, BindingClaim: nil}
+	failed = &original
 	initial := Publication{ProtocolVersion: 1, Identity: id, BindingClaim: nil, State: nil, Actual: nil}
 	raw, err := json.Marshal(initial)
 	if err != nil {
@@ -166,6 +189,15 @@ func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient
 	}
 	stateRef := budget.ObjectRef{Name: state.Name, UID: string(state.UID)}
 	failed.StateClaim = &stateRef
+	raw, err = json.Marshal(stateRef)
+	if err != nil {
+		return nil, err
+	}
+	// GET已确认的UID必须在下一次CREATE前独立fsync。直接崩溃后不能把
+	// 它降成未知CREATE，并收养同名但新UID的替代来源。
+	if err := s.writeOnce("birth-close-state.json", raw); err != nil {
+		return nil, err
+	}
 	birth := Birth{ProtocolVersion: 1, Identity: id, StateClaim: budget.ObjectRef{Name: state.Name, UID: string(state.UID)}}
 	raw, err = json.Marshal(birth)
 	if err != nil {
@@ -177,6 +209,13 @@ func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient
 	}
 	ref := budget.ObjectRef{Name: birthCM.Name, UID: string(birthCM.UID)}
 	failed.BindingClaim = &ref
+	raw, err = json.Marshal(failedBirthSources{State: stateRef, Binding: ref})
+	if err != nil {
+		return nil, err
+	}
+	if err := s.writeOnce("birth-close-sources.json", raw); err != nil {
+		return nil, err
+	}
 	if err := s.save(&record{ProtocolVersion: 1, Identity: id, BindingClaim: ref, Sequence: 1, Floor: model.Owner, LeaseUID: "", HighWater: nil, Pending: nil, Last: nil, LastPublished: nil}); err != nil {
 		return nil, err
 	}

@@ -3,6 +3,23 @@
 更新：2026-10-26。分支`codex/dsga-autoscaling-20261019`，只推自有fork，不合main。
 本文件是当前入口；初始维护快照仍见[基线](DSGA-上游基线与开发约束.md)。
 
+
+## 最新验证：无失败屏障的Runner出生崩溃关闭已完成Mac阶段
+
+完整原出生选择先原子fsync，State/Binding真实UID分步持久；五个真实子进程
+直接退出越过defer后，只补原NoStart关闭，不返回可启动Runner。14种故障、
+真实Start/恢复竞争及旧完整失败屏障兼容通过；未知launch/坏WAL/UID替换拒绝。
+最终Runner全包及受影响Scheduler/首次服务→Grow组合-race53顶层217含父子
+记录0fail/skip（含1个helper），不是217次独立E2E；vet/增量lint0，31消费者
+仅编译，两架构ELF及LinuxRunner入口仅编译。原超时/基线缺陷/文案断言/lint/
+Mac入口vet失败全部保留。详见[阶段验收](DSGA-无屏障出生崩溃关闭-Mac验收-20261029.md)
+及[机器收据](DSGA-无屏障出生崩溃关闭-Mac收据-20261029.json)。
+
+PG17实际/gitlink/两锁仍0d2be6c8，PG/Rust未改；已有launch无Wait、坏缺外层
+WAL关闭/受控重开、normal安全降限及私有后台持续预算等仍需代码，Linux平台
+验收另列，整体未完成、Goal active。另一并发聊天及其自动接续已按所有者要求
+停止并归档；本聊天继续，PG17全面完成/远程归档后才暂停，不进入18/16。
+
 ## 最新验证：出生失败关闭与整Pod结清已完成Mac阶段（2026-10-29）
 
 Initialize在返回Runner前失败，现先持原flock封存不可撤销屏障；同nonce补齐

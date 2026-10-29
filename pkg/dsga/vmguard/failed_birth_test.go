@@ -61,8 +61,9 @@ func TestFailedBirthSealsOriginalNonceAndPublishesOnlyNoStart(t *testing.T) {
 			require.NoError(t, aborted.validate(f.store.Binding(), f.config))
 			intent, err := os.ReadFile(filepath.Join(f.config.StateDir, "birth-intent.json"))
 			require.NoError(t, err)
-			var id Identity
-			require.NoError(t, json.Unmarshal(intent, &id))
+			var selected failedBirth
+			require.NoError(t, json.Unmarshal(intent, &selected))
+			id := selected.Identity
 			require.Equal(t, id, aborted.Identity)
 			birthCM, err := f.core.CoreV1().ConfigMaps(f.store.Binding().Namespace).Get(ctx, BindingName(f.store.Binding()), metav1.GetOptions{})
 			require.NoError(t, err)
