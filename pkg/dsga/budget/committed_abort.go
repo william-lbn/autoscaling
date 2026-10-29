@@ -23,7 +23,10 @@ type CommittedAbortCommand struct {
 func (c CommittedAbortCommand) ValidateFor(f Finalized, dispatchEpoch control.Uint64) error {
 	digest, err := hex.DecodeString(c.FinalizationSHA256)
 	a := c.Admission
-	if c.ProtocolVersion != 1 || c.Request != f.Request || f.ValidateFor(f.Request, f.Shared, f.IssuerEpoch, f.RunnerPodName, f.RunnerRestartCount, uint64(f.Request.TargetVMMemoryBytes)) != nil ||
+	// 独立恢复预算保留原请求issuer，Shared则绑定真实结算owner。只能使用
+	// 原派发时已经形成的预算；取实际结算epoch做结构检查不授予当前执行权，
+	// Admission原epoch、MaySend及回执floor仍须分别满足下方严格约束。
+	if c.ProtocolVersion != 1 || c.Request != f.Request || f.SettlementEpoch > dispatchEpoch || f.ValidateFor(f.Request, f.Shared, max(f.IssuerEpoch, f.SettlementEpoch), f.RunnerPodName, f.RunnerRestartCount, uint64(f.Request.TargetVMMemoryBytes)) != nil ||
 		err != nil || len(digest) != 32 || hex.EncodeToString(digest) != c.FinalizationSHA256 || a.Validate() != nil || !a.Open || a.Instance != c.Request.Key.Instance || a.BudgetCommitmentID != c.Request.BudgetCommitmentID || a.ExpectedCapacityGeneration != f.Shared.Observed.CapacityGeneration || dispatchEpoch < c.Request.Key.IssuerEpoch || a.IssuerEpoch < c.Request.Key.IssuerEpoch || a.IssuerEpoch > dispatchEpoch || (c.MaySend && a.IssuerEpoch != dispatchEpoch) {
 		return fmt.Errorf("committed abort changed original complete budget or admission binding")
 	}

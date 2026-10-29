@@ -28,9 +28,13 @@ func unchangedDigest(value string) bool {
 
 func (c UnchangedAbortCommand) ValidateFor(f Finalized, dispatchEpoch control.Uint64) error {
 	old, next := f.Request.Key, c.Request.Key
+	// 旧预算可能由更高owner独立结算；原请求issuer不能改写。结构检查以
+	// 真实结算epoch为准，但它必须不晚于本取消的原派发。否则旧取消会
+	// 借用未来才形成的预算。当前执行权/PG floor仍由回执及来源审计认证，
+	// 此处不提升派发权限，也不允许以接管epoch重发原开放命令。
 	if c.ProtocolVersion != 1 || c.Request.Validate() != nil || c.Request.Kind != control.Grow || next.Instance != old.Instance || next.IssuerEpoch < old.IssuerEpoch || next.IssuerEpoch == old.IssuerEpoch && next.Revision <= old.Revision || dispatchEpoch < next.IssuerEpoch ||
 		!unchangedDigest(c.FinalizationSHA256) || !unchangedDigest(c.CancelledVMSHA256) || c.CancellationSources.Validate() != nil || f.Sources == nil || f.Sources.Runner == nil || c.CancellationSources.BirthClaim != f.Sources.Runner.BirthClaim || c.CancellationSources.StateClaim != f.Sources.Runner.StateClaim ||
-		f.ValidateFor(f.Request, f.Shared, f.IssuerEpoch, f.RunnerPodName, f.RunnerRestartCount, uint64(f.Request.TargetVMMemoryBytes)) != nil {
+		f.SettlementEpoch > dispatchEpoch || f.ValidateFor(f.Request, f.Shared, max(f.IssuerEpoch, f.SettlementEpoch), f.RunnerPodName, f.RunnerRestartCount, uint64(f.Request.TargetVMMemoryBytes)) != nil {
 		return fmt.Errorf("unchanged abort lost original budget or later cancellation context")
 	}
 	if a := c.Admission; a != nil && (a.Validate() != nil || !a.Open || a.Instance != old.Instance || a.IssuerEpoch != dispatchEpoch || a.BudgetCommitmentID != f.Request.BudgetCommitmentID || a.ExpectedCapacityGeneration != f.Shared.Observed.CapacityGeneration) {

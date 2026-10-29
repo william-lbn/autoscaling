@@ -358,6 +358,7 @@ func productionInitialService(t *testing.T, mode string) {
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
 	committedCompletionTransfer := mode == "resume-safety-recover-complete-takeover"
 	finalizationTransfer := strings.HasPrefix(mode, "finalize-safety-recover-") && strings.HasSuffix(mode, "takeover")
+	finalizationCancel := mode == "finalize-safety-recover-planned-unchanged-takeover"
 	closureTransfer := finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
 	pgSafety := strings.HasPrefix(mode, "active-safety-pg-")
 	pgTakeover := mode == "owner-transfer-after-pg"
@@ -488,6 +489,11 @@ func productionInitialService(t *testing.T, mode string) {
 		var extra []budget.QualifiedTarget
 		if automaticMode {
 			extra = []budget.QualifiedTarget{{VMMemoryBytes: 1 << 30, GuestUsableMemoryBytes: 768 << 20, Limits: p.Limits, SystemOutsidePGBytes: 24 << 20, TransitionBytes: 4 << 20, SafetyBytes: 4 << 20}}
+		}
+		if finalizationCancel {
+			// 新取消目标在首次绑定前就具有独立平台资格；不能在取消后
+			// 按实际占用补造新规格，或把旧1GiB预算冒充2GiB成功。
+			extra = []budget.QualifiedTarget{{VMMemoryBytes: 2 << 30, GuestUsableMemoryBytes: (2 << 30) - (256 << 20), Limits: p.Limits, SystemOutsidePGBytes: 24 << 20, TransitionBytes: 4 << 20, SafetyBytes: 4 << 20}}
 		}
 		source := initialAndGrowQualification(t, ctx, client, root, p, extra...)
 		rebuild := func() *PGWorker {
@@ -661,7 +667,7 @@ func productionInitialService(t *testing.T, mode string) {
 			// 完整结案/自动Grow→Shrink会经过多次正式来源预审，race运行
 			// 可能超过静态夹具Lease的60秒寿命。用原UID/holder的真实
 			// 选主续租维持Host，不放宽生产过期校验，也不重建同名来源。
-			if pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "cleanup-safety-") {
+			if pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || finalizationCancel || strings.HasPrefix(mode, "cleanup-safety-") {
 				keepPGTakeoverHostOwner(t, ctx, client)
 			}
 		}
@@ -695,10 +701,13 @@ func productionInitialService(t *testing.T, mode string) {
 						require.NoError(t, runner.Tick(ctx))
 					}
 					recoveryMode := strings.TrimPrefix(mode, "finalize-safety-recover-")
-					if recoveryMode == "planned-takeover" || recoveryMode == "unknown-takeover" {
+					if recoveryMode == "planned-takeover" || recoveryMode == "unknown-takeover" || finalizationCancel {
 						recoveryMode = "normal"
 					}
 					worker = verifyProductionCommittedServiceRecovery(t, ctx, "resume-safety-recover-"+recoveryMode, api, store, client, session, resources, config, source, pg, root, transfer, runner)
+					if finalizationCancel {
+						verifyRecoveredBudgetUnchangedCancel(t, ctx, api, store, client, coord, session, resources, worker, config, source, runner, qmp, pg, root)
+					}
 					if automaticMode {
 						verifyProductionAutomaticSuccessor(t, ctx, client, coord, store, session, resources, worker, config, source, pg, runner, qmp)
 					}
