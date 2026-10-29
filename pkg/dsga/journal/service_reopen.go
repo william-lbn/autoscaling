@@ -36,6 +36,12 @@ type ServiceReopen struct {
 	// 重新审计失败时的独立关闭。原开放相位/回执不被改成失败或 NoEffect，
 	// 原关闭选择亦不覆盖；该关闭只能阻止之后的新准入，不能释放资源。
 	Closing *ServiceReopenClosure `json:"closing,omitempty"`
+	// 每次重新选择必须以最近完整再关闭为前驱。零表示首次新开放；
+	// 后继保存完整直接前驱与累积摘要，不能递归包含旧前驱或改旧Unknown。
+	Attempt       control.Uint64            `json:"attempt,omitempty"`
+	PriorClose    *control.AdmissionRequest `json:"prior_close,omitempty"`
+	PriorClosedAt control.Uint64            `json:"prior_closed_at,omitempty"`
+	Retired       *ServiceReopenRetirement  `json:"retired,omitempty"`
 }
 
 func serviceReopenClosureDigest(c ServiceClosure) (string, error) {
@@ -65,6 +71,12 @@ func (m Model) serviceClosureVersion() uint32 {
 }
 
 func (m Model) validateServiceReopen() error {
+	return m.validateServiceReopenRecord(false)
+}
+
+// archived仅供已去除更早前驱的完整直接前驱原文校验。当前记录始终
+// 要求完整Retired；归档仍认证原命令/预算/期限/关闭，不能获得派发许可。
+func (m Model) validateServiceReopenRecord(archived bool) error {
 	c := m.ServiceClosure
 	if c.Reopen == nil {
 		if m.ClosureFormatVersion() == 20 {
@@ -84,11 +96,17 @@ func (m Model) validateServiceReopen() error {
 	if c.Rearm != nil {
 		closedAt = max(closedAt, c.Rearm.RecordedSequence)
 	}
+	if r.Attempt != 0 {
+		closedAt = r.PriorClosedAt
+	}
 	version := r.ClosureVersion
 	if m.ClosureFormatVersion() != 20 || !serviceReopenVersionAllowed(version) || (version == 19) != (c.Rearm != nil) || m.Active != nil || c.Pending() || c.Rearm != nil && c.Rearm.Phase != Settled || closureErr != nil || heldErr != nil || commandErr != nil || r.ClosureSHA256 != closureHash || r.HeldSHA256 != heldHash || r.CommandSHA256 != digest || r.Origin.Validate() != nil || r.Origin.Epoch > m.Owner.Epoch || r.Origin.Epoch == m.Owner.Epoch && r.Origin != m.Owner || r.StartedSequence <= closedAt || r.StartedSequence > m.Sequence {
 		return fmt.Errorf("service reopen changed original stable closure, budget or owner")
 	}
 	b, q := r.Before, r.Request
+	if r.Attempt != 0 && r.PriorClose != nil {
+		closed = *r.PriorClose
+	}
 	if m.PGInstance == nil || b.ValidateFor(b.Request, *m.PGInstance) != nil || b.Request.Action != "observe" || !b.Armed || b.Expired || b.Observed.AdmissionOpen || b.LeaseEpoch > r.Origin.Epoch || b.Observed.IssuerFloorEpoch != r.Origin.Epoch || b.Request.IssuerEpoch != r.Origin.Epoch || b.Observed.CapacityGeneration != closed.ExpectedCapacityGeneration || b.Observed.AdmissionRevision != closed.Revision || b.Observed.AdmissionRevision == control.Uint64(math.MaxUint64) || !q.Open || q.Instance != *m.PGInstance || q.IssuerEpoch != r.Origin.Epoch || q.Revision != b.Observed.AdmissionRevision+1 || q.ExpectedCapacityGeneration != b.Observed.CapacityGeneration || q.BudgetCommitmentID != closed.BudgetCommitmentID {
 		return fmt.Errorf("service reopen lacks exact live native lease and next admission context")
 	}
@@ -110,7 +128,10 @@ func (m Model) validateServiceReopen() error {
 	default:
 		return fmt.Errorf("invalid service reopen phase")
 	}
-	return m.validateServiceReopenClosure()
+	if err := m.validateServiceReopenClosure(); err != nil {
+		return err
+	}
+	return m.validateServiceReopenRetirement(archived)
 }
 
 // StartServiceReopen 只构造写前模型，不发送网络。新请求由已校验的原生
@@ -146,7 +167,7 @@ func (m Model) StartServiceReopen(actor Owner, selector string, before control.A
 		return m, err
 	}
 	next.setClosureFormatVersion(20)
-	next.ServiceClosure.Reopen = &ServiceReopen{ClosureVersion: m.ClosureFormatVersion(), Origin: actor, StartedSequence: next.Sequence, ClosureSHA256: closureHash, HeldSHA256: heldHash, Before: cloneLeaseResponse(before), Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, SafetyStage: "opening", Closing: nil}
+	next.ServiceClosure.Reopen = &ServiceReopen{ClosureVersion: m.ClosureFormatVersion(), Origin: actor, StartedSequence: next.Sequence, ClosureSHA256: closureHash, HeldSHA256: heldHash, Before: cloneLeaseResponse(before), Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, SafetyStage: "opening", Closing: nil, Attempt: 0, PriorClose: nil, PriorClosedAt: 0, Retired: nil}
 	if err := next.reopenCompletionCapacity(); err != nil {
 		return m, err
 	}
@@ -201,7 +222,7 @@ func (store *Store) RecordServiceReopen(ctx context.Context, s *Snapshot, actor 
 func (r *ServiceReopen) UnmarshalJSON(raw []byte) error {
 	type plain ServiceReopen
 	var next plain
-	if err := control.UnmarshalObject(raw, &next); err != nil {
+	if err := control.UnmarshalObjectBounded(raw, &next, MaxRawBytes/2, 16384); err != nil {
 		return err
 	}
 	*r = ServiceReopen(next)

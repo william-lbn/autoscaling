@@ -345,7 +345,7 @@ func productionInitialService(t *testing.T, mode string) {
 	if finiteAddressSpace {
 		mode = "automatic-policy"
 	}
-	automaticMode := mode == "automatic-policy" || mode == "service-lifecycle-first-unknown-automatic"
+	automaticMode := mode == "automatic-policy" || mode == "service-lifecycle-first-unknown-automatic" || mode == "service-retry-first-unknown-automatic"
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
 	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
 	pgSafety := strings.HasPrefix(mode, "active-safety-pg-")
@@ -410,11 +410,16 @@ func productionInitialService(t *testing.T, mode string) {
 		// 整个测试的上限，各生产请求/租约/单轮deadline均保持原值。
 		deadline = 3 * time.Minute
 	}
-	if automaticMode || strings.HasPrefix(mode, "service-lifecycle-") {
+	if automaticMode || strings.HasPrefix(mode, "service-lifecycle-") || strings.HasPrefix(mode, "service-retry-") {
 		// 在途永久头/Prepare/Host的正式来源预审增加了受Kube客户端
 		// 限流的只读请求；完整Grow→Shrink曾在原三分钟总期限耗尽。
 		// 仅扩大组合测试总期限，保留生产限流、请求期限和选主续租。
 		deadline = 5 * time.Minute
+	}
+	if strings.HasPrefix(mode, "service-retry-") {
+		// 本批组合增加原开放→异常再关闭→再次来源审计和SDK重建，
+		// 仅扩大测试总期限；生产请求、Kube限流和选主期限不变。
+		deadline = 7 * time.Minute
 	}
 	if ownerTransfer || closureTransfer {
 		// 实测包含原30秒Lease失效等待的完整组合为175.53秒，
@@ -482,7 +487,8 @@ func productionInitialService(t *testing.T, mode string) {
 			return next
 		}
 		worker = rebuild()
-		lifecycleMode := strings.HasPrefix(mode, "service-lifecycle-")
+		retryMode := strings.HasPrefix(mode, "service-retry-")
+		lifecycleMode := strings.HasPrefix(mode, "service-lifecycle-") || retryMode
 		lifecyclePosts := 0
 		if lifecycleMode {
 			progress, err := worker.Advance(ctx)
@@ -502,8 +508,13 @@ func productionInitialService(t *testing.T, mode string) {
 			if unknown {
 				predecessor = "first-unknown"
 			}
-			verifyProductionServiceReopen(t, ctx, predecessor, api, store, session, resources, worker, config, client, source, pg, root)
-			worker = verifyProductionServiceLifecycle(t, ctx, strings.TrimPrefix(mode, "service-lifecycle-"), api, store, session, resources, worker, config, client, source, pg, root)
+			if retryMode {
+				verifyProductionServiceReopen(t, ctx, "source-after-unknown-setter", api, store, session, resources, worker, config, client, source, pg, root)
+				worker = verifyProductionServiceReopenRetry(t, ctx, strings.TrimPrefix(mode, "service-retry-"), api, store, session, resources, worker, config, client, source, pg, root)
+			} else {
+				verifyProductionServiceReopen(t, ctx, predecessor, api, store, session, resources, worker, config, client, source, pg, root)
+				worker = verifyProductionServiceLifecycle(t, ctx, strings.TrimPrefix(mode, "service-lifecycle-"), api, store, session, resources, worker, config, client, source, pg, root)
+			}
 			if mode != "service-lifecycle-first-unknown-grow" && !automaticMode {
 				return nil
 			}

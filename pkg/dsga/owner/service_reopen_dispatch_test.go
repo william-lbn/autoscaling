@@ -192,6 +192,13 @@ func (p *initialServicePG) serveReopenFixture(t *testing.T, w http.ResponseWrite
 		fact := control.AdmissionLeaseResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: q, Armed: true, Renewed: false, Expired: p.leaseExpired, DeadlineNS: p.leaseDeadline, LeaseEpoch: q.IssuerEpoch, TimeoutMS: 30000, Observed: p.current().Observed}
 		if !f.selectionFault {
 			switch {
+			case r != nil && r.Attempt == 0 && r.Closing != nil && !r.Closing.Close.Pending() && f.mode == "retry-source-after-selection":
+				// 与首次开放窗口一致：最后写前observe返回时来源失效，
+				// 写后完整来源复核应在setter之前发现，不放到后审期间。
+				f.root.mu.Lock()
+				f.root.view.Actual.MemoryMaxBytes++
+				f.root.mu.Unlock()
+				f.selectionFault = true
 			case r == nil && f.mode == "source-after-selection":
 				f.root.mu.Lock()
 				f.root.view.Actual.MemoryMaxBytes++

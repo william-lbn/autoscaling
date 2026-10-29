@@ -186,9 +186,34 @@ func verifyProductionAutomaticSuccessor(t *testing.T, ctx context.Context, clien
 	defer worker.CloseIdleConnections()
 	c := automaticConfig(policy.Target{VMMemoryBytes: 1 << 30, Buffers: 512}, policy.Target{VMMemoryBytes: 2 << 30, Buffers: 1024})
 	require.NoError(t, worker.ConfigureAutomaticMemory(c, client.CoreV1()))
+	s, err = store.Load(ctx)
+	require.NoError(t, err)
+	sample, err := worker.sampleAutomatic(ctx, s)
+	require.NoError(t, err)
+	t.Logf("自动Shrink首样本：age=%s current=%+v normal=%d/%d clients=%d open=%t eligible=%v", time.Since(sample.At), sample.Current, sample.NormalCurrent, sample.NormalMax, sample.ClientProcesses, sample.AdmissionOpen, sample.Eligible)
 	loopCtx, stop := context.WithCancel(ctx)
 	defer stop()
+	var sampleTick int
+	lastTick := time.Now()
 	err = worker.Run(loopCtx, PGLoopOptions{Control: nil, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, PollInterval: 20 * time.Millisecond, Observe: func(tick Tick) {
+		sampleTick++
+		if sampleTick <= 4 || sampleTick%10 == 0 {
+			t.Logf("自动Shrink采样：tick=%d progress=%s interval=%s", sampleTick, tick.Progress, time.Since(lastTick))
+		}
+		lastTick = time.Now()
+		if tick.Err != nil {
+			// 失败时保留准确领域阶段和只读审计原因，不能把安全关闭
+			// 误报成策略超时。只输出状态类别/摘要，不输出凭据或领域原文。
+			snapshot, loadErr := store.Load(ctx)
+			if loadErr == nil {
+				m := snapshot.State()
+				reason := ""
+				if m.ServiceClosure != nil {
+					reason = m.ServiceClosure.Reason
+				}
+				t.Logf("自动Shrink失败边界：sequence=%d closure_version=%d reason=%s active=%t idle_audit=%v", m.Sequence, m.ClosureFormatVersion(), reason, m.Active != nil, worker.inspectIdleService(ctx, snapshot))
+			}
+		}
 		require.NoError(t, tick.Err)
 		if tick.Progress == pgexec.Recorded {
 			stop()

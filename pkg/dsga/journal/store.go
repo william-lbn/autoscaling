@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"maps"
 	"reflect"
+	"sync"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -32,6 +33,37 @@ type Binding struct {
 type Store struct {
 	client  vmclient.VirtualMachineInterface
 	binding Binding
+	cache   validatedModelCache
+}
+
+// 只复用同一Store中逐字相同账本的确定性解码结果；绝不缓存GET、VM元数据、
+// Lease、来源或派发许可。完整生命周期原文变大后，每次取凭据重复解压/严格
+// 校验同一份历史会占满串行轮次，使有限的新鲜采样窗口无法累计。
+// 缓存只有一项，空间仍受原编码/模型界限约束。锁仅保护本地查找及深拷贝，
+// 网络和解码都在锁外；并发旧解码后完成最多替换性能缓存，不能推进任何水位。
+type validatedModelCache struct {
+	mu      sync.Mutex
+	encoded string
+	model   Model
+}
+
+func (store *Store) decodeModel(data string) (Model, error) {
+	store.cache.mu.Lock()
+	if data != "" && data == store.cache.encoded {
+		model := store.cache.model.Clone()
+		store.cache.mu.Unlock()
+		return model, nil
+	}
+	store.cache.mu.Unlock()
+	model, err := decode(data, string(store.binding.VMUID), store.binding.Incarnation)
+	if err != nil {
+		// 不缓存错误，也不把已通过的旧模型用于不同/缺失/损坏的原文。
+		return Model{}, err
+	}
+	store.cache.mu.Lock()
+	store.cache.encoded, store.cache.model = data, model.Clone()
+	store.cache.mu.Unlock()
+	return model, nil
 }
 
 // Binding返回固定值副本，供选主/凭据适配器核对同一VM incarnation；它不是
@@ -91,7 +123,9 @@ func NewStore(client vmclient.VirtualMachineInterface, binding Binding) (*Store,
 	if err := control.ValidateID(string(binding.VMUID), "VM"); err != nil {
 		return nil, err
 	}
-	return &Store{client: client, binding: binding}, nil
+	var store Store
+	store.client, store.binding = client, binding
+	return &store, nil
 }
 
 func (store *Store) readVM(ctx context.Context) (*vmv1.VirtualMachine, error) {
@@ -106,12 +140,20 @@ func (store *Store) readVM(ctx context.Context) (*vmv1.VirtualMachine, error) {
 }
 
 func (store *Store) fromVM(vm *vmv1.VirtualMachine) (*Snapshot, error) {
-	return Inspect(vm, store.binding)
+	return inspectVM(vm, store.binding, store.decodeModel)
 }
 
 // Inspect以唯一有界解码器核验已读取的完整VM/journal，供Controller/准入复用。
 // 它不访问网络、不认证调用方、不造票据；快照深拷贝，外部修改不能改变CAS事实。
 func Inspect(vm *vmv1.VirtualMachine, binding Binding) (*Snapshot, error) {
+	return inspectVM(vm, binding, func(data string) (Model, error) {
+		return decode(data, string(binding.VMUID), binding.Incarnation)
+	})
+}
+
+// 所有当前VM身份、bootstrap和Compute绑定都在每次GET之后重新核验。
+// decodeModel仅可复用确定性完整模型；外部Inspect仍独立执行严格解码。
+func inspectVM(vm *vmv1.VirtualMachine, binding Binding, decodeModel func(string) (Model, error)) (*Snapshot, error) {
 	if vm == nil || vm.UID != binding.VMUID || vm.Name != binding.Name || vm.Namespace != binding.Namespace || vm.ResourceVersion == "" {
 		return nil, fmt.Errorf("journal response VM identity changed")
 	}
@@ -128,7 +170,7 @@ func Inspect(vm *vmv1.VirtualMachine, binding Binding) (*Snapshot, error) {
 	if vm.Spec.DSGABootstrap == nil || vm.Spec.DSGABootstrap.Incarnation != binding.Incarnation {
 		return nil, fmt.Errorf("journal bootstrap binding differs")
 	}
-	model, err := decode(data, string(binding.VMUID), binding.Incarnation)
+	model, err := decodeModel(data)
 	if err != nil {
 		return nil, err
 	}

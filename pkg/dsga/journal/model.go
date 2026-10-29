@@ -559,6 +559,15 @@ func (model Model) Clone() Model {
 		closure := *model.ServiceClosure
 		if closure.Reopen != nil {
 			reopen := *closure.Reopen
+			if reopen.PriorClose != nil {
+				prior := *reopen.PriorClose
+				reopen.PriorClose = &prior
+			}
+			if reopen.Retired != nil {
+				retired := *reopen.Retired
+				retired.Context = append([]byte(nil), retired.Context...)
+				reopen.Retired = &retired
+			}
 			reopen.Before = cloneLeaseResponse(reopen.Before)
 			if reopen.Receipt != nil {
 				reopen.Receipt = cloneAdmissionResponse(reopen.Receipt)
