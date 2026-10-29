@@ -76,6 +76,18 @@ const (
 	CoordinationReplayServiceRearm  CoordinationAction = "replay_service_rearm"
 )
 
+// 受控新开放与原生期限恢复分开选择。管理端只指定完整原摘要，不能
+// 提供预算、revision、deadline 或回执。再关闭可在来源损坏时单独执行；
+// 普通查询仍只读原 WAL，不因网络错误自动生成重放或更高 owner 接续。
+const (
+	CoordinationReopenService                CoordinationAction = "reopen_service"
+	CoordinationObserveServiceReopen         CoordinationAction = "observe_service_reopen"
+	CoordinationReplayServiceReopen          CoordinationAction = "replay_service_reopen"
+	CoordinationCloseServiceReopen           CoordinationAction = "close_service_reopen"
+	CoordinationReplayServiceReopenClosure   CoordinationAction = "replay_service_reopen_closure"
+	CoordinationContinueServiceReopenClosure CoordinationAction = "continue_service_reopen_closure"
+)
+
 // CoordinationCommand固定接收方完整实例及预期当前owner代次。Key保留原操作代次，
 // 因此取消旧操作时可与ExpectedOwnerEpoch不同；重放资格仍由各领域原WAL决定。
 // expected代次用于拒绝网络中排队至接管后的旧管理决定，不能从该数字获得执行权。
@@ -105,7 +117,8 @@ func (c CoordinationCommand) Validate() error {
 		if c.Request == nil || c.Request.Validate() != nil || c.Request.Key.Instance != Instance(c.Instance) || c.Request.Key.IssuerEpoch > c.ExpectedOwnerEpoch || c.Key != nil || c.Selector != "" {
 			return fmt.Errorf("begin requires one complete request for the selected owner")
 		}
-	case CoordinationReplayInitial, CoordinationRepairHeld, CoordinationObserveHeld, CoordinationReplayServiceClosure, CoordinationContinueServiceClosure, CoordinationRearmService, CoordinationObserveServiceRearm, CoordinationReplayServiceRearm:
+	case CoordinationReplayInitial, CoordinationRepairHeld, CoordinationObserveHeld, CoordinationReplayServiceClosure, CoordinationContinueServiceClosure, CoordinationRearmService, CoordinationObserveServiceRearm, CoordinationReplayServiceRearm,
+		CoordinationReopenService, CoordinationObserveServiceReopen, CoordinationReplayServiceReopen, CoordinationCloseServiceReopen, CoordinationReplayServiceReopenClosure, CoordinationContinueServiceReopenClosure:
 		decoded, err := hex.DecodeString(c.Selector)
 		if err != nil || len(decoded) != 32 || hex.EncodeToString(decoded) != c.Selector || c.Request != nil || c.Key != nil {
 			return fmt.Errorf("source selection requires the original SHA256")

@@ -188,6 +188,18 @@ func (worker *PGWorker) executeControl(ctx context.Context, command control.Coor
 		result.Progress, err = worker.advanceServiceRearm(callCtx, command.Selector, false)
 	case control.CoordinationReplayServiceRearm:
 		result.Progress, err = worker.advanceServiceRearm(callCtx, command.Selector, true)
+	case control.CoordinationReopenService:
+		result.Progress, err = worker.reopenService(callCtx, command.Selector)
+	case control.CoordinationObserveServiceReopen:
+		result.Progress, err = worker.observeServiceReopen(callCtx, command.Selector)
+	case control.CoordinationReplayServiceReopen:
+		result.Progress, err = worker.replayServiceReopen(callCtx, command.Selector)
+	case control.CoordinationCloseServiceReopen:
+		result.Progress, err = worker.closeServiceReopen(callCtx, command.Selector, false)
+	case control.CoordinationReplayServiceReopenClosure:
+		result.Progress, err = worker.replayServiceReopenClosure(callCtx, command.Selector)
+	case control.CoordinationContinueServiceReopenClosure:
+		result.Progress, err = worker.closeServiceReopen(callCtx, command.Selector, true)
 	case control.CoordinationReplayVM:
 		result.Progress, err = worker.ReplayVMOriginal(callCtx, *command.Key)
 	case control.CoordinationReplayAbort:

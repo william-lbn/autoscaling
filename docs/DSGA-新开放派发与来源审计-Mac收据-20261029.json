@@ -1,0 +1,286 @@
+{
+  "receipt_version": 1,
+  "date": "2026-10-29 Asia/Shanghai",
+  "scope": "正式新开放选择/派发前后完整来源审计，异常独立再关闭及更高owner关闭接续；业务门禁解除与生命周期尚未完成",
+  "autoscaling_parent": "c5389ee7df1652281bbc23f00a6954669738c506",
+  "postgres17_unchanged": "79367196a74eef82e67cac917877d2e6271d3e70",
+  "adopted_go_race": [
+    {
+      "log": "build/dsga-reopen-dispatch-api.jsonl",
+      "sha256": "49b55152f76da15f7fd391639dbe833bc2aeaa0e461f9d058aeff3cee7207e45",
+      "package_outcomes": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+          "action": "pass",
+          "elapsed": 4.132
+        }
+      ],
+      "test_fail_records_in_original_log": 0,
+      "adopted_top_level": 3,
+      "adopted_parent_child_records": 30,
+      "go_args": [
+        "test",
+        "-race",
+        "-mod=readonly",
+        "-count=1",
+        "-json",
+        "./pkg/api/dsga",
+        "-run",
+        "^TestCoordination|^TestResourceOnlyZeroBoot"
+      ]
+    },
+    {
+      "log": "build/dsga-reopen-dispatch-fixed.jsonl",
+      "sha256": "c42008ac7d8cdadd144fabf6a0a68ab4b57ab9720e935f20cf05b62d6368ce8e",
+      "package_outcomes": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "action": "fail",
+          "elapsed": 395.796
+        }
+      ],
+      "test_fail_records_in_original_log": 2,
+      "adopted_top_level": 0,
+      "adopted_parent_child_records": 17,
+      "go_args": [
+        "test",
+        "-race",
+        "-mod=readonly",
+        "-count=1",
+        "-json",
+        "./pkg/dsga/owner",
+        "-run",
+        "^TestProductionServiceReopenAuditsSourcesAndClosesOriginalUnknown$"
+      ]
+    },
+    {
+      "log": "build/dsga-reopen-dispatch-takeover-affected.jsonl",
+      "sha256": "83ed48bb1a8d06f07f34e3774ad38d0bec1b5df873baefcbceb13f507a77fee9",
+      "package_outcomes": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "action": "fail",
+          "elapsed": 79.074
+        }
+      ],
+      "test_fail_records_in_original_log": 2,
+      "adopted_top_level": 3,
+      "adopted_parent_child_records": 45,
+      "go_args": [
+        "test",
+        "-race",
+        "-mod=readonly",
+        "-count=1",
+        "-json",
+        "./pkg/dsga/owner",
+        "-run",
+        "^TestServiceReopenClosureDispatchAfterRealElectorTakeover$|^TestProductionExpiredNativeLeaseRetainsRestrictedManagement$|^TestOwnedControlLoopCancellationAndSerialExecution$|^TestOwnedControlLoopCancellationStopsActiveManagementRead$"
+      ]
+    },
+    {
+      "log": "build/dsga-reopen-dispatch-opening-fixed.jsonl",
+      "sha256": "63495044411fe4d0247adb2146f43de77570c02b5d79e1fcb9c940d4890e0b68",
+      "package_outcomes": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "action": "pass",
+          "elapsed": 8.686
+        }
+      ],
+      "test_fail_records_in_original_log": 0,
+      "adopted_top_level": 0,
+      "adopted_parent_child_records": 1,
+      "go_args": [
+        "test",
+        "-race",
+        "-mod=readonly",
+        "-count=1",
+        "-json",
+        "./pkg/dsga/owner",
+        "-run",
+        "^TestServiceReopenClosureDispatchAfterRealElectorTakeover$/^opening$"
+      ]
+    },
+    {
+      "log": "build/dsga-reopen-dispatch-cancel-only.jsonl",
+      "sha256": "64a0d2900e4a9bf8990c4433f0af138d0575f1070da80cb133288c95c56a6210",
+      "package_outcomes": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "action": "pass",
+          "elapsed": 24.75
+        }
+      ],
+      "test_fail_records_in_original_log": 0,
+      "adopted_top_level": 1,
+      "adopted_parent_child_records": 1,
+      "go_args": [
+        "test",
+        "-race",
+        "-mod=readonly",
+        "-count=1",
+        "-json",
+        "./pkg/dsga/owner",
+        "-run",
+        "^TestProductionServiceReopenCancelAfterNativeWriteRetainsOriginal$"
+      ]
+    },
+    {
+      "log": "build/dsga-reopen-dispatch-rearm-continuation.jsonl",
+      "sha256": "4c72cfd61a37dc48aa3bea734e29e146ee71de399ce7da80ed4506fd59447afc",
+      "package_outcomes": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "action": "pass",
+          "elapsed": 93.854
+        }
+      ],
+      "test_fail_records_in_original_log": 0,
+      "adopted_top_level": 2,
+      "adopted_parent_child_records": 4,
+      "go_args": [
+        "test",
+        "-race",
+        "-mod=readonly",
+        "-count=1",
+        "-json",
+        "./pkg/dsga/owner",
+        "-run",
+        "^TestProductionServiceRearmPreservesClosedBusinessAcrossCrashWindows$/^normal$|^TestProductionServiceContinuationAcrossOwnersAndUnknownReplies$/^original-applied$"
+      ]
+    },
+    {
+      "log": "build/dsga-reopen-dispatch-synchronous-readback.jsonl",
+      "sha256": "c3d2b06e033ead7dfc6fff79519305bc461e7a94c4e850004a09353d999afed5",
+      "package_outcomes": [
+        {
+          "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "action": "pass",
+          "elapsed": 41.148
+        }
+      ],
+      "test_fail_records_in_original_log": 0,
+      "adopted_top_level": 2,
+      "adopted_parent_child_records": 4,
+      "go_args": [
+        "test",
+        "-race",
+        "-mod=readonly",
+        "-count=1",
+        "-json",
+        "./pkg/dsga/owner",
+        "-run",
+        "^TestProductionServiceReopenAuditsSourcesAndClosesOriginalUnknown$/^close-before$|^TestServiceReopenClosureDispatchAfterRealElectorTakeover$/^close-after$"
+      ]
+    }
+  ],
+  "deduplicated_go_race": {
+    "top_level": 11,
+    "parent_child_records": 102,
+    "fail": 0,
+    "skip": 0,
+    "independent_e2e_count": null
+  },
+  "go_roots": [
+    "github.com/neondatabase/autoscaling/pkg/api/dsga:TestCoordinationSelectorsCannotReplaceOriginalCommands",
+    "github.com/neondatabase/autoscaling/pkg/api/dsga:TestCoordinationStrictDecodeAndIndependentCopies",
+    "github.com/neondatabase/autoscaling/pkg/api/dsga:TestResourceOnlyZeroBootCannotAuthorizePGOrBusiness",
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner:TestOwnedControlLoopCancellationAndSerialExecution",
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner:TestOwnedControlLoopCancellationStopsActiveManagementRead",
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner:TestProductionExpiredNativeLeaseRetainsRestrictedManagement",
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner:TestProductionServiceContinuationAcrossOwnersAndUnknownReplies",
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner:TestProductionServiceRearmPreservesClosedBusinessAcrossCrashWindows",
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner:TestProductionServiceReopenAuditsSourcesAndClosesOriginalUnknown",
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner:TestProductionServiceReopenCancelAfterNativeWriteRetainsOriginal",
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner:TestServiceReopenClosureDispatchAfterRealElectorTakeover"
+  ],
+  "quality": {
+    "vet_exit": 0,
+    "incremental_lint": "0 issues",
+    "consumer_compile_only_packages": 33,
+    "consumer_exit": 0,
+    "check_logs": [
+      {
+        "log": "build/dsga-reopen-dispatch-lint-final-sync.log",
+        "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47"
+      },
+      {
+        "log": "build/dsga-reopen-dispatch-vet-final-after-sync.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "log": "build/dsga-reopen-dispatch-consumers.log",
+        "sha256": "6af915c83f25b791b00e5df78b9cea24f4096e667c5d0b8b2c94c6fa07a7fe62"
+      }
+    ],
+    "commands": {
+      "vet": [
+        "go",
+        "vet",
+        "-mod=readonly",
+        "./pkg/api/dsga",
+        "./pkg/dsga/owner"
+      ],
+      "lint": [
+        "build/tools/golangci-lint",
+        "run",
+        "--new-from-rev=HEAD",
+        "--timeout=4m",
+        "./pkg/api/dsga/...",
+        "./pkg/dsga/owner/..."
+      ],
+      "consumer_compile_only": [
+        "go",
+        "test",
+        "-mod=readonly",
+        "-run",
+        "^$",
+        "./pkg/dsga/...",
+        "./pkg/agent/...",
+        "./pkg/api/...",
+        "./pkg/neonvm/controllers"
+      ]
+    },
+    "lint_cache_env": {
+      "GOCACHE": "/Users/williamlee/github/neon-self-dev/build/go-cache",
+      "GOLANGCI_LINT_CACHE": "/Users/williamlee/github/neon-self-dev/build/golangci-lint-cache"
+    }
+  },
+  "source_sha256": {
+    "pkg/api/dsga/coordination.go": "2f69534794f42d07c01af14bb4a5a0c50747dc0bf449f52663cc4ce6069255cb",
+    "pkg/api/dsga/coordination_test.go": "87b3e2c386a6726e01031988e4c01fea784cbb1fde91c8e5dcf12a02ae3788af",
+    "pkg/dsga/owner/admission_lease.go": "0d45ce3b4f3ea7e55430c8ff51c75fc2169a940b13a2c82adee2a44808a5cd17",
+    "pkg/dsga/owner/control.go": "6de550a1c537a977a0ed8711ee8bc59d72878f24cae0771a40e782ab965acf73",
+    "pkg/dsga/owner/service_rearm.go": "51ff5ca449bcc49416dd62e8ec76746720ab80af26134b1480e50cd98a73e3e4",
+    "pkg/dsga/owner/service_safety.go": "505f3f7de3b81417790565a305e8d50cea55ad173a3a0a7de14cc31bc74d0e15",
+    "pkg/dsga/owner/initial_service_test.go": "e0c782fd98bd4ea22de56ce5d6b8df61eb60f56b8774945aacc6379e90861505",
+    "pkg/dsga/owner/service_reopen_dispatch.go": "ee49d103a98ab5d0105b261c86e9395d12caaeabe02f3a0163ac940984b8f1c8",
+    "pkg/dsga/owner/service_reopen_dispatch_test.go": "aa9c6878479ec62ac843e6338508902148b287caf09869739e1af0ef70e41ad2"
+  },
+  "preserved_failures": [
+    "dsga-reopen-dispatch-normal.jsonl：默认沙箱拒绝本机端口，获授权后按Mac网络测试执行。",
+    "dsga-reopen-dispatch-first.jsonl：peer错误返回armed且deadline=0；终止失败批，补有限期限后重跑完整新组合。",
+    "dsga-reopen-dispatch-lint-first.log：测试结构体字段及import分组，已修；最终lint0。",
+    "dsga-reopen-dispatch-takeover-affected.jsonl：opening场景peer预设已应用，普通只读先合法结清；改为真正原开放未执行的未知前提，opening定向通过，其余完整成功子树采用。",
+    "dsga-reopen-dispatch-fixed.jsonl：close-before在5秒Eventually后台条件里等待受限流的同步状态请求而超时；改成同串行通道同步状态核实，close-before和接管close-after定向通过。整批原结果仍为fail，未把其他17个完整成功子树写成全批通过。",
+    "dsga-reopen-dispatch-cancel-continuation.jsonl：误包含已通过的旧接续，主动终止重复批；不采用此日志，新增取消由cancel-only独立通过。"
+  ],
+  "limitations": [
+    "真实Elector/Session/来源Reader/Root客户端/Runner出生发布/TLS/UID-RV CAS及Run串行管理已执行；PG/Root/Kube/QMP仍是明确peer，不代替原生或Linux目标环境认证。",
+    "取消组合显式模拟后续原生期限到期；真实PG单调时钟此前独立验证，本例不将peer翻转当成原生自动关闭证明。",
+    "新开放确认后ServiceClosure和Run过期latch仍保留，Begin/普通业务仍拒绝；业务完成证明、当前许可解除和有界重复生命周期仍须代码。",
+    "PG/Rust/HTTP wire和Journal模型未改，不重复未变原生/自动Grow→Shrink；normal安全降限、私有/后台持续预算活性、分区跨boot及Monitor/CPU等核心仍需实现。",
+    "Linux/K8s/KVM/NeonVM/CRI/cgroup/HugeTLB/物理返还/性能另验；不建镜像/部署/合main，不改独立控制面，不stage所有者AGENTS，PG17整体未完成，Goal active。"
+  ],
+  "execution": {
+    "cwd": "repos/autoscaling",
+    "env": {
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/Users/williamlee/github/neon-self-dev/build/go-cache"
+    },
+    "go_binary": "/Users/williamlee/go/bin/go",
+    "requires_local_network_approval": true,
+    "network_authorized_by_owner": true
+  }
+}

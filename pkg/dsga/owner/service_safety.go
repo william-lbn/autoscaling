@@ -383,7 +383,7 @@ func (w *PGWorker) continueServiceClosure(ctx context.Context, selector string) 
 	}
 	m := s.State()
 	c := m.ServiceClosure
-	if m.Owner != w.session.Actor() || c == nil || !c.Pending() {
+	if m.Owner != w.session.Actor() || c == nil || c.Reopen != nil || !c.Pending() {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
 	origin, _, previous, digest := c.Selection()

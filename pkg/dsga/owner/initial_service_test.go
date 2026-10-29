@@ -58,6 +58,7 @@ type initialServicePG struct {
 	leaseExpired   bool
 	leaseTimeoutMS int
 	rearmFixture   *serviceRearmPG
+	reopenFixture  *serviceReopenPG
 }
 
 func (p *initialServicePG) shared() control.SharedCostResponse {
@@ -94,6 +95,9 @@ func (p *initialServicePG) counts() (int, int, int) {
 
 func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Request) {
 	t.Helper()
+	if p.serveReopenFixture(t, w, r) {
+		return
+	}
 	if p.serveRearmFixture(t, w, r) {
 		return
 	}
@@ -448,7 +452,7 @@ func productionInitialService(t *testing.T, mode string) {
 		for _, a := range after.Observed.Arrays {
 			after.CurrentMainAndArraysUpperBytes += a.CommittedUpperBytes
 		}
-		pg := &initialServicePG{mu: sync.Mutex{}, request: request, before: before, after: after, resized: false, gate: nil, posts: 0, queries: 0, resizePosts: 0, loseBefore: false, loseAfter: false, store: store, loseResize: false, resizeReceipt: nil, resizeQueries: 0, afterOpen: nil, beforeClose: nil, leaseDeadline: 0, leaseRenewals: 0, leaseReject: false, leaseExpired: false, leaseTimeoutMS: 0, rearmFixture: nil}
+		pg := &initialServicePG{mu: sync.Mutex{}, request: request, before: before, after: after, resized: false, gate: nil, posts: 0, queries: 0, resizePosts: 0, loseBefore: false, loseAfter: false, store: store, loseResize: false, resizeReceipt: nil, resizeQueries: 0, afterOpen: nil, beforeClose: nil, leaseDeadline: 0, leaseRenewals: 0, leaseReject: false, leaseExpired: false, leaseTimeoutMS: 0, rearmFixture: nil, reopenFixture: nil}
 		var nativeFence http.HandlerFunc
 		if transfer != nil {
 			nativeFence = pg.ownerFence(t)
@@ -477,6 +481,22 @@ func productionInitialService(t *testing.T, mode string) {
 			return next
 		}
 		worker = rebuild()
+		if strings.HasPrefix(mode, "service-reopen-") {
+			progress, err := worker.Advance(ctx)
+			require.NoError(t, err)
+			require.Equal(t, pgexec.Recorded, progress)
+			if mode == "service-reopen-first-unknown" {
+				pg.faults(false, true)
+			}
+			_, err = worker.Advance(ctx)
+			if mode == "service-reopen-first-unknown" {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			verifyProductionServiceReopen(t, ctx, strings.TrimPrefix(mode, "service-reopen-"), api, store, session, resources, worker, config, client, source, pg, root)
+			return nil
+		}
 		if strings.HasPrefix(mode, "native-lease-") {
 			for range 2 {
 				progress, err := worker.Advance(ctx)
