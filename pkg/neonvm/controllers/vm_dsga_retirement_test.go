@@ -60,9 +60,17 @@ func controllerRetirementFixture(t *testing.T) (*testParams, *vmv1.VirtualMachin
 }
 
 func TestManagedVMFinalizationCollectsOnlyClosedOriginalSources(t *testing.T) {
-	for _, what := range []string{"complete", "patch-reply-lost", "delete-reply-lost", "cold-bootstrap"} {
+	for _, what := range []string{"complete", "patch-reply-lost", "delete-reply-lost", "cold-bootstrap", "whole-pod-source"} {
 		t.Run(what, func(t *testing.T) {
 			p, vm, node, sources := controllerRetirementFixture(t)
+			if what == "whole-pod-source" {
+				// GC只在全Node结清及VM关闭锚点已核验后运行；独立整Pod
+				// 来源与Wait来源共享保护规则，不要求伪造任何Wait内容。
+				stopped := sources[0].DeepCopy()
+				stopped.Name, stopped.UID = "stopped", "stopped-uid"
+				stopped.Labels[vmguard.ClaimLabel] = vmguard.StoppedPodKind
+				sources = append(sources, stopped)
+			}
 			if what == "cold-bootstrap" {
 				cold, _, _ := controllerBootstrapInputs(t)
 				cold.DeletionTimestamp, cold.Finalizers = vm.DeletionTimestamp, vm.Finalizers

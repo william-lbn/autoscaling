@@ -219,6 +219,16 @@ func ReadPublished(ctx context.Context, client coreclient.CoreV1Interface, bindi
 	} else if !apierrors.IsNotFound(err) {
 		return birth, ref, p, err
 	}
+	// 无Wait时Scheduler的整Pod关闭来源同样永久封住旧发布。此处只拒绝
+	// 活动授权，不作Node容量结清；坏来源/网络失败也不能降级到旧State。
+	if stopped, err := client.ConfigMaps(binding.Namespace).Get(ctx, StoppedPodClaimName(binding, birth), metav1.GetOptions{}); err == nil {
+		if _, err := InspectStoppedPodSource(stopped, binding, birth, ref); err != nil {
+			return birth, ref, p, err
+		}
+		return birth, ref, p, ErrStopped
+	} else if !apierrors.IsNotFound(err) {
+		return birth, ref, p, err
+	}
 	state, err := readClaim(ctx, client, binding, birth.StateClaim, stateKind, false)
 	if err != nil {
 		return birth, ref, p, err

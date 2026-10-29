@@ -27,7 +27,7 @@ import (
 // 只验证Controller的实际直接读取/唯一来源解码及状态路径。Kube API/Runner
 // 发布数据是显式夹具，不启动QEMU，也不以此测试声称最终预算/内存热拔完成。
 func TestManagedControllerMemoryConsumesOriginalRunnerPublication(t *testing.T) {
-	for _, what := range []string{"complete", "missing-reader", "pod-uid", "node-uid", "floor-holder", "state-uid", "state-deleting", "birth-unprotected", "exit", "exit-malformed", "never-started", "never-started-with-pid", "unlaunched", "unlaunched-with-launch"} {
+	for _, what := range []string{"complete", "missing-reader", "pod-uid", "node-uid", "floor-holder", "state-uid", "state-deleting", "birth-unprotected", "exit", "exit-malformed", "never-started", "never-started-with-pid", "unlaunched", "unlaunched-with-launch", "whole-pod", "whole-pod-malformed", "whole-pod-unprotected", "whole-pod-after-gc"} {
 		t.Run(what, func(t *testing.T) {
 			p := newTestParams(t)
 			require.NoError(t, core.AddToScheme(p.r.Scheme))
@@ -69,6 +69,27 @@ func TestManagedControllerMemoryConsumesOriginalRunnerPublication(t *testing.T) 
 			require.NoError(t, err)
 			stateCM.Data = map[string]string{vmguard.ClaimKey: string(b)}
 			p.r.APIReader = fake.NewClientBuilder().WithScheme(p.r.Scheme).WithObjects(vm, birthCM, stateCM, pod, node).Build()
+			if what == "whole-pod" || what == "whole-pod-malformed" || what == "whole-pod-unprotected" || what == "whole-pod-after-gc" {
+				// 封存来源是Scheduler已核完整终态的协议夹具；Controller
+				// 即使尚能读旧State或原Pod已GC，也不能恢复活动内存授权。
+				stoppedCM := birthCM.DeepCopy()
+				stoppedCM.Name, stoppedCM.UID, stoppedCM.ResourceVersion = vmguard.StoppedPodClaimName(binding, birth), "stopped-uid", ""
+				stoppedCM.Labels[vmguard.ClaimLabel] = vmguard.StoppedPodKind
+				stopped := vmguard.StoppedPod{ProtocolVersion: 1, Identity: id, BirthClaim: birthRef, StateClaim: stateRef, PodName: pod.Name, NodeName: pod.Spec.NodeName, TerminalSHA256: vmguard.SourceDigest([]byte("complete-terminal-pod")), ContainerID: "containerd://original"}
+				if what == "whole-pod-malformed" {
+					stopped.TerminalSHA256 = ""
+				}
+				if what == "whole-pod-unprotected" {
+					stoppedCM.Finalizers = nil
+				}
+				raw, err := json.Marshal(stopped)
+				require.NoError(t, err)
+				stoppedCM.Data = map[string]string{vmguard.ClaimKey: string(raw)}
+				require.NoError(t, p.r.APIReader.(client.Client).Create(context.Background(), stoppedCM))
+				if what == "whole-pod-after-gc" {
+					require.NoError(t, p.r.APIReader.(client.Client).Delete(context.Background(), pod))
+				}
+			}
 			if what == "exit" || what == "exit-malformed" || what == "never-started" || what == "never-started-with-pid" || what == "unlaunched" || what == "unlaunched-with-launch" {
 				exitCM := birthCM.DeepCopy()
 				exitCM.Name, exitCM.UID, exitCM.ResourceVersion = vmguard.ExitClaimName(binding, birth), "exit-uid", ""
@@ -98,7 +119,7 @@ func TestManagedControllerMemoryConsumesOriginalRunnerPublication(t *testing.T) 
 				p.r.APIReader = nil
 			}
 			memory, pending, err := p.r.dsgaMemory(context.Background(), vm)
-			if what == "exit" || what == "never-started" || what == "unlaunched" {
+			if what == "exit" || what == "never-started" || what == "unlaunched" || what == "whole-pod" || what == "whole-pod-after-gc" {
 				require.ErrorIs(t, err, vmguard.ErrStopped, "原终结屏障必须早于旧QMP实际值读取")
 				return
 			}

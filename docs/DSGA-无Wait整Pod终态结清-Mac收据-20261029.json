@@ -1,0 +1,133 @@
+{
+  "receipt_version": 1,
+  "date": "2026-10-29 Asia/Shanghai",
+  "scope": "Runner已Start无Wait时的整Pod终态结清；PG17整体未完成",
+  "autoscaling_parent": "80bc0309a7c64771d520bab70da90519cc823e39",
+  "postgres17_commit": "33c92fe33e741309f9e8ab23e3767fb6f2210216",
+  "go_race": [
+    {
+      "log": "build/dsga-no-wait-full-race.jsonl",
+      "sha256": "51309a1f0c61643c7e5bfd315f08b324363c7ef547e43afd0451ca16a5401058",
+      "packages": {
+        "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler": {
+          "pass": 50,
+          "top_pass": 18,
+          "package_pass": 1
+        },
+        "github.com/neondatabase/autoscaling/pkg/neonvm/controllers": {
+          "pass": 68,
+          "top_pass": 17,
+          "package_pass": 1
+        },
+        "github.com/neondatabase/autoscaling/pkg/dsga/vmguard": {
+          "pass": 224,
+          "top_pass": 52,
+          "package_pass": 1
+        },
+        "github.com/neondatabase/autoscaling/pkg/dsga/hostguard": {
+          "pass": 81,
+          "top_pass": 24,
+          "package_pass": 1
+        }
+      }
+    },
+    {
+      "log": "build/dsga-no-wait-source-unknown.jsonl",
+      "sha256": "b678560d490b474214dbba741460275cf0e95c00f626c6cef9ce67e451408190",
+      "packages": {
+        "github.com/neondatabase/autoscaling/pkg/dsga/vmguard": {
+          "pass": 1,
+          "top_pass": 1,
+          "package_pass": 1
+        }
+      }
+    },
+    {
+      "log": "build/dsga-no-wait-automatic-race.jsonl",
+      "sha256": "535f8a4fe5efc9ef5867501ff87f3e13c0c8beb5d0a70181d0173d46359d7d97",
+      "packages": {
+        "github.com/neondatabase/autoscaling/pkg/dsga/owner": {
+          "pass": 5,
+          "top_pass": 1,
+          "package_pass": 1
+        }
+      }
+    }
+  ],
+  "deduplicated_go_race": {
+    "top_level": 113,
+    "parent_child_records": 429,
+    "fail": 0,
+    "skip": 0,
+    "included_helper_entries": 2,
+    "independent_e2e_count": null
+  },
+  "automatic_control_chain": {
+    "elapsed_seconds": 169.3,
+    "grow_and_shrink_once": true,
+    "finish_and_host_settled": true,
+    "qmp_peer_actual_readback_bytes": 1073741824,
+    "real_pg_or_qemu_or_kube": false
+  },
+  "quality": {
+    "vet_exit": 0,
+    "incremental_lint": "0 issues",
+    "consumer_compile_only_packages": 33,
+    "consumer_compile_first_exit": 1,
+    "consumer_compile_first_reason": "误用不存在的neonvm/runner目录；正确包集合后续退出0",
+    "diff_check_exit": 0
+  },
+  "logs": [
+    {
+      "path": "build/dsga-no-wait-vet.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "build/dsga-no-wait-lint-final.log",
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47"
+    },
+    {
+      "path": "build/dsga-no-wait-consumer-compile-final.log",
+      "sha256": "db089499afe4a08952d193e3882b82be11b8429a966f0f63e0c7b4f6482b14a5"
+    },
+    {
+      "path": "build/dsga-no-wait-consumer-compile.log",
+      "sha256": "7a87cb438ab12c3973c6eb212c6e4f66e49d474ff49ab67ee7ef3acdf19c4909"
+    }
+  ],
+  "source_sha256": {
+    "pkg/dsga/hostscheduler/retirement.go": "c1bc0ef3755781522ae554a9369e23dc911e6459d8adba7d93e950f44fd2e82a",
+    "pkg/dsga/hostscheduler/retirement_test.go": "61b23671c7d1e85e4e4c8e8e7e881bd537f8a2793ccf2abecd270e47796575f4",
+    "pkg/dsga/vmguard/publication.go": "1f722aad5845e3da4b6e7a1961eb45577b4334fe7d465c829cd132d594543d17",
+    "pkg/dsga/vmguard/runner.go": "5c808f6dc3b4783c745e0b3ad6a3ad1b845662e716268ec28b567582f65447a2",
+    "pkg/neonvm/controllers/vm_dsga_memory.go": "ea6c7e7bc8a65d04bfdf2e267a50d6d130555adaedcb10b8a058dd9787e8960c",
+    "pkg/neonvm/controllers/vm_dsga_memory_test.go": "995cce1d535fc09ab0539132e41155a9605f57a2b2768ecb6422f34256b9a10e",
+    "pkg/neonvm/controllers/vm_dsga_retirement.go": "71f2c09b32cfe522c376cda26ac2a47f21270103ea016f149cbb0b0594cc6c89",
+    "pkg/neonvm/controllers/vm_dsga_retirement_test.go": "0eac38daefbc78ef68c2d965d48da0d06f82016c31f6c3f5b29e654797a2cd0b",
+    "pkg/dsga/hostscheduler/stopped_pod_test.go": "6290740fc36c628b418ad0b1d45476a4c6fcd69ceda9b9509f0859c6557bccdb",
+    "pkg/dsga/vmguard/stopped_pod.go": "736fe83a5bb79f2ff8dd1a1a210d3d60713d7e8c4cc73da9ce3a27262b1407f6",
+    "pkg/dsga/vmguard/stopped_pod_crash_test.go": "6ea1feaaf88fc75d54b611a3c2b75423d2f7196248cfad4a04b5978439e3a771",
+    "pkg/dsga/vmguard/stopped_pod_test.go": "59d3c852779d8f0426cf9cb4bc5bd91f0b8d23c222113b943bd1bb26a42bba30"
+  },
+  "actual_execution": "Mac原生产RunQEMU启动测试二进制替身，真实SIGKILL其隔离Launcher，fsync launch存在、Wait不存在、Runner WAL不变；Kube终态为明确夹具",
+  "unverified_platform": [
+    "Linux K8s/Kubelet/CRI实际全容器停止",
+    "KVM/NeonVM/cgroup/HugeTLB实际物理返还及性能",
+    "实际RBAC与生产资格"
+  ],
+  "remaining_implementation": [
+    "受控重新开放与有界重复生命周期",
+    "normal安全降限与私有后台持续预算及活性",
+    "分区/跨boot迁移",
+    "Monitor/WSS/总配额/RW-RO/可信CPU与全部写者"
+  ],
+  "boundaries": [
+    "冻结上游不追新",
+    "仅自有功能分支提交推送，不合main",
+    "不构建镜像或部署",
+    "不改独立控制面",
+    "所有者AGENTS未提交改动保留且不stage",
+    "Goal active，PG17全面完成后才暂停，不进入PG18/16"
+  ],
+  "erratum": "前一Neon 12eb66fa9正文41扩展阶段应为39；原index日志与收据为39"
+}

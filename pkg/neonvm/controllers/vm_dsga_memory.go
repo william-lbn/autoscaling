@@ -58,6 +58,15 @@ func (r *VMReconciler) dsgaMemoryObservation(ctx context.Context, vm *vmv1.Virtu
 	} else if !apierrors.IsNotFound(err) {
 		return nil, false, nil, err
 	}
+	stoppedCM := new(core.ConfigMap)
+	if err := r.APIReader.Get(ctx, client.ObjectKey{Namespace: vm.Namespace, Name: vmguard.StoppedPodClaimName(binding, birth)}, stoppedCM); err == nil {
+		if _, err := vmguard.InspectStoppedPodSource(stoppedCM, binding, birth, ref); err != nil {
+			return nil, false, nil, err
+		}
+		return nil, false, nil, vmguard.ErrStopped
+	} else if !apierrors.IsNotFound(err) {
+		return nil, false, nil, err
+	}
 	stateCM := new(core.ConfigMap)
 	if err := r.APIReader.Get(ctx, client.ObjectKey{Namespace: vm.Namespace, Name: birth.StateClaim.Name}, stateCM); err != nil {
 		return nil, false, nil, err

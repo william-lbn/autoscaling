@@ -8,6 +8,7 @@ import (
 	"slices"
 
 	core "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
@@ -69,20 +70,46 @@ func (s *Service) terminalRunner(ctx context.Context, d domain, pod *core.Pod, p
 	if birth.Identity.RunnerPodUID != p.PodUID || birth.Identity.NodeUID != string(d.config.Binding.NodeUID) || pod.Spec.RestartPolicy != core.RestartPolicyNever {
 		return none, none, "", fmt.Errorf("original stopped Runner Pod/Node/restart policy differs")
 	}
-	exitCM, err := s.core.ConfigMaps(p.Namespace).Get(ctx, vmguard.ExitClaimName(binding, birth), metav1.GetOptions{})
+	waitName, stoppedName := vmguard.ExitClaimName(binding, birth), vmguard.StoppedPodClaimName(binding, birth)
+	selected := waitName
+	if expected != nil {
+		if expected.RunnerExit == nil || expected.RunnerExit.Name != waitName && expected.RunnerExit.Name != stoppedName {
+			return none, none, "", fmt.Errorf("original Runner retirement source kind changed")
+		}
+		selected = expected.RunnerExit.Name
+	}
+	exitCM, err := s.core.ConfigMaps(p.Namespace).Get(ctx, selected, metav1.GetOptions{})
+	// 仅首次选择且真实404表示尚无Wait来源时，允许独立的整Pod终态来源。
+	// 网络错误/坏来源/已选择UID丢失绝不降级。选择一经原Pod WAL保存，迟到
+	// Wait也不能替换它；后续每次重新核完整原Pod终态及同一不可变来源UID。
+	if apierrors.IsNotFound(err) && expected == nil {
+		exitCM, err = vmguard.PublishStoppedPod(ctx, s.core, binding, birth, ref, pod)
+		selected = stoppedName
+	}
 	if err != nil {
 		return none, none, "", err
 	}
-	exited, err := vmguard.InspectProcessExit(exitCM, binding, birth, ref)
-	if err != nil {
-		return none, none, "", err
+	var containerID string
+	if selected == stoppedName {
+		stopped, err := vmguard.InspectStoppedPod(exitCM, binding, birth, ref, pod)
+		if err != nil {
+			return none, none, "", err
+		}
+		containerID = stopped.ContainerID
+	} else {
+		exited, err := vmguard.InspectProcessExit(exitCM, binding, birth, ref)
+		if err != nil {
+			return none, none, "", err
+		}
+		containerID = exited.ContainerID
 	}
-	// 来源可以是同一Start/Wait的v1、原调用证实未Start的v2或同flock
-	// 阻止尚未登记launch的v3。校验器逐版拒绝伪造PID/启动，均不能跳过整Pod终态，
+	// 来源可以是同一Start/Wait的v1、原调用证实未Start的v2、同flock
+	// 阻止尚未登记launch的v3，或上面独立的整Pod终态封存。校验器按来源
+	// 拒绝伪造PID/启动；任何一种都不能跳过整Pod终态，
 	// 也不能收养另一个容器/重启代次来归还原Node成本。
 	matched := false
 	for _, status := range pod.Status.ContainerStatuses {
-		if status.Name == "neonvm-runner" && status.RestartCount == 0 && status.ContainerID == exited.ContainerID {
+		if status.Name == "neonvm-runner" && status.RestartCount == 0 && status.ContainerID == containerID {
 			matched = true
 		}
 	}
@@ -167,7 +194,7 @@ func (s *Service) recordVMRetirement(ctx context.Context, r hostguard.Retirement
 }
 
 // retirePod是实际节点owner循环的明确停止结清。顺序固定为原Node快照/fence
-// →原终态Pod/VM/Runner Wait来源→Pod关闭意图持久→来源重读→同Node CAS→
+// →原终态Pod/VM/Runner关闭来源→Pod关闭意图持久→来源重读→同Node CAS→
 // 再确认原Node/来源→移除Pod保护。任一未知不删来源/不按超时释放；可能已发
 // 的旧Resize仍保留原VM/Runner WAL，Guest停止不冒充该动作Completed。
 func (s *Service) retirePod(ctx context.Context, d domain, expected *core.Pod) error {

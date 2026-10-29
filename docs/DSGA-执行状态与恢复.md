@@ -4,6 +4,16 @@
 本文件是当前入口；初始维护快照仍见[基线](DSGA-上游基线与开发约束.md)。
 
 
+
+## 最新验证：Runner 无 Wait 的整 Pod 终态结清完成 Mac 阶段
+
+本批独立整 Pod 终态来源接入生产 Scheduler、活动 Reader/Controller 与完成后 GC；只在原 Wait 真实 404、原 Pod/VM/Node/Birth 和全容器终态固定时结清，不制造 Wait，不清原 resize 未知。来源选择保存后固定 UID/摘要，迟到 Wait 不替换，来源丢失/换 UID 保留未知。
+
+Mac -race 去重 113 顶层/429 含父子记录，0 fail/skip（含 2 个隔离 helper）；真实 Launcher 在 Start 后 SIGKILL 且 Wait 不存在，完整终态仍要求 Kube 夹具；正式自动 Grow→Shrink 169.30 秒通过并 Finish/Host 结清、QMP peer 读回 1 GiB。三包 vet、最终增量 lint0、33 消费者仅编译通过。详见[阶段验收](DSGA-无Wait整Pod终态结清-Mac验收-20261029.md)及[机器收据](DSGA-无Wait整Pod终态结清-Mac收据-20261029.json)。
+
+本批 PG/Rust 未改；真实 Linux CRI/cgroup/物理返还及性能另验。受控重新开放/重复生命周期、normal 安全降限、私有后台持续预算、分区/跨 boot、Monitor/WSS/配额/RW-RO/可信 CPU/全部写者仍须代码，PG17 整体未完成、Goal active。另一聊天已关闭；所有者 AGENTS 修改保留不 stage。PG17 全面实现、Mac 验证及远程归档后才暂停，不进入 18/16。本段为最新状态，下文既有缺口清单保留历史。
+
+
 ## 最新验证：原生准入失联关闭与生产续租已完成 Mac 阶段
 
 PG17 `33c92fe33e741309f9e8ab23e3767fb6f2210216` 已推自有功能分支；受管PG首次Fence启动单调期限，后台独立过期关闭。正式SQL/Rust/认证Router/Go和生产Run完成期限协商与原deadline CAS；每期限三分之一完整核验续租，坏缺WAL/失租不续、过期不自动rearm或开放。

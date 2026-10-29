@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	core "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -315,7 +316,7 @@ func TestSchedulerWholePodRetirementRecoversOriginalUnknownWrites(t *testing.T) 
 }
 
 func TestSchedulerWholePodRetirementRejectsIncompleteProofs(t *testing.T) {
-	for _, what := range []string{"missing-exit", "running-sidecar", "wrong-container", "replacement-after-cas"} {
+	for _, what := range []string{"inaccessible-exit", "running-sidecar", "wrong-container", "replacement-after-cas"} {
 		t.Run(what, func(t *testing.T) {
 			s, f, n, claims, pod := retiredRunnerFixture(t)
 			ctx := context.Background()
@@ -335,8 +336,14 @@ func TestSchedulerWholePodRetirementRejectsIncompleteProofs(t *testing.T) {
 				require.Error(t, s.retirePod(ctx, d, pod))
 				exited.UID = "replacement-exit-uid"
 				require.NoError(t, claims.Tracker().Update(core.SchemeGroupVersion.WithResource("configmaps"), exited, exited.Namespace))
-			case "missing-exit":
-				require.NoError(t, claims.Tracker().Delete(core.SchemeGroupVersion.WithResource("configmaps"), exited.Namespace, exited.Name))
+			case "inaccessible-exit":
+				// 网络/权限失败不能解释为没有Wait，更不能借整Pod路径忽略坏来源。
+				claims.PrependReactor("get", "configmaps", func(a kt.Action) (bool, runtime.Object, error) {
+					if a.(kt.GetAction).GetName() == exited.Name {
+						return true, nil, apierrors.NewForbidden(core.Resource("configmaps"), exited.Name, errors.New("fixture authorization failed"))
+					}
+					return false, nil, nil
+				})
 			default:
 				f.Mutate(func(f *dsgatest.SchedulerAPI) {
 					p := f.Pods["testing/runner"]

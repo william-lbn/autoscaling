@@ -149,7 +149,7 @@ func memorySourceFinalizer(cm *core.ConfigMap, vm *vmv1.VirtualMachine) (string,
 	}
 	if kind := cm.Labels[vmguard.ClaimLabel]; kind != "" {
 		switch kind {
-		case "binding-v1", "state-v1", "receipt-v1", "process-exit-v1":
+		case "binding-v1", "state-v1", "receipt-v1", "process-exit-v1", vmguard.StoppedPodKind:
 			return vmguard.ProtectionFinalizer, nil
 		default:
 			return "", fmt.Errorf("unknown original Runner source version blocks finalization")

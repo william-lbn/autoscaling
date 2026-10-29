@@ -234,6 +234,17 @@ func boundRunner(store *journal.Store, coreClient coreclient.CoreV1Interface, co
 }
 
 func originalPod(pod *core.Pod, binding journal.Binding, name, uid, node string) error {
+	if err := originalPodIdentity(pod, binding, name, uid, node); err != nil {
+		return err
+	}
+	if pod.Status.Phase == core.PodSucceeded || pod.Status.Phase == core.PodFailed {
+		return ErrStopped
+	}
+	return nil
+}
+
+// 终态关闭只复用原身份校验；活动启动/执行另由originalPod拒绝不可撤回终态。
+func originalPodIdentity(pod *core.Pod, binding journal.Binding, name, uid, node string) error {
 	if pod == nil || pod.Namespace != binding.Namespace || pod.Name != name || string(pod.UID) != uid || pod.ResourceVersion == "" || pod.DeletionTimestamp != nil || pod.Spec.NodeName != node {
 		return fmt.Errorf("original live Runner Pod identity differs")
 	}
