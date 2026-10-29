@@ -181,7 +181,11 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 			if err != nil {
 				return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 			}
-			_, err = w.session.store.RecordInitialServiceClosure(ctx, s, m.Owner, fact, replay == "")
+			if c.OperationSHA256 != "" {
+				_, err = w.session.store.RecordResumeServiceClosure(ctx, s, m.Owner, fact, replay == "")
+			} else {
+				_, err = w.session.store.RecordInitialServiceClosure(ctx, s, m.Owner, fact, replay == "")
+			}
 			return true, pgexec.Recorded, err
 		}
 		var fact control.AdmissionResponse
@@ -199,8 +203,20 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 	if replay != "" {
 		return true, pgexec.AwaitingFact, fmt.Errorf("service closure WAL is absent")
 	}
-	if w.safety == nil || m.Active != nil || m.InitialHeld == nil && m.BudgetHeld == nil && m.CapacityHeld == nil {
+	if w.safety == nil || m.InitialHeld == nil && m.BudgetHeld == nil && m.CapacityHeld == nil {
 		return false, pgexec.Idle, nil
+	}
+	if m.Active != nil {
+		// 仅在所有先前领域完整结算、最后开放已Start的稳定边界复用
+		// 完整预算审计。其他Resize中间态不能按旧永久预算误判来源漂移。
+		original, err := m.ResumeAdmissionForClosure()
+		if err != nil {
+			return false, pgexec.Idle, nil
+		}
+		if err := w.admission.CheckRetainedService(ctx, s); err == nil {
+			return false, pgexec.Idle, nil
+		}
+		return w.closeOriginalService(ctx, s, original, true)
 	}
 	if h := m.InitialHeld; h != nil {
 		if h.Admission == nil {
@@ -311,8 +327,17 @@ func (w *PGWorker) advanceInitialServiceSafety(ctx context.Context, s *journal.S
 		return true, pgexec.AwaitingFact, ErrServiceSafety
 	}
 	original := command.Request
+	return w.closeOriginalService(ctx, s, original, false)
+}
+
+// 首次与最终开放共享同一原生关闭协议，但写入各自严格的外层WAL。
+// resume只在完整Finalized已持有时为true，不借当前PG状态拼造预算。
+// 已确认的Resize SDK pending可能仅待原终态对账；关闭可走独立观察池，
+// 不清该未知。首次规则仍拒绝任何Resize pending，保持原兼容边界。
+func (w *PGWorker) closeOriginalService(ctx context.Context, s *journal.Snapshot, original control.AdmissionRequest, resume bool) (bool, pgexec.Progress, error) {
+	m := s.State()
 	pending, closing := w.client.PendingAdmission()
-	if closing != nil || pending != nil && *pending != original || w.client.Pending() != nil {
+	if closing != nil || pending != nil && *pending != original || !resume && w.client.Pending() != nil {
 		return true, pgexec.AwaitingFact, ErrServiceSafety
 	}
 	instance, epoch := w.Binding()
@@ -336,7 +361,12 @@ func (w *PGWorker) advanceInitialServiceSafety(ctx context.Context, s *journal.S
 	closeRequest := original
 	closeRequest.Open, closeRequest.IssuerEpoch, closeRequest.Revision = false, epoch, revision+1
 	selection := control.AdmissionCloseRequest{ProtocolVersion: 1, Original: original, Close: closeRequest}
-	s, dispatch, err := w.session.store.StartInitialServiceClosure(ctx, s, m.Owner, selection)
+	var dispatch *journal.ServiceClosure
+	if resume {
+		s, dispatch, err = w.session.store.StartResumeServiceClosure(ctx, s, m.Owner, selection)
+	} else {
+		s, dispatch, err = w.session.store.StartInitialServiceClosure(ctx, s, m.Owner, selection)
+	}
 	if err != nil {
 		return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
@@ -345,6 +375,10 @@ func (w *PGWorker) advanceInitialServiceSafety(ctx context.Context, s *journal.S
 	if err != nil {
 		return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
-	_, err = w.session.store.RecordInitialServiceClosure(ctx, s, m.Owner, fact, false)
+	if resume {
+		_, err = w.session.store.RecordResumeServiceClosure(ctx, s, m.Owner, fact, false)
+	} else {
+		_, err = w.session.store.RecordInitialServiceClosure(ctx, s, m.Owner, fact, false)
+	}
 	return true, pgexec.Recorded, err
 }

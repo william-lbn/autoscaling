@@ -336,7 +336,8 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	}
 	// Setter成功不等于资源仍归原来源：写后重核原root/Birth及同一VM版本。
 	// 相同数值的新Held也会改变来源摘要，不能收养为原完整预算。失败保留
-	// 已派发原命令供下次只读查询，不补发关闭/开放、不改原epoch或预算。
+	// 已派发原命令供下次只读查询。本执行器不补发关闭/开放、不改原epoch
+	// 或预算；生产owner会另写独立关闭WAL，不能据此伪造本步骤已完成。
 	aggregate, err := e.checkRoot(ctx, snapshot, settled)
 	if err != nil {
 		return pgexec.AwaitingFact, err

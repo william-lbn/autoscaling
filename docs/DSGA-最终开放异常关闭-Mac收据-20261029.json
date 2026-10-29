@@ -1,0 +1,1011 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "stage": "最终开放来源异常：v13独立关闭WAL和生产恢复Mac验收",
+  "bases": {
+    "autoscaling": "d0a38da5b4d0513d4c28913517195795aa68e1b0",
+    "neon": "e2f28f06f179179d2405bdce522b7fc38631308c"
+  },
+  "pg17": {
+    "tested_dependency_unchanged": "325aeb42a6080d86902d51892b2518a70ec2512b",
+    "upstream_frozen_unchanged": true,
+    "new_native_build_or_test": false,
+    "prior_evidence": "DSGA-首次未知异常关闭-Mac收据-20261029.json"
+  },
+  "source_sha256": {
+    "autoscaling": {
+      "pkg/dsga/admissionexec/executor.go": "f7de8c2247b4f9452264da7db33af2baaa21d0b942ac27301356c803040b91bf",
+      "pkg/dsga/admissionexec/retained_service.go": "9fe36866a78e702b43ec6743f7a9884715267109a0d6fe58546ce1c195b0456f",
+      "pkg/dsga/journal/initial_service_closure.go": "1089d0ca8558f69a2c3a42537bc548d59263aaa308ece84631bdd6321067d426",
+      "pkg/dsga/journal/model.go": "b5f37a979eab1ac1ce4feaab82779d3993a4dec17a697536ba6a90bfacf73547",
+      "pkg/dsga/journal/resume_service_closure.go": "2b321f7fef553bf421ca5c4802d440381cdb1dc457d7edbc2e975b607106e96a",
+      "pkg/dsga/journal/resume_service_closure_test.go": "0932597e560e73c66e2bbe0bc4d8caa8bd0e0c637f2fdb8b16b0b2b5908e31d0",
+      "pkg/dsga/journal/service_closure.go": "9fa1554f05cc352ce4d1106b267208416cf06f0676a6bcf55ca018e5b7b64e95",
+      "pkg/dsga/owner/initial_service_test.go": "6d6c9538951a6af99a2c2b512636f82268627490f8d6bccbd0cab17ef4cc4f51",
+      "pkg/dsga/owner/normal_completion_test.go": "58aca5159580198a5e37ac63d767682bd0d4286e7dc1fab5e5f91bf6ff2d3b31",
+      "pkg/dsga/owner/pg.go": "ef1908456fb20a1ccfbc335fe8e2f020d46a878dba6cf0d48275052b274205b3",
+      "pkg/dsga/owner/resume_service_safety_test.go": "50e031b31ab0734d93210dec77d63a7c887b0d6a9d1c1571a70831dec7570276",
+      "pkg/dsga/owner/service_safety.go": "ce2630160bbe5b43e61f92559d3840df10f593a6c0d782957e09693af0727778"
+    }
+  },
+  "logs": {
+    "dsga-resume-service-safety-baseline.jsonl": {
+      "sha256": "90f87f9ff0c8502a50290be3dbe605974b683aac485a27bbc1a0d6709f0fc3a8",
+      "bytes": 7553,
+      "exit_code": 1,
+      "counts": {
+        "pass": 0,
+        "fail": 2,
+        "skip": 0
+      },
+      "top_level_pass": [],
+      "test_terminal": [
+        {
+          "Action": "fail",
+          "Test": "TestProductionResumeSourceFailureClosesAndRetainsActive/unreceived",
+          "Elapsed": 26.69
+        },
+        {
+          "Action": "fail",
+          "Test": "TestProductionResumeSourceFailureClosesAndRetainsActive",
+          "Elapsed": 26.69
+        },
+        {
+          "Action": "fail",
+          "Elapsed": 32.724
+        }
+      ]
+    },
+    "dsga-resume-service-closure-model-first.jsonl": {
+      "sha256": "5820abe27fea852e2ebf9d6e2b228357915848aa703dc4838abb8c2e739020ef",
+      "bytes": 27853,
+      "exit_code": 1,
+      "counts": {
+        "pass": 18,
+        "fail": 2,
+        "skip": 0
+      },
+      "top_level_pass": [
+        "TestResumeServiceClosureRetainsFullActiveAndUnknownAcrossCodec",
+        "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation",
+        "TestResumeServiceClosureContinuationRetainsActiveAndVersion"
+      ],
+      "test_terminal": [
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRetainsFullActiveAndUnknownAcrossCodec/unknown",
+          "Elapsed": 1.11
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRetainsFullActiveAndUnknownAcrossCodec/completed-before-finish",
+          "Elapsed": 1.11
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRetainsFullActiveAndUnknownAcrossCodec",
+          "Elapsed": 2.21
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/v12",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/v11",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/no-original",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/no-active",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/no-hash",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/wrong-hash",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/abort-active",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/rewrite-prior",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/initial-reason",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/wrong-original",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/wrong-capacity",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/wrong-budget",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation/predated",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureRejectsProjectionAndRewrittenOperation",
+          "Elapsed": 1.15
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureContinuationRetainsActiveAndVersion",
+          "Elapsed": 1.04
+        },
+        {
+          "Action": "fail",
+          "Test": "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies/ok",
+          "Elapsed": 0
+        },
+        {
+          "Action": "fail",
+          "Test": "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies",
+          "Elapsed": 0
+        },
+        {
+          "Action": "fail",
+          "Elapsed": 7.095
+        }
+      ]
+    },
+    "dsga-resume-service-closure-store-final.jsonl": {
+      "sha256": "31c156a09f0dab236cc94e9cc8dfb59ecf2e704d3f0ccd69ba59b39d8017e413",
+      "bytes": 7173,
+      "exit_code": 0,
+      "counts": {
+        "pass": 6,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_pass": [
+        "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies"
+      ],
+      "test_terminal": [
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies/ok",
+          "Elapsed": 1.17
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies/lost-start",
+          "Elapsed": 0.67
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies/lost-record",
+          "Elapsed": 1.01
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies/stale-rv",
+          "Elapsed": 0.53
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies/recreated-vm",
+          "Elapsed": 0.52
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResumeServiceClosureStoreRequiresConfirmedCASAndPreservesLostReplies",
+          "Elapsed": 3.9
+        },
+        {
+          "Action": "pass",
+          "Elapsed": 5.556
+        }
+      ]
+    },
+    "dsga-resume-service-closure-legacy-affected.jsonl": {
+      "sha256": "bd06402f676d3c5b97be83fa0a91216ccc348dbaa1af769bd2668a0f7f9eb4e6",
+      "bytes": 94490,
+      "exit_code": 0,
+      "counts": {
+        "pass": 91,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_pass": [
+        "TestInitialServiceClosurePreservesUnknownBudgetAndFullProof",
+        "TestInitialServiceClosureRejectsProjectionAndFalseHistory",
+        "TestInitialServiceClosureContinuationRetainsOpenAndVersion",
+        "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies",
+        "TestServiceContinuationRetainsOriginalAndRepeatedPredecessors",
+        "TestServiceContinuationRejectsChangedSelectionAndProjection",
+        "TestServiceContinuationStrictCodecAndCompletionSpace",
+        "TestServiceContinuationStoreRequiresConfirmedUIDRV",
+        "TestServiceClosureKeepsNormalAndReconciledPermanentBudgets",
+        "TestServiceClosureRetainsBudgetUnknownAndOriginalOwnerAcrossCodec",
+        "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion",
+        "TestServiceClosureRejectsPredatedBoundaryAndFutureOwnerReceipt",
+        "TestServiceClosureCodecReservesSpaceForNativeReceipt"
+      ],
+      "test_terminal": [
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosurePreservesUnknownBudgetAndFullProof",
+          "Elapsed": 0.42
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/v11",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/v10",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/original-missing",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/original-boot",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/original-revision",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/original-closed",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/close-open",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/close-budget",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/close-capacity",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/close-revision",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/predated",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/initial-settled",
+          "Elapsed": 0.01
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/false-receipt",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/reason",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/no-prior",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/wrong-original",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/open-observed",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/future-floor",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/no-proof",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory",
+          "Elapsed": 0.57
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureContinuationRetainsOpenAndVersion",
+          "Elapsed": 0.36
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies/ok",
+          "Elapsed": 0.52
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies/lost-start",
+          "Elapsed": 0.29
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies/lost-record",
+          "Elapsed": 0.46
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies/stale-rv",
+          "Elapsed": 0.24
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies/recreated-vm",
+          "Elapsed": 0.24
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies",
+          "Elapsed": 1.76
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRetainsOriginalAndRepeatedPredecessors",
+          "Elapsed": 1.34
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/selector",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/original",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/predecessor",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/budget",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/boot",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/capacity",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/epoch",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/actor",
+          "Elapsed": 0.07
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/version",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/no-closure",
+          "Elapsed": 0.03
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/no-continuation",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/original-settled",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/previous-holder",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/previous-sequence",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/started-sequence",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/origin",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/digest",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/unknown-receipt",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/future-floor",
+          "Elapsed": 0.08
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection",
+          "Elapsed": 1.23
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-origin",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-started_sequence",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-command_sha256",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-phase",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-query",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-previous_origin",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-previous_sequence",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-request",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-recorded_sequence",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-receipt",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace",
+          "Elapsed": 0.73
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStoreRequiresConfirmedUIDRV/complete",
+          "Elapsed": 1.17
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStoreRequiresConfirmedUIDRV/lost-start",
+          "Elapsed": 0.82
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStoreRequiresConfirmedUIDRV/stale-rv",
+          "Elapsed": 0.68
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStoreRequiresConfirmedUIDRV/recreated-vm",
+          "Elapsed": 0.68
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStoreRequiresConfirmedUIDRV/lost-record",
+          "Elapsed": 1.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStoreRequiresConfirmedUIDRV",
+          "Elapsed": 4.4
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureKeepsNormalAndReconciledPermanentBudgets/normal",
+          "Elapsed": 0.83
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureKeepsNormalAndReconciledPermanentBudgets/actual-capacity",
+          "Elapsed": 1.99
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureKeepsNormalAndReconciledPermanentBudgets",
+          "Elapsed": 2.81
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRetainsBudgetUnknownAndOriginalOwnerAcrossCodec",
+          "Elapsed": 0.81
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/old-version",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/missing",
+          "Elapsed": 0.03
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/open",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/boot",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/budget",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/owner",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/sequence",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/digest",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/reason",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/false-receipt",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/initial-unknown",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/active",
+          "Elapsed": 0.13
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/wrong-request",
+          "Elapsed": 0.07
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/open-observed",
+          "Elapsed": 0.07
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/not-found",
+          "Elapsed": 0.07
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion",
+          "Elapsed": 1
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsPredatedBoundaryAndFutureOwnerReceipt/before-budget",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsPredatedBoundaryAndFutureOwnerReceipt/before-first-open",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsPredatedBoundaryAndFutureOwnerReceipt/future-owner-receipt",
+          "Elapsed": 0.07
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsPredatedBoundaryAndFutureOwnerReceipt",
+          "Elapsed": 0.41
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureCodecReservesSpaceForNativeReceipt",
+          "Elapsed": 0.61
+        },
+        {
+          "Action": "pass",
+          "Elapsed": 18.178
+        }
+      ]
+    },
+    "dsga-resume-service-safety-owner-first.jsonl": {
+      "sha256": "479ebe5986c70a6037ed1f9bda0a16f518acd7604aa8f9baf6c941f68a9648fa",
+      "bytes": 21545,
+      "exit_code": 0,
+      "counts": {
+        "pass": 8,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_pass": [
+        "TestProductionResumeSourceFailureClosesAndRetainsActive"
+      ],
+      "test_terminal": [
+        {
+          "Action": "pass",
+          "Test": "TestProductionResumeSourceFailureClosesAndRetainsActive/unreceived",
+          "Elapsed": 32.44
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionResumeSourceFailureClosesAndRetainsActive/applied",
+          "Elapsed": 31.23
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionResumeSourceFailureClosesAndRetainsActive/settled",
+          "Elapsed": 31.21
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionResumeSourceFailureClosesAndRetainsActive/lost-start",
+          "Elapsed": 32.7
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionResumeSourceFailureClosesAndRetainsActive/lost-close",
+          "Elapsed": 32.18
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionResumeSourceFailureClosesAndRetainsActive/transfer",
+          "Elapsed": 69.95
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionResumeSourceFailureClosesAndRetainsActive/post-send-source-drift",
+          "Elapsed": 29.57
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionResumeSourceFailureClosesAndRetainsActive",
+          "Elapsed": 259.28
+        },
+        {
+          "Action": "pass",
+          "Elapsed": 261.083
+        }
+      ]
+    },
+    "dsga-resume-service-safety-legacy-affected.jsonl": {
+      "sha256": "6361d82e8dafebaec527339e05bc4fc7e9889d8ab742575136b6f984e4f39825",
+      "bytes": 7018,
+      "exit_code": 0,
+      "counts": {
+        "pass": 4,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_pass": [
+        "TestProductionInitialUnknownSourceFailureClosesWithoutReopening",
+        "TestProductionNormalCompletionRechecksSourcesAndRecoversLostFinish"
+      ],
+      "test_terminal": [
+        {
+          "Action": "pass",
+          "Test": "TestProductionInitialUnknownSourceFailureClosesWithoutReopening/applied",
+          "Elapsed": 2.36
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionInitialUnknownSourceFailureClosesWithoutReopening/post-send-source-drift",
+          "Elapsed": 1.47
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionInitialUnknownSourceFailureClosesWithoutReopening",
+          "Elapsed": 3.83
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionNormalCompletionRechecksSourcesAndRecoversLostFinish",
+          "Elapsed": 44.93
+        },
+        {
+          "Action": "pass",
+          "Elapsed": 50.461
+        }
+      ]
+    },
+    "dsga-resume-service-safety-sources-final.jsonl": {
+      "sha256": "f09a40cfd619aa4e56f7350022a416273ccf5f047ab74b7b59138d470df9f445",
+      "bytes": 6927,
+      "exit_code": 0,
+      "counts": {
+        "pass": 4,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_pass": [
+        "TestProductionResumeSourceFailureClosesAndRetainsActive"
+      ],
+      "test_terminal": [
+        {
+          "Action": "pass",
+          "Test": "TestProductionResumeSourceFailureClosesAndRetainsActive/settled",
+          "Elapsed": 31.25
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionResumeSourceFailureClosesAndRetainsActive/qualification-releasing",
+          "Elapsed": 31.58
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionResumeSourceFailureClosesAndRetainsActive/postmaster-replaced",
+          "Elapsed": 31.37
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionResumeSourceFailureClosesAndRetainsActive",
+          "Elapsed": 94.2
+        },
+        {
+          "Action": "pass",
+          "Elapsed": 98.71
+        }
+      ]
+    },
+    "dsga-resume-service-safety-normal-final.jsonl": {
+      "sha256": "57a7b8da8bf8177d2a18be1683e351f71ea13e5557f132dd2044ba8206b8133d",
+      "bytes": 5320,
+      "exit_code": 0,
+      "counts": {
+        "pass": 3,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_pass": [
+        "TestProductionNormalCompletionRechecksSourcesAndRecoversLostFinish"
+      ],
+      "test_terminal": [
+        {
+          "Action": "pass",
+          "Test": "TestProductionNormalCompletionRechecksSourcesAndRecoversLostFinish/admission-superseded",
+          "Elapsed": 4.55
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionNormalCompletionRechecksSourcesAndRecoversLostFinish/vm-rv-changed-during-check",
+          "Elapsed": 3.15
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionNormalCompletionRechecksSourcesAndRecoversLostFinish",
+          "Elapsed": 52.67
+        },
+        {
+          "Action": "pass",
+          "Elapsed": 57.194
+        }
+      ]
+    },
+    "dsga-resume-service-closure-vet-first.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "exit_code": 0
+    },
+    "dsga-resume-service-closure-vet-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "exit_code": 0
+    },
+    "dsga-resume-service-closure-lint-first.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "bytes": 10,
+      "exit_code": 0
+    },
+    "dsga-resume-service-closure-lint-final.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "bytes": 10,
+      "exit_code": 0
+    },
+    "dsga-resume-service-closure-consumers-compile.log": {
+      "sha256": "145cdb26ef6cd584fa3138492c7aaea3fe9cdebe5b366d831658d23488811ce0",
+      "bytes": 2565,
+      "exit_code": 0
+    }
+  },
+  "adopted": [
+    {
+      "log": "dsga-resume-service-closure-model-first.jsonl",
+      "scope": "only the three passing model tests; whole command failed before Store business due sandbox bind denial"
+    },
+    {
+      "log": "dsga-resume-service-closure-store-final.jsonl",
+      "scope": "Store only: five subcases; exit 0 with local listener permission"
+    },
+    {
+      "log": "dsga-resume-service-closure-legacy-affected.jsonl",
+      "scope": "13 top-level, 91 parent/subtest pass records, no failures or skips"
+    },
+    {
+      "log": "dsga-resume-service-safety-owner-first.jsonl",
+      "scope": "seven initial production modes; production logic unchanged thereafter; test-only source restoration strengthened later"
+    },
+    {
+      "log": "dsga-resume-service-safety-sources-final.jsonl",
+      "scope": "new qualification-releasing and postmaster-replaced plus affected settled recovery after source restoration"
+    },
+    {
+      "log": "dsga-resume-service-safety-legacy-affected.jsonl",
+      "scope": "two first-admission subcases adopted; normal nested fault cases filtered by explicit child selection, normal final below supersedes that parent"
+    },
+    {
+      "log": "dsga-resume-service-safety-normal-final.jsonl",
+      "scope": "full current normal-completion test: two remaining nested windows plus actual Run/Finish lost reply, history and rebuild"
+    }
+  ],
+  "deduplicated": {
+    "new_journal": {
+      "top_level": 4,
+      "parent_and_child_pass_records": 24
+    },
+    "new_production_modes": [
+      "unreceived",
+      "applied",
+      "settled",
+      "lost-start",
+      "lost-close",
+      "transfer",
+      "post-send-source-drift",
+      "qualification-releasing",
+      "postmaster-replaced"
+    ]
+  },
+  "boundaries": {
+    "production": [
+      "Elector/Session",
+      "SDK/TLS",
+      "Journal/codec/typed UID-RV CAS",
+      "PGWorker/executeControl",
+      "budget/final admission executors"
+    ],
+    "peers": [
+      "PG",
+      "Root/OS",
+      "Kube API/etcd",
+      "Runner/QMP physical results"
+    ],
+    "not_new_e2e": [
+      "management HTTP/Submit inbound",
+      "same Go-to-real-PG-to-VM full chain",
+      "Linux/K8s/NeonVM/HugeTLB/physical reclaim/performance"
+    ],
+    "missing_code": [
+      "Resume still Planned or other pre-Finalize in-flight safety closure",
+      "corrupt or absent outer-journal independent closure",
+      "controlled reopening and bounded repeated lifecycle",
+      "safe normal limit reduction and continuously held private/background bounds",
+      "remaining birth/no-Wait/partition/cross-boot/migration lifecycles",
+      "Monitor cache/WSS/group quota/RW-RO and all final writers/trusted CPU"
+    ]
+  },
+  "execution": {
+    "all_sessions_collected": true,
+    "sessions_exit_0": [
+      15405,
+      62794,
+      13512,
+      43346,
+      1117,
+      38929,
+      31178,
+      85535,
+      81975,
+      5726,
+      53623
+    ],
+    "historical_failure_sessions": [
+      3368,
+      65770
+    ],
+    "goal": "active; pause only after all PG17 implementation/Mac validation/remote archiving complete",
+    "pg18_pg16": "deferred until owner resumes",
+    "images_k8s_merge_release": false
+  }
+}

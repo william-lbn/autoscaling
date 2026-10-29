@@ -50,17 +50,23 @@ func (model Model) StartInitialServiceClosure(actor Owner, request control.Admis
 	}
 	original := request.Original
 	next.ProtocolVersion = 12
-	next.ServiceClosure = &ServiceClosure{Origin: actor, StartedSequence: next.Sequence, Reason: "initial_source_unconfirmed", Request: request.Close, CommandSHA256: digest, Phase: Unconfirmed, Original: &original, RecordedSequence: 0, Query: false, Receipt: nil, Continuation: nil, ClosureReceipt: nil}
+	next.ServiceClosure = &ServiceClosure{Origin: actor, StartedSequence: next.Sequence, Reason: "initial_source_unconfirmed", Request: request.Close, CommandSHA256: digest, Phase: Unconfirmed, Original: &original, RecordedSequence: 0, Query: false, Receipt: nil, Continuation: nil, ClosureReceipt: nil, OperationSHA256: ""}
 	return next, next.Validate()
 }
 
 func (model Model) RecordInitialServiceClosure(actor Owner, fact control.AdmissionClosure, query bool) (Model, error) {
+	return model.recordOriginalServiceClosure(actor, fact, query, "initial_source_unconfirmed")
+}
+
+// 原首次/最终开放共用完整原生关闭证明，但不得由一个业务入口结清另一
+// 类WAL。仅更改关闭本身，原预算、Active和原开放相位均不修改。
+func (model Model) recordOriginalServiceClosure(actor Owner, fact control.AdmissionClosure, query bool, reason string) (Model, error) {
 	next, err := model.next(actor)
 	if err != nil {
 		return model, err
 	}
 	c := next.ServiceClosure
-	if c == nil || c.Original == nil || c.Continuation != nil || c.Phase != Unconfirmed || !query && c.Origin != actor {
+	if c == nil || c.Reason != reason || c.Original == nil || c.Continuation != nil || c.Phase != Unconfirmed || !query && c.Origin != actor {
 		return model, fmt.Errorf("initial closure is not original unknown")
 	}
 	proof := fact

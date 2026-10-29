@@ -13,7 +13,9 @@ import (
 // 阻止新连接；原预算、历史及已存在的连接全部保留。没有受控重开协议前，
 // 不允许因来源重新可达就清除此字段。旧版本必须因v10拒绝，不能忽略门禁。
 // v12另支持无Active的首次开放未知：Original逐字引用原开放，关闭回执
-// 单独保存，绝不把首次开放改成Settled/NoEffect。在途Resize另行取消/对账。
+// 单独保存，绝不把首次开放改成Settled/NoEffect。v13保护已完整结算但
+// 尚未结案的最终开放，以完整Active摘要冻结所有原领域事实；其他在途
+// Resize阶段仍须独立关闭/对账，不能用本终段规则收养合法中间态。
 type ServiceClosure struct {
 	Origin           Owner                      `json:"origin"`
 	StartedSequence  control.Uint64             `json:"started_sequence"`
@@ -29,6 +31,9 @@ type ServiceClosure struct {
 	Continuation   *ServiceClosureContinuation `json:"continuation,omitempty"`
 	Original       *control.AdmissionRequest   `json:"original,omitempty"`
 	ClosureReceipt *control.AdmissionClosure   `json:"closure_receipt,omitempty"`
+	// v13只保存完整原Active的SHA256；完整原文仍在Active中，防止关闭
+	// 后借普通Record/RequestAbort/Finish重写原步骤或丢失未知效果。
+	OperationSHA256 string `json:"operation_sha256,omitempty"`
 }
 
 // ProtectedAdmission返回本关闭保护的最初意图。v10/11原意图就是关闭；
@@ -89,20 +94,30 @@ func (model Model) validateServiceClosure() error {
 	}
 	budgetID, err := model.ServiceBudgetID()
 	digest, hashErr := c.Request.ContextSHA256()
-	if model.ProtocolVersion < 10 || model.ProtocolVersion > 12 || (model.ProtocolVersion == 12) != (c.Original != nil) || model.ProtocolVersion < 12 && ((model.ProtocolVersion == 11) != (c.Continuation != nil)) || model.Active != nil || model.PGInstance == nil || err != nil || hashErr != nil || c.Request.Open || c.Request.Instance != *model.PGInstance || c.Request.BudgetCommitmentID != budgetID || c.CommandSHA256 != digest || c.Origin.Validate() != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Origin.Epoch > model.Owner.Epoch || c.Origin.Epoch == model.Owner.Epoch && c.Origin != model.Owner || c.StartedSequence == 0 || c.StartedSequence > model.Sequence {
+	if model.ProtocolVersion < 10 || model.ProtocolVersion > 13 || model.ProtocolVersion < 12 && ((model.ProtocolVersion == 11) != (c.Continuation != nil)) || model.PGInstance == nil || err != nil || hashErr != nil || c.Request.Open || c.Request.Instance != *model.PGInstance || c.Request.BudgetCommitmentID != budgetID || c.CommandSHA256 != digest || c.Origin.Validate() != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Origin.Epoch > model.Owner.Epoch || c.Origin.Epoch == model.Owner.Epoch && c.Origin != model.Owner || c.StartedSequence == 0 || c.StartedSequence > model.Sequence {
 		return fmt.Errorf("service closure differs from original idle PG, budget or owner")
 	}
-	if c.Original != nil {
+	switch {
+	case c.Original != nil && model.ProtocolVersion == 12:
+		if model.Active != nil || c.OperationSHA256 != "" {
+			return fmt.Errorf("initial service closure cannot adopt active resize")
+		}
 		if err := model.validateInitialServiceClosure(); err != nil {
 			return err
 		}
-	} else {
-		if c.Reason != "idle_source_unconfirmed" || c.ClosureReceipt != nil {
+	case c.Original != nil && model.ProtocolVersion == 13:
+		if err := model.validateResumeServiceClosure(); err != nil {
+			return err
+		}
+	case c.Original == nil && model.ProtocolVersion < 12:
+		if model.Active != nil || c.OperationSHA256 != "" || c.Reason != "idle_source_unconfirmed" || c.ClosureReceipt != nil {
 			return fmt.Errorf("idle service closure changed reason or original proof")
 		}
 		if h := model.InitialHeld; h != nil && (h.Admission == nil || h.Admission.Phase != Settled) {
 			return fmt.Errorf("idle service closure cannot hide first admission unknown")
 		}
+	default:
+		return fmt.Errorf("service closure lost original admission or required version")
 	}
 	// StartedSequence必须严格晚于受保护的持久边界。不能只核非零/小于
 	// 当前Sequence：旧预算、首次开放及最近零派发取消各自都可能合法，
@@ -162,7 +177,7 @@ func (model Model) StartServiceClosure(actor Owner, request control.AdmissionReq
 		return model, err
 	}
 	next.ProtocolVersion = 10
-	next.ServiceClosure = &ServiceClosure{Origin: actor, StartedSequence: next.Sequence, Reason: "idle_source_unconfirmed", Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, Continuation: nil, Original: nil, ClosureReceipt: nil}
+	next.ServiceClosure = &ServiceClosure{Origin: actor, StartedSequence: next.Sequence, Reason: "idle_source_unconfirmed", Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, Continuation: nil, Original: nil, ClosureReceipt: nil, OperationSHA256: ""}
 	return next, next.Validate()
 }
 

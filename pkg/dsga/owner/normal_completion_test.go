@@ -9,8 +9,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	core "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubefake "k8s.io/client-go/kubernetes/fake"
 
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
@@ -47,35 +45,9 @@ func verifyAutomaticNormalFinish(t *testing.T, ctx context.Context, api *ownerAP
 		require.NoError(t, readErr)
 		require.Equal(t, before.State(), after.State(), "来源未确认不得改原回执、预算头、关闭边界或历史")
 	}
-	require.True(t, t.Run("root-limit-drift", func(t *testing.T) {
-		root.mu.Lock()
-		original := root.view.Actual.MemoryMaxBytes
-		root.view.Actual.MemoryMaxBytes++
-		root.mu.Unlock()
-		defer func() { root.mu.Lock(); root.view.Actual.MemoryMaxBytes = original; root.mu.Unlock() }()
-		blocked(t)
-	}))
-	require.True(t, t.Run("qualification-releasing", func(t *testing.T) {
-		cm, err := client.CoreV1().ConfigMaps(binding().Namespace).Get(ctx, source.Claim.Name, metav1.GetOptions{})
-		require.NoError(t, err)
-		changed := cm.DeepCopy()
-		stamp := metav1.Now()
-		changed.DeletionTimestamp = &stamp
-		require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("configmaps"), changed, changed.Namespace))
-		defer func() {
-			require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("configmaps"), cm, cm.Namespace))
-		}()
-		blocked(t)
-	}))
-	require.True(t, t.Run("postmaster-replaced", func(t *testing.T) {
-		root.mu.Lock()
-		birth := *root.view.Birth
-		birth.PostmasterStartTicks++
-		root.processOverride = &birth
-		root.mu.Unlock()
-		defer func() { root.mu.Lock(); root.processOverride = nil; root.mu.Unlock() }()
-		blocked(t)
-	}))
+	// Root硬约束漂移、资格撤销和出生改变会永久关闭服务，已移入
+	// resume_service_safety_test各自独立生命周期。不能在本正常链中
+	// 先制造这些异常，再靠撤销peer故障自动恢复开放或Finish。
 	require.True(t, t.Run("admission-superseded", func(t *testing.T) {
 		pg.mu.Lock()
 		original := pg.gate

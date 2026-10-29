@@ -147,7 +147,7 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 				request := active.Request
 				pending = &request
 			}
-			if (step.Action == journal.ResumeAdmission || step.Action == journal.Quiesce) && step.Phase == journal.Unconfirmed {
+			if (step.Action == journal.ResumeAdmission || step.Action == journal.Quiesce) && step.Phase == journal.Unconfirmed && (model.ServiceClosure == nil || model.ServiceClosure.Pending()) {
 				var original control.AdmissionRequest
 				// Quiesce关闭与最终Resume开放共用原生独立准入代次；恢复必须由
 				// 原步骤确定方向，不能只恢复Open而丢掉写前/写后未知的关闭命令。
@@ -409,7 +409,14 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 		progress, err = worker.finalize.Advance(callCtx)
 	}
 	if err == nil && progress == pgexec.ExternalStep {
-		return worker.admission.Advance(callCtx)
+		progress, err = worker.admission.Advance(callCtx)
+		if err != nil {
+			// 最终开放可能已送达、但写后来源审计失败。保持同一Session
+			// 和串行轮次补做独立关闭，不让错误返回/换owner留下服务窗口。
+			if handled, safetyProgress, safetyErr := worker.advanceServiceSafety(callCtx, ""); handled {
+				return safetyProgress, safetyErr
+			}
+		}
 	}
 	return progress, err
 }
