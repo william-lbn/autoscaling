@@ -59,7 +59,7 @@ func (p *initialServicePG) serveClosureContinuation(t *testing.T, w http.Respons
 			return
 		}
 		if p.gate == nil || *p.gate != request.Close {
-			require.Equal(t, p.current().Observed.AdmissionRevision+1, request.Close.Revision)
+			require.Greater(t, request.Close.Revision, p.current().Observed.AdmissionRevision)
 			closeRequest := request.Close
 			p.gate = &closeRequest
 		}

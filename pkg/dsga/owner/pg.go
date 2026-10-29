@@ -126,7 +126,7 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 	}
 	var pending *control.Request
 	var admissionPending *control.AdmissionRequest
-	if held := model.InitialHeld; held != nil && held.Admission != nil && held.Admission.Phase == journal.Unconfirmed {
+	if held := model.InitialHeld; held != nil && held.Admission != nil && held.Admission.Phase == journal.Unconfirmed && (model.ServiceClosure == nil || model.ServiceClosure.Pending()) {
 		// 首次开放没有Resize Active，仍可能已经执行但未获回复。必须先从
 		// 原永久预算及独立WAL恢复同一SDK pending；不能把空Active当空闲，
 		// 不能换budget/epoch或借能力发现悄悄重发首次开放。
@@ -199,11 +199,15 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 	var admissionClose *control.AdmissionRequest
 	var admissionContinuation *control.AdmissionContinuationRequest
 	if c := model.ServiceClosure; c != nil && c.Pending() {
-		if admissionPending != nil && *admissionPending != c.Request {
+		original := c.ProtectedAdmission()
+		if admissionPending != nil && *admissionPending != original {
 			return nil, fmt.Errorf("service closure conflicts with original admission unknown")
 		}
-		request := c.Request
-		admissionPending = &request
+		admissionPending = &original
+		if c.Original != nil {
+			closeRequest := c.Request
+			admissionClose = &closeRequest
+		}
 		if c.Continuation != nil {
 			// v11恢复最初未知、最近关闭及完整直接前驱。只恢复最后关闭
 			// 会丢失选择摘要及旧owner影响；重建SDK不能借此退回旧接口。
@@ -359,6 +363,14 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 	}
 	if worker.initial != nil {
 		progress, err := worker.initial.Advance(callCtx)
+		if err != nil {
+			// 首次setter成功后来源也可能在完成审计前漂移。仍在同一
+			// Session/串行轮次尝试安全关闭，不等外层返回错误后换owner，
+			// 不将原首次未知记为成功或重新派发一次开放。
+			if handled, safetyProgress, safetyErr := worker.advanceServiceSafety(callCtx, ""); handled {
+				return safetyProgress, safetyErr
+			}
+		}
 		if err != nil || progress != pgexec.ExternalStep {
 			return progress, err
 		}

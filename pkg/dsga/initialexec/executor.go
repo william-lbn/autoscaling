@@ -166,6 +166,19 @@ func (e *Executor) observe(ctx context.Context, s *journal.Snapshot, source budg
 
 func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) { return e.advance(ctx, "") }
 
+// CheckRetained复用首次预算生产者的完整来源核验，但从不开放或记录原开放
+// 已完成。供服务安全门禁在首次开放未知时使用：即使Status尚未找到原命令，
+// 也不能跳过Root/资格/Runner/PG预算检查，任由迟到开放在坏来源上开始服务。
+// observe中的Fence只认证当前owner，不作为关闭或旧请求NoEffect证明。
+func (e *Executor) CheckRetained(ctx context.Context, s *journal.Snapshot) error {
+	i, err := s.State().InitialBudgetFor()
+	if err != nil {
+		return err
+	}
+	_, err = e.observe(ctx, s, i.Qualification, &i)
+	return err
+}
+
 // selector仅是原WAL命令摘要，不携带预算/revision等替换参数。只有原派发
 // Session仍为owner才可原样重放；普通轮询和NotFound从不自动投递此选择。
 func (e *Executor) ReplayOriginal(ctx context.Context, selector string) (pgexec.Progress, error) {

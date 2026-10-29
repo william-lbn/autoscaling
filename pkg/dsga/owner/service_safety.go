@@ -170,6 +170,20 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 			_, err = w.session.store.RecordServiceClosureContinuation(ctx, s, m.Owner, fact, replay == "")
 			return true, pgexec.Recorded, err
 		}
+		if c.Original != nil {
+			selection := control.AdmissionCloseRequest{ProtocolVersion: 1, Original: *c.Original, Close: c.Request}
+			var fact control.AdmissionClosure
+			if replay == "" {
+				fact, err = w.client.AdmissionClosureStatus(ctx, selection)
+			} else {
+				fact, err = w.client.CloseAdmissionOriginal(ctx, selection)
+			}
+			if err != nil {
+				return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+			}
+			_, err = w.session.store.RecordInitialServiceClosure(ctx, s, m.Owner, fact, replay == "")
+			return true, pgexec.Recorded, err
+		}
 		var fact control.AdmissionResponse
 		if replay == "" {
 			fact, err = w.client.AdmissionStatus(ctx, c.Request)
@@ -188,8 +202,13 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 	if w.safety == nil || m.Active != nil || m.InitialHeld == nil && m.BudgetHeld == nil && m.CapacityHeld == nil {
 		return false, pgexec.Idle, nil
 	}
-	if h := m.InitialHeld; h != nil && (h.Admission == nil || h.Admission.Phase != journal.Settled) {
-		return false, pgexec.Idle, nil
+	if h := m.InitialHeld; h != nil {
+		if h.Admission == nil {
+			return false, pgexec.Idle, nil
+		}
+		if h.Admission.Phase == journal.Unconfirmed {
+			return w.advanceInitialServiceSafety(ctx, s)
+		}
 	}
 	if pending, closing := w.client.PendingAdmission(); pending != nil || closing != nil || w.client.Pending() != nil {
 		return true, pgexec.AwaitingFact, ErrServiceSafety
@@ -256,11 +275,13 @@ func (w *PGWorker) continueServiceClosure(ctx context.Context, selector string) 
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
 	pg := shared.Observed
-	if pg.Instance != instance || pg.IssuerFloorEpoch != epoch || pg.CapacityGeneration != c.Request.ExpectedCapacityGeneration || pg.AdmissionRevision == control.Uint64(math.MaxUint64) || pg.AdmissionRevision+1 < previous.Revision {
+	if pg.Instance != instance || pg.IssuerFloorEpoch != epoch || pg.CapacityGeneration != c.Request.ExpectedCapacityGeneration || pg.AdmissionRevision == control.Uint64(math.MaxUint64) {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
-	request := control.AdmissionContinuationRequest{ProtocolVersion: 1, Original: c.Request, PreviousClose: previous, Close: c.Request}
-	request.Close.IssuerEpoch, request.Close.Revision = epoch, pg.AdmissionRevision+1
+	request := control.AdmissionContinuationRequest{ProtocolVersion: 1, Original: c.ProtectedAdmission(), PreviousClose: previous, Close: c.Request}
+	// 原首次开放及关闭都未投递时，PG水位可能仍为0；新关闭必须
+	// 至少覆盖最近已持久的关闭，不能退到1与最初开放共享revision。
+	request.Close.IssuerEpoch, request.Close.Revision = epoch, max(pg.AdmissionRevision+1, previous.Revision)
 	s, dispatch, err := w.session.store.StartServiceClosureContinuation(ctx, s, m.Owner, selector, request)
 	if err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
@@ -271,4 +292,59 @@ func (w *PGWorker) continueServiceClosure(ctx context.Context, selector string) 
 	}
 	_, err = w.session.store.RecordServiceClosureContinuation(ctx, s, m.Owner, fact, false)
 	return pgexec.Recorded, err
+}
+
+// 首次开放可能已执行、未发送或仍在网络中。先复核完整原预算；来源异常
+// 时写独立关闭WAL，再关闭同boot/容量/预算下所有更低revision，保留原开放
+// Unconfirmed。此处不调用原开放Status来清本地栅栏，也不以NotFound重发。
+// 网络期间无本地锁，失租取消通过Session ctx及SDK凭据检查逐次传播。
+func (w *PGWorker) advanceInitialServiceSafety(ctx context.Context, s *journal.Snapshot) (bool, pgexec.Progress, error) {
+	m := s.State()
+	if w.initial == nil {
+		return true, pgexec.AwaitingFact, ErrServiceSafety
+	}
+	if err := w.initial.CheckRetained(ctx, s); err == nil {
+		return false, pgexec.Idle, nil
+	}
+	var command budget.InitialAdmissionCommand
+	if json.Unmarshal(m.InitialHeld.Admission.Command, &command) != nil {
+		return true, pgexec.AwaitingFact, ErrServiceSafety
+	}
+	original := command.Request
+	pending, closing := w.client.PendingAdmission()
+	if closing != nil || pending != nil && *pending != original || w.client.Pending() != nil {
+		return true, pgexec.AwaitingFact, ErrServiceSafety
+	}
+	instance, epoch := w.Binding()
+	// 来源可能在observe到达PG前就失败；新owner也必须独立取得原生
+	// fence，不能靠Root可达性决定是否封住旧owner的迟到开放。
+	fence, err := w.client.Fence(ctx, control.FenceRequest{ProtocolVersion: 1, Instance: instance, IssuerEpoch: epoch})
+	if err != nil || fence.Disposition != control.Fenced {
+		return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+	}
+	shared, err := w.client.SharedCost(ctx)
+	if err != nil {
+		return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+	}
+	pg := shared.Observed
+	// 初次开放只允许原容量，跨容量/boot必须走独立生命周期协议。
+	// max后先核溢出再加一；未投递的原revision也必须被关闭水位覆盖。
+	revision := max(pg.AdmissionRevision, original.Revision)
+	if pg.Instance != instance || pg.IssuerFloorEpoch != epoch || pg.CapacityGeneration != original.ExpectedCapacityGeneration || revision == control.Uint64(math.MaxUint64) {
+		return true, pgexec.AwaitingFact, ErrServiceSafety
+	}
+	closeRequest := original
+	closeRequest.Open, closeRequest.IssuerEpoch, closeRequest.Revision = false, epoch, revision+1
+	selection := control.AdmissionCloseRequest{ProtocolVersion: 1, Original: original, Close: closeRequest}
+	s, dispatch, err := w.session.store.StartInitialServiceClosure(ctx, s, m.Owner, selection)
+	if err != nil {
+		return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+	}
+	selection.Original, selection.Close = *dispatch.Original, dispatch.Request
+	fact, err := w.client.CloseAdmissionOriginal(ctx, selection)
+	if err != nil {
+		return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+	}
+	_, err = w.session.store.RecordInitialServiceClosure(ctx, s, m.Owner, fact, false)
+	return true, pgexec.Recorded, err
 }

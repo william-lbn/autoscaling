@@ -1,0 +1,867 @@
+{
+  "schema_version": 1,
+  "stage": "首次开放未知异常关闭：PG17原生修复、v12持久WAL与生产恢复的Mac阶段验收",
+  "date": "2026-10-29",
+  "bases": {
+    "autoscaling": "d12f533bb2e35ad933a178a6d1186234c0bbad12",
+    "neon": "d05002e1f547d84a71525af973b34ff0735133b7"
+  },
+  "pg17": {
+    "frozen_own_sha": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+    "tested_own_sha": "325aeb42a6080d86902d51892b2518a70ec2512b",
+    "upstream_frozen_unchanged": true,
+    "binary_version": "postgres (PostgreSQL) 17.11 (325aeb42a6080d86902d51892b2518a70ec2512b)"
+  },
+  "source_sha256": {
+    "autoscaling": {
+      "pkg/dsga/initialexec/executor.go": "3718702a2522f6eb0d708453aa5aaec2b2762b7d2ebb0af361128d6769b08858",
+      "pkg/dsga/journal/initial_service_closure.go": "b232d182009c8b88e34096f8ba15c00d926569f0caa8848fe7036e3cd91904d5",
+      "pkg/dsga/journal/initial_service_closure_test.go": "9f8ce06c76459ba3bf249944299362a45f631e7954b6d33d6b83f4808da02d37",
+      "pkg/dsga/journal/model.go": "4260e18d635ce6f430ed2618477657cabd14df6cd4cd90e64eacd560be32ac1e",
+      "pkg/dsga/journal/service_closure.go": "e1cd094b2aa203b5bc541bc372a53ff17f4d130dc45f1436c41e311e0981e23e",
+      "pkg/dsga/journal/service_closure_continuation.go": "c25cbd336b7ea77020c67fc517d87b39dbb79570a9116540c0287bc772cd71f8",
+      "pkg/dsga/owner/initial_service_safety_test.go": "b06193a468ef4e34ca0563fec0e4945e558589c8c4d4759ac135fc8324f491ea",
+      "pkg/dsga/owner/initial_service_test.go": "ca9b0a92cbe98ae12e1a627cb9f42db8e33d411d9010fbc05acce00fa2e25503",
+      "pkg/dsga/owner/pg.go": "5c9f0915ac20a387aa2abcbf5a4676f554b7b3f78a962e67fee16302021d53b2",
+      "pkg/dsga/owner/service_continuation_test.go": "f183d10ed78b56737b807e7358d6bdb7e232f8b5f49f295ec555547f709f9088",
+      "pkg/dsga/owner/service_safety.go": "fe52c1391fd4beb589edb7566a3c3e4eab7f378e1acf24d7bf19e584fcf69829"
+    },
+    "neon": {
+      "ci/test-dsg-postgres.sh": "1720885846b039801b6e1a00e3ea5e094ff1a4b7efa08cd15cececafa9b652ab",
+      "ci/test_dsg_admission_closure.py": "dd2ec7cad25c7fd7fa6f0a598c6a429e3a2d39c25cbf028e886dfc5f1754dcc0",
+      "libs/compute_api/tests/dsg_admission_continuation_native.rs": "2562f05ef77b0ca0e4e5938b2fba3560404b57e546f8f40a0699a0f1723a3c0e"
+    },
+    "pg17": {
+      "src/backend/storage/buffer/dynamic_shared_buffers.c": "82883620144bd94162fb7fd361f5d6258045ad96873c6e412a5221021b960e59"
+    }
+  },
+  "logs": {
+    "dsga-initial-service-closure-model-first.jsonl": {
+      "sha256": "26d3e54b0ecc3beaf6d29959d796d5ae7cf7ed8a2fe0b1161249066c9b7b7f60",
+      "bytes": 24206,
+      "test_pass_records": 21,
+      "test_fail_records": 1,
+      "test_skip_records": 0,
+      "test_terminal": [
+        {
+          "Action": "fail",
+          "Test": "TestInitialServiceClosurePreservesUnknownBudgetAndFullProof",
+          "Elapsed": 0.34
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/v11",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/v10",
+          "Elapsed": 0.03
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/original-missing",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/original-boot",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/original-revision",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/original-closed",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/close-open",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/close-budget",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/close-capacity",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/close-revision",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/predated",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/initial-settled",
+          "Elapsed": 0.01
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/false-receipt",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/reason",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/no-prior",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/wrong-original",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/open-observed",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/future-floor",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory/no-proof",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureRejectsProjectionAndFalseHistory",
+          "Elapsed": 0.76
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureContinuationRetainsOpenAndVersion",
+          "Elapsed": 0.47
+        }
+      ],
+      "package_terminal": [
+        {
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+          "Elapsed": 2.423
+        }
+      ]
+    },
+    "dsga-initial-service-closure-model-cas-final.jsonl": {
+      "sha256": "d40eb0d71d93f2c4554e7e629307e35d5e166f422b7c75298f8b5642e68606cb",
+      "bytes": 7965,
+      "test_pass_records": 7,
+      "test_fail_records": 0,
+      "test_skip_records": 0,
+      "test_terminal": [
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosurePreservesUnknownBudgetAndFullProof",
+          "Elapsed": 0.54
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies/ok",
+          "Elapsed": 0.68
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies/lost-start",
+          "Elapsed": 0.37
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies/lost-record",
+          "Elapsed": 0.58
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies/stale-rv",
+          "Elapsed": 0.3
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies/recreated-vm",
+          "Elapsed": 0.3
+        },
+        {
+          "Action": "pass",
+          "Test": "TestInitialServiceClosureStoreRequiresExactCASAndRetainsLostReplies",
+          "Elapsed": 2.23
+        }
+      ],
+      "package_terminal": [
+        {
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+          "Elapsed": 4.657
+        }
+      ]
+    },
+    "dsga-initial-service-closure-legacy-affected.jsonl": {
+      "sha256": "5e25581bc46e5e30dd8128767173b7fc1cfdb2a25f500c25986b0348317d360a",
+      "bytes": 65664,
+      "test_pass_records": 63,
+      "test_fail_records": 0,
+      "test_skip_records": 0,
+      "test_terminal": [
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRetainsOriginalAndRepeatedPredecessors",
+          "Elapsed": 1.75
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/selector",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/original",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/predecessor",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/budget",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/boot",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/capacity",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/epoch",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/actor",
+          "Elapsed": 0.11
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/version",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/no-closure",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/no-continuation",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/original-settled",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/previous-holder",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/previous-sequence",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/started-sequence",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/origin",
+          "Elapsed": 0.06
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/digest",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/unknown-receipt",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection/future-floor",
+          "Elapsed": 0.1
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection",
+          "Elapsed": 1.61
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-phase",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-previous_sequence",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-recorded_sequence",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-query",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-receipt",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-origin",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-started_sequence",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-previous_origin",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-request",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace/missing-command_sha256",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace",
+          "Elapsed": 0.93
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStoreRequiresConfirmedUIDRV/complete",
+          "Elapsed": 1.53
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStoreRequiresConfirmedUIDRV/lost-start",
+          "Elapsed": 1.07
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStoreRequiresConfirmedUIDRV/stale-rv",
+          "Elapsed": 0.93
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStoreRequiresConfirmedUIDRV/recreated-vm",
+          "Elapsed": 1.15
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStoreRequiresConfirmedUIDRV/lost-record",
+          "Elapsed": 1.45
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStoreRequiresConfirmedUIDRV",
+          "Elapsed": 6.12
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureKeepsNormalAndReconciledPermanentBudgets/normal",
+          "Elapsed": 1.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureKeepsNormalAndReconciledPermanentBudgets/actual-capacity",
+          "Elapsed": 2.59
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureKeepsNormalAndReconciledPermanentBudgets",
+          "Elapsed": 3.64
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRetainsBudgetUnknownAndOriginalOwnerAcrossCodec",
+          "Elapsed": 1.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/old-version",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/missing",
+          "Elapsed": 0.04
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/open",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/boot",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/budget",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/owner",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/sequence",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/digest",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/reason",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/false-receipt",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/initial-unknown",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/active",
+          "Elapsed": 0.17
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/wrong-request",
+          "Elapsed": 0.1
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/open-observed",
+          "Elapsed": 0.09
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion/not-found",
+          "Elapsed": 0.09
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion",
+          "Elapsed": 1.3
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsPredatedBoundaryAndFutureOwnerReceipt/before-budget",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsPredatedBoundaryAndFutureOwnerReceipt/before-first-open",
+          "Elapsed": 0.05
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsPredatedBoundaryAndFutureOwnerReceipt/future-owner-receipt",
+          "Elapsed": 0.1
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsPredatedBoundaryAndFutureOwnerReceipt",
+          "Elapsed": 0.54
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureCodecReservesSpaceForNativeReceipt",
+          "Elapsed": 0.78
+        }
+      ],
+      "package_terminal": [
+        {
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+          "Elapsed": 19.547
+        }
+      ]
+    },
+    "dsga-initial-service-safety-owner-first.jsonl": {
+      "sha256": "5ac820c39075170802d77604054dcf5e9f8f2fb45c219c2515f003d44a801709",
+      "bytes": 20355,
+      "test_pass_records": 7,
+      "test_fail_records": 0,
+      "test_skip_records": 0,
+      "test_terminal": [
+        {
+          "Action": "pass",
+          "Test": "TestProductionInitialUnknownSourceFailureClosesWithoutReopening/unreceived",
+          "Elapsed": 2.91
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionInitialUnknownSourceFailureClosesWithoutReopening/applied",
+          "Elapsed": 2.88
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionInitialUnknownSourceFailureClosesWithoutReopening/lost-start",
+          "Elapsed": 3.28
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionInitialUnknownSourceFailureClosesWithoutReopening/lost-close",
+          "Elapsed": 3.09
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionInitialUnknownSourceFailureClosesWithoutReopening/qualification",
+          "Elapsed": 2.81
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionInitialUnknownSourceFailureClosesWithoutReopening/transfer",
+          "Elapsed": 40.07
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionInitialUnknownSourceFailureClosesWithoutReopening",
+          "Elapsed": 55.03
+        }
+      ],
+      "package_terminal": [
+        {
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 59.679
+        }
+      ]
+    },
+    "dsga-initial-service-safety-affected.jsonl": {
+      "sha256": "f16d0e76dcebe0a9702d8369b4774728457c365c1f5528182dae0e89d752fe51",
+      "bytes": 1767,
+      "test_pass_records": 0,
+      "test_fail_records": 0,
+      "test_skip_records": 0,
+      "test_terminal": [],
+      "package_terminal": [
+        {
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 0
+        }
+      ]
+    },
+    "dsga-initial-service-safety-affected-fixture-final.jsonl": {
+      "sha256": "e9204f19a4528af1d59603f38bc81dd4e776756e1dfc201838b7d3ab277c83f8",
+      "bytes": 1277,
+      "test_pass_records": 0,
+      "test_fail_records": 0,
+      "test_skip_records": 0,
+      "test_terminal": [],
+      "package_terminal": [
+        {
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 0
+        }
+      ]
+    },
+    "dsga-initial-service-safety-affected-compile-final.jsonl": {
+      "sha256": "60092dffd9b001fc124055861b6dc160ec10a2d6cb4e09924e0432a6dc964466",
+      "bytes": 9908,
+      "test_pass_records": 6,
+      "test_fail_records": 0,
+      "test_skip_records": 0,
+      "test_terminal": [
+        {
+          "Action": "pass",
+          "Test": "TestProductionInitialUnknownSourceFailureClosesWithoutReopening/qualification-applied",
+          "Elapsed": 3.61
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionInitialUnknownSourceFailureClosesWithoutReopening/post-send-source-drift",
+          "Elapsed": 1.86
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionInitialUnknownSourceFailureClosesWithoutReopening",
+          "Elapsed": 5.48
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionInitialServiceThenGrowUsesOriginalSourcesAndUnknownRecovery",
+          "Elapsed": 47.67
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionIdleServiceClosureUsesOriginalWALAndRecovery/root-drift",
+          "Elapsed": 6.27
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionIdleServiceClosureUsesOriginalWALAndRecovery",
+          "Elapsed": 6.27
+        }
+      ],
+      "package_terminal": [
+        {
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 61.463
+        }
+      ]
+    },
+    "dsga-initial-service-closure-vet-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "dsga-initial-service-closure-lint-first.log": {
+      "sha256": "4eaa6e7159eebddabd88123ad95aba5c8a0c0c44a05d82b80ba33b6ddc72e54a",
+      "bytes": 1871
+    },
+    "dsga-initial-service-closure-lint-final.log": {
+      "sha256": "36ab714533276ed3d53646460099fc1eb20030411357706ce7defd78cb04b0a5",
+      "bytes": 459
+    },
+    "dsga-initial-service-closure-lint-release.log": {
+      "sha256": "1ede08bda01f5123d79a4921ab3aa71c7fc195b999d711b7b4202a4ab126dcf2",
+      "bytes": 295
+    },
+    "dsga-initial-service-closure-lint-compile-final.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "bytes": 10
+    },
+    "dsga-initial-service-closure-consumers-compile.log": {
+      "sha256": "2138c42446209289c1aad0905b9d963f451ef4f18e881e32be231d52123f1d9e",
+      "bytes": 896
+    },
+    "dsga-initial-service-closure-consumers-compile-final.log": {
+      "sha256": "1cc8607dfa9ff0b7377fd36d08825985f94a6742c120cf16f8c7576b14cdf4f9",
+      "bytes": 2567
+    },
+    "dsga-initial-close-control-old-final-fixture.log": {
+      "sha256": "8d76d7d52f1674b6eb62f6a3d9edb1fe9cce025cd789cde5405b4ff1d1d43980",
+      "bytes": 1487
+    },
+    "dsga-initial-close-control-candidate-final-fixture.log": {
+      "sha256": "0f5c55a7ceaf0f80afd2db7995e8fd03f8d655dce1e4535cf2986628c1de79b2",
+      "bytes": 271
+    },
+    "dsga-initial-close-native.log": {
+      "sha256": "ceec000d8d0583211bc2b5983150f73bef53a7f74326b47f855e49bad5f6cd48",
+      "bytes": 2351
+    },
+    "dsga-initial-unknown-native-control-old.log": {
+      "sha256": "066ecc3186125c975fcb12afb4a0ba8a91b7047e1845a51cfbff8397c31fb084",
+      "bytes": 2625
+    },
+    "dsga-initial-unknown-native-control-old-fixture-final.log": {
+      "sha256": "aef430ccea13a747ee3cba9a6851af51b0e63b27ec2e8208e74f211834acaadf",
+      "bytes": 2359
+    },
+    "dsga-initial-unknown-native-control-candidate.log": {
+      "sha256": "d937bc36cbd4d219b952fde61deadc6dba5ac8c90681a52910cc06d7215bb345",
+      "bytes": 2341
+    },
+    "dsga-initial-unknown-native-old/native.log": {
+      "sha256": "2c2617b441889106b4ce32ff7024d2b20757ce72a8f3a6b8188c00a3a28197e1",
+      "bytes": 8627
+    },
+    "dsga-initial-unknown-native-old-compile-fixed/native.log": {
+      "sha256": "986114a18283a85f08a1ce01ce0c6122c39cea88aa9986447558796a941eb915",
+      "bytes": 8446
+    },
+    "dsga-initial-unknown-native-old-compile-fixed/result.json": {
+      "sha256": "439aba53a2064aa7be84ce4a67b9a7a51e9dd0213ef42649ef89fbf8074c8ae2",
+      "bytes": 148
+    },
+    "dsga-initial-unknown-native-exact/native.log": {
+      "sha256": "ebf79bb0a2c049c79bd0e6fc6bec11aa076ae3d69fa16f4eec4f6ec9f90d4131",
+      "bytes": 7981
+    },
+    "dsga-initial-unknown-native-exact/result.json": {
+      "sha256": "9599d18d39de3540c099ba4547a1054bc5eab65f7e1727ea1084121e678494bb",
+      "bytes": 151
+    },
+    "dsga-initial-close-exact-configure.log": {
+      "sha256": "9fb897b241efd83fea9b21f693a3e1e82fc6452380ea2229e77feec2c50f1023",
+      "bytes": 18417
+    },
+    "dsga-initial-close-exact-build.log": {
+      "sha256": "e4a9095e5045c42c911c096922b3e1b3866dba4454cc9d192199f86c1cedb374",
+      "bytes": 1349585
+    },
+    "dsga-initial-close-exact-install.log": {
+      "sha256": "ca1702647a8154b35c18d9c9325e41e5be153fe307457e6284d8aa7abb36b5cc",
+      "bytes": 98152
+    },
+    "dsga-initial-close-exact-neon-build.log": {
+      "sha256": "9f4a3b4e36c8ea7e1d3bed6178b3e73700053becdc20fcff23208605dc1183ac",
+      "bytes": 30711
+    },
+    "dsga-initial-close-exact-version.log": {
+      "sha256": "482976813a4e68baf301e81693e9355524a217ccee3ab49930f57af44e078503",
+      "bytes": 71
+    },
+    "dsga-initial-close-exact-affected/results.json": {
+      "sha256": "c20137c842741de69708b4eda824441ae1d39120d542814860f10e43064938af",
+      "bytes": 351
+    },
+    "dsga-initial-close-exact-affected/python-native.log": {
+      "sha256": "47a99f03c604c96334f080d54d9f2c682a9d55ef860b06e233e37fbae15cfffb",
+      "bytes": 796
+    },
+    "dsga-initial-close-exact-affected/old-continuation.log": {
+      "sha256": "12c53170fd81bd24a7ace1c453277c27e9abbcfa2fa481494d4f55a4fe5818c8",
+      "bytes": 7970
+    },
+    "dsga-initial-close-exact-affected/sdk-admission.log": {
+      "sha256": "038bbec0de7edcb9c3b0345ceb0be1b0411fdc576555b2fa24e5ce73a415100f",
+      "bytes": 8000
+    },
+    "dsga-initial-close-exact-affected/http-admission.log": {
+      "sha256": "ef67ea434e83b673b9fc4bfc36969dd1b3e25e20ec44d05e00e30dd49de417d9",
+      "bytes": 12513
+    },
+    "run-dsga-initial-close-exact.sh": {
+      "sha256": "643def46dde1c1efb6991a8c700bf66933a968fea47831c3a8c4abb106122378",
+      "bytes": 1768
+    },
+    "run-dsga-initial-close-exact-neon-build.sh": {
+      "sha256": "1481dec769c56420cd1485feef83b170eeeaeff7f6b0c12046523244ace81921",
+      "bytes": 1044
+    },
+    "run-dsga-initial-unknown-native.py": {
+      "sha256": "ce4d58c96f79e344e2f6c3a46dbcb4dbba7aa377842179769a60065eab89dade",
+      "bytes": 1411
+    }
+  },
+  "adoption": {
+    "new_journal": {
+      "top_level_unique": 4,
+      "test_records_unique": 28,
+      "rule": "RejectsProjection和Continuation采用model-first中的通过记录，Preserves和Store采用model-cas-final；首轮整包失败不标绿"
+    },
+    "legacy_journal": {
+      "top_level": 9,
+      "test_records": 63,
+      "log": "dsga-initial-service-closure-legacy-affected.jsonl"
+    },
+    "production_initial_safety": {
+      "modes": [
+        "unreceived",
+        "applied",
+        "lost-start",
+        "lost-close",
+        "qualification",
+        "qualification-applied",
+        "transfer",
+        "post-send-source-drift"
+      ],
+      "logs": [
+        "dsga-initial-service-safety-owner-first.jsonl",
+        "dsga-initial-service-safety-affected-compile-final.jsonl"
+      ],
+      "rule": "前者6个模式，后者新增2个模式；相同父记录不重复计作独立E2E"
+    },
+    "affected_owner": [
+      "TestProductionInitialServiceThenGrowUsesOriginalSourcesAndUnknownRecovery",
+      "TestProductionIdleServiceClosureUsesOriginalWALAndRecovery/root-drift"
+    ],
+    "native": {
+      "new_sql": 1,
+      "old_admission_sql": 3,
+      "new_rust_sql_client": 1,
+      "old_continuation": 1,
+      "sdk_admission": 2,
+      "http_admission": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    "quality": {
+      "vet_exit": 0,
+      "incremental_lint_issues": 0,
+      "consumers_compile_exit": 0,
+      "consumers_not_executed": true,
+      "sessions_collected": {
+        "60160": 0,
+        "59913": 0
+      }
+    }
+  },
+  "failure_history": [
+    "原b078同一SQL回归和修导入后的新增Rust原生用例均真实失败，325a准确构建后通过。",
+    "早期SQL夹具缺boot函数及signed bigint到uint64转换、Rust导入、普通沙箱shmget拒绝不算产品失败/通过证据。",
+    "模型首轮Preserves误断言Begin应返回error，实际正确Busy；修测试后定向通过，未重跑已通过用例。",
+    "owner受影响组合两次编译失败（残余未使用导入/变量）；修夹具后实际运行通过。",
+    "lint首轮显式零值/格式问题修正；最终0 issues。",
+    "消费者首轮路径./neonvm/controllers不存在，未编译通过；改实际./pkg/neonvm/controllers后终态exit0。"
+  ],
+  "boundaries": [
+    "Go组合使用真实Elector Session、TLS/SDK、typed UID/RV CAS和持久WAL；PG/Root/Kube/平台为显式peer。",
+    "原生PG/Neon SQL与Rust SDK验证是独立链；不冒充Go到真实K8s/PG全链。",
+    "新管理executeControl直接执行正式处理器，本批未新增管理HTTP/Submit入站E2E。",
+    "不证明已开始工作排空、Linux/K8s/NeonVM/KVM/HugeTLB、物理回收、性能或跨boot迁移；没有构建镜像、部署或发布。",
+    "PG17整体代码仍未完成，不能把其他代码缺口归入Linux待验。"
+  ]
+}

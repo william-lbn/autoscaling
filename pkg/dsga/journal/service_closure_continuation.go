@@ -52,7 +52,7 @@ func (model Model) validateServiceClosureContinuation() error {
 	// 任意关闭。原始WAL始终Unconfirmed，证明的是新关闭已确认，而
 	// 非旧关闭未执行。所有序列均来自同一外层CAS，不借PG快照补写。
 	digest, err := n.Request.ContextSHA256()
-	if c.Phase != Unconfirmed || err != nil || n.Request.Original != c.Request || n.CommandSHA256 != digest ||
+	if c.Phase != Unconfirmed || err != nil || n.Request.Original != c.ProtectedAdmission() || n.CommandSHA256 != digest ||
 		n.Origin.Validate() != nil || n.PreviousOrigin.Validate() != nil || n.Request.Close.IssuerEpoch != n.Origin.Epoch ||
 		n.Request.PreviousClose.IssuerEpoch != n.PreviousOrigin.Epoch || n.Origin.Epoch > model.Owner.Epoch ||
 		n.Origin.Epoch == model.Owner.Epoch && n.Origin != model.Owner || n.PreviousOrigin.Epoch >= n.Origin.Epoch ||
@@ -96,7 +96,7 @@ func (model Model) StartServiceClosureContinuation(actor Owner, selector string,
 		return model, fmt.Errorf("original service closure is not unknown")
 	}
 	origin, sequence, previous, digest := c.Selection()
-	if actor.Epoch <= origin.Epoch || selector != digest || request.Validate() != nil || request.Original != c.Request || request.PreviousClose != previous || request.Close.IssuerEpoch != actor.Epoch {
+	if actor.Epoch <= origin.Epoch || selector != digest || request.Validate() != nil || request.Original != c.ProtectedAdmission() || request.PreviousClose != previous || request.Close.IssuerEpoch != actor.Epoch {
 		return model, fmt.Errorf("continuation is not exact explicit successor selection")
 	}
 	next, err := model.next(actor)
@@ -107,7 +107,7 @@ func (model Model) StartServiceClosureContinuation(actor Owner, selector string,
 	if err != nil {
 		return model, err
 	}
-	next.ProtocolVersion = 11
+	next.ProtocolVersion = max(next.ProtocolVersion, 11)
 	next.ServiceClosure.Continuation = &ServiceClosureContinuation{
 		Origin: actor, StartedSequence: next.Sequence, PreviousOrigin: origin, PreviousSequence: sequence,
 		Request: request, CommandSHA256: commandDigest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil,

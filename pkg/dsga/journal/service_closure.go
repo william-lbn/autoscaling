@@ -12,7 +12,8 @@ import (
 // ServiceClosure是空闲服务发现来源异常后的独立、不可撤销关闭WAL。它只
 // 阻止新连接；原预算、历史及已存在的连接全部保留。没有受控重开协议前，
 // 不允许因来源重新可达就清除此字段。旧版本必须因v10拒绝，不能忽略门禁。
-// 当前只覆盖无Active、无首次开放未知的边界；在途异常须另行取消/对账。
+// v12另支持无Active的首次开放未知：Original逐字引用原开放，关闭回执
+// 单独保存，绝不把首次开放改成Settled/NoEffect。在途Resize另行取消/对账。
 type ServiceClosure struct {
 	Origin           Owner                      `json:"origin"`
 	StartedSequence  control.Uint64             `json:"started_sequence"`
@@ -25,7 +26,18 @@ type ServiceClosure struct {
 	Receipt          *control.AdmissionResponse `json:"receipt"`
 	// v11只添加接续，不改写上面的原始意图/派发者/未知。旧v10读者必须
 	// 因版本或未知字段拒绝，不能把新关闭投影成原命令已成功或重新开放。
-	Continuation *ServiceClosureContinuation `json:"continuation,omitempty"`
+	Continuation   *ServiceClosureContinuation `json:"continuation,omitempty"`
+	Original       *control.AdmissionRequest   `json:"original,omitempty"`
+	ClosureReceipt *control.AdmissionClosure   `json:"closure_receipt,omitempty"`
+}
+
+// ProtectedAdmission返回本关闭保护的最初意图。v10/11原意图就是关闭；
+// v12为原首次开放。返回副本，不能由后继选择覆盖持久原意图。
+func (c *ServiceClosure) ProtectedAdmission() control.AdmissionRequest {
+	if c.Original != nil {
+		return *c.Original
+	}
+	return c.Request
 }
 
 func cloneAdmissionResponse(original *control.AdmissionResponse) *control.AdmissionResponse {
@@ -77,11 +89,20 @@ func (model Model) validateServiceClosure() error {
 	}
 	budgetID, err := model.ServiceBudgetID()
 	digest, hashErr := c.Request.ContextSHA256()
-	if model.ProtocolVersion < 10 || model.ProtocolVersion > 11 || (model.ProtocolVersion == 11) != (c.Continuation != nil) || model.Active != nil || model.PGInstance == nil || err != nil || hashErr != nil || c.Request.Open || c.Request.Instance != *model.PGInstance || c.Request.BudgetCommitmentID != budgetID || c.CommandSHA256 != digest || c.Reason != "idle_source_unconfirmed" || c.Origin.Validate() != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Origin.Epoch > model.Owner.Epoch || c.Origin.Epoch == model.Owner.Epoch && c.Origin != model.Owner || c.StartedSequence == 0 || c.StartedSequence > model.Sequence {
+	if model.ProtocolVersion < 10 || model.ProtocolVersion > 12 || (model.ProtocolVersion == 12) != (c.Original != nil) || model.ProtocolVersion < 12 && ((model.ProtocolVersion == 11) != (c.Continuation != nil)) || model.Active != nil || model.PGInstance == nil || err != nil || hashErr != nil || c.Request.Open || c.Request.Instance != *model.PGInstance || c.Request.BudgetCommitmentID != budgetID || c.CommandSHA256 != digest || c.Origin.Validate() != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Origin.Epoch > model.Owner.Epoch || c.Origin.Epoch == model.Owner.Epoch && c.Origin != model.Owner || c.StartedSequence == 0 || c.StartedSequence > model.Sequence {
 		return fmt.Errorf("service closure differs from original idle PG, budget or owner")
 	}
-	if h := model.InitialHeld; h != nil && (h.Admission == nil || h.Admission.Phase != Settled) {
-		return fmt.Errorf("idle service closure cannot hide first admission unknown")
+	if c.Original != nil {
+		if err := model.validateInitialServiceClosure(); err != nil {
+			return err
+		}
+	} else {
+		if c.Reason != "idle_source_unconfirmed" || c.ClosureReceipt != nil {
+			return fmt.Errorf("idle service closure changed reason or original proof")
+		}
+		if h := model.InitialHeld; h != nil && (h.Admission == nil || h.Admission.Phase != Settled) {
+			return fmt.Errorf("idle service closure cannot hide first admission unknown")
+		}
 	}
 	// StartedSequence必须严格晚于受保护的持久边界。不能只核非零/小于
 	// 当前Sequence：旧预算、首次开放及最近零派发取消各自都可能合法，
@@ -89,7 +110,7 @@ func (model Model) validateServiceClosure() error {
 	// BudgetBoundary独立于可淘汰历史保留同一限制，接管只推进外层序列。
 	var protectedSequence control.Uint64
 	if h := model.InitialHeld; h != nil {
-		protectedSequence = max(h.RecordedSequence, h.Admission.RecordedSequence)
+		protectedSequence = max(h.RecordedSequence, h.Admission.RecordedSequence, h.Admission.StartedSequence)
 	}
 	if h := model.BudgetHeld; h != nil {
 		protectedSequence = max(protectedSequence, h.RecordedSequence)
@@ -108,11 +129,15 @@ func (model Model) validateServiceClosure() error {
 	}
 	switch c.Phase {
 	case Unconfirmed:
-		if c.RecordedSequence != 0 || c.Receipt != nil || c.Query {
+		if c.RecordedSequence != 0 || c.Receipt != nil || c.ClosureReceipt != nil || c.Query {
 			return fmt.Errorf("unknown service closure contains completion")
 		}
 	case Settled:
-		if c.RecordedSequence <= c.StartedSequence || c.RecordedSequence > model.Sequence || c.Receipt == nil || c.Receipt.Observed.IssuerFloorEpoch > model.Owner.Epoch || !c.Receipt.Confirms() || c.Receipt.ValidateFor(c.Request, *model.PGInstance, c.Query) != nil {
+		fact := c.Receipt
+		if c.Original != nil && c.ClosureReceipt != nil {
+			fact = &c.ClosureReceipt.ClosedBy
+		}
+		if c.RecordedSequence <= c.StartedSequence || c.RecordedSequence > model.Sequence || fact == nil || fact.Observed.IssuerFloorEpoch > model.Owner.Epoch || !fact.Confirms() || fact.ValidateFor(c.Request, *model.PGInstance, c.Query) != nil {
 			return fmt.Errorf("service closure lacks exact native closed receipt")
 		}
 	default:
@@ -137,7 +162,7 @@ func (model Model) StartServiceClosure(actor Owner, request control.AdmissionReq
 		return model, err
 	}
 	next.ProtocolVersion = 10
-	next.ServiceClosure = &ServiceClosure{Origin: actor, StartedSequence: next.Sequence, Reason: "idle_source_unconfirmed", Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, Continuation: nil}
+	next.ServiceClosure = &ServiceClosure{Origin: actor, StartedSequence: next.Sequence, Reason: "idle_source_unconfirmed", Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, Continuation: nil, Original: nil, ClosureReceipt: nil}
 	return next, next.Validate()
 }
 
@@ -147,7 +172,7 @@ func (model Model) RecordServiceClosure(actor Owner, fact control.AdmissionRespo
 		return model, err
 	}
 	c := next.ServiceClosure
-	if c == nil || c.Continuation != nil || c.Phase != Unconfirmed || !query && c.Origin != actor {
+	if c == nil || c.Original != nil || c.Continuation != nil || c.Phase != Unconfirmed || !query && c.Origin != actor {
 		return model, fmt.Errorf("service closure is not original unknown")
 	}
 	c.Phase, c.Query, c.RecordedSequence, c.Receipt = Settled, query, next.Sequence, cloneAdmissionResponse(&fact)

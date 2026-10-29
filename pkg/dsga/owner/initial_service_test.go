@@ -15,9 +15,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubefake "k8s.io/client-go/kubernetes/fake"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
@@ -48,6 +46,9 @@ type initialServicePG struct {
 	loseResize    bool
 	resizeReceipt *control.ControlResponse
 	resizeQueries int
+	// 只在新增安全组合中安排原开放已发送、审计前来源漂移。
+	// hook在peer锁外运行，不伪造生产WAL/关闭结果。
+	afterOpen func()
 }
 
 func (p *initialServicePG) shared() control.SharedCostResponse {
@@ -87,6 +88,9 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 		return
 	case "/dsg/v1/admission/continue-close", "/dsg/v1/admission/continue-close/status":
 		p.serveClosureContinuation(t, w, r)
+		return
+	case "/dsg/v1/admission/close-original", "/dsg/v1/admission/close-original/status":
+		p.serveInitialClosure(t, w, r)
 		return
 	case "/dsg/v1/resize":
 		var request control.Request
@@ -178,6 +182,9 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 			p.loseAfter = false
 		}
 		p.mu.Unlock()
+		if !query && request.Open && p.afterOpen != nil {
+			p.afterOpen()
+		}
 		if lose {
 			w.WriteHeader(503)
 			return
@@ -267,7 +274,7 @@ func TestProductionInitialOwnerTransferCancelsUnreceivedGuestAndSettlesActualBud
 func productionInitialService(t *testing.T, mode string) {
 	t.Helper()
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
-	closureTransfer := strings.HasPrefix(mode, "closure-transfer-")
+	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer"
 	pgTakeover := mode == "owner-transfer-after-pg"
 	unreceivedGuest := mode == "owner-transfer-before-guest-delivery"
 	guestTakeover := mode == "owner-transfer-after-guest" || unreceivedGuest
@@ -355,7 +362,7 @@ func productionInitialService(t *testing.T, mode string) {
 		for _, a := range after.Observed.Arrays {
 			after.CurrentMainAndArraysUpperBytes += a.CommittedUpperBytes
 		}
-		pg := &initialServicePG{mu: sync.Mutex{}, request: request, before: before, after: after, resized: false, gate: nil, posts: 0, queries: 0, resizePosts: 0, loseBefore: false, loseAfter: false, store: store, loseResize: false, resizeReceipt: nil, resizeQueries: 0}
+		pg := &initialServicePG{mu: sync.Mutex{}, request: request, before: before, after: after, resized: false, gate: nil, posts: 0, queries: 0, resizePosts: 0, loseBefore: false, loseAfter: false, store: store, loseResize: false, resizeReceipt: nil, resizeQueries: 0, afterOpen: nil}
 		var nativeFence http.HandlerFunc
 		if transfer != nil {
 			nativeFence = pg.ownerFence(t)
@@ -384,6 +391,10 @@ func productionInitialService(t *testing.T, mode string) {
 			return next
 		}
 		worker = rebuild()
+		if strings.HasPrefix(mode, "initial-safety-") {
+			verifyInitialServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, transfer)
+			return nil
+		}
 		if closureTransfer {
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -587,7 +598,9 @@ func productionInitialService(t *testing.T, mode string) {
 }
 
 // 同一首次启动串联预算保存/Start/原setter前后/Record丢回复及SDK重建；
-// 删除/换UID/Root漂移仅作负向故障，恢复原来源后继续，不创建替代资格。
+// 无开放WAL时Root漂移仍只拒绝新开放；已有开放未知后资格丢失会安全
+// 关闭，单独由initial_service_safety_test验证，不再在本正常成功链中
+// 依赖“资格恢复就可继续旧开放”。本链只验证健康来源下的丢回复恢复。
 func verifyInitialServiceReplies(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, store *journal.Store, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture) *PGWorker {
 	t.Helper()
 	rebuild := func() *PGWorker {
@@ -630,12 +643,8 @@ func verifyInitialServiceReplies(t *testing.T, ctx context.Context, api *ownerAP
 	require.NotNil(t, s.State().InitialHeld.Admission)
 	selector := s.State().InitialHeld.Admission.CommandSHA256
 	worker = rebuild()
-	qualification, err := client.CoreV1().ConfigMaps(binding().Namespace).Get(ctx, source.Claim.Name, metav1.GetOptions{})
-	require.NoError(t, err)
-	require.NoError(t, client.Tracker().Delete(core.SchemeGroupVersion.WithResource("configmaps"), binding().Namespace, source.Claim.Name))
 	_, err = worker.Advance(ctx)
-	require.ErrorIs(t, err, resourceguard.ErrUnknown, "先查原NotFound，不能让丢资格掩盖原未知")
-	require.NoError(t, client.Tracker().Create(core.SchemeGroupVersion.WithResource("configmaps"), qualification, binding().Namespace))
+	require.ErrorIs(t, err, resourceguard.ErrUnknown, "健康来源NotFound只保留未知，不自动重发")
 	posts, queries, _ := pg.counts()
 	require.Zero(t, posts)
 	require.Positive(t, queries)
@@ -662,13 +671,9 @@ func verifyInitialServiceReplies(t *testing.T, ctx context.Context, api *ownerAP
 	require.Error(t, err)
 	posts, _, _ = pg.counts()
 	require.Equal(t, 2, posts)
-	require.NoError(t, client.Tracker().Delete(core.SchemeGroupVersion.WithResource("configmaps"), binding().Namespace, source.Claim.Name))
-	_, err = worker.Advance(ctx)
-	require.Error(t, err)
 	s, err = store.Load(ctx)
 	require.NoError(t, err)
 	require.Equal(t, journal.Unconfirmed, s.State().InitialHeld.Admission.Phase)
-	require.NoError(t, client.Tracker().Create(core.SchemeGroupVersion.WithResource("configmaps"), qualification, binding().Namespace))
 	api.mu.Lock()
 	api.loseJournalReply = true
 	api.mu.Unlock()
@@ -682,12 +687,8 @@ func verifyInitialServiceReplies(t *testing.T, ctx context.Context, api *ownerAP
 	require.Nil(t, s.State().HighWater)
 	pending, _ := worker.client.PendingAdmission()
 	require.Nil(t, pending)
-	changed := qualification.DeepCopy()
-	changed.UID = "replacement-qualification"
-	require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("configmaps"), changed, binding().Namespace))
-	_, err = worker.Advance(ctx)
-	require.Error(t, err, "首次已开放也须持续认证原资格")
-	require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("configmaps"), qualification, binding().Namespace))
+	// 已开放后的资格失效由独立service_safety组合验证，其正确结果是
+	// 保留关闭；不能把故障混进本正常链再靠恢复资格自动重新开放。
 	progress, err := worker.Advance(ctx)
 	require.NoError(t, err)
 	require.Equal(t, pgexec.Idle, progress)

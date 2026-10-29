@@ -3,6 +3,32 @@
 更新：2026-10-26。分支`codex/dsga-autoscaling-20261019`，只推自有fork，不合main。
 本文件是当前入口；初始维护快照仍见[基线](DSGA-上游基线与开发约束.md)。
 
+## 最新验证：首次开放未知异常关闭已通过Mac阶段
+
+PG17自有修复`325aeb42a6080d86902d51892b2518a70ec2512b`在冻结b078之上，只允许
+关闭跨过未投递revision，开放仍精确next；官方冻结点/清单不变，没有追新。
+准确325a干净源码已编译安装，Neon扩展安装通过，完整二进制SHA匹配。新增SQL
+与Rust原生SDK在原b078失败、325a通过；新SQL及旧准入4项、Rust新用例1项、
+旧接续1项、SDK2项、认证HTTP3项均通过，0skip/ignored。没有重复完整未变PG矩阵。
+
+AS v12独立原首次开放/关闭WAL及完整proof、生产首次安全检查和SDK重建通过。
+原InitialHeld/预算/开放Unconfirmed保留；关闭不证明旧工作未执行或可释放/缩VM。
+新Journal按用例去重4顶层28记录、受影响v10/11九顶层63记录通过；生产8个模式
+分两次-race通过，含原开放未送达/已应用、CAS/setter丢回复、资格丢失两窗口、
+真实Session失租接续与setter后来源漂移。正常首次→Grow和旧空闲Root受影响
+组合也通过；vet/最终增量lint0，DSGA/Agent/Controller消费者仅编译退出0。
+
+日志及源码摘要、首轮失败、准确采用及环境边界见[本阶段验收](DSGA-首次未知异常关闭-Mac验收-20261029.md)
+和[机器收据](DSGA-首次未知异常关闭-Mac收据-20261029.json)。Go组合PG/Root/Kube/
+平台仍是peer；原生PG链独立验证，新管理HTTP/Submit入站本批未新增E2E。
+验证句柄59913/60160均终态0，进程核对无相关残留，不重复已通过未变测试。
+
+本阶段源码、验收和机器收据随本次中文模块提交归档。按依赖顺序先推PG/AS，
+核完整远程SHA后才更新Neon两份PG锁/gitlink及AS锁；远程结果由实际Git核验及
+Neon最新锁记录，不以本地commit代替。所有者AS AGENTS改动保留不stage。PG17仍缺在途/坏缺日志异常关闭、受控重开与重复生命周期、normal/
+持续约束、其他出生/无Wait/跨boot迁移、Monitor/CPU等核心代码，不能转列Linux
+待验。Goal active；PG17全面代码/Mac验证/远程归档完成后才暂停，不进入18/16。
+
 ## 最新验证：关闭接续持久WAL与PGWorker/管理处理器已通过Mac阶段
 
 原Goal恢复active；原neon heartbeat已通过应用工具更新为PG17全面完成后暂停，
