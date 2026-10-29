@@ -49,6 +49,9 @@ type initialServicePG struct {
 	// 只在新增安全组合中安排原开放已发送、审计前来源漂移。
 	// hook在peer锁外运行，不伪造生产WAL/关闭结果。
 	afterOpen func()
+	// 仅新容量竞态组合在原关闭WAL确认后、setter到达前提交原Resize。
+	// 由peer锁外调用；生产代码仍必须识别Stale并写独立接续WAL。
+	beforeClose func()
 }
 
 func (p *initialServicePG) shared() control.SharedCostResponse {
@@ -158,6 +161,15 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 				require.Equal(t, journal.Unconfirmed, budgetStep(t, p.store, journal.ResumeAdmission).Phase)
 			}
 		}
+		if !query && !request.Open {
+			p.mu.Lock()
+			hook := p.beforeClose
+			p.beforeClose = nil
+			p.mu.Unlock()
+			if hook != nil {
+				hook()
+			}
+		}
 		p.mu.Lock()
 		disposition := control.AdmissionApplied
 		if query {
@@ -176,11 +188,15 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 				w.WriteHeader(503)
 				return
 			}
-			if p.gate != nil && *p.gate != request {
-				require.Equal(t, p.gate.Revision+1, request.Revision)
+			if request.ExpectedCapacityGeneration != p.current().Observed.CapacityGeneration && (p.gate == nil || *p.gate != request) {
+				disposition = control.AdmissionStale
+			} else {
+				if p.gate != nil && *p.gate != request {
+					require.Equal(t, p.gate.Revision+1, request.Revision)
+				}
+				original := request
+				p.gate = &original
 			}
-			original := request
-			p.gate = &original
 		}
 		s := p.current().Observed
 		lose := !query && p.loseAfter
@@ -280,7 +296,8 @@ func TestProductionInitialOwnerTransferCancelsUnreceivedGuestAndSettlesActualBud
 func productionInitialService(t *testing.T, mode string) {
 	t.Helper()
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
-	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer"
+	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer"
+	pgSafety := strings.HasPrefix(mode, "active-safety-pg-")
 	pgTakeover := mode == "owner-transfer-after-pg"
 	unreceivedGuest := mode == "owner-transfer-before-guest-delivery"
 	guestTakeover := mode == "owner-transfer-after-guest" || unreceivedGuest
@@ -379,7 +396,7 @@ func productionInitialService(t *testing.T, mode string) {
 		for _, a := range after.Observed.Arrays {
 			after.CurrentMainAndArraysUpperBytes += a.CommittedUpperBytes
 		}
-		pg := &initialServicePG{mu: sync.Mutex{}, request: request, before: before, after: after, resized: false, gate: nil, posts: 0, queries: 0, resizePosts: 0, loseBefore: false, loseAfter: false, store: store, loseResize: false, resizeReceipt: nil, resizeQueries: 0, afterOpen: nil}
+		pg := &initialServicePG{mu: sync.Mutex{}, request: request, before: before, after: after, resized: false, gate: nil, posts: 0, queries: 0, resizePosts: 0, loseBefore: false, loseAfter: false, store: store, loseResize: false, resizeReceipt: nil, resizeQueries: 0, afterOpen: nil, beforeClose: nil}
 		var nativeFence http.HandlerFunc
 		if transfer != nil {
 			nativeFence = pg.ownerFence(t)
@@ -507,7 +524,7 @@ func productionInitialService(t *testing.T, mode string) {
 			// 完整结案/自动Grow→Shrink会经过多次正式来源预审，race运行
 			// 可能超过静态夹具Lease的60秒寿命。用原UID/holder的真实
 			// 选主续租维持Host，不放宽生产过期校验，也不重建同名来源。
-			if pgTakeover || guestTakeover || mode == "auto-finish" || mode == "automatic-policy" {
+			if pgTakeover || guestTakeover || mode == "auto-finish" || mode == "automatic-policy" || pgSafety {
 				keepPGTakeoverHostOwner(t, ctx, client)
 			}
 		}
@@ -564,6 +581,17 @@ func productionInitialService(t *testing.T, mode string) {
 				pg.loseResize = true
 				pg.mu.Unlock()
 			}
+			if pgSafety && action == journal.ResizePG {
+				if strings.Contains(mode, "unreceived") || strings.Contains(mode, "race") {
+					api.mu.Lock()
+					api.loseJournalReply = true
+					api.mu.Unlock()
+				} else {
+					pg.mu.Lock()
+					pg.loseResize = true
+					pg.mu.Unlock()
+				}
+			}
 			if unreceivedGuest && action == journal.GuestReady {
 				// 完整首次/Prepare/Host/VM均由正式执行器推进；原GuestReady
 				// 写前CAS已经持久但回复丢失，Root尚未接收，不能补造NoEffect。
@@ -572,6 +600,11 @@ func productionInitialService(t *testing.T, mode string) {
 				api.mu.Unlock()
 			}
 			progress, err = worker.Advance(ctx)
+			if pgSafety && action == journal.ResizePG {
+				require.Error(t, err, "原PG派发WAL或实际提交回复未知必须保留")
+				verifyPGActiveServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
+				return nil
+			}
 			if guestTakeover && action == journal.GuestReady {
 				if unreceivedGuest {
 					var lost *journal.UnconfirmedWrite

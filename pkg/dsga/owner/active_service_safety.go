@@ -139,8 +139,9 @@ func (w *PGWorker) inspectActiveService(ctx context.Context, s *journal.Snapshot
 	return nil
 }
 
-// PG未Start时，其容量不变；VM/Root可能已有部分效果，但绝不据此释放/重发。
-// 若Quiesce仍未知，逐字引用它并用close-original封住迟到写；否则独立关闭。
+// PG未Start时容量固定；已Start时只接受原代次/提交后下一代，原命令及效果
+// 未知全部保留。VM/Root可能已有部分效果，但绝不据此释放/重发。若Quiesce
+// 仍未知，逐字引用它并用close-original封住迟到写；否则独立关闭。
 func (w *PGWorker) closeActiveService(ctx context.Context, s *journal.Snapshot) (bool, pgexec.Progress, error) {
 	m := s.State()
 	original, err := m.ActiveAdmissionForClosure()
@@ -165,7 +166,7 @@ func (w *PGWorker) closeActiveService(ctx context.Context, s *journal.Snapshot) 
 	if original != nil {
 		revision = max(revision, original.Revision)
 	}
-	if pg.Instance != instance || pg.IssuerFloorEpoch != epoch || pg.CapacityGeneration != m.Active.Request.ExpectedCapacityGeneration || revision == control.Uint64(math.MaxUint64) {
+	if pg.Instance != instance || pg.IssuerFloorEpoch != epoch || !m.ActiveServiceCapacityAllowed(pg.CapacityGeneration) || revision == control.Uint64(math.MaxUint64) {
 		return true, pgexec.AwaitingFact, ErrServiceSafety
 	}
 	request := control.AdmissionRequest{ProtocolVersion: 1, Instance: instance, IssuerEpoch: epoch, Revision: revision + 1, ExpectedCapacityGeneration: pg.CapacityGeneration, Open: false, BudgetCommitmentID: m.Active.Request.BudgetCommitmentID}

@@ -26,6 +26,11 @@ func TestAdmissionContinuationVectors(t *testing.T) {
 		t.Run(v.Name, func(t *testing.T) {
 			var req AdmissionContinuationRequest
 			err := json.Unmarshal(v.Request, &req)
+			// 历史表是固定v1读者合同。v2的新读者允许旧表中曾被拒绝的2，
+			// 但旧读者仍须明确拒绝；新能力使用独立v2向量，不改历史字节。
+			if err == nil && req.ProtocolVersion != 1 {
+				err = os.ErrInvalid
+			}
 			if !v.Valid {
 				require.Error(t, err)
 				return
@@ -129,4 +134,55 @@ func TestAdmissionContinuationStrictJSON(t *testing.T) {
 			}
 		}
 	}
+}
+
+// 新表由独立Python生成，覆盖容量前进、u64边界、版本协商及不合法降级。
+// 这里只验证协议；单个Resize允许的代次和派发权限仍由外层持久模型认证。
+func TestAdmissionContinuationCapacityVectors(t *testing.T) {
+	raw, err := os.ReadFile("testdata/admission-continuation-v2.json")
+	require.NoError(t, err)
+	var vectors []struct {
+		Name          string          `json:"name"`
+		Valid         bool            `json:"valid"`
+		Request       json.RawMessage `json:"request"`
+		ContextSHA256 string          `json:"context_sha256"`
+	}
+	require.NoError(t, json.Unmarshal(raw, &vectors))
+	require.Len(t, vectors, 37)
+	for _, v := range vectors {
+		t.Run(v.Name, func(t *testing.T) {
+			var request AdmissionContinuationRequest
+			err := json.Unmarshal(v.Request, &request)
+			if !v.Valid {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			digest, err := request.ContextSHA256()
+			require.NoError(t, err)
+			require.Equal(t, v.ContextSHA256, digest)
+		})
+	}
+}
+
+func TestAdmissionContinuationCapacityProofRequiresSelectedVersion(t *testing.T) {
+	req, proof := continuationFixture(t)
+	req.ProtocolVersion = 2
+	req.Close.ExpectedCapacityGeneration++
+	proof.ProtocolVersion, proof.Request, proof.ClosedBy.Request = 2, req, req.Close
+	var err error
+	proof.ContextSHA256, err = req.ContextSHA256()
+	require.NoError(t, err)
+	proof.ClosedBy.ContextSHA256, err = req.Close.ContextSHA256()
+	require.NoError(t, err)
+	proof.ClosedBy.Observed.CapacityGeneration = req.Close.ExpectedCapacityGeneration
+	require.NoError(t, proof.ValidateFor(req, req.Close.Instance, false))
+	bad := proof
+	bad.ProtocolVersion = 1
+	require.Error(t, bad.ValidateFor(req, req.Close.Instance, false), "包装不能降级但保留v2原文")
+	proof.ClosedBy.Disposition = AdmissionReplayed
+	proof.ClosedBy.Observed.CapacityGeneration++
+	require.NoError(t, proof.ValidateFor(req, req.Close.Instance, true), "原关闭后容量前进不能抹去原生回执")
+	proof.ClosedBy.Observed.CapacityGeneration = req.Close.ExpectedCapacityGeneration - 1
+	require.Error(t, proof.ValidateFor(req, req.Close.Instance, true))
 }

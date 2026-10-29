@@ -27,6 +27,10 @@ func activeClosureModel(t *testing.T, kind control.Kind, action Action, unknown 
 			break
 		}
 		raw := testCommand
+		if step.Action == ResizePG {
+			raw, err = json.Marshal(request)
+			require.NoError(t, err)
+		}
 		if step.Action == Quiesce {
 			closing := opening.Request
 			closing.Open, closing.Revision, closing.BudgetCommitmentID = false, closing.Revision+1, request.BudgetCommitmentID
@@ -141,8 +145,9 @@ func TestActiveClosureRejectsCapacityChangesAndWALProjection(t *testing.T) {
 		})
 	}
 	m, r, _ = activeClosureModel(t, control.Grow, ResizePG, true)
-	_, err = m.StartActiveServiceClosure(m.Owner, r)
-	require.Error(t, err, "PG已发送不能套用原容量关闭合同")
+	closed, err = m.StartActiveServiceClosure(m.Owner, r)
+	require.NoError(t, err)
+	require.EqualValues(t, 17, closed.ProtocolVersion, "PG已派发使用完整原命令和有限容量边界")
 }
 
 func TestActiveClosureStoreRequiresConfirmedCAS(t *testing.T) {

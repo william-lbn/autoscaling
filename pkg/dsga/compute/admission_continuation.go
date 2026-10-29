@@ -83,7 +83,7 @@ func (client *Client) reserveAdmissionContinuation(intent control.AdmissionConti
 		return &CallError{MayHaveExecuted: false, Code: "unresolved_other_admission"}
 	}
 	if prior := client.admissionContinuation; prior != nil {
-		if *prior != intent && (prior.Original != intent.Original || prior.Close != intent.PreviousClose) {
+		if *prior != intent && (prior.Original != intent.Original || prior.Close != intent.PreviousClose || intent.ProtocolVersion < prior.ProtocolVersion) {
 			return &CallError{MayHaveExecuted: false, Code: "admission_continuation_predecessor_changed"}
 		}
 	} else if client.admissionClose != nil {
@@ -93,8 +93,9 @@ func (client *Client) reserveAdmissionContinuation(intent control.AdmissionConti
 	} else if client.admissionPending != nil && intent.PreviousClose != intent.Original {
 		return &CallError{MayHaveExecuted: false, Code: "admission_continuation_predecessor_missing"}
 	}
-	// 不丢最初未知，只将最近关闭与它的直接前驱同时保留。每次接续严格提高
-	// epoch，预算/boot/容量固定，故更早前驱被传递封住，无需无界增长链表。
+	// 不丢最初未知，只将最近关闭与它的直接前驱同时保留。每次接续提高
+	// epoch，或在v2同epoch时严格提高容量与revision；预算/boot固定。v1可显式升至v2，已保留v2
+	// 禁止降回v1，即使这一跳容量恰好相等；否则丢失整个恢复链的协议语义。
 	original, closeIntent, selection := intent.Original, intent.Close, intent
 	client.admissionPending, client.admissionClose, client.admissionContinuation = &original, &closeIntent, &selection
 	client.admissionInFlight = true

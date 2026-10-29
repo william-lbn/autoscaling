@@ -1,0 +1,1730 @@
+[
+  {
+    "name": "v2-same-generation",
+    "valid": true,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": "1ee6d4bc7c8419f4cca1e7dca93d09ac059a6652de5d024c1f00ec831b269879"
+  },
+  {
+    "name": "v2-first-close-after-resize",
+    "valid": true,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": "63f617d3ad0b2d46cd51973c16658baa186702de73a3d7b01369350ab63e4785"
+  },
+  {
+    "name": "v2-retained-predecessor-after-resize",
+    "valid": true,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740995",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": "c1c93e4d997bb4b28d67bb5967241c72cbae9a5a340db8cf0f2c9eb384802820"
+  },
+  {
+    "name": "v2-maximum-generation-no-addition",
+    "valid": true,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "18446744073709551614",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "18446744073709551615",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740995",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "18446744073709551615",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": "09a2d7980629fc34583f53c150d5ca7123e9ced09e6843af8d671d8c004a1174"
+  },
+  {
+    "name": "v2-original-open-retained",
+    "valid": true,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": true,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740995",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": "10c54e11c79bf7158ff66ceae49b3875c73cd2a660d6bacde48a1036dea7df6a"
+  },
+  {
+    "name": "v2-monotonic-protocol-not-resize-authorization",
+    "valid": true,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740995",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "18446744073709551615",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": "6abc0b2ea03c69f07e35ff69955281ca17b0c46be349366b46c2b4e305ae5e93"
+  },
+  {
+    "name": "v2-same-owner-capacity-progress",
+    "valid": true,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775809",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": "dd0efc40213e8d689243efa2b2f7c8a3c6b063dba302181e95a50e722d332542"
+  },
+  {
+    "name": "v2-same-owner-no-capacity-progress",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "v1-same-owner-capacity-progress",
+    "valid": false,
+    "request": {
+      "protocol_version": 1,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775809",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "v2-same-owner-no-revision-progress",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "v1-preserved-first-unreceived-close-same-global-revision",
+    "valid": true,
+    "request": {
+      "protocol_version": 1,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": "5ded0d37338ab7cc0a6d5b21a0b46675f2760fe21937eb49fc31f5c509da5d62"
+  },
+  {
+    "name": "v1-preserved-later-unreceived-close-same-global-revision",
+    "valid": true,
+    "request": {
+      "protocol_version": 1,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775809",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740995",
+        "revision": "9223372036854775809",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": "d1c170d6b89671c6e74a9c414df630627b792132b87629ec1f5e9f7a359d3e63"
+  },
+  {
+    "name": "v1-preserved-later-applied-close-next-global-revision",
+    "valid": true,
+    "request": {
+      "protocol_version": 1,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775809",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740995",
+        "revision": "9223372036854775810",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": "4f9b21a884164e9ba399db4b56e47992ace30bcd0266c262e2eb39c909cbaf46"
+  },
+  {
+    "name": "v1-preserved-uint64-boundary-no-addition",
+    "valid": true,
+    "request": {
+      "protocol_version": 1,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "18446744073709551614",
+        "revision": "18446744073709551615",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "18446744073709551614",
+        "revision": "18446744073709551615",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "18446744073709551615",
+        "revision": "18446744073709551615",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": "bdd6b6a5c855617dad0045753873ff086550e92c2c52501cc2c7bb31821f5ca1"
+  },
+  {
+    "name": "unsupported-version",
+    "valid": false,
+    "request": {
+      "protocol_version": 3,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "v1-rejects-cross-generation",
+    "valid": false,
+    "request": {
+      "protocol_version": 1,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "generation-rollback",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "1",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "original-generation-zero",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "0",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "previous-generation-zero",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "0",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "close-generation-zero",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "0",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "next-generation-numeric",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": 3,
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "next-generation-overflow",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "18446744073709551616",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "predecessor-ahead-of-next",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "4",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "changed-budget",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "foreign-budget"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "changed-original-budget",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "foreign-budget"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "changed-predecessor-budget",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "foreign-budget"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "changed-close-boot",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "3"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "changed-predecessor-vm",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "foreign-vm",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "predecessor-open",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": true,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "next-open",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": true,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "next-owner-not-higher",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "revision-backward",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775807",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "original-request-protocol",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 2,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "native-request-protocol",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 2,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "unknown-wrapper-field",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "allow_resize": true
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "missing-value",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "2",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": null,
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  },
+  {
+    "name": "predecessor-before-original",
+    "valid": false,
+    "request": {
+      "protocol_version": 2,
+      "original": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740993",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "4",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "previous_close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740994",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      },
+      "close": {
+        "protocol_version": 1,
+        "instance": {
+          "vm_uid": "dsg-vm-1",
+          "compute_instance_id": "dsg-compute-1",
+          "pg_boot_id": "18446744073709551615"
+        },
+        "issuer_epoch": "9007199254740995",
+        "revision": "9223372036854775808",
+        "expected_capacity_generation": "3",
+        "open": false,
+        "budget_commitment_id": "budget-service-continuation"
+      }
+    },
+    "context_sha256": ""
+  }
+]

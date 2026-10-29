@@ -53,6 +53,7 @@ func (p *initialServicePG) serveClosureContinuation(t *testing.T, w http.Respons
 		require.Equal(t, s.State().Owner.Epoch, request.Close.IssuerEpoch)
 		require.Equal(t, request.Close.IssuerEpoch, p.current().Observed.IssuerFloorEpoch, "必须先fence再派发后继关闭")
 		p.posts++
+		require.Equal(t, request.Close.ExpectedCapacityGeneration, p.current().Observed.CapacityGeneration)
 		if p.loseBefore {
 			p.loseBefore = false
 			w.WriteHeader(http.StatusServiceUnavailable)
@@ -78,7 +79,7 @@ func (p *initialServicePG) serveClosureContinuation(t *testing.T, w http.Respons
 		disposition = control.AdmissionReplayed
 	}
 	closed := control.AdmissionResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: request.Close, Disposition: disposition, ContextSHA256: closeDigest, Observed: p.current().Observed}
-	pgReply(w, control.AdmissionContinuationResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: request, ContextSHA256: digest, ClosedBy: closed, PriorMayHaveApplied: true})
+	pgReply(w, control.AdmissionContinuationResponse{ProtocolVersion: request.ProtocolVersion, VMShrinkPermit: false, Request: request, ContextSHA256: digest, ClosedBy: closed, PriorMayHaveApplied: true})
 }
 
 // 空闲关闭没有Resize Active。独立调度真实失租/接管窗口，原关闭和

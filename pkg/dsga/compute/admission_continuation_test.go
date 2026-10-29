@@ -149,4 +149,93 @@ func TestAdmissionContinuationReservationSerializesAndRetainsPredecessor(t *test
 	retainedValue := client.PendingAdmissionContinuation()
 	retainedValue.Original.BudgetCommitmentID = "changed-copy"
 	require.Equal(t, &next, client.PendingAdmissionContinuation())
+	upgraded := next
+	upgraded.ProtocolVersion, upgraded.PreviousClose = 2, next.Close
+	upgraded.Close.IssuerEpoch++
+	require.NoError(t, client.reserveAdmissionContinuation(upgraded))
+	client.finishAdmission(false)
+	downgraded := upgraded
+	downgraded.ProtocolVersion, downgraded.PreviousClose = 1, upgraded.Close
+	downgraded.Close.IssuerEpoch++
+	require.NoError(t, downgraded.Validate(), "单次v1选择合法也不能覆盖已持久的v2语义")
+	require.Error(t, client.reserveAdmissionContinuation(downgraded))
+	require.Equal(t, &upgraded, client.PendingAdmissionContinuation())
+}
+
+// TLS peer分别丢失v1旧代次关闭与v2新代次关闭的回复。恢复只查明确原文，
+// 包装降级和旧回执都不能清未知；关闭完成后原Resize未知仍独立保留。
+func TestAdmissionContinuationCapacityLostReplyAndRestore(t *testing.T) {
+	resize, baseline := fixtures(t)
+	original := control.AdmissionRequest{
+		ProtocolVersion: 1, Instance: resize.Key.Instance,
+		IssuerEpoch: resize.Key.IssuerEpoch, Revision: 1, ExpectedCapacityGeneration: baseline.Observed.CapacityGeneration,
+		Open: false, BudgetCommitmentID: "capacity-continuation-budget",
+	}
+	first := control.AdmissionContinuationRequest{ProtocolVersion: 1, Original: original, PreviousClose: original, Close: original}
+	first.Close.IssuerEpoch++
+	next := first
+	next.ProtocolVersion, next.PreviousClose = 2, first.Close
+	next.Close.IssuerEpoch++
+	next.Close.ExpectedCapacityGeneration++
+	var writes atomic.Int32
+	var downgrade atomic.Bool
+	_, config := newTLSClient(t, func(w http.ResponseWriter, r *http.Request) {
+		var request control.AdmissionContinuationRequest
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&request))
+		if r.URL.Path == "/dsg/v1/admission/continue-close" {
+			writes.Add(1)
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		require.Equal(t, "/dsg/v1/admission/continue-close/status", r.URL.Path)
+		s := baseline.Observed
+		s.Operation, s.AdmissionOpen = nil, false
+		s.IssuerFloorEpoch, s.AdmissionRevision = next.Close.IssuerEpoch, request.Close.Revision
+		s.CapacityGeneration = next.Close.ExpectedCapacityGeneration
+		digest, err := request.ContextSHA256()
+		require.NoError(t, err)
+		native, err := request.Close.ContextSHA256()
+		require.NoError(t, err)
+		version := request.ProtocolVersion
+		if downgrade.Load() {
+			version = 1
+		}
+		reply(w, control.AdmissionContinuationResponse{
+			ProtocolVersion: version, VMShrinkPermit: false, Request: request, ContextSHA256: digest,
+			PriorMayHaveApplied: true, ClosedBy: control.AdmissionResponse{
+				ProtocolVersion: 1, VMShrinkPermit: false, Request: request.Close,
+				Disposition: control.AdmissionReplayed, ContextSHA256: native, Observed: s,
+			},
+		})
+	})
+	ctx := context.Background()
+	config.IssuerEpoch, config.Pending, config.AdmissionPending = first.Close.IssuerEpoch, &resize, &original
+	a, err := New(ctx, config)
+	require.NoError(t, err)
+	defer a.CloseIdleConnections()
+	_, err = a.ContinueAdmissionClosure(ctx, first)
+	require.Error(t, err)
+	config.IssuerEpoch, config.AdmissionClose, config.AdmissionContinuation = next.Close.IssuerEpoch, &first.Close, &first
+	b, err := New(ctx, config)
+	require.NoError(t, err)
+	defer b.CloseIdleConnections()
+	_, err = b.ContinueAdmissionClosure(ctx, next)
+	require.Error(t, err)
+	require.Equal(t, &next, b.PendingAdmissionContinuation())
+	config.AdmissionClose, config.AdmissionContinuation = &next.Close, &next
+	c, err := New(ctx, config)
+	require.NoError(t, err)
+	defer c.CloseIdleConnections()
+	_, err = c.AdmissionContinuationStatus(ctx, first)
+	require.Error(t, err)
+	downgrade.Store(true)
+	_, err = c.AdmissionContinuationStatus(ctx, next)
+	require.Error(t, err)
+	require.Equal(t, &next, c.PendingAdmissionContinuation())
+	downgrade.Store(false)
+	_, err = c.AdmissionContinuationStatus(ctx, next)
+	require.NoError(t, err)
+	require.Nil(t, c.PendingAdmissionContinuation())
+	require.Equal(t, &resize, c.Pending(), "安全关闭不能抹去PG原Resize未知")
+	require.Equal(t, int32(2), writes.Load(), "查询不得隐式重放")
 }

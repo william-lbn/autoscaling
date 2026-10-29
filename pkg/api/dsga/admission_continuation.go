@@ -4,7 +4,9 @@ import "fmt"
 
 // AdmissionContinuationRequest为接管者显式选择同一空闲服务关闭的后继命令。
 // Original始终保留最初完整意图；PreviousClose保留最近一次关闭，不能将其
-// 直接换成新owner后重放。Close只允许在相同boot、容量和预算上继续关闭。
+// 直接换成新owner后重放。v1固定同容量；v2允许同boot/预算的容量代次
+// 单调前进，用于PG已派发后关闭撞上原Resize提交的恢复。子请求仍为v1。
+// v2不授权任意Resize：外层Journal必须另核该原操作允许的有限代次集合。
 //
 // 该值只是写前WAL的协议，不授予派发权限。实际执行前仍须原UID/RV写前
 // 确认、当前Session认证及PG原生fence；只有Close的完整关闭回执才能完成。
@@ -17,17 +19,28 @@ type AdmissionContinuationRequest struct {
 }
 
 func (r AdmissionContinuationRequest) Validate() error {
-	if r.ProtocolVersion != ProtocolVersion || r.Original.Validate() != nil || r.PreviousClose.Validate() != nil || r.Close.Validate() != nil {
+	if (r.ProtocolVersion != 1 && r.ProtocolVersion != 2) || r.Original.Validate() != nil || r.PreviousClose.Validate() != nil || r.Close.Validate() != nil {
 		return fmt.Errorf("invalid admission continuation protocol or request")
 	}
 	o, p, n := r.Original, r.PreviousClose, r.Close
 	// 初次接续可令PreviousClose逐字等于原关闭；已有后继时必须是更高
 	// 的原关闭。准入revision在同boot内全局单调，换owner也不能倒退。
 	if p.Open || (p != o && p.ClosesOver(o) != nil) || p.Revision < o.Revision ||
-		n.ClosesOver(p) != nil || n.IssuerEpoch <= p.IssuerEpoch || n.Revision < p.Revision ||
-		o.BudgetCommitmentID != p.BudgetCommitmentID || o.BudgetCommitmentID != n.BudgetCommitmentID ||
-		o.ExpectedCapacityGeneration != p.ExpectedCapacityGeneration || o.ExpectedCapacityGeneration != n.ExpectedCapacityGeneration {
-		return fmt.Errorf("admission continuation changes original idle boundary or fails to fence predecessor")
+		n.ClosesOver(p) != nil || n.IssuerEpoch < p.IssuerEpoch || n.Revision < p.Revision ||
+		o.BudgetCommitmentID != p.BudgetCommitmentID || o.BudgetCommitmentID != n.BudgetCommitmentID {
+		return fmt.Errorf("admission continuation changes original boundary or fails to fence predecessor")
+	}
+	// 只比较不加一，避免最大u64回绕。容量前进不证明原资源动作完成、没有
+	// 效果或预算可释放；关闭原生回执仍须精确匹配所选Close及当前boot。
+	if r.ProtocolVersion == 1 && (o.ExpectedCapacityGeneration != p.ExpectedCapacityGeneration || p.ExpectedCapacityGeneration != n.ExpectedCapacityGeneration) ||
+		r.ProtocolVersion == 2 && (o.ExpectedCapacityGeneration > p.ExpectedCapacityGeneration || p.ExpectedCapacityGeneration > n.ExpectedCapacityGeneration) {
+		return fmt.Errorf("admission continuation violates selected capacity protocol")
+	}
+	// 同owner只在v2且容量确实前进时选择新关闭，ClosesOver同时要求
+	// revision严格提高，封住迟到旧关闭。这是原Resize唯一的有限恢复机会，
+	// 不是超时后任意换revision的重试；同代次仍必须更高owner接管。
+	if n.IssuerEpoch == p.IssuerEpoch && (r.ProtocolVersion != 2 || n.ExpectedCapacityGeneration <= p.ExpectedCapacityGeneration) {
+		return fmt.Errorf("same owner continuation requires capacity progress")
 	}
 	return nil
 }
@@ -53,7 +66,7 @@ type AdmissionContinuationResponse struct {
 
 func (r AdmissionContinuationResponse) ValidateFor(request AdmissionContinuationRequest, bound Instance, query bool) error {
 	digest, err := request.ContextSHA256()
-	if err != nil || r.ProtocolVersion != ProtocolVersion || r.VMShrinkPermit || !r.PriorMayHaveApplied || r.Request != request || r.ContextSHA256 != digest || !r.ClosedBy.Confirms() {
+	if err != nil || r.ProtocolVersion != request.ProtocolVersion || r.VMShrinkPermit || !r.PriorMayHaveApplied || r.Request != request || r.ContextSHA256 != digest || !r.ClosedBy.Confirms() {
 		return fmt.Errorf("admission continuation lacks exact retained selection or native close")
 	}
 	return r.ClosedBy.ValidateFor(request.Close, bound, query)

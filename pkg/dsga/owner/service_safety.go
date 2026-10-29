@@ -165,7 +165,7 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 				fact, err = w.client.ContinueAdmissionClosure(ctx, n.Request)
 			}
 			if err != nil {
-				return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+				return w.recoverServiceClosureCapacity(ctx, m, err)
 			}
 			_, err = w.session.store.RecordServiceClosureContinuation(ctx, s, m.Owner, fact, replay == "")
 			return true, pgexec.Recorded, err
@@ -179,9 +179,9 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 				fact, err = w.client.CloseAdmissionOriginal(ctx, selection)
 			}
 			if err != nil {
-				return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+				return w.recoverServiceClosureCapacity(ctx, m, err)
 			}
-			if m.ProtocolVersion == 16 {
+			if m.ProtocolVersion == 16 || m.ProtocolVersion == 17 {
 				_, err = w.session.store.RecordActiveServiceClosure(ctx, s, m.Owner, fact, replay == "")
 			} else if c.OperationSHA256 != "" {
 				_, err = w.session.store.RecordResumeServiceClosure(ctx, s, m.Owner, fact, replay == "")
@@ -197,7 +197,7 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 			fact, err = w.client.SetAdmission(ctx, c.Request)
 		}
 		if err != nil || !fact.Confirms() {
-			return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+			return w.recoverServiceClosureCapacity(ctx, m, err)
 		}
 		_, err = w.session.store.RecordServiceClosure(ctx, s, m.Owner, fact, replay == "")
 		return true, pgexec.Recorded, err
@@ -285,6 +285,24 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 	return true, pgexec.Recorded, err
 }
 
+// 原关闭可能在取SharedCost和setter之间撞上原PG提交。只在v17、当前
+// 同一owner且容量严格前进时，continueServiceClosure才允许新选择并先写前
+// CAS；同代次/网络未知原样等待，不自动重放原setter，也不等待被迫换owner。
+// 单个原Resize最多前进一次，因此该自动恢复有界，不会无穷消耗revision。
+func (w *PGWorker) recoverServiceClosureCapacity(ctx context.Context, m journal.Model, originalErr error) (bool, pgexec.Progress, error) {
+	if m.ProtocolVersion == 17 && m.ServiceClosure != nil && m.ServiceClosure.Pending() {
+		origin, _, _, digest := m.ServiceClosure.Selection()
+		if origin == m.Owner {
+			progress, err := w.continueServiceClosure(ctx, digest)
+			if err == nil {
+				return true, progress, nil
+			}
+			originalErr = errors.Join(originalErr, err)
+		}
+	}
+	return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, originalErr)
+}
+
 // Resume仍为空Planned时没有可供CloseAdmissionOriginal选择的原开放。
 // 先原生fence封住旧owner，再在同boot/完整Finalize容量下选择真实关闭；
 // UID/RV写前CAS固定完整Active及预算后才派发SetAdmission(false)。Resize
@@ -329,6 +347,8 @@ func (w *PGWorker) closePlannedResumeService(ctx context.Context, s *journal.Sna
 // fence不能证明已关闭，也不清旧未知；若旧关闭已应用则使用下一revision，
 // 未投递则可复用其未消费revision。任何失败都保留原预算/旧工作，不自动
 // 重开、释放或缩VM；再次接管必须选择最新摘要，不能从最初关闭跳跃。
+// 已派发PG的容量在关闭前进一次时，当前同owner也可持久选择新关闭；严格
+// 更高revision封住迟到旧关闭。该自动分支由原Resize有限容量集合约束。
 func (w *PGWorker) continueServiceClosure(ctx context.Context, selector string) (pgexec.Progress, error) {
 	s, err := w.session.store.Load(ctx)
 	if err != nil {
@@ -341,8 +361,8 @@ func (w *PGWorker) continueServiceClosure(ctx context.Context, selector string) 
 	}
 	origin, _, previous, digest := c.Selection()
 	instance, epoch := w.Binding()
-	if selector != digest || m.Owner.Epoch <= origin.Epoch || c.Request.Instance != instance {
-		return pgexec.AwaitingFact, fmt.Errorf("service continuation requires exact latest closure and higher current owner")
+	if selector != digest || m.Owner.Epoch < origin.Epoch || m.Owner.Epoch == origin.Epoch && m.Owner != origin || c.Request.Instance != instance {
+		return pgexec.AwaitingFact, fmt.Errorf("service continuation requires exact latest closure and current owner")
 	}
 	// PG的fence与后续setter还会独立认证当前签名owner；此处先封住
 	// 旧setter再读revision，避免“先观察，旧请求迟到后仍按旧值派发”。
@@ -355,13 +375,27 @@ func (w *PGWorker) continueServiceClosure(ctx context.Context, selector string) 
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
 	pg := shared.Observed
-	if pg.Instance != instance || pg.IssuerFloorEpoch != epoch || pg.CapacityGeneration != c.Request.ExpectedCapacityGeneration || pg.AdmissionRevision == control.Uint64(math.MaxUint64) {
+	allowed := pg.CapacityGeneration == c.Request.ExpectedCapacityGeneration
+	if m.ProtocolVersion == 17 {
+		allowed = m.ActiveServiceCapacityAllowed(pg.CapacityGeneration) && pg.CapacityGeneration >= previous.ExpectedCapacityGeneration
+	}
+	if pg.Instance != instance || pg.IssuerFloorEpoch != epoch || !allowed || pg.AdmissionRevision == control.Uint64(math.MaxUint64) {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
 	request := control.AdmissionContinuationRequest{ProtocolVersion: 1, Original: c.ProtectedAdmission(), PreviousClose: previous, Close: c.Request}
+	if m.ProtocolVersion == 17 {
+		request.ProtocolVersion = 2
+		request.Close.ExpectedCapacityGeneration = pg.CapacityGeneration
+	}
+	if m.Owner == origin && (m.ProtocolVersion != 17 || pg.CapacityGeneration <= previous.ExpectedCapacityGeneration || previous.Revision == control.Uint64(math.MaxUint64)) {
+		return pgexec.AwaitingFact, ErrServiceSafety
+	}
 	// 原首次开放及关闭都未投递时，PG水位可能仍为0；新关闭必须
 	// 至少覆盖最近已持久的关闭，不能退到1与最初开放共享revision。
 	request.Close.IssuerEpoch, request.Close.Revision = epoch, max(pg.AdmissionRevision+1, previous.Revision)
+	if m.Owner == origin {
+		request.Close.Revision = max(request.Close.Revision, previous.Revision+1)
+	}
 	s, dispatch, err := w.session.store.StartServiceClosureContinuation(ctx, s, m.Owner, selector, request)
 	if err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
