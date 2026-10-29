@@ -1,0 +1,263 @@
+{
+  "schema_version": 1,
+  "stage": "关闭接续外层持久WAL、PGWorker恢复与显式管理选择的Mac阶段验收",
+  "date": "2026-10-29",
+  "bases": {
+    "autoscaling": "ca15c2bd410e42a1c3eb8d1771465a5d5c0a0835",
+    "neon": "d9701afb49f3f8fef31fe5d780e728c44dfa13bb"
+  },
+  "pg17_frozen_sha": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "source_sha256": {
+    "pkg/dsga/journal/service_closure_continuation.go": "751f735acf08b1c16c898c09ac406d9d4d0b4364979cef5d7242707e151ae607",
+    "pkg/dsga/journal/service_closure_continuation_test.go": "99d6550066266456ab5254811fd8007a583663f5ccb08d4db6e279b2e7f8c2e7",
+    "pkg/dsga/journal/service_closure.go": "85d37b9f401808d961ddf2a89407cc84b243ac51a1eaa0aa5ea930204484313e",
+    "pkg/dsga/journal/model.go": "b7fb4693a73e758e6321ff79298b75bac9dbe65a81e06c1f70e036d2b8f640f6",
+    "pkg/dsga/journal/codec.go": "dfba38b0500141c851270052a19522d969128e552ae6aa7c4a1b3d2151578939",
+    "pkg/dsga/owner/service_safety.go": "d2af76b3de6275efc031184e943372eca1ed39c60908d44eb5ac537f9461d4c8",
+    "pkg/dsga/owner/service_continuation_test.go": "ceff3b645feb367526d986f425f8359106a16156efe16612dbf86e57530f8b6f",
+    "pkg/dsga/owner/pg.go": "dfb8f6ee9d76df4d1ffbf631929bab2d1bd8c77b026ad2c00fbe005c7c77f135",
+    "pkg/dsga/owner/control.go": "c18bafd28a051ff4187745517f3ec3f49d198822f0912183ee0bd90d1fd5011b",
+    "pkg/dsga/owner/initial_service_test.go": "a783838e1af402cf964f355007714ef51abde71d9993f64dfe3559e45f4162f7",
+    "pkg/api/dsga/coordination.go": "93e66d9e522ccae525b2ecf2f77b67cb0651f3219733027f01f709ad8f58e7bb",
+    "pkg/api/dsga/coordination_test.go": "b497e72466cd7612f41e40545e5b9e30d5f37c66bff0546f25346cbb626127d6"
+  },
+  "logs": {
+    "dsga-service-continuation-journal-first.jsonl": {
+      "sha256": "e7a7a4a68f6be57e8788e43343cb90c97d7738c34133a2ab1e51378389b09f92",
+      "bytes": 65659,
+      "test_pass_records": 63,
+      "test_fail_records": 0,
+      "test_skip_records": 0,
+      "top_level": [
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRetainsOriginalAndRepeatedPredecessors",
+          "Elapsed": 1.71
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationRejectsChangedSelectionAndProjection",
+          "Elapsed": 1.56
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStrictCodecAndCompletionSpace",
+          "Elapsed": 0.9
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceContinuationStoreRequiresConfirmedUIDRV",
+          "Elapsed": 5.59
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureKeepsNormalAndReconciledPermanentBudgets",
+          "Elapsed": 3.56
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRetainsBudgetUnknownAndOriginalOwnerAcrossCodec",
+          "Elapsed": 1.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsProjectionBorrowedBudgetAndFalseCompletion",
+          "Elapsed": 1.27
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureRejectsPredatedBoundaryAndFutureOwnerReceipt",
+          "Elapsed": 0.52
+        },
+        {
+          "Action": "pass",
+          "Test": "TestServiceClosureCodecReservesSpaceForNativeReceipt",
+          "Elapsed": 0.77
+        }
+      ],
+      "package_terminal": {
+        "Time": "2026-10-29T09:39:22.812875+08:00",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+        "Elapsed": 21.788
+      }
+    },
+    "dsga-service-continuation-control-contract.jsonl": {
+      "sha256": "80221c33d83a6ae46cb79973881c980a4b17760334478260581118526231f81c",
+      "bytes": 21657,
+      "test_pass_records": 21,
+      "test_fail_records": 0,
+      "test_skip_records": 0,
+      "top_level": [
+        {
+          "Action": "pass",
+          "Test": "TestCoordinationSelectorsCannotReplaceOriginalCommands",
+          "Elapsed": 0.02
+        },
+        {
+          "Action": "pass",
+          "Test": "TestCoordinationStrictDecodeAndIndependentCopies",
+          "Elapsed": 0
+        },
+        {
+          "Action": "pass",
+          "Test": "TestResourceOnlyZeroBootCannotAuthorizePGOrBusiness",
+          "Elapsed": 0
+        }
+      ],
+      "package_terminal": {
+        "Time": "2026-10-29T09:46:10.006803+08:00",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+        "Elapsed": 2.232
+      }
+    },
+    "dsga-service-continuation-owner-first.jsonl": {
+      "sha256": "179fe3c89e2d768010ebef46141cd92fcd4bb7e11c67bc7d0a99619c3457df35",
+      "bytes": 34373,
+      "test_pass_records": 3,
+      "test_fail_records": 3,
+      "test_skip_records": 0,
+      "top_level": [
+        {
+          "Action": "pass",
+          "Test": "TestPGWorkerInitialDiscoveryOrRetainedHighWaterBinding",
+          "Elapsed": 0.41
+        },
+        {
+          "Action": "fail",
+          "Test": "TestProductionServiceContinuationAcrossOwnersAndUnknownReplies",
+          "Elapsed": 71.33
+        },
+        {
+          "Action": "pass",
+          "Test": "TestProductionIdleServiceClosureUsesOriginalWALAndRecovery",
+          "Elapsed": 5.83
+        }
+      ],
+      "package_terminal": {
+        "Time": "2026-10-29T10:10:13.989241+08:00",
+        "Action": "fail",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "Elapsed": 81.191
+      }
+    },
+    "dsga-service-continuation-owner-fixture-final.jsonl": {
+      "sha256": "6af8702dfd5c040b16d6111f41d1cba5ff516e75a4b4ecc585c079b93c778f17",
+      "bytes": 30319,
+      "test_pass_records": 3,
+      "test_fail_records": 0,
+      "test_skip_records": 0,
+      "top_level": [
+        {
+          "Action": "pass",
+          "Test": "TestProductionServiceContinuationAcrossOwnersAndUnknownReplies",
+          "Elapsed": 115.75
+        }
+      ],
+      "package_terminal": {
+        "Time": "2026-10-29T10:12:49.367743+08:00",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+        "Elapsed": 120.648
+      }
+    },
+    "dsga-service-continuation-vet-first.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "dsga-service-continuation-owner-vet-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "dsga-service-continuation-lint-first.log": {
+      "sha256": "fc4b26863377a56290562a393c859529b13e69c10bcf27f226720d490808a457",
+      "bytes": 285
+    },
+    "dsga-service-continuation-lint-final.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "bytes": 10
+    },
+    "dsga-service-continuation-lint-release.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "bytes": 10
+    },
+    "dsga-service-continuation-consumers-compile.log": {
+      "sha256": "e3be467d55130d0e1adab5e7e48922354539dc5985a2c624ff0911fc0fc9dd5e",
+      "bytes": 2565
+    }
+  },
+  "adopted_results": {
+    "journal": {
+      "top_level_pass": 9,
+      "test_pass_records": 63,
+      "fail": 0,
+      "skip": 0
+    },
+    "coordination": {
+      "top_level_pass": 3,
+      "test_pass_records": 21,
+      "fail": 0,
+      "skip": 0
+    },
+    "owner_new_final": {
+      "top_level_pass": 1,
+      "test_pass_records": 3,
+      "fail": 0,
+      "skip": 0,
+      "seconds": 115.75
+    },
+    "owner_affected_from_first_failed_invocation": {
+      "top_level_pass": 2,
+      "test_pass_records": 3,
+      "tests": [
+        "TestPGWorkerInitialDiscoveryOrRetainedHighWaterBinding",
+        "TestProductionIdleServiceClosureUsesOriginalWALAndRecovery/root-drift"
+      ],
+      "invocation_as_whole_failed": true,
+      "not_rerun_after_test_only_assertion_fix": true
+    }
+  },
+  "processes": {
+    "journal_race_exit": 0,
+    "coordination_race_exit": 0,
+    "owner_first_exit": 1,
+    "owner_final_exit": 0,
+    "vet_exit": 0,
+    "owner_vet_final_exit": 0,
+    "initial_lint_exit": 1,
+    "final_lint_exit": 0,
+    "release_lint_exit": 0,
+    "consumer_compile_exit": 0
+  },
+  "failure_preservation": [
+    "审批服务502/超时在进程创建前拒绝，不计测试失败或通过",
+    "首轮owner组合两分支只接受LeadershipLost，实际executeControl更早以context canceled拒绝；仅修测试断言接受两种拒绝，生产取消顺序不变",
+    "首轮gofumpt一处格式失败，格式修正后lint0"
+  ],
+  "executed_scope": [
+    "Go Journal模型/严格codec",
+    "typed HTTP RFC6902 UID/RV CAS",
+    "真实client-go Elector/Session失租和重复接管",
+    "Go TLS SDK/PGWorker/executeControl管理处理器",
+    "PG/Root/平台/Kube为显式peer，非真实目标环境"
+  ],
+  "not_executed": [
+    "管理HTTP端点和ControlEndpoint.Submit网络入站本批未新增实测，旧认证测试沿用",
+    "本批没有新的Go→真实Compute/SQL/PG组合，沿用协议SDK前阶段原生证据",
+    "无新的PG内核编译/Rust执行",
+    "无Linux执行/交叉编译或真实K8s/etcd/NeonVM/KVM/HugeTLB/物理回收/迁移/性能认证"
+  ],
+  "remaining_business": [
+    "在途/首次开放未知异常关闭",
+    "坏/缺外层日志独立关闭",
+    "受控重新开放",
+    "normal安全降限与私有/后台持续上界及活性",
+    "分区旧进程/出生不完整/Runner无Wait/外层跨boot迁移",
+    "Monitor缓存WSS/组配额/RW-RO/全部最终写入口/可信CPU"
+  ],
+  "owner_stop_rule": "PG17全部核心代码、Mac可执行验证和自有远程归档完成后暂停Goal和原heartbeat；不自动进入PG18/PG16。",
+  "automation_state": "neon原heartbeat已通过应用工具更新为PG17停止点，ACTIVE；Goal恢复active，未新建重复任务。",
+  "whole_pg17_complete": false,
+  "default_enabled": false
+}

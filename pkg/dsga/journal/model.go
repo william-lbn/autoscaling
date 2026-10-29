@@ -383,7 +383,7 @@ func compareKeys(left, right control.Key) int {
 }
 
 func (model Model) Validate() error {
-	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 10) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
+	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 11) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
 		return fmt.Errorf("invalid journal version/sequence/incarnation")
 	}
 	// 旧Model已有严格字段解码，会拒绝pg_instance；这里另用v2明确标识
@@ -529,6 +529,15 @@ func cloneOperation(operation Operation) Operation {
 func (model Model) Clone() Model {
 	if model.ServiceClosure != nil {
 		closure := *model.ServiceClosure
+		if closure.Continuation != nil {
+			continuation := *closure.Continuation
+			if continuation.Receipt != nil {
+				fact := *continuation.Receipt
+				fact.ClosedBy = *cloneAdmissionResponse(&fact.ClosedBy)
+				continuation.Receipt = &fact
+			}
+			closure.Continuation = &continuation
+		}
 		if closure.Receipt != nil {
 			// Snapshot含数组、release key和操作指针，逐层复制避免调用方
 			// 修改快照内原生回执；不持锁，也不将指针共享给管理入口。

@@ -119,7 +119,7 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 		}
 		config.Instance = *known
 	} else if config.Instance.PGBootID == 0 {
-		if model.Active != nil || len(model.History) != 0 || model.ExpiredResults != 0 || config.Pending != nil || config.AdmissionPending != nil || config.AdmissionClose != nil {
+		if model.Active != nil || len(model.History) != 0 || model.ExpiredResults != 0 || config.Pending != nil || config.AdmissionPending != nil || config.AdmissionClose != nil || config.AdmissionContinuation != nil {
 			return nil, fmt.Errorf("PG worker initial discovery requires pristine journal")
 		}
 		initial = true
@@ -196,17 +196,29 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 		return nil, fmt.Errorf("PG worker supplied pending intent differs from journal")
 	}
 	config.Pending = pending
-	if c := model.ServiceClosure; c != nil && c.Phase == journal.Unconfirmed {
+	var admissionClose *control.AdmissionRequest
+	var admissionContinuation *control.AdmissionContinuationRequest
+	if c := model.ServiceClosure; c != nil && c.Pending() {
 		if admissionPending != nil && *admissionPending != c.Request {
 			return nil, fmt.Errorf("service closure conflicts with original admission unknown")
 		}
 		request := c.Request
 		admissionPending = &request
+		if c.Continuation != nil {
+			// v11恢复最初未知、最近关闭及完整直接前驱。只恢复最后关闭
+			// 会丢失选择摘要及旧owner影响；重建SDK不能借此退回旧接口。
+			continuation := c.Continuation.Request
+			closeRequest := continuation.Close
+			admissionClose, admissionContinuation = &closeRequest, &continuation
+		}
 	}
-	if config.AdmissionClose != nil || (config.AdmissionPending != nil && (admissionPending == nil || *config.AdmissionPending != *admissionPending)) {
+	if (config.AdmissionClose != nil && (admissionClose == nil || *config.AdmissionClose != *admissionClose)) ||
+		(config.AdmissionContinuation != nil && (admissionContinuation == nil || *config.AdmissionContinuation != *admissionContinuation)) ||
+		(config.AdmissionPending != nil && (admissionPending == nil || *config.AdmissionPending != *admissionPending)) {
 		return nil, fmt.Errorf("PG worker supplied admission differs from journal")
 	}
 	config.AdmissionPending = admissionPending
+	config.AdmissionClose, config.AdmissionContinuation = admissionClose, admissionContinuation
 	config.IssuerEpoch = session.actor.Epoch
 	token := config.Token
 	credentialWait := config.Timeout

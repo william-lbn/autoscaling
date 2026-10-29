@@ -3,6 +3,58 @@
 更新：2026-10-26。分支`codex/dsga-autoscaling-20261019`，只推自有fork，不合main。
 本文件是当前入口；初始维护快照仍见[基线](DSGA-上游基线与开发约束.md)。
 
+## 最新验证：关闭接续持久WAL与PGWorker/管理处理器已通过Mac阶段
+
+原Goal恢复active；原neon heartbeat已通过应用工具更新为PG17全面完成后暂停，
+不进入PG18/PG16，未创建重复任务。此前paused及审批失败段为历史，不覆盖本段。
+
+本地v11独立Continuation、完整三份选择恢复、显式更高owner接续与原选择重放已
+验证。新组合最终-race1顶层/3记录通过，0fail/skip，115.75秒；真实Session失租/
+重复接管、写前CAS/PG前后/Record丢回复、SDK重建与旧Session零派发。PG/Root/
+Kube/平台为显式peer，executeControl为正式处理器但未走新管理HTTP/Submit入站。
+原Journal9顶层63记录、协议3顶层21记录采用不重跑；首轮受影响旧v10/实例绑定
+两顶层3记录通过单列，首轮整条命令因新测试只接受LeadershipLost而实际先返回
+context canceled失败，修新测试断言后两新分支通过。三包vet及最终owner vet、
+增量lint0、共享消费者只编译exit0。详细源码/日志/未执行见[阶段验收](DSGA-关闭接续持久WAL-Mac验收-20261029.md)
+及[机器收据](DSGA-关闭接续持久WAL-Mac收据-20261029.json)。
+
+验证进程已终态，PG17 b078冻结/独立控制面/环境边界不变。候选记录保留历史；
+接下来中文模块提交、先推AS核完整SHA再更新Neon锁/文档并推核，远程以实际Git
+核验为准。在途/首次开放未知异常、坏缺日志关闭/受控重开、normal/持续约束、
+生命周期与Monitor/CPU仍有代码工作；不是PG17全面完成，不将其归为Linux待验。
+
+## 本次心跳读取到Goal已暂停（2026-10-29）
+
+get_goal实际返回status=paused，工具未说明暂停原因。PG17尚未全面完成，不能
+将该状态解释为验收或触发了“PG17完成后暂停”的业务条件。本心跳未启动开发、
+构建或测试；候选源码摘要仍与既有收据一致，owner组合日志仍不存在。
+
+旧neon heartbeat仍为ACTIVE且提示自动进入PG18/PG16，已调用应用工具尝试改为
+PAUSED并更新为最新PG17停止点，但自动审批服务返回usage limit、明确未执行。
+不得绕过审批改写应用配置。后续心跳先读Goal真实状态；paused时不自行复工，
+等待所有者明确恢复。源码/候选/既有日志保留，恢复后仍须先完成新owner生产组合。
+
+## 最新本地候选：关闭接续持久WAL及生产入口（未提交）
+
+按所有者最新指示，先完成PG17全部核心代码、Mac可执行验证与远程归档后暂停，
+不进入PG18/PG16；当前未满足该条件，Goal active。根AGENTS已记录，原heartbeat
+更新遇审批服务断连/超时，工具未执行；恢复必须按最新停止点。
+
+本地新增v11独立Continuation、原UID/RV写前CAS、完整PGWorker三份选择恢复与
+显式continue_service_closure管理入口。原关闭/预算/未知不改；当前选择只读
+轮询，更高owner先原生Fenced再观察revision，写前确认后派发，不自动重开。
+Journal 9顶层/63记录-race及管理协议3顶层/21记录-race通过，0fail/skip；三包
+vet终态0，首轮gofumpt修正后最终增量lint0。新生产组合已编写但四次启动均在
+创建进程前被自动审批服务502/超时拒绝，没有owner日志/进程，不能算通过或归
+Linux后验。详见[当前候选恢复](DSGA-关闭接续持久WAL-开发恢复-20261029.md)及
+[候选收据](DSGA-关闭接续持久WAL-候选收据-20261029.json)。
+
+两仓尚未提交/推送；AS HEAD仍ca15c2bd、Neon仍d9701afb及原依赖锁；PG17三处
+b078冻结不变，无遗留测试进程，不重跑已通过未变功能。下一步先执行新owner
+组合与受影响v10/Worker绑定，真失败先修，通过后再按依赖顺序中文提交推核。
+所有者AS AGENTS改动保留；不追上游/独立控制面，不建子代理/镜像/部署/合main。
+以下既有已归档阶段仍有效，不将本候选写成已验收或PG17全面完成。
+
 ## 最新接续：冻结基线上的Runner持久消费与私有QMP（2026-10-26）
 
 按所有者17:29:30冻结维护截止，本轮不再fetch/merge新上游。实际Runner出生/

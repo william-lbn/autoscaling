@@ -16,7 +16,7 @@ func coordinationFixture(t *testing.T) CoordinationCommand {
 
 func TestCoordinationSelectorsCannotReplaceOriginalCommands(t *testing.T) {
 	original := coordinationFixture(t)
-	for _, action := range []CoordinationAction{CoordinationState, CoordinationResourceState, CoordinationBegin, CoordinationCancel, CoordinationReplayPG, CoordinationReplayQuiesce, CoordinationReplayAdmission, CoordinationReplayResource, CoordinationReplayPrepare, CoordinationReplayInitial, CoordinationReplayVM, CoordinationReplayAbort, CoordinationRecoverUnchanged, CoordinationRecoverCapacity, CoordinationRepairHeld, CoordinationObserveHeld, CoordinationReplayServiceClosure} {
+	for _, action := range []CoordinationAction{CoordinationState, CoordinationResourceState, CoordinationBegin, CoordinationCancel, CoordinationReplayPG, CoordinationReplayQuiesce, CoordinationReplayAdmission, CoordinationReplayResource, CoordinationReplayPrepare, CoordinationReplayInitial, CoordinationReplayVM, CoordinationReplayAbort, CoordinationRecoverUnchanged, CoordinationRecoverCapacity, CoordinationRepairHeld, CoordinationObserveHeld, CoordinationReplayServiceClosure, CoordinationContinueServiceClosure} {
 		t.Run(string(action), func(t *testing.T) {
 			command := original.Clone()
 			command.Action = action
@@ -25,7 +25,7 @@ func TestCoordinationSelectorsCannotReplaceOriginalCommands(t *testing.T) {
 			}
 			switch action {
 			case CoordinationBegin, CoordinationState, CoordinationResourceState:
-			case CoordinationReplayInitial, CoordinationRepairHeld, CoordinationObserveHeld, CoordinationReplayServiceClosure:
+			case CoordinationReplayInitial, CoordinationRepairHeld, CoordinationObserveHeld, CoordinationReplayServiceClosure, CoordinationContinueServiceClosure:
 				command.Selector = strings.Repeat("ab", 32)
 			default:
 				key := original.Request.Key

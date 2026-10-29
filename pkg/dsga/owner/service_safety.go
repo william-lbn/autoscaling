@@ -148,11 +148,27 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 		return true, pgexec.AwaitingFact, ErrLeadershipLost
 	}
 	if c := m.ServiceClosure; c != nil {
-		if replay != "" && (c.CommandSHA256 != replay || c.Origin != m.Owner || c.Phase != journal.Unconfirmed) {
+		origin, _, _, digest := c.Selection()
+		if replay != "" && (digest != replay || origin != m.Owner || !c.Pending()) {
 			return true, pgexec.AwaitingFact, fmt.Errorf("service closure replay differs from original owner/command")
 		}
-		if c.Phase == journal.Settled {
+		if !c.Pending() {
 			return true, pgexec.AwaitingFact, ErrServiceSafety
+		}
+		if n := c.Continuation; n != nil {
+			// 普通轮询始终只查询最近选择；原始/前驱回执不能完成它。
+			// 同owner明确重放也必须逐字使用WAL，不能重选revision。
+			var fact control.AdmissionContinuationResponse
+			if replay == "" {
+				fact, err = w.client.AdmissionContinuationStatus(ctx, n.Request)
+			} else {
+				fact, err = w.client.ContinueAdmissionClosure(ctx, n.Request)
+			}
+			if err != nil {
+				return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+			}
+			_, err = w.session.store.RecordServiceClosureContinuation(ctx, s, m.Owner, fact, replay == "")
+			return true, pgexec.Recorded, err
 		}
 		var fact control.AdmissionResponse
 		if replay == "" {
@@ -207,4 +223,52 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 	}
 	_, err = w.session.store.RecordServiceClosure(ctx, s, m.Owner, fact, false)
 	return true, pgexec.Recorded, err
+}
+
+// continueServiceClosure只由已认证的同一串行管理循环调用。先原生fence
+// 当前owner，再观察全局准入revision，最后写前CAS并发出完整新关闭。
+// fence不能证明已关闭，也不清旧未知；若旧关闭已应用则使用下一revision，
+// 未投递则可复用其未消费revision。任何失败都保留原预算/旧工作，不自动
+// 重开、释放或缩VM；再次接管必须选择最新摘要，不能从最初关闭跳跃。
+func (w *PGWorker) continueServiceClosure(ctx context.Context, selector string) (pgexec.Progress, error) {
+	s, err := w.session.store.Load(ctx)
+	if err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	m := s.State()
+	c := m.ServiceClosure
+	if m.Owner != w.session.Actor() || c == nil || !c.Pending() {
+		return pgexec.AwaitingFact, ErrServiceSafety
+	}
+	origin, _, previous, digest := c.Selection()
+	instance, epoch := w.Binding()
+	if selector != digest || m.Owner.Epoch <= origin.Epoch || c.Request.Instance != instance {
+		return pgexec.AwaitingFact, fmt.Errorf("service continuation requires exact latest closure and higher current owner")
+	}
+	// PG的fence与后续setter还会独立认证当前签名owner；此处先封住
+	// 旧setter再读revision，避免“先观察，旧请求迟到后仍按旧值派发”。
+	fence, err := w.client.Fence(ctx, control.FenceRequest{ProtocolVersion: 1, Instance: instance, IssuerEpoch: epoch})
+	if err != nil || fence.Disposition != control.Fenced {
+		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+	}
+	shared, err := w.client.SharedCost(ctx)
+	if err != nil {
+		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+	}
+	pg := shared.Observed
+	if pg.Instance != instance || pg.IssuerFloorEpoch != epoch || pg.CapacityGeneration != c.Request.ExpectedCapacityGeneration || pg.AdmissionRevision == control.Uint64(math.MaxUint64) || pg.AdmissionRevision+1 < previous.Revision {
+		return pgexec.AwaitingFact, ErrServiceSafety
+	}
+	request := control.AdmissionContinuationRequest{ProtocolVersion: 1, Original: c.Request, PreviousClose: previous, Close: c.Request}
+	request.Close.IssuerEpoch, request.Close.Revision = epoch, pg.AdmissionRevision+1
+	s, dispatch, err := w.session.store.StartServiceClosureContinuation(ctx, s, m.Owner, selector, request)
+	if err != nil {
+		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+	}
+	fact, err := w.client.ContinueAdmissionClosure(ctx, dispatch.Request)
+	if err != nil {
+		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+	}
+	_, err = w.session.store.RecordServiceClosureContinuation(ctx, s, m.Owner, fact, false)
+	return pgexec.Recorded, err
 }

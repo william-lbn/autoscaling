@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "updated_at": "2026-10-29T09:49:13.964425+08:00",
+  "status": "development_candidate_not_committed_not_pushed",
+  "autoscaling_head": "ca15c2bd410e42a1c3eb8d1771465a5d5c0a0835",
+  "neon_head": "d9701afb49f3f8fef31fe5d780e728c44dfa13bb",
+  "pg17_sha": "b078736a4cfdfccce69914feefb5b5e56560c1e8",
+  "candidate_sources": {
+    "pkg/dsga/journal/service_closure_continuation.go": "751f735acf08b1c16c898c09ac406d9d4d0b4364979cef5d7242707e151ae607",
+    "pkg/dsga/journal/service_closure_continuation_test.go": "99d6550066266456ab5254811fd8007a583663f5ccb08d4db6e279b2e7f8c2e7",
+    "pkg/dsga/journal/service_closure.go": "85d37b9f401808d961ddf2a89407cc84b243ac51a1eaa0aa5ea930204484313e",
+    "pkg/dsga/journal/model.go": "b7fb4693a73e758e6321ff79298b75bac9dbe65a81e06c1f70e036d2b8f640f6",
+    "pkg/dsga/journal/codec.go": "dfba38b0500141c851270052a19522d969128e552ae6aa7c4a1b3d2151578939",
+    "pkg/dsga/owner/service_safety.go": "d2af76b3de6275efc031184e943372eca1ed39c60908d44eb5ac537f9461d4c8",
+    "pkg/dsga/owner/service_continuation_test.go": "6d320538482b723e31007b7648e3379968f0cfd690884f2101e4f9ed28596edc",
+    "pkg/dsga/owner/pg.go": "dfb8f6ee9d76df4d1ffbf631929bab2d1bd8c77b026ad2c00fbe005c7c77f135",
+    "pkg/dsga/owner/control.go": "c18bafd28a051ff4187745517f3ec3f49d198822f0912183ee0bd90d1fd5011b",
+    "pkg/dsga/owner/initial_service_test.go": "a783838e1af402cf964f355007714ef51abde71d9993f64dfe3559e45f4162f7",
+    "pkg/api/dsga/coordination.go": "93e66d9e522ccae525b2ecf2f77b67cb0651f3219733027f01f709ad8f58e7bb",
+    "pkg/api/dsga/coordination_test.go": "b497e72466cd7612f41e40545e5b9e30d5f37c66bff0546f25346cbb626127d6"
+  },
+  "evidence": [
+    {
+      "path": "build/dsga-service-continuation-journal-first.jsonl",
+      "sha256": "e7a7a4a68f6be57e8788e43343cb90c97d7738c34133a2ab1e51378389b09f92",
+      "bytes": 65659,
+      "top_level_pass": 9,
+      "test_records_pass": 63,
+      "fail": 0,
+      "skip": 0,
+      "package_elapsed_seconds": 21.788
+    },
+    {
+      "path": "build/dsga-service-continuation-control-contract.jsonl",
+      "sha256": "80221c33d83a6ae46cb79973881c980a4b17760334478260581118526231f81c",
+      "bytes": 21657,
+      "top_level_pass": 3,
+      "test_records_pass": 21,
+      "fail": 0,
+      "skip": 0,
+      "package_elapsed_seconds": 2.232
+    },
+    {
+      "path": "build/dsga-service-continuation-vet-first.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "build/dsga-service-continuation-lint-first.log",
+      "sha256": "fc4b26863377a56290562a393c859529b13e69c10bcf27f226720d490808a457",
+      "bytes": 285
+    },
+    {
+      "path": "build/dsga-service-continuation-lint-final.log",
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "bytes": 10
+    }
+  ],
+  "commands_terminal": {
+    "journal_race_exit": 0,
+    "coordination_race_exit": 0,
+    "vet_exit": 0,
+    "initial_lint_exit": 1,
+    "formatted_final_lint_exit": 0
+  },
+  "owner_combination": {
+    "status": "not_executed_approval_service_failure_before_process",
+    "attempts": 4,
+    "reasons": [
+      "502 previous response owner account unavailable",
+      "502 previous response owner account unavailable",
+      "upstream timeout",
+      "502 previous response owner account unavailable"
+    ],
+    "expected_log_absent": true
+  },
+  "automation_update": {
+    "status": "not_executed_approval_service_failure",
+    "local_stop_rule_recorded": true
+  },
+  "stop_rule": "PG17全部核心代码、Mac可执行验证及远程归档实际完成后暂停Goal与原heartbeat，不进入PG18/PG16；当前未达到该条件。",
+  "excluded_certifications": [
+    "real Linux",
+    "real K8s/apiserver/etcd",
+    "real NeonVM/KVM",
+    "HugeTLB",
+    "physical memory reclamation",
+    "migration",
+    "performance"
+  ]
+}

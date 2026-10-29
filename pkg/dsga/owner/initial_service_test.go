@@ -85,6 +85,9 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 	case "/dsg/v1/budget/shared":
 		pgReply(w, p.shared())
 		return
+	case "/dsg/v1/admission/continue-close", "/dsg/v1/admission/continue-close/status":
+		p.serveClosureContinuation(t, w, r)
+		return
 	case "/dsg/v1/resize":
 		var request control.Request
 		require.NoError(t, json.NewDecoder(r.Body).Decode(&request))
@@ -264,6 +267,7 @@ func TestProductionInitialOwnerTransferCancelsUnreceivedGuestAndSettlesActualBud
 func productionInitialService(t *testing.T, mode string) {
 	t.Helper()
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
+	closureTransfer := strings.HasPrefix(mode, "closure-transfer-")
 	pgTakeover := mode == "owner-transfer-after-pg"
 	unreceivedGuest := mode == "owner-transfer-before-guest-delivery"
 	guestTakeover := mode == "owner-transfer-after-guest" || unreceivedGuest
@@ -315,7 +319,7 @@ func productionInitialService(t *testing.T, mode string) {
 		// 整个测试的上限，各生产请求/租约/单轮deadline均保持原值。
 		deadline = 3 * time.Minute
 	}
-	if ownerTransfer {
+	if ownerTransfer || closureTransfer {
 		// 实测包含原30秒Lease失效等待的完整组合为175.53秒，
 		// 总期限留出race调度余量；不改各生产请求或30/20/2秒租约。
 		deadline = 4 * time.Minute
@@ -324,7 +328,7 @@ func productionInitialService(t *testing.T, mode string) {
 	defer cancel()
 	run := elector.Run
 	var transfer *businessOwnerTransfer
-	if ownerTransfer {
+	if ownerTransfer || closureTransfer {
 		transfer = newBusinessOwnerTransfer(t, api, coord, store, resourceConfig)
 		transfer.effectBeforeTakeover = mode == "owner-transfer-after-vm" || pgTakeover || guestTakeover
 		if pgTakeover {
@@ -380,6 +384,15 @@ func productionInitialService(t *testing.T, mode string) {
 			return next
 		}
 		worker = rebuild()
+		if closureTransfer {
+			for range 2 {
+				progress, err := worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress)
+			}
+			verifyServiceClosureContinuation(t, ctx, mode, transfer, client, session, resources, worker, config, source, pg, root)
+			return nil
+		}
 		if strings.HasPrefix(mode, "service-safety-") {
 			for range 2 {
 				progress, err := worker.Advance(ctx)

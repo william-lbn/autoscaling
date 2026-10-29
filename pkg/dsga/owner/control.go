@@ -128,7 +128,7 @@ func (worker *PGWorker) executeControl(ctx context.Context, command control.Coor
 	if safetyErr != nil {
 		return result, safetyErr
 	}
-	if safetySnapshot.State().ServiceClosure != nil && command.Action != control.CoordinationState && !command.Action.ResourceOnly() && command.Action != control.CoordinationReplayServiceClosure {
+	if safetySnapshot.State().ServiceClosure != nil && command.Action != control.CoordinationState && !command.Action.ResourceOnly() && command.Action != control.CoordinationReplayServiceClosure && command.Action != control.CoordinationContinueServiceClosure {
 		return result, ErrServiceSafety
 	}
 	var err error
@@ -180,6 +180,8 @@ func (worker *PGWorker) executeControl(ctx context.Context, command control.Coor
 		result.Progress, err = worker.ReplayInitialAdmission(callCtx, command.Selector)
 	case control.CoordinationReplayServiceClosure:
 		_, result.Progress, err = worker.advanceServiceSafety(callCtx, command.Selector)
+	case control.CoordinationContinueServiceClosure:
+		result.Progress, err = worker.continueServiceClosure(callCtx, command.Selector)
 	case control.CoordinationReplayVM:
 		result.Progress, err = worker.ReplayVMOriginal(callCtx, *command.Key)
 	case control.CoordinationReplayAbort:
