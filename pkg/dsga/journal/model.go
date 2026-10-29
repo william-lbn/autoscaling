@@ -164,13 +164,16 @@ type Model struct {
 	// 后续派发效果。它与Finish同CAS，独立于16条结果缓存；任何Start先撤销
 	// 此证明，新预算也必须重新成功关闭。首次生成升v5，旧读者必须拒绝。
 	BudgetBoundary *ClosedBudgetBoundary `json:"budget_boundary,omitempty"`
+	// 异常服务关闭独立于Resize和预算终态，永久保留原命令及未知。v10旧
+	// 读者必须拒绝；关门不证明旧连接排空，也不解除任何资源持有。
+	ServiceClosure *ServiceClosure `json:"service_closure,omitempty"`
 }
 
 func New(vmUID, incarnation, holder string) (Model, error) {
 	model := Model{
 		ProtocolVersion: 1, VMUID: vmUID, Incarnation: incarnation, Sequence: 1,
 		Owner: Owner{HolderID: holder, Epoch: 1}, HighWater: nil, Active: nil, History: []Record{}, ExpiredResults: 0,
-		ResourceIdentity: nil, PGInstance: nil, BudgetHeld: nil, CapacityHeld: nil, InitialHeld: nil, BudgetBoundary: nil,
+		ResourceIdentity: nil, PGInstance: nil, BudgetHeld: nil, CapacityHeld: nil, InitialHeld: nil, BudgetBoundary: nil, ServiceClosure: nil,
 	}
 	return model, model.Validate()
 }
@@ -380,7 +383,7 @@ func compareKeys(left, right control.Key) int {
 }
 
 func (model Model) Validate() error {
-	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 9) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
+	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 10) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
 		return fmt.Errorf("invalid journal version/sequence/incarnation")
 	}
 	// 旧Model已有严格字段解码，会拒绝pg_instance；这里另用v2明确标识
@@ -469,6 +472,9 @@ func (model Model) Validate() error {
 	if err := model.validateInitialBudget(); err != nil {
 		return err
 	}
+	if err := model.validateServiceClosure(); err != nil {
+		return err
+	}
 	return model.validateBudgetBoundary()
 }
 
@@ -521,6 +527,15 @@ func cloneOperation(operation Operation) Operation {
 }
 
 func (model Model) Clone() Model {
+	if model.ServiceClosure != nil {
+		closure := *model.ServiceClosure
+		if closure.Receipt != nil {
+			// Snapshot含数组、release key和操作指针，逐层复制避免调用方
+			// 修改快照内原生回执；不持锁，也不将指针共享给管理入口。
+			closure.Receipt = cloneAdmissionResponse(closure.Receipt)
+		}
+		model.ServiceClosure = &closure
+	}
 	model.InitialHeld = cloneInitial(model.InitialHeld)
 	if model.BudgetBoundary != nil {
 		boundary := *model.BudgetBoundary
@@ -701,6 +716,9 @@ func (model Model) Begin(actor Owner, request control.Request, now uint64) (Mode
 	// 只返回已保存事实，不给旧动作新派发权；actor身份仍需上层认证，不来自请求自报。
 	if disposition := model.Lookup(request); disposition != Stale {
 		return model.Clone(), disposition, nil
+	}
+	if model.ServiceClosure != nil {
+		return model, Busy, nil
 	}
 	if request.Key.IssuerEpoch != actor.Epoch {
 		return model, Stale, nil

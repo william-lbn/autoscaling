@@ -132,7 +132,10 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 		if !query {
 			s, err := p.store.Load(r.Context())
 			require.NoError(t, err)
-			if s.State().InitialHeld != nil && s.State().InitialHeld.Admission != nil && s.State().Active == nil {
+			if c := s.State().ServiceClosure; c != nil {
+				require.Equal(t, journal.Unconfirmed, c.Phase)
+				require.Equal(t, c.Request, request, "异常关闭setter之前须有完整原关闭WAL")
+			} else if s.State().InitialHeld != nil && s.State().InitialHeld.Admission != nil && s.State().Active == nil {
 				a := s.State().InitialHeld.Admission
 				require.Equal(t, journal.Unconfirmed, a.Phase)
 				var c budget.InitialAdmissionCommand
@@ -377,6 +380,15 @@ func productionInitialService(t *testing.T, mode string) {
 			return next
 		}
 		worker = rebuild()
+		if strings.HasPrefix(mode, "service-safety-") {
+			for range 2 {
+				progress, err := worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress)
+			}
+			verifyIdleServiceClosure(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root)
+			return nil
+		}
 		if mode == "host" {
 			for range 2 {
 				progress, err := worker.Advance(ctx)

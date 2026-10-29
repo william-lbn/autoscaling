@@ -162,7 +162,7 @@ func (model Model) StartInitialAdmission(actor Owner, c budget.InitialAdmissionC
 	if err != nil {
 		return model, err
 	}
-	if actor != model.Owner || model.InitialHeld.Admission != nil || c.ValidateFor(i) != nil || c.Request.IssuerEpoch != actor.Epoch || model.Active != nil || model.HighWater != nil {
+	if actor != model.Owner || model.ServiceClosure != nil || model.InitialHeld.Admission != nil || c.ValidateFor(i) != nil || c.Request.IssuerEpoch != actor.Epoch || model.Active != nil || model.HighWater != nil {
 		return model, fmt.Errorf("first admission is not eligible for original dispatch")
 	}
 	raw, err := json.Marshal(c)

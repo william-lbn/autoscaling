@@ -122,6 +122,15 @@ func (worker *PGWorker) executeControl(ctx context.Context, command control.Coor
 	if err := worker.session.Check(callCtx); err != nil {
 		return result, err
 	}
+	// 持久关闭是独立服务栅栏：只允许查询、原Root修复/观察和明确选择原
+	// 关闭重放。不能从管理Begin、旧首次开放或取消恢复接口偷偷重开服务。
+	safetySnapshot, safetyErr := worker.session.store.Load(callCtx)
+	if safetyErr != nil {
+		return result, safetyErr
+	}
+	if safetySnapshot.State().ServiceClosure != nil && command.Action != control.CoordinationState && !command.Action.ResourceOnly() && command.Action != control.CoordinationReplayServiceClosure {
+		return result, ErrServiceSafety
+	}
 	var err error
 	switch command.Action {
 	case control.CoordinationState:
@@ -169,6 +178,8 @@ func (worker *PGWorker) executeControl(ctx context.Context, command control.Coor
 		result.Progress, err = worker.ReplayPrepareOriginal(callCtx, *command.Key)
 	case control.CoordinationReplayInitial:
 		result.Progress, err = worker.ReplayInitialAdmission(callCtx, command.Selector)
+	case control.CoordinationReplayServiceClosure:
+		_, result.Progress, err = worker.advanceServiceSafety(callCtx, command.Selector)
 	case control.CoordinationReplayVM:
 		result.Progress, err = worker.ReplayVMOriginal(callCtx, *command.Key)
 	case control.CoordinationReplayAbort:

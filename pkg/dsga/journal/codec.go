@@ -28,9 +28,12 @@ func encode(model Model, budget int) (Model, string, error) {
 	if budget < 1 || budget > MaxEncodedBytes {
 		return model, "", fmt.Errorf("invalid journal byte budget")
 	}
-	if model.Active != nil {
+	// 服务关闭有独立WAL，即使无Resize Active，也必须为原生关闭回执及
+	// owner接管保留既有4KiB余量。不能先发出关闭、再发现注解只能保存
+	// 写前命令而无法落账；淘汰规则仍只处理历史，不裁掉未知或原预算。
+	if model.Active != nil || model.ServiceClosure != nil && model.ServiceClosure.Phase == Unconfirmed {
 		budget -= 4096
-	} // 为完成记录/owner更换留头部空间，不截断在途动作。
+	}
 	model = model.Clone()
 	if err := model.Validate(); err != nil {
 		return model, "", err

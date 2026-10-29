@@ -61,6 +61,9 @@ const (
 	CoordinationObserveHeld      CoordinationAction = "observe_held_resources"
 )
 
+// 只选择已经持久保存的异常关闭摘要，不接受新的门禁/预算参数。
+const CoordinationReplayServiceClosure CoordinationAction = "replay_service_closure"
+
 // CoordinationCommand固定接收方完整实例及预期当前owner代次。Key保留原操作代次，
 // 因此取消旧操作时可与ExpectedOwnerEpoch不同；重放资格仍由各领域原WAL决定。
 // expected代次用于拒绝网络中排队至接管后的旧管理决定，不能从该数字获得执行权。
@@ -90,7 +93,7 @@ func (c CoordinationCommand) Validate() error {
 		if c.Request == nil || c.Request.Validate() != nil || c.Request.Key.Instance != Instance(c.Instance) || c.Request.Key.IssuerEpoch > c.ExpectedOwnerEpoch || c.Key != nil || c.Selector != "" {
 			return fmt.Errorf("begin requires one complete request for the selected owner")
 		}
-	case CoordinationReplayInitial, CoordinationRepairHeld, CoordinationObserveHeld:
+	case CoordinationReplayInitial, CoordinationRepairHeld, CoordinationObserveHeld, CoordinationReplayServiceClosure:
 		decoded, err := hex.DecodeString(c.Selector)
 		if err != nil || len(decoded) != 32 || hex.EncodeToString(decoded) != c.Selector || c.Request != nil || c.Key != nil {
 			return fmt.Errorf("source selection requires the original SHA256")
