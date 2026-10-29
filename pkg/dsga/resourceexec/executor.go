@@ -213,7 +213,7 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		}
 		// 独立资源代次取自原root WAL，绝不借PG revision/gen生成。完整命令
 		// 先经原VM UID/RV CAS持久化；丢回复没有票据，绝不调用下面Apply。
-		command = resourceguard.Command{ProtocolVersion: 1, Identity: e.id, IssuerEpoch: e.actor.Epoch, Revision: revision, BudgetCommitmentID: op.Request.BudgetCommitmentID, PostmasterPID: process.PostmasterPID, PostmasterStartTicks: process.PostmasterStartTicks, MemoryMaxBytes: prepared.Limits.MemoryMaxBytes, PidsMaxTasks: prepared.Limits.PidsMaxTasks, SystemMemoryMaxBytes: prepared.Limits.SystemMemoryMaxBytes, OutsideUpperBytes: prepared.Limits.OutsideUpperBytes, HugePools: append([]resourceguard.HugePool(nil), prepared.Limits.HugePools...)}
+		command = resourceguard.Command{ProtocolVersion: 1, Identity: e.id, IssuerEpoch: e.actor.Epoch, Revision: revision, BudgetCommitmentID: op.Request.BudgetCommitmentID, PostmasterPID: process.PostmasterPID, PostmasterStartTicks: process.PostmasterStartTicks, MemoryMaxBytes: prepared.Limits.MemoryMaxBytes, PidsMaxTasks: prepared.Limits.PidsMaxTasks, SystemMemoryMaxBytes: prepared.Limits.SystemMemoryMaxBytes, AddressSpaceMaxBytes: prepared.Limits.AddressSpaceMaxBytes, OutsideUpperBytes: prepared.Limits.OutsideUpperBytes, HugePools: append([]resourceguard.HugePool(nil), prepared.Limits.HugePools...)}
 		body, marshalErr := json.Marshal(command)
 		if marshalErr != nil || command.Validate() != nil {
 			return pgexec.AwaitingFact, fmt.Errorf("invalid complete resource command")
@@ -302,14 +302,14 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 }
 
 func commandMatches(c resourceguard.Command, p budget.Prepared) bool {
-	return c.Identity == p.Identity && c.BudgetCommitmentID == p.Request.BudgetCommitmentID && c.MemoryMaxBytes == p.Limits.MemoryMaxBytes && c.PidsMaxTasks == p.Limits.PidsMaxTasks && c.SystemMemoryMaxBytes == p.Limits.SystemMemoryMaxBytes && c.OutsideUpperBytes == p.Limits.OutsideUpperBytes && reflect.DeepEqual(c.HugePools, p.Limits.HugePools)
+	return c.Identity == p.Identity && c.BudgetCommitmentID == p.Request.BudgetCommitmentID && c.MemoryMaxBytes == p.Limits.MemoryMaxBytes && c.PidsMaxTasks == p.Limits.PidsMaxTasks && c.SystemMemoryMaxBytes == p.Limits.SystemMemoryMaxBytes && c.AddressSpaceMaxBytes == p.Limits.AddressSpaceMaxBytes && c.OutsideUpperBytes == p.Limits.OutsideUpperBytes && reflect.DeepEqual(c.HugePools, p.Limits.HugePools)
 }
 
 func checkGuest(v resourceguard.View, p budget.Prepared) error {
-	// 原创建冻结的任务数也属于完整限额，不接受Prepare遗漏/变更后才让root晚拒绝。
-	// 这只是任务数量硬约束，不能在此乘估算RSS冒充私有内存预算。
+	// 原创建冻结的任务数/AS/系统额度都属于完整来源，Prepare遗漏/变更须写前拒绝。
+	// 数量/整个VA硬约束不能在此当作私有RSS，不能靠它绕过normal安全降限。
 
-	if p.Limits.PidsMaxTasks != v.Bootstrap.Limits.PidsMaxTasks || p.Limits.SystemMemoryMaxBytes != v.Bootstrap.Limits.SystemMemoryMaxBytes || v.Identity != p.Identity || v.Birth == nil || v.Actual.GuestMemTotalBytes < p.GuestUsableMemoryBytes || p.Limits.OutsideUpperBytes < v.Bootstrap.Limits.OutsideUpperBytes || len(v.Actual.HugePools) != len(p.Limits.HugePools) {
+	if p.Limits.AddressSpaceMaxBytes != v.Bootstrap.Limits.AddressSpaceMaxBytes || p.Limits.PidsMaxTasks != v.Bootstrap.Limits.PidsMaxTasks || p.Limits.SystemMemoryMaxBytes != v.Bootstrap.Limits.SystemMemoryMaxBytes || v.Identity != p.Identity || v.Birth == nil || v.Actual.GuestMemTotalBytes < p.GuestUsableMemoryBytes || p.Limits.OutsideUpperBytes < v.Bootstrap.Limits.OutsideUpperBytes || len(v.Actual.HugePools) != len(p.Limits.HugePools) {
 		return fmt.Errorf("current Guest/source cannot contain prepared target")
 	}
 	for i, h := range v.Actual.HugePools {

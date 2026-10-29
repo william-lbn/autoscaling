@@ -70,17 +70,19 @@ func RootAggregateFromView(v resourceguard.View) (RootAggregate, error) {
 }
 
 func (a RootAggregate) derive() (Bound, error) {
+	// 独立反序列化来源也核出生AS，不仅依赖FromView；避免删Birth字段仍保留
+	// Bootstrap限额后，重新计算摘要把未落实的进程来源洗成合法预算。
 	if a.ProtocolVersion != 1 || a.VMShrinkPermit || a.Scope != rootAggregateScope || a.Identity.Validate() != nil ||
-		a.Bootstrap.Validate() != nil || a.Bootstrap.Identity != a.Identity || a.Birth.Validate() != nil || a.Birth.Identity != a.Identity {
+		a.Bootstrap.Validate() != nil || a.Bootstrap.Identity != a.Identity || a.Birth.Validate() != nil || a.Birth.Identity != a.Identity || a.Birth.AddressSpaceMaxBytes != a.Bootstrap.Limits.AddressSpaceMaxBytes {
 		return Bound{}, fmt.Errorf("invalid original PG aggregate source")
 	}
 	limits := a.Bootstrap.Limits
 	if a.Held != nil {
 		if a.Held.Validate() != nil || a.Held.Identity != a.Identity || a.Held.IssuerEpoch < a.Bootstrap.IssuerEpoch ||
-			a.Held.PidsMaxTasks != a.Bootstrap.Limits.PidsMaxTasks || a.Held.SystemMemoryMaxBytes != a.Bootstrap.Limits.SystemMemoryMaxBytes || a.Held.PostmasterPID != a.Birth.PostmasterPID || a.Held.PostmasterStartTicks != a.Birth.PostmasterStartTicks {
+			a.Held.AddressSpaceMaxBytes != a.Bootstrap.Limits.AddressSpaceMaxBytes || a.Held.PidsMaxTasks != a.Bootstrap.Limits.PidsMaxTasks || a.Held.SystemMemoryMaxBytes != a.Bootstrap.Limits.SystemMemoryMaxBytes || a.Held.PostmasterPID != a.Birth.PostmasterPID || a.Held.PostmasterStartTicks != a.Birth.PostmasterStartTicks {
 			return Bound{}, fmt.Errorf("PG aggregate held command differs from original identity/birth")
 		}
-		limits = resourceguard.Limits{MemoryMaxBytes: a.Held.MemoryMaxBytes, PidsMaxTasks: a.Held.PidsMaxTasks, SystemMemoryMaxBytes: a.Held.SystemMemoryMaxBytes, OutsideUpperBytes: a.Held.OutsideUpperBytes, HugePools: a.Held.HugePools}
+		limits = resourceguard.Limits{MemoryMaxBytes: a.Held.MemoryMaxBytes, PidsMaxTasks: a.Held.PidsMaxTasks, SystemMemoryMaxBytes: a.Held.SystemMemoryMaxBytes, AddressSpaceMaxBytes: a.Held.AddressSpaceMaxBytes, OutsideUpperBytes: a.Held.OutsideUpperBytes, HugePools: a.Held.HugePools}
 	}
 	// TotalUpperBytes先做全部乘加溢出/规范检查。仅扣已明确包含的Outside份额，
 	// HugeTLB reservation/已用/空闲池不相加，全部只用整池的一份持有限额。

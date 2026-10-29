@@ -16,6 +16,10 @@ type Limits struct {
 	// 0/缺省保持旧未约束来源，绝不补造默认。有限任务数覆盖线程，原创建后冻结；
 	// 它不是私有字节上界，也不保证后台工作进程仍有出生余量。
 	PidsMaxTasks control.Uint64 `json:"pids_max_tasks,omitempty"`
+	// 原创建可明确限制每个进程的整个虚拟地址空间。0保持旧未约束来源；
+	// 非零必须与有限任务数一起使用。它包括共享VA/占位，绝不能直接当私有
+	// RSS或从预算扣除；实际soft/hard与不可提权属性须出生后逐进程核验。
+	AddressSpaceMaxBytes control.Uint64 `json:"address_space_max_bytes,omitempty"`
 	// 系统计费域额度包含于OutsideUpperBytes，不能再次相加；0保持旧未约束来源。
 	SystemMemoryMaxBytes control.Uint64 `json:"system_memory_max_bytes,omitempty"`
 	OutsideUpperBytes    control.Uint64 `json:"outside_upper_bytes"`
@@ -45,10 +49,13 @@ func bootstrapMatches(e Evidence, id Identity, l Limits) error {
 }
 
 func (c Command) limits() Limits {
-	return Limits{MemoryMaxBytes: c.MemoryMaxBytes, PidsMaxTasks: c.PidsMaxTasks, SystemMemoryMaxBytes: c.SystemMemoryMaxBytes, OutsideUpperBytes: c.OutsideUpperBytes, HugePools: c.HugePools}
+	return Limits{MemoryMaxBytes: c.MemoryMaxBytes, PidsMaxTasks: c.PidsMaxTasks, SystemMemoryMaxBytes: c.SystemMemoryMaxBytes, AddressSpaceMaxBytes: c.AddressSpaceMaxBytes, OutsideUpperBytes: c.OutsideUpperBytes, HugePools: c.HugePools}
 }
 
 func (l Limits) Validate() error {
+	if err := validateAddressSpaceLimit(l.AddressSpaceMaxBytes, l.PidsMaxTasks); err != nil {
+		return err
+	}
 	if l.SystemMemoryMaxBytes > l.OutsideUpperBytes {
 		return fmt.Errorf("system charged-domain cap exceeds retained outside bound")
 	}
@@ -184,6 +191,10 @@ func (g *Guard) bootstrap(ctx context.Context, c BootstrapCommand, observe, repl
 	}
 	if c.Limits.SystemMemoryMaxBytes != 0 && (before.System == nil || before.System.ProcessCount != 0) {
 		return evidence, fmt.Errorf("initial system cap requires empty charged domain")
+	}
+	// 空域也须来自完整读取；不能用缺失/伪造的AS事实先保存并写入新资源。
+	if err := before.matchesAddressSpace(c.Limits); err != nil {
+		return evidence, err
 	}
 	if err := ctx.Err(); err != nil {
 		return evidence, err

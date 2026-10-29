@@ -49,6 +49,11 @@ func TestContinuousQuiesceKeepsRetainedCostsAndRejectsUnprovedLowerLimit(t *test
 	changedSystem.Limits.SystemMemoryMaxBytes = 16 << 20
 	require.ErrorContains(t, command.ValidateFor(changedSystem, req.Key.IssuerEpoch), "immutable task limit")
 
+	changedAS := p
+	changedAS.Limits.PidsMaxTasks = 64
+	changedAS.Limits.AddressSpaceMaxBytes = 128 << 20
+	require.ErrorContains(t, command.ValidateFor(changedAS, req.Key.IssuerEpoch), "immutable task limit")
+
 	commandJSON, err := json.Marshal(command)
 	require.NoError(t, err)
 	var commandFields map[string]json.RawMessage

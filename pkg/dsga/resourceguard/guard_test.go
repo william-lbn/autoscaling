@@ -61,6 +61,10 @@ func (k *fixtureKernel) Read(c Command) (Evidence, error) {
 		tasks := *e.TaskLimit
 		e.TaskLimit = &tasks
 	}
+	if e.AddressSpace != nil {
+		space := *e.AddressSpace
+		e.AddressSpace = &space
+	}
 	return e, nil
 }
 func (k *fixtureKernel) Apply(c Command) error {

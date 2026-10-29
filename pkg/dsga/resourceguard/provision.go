@@ -91,7 +91,7 @@ func (s SourceConfig) Validate() error {
 	if s.Config.SystemCgroup != (s.Limits.SystemMemoryMaxBytes != 0) {
 		return fmt.Errorf("system cgroup mode differs from original limit")
 	}
-	if uint64(s.Limits.MemoryMaxBytes)%(64<<10) != 0 || uint64(s.Limits.SystemMemoryMaxBytes)%(64<<10) != 0 {
+	if uint64(s.Limits.MemoryMaxBytes)%(64<<10) != 0 || uint64(s.Limits.SystemMemoryMaxBytes)%(64<<10) != 0 || uint64(s.Limits.AddressSpaceMaxBytes)%(64<<10) != 0 {
 		return fmt.Errorf("resource source memory.max is not base-page aligned")
 	}
 	key, err := base64.RawURLEncoding.DecodeString(s.ControlPublicKey)

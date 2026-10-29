@@ -100,7 +100,7 @@ func (g *Guard) CancelOriginal(ctx context.Context, request CancelRequest) (Canc
 	}
 	err := g.withRecord(ctx, func(r *record, state *lockedState) error {
 		command := request.Command
-		if request.IssuerEpoch != r.Floor || command.Identity != r.Identity || r.Bootstrap == nil || !r.Bootstrap.Applied || r.Birth == nil || !r.Birth.matches(command) || command.PidsMaxTasks != r.taskLimit() || command.SystemMemoryMaxBytes != r.systemLimit() {
+		if request.IssuerEpoch != r.Floor || command.Identity != r.Identity || r.Bootstrap == nil || !r.Bootstrap.Applied || r.Birth == nil || !r.Birth.matches(command) || command.PidsMaxTasks != r.taskLimit() || command.SystemMemoryMaxBytes != r.systemLimit() || command.AddressSpaceMaxBytes != r.addressSpaceLimit() {
 			return fmt.Errorf("resource cancellation original source or floor differs")
 		}
 		if err := g.kernel.VerifyProcess(*r.Birth); err != nil {

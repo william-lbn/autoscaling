@@ -300,6 +300,11 @@ func TestProductionInitialOwnerTransferCancelsUnreceivedGuestAndSettlesActualBud
 
 func productionInitialService(t *testing.T, mode string) {
 	t.Helper()
+	// 同一完整自动组合显式追加AS来源；不改变旧夹具事实或以peer冒充Linux硬限。
+	finiteAddressSpace := mode == "automatic-policy-as"
+	if finiteAddressSpace {
+		mode = "automatic-policy"
+	}
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
 	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
 	pgSafety := strings.HasPrefix(mode, "active-safety-pg-")
@@ -329,6 +334,11 @@ func productionInitialService(t *testing.T, mode string) {
 	qualifiedRootFixture(root)
 	root.mu.Lock()
 	root.view.Actual.GuestMemTotalBytes = 480 << 20
+	if finiteAddressSpace {
+		root.view.Bootstrap.Limits.AddressSpaceMaxBytes = 512 << 20
+		root.view.Birth.AddressSpaceMaxBytes = 512 << 20
+		root.view.Actual.AddressSpace = &resourceguard.AddressSpaceEvidence{Processes: 5, MaxHardBytes: 512 << 20, MaxVirtualBytes: 128 << 20, Irreversible: true}
+	}
 	if strings.HasPrefix(mode, "active-safety-quiesce-") {
 		// 新Quiesce组合保留80MiB原PG成本，初始normal64MiB不足以
 		// 形成合法Prepare。首次绑定前即固定128MiB，原bootstrap、
@@ -394,6 +404,7 @@ func productionInitialService(t *testing.T, mode string) {
 		}
 		p, before := preparedGuest(t, request, root.view.Identity)
 		p.Limits.PidsMaxTasks = 128
+		p.Limits.AddressSpaceMaxBytes = root.view.Bootstrap.Limits.AddressSpaceMaxBytes
 		p.Limits.SystemMemoryMaxBytes = 16 << 20
 		after := before
 		after.Observed = pgResponse(t, request).Observed

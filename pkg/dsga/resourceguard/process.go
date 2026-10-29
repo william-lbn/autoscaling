@@ -17,10 +17,12 @@ type ProcessIdentity struct {
 	Identity             Identity       `json:"identity"`
 	PostmasterPID        int            `json:"postmaster_pid"`
 	PostmasterStartTicks control.Uint64 `json:"postmaster_start_ticks"`
+	// 此值来自同一root原创建，不是调用方对现有PID追加的限额声明。
+	AddressSpaceMaxBytes control.Uint64 `json:"address_space_max_bytes,omitempty"`
 }
 
 func (p ProcessIdentity) Validate() error {
-	if p.ProtocolVersion != 1 || p.Identity.Validate() != nil || p.PostmasterPID <= 1 || p.PostmasterStartTicks == 0 {
+	if validateAddressSpaceLimit(p.AddressSpaceMaxBytes, 1) != nil || p.ProtocolVersion != 1 || p.Identity.Validate() != nil || p.PostmasterPID <= 1 || p.PostmasterStartTicks == 0 {
 		return fmt.Errorf("incomplete original PG process identity")
 	}
 	return nil
@@ -35,7 +37,7 @@ func (p *ProcessIdentity) UnmarshalJSON(b []byte) error {
 	return nil
 }
 func (p ProcessIdentity) matches(c Command) bool {
-	return p.Identity == c.Identity && p.PostmasterPID == c.PostmasterPID && p.PostmasterStartTicks == c.PostmasterStartTicks
+	return p.Identity == c.Identity && p.PostmasterPID == c.PostmasterPID && p.PostmasterStartTicks == c.PostmasterStartTicks && p.AddressSpaceMaxBytes == c.AddressSpaceMaxBytes
 }
 
 // InspectProcess只返回原出生记录且真实进程仍匹配时的事实。普通HTTP请求不能

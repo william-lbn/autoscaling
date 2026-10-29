@@ -77,7 +77,7 @@ func ExecPostgres(args []string) error {
 		if err != nil {
 			return err
 		}
-		birth = &ProcessIdentity{ProtocolVersion: 1, Identity: id, PostmasterPID: os.Getpid(), PostmasterStartTicks: control.Uint64(ticks)}
+		birth = &ProcessIdentity{ProtocolVersion: 1, Identity: id, PostmasterPID: os.Getpid(), PostmasterStartTicks: control.Uint64(ticks), AddressSpaceMaxBytes: source.Limits.AddressSpaceMaxBytes}
 		// Linux6.12 fs/exec.c::de_thread在非leader线程exec时保留原TGID和
 		// leader start_boottime；/proc stat使用此值生成第22字段。这里记录
 		// 进程PID而非当前Go线程TID；真实内核验证仍列入Linux目标验收。
@@ -125,6 +125,10 @@ func ExecPostgres(args []string) error {
 		// 降权完成后才解析/执行PG路径（官方路径可以是root提供的版本符号链接），
 		// PG参数与存储token环境仅交给postgres身份。不打印args/env，防止泄漏token。
 		argv := append([]string{FixedPostgresPath}, args...)
-		return syscall.Exec(FixedPostgresPath, argv, os.Environ())
+		// 由原生PG在main最早阶段落实AS；不能在仍有GC/多线程的Go helper里
+		// 压低整个进程AS再继续分配。root原创建覆盖同名环境，普通调用者不能
+		// 放宽、删除或选择另一额度。原生旧PG忽略此项时，Root真实读回会拒绝。
+		environment := addressSpaceEnvironment(os.Environ(), source.Limits.AddressSpaceMaxBytes)
+		return syscall.Exec(FixedPostgresPath, argv, environment)
 	})
 }

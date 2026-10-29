@@ -89,6 +89,10 @@ func repairPreflight(e Evidence, id Identity, limits Limits) error {
 	if err := e.matchesTasks(limits.PidsMaxTasks); err != nil {
 		return err
 	}
+	// 单调恢复只能重写原memory/池；不能收养缺失或可放宽的进程硬限。
+	if err := e.matchesAddressSpace(limits); err != nil {
+		return err
+	}
 	if err := e.systemPlacementMatches(limits.SystemMemoryMaxBytes); err != nil {
 		return err
 	}

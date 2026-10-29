@@ -133,7 +133,7 @@ func (w *PGWorker) sampleAutomatic(ctx context.Context, s *journal.Snapshot) (po
 		}
 		// 安全降normal尚须专属执行协议，不能由策略低占用绕过Prepare的
 		// 拒绝。资格是不可变来源，不能临时按比例修改成可派发的额度。
-		eligible[i] = qualified.Limits.MemoryMaxBytes >= limits.MemoryMaxBytes && qualified.Limits.PidsMaxTasks == limits.PidsMaxTasks && qualified.Limits.SystemMemoryMaxBytes == limits.SystemMemoryMaxBytes && len(qualified.Limits.HugePools) == len(limits.HugePools)
+		eligible[i] = qualified.Limits.MemoryMaxBytes >= limits.MemoryMaxBytes && qualified.Limits.AddressSpaceMaxBytes == limits.AddressSpaceMaxBytes && qualified.Limits.PidsMaxTasks == limits.PidsMaxTasks && qualified.Limits.SystemMemoryMaxBytes == limits.SystemMemoryMaxBytes && len(qualified.Limits.HugePools) == len(limits.HugePools)
 		if eligible[i] {
 			for j := range limits.HugePools {
 				if qualified.Limits.HugePools[j].PageSizeKB != limits.HugePools[j].PageSizeKB {

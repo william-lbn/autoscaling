@@ -263,6 +263,11 @@ func (k *linuxKernel) postmaster(c Command) error {
 	if err != nil || !os.SameFile(installed, actual) {
 		return fmt.Errorf("original Postmaster has not execed the fixed PG program")
 	}
+	if c.AddressSpaceMaxBytes != 0 {
+		if _, err := inspectProcessAddressSpace(c.PostmasterPID, c.AddressSpaceMaxBytes, uid); err != nil {
+			return err
+		}
+	}
 	second, err := read("stat")
 	if err != nil {
 		return err
@@ -285,7 +290,8 @@ func (k *linuxKernel) VerifyProcess(p ProcessIdentity) error {
 	if id != p.Identity {
 		return fmt.Errorf("Postmaster birth belongs to another Guest")
 	}
-	return k.postmaster(Command{PostmasterPID: p.PostmasterPID, PostmasterStartTicks: p.PostmasterStartTicks})
+	// 此内部值仅传身份给只读postmaster核验，不是可派发资源命令。
+	return k.postmaster(Command{ProtocolVersion: 0, Identity: p.Identity, IssuerEpoch: 0, Revision: 0, BudgetCommitmentID: "", PostmasterPID: p.PostmasterPID, PostmasterStartTicks: p.PostmasterStartTicks, MemoryMaxBytes: 0, PidsMaxTasks: 0, AddressSpaceMaxBytes: p.AddressSpaceMaxBytes, SystemMemoryMaxBytes: 0, OutsideUpperBytes: 0, HugePools: nil})
 }
 
 func poolDirectory(size control.Uint64) string {
@@ -472,6 +478,12 @@ func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (Evidence, error) 
 		e.HugeOvercommitDisabled = e.HugeOvercommitDisabled && overcommit == 0
 		p.Pages = control.Uint64(nr)
 		e.HugePools = append(e.HugePools, p)
+	}
+	if c.AddressSpaceMaxBytes != 0 {
+		e.AddressSpace, err = readAddressSpaces(c)
+		if err != nil {
+			return e, err
+		}
 	}
 	return e, nil
 }

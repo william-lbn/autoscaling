@@ -65,6 +65,8 @@ type Command struct {
 	MemoryMaxBytes       control.Uint64 `json:"memory_max_bytes"`
 	// 必须保持原Bootstrap的N；缺省仍是旧未约束来源，运行命令不能新增/取消。
 	PidsMaxTasks control.Uint64 `json:"pids_max_tasks,omitempty"`
+	// 必须逐字保持原创建的进程硬地址空间上限；运行期不得增、减或删除。
+	AddressSpaceMaxBytes control.Uint64 `json:"address_space_max_bytes,omitempty"`
 	// 系统计费域额度包含于OutsideUpperBytes，不能再次相加；0保持旧未约束来源。
 	SystemMemoryMaxBytes control.Uint64 `json:"system_memory_max_bytes,omitempty"`
 	OutsideUpperBytes    control.Uint64 `json:"outside_upper_bytes"`
@@ -89,8 +91,9 @@ type Evidence struct {
 	HugeSurplusPages       control.Uint64 `json:"huge_surplus_pages"`
 	CgroupPopulated        bool           `json:"cgroup_populated"`
 	// 只有原限额显式启用才读/返回，缺省仍是旧未约束协议，不能把缺失当0任务。
-	TaskLimit *TaskLimitEvidence `json:"task_limit,omitempty"`
-	System    *SystemEvidence    `json:"system,omitempty"`
+	TaskLimit    *TaskLimitEvidence    `json:"task_limit,omitempty"`
+	AddressSpace *AddressSpaceEvidence `json:"address_space,omitempty"`
+	System       *SystemEvidence       `json:"system,omitempty"`
 }
 
 // 网络/持久消费者不能把缺字段/null解释成0占用或false许可。严格别名解码
@@ -186,6 +189,9 @@ func (e Evidence) ValidateFor(c Command) error {
 }
 
 func (e Evidence) matchesLimits(id Identity, c Limits) error {
+	if err := e.matchesAddressSpace(c); err != nil {
+		return err
+	}
 	if err := e.matchesSystem(c.SystemMemoryMaxBytes); err != nil {
 		return err
 	}
@@ -244,7 +250,7 @@ func (r *record) validate(id Identity) error {
 	if !validVersion || r.Floor == 0 || r.Identity != id || (r.Applied && r.Original == nil) {
 		return fmt.Errorf("resource journal identity changed; controlled recovery required")
 	}
-	if r.Birth != nil && (r.Birth.Validate() != nil || r.Birth.Identity != id || r.Bootstrap == nil) {
+	if r.Birth != nil && (r.Birth.Validate() != nil || r.Birth.Identity != id || r.Bootstrap == nil || r.Birth.AddressSpaceMaxBytes != r.addressSpaceLimit()) {
 		return fmt.Errorf("invalid original PG birth record")
 	}
 	if r.Original != nil && (r.Original.Validate() != nil || r.Original.Identity != id || r.Original.IssuerEpoch > r.Floor) {
@@ -288,10 +294,10 @@ func (r *record) validate(id Identity) error {
 			return fmt.Errorf("runtime started before durable system placement")
 		}
 	}
-	// 任务限额是原Guest资源来源的一部分，PG boot、接管、历史淘汰均不能改变。
+	// 任务数、进程AS和系统额度是原Guest来源，PG boot、接管、历史淘汰均不能改变。
 	// 同时检查未知Original和旧Held，损坏/跨版本删字段不能把有限上限降成旧模式。
 	for _, c := range []*Command{r.Original, r.Held, r.Cancelled} {
-		if c != nil && (c.PidsMaxTasks != r.taskLimit() || c.SystemMemoryMaxBytes != r.systemLimit()) {
+		if c != nil && (c.PidsMaxTasks != r.taskLimit() || c.SystemMemoryMaxBytes != r.systemLimit() || c.AddressSpaceMaxBytes != r.addressSpaceLimit()) {
 			return fmt.Errorf("retained task/system limit differs from original bootstrap")
 		}
 	}
@@ -385,9 +391,9 @@ func (g *Guard) apply(ctx context.Context, command Command, replay bool) (Eviden
 			return fmt.Errorf("%w: original bootstrap constraints unconfirmed", ErrUnknown)
 		}
 		// 写前拒绝任何变更，包括有限→0、旧未约束→有限；不为新命令生成部分效应。
-		// bootstrap后只能保持原N；动态更改需要另行证明后台活性与全部预算，不能夹带
+		// bootstrap后只能保持原N/AS/系统额度；动态更改须另证后台活性与全部预算，不能夹带
 		// 在一次memory.max/HugeTLB调整中完成。
-		if command.PidsMaxTasks != r.taskLimit() || command.SystemMemoryMaxBytes != r.systemLimit() {
+		if command.PidsMaxTasks != r.taskLimit() || command.SystemMemoryMaxBytes != r.systemLimit() || command.AddressSpaceMaxBytes != r.addressSpaceLimit() {
 			return fmt.Errorf("runtime task/system limit differs from immutable creation")
 		}
 		if command.Identity != r.Identity || command.IssuerEpoch != r.Floor {
@@ -454,6 +460,11 @@ func (g *Guard) apply(ctx context.Context, command Command, replay bool) (Eviden
 		// 原N不会在运行期变化，因此上次有限约束应仍在；迁入/外部改限导致漂移时，
 		// 在新WAL及任何资源写前拒绝。占用超限不是靠重写同一个pids.max即可排空。
 		if err := before.matchesTasks(command.PidsMaxTasks); err != nil {
+			return err
+		}
+		// AS是原出生的不可逆属性，资源写不能修复它；先拒绝缺失/漂移，
+		// 不得等新WAL或memory/HugeTLB已部分写入后才发现来源不成立。
+		if err := before.matchesAddressSpace(command.limits()); err != nil {
 			return err
 		}
 		if err := before.systemPlacementMatches(command.SystemMemoryMaxBytes); err != nil {

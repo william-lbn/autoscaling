@@ -143,3 +143,29 @@ func TestRootAggregateFiniteTasksBindSourceWithoutAddingBytes(t *testing.T) {
 	_, err = RootAggregateFromView(view)
 	require.Error(t, err, "迁入允许超额，不可发证")
 }
+
+func TestRootAggregateAddressSpaceBindsBirthWithoutAddingOrSubtractingBytes(t *testing.T) {
+	view := aggregateView()
+	legacy, err := RootAggregateFromView(view)
+	require.NoError(t, err)
+	view.Bootstrap.Limits.PidsMaxTasks = 64
+	view.Bootstrap.Limits.AddressSpaceMaxBytes = 128 << 20
+	view.Birth.AddressSpaceMaxBytes = 128 << 20
+	view.Actual.TaskLimit = &resourceguard.TaskLimitEvidence{MaxTasks: 64, CurrentTasks: 4}
+	view.Actual.AddressSpace = &resourceguard.AddressSpaceEvidence{Processes: 4, MaxHardBytes: 128 << 20, MaxVirtualBytes: 64 << 20, Irreversible: true}
+	finite, err := RootAggregateFromView(view)
+	require.NoError(t, err)
+	require.Equal(t, legacy.Bound.UpperBytes, finite.Bound.UpperBytes, "AS包含共享VA和占位，不能加成私有RSS或扣减原normal预算")
+	require.NotEqual(t, legacy.Bound.SourceID, finite.Bound.SourceID)
+	view.Actual.AddressSpace.MaxVirtualBytes++
+	require.NoError(t, finite.Match(view), "瞬时VA不改变原硬约束摘要")
+	finite.Birth.AddressSpaceMaxBytes = 0
+	require.Error(t, finite.Validate(), "独立来源校验也必须拒绝出生漏限额")
+	view.Birth.AddressSpaceMaxBytes = 0
+	_, err = RootAggregateFromView(view)
+	require.Error(t, err)
+	view.Birth.AddressSpaceMaxBytes = 128 << 20
+	view.Actual.AddressSpace.Irreversible = false
+	_, err = RootAggregateFromView(view)
+	require.Error(t, err)
+}

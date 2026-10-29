@@ -62,7 +62,7 @@ func (g *Guard) launchWithBirth(ctx context.Context, source *SourceConfig, birth
 			return err
 		}
 		if birth != nil {
-			if birth.Validate() != nil || birth.Identity != r.Identity {
+			if birth.Validate() != nil || birth.Identity != r.Identity || birth.AddressSpaceMaxBytes != r.addressSpaceLimit() {
 				return fmt.Errorf("PG birth process belongs to another Guest")
 			}
 			copy := *birth

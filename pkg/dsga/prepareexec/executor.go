@@ -153,10 +153,10 @@ func (e *Executor) inspect(ctx context.Context, s *journal.Snapshot) (command, e
 	if err != nil {
 		return c, err
 	}
-	// N和系统组额度在bootstrap后固定；所有hstate须原样列全。当前没有安全
+	// N、每进程AS和系统组额度在bootstrap后固定；所有hstate须原样列全。当前没有安全
 	// 降normal生产协议，不能靠一次排空/采样直接压低memory.max。Prepare仅
 	// 保留目标，grow尚小时也绝不写入更大的硬限额。
-	if target.Limits.MemoryMaxBytes < held.MemoryMaxBytes || target.Limits.PidsMaxTasks != held.PidsMaxTasks || target.Limits.SystemMemoryMaxBytes != held.SystemMemoryMaxBytes || len(target.Limits.HugePools) != len(held.HugePools) {
+	if target.Limits.MemoryMaxBytes < held.MemoryMaxBytes || target.Limits.AddressSpaceMaxBytes != held.AddressSpaceMaxBytes || target.Limits.PidsMaxTasks != held.PidsMaxTasks || target.Limits.SystemMemoryMaxBytes != held.SystemMemoryMaxBytes || len(target.Limits.HugePools) != len(held.HugePools) {
 		return c, fmt.Errorf("qualified target changes fixed limits or requires unsupported normal-cap decrease")
 	}
 	for i := range held.HugePools {

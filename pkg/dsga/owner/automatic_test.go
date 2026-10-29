@@ -285,3 +285,9 @@ func TestAutomaticMemoryPendingRejectsLostSessionBeforeAnyIO(t *testing.T) {
 	require.ErrorIs(t, err, ErrLeadershipLost)
 	require.Equal(t, pgexec.AwaitingFact, progress)
 }
+
+// 正式Prepare/Host/Guest/Runner/最终预算/准入全链携带原AS，且自动Grow后再
+// 自动Shrink。内核仍是明确peer；不把这一控制组合称为Linux RLIMIT_AS认证。
+func TestProductionAutomaticMemoryKeepsOriginalAddressSpaceAcrossGrowShrink(t *testing.T) {
+	productionInitialService(t, "automatic-policy-as")
+}
