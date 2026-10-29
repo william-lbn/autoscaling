@@ -74,7 +74,7 @@ func steps(op *journal.Operation) (map[journal.Action]*journal.Step, *journal.St
 }
 
 func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) {
-	return e.advance(ctx, false, false)
+	return e.advance(ctx, false, false, nil)
 }
 
 // CheckBeforeFinalization只复核完整资源前驱和当前Root/PG/Host/Outside/Runner，
@@ -90,7 +90,7 @@ func (e *Executor) CheckBeforeFinalization(ctx context.Context, s *journal.Snaps
 	if err := e.sameSnapshot(ctx, s); err != nil {
 		return err
 	}
-	progress, err := e.advance(ctx, false, true)
+	progress, err := e.advance(ctx, false, true, nil)
 	if err == nil && progress != pgexec.Idle {
 		err = fmt.Errorf("pending finalization check did not verify original resource boundary")
 	}
@@ -101,15 +101,49 @@ func (e *Executor) CheckBeforeFinalization(ctx context.Context, s *journal.Snaps
 // 原准入，不能让来源失联挡住只读查询。本函数重核所有原前驱/来源，不改旧回执
 // 或外部资源；成功只做一次同VM UID/RV长期预算保存。历史不自动收养。
 func (e *Executor) RetainOriginal(ctx context.Context) (pgexec.Progress, error) {
-	return e.advance(ctx, true, false)
+	return e.advance(ctx, true, false, nil)
 }
 
-func (e *Executor) advance(ctx context.Context, retain, inspect bool) (pgexec.Progress, error) {
+// RecoverServiceFinalization只由明确的恢复管理动作调用。复核所有原前驱/
+// 来源后保存独立结算，绝不Start/Record原Finalize或发送资源写。相同快照
+// 与完整最近关闭selector共同约束选择；回复丢失重读Proof，不换来源重选。
+func (e *Executor) RecoverServiceFinalization(ctx context.Context, s *journal.Snapshot, selector string) (pgexec.Progress, error) {
+	if s == nil || s.State().ServiceClosure == nil {
+		return pgexec.AwaitingFact, fmt.Errorf("service finalization requires original closure snapshot")
+	}
+	_, _, _, selected := s.State().ServiceClosure.Selection()
+	if selected != selector {
+		return pgexec.AwaitingFact, fmt.Errorf("service finalization selector changed")
+	}
+	if err := e.sameSnapshot(ctx, s); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	return e.advance(ctx, false, false, s)
+}
+
+// CheckServiceFinalization只重审已持久的独立结算。原SDK pending不妨碍
+// 这些独立只读观察，真正开放前仍由PG终态对账解除准确相同的本地栅栏。
+func (e *Executor) CheckServiceFinalization(ctx context.Context, s *journal.Snapshot) error {
+	if s == nil || s.State().ServiceClosure == nil || s.State().ServiceClosure.Finalization == nil {
+		return fmt.Errorf("service finalization lacks retained independent proof")
+	}
+	if err := e.sameSnapshot(ctx, s); err != nil {
+		return err
+	}
+	_, err := e.advance(ctx, false, true, s)
+	return err
+}
+
+func (e *Executor) advance(ctx context.Context, retain, inspect bool, recoverySnapshot *journal.Snapshot) (pgexec.Progress, error) {
 	snapshot, err := e.store.Load(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
 	state := snapshot.State()
+	recoverService := recoverySnapshot != nil
+	if recoverService && snapshot.ResourceVersion() != recoverySnapshot.ResourceVersion() {
+		return pgexec.AwaitingFact, fmt.Errorf("service finalization changed original snapshot during selection")
+	}
 	if state.Owner != e.actor || state.ResourceIdentity == nil || *state.ResourceIdentity != e.id {
 		return pgexec.AwaitingFact, fmt.Errorf("budget owner or original resource changed")
 	}
@@ -117,6 +151,17 @@ func (e *Executor) advance(ctx context.Context, retain, inspect bool) (pgexec.Pr
 		return pgexec.Idle, nil
 	}
 	op := state.Active
+	if recoverService {
+		if state.ServiceClosure == nil || state.ServiceClosure.Pending() || state.ServiceClosure.Reason != "finalize_source_unconfirmed" {
+			return pgexec.AwaitingFact, fmt.Errorf("independent finalization requires complete pending-finalize closure")
+		}
+		if _, err := state.PendingFinalizationGenerationForClosure(); err != nil {
+			return pgexec.AwaitingFact, err
+		}
+		if state.ServiceClosure.Finalization != nil {
+			inspect = true
+		}
+	}
 	prior, step := steps(op)
 	if retain {
 		if state.ProtocolVersion != 2 || state.BudgetHeld != nil || prior[journal.FinalizeBudget] == nil {
@@ -129,7 +174,7 @@ func (e *Executor) advance(ctx context.Context, retain, inspect bool) (pgexec.Pr
 	if !snapshot.Dispatchable() || op.Request.Key.Instance != e.instance {
 		return pgexec.AwaitingFact, fmt.Errorf("budget original VM/PG not dispatchable")
 	}
-	if !inspect && step.Phase == journal.Planned && (op.AbortRequested || op.Origin != e.actor) {
+	if !inspect && !recoverService && step.Phase == journal.Planned && (op.AbortRequested || op.Origin != e.actor) {
 		return pgexec.ExternalStep, nil
 	}
 	// 接管不能新派发旧owner的结算，但可只读完成已持久原结算。原Finalized的
@@ -221,13 +266,22 @@ func (e *Executor) advance(ctx context.Context, retain, inspect bool) (pgexec.Pr
 		return pgexec.AwaitingFact, fmt.Errorf("final VM status differs from verified QMP settlement")
 	}
 	final := budget.Finalized{ProtocolVersion: 1, Request: op.Request, IssuerEpoch: op.Request.Key.IssuerEpoch, RunnerPodName: p.RunnerPodName, RunnerRestartCount: p.RunnerRestartCount, HostReservationID: vmFact.Host.SourceID, GuestUsableMemoryBytes: p.GuestUsableMemoryBytes, Shared: shared, SystemOutsidePG: p.SystemOutsidePG, Aggregate: &guest.PGAggregate.Bound, Transition: p.Transition, Safety: p.Safety, Sources: &budget.SettlementSources{OutsideClaim: *p.OutsideClaim, HostClaim: vmFact.HostClaim, VMReceiptSHA256: digest(vmStep.Observation.Data), Runner: vmFact.Runner}, VMShrinkPermit: false, PrivateAndDSM: nil, LFCOutsideShared: nil, HugePoolOutsideShared: nil}
+	if recoverService && step.Phase == journal.Planned {
+		final.SettlementEpoch = e.actor.Epoch
+	}
 	if step.Phase == journal.Planned && final.ValidateFor(op.Request, shared, e.actor.Epoch, vm.Status.PodName, vm.Status.RestartCount, uint64(memory)) != nil {
 		return pgexec.AwaitingFact, fmt.Errorf("complete final budget does not fit original target")
 	}
 	original := command{ProtocolVersion: 1, Finalized: final, PreparedSHA256: digest(preparedStep.Observation.Data), GuestSHA256: digest(guestStep.Observation.Data), VMSHA256: digest(vmStep.Observation.Data)}
-	if step.Phase != journal.Planned {
+	if step.Phase != journal.Planned || recoverService && state.ServiceClosure.Finalization != nil {
 		var saved command
-		if json.Unmarshal(step.Command, &saved) != nil || saved.ProtocolVersion != 1 || saved.PreparedSHA256 != original.PreparedSHA256 || saved.GuestSHA256 != original.GuestSHA256 || saved.VMSHA256 != original.VMSHA256 || saved.Finalized.Sources == nil || saved.Finalized.HostReservationID != vmFact.Host.SourceID || saved.Finalized.GuestUsableMemoryBytes != p.GuestUsableMemoryBytes || !reflect.DeepEqual(saved.Finalized.Sources, final.Sources) || saved.Finalized.Aggregate == nil || *saved.Finalized.Aggregate != guest.PGAggregate.Bound || saved.Finalized.SystemOutsidePG != p.SystemOutsidePG || saved.Finalized.Transition != p.Transition || saved.Finalized.Safety != p.Safety || saved.Finalized.ValidateFor(op.Request, shared, e.actor.Epoch, vm.Status.PodName, vm.Status.RestartCount, uint64(memory)) != nil || step.TargetID != e.instance.ComputeInstanceID {
+		var decodeErr error
+		if recoverService && state.ServiceClosure.Finalization != nil {
+			saved = state.ServiceClosure.Finalization.Command
+		} else {
+			decodeErr = json.Unmarshal(step.Command, &saved)
+		}
+		if decodeErr != nil || saved.ProtocolVersion != 1 || saved.PreparedSHA256 != original.PreparedSHA256 || saved.GuestSHA256 != original.GuestSHA256 || saved.VMSHA256 != original.VMSHA256 || saved.Finalized.Sources == nil || saved.Finalized.HostReservationID != vmFact.Host.SourceID || saved.Finalized.GuestUsableMemoryBytes != p.GuestUsableMemoryBytes || !reflect.DeepEqual(saved.Finalized.Sources, final.Sources) || saved.Finalized.Aggregate == nil || *saved.Finalized.Aggregate != guest.PGAggregate.Bound || saved.Finalized.SystemOutsidePG != p.SystemOutsidePG || saved.Finalized.Transition != p.Transition || saved.Finalized.Safety != p.Safety || saved.Finalized.ValidateFor(op.Request, shared, e.actor.Epoch, vm.Status.PodName, vm.Status.RestartCount, uint64(memory)) != nil || step.Phase != journal.Planned && step.TargetID != e.instance.ComputeInstanceID {
 			return pgexec.AwaitingFact, fmt.Errorf("retained original budget settlement differs")
 		}
 		original = saved
@@ -244,7 +298,7 @@ func (e *Executor) advance(ctx context.Context, retain, inspect bool) (pgexec.Pr
 	if inspect {
 		return pgexec.Idle, nil
 	}
-	if step.Phase == journal.Planned {
+	if step.Phase == journal.Planned && !recoverService {
 		data, err := json.Marshal(original)
 		if err != nil {
 			return pgexec.AwaitingFact, err
@@ -292,7 +346,10 @@ func (e *Executor) advance(ctx context.Context, retain, inspect bool) (pgexec.Pr
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
-	if retain {
+	if recoverService {
+		_, _, _, selector := state.ServiceClosure.Selection()
+		_, err = e.store.RecordServiceFinalization(ctx, snapshot, e.actor, selector, original, actualShared)
+	} else if retain {
 		// 旧Completed必须等于原完整WAL的Finalized。不能用当前较低的Shared成本
 		// 重写旧数据；保留原字节以及当时owner，CAS只增加长期持有字段/版本。
 		var recorded budget.Finalized

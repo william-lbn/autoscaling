@@ -51,6 +51,9 @@ type ServiceClosure struct {
 	// 新开放有独立写前/回执，不改旧关闭或任何原开放未知；完成该原生
 	// 事实仍须后继来源复核及生命周期归档，本字段本身不解除关闭。
 	Reopen *ServiceReopen `json:"reopen,omitempty"`
+	// 类别15恢复后独立保留完整结算；原Active/Finalize未知及旧预算仍不改。
+	// 只有后继开放完成CAS可以把它安装为当前永久预算。
+	Finalization *ServiceFinalization `json:"finalization,omitempty"`
 }
 
 // ProtectedAdmission返回本关闭保护的最初意图。v10/11原意图就是关闭；
@@ -204,6 +207,9 @@ func (model Model) validateServiceClosure() error {
 	if err := model.validateServiceClosureContinuation(); err != nil {
 		return err
 	}
+	if err := model.validateServiceFinalization(); err != nil {
+		return err
+	}
 	if err := model.validateServiceRearm(); err != nil {
 		return err
 	}
@@ -293,7 +299,7 @@ func (store *Store) RecordServiceClosure(ctx context.Context, s *Snapshot, actor
 func (c *ServiceClosure) UnmarshalJSON(raw []byte) error {
 	type plain ServiceClosure
 	var value plain
-	if err := control.UnmarshalObject(raw, &value); err != nil {
+	if err := control.UnmarshalObjectBounded(raw, &value, MaxRawBytes/2, 16384); err != nil {
 		return err
 	}
 	*c = ServiceClosure(value)

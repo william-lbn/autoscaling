@@ -176,7 +176,13 @@ func verifyProductionReopenLeaseRecovery(t *testing.T, ctx context.Context, mode
 		// 13/14已有完整资源预算；期限恢复同样不能改写原Active，
 		// 独立业务完成才在同CAS归档原操作与覆盖，永久预算逐字保留。
 		require.Nil(t, complete.State().Active)
-		require.Equal(t, original.BudgetHeld, complete.State().BudgetHeld)
+		if original.ServiceClosure.Finalization != nil {
+			require.Nil(t, complete.State().InitialHeld)
+			require.NotNil(t, complete.State().BudgetHeld.Recovery)
+			require.Equal(t, *original.Active, complete.State().BudgetHeld.Recovery.Original)
+		} else {
+			require.Equal(t, original.BudgetHeld, complete.State().BudgetHeld)
+		}
 		record := complete.State().History[len(complete.State().History)-1]
 		require.Equal(t, *original.Active, record.Operation)
 		require.Equal(t, journal.RecoveredAfterResourceCommit, record.Outcome)

@@ -47,7 +47,13 @@ func verifyProductionCommittedServiceRecovery(t *testing.T, ctx context.Context,
 	original := s.State()
 	recoveryMode := strings.TrimPrefix(mode, "resume-safety-recover-")
 	require.NotNil(t, original.Active)
-	require.NotNil(t, original.BudgetHeld)
+	pendingFinalization := original.ServiceClosure.Reason == "finalize_source_unconfirmed"
+	if pendingFinalization {
+		require.Nil(t, original.BudgetHeld)
+		require.NotNil(t, original.InitialHeld)
+	} else {
+		require.NotNil(t, original.BudgetHeld)
+	}
 	require.False(t, original.ServiceClosure.Pending())
 	worker, err := session.NewProductionPGWorker(ctx, config, resources, core.CoreV1(), source)
 	require.NoError(t, err)
@@ -88,7 +94,15 @@ func verifyProductionCommittedServiceRecovery(t *testing.T, ctx context.Context,
 		require.ErrorIs(t, err, ErrServiceSafety)
 		unchanged, loadErr := store.Load(ctx)
 		require.NoError(t, loadErr)
-		require.Equal(t, original, unchanged.State())
+		if pendingFinalization {
+			require.Equal(t, original.Active, unchanged.State().Active)
+			require.Equal(t, original.InitialHeld, unchanged.State().InitialHeld)
+			require.Nil(t, unchanged.State().BudgetHeld)
+			require.NotNil(t, unchanged.State().ServiceClosure.Finalization)
+			require.Nil(t, unchanged.State().ServiceClosure.Reopen)
+		} else {
+			require.Equal(t, original, unchanged.State())
+		}
 		require.NotNil(t, worker.client.Pending())
 		pg.mu.Lock()
 		require.Zero(t, pg.reopenFixture.posts)
@@ -101,13 +115,13 @@ func verifyProductionCommittedServiceRecovery(t *testing.T, ctx context.Context,
 		pg.reopenFixture.mode = "source-after-unknown-setter"
 	}
 	pg.mu.Unlock()
-	if recoveryMode == "lost-start" {
+	if recoveryMode == "lost-start" || recoveryMode == "lost-proof" {
 		api.mu.Lock()
 		api.loseJournalReply = true
 		api.mu.Unlock()
 	}
 	_, err = endpoint.Submit(ctx, closureControl(session, config.Instance, control.CoordinationReopenService, selector))
-	fault := recoveryMode == "expired" || recoveryMode == "lost-start" || recoveryMode == "setter-before" || recoveryMode == "setter-after" || recoveryMode == "lost-record" || recoveryMode == "source-after-selection" || recoveryMode == "source-after-unknown-setter"
+	fault := recoveryMode == "lost-proof" || recoveryMode == "expired" || recoveryMode == "lost-start" || recoveryMode == "setter-before" || recoveryMode == "setter-after" || recoveryMode == "lost-record" || recoveryMode == "source-after-selection" || recoveryMode == "source-after-unknown-setter"
 	if fault {
 		require.Error(t, err)
 	} else {
@@ -116,6 +130,25 @@ func verifyProductionCommittedServiceRecovery(t *testing.T, ctx context.Context,
 	stop()
 	selected, err := store.Load(ctx)
 	require.NoError(t, err)
+	if recoveryMode == "lost-proof" {
+		require.True(t, pendingFinalization)
+		require.Nil(t, selected.State().ServiceClosure.Reopen, "独立结算CAS丢回复不得派发新开放")
+		require.NotNil(t, selected.State().ServiceClosure.Finalization)
+		require.Equal(t, original.Active, selected.State().Active)
+		require.Nil(t, selected.State().BudgetHeld)
+		proof := selected.State().ServiceClosure.Finalization
+		worker.CloseIdleConnections()
+		worker, err = session.NewProductionPGWorker(ctx, config, resources, core.CoreV1(), source)
+		require.NoError(t, err)
+		t.Cleanup(worker.CloseIdleConnections)
+		endpoint, stop = reopenRun(t, ctx, worker)
+		_, err = endpoint.Submit(ctx, closureControl(session, config.Instance, control.CoordinationReopenService, selector))
+		require.NoError(t, err)
+		stop()
+		selected, err = store.Load(ctx)
+		require.NoError(t, err)
+		require.Equal(t, proof, selected.State().ServiceClosure.Finalization, "重建只能沿用完整原结算Proof")
+	}
 	r := selected.State().ServiceClosure.Reopen
 	require.NotNil(t, r)
 	require.Equal(t, original.Active, selected.State().Active)
@@ -124,7 +157,13 @@ func verifyProductionCommittedServiceRecovery(t *testing.T, ctx context.Context,
 		done, loadErr := store.Load(ctx)
 		require.NoError(t, loadErr)
 		require.Nil(t, done.State().Active)
-		require.Equal(t, original.BudgetHeld, done.State().BudgetHeld)
+		if pendingFinalization {
+			require.Nil(t, done.State().InitialHeld)
+			require.NotNil(t, done.State().BudgetHeld.Recovery)
+			require.Equal(t, *original.Active, done.State().BudgetHeld.Recovery.Original)
+		} else {
+			require.Equal(t, original.BudgetHeld, done.State().BudgetHeld)
+		}
 		record := done.State().History[len(done.State().History)-1]
 		require.Equal(t, journal.RecoveredAfterResourceCommit, record.Outcome)
 		require.Equal(t, *original.Active, record.Operation)
@@ -197,7 +236,14 @@ func verifyProductionCommittedServiceRecovery(t *testing.T, ctx context.Context,
 	require.NoError(t, err)
 	require.Nil(t, s.State().Active)
 	require.Nil(t, s.State().ServiceClosure)
-	require.Equal(t, original.BudgetHeld, s.State().BudgetHeld)
+	if pendingFinalization {
+		require.Nil(t, s.State().InitialHeld)
+		require.NotNil(t, s.State().BudgetHeld.Recovery)
+		require.Equal(t, *original.Active, s.State().BudgetHeld.Recovery.Original)
+		require.Equal(t, journal.RecoverFinalization, s.State().BudgetHeld.Finalization.Action)
+	} else {
+		require.Equal(t, original.BudgetHeld, s.State().BudgetHeld)
+	}
 	require.Equal(t, original.HighWater, s.State().HighWater)
 	record := s.State().History[len(s.State().History)-1]
 	require.Equal(t, journal.RecoveredAfterResourceCommit, record.Outcome)

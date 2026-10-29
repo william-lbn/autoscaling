@@ -19,14 +19,19 @@ func (w *PGWorker) rearmServiceLease(ctx context.Context, selector string) (pgex
 		return pgexec.AwaitingFact, err
 	}
 	m := s.State()
-	if m.Owner != w.session.Actor() || m.ServiceClosure == nil || m.ServiceClosure.Rearm != nil || m.ServiceClosure.Reopen != nil || m.ServiceClosure.Pending() || m.CheckStableServiceRecovery() != nil || w.safety == nil {
+	if m.Owner != w.session.Actor() || m.ServiceClosure == nil || m.ServiceClosure.Rearm != nil || m.ServiceClosure.Reopen != nil || m.ServiceClosure.Pending() || w.safety == nil {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
 	_, _, _, selected := m.ServiceClosure.Selection()
 	if selector != selected {
 		return pgexec.AwaitingFact, fmt.Errorf("rearm requires latest complete closure selector")
 	}
-	if err := w.inspectIdleService(ctx, s); err != nil {
+	s, err = w.ensureServiceFinalization(ctx, s, selector)
+	if err != nil || s.State().CheckStableServiceRecovery() != nil {
+		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+	}
+	m = s.State()
+	if err := w.inspectServiceRecovery(ctx, s); err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
 	before, err := w.observeAdmissionLease(ctx)
@@ -50,7 +55,7 @@ func (w *PGWorker) checkRearmDispatch(ctx context.Context, s *journal.Snapshot) 
 	if err := w.session.Check(ctx); err != nil {
 		return err
 	}
-	if err := w.inspectIdleService(ctx, s); err != nil {
+	if err := w.inspectServiceRecovery(ctx, s); err != nil {
 		return errors.Join(ErrServiceSafety, err)
 	}
 	current, err := w.session.store.Load(ctx)

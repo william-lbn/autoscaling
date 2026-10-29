@@ -20,12 +20,15 @@ type HeldBudget struct {
 	Identity         resourceguard.Identity `json:"identity"`
 	RecordedSequence control.Uint64         `json:"recorded_sequence"`
 	Finalization     Step                   `json:"finalization"`
+	// 非nil只允许独立恢复预算；完整原Unknown另存于Original，不能拿新
+	// RecoverFinalization步骤冒充原Finalize。旧读者严格拒绝本字段/版本。
+	Recovery *RecoveredBudgetOrigin `json:"recovery,omitempty"`
 }
 
 func (h *HeldBudget) UnmarshalJSON(data []byte) error {
 	type plain HeldBudget
 	var p plain
-	if err := control.UnmarshalObject(data, &p); err != nil {
+	if err := control.UnmarshalObjectBounded(data, &p, MaxRawBytes/2, 16384); err != nil {
 		return err
 	}
 	*h = HeldBudget(p)
@@ -41,6 +44,9 @@ func finalizedBudget(op Operation, step Step) (budget.Finalized, error) {
 	if step.Action != FinalizeBudget || step.Phase != Settled || step.Observation == nil || step.Observation.Result != Completed ||
 		json.Unmarshal(step.Command, &c) != nil || c.Validate() != nil || json.Unmarshal(step.Observation.Data, &f) != nil || !reflect.DeepEqual(c.Finalized, f) || f.Request != op.Request || step.TargetID != op.Request.Key.Instance.ComputeInstanceID {
 		return f, fmt.Errorf("held budget lacks exact complete original finalization")
+	}
+	if f.SettlementEpoch != 0 {
+		return f, fmt.Errorf("ordinary finalization cannot project independent settlement evidence")
 	}
 	ordinal := 0
 	for i, action := range plan(op.Request.Kind) {
@@ -92,6 +98,9 @@ func (model Model) validateHeldBudget() error {
 		return nil
 	}
 	h := model.BudgetHeld
+	if h.ProtocolVersion == 2 || h.Recovery != nil {
+		return model.validateRecoveredBudget()
+	}
 	if h.ProtocolVersion != 1 || h.RecordedSequence == 0 || h.RecordedSequence > model.Sequence || h.Identity.Validate() != nil || model.ResourceIdentity == nil || h.Identity != *model.ResourceIdentity || model.PGInstance == nil || model.HighWater == nil || h.Finalization.DispatchedBy == nil || h.Finalization.Observation == nil {
 		return fmt.Errorf("invalid retained budget identity or sequence")
 	}

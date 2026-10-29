@@ -34,10 +34,14 @@ type Bound struct {
 // 进程迁入不迁移既有共享/file页收费；其他计费域必须由外部来源持续覆盖，不能
 // 从PG进程当前归组推断所有相关内存都在Aggregate内。硬限额也不证明免OOM。
 type Finalized struct {
-	ProtocolVersion        uint32                     `json:"protocol_version"`
-	VMShrinkPermit         bool                       `json:"vm_shrink_permit"`
-	Request                control.Request            `json:"request"`
-	IssuerEpoch            control.Uint64             `json:"issuer_epoch"`
+	ProtocolVersion uint32          `json:"protocol_version"`
+	VMShrinkPermit  bool            `json:"vm_shrink_permit"`
+	Request         control.Request `json:"request"`
+	IssuerEpoch     control.Uint64  `json:"issuer_epoch"`
+	// 仅独立恢复结算使用：原请求issuer不变，Shared来自恢复owner的真实观察。
+	// 零值保留普通/历史结算语义；持久消费者还须认证独立恢复证据，不能
+	// 仅设置本字段就把原Finalize未知改为完成或取得资源派发资格。
+	SettlementEpoch        control.Uint64             `json:"settlement_epoch,omitempty"`
 	RunnerPodName          string                     `json:"runner_pod_name"`
 	RunnerRestartCount     int32                      `json:"runner_restart_count"`
 	HostReservationID      string                     `json:"host_reservation_id"`
@@ -76,7 +80,14 @@ func (f Finalized) ValidateFor(request control.Request, latest control.SharedCos
 	if control.ValidateID(f.RunnerPodName, "Runner") != nil || control.ValidateID(f.HostReservationID, "host reservation") != nil {
 		return fmt.Errorf("invalid finalized budget source binding")
 	}
-	if latest.Observed.IssuerFloorEpoch != epoch || f.Shared.Observed.IssuerFloorEpoch != f.IssuerEpoch || latest.Observed.CapacityGeneration != f.Shared.Observed.CapacityGeneration || latest.StartupMainUpperBytes != f.Shared.StartupMainUpperBytes || latest.StartupArraysUpperBytes != f.Shared.StartupArraysUpperBytes || latest.CurrentMainAndArraysUpperBytes > f.Shared.CurrentMainAndArraysUpperBytes {
+	settledAt := f.IssuerEpoch
+	if f.SettlementEpoch != 0 {
+		if f.SettlementEpoch < f.IssuerEpoch || f.SettlementEpoch > epoch {
+			return fmt.Errorf("independent settlement epoch differs from original issuer or current owner")
+		}
+		settledAt = f.SettlementEpoch
+	}
+	if latest.Observed.IssuerFloorEpoch != epoch || f.Shared.Observed.IssuerFloorEpoch != settledAt || latest.Observed.CapacityGeneration != f.Shared.Observed.CapacityGeneration || latest.StartupMainUpperBytes != f.Shared.StartupMainUpperBytes || latest.StartupArraysUpperBytes != f.Shared.StartupArraysUpperBytes || latest.CurrentMainAndArraysUpperBytes > f.Shared.CurrentMainAndArraysUpperBytes {
 		return fmt.Errorf("PG budget generation/floor or retained allocation differs")
 	}
 	digest, err := request.ContextSHA256()

@@ -22,6 +22,8 @@ type CommittedServiceCoverage struct {
 	Receipt            control.AdmissionResponse      `json:"receipt"`
 	Query              bool                           `json:"query"`
 	Current            control.AdmissionLeaseResponse `json:"current"`
+	// 仅类别15：独立结算不回写原Finalize未知，完整证据随终态保存。
+	Finalization *ServiceFinalization `json:"finalization,omitempty"`
 }
 
 // committedResourceBudget不递归调用Model.Validate。只有全部资源及完整
@@ -49,6 +51,9 @@ func (m Model) stableServiceRecovery() error {
 		return nil
 	}
 	v := m.serviceClosureVersion()
+	if v == 15 && m.ServiceClosure != nil && m.ServiceClosure.Finalization != nil {
+		return m.validateServiceFinalization()
+	}
 	if m.ServiceClosure == nil || v != 13 && v != 14 || m.BudgetHeld == nil {
 		return fmt.Errorf("service recovery requires original stable finalized closure")
 	}
@@ -62,7 +67,7 @@ func (m Model) stableServiceRecovery() error {
 }
 
 // CheckStableServiceRecovery供生产入口核对原WAL，不生成派发许可。
-// 无Active继续既有稳定协议；有Active仅接受13/14及完整资源结算。
+// 无Active继续既有稳定协议；有Active仅接受13/14完整结算或15独立证明。
 func (m Model) CheckStableServiceRecovery() error {
 	if err := m.Validate(); err != nil {
 		return err
@@ -77,6 +82,7 @@ func cloneCommittedCoverage(p *CommittedServiceCoverage) *CommittedServiceCovera
 	n := *p
 	n.Receipt = *cloneAdmissionResponse(&p.Receipt)
 	n.Current = cloneLeaseResponse(p.Current)
+	n.Finalization = cloneServiceFinalization(p.Finalization)
 	return &n
 }
 
@@ -86,8 +92,20 @@ func (record Record) closingOutcome() (Outcome, error) {
 		return record.Operation.closingOutcome()
 	}
 	f, err := committedResourceBudget(record.Operation)
+	var finalHash string
+	if p.Finalization != nil {
+		var step Step
+		step, err = p.Finalization.recoveredStep(record.Operation)
+		finalHash = step.CommandSHA256
+		f = p.Finalization.Command.Finalized
+		if p.Finalization.RecordedSequence >= record.ClosedSequence || p.Finalization.Origin.Epoch > p.Origin.Epoch || p.Finalization.Origin.Epoch == p.Origin.Epoch && p.Finalization.Origin != p.Origin {
+			return "", fmt.Errorf("covered admission predates independent budget settlement")
+		}
+	} else if err == nil {
+		finalHash = record.Operation.Steps[len(record.Operation.Steps)-2].CommandSHA256
+	}
 	q := p.Request
-	if err != nil || record.Outcome != RecoveredAfterResourceCommit || p.Origin.Validate() != nil || p.Origin.Epoch < record.Operation.Origin.Epoch || p.Origin.Epoch == record.Operation.Origin.Epoch && p.Origin != record.Operation.Origin || p.FinalizationSHA256 != record.Operation.Steps[len(record.Operation.Steps)-2].CommandSHA256 || q.Validate() != nil || !q.Open || q.Instance != record.Operation.Request.Key.Instance || q.IssuerEpoch < record.Operation.Origin.Epoch || q.IssuerEpoch > p.Origin.Epoch || q.BudgetCommitmentID != record.Operation.Request.BudgetCommitmentID || q.ExpectedCapacityGeneration != f.Shared.Observed.CapacityGeneration || q.Revision <= f.Shared.Observed.AdmissionRevision || !p.Receipt.Confirms() || p.Receipt.ValidateFor(q, q.Instance, p.Query) != nil || !validLiveReopen(p.Current, q, p.Origin) || p.Receipt.Observed.IssuerFloorEpoch > p.Origin.Epoch || p.Receipt.Observed.CapacityGeneration != q.ExpectedCapacityGeneration {
+	if err != nil || record.Outcome != RecoveredAfterResourceCommit || p.Origin.Validate() != nil || p.Origin.Epoch < record.Operation.Origin.Epoch || p.Origin.Epoch == record.Operation.Origin.Epoch && p.Origin != record.Operation.Origin || p.FinalizationSHA256 != finalHash || q.Validate() != nil || !q.Open || q.Instance != record.Operation.Request.Key.Instance || q.IssuerEpoch < record.Operation.Origin.Epoch || q.IssuerEpoch > p.Origin.Epoch || q.BudgetCommitmentID != record.Operation.Request.BudgetCommitmentID || q.ExpectedCapacityGeneration != f.Shared.Observed.CapacityGeneration || q.Revision <= f.Shared.Observed.AdmissionRevision || !p.Receipt.Confirms() || p.Receipt.ValidateFor(q, q.Instance, p.Query) != nil || !validLiveReopen(p.Current, q, p.Origin) || p.Receipt.Observed.IssuerFloorEpoch > p.Origin.Epoch || p.Receipt.Observed.CapacityGeneration != q.ExpectedCapacityGeneration {
 		return "", fmt.Errorf("resource commit lacks exact independent live admission coverage")
 	}
 	last := record.Operation.Steps[len(record.Operation.Steps)-1]
@@ -116,6 +134,14 @@ func (m Model) committedCompletionRecord(actor Owner, current control.AdmissionL
 	}
 	op := cloneOperation(*m.Active)
 	p := &CommittedServiceCoverage{Origin: actor, FinalizationSHA256: op.Steps[len(op.Steps)-2].CommandSHA256, Request: r.Request, Receipt: *cloneAdmissionResponse(r.Receipt), Query: r.Query, Current: cloneLeaseResponse(current)}
+	if f := m.ServiceClosure.Finalization; f != nil {
+		step, err := f.recoveredStep(op)
+		if err != nil {
+			return nil, err
+		}
+		p.FinalizationSHA256 = step.CommandSHA256
+		p.Finalization = cloneServiceFinalization(f)
+	}
 	record := &Record{Operation: op, Outcome: RecoveredAfterResourceCommit, ClosedSequence: sequence, ServiceCoverage: p}
 	_, err := record.closingOutcome()
 	return record, err
@@ -153,7 +179,7 @@ func (m Model) validateCommittedLifecycle(c Model, l *ServiceLifecycle) error {
 func (p *CommittedServiceCoverage) UnmarshalJSON(raw []byte) error {
 	type plain CommittedServiceCoverage
 	var next plain
-	if err := control.UnmarshalObjectBounded(raw, &next, MaxObservationBytes*2+4096, 16384); err != nil {
+	if err := control.UnmarshalObjectBounded(raw, &next, MaxObservationBytes*4+4096, 16384); err != nil {
 		return err
 	}
 	*p = CommittedServiceCoverage(next)

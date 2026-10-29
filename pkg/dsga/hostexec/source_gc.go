@@ -145,6 +145,15 @@ func retainedSourceNames(m journal.Model, published vmguard.Publication) (source
 		if err := refs.step(h.Finalization); err != nil {
 			return nil, err
 		}
+		if h.Recovery != nil {
+			// 独立结算保留的完整原操作寿命长于结果缓存；原Finalize
+			// 未知仍在其中，不能只扫描新预算而提前回收原来源对象。
+			for _, step := range h.Recovery.Original.Steps {
+				if err := refs.step(step); err != nil {
+					return nil, err
+				}
+			}
+		}
 	}
 	if h := m.CapacityHeld; h != nil {
 		if err := refs.step(h.Cleanup); err != nil {
@@ -163,6 +172,15 @@ func retainedSourceNames(m journal.Model, published vmguard.Publication) (source
 		}
 	}
 	for _, h := range m.History {
+		if h.ServiceCoverage != nil && h.ServiceCoverage.Finalization != nil {
+			raw, err := json.Marshal(h.ServiceCoverage.Finalization.Command)
+			if err != nil {
+				return nil, err
+			}
+			if err := refs.add(raw); err != nil {
+				return nil, err
+			}
+		}
 		for _, s := range h.Operation.Steps {
 			if err := refs.step(s); err != nil {
 				return nil, err

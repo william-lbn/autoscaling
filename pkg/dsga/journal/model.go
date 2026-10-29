@@ -37,17 +37,19 @@ type Owner struct {
 type Action string
 
 const (
-	PrepareBudget   Action = "prepare_budget"
-	ReserveHost     Action = "reserve_host"
-	Quiesce         Action = "quiesce"
-	ResizePG        Action = "resize_pg"
-	ReleasePG       Action = "release_pg"
-	ResizeVM        Action = "resize_vm"
-	GuestReady      Action = "guest_ready"
-	ObserveVM       Action = "observe_vm"
-	FinalizeBudget  Action = "finalize_budget"
-	ResumeAdmission Action = "resume_admission"
-	AbortReconcile  Action = "abort_reconcile"
+	PrepareBudget  Action = "prepare_budget"
+	ReserveHost    Action = "reserve_host"
+	Quiesce        Action = "quiesce"
+	ResizePG       Action = "resize_pg"
+	ReleasePG      Action = "release_pg"
+	ResizeVM       Action = "resize_vm"
+	GuestReady     Action = "guest_ready"
+	ObserveVM      Action = "observe_vm"
+	FinalizeBudget Action = "finalize_budget"
+	// 独立预算恢复只写同VM账本，绝不是原计划中FinalizeBudget的完成。
+	RecoverFinalization Action = "recover_finalization"
+	ResumeAdmission     Action = "resume_admission"
+	AbortReconcile      Action = "abort_reconcile"
 )
 
 type Phase string
@@ -563,6 +565,7 @@ func (model Model) Clone() Model {
 	}
 	if model.ServiceClosure != nil {
 		closure := *model.ServiceClosure
+		closure.Finalization = cloneServiceFinalization(closure.Finalization)
 		if closure.Reopen != nil {
 			reopen := *closure.Reopen
 			if reopen.PriorClose != nil {
@@ -625,6 +628,7 @@ func (model Model) Clone() Model {
 	if model.BudgetHeld != nil {
 		copy := *model.BudgetHeld
 		copy.Finalization = cloneStep(copy.Finalization)
+		copy.Recovery = cloneRecoveredBudget(copy.Recovery)
 		model.BudgetHeld = &copy
 	}
 	if model.CapacityHeld != nil {

@@ -93,8 +93,8 @@ func liveAfterReopenRearm(rearm *ReopenLeaseRecovery, b control.AdmissionLeaseRe
 
 // RetryServiceReopen只选择已完整再关闭后的下一次受控开放。普通重试、
 // 查询、当前closed布尔及回退期限都不能产生新revision。仍要求原VM、
-// 同容量/预算、有效期限与当前owner；有Active仅接受13/14完整资源结算。
-// 调用方必须前后审计来源，不能用新开放替代15～18的资源/取消结算。
+// 同容量/预算、有效期限与当前owner；有Active须有13/14结算或15独立证明。
+// 调用方必须前后审计来源，不能用新开放替代16～18的资源/取消结算。
 // next先深拷贝，失败保持原模型，永久预算/首次未知/HWM全部不改。
 func (m Model) RetryServiceReopen(actor Owner, selector string, before control.AdmissionLeaseResponse) (Model, error) {
 	if err := m.Validate(); err != nil {

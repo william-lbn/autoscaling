@@ -30,6 +30,22 @@ func TestFinalizedBudgetRequiresFullBindingsAndDistinctEnforcedBounds(t *testing
 		return f.ValidateFor(request, shared, request.Key.IssuerEpoch, "runner-1", 0, uint64(request.TargetVMMemoryBytes))
 	}
 	require.NoError(t, validate(fact))
+	t.Run("independent-settlement-owner", func(t *testing.T) {
+		// 原请求issuer不变，恢复观察必须保留真实新floor，不能把它
+		// 改回旧owner来满足普通预算校验。独立Journal证据另行认证。
+		f := fact
+		f.SettlementEpoch = request.Key.IssuerEpoch + 1
+		f.Shared.Observed.IssuerFloorEpoch = f.SettlementEpoch
+		latest := f.Shared
+		require.NoError(t, f.ValidateFor(request, latest, f.SettlementEpoch, "runner-1", 0, uint64(request.TargetVMMemoryBytes)))
+		for _, epoch := range []control.Uint64{0, request.Key.IssuerEpoch - 1, f.SettlementEpoch + 1} {
+			bad := f
+			bad.SettlementEpoch = epoch
+			require.Error(t, bad.ValidateFor(request, latest, f.SettlementEpoch, "runner-1", 0, uint64(request.TargetVMMemoryBytes)))
+		}
+		f.Shared.Observed.IssuerFloorEpoch = request.Key.IssuerEpoch
+		require.Error(t, f.ValidateFor(request, latest, f.SettlementEpoch, "runner-1", 0, uint64(request.TargetVMMemoryBytes)))
+	})
 	encoded, err := json.Marshal(fact)
 	require.NoError(t, err)
 	for _, mutate := range []func(*Finalized){

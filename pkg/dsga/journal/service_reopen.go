@@ -16,7 +16,7 @@ import (
 // 本记录只确认新开放的原生事实，不能自行解除外层关闭：后继还必须完成
 // setter 后来源复核、异常再关闭和生命周期归档。这里绝不清 ServiceClosure，
 // 不把 Settled 当成 Begin/VM/预算释放许可。无Active沿用原规则；有Active
-// 仅接受13/14完整资源结算及永久预算，15～18须由完整资源协议先恢复。
+// 仅接受13/14完整结算及永久预算，或15独立结算证明；16～18仍须恢复资源。
 type ServiceReopen struct {
 	ClosureVersion   uint32                         `json:"closure_version"`
 	Origin           Owner                          `json:"origin"`
@@ -55,7 +55,7 @@ func serviceReopenClosureDigest(c ServiceClosure) (string, error) {
 }
 
 func serviceReopenVersionAllowed(version uint32) bool {
-	return version >= 10 && version <= 14 || version == 19
+	return version >= 10 && version <= 15 || version == 19
 }
 
 // serviceClosureVersion 只解开明确保存的外层恢复格式，不能降级外层

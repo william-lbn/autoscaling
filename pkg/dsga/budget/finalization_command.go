@@ -34,8 +34,9 @@ func (c FinalizationCommand) Validate() error {
 		return fmt.Errorf("finalization VM source differs from original predecessor")
 	}
 	// 此处是持久结构自洽性检查：当前PG/VM/资源仍须由执行器独立只读核验。
-	// 原issuer及原Shared保持不变，接管不能把旧事实改写成新的owner代次。
-	return f.ValidateFor(f.Request, f.Shared, f.IssuerEpoch, f.RunnerPodName, f.RunnerRestartCount, uint64(f.Request.TargetVMMemoryBytes))
+	// 原未知命令的issuer/Shared保持不变；独立恢复的全新结算则另以
+	// SettlementEpoch记录真实观察owner，Journal须同时认证独立Proof。
+	return f.ValidateFor(f.Request, f.Shared, max(f.IssuerEpoch, f.SettlementEpoch), f.RunnerPodName, f.RunnerRestartCount, uint64(f.Request.TargetVMMemoryBytes))
 }
 
 func (c *FinalizationCommand) UnmarshalJSON(b []byte) error {

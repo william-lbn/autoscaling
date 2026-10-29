@@ -14,7 +14,7 @@ import (
 // 已派发/部分完成/拒绝的后续动作。所有变化都复用原VM UID/RV CAS，不另建锁。
 // v6的SucceededSequence也可指所有容量已完成、原预算准入清理已闭合的取消；
 // 它证明容量结清资格，不把业务结果AbortedAfterReconcile改成Succeeded。
-// 13/14恢复的SucceededSequence则指独立准入覆盖完成点，原Operation和
+// 13～15恢复的SucceededSequence则指独立准入覆盖完成点，原Operation和
 // Resume未知逐字保留；只有该覆盖和完整资源预算同CAS才取得结清资格。
 //
 // 该永久水位解决结果历史淘汰和后续零派发取消导致Host峰值无法结清的问题。

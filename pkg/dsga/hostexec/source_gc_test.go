@@ -46,6 +46,9 @@ func TestRetainedSourceNamesWalksRawHeadsAndHistory(t *testing.T) {
 	var admission journal.InitialAdmission
 	var history journal.Record
 	normal.Finalization = step("normal-command", "normal-audit")
+	var recovered journal.RecoveredBudgetOrigin
+	recovered.Original.Steps = []journal.Step{step("recovered-original-command", "recovered-original-audit")}
+	normal.Recovery = &recovered
 	capacity.Cleanup = step("capacity-command", "capacity-audit")
 	initial.Budget = ref("initial-budget")
 	admission.Command, admission.Receipt = ref("initial-command"), ref("initial-audit")
@@ -53,13 +56,21 @@ func TestRetainedSourceNamesWalksRawHeadsAndHistory(t *testing.T) {
 	history.Operation.Steps = []journal.Step{step("history-command", "history-audit")}
 	cleanup := step("history-cleanup", "cleanup-audit")
 	history.Operation.Cleanup = &cleanup
+	var proof journal.ServiceFinalization
+	var sources budget.SettlementSources
+	sources.OutsideClaim = budget.ObjectRef{Name: "history-proof-outside", UID: "proof-outside-uid"}
+	sources.HostClaim = budget.ObjectRef{Name: "history-proof-host", UID: "proof-host-uid"}
+	proof.Command.Finalized.Sources = &sources
+	var coverage journal.CommittedServiceCoverage
+	coverage.Finalization = &proof
+	history.ServiceCoverage = &coverage
 	m.BudgetHeld, m.CapacityHeld, m.InitialHeld, m.History = &normal, &capacity, &initial, []journal.Record{history}
 	birth := budget.ObjectRef{Name: "original-birth", UID: "birth-uid"}
 	var published vmguard.Publication
 	published.BindingClaim = &birth
 	refs, err := retainedSourceNames(m, published)
 	require.NoError(t, err)
-	for _, name := range []string{"normal-command", "normal-audit", "capacity-command", "capacity-audit", "initial-budget", "initial-command", "initial-audit", "history-command", "history-audit", "history-cleanup", "cleanup-audit", birth.Name} {
+	for _, name := range []string{"normal-command", "normal-audit", "recovered-original-command", "recovered-original-audit", "history-proof-outside", "history-proof-host", "capacity-command", "capacity-audit", "initial-budget", "initial-command", "initial-audit", "history-command", "history-audit", "history-cleanup", "cleanup-audit", birth.Name} {
 		require.Contains(t, refs, name)
 	}
 	// 历史淘汰只减历史引用；当前预算即使完全不在History中也继续保留。
@@ -69,7 +80,9 @@ func TestRetainedSourceNamesWalksRawHeadsAndHistory(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, refs, "capacity-command")
 	require.Contains(t, refs, "normal-audit")
+	require.Contains(t, refs, "recovered-original-audit", "结果缓存淘汰不能裁掉独立预算内的原未知来源")
 	require.NotContains(t, refs, "history-command")
+	require.NotContains(t, refs, "history-proof-outside")
 	for _, raw := range []string{`{"ref":{"name":"source","uid":null}}`, `{"ref":{"name":"source","uid":"a","uid":"b"}}`, `{"broken":`} {
 		m.BudgetHeld.Finalization.Command = []byte(raw)
 		_, err = retainedSourceNames(m, published)

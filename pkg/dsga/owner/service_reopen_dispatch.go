@@ -22,13 +22,18 @@ func (w *PGWorker) reopenService(ctx context.Context, selector string) (pgexec.P
 	}
 	m := s.State()
 	c := m.ServiceClosure
-	if m.Owner != w.session.Actor() || c == nil || c.Reopen != nil || c.Pending() || m.CheckStableServiceRecovery() != nil || !w.reopenSourcesAvailable() {
+	if m.Owner != w.session.Actor() || c == nil || c.Reopen != nil || c.Pending() || !w.reopenSourcesAvailable() {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
 	_, _, _, selected := c.Selection()
 	if selector != selected {
 		return pgexec.AwaitingFact, fmt.Errorf("reopen requires latest complete closure selector")
 	}
+	s, err = w.ensureServiceFinalization(ctx, s, selector)
+	if err != nil || s.State().CheckStableServiceRecovery() != nil {
+		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+	}
+	m = s.State()
 	if err := w.inspectServiceRecovery(ctx, s); err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
@@ -54,9 +59,17 @@ func (w *PGWorker) reopenSourcesAvailable() bool {
 
 // 稳定资源恢复比普通空闲服务多一项原PG终态对账。先审完整来源，再以
 // 当前owner隔离并只读核验原终态，最后由调用方检查相同UID/RV。这个顺序
-// 不修改原Unknown，也不允许资源仍在途的15～18借当前容量绕过原账本。
+// 不修改原Unknown；15先保存独立结算证明，16～18不能借当前容量绕过原账本。
 func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapshot) error {
-	if err := w.inspectIdleService(ctx, s); err != nil {
+	m := s.State()
+	if m.ServiceClosure != nil && m.ServiceClosure.Finalization != nil {
+		if w.finalize == nil {
+			return ErrServiceSafety
+		}
+		if err := w.finalize.CheckServiceFinalization(ctx, s); err != nil {
+			return err
+		}
+	} else if err := w.inspectIdleService(ctx, s); err != nil {
 		return err
 	}
 	if s.State().Active != nil {
@@ -65,6 +78,23 @@ func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapsh
 		}
 	}
 	return nil
+}
+
+// 明确恢复管理动作先完成原预算结算的独立证据；普通Run轮询不自动调用。
+// 只有类别15且未选择rearm/reopen时可新增Proof；原Active/预算不会被改写。
+// CAS丢回复停止本次管理，重读后再次显式恢复沿用已保存Proof和原selector。
+func (w *PGWorker) ensureServiceFinalization(ctx context.Context, s *journal.Snapshot, selector string) (*journal.Snapshot, error) {
+	m := s.State()
+	if m.ServiceClosure == nil || m.ServiceClosure.Reason != "finalize_source_unconfirmed" || m.ServiceClosure.Finalization != nil {
+		return s, nil
+	}
+	if w.finalize == nil {
+		return nil, ErrServiceSafety
+	}
+	if _, err := w.finalize.RecoverServiceFinalization(ctx, s, selector); err != nil {
+		return nil, err
+	}
+	return w.session.store.Load(ctx)
 }
 
 // 不持本地锁跨网络。当前 Session 及相同 VM UID/RV 是每次外部发送/落账

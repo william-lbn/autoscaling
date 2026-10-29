@@ -33,7 +33,7 @@ func (w *PGWorker) rearmServiceReopen(ctx context.Context, selector string) (pge
 	if selector != selected {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
-	if err := w.inspectIdleService(ctx, s); err != nil {
+	if err := w.inspectServiceRecovery(ctx, s); err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
 	instance, epoch := w.Binding()
