@@ -426,6 +426,13 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 			}
 		}
 	}
+	if err != nil {
+		// VM/Guest写后来源可能在原执行器审计前失效。仍在同一串行轮次
+		// 复核独立关闭；合法原命令未知由检查器保留，不改写为NoEffect。
+		if handled, safetyProgress, safetyErr := worker.advanceServiceSafety(callCtx, ""); handled {
+			return safetyProgress, safetyErr
+		}
+	}
 	return progress, err
 }
 

@@ -149,7 +149,7 @@ func TestPlannedResumeClosureStoreRequiresConfirmedCAS(t *testing.T) {
 	serviceClosureStoreContract(t, plannedResumeClosureModel)
 }
 
-func serviceClosureStoreContract(t *testing.T, factory func(*testing.T) (Model, control.AdmissionRequest, control.AdmissionResponse)) {
+func serviceClosureStoreContract(t *testing.T, factory func(*testing.T) (Model, control.AdmissionRequest, control.AdmissionResponse), active ...bool) {
 	t.Helper()
 	for _, mode := range []string{"ok", "lost-start", "lost-record", "stale-rv", "recreated-vm"} {
 		t.Run(mode, func(t *testing.T) {
@@ -171,7 +171,13 @@ func serviceClosureStoreContract(t *testing.T, factory func(*testing.T) (Model, 
 				api.beforePatch = func() { api.mu.Lock(); api.vm.UID = "replacement-vm"; api.mu.Unlock() }
 			}
 			api.mu.Unlock()
-			started, ticket, err := store.StartServiceClosure(ctx, s, m.Owner, request)
+			var started *Snapshot
+			var ticket *ServiceClosure
+			if len(active) == 1 && active[0] {
+				started, ticket, err = store.StartActiveServiceClosure(ctx, s, m.Owner, request)
+			} else {
+				started, ticket, err = store.StartServiceClosure(ctx, s, m.Owner, request)
+			}
 			if mode == "stale-rv" || mode == "recreated-vm" || mode == "lost-start" {
 				require.Error(t, err)
 				require.Nil(t, ticket)

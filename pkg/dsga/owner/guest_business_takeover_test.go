@@ -7,6 +7,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubefake "k8s.io/client-go/kubernetes/fake"
 	coordclient "k8s.io/client-go/kubernetes/typed/coordination/v1"
 
@@ -166,14 +168,36 @@ func verifyLostGuestTakeoverSettlement(t *testing.T, ctx context.Context, api *o
 	pg.mu.Unlock()
 	snapshot, err = store.Load(ctx)
 	require.NoError(t, err)
-	_, _, err = store.Begin(ctx, snapshot, session.Actor(), next, 0)
+	snapshot, _, err = store.Begin(ctx, snapshot, session.Actor(), next, 0)
 	require.NoError(t, err)
+	_, err = claims.ReadCurrent(ctx, snapshot)
+	require.Error(t, err, "旧全局闭合读者仍须拒绝新Active，不放宽结清条件")
+	_, err = claims.ReadActiveHeld(ctx, snapshot)
+	require.NoError(t, err, "新在途读者只认证旧永久头来源，不授予旧操作执行权")
+	t.Run("active-held-original-source-required", func(t *testing.T) {
+		original, err := client.CoreV1().ConfigMaps(binding().Namespace).Get(ctx, current.Closed.HostClaim.Name, metav1.GetOptions{})
+		require.NoError(t, err)
+		changed := original.DeepCopy()
+		changed.Finalizers = nil
+		require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("configmaps"), changed, changed.Namespace))
+		defer func() {
+			require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("configmaps"), original, original.Namespace))
+		}()
+		_, err = claims.ReadActiveHeld(ctx, snapshot)
+		require.Error(t, err, "在途预算也必须保有原来源保护，不能因容量数值不变降级")
+	})
+	require.NoError(t, worker.inspectActiveService(ctx, snapshot), "后继Prepare前必须认证原永久头及合法Root，不能把安全关闭误当Prepare完成")
 	progress, err = worker.Advance(ctx)
 	require.NoError(t, err)
 	require.Equal(t, pgexec.Recorded, progress)
 	var following budget.Prepared
-	require.NoError(t, json.Unmarshal(budgetStep(t, store, journal.PrepareBudget).Observation.Data, &following))
+	preparedStep := budgetStep(t, store, journal.PrepareBudget)
+	require.NotNil(t, preparedStep.Observation)
+	require.NoError(t, json.Unmarshal(preparedStep.Observation.Data, &following))
 	require.Equal(t, next, following.Request)
 	require.Equal(t, prepared.Request.TargetVMMemoryBytes, following.VMBeforeMemoryBytes)
 	require.NoError(t, claims.CheckOutside(ctx, following))
+	snapshot, err = store.Load(ctx)
+	require.NoError(t, err)
+	require.NoError(t, worker.inspectActiveService(ctx, snapshot), "新Start已捕获原关闭链，不能因顶层边界撤销而误关合法后继")
 }

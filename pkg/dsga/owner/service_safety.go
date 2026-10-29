@@ -181,7 +181,9 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 			if err != nil {
 				return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 			}
-			if c.OperationSHA256 != "" {
+			if m.ProtocolVersion == 16 {
+				_, err = w.session.store.RecordActiveServiceClosure(ctx, s, m.Owner, fact, replay == "")
+			} else if c.OperationSHA256 != "" {
 				_, err = w.session.store.RecordResumeServiceClosure(ctx, s, m.Owner, fact, replay == "")
 			} else {
 				_, err = w.session.store.RecordInitialServiceClosure(ctx, s, m.Owner, fact, replay == "")
@@ -215,7 +217,16 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 			if plannedErr != nil {
 				generation, pendingErr := m.PendingFinalizationGenerationForClosure()
 				if pendingErr != nil || w.finalize == nil {
-					return false, pgexec.Idle, nil
+					if w.qualification == nil {
+						return false, pgexec.Idle, nil
+					}
+					if _, boundaryErr := m.ActiveAdmissionForClosure(); boundaryErr != nil {
+						return false, pgexec.Idle, nil
+					}
+					if err := w.inspectActiveService(ctx, s); err == nil {
+						return false, pgexec.Idle, nil
+					}
+					return w.closeActiveService(ctx, s)
 				}
 				if err := w.finalize.CheckBeforeFinalization(ctx, s); err == nil {
 					return false, pgexec.Idle, nil

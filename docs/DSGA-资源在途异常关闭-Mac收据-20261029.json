@@ -1,0 +1,540 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "stage": "PG尚Planned时资源在途来源失效的独立安全关闭；不覆盖PG已派发或Cleanup",
+  "platform": "go1.25.13 darwin/arm64",
+  "bases": {
+    "autoscaling": "4bbcdba6fc668ee571591bc093961136da1244a3",
+    "neon": "265f97dc5ecfdb5a37288e849c80cb3ff9cc6cac"
+  },
+  "pg17_unchanged": "325aeb42a6080d86902d51892b2518a70ec2512b",
+  "source_sha256": {
+    "pkg/dsga/budgetclaims/active_current.go": "3f194154ab70de363e94eb19e88468cd5c85bf913e690bbde32787e140d8c9ea",
+    "pkg/dsga/budgetclaims/current.go": "d27c1f2a3afdc64a41b7f5491ce21d187bb89d1dea433972facfd67a106ef12e",
+    "pkg/dsga/budgetclaims/reconciled.go": "59fcd4d9d9aaaf5839dbb65e93c7568fe28d988049e3dee87b784cf7286afdc3",
+    "pkg/dsga/journal/active_service_closure.go": "35aee8fe7e4ac30a034ead30044d39fdc1a75950ea50d5f88437b8ef5155c430",
+    "pkg/dsga/journal/active_service_closure_test.go": "4162e6dc67f06cf362d0e056825440c68dcbab6594ce15f357470449b1c3ba54",
+    "pkg/dsga/journal/model.go": "01ddbe93e7b5a549acc56a67df8c2501426b772ab33ee7ba9cf2e76f3b4e0cd2",
+    "pkg/dsga/journal/planned_resume_closure_test.go": "b8c9ef8021481c324806f4d15e67c9ea694364f04739c8cb34da75d6a0dbff13",
+    "pkg/dsga/journal/service_closure.go": "afaf7da4d837b2cfc9aa4ccca31601e0eb32c5f94186cd3e759d299701e9822f",
+    "pkg/dsga/owner/active_service_safety.go": "433bd921eca9852678dd56dff56eea8e6d9c6a05089f3eeb2e426efe17c8ff7d",
+    "pkg/dsga/owner/active_service_safety_test.go": "7fbff7a461ed2d4f784dda3aa35481e973d4cf85697ef816e48702a2ff807366",
+    "pkg/dsga/owner/guest_business_takeover_test.go": "6a7181e57a069abcd647f354757d19868564b403f1485284203e03cb943aac1e",
+    "pkg/dsga/owner/initial_service_test.go": "63ba052b63f85e31a959073590495622a6059d11f180640f2197cdaf41e29cfe",
+    "pkg/dsga/owner/pg.go": "9c9d52d70c9122702ebd257fabdc4cbbd6367e514c813dfb6600b2c2d06706aa",
+    "pkg/dsga/owner/service_safety.go": "10124160e605dc02ac85668cdf1cf0a89b31d00f32a35a56801259b597e29939"
+  },
+  "logs": {
+    "dsga-active-close-affected-normal-guest.jsonl": {
+      "sha256": "59f5ee33998de8dbd5f226705eeba08d8286a55bafaceea15de8915cc252e81f",
+      "bytes": 19951,
+      "test_counts": {
+        "pass": 3,
+        "fail": 1,
+        "skip": 0
+      },
+      "top_level_tests": 2,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:56:44.440785+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 159.534
+        }
+      ],
+      "failure_evidence": [
+        "        \tError Trace:\t/Users/williamlee/github/neon-self-dev/repos/autoscaling/pkg/dsga/owner/trusted_prepare_test.go:178",
+        "        \tError:      \tReceived unexpected error:",
+        "        \t            \thost allocator Lease expired or timestamp is in future",
+        "        \tError Trace:\t/Users/williamlee/github/neon-self-dev/repos/autoscaling/pkg/dsga/owner/initial_service_test.go:617",
+        "        \tError:      \tReceived unexpected error:",
+        "--- FAIL: TestProductionNormalCompletionRechecksSourcesAndRecoversLostFinish (65.54s)",
+        "FAIL",
+        "FAIL\tgithub.com/neondatabase/autoscaling/pkg/dsga/owner\t159.534s"
+      ]
+    },
+    "dsga-active-close-automatic-final.jsonl": {
+      "sha256": "78c61f18a5e69bc7e35692b743a9f49e7bd2a872ff177ebe7c96e7f80cb336b1",
+      "bytes": 11945,
+      "test_counts": {
+        "pass": 4,
+        "fail": 1,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:59:03.698827+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 180.882
+        }
+      ],
+      "failure_evidence": [
+        "        \tError Trace:\t/Users/williamlee/github/neon-self-dev/repos/autoscaling/pkg/dsga/owner/automatic_test.go:249",
+        "        \tError:      \tReceived unexpected error:",
+        "        \t            \tclient rate limiter Wait returned an error: context deadline exceeded",
+        "        \tError Trace:\t/Users/williamlee/github/neon-self-dev/repos/autoscaling/pkg/dsga/owner/initial_service_test.go:617",
+        "        \tError:      \tReceived unexpected error:",
+        "        \t            \tcontext deadline exceeded",
+        "--- FAIL: TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain (180.27s)",
+        "FAIL",
+        "FAIL\tgithub.com/neondatabase/autoscaling/pkg/dsga/owner\t180.881s"
+      ]
+    },
+    "dsga-active-close-automatic-renewed.jsonl": {
+      "sha256": "8baab71efe8acc5565b584cb94f7976de0a8f4c72da28b2e20d041986fa3c55f",
+      "bytes": 8781,
+      "test_counts": {
+        "pass": 5,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:03:42.533802+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 193.255
+        }
+      ]
+    },
+    "dsga-active-close-automatic-retained.jsonl": {
+      "sha256": "43b68d5951942e10208b2a681879fe9f495641bf35f3ef07760230b87a6e2bf7",
+      "bytes": 8781,
+      "test_counts": {
+        "pass": 5,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:17:13.377923+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 197.025
+        }
+      ]
+    },
+    "dsga-active-close-baseline.jsonl": {
+      "sha256": "4b2f705f13ed479b3602d3a465bbad1e2b863bc0e433efbb621453295284f0bc",
+      "bytes": 8050,
+      "test_counts": {
+        "pass": 0,
+        "fail": 2,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:52:56.92615+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 4.5969999999999995
+        }
+      ],
+      "failure_evidence": [
+        "        \tError Trace:\t/Users/williamlee/github/neon-self-dev/repos/autoscaling/pkg/dsga/owner/active_service_safety_test.go:76",
+        "        \tError:      \tExpected value not to be nil.",
+        "        \tError Trace:\t/Users/williamlee/github/neon-self-dev/repos/autoscaling/pkg/dsga/owner/initial_service_test.go:617",
+        "        \tError:      \tReceived unexpected error:",
+        "--- FAIL: TestProductionActiveSourceFailureClosesWithoutAdvancingUnknownResources/prepare-root (3.68s)",
+        "--- FAIL: TestProductionActiveSourceFailureClosesWithoutAdvancingUnknownResources (3.68s)",
+        "FAIL",
+        "FAIL\tgithub.com/neondatabase/autoscaling/pkg/dsga/owner\t4.596s"
+      ]
+    },
+    "dsga-active-close-budgetclaims.jsonl": {
+      "sha256": "f5bdb7f641975f204ecc3b9cf5c16584741c970b0af95fb5a3b12cdbcf14e776",
+      "bytes": 11326,
+      "test_counts": {
+        "pass": 10,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:13:03.218536+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims",
+          "Elapsed": 2.661
+        }
+      ]
+    },
+    "dsga-active-close-compile.log": {
+      "sha256": "8d9d813fe81fabd66460cbdbaac464550c302164721ad16d296052de47657ead",
+      "bytes": 164,
+      "output": "ok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/journal\t1.513s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/owner\t1.466s [no tests to run]\n"
+    },
+    "dsga-active-close-consumers-retained.log": {
+      "sha256": "bc861626dc03ff7105e0a582ebf53749b79bc11d548f839c0eb24ac760626349",
+      "bytes": 2864,
+      "output": "ok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/admissionexec\t0.636s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/bootstrap\t(cached) [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/budget\t(cached) [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/budgetclaims\t(cached) [no tests to run]\n?   \tgithub.com/neondatabase/autoscaling/pkg/dsga/budgetexec\t[no test files]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/compute\t(cached) [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/credential\t0.754s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/hostexec\t0.708s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/hostguard\t(cached) [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/hostscheduler\t0.722s [no tests to run]\n?   \tgithub.com/neondatabase/autoscaling/pkg/dsga/initialexec\t[no test files]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/journal\t(cached) [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/localcontrol\t0.677s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/owner\t0.750s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/pgexec\t(cached) [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/policy\t(cached) [no tests to run]\n?   \tgithub.com/neondatabase/autoscaling/pkg/dsga/prepareexec\t[no test files]\n?   \tgithub.com/neondatabase/autoscaling/pkg/dsga/quiesceexec\t[no test files]\n?   \tgithub.com/neondatabase/autoscaling/pkg/dsga/resourceexec\t[no test files]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/resourceguard\t(cached) [no tests to run]\n?   \tgithub.com/neondatabase/autoscaling/pkg/dsga/vmexec\t[no test files]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/vmguard\t0.658s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/agent\t0.758s [no tests to run]\n?   \tgithub.com/neondatabase/autoscaling/pkg/agent/billing\t[no test files]\nok  \tgithub.com/neondatabase/autoscaling/pkg/agent/core\t(cached) [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/agent/core/revsource\t(cached) [no tests to run]\n?   \tgithub.com/neondatabase/autoscaling/pkg/agent/core/testhelpers\t[no test files]\n?   \tgithub.com/neondatabase/autoscaling/pkg/agent/executor\t[no test files]\n?   \tgithub.com/neondatabase/autoscaling/pkg/agent/scalingevents\t[no test files]\n?   \tgithub.com/neondatabase/autoscaling/pkg/agent/schedwatch\t[no test files]\nok  \tgithub.com/neondatabase/autoscaling/pkg/neonvm/controllers\t0.687s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/neonvm/controllers/failurelag\t(cached) [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/neonvm/controllers/functests\t0.764s [no tests to run]\n?   \tgithub.com/neondatabase/autoscaling/pkg/neonvm/controllers/reqchan\t[no test files]\n"
+    },
+    "dsga-active-close-consumers.log": {
+      "sha256": "dd37ba6c0090e6ca03868701f45763367845870be0fdd2bfe91e38b57698514c",
+      "bytes": 2854,
+      "output": "ok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/admissionexec\t0.615s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/bootstrap\t0.469s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/budget\t(cached) [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/budgetclaims\t0.500s [no tests to run]\n?   \tgithub.com/neondatabase/autoscaling/pkg/dsga/budgetexec\t[no test files]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/compute\t(cached) [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/credential\t0.417s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/hostexec\t0.441s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/hostguard\t0.485s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/hostscheduler\t0.458s [no tests to run]\n?   \tgithub.com/neondatabase/autoscaling/pkg/dsga/initialexec\t[no test files]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/journal\t0.393s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/localcontrol\t0.353s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/owner\t0.448s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/pgexec\t0.413s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/policy\t(cached) [no tests to run]\n?   \tgithub.com/neondatabase/autoscaling/pkg/dsga/prepareexec\t[no test files]\n?   \tgithub.com/neondatabase/autoscaling/pkg/dsga/quiesceexec\t[no test files]\n?   \tgithub.com/neondatabase/autoscaling/pkg/dsga/resourceexec\t[no test files]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/resourceguard\t(cached) [no tests to run]\n?   \tgithub.com/neondatabase/autoscaling/pkg/dsga/vmexec\t[no test files]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/vmguard\t0.399s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/agent\t0.500s [no tests to run]\n?   \tgithub.com/neondatabase/autoscaling/pkg/agent/billing\t[no test files]\nok  \tgithub.com/neondatabase/autoscaling/pkg/agent/core\t(cached) [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/agent/core/revsource\t(cached) [no tests to run]\n?   \tgithub.com/neondatabase/autoscaling/pkg/agent/core/testhelpers\t[no test files]\n?   \tgithub.com/neondatabase/autoscaling/pkg/agent/executor\t[no test files]\n?   \tgithub.com/neondatabase/autoscaling/pkg/agent/scalingevents\t[no test files]\n?   \tgithub.com/neondatabase/autoscaling/pkg/agent/schedwatch\t[no test files]\nok  \tgithub.com/neondatabase/autoscaling/pkg/neonvm/controllers\t0.404s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/neonvm/controllers/failurelag\t(cached) [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/neonvm/controllers/functests\t0.428s [no tests to run]\n?   \tgithub.com/neondatabase/autoscaling/pkg/neonvm/controllers/reqchan\t[no test files]\n"
+    },
+    "dsga-active-close-guest-transfer-diagnosis.jsonl": {
+      "sha256": "f21d1e969c5b9e5fad56dcd5b18efd33139774b1da52444dca7b1a1275e2260e",
+      "bytes": 14290,
+      "test_counts": {
+        "pass": 0,
+        "fail": 1,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:10:13.287883+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 83.778
+        }
+      ],
+      "failure_evidence": [
+        "        \tError Trace:\t/Users/williamlee/github/neon-self-dev/repos/autoscaling/pkg/dsga/owner/guest_business_takeover_test.go:171",
+        "        \tError:      \tReceived unexpected error:",
+        "--- FAIL: TestProductionInitialOwnerTransferObservesLostGuestReplyWithoutSendingPG (81.06s)",
+        "FAIL",
+        "FAIL\tgithub.com/neondatabase/autoscaling/pkg/dsga/owner\t83.777s"
+      ]
+    },
+    "dsga-active-close-guest-transfer-final.jsonl": {
+      "sha256": "077f7e1456bf6155003069e96e9365a1dd6092274647b95b8328316e23b4151d",
+      "bytes": 18063,
+      "test_counts": {
+        "pass": 0,
+        "fail": 1,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:06:50.27404+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 89.178
+        }
+      ],
+      "failure_evidence": [
+        "--- FAIL: TestProductionInitialOwnerTransferObservesLostGuestReplyWithoutSendingPG (85.23s)",
+        "FAIL\tgithub.com/neondatabase/autoscaling/pkg/dsga/owner\t89.176s"
+      ]
+    },
+    "dsga-active-close-guest-transfer-retained.jsonl": {
+      "sha256": "7b5293e4f17644928c697c3eb266d25a0d7101783c7792e8a65524ebf1c70fd3",
+      "bytes": 12292,
+      "test_counts": {
+        "pass": 2,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:14:42.728603+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 97.216
+        }
+      ]
+    },
+    "dsga-active-close-guest-unreceived-retained.jsonl": {
+      "sha256": "17b621d9c7b0b071745cd4eee2048257ef819e9578aa10f6096d9354224120c6",
+      "bytes": 12527,
+      "test_counts": {
+        "pass": 2,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:17:06.902433+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 91.88
+        }
+      ]
+    },
+    "dsga-active-close-lint-adopted.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "bytes": 10,
+      "output": "0 issues.\n"
+    },
+    "dsga-active-close-lint-final-source.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "bytes": 10,
+      "output": "0 issues.\n"
+    },
+    "dsga-active-close-lint-final.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "bytes": 10,
+      "output": "0 issues.\n"
+    },
+    "dsga-active-close-lint-first.log": {
+      "sha256": "c34cfde409faece9f7d89d712e016048e393a07b60b7be48ea8621d33a0c13da",
+      "bytes": 879,
+      "output": "pkg/dsga/owner/active_service_safety_test.go:9:1: File is not properly formatted (gci)\n\t\"github.com/stretchr/testify/require\"\n^\npkg/dsga/owner/active_service_safety_test.go:41:2: ineffectual assignment to restore (ineffassign)\n\trestore := func() {}\n\t^\npkg/dsga/owner/active_service_safety_test.go:119:2: ineffectual assignment to restore (ineffassign)\n\trestore = func() {}\n\t^\npkg/dsga/journal/active_service_closure_test.go:31:4: variable close has same name as predeclared identifier (predeclared)\n\t\t\tclose := opening.Request\n\t\t\t^\npkg/dsga/journal/active_service_closure.go:16:72: (Model).activeClosureBoundary - result 1 (bool) is never used (unparam)\nfunc (model Model) activeClosureBoundary() (*control.AdmissionRequest, bool, error) {\n                                                                       ^\n5 issues:\n* gci: 1\n* ineffassign: 2\n* predeclared: 1\n* unparam: 1\n"
+    },
+    "dsga-active-close-lint-retained.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "bytes": 10,
+      "output": "0 issues.\n"
+    },
+    "dsga-active-close-lint-second.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "bytes": 10,
+      "output": "0 issues.\n"
+    },
+    "dsga-active-close-model-combined.jsonl": {
+      "sha256": "0099ea8bedadd91f4088e3b31bb65a00329c2d0e2153c65549438b21591f5fff",
+      "bytes": 152128,
+      "test_counts": {
+        "pass": 147,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 25,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:53:30.342493+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+          "Elapsed": 68.823
+        }
+      ]
+    },
+    "dsga-active-close-model-first.jsonl": {
+      "sha256": "91608129b8485de085d8b4a7e35b4f71c807ef2d19cbe05d2572da2677a1b91b",
+      "bytes": 23984,
+      "test_counts": {
+        "pass": 23,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 4,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:50:47.480799+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+          "Elapsed": 18.058
+        }
+      ]
+    },
+    "dsga-active-close-normal-final.jsonl": {
+      "sha256": "b58ff34fb4bb25308ef1eb93080b2b6650b8fcaadc59827a2d7929d00e0318b1",
+      "bytes": 6002,
+      "test_counts": {
+        "pass": 3,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:00:57.910885+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 79.296
+        }
+      ]
+    },
+    "dsga-active-close-owner-final.jsonl": {
+      "sha256": "09b86c4e145a3949422bf1ebda6643410728e9446a884d4c51c18fd5a5ed3eee",
+      "bytes": 23566,
+      "test_counts": {
+        "pass": 8,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:57:49.314791+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 146.263
+        }
+      ]
+    },
+    "dsga-active-close-owner-first.jsonl": {
+      "sha256": "2f1d31bbf10868221a544c04fbf2cd89bb97ebeec611ab98541463b12f6025d1",
+      "bytes": 3526,
+      "test_counts": {
+        "pass": 2,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:52:17.938604+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 9.909
+        }
+      ]
+    },
+    "dsga-active-close-owner-rest.jsonl": {
+      "sha256": "c85dc531378c0c08ee8a1fcdf40f8925aecb31436f8f0611735377fffae36b34",
+      "bytes": 21679,
+      "test_counts": {
+        "pass": 7,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:55:02.277648+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 136.122
+        }
+      ]
+    },
+    "dsga-active-close-quiesce-final.jsonl": {
+      "sha256": "e2b5199ba6b89fac6111452736abe6fc3dbd6c3fd8c15a8ba148d3cd5b903686",
+      "bytes": 5404,
+      "test_counts": {
+        "pass": 3,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:04:10.788817+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 31.305
+        }
+      ]
+    },
+    "dsga-active-close-quiesce.jsonl": {
+      "sha256": "c66d6dcb35b63a9cb8d59dca85053962c7a07f84f667ec9110119327235982ea",
+      "bytes": 13724,
+      "test_counts": {
+        "pass": 0,
+        "fail": 3,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:02:33.961516+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 10.225
+        }
+      ],
+      "failure_evidence": [
+        "        \tError Trace:\t/Users/williamlee/github/neon-self-dev/repos/autoscaling/pkg/dsga/owner/initial_service_test.go:480",
+        "        \tError:      \tReceived unexpected error:",
+        "        \t            \tprepared resource cap cannot contain shared/system/safety commitment",
+        "        \tError Trace:\t/Users/williamlee/github/neon-self-dev/repos/autoscaling/pkg/dsga/owner/initial_service_test.go:647",
+        "        \tError:      \tReceived unexpected error:",
+        "--- FAIL: TestProductionActiveQuiesceUnknownSourceFailureRetainsOriginalClose/unreceived-root (4.22s)",
+        "        \tError Trace:\t/Users/williamlee/github/neon-self-dev/repos/autoscaling/pkg/dsga/owner/initial_service_test.go:480",
+        "        \tError:      \tReceived unexpected error:",
+        "        \t            \tprepared resource cap cannot contain shared/system/safety commitment",
+        "        \tError Trace:\t/Users/williamlee/github/neon-self-dev/repos/autoscaling/pkg/dsga/owner/initial_service_test.go:647",
+        "        \tError:      \tReceived unexpected error:",
+        "--- FAIL: TestProductionActiveQuiesceUnknownSourceFailureRetainsOriginalClose/applied-lost-close (4.31s)",
+        "--- FAIL: TestProductionActiveQuiesceUnknownSourceFailureRetainsOriginalClose (8.53s)",
+        "FAIL",
+        "FAIL\tgithub.com/neondatabase/autoscaling/pkg/dsga/owner\t10.225s"
+      ]
+    },
+    "dsga-active-close-retained-compile.log": {
+      "sha256": "6404e4e2564473e7c3513b9139b9a498fd9416b48b1d6166029a811e124f01fe",
+      "bytes": 169,
+      "output": "ok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/budgetclaims\t3.411s [no tests to run]\nok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/owner\t3.464s [no tests to run]\n"
+    },
+    "dsga-active-close-vet-adopted.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "output": ""
+    },
+    "dsga-active-close-vet-final-source.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "output": ""
+    },
+    "dsga-active-close-vet-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "output": ""
+    },
+    "dsga-active-close-vet-first.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "output": ""
+    },
+    "dsga-active-close-vet-retained.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "output": ""
+    }
+  },
+  "adopted": {
+    "logs": [
+      "dsga-active-close-model-combined.jsonl",
+      "dsga-active-close-owner-final.jsonl",
+      "dsga-active-close-quiesce-final.jsonl",
+      "dsga-active-close-normal-final.jsonl",
+      "dsga-active-close-automatic-retained.jsonl",
+      "dsga-active-close-guest-transfer-retained.jsonl",
+      "dsga-active-close-guest-unreceived-retained.jsonl",
+      "dsga-active-close-budgetclaims.jsonl"
+    ],
+    "top_level_tests": 32,
+    "test_records": 180,
+    "fail": 0,
+    "skip": 0,
+    "new_journal_top_level": 4,
+    "new_journal_records": 26,
+    "new_production_top_level": 2,
+    "new_production_records": 11,
+    "new_affected_source_checks": 2,
+    "quality": "最终三包vet-retained退出0；lint-retained为0 issues；git diff --check通过",
+    "compile_only": "consumers-retained.log全部仅编译，不算业务执行；未改变的Linux-only Runner不重复交叉编译"
+  },
+  "intermediate_failures": {
+    "baseline": "overlay只替换原HEAD的owner/service_safety.go，prepare-root确实失败，未写当前工作树",
+    "normal": "affected-normal-guest中的正常结案因静态60秒Host Lease过期失败；原Guest接管子树通过但最终源码另完整复测，不采用该混合包的正常结果",
+    "automatic": "automatic-final在180秒组合总期限耗尽；最终扩大为5分钟，生产请求、限流和租约不变，最终完整业务结果见automatic-retained日志",
+    "quiesce": "首轮新组合使用64MiB初始normal但PG成本80MiB，正式Prepare正确拒绝；最终仅该fixture在首次资源绑定前统一固定128MiB bootstrap/资格/实际值",
+    "lint": "首轮五项已修正，所有失败日志保留",
+    "active_current_bug": "最终源码原Guest接管首轮先panic于空Prepare观察；诊断轮明确ReadCurrent要求全局Active=nil，误将后继合法CapacityHeld当来源失效；修为ReadActiveHeld按原永久头及捕获的旧关闭链只读认证，旧ReadCurrent严格条件保持，原Host保护丢失仍拒绝",
+    "model_first": "早期Store测试仅模型镜像，不采用该旧Store结果；model-combined使用真实HTTP typed Store UID/RV CAS"
+  },
+  "compatibility": [
+    "Journal v16明确拒绝旧v15读者；v10–15既有关闭回归通过",
+    "PG/Go/Rust外部准入仍v1，本批未改变PG/Rust源码；PG三锁与实际源码保持325a",
+    "原Active全部字段、历史和原永久预算不变；未确认不改Completed/NoEffect，不授予VM缩容许可",
+    "只读原永久头/Prepare/Host来源、原Root与Runner；合法未知不误关，来源恢复不自行开放"
+  ],
+  "boundaries": [
+    "正式Session/Lease接管、TLS SDK、UID/RV CAS与外层WAL实际在Mac执行；PG/Root/QMP/Kube API为明确peer，不是完整Linux E2E",
+    "正常自动Grow→Shrink包含生产Prepare/Quiesce/Host/Runner/Guest/PG消费者/Finalize/Resume/Finish与Host结清，QMP peer实际值读回1GiB",
+    "Linux/KVM/NeonVM/HugeTLB物理释放、真实apiserver/RBAC/证书/性能未执行",
+    "不构建镜像、不部署、不合main、不追新上游、不改独立控制面、不进入PG18/16"
+  ],
+  "remaining_code": [
+    "PG已派发/跨容量与Cleanup异常关闭",
+    "坏缺日志独立关闭、受控重开与有界重复生命周期",
+    "安全降normal及后台/私有内存持续上界和活性",
+    "出生崩溃无失败屏障、Runner无Wait、分区/跨boot迁移",
+    "Monitor/WSS/配额/RW-RO、可信CPU及全部最终写者"
+  ],
+  "goal_status": "active；PG17全面实现、Mac验证和远程归档后才暂停自动接续",
+  "owner_worktree_preservation": "AGENTS.md用户原改动保留，不stage；不apply旧stash"
+}

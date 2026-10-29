@@ -45,6 +45,13 @@ func (r *Reader) readReconciled(ctx context.Context, s *journal.Snapshot, c budg
 	} else if s.State().CheckClosedCapacity(c.Request) != nil {
 		return nil, fmt.Errorf("reconciled current source reader requires original closed permanent budget")
 	}
+	return r.readReconciledSources(ctx, s, c, closed)
+}
+
+// 调用方必须先认证原Active取消，或从严格验证的永久CapacityHeld导出原
+// 完整预算与Host边界。本层只读原对象/持有；不决定操作已闭合，不发释放
+// 或派发票据。共用来源认证避免在途读者另写一套较宽松的UID/保护检查。
+func (r *Reader) readReconciledSources(ctx context.Context, s *journal.Snapshot, c budget.ReconciledCapacity, closed *hostguard.Settlement) (*ReconciledSources, error) {
 	out, outside, initial, err := r.readCapacityOutside(ctx, s, c)
 	if err != nil {
 		return nil, err

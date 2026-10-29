@@ -35,7 +35,7 @@ type ServiceClosure struct {
 	Continuation   *ServiceClosureContinuation `json:"continuation,omitempty"`
 	Original       *control.AdmissionRequest   `json:"original,omitempty"`
 	ClosureReceipt *control.AdmissionClosure   `json:"closure_receipt,omitempty"`
-	// v13～v15只保存完整原Active的SHA256；完整原文仍在Active中，防止关闭
+	// v13～v16只保存完整原Active的SHA256；完整原文仍在Active中，防止关闭
 	// 后借普通Record/RequestAbort/Finish重写原步骤或丢失未知效果。
 	OperationSHA256 string `json:"operation_sha256,omitempty"`
 }
@@ -70,7 +70,7 @@ func cloneAdmissionResponse(original *control.AdmissionResponse) *control.Admiss
 // 不将其补成已结算预算。不能由错误文字、RSS或当前资格派生新承诺。
 // 本函数不认证外部对象，也不向Root/Host发出释放许可。
 func (model Model) ServiceBudgetID() (string, error) {
-	if model.ProtocolVersion == 15 && model.Active != nil {
+	if model.ProtocolVersion >= 15 && model.Active != nil {
 		return model.Active.Request.BudgetCommitmentID, nil
 	}
 	switch {
@@ -103,7 +103,7 @@ func (model Model) validateServiceClosure() error {
 	}
 	budgetID, err := model.ServiceBudgetID()
 	digest, hashErr := c.Request.ContextSHA256()
-	if model.ProtocolVersion < 10 || model.ProtocolVersion > 15 || model.ProtocolVersion < 12 && ((model.ProtocolVersion == 11) != (c.Continuation != nil)) || model.PGInstance == nil || err != nil || hashErr != nil || c.Request.Open || c.Request.Instance != *model.PGInstance || c.Request.BudgetCommitmentID != budgetID || c.CommandSHA256 != digest || c.Origin.Validate() != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Origin.Epoch > model.Owner.Epoch || c.Origin.Epoch == model.Owner.Epoch && c.Origin != model.Owner || c.StartedSequence == 0 || c.StartedSequence > model.Sequence {
+	if model.ProtocolVersion < 10 || model.ProtocolVersion > 16 || model.ProtocolVersion < 12 && ((model.ProtocolVersion == 11) != (c.Continuation != nil)) || model.PGInstance == nil || err != nil || hashErr != nil || c.Request.Open || c.Request.Instance != *model.PGInstance || c.Request.BudgetCommitmentID != budgetID || c.CommandSHA256 != digest || c.Origin.Validate() != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Origin.Epoch > model.Owner.Epoch || c.Origin.Epoch == model.Owner.Epoch && c.Origin != model.Owner || c.StartedSequence == 0 || c.StartedSequence > model.Sequence {
 		return fmt.Errorf("service closure differs from original retained PG, budget or owner")
 	}
 	switch {
@@ -124,6 +124,10 @@ func (model Model) validateServiceClosure() error {
 		}
 	case c.Original == nil && model.ProtocolVersion == 15:
 		if err := model.validatePendingFinalizationServiceClosure(); err != nil {
+			return err
+		}
+	case model.ProtocolVersion == 16:
+		if err := model.validateActiveServiceClosure(); err != nil {
 			return err
 		}
 	case c.Original == nil && model.ProtocolVersion < 12:

@@ -148,6 +148,12 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 				var c budget.InitialAdmissionCommand
 				require.NoError(t, json.Unmarshal(a.Command, &c))
 				require.Equal(t, c.Request, request, "真实首次setter之前必须有原完整WAL")
+			} else if s.State().Active != nil && s.State().Active.Request.Kind == control.Shrink && !request.Open {
+				step := budgetStep(t, p.store, journal.Quiesce)
+				require.Equal(t, journal.Unconfirmed, step.Phase)
+				var command budget.QuiesceCommand
+				require.NoError(t, json.Unmarshal(step.Command, &command))
+				require.Equal(t, command.Close, request, "原Quiesce完整关闭必须先于setter写前持久")
 			} else {
 				require.Equal(t, journal.Unconfirmed, budgetStep(t, p.store, journal.ResumeAdmission).Phase)
 			}
@@ -274,7 +280,7 @@ func TestProductionInitialOwnerTransferCancelsUnreceivedGuestAndSettlesActualBud
 func productionInitialService(t *testing.T, mode string) {
 	t.Helper()
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
-	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer"
+	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer"
 	pgTakeover := mode == "owner-transfer-after-pg"
 	unreceivedGuest := mode == "owner-transfer-before-guest-delivery"
 	guestTakeover := mode == "owner-transfer-after-guest" || unreceivedGuest
@@ -301,6 +307,13 @@ func productionInitialService(t *testing.T, mode string) {
 	qualifiedRootFixture(root)
 	root.mu.Lock()
 	root.view.Actual.GuestMemTotalBytes = 480 << 20
+	if strings.HasPrefix(mode, "active-safety-quiesce-") {
+		// 新Quiesce组合保留80MiB原PG成本，初始normal64MiB不足以
+		// 形成合法Prepare。首次绑定前即固定128MiB，原bootstrap、
+		// 资格、永久头和真实读取保持一致；不在运行中补大限额。
+		root.view.Bootstrap.Limits.MemoryMaxBytes = 128 << 20
+		root.view.Actual.MemoryMaxBytes = 128 << 20
+	}
 	root.mu.Unlock()
 	args := runner.QMPArguments()
 	qmp := &vmQMPPeer{mu: sync.Mutex{}, uuid: args[1], minimum: 512 << 20, maximum: 2 << 30, actual: 512 << 20, writes: 0, lose: false, onResize: func(actual uint64) {
@@ -318,13 +331,17 @@ func productionInitialService(t *testing.T, mode string) {
 	elector, err := New(coord, store, DefaultOptions())
 	require.NoError(t, err)
 	deadline := 2 * time.Minute
-	if cancelled || mode == "automatic-policy" {
-		// 自动完整Grow→Shrink组合已在原两分钟上限内119.86秒通过，
-		// 同样留出race调度余量；只扩测试总期限，不改生产请求或租约。
+	if cancelled {
 		// 本组合串联首次服务、取消回收、后继Grow和下一次Prepare，
 		// -race下已实测到最后Prepare才触及原两分钟总期限；扩大的是
 		// 整个测试的上限，各生产请求/租约/单轮deadline均保持原值。
 		deadline = 3 * time.Minute
+	}
+	if mode == "automatic-policy" {
+		// 在途永久头/Prepare/Host的正式来源预审增加了受Kube客户端
+		// 限流的只读请求；完整Grow→Shrink曾在原三分钟总期限耗尽。
+		// 仅扩大组合测试总期限，保留生产限流、请求期限和选主续租。
+		deadline = 5 * time.Minute
 	}
 	if ownerTransfer || closureTransfer {
 		// 实测包含原30秒Lease失效等待的完整组合为175.53秒，
@@ -423,7 +440,7 @@ func productionInitialService(t *testing.T, mode string) {
 			return nil
 		}
 		var successorHost *hostexec.Publisher
-		if pgTakeover || guestTakeover || mode == "auto-finish" || mode == "automatic-policy" || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") {
+		if pgTakeover || guestTakeover || mode == "auto-finish" || mode == "automatic-policy" || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") {
 			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -444,6 +461,14 @@ func productionInitialService(t *testing.T, mode string) {
 		} else {
 			worker = verifyInitialServiceReplies(t, ctx, api, client, store, session, resources, worker, config, source, pg, root)
 		}
+		if strings.HasPrefix(mode, "active-safety-quiesce-") {
+			// 只缩PG、VM保持原最小规格，使用已有512MiB完整资格及真实
+			// 首次预算。Prepare/Quiesce仍走生产者，不注入领域Completed。
+			request.Kind, request.TargetBuffers, request.TargetVMMemoryBytes = control.Shrink, 256, 512<<20
+			pg.mu.Lock()
+			pg.request = request
+			pg.mu.Unlock()
+		}
 		// 后继完整Grow使用实际Prepare/Host/Guest/VM/PG/预算/准入，首次永久
 		// 头只能在完整Finalize的同CAS被替换；不注入领域Completed。
 		s, err := store.Load(ctx)
@@ -454,9 +479,22 @@ func productionInitialService(t *testing.T, mode string) {
 			_, _, err = store.Begin(ctx, s, session.Actor(), request, 1)
 			require.NoError(t, err)
 		}
+		if strings.HasPrefix(mode, "active-safety-prepare-") {
+			verifyActiveServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
+			return nil
+		}
 		progress, err := worker.Advance(ctx)
 		require.NoError(t, err)
 		require.Equal(t, pgexec.Recorded, progress)
+		if strings.HasPrefix(mode, "active-safety-quiesce-") {
+			unreceived := strings.Contains(mode, "unreceived")
+			pg.faults(unreceived, !unreceived)
+			_, err = worker.Advance(ctx)
+			require.Error(t, err, "保留原Quiesce在写前已确认、native回复未知的边界")
+			require.Equal(t, journal.Unconfirmed, budgetStep(t, store, journal.Quiesce).Phase)
+			verifyActiveServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
+			return nil
+		}
 		var prepared budget.Prepared
 		require.NoError(t, json.Unmarshal(budgetStep(t, store, journal.PrepareBudget).Observation.Data, &prepared))
 		if successorHost != nil {
@@ -466,7 +504,10 @@ func productionInitialService(t *testing.T, mode string) {
 			require.NoError(t, err)
 		} else {
 			publishVMHost(t, ctx, client, coord, store, session)
-			if pgTakeover || guestTakeover {
+			// 完整结案/自动Grow→Shrink会经过多次正式来源预审，race运行
+			// 可能超过静态夹具Lease的60秒寿命。用原UID/holder的真实
+			// 选主续租维持Host，不放宽生产过期校验，也不重建同名来源。
+			if pgTakeover || guestTakeover || mode == "auto-finish" || mode == "automatic-policy" {
 				keepPGTakeoverHostOwner(t, ctx, client)
 			}
 		}
@@ -475,11 +516,19 @@ func productionInitialService(t *testing.T, mode string) {
 			require.NoError(t, err, string(action))
 			require.Equal(t, pgexec.Recorded, progress)
 		}
+		if strings.HasPrefix(mode, "active-safety-vm-unknown-") {
+			verifyActiveServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
+			return nil
+		}
 		require.NoError(t, runner.Tick(ctx))
 		progress, err = worker.Advance(ctx)
 		require.NoError(t, err)
 		require.Equal(t, pgexec.Recorded, progress)
 		for _, action := range []journal.Action{journal.GuestReady, journal.ResizePG, journal.FinalizeBudget, journal.ResumeAdmission} {
+			if action == journal.ResizePG && strings.HasPrefix(mode, "active-safety-guest-complete-") {
+				verifyActiveServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
+				return nil
+			}
 			if action == journal.FinalizeBudget && strings.HasPrefix(mode, "finalize-safety-") {
 				verifyPendingFinalizationSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
 				return nil
