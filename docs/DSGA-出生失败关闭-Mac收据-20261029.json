@@ -1,0 +1,485 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "stage": "原Runner出生失败封存、同nonce关闭来源接续与整Pod结清",
+  "platform": "go1.25.13 darwin/arm64",
+  "base_autoscaling": "a29c79f825732352e4aac04d2974d28feb5a016b",
+  "pg17_unchanged": "325aeb42a6080d86902d51892b2518a70ec2512b",
+  "source_sha256": {
+    "pkg/dsga/vmguard/runner.go": "4609a3dcdb5c4026d193f90d85bf134089420e19519bd2a8fce2329f3f4f1f6e",
+    "pkg/dsga/vmguard/engine.go": "cedaa8be0aa7b988acc084cdfcb17d25eae3765622062fc230db71a610ac1193",
+    "pkg/dsga/vmguard/state_unix.go": "b7cf10253587781fc3607f69d65ffcf578edba5cf08e485f931c839c0556b9cc",
+    "pkg/dsga/vmguard/failed_birth.go": "d59858bb02f71d22780d283100935b5a128228353d877088c75e991c8670e385",
+    "pkg/dsga/vmguard/failed_birth_test.go": "71b3672136904f5f2b830ea1d912e60cf04947ce289f5b6045f187544050c334",
+    "pkg/dsga/vmguard/runner_test.go": "c5dbf8487d83eb961849b9abcc72e39d5fa7d0cc0120c1291c9f20494be39a92",
+    "pkg/dsga/hostscheduler/retirement_test.go": "b857c3f78210e066a70c7014ad6e16b9027ce6de5b26c56b5bff76cfd1a3e52d"
+  },
+  "logs": {
+    "dsga-failed-birth-baseline.jsonl": {
+      "sha256": "5f2e4eee720f979a2eb20cf66ac6149209f702e2cdb0bd6fda2941ae0bec92e1",
+      "bytes": 4186,
+      "test_counts": {
+        "pass": 0,
+        "fail": 2,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:35:16.278406+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+          "Elapsed": 1.126
+        }
+      ]
+    },
+    "dsga-failed-birth-first.jsonl": {
+      "sha256": "e21719bf2dd26e165977d8ecb423203f79f90eec233806b59e5c152763f16085",
+      "bytes": 18077,
+      "test_counts": {
+        "pass": 4,
+        "fail": 5,
+        "skip": 0
+      },
+      "top_level_tests": 2,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:33:18.013654+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+          "Elapsed": 2.056
+        }
+      ]
+    },
+    "dsga-failed-birth-second.jsonl": {
+      "sha256": "f699ad8b70826887ce136de993014f9a2970f06e6b3808dc24a325b475c4df18",
+      "bytes": 743,
+      "test_counts": {
+        "pass": 0,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 0,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:35:55.898541+08:00",
+          "Action": "fail",
+          "Package": "./pkg/dsga/vmguard",
+          "Elapsed": 0,
+          "FailedBuild": "./pkg/dsga/vmguard"
+        }
+      ]
+    },
+    "dsga-failed-birth-third.jsonl": {
+      "sha256": "55368226d14b5b49936eebf764432a11cade39e50368e18101b33e7945f8277d",
+      "bytes": 10159,
+      "test_counts": {
+        "pass": 9,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 2,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:36:19.881258+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+          "Elapsed": 3.215
+        }
+      ]
+    },
+    "dsga-failed-birth-checkpoint.jsonl": {
+      "sha256": "b0263b818bebfe16d27e38e0ececcb1d1e4d79dd7f2267ba99b3b793e2a08f0e",
+      "bytes": 21861,
+      "test_counts": {
+        "pass": 6,
+        "fail": 7,
+        "skip": 0
+      },
+      "top_level_tests": 3,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:38:01.581998+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+          "Elapsed": 1.459
+        }
+      ]
+    },
+    "dsga-failed-birth-affected-first.jsonl": {
+      "sha256": "f3c63b8ffd82ceb41d5f851a0b1852f9345ed951cba80660dd554374f631eee9",
+      "bytes": 218606,
+      "test_counts": {
+        "pass": 154,
+        "fail": 21,
+        "skip": 0
+      },
+      "top_level_tests": 42,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:36:55.375825+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+          "Elapsed": 0.802
+        },
+        {
+          "Time": "2026-10-29T13:37:14.501925+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+          "Elapsed": 19.975
+        }
+      ]
+    },
+    "dsga-failed-birth-retirement-first.jsonl": {
+      "sha256": "7e6bf15fe7d0019e971b2f537261cc4eecbe1dd4c86b6a6a7c01d402fe17f784",
+      "bytes": 9359,
+      "test_counts": {
+        "pass": 0,
+        "fail": 1,
+        "skip": 0
+      },
+      "top_level_tests": 1,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:36:34.937149+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+          "Elapsed": 0.875
+        }
+      ]
+    },
+    "dsga-failed-birth-vmguard-full.jsonl": {
+      "sha256": "cff0f82021437c948f11be76be3bead50b0a7e66bd475edeb3f99423037f5ddb",
+      "bytes": 179138,
+      "test_counts": {
+        "pass": 177,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 41,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:39:12.128658+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+          "Elapsed": 22.423
+        }
+      ]
+    },
+    "dsga-failed-birth-scheduler-full.jsonl": {
+      "sha256": "cec9b4fe0941a01b025fadee91a3d5b7672105361a93a548d2d6ed89e7cf17da",
+      "bytes": 47478,
+      "test_counts": {
+        "pass": 43,
+        "fail": 1,
+        "skip": 0
+      },
+      "top_level_tests": 17,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:38:50.822167+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+          "Elapsed": 98.593
+        }
+      ]
+    },
+    "dsga-failed-birth-scheduler-corrected.jsonl": {
+      "sha256": "03e0da53a3511debe46a6006adaf0074a97e0b9303ac12116a94a5a544349099",
+      "bytes": 2653,
+      "test_counts": {
+        "pass": 2,
+        "fail": 0,
+        "skip": 0
+      },
+      "top_level_tests": 2,
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T13:39:28.772297+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler",
+          "Elapsed": 14.132
+        }
+      ]
+    },
+    "dsga-failed-birth-lint-first.log": {
+      "sha256": "92e4856b17b0e8ce73d22cbc40f5e0b3dd224431f1a1f53ceee700b6d4237151",
+      "bytes": 193
+    },
+    "dsga-failed-birth-lint-second.log": {
+      "sha256": "6eeeec2da40f4828a641db33891254234058a8334b78965232d7a105ac374f12",
+      "bytes": 158
+    },
+    "dsga-failed-birth-lint-final2.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "bytes": 10
+    },
+    "dsga-failed-birth-vet-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "dsga-failed-birth-consumers-compile.log": {
+      "sha256": "0df977bad03576b535fed8dc7afbe60659cb6b0041b3289b933538fdaa5d5cfd",
+      "bytes": 2783
+    },
+    "dsga-failed-birth-consumers-compile-final.log": {
+      "sha256": "0bb0023008a89b080e5cf9604a90a014968e86bab1ceb0eb85274ae0444204c2",
+      "bytes": 2996
+    },
+    "dsga-failed-birth-consumers-compile-final2.log": {
+      "sha256": "716aaad9dd3b273e2ee9b8b024949ef6ab8e0bd24ba3f881f940a920ef66842a",
+      "bytes": 4715
+    }
+  },
+  "adopted": {
+    "vmguard": "vmguard-full: 41顶层/177含父子pass，0fail/skip，22.423s",
+    "hostscheduler": "scheduler-full成功子树加scheduler-corrected修正旧v8断言，去重17顶层/44含父子pass，0fail/skip；完整首轮保留1fail",
+    "total": "去重58顶层/221含父子pass，0skip；不是221次产品E2E",
+    "new_tests": "出生三顶层/13记录与新增Scheduler一顶层，共4顶层14记录",
+    "quality": "vet-final exit0，lint-final2 0 issues"
+  },
+  "intermediate_failures": {
+    "baseline": "旧Initialize overlay确实缺birth-abort，首个正向子用例失败",
+    "first": "错误比较CREATE调用次数，改为原CM UID/原文完整对象不变；不削弱生产校验",
+    "second": "默认Go cache沙箱禁止访问，改用workspace build/go-cache",
+    "checkpoint": "UnmarshalObject拒绝带自定义UnmarshalJSON的ObjectRef，改用其严格JSON解码器",
+    "affected-first": "沙箱禁止TCP/Unix监听，扩大本地测试权限后重跑；不采用部分失败结果",
+    "scheduler-full": "旧测试把已经支持的Node v8当未知；改用未知v9并定向复测",
+    "compile": "首次两次消费者命令含不存在目录，第三次含Linux-only Runner导致Darwin依赖编译失败；全部保留，采用独立Mac消费者及Linux双架构Runner编译",
+    "lint": "predeclared copy与分支style已修正，最终0"
+  },
+  "boundaries": [
+    "失败封存在Initialize返回Runner之前，原nonce、owner、确认CM UID及pristine本地WAL固定；只允许关闭用途补齐",
+    "State UID逐步fsync再创建Binding，防跨失败窗口同名收养；完整sources checkpoint先于state保存",
+    "Initialize始终nil/error，补齐后Tick/RunQEMU永久ErrStopped；不调用QMP或Start，不伪造PID/Wait",
+    "Scheduler仍核同一原Pod全部容器终态、Node UID/RV CAS；丢回复保留保护，VM锚点先于解除保护，幂等不重复退还",
+    "Mac真实文件锁/fsync及正式Runner/Scheduler逻辑；Kube/终态为显式peer，QEMU/KVM/apiserver不是实测",
+    "已有出生意图但未封存的进程崩溃、Runner被杀无Wait、缺坏日志、分区与跨boot迁移仍有代码工作；normal/持续预算/Monitor/CPU等未封版",
+    "默认关闭，不构建镜像、不部署、不合main；Linux物理与性能另验"
+  ],
+  "compile_only": {
+    "mac": {
+      "exit_code": 0,
+      "sha256": "98f3fa1f0ff2c5cc475a83add056cfe7ca36de4114bcdeb1e4c3b0ac98978436",
+      "packages_ok": 22,
+      "packages_no_tests": 12,
+      "business_tests_run": false
+    },
+    "amd64": {
+      "exit_code": 0,
+      "sha256": "a787ff93680f77ff86114027277c5880071fc20ded9a0af408d60123b6024da3",
+      "buildinfo_sha256": "73737fdaf737e3871b25d4f75ebb26f96c6e1b4acc032308bcb08ddeb83eccd0",
+      "buildinfo": [
+        "/Users/williamlee/github/neon-self-dev/build/dsga-failed-birth-runner-linux-amd64: go1.25.13",
+        "\tpath\tgithub.com/neondatabase/autoscaling/neonvm-runner/cmd",
+        "\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261029052316-a29c79f82573+dirty\t",
+        "\tdep\tgithub.com/alessio/shellescape\tv1.4.1\th1:V7yhSDDn8LP4lc4jS8pFkt0zCnzVJlG5JXy9BVKJUX0=",
+        "\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=",
+        "\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=",
+        "\tdep\tgithub.com/cilium/cilium\tv1.12.14\th1:8TM2fbVBI7zpOSfyc0YxunPY2QeinlEHqeSfVgnQEog=",
+        "\tdep\tgithub.com/cilium/ebpf\tv0.10.0\th1:nk5HPMeoBXtOzbkZBWym+ZWq1GIiHUsBFXxwewXAHLQ=",
+        "\tdep\tgithub.com/containerd/cgroups/v3\tv3.0.1\th1:4hfGvu8rfGIwVIDd+nLzn/B9ZXx4BcCjzt5ToenJRaE=",
+        "\tdep\tgithub.com/coreos/go-iptables\tv0.6.0\th1:is9qnZMPYjLd8LYqmm/qlE+wwEgJIkTYdhV3rfZo4jk=",
+        "\tdep\tgithub.com/coreos/go-systemd/v22\tv22.5.0\th1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=",
+        "\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=",
+        "\tdep\tgithub.com/digitalocean/go-libvirt\tv0.0.0-20220804181439-8648fbde413e\th1:SCnqm8SjSa0QqRxXbo5YY//S+OryeJioe17nK+iDZpg=",
+        "\tdep\tgithub.com/digitalocean/go-qemu\tv0.0.0-20220826173844-d5f5e3ceed89\th1:2/52ma1zkjfR9aIrAX1F9H24rpj+PkCDkAwhQgqVR/A=",
+        "\tdep\tgithub.com/docker/docker\tv24.0.9+incompatible\th1:HPGzNmwfLZWdxHqK9/II92pyi1EpYKsAqcl4G0Of9v0=",
+        "\tdep\tgithub.com/docker/go-units\tv0.5.0\th1:69rxXcBk27SvSaaxTtLh/8llcHD8vYHT7WSdRZ/jvr4=",
+        "\tdep\tgithub.com/docker/libnetwork\tv0.8.0-dev.2.0.20210525090646-64b7a4574d14\th1:GZvuJOpa10/Yl2EinacWoMqJ+XtNPbikclDZvNXBNO8=",
+        "\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=",
+        "\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=",
+        "\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=",
+        "\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=",
+        "\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=",
+        "\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=",
+        "\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=",
+        "\tdep\tgithub.com/godbus/dbus/v5\tv5.1.0\th1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=",
+        "\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=",
+        "\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=",
+        "\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=",
+        "\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=",
+        "\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=",
+        "\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=",
+        "\tdep\tgithub.com/ishidawataru/sctp\tv0.0.0-20230406120618-7ff4192f6ff2\th1:i2fYnDurfLlJH8AyyMOnkLHnHeP8Ff/DDpuZA/D3bPo=",
+        "\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=",
+        "\tdep\tgithub.com/jpillora/backoff\tv1.0.0\th1:uvFg412JmmHBHw7iwprIxkPMI+sGQ4kzOWsMeHnm2EA=",
+        "\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=",
+        "\tdep\tgithub.com/kdomanski/iso9660\tv0.3.3\th1:cNwM9L2L1Hzc5hZWGy6fPJ92UyWDccaY69DmEPlfDNY=",
+        "\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=",
+        "\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=",
+        "\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=",
+        "\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=",
+        "\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=",
+        "\tdep\tgithub.com/opencontainers/runtime-spec\tv1.0.3-0.20220909204839-494a5a6aca78\th1:R5M2qXZiK/mWPMT4VldCOiSL9HIAMuxQZWdG0CSM5+4=",
+        "\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=",
+        "\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=",
+        "\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=",
+        "\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=",
+        "\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=",
+        "\tdep\tgithub.com/sirupsen/logrus\tv1.9.3\th1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=",
+        "\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=",
+        "\tdep\tgithub.com/vishvananda/netlink\tv1.1.1-0.20220125195016-0639e7e787ba\th1:MU5oPE25XZhDS8Z0xFG0/1ERBEu5rZIw62TImubLusU=",
+        "\tdep\tgithub.com/vishvananda/netns\tv0.0.4\th1:Oeaw1EM2JMxD51g9uhtC0D7erkIjgmj8+JZc26m1YX8=",
+        "\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=",
+        "\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=",
+        "\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=",
+        "\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=",
+        "\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=",
+        "\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=",
+        "\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=",
+        "\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=",
+        "\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=",
+        "\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=",
+        "\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=",
+        "\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=",
+        "\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=",
+        "\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=",
+        "\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=",
+        "\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=",
+        "\tdep\tk8s.io/api\tv0.31.7",
+        "\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=",
+        "\t",
+        "\tdep\tk8s.io/apimachinery\tv0.31.7",
+        "\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=",
+        "\t",
+        "\tdep\tk8s.io/client-go\tv0.31.7",
+        "\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=",
+        "\t",
+        "\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=",
+        "\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38",
+        "\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=",
+        "\t",
+        "\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=",
+        "\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=",
+        "\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=",
+        "\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=",
+        "\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=",
+        "\tbuild\t-buildmode=exe",
+        "\tbuild\t-compiler=gc",
+        "\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "\tbuild\tCGO_ENABLED=0",
+        "\tbuild\tGOARCH=amd64",
+        "\tbuild\tGOOS=linux",
+        "\tbuild\tGOAMD64=v1",
+        "\tbuild\tvcs=git",
+        "\tbuild\tvcs.revision=a29c79f825732352e4aac04d2974d28feb5a016b",
+        "\tbuild\tvcs.time=2026-10-29T05:23:16Z",
+        "\tbuild\tvcs.modified=true"
+      ],
+      "log_sha256": "b78411bcd07deed3db37707f78ad6fb3402ff23c04b838a79ff5a429d92e576d",
+      "warnings": [
+        "go: writing stat cache: open /Users/williamlee/gopath/pkg/mod/cache/download/github.com/neondatabase/autoscaling/@v/v0.49.2-0.20261029052316-a29c79f82573.info896389341.tmp: operation not permitted"
+      ],
+      "execution": "not run"
+    },
+    "arm64": {
+      "exit_code": 0,
+      "sha256": "a97f3521226dcd6c1ecefcf6cd1a65e5e3384b3069b6b32e2297b49eb8cad391",
+      "buildinfo_sha256": "0d71f93f77c6eef8081fa93d31b3fc58a5724e7486b45a9f4137ce32fee8df95",
+      "buildinfo": [
+        "/Users/williamlee/github/neon-self-dev/build/dsga-failed-birth-runner-linux-arm64: go1.25.13",
+        "\tpath\tgithub.com/neondatabase/autoscaling/neonvm-runner/cmd",
+        "\tmod\tgithub.com/neondatabase/autoscaling\tv0.49.2-0.20261029052316-a29c79f82573+dirty\t",
+        "\tdep\tgithub.com/alessio/shellescape\tv1.4.1\th1:V7yhSDDn8LP4lc4jS8pFkt0zCnzVJlG5JXy9BVKJUX0=",
+        "\tdep\tgithub.com/beorn7/perks\tv1.0.1\th1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=",
+        "\tdep\tgithub.com/cespare/xxhash/v2\tv2.3.0\th1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=",
+        "\tdep\tgithub.com/cilium/cilium\tv1.12.14\th1:8TM2fbVBI7zpOSfyc0YxunPY2QeinlEHqeSfVgnQEog=",
+        "\tdep\tgithub.com/cilium/ebpf\tv0.10.0\th1:nk5HPMeoBXtOzbkZBWym+ZWq1GIiHUsBFXxwewXAHLQ=",
+        "\tdep\tgithub.com/containerd/cgroups/v3\tv3.0.1\th1:4hfGvu8rfGIwVIDd+nLzn/B9ZXx4BcCjzt5ToenJRaE=",
+        "\tdep\tgithub.com/coreos/go-iptables\tv0.6.0\th1:is9qnZMPYjLd8LYqmm/qlE+wwEgJIkTYdhV3rfZo4jk=",
+        "\tdep\tgithub.com/coreos/go-systemd/v22\tv22.5.0\th1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=",
+        "\tdep\tgithub.com/davecgh/go-spew\tv1.1.2-0.20180830191138-d8f796af33cc\th1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=",
+        "\tdep\tgithub.com/digitalocean/go-libvirt\tv0.0.0-20220804181439-8648fbde413e\th1:SCnqm8SjSa0QqRxXbo5YY//S+OryeJioe17nK+iDZpg=",
+        "\tdep\tgithub.com/digitalocean/go-qemu\tv0.0.0-20220826173844-d5f5e3ceed89\th1:2/52ma1zkjfR9aIrAX1F9H24rpj+PkCDkAwhQgqVR/A=",
+        "\tdep\tgithub.com/docker/docker\tv24.0.9+incompatible\th1:HPGzNmwfLZWdxHqK9/II92pyi1EpYKsAqcl4G0Of9v0=",
+        "\tdep\tgithub.com/docker/go-units\tv0.5.0\th1:69rxXcBk27SvSaaxTtLh/8llcHD8vYHT7WSdRZ/jvr4=",
+        "\tdep\tgithub.com/docker/libnetwork\tv0.8.0-dev.2.0.20210525090646-64b7a4574d14\th1:GZvuJOpa10/Yl2EinacWoMqJ+XtNPbikclDZvNXBNO8=",
+        "\tdep\tgithub.com/emicklei/go-restful/v3\tv3.12.1\th1:PJMDIM/ak7btuL8Ex0iYET9hxM3CI2sjZtzpL63nKAU=",
+        "\tdep\tgithub.com/fsnotify/fsnotify\tv1.7.0\th1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=",
+        "\tdep\tgithub.com/fxamacker/cbor/v2\tv2.7.0\th1:iM5WgngdRBanHcxugY4JySA0nk1wZorNOpTgCMedv5E=",
+        "\tdep\tgithub.com/go-logr/logr\tv1.4.2\th1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=",
+        "\tdep\tgithub.com/go-openapi/jsonpointer\tv0.21.0\th1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=",
+        "\tdep\tgithub.com/go-openapi/jsonreference\tv0.21.0\th1:Rs+Y7hSXT83Jacb7kFyjn4ijOuVGSvOdF2+tg1TRrwQ=",
+        "\tdep\tgithub.com/go-openapi/swag\tv0.23.0\th1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=",
+        "\tdep\tgithub.com/godbus/dbus/v5\tv5.1.0\th1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=",
+        "\tdep\tgithub.com/gogo/protobuf\tv1.3.2\th1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=",
+        "\tdep\tgithub.com/golang/protobuf\tv1.5.4\th1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=",
+        "\tdep\tgithub.com/google/gnostic-models\tv0.6.9-0.20230804172637-c7be7c783f49\th1:0VpGH+cDhbDtdcweoyCVsF3fhN8kejK6rFe/2FFX2nU=",
+        "\tdep\tgithub.com/google/go-cmp\tv0.6.0\th1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=",
+        "\tdep\tgithub.com/google/gofuzz\tv1.2.0\th1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=",
+        "\tdep\tgithub.com/google/uuid\tv1.6.0\th1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=",
+        "\tdep\tgithub.com/ishidawataru/sctp\tv0.0.0-20230406120618-7ff4192f6ff2\th1:i2fYnDurfLlJH8AyyMOnkLHnHeP8Ff/DDpuZA/D3bPo=",
+        "\tdep\tgithub.com/josharian/intern\tv1.0.0\th1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=",
+        "\tdep\tgithub.com/jpillora/backoff\tv1.0.0\th1:uvFg412JmmHBHw7iwprIxkPMI+sGQ4kzOWsMeHnm2EA=",
+        "\tdep\tgithub.com/json-iterator/go\tv1.1.12\th1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=",
+        "\tdep\tgithub.com/kdomanski/iso9660\tv0.3.3\th1:cNwM9L2L1Hzc5hZWGy6fPJ92UyWDccaY69DmEPlfDNY=",
+        "\tdep\tgithub.com/klauspost/compress\tv1.17.9\th1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=",
+        "\tdep\tgithub.com/mailru/easyjson\tv0.7.7\th1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=",
+        "\tdep\tgithub.com/modern-go/concurrent\tv0.0.0-20180306012644-bacd9c7ef1dd\th1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=",
+        "\tdep\tgithub.com/modern-go/reflect2\tv1.0.2\th1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=",
+        "\tdep\tgithub.com/munnerz/goautoneg\tv0.0.0-20191010083416-a7dc8b61c822\th1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=",
+        "\tdep\tgithub.com/opencontainers/runtime-spec\tv1.0.3-0.20220909204839-494a5a6aca78\th1:R5M2qXZiK/mWPMT4VldCOiSL9HIAMuxQZWdG0CSM5+4=",
+        "\tdep\tgithub.com/prometheus/client_golang\tv1.20.4\th1:Tgh3Yr67PaOv/uTqloMsCEdeuFTatm5zIq5+qNN23vI=",
+        "\tdep\tgithub.com/prometheus/client_model\tv0.6.1\th1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=",
+        "\tdep\tgithub.com/prometheus/common\tv0.55.0\th1:KEi6DK7lXW/m7Ig5i47x0vRzuBsHuvJdi5ee6Y3G1dc=",
+        "\tdep\tgithub.com/prometheus/procfs\tv0.15.1\th1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=",
+        "\tdep\tgithub.com/samber/lo\tv1.39.0\th1:4gTz1wUhNYLhFSKl6O+8peW0v2F4BCY034GRpU9WnuA=",
+        "\tdep\tgithub.com/sirupsen/logrus\tv1.9.3\th1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=",
+        "\tdep\tgithub.com/tychoish/fun\tv0.8.5\th1:8uTFk2fG8mxDyRmqMj6llKE8+vTuQRclUkl0/tyYwAU=",
+        "\tdep\tgithub.com/vishvananda/netlink\tv1.1.1-0.20220125195016-0639e7e787ba\th1:MU5oPE25XZhDS8Z0xFG0/1ERBEu5rZIw62TImubLusU=",
+        "\tdep\tgithub.com/vishvananda/netns\tv0.0.4\th1:Oeaw1EM2JMxD51g9uhtC0D7erkIjgmj8+JZc26m1YX8=",
+        "\tdep\tgithub.com/x448/float16\tv0.8.4\th1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=",
+        "\tdep\tgo.uber.org/multierr\tv1.11.0\th1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=",
+        "\tdep\tgo.uber.org/zap\tv1.27.0\th1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732ud/XR8=",
+        "\tdep\tgolang.org/x/crypto\tv0.36.0\th1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=",
+        "\tdep\tgolang.org/x/exp\tv0.0.0-20240719175910-8a7402abbf56\th1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=",
+        "\tdep\tgolang.org/x/net\tv0.38.0\th1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=",
+        "\tdep\tgolang.org/x/oauth2\tv0.27.0\th1:da9Vo7/tDv5RH/7nZDz1eMGS/q1Vv1N/7FCrBhI9I3M=",
+        "\tdep\tgolang.org/x/sys\tv0.31.0\th1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=",
+        "\tdep\tgolang.org/x/term\tv0.30.0\th1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=",
+        "\tdep\tgolang.org/x/text\tv0.23.0\th1:D71I7dUrlY+VX0gQShAThNGHFxZ13dGLBHQLVl1mJlY=",
+        "\tdep\tgolang.org/x/time\tv0.6.0\th1:eTDhh4ZXt5Qf0augr54TN6suAUudPcawVZeIAPU7D4U=",
+        "\tdep\tgomodules.xyz/jsonpatch/v2\tv2.4.0\th1:Ci3iUJyx9UeRx7CeFN8ARgGbkESwJK+KB9lLcWxY/Zw=",
+        "\tdep\tgoogle.golang.org/protobuf\tv1.34.2\th1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6hg=",
+        "\tdep\tgopkg.in/inf.v0\tv0.9.1\th1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=",
+        "\tdep\tgopkg.in/yaml.v2\tv2.4.0\th1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=",
+        "\tdep\tgopkg.in/yaml.v3\tv3.0.1\th1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=",
+        "\tdep\tk8s.io/api\tv0.31.7",
+        "\t=>\tk8s.io/api\tv0.31.7\th1:wSo59nXpVXmaB6hgNVJCrdnKtyYoutIgpNNBbROBd2U=",
+        "\t",
+        "\tdep\tk8s.io/apimachinery\tv0.31.7",
+        "\t=>\tk8s.io/apimachinery\tv0.31.7\th1:fpV8yLerIZFAkj0of66+i1ArPv/Btf9KO6Aulng7RRw=",
+        "\t",
+        "\tdep\tk8s.io/client-go\tv0.31.7",
+        "\t=>\tk8s.io/client-go\tv0.31.7\th1:2+LFJc6Xw6rhmpDbN1NSmhoFLWBh62cPG/P+IfaTSGY=",
+        "\t",
+        "\tdep\tk8s.io/klog/v2\tv2.130.1\th1:n9Xl7H1Xvksem4KFG4PYbdQCQxqc/tTUyrgXaOhHSzk=",
+        "\tdep\tk8s.io/kube-openapi\tv0.0.0-20240903163716-9e1beecbcb38",
+        "\t=>\tk8s.io/kube-openapi\tv0.0.0-20240228011516-70dd3763d340\th1:BZqlfIlq5YbRMFko6/PM7FjZpUb45WallggurYhKGag=",
+        "\t",
+        "\tdep\tk8s.io/utils\tv0.0.0-20240921022957-49e7df575cb6\th1:MDF6h2H/h4tbzmtIKTuctcwZmY0tY9mD9fNT47QO6HI=",
+        "\tdep\tsigs.k8s.io/controller-runtime\tv0.19.7\th1:DLABZfMr20A+AwCZOHhcbcu+TqBXnJZaVBri9K3EO48=",
+        "\tdep\tsigs.k8s.io/json\tv0.0.0-20221116044647-bc3834ca7abd\th1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=",
+        "\tdep\tsigs.k8s.io/structured-merge-diff/v4\tv4.4.1\th1:150L+0vs/8DA78h1u02ooW1/fFq/Lwr+sGiqlzvrtq4=",
+        "\tdep\tsigs.k8s.io/yaml\tv1.4.0\th1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=",
+        "\tbuild\t-buildmode=exe",
+        "\tbuild\t-compiler=gc",
+        "\tbuild\tDefaultGODEBUG=containermaxprocs=0,decoratemappings=0,tlssha1=1,updatemaxprocs=0,x509sha256skid=0",
+        "\tbuild\tCGO_ENABLED=0",
+        "\tbuild\tGOARCH=arm64",
+        "\tbuild\tGOOS=linux",
+        "\tbuild\tGOARM64=v8.0",
+        "\tbuild\tvcs=git",
+        "\tbuild\tvcs.revision=a29c79f825732352e4aac04d2974d28feb5a016b",
+        "\tbuild\tvcs.time=2026-10-29T05:23:16Z",
+        "\tbuild\tvcs.modified=true"
+      ],
+      "log_sha256": "bbcf952e679af1646a2f38bfb7a3f1a4c225332ab79811aa6933778eafb4f880",
+      "warnings": [
+        "go: writing stat cache: open /Users/williamlee/gopath/pkg/mod/cache/download/github.com/neondatabase/autoscaling/@v/v0.49.2-0.20261029052316-a29c79f82573.info16124049.tmp: operation not permitted"
+      ],
+      "execution": "not run"
+    }
+  }
+}

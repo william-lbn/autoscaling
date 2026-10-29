@@ -54,7 +54,9 @@ type Runner struct {
 // Initialize只用于一次明确的原Runner出生，必须在QEMU启动之前。目录由启动
 // 入口显式安装，不在丢日志后补建；本地birth-intent先fsync，再创建受保护CM，
 // 最后持久固定真实UID。任何已有birth/state都拒绝自动重启/重新发放首次身份。
-func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient.CoreV1Interface, coord coordclient.CoordinationV1Interface, c Config) (*Runner, error) {
+// 同调用的出生失败先封存不可撤销屏障；后继只可补齐同nonce的关闭来源，
+// 始终返回错误，不把完整关闭来源转换为可启动Runner。既有运行WAL不走此分支。
+func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient.CoreV1Interface, coord coordclient.CoordinationV1Interface, c Config) (result *Runner, initErr error) {
 	if store == nil || coreClient == nil || coord == nil || !filepath.IsAbs(c.StateDir) || control.ValidateID(c.PodName, "Runner Pod name") != nil || control.ValidateID(c.PodUID, "Runner Pod UID") != nil || control.ValidateID(c.NodeName, "Node") != nil {
 		return nil, fmt.Errorf("original Runner requires fixed Kubernetes clients, directory and Downward API identity")
 	}
@@ -64,7 +66,32 @@ func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient
 	if err != nil {
 		return nil, err
 	}
-	defer s.close()
+	var failed *failedBirth
+	defer func() {
+		// 此调用尚未返回Runner，因此QEMU不可能取得本调用的启动权。
+		// 先在原flock内封存失败，再释放锁补齐仅供关闭的原来源；无论
+		// 补发是否成功，返回值始终nil/error，不能把失败恢复成正常出生。
+		sealed := false
+		if initErr != nil && failed != nil {
+			sealErr := sealFailedBirth(s, *failed)
+			initErr = errors.Join(initErr, sealErr)
+			sealed = sealErr == nil
+		}
+		s.close()
+		if sealed {
+			initErr = errors.Join(initErr, closeFailedBirth(store, coreClient, coord, c, *failed))
+		}
+	}()
+	if raw, err := s.readProcessFile("birth-abort.json"); err != nil {
+		return nil, err
+	} else if raw != nil {
+		var original failedBirth
+		if json.Unmarshal(raw, &original) != nil || original.validate(store.Binding(), c) != nil {
+			return nil, fmt.Errorf("original failed Runner birth is malformed or replaced")
+		}
+		failed = &original
+		return nil, ErrStopped
+	}
 	old, err := s.load()
 	if err != nil || old != nil {
 		return nil, fmt.Errorf("Runner journal already exists or is unreadable; controlled recovery required")
@@ -127,6 +154,7 @@ func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient
 	if err := s.birthIntent(id); err != nil {
 		return nil, err
 	}
+	failed = &failedBirth{ProtocolVersion: 1, Identity: id, Owner: model.Owner, PodName: c.PodName, NodeName: c.NodeName, StateClaim: nil, BindingClaim: nil}
 	initial := Publication{ProtocolVersion: 1, Identity: id, BindingClaim: nil, State: nil, Actual: nil}
 	raw, err := json.Marshal(initial)
 	if err != nil {
@@ -136,6 +164,8 @@ func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient
 	if err != nil {
 		return nil, err
 	}
+	stateRef := budget.ObjectRef{Name: state.Name, UID: string(state.UID)}
+	failed.StateClaim = &stateRef
 	birth := Birth{ProtocolVersion: 1, Identity: id, StateClaim: budget.ObjectRef{Name: state.Name, UID: string(state.UID)}}
 	raw, err = json.Marshal(birth)
 	if err != nil {
@@ -146,15 +176,20 @@ func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient
 		return nil, err
 	}
 	ref := budget.ObjectRef{Name: birthCM.Name, UID: string(birthCM.UID)}
+	failed.BindingClaim = &ref
 	if err := s.save(&record{ProtocolVersion: 1, Identity: id, BindingClaim: ref, Sequence: 1, Floor: model.Owner, LeaseUID: "", HighWater: nil, Pending: nil, Last: nil, LastPublished: nil}); err != nil {
 		return nil, err
 	}
+	return boundRunner(store, coreClient, coord, c, birth, ref)
+}
+
+func boundRunner(store *journal.Store, coreClient coreclient.CoreV1Interface, coord coordclient.CoordinationV1Interface, c Config, birth Birth, ref budget.ObjectRef) (*Runner, error) {
 	claims, err := budgetclaims.New(coreClient, store.Binding())
 	if err != nil {
 		return nil, err
 	}
 	r := &Runner{store: store, core: coreClient, coord: coord, birth: birth, pod: c.PodName, node: c.NodeName, claims: claims, engine: nil}
-	r.engine = &engine{dir: c.StateDir, id: id, binding: ref, native: &nativeQMP{id: id, path: filepath.Join(c.StateDir, "qmp.sock"), timeout: 2 * time.Second}, now: time.Now, read: nil}
+	r.engine = &engine{dir: c.StateDir, id: birth.Identity, binding: ref, native: &nativeQMP{id: birth.Identity, path: filepath.Join(c.StateDir, "qmp.sock"), timeout: 2 * time.Second}, now: time.Now, read: nil}
 	r.engine.read = r.authorize
 	return r, nil
 }

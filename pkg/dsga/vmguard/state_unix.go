@@ -28,10 +28,10 @@ func randomProcessNonce() (string, error) {
 	return hex.EncodeToString(nonce[:]), nil
 }
 
-// readProcessFile只在原目录flock内读取两种固定文件，不能把调用方路径变成
+// readProcessFile只在原目录flock内读取固定启动/关闭文件，不能把调用方路径变成
 // 任意文件访问。ENOENT保留为“尚无事实”，符号链接/权限/超长或读失败均拒绝。
 func (s *lockedState) readProcessFile(name string) ([]byte, error) {
-	if name != "process-launch.json" && name != "process-exit.json" {
+	if name != "process-launch.json" && name != "process-exit.json" && name != "birth-intent.json" && name != "birth-abort.json" && name != "birth-close-state.json" && name != "birth-close-sources.json" {
 		return nil, fmt.Errorf("unknown original process file")
 	}
 	fd, err := unix.Openat(int(s.dir.Fd()), name, unix.O_RDONLY|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0)

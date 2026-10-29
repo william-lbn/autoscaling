@@ -76,6 +76,19 @@ func (e *engine) withRecordState(ctx context.Context, allowStopped bool, fn func
 	if r == nil || r.Identity != e.id || r.BindingClaim != e.binding {
 		return fmt.Errorf("Runner original journal is missing or belongs to another birth; automatic reset forbidden")
 	}
+	if raw, err := s.readProcessFile("birth-abort.json"); err != nil {
+		return err
+	} else if raw != nil {
+		var aborted failedBirth
+		if json.Unmarshal(raw, &aborted) != nil || aborted.ProtocolVersion != 1 || aborted.Identity != e.id || aborted.Owner != r.Floor || r.Sequence != 1 || r.HighWater != nil || r.Pending != nil || r.Last != nil || r.LastPublished != nil {
+			return fmt.Errorf("original failed birth barrier differs")
+		}
+		// 出生失败后的来源补齐只服务于NoStart关闭，不能借获得完整
+		// state/binding对象重新取QEMU启动权。只允许原关闭事实补发。
+		if !allowStopped {
+			return ErrStopped
+		}
+	}
 	raw, err := s.readProcessFile("process-exit.json")
 	if err != nil {
 		return err

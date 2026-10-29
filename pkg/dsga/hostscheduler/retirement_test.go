@@ -63,8 +63,8 @@ func retiredRunnerStartFixture(t *testing.T, failedStart bool) (*Service, *dsgat
 	return retiredRunnerExitFixture(t, mode)
 }
 
-// 三种来源分别由真实Wait、Start错误或原launch缺失时的同锁关闭生产。
-// unlaunched不执行Start或制造launch/Wait；其后整Pod终态与Node CAS消费保持一致。
+// 来源由真实Wait、Start错误、完整出生后关闭或出生失败关闭生产；后两者
+// 不执行Start或制造launch/Wait，其后整Pod终态与Node CAS消费保持一致。
 func retiredRunnerExitFixture(t *testing.T, exitMode string) (*Service, *dsgatest.SchedulerAPI, NodeConfig, *kubefake.Clientset, *core.Pod) {
 	t.Helper()
 	s, f, n := schedulerFixture(t)
@@ -109,16 +109,47 @@ func retiredRunnerExitFixture(t *testing.T, exitMode string) (*Service, *dsgates
 	require.NoError(t, s.reconcile(context.Background(), s.domains[n.Binding.NodeName]))
 	dir := t.TempDir()
 	require.NoError(t, os.Chmod(dir, 0o700))
+	interrupted := false
+	if exitMode == "incomplete-birth" {
+		claims.PrependReactor("get", "configmaps", func(a kt.Action) (bool, runtime.Object, error) {
+			if a.(kt.GetAction).GetName() != vmguard.BindingName(store.Binding()) || interrupted {
+				return false, nil, nil
+			}
+			// Birth CREATE已落库但首次读回失败；Initialize不能返回Runner。
+			// 同调用先封存失败，再补齐同nonce来源并实际产生v3关闭。
+			interrupted = true
+			return true, nil, errors.New("explicit birth readback interruption")
+		})
+	}
 	runner, err := vmguard.Initialize(context.Background(), store, combined, f.Core.CoordinationV1(), vmguard.Config{StateDir: dir, PodName: pod.Name, PodUID: string(pod.UID), NodeName: n.Binding.NodeName, MinimumBytes: 1 << 30, MaximumBytes: 4 << 30})
-	require.NoError(t, err)
-	self, err := os.Executable()
-	require.NoError(t, err)
-	program := filepath.Join(t.TempDir(), "qemu-system-x86_64")
-	require.NoError(t, os.Symlink(self, program))
-	args := append([]string{"-test.run=^TestSchedulerExitWaitChildHelper$", "--"}, runner.QMPArguments()...)
-	cmd := exec.Command(program, args...)
-	cmd.Env = append(os.Environ(), "DSGA_SCHEDULER_WAIT_CHILD=1")
+	var cmd *exec.Cmd
+	var program string
+	if exitMode == "incomplete-birth" {
+		require.Error(t, err)
+		require.True(t, interrupted)
+		require.Nil(t, runner)
+	} else {
+		require.NoError(t, err)
+		self, err := os.Executable()
+		require.NoError(t, err)
+		program = filepath.Join(t.TempDir(), "qemu-system-x86_64")
+		require.NoError(t, os.Symlink(self, program))
+		args := append([]string{"-test.run=^TestSchedulerExitWaitChildHelper$", "--"}, runner.QMPArguments()...)
+		cmd = exec.Command(program, args...)
+		cmd.Env = append(os.Environ(), "DSGA_SCHEDULER_WAIT_CHILD=1")
+	}
 	switch exitMode {
+	case "incomplete-birth":
+		_, err := os.Stat(filepath.Join(dir, "process-launch.json"))
+		require.True(t, os.IsNotExist(err))
+		birthCM, err := combined.ConfigMaps(store.Binding().Namespace).Get(context.Background(), vmguard.BindingName(store.Binding()), metav1.GetOptions{})
+		require.NoError(t, err)
+		birth, ref, err := vmguard.InspectBirthForExit(birthCM, store.Binding(), nil)
+		require.NoError(t, err)
+		exited, err := vmguard.ReadProcessExit(context.Background(), combined, store.Binding(), birth, ref)
+		require.NoError(t, err)
+		require.EqualValues(t, 3, exited.ProtocolVersion)
+		require.Zero(t, exited.ProcessID)
 	case "unlaunched":
 		closed, err := runner.CloseUnlaunched(context.Background())
 		require.NoError(t, err)
@@ -160,6 +191,11 @@ func TestSchedulerNeverStartedRunnerRetiresOnlyAfterCompletePodTermination(t *te
 
 func TestSchedulerUnlaunchedRunnerRetiresOnlyAfterCompletePodTermination(t *testing.T) {
 	s, f, n, _, pod := retiredRunnerExitFixture(t, "unlaunched")
+	verifyNeverStartedRunnerRetirement(t, s, f, n, pod)
+}
+
+func TestSchedulerIncompleteBirthRetiresOnlyAfterCompletePodTermination(t *testing.T) {
+	s, f, n, _, pod := retiredRunnerExitFixture(t, "incomplete-birth")
 	verifyNeverStartedRunnerRetirement(t, s, f, n, pod)
 }
 
@@ -348,8 +384,9 @@ func TestSchedulerOrdinaryPodRetirementKeepsOtherAllocations(t *testing.T) {
 	require.NoError(t, err)
 	var restored hostguard.Model
 	require.NoError(t, json.Unmarshal(raw, &restored))
-	// v7已用于实际容量结清；未知的下一版仍必须拒绝，避免读者忽略新合同。
-	restored.ProtocolVersion = 8
+	// v8已支持原初始容量来源，不能继续将它当未知版本。下一版仍须
+	// 拒绝，避免读者忽略新合同；具体v8来源不变量由Host领域测试覆盖。
+	restored.ProtocolVersion = 9
 	raw, err = json.Marshal(restored)
 	require.NoError(t, err)
 	require.Error(t, json.Unmarshal(raw, &restored))

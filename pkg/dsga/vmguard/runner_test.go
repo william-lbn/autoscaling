@@ -91,6 +91,12 @@ func TestRunnerInitialHostDenialPrecedesBirthAndSourceWrites(t *testing.T) {
 }
 
 func newRunnerFixture(t *testing.T) *runnerFixture {
+	return runnerBirthFixture(t, true)
+}
+
+// initialize=false仅为新出生故障组合保留真实Initialize之前的原环境，
+// 不删除已存在的出生或WAL来冒充新实例；旧测试仍走完整成功构造。
+func runnerBirthFixture(t *testing.T, initialize bool) *runnerFixture {
 	t.Helper()
 	ctx := context.Background()
 	id := fixtureIdentity()
@@ -156,8 +162,10 @@ func newRunnerFixture(t *testing.T) *runnerFixture {
 	dir := t.TempDir()
 	require.NoError(t, os.Chmod(dir, 0o700))
 	f.config = Config{StateDir: dir, PodName: "runner", PodUID: "pod-uid", NodeName: "node", MinimumBytes: 1 << 30, MaximumBytes: 4 << 30}
-	f.runner, err = Initialize(ctx, store, f.core.CoreV1(), f.core.CoordinationV1(), f.config)
-	require.NoError(t, err)
+	if initialize {
+		f.runner, err = Initialize(ctx, store, f.core.CoreV1(), f.core.CoordinationV1(), f.config)
+		require.NoError(t, err)
+	}
 	seconds, transitions, holder := int32(60), int32(0), f.actor.HolderID
 	stamp := metav1.NewMicroTime(time.Now())
 	lease := &coordination.Lease{

@@ -3,6 +3,21 @@
 更新：2026-10-26。分支`codex/dsga-autoscaling-20261019`，只推自有fork，不合main。
 本文件是当前入口；初始维护快照仍见[基线](DSGA-上游基线与开发约束.md)。
 
+## 最新验证：出生失败关闭与整Pod结清已完成Mac阶段（2026-10-29）
+
+Initialize在返回Runner前失败，现先持原flock封存不可撤销屏障；同nonce补齐
+State/Binding及v3关闭来源也始终nil/error。已确认State UID独立fsync，后续
+Binding失败不丢身份；来源替换/缺失、坏WAL和已有launch拒绝。迟到Tick/Start
+永久拒绝，外层预算不改。整Pod终态与Node CAS未知恢复复用正式消费链。
+
+两包Mac -race采用去重58顶层/221含父子记录pass（新增4顶层14记录），0skip；
+Scheduler首轮旧v8断言失败单列，改为未知v9后只复测受影响两项通过。vet/最终
+增量lint通过。详细真实失败、源码/日志及编译边界见[阶段验收](DSGA-出生失败关闭-Mac验收-20261029.md)
+和[机器收据](DSGA-出生失败关闭-Mac收据-20261029.json)。PG17/Rust未改，不重复
+原生大矩阵；仅同调用可封存的出生失败完成，崩溃无屏障/无Wait/跨boot与其他
+核心缺口继续。Goal active，PG17全面完成后才暂停，不自动进入18/16；所有者
+AGENTS修改保留不stage，不追新上游、不改独立控制面、不建镜像/部署/合main。
+
 ## 最新验证：最终开放异常关闭已通过Mac阶段（2026-10-29）
 
 新增v13保护完整Finalize已永久持有、前驱均Completed且最终Resume已Start的
