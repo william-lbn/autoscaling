@@ -148,6 +148,10 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 		return true, pgexec.AwaitingFact, ErrLeadershipLost
 	}
 	if c := m.ServiceClosure; c != nil {
+		if c.Rearm != nil && c.Rearm.Phase == journal.Unconfirmed && replay == "" {
+			progress, err := w.advanceServiceRearm(ctx, c.Rearm.CommandSHA256, false)
+			return true, progress, err
+		}
 		origin, _, _, digest := c.Selection()
 		if replay != "" && (digest != replay || origin != m.Owner || !c.Pending()) {
 			return true, pgexec.AwaitingFact, fmt.Errorf("service closure replay differs from original owner/command")

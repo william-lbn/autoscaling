@@ -383,7 +383,7 @@ func compareKeys(left, right control.Key) int {
 }
 
 func (model Model) Validate() error {
-	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 18) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
+	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 19) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
 		return fmt.Errorf("invalid journal version/sequence/incarnation")
 	}
 	// 旧Model已有严格字段解码，会拒绝pg_instance；这里另用v2明确标识
@@ -533,6 +533,16 @@ func cloneOperation(operation Operation) Operation {
 func (model Model) Clone() Model {
 	if model.ServiceClosure != nil {
 		closure := *model.ServiceClosure
+		if closure.Rearm != nil {
+			rearm := *closure.Rearm
+			rearm.Before = cloneLeaseResponse(rearm.Before)
+			if rearm.Receipt != nil {
+				receipt := *rearm.Receipt
+				receipt.Current = cloneLeaseResponse(receipt.Current)
+				rearm.Receipt = &receipt
+			}
+			closure.Rearm = &rearm
+		}
 		if closure.Original != nil {
 			original := *closure.Original
 			closure.Original = &original

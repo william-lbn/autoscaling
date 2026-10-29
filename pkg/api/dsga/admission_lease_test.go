@@ -45,3 +45,53 @@ func TestAdmissionLeaseStrictCASProof(t *testing.T) {
 	fact.Observed.AdmissionOpen = false
 	require.NoError(t, fact.ValidateFor(request, s.Instance))
 }
+
+func TestAdmissionRearmHistoricalProofDoesNotImplyCurrentService(t *testing.T) {
+	raw, err := os.ReadFile("testdata/response-v1.json")
+	require.NoError(t, err)
+	var base ControlResponse
+	require.NoError(t, json.Unmarshal(raw, &base))
+	s := base.Observed
+	s.Operation = nil
+	s.IssuerFloorEpoch, s.AdmissionRevision, s.AdmissionOpen = 3, 1, false
+	request := AdmissionLeaseRequest{ProtocolVersion: 1, Instance: s.Instance, IssuerEpoch: 2, ExpectedCapacityGeneration: s.CapacityGeneration, ExpectedAdmissionRevision: 1, ExpectedDeadlineNS: 100, Action: "rearm"}
+	current := AdmissionLeaseResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: request, Renewed: false, Armed: true, Expired: true, DeadlineNS: 300, LeaseEpoch: 2, TimeoutMS: 30000, Observed: s}
+	fact := AdmissionRearmStatus{ProtocolVersion: 1, VMShrinkPermit: false, Request: request, Retained: true, AppliedDeadlineNS: 200, Current: current}
+	require.NoError(t, fact.ValidateFor(request, s.Instance), "历史成功可与当前过期同时成立")
+	for name, change := range map[string]func(*AdmissionRearmStatus){
+		"permit":                func(p *AdmissionRearmStatus) { p.VMShrinkPermit = true },
+		"applied-before-cas":    func(p *AdmissionRearmStatus) { p.AppliedDeadlineNS = 100 },
+		"applied-after-current": func(p *AdmissionRearmStatus) { p.AppliedDeadlineNS = 301 },
+		"unknown-with-proof":    func(p *AdmissionRearmStatus) { p.Retained = false },
+		"query-renewed":         func(p *AdmissionRearmStatus) { p.Current.Renewed = true },
+		"unarmed":               func(p *AdmissionRearmStatus) { p.Current.Armed = false },
+		"old-lease":             func(p *AdmissionRearmStatus) { p.Current.LeaseEpoch = 1 },
+		"old-floor":             func(p *AdmissionRearmStatus) { p.Current.Observed.IssuerFloorEpoch = 1 },
+		"old-capacity": func(p *AdmissionRearmStatus) {
+			p.Current.Observed.CapacityGeneration = request.ExpectedCapacityGeneration - 1
+		},
+		"old-admission": func(p *AdmissionRearmStatus) { p.Current.Observed.AdmissionRevision = 0 },
+		"echo":          func(p *AdmissionRearmStatus) { p.Request.ExpectedDeadlineNS++ },
+		"nested-echo":   func(p *AdmissionRearmStatus) { p.Current.Request.ExpectedDeadlineNS++ },
+		"expired-open":  func(p *AdmissionRearmStatus) { p.Current.Observed.AdmissionOpen = true },
+	} {
+		t.Run(name, func(t *testing.T) { bad := fact; change(&bad); require.Error(t, bad.ValidateFor(request, s.Instance)) })
+	}
+	unknown := fact
+	unknown.Retained, unknown.AppliedDeadlineNS = false, 0
+	require.NoError(t, unknown.ValidateFor(request, s.Instance))
+	encoded, err := json.Marshal(fact)
+	require.NoError(t, err)
+	for _, bad := range []string{
+		strings.Replace(string(encoded), `"retained":true`, `"retained":true,"retained":true`, 1),
+		strings.Replace(string(encoded), `"applied_deadline_ns":"200"`, `"applied_deadline_ns":200`, 1),
+		strings.Replace(string(encoded), `"request":`, `"extra":true,"request":`, 1),
+	} {
+		var decoded AdmissionRearmStatus
+		require.Error(t, json.Unmarshal([]byte(bad), &decoded))
+	}
+	request.Action = "renew"
+	wrong := fact
+	wrong.Request, wrong.Current.Request = request, request
+	require.Error(t, wrong.ValidateFor(request, s.Instance))
+}

@@ -58,3 +58,63 @@ func TestNativeAdmissionLeaseCASRetainsAllOriginalUnknowns(t *testing.T) {
 	require.Equal(t, &admission, original)
 	require.Nil(t, closeIntent)
 }
+
+func TestNativeAdmissionRearmStatusIsReadOnlyAndKeepsOriginalUnknowns(t *testing.T) {
+	intent, base := fixtures(t)
+	var mode, posts atomic.Int32
+	_, config := newTLSClient(t, func(w http.ResponseWriter, r *http.Request) {
+		require.Equal(t, "/dsg/v1/admission/lease/rearm/status", r.URL.Path)
+		posts.Add(1)
+		var request control.AdmissionLeaseRequest
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&request))
+		require.Equal(t, "rearm", request.Action)
+		if mode.Load() == 2 {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		s := base.Observed
+		s.Operation, s.AdmissionRevision, s.AdmissionOpen = nil, 0, false
+		current := control.AdmissionLeaseResponse{ProtocolVersion: 1, VMShrinkPermit: false, Expired: true, Request: request, Armed: true, Renewed: false, DeadlineNS: 20, LeaseEpoch: intent.Key.IssuerEpoch, TimeoutMS: 30000, Observed: s}
+		fact := control.AdmissionRearmStatus{ProtocolVersion: 1, VMShrinkPermit: false, Request: request, Retained: true, AppliedDeadlineNS: 20, Current: current}
+		if mode.Load() == 1 {
+			fact.AppliedDeadlineNS = request.ExpectedDeadlineNS
+		} else if mode.Load() == 3 {
+			fact.Retained, fact.AppliedDeadlineNS = false, 0
+		}
+		reply(w, fact)
+	})
+	admission := control.AdmissionRequest{ProtocolVersion: 1, Instance: intent.Key.Instance, IssuerEpoch: intent.Key.IssuerEpoch, Revision: 1, ExpectedCapacityGeneration: base.Observed.CapacityGeneration, Open: true, BudgetCommitmentID: "retained-original"}
+	config.Pending, config.AdmissionPending = &intent, &admission
+	client, err := New(context.Background(), config)
+	require.NoError(t, err)
+	defer client.CloseIdleConnections()
+	request := control.AdmissionLeaseRequest{ProtocolVersion: 1, Instance: intent.Key.Instance, IssuerEpoch: intent.Key.IssuerEpoch, ExpectedCapacityGeneration: base.Observed.CapacityGeneration, ExpectedAdmissionRevision: 0, ExpectedDeadlineNS: 10, Action: "rearm"}
+	fact, err := client.AdmissionRearmStatus(context.Background(), request)
+	require.NoError(t, err)
+	require.True(t, fact.Retained)
+	require.True(t, fact.Current.Expired, "历史成功不能被当作当前期限有效")
+	for _, value := range []int32{1, 2} {
+		mode.Store(value)
+		_, err := client.AdmissionRearmStatus(context.Background(), request)
+		require.Error(t, err)
+	}
+	mode.Store(3)
+	fact, err = client.AdmissionRearmStatus(context.Background(), request)
+	require.NoError(t, err)
+	require.False(t, fact.Retained)
+	for _, change := range []func(*control.AdmissionLeaseRequest){
+		func(r *control.AdmissionLeaseRequest) { r.Action = "renew" },
+		func(r *control.AdmissionLeaseRequest) { r.IssuerEpoch++ },
+		func(r *control.AdmissionLeaseRequest) { r.Instance.PGBootID++ },
+	} {
+		bad := request
+		change(&bad)
+		_, err = client.AdmissionRearmStatus(context.Background(), bad)
+		require.Error(t, err)
+	}
+	require.EqualValues(t, 4, posts.Load(), "查询失败不自动重试/重发setter，坏选择写前拒绝")
+	require.Equal(t, &intent, client.Pending())
+	original, closing := client.PendingAdmission()
+	require.Equal(t, &admission, original)
+	require.Nil(t, closing)
+}

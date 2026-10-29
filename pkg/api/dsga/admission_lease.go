@@ -69,3 +69,38 @@ func (r *AdmissionLeaseResponse) UnmarshalJSON(data []byte) error {
 	*r = AdmissionLeaseResponse(next)
 	return nil
 }
+
+// AdmissionRearmStatus只确认完整原rearm的历史应用。Retained=false是未知，
+// 不证明未执行；当前期限可能已过期或换owner，历史命中不授予开放/回收许可。
+type AdmissionRearmStatus struct {
+	ProtocolVersion   int                    `json:"protocol_version"`
+	VMShrinkPermit    bool                   `json:"vm_shrink_permit"`
+	Request           AdmissionLeaseRequest  `json:"request"`
+	Retained          bool                   `json:"retained"`
+	AppliedDeadlineNS Uint64                 `json:"applied_deadline_ns"`
+	Current           AdmissionLeaseResponse `json:"current"`
+}
+
+func (r AdmissionRearmStatus) ValidateFor(request AdmissionLeaseRequest, bound Instance) error {
+	if r.Current.ValidateFor(request, bound) != nil || request.Action != "rearm" || r.ProtocolVersion != 1 || r.VMShrinkPermit || r.Request != request || r.Current.Renewed {
+		return fmt.Errorf("rearm status differs from original read-only selection")
+	}
+	if r.Retained {
+		if r.AppliedDeadlineNS <= request.ExpectedDeadlineNS || r.AppliedDeadlineNS > r.Current.DeadlineNS || !r.Current.Armed || r.Current.LeaseEpoch < request.IssuerEpoch || r.Current.Observed.IssuerFloorEpoch < request.IssuerEpoch || r.Current.Observed.CapacityGeneration < request.ExpectedCapacityGeneration || r.Current.Observed.AdmissionRevision < request.ExpectedAdmissionRevision {
+			return fmt.Errorf("retained rearm contradicts native monotonic lifetime")
+		}
+	} else if r.AppliedDeadlineNS != 0 {
+		return fmt.Errorf("unknown rearm contains an applied deadline")
+	}
+	return nil
+}
+
+func (r *AdmissionRearmStatus) UnmarshalJSON(data []byte) error {
+	type plain AdmissionRearmStatus
+	var next plain
+	if err := UnmarshalObject(data, &next); err != nil {
+		return err
+	}
+	*r = AdmissionRearmStatus(next)
+	return nil
+}

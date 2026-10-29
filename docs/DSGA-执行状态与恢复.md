@@ -1,5 +1,13 @@
 # DSGA Autoscaling 执行状态与恢复
 
+## 最新验证：原生 rearm 原请求查询与持久恢复完成 Mac 阶段
+
+准确 PG17 `79367196a74eef82e67cac917877d2e6271d3e70` 已推自有分支并核远程。原 status_lock 内保留完整成功 CAS；独立只读 SQL/认证 HTTP/Rust/Go 返回历史应用及当前快照。外层先 UID/RV 写前确认、重审完整来源，再派发原 rearm；丢回复查询或显式原重放，不换期限，不解除过期 latch、不清原关闭/预算/首次未知。
+
+Mac 去重 race 110 顶层/540 含父子及种子记录采用 0 fail/skip；准确原生 10 项、正式 Router→SQL→PG 1 项、认证 1 项和 Rust 合同 2 项通过。五故障模式、选择后来源漂移零派发、完整回执预留均通过。vet/最终增量 lint/目标 Clippy/修改文件格式通过，33 消费包仅编译；Neon 默认 CI 13 pass/219 环境 skip。超时批仅采用完整子树并补余项，首轮失败保留。详见[阶段验收](DSGA-原生rearm持久恢复-Mac验收-20261029.md)与[机器收据](DSGA-原生rearm持久恢复-Mac收据-20261029.json)。
+
+本批尚未业务重新开放，也未完成重复生命周期；其余 normal/持续预算/分区/跨 boot/Monitor/CPU 等仍须代码。Linux 目标环境验收单列。PG17 整体未完成、Goal active；全面完成并远程归档后才暂停，不进入 PG18/16，不追上游、不建镜像/部署/合 main。所有者 AS AGENTS 修改保留不 stage。
+
 更新：2026-10-26。分支`codex/dsga-autoscaling-20261019`，只推自有fork，不合main。
 本文件是当前入口；初始维护快照仍见[基线](DSGA-上游基线与开发约束.md)。
 

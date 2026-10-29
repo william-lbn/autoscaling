@@ -18,6 +18,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
 
 // 复用正式首次预算/开放前驱及真实Elector Session，不手改owner、缩短
@@ -143,15 +144,24 @@ func closureControl(session *Session, instance control.Instance, action control.
 	return control.CoordinationCommand{ProtocolVersion: 1, Instance: control.CoordinationBinding(instance), ExpectedOwnerEpoch: session.Actor().Epoch, Action: action, Request: nil, Key: nil, Selector: selector}
 }
 
-func verifyServiceClosureContinuation(t *testing.T, ctx context.Context, mode string, transfer *businessOwnerTransfer, core *kubefake.Clientset, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture) {
+func verifyServiceClosureContinuation(t *testing.T, ctx context.Context, mode string, transfer *businessOwnerTransfer, core *kubefake.Clientset, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture, runner *vmguard.Runner) {
 	t.Helper()
-	applied := mode == "closure-transfer-original-applied"
+	applied := mode == "closure-transfer-original-applied" || strings.HasPrefix(mode, "closure-transfer-rearm-")
 	before, err := transfer.store.Load(ctx)
 	require.NoError(t, err)
 	root.mu.Lock()
 	root.view.Actual.MemoryMaxBytes++
 	root.mu.Unlock()
-	defer func() { root.mu.Lock(); root.view.Actual.MemoryMaxBytes--; root.mu.Unlock() }()
+	var restored bool
+	restore := func() {
+		if !restored {
+			root.mu.Lock()
+			root.view.Actual.MemoryMaxBytes--
+			root.mu.Unlock()
+			restored = true
+		}
+	}
+	defer restore()
 	if applied {
 		pg.faults(false, true)
 	} else {
@@ -264,4 +274,11 @@ func verifyServiceClosureContinuation(t *testing.T, ctx context.Context, mode st
 	_, err = worker.Advance(ctx)
 	require.ErrorIs(t, err, ErrServiceSafety, "来源恢复或重建不能自动重开服务")
 	t.Logf("关闭接续完成：mode=%s owner=%d 原revision=%d 后继revision=%d，旧意图和永久预算保留", mode, session.Actor().Epoch, original.Request.Revision, c.Continuation.Request.Close.Revision)
+	if strings.HasPrefix(mode, "closure-transfer-rearm-") {
+		restore()
+		// 本组合此前只运行关闭协调器。恢复期限前必须让真实Runner轮次
+		// 确认新owner floor并发布来源，不能手改publication冒充已确认。
+		require.NoError(t, runner.Tick(ctx))
+		verifyServiceRearm(t, ctx, strings.TrimPrefix(mode, "closure-transfer-rearm-"), transfer.api, transfer.store, session, resources, worker, config, core, source, pg, root)
+	}
 }

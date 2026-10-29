@@ -16,7 +16,7 @@ var errNativeAdmissionExpired = fmt.Errorf("%w: native admission lease expired",
 // 显式的旧开放重放/Begin/取消同样不能越过期限；未来受控重开须有自己
 // 完整持久WAL及来源审计，不能把此处普通恢复动作当作rearm许可。
 func expiredAdmissionControlAllowed(action control.CoordinationAction) bool {
-	return action == control.CoordinationState || action.ResourceOnly() || action == control.CoordinationReplayServiceClosure || action == control.CoordinationContinueServiceClosure
+	return action == control.CoordinationState || action.ResourceOnly() || action == control.CoordinationReplayServiceClosure || action == control.CoordinationContinueServiceClosure || action == control.CoordinationRearmService || action == control.CoordinationObserveServiceRearm || action == control.CoordinationReplayServiceRearm
 }
 
 // 精确本地取消不曾授予服务或派发任何领域动作。Finish丢回复后，原取消

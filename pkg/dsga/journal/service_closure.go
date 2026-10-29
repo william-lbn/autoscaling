@@ -42,6 +42,8 @@ type ServiceClosure struct {
 	// v13～v18只保存完整原Active的SHA256；完整原文仍在Active中，防止关闭
 	// 后借普通Record/RequestAbort/Finish重写原步骤或丢失未知效果。
 	OperationSHA256 string `json:"operation_sha256,omitempty"`
+	// 原生期限恢复与业务重开分域；该记录不能撤销本关闭或改变旧开放未知。
+	Rearm *ServiceRearm `json:"rearm,omitempty"`
 }
 
 // ProtectedAdmission返回本关闭保护的最初意图。v10/11原意图就是关闭；
@@ -103,6 +105,10 @@ func (model Model) ServiceBudgetID() (string, error) {
 
 func (model Model) validateServiceClosure() error {
 	c := model.ServiceClosure
+	version := model.ProtocolVersion
+	if version == 19 && c != nil && c.Rearm != nil {
+		version = c.Rearm.ClosureVersion
+	}
 	if c == nil {
 		if model.ProtocolVersion >= 10 {
 			return fmt.Errorf("service closure cannot disappear from v10 journal")
@@ -111,7 +117,7 @@ func (model Model) validateServiceClosure() error {
 	}
 	budgetID, err := model.ServiceBudgetID()
 	digest, hashErr := c.Request.ContextSHA256()
-	if model.ProtocolVersion < 10 || model.ProtocolVersion > 18 || model.ProtocolVersion < 12 && ((model.ProtocolVersion == 11) != (c.Continuation != nil)) || model.PGInstance == nil || err != nil || hashErr != nil || c.Request.Open || c.Request.Instance != *model.PGInstance || c.Request.BudgetCommitmentID != budgetID || c.CommandSHA256 != digest || c.Origin.Validate() != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Origin.Epoch > model.Owner.Epoch || c.Origin.Epoch == model.Owner.Epoch && c.Origin != model.Owner || c.StartedSequence == 0 || c.StartedSequence > model.Sequence {
+	if version < 10 || version > 18 || version < 12 && ((version == 11) != (c.Continuation != nil)) || model.PGInstance == nil || err != nil || hashErr != nil || c.Request.Open || c.Request.Instance != *model.PGInstance || c.Request.BudgetCommitmentID != budgetID || c.CommandSHA256 != digest || c.Origin.Validate() != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Origin.Epoch > model.Owner.Epoch || c.Origin.Epoch == model.Owner.Epoch && c.Origin != model.Owner || c.StartedSequence == 0 || c.StartedSequence > model.Sequence {
 		return fmt.Errorf("service closure differs from original retained PG, budget or owner")
 	}
 	switch {
@@ -119,7 +125,7 @@ func (model Model) validateServiceClosure() error {
 		if err := model.validateCleanupServiceClosure(); err != nil {
 			return err
 		}
-	case c.Original != nil && model.ProtocolVersion == 12:
+	case c.Original != nil && version == 12:
 		if model.Active != nil || c.OperationSHA256 != "" {
 			return fmt.Errorf("initial service closure cannot adopt active resize")
 		}
@@ -142,7 +148,7 @@ func (model Model) validateServiceClosure() error {
 		if err := model.validateActiveServiceClosure(); err != nil {
 			return err
 		}
-	case c.Original == nil && model.ProtocolVersion < 12:
+	case c.Original == nil && version < 12:
 		if model.Active != nil || c.OperationSHA256 != "" || c.Reason != "idle_source_unconfirmed" || c.ClosureReceipt != nil {
 			return fmt.Errorf("idle service closure changed reason or original proof")
 		}
@@ -191,7 +197,10 @@ func (model Model) validateServiceClosure() error {
 	default:
 		return fmt.Errorf("invalid service closure phase")
 	}
-	return model.validateServiceClosureContinuation()
+	if err := model.validateServiceClosureContinuation(); err != nil {
+		return err
+	}
+	return model.validateServiceRearm()
 }
 
 func (model Model) StartServiceClosure(actor Owner, request control.AdmissionRequest) (Model, error) {

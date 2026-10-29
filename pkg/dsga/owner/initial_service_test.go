@@ -57,6 +57,7 @@ type initialServicePG struct {
 	leaseReject    bool
 	leaseExpired   bool
 	leaseTimeoutMS int
+	rearmFixture   *serviceRearmPG
 }
 
 func (p *initialServicePG) shared() control.SharedCostResponse {
@@ -93,6 +94,9 @@ func (p *initialServicePG) counts() (int, int, int) {
 
 func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Request) {
 	t.Helper()
+	if p.serveRearmFixture(t, w, r) {
+		return
+	}
 	switch r.URL.Path {
 	case "/dsg/v1/admission/lease":
 		var request control.AdmissionLeaseRequest
@@ -444,7 +448,7 @@ func productionInitialService(t *testing.T, mode string) {
 		for _, a := range after.Observed.Arrays {
 			after.CurrentMainAndArraysUpperBytes += a.CommittedUpperBytes
 		}
-		pg := &initialServicePG{mu: sync.Mutex{}, request: request, before: before, after: after, resized: false, gate: nil, posts: 0, queries: 0, resizePosts: 0, loseBefore: false, loseAfter: false, store: store, loseResize: false, resizeReceipt: nil, resizeQueries: 0, afterOpen: nil, beforeClose: nil, leaseDeadline: 0, leaseRenewals: 0, leaseReject: false, leaseExpired: false, leaseTimeoutMS: 0}
+		pg := &initialServicePG{mu: sync.Mutex{}, request: request, before: before, after: after, resized: false, gate: nil, posts: 0, queries: 0, resizePosts: 0, loseBefore: false, loseAfter: false, store: store, loseResize: false, resizeReceipt: nil, resizeQueries: 0, afterOpen: nil, beforeClose: nil, leaseDeadline: 0, leaseRenewals: 0, leaseReject: false, leaseExpired: false, leaseTimeoutMS: 0, rearmFixture: nil}
 		var nativeFence http.HandlerFunc
 		if transfer != nil {
 			nativeFence = pg.ownerFence(t)
@@ -492,7 +496,7 @@ func productionInitialService(t *testing.T, mode string) {
 				require.NoError(t, err)
 				require.Equal(t, pgexec.Recorded, progress)
 			}
-			verifyServiceClosureContinuation(t, ctx, mode, transfer, client, session, resources, worker, config, source, pg, root)
+			verifyServiceClosureContinuation(t, ctx, mode, transfer, client, session, resources, worker, config, source, pg, root, runner)
 			return nil
 		}
 		if strings.HasPrefix(mode, "service-safety-") {

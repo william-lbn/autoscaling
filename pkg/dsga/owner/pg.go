@@ -737,6 +737,14 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		var err error
 		if leaseExpired {
 			progress, err = pgexec.AwaitingFact, ErrServiceSafety
+			// 只查询已持久rearm的原生应用，不自动发CAS、不清过期latch。
+			// 期限已恢复仍保留原业务关闭；真正重开须后继独立持久协议。
+			snapshot, loadErr := worker.session.store.Load(callCtx)
+			if loadErr != nil {
+				err = loadErr
+			} else if c := snapshot.State().ServiceClosure; c != nil && c.Rearm != nil && c.Rearm.Phase == journal.Unconfirmed {
+				progress, err = worker.advanceServiceRearm(callCtx, c.Rearm.CommandSHA256, false)
+			}
 		} else if replay != nil {
 			progress, err = worker.ReplayOriginal(callCtx, *replay)
 			replay = nil

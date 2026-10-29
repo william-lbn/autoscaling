@@ -68,6 +68,14 @@ const CoordinationReplayServiceClosure CoordinationAction = "replay_service_clos
 // 的后继关闭，调用方不能提交revision或原生命令。普通轮询不隐式接续。
 const CoordinationContinueServiceClosure CoordinationAction = "continue_service_closure"
 
+// 原生rearm独立于业务重新开放。新选择只引用最近关闭摘要；查询/重放只
+// 引用已持久rearm摘要，调用方不能提供deadline/epoch/新原生命令。
+const (
+	CoordinationRearmService        CoordinationAction = "rearm_service_lease"
+	CoordinationObserveServiceRearm CoordinationAction = "observe_service_rearm"
+	CoordinationReplayServiceRearm  CoordinationAction = "replay_service_rearm"
+)
+
 // CoordinationCommand固定接收方完整实例及预期当前owner代次。Key保留原操作代次，
 // 因此取消旧操作时可与ExpectedOwnerEpoch不同；重放资格仍由各领域原WAL决定。
 // expected代次用于拒绝网络中排队至接管后的旧管理决定，不能从该数字获得执行权。
@@ -97,7 +105,7 @@ func (c CoordinationCommand) Validate() error {
 		if c.Request == nil || c.Request.Validate() != nil || c.Request.Key.Instance != Instance(c.Instance) || c.Request.Key.IssuerEpoch > c.ExpectedOwnerEpoch || c.Key != nil || c.Selector != "" {
 			return fmt.Errorf("begin requires one complete request for the selected owner")
 		}
-	case CoordinationReplayInitial, CoordinationRepairHeld, CoordinationObserveHeld, CoordinationReplayServiceClosure, CoordinationContinueServiceClosure:
+	case CoordinationReplayInitial, CoordinationRepairHeld, CoordinationObserveHeld, CoordinationReplayServiceClosure, CoordinationContinueServiceClosure, CoordinationRearmService, CoordinationObserveServiceRearm, CoordinationReplayServiceRearm:
 		decoded, err := hex.DecodeString(c.Selector)
 		if err != nil || len(decoded) != 32 || hex.EncodeToString(decoded) != c.Selector || c.Request != nil || c.Key != nil {
 			return fmt.Errorf("source selection requires the original SHA256")
