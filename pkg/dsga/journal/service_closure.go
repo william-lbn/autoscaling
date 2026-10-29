@@ -16,6 +16,8 @@ import (
 // 单独保存，绝不把首次开放改成Settled/NoEffect。v13保护已完整结算但
 // 尚未结案的最终开放，以完整Active摘要冻结所有原领域事实；其他在途
 // Resize阶段仍须独立关闭/对账，不能用本终段规则收养合法中间态。
+// v14支持同一完整结算边界上尚未Start的Resume：只记录真实关闭，Original
+// 保持nil，Active仍保留空Planned；旧v13读者不得误读成无Active空闲关闭。
 type ServiceClosure struct {
 	Origin           Owner                      `json:"origin"`
 	StartedSequence  control.Uint64             `json:"started_sequence"`
@@ -31,13 +33,14 @@ type ServiceClosure struct {
 	Continuation   *ServiceClosureContinuation `json:"continuation,omitempty"`
 	Original       *control.AdmissionRequest   `json:"original,omitempty"`
 	ClosureReceipt *control.AdmissionClosure   `json:"closure_receipt,omitempty"`
-	// v13只保存完整原Active的SHA256；完整原文仍在Active中，防止关闭
+	// v13/v14只保存完整原Active的SHA256；完整原文仍在Active中，防止关闭
 	// 后借普通Record/RequestAbort/Finish重写原步骤或丢失未知效果。
 	OperationSHA256 string `json:"operation_sha256,omitempty"`
 }
 
 // ProtectedAdmission返回本关闭保护的最初意图。v10/11原意图就是关闭；
-// v12为原首次开放。返回副本，不能由后继选择覆盖持久原意图。
+// v12/v13为原首次/最终开放；v14为没有原开放的真实关闭。返回副本，
+// 不能由后继选择覆盖持久原意图。
 func (c *ServiceClosure) ProtectedAdmission() control.AdmissionRequest {
 	if c.Original != nil {
 		return *c.Original
@@ -94,8 +97,8 @@ func (model Model) validateServiceClosure() error {
 	}
 	budgetID, err := model.ServiceBudgetID()
 	digest, hashErr := c.Request.ContextSHA256()
-	if model.ProtocolVersion < 10 || model.ProtocolVersion > 13 || model.ProtocolVersion < 12 && ((model.ProtocolVersion == 11) != (c.Continuation != nil)) || model.PGInstance == nil || err != nil || hashErr != nil || c.Request.Open || c.Request.Instance != *model.PGInstance || c.Request.BudgetCommitmentID != budgetID || c.CommandSHA256 != digest || c.Origin.Validate() != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Origin.Epoch > model.Owner.Epoch || c.Origin.Epoch == model.Owner.Epoch && c.Origin != model.Owner || c.StartedSequence == 0 || c.StartedSequence > model.Sequence {
-		return fmt.Errorf("service closure differs from original idle PG, budget or owner")
+	if model.ProtocolVersion < 10 || model.ProtocolVersion > 14 || model.ProtocolVersion < 12 && ((model.ProtocolVersion == 11) != (c.Continuation != nil)) || model.PGInstance == nil || err != nil || hashErr != nil || c.Request.Open || c.Request.Instance != *model.PGInstance || c.Request.BudgetCommitmentID != budgetID || c.CommandSHA256 != digest || c.Origin.Validate() != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Origin.Epoch > model.Owner.Epoch || c.Origin.Epoch == model.Owner.Epoch && c.Origin != model.Owner || c.StartedSequence == 0 || c.StartedSequence > model.Sequence {
+		return fmt.Errorf("service closure differs from original retained PG, budget or owner")
 	}
 	switch {
 	case c.Original != nil && model.ProtocolVersion == 12:
@@ -107,6 +110,10 @@ func (model Model) validateServiceClosure() error {
 		}
 	case c.Original != nil && model.ProtocolVersion == 13:
 		if err := model.validateResumeServiceClosure(); err != nil {
+			return err
+		}
+	case c.Original == nil && model.ProtocolVersion == 14:
+		if err := model.validatePlannedResumeServiceClosure(); err != nil {
 			return err
 		}
 	case c.Original == nil && model.ProtocolVersion < 12:
@@ -178,6 +185,17 @@ func (model Model) StartServiceClosure(actor Owner, request control.AdmissionReq
 	}
 	next.ProtocolVersion = 10
 	next.ServiceClosure = &ServiceClosure{Origin: actor, StartedSequence: next.Sequence, Reason: "idle_source_unconfirmed", Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, Continuation: nil, Original: nil, ClosureReceipt: nil, OperationSHA256: ""}
+	if model.Active != nil {
+		// 完整Active不变地纳入摘要；普通Record/取消/Finish会因摘要或
+		// 稳定边界校验失败而拒绝。这里只生成模型，Store仍须写前CAS。
+		opDigest, err := operationClosureDigest(model.Active)
+		if err != nil {
+			return model, err
+		}
+		next.ProtocolVersion = 14
+		next.ServiceClosure.Reason = "planned_resume_source_unconfirmed"
+		next.ServiceClosure.OperationSHA256 = opDigest
+	}
 	return next, next.Validate()
 }
 

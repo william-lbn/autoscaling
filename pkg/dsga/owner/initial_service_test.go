@@ -274,7 +274,7 @@ func TestProductionInitialOwnerTransferCancelsUnreceivedGuestAndSettlesActualBud
 func productionInitialService(t *testing.T, mode string) {
 	t.Helper()
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
-	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer"
+	closureTransfer := strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer"
 	pgTakeover := mode == "owner-transfer-after-pg"
 	unreceivedGuest := mode == "owner-transfer-before-guest-delivery"
 	guestTakeover := mode == "owner-transfer-after-guest" || unreceivedGuest

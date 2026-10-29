@@ -207,11 +207,18 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 		return false, pgexec.Idle, nil
 	}
 	if m.Active != nil {
-		// 仅在所有先前领域完整结算、最后开放已Start的稳定边界复用
+		// 仅在所有先前领域完整结算、最后开放前后的稳定边界复用
 		// 完整预算审计。其他Resize中间态不能按旧永久预算误判来源漂移。
 		original, err := m.ResumeAdmissionForClosure()
 		if err != nil {
-			return false, pgexec.Idle, nil
+			f, plannedErr := m.PlannedResumeBudgetForClosure()
+			if plannedErr != nil {
+				return false, pgexec.Idle, nil
+			}
+			if err := w.admission.CheckRetainedService(ctx, s); err == nil {
+				return false, pgexec.Idle, nil
+			}
+			return w.closePlannedResumeService(ctx, s, f.Shared.Observed.CapacityGeneration)
 		}
 		if err := w.admission.CheckRetainedService(ctx, s); err == nil {
 			return false, pgexec.Idle, nil
@@ -257,6 +264,42 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 		return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
 	_, err = w.session.store.RecordServiceClosure(ctx, s, m.Owner, fact, false)
+	return true, pgexec.Recorded, err
+}
+
+// Resume仍为空Planned时没有可供CloseAdmissionOriginal选择的原开放。
+// 先原生fence封住旧owner，再在同boot/完整Finalize容量下选择真实关闭；
+// UID/RV写前CAS固定完整Active及预算后才派发SetAdmission(false)。Resize
+// SDK可能仅待已Completed原回执对账，保留它而不阻塞独立关闭；另一未知
+// 准入则拒绝收养。任何失败不Finish、不改Planned、不释放或缩VM。
+func (w *PGWorker) closePlannedResumeService(ctx context.Context, s *journal.Snapshot, generation control.Uint64) (bool, pgexec.Progress, error) {
+	if pending, closing := w.client.PendingAdmission(); pending != nil || closing != nil {
+		return true, pgexec.AwaitingFact, ErrServiceSafety
+	}
+	instance, epoch := w.Binding()
+	fence, err := w.client.Fence(ctx, control.FenceRequest{ProtocolVersion: 1, Instance: instance, IssuerEpoch: epoch})
+	if err != nil || fence.Disposition != control.Fenced {
+		return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+	}
+	shared, err := w.client.SharedCost(ctx)
+	if err != nil {
+		return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+	}
+	pg := shared.Observed
+	budgetID, err := s.State().ServiceBudgetID()
+	if err != nil || pg.Instance != instance || pg.IssuerFloorEpoch != epoch || pg.CapacityGeneration != generation || pg.AdmissionRevision == control.Uint64(math.MaxUint64) {
+		return true, pgexec.AwaitingFact, ErrServiceSafety
+	}
+	request := control.AdmissionRequest{ProtocolVersion: 1, Instance: instance, IssuerEpoch: epoch, Revision: pg.AdmissionRevision + 1, ExpectedCapacityGeneration: generation, Open: false, BudgetCommitmentID: budgetID}
+	s, dispatch, err := w.session.store.StartServiceClosure(ctx, s, w.session.Actor(), request)
+	if err != nil {
+		return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+	}
+	fact, err := w.client.SetAdmission(ctx, dispatch.Request)
+	if err != nil || !fact.Confirms() {
+		return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+	}
+	_, err = w.session.store.RecordServiceClosure(ctx, s, w.session.Actor(), fact, false)
 	return true, pgexec.Recorded, err
 }
 

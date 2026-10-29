@@ -8,7 +8,8 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
 
-// CheckRetainedService为最终开放Unknown/Completed但尚未Finish的安全检查。
+// CheckRetainedService为完整Finalize后、尚未Finish的最终开放安全检查，
+// 包括尚未Start的Planned：Grow可能保留首次服务的开放，不能只拒绝新开放。
 // 普通advance在原开放NotFound时会先返回，不能据此跳过真实来源审计，
 // 否则迟到开放仍可能在坏预算上服务。这里复用正常开放的Root/Host/Outside/
 // Runner完整核验，不发开放、不Record/Finish，也不清SDK的原开放未知。
@@ -19,7 +20,9 @@ func (e *Executor) CheckRetainedService(ctx context.Context, s *journal.Snapshot
 		return fmt.Errorf("retained admission check requires original live production domains")
 	}
 	if _, err := m.ResumeAdmissionForClosure(); err != nil {
-		return err
+		if _, err := m.PlannedResumeBudgetForClosure(); err != nil {
+			return err
+		}
 	}
 	f, err := m.BudgetFor(m.Active.Request)
 	if err != nil {
