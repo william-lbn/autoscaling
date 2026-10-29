@@ -1,0 +1,360 @@
+{
+  "compile_only": {
+    "pass_package": 22,
+    "no_test_files_package": 12,
+    "business_execution": false
+  },
+  "schema_version": 1,
+  "status": "mac_module_validation_passed_product_incomplete",
+  "product_target": "完整PG17自动扩缩容；协议编号仅为持久格式兼容，不构成中间产品",
+  "bases": {
+    "autoscaling": "3f8528c2427cd470c6ec657044e8fda081eec130",
+    "neon": "0baa8a5820efcc9c69c3b273f2cdd7176dded8a7"
+  },
+  "pg17_source_and_binary": "325aeb42a6080d86902d51892b2518a70ec2512b",
+  "source_sha256": {
+    "autoscaling": {
+      "pkg/api/dsga/admission_continuation.go": "c6cf1942f290103de2aa0dbefb8acdfbbe2db6da09cc9a689e13c0abdb94750f",
+      "pkg/api/dsga/admission_continuation_test.go": "37d727cf80941aa78e0c3b0bbf026649fd87724f8ded845dcc8eeaef2dedd69a",
+      "pkg/api/dsga/testdata/admission-continuation-v2.json": "c0cb5145179c0491f2412a4dd73ecdeb99caecdc5beacb86fee6d58a38f53204",
+      "pkg/dsga/compute/admission_continuation.go": "89e9a3c426441eec2104a59f67e3b55a69a61dac8432e2a8191dd37dafe37859",
+      "pkg/dsga/compute/admission_continuation_test.go": "2e08034a595b749167f0d0790d16ea86365efb47cb414ab7ab7df98d23dab170",
+      "pkg/dsga/journal/active_service_closure.go": "07bcf4534af2f66cb79ec65fff34b81882ef9bc14ba970ea36737166abde8c74",
+      "pkg/dsga/journal/active_service_closure_test.go": "7bba3126cbb5a95d419c014fe91c68c646f00079a31a047dd2a16cb67c43a062",
+      "pkg/dsga/journal/model.go": "6446897ea4cca55e559a4c424bff87c6de21b297ddf999393c8e91e977c870bd",
+      "pkg/dsga/journal/pg_active_service_closure_test.go": "a59d7e0de4bf8ea3c8814ce62b615249e35a872cc83220efa781665a7aff1d44",
+      "pkg/dsga/journal/service_closure.go": "44480d7b3d793f17f9fda6e87674ff4f88d295271ed27f74efa028aa70301f89",
+      "pkg/dsga/journal/service_closure_continuation.go": "8a43c8d896beb77f7418baa27556618dff25ef592e944228bb4e12c2b71e934a",
+      "pkg/dsga/owner/active_service_safety.go": "9b17618454d2fa2897f6f7b5adf3761fd44f7a6c6e28bfb5da37b8e89484d874",
+      "pkg/dsga/owner/initial_service_test.go": "c4c87d6cb1e3d5183852cfd1019f350a892b3ff33ce2a91612b1f42c116d7ead",
+      "pkg/dsga/owner/pg_active_service_safety_test.go": "f6901c773e2ddaf523f4b145e53277210c9170f438b01bbf3b4948bef4b08bf9",
+      "pkg/dsga/owner/service_continuation_test.go": "eb8650e6c714cc67515a0989755c8cc34ce23e71283a7cab6faccb62ceb30316",
+      "pkg/dsga/owner/service_safety.go": "b9a6a4b45f61b84cacb31b858784840a04a5ac7cc6b11a7c24a55f07480b0da2"
+    },
+    "neon": {
+      "compute_tools/src/http/dsg_openapi.yaml": "9bf7a162a9a3923cba2856b132ec204e377f18a989ed11a164c90772bda24f7e",
+      "compute_tools/tests/dsg_http.rs": "f6a20488deeda912283603e1ee4b0db4e4ac54ba2bc102f4c8174a678deed1c0",
+      "libs/compute_api/src/dsg_admission.rs": "14d93644c740d42c6912061100f4c1cdce99742647d06ef0ade72e5b75a169bc",
+      "libs/compute_api/src/dsg_client.rs": "219bdf90f5a46ed91500de7deee04104018b99cfb39e4d274debd55f7e6d4fe1",
+      "libs/compute_api/testdata/dsg_admission_continuation_v2.json": "c0cb5145179c0491f2412a4dd73ecdeb99caecdc5beacb86fee6d58a38f53204",
+      "libs/compute_api/tests/dsg_admission_continuation.rs": "baae31301c25e4a2aa14b9298c3bb393322c995c99d8c3a74562286d9b75aabb",
+      "libs/compute_api/tests/dsg_admission_continuation_native.rs": "c2e3fdb9c03d9449fd50467b26dc1a4af070f6f4f857056819176eaea7c46be9"
+    }
+  },
+  "evidence": {
+    "dsga-capacity-continuation-baseline-clean.jsonl": {
+      "sha256": "1b931502b2d19843b6e698001b6e811cb3d83e9c25c7108b59ead7c66ed0b029",
+      "tests": {
+        "fail": 8,
+        "pass": 30
+      },
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:42:33.713606+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+          "Elapsed": 0.082
+        }
+      ]
+    },
+    "dsga-capacity-continuation-baseline.jsonl": {
+      "sha256": "f179c43cc60b234deb9adb64457582d9c019b6c49480f2d9585ed380f807b13a",
+      "tests": {
+        "fail": 11,
+        "pass": 23
+      },
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:25:13.013479+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+          "Elapsed": 0.091
+        }
+      ]
+    },
+    "dsga-capacity-continuation-contract.jsonl": {
+      "sha256": "626cfafd43b57e94dba326804ef8e7c8e235b86a3f5e4c2e48ae04e29f3c223b",
+      "tests": {
+        "pass": 64,
+        "fail": 11
+      },
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:26:03.729056+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+          "Elapsed": 0.605
+        }
+      ]
+    },
+    "dsga-capacity-continuation-model-first.jsonl": {
+      "sha256": "6533f5f1c0869547ab957b645cde02b8cd8d6f43edde267b3e19d122c7dab83c",
+      "tests": {
+        "pass": 100,
+        "fail": 2
+      },
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:32:03.417328+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+          "Elapsed": 4.373
+        },
+        {
+          "Time": "2026-10-29T14:32:16.648595+08:00",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+          "Elapsed": 13.669
+        }
+      ]
+    },
+    "dsga-capacity-continuation-model.jsonl": {
+      "sha256": "fab28d48489c3fe16560e3dfecb3441dafe14a66df5809555a686203afd384ed",
+      "tests": {
+        "pass": 189
+      },
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:33:46.15088+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+          "Elapsed": 2.403
+        },
+        {
+          "Time": "2026-10-29T14:33:48.187751+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/compute",
+          "Elapsed": 1.677
+        },
+        {
+          "Time": "2026-10-29T14:34:41.195538+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+          "Elapsed": 54.685
+        }
+      ]
+    },
+    "dsga-capacity-continuation-older-pure.jsonl": {
+      "sha256": "ed558cd69567249dfb8f6ef2abb53939e5ba2707b4956869374124c3a45cabbf",
+      "tests": {
+        "pass": 72
+      },
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:46:57.090309+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+          "Elapsed": 22.144
+        }
+      ]
+    },
+    "dsga-capacity-continuation-owner-first.jsonl": {
+      "sha256": "a6c471462510b5ebb0683c08a4f944afb858c6c333f4ec45293ae2244c520d60",
+      "tests": {
+        "pass": 8
+      },
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:40:35.595234+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 249.847
+        }
+      ]
+    },
+    "dsga-capacity-continuation-pure-final.jsonl": {
+      "sha256": "0d666fb73a47616402ee3585a73135d9ea1b11320289cf99635bef418938f567",
+      "tests": {
+        "pass": 100
+      },
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:40:22.499942+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/api/dsga",
+          "Elapsed": 2.471
+        },
+        {
+          "Time": "2026-10-29T14:40:44.114175+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+          "Elapsed": 19.876
+        }
+      ]
+    },
+    "dsga-capacity-continuation-binding-base.log": {
+      "sha256": "5b3f902293ddc5c379b85698a19cd19019a4cdede29b2e715b3ee406e4b35015",
+      "bytes": 65
+    },
+    "dsga-capacity-continuation-consumers-final.log": {
+      "sha256": "5d779499c8ba0e6af81006ad171d0e622dbdcb3d582c5c48104d6ec1e241ce86",
+      "bytes": 24224
+    },
+    "dsga-capacity-continuation-consumers-first.log": {
+      "sha256": "21cceb110ffe4d2dc16d275c4ee464497c4f8abd0271cea4cb0bbe2a3798d854",
+      "bytes": 17497
+    },
+    "dsga-capacity-continuation-lint-final.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "bytes": 10
+    },
+    "dsga-capacity-continuation-lint-first.log": {
+      "sha256": "5e1f13f34d5f6d6888bd95f78c836430e9f42862548f76729bb7a4fc6576d47f",
+      "bytes": 1581
+    },
+    "dsga-capacity-continuation-lint-retained.log": {
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47",
+      "bytes": 10
+    },
+    "dsga-capacity-continuation-lint-second.log": {
+      "sha256": "07d547a065286d0508fe2bbac638a73d635cf618893c25d99cae05d6ece38a39",
+      "bytes": 517
+    },
+    "dsga-capacity-continuation-vet-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "dsga-capacity-continuation-vet.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "rust/clippy-api.log": {
+      "sha256": "ff4a172b8f5f962a89d7f15273df14c6449c4b821dfb1cb3244d20b055cffbcf",
+      "bytes": 17759,
+      "summary": []
+    },
+    "rust/clippy-http.log": {
+      "sha256": "3c885fd1f880a124e1a63b829f94bb58ef3dde85672787bae7de762e0ddd9e4e",
+      "bytes": 17423,
+      "summary": []
+    },
+    "rust/contract.log": {
+      "sha256": "89cea7a3239257476217d07094880bd536e5aac6811ef582fcca08f057d41122",
+      "bytes": 8211,
+      "summary": [
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s"
+      ]
+    },
+    "rust/native-compile-first.log": {
+      "sha256": "65b5c2ee611b5329beda98e0e25a66f7d2e694d6e679d9f123e7c598d4d36ed7",
+      "bytes": 10648,
+      "summary": []
+    },
+    "rust/native.log": {
+      "sha256": "3779d9602fcb7fe8bb9fac3d156be4458a9bbb236bf6e4768915c69462ddea77",
+      "bytes": 8243,
+      "summary": [
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.56s"
+      ]
+    },
+    "rust/results.json": {
+      "sha256": "7c113d4364c341b495d35f25d72e421ac942b6c0b2f4cff4471c09f092b0978e",
+      "bytes": 163,
+      "summary": []
+    },
+    "dsga-capacity-continuation-older-store.jsonl": {
+      "sha256": "75e557adc9e85d54edbeda63624f5f423f2131db9b577c47de60b602d1edb23c",
+      "tests": {
+        "pass": 24
+      },
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:53:47.566494+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+          "Elapsed": 20.666
+        }
+      ]
+    },
+    "dsga-capacity-continuation-normal.jsonl": {
+      "sha256": "dfec3092c0606e585004822945e267ac3b8247468ce8fffff4695dc9b6df6ba4",
+      "tests": {
+        "pass": 8
+      },
+      "package_terminal": [
+        {
+          "Time": "2026-10-29T14:57:19.721433+08:00",
+          "Action": "pass",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 232.583
+        }
+      ]
+    },
+    "rust/http-result.json": {
+      "sha256": "270dc1df51172a0cf8db002645835ca47b5023d446e208411665bc5f85b38412",
+      "bytes": 48,
+      "summary": []
+    },
+    "rust/http.log": {
+      "sha256": "12d7eaf848a560125cb4ae7911843a16b898014cc7ec8f2573a0757b80b6253b",
+      "bytes": 8365,
+      "summary": [
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 24 filtered out; finished in 2.81s"
+      ]
+    }
+  },
+  "adopted_go": {
+    "logs": [
+      "model",
+      "pure-final",
+      "owner-first",
+      "older-pure",
+      "older-store",
+      "normal"
+    ],
+    "unique_top_level": 44,
+    "unique_parent_child_records": 310,
+    "fail": 0,
+    "skip": 0,
+    "note": "父子记录不是独立E2E；后一次同名纯模型覆盖早一次，按(package,test)去重"
+  },
+  "rust": {
+    "contract_pass": 5,
+    "native_pg_pass": 3,
+    "ignored": 0,
+    "pg_prefix": "build/pg17-initial-close-exact-install",
+    "independent_pg_jsonb_sha_vectors": 11,
+    "compute_router_new_test_execution": "executed_pass",
+    "clippy_api": 0,
+    "clippy_http": 0,
+    "dependency_warnings_retained": true,
+    "compute_router_pass": 4,
+    "compute_router_ignored": 0,
+    "compute_router_filtered_unaffected": 24
+  },
+  "pending_before_commit": [],
+  "approval_block": {
+    "action": "启动Compute Router原生执行验证",
+    "result": "Automatic approval review failed: usage limit; not executed; not unsafe determination",
+    "retry_hint": "3:56 PM（审核服务未明确时区）",
+    "occurrences_this_resumed_audit": 1,
+    "resolved": "用户明确批准验证后Router实际退出0；旧HTTP Store与正常自动Grow→Shrink也终态通过"
+  },
+  "failures_retained": {
+    "initial_generator": "首次独立生成器错误使用紧凑字典序JSON摘要；contract日志失败保留，修成PG JSONB键长/字节序和空格，最终11有效向量由真实PG独立核对",
+    "clean_old_reader_overlay": "只替换原HEAD Go准入合同；最终37向量中7个新有效请求及父节点失败，旧v1有效向量通过；未改工作树",
+    "sandbox_model_first": "首轮Store启动被沙箱监听限制拒绝；获审批后HTTP/TLS模型及Store回归全通过",
+    "native_compile_first": "新增原生测试首次作用域/方法名编译失败，修正后3个真实PG测试通过",
+    "lint_first": "7项修正后0 issues，第二轮3项格式也修正",
+    "consumer_first": "误用不存在cmd/agent及neonvm/controllers包路径，纠正为pkg/agent和pkg/neonvm/controllers；最终仅编译结果另核",
+    "wrong_cwd_vet": "曾在Neon cwd调用Go包，未执行有效检查；随后AS正确cwd四包vet退出0"
+  },
+  "remaining_product_code": [
+    "Cleanup恢复开放异常的独立关闭与原预算边界",
+    "坏缺日志独立关闭、受控重开与有界重复生命周期",
+    "安全降normal、后台/私有持续上界及活性",
+    "出生崩溃无失败屏障、Runner无Wait/分区/跨boot迁移",
+    "Monitor/WSS/配额/RW-RO、可信CPU及全部最终写者"
+  ],
+  "boundaries": [
+    "Goal保持active，PG17全面实现/Mac验证/远程归档后才暂停",
+    "PG18/16不自动进入，独立控制面不修改，上游冻结",
+    "Mac API/SDK/CAS/Lease实际执行，Go里的PG/Root/QMP/Kube是明确peer",
+    "Rust原生实际PG17执行，不是完整Linux/K8s/KVM/NeonVM/HugeTLB/物理/性能验收",
+    "不构建镜像、不部署、不合main"
+  ],
+  "archive": "Mac必要检查通过；本收据随代码归档；提交/推送及远程完整SHA由Git和Neon发行锁证明",
+  "comment_only_after_validation": [
+    "Go/Rust SDK说明接续可由更高epoch，或同epoch严格更高容量及revision封住前驱；业务字节未改"
+  ]
+}
