@@ -1,0 +1,114 @@
+{
+  "receipt_version": 1,
+  "date": "2026-10-29 Asia/Shanghai",
+  "scope": "原生期限观察过期后的受限管理循环与纯本地取消恢复；受控重新开放业务仍未完成",
+  "autoscaling_parent": "d78216bb92299e56a227c97701076ef1422f9a9b",
+  "postgres17_commit": "33c92fe33e741309f9e8ab23e3767fb6f2210216",
+  "adopted_go_race": [
+    {
+      "log": "build/dsga-expired-management-affected-final.jsonl",
+      "sha256": "93e7bbe990d69ff6e70d1d29f1f9e3a1bf9a0507b2612cce2e73d69930bb292b",
+      "stats": {
+        "pass": 53,
+        "top_pass": 10,
+        "package_pass": 1
+      }
+    },
+    {
+      "log": "build/dsga-expired-management-final-boundaries.jsonl",
+      "sha256": "8729fb89041d446357b7cac301cfda69fa8b4f00af3eeb4ef20e077f506565cd",
+      "stats": {
+        "pass": 46,
+        "top_pass": 3,
+        "package_pass": 1
+      }
+    },
+    {
+      "log": "build/dsga-expired-management-automatic-race.jsonl",
+      "sha256": "0790372b27ab45bf87ffdf0ea0df8d45ae724bd714962e2ab32c126a263bef17",
+      "stats": {
+        "pass": 5,
+        "top_pass": 1,
+        "package_pass": 1
+      }
+    }
+  ],
+  "deduplicated_go_race": {
+    "top_level": 13,
+    "parent_child_records": 64,
+    "fail": 0,
+    "skip": 0,
+    "independent_e2e_count": null
+  },
+  "automatic_control_chain": {
+    "elapsed_seconds": 167.24,
+    "qmp_peer_actual_bytes": 1073741824,
+    "finish_and_host_settled": true,
+    "real_pg_or_qemu_or_kube": false
+  },
+  "quality": {
+    "vet_exit": 0,
+    "incremental_lint": "0 issues",
+    "consumer_compile_only_packages": 33,
+    "diff_check_exit": 0
+  },
+  "original_failures": {
+    "startup_expired_run_exit_reproduced": true,
+    "local_abort_finish_lost_reply_extra_pg_credentials_reproduced": true,
+    "lint_first_issues": 2,
+    "all_failure_logs_preserved": true
+  },
+  "logs": [
+    {
+      "path": "build/dsga-expired-management-baseline.jsonl",
+      "sha256": "5359951eeb767ecbbf807eda2cb49f69da396e51924dd46ca746e46845dc7e77"
+    },
+    {
+      "path": "build/dsga-expired-management-local-abort.jsonl",
+      "sha256": "215912998f5be161c27ce83de9a85b9dd0742172a069965ab742f5b3722e0bb7"
+    },
+    {
+      "path": "build/dsga-expired-management-local-abort-fixed.jsonl",
+      "sha256": "e1f7a14b9fb02f53af7b1ff24afa385438b2be6741566e27f926f05ae7047bad"
+    },
+    {
+      "path": "build/dsga-expired-management-lint.log",
+      "sha256": "8be8ce7ee5d2f2f9f855946ecb961a38e907ea9880de93cba536e2dcd142a8f6"
+    },
+    {
+      "path": "build/dsga-expired-management-lint-boundaries.log",
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47"
+    },
+    {
+      "path": "build/dsga-expired-management-vet-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "build/dsga-expired-management-consumer-compile.log",
+      "sha256": "2b2372eb7860caa0d2fd0aec1d52594a49ef79fcf00a63cb01bf5fde97d1ea34"
+    }
+  ],
+  "source_sha256": {
+    "pkg/dsga/owner/admission_lease.go": "712140c8344cff0d08fde5f317406938ccd10e8c7ea8a5c8a232f60f965c6e37",
+    "pkg/dsga/owner/admission_lease_test.go": "0404a16b1c612f95ac053a0d3e62190975ceffd151dc1102f4c4c1ecfb9b3b21",
+    "pkg/dsga/owner/pg.go": "edae03aae0b5ff8d84e106e7d5b47401f97332353f54c528013688fdabc2f5b4",
+    "pkg/dsga/owner/initial_service_test.go": "ad0e8b023e998f77ee6c7a7ed4b77f0d7c7f1776d480d76d11fbcd1058bf53bd"
+  },
+  "coverage": [
+    "启动时已过期、运行中续租观察过期、管理请求排队期间过期",
+    "状态查询持续可用，12种业务/原开放恢复入口拒绝且原WAL和预算不变",
+    "完整本地取消历史读回零PG访问，新Begin原生协商失败不写新意图",
+    "正常自动Grow→Shrink、管理串行/取消/失租/显式原重放/关闭通道回归"
+  ],
+  "execution_boundary": "Mac生产Session/Run/SDK/typed客户端/WAL实际执行，PG/Root/QMP/Kube为明确peer；没有新PG内核或Linux执行",
+  "remaining_implementation": [
+    "持久rearm/受控重新开放及有界重复生命周期",
+    "normal安全降限、私有后台持续预算及活性",
+    "分区/跨boot迁移",
+    "Monitor/WSS/总配额/RW-RO/可信CPU与全部写者"
+  ],
+  "platform_acceptance": [
+    "Linux K8s/KVM/NeonVM/CRI/cgroup/HugeTLB/真实物理返还/性能"
+  ],
+  "goal_status": "active"
+}

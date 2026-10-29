@@ -5,6 +5,16 @@
 
 
 
+
+## 最新验证：原生过期受限管理与本地取消恢复完成 Mac 阶段
+
+观察原生过期后保留原 Run/Session 串行管理，允许状态、原 Root 有界修复与关闭恢复，拒绝普通业务/自动策略/原开放重放，不续租或自动 rearm。管理排队跨过期在新 WAL 前核验；本地取消 Finish 丢回复后完整历史零 PG 读回，新 Begin 仍先强制协商，失败不写新意图。
+
+Mac race 去重 13 顶层/64 含父子记录 0 fail/skip；完整自动 Grow→Shrink 167.24 秒正常 Finish/Host 结清，QMP peer 读回 1 GiB。最终 vet/增量 lint0、33 消费者仅编译通过；原启动退出、本地取消多取凭据和 lint 失败日志保留。详见[阶段验收](DSGA-原生过期受限管理-Mac验收-20261029.md)与[机器收据](DSGA-原生过期受限管理-Mac收据-20261029.json)。
+
+这只是受控重开的必要前置，持久 rearm/重新开放及重复生命周期仍须代码，其余 normal/私有后台/分区/跨 boot/Monitor/CPU 等核心清单不变。PG17 整体未完成，Goal active；PG17 全面实现、Mac 验证及远程归档后才暂停，不进入 18/16。所有者 AGENTS 改动保留不 stage。
+
+
 ## 最新验证：Runner 无 Wait 的整 Pod 终态结清完成 Mac 阶段
 
 本批独立整 Pod 终态来源接入生产 Scheduler、活动 Reader/Controller 与完成后 GC；只在原 Wait 真实 404、原 Pod/VM/Node/Birth 和全容器终态固定时结清，不制造 Wait，不清原 resize 未知。来源选择保存后固定 UID/摘要，迟到 Wait 不替换，来源丢失/换 UID 保留未知。

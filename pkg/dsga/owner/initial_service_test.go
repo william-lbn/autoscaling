@@ -51,10 +51,12 @@ type initialServicePG struct {
 	afterOpen func()
 	// 仅新容量竞态组合在原关闭WAL确认后、setter到达前提交原Resize。
 	// 由peer锁外调用；生产代码仍必须识别Stale并写独立接续WAL。
-	beforeClose   func()
-	leaseDeadline control.Uint64
-	leaseRenewals int
-	leaseReject   bool
+	beforeClose    func()
+	leaseDeadline  control.Uint64
+	leaseRenewals  int
+	leaseReject    bool
+	leaseExpired   bool
+	leaseTimeoutMS int
 }
 
 func (p *initialServicePG) shared() control.SharedCostResponse {
@@ -70,6 +72,9 @@ func (p *initialServicePG) current() control.SharedCostResponse {
 	}
 	if p.gate != nil {
 		s.Observed.AdmissionOpen, s.Observed.AdmissionRevision = p.gate.Open, p.gate.Revision
+	}
+	if p.leaseExpired {
+		s.Observed.AdmissionOpen = false
 	}
 	return s
 }
@@ -102,12 +107,16 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 			p.leaseDeadline = 1000000000
 		}
 		s := p.current().Observed
-		renewed := request.Action == "renew" && request.ExpectedDeadlineNS == p.leaseDeadline && request.ExpectedCapacityGeneration == s.CapacityGeneration && request.ExpectedAdmissionRevision == s.AdmissionRevision && request.IssuerEpoch == s.IssuerFloorEpoch
+		renewed := !p.leaseExpired && request.Action == "renew" && request.ExpectedDeadlineNS == p.leaseDeadline && request.ExpectedCapacityGeneration == s.CapacityGeneration && request.ExpectedAdmissionRevision == s.AdmissionRevision && request.IssuerEpoch == s.IssuerFloorEpoch
 		if renewed {
 			p.leaseDeadline++
 			p.leaseRenewals++
 		}
-		pgReply(w, control.AdmissionLeaseResponse{ProtocolVersion: 1, VMShrinkPermit: false, Expired: false, Request: request, Armed: true, Renewed: renewed, DeadlineNS: p.leaseDeadline, LeaseEpoch: s.IssuerFloorEpoch, TimeoutMS: 30000, Observed: s})
+		timeout := p.leaseTimeoutMS
+		if timeout == 0 {
+			timeout = 30000
+		}
+		pgReply(w, control.AdmissionLeaseResponse{ProtocolVersion: 1, VMShrinkPermit: false, Expired: p.leaseExpired, Request: request, Armed: true, Renewed: renewed, DeadlineNS: p.leaseDeadline, LeaseEpoch: s.IssuerFloorEpoch, TimeoutMS: timeout, Observed: s})
 		return
 	case "/dsg/v1/budget/shared":
 		pgReply(w, p.shared())
@@ -435,7 +444,7 @@ func productionInitialService(t *testing.T, mode string) {
 		for _, a := range after.Observed.Arrays {
 			after.CurrentMainAndArraysUpperBytes += a.CommittedUpperBytes
 		}
-		pg := &initialServicePG{mu: sync.Mutex{}, request: request, before: before, after: after, resized: false, gate: nil, posts: 0, queries: 0, resizePosts: 0, loseBefore: false, loseAfter: false, store: store, loseResize: false, resizeReceipt: nil, resizeQueries: 0, afterOpen: nil, beforeClose: nil}
+		pg := &initialServicePG{mu: sync.Mutex{}, request: request, before: before, after: after, resized: false, gate: nil, posts: 0, queries: 0, resizePosts: 0, loseBefore: false, loseAfter: false, store: store, loseResize: false, resizeReceipt: nil, resizeQueries: 0, afterOpen: nil, beforeClose: nil, leaseDeadline: 0, leaseRenewals: 0, leaseReject: false, leaseExpired: false, leaseTimeoutMS: 0}
 		var nativeFence http.HandlerFunc
 		if transfer != nil {
 			nativeFence = pg.ownerFence(t)

@@ -5,7 +5,46 @@ import (
 	"fmt"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
+
+// 仅原生期限事实设置此标志；一般来源错误仍保留自己的关闭/未知路径。
+// 它属于安全等待，不触发换owner，也不自动恢复期限或开放服务。
+var errNativeAdmissionExpired = fmt.Errorf("%w: native admission lease expired", ErrServiceSafety)
+
+// 原生过期后保留管理入口，但只准查询、原Root有界修复和关闭恢复。
+// 显式的旧开放重放/Begin/取消同样不能越过期限；未来受控重开须有自己
+// 完整持久WAL及来源审计，不能把此处普通恢复动作当作rearm许可。
+func expiredAdmissionControlAllowed(action control.CoordinationAction) bool {
+	return action == control.CoordinationState || action.ResourceOnly() || action == control.CoordinationReplayServiceClosure || action == control.CoordinationContinueServiceClosure
+}
+
+// 精确本地取消不曾授予服务或派发任何领域动作。Finish丢回复后，原取消
+// 可能已经从Active移入历史；只要完整保留的每条历史都证明零派发，读回它
+// 仍不应获取PG凭据。历史有淘汰/未知、任一持有预算、普通Active或任何已
+// 派发步骤都失去此特例，新的Begin必须先协商期限，不能据空闲状态推定。
+func nativeLeaseLocalAbort(m journal.Model) bool {
+	if m.InitialHeld != nil || m.BudgetHeld != nil || m.CapacityHeld != nil || m.ServiceClosure != nil || m.ExpiredResults != 0 || m.Active == nil && len(m.History) == 0 {
+		return false
+	}
+	unstarted := func(op journal.Operation) bool {
+		if !op.AbortRequested || op.Cleanup != nil {
+			return false
+		}
+		for _, step := range op.Steps {
+			if step.Phase != journal.Planned {
+				return false
+			}
+		}
+		return true
+	}
+	for _, record := range m.History {
+		if record.Outcome != journal.AbortedBeforeDispatch || !unstarted(record.Operation) {
+			return false
+		}
+	}
+	return m.Active == nil || unstarted(*m.Active)
+}
 
 // observeAdmissionLease不发心跳；来源损坏/失租/旧SDK都不能借只读观察延长
 // PG期限。协议缺失或过期明确返回，正式Run没有无限期开放的旧路径降级。
@@ -41,7 +80,7 @@ func (w *PGWorker) renewAdmissionLease(ctx context.Context) error {
 		return err
 	}
 	if fact.Expired {
-		return ErrServiceSafety
+		return errNativeAdmissionExpired
 	}
 	if fact.Observed.AdmissionOpen {
 		if _, err := before.State().ServiceBudgetID(); err != nil {
@@ -74,6 +113,9 @@ func (w *PGWorker) renewAdmissionLease(ctx context.Context) error {
 		return err
 	}
 	if !renewed.Renewed {
+		if renewed.Expired {
+			return errNativeAdmissionExpired
+		}
 		return ErrServiceSafety
 	}
 	return nil

@@ -629,9 +629,10 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	defer cancel()
 	defer worker.CloseIdleConnections()
 	leaseReady := false
+	leaseExpired := false
 	var nextLeaseRenew time.Time
 	var leaseRenewInterval time.Duration
-	ensureLease := func() error {
+	ensureLease := func(allowLocalAbort bool) error {
 		if worker.safety == nil || leaseReady {
 			return nil
 		}
@@ -640,19 +641,9 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			return err
 		}
 		m := snapshot.State()
-		// 完全未派发、无历史/永久预算的原取消只有外层CAS，不得为关闭
-		// 本地空意图额外取得凭据或触碰PG。该特例不能进入任何新派发；
-		// 下一轮一旦离开此精确边界，仍先完成下面的强制原生协商。
-		localAbort := m.Active != nil && m.Active.AbortRequested && m.Active.Cleanup == nil && m.InitialHeld == nil && m.BudgetHeld == nil && m.CapacityHeld == nil && len(m.History) == 0 && m.ExpiredResults == 0
-		if localAbort {
-			for _, step := range m.Active.Steps {
-				if step.Phase != journal.Planned {
-					localAbort = false
-					break
-				}
-			}
-		}
-		if localAbort {
+		// 原零派发取消及其Finish丢回复后的完整历史读回只有外层CAS；
+		// 离开此精确边界的新Begin仍必须完成下面的强制原生协商。
+		if allowLocalAbort && nativeLeaseLocalAbort(m) {
 			return nil
 		}
 		// 正式长驻服务必须协商内核失联关闭；测试用的单步领域调用不能
@@ -661,13 +652,14 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		if err != nil {
 			return err
 		}
-		if fact.Expired {
-			return ErrServiceSafety
-		}
 		if options.PollInterval > time.Duration(fact.TimeoutMS)*time.Millisecond/3 {
 			return fmt.Errorf("PG polling interval exceeds native admission lease renewal bound")
 		}
 		leaseReady = true
+		// 过期不是owner/协议失败。保留同Session的串行管理入口，下面
+		// 只允许查询和关闭恢复，绝不调用普通Advance、原重放或自动策略。
+		// 该标志在本Run内不可因只读观察或来源恢复而清除。
+		leaseExpired = fact.Expired
 		leaseRenewInterval = time.Duration(fact.TimeoutMS) * time.Millisecond / 3
 		return nil
 	}
@@ -694,7 +686,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		if callCtx.Err() != nil {
 			return callCtx.Err()
 		}
-		if err := ensureLease(); err != nil {
+		if err := ensureLease(true); err != nil {
 			return err
 		}
 		if pendingControl != nil {
@@ -709,7 +701,32 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			if pendingControl.ctx.Err() != nil {
 				cancelControl()
 			}
-			value, controlErr := worker.executeControl(controlCtx, pendingControl.command)
+			var value CoordinationResult
+			var controlErr error
+			allowedClosed := expiredAdmissionControlAllowed(pendingControl.command.Action)
+			if pendingControl.command.Action == control.CoordinationBegin && !leaseReady {
+				// 历史只含本地取消时普通循环尚未触PG；新Begin在外层
+				// 写前就离开此特例，不能先接受再让下一轮协商失败。
+				controlErr = ensureLease(false)
+			}
+			if controlErr == nil && worker.safety != nil && leaseReady && !leaseExpired && !allowedClosed {
+				// 管理队列可能跨过最后一次期限观察。业务选择在写任何
+				// 外层WAL前再读原生期限；坏回复/网络未知不能继续派发。
+				// 精确零派发本地取消尚未协商lease，不为它额外触碰PG；
+				// 它离开本地边界后的下一轮仍由ensureLease强制协商。
+				var fact control.AdmissionLeaseResponse
+				fact, controlErr = worker.observeAdmissionLease(controlCtx)
+				if controlErr == nil {
+					leaseExpired = fact.Expired
+				}
+			}
+			if controlErr == nil {
+				if leaseExpired && !allowedClosed {
+					controlErr = ErrServiceSafety
+				} else {
+					value, controlErr = worker.executeControl(controlCtx, pendingControl.command)
+				}
+			}
 			stopCaller()
 			cancelControl()
 			pendingControl.result <- controlReply{value: value, err: controlErr}
@@ -718,7 +735,9 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		}
 		var progress pgexec.Progress
 		var err error
-		if replay != nil {
+		if leaseExpired {
+			progress, err = pgexec.AwaitingFact, ErrServiceSafety
+		} else if replay != nil {
 			progress, err = worker.ReplayOriginal(callCtx, *replay)
 			replay = nil
 		} else if admissionReplay != nil {
@@ -760,10 +779,12 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		// 每轮已有领域来源审计，期限还充足时不重复完整网络审计；否则
 		// 限流会扩大策略采样间隔、反复重置缩容窗口。首次及每个期限的
 		// 三分之一执行独立完整续租，失败不更新next，更不发盲心跳。
-		if err == nil && leaseReady && !time.Now().Before(nextLeaseRenew) {
+		if err == nil && leaseReady && !leaseExpired && !time.Now().Before(nextLeaseRenew) {
 			err = worker.renewAdmissionLease(callCtx)
 			if err == nil {
 				nextLeaseRenew = time.Now().Add(leaseRenewInterval)
+			} else if errors.Is(err, errNativeAdmissionExpired) {
+				leaseExpired = true
 			}
 		}
 		if options.Observe != nil {
