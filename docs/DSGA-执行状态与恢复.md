@@ -1,5 +1,13 @@
 # DSGA Autoscaling 执行状态与恢复
 
+## 最新验证：新开放 SDK 重建及只读恢复完成 Mac 阶段
+
+NewPGWorker 恢复准确新开放、再关闭及完整接续 pending，旧初开不能替代；Advance/过期 Run 只查询原 WAL 再按 UID/RV 落账，不发 setter、不续租/自动 rearm、不解除 latch 或外层关闭。未找到/较新开/落账丢回复/终态重建及过期 Run 通过，首次未知和预算保留。
+
+Mac race 去重 6 顶层/58 含父子记录 0 fail/skip，新增十二 SDK 模式及过期 Run 两根；完整新根后仅替换两项变化场景/取消清理，首轮夹具错误路由失败保留。最终 owner vet/lint0，33 消费包仅编译通过。详见[阶段验收](DSGA-新开放SDK只读恢复-Mac验收-20261029.md)和[机器收据](DSGA-新开放SDK只读恢复-Mac收据-20261029.json)。真实 Session/SDK/Store/Run 已验，PG/Root 仍是明确 peer，过期分支不当成生产来源审计器。
+
+生产新选择/派发、来源前后审计、异常再关闭、Run 业务门禁解除及有界生命周期仍需代码；PG17 整体未完成、Goal active。PG/Rust/HTTP 未改，不重复未变原生/自动伸缩；其他核心和 Linux 边界、完成后暂停约定不变，所有者 AS AGENTS 不 stage。
+
 ## 最新验证：新开放与异常再关闭持久账本完成 Mac 阶段，生产入口待接
 
 新增唯一新开放 WAL、原生回执独立落账、来源异常后原意图再关闭与更高 owner 有界接续；必填安全阶段拒绝删除关闭/接续的字段投影。写前预留完整后继恢复空间，UID/RV 丢回复零票据。旧关闭/预算/首次及新开放未知保留，新开放确认仍 Begin Busy。

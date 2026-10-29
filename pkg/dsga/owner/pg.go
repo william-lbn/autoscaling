@@ -217,6 +217,26 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 			admissionClose, admissionContinuation = &closeRequest, &continuation
 		}
 	}
+	if c := model.ServiceClosure; c != nil && c.Reopen != nil {
+		// 原关闭已确认后，旧首次开放不再恢复为 SDK pending；后继新
+		// 开放有自己的完整 WAL，必须恢复它自己的未知。再关闭未知则
+		// 同时恢复原新开放、最新关闭和完整接续，不能只保留布尔 closed。
+		// 已确认再关闭仍保留所有历史未知，但不恢复成能迟到开放的栅栏。
+		r := c.Reopen
+		if r.Closing == nil && r.Phase == journal.Unconfirmed {
+			original := r.Request
+			admissionPending = &original
+		} else if r.Closing != nil && r.Closing.Close.Pending() {
+			closed := r.Closing.Close
+			original, closeRequest := r.Request, closed.Request
+			admissionPending, admissionClose = &original, &closeRequest
+			if closed.Continuation != nil {
+				selection := closed.Continuation.Request
+				closeRequest := selection.Close
+				admissionClose, admissionContinuation = &closeRequest, &selection
+			}
+		}
+	}
 	if (config.AdmissionClose != nil && (admissionClose == nil || *config.AdmissionClose != *admissionClose)) ||
 		(config.AdmissionContinuation != nil && (admissionContinuation == nil || *config.AdmissionContinuation != *admissionContinuation)) ||
 		(config.AdmissionPending != nil && (admissionPending == nil || *config.AdmissionPending != *admissionPending)) {
@@ -742,8 +762,12 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			snapshot, loadErr := worker.session.store.Load(callCtx)
 			if loadErr != nil {
 				err = loadErr
-			} else if c := snapshot.State().ServiceClosure; c != nil && c.Rearm != nil && c.Rearm.Phase == journal.Unconfirmed {
-				progress, err = worker.advanceServiceRearm(callCtx, c.Rearm.CommandSHA256, false)
+			} else if c := snapshot.State().ServiceClosure; c != nil {
+				if c.Reopen != nil {
+					progress, err = worker.advanceServiceReopen(callCtx)
+				} else if c.Rearm != nil && c.Rearm.Phase == journal.Unconfirmed {
+					progress, err = worker.advanceServiceRearm(callCtx, c.Rearm.CommandSHA256, false)
+				}
 			}
 		} else if replay != nil {
 			progress, err = worker.ReplayOriginal(callCtx, *replay)

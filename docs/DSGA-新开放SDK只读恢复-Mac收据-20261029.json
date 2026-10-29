@@ -1,0 +1,76 @@
+{
+  "receipt_version": 1,
+  "date": "2026-10-29 Asia/Shanghai",
+  "scope": "SDK按新开放/再关闭/完整接续原WAL重建，Run/Advance仅只读原事实恢复；生产新选择/派发/业务门禁解除仍未接入",
+  "autoscaling_parent": "38adb0583a770ed32d7d57e4b4108f5dfe94acfb",
+  "postgres17_unchanged": "79367196a74eef82e67cac917877d2e6271d3e70",
+  "adopted_go_race": [
+    {
+      "log": "build/dsga-reopen-sdk-fixed.jsonl",
+      "sha256": "d303e06ac3a877fa5bf77a72f7154193889c7228ee925999cb0f73477afd7290",
+      "duration_seconds": 51.926,
+      "adopted_top_level": 0,
+      "adopted_parent_child_records": 10
+    },
+    {
+      "log": "build/dsga-reopen-sdk-final-boundaries.jsonl",
+      "sha256": "730d47df5db7a5fa254ce3c2b298c81daf9f892985e2e32d8b086a7e1b664d96",
+      "duration_seconds": 12.045,
+      "adopted_top_level": 2,
+      "adopted_parent_child_records": 4
+    },
+    {
+      "log": "build/dsga-reopen-sdk-affected.jsonl",
+      "sha256": "87d562ca98fd6601b98d27ebf50517970305754dc6d40780d5074e7953484e29",
+      "duration_seconds": 26.837,
+      "adopted_top_level": 3,
+      "adopted_parent_child_records": 42
+    },
+    {
+      "log": "build/dsga-reopen-sdk-rearm-affected.jsonl",
+      "sha256": "ef60a283c0d6d2897ce06900d77e71d920b6ebcf3a54833b8d4a6cf79a093087",
+      "duration_seconds": 50.826,
+      "adopted_top_level": 1,
+      "adopted_parent_child_records": 2
+    }
+  ],
+  "deduplicated_go_race": {
+    "top_level": 6,
+    "parent_child_records": 58,
+    "fail": 0,
+    "skip": 0,
+    "independent_e2e_count": null
+  },
+  "go_roots": [
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner:TestExpiredRunReadsReopenWALWithoutRenewOrSetter",
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner:TestInitialAdmissionSDKRestoresUnknownWithoutActiveAndNeverAutoSends",
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner:TestPGWorkerInitialDiscoveryOrRetainedHighWaterBinding",
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner:TestProductionExpiredNativeLeaseRetainsRestrictedManagement",
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner:TestProductionServiceRearmPreservesClosedBusinessAcrossCrashWindows",
+    "github.com/neondatabase/autoscaling/pkg/dsga/owner:TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries"
+  ],
+  "quality": {
+    "owner_vet_exit": 0,
+    "incremental_lint": "0 issues",
+    "consumer_compile_only_packages": 33,
+    "consumer_exit": 0,
+    "consumer_log": "build/dsga-reopen-sdk-consumers.log"
+  },
+  "source_sha256": {
+    "pkg/dsga/owner/pg.go": "f3359c8aa3037fbb6cb26801a00bd88ebfd0f73068dfd10dd0f52f1b436c4617",
+    "pkg/dsga/owner/service_safety.go": "034898beefdccaf35a645ee05ba9c670a3e200209695488e34f364f67c6a76e5",
+    "pkg/dsga/owner/service_reopen.go": "84f26b9ba07ec87e3713ea955436993893dfc06c56edfcc54c2e61403ca5b3ee",
+    "pkg/dsga/owner/service_reopen_test.go": "e7a84da715267cb4d060d4cfc51323f009f271b488919f73a349ad4a781ca627"
+  },
+  "preserved_failures": [
+    "build/dsga-reopen-sdk-first.jsonl：夹具错误使用continue-closure/status，三项接续失败，整批失败；改为真实SDK路由continue-close/status后完整两根通过",
+    "build/dsga-reopen-sdk-lint-first.log：一处tagged switch lint，已修；仅定向替换两项变化场景和过期Run，未重复其余成功模式"
+  ],
+  "limitations": [
+    "真实Session/SDK/TLS/typed UID-RV CAS和Run已执行；原生PG回执及Root是明确peer，不能当完整生产开门/来源或Linux认证",
+    "过期Run测试仅启用原生期限路径，来源Reader明确未配置；已有关闭WAL在任何来源Reader访问前处理，这不是生产来源审计器测试",
+    "没有新生产开放/关闭setter入口、派发前后来源审计、Run latch解除及有界生命周期归档；新开放确认后外层关闭仍保留",
+    "PG/Rust/HTTP/Go wire未改，不重跑未变PG和自动Grow→Shrink；normal/持续预算/活性/分区跨boot/Monitor/CPU等核心代码仍需实现",
+    "Linux/K8s/KVM/NeonVM/HugeTLB/真实物理和性能未验；不建镜像/部署/合main，PG17整体未完成，Goal active"
+  ]
+}

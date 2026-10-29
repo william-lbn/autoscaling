@@ -148,6 +148,15 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 		return true, pgexec.AwaitingFact, ErrLeadershipLost
 	}
 	if c := m.ServiceClosure; c != nil {
+		if c.Reopen != nil {
+			// 新开放/再关闭只能查自己的最新 WAL，不退回原关闭接口。
+			// 普通轮询绝不重放 setter，原管理重放也不能借旧摘要越过它。
+			if replay != "" {
+				return true, pgexec.AwaitingFact, ErrServiceSafety
+			}
+			progress, err := w.advanceServiceReopen(ctx)
+			return true, progress, err
+		}
 		if c.Rearm != nil && c.Rearm.Phase == journal.Unconfirmed && replay == "" {
 			progress, err := w.advanceServiceRearm(ctx, c.Rearm.CommandSHA256, false)
 			return true, progress, err
