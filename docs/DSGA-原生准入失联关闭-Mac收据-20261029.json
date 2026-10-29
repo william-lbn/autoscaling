@@ -1,0 +1,283 @@
+{
+  "receipt_version": 1,
+  "date": "2026-10-29 Asia/Shanghai",
+  "scope": "PG17 原生准入失联独立关闭及生产续租；Mac实施阶段，整体尚未完成",
+  "postgres17_commit": "33c92fe33e741309f9e8ab23e3767fb6f2210216",
+  "autoscaling_parent": "5cbb6c4d0db94c821a44dd66a074fa565d7ed5ed",
+  "neon_parent": "d180f71d2",
+  "adopted_go_race": [
+    {
+      "log": "build/dsga-admission-lease-go-contract-final.jsonl",
+      "sha256": "f82a0383ac8f942c0c68ddced0cd9392e70009712c5069a25b028c6ee7cb5e4c",
+      "top_level": 55,
+      "parent_child_records": 192,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "build/dsga-admission-lease-owner-final.jsonl",
+      "sha256": "ba84d9798443801a026cc2122decdc3e16cf8957f3affec6df046f785bea5edb",
+      "top_level": 4,
+      "parent_child_records": 6,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "build/dsga-admission-lease-owner-renew-interval.jsonl",
+      "sha256": "1be1c34fd5ad466caa975693feeb121e0d5024360283decadaa9b95e0b8cdcf5",
+      "top_level": 1,
+      "parent_child_records": 5,
+      "fail": 0,
+      "skip": 0
+    }
+  ],
+  "deduplicated_go_race": {
+    "top_level": 60,
+    "parent_child_records": 203,
+    "fail": 0,
+    "skip": 0,
+    "independent_e2e_count": null
+  },
+  "native_pg": {
+    "candidate_affected": 37,
+    "exact_commit_tests": 9,
+    "exact_new_lease_tests": 6,
+    "formal_router_sql_pg_exact_tests": 1,
+    "fail": 0,
+    "skip": 0
+  },
+  "quality": {
+    "vet_packages": 3,
+    "vet_exit": 0,
+    "incremental_lint": "0 issues",
+    "consumer_compile_only_packages": 32,
+    "neon_default_ci": {
+      "total": 228,
+      "passed": 13,
+      "environment_skipped": 215
+    },
+    "rust_clippy_target_no_deps_exit": 0,
+    "rust_clippy_unmodified_dependency_warnings": 27,
+    "rust_clippy_first_including_dependencies_exit": 101,
+    "auth_router_scope_duplicate_fields_tests": 1,
+    "diff_check_exit": 0,
+    "shell_syntax_exit": 0
+  },
+  "limits": [
+    "Go生产组合的PG、Root、QMP、Kube为明确协议peer；真实PG后台失联另由原生与Router链证明",
+    "续租间隔为内核期限三分之一，每次仍完整核验来源，不发盲心跳；自动Grow→Shrink最终174.10秒通过",
+    "过期不生成预算、排空、物理回收或VM许可；显式rearm仅恢复期限并保持关闭",
+    "受控重新开放、重复生命周期、安全降normal、私有后台持续预算与活性、Runner已launch无Wait、跨boot/分区、Monitor/WSS/配额/RW-RO/可信CPU及全部写者仍有代码工作",
+    "Linux/K8s/KVM/NeonVM/HugeTLB/真实物理回收和性能另验；不构建镜像、不部署、不合main"
+  ],
+  "logs": [
+    {
+      "path": "build/dsga-admission-lease-candidate-build-close.log",
+      "sha256": "f1fa8c2631701c9a9e14b2926c229cd6fbed4a90a0c1dc02236fbedd3025b003"
+    },
+    {
+      "path": "build/dsga-admission-lease-candidate-build-fixed.log",
+      "sha256": "62d418850b5eb72e5ea669c5f292a7b8fd20601543ee3a8602606f2d7c8c8f40"
+    },
+    {
+      "path": "build/dsga-admission-lease-candidate-configure-fixed.log",
+      "sha256": "9fb897b241efd83fea9b21f693a3e1e82fc6452380ea2229e77feec2c50f1023"
+    },
+    {
+      "path": "build/dsga-admission-lease-candidate-install-close.log",
+      "sha256": "ef16baa3e60a2daa56f24f4f01564f27622891007a6bf59b808b3a6a7cbc9c19"
+    },
+    {
+      "path": "build/dsga-admission-lease-candidate-install-fixed.log",
+      "sha256": "6d560a4a87f825da4c50b3f5626c6a8629b6d0734d6a2d0f3d41cb21d882b031"
+    },
+    {
+      "path": "build/dsga-admission-lease-candidate-neon-build.log",
+      "sha256": "f63d64efbc10ad8df60e42a7b920a1d11e421f64454cd1152dd2c02324d94079"
+    },
+    {
+      "path": "build/dsga-admission-lease-candidate-version.log",
+      "sha256": "4f26b333fe50e7255dd84fcb997165f8e89ea9ea32ca2498abeb2d05f69c46e5"
+    },
+    {
+      "path": "build/dsga-admission-lease-clippy-no-deps.log",
+      "sha256": "909a4df6a5fb7e330bde0f1e1ccfd73c38bd12ce25a51034b3dde978d95803ea"
+    },
+    {
+      "path": "build/dsga-admission-lease-clippy.log",
+      "sha256": "af753f1ac5d18566e5c94f0f15721f461826ae9d71a175eed4d0227d7b506798"
+    },
+    {
+      "path": "build/dsga-admission-lease-consumers.log",
+      "sha256": "83e1ca32f9869cc3283d39a3efe1b09a2429c5e01060195fbe78eda1f03e79e0"
+    },
+    {
+      "path": "build/dsga-admission-lease-exact-build-fixed.log",
+      "sha256": "d909ea3cd7a841bf797437ee421b090d15b3158fc43782ce7e541ea661b9dac2"
+    },
+    {
+      "path": "build/dsga-admission-lease-exact-configure-fixed.log",
+      "sha256": "9fb897b241efd83fea9b21f693a3e1e82fc6452380ea2229e77feec2c50f1023"
+    },
+    {
+      "path": "build/dsga-admission-lease-exact-http.log",
+      "sha256": "f9f646f63775eceaf646f27a0d009bb29896eb5d43de19717faee6cfe43a5daf"
+    },
+    {
+      "path": "build/dsga-admission-lease-exact-install-fixed.log",
+      "sha256": "d3b406de380924a52deb50af566f7eb6e8cb426b7180063df517cd66d6d810c7"
+    },
+    {
+      "path": "build/dsga-admission-lease-exact-native.log",
+      "sha256": "0d92cc0f4a0eae936fb20aa8e843b477666bbab0a9d218dc8a51708e9f5d492e"
+    },
+    {
+      "path": "build/dsga-admission-lease-exact-neon-build.log",
+      "sha256": "fd9d91413d460889bba5d3c31b882fd3e3f4354e45a0b8cde0f7abb316d9af5f"
+    },
+    {
+      "path": "build/dsga-admission-lease-exact-version.log",
+      "sha256": "a9ae476bf7b025483a4ccd34505a54a1c1b39a503b8417a40a94e9f54e75581a"
+    },
+    {
+      "path": "build/dsga-admission-lease-go-compile-first.log",
+      "sha256": "8a5fcb7b60ce260432f04a93c885b9b5c69aaa871e095d69c2973a4fca6410ae"
+    },
+    {
+      "path": "build/dsga-admission-lease-go-contract-final.jsonl",
+      "sha256": "f82a0383ac8f942c0c68ddced0cd9392e70009712c5069a25b028c6ee7cb5e4c"
+    },
+    {
+      "path": "build/dsga-admission-lease-go-contract.jsonl",
+      "sha256": "f2de0f434496bff36a3de15c3550098ade5b3ebb32dc2df242386405c33c9505"
+    },
+    {
+      "path": "build/dsga-admission-lease-http-auth.log",
+      "sha256": "292e32a0f0dbfcf001328171c4585aa765fafab7f46adadaf1425a26ab8eb4a6"
+    },
+    {
+      "path": "build/dsga-admission-lease-http-compile.log",
+      "sha256": "a3c15f2ccbb951d48fa95afef689a389cef4b4dda3956137be9b8301b55b249c"
+    },
+    {
+      "path": "build/dsga-admission-lease-lint-current.log",
+      "sha256": "852ba4be0be1f22621bc6c3053f6fdc4a7cf19e96d128750598b09164f73a952"
+    },
+    {
+      "path": "build/dsga-admission-lease-lint-final-fixed.log",
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47"
+    },
+    {
+      "path": "build/dsga-admission-lease-lint-final.log",
+      "sha256": "ffec058f862561ce7c4e86cb90af79117aab373e75a5bf046a76ebe9d266cfe2"
+    },
+    {
+      "path": "build/dsga-admission-lease-lint-first.log",
+      "sha256": "ffec058f862561ce7c4e86cb90af79117aab373e75a5bf046a76ebe9d266cfe2"
+    },
+    {
+      "path": "build/dsga-admission-lease-lint-fix.log",
+      "sha256": "e92606b0bf483111dff0a120c315ea165821348f31365020e2468a0059095c47"
+    },
+    {
+      "path": "build/dsga-admission-lease-native-candidate-affected.log",
+      "sha256": "72102b715a98270b2f742e4486c69a73662d0f0ae7ed2de782c013af577a887e"
+    },
+    {
+      "path": "build/dsga-admission-lease-native-first.log",
+      "sha256": "aeec1de4750669925ae4fc73cfaeb63a359f40eeec806373c03e78f1231727cb"
+    },
+    {
+      "path": "build/dsga-admission-lease-neon-ci.log",
+      "sha256": "31a7e45725cbca3f0563693798aac2a555534cf4bb93555e089a56d092eaa190"
+    },
+    {
+      "path": "build/dsga-admission-lease-owner-affected.jsonl",
+      "sha256": "8803c2f7257fb13bb2bf9d0b5abc7708d75e4d761f6a095bf64780df120a67b8"
+    },
+    {
+      "path": "build/dsga-admission-lease-owner-corrected.jsonl",
+      "sha256": "34e1ae938f4a1e5086b70e18cdf02ea5b3fcd12ca7c4d11e0658073ce945520a"
+    },
+    {
+      "path": "build/dsga-admission-lease-owner-final.jsonl",
+      "sha256": "ba84d9798443801a026cc2122decdc3e16cf8957f3affec6df046f785bea5edb"
+    },
+    {
+      "path": "build/dsga-admission-lease-owner-first.jsonl",
+      "sha256": "aec3ff8fa00e83405f398edd905bbdf70eb0b7e31d5b28f6071cc0286786eac9"
+    },
+    {
+      "path": "build/dsga-admission-lease-owner-renew-interval.jsonl",
+      "sha256": "1be1c34fd5ad466caa975693feeb121e0d5024360283decadaa9b95e0b8cdcf5"
+    },
+    {
+      "path": "build/dsga-admission-lease-pg-push.log",
+      "sha256": "d8153ab050fc48cb5898b2bfc95470de637d7551e430c0b15f5e44ded87d98bf"
+    },
+    {
+      "path": "build/dsga-admission-lease-pg-remote.log",
+      "sha256": "641b4d61a67795c5993d0e183fb0334c1c21cf43764166fd7c2f5faa5cd88f13"
+    },
+    {
+      "path": "build/dsga-admission-lease-rust-check-first.log",
+      "sha256": "cfa62c7c1013998f5270335c04aa3e73c95dc777371e319711f395a7e7ebc6f7"
+    },
+    {
+      "path": "build/dsga-admission-lease-rust-check-sdk.log",
+      "sha256": "c9998c23e20d1e55e7b03788f8ab7dcc3e81f4b31bcb4f0609719de61f25a7fa"
+    },
+    {
+      "path": "build/dsga-admission-lease-rust-contract-fixed.log",
+      "sha256": "2f4961f7fed46c7b6709a136e64759b043d386d50bbf827f0dc59de00698f399"
+    },
+    {
+      "path": "build/dsga-admission-lease-rust-contract.log",
+      "sha256": "597d5f8188f76ed9aa71335c21b468b73ac63318fa04e8e5d2095cbf724f0a35"
+    },
+    {
+      "path": "build/dsga-admission-lease-rust-fmt-first.log",
+      "sha256": "aeecc0281588b32fc1d42b084f3b4beec9999faacb2e52a976c37aba7c252cc8"
+    },
+    {
+      "path": "build/dsga-admission-lease-vet-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "build/dsga-admission-lease-vet.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "source_sha256": {
+    "repos/autoscaling/pkg/api/dsga/admission_lease.go": "5da31d07141ef906e8678c572bf1a46b89ce2dcb8c64df4fd405010f6311d7c4",
+    "repos/autoscaling/pkg/api/dsga/admission_lease_test.go": "70e25fce8457a6e3d9a6e1d60912848ea23315d7b62c65c3286952fc7b596d6a",
+    "repos/autoscaling/pkg/dsga/compute/admission_lease.go": "a110a98307b3385d18f3d1b1f818a2fea530a85afabb4424afc7621986797215",
+    "repos/autoscaling/pkg/dsga/compute/admission_lease_test.go": "d95bb9362f874148b79aba7a75503807baaf4cc5af8d19b3cc3b47082881b7cc",
+    "repos/autoscaling/pkg/dsga/owner/admission_lease.go": "a269562ec78106f4d54edbfe39c37d81b12f0f439491de43a9664d44e865141c",
+    "repos/autoscaling/pkg/dsga/owner/admission_lease_test.go": "bf57581b43cfdb41b6574adf12e019a959c85c99468e44da92d9bb33543d0480",
+    "repos/autoscaling/pkg/dsga/owner/initial_service_test.go": "1183dbb120b7bd1a7f37a4ac3437dac26fbc30b444a5ff5c8331c48754783b8a",
+    "repos/autoscaling/pkg/dsga/owner/pg.go": "10c0b52ab6ca70ce6c3b5cb2cd140e6570d6c61dcaf37be548a76252be75bc0a",
+    "repos/autoscaling/pkg/dsga/owner/pg_test.go": "068636136a021d467437d85fc44852127fb0b4099acc521be34f1d049750ee41",
+    "repos/neon/ci/test-dsg-neon-extension.sh": "cd75e07cb4963a12dfe3e2cb4ba1e2a71dd905ca6e02ba629bfd8780797a4e8a",
+    "repos/neon/ci/test-dsg-rust-client.sh": "5955fa54553df36e49c4ec9092ec7a59c41e2a795e1881667f75b03f4715d470",
+    "repos/neon/ci/test_dsg_admission_lease.py": "5f8fae5348e5591bfc59e704c30e5623c64a723180bb68d3b657533f8587c0d9",
+    "repos/neon/compute_tools/src/http/dsg_openapi.yaml": "29d10482ff0d5b8575115d40e9b3bdea8b975827e76862b2521ddca417694862",
+    "repos/neon/compute_tools/src/http/routes/dsg.rs": "597c777e871b102a93a31e9083dcfd1b8d1fdaf5785eb55ba929058fae6948b3",
+    "repos/neon/compute_tools/tests/dsg_http.rs": "6b2629ecd7a1df0d977986a5eaf92aad5e912cbf38ea4a2a628a2b14e0d873ad",
+    "repos/neon/libs/compute_api/src/dsg_admission_lease.rs": "f03b25b1eeda076e50c9cb9f2ca81dd44d596e027f897f04d72acb81dba43e26",
+    "repos/neon/libs/compute_api/src/dsg_client.rs": "1b29212b65df3e38175159f8f8e0509d1b9423e8c01d5034d60573d9c20a3e13",
+    "repos/neon/libs/compute_api/src/lib.rs": "f99f0abe69f61badfb998c350594932df7a7a63294c9d0164692ab809a431b50",
+    "repos/neon/libs/compute_api/tests/dsg_admission_lease.rs": "9cd001159fe449494b5b1659ad4b6409161daca5fafa2399b4af0cb4c6f4ee47",
+    "repos/neon/pgxn/neon/Makefile": "6f5d0cae4a61ef303f2b7a6a03285527f38e6a6d55f08a870c76c9c4a2fd48ab",
+    "repos/neon/pgxn/neon/dsg_control.c": "2578c77a5e91ed2af65af32d3170ee89a843793bbdf57e3a3f5ca9f2f53940ab",
+    "repos/neon/pgxn/neon/neon--1.15--1.16.sql": "0388d14d2a5fb9bfd616d4638183c54ca233f1afce6e1e95a6249ade29ec317c",
+    "repos/neon/pgxn/neon/neon--1.16--1.15.sql": "be2fba7f438bcc8826c4d7b61da06eb9aaa51a8fa7ab2da5d043e43baaa2e4ac",
+    "repos/neon/pgxn/neon/neon.control": "1febf0eebf83cf0e456cf1d8b89331a4e0ebd91d63925357b9165cad7ea2b50c"
+  },
+  "exact_artifacts": {
+    "build/pg17-admission-lease-exact-install/bin/postgres": "f58994b71b81002b7f0edacbc6a617414ed5c48c049081f12292c206e5c093d3",
+    "build/pg17-admission-lease-exact-install/lib/postgresql/neon.dylib": "426d0a520e5d30444b36996f855c57003147e6eb79da75000c9ec152027c32db",
+    "build/pg17-admission-lease-exact-install/lib/postgresql/test_dsg_region.dylib": "e92704d1425331baf680c0bd4c59a36a4e2505c3909bde1ee43981ff7c778707",
+    "build/pg17-admission-lease-exact-install/lib/postgresql/neon_rmgr.dylib": "06600a59d8b428f780e5d579f6ada648d7b45b6913766df35a61637401f1083e"
+  }
+}

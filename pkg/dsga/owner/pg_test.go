@@ -88,8 +88,28 @@ func pgConfig(t *testing.T, request control.Request, handler http.HandlerFunc, v
 func pgConfigWithFence(t *testing.T, request control.Request, handler, fence http.HandlerFunc, views ...func() control.Snapshot) compute.Config {
 	t.Helper()
 	require.LessOrEqual(t, len(views), 1)
+	var leaseMu sync.Mutex
+	leaseDeadline := control.Uint64(1000000000)
 	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case "/dsg/v1/admission/lease":
+			if len(views) == 1 {
+				handler(w, r)
+				return
+			}
+			// 旧单领域静态peer仅补严格CAS承载，不声称模拟真实时钟/PG过期；
+			// 有动态view的组合必须由原peer返回同点事实，不能被此常量覆盖。
+			var intent control.AdmissionLeaseRequest
+			require.NoError(t, json.NewDecoder(r.Body).Decode(&intent))
+			leaseMu.Lock()
+			defer leaseMu.Unlock()
+			s := pgResponse(t, request).Observed
+			s.Operation, s.AdmissionOpen, s.AdmissionRevision, s.CapacityGeneration = nil, false, 0, 1
+			renewed := intent.Action == "renew" && intent.ExpectedDeadlineNS == leaseDeadline && intent.ExpectedCapacityGeneration == s.CapacityGeneration && intent.ExpectedAdmissionRevision == s.AdmissionRevision && intent.IssuerEpoch == s.IssuerFloorEpoch
+			if renewed {
+				leaseDeadline++
+			}
+			pgReply(w, control.AdmissionLeaseResponse{ProtocolVersion: 1, VMShrinkPermit: false, Expired: false, Request: intent, Armed: true, Renewed: renewed, DeadlineNS: leaseDeadline, LeaseEpoch: s.IssuerFloorEpoch, TimeoutMS: 30000, Observed: s})
 		case "/dsg/v1/capabilities":
 			history := uint32(16)
 			provider := false

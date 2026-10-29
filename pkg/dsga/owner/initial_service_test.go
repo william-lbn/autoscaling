@@ -51,7 +51,10 @@ type initialServicePG struct {
 	afterOpen func()
 	// 仅新容量竞态组合在原关闭WAL确认后、setter到达前提交原Resize。
 	// 由peer锁外调用；生产代码仍必须识别Stale并写独立接续WAL。
-	beforeClose func()
+	beforeClose   func()
+	leaseDeadline control.Uint64
+	leaseRenewals int
+	leaseReject   bool
 }
 
 func (p *initialServicePG) shared() control.SharedCostResponse {
@@ -86,6 +89,26 @@ func (p *initialServicePG) counts() (int, int, int) {
 func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Request) {
 	t.Helper()
 	switch r.URL.Path {
+	case "/dsg/v1/admission/lease":
+		var request control.AdmissionLeaseRequest
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&request))
+		p.mu.Lock()
+		defer p.mu.Unlock()
+		if p.leaseReject {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		if p.leaseDeadline == 0 {
+			p.leaseDeadline = 1000000000
+		}
+		s := p.current().Observed
+		renewed := request.Action == "renew" && request.ExpectedDeadlineNS == p.leaseDeadline && request.ExpectedCapacityGeneration == s.CapacityGeneration && request.ExpectedAdmissionRevision == s.AdmissionRevision && request.IssuerEpoch == s.IssuerFloorEpoch
+		if renewed {
+			p.leaseDeadline++
+			p.leaseRenewals++
+		}
+		pgReply(w, control.AdmissionLeaseResponse{ProtocolVersion: 1, VMShrinkPermit: false, Expired: false, Request: request, Armed: true, Renewed: renewed, DeadlineNS: p.leaseDeadline, LeaseEpoch: s.IssuerFloorEpoch, TimeoutMS: 30000, Observed: s})
+		return
 	case "/dsg/v1/budget/shared":
 		pgReply(w, p.shared())
 		return
@@ -441,6 +464,15 @@ func productionInitialService(t *testing.T, mode string) {
 			return next
 		}
 		worker = rebuild()
+		if strings.HasPrefix(mode, "native-lease-") {
+			for range 2 {
+				progress, err := worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress)
+			}
+			verifyNativeAdmissionLease(t, ctx, mode, api, store, worker, pg)
+			return nil
+		}
 		if strings.HasPrefix(mode, "initial-safety-") {
 			verifyInitialServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, transfer)
 			return nil

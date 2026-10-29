@@ -4,6 +4,14 @@
 本文件是当前入口；初始维护快照仍见[基线](DSGA-上游基线与开发约束.md)。
 
 
+## 最新验证：原生准入失联关闭与生产续租已完成 Mac 阶段
+
+PG17 `33c92fe33e741309f9e8ab23e3767fb6f2210216` 已推自有功能分支；受管PG首次Fence启动单调期限，后台独立过期关闭。正式SQL/Rust/认证Router/Go和生产Run完成期限协商与原deadline CAS；每期限三分之一完整核验续租，坏缺WAL/失租不续、过期不自动rearm或开放。
+
+Mac race按package/test去重60顶层203含父子记录0fail/skip；完整自动Grow→Shrink 174.10秒通过并正常Finish/Host结清，QMP peer读回1GiB，扩缩各一次。候选真实PG受影响37项通过，准确SHA重建后9项原生、1项正式Router→SQL→PG、1项认证范围与重复字段、1项Rust合同通过；vet/增量lint/目标Clippy0，32消费者仅编译，Neon默认CI228项13pass/215环境skip。原SIGQUIT、旧lint二进制/冻结依赖Clippy及早期候选失败均保留。
+
+详见[阶段验收](DSGA-原生准入失联关闭-Mac验收-20261029.md)与[机器收据](DSGA-原生准入失联关闭-Mac收据-20261029.json)。续租不清预算/未知、不授予物理/VM许可；受控重新开放/重复生命周期、normal安全降限、私有后台持续预算、Runner已launch无Wait、分区/跨boot及Monitor/WSS/配额/RW-RO/可信CPU/全部写者仍须代码，Linux环境验收单列。整体未完成，Goal active；PG17全面完成/远程归档后才暂停，不进入18/16。另一并发聊天已停止归档，所有者AS AGENTS修改保留不stage。
+
 ## 最新验证：无失败屏障的Runner出生崩溃关闭已完成Mac阶段
 
 完整原出生选择先原子fsync，State/Binding真实UID分步持久；五个真实子进程

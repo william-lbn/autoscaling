@@ -628,6 +628,49 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	callCtx, cancel := worker.session.coupledContext(ctx)
 	defer cancel()
 	defer worker.CloseIdleConnections()
+	leaseReady := false
+	var nextLeaseRenew time.Time
+	var leaseRenewInterval time.Duration
+	ensureLease := func() error {
+		if worker.safety == nil || leaseReady {
+			return nil
+		}
+		snapshot, err := worker.session.store.Load(callCtx)
+		if err != nil {
+			return err
+		}
+		m := snapshot.State()
+		// 完全未派发、无历史/永久预算的原取消只有外层CAS，不得为关闭
+		// 本地空意图额外取得凭据或触碰PG。该特例不能进入任何新派发；
+		// 下一轮一旦离开此精确边界，仍先完成下面的强制原生协商。
+		localAbort := m.Active != nil && m.Active.AbortRequested && m.Active.Cleanup == nil && m.InitialHeld == nil && m.BudgetHeld == nil && m.CapacityHeld == nil && len(m.History) == 0 && m.ExpiredResults == 0
+		if localAbort {
+			for _, step := range m.Active.Steps {
+				if step.Phase != journal.Planned {
+					localAbort = false
+					break
+				}
+			}
+		}
+		if localAbort {
+			return nil
+		}
+		// 正式长驻服务必须协商内核失联关闭；测试用的单步领域调用不能
+		// 代替此运行门槛。旧网关/扩展明确拒绝，没有legacy心跳兜底。
+		fact, err := worker.observeAdmissionLease(callCtx)
+		if err != nil {
+			return err
+		}
+		if fact.Expired {
+			return ErrServiceSafety
+		}
+		if options.PollInterval > time.Duration(fact.TimeoutMS)*time.Millisecond/3 {
+			return fmt.Errorf("PG polling interval exceeds native admission lease renewal bound")
+		}
+		leaseReady = true
+		leaseRenewInterval = time.Duration(fact.TimeoutMS) * time.Millisecond / 3
+		return nil
+	}
 	ticker := time.NewTicker(options.PollInterval)
 	defer ticker.Stop()
 	var replay *control.Key
@@ -650,6 +693,9 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	for {
 		if callCtx.Err() != nil {
 			return callCtx.Err()
+		}
+		if err := ensureLease(); err != nil {
+			return err
 		}
 		if pendingControl != nil {
 			// 调用方可能已在等待队列中取消；executeControl在任何WAL/SDK
@@ -709,6 +755,15 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			}
 			if err == nil && progress == pgexec.Idle && worker.automatic != nil {
 				progress, err = worker.advanceAutomatic(callCtx)
+			}
+		}
+		// 每轮已有领域来源审计，期限还充足时不重复完整网络审计；否则
+		// 限流会扩大策略采样间隔、反复重置缩容窗口。首次及每个期限的
+		// 三分之一执行独立完整续租，失败不更新next，更不发盲心跳。
+		if err == nil && leaseReady && !time.Now().Before(nextLeaseRenew) {
+			err = worker.renewAdmissionLease(callCtx)
+			if err == nil {
+				nextLeaseRenew = time.Now().Add(leaseRenewInterval)
 			}
 		}
 		if options.Observe != nil {
