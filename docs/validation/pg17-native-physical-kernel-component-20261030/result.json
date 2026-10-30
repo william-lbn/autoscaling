@@ -1,0 +1,117 @@
+{
+  "id": "PG17-S-KERNEL-001",
+  "status": "PASS_COMPONENT_ONLY",
+  "actualKVM": true,
+  "TCGFallback": false,
+  "classification": "physical kernel observation component; not authorization nor E2E",
+  "testRoot": "TestPG17NativePhysicalKernelComponent",
+  "testRootCount": 1,
+  "nativeTestExitCode": 0,
+  "hostQemuExitCode": 0,
+  "actualObservation": {
+    "protocol_version": 1,
+    "vm_shrink_permit": false,
+    "scope": "linux-6.12.26-physical-component-observation-only",
+    "identity": {
+      "vm_uid": "test-harness-pg17-native-kernel-component",
+      "compute_instance_id": "test-harness-isolated-kvm-observer",
+      "guest_boot_id": "d874c52c-fcb2-438d-b8cd-3e5db1ea24b7",
+      "cgroup_device": "23",
+      "cgroup_inode": "28"
+    },
+    "kernel_release": "6.12.26-william-bd33f7c78026",
+    "kernel_notes_sha256": "b52a6321c44be2b8d138e9ca990ec86413c3744a189a118ed69aa295cb8ef03d",
+    "command_line_sha256": "781e0163df6c2f0157e05124f8c4229c89be62140f5800a3bfb6d025a935a416",
+    "page_size_bytes": "4096",
+    "possible_cpus": 2,
+    "pid_max": 512,
+    "zones": [
+      {
+        "node": 0,
+        "name": "DMA32",
+        "present_pages": "66462"
+      },
+      {
+        "node": 0,
+        "name": "Movable",
+        "present_pages": "195551"
+      },
+      {
+        "node": 0,
+        "name": "Normal",
+        "present_pages": "0"
+      }
+    ],
+    "non_movable_upper_bytes": "272228352",
+    "cpu_charge_stock_upper_bytes": "524288"
+  },
+  "movablePresentBytes": 800976896,
+  "kernelcoreLiteralIsNotActualK": true,
+  "environment": {
+    "host": "worker-118",
+    "vcpus": 2,
+    "guestRAMBytes": 1073741824,
+    "network": "Docker none; Guest -nic none",
+    "pidMax": 512,
+    "guestPGCgroup": "/sys/fs/cgroup/pg17-native-empty",
+    "guestPGCgroupEmpty": true,
+    "guestPGMemoryMax": "max",
+    "productionKubeIdentity": false
+  },
+  "boundaries": {
+    "PGStarted": false,
+    "normalMemoryLimitWritten": false,
+    "VMHotplugOrShrinkPerformed": false,
+    "originalBirthSealCreated": false,
+    "outsideOrHostBudgetQualification": false,
+    "VMShrinkPermit": false,
+    "fullInflightChargeBound": false,
+    "KubernetesE2E": false,
+    "hostNetworkOrPodChanges": false
+  },
+  "artifacts": {
+    "kernel": "0ab3f71456c783452a49d50752a9b1945c2da399588febed409637d7af6891a0",
+    "runnerImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+    "qemuBinarySha256": "8d8d8ee83471749d0b882ce34344638e0ac0fa2390cd822b98d9b6314e2f9cb5",
+    "qemuVersion": "8.1.5",
+    "staticNativeBinarySha256": "41c99db95061bc9a6145ee500643694731d916fd9f42d307e7358e73588f66ac",
+    "initramfsGzipSha256": "54d325fa8873742f5037258b598f96563fe4620e33838985aba6009f39b3b988",
+    "consoleSha256": "f0c048460196a7dfe505f5ac72284d94b1b786acbd4659f814d5a7366e4d029e",
+    "runningKernelNotesSha256": "b52a6321c44be2b8d138e9ca990ec86413c3744a189a118ed69aa295cb8ef03d"
+  },
+  "source": {
+    "baseCommit": "7a9b85c5baecf6c6132eb88149a0054d6dea1c0e",
+    "branch": "codex/dsga-autoscaling-20261019",
+    "copiedGoModFileCount": 677,
+    "copiedManifestRawSha256": "28e35b169e6c6e24395f5efc39d5648640f0b59cdaef6b2799ddf6031401f2cb",
+    "selectedCopiedSources": {
+      "pkg/dsga/resourceguard/physical_kernel_profile.go": "21fb622f69238ba846831ace7670ba6c98e93e37debd5f33620f06528f598b35",
+      "pkg/dsga/resourceguard/physical_kernel_profile_linux.go": "f1b1fea155cba036a9bb4a6a707dadb0a8f229d4925eee4467ed1e388593e9ed",
+      "pkg/dsga/resourceguard/physical_kernel_profile_native_test.go": "6ab912cacef162057c384bf751ccace752f66849c8a59bae970ee29dc8840700",
+      "pkg/dsga/resourceguard/physical_kernel_profile_test.go": "d2eb72402beaa4f1b92650456713d3b908254c1ab4dd23cb74f08b9af058137b"
+    },
+    "selectedSourcesStillMatch": true,
+    "GoVersion": "go version go1.24.3 linux/amd64",
+    "CGO_ENABLED": "0",
+    "compilerNetwork": "none",
+    "frozenP2FilesUnmodified": true,
+    "finishHead": "7a9b85c5baecf6c6132eb88149a0054d6dea1c0e",
+    "allCopiedSourcesStillMatchAtFinish": true,
+    "changedCopiedSourcesAtFinish": []
+  },
+  "preparation": {
+    "initialBuildDriverExitCode": 125,
+    "initialBuildDriverIssue": "missing project Docker CLI configuration; retry sourced existing env and passed",
+    "initialGofmtIssue": "read-only container could not create sibling temp; no source changed; fixed stdout formatting",
+    "busyboxDownload": "official HTTPS attempts failed while specified proxy unhealthy; originals retained; reused pinned local Runner BusyBox+musl without downloads/install",
+    "proxyRestartByThisAgent": false
+  },
+  "reportDirectory": "/data/neon-build/validation/pg17-s-kernel-001-20261030T154132Z",
+  "completedUTC": "2026-10-30T15:49:15.989880+00:00",
+  "rawConsole": "kvm-console.log",
+  "cleanup": {
+    "exitCode": 0,
+    "stdout": "pg17-native-kernel-component-20261030t154132z\n",
+    "stderr": ""
+  }
+}
