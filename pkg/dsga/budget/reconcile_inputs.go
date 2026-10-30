@@ -28,11 +28,12 @@ type ReconcileInputs struct {
 // 真正协调器须在Start/发送/Record/Finish前后重读原来源，并由同VM UID/RV
 // CAS线性化；此纯函数不跨网络加锁，也不将结构验证冒充平台资格认证。
 func Reconcile(i ReconcileInputs) (ReconciledCapacity, error) {
-	return reconcile(i, nil)
+	return reconcile(i, nil, nil, nil)
 }
 
-func reconcile(i ReconcileInputs, initial *Initial) (ReconciledCapacity, error) {
+func reconcile(i ReconcileInputs, initial *Initial, recovery *RecoveryPG, unchanged *control.SharedCostResponse) (ReconciledCapacity, error) {
 	var c ReconciledCapacity
+	service := recovery != nil || unchanged != nil
 	p, s, root, out, host := i.Prepared, i.Shared, i.Root, i.Outside, i.Host
 	vmBytes, instance := i.VM.MemoryBytes(), i.VM.Request.Key.Instance
 	var noNative NativeCapacity
@@ -56,7 +57,7 @@ func reconcile(i ReconcileInputs, initial *Initial) (ReconciledCapacity, error) 
 	} else {
 		// 固定仍被原Initial实际覆盖的Guest，不以同数值root上限猜测
 		// 原出生/命令相同；MatchCurrent逐项绑定完整原聚合与PG容量。
-		if out != noOutside || i.OutsideClaim != noRef || initial.PGAggregate.Identity != p.Identity || initial.MatchCurrent(s, root, i.IssuerEpoch, vmBytes, i.GuestUsableMemoryBytes) != nil {
+		if out != noOutside || i.OutsideClaim != noRef || initial.PGAggregate.Identity != p.Identity || !service && initial.MatchCurrent(s, root, i.IssuerEpoch, vmBytes, i.GuestUsableMemoryBytes) != nil || service && (initial.Validate() != nil || initial.VMMemoryBytes != vmBytes || i.GuestUsableMemoryBytes < initial.GuestUsableMemoryBytes) {
 			return c, fmt.Errorf("reconciled initial inputs differ from original live boot budget")
 		}
 		incarnation = initial.Incarnation
@@ -83,8 +84,14 @@ func reconcile(i ReconcileInputs, initial *Initial) (ReconciledCapacity, error) 
 		}
 		outside += uint64(b.UpperBytes)
 	}
-	if outside != uint64(limits.OutsideUpperBytes) {
+	if !service && outside != uint64(limits.OutsideUpperBytes) {
 		return c, fmt.Errorf("reconciled current root limits cannot contain original full commitments")
+	}
+	// v4只把原Root声明的Outside当排除项，当前实际VM的认证系统/过渡/安全
+	// 预算独立计入。Guest小规格已应用而VM仍大时，不伪造Root的历史声明；
+	// 有效system硬限在Root合同中固定于Bootstrap，须由当前资格真实覆盖。
+	if service && (root.Bootstrap.Limits.SystemMemoryMaxBytes == 0 || root.Bootstrap.Limits.SystemMemoryMaxBytes > system.UpperBytes) {
+		return c, fmt.Errorf("service actual outside cannot cover current system hard limit")
 	}
 	// Shared可能含由Guest HugeTLB池承担的数组，不把整份Shared再压入
 	// normal memory.max。最终以Root聚合上界覆盖并只计整池一次；真实
@@ -104,7 +111,7 @@ func reconcile(i ReconcileInputs, initial *Initial) (ReconciledCapacity, error) 
 		CapacityGeneration: s.Observed.CapacityGeneration, Buffers: s.Observed.HighBuffers, MaximumBuffers: s.Observed.MaximumBuffers,
 		StartupMainUpperBytes: s.StartupMainUpperBytes, StartupArraysUpperBytes: s.StartupArraysUpperBytes, RetainedSharedUpperBytes: s.CurrentMainAndArraysUpperBytes, PGOperation: nil,
 		PGAggregate: root.Bound, RootSHA256: digest, OutsideClaim: i.OutsideClaim, OutsideRequest: out.Request, ResidualProfileID: profile,
-		SystemOutsidePG: system, Transition: transition, Safety: safety, HostClaim: i.HostClaim, HostReservationID: host.SourceID, VM: i.VM, InitialOutside: initial, InitialVM: nil,
+		SystemOutsidePG: system, Transition: transition, Safety: safety, HostClaim: i.HostClaim, HostReservationID: host.SourceID, VM: i.VM, InitialOutside: initial, InitialVM: nil, RecoveryPG: nil, UnchangedPG: nil,
 	}
 	if initial != nil {
 		c.ProtocolVersion = 2
@@ -117,6 +124,12 @@ func reconcile(i ReconcileInputs, initial *Initial) (ReconciledCapacity, error) 
 	if s.Observed.Operation != nil {
 		operation := *s.Observed.Operation
 		c.PGOperation = &operation
+	}
+	if service {
+		c.ProtocolVersion, c.RecoveryPG, c.UnchangedPG = 4, recovery, unchanged
+		if recovery != nil {
+			c.PGOperation = nil
+		}
 	}
 	if err := c.Validate(); err != nil {
 		return ReconciledCapacity{}, err

@@ -47,7 +47,7 @@ func (v *InitialVMSources) UnmarshalJSON(raw []byte) error {
 func (c ReconciledCapacity) validateVMSource() error {
 	if c.InitialVM != nil {
 		var noNative NativeCapacity
-		if c.ProtocolVersion != 3 || c.VM != noNative || c.InitialOutside == nil || c.InitialVM.MatchInitial(*c.InitialOutside) != nil || c.InitialVM.Instance != c.Request.Key.Instance || c.InitialVM.MemoryBytes != c.VMMemoryBytes {
+		if c.ProtocolVersion != 3 && c.ProtocolVersion != 4 || c.VM != noNative || c.InitialOutside == nil || c.InitialVM.MatchInitial(*c.InitialOutside) != nil || c.InitialVM.Instance != c.Request.Key.Instance || c.InitialVM.MemoryBytes != c.VMMemoryBytes || c.InitialVM.MemoryBytes != c.VMBeforeMemoryBytes {
 			return fmt.Errorf("initial VM recovery requires exclusive original boot source")
 		}
 	} else if c.ProtocolVersion == 3 || c.VM.Validate() != nil || c.VM.Request.Key.Instance != c.Request.Key.Instance || c.VM.MemoryBytes() != c.VMMemoryBytes {

@@ -21,7 +21,7 @@ type ReconciledAbortCommand struct {
 }
 
 func (c ReconciledAbortCommand) ValidateFor(dispatchEpoch control.Uint64) error {
-	if c.ProtocolVersion != 1 || c.Capacity.Validate() != nil || c.Capacity.IssuerEpoch != dispatchEpoch || !unchangedDigest(c.PreparedSHA256) {
+	if c.ProtocolVersion != 1 || c.Capacity.ProtocolVersion == 4 || c.Capacity.Validate() != nil || c.Capacity.IssuerEpoch != dispatchEpoch || !unchangedDigest(c.PreparedSHA256) {
 		return fmt.Errorf("reconciled abort lacks complete original capacity budget")
 	}
 	if a := c.Admission; a != nil && (a.Validate() != nil || !a.Open || a.Instance != c.Capacity.Request.Key.Instance || a.IssuerEpoch != dispatchEpoch || a.ExpectedCapacityGeneration != c.Capacity.CapacityGeneration || a.BudgetCommitmentID != c.Capacity.Request.BudgetCommitmentID) {

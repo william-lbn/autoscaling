@@ -42,8 +42,8 @@ func (n NativeCapacity) Validate() error {
 // target仍原样保留，实际Buffer/VM及PG操作另列。普通成功消费者不能把本结构
 // 解成Finalized，从而把VM已大/PG未长或PG已小/VM未缩写成完整目标成功。
 //
-// 这里保存能力相关的PG事实，不复制并伪造一份带准入状态的原生回复。准入代次
-// 和当前floor在生产执行器每次认证读取；PG成本可以减少，但不能超过保留上界。
+// v1–3保存能力相关PG事实，v4另存完整认证独立来源而不伪造原生回复。准入
+// 代次和当前floor在生产执行器每次认证读取；PG成本可减少但不能超过保留上界。
 // Root/Outside/Host/Runner都是原持久来源；本合同只核结构和算术，不认证来源。
 type ReconciledCapacity struct {
 	ProtocolVersion          uint32                 `json:"protocol_version"`
@@ -81,16 +81,27 @@ type ReconciledCapacity struct {
 	// v3在VM尚未派发且原Runner从未有内存命令时使用真实启动来源。
 	// 与VM互斥，不给原启动状态伪造Resize/NoEffect或普通完成回执。
 	InitialVM *InitialVMSources `json:"initial_vm,omitempty"`
+	// v4只供服务关闭后的独立实际预算。已派发PG使用串行对账证明，未派发
+	// 使用原Prepared.Shared；恰好一个，不把原Unknown改成普通取消成功。
+	RecoveryPG  *RecoveryPG                 `json:"recovery_pg,omitempty"`
+	UnchangedPG *control.SharedCostResponse `json:"unchanged_pg,omitempty"`
 }
 
-// ValidateCurrent不要求原目标已全部完成；要求当前PG是准确同代次、稳定前缀和
-// 已终止的原操作。只有expected或expected+1两种代次可由本次取消覆盖；不同
-// 操作、PREPARING、未知分配、成本增长及另一个boot均不得恢复普通服务。
+// ValidateCurrent不要求原目标全部完成，要求同代次稳定前缀和完整保守成本。
+// v1–3仍精确固定原终态；v4独立对账仅接受有限单调的同容量后继终态，
+// 未派发PG仍精确固定原head。PREPARING、未知分配、成本增长和另一boot均拒绝。
 func (c ReconciledCapacity) ValidateCurrent(latest control.SharedCostResponse, epoch control.Uint64, memory control.Uint64) error {
 	if c.Validate() != nil || latest.ValidateFor(c.Request.Key.Instance) != nil || latest.Observed.IssuerFloorEpoch != epoch || epoch < c.IssuerEpoch || memory != c.VMMemoryBytes ||
 		latest.Observed.CapacityGeneration != c.CapacityGeneration || latest.Observed.HighBuffers != c.Buffers || latest.Observed.LowBuffers != c.Buffers || latest.Observed.MaximumBuffers != c.MaximumBuffers ||
-		latest.StartupMainUpperBytes != c.StartupMainUpperBytes || latest.StartupArraysUpperBytes != c.StartupArraysUpperBytes || latest.CurrentMainAndArraysUpperBytes > c.RetainedSharedUpperBytes || !reflect.DeepEqual(latest.Observed.Operation, c.PGOperation) {
+		latest.StartupMainUpperBytes != c.StartupMainUpperBytes || latest.StartupArraysUpperBytes != c.StartupArraysUpperBytes || latest.CurrentMainAndArraysUpperBytes > c.RetainedSharedUpperBytes {
 		return fmt.Errorf("reconciled PG or VM capacity changed from original retained facts")
+	}
+	if c.ProtocolVersion == 4 {
+		if err := c.validateRecoveryCurrent(latest.Observed); err != nil {
+			return err
+		}
+	} else if !reflect.DeepEqual(latest.Observed.Operation, c.PGOperation) {
+		return fmt.Errorf("reconciled original terminal head changed")
 	}
 	for _, a := range latest.Observed.Arrays {
 		if a.AllocationUnknown {
@@ -102,6 +113,13 @@ func (c ReconciledCapacity) ValidateCurrent(latest control.SharedCostResponse, e
 
 func (c ReconciledCapacity) Validate() error {
 	r := c.Request
+	if c.ProtocolVersion == 4 {
+		if err := c.validateServicePG(); err != nil {
+			return err
+		}
+	} else if c.RecoveryPG != nil || c.UnchangedPG != nil {
+		return fmt.Errorf("ordinary reconciled capacity cannot contain service recovery PG sources")
+	}
 	if c.VMShrinkPermit || r.Validate() != nil || c.IssuerEpoch < r.Key.IssuerEpoch || control.ValidateID(c.RunnerPodName, "Runner") != nil || c.RunnerRestartCount < 0 ||
 		c.VMBeforeMemoryBytes == 0 || (c.VMMemoryBytes != c.VMBeforeMemoryBytes && c.VMMemoryBytes != r.TargetVMMemoryBytes) || c.GuestUsableMemoryBytes == 0 || c.GuestUsableMemoryBytes > c.VMMemoryBytes || c.CapacityGeneration == 0 || c.Buffers == 0 || c.Buffers > c.MaximumBuffers ||
 		c.StartupMainUpperBytes == 0 || c.StartupArraysUpperBytes == 0 || c.RetainedSharedUpperBytes < c.StartupMainUpperBytes || c.PGAggregate.Kind != HardLimit || c.PGAggregate.UpperBytes < c.RetainedSharedUpperBytes || !unchangedDigest(c.RootSHA256) ||
@@ -114,7 +132,7 @@ func (c ReconciledCapacity) Validate() error {
 		return err
 	}
 	if c.InitialOutside == nil {
-		if c.ProtocolVersion != 1 || c.OutsideClaim.Validate() != nil || c.OutsideRequest.Validate() != nil || c.OutsideRequest.Key.Instance != r.Key.Instance || c.OutsideRequest.TargetVMMemoryBytes != c.VMMemoryBytes {
+		if c.ProtocolVersion != 1 && c.ProtocolVersion != 4 || c.OutsideClaim.Validate() != nil || c.OutsideRequest.Validate() != nil || c.OutsideRequest.Key.Instance != r.Key.Instance || c.OutsideRequest.TargetVMMemoryBytes != c.VMMemoryBytes {
 			return fmt.Errorf("reconciled outside source lost exact original operation")
 		}
 	} else if err := c.validateInitialOutside(); err != nil {
@@ -129,16 +147,18 @@ func (c ReconciledCapacity) Validate() error {
 	if c.InitialVM == nil && c.VM.Request.Key == r.Key && (c.VM.Request != r || c.VM.HostClaim != c.HostClaim) || c.InitialOutside == nil && c.OutsideRequest.Key == r.Key && c.OutsideRequest != r {
 		return fmt.Errorf("reconciled budget changed same-key original request or Host source")
 	}
-	op := c.PGOperation
-	if op != nil && (op.Key.Validate() != nil || op.Key.Instance != r.Key.Instance || (op.Kind != control.Grow && op.Kind != control.Shrink) || (op.Phase != control.Committed && op.Phase != control.Denied) || !unchangedDigest(op.ContextSHA256) || compareCapacityKey(op.Key, r.Key) > 0) {
-		return fmt.Errorf("reconciled PG operation is not terminal in the original domain")
-	}
-	if c.CapacityGeneration == r.ExpectedCapacityGeneration {
-		if op != nil && op.Key == r.Key && (op.Phase == control.Committed || !sameCapacityOperation(*op, r)) {
-			return fmt.Errorf("reconciled unchanged PG generation contradicts original operation")
+	if c.ProtocolVersion != 4 {
+		op := c.PGOperation
+		if op != nil && (op.Key.Validate() != nil || op.Key.Instance != r.Key.Instance || (op.Kind != control.Grow && op.Kind != control.Shrink) || (op.Phase != control.Committed && op.Phase != control.Denied) || !unchangedDigest(op.ContextSHA256) || compareCapacityKey(op.Key, r.Key) > 0) {
+			return fmt.Errorf("reconciled PG operation is not terminal in the original domain")
 		}
-	} else if r.ExpectedCapacityGeneration == control.Uint64(math.MaxUint64) || c.CapacityGeneration != r.ExpectedCapacityGeneration+1 || op == nil || op.Phase != control.Committed || !sameCapacityOperation(*op, r) || c.Buffers != r.TargetBuffers {
-		return fmt.Errorf("reconciled PG generation is outside original operation")
+		if c.CapacityGeneration == r.ExpectedCapacityGeneration {
+			if op != nil && op.Key == r.Key && (op.Phase == control.Committed || !sameCapacityOperation(*op, r)) {
+				return fmt.Errorf("reconciled unchanged PG generation contradicts original operation")
+			}
+		} else if r.ExpectedCapacityGeneration == control.Uint64(math.MaxUint64) || c.CapacityGeneration != r.ExpectedCapacityGeneration+1 || op == nil || op.Phase != control.Committed || !sameCapacityOperation(*op, r) || c.Buffers != r.TargetBuffers {
+			return fmt.Errorf("reconciled PG generation is outside original operation")
+		}
 	}
 	seen, total := map[string]bool{}, uint64(0)
 	for _, b := range []Bound{c.PGAggregate, c.SystemOutsidePG, c.Transition, c.Safety} {
@@ -183,8 +203,13 @@ func (v *NativeCapacity) UnmarshalJSON(raw []byte) error {
 func (v *ReconciledCapacity) UnmarshalJSON(raw []byte) error {
 	type plain ReconciledCapacity
 	var p plain
-	if err := control.UnmarshalObject(raw, &p); err != nil {
+	if err := control.UnmarshalObjectBounded(raw, &p, maxRecoveryCapacityBytes, maxRecoveryCapacityValues); err != nil {
 		return err
+	}
+	if p.ProtocolVersion != 4 {
+		if err := control.ValidateJSON(raw, 64*1024, 2048); err != nil {
+			return err
+		}
 	}
 	*v = ReconciledCapacity(p)
 	return v.Validate()

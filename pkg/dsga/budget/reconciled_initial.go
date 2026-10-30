@@ -18,14 +18,22 @@ func (c ReconciledCapacity) validateInitialOutside() error {
 	if c.InitialVM != nil {
 		birth = c.InitialVM.BirthClaim
 	}
-	if i == nil || i.Validate() != nil || (c.ProtocolVersion != 2 && c.ProtocolVersion != 3) || c.OutsideClaim != noRef || c.OutsideRequest != noRequest ||
-		i.Instance != c.Request.Key.Instance || i.IssuerEpoch > c.IssuerEpoch || i.VMMemoryBytes != c.VMMemoryBytes || i.VMMemoryBytes != c.VMBeforeMemoryBytes ||
+	if i == nil || i.Validate() != nil || (c.ProtocolVersion != 2 && c.ProtocolVersion != 3 && c.ProtocolVersion != 4) || c.OutsideClaim != noRef || c.OutsideRequest != noRequest ||
+		i.Instance != c.Request.Key.Instance || i.IssuerEpoch > c.IssuerEpoch || i.VMMemoryBytes != c.VMMemoryBytes ||
 		i.RunnerPodName != c.RunnerPodName || i.RunnerRestartCount != c.RunnerRestartCount || i.RunnerBirth != birth ||
-		i.Shared.Observed.CapacityGeneration != c.CapacityGeneration || i.Shared.Observed.HighBuffers != c.Buffers || i.Shared.Observed.MaximumBuffers != c.MaximumBuffers ||
+		i.Shared.Observed.MaximumBuffers != c.MaximumBuffers ||
 		i.Shared.StartupMainUpperBytes != c.StartupMainUpperBytes || i.Shared.StartupArraysUpperBytes != c.StartupArraysUpperBytes ||
-		i.PGAggregate.Bound != c.PGAggregate || c.RetainedSharedUpperBytes > i.PGAggregate.Bound.UpperBytes || c.GuestUsableMemoryBytes != i.GuestUsableMemoryBytes ||
+		c.GuestUsableMemoryBytes != i.GuestUsableMemoryBytes ||
 		c.ResidualProfileID != "qualified-"+i.Qualification.SHA256 || i.SystemOutsidePG != c.SystemOutsidePG || i.Transition != c.Transition || i.Safety != c.Safety {
 		return fmt.Errorf("reconciled initial outside differs from original complete boot budget")
+	}
+	if c.ProtocolVersion == 4 {
+		// 原Initial现在仅提供同尺寸/同出生/同资格的Outside保证；当前PG和
+		// Root由v4独立来源认证，不能为复用系统资格把它们改回启动代次。
+		return nil
+	}
+	if i.VMMemoryBytes != c.VMBeforeMemoryBytes || i.Shared.Observed.CapacityGeneration != c.CapacityGeneration || i.Shared.Observed.HighBuffers != c.Buffers || i.PGAggregate.Bound != c.PGAggregate || c.RetainedSharedUpperBytes > i.PGAggregate.Bound.UpperBytes {
+		return fmt.Errorf("ordinary initial actual capacity changed original PG or root budget")
 	}
 	digest, err := RootDigest(i.PGAggregate)
 	if err != nil || digest != c.RootSHA256 {
@@ -46,7 +54,7 @@ func ReconcileInitial(inputs ReconcileInputs, initial Initial) (ReconciledCapaci
 	if err := json.Unmarshal(raw, &owned); err != nil {
 		return ReconciledCapacity{}, err
 	}
-	return reconcile(inputs, &owned)
+	return reconcile(inputs, &owned, nil, nil)
 }
 
 // Request是严格解码的领域类型，空struct即使带omitempty也会写成畸形
@@ -58,7 +66,7 @@ func (c ReconciledCapacity) MarshalJSON() ([]byte, error) {
 	var noRef ObjectRef
 	var noRequest control.Request
 	var noNative NativeCapacity
-	if c.ProtocolVersion == 3 && c.InitialVM != nil && c.VM == noNative && c.InitialOutside != nil && c.OutsideClaim == noRef && c.OutsideRequest == noRequest {
+	if (c.ProtocolVersion == 3 || c.ProtocolVersion == 4) && c.InitialVM != nil && c.VM == noNative && c.InitialOutside != nil && c.OutsideClaim == noRef && c.OutsideRequest == noRequest {
 		// 缺失native_vm字段才表示没有Resize来源；空NativeCapacity内的
 		// Request也是严格类型，不能输出一条零值“原命令”再期待读者忽略。
 		return json.Marshal(struct {
@@ -68,7 +76,7 @@ func (c ReconciledCapacity) MarshalJSON() ([]byte, error) {
 			VM             *NativeCapacity  `json:"native_vm,omitempty"`
 		}{plain: plain(c), OutsideClaim: nil, OutsideRequest: nil, VM: nil})
 	}
-	if c.ProtocolVersion == 2 && c.InitialOutside != nil && c.OutsideClaim == noRef && c.OutsideRequest == noRequest {
+	if (c.ProtocolVersion == 2 || c.ProtocolVersion == 4) && c.InitialOutside != nil && c.OutsideClaim == noRef && c.OutsideRequest == noRequest {
 		return json.Marshal(struct {
 			plain
 			OutsideClaim   *ObjectRef       `json:"outside_claim,omitempty"`
