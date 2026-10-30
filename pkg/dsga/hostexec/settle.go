@@ -52,9 +52,14 @@ func (p *Publisher) SettleCurrentWithCollection(ctx context.Context, progress *C
 	}
 	m := s.State()
 	if m.Active == nil && m.InitialHeld != nil {
-		// 首次预算持续消费原placement而无Resize结清格式。只读认证
-		// 原域；不能因无Active直接跳过，也不能凭初始容量清后继峰值。
-		return false, p.checkInitial(ctx, s)
+		// 首次预算持续消费原placement而无Resize结清格式。完整独立
+		// 覆盖后只收该早期请求的Outside垃圾，不生成Settlement、不
+		// 释放placement或Host峰值。未扫完将原ErrCollectionPending
+		// 传回Scheduler继续有界工作，changed仍只表示Node结清变动。
+		if err := p.checkInitial(ctx, s); err != nil {
+			return false, err
+		}
+		return false, p.collectRetainedInitialSources(ctx, s, progress)
 	}
 	if m.Active != nil || m.BudgetHeld == nil && m.CapacityHeld == nil {
 		return false, nil

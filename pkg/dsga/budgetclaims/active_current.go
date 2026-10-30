@@ -42,8 +42,19 @@ func activeHeldSettlement(m journal.Model) (hostguard.Settlement, error) {
 		return none, err
 	}
 	b := m.BudgetBoundary
-	if b == nil {
-		b = m.Active.PriorBudgetBoundary
+	if prior := m.Active.PriorBudgetBoundary; prior != nil {
+		if b != nil {
+			return none, fmt.Errorf("active retained source has ambiguous closed anchors")
+		}
+		b = prior
+	} else if b != nil {
+		// Start必须在原VM CAS内撤销全局边界并捕获Prior。读取不能
+		// 接受已派发操作重新挂回旧全局边界，或据此恢复Host释放资格。
+		for _, step := range m.Active.Steps {
+			if step.Phase != journal.Planned {
+				return none, fmt.Errorf("dispatched active retained source lacks captured original anchor")
+			}
+		}
 	}
 	if b == nil || b.BudgetKey != closed.Request.Key || b.FinalizationSHA256 != closed.FinalizationSHA || b.RecordedSequence != closed.BudgetSequence || m.Active.Request.Key == closed.Request.Key {
 		return none, fmt.Errorf("active retained source lost original budget closure anchor")
