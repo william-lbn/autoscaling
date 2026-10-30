@@ -1,0 +1,200 @@
+[
+  {
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/bootstrap",
+    "Action": "pass",
+    "Elapsed": 0.09,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T144338Z"
+  },
+  {
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/runtime-held",
+    "Action": "pass",
+    "Elapsed": 0.06,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T144338Z"
+  },
+  {
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/actual-drift",
+    "Action": "pass",
+    "Elapsed": 0.05,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T144338Z"
+  },
+  {
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite",
+    "Action": "pass",
+    "Elapsed": 0.2,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T144338Z"
+  },
+  {
+    "Test": "TestLegacyPendingNormalDecreaseRemainsObservableWithoutReplay",
+    "Action": "pass",
+    "Elapsed": 0.13,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T144338Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationParsers/present-not-managed-or-free",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationParsers/noncanonical",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationParsers/missing-present",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationParsers/device-out-of-profile",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationParsers/only-movable",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationParsers/unbound-present",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationParsers/duplicate-present",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationParsers/duplicate-zone",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationParsers/numa-out-of-profile",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationParsers/overflow",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationParsers/cpu-possible-not-online",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationParsers/boot-explicit-and-unambiguous",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationParsers",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/movable-may-grow-or-shrink",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/physical-growth",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/physical-shrink",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/wrong-release",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/permit",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/cgroup",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/boot-controls",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/forged-total",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/forged-stock",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/guest-boot",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/notes",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/possible-cpu",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/pid-space",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  },
+  {
+    "Test": "TestPhysicalKernelObservationRejectsSummedCapacityOverflow",
+    "Action": "pass",
+    "Elapsed": 0,
+    "receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  }
+]

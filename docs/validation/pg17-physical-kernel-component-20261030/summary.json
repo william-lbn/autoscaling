@@ -1,0 +1,55 @@
+{
+  "status": "component-only-pass-p2-not-complete",
+  "roots": 5,
+  "subcases": 28,
+  "failures": 0,
+  "skips": 0,
+  "new_roots": 3,
+  "new_subcases": 25,
+  "guard_regression_roots": 2,
+  "guard_regression_subcases": 3,
+  "head": "79ec6501da167e6ae7abb47a48065e722865e611",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "actual_test_toolchain": "go1.24.3 linux/amd64",
+  "gofmt_toolchain": "go1.27.1 linux/amd64",
+  "race": true,
+  "count": 1,
+  "contexts": [
+    "/data/neon-build/validation/p2-physical-kernel-component-20261030T144338Z",
+    "/data/neon-build/validation/p2-physical-kernel-component-20261030T144637Z",
+    "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  ],
+  "changed_between_contexts": null,
+  "failure_receipt_preserved": "/data/neon-build/validation/p2-physical-kernel-component-20261030T144338Z",
+  "first_failure_reason": "new fixture used noncanonical Guest boot UUID; only test fixture changed before 3-root rerun",
+  "physical_profile_kvm": "NotRun",
+  "normal_memory_max_decrease": "NotImplemented/NotRun",
+  "production_consumers": "none; all five existing decrease guards retained",
+  "new_files": [
+    {
+      "path": "pkg/dsga/resourceguard/physical_kernel_profile.go",
+      "sha256": "21fb622f69238ba846831ace7670ba6c98e93e37debd5f33620f06528f598b35"
+    },
+    {
+      "path": "pkg/dsga/resourceguard/physical_kernel_profile_linux.go",
+      "sha256": "f1b1fea155cba036a9bb4a6a707dadb0a8f229d4925eee4467ed1e388593e9ed"
+    },
+    {
+      "path": "pkg/dsga/resourceguard/physical_kernel_profile_test.go",
+      "sha256": "d2eb72402beaa4f1b92650456713d3b908254c1ab4dd23cb74f08b9af058137b"
+    }
+  ],
+  "adopted_contexts": [
+    "/data/neon-build/validation/p2-physical-kernel-component-20261030T144338Z",
+    "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z"
+  ],
+  "changed_between_adopted_contexts": [
+    "pkg/dsga/resourceguard/physical_kernel_profile.go",
+    "pkg/dsga/resourceguard/physical_kernel_profile_linux.go",
+    "pkg/dsga/resourceguard/physical_kernel_profile_test.go"
+  ],
+  "latest_component_receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T151300Z",
+  "latest_component_changes": "中文关键注释；与准确artifact完整release逐字匹配；DMA保守求和和完整4zone验证；不接生产消费者",
+  "guard_production_dependency_hashes": "all 43 non-owned resourceguard Go files identical across adopted contexts",
+  "superseded_component_pass_receipt": "/data/neon-build/validation/p2-physical-kernel-component-20261030T144637Z"
+}

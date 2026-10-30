@@ -1,0 +1,176 @@
+{
+  "source": "/data/neon-build/cache/buildkit/runc-overlayfs/snapshots/snapshots/287/fs/build/linux-6.12.26",
+  "kind": "exact-6.12.26-cached-source-read-only-audit-not-running-kernel-proof",
+  "files": [
+    {
+      "path": "Makefile",
+      "sha256": "9cbd020750bc0bdb138fc550aa6bd4c14fe4cb573a2067db1b94601712d442bb"
+    },
+    {
+      "path": "drivers/base/memory.c",
+      "sha256": "91ffb9752b804c04af0a5ac3181162c35dd5344527a7c1f17d14cad94b6aafb6"
+    },
+    {
+      "path": "drivers/block/loop.c",
+      "sha256": "de33fd68b5499932ff315c2805ed0c87a71a65599710ee7ee5bc1381dfe51529"
+    },
+    {
+      "path": "drivers/virtio/virtio_mem.c",
+      "sha256": "1d3b4dc332f1e8b7ce51e97267d5db811f6575131bafbc01fbf88c6b93de1de0"
+    },
+    {
+      "path": "fs/buffer.c",
+      "sha256": "adaaa2c33de16df09ca53d05380151f5c89cb182d3c33aa8f5141ab8d26424fd"
+    },
+    {
+      "path": "fs/ext4/inode.c",
+      "sha256": "e2798a71007f5693e4f5e88a4c696c1292fafee88721559ec60f046ceccf6607"
+    },
+    {
+      "path": "fs/ext4/readpage.c",
+      "sha256": "5c345e68b4b9fb1b8852960e5bbad1b1cfafcdfb8558ffc3e205d073c9288176"
+    },
+    {
+      "path": "fs/file_table.c",
+      "sha256": "797d7c508621a3e8f7ccefe36836eddf0093b661ec3e88701a097578c63580b7"
+    },
+    {
+      "path": "fs/fuse/dev.c",
+      "sha256": "4ca79fee8817c3b169a1f93a54ce73e47240395abe705778a643f71bae752c58"
+    },
+    {
+      "path": "fs/proc/array.c",
+      "sha256": "8fa2c1406e67bc42fd04682867f19113b290f5d1068c20003e6661634193e6e5"
+    },
+    {
+      "path": "fs/proc/task_mmu.c",
+      "sha256": "a6dd1a8f9ab0ad0ca0f1f92fa33354c16e6ef7433cbdc9f7aa64bf32786fa465"
+    },
+    {
+      "path": "include/asm-generic/tlb.h",
+      "sha256": "7101ac0b6cbe4822ef326fcff481e766253742aa4d2a26497fcb66284506196f"
+    },
+    {
+      "path": "include/linux/gfp.h",
+      "sha256": "e8788c1ffb02b53b513a3b9e2f19c7a519b7f6533228b6d5130de3bf1c0b2bf8"
+    },
+    {
+      "path": "include/linux/gfp_types.h",
+      "sha256": "433bfc7b72e82fca5e1f2cfdd7557a0fdd7d1f845bfa0ba2e8dbcdb369d2c2f3"
+    },
+    {
+      "path": "include/linux/memcontrol.h",
+      "sha256": "09ca8fbff716d7a36654b6ab440eabf483e125b3eb4afc5b4aa0160a68362751"
+    },
+    {
+      "path": "include/linux/pagemap.h",
+      "sha256": "2a90105c4c29ea943cad6b71dcebac14fa9692be6d90b5fa8ec641ac30363e2b"
+    },
+    {
+      "path": "include/linux/pagevec.h",
+      "sha256": "e067b03f80c917944d79f41b7ba3577f7503a551754fcb0eeda63b9b44bea3ad"
+    },
+    {
+      "path": "include/linux/sched/mm.h",
+      "sha256": "bb34ec7bd531ad709967810a8b57fd95fbadbe320769fe3cfe84656d606d084c"
+    },
+    {
+      "path": "kernel/cgroup/pids.c",
+      "sha256": "802a4643e30c5cedd8bd67f5dec91ee28bec802cec9b1169a448ee2f233fd634"
+    },
+    {
+      "path": "kernel/exit.c",
+      "sha256": "7c28bfc644117470b9cbe6d46c84580de98225755bbb227e61d638ea7104025d"
+    },
+    {
+      "path": "kernel/fork.c",
+      "sha256": "cc74d2293e9960db61f154c18f38c5e1658a5e98f03131f3085e27872e487f9e"
+    },
+    {
+      "path": "kernel/pid.c",
+      "sha256": "3a9065c03bf74805a58ce3a372a69f911b3382db769237414aa2034fe218e60c"
+    },
+    {
+      "path": "kernel/pid_namespace.c",
+      "sha256": "ab9b08d1e50c5a221ae9ae2f75932ba9498b20a2d22e9496f481324cc5881061"
+    },
+    {
+      "path": "mm/filemap.c",
+      "sha256": "9a31917b4306f2bb74921b884a3e5dae5624cc6bd9067d6d39ec2f71cf368022"
+    },
+    {
+      "path": "mm/memcontrol.c",
+      "sha256": "8f0e3aef837ebc67660372618a8394c17973c5c597811f7b96b6bce2f2b02e5e"
+    },
+    {
+      "path": "mm/memory.c",
+      "sha256": "f64f682650a71d6996ef88645fe4469827892117c531a840fc0afe2c948860b0"
+    },
+    {
+      "path": "mm/memory_hotplug.c",
+      "sha256": "351267858c815b6b116477f8acb3df0f391570d438caee2f7762ff479a58e79c"
+    },
+    {
+      "path": "mm/migrate.c",
+      "sha256": "a70c56fecd9c862a0c5b679d59090a2a5f78b17a73dc1ed2643113798f26cd30"
+    },
+    {
+      "path": "mm/mm_init.c",
+      "sha256": "be16002f99c4fe1b26067bc73f01ee79a649f8176c4f84ec9598c29cedb20b30"
+    },
+    {
+      "path": "mm/mmu_gather.c",
+      "sha256": "129bfb331764a879f2f2ad3ec9776f4fc813e16b2e256b6c62f26e9091ec58ea"
+    },
+    {
+      "path": "mm/page_alloc.c",
+      "sha256": "1910e8ae784507957fe92351be7f0a075ab15498bc5f740384c57fc14ca45802"
+    },
+    {
+      "path": "mm/page_counter.c",
+      "sha256": "e84cd7e74e3edc9b049a2cad5ddf356bc5b15f750acbd8d778c3ad2a5d972eaf"
+    },
+    {
+      "path": "mm/readahead.c",
+      "sha256": "58b36be638c48f8cbc6e9b37c3df5d3889fb3c8fcfec912d8ab2398ed4f9e860"
+    },
+    {
+      "path": "mm/shmem.c",
+      "sha256": "db69c674ea4f5c07f8b8e0a13bb7f53cd16d81ea14ba2ed24a220a39edec7e1c"
+    },
+    {
+      "path": "mm/swap.c",
+      "sha256": "40e99753a221b25c3ed03626898b44016ce4b6cd33060eb95a8a1e3ec08cea0b"
+    },
+    {
+      "path": "mm/truncate.c",
+      "sha256": "8ac956b3e7c4fad01d7e787a6846ab51d0529df2ed6c11475207fdc005fe2388"
+    },
+    {
+      "path": "mm/vma.c",
+      "sha256": "107c8e64682ac6f5c219d2f27f826911b41b467a3c4e078c141d463e0ff26264"
+    },
+    {
+      "path": "mm/vma.h",
+      "sha256": "516b7b35df8329ec352877f27b3867d9fdfc0677dcb8d683e51595ceb153ca64"
+    },
+    {
+      "path": "mm/vmscan.c",
+      "sha256": "9f36b31c5cbd6c430d8714e88e2465da7613862612c412e49bd1f33baac46275"
+    },
+    {
+      "path": "net/core/sock.c",
+      "sha256": "ca478ffbc691004a9b941335ce16a54b40a9de2e92ff3a2bdecf42c0de7523f4"
+    },
+    {
+      "path": "net/ipv4/af_inet.c",
+      "sha256": "a03e0d0ad662b80134ee589abc7ad8495780c211d5c6124d3e4433fa966b4912"
+    },
+    {
+      "path": "net/ipv4/tcp_output.c",
+      "sha256": "c1377a36ecdf349d7ee9be951f030484358fe8895df1bf5b931817396ca3e069"
+    }
+  ],
+  "config_sha256": "639ea751eb4ae7743e2695368286d1aeb0417f6680d6ac24ae3b051948a94b96",
+  "running_validation_host_kernel": "6.8.0-147-generic"
+}

@@ -1,0 +1,16 @@
+{
+  "receipt_path": "/data/neon-build/manifests/kernel-binary.json",
+  "receipt_sha256": "0f214c942033917714194647f1371f31d0ccc38d0e7b7da5e4ef9cb882ef4ceb",
+  "receipt": {
+    "kernel_version": "6.12.26-william-bd33f7c78026 (root@buildkitsandbox) #1 SMP PREEMPT_DYNAMIC Fri Oct 30 11:06:19 UTC 2026",
+    "sha256": "0ab3f71456c783452a49d50752a9b1945c2da399588febed409637d7af6891a0",
+    "bytes": 8459264,
+    "x86_boot_header": "verified",
+    "vm_boot_test": "not run"
+  },
+  "artifact_path": "/data/neon-build/artifacts/kernel-pg17-7bbabd0f9869/vmlinuz",
+  "artifact_sha256": "0ab3f71456c783452a49d50752a9b1945c2da399588febed409637d7af6891a0",
+  "artifact_bytes": 8459264,
+  "observation_exact_release": "6.12.26-william-bd33f7c78026",
+  "running_kernel_authentication": "NotRun; release/notes only observations, image/config receipt and original birth seal still required"
+}
