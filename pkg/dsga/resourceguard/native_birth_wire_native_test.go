@@ -99,7 +99,11 @@ func TestNativeBirthWireKernelPeerAndMalformedFrames(t *testing.T) {
 				require.Nil(t, frame)
 			}
 			if mode == "rights" || mode == "truncated-rights" {
+				// 子进程仍停在明确测试屏障中，stdio复制管道和pidfd尚未退出关闭；
+				// 否则无关FD减少既可能误报，也可能抵消一个真实泄漏。
 				require.Equal(t, before, nativeBirthWireFDCount(t), "拒绝后不得遗留传入的FD")
+				_, err = conn.Write([]byte{0x7a})
+				require.NoError(t, err)
 			}
 			require.NoError(t, conn.Close())
 			require.NoError(t, cmd.Wait(), output.String())
@@ -152,6 +156,14 @@ func nativeBirthWireChild(t *testing.T, mode string) {
 		require.NoError(t, err)
 		require.Equal(t, len(frame), n)
 		require.Positive(t, oobn)
+		// 这只是测试fixture的完成屏障，不是112B生产出生ACK。父进程核完FD
+		// 集合后才准退出，消除os/exec后台stdio关闭与计数之间的真实竞态。
+		require.NoError(t, conn.SetReadDeadline(time.Now().Add(5*time.Second)))
+		ack := make([]byte, 1)
+		n, err = conn.Read(ack)
+		require.NoError(t, err)
+		require.Equal(t, 1, n)
+		require.Equal(t, byte(0x7a), ack[0])
 	} else {
 		_, err = conn.Write(frame)
 		// 错误peer/type会在接收端不消费即关闭；EPIPE/ECONNRESET在该负路径

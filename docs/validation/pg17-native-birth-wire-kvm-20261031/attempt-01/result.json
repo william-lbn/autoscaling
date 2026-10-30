@@ -1,0 +1,310 @@
+{
+  "id": "PG17-S-WIRE-001",
+  "status": "FAIL_COMPONENT_FIXTURE",
+  "platformEvidence": "actual KVM Guest target kernel; does not add coverage ID",
+  "sourceCommit": "1f57705491a5407bbea3496460b0d96e5c58cc64",
+  "actualKernelRelease": "6.12.26-william-bd33f7c78026",
+  "actualKernelNotesSha256": "b52a6321c44be2b8d138e9ca990ec86413c3744a189a118ed69aa295cb8ef03d",
+  "GuestTestExitCode": 1,
+  "hostQemuExitCode": 0,
+  "normalPoweroffDoesNotMeanTestPass": true,
+  "rootResults": [
+    {
+      "name": "TestNativeBirthWireKernelPeerAndMalformedFrames",
+      "result": "FAIL"
+    },
+    {
+      "name": "TestNativeBirthWireExactOriginalContextAndRanges",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRequiresIndependentOriginalGeometry",
+      "result": "PASS"
+    },
+    {
+      "name": "TestPG17NativePhysicalKernelComponent",
+      "result": "PASS"
+    }
+  ],
+  "subcaseCount": 41,
+  "subcaseResults": [
+    {
+      "name": "TestNativeBirthWireKernelPeerAndMalformedFrames/valid",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-pid",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-uid",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-gid",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireKernelPeerAndMalformedFrames/oversized",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireKernelPeerAndMalformedFrames/short",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireKernelPeerAndMalformedFrames/rights",
+      "result": "FAIL"
+    },
+    {
+      "name": "TestNativeBirthWireKernelPeerAndMalformedFrames/truncated-rights",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireKernelPeerAndMalformedFrames/stream",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireKernelPeerAndMalformedFrames/deadline",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/short",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/tail",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/magic",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/version",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/ack-as-request",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/nonce",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/source",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/profile",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/AS",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/maximum",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/page",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/total",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/null-base",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/unaligned-base",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/high-base",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/overflow-base",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/length",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/element",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/overlap",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRequiresIndependentOriginalGeometry/nonce",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRequiresIndependentOriginalGeometry/source",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRequiresIndependentOriginalGeometry/profile",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-zero",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-alignment",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-overflow",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRequiresIndependentOriginalGeometry/R-equals-AS",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRequiresIndependentOriginalGeometry/buffers-zero",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRequiresIndependentOriginalGeometry/buffers-overflow",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRequiresIndependentOriginalGeometry/page",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRequiresIndependentOriginalGeometry/ABI-zero",
+      "result": "PASS"
+    },
+    {
+      "name": "TestNativeBirthWireRequiresIndependentOriginalGeometry/ABI-overflow",
+      "result": "PASS"
+    }
+  ],
+  "failedSubcases": [
+    {
+      "name": "TestNativeBirthWireKernelPeerAndMalformedFrames/rights",
+      "result": "FAIL"
+    }
+  ],
+  "failure": {
+    "file": "pkg/dsga/resourceguard/native_birth_wire_native_test.go",
+    "line": 102,
+    "mode": "rights",
+    "beforeFdCount": 10,
+    "afterFdCount": 9,
+    "classification": "confirmed fixture lifecycle race; asynchronous stdout pipe closure; equality is not weakened",
+    "productionWireLeakProven": false,
+    "repeatOldToObtainPass": false,
+    "next": "parent changes only native fixture with explicit child/parent lifetime sync, then new immutable commit and recompile"
+  },
+  "actualValidPeer": {
+    "UID": 65534,
+    "GID": 65534,
+    "kernelSO_PEERCREDMatchedOriginalChildPID": true,
+    "childUIDGIDAssertionsPassedInValidCase": true
+  },
+  "physicalKernelCase": {
+    "id": "PG17-S-KERNEL-001",
+    "status": "PASS_COMPONENT_ONLY",
+    "repeatedExistingCase": true,
+    "observation": {
+      "protocol_version": 1,
+      "vm_shrink_permit": false,
+      "scope": "linux-6.12.26-physical-component-observation-only",
+      "identity": {
+        "vm_uid": "test-harness-pg17-native-kernel-component",
+        "compute_instance_id": "test-harness-isolated-kvm-observer",
+        "guest_boot_id": "38c06d3c-9b1b-43d5-a987-d9012838cd42",
+        "cgroup_device": "23",
+        "cgroup_inode": "28"
+      },
+      "kernel_release": "6.12.26-william-bd33f7c78026",
+      "kernel_notes_sha256": "b52a6321c44be2b8d138e9ca990ec86413c3744a189a118ed69aa295cb8ef03d",
+      "command_line_sha256": "781e0163df6c2f0157e05124f8c4229c89be62140f5800a3bfb6d025a935a416",
+      "page_size_bytes": "4096",
+      "possible_cpus": 2,
+      "pid_max": 512,
+      "zones": [
+        {
+          "node": 0,
+          "name": "DMA32",
+          "present_pages": "66462"
+        },
+        {
+          "node": 0,
+          "name": "Movable",
+          "present_pages": "195551"
+        },
+        {
+          "node": 0,
+          "name": "Normal",
+          "present_pages": "0"
+        }
+      ],
+      "non_movable_upper_bytes": "272228352",
+      "cpu_charge_stock_upper_bytes": "524288"
+    }
+  },
+  "sourceProof": {
+    "copiedGoModCount": 684,
+    "copiedManifestRawSha256": "985059d3e5a6c0874f411bcbba2eed7989aac35b406ec76a772bc655c204a8d5",
+    "allCopiedSourcesMatchSnapshot": true,
+    "P2UntrackedOriginExcluded": true,
+    "wireSources": {
+      "pkg/dsga/resourceguard/native_birth_wire.go": "8bbba0892d5bc46a9dc0c55c5ee23844b7ba2bc06a93259f0d7a2665bdc68c55",
+      "pkg/dsga/resourceguard/native_birth_wire_linux.go": "9c997d31e3b87f8d6fbb842596f98c7626573648773e6da186882fc25908e288",
+      "pkg/dsga/resourceguard/native_birth_wire_native_test.go": "7fe8724ba4d1417661c2c540f380aa5e446cc8c8fc0a8b2d50f2bc1136cb76e5",
+      "pkg/dsga/resourceguard/native_birth_wire_test.go": "8110cd4f60e2afef21b7621a887ace3b71ee5b65d6585e4e83ae8d3f63476e6f"
+    },
+    "toolchain": "go version go1.24.3 linux/amd64",
+    "CGO_ENABLED": "0",
+    "race": false
+  },
+  "artifacts": {
+    "startUTC": "2026-10-30T16:35:33.087351+00:00",
+    "endUTC": "2026-10-30T16:35:36.530150+00:00",
+    "elapsedSeconds": 3.442791235000186,
+    "hostDockerExitCode": 0,
+    "timeoutSeconds": 150,
+    "goTestTimeoutSeconds": 90,
+    "accel": "kvm",
+    "TCGFallback": false,
+    "NIC": "none",
+    "guestMemoryBytes": 1073741824,
+    "guestVCPUs": 2,
+    "image": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+    "kernelSha256": "0ab3f71456c783452a49d50752a9b1945c2da399588febed409637d7af6891a0",
+    "initramfsSha256": "809be6f3a70731f24fda4d1a1091c1d5c991a4953091dbd230decc0a8ceba78f",
+    "binarySha256": "5a9a47cd5c86b59b54af35213da21ac3637e8004ccd9438b4f9680f22043fa0f",
+    "rawConsoleSha256": "b6ea62fe7627c297d8873a92b88e74a007f6c311e8f80ef20e15ce6a541ec7cb",
+    "E2E": false
+  },
+  "boundaries": {
+    "PGStarted": false,
+    "RootPendingOrEnrollment": false,
+    "productionACKSender": false,
+    "normalMemoryLimitWritten": false,
+    "VMResize": false,
+    "KubernetesE2E": false,
+    "coverageDelta": 0,
+    "hostNetworkOrExistingVMChanged": false
+  },
+  "completedUTC": "2026-10-30T16:38:43.045280+00:00"
+}

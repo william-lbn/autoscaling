@@ -1,0 +1,21 @@
+{
+  "status": "PASS_HOST_COMPONENT_ONLY_TARGET_GUEST_RETEST_PENDING",
+  "id": "PG17-S-WIRE-001",
+  "actual_run": "/data/neon-build/validation/go-1793378401185524776",
+  "toolchain": "go1.24.3 linux/amd64",
+  "race": true,
+  "count": 1,
+  "roots": 1,
+  "subcases": 10,
+  "failures": 0,
+  "skips": 0,
+  "host_kernel": "6.8.0-147-generic",
+  "source_head": "2f27d71c5b09aa5002d6b134a15922a3afaa0504",
+  "owned_file": "pkg/dsga/resourceguard/native_birth_wire_native_test.go",
+  "owned_sha256": "3afb0e389e99f5dbf1c9d895aeb9fa9f84c1fc7ae2fe8d5d6171fc41a24d5499",
+  "copied_file_count": 687,
+  "production_three_wire_sources_unchanged": true,
+  "original_kvm_failure": "/data/neon-build/validation/pg17-native-birth-wire-kvm-20261030T163112Z",
+  "no_new_coverage_id": true,
+  "normal_or_e2e": false
+}
