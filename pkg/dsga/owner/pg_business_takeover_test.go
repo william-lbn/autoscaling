@@ -33,9 +33,9 @@ func pgTakeoverHostStore(t *testing.T, ctx context.Context, client *kubefake.Cli
 	return store
 }
 
-func keepPGTakeoverHostOwner(t *testing.T, ctx context.Context, client *kubefake.Clientset) {
+func keepPGTakeoverHostOwner(t *testing.T, ctx context.Context, client *kubefake.Clientset) func() {
 	t.Helper()
-	keepInitialHostOwner(t, ctx, client, pgTakeoverHostStore(t, ctx, client))
+	return keepInitialHostOwner(t, ctx, client, pgTakeoverHostStore(t, ctx, client))
 }
 
 // 原PG已Grow、SDK回复未知后真实失租；不新发Resize，保存原终态，再按当前实际

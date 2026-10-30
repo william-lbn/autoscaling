@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 
 	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	coordclient "k8s.io/client-go/kubernetes/typed/coordination/v1"
 	coreclient "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -87,7 +88,7 @@ func (s *Service) Reserve(ctx context.Context, node string, pod *core.Pod, targe
 	if !ok {
 		return nil, none, fmt.Errorf("node is not an explicitly configured Host domain")
 	}
-	canonical, p, _, err := s.allocation(ctx, d.config, pod, target)
+	canonical, p, vm, err := s.allocation(ctx, d.config, pod, target)
 	if err != nil {
 		return nil, none, err
 	}
@@ -102,7 +103,31 @@ func (s *Service) Reserve(ctx context.Context, node string, pod *core.Pod, targe
 	if err := checkProfile(snapshot, d.config); err != nil {
 		return nil, none, err
 	}
-	_, held, err := d.store.HoldPlacement(ctx, snapshot, p)
+	var held hostguard.Placement
+	if p.Managed && vm != nil {
+		// Key只来自原VM Active；普通Pod/关闭中的原请求绝不伪造新Key。
+		// 保护Pod与读取Node之后复核原VM RV，旧事件变化交回队列重读。
+		latest, readErr := s.vm.NeonvmV1().VirtualMachines(p.Namespace).Get(ctx, p.VMName, metav1.GetOptions{})
+		if readErr != nil {
+			return nil, none, readErr
+		}
+		if latest.UID != vm.UID || latest.ResourceVersion != vm.ResourceVersion {
+			return nil, none, fmt.Errorf("managed placement original VM changed before Node CAS")
+		}
+		b := journal.Binding{Namespace: p.Namespace, Name: p.VMName, VMUID: latest.UID, Incarnation: p.Incarnation}
+		current, readErr := journal.Inspect(latest, b)
+		if readErr != nil {
+			return nil, none, readErr
+		}
+		m := current.State()
+		if m.Active != nil && m.ServiceClosure == nil && !m.Active.AbortRequested && m.Active.Origin == m.Owner && m.Active.Request.Key.IssuerEpoch == m.Owner.Epoch {
+			_, held, err = d.store.HoldPlacementFor(ctx, snapshot, p, m.Active.Request.Key)
+		} else {
+			_, held, err = d.store.HoldPlacement(ctx, snapshot, p)
+		}
+	} else {
+		_, held, err = d.store.HoldPlacement(ctx, snapshot, p)
+	}
 	if err != nil {
 		return nil, none, err
 	}
@@ -237,13 +262,16 @@ func (s *Service) publish(ctx context.Context, d domain, pod *core.Pod, p hostgu
 		return err
 	}
 	m := snapshot.State()
+	sealing := false
 	if m.Active != nil && m.ServiceClosure != nil {
-		// 关闭后原Prepare仍可能是Completed，不能据此继续发布新的
-		// Host目标持有。最终Publisher也独立拒绝，保护直接调用入口；
-		// 无Active的原永久预算结清仍走下方原有完整来源/水位路径。
-		return nil
+		// 关闭仍禁止普通Host发布；仅严格Completed Prepare早期分支
+		// 可进入独立只封不放入口，不把未知或404补成Host成功。
+		if _, err := m.PreparedHostClosure(); err != nil {
+			return nil
+		}
+		sealing = true
 	}
-	if m.Active == nil && m.BudgetHeld == nil && m.CapacityHeld == nil && m.InitialHeld == nil || m.Active != nil && m.Active.AbortRequested {
+	if m.Active == nil && m.BudgetHeld == nil && m.CapacityHeld == nil && m.InitialHeld == nil || m.Active != nil && m.Active.AbortRequested && !sealing {
 		return nil
 	}
 	// 等Prepare真实完成后再请求发布，不制造替代预算。Runner已发布的原
@@ -279,6 +307,10 @@ func (s *Service) publish(ctx context.Context, d domain, pod *core.Pod, p hostgu
 	if err != nil {
 		return err
 	}
+	if sealing {
+		_, err = publisher.SealClosedHostRequest(ctx)
+		return err
+	}
 	if m.Active == nil {
 		// 只有成功原操作闭合后才进入明确结清；普通轮询不会因Lease/
 		// Pod事件清峰值。Publisher独立重读所有事实和原Node快照。
@@ -298,4 +330,24 @@ func (s *Service) publish(ctx context.Context, d domain, pod *core.Pod, p hostgu
 	}
 	_, err = publisher.Reconcile(ctx)
 	return err
+}
+
+// settleBeforeRetainedPlacement只由已选主Node循环使用。公开Reserve仍只做
+// 单调容量记账，不能凭新实际数值或无Key重抬带水位的旧行。真正Settle仍
+// 在Publisher中完整重读原VM/Runner/预算/Node/Lease并使用同UID/RV CAS。
+func (s *Service) settleBeforeRetainedPlacement(ctx context.Context, d domain, pod *core.Pod, row hostguard.Placement) error {
+	vm, err := s.vm.NeonvmV1().VirtualMachines(row.Namespace).Get(ctx, row.VMName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	binding := journal.Binding{Namespace: row.Namespace, Name: row.VMName, VMUID: types.UID(row.VMUID), Incarnation: row.Incarnation}
+	current, err := journal.Inspect(vm, binding)
+	if err != nil {
+		return err
+	}
+	m := current.State()
+	if m.Active != nil || m.ServiceClosure != nil || m.BudgetHeld == nil && m.CapacityHeld == nil && m.InitialHeld == nil {
+		return nil
+	}
+	return s.publish(ctx, d, pod, row)
 }

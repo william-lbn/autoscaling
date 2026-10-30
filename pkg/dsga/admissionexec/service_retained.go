@@ -13,9 +13,10 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
 
-// RecoverServiceRetained只在明确管理选择中恢复原完整预算。Prepare尚未完成，
-// Host/Guest/VM/PG均未派发；已经在网络中的Outside CREATE仍可能提交，所以
-// 不按404或关闭推导NoEffect，不补Prepared、不新建Host、不重发资源命令。
+// RecoverServiceRetained只在明确管理选择中恢复原完整预算。Prepare未完成
+// 的旧分支保留原合同；Prepare已Completed的新分支另须Scheduler认证并落账
+// 的完整Node屏障，其它资源步骤仍全Planned。Outside/Host CREATE仍可能
+// 在途，不能按404或关闭推导NoEffect，不补Prepared/Host完成，不重发资源。
 // 独立Proof的CAS只是保存来源；后继显式重开和完成CAS才解除关闭。
 func (e *Executor) RecoverServiceRetained(ctx context.Context, s *journal.Snapshot, selector string) error {
 	if s == nil || s.State().ServiceClosure == nil {
@@ -193,6 +194,18 @@ func (e *Executor) checkServiceRetained(ctx context.Context, s *journal.Snapshot
 	// 解析整份Finalize命令/回执，也不把本次已校验叶子跨轮次缓存。
 	memory := control.Uint64(actual)
 	proof.Source, proof.Fence, proof.Current, proof.Root = source, fence, shared, root
+	// Completed Prepare不再靠Host缺失推断无在途操作；只读认证Scheduler
+	// 已落账的原Node屏障，并与本次真实Runner/当前旧预算绑定。
+	if _, barrierErr := m.PreparedHostClosure(); barrierErr == nil {
+		b, readErr := e.claims.ReadPreparedBarrier(ctx, s)
+		if readErr != nil {
+			return proof, readErr
+		}
+		if b.RunnerPodUID != runner.identity.RunnerPodUID || b.NodeUID != runner.identity.NodeUID || b.BeforeMemoryBytes != memory {
+			return proof, fmt.Errorf("retained Host barrier differs from original Runner/current old capacity")
+		}
+		proof.PreparedHostBarrier = &b
+	}
 	if source.Initial == nil {
 		anchor := m.BudgetBoundary
 		if m.Active.PriorBudgetBoundary != nil {
@@ -210,6 +223,9 @@ func (e *Executor) checkServiceRetained(ctx context.Context, s *journal.Snapshot
 		return proof, err
 	}
 	if existing != nil {
+		if !reflect.DeepEqual(proof.PreparedHostBarrier, existing.PreparedHostBarrier) {
+			return proof, fmt.Errorf("saved original Host barrier source drifted")
+		}
 		// 不比较随owner/floor或实际释放合法变化的当前PG观察；完整来源、
 		// 原Root和两个不同Runner意图必须逐字不变，接管不能重选便宜来源。
 		if !reflect.DeepEqual(proof.Source, existing.Source) || !reflect.DeepEqual(proof.Anchor, existing.Anchor) || !reflect.DeepEqual(proof.Root, existing.Root) || !reflect.DeepEqual(proof.NativeVM, existing.NativeVM) || !reflect.DeepEqual(proof.InitialVM, existing.InitialVM) || !reflect.DeepEqual(proof.NativeVMCancellation, existing.NativeVMCancellation) || !reflect.DeepEqual(proof.TailVM, existing.TailVM) || !reflect.DeepEqual(proof.TailVMCancellation, existing.TailVMCancellation) {
@@ -259,6 +275,12 @@ func (e *Executor) checkServiceRetained(ctx context.Context, s *journal.Snapshot
 	}
 	if err != nil {
 		return proof, err
+	}
+	if proof.PreparedHostBarrier != nil {
+		b, readErr := e.claims.ReadPreparedBarrier(ctx, s)
+		if readErr != nil || !reflect.DeepEqual(b, *proof.PreparedHostBarrier) {
+			return proof, fmt.Errorf("original Node barrier changed during retained source audit")
+		}
 	}
 	// source来自本次整模校验后的深副本，m和它在网络期间都不修改。
 	// 末尾重新Load并核同UID/RV；不能以重复验证同一旧本地m代替此屏障。

@@ -107,6 +107,7 @@ type Hold struct {
 // v6保留后续无容量效果操作的Through水位；v7另存部分效果取消后的实际
 // 容量，原请求目标仍不可变，旧读者必须拒绝以免按更小目标错误退还预留。
 // v8为从未派发VM命令的取消保留独立启动来源，不投影成Runner完成回执。
+// v9增加独立Node请求封存水位，只撤销迟到执行资格，绝不由封存释放容量。
 type Model struct {
 	ProtocolVersion uint32         `json:"protocol_version"`
 	Binding         Binding        `json:"binding"`
@@ -131,7 +132,7 @@ func SourceID(origin string, p Plan) string {
 }
 
 func (m Model) Validate() error {
-	if (m.ProtocolVersion < 1 || m.ProtocolVersion > 8) || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
+	if (m.ProtocolVersion < 1 || m.ProtocolVersion > 9) || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
 		return fmt.Errorf("invalid durable Host allocation model")
 	}
 	for i, h := range m.Holds {
@@ -251,6 +252,10 @@ func (m Model) reserve(actor journal.Owner, p Plan, capacity control.Uint64) (Mo
 	if _, err := p.Bytes(); err != nil {
 		return m, none, err
 	}
+	// 屏障先于已有Hold的幂等返回，防止封存后重新取得旧执行资格。
+	if err := m.checkPreparedBarrier(p); err != nil {
+		return m, none, err
+	}
 	if _, closed := m.settledPlacement(p); closed {
 		return m, none, fmt.Errorf("original Host request has been settled; execution reservation cannot reopen")
 	}
@@ -258,6 +263,12 @@ func (m Model) reserve(actor journal.Owner, p Plan, capacity control.Uint64) (Mo
 		if h.Plan.Request.Key == p.Request.Key {
 			if h.Plan != p {
 				return m, none, fmt.Errorf("same original Host key changed complete context")
+			}
+			// 幂等Reserve同样不能把私有快照的Claim指针交给调用方。否则
+			// 调用方修改返回UID后，后续Seal/CAS可能把原发布来源覆盖。
+			if h.Claim != nil {
+				ref := *h.Claim
+				h.Claim = &ref
 			}
 			return m, h, nil
 		}

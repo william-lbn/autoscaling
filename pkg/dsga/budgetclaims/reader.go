@@ -15,6 +15,7 @@ import (
 	core "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	coordclient "k8s.io/client-go/kubernetes/typed/coordination/v1"
 	coreclient "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
@@ -38,6 +39,7 @@ const (
 
 type Reader struct {
 	core    coreclient.CoreV1Interface
+	coord   coordclient.CoordinationV1Interface
 	binding journal.Binding
 }
 
@@ -45,7 +47,7 @@ func New(client coreclient.CoreV1Interface, binding journal.Binding) (*Reader, e
 	if client == nil || binding.Namespace == "" || binding.VMUID == "" {
 		return nil, fmt.Errorf("reservation reader requires fixed trusted Kubernetes client/VM")
 	}
-	return &Reader{core: client, binding: binding}, nil
+	return &Reader{core: client, coord: nil, binding: binding}, nil
 }
 
 // HostClaimName固定到完整原请求/VM incarnation，供真实Scheduler生产者与Agent

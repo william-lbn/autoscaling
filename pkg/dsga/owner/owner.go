@@ -42,6 +42,7 @@ func DefaultOptions() Options {
 // Elector每次New生成随机进程身份，不能将Pod名或调用方自报holder当领导权。
 // Run是一次性生命周期；失去租约/返回后必须新建实例，不复用旧Session或epoch。
 type Elector struct {
+	coord   coordclient.CoordinationV1Interface
 	client  coordclient.LeaseInterface
 	store   *journal.Store
 	binding journal.Binding
@@ -69,12 +70,14 @@ func New(client coordclient.CoordinationV1Interface, store *journal.Store, optio
 	if options.PodUID != "" {
 		holder += "." + string(options.PodUID)
 	}
-	return &Elector{client: client.Leases(binding.Namespace), store: store, binding: binding, options: options, holder: holder, mu: sync.Mutex{}, used: false}, nil
+	return &Elector{coord: client, client: client.Leases(binding.Namespace), store: store, binding: binding, options: options, holder: holder, mu: sync.Mutex{}, used: false}, nil
 }
 
 // Session只能由选主成功且journal接管已确认后创建。Actor只是值副本，不是
 // 独立许可；每次派发/签发凭据前仍须Check，原生PG与最终Runner还要执行fence。
 type Session struct {
+	// coord沿用Elector启动时固定的集群客户端，仅增加Host Lease只读认证。
+	coord      coordclient.CoordinationV1Interface
 	ctx        context.Context
 	client     coordclient.LeaseInterface
 	store      *journal.Store
@@ -136,7 +139,7 @@ func (elector *Elector) claim(ctx context.Context, lock *boundLease) (*Session, 
 		}
 		if snapshot.State().Owner.HolderID == elector.holder {
 			// 长期Session沿用领导权ctx，不能继承即将结束的短期claimCtx。
-			session := &Session{ctx: ctx, client: elector.client, store: elector.store, binding: elector.binding, leaseUID: lease.UID, actor: snapshot.State().Owner, apiTimeout: elector.options.RenewDeadline}
+			session := &Session{coord: elector.coord, ctx: ctx, client: elector.client, store: elector.store, binding: elector.binding, leaseUID: lease.UID, actor: snapshot.State().Owner, apiTimeout: elector.options.RenewDeadline}
 			if err := session.Check(claimCtx); err != nil {
 				return nil, err
 			}

@@ -1,0 +1,1011 @@
+{
+  "created_at_utc": "2026-10-30T13:48:24.776491+00:00",
+  "repo": "/data/neon-build/src/autoscaling",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "head": "ab9d058ce0e7650f8f8dee13b39b18d565159bce",
+  "p1_changes_uncommitted": true,
+  "final_source_sha256": {
+    "pkg/dsga/admissionexec/service_retained.go": "993ecdb06f58928752eadcb05c95a3a729e882aa8cf48fc24648374ef40a53b9",
+    "pkg/dsga/budget/host_barrier.go": "e2620195cd1220addcb44b4c6ba4d72525d9f540df1072507c4f3397053d7cb5",
+    "pkg/dsga/budgetclaims/prepared_barrier.go": "637391aefe097cc3a1ed337aecb1fa716533624c184898beefea6dbe9072f78b",
+    "pkg/dsga/budgetclaims/reader.go": "e819142d732677f99cb2b9f5792fa74892ede13d566b4b7a7c615657287b6da0",
+    "pkg/dsga/hostexec/prepared_barrier.go": "4a014c7cd107ca2f1414c571b421465464803c98896beae48d2343874e900f54",
+    "pkg/dsga/hostexec/retained_source_gc_test.go": "d6cc7bd2a35437ac043f5d14d6caea7ef22b2b03b15e15971d13b165b20222fc",
+    "pkg/dsga/hostexec/settle.go": "813345cfaabae5286d98729fc362320e2d1386d6057385ca3efe431ea1f5df48",
+    "pkg/dsga/hostexec/source_gc.go": "997e6a2b5d3f1e7cc9ae68e951bb41f0efaa85dfd34caefb0eb2f6645f4d7c59",
+    "pkg/dsga/hostguard/model.go": "f4467c0bda04bde3cbd962ab758b5540e499289e8241f8f0fe0ede190088ded6",
+    "pkg/dsga/hostguard/placement.go": "de7fc2a4be85718259bdfb23f2b0d8e3c937ebc2b6b2131792612027107274ca",
+    "pkg/dsga/hostguard/prepared_barrier.go": "1dcb21781078e150bcce63b5dcf9dcf7163abc1098ac3234ec7fb6047649baa8",
+    "pkg/dsga/hostguard/prepared_barrier_test.go": "c423cf94484863f66425a789f1e20bca1bf0550b109f7456d42b7b0e27e7a065",
+    "pkg/dsga/hostguard/store.go": "1faca279a60e95a8db7946662dfe645c2dc7b11aae4b0398112b15dadf3347f5",
+    "pkg/dsga/hostguard/store_test.go": "883c4ccb746aa115abbfd8f9aa4bac858b6a97d35eb136be9c505fdfc1951fd5",
+    "pkg/dsga/hostscheduler/service.go": "f1b46d908837d5bb4f4cab57debf1974a777cc730a03260a6a8077d224e76242",
+    "pkg/dsga/hostscheduler/work.go": "439198c731e488c30cdd4eddf44885dc037b644803fcf79ed8b161e8837aae25",
+    "pkg/dsga/journal/retained_service_completion.go": "4b35971077e2c00f187e4da5ca89b3cfd5f7ac707fd047579f5c1e6999a12764",
+    "pkg/dsga/journal/service_prepared_host.go": "a8639ba6c3e963bc60be4e82956bcd318436f652bf178a73fd22d4b221bcb388",
+    "pkg/dsga/journal/service_prepared_host_test.go": "60d21b6638f2a5f9454f3b0e18d375e5a9edd82c269f2f6ac4f98b105f1d5c69",
+    "pkg/dsga/journal/service_retained_recovery.go": "1b70da63615f87586bb9bb3f00cee039fec66319f7fb232701039a4510bf298c",
+    "pkg/dsga/owner/host_source_test.go": "5a12e2d6d25de440087549f3d7c35f027d8b3cfdbf25cc50e489c3bc3f19f34f",
+    "pkg/dsga/owner/initial_cancel_test.go": "ad692c19ff2cdbf8546ad3847bc707593f5af1ceb5aaa6c042df547881946189",
+    "pkg/dsga/owner/initial_service_test.go": "71819a77c7fe1e2572ca9e8dbb3f1a5a2f035ba757fc9127cd942ea3651464e4",
+    "pkg/dsga/owner/owner.go": "da817124b0a5f772fcd96f0bdf31d1c0fdd12205282fe9299bda7ad1a7563580",
+    "pkg/dsga/owner/owner_test.go": "adf88863070ac4389c95f68ec338928a4914cdc071a491dcfb90d6d654991f71",
+    "pkg/dsga/owner/pg.go": "1fee44dfecb1b67cfa11cc5f8205eff11e29b87e72a836d705aa89fb00cbf4d6",
+    "pkg/dsga/owner/pg_business_takeover_test.go": "bee7cd5b5b182051485ba2e0378da97540c5cb2b1fbefdf474830532cabd3666",
+    "pkg/dsga/owner/prepared_host_barrier_test.go": "c7ec830df5dd81ddb0150990b3f020bc14da7e21d1fd6db6eb0064b498511729",
+    "pkg/dsga/owner/service_reopen_dispatch.go": "43954811786063d6ac69f22fc5540d2f5e640fd8d40f65ec14cc097b44a2d9de",
+    "pkg/dsga/owner/service_retained_recovery_test.go": "fbffbc3ba4a0f99fa35fa5621a747dd8197a865967bdef548ae6df12a42b5647"
+  },
+  "summary_unique_passed_roots": {
+    "unit": 47,
+    "service-integration": 1,
+    "protocol-integration": 4
+  },
+  "real_end_to_end_passed": 0,
+  "cases": [
+    {
+      "id": "PG17-I-P1-001",
+      "legacy_aliases": [
+        "PG17-E-P1-001"
+      ],
+      "layer": "protocol-integration",
+      "root": "TestPG17EP1InitialSealBeforeReserve",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 26.76,
+      "run_directory": "/data/neon-build/validation/go-1793366835559849241",
+      "run_outer_exit_code": 1,
+      "scope": "Production Prepare/Session/SDK/WAL/typed VM CAS/Publisher/Node HTTP CAS/reopen/Complete/retirement; PG/Root/QMP/other Kube are peers"
+    },
+    {
+      "id": "PG17-I-P1-002",
+      "legacy_aliases": [
+        "PG17-E-P1-002"
+      ],
+      "layer": "protocol-integration",
+      "root": "TestPG17EP1InitialReservedHostCreateLate",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 27.51,
+      "run_directory": "/data/neon-build/validation/go-1793366835559849241",
+      "run_outer_exit_code": 1,
+      "scope": "Same production chain; Reserve first, late original Host CREATE, Seal lost reply, old/fresh Bind blocked, Initial prefix retirement and exact GC"
+    },
+    {
+      "id": "PG17-I-P1-003",
+      "legacy_aliases": [
+        "PG17-E-P1-003"
+      ],
+      "layer": "protocol-integration",
+      "root": "TestPG17EP1FinalizedBoundHostAndRealSuccessor",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 308.25,
+      "run_directory": "/data/neon-build/validation/go-1793367551253478994",
+      "run_outer_exit_code": 0,
+      "scope": "Bound original Claim with outer Host Planned, old budget proof/reopen/Complete, source-read faults and real 1024-to-2048 eight-action successor; peers remain explicit"
+    },
+    {
+      "id": "PG17-I-P1-004",
+      "legacy_aliases": [
+        "PG17-S-P1-002"
+      ],
+      "layer": "protocol-integration",
+      "root": "TestPG17SP1SchedulerCompletesMissedActivePlacement",
+      "status": "PASS",
+      "race": false,
+      "elapsed_seconds": 61.75,
+      "run_directory": "/data/neon-build/validation/go-1793366829587828168",
+      "run_outer_exit_code": 0,
+      "scope": "Same full chain without race, real client-go Host Lease natural expiry/election/fence, owner-only NoActive settlement then keyless retention; production 10s reconcile limit unchanged"
+    },
+    {
+      "id": "PG17-S-P1-001",
+      "legacy_aliases": [],
+      "layer": "service-integration",
+      "root": "TestPG17SP1PublisherSealAndReadOnlyConsumer",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 65.49,
+      "run_directory": "/data/neon-build/validation/go-1793366835559849241",
+      "run_outer_exit_code": 1,
+      "scope": "Actual Scheduler owner election -> Publisher Seal -> fixed Agent read-only Node/Lease certification; no recovery/open/resource action in measured Host boundary"
+    },
+    {
+      "id": "PG17-U-P1-001",
+      "layer": "unit",
+      "root": "TestPG17UP1SealBeforeReserveAndPlacementBarrier",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.63,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-002",
+      "layer": "unit",
+      "root": "TestPG17UP1ReservedSealUnknownAndLateBind",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.04,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-003",
+      "layer": "unit",
+      "root": "TestPG17UP1BoundSealPreservesRetainedBudgetAndSettlement",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 3.22,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-004",
+      "layer": "unit",
+      "root": "TestPG17UP1LatestBarrierRetiresTrustedInitialPrefix",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 4,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-005",
+      "layer": "unit",
+      "root": "TestPG17UP1BarrierCodecCloneAndSourceDrift",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.1,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-006",
+      "layer": "unit",
+      "root": "TestPG17UP1SealRejectsChangedNodeLeaseAndOwner",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.18,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-007",
+      "layer": "unit",
+      "root": "TestPG17UP1KeyedPlacementHonorsClosedThroughWithoutSeal",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.82,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-01",
+      "layer": "unit",
+      "root": "TestHostActualCapacitySettlementRetainsCancelledShrinkBefore",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 1.21,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-02",
+      "layer": "unit",
+      "root": "TestHostActualCapacityCannotRegressOrLoseUnknownSettlement",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 2.81,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-03",
+      "layer": "unit",
+      "root": "TestInitialHostSettlementRequiresV8AndPreservesComparableSource",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.42,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-04",
+      "layer": "unit",
+      "root": "TestNodeLedgerRejectsChangedAliasesBootsAndOverflow",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.01,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-05",
+      "layer": "unit",
+      "root": "TestNodeLedgerStrictSourcesAndBoundNeverEvictHeldMemory",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 6.61,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-06",
+      "layer": "unit",
+      "root": "TestCompletePlacementsMultiWriterCASAndUnknownRecovery",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.04,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-07",
+      "layer": "unit",
+      "root": "TestInitialVMRequiresOriginalCompletePlacement",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.02,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-08",
+      "layer": "unit",
+      "root": "TestBoundHostElectionPreservesOriginalUIDAndEpoch",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.01,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-09",
+      "layer": "unit",
+      "root": "TestPlacementSchemaBoundsAndRoundTripRemainStrict",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.2,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-10",
+      "layer": "unit",
+      "root": "TestNodeLedgerPublishedClaimKeepsOriginalUIDAndIndependentCopies",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.04,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-11",
+      "layer": "unit",
+      "root": "TestNodeLedgerPublicationLostReplyAndSourceFailuresNeverRebind",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.08,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-12",
+      "layer": "unit",
+      "root": "TestSuccessfulSettlementPreservesRetirementVersionBarrier",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.21,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-13",
+      "layer": "unit",
+      "root": "TestHostSettlementDropsOnlyClosedPeakAndCannotReopenExecution",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 1.61,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-14",
+      "layer": "unit",
+      "root": "TestHostSettlementUnknownCASAndNewGrantRemainConservative",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 1.61,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-15",
+      "layer": "unit",
+      "root": "TestHostSettlementCompactsBeyondOperationBoundButKeepsWatermark",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.37,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-16",
+      "layer": "unit",
+      "root": "TestNodeLedgerOriginalHoldLostRepliesAndReadOnlyRetry",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.02,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-17",
+      "layer": "unit",
+      "root": "TestNodeLedgerCountsSameVMByPeakAndRetainsOldPod",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.04,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-18",
+      "layer": "unit",
+      "root": "TestNodeLedgerConcurrentCASNeverGrantsSameCapacityTwice",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.02,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-19",
+      "layer": "unit",
+      "root": "TestNodeLedgerTakeoverPreservesHoldAndFencesLateOldPatch",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.05,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-20",
+      "layer": "unit",
+      "root": "TestNodeLedgerNeverResetsLostChangedOrExpiredSources",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.17,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-21",
+      "layer": "unit",
+      "root": "TestHostClosedThroughSettlesCancelledPeakAndRejectsDelayedReserve",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 4.01,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-22",
+      "layer": "unit",
+      "root": "TestHostClosedThroughRejectsForgedOrNonMonotonicWitness",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 2.81,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-008-23",
+      "layer": "unit",
+      "root": "TestHostClosedThroughUnknownCASPreservesFenceAndFutureBudget",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 2.81,
+      "run_directory": "/data/neon-build/validation/go-1793363224278729296",
+      "scope": "Node model/Store HTTP RFC6902, explicit VM closure input; no physical/E2E claim"
+    },
+    {
+      "id": "PG17-U-P1-009",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestPG17UP1CompletedPrepareRequiresIndependentBarrier",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 2.6,
+      "run_directory": "/data/neon-build/validation/go-1793366828642808795",
+      "run_outer_exit_code": 0,
+      "scope": "Journal raw-Prepare/operation/closed selection and mandatory independent barrier contract"
+    },
+    {
+      "id": "PG17-U-P1-010",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestPG17UP1CompletedBarrierSurvivesRealHistoryExpiryAndBudgetReplacement",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 72.81,
+      "run_directory": "/data/neon-build/validation/go-1793366828642808795",
+      "run_outer_exit_code": 0,
+      "scope": "Real Model history eviction, repeated completed recovery/slot replacement and new budget audit-only boundary"
+    },
+    {
+      "id": "PG17-U-P1-011",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestInitialCollectionProgressIsIndependentAndRestartsAfterBoundedScan",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0,
+      "run_directory": "/data/neon-build/validation/go-1793366833080767154",
+      "run_outer_exit_code": 0,
+      "scope": "Directly affected existing GC/Scheduler regression only"
+    },
+    {
+      "id": "PG17-U-P1-012",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestPG17UP1SealBeforeProofTakeoverKeepsConfirmedSelection",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 2.39,
+      "run_directory": "/data/neon-build/validation/go-1793367344028361292",
+      "run_outer_exit_code": 0,
+      "scope": "Seal-before-VM-proof takeover: confirmed original/confirmed continuation both reject another continuation and retain exact old barrier"
+    },
+    {
+      "id": "PG17-U-P1-013-01",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestCollectionProgressDiscardsOnlyDiscoveryOnWatermarkOrVMChange",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0,
+      "run_directory": "/data/neon-build/validation/go-1793366833080767154",
+      "run_outer_exit_code": 0,
+      "scope": "Directly affected existing GC/Scheduler regression only"
+    },
+    {
+      "id": "PG17-U-P1-013-02",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestInitialSourceCandidatesUseRetiredKeyAndNeverCollectRunnerReceipts",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.03,
+      "run_directory": "/data/neon-build/validation/go-1793366833080767154",
+      "run_outer_exit_code": 0,
+      "scope": "Directly affected existing GC/Scheduler regression only"
+    },
+    {
+      "id": "PG17-U-P1-013-03",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestInitialSourceCollectionPagesYieldResumeAndDiscoverLateOutside",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.03,
+      "run_directory": "/data/neon-build/validation/go-1793366833080767154",
+      "run_outer_exit_code": 0,
+      "scope": "Directly affected existing GC/Scheduler regression only"
+    },
+    {
+      "id": "PG17-U-P1-013-04",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestRetainedSourceNamesPreserveSingleSlotAcrossHistoryExpiryAndBudgetReplacement",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.03,
+      "run_directory": "/data/neon-build/validation/go-1793366833080767154",
+      "run_outer_exit_code": 0,
+      "scope": "Directly affected existing GC/Scheduler regression only"
+    },
+    {
+      "id": "PG17-U-P1-013-05",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestSchedulerLegacyApprovalHoldsTargetBeforeOriginalVMCAS",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 4.2,
+      "run_directory": "/data/neon-build/validation/go-1793366833080767154",
+      "run_outer_exit_code": 0,
+      "scope": "Directly affected existing GC/Scheduler regression only"
+    },
+    {
+      "id": "PG17-U-P1-013-06",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestSchedulerManagedFirstPlacementAndLegacyBypassExclusion",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 1.43,
+      "run_directory": "/data/neon-build/validation/go-1793366833080767154",
+      "run_outer_exit_code": 0,
+      "scope": "Directly affected existing GC/Scheduler regression only"
+    },
+    {
+      "id": "PG17-U-P1-013-07",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestSchedulerRestoresAllWorkloadsAndCanonicalVMBeforeFirstGrant",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 4.6,
+      "run_directory": "/data/neon-build/validation/go-1793366833080767154",
+      "run_outer_exit_code": 0,
+      "scope": "Directly affected existing GC/Scheduler regression only"
+    },
+    {
+      "id": "PG17-U-P1-013-08",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestSchedulerWorkExpiredDiscoveryDoesNotResetOriginalLedger",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.6,
+      "run_directory": "/data/neon-build/validation/go-1793366833080767154",
+      "run_outer_exit_code": 0,
+      "scope": "Directly affected existing GC/Scheduler regression only"
+    },
+    {
+      "id": "PG17-U-P1-013-09",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestSchedulerWorkPagesClosedHistoryWithoutLedgerExhaustion",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 6,
+      "run_directory": "/data/neon-build/validation/go-1793366833080767154",
+      "run_outer_exit_code": 0,
+      "scope": "Directly affected existing GC/Scheduler regression only"
+    },
+    {
+      "id": "PG17-U-P1-013-10",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestSchedulerWorkRetainsUnattemptedTailAcrossDeadline",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 1.6,
+      "run_directory": "/data/neon-build/validation/go-1793366833080767154",
+      "run_outer_exit_code": 0,
+      "scope": "Directly affected existing GC/Scheduler regression only"
+    },
+    {
+      "id": "PG17-U-P1-013-11",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestSourceCollectionDeleteKeepsExactUIDDigestAndUnknownReplies",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0.03,
+      "run_directory": "/data/neon-build/validation/go-1793366833080767154",
+      "run_outer_exit_code": 0,
+      "scope": "Directly affected existing GC/Scheduler regression only"
+    },
+    {
+      "id": "PG17-U-P1-013-12",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestSourceCollectionProgressSurvivesPublisherRebuildAndRemainsBounded",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0,
+      "run_directory": "/data/neon-build/validation/go-1793366833080767154",
+      "run_outer_exit_code": 0,
+      "scope": "Directly affected existing GC/Scheduler regression only"
+    },
+    {
+      "id": "PG17-U-P1-013-13",
+      "legacy_aliases": [],
+      "layer": "unit",
+      "root": "TestSourceCollectionThroughKeyNeverOrdersConflictingOperationID",
+      "status": "PASS",
+      "race": true,
+      "elapsed_seconds": 0,
+      "run_directory": "/data/neon-build/validation/go-1793366833080767154",
+      "run_outer_exit_code": 0,
+      "scope": "Directly affected existing GC/Scheduler regression only"
+    }
+  ],
+  "runs": {
+    "unit": {
+      "directory": "/data/neon-build/validation/go-1793366828642808795",
+      "source_head": "ab9d058ce0e7650f8f8dee13b39b18d565159bce",
+      "command": "bash -c sha256sum\\ pkg/dsga/admissionexec/service_retained.go\\ pkg/dsga/budget/host_barrier.go\\ pkg/dsga/budgetclaims/prepared_barrier.go\\ pkg/dsga/budgetclaims/reader.go\\ pkg/dsga/hostexec/prepared_barrier.go\\ pkg/dsga/hostexec/retained_source_gc_test.go\\ pkg/dsga/hostexec/settle.go\\ pkg/dsga/hostexec/source_gc.go\\ pkg/dsga/hostguard/model.go\\ pkg/dsga/hostguard/placement.go\\ pkg/dsga/hostguard/prepared_barrier.go\\ pkg/dsga/hostguard/prepared_barrier_test.go\\ pkg/dsga/hostguard/store.go\\ pkg/dsga/hostguard/store_test.go\\ pkg/dsga/hostscheduler/service.go\\ pkg/dsga/hostscheduler/work.go\\ pkg/dsga/journal/retained_service_completion.go\\ pkg/dsga/journal/service_prepared_host.go\\ pkg/dsga/journal/service_prepared_host_test.go\\ pkg/dsga/journal/service_retained_recovery.go\\ pkg/dsga/owner/host_source_test.go\\ pkg/dsga/owner/initial_cancel_test.go\\ pkg/dsga/owner/initial_service_test.go\\ pkg/dsga/owner/owner.go\\ pkg/dsga/owner/owner_test.go\\ pkg/dsga/owner/pg.go\\ pkg/dsga/owner/pg_business_takeover_test.go\\ pkg/dsga/owner/prepared_host_barrier_test.go\\ pkg/dsga/owner/service_reopen_dispatch.go\\ pkg/dsga/owner/service_retained_recovery_test.go\\ \\&\\&\\ go\\ test\\ -race\\ -count=1\\ -parallel=4\\ -timeout=180s\\ -json\\ ./pkg/dsga/journal\\ -run\\ \\'\\^\\(TestPG17UP1CompletedPrepareRequiresIndependentBarrier\\|TestPG17UP1CompletedBarrierSurvivesRealHistoryExpiryAndBudgetReplacement\\)\\$\\'",
+      "outer_exit_code": 0,
+      "passed_roots": {
+        "TestPG17UP1CompletedPrepareRequiresIndependentBarrier": {
+          "elapsed_seconds": 2.6
+        },
+        "TestPG17UP1CompletedBarrierSurvivesRealHistoryExpiryAndBudgetReplacement": {
+          "elapsed_seconds": 72.81
+        }
+      },
+      "subtest_pass_count": 8,
+      "failed_events": [],
+      "actual_copy_source_sha256": {
+        "pkg/dsga/admissionexec/service_retained.go": "c5a6e4e3772ae3ac3bda3101d931b98bb146ffb04b935d4e34897e3a3929ef02",
+        "pkg/dsga/budget/host_barrier.go": "e2620195cd1220addcb44b4c6ba4d72525d9f540df1072507c4f3397053d7cb5",
+        "pkg/dsga/budgetclaims/prepared_barrier.go": "637391aefe097cc3a1ed337aecb1fa716533624c184898beefea6dbe9072f78b",
+        "pkg/dsga/budgetclaims/reader.go": "e819142d732677f99cb2b9f5792fa74892ede13d566b4b7a7c615657287b6da0",
+        "pkg/dsga/hostexec/prepared_barrier.go": "4a014c7cd107ca2f1414c571b421465464803c98896beae48d2343874e900f54",
+        "pkg/dsga/hostexec/retained_source_gc_test.go": "d6cc7bd2a35437ac043f5d14d6caea7ef22b2b03b15e15971d13b165b20222fc",
+        "pkg/dsga/hostexec/settle.go": "196b9471e09aaf48ec7ec6125b76dd3733c778cdcabb9b6b3d4184a1b4fbbd60",
+        "pkg/dsga/hostexec/source_gc.go": "997e6a2b5d3f1e7cc9ae68e951bb41f0efaa85dfd34caefb0eb2f6645f4d7c59",
+        "pkg/dsga/hostguard/model.go": "f4467c0bda04bde3cbd962ab758b5540e499289e8241f8f0fe0ede190088ded6",
+        "pkg/dsga/hostguard/placement.go": "de7fc2a4be85718259bdfb23f2b0d8e3c937ebc2b6b2131792612027107274ca",
+        "pkg/dsga/hostguard/prepared_barrier.go": "1dcb21781078e150bcce63b5dcf9dcf7163abc1098ac3234ec7fb6047649baa8",
+        "pkg/dsga/hostguard/prepared_barrier_test.go": "c423cf94484863f66425a789f1e20bca1bf0550b109f7456d42b7b0e27e7a065",
+        "pkg/dsga/hostguard/store.go": "1faca279a60e95a8db7946662dfe645c2dc7b11aae4b0398112b15dadf3347f5",
+        "pkg/dsga/hostguard/store_test.go": "883c4ccb746aa115abbfd8f9aa4bac858b6a97d35eb136be9c505fdfc1951fd5",
+        "pkg/dsga/hostscheduler/service.go": "f1b46d908837d5bb4f4cab57debf1974a777cc730a03260a6a8077d224e76242",
+        "pkg/dsga/hostscheduler/work.go": "439198c731e488c30cdd4eddf44885dc037b644803fcf79ed8b161e8837aae25",
+        "pkg/dsga/journal/retained_service_completion.go": "4b35971077e2c00f187e4da5ca89b3cfd5f7ac707fd047579f5c1e6999a12764",
+        "pkg/dsga/journal/service_prepared_host.go": "a8639ba6c3e963bc60be4e82956bcd318436f652bf178a73fd22d4b221bcb388",
+        "pkg/dsga/journal/service_prepared_host_test.go": "a91be118ae1f58db4751d20836bc760c320543e11126ffd5ca8efc8705810889",
+        "pkg/dsga/journal/service_retained_recovery.go": "1b70da63615f87586bb9bb3f00cee039fec66319f7fb232701039a4510bf298c",
+        "pkg/dsga/owner/host_source_test.go": "5a12e2d6d25de440087549f3d7c35f027d8b3cfdbf25cc50e489c3bc3f19f34f",
+        "pkg/dsga/owner/initial_cancel_test.go": "ad692c19ff2cdbf8546ad3847bc707593f5af1ceb5aaa6c042df547881946189",
+        "pkg/dsga/owner/initial_service_test.go": "71819a77c7fe1e2572ca9e8dbb3f1a5a2f035ba757fc9127cd942ea3651464e4",
+        "pkg/dsga/owner/owner.go": "da817124b0a5f772fcd96f0bdf31d1c0fdd12205282fe9299bda7ad1a7563580",
+        "pkg/dsga/owner/owner_test.go": "bfa29b3809254d4c68fb9c7a3da9f4187f631d91b17653e0bea78fcb0d80ee5c",
+        "pkg/dsga/owner/pg.go": "1fee44dfecb1b67cfa11cc5f8205eff11e29b87e72a836d705aa89fb00cbf4d6",
+        "pkg/dsga/owner/pg_business_takeover_test.go": "bee7cd5b5b182051485ba2e0378da97540c5cb2b1fbefdf474830532cabd3666",
+        "pkg/dsga/owner/prepared_host_barrier_test.go": "bb5fb6eb19fb6b00eb2189728361f32d2bce358190f135bb601be905074b7bff",
+        "pkg/dsga/owner/service_reopen_dispatch.go": "43954811786063d6ac69f22fc5540d2f5e640fd8d40f65ec14cc097b44a2d9de",
+        "pkg/dsga/owner/service_retained_recovery_test.go": "fbffbc3ba4a0f99fa35fa5621a747dd8197a865967bdef548ae6df12a42b5647"
+      },
+      "dockerfile_sha256": "6c09fcc672d7c95cc5d79ba4a40df2a319c77cc0a34371bb611aed9515302821",
+      "log_sha256": "cc2f1f11d871ecd4f26a9372485acf020f8b4921ba5b745439ef7213ae20fa8b",
+      "module_download_messages": 0,
+      "go_race_enabled": true
+    },
+    "integration_mixed": {
+      "directory": "/data/neon-build/validation/go-1793366835559849241",
+      "source_head": "ab9d058ce0e7650f8f8dee13b39b18d565159bce",
+      "command": "bash -c sha256sum\\ pkg/dsga/admissionexec/service_retained.go\\ pkg/dsga/budget/host_barrier.go\\ pkg/dsga/budgetclaims/prepared_barrier.go\\ pkg/dsga/budgetclaims/reader.go\\ pkg/dsga/hostexec/prepared_barrier.go\\ pkg/dsga/hostexec/retained_source_gc_test.go\\ pkg/dsga/hostexec/settle.go\\ pkg/dsga/hostexec/source_gc.go\\ pkg/dsga/hostguard/model.go\\ pkg/dsga/hostguard/placement.go\\ pkg/dsga/hostguard/prepared_barrier.go\\ pkg/dsga/hostguard/prepared_barrier_test.go\\ pkg/dsga/hostguard/store.go\\ pkg/dsga/hostguard/store_test.go\\ pkg/dsga/hostscheduler/service.go\\ pkg/dsga/hostscheduler/work.go\\ pkg/dsga/journal/retained_service_completion.go\\ pkg/dsga/journal/service_prepared_host.go\\ pkg/dsga/journal/service_prepared_host_test.go\\ pkg/dsga/journal/service_retained_recovery.go\\ pkg/dsga/owner/host_source_test.go\\ pkg/dsga/owner/initial_cancel_test.go\\ pkg/dsga/owner/initial_service_test.go\\ pkg/dsga/owner/owner.go\\ pkg/dsga/owner/owner_test.go\\ pkg/dsga/owner/pg.go\\ pkg/dsga/owner/pg_business_takeover_test.go\\ pkg/dsga/owner/prepared_host_barrier_test.go\\ pkg/dsga/owner/service_reopen_dispatch.go\\ pkg/dsga/owner/service_retained_recovery_test.go\\ \\&\\&\\ go\\ test\\ -race\\ -count=1\\ -parallel=4\\ -timeout=600s\\ -json\\ ./pkg/dsga/owner\\ -run\\ \\'\\^\\(TestPG17EP1InitialSealBeforeReserve\\|TestPG17EP1InitialReservedHostCreateLate\\|TestPG17EP1FinalizedBoundHostAndRealSuccessor\\|TestPG17SP1PublisherSealAndReadOnlyConsumer\\)\\$\\'",
+      "outer_exit_code": 1,
+      "passed_roots": {
+        "TestPG17EP1InitialSealBeforeReserve": {
+          "elapsed_seconds": 26.76
+        },
+        "TestPG17EP1InitialReservedHostCreateLate": {
+          "elapsed_seconds": 27.51
+        },
+        "TestPG17SP1PublisherSealAndReadOnlyConsumer": {
+          "elapsed_seconds": 65.49
+        }
+      },
+      "subtest_pass_count": 0,
+      "failed_events": [
+        {
+          "Time": "2026-10-30T13:29:56.837067675Z",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Test": "TestPG17EP1FinalizedBoundHostAndRealSuccessor",
+          "Elapsed": 58.89
+        },
+        {
+          "Time": "2026-10-30T13:29:56.851340199Z",
+          "Action": "fail",
+          "Package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+          "Elapsed": 65.57
+        }
+      ],
+      "actual_copy_source_sha256": {
+        "pkg/dsga/admissionexec/service_retained.go": "c5a6e4e3772ae3ac3bda3101d931b98bb146ffb04b935d4e34897e3a3929ef02",
+        "pkg/dsga/budget/host_barrier.go": "e2620195cd1220addcb44b4c6ba4d72525d9f540df1072507c4f3397053d7cb5",
+        "pkg/dsga/budgetclaims/prepared_barrier.go": "637391aefe097cc3a1ed337aecb1fa716533624c184898beefea6dbe9072f78b",
+        "pkg/dsga/budgetclaims/reader.go": "e819142d732677f99cb2b9f5792fa74892ede13d566b4b7a7c615657287b6da0",
+        "pkg/dsga/hostexec/prepared_barrier.go": "4a014c7cd107ca2f1414c571b421465464803c98896beae48d2343874e900f54",
+        "pkg/dsga/hostexec/retained_source_gc_test.go": "d6cc7bd2a35437ac043f5d14d6caea7ef22b2b03b15e15971d13b165b20222fc",
+        "pkg/dsga/hostexec/settle.go": "196b9471e09aaf48ec7ec6125b76dd3733c778cdcabb9b6b3d4184a1b4fbbd60",
+        "pkg/dsga/hostexec/source_gc.go": "997e6a2b5d3f1e7cc9ae68e951bb41f0efaa85dfd34caefb0eb2f6645f4d7c59",
+        "pkg/dsga/hostguard/model.go": "f4467c0bda04bde3cbd962ab758b5540e499289e8241f8f0fe0ede190088ded6",
+        "pkg/dsga/hostguard/placement.go": "de7fc2a4be85718259bdfb23f2b0d8e3c937ebc2b6b2131792612027107274ca",
+        "pkg/dsga/hostguard/prepared_barrier.go": "1dcb21781078e150bcce63b5dcf9dcf7163abc1098ac3234ec7fb6047649baa8",
+        "pkg/dsga/hostguard/prepared_barrier_test.go": "c423cf94484863f66425a789f1e20bca1bf0550b109f7456d42b7b0e27e7a065",
+        "pkg/dsga/hostguard/store.go": "1faca279a60e95a8db7946662dfe645c2dc7b11aae4b0398112b15dadf3347f5",
+        "pkg/dsga/hostguard/store_test.go": "883c4ccb746aa115abbfd8f9aa4bac858b6a97d35eb136be9c505fdfc1951fd5",
+        "pkg/dsga/hostscheduler/service.go": "f1b46d908837d5bb4f4cab57debf1974a777cc730a03260a6a8077d224e76242",
+        "pkg/dsga/hostscheduler/work.go": "439198c731e488c30cdd4eddf44885dc037b644803fcf79ed8b161e8837aae25",
+        "pkg/dsga/journal/retained_service_completion.go": "4b35971077e2c00f187e4da5ca89b3cfd5f7ac707fd047579f5c1e6999a12764",
+        "pkg/dsga/journal/service_prepared_host.go": "a8639ba6c3e963bc60be4e82956bcd318436f652bf178a73fd22d4b221bcb388",
+        "pkg/dsga/journal/service_prepared_host_test.go": "a91be118ae1f58db4751d20836bc760c320543e11126ffd5ca8efc8705810889",
+        "pkg/dsga/journal/service_retained_recovery.go": "1b70da63615f87586bb9bb3f00cee039fec66319f7fb232701039a4510bf298c",
+        "pkg/dsga/owner/host_source_test.go": "5a12e2d6d25de440087549f3d7c35f027d8b3cfdbf25cc50e489c3bc3f19f34f",
+        "pkg/dsga/owner/initial_cancel_test.go": "ad692c19ff2cdbf8546ad3847bc707593f5af1ceb5aaa6c042df547881946189",
+        "pkg/dsga/owner/initial_service_test.go": "71819a77c7fe1e2572ca9e8dbb3f1a5a2f035ba757fc9127cd942ea3651464e4",
+        "pkg/dsga/owner/owner.go": "da817124b0a5f772fcd96f0bdf31d1c0fdd12205282fe9299bda7ad1a7563580",
+        "pkg/dsga/owner/owner_test.go": "bfa29b3809254d4c68fb9c7a3da9f4187f631d91b17653e0bea78fcb0d80ee5c",
+        "pkg/dsga/owner/pg.go": "1fee44dfecb1b67cfa11cc5f8205eff11e29b87e72a836d705aa89fb00cbf4d6",
+        "pkg/dsga/owner/pg_business_takeover_test.go": "bee7cd5b5b182051485ba2e0378da97540c5cb2b1fbefdf474830532cabd3666",
+        "pkg/dsga/owner/prepared_host_barrier_test.go": "bb5fb6eb19fb6b00eb2189728361f32d2bce358190f135bb601be905074b7bff",
+        "pkg/dsga/owner/service_reopen_dispatch.go": "43954811786063d6ac69f22fc5540d2f5e640fd8d40f65ec14cc097b44a2d9de",
+        "pkg/dsga/owner/service_retained_recovery_test.go": "fbffbc3ba4a0f99fa35fa5621a747dd8197a865967bdef548ae6df12a42b5647"
+      },
+      "dockerfile_sha256": "6c09fcc672d7c95cc5d79ba4a40df2a319c77cc0a34371bb611aed9515302821",
+      "log_sha256": "287e8be69b87eac52a9018e64d58e2548c616fa7c5cd642eb23e90a6d3114fe6",
+      "module_download_messages": 0,
+      "go_race_enabled": true
+    },
+    "scheduler_late": {
+      "directory": "/data/neon-build/validation/go-1793366829587828168",
+      "source_head": "ab9d058ce0e7650f8f8dee13b39b18d565159bce",
+      "command": "bash -c sha256sum\\ pkg/dsga/admissionexec/service_retained.go\\ pkg/dsga/budget/host_barrier.go\\ pkg/dsga/budgetclaims/prepared_barrier.go\\ pkg/dsga/budgetclaims/reader.go\\ pkg/dsga/hostexec/prepared_barrier.go\\ pkg/dsga/hostexec/retained_source_gc_test.go\\ pkg/dsga/hostexec/settle.go\\ pkg/dsga/hostexec/source_gc.go\\ pkg/dsga/hostguard/model.go\\ pkg/dsga/hostguard/placement.go\\ pkg/dsga/hostguard/prepared_barrier.go\\ pkg/dsga/hostguard/prepared_barrier_test.go\\ pkg/dsga/hostguard/store.go\\ pkg/dsga/hostguard/store_test.go\\ pkg/dsga/hostscheduler/service.go\\ pkg/dsga/hostscheduler/work.go\\ pkg/dsga/journal/retained_service_completion.go\\ pkg/dsga/journal/service_prepared_host.go\\ pkg/dsga/journal/service_prepared_host_test.go\\ pkg/dsga/journal/service_retained_recovery.go\\ pkg/dsga/owner/host_source_test.go\\ pkg/dsga/owner/initial_cancel_test.go\\ pkg/dsga/owner/initial_service_test.go\\ pkg/dsga/owner/owner.go\\ pkg/dsga/owner/owner_test.go\\ pkg/dsga/owner/pg.go\\ pkg/dsga/owner/pg_business_takeover_test.go\\ pkg/dsga/owner/prepared_host_barrier_test.go\\ pkg/dsga/owner/service_reopen_dispatch.go\\ pkg/dsga/owner/service_retained_recovery_test.go\\ \\&\\&\\ go\\ test\\ -count=1\\ -parallel=4\\ -timeout=480s\\ -json\\ ./pkg/dsga/owner\\ -run\\ \\'\\^\\(TestPG17SP1SchedulerCompletesMissedActivePlacement\\)\\$\\'",
+      "outer_exit_code": 0,
+      "passed_roots": {
+        "TestPG17SP1SchedulerCompletesMissedActivePlacement": {
+          "elapsed_seconds": 61.75
+        }
+      },
+      "subtest_pass_count": 0,
+      "failed_events": [],
+      "actual_copy_source_sha256": {
+        "pkg/dsga/admissionexec/service_retained.go": "c5a6e4e3772ae3ac3bda3101d931b98bb146ffb04b935d4e34897e3a3929ef02",
+        "pkg/dsga/budget/host_barrier.go": "e2620195cd1220addcb44b4c6ba4d72525d9f540df1072507c4f3397053d7cb5",
+        "pkg/dsga/budgetclaims/prepared_barrier.go": "637391aefe097cc3a1ed337aecb1fa716533624c184898beefea6dbe9072f78b",
+        "pkg/dsga/budgetclaims/reader.go": "e819142d732677f99cb2b9f5792fa74892ede13d566b4b7a7c615657287b6da0",
+        "pkg/dsga/hostexec/prepared_barrier.go": "4a014c7cd107ca2f1414c571b421465464803c98896beae48d2343874e900f54",
+        "pkg/dsga/hostexec/retained_source_gc_test.go": "d6cc7bd2a35437ac043f5d14d6caea7ef22b2b03b15e15971d13b165b20222fc",
+        "pkg/dsga/hostexec/settle.go": "196b9471e09aaf48ec7ec6125b76dd3733c778cdcabb9b6b3d4184a1b4fbbd60",
+        "pkg/dsga/hostexec/source_gc.go": "997e6a2b5d3f1e7cc9ae68e951bb41f0efaa85dfd34caefb0eb2f6645f4d7c59",
+        "pkg/dsga/hostguard/model.go": "f4467c0bda04bde3cbd962ab758b5540e499289e8241f8f0fe0ede190088ded6",
+        "pkg/dsga/hostguard/placement.go": "de7fc2a4be85718259bdfb23f2b0d8e3c937ebc2b6b2131792612027107274ca",
+        "pkg/dsga/hostguard/prepared_barrier.go": "1dcb21781078e150bcce63b5dcf9dcf7163abc1098ac3234ec7fb6047649baa8",
+        "pkg/dsga/hostguard/prepared_barrier_test.go": "c423cf94484863f66425a789f1e20bca1bf0550b109f7456d42b7b0e27e7a065",
+        "pkg/dsga/hostguard/store.go": "1faca279a60e95a8db7946662dfe645c2dc7b11aae4b0398112b15dadf3347f5",
+        "pkg/dsga/hostguard/store_test.go": "883c4ccb746aa115abbfd8f9aa4bac858b6a97d35eb136be9c505fdfc1951fd5",
+        "pkg/dsga/hostscheduler/service.go": "f1b46d908837d5bb4f4cab57debf1974a777cc730a03260a6a8077d224e76242",
+        "pkg/dsga/hostscheduler/work.go": "439198c731e488c30cdd4eddf44885dc037b644803fcf79ed8b161e8837aae25",
+        "pkg/dsga/journal/retained_service_completion.go": "4b35971077e2c00f187e4da5ca89b3cfd5f7ac707fd047579f5c1e6999a12764",
+        "pkg/dsga/journal/service_prepared_host.go": "a8639ba6c3e963bc60be4e82956bcd318436f652bf178a73fd22d4b221bcb388",
+        "pkg/dsga/journal/service_prepared_host_test.go": "a91be118ae1f58db4751d20836bc760c320543e11126ffd5ca8efc8705810889",
+        "pkg/dsga/journal/service_retained_recovery.go": "1b70da63615f87586bb9bb3f00cee039fec66319f7fb232701039a4510bf298c",
+        "pkg/dsga/owner/host_source_test.go": "5a12e2d6d25de440087549f3d7c35f027d8b3cfdbf25cc50e489c3bc3f19f34f",
+        "pkg/dsga/owner/initial_cancel_test.go": "ad692c19ff2cdbf8546ad3847bc707593f5af1ceb5aaa6c042df547881946189",
+        "pkg/dsga/owner/initial_service_test.go": "71819a77c7fe1e2572ca9e8dbb3f1a5a2f035ba757fc9127cd942ea3651464e4",
+        "pkg/dsga/owner/owner.go": "da817124b0a5f772fcd96f0bdf31d1c0fdd12205282fe9299bda7ad1a7563580",
+        "pkg/dsga/owner/owner_test.go": "bfa29b3809254d4c68fb9c7a3da9f4187f631d91b17653e0bea78fcb0d80ee5c",
+        "pkg/dsga/owner/pg.go": "1fee44dfecb1b67cfa11cc5f8205eff11e29b87e72a836d705aa89fb00cbf4d6",
+        "pkg/dsga/owner/pg_business_takeover_test.go": "bee7cd5b5b182051485ba2e0378da97540c5cb2b1fbefdf474830532cabd3666",
+        "pkg/dsga/owner/prepared_host_barrier_test.go": "bb5fb6eb19fb6b00eb2189728361f32d2bce358190f135bb601be905074b7bff",
+        "pkg/dsga/owner/service_reopen_dispatch.go": "43954811786063d6ac69f22fc5540d2f5e640fd8d40f65ec14cc097b44a2d9de",
+        "pkg/dsga/owner/service_retained_recovery_test.go": "fbffbc3ba4a0f99fa35fa5621a747dd8197a865967bdef548ae6df12a42b5647"
+      },
+      "dockerfile_sha256": "6c09fcc672d7c95cc5d79ba4a40df2a319c77cc0a34371bb611aed9515302821",
+      "log_sha256": "961e0ab1dd35f9c1c7c195ec69d2bc9cc70dee94e9f66bdff1c47a83e021de7c",
+      "module_download_messages": 0,
+      "go_race_enabled": false
+    },
+    "affected": {
+      "directory": "/data/neon-build/validation/go-1793366833080767154",
+      "source_head": "ab9d058ce0e7650f8f8dee13b39b18d565159bce",
+      "command": "bash -c sha256sum\\ pkg/dsga/admissionexec/service_retained.go\\ pkg/dsga/budget/host_barrier.go\\ pkg/dsga/budgetclaims/prepared_barrier.go\\ pkg/dsga/budgetclaims/reader.go\\ pkg/dsga/hostexec/prepared_barrier.go\\ pkg/dsga/hostexec/retained_source_gc_test.go\\ pkg/dsga/hostexec/settle.go\\ pkg/dsga/hostexec/source_gc.go\\ pkg/dsga/hostguard/model.go\\ pkg/dsga/hostguard/placement.go\\ pkg/dsga/hostguard/prepared_barrier.go\\ pkg/dsga/hostguard/prepared_barrier_test.go\\ pkg/dsga/hostguard/store.go\\ pkg/dsga/hostguard/store_test.go\\ pkg/dsga/hostscheduler/service.go\\ pkg/dsga/hostscheduler/work.go\\ pkg/dsga/journal/retained_service_completion.go\\ pkg/dsga/journal/service_prepared_host.go\\ pkg/dsga/journal/service_prepared_host_test.go\\ pkg/dsga/journal/service_retained_recovery.go\\ pkg/dsga/owner/host_source_test.go\\ pkg/dsga/owner/initial_cancel_test.go\\ pkg/dsga/owner/initial_service_test.go\\ pkg/dsga/owner/owner.go\\ pkg/dsga/owner/owner_test.go\\ pkg/dsga/owner/pg.go\\ pkg/dsga/owner/pg_business_takeover_test.go\\ pkg/dsga/owner/prepared_host_barrier_test.go\\ pkg/dsga/owner/service_reopen_dispatch.go\\ pkg/dsga/owner/service_retained_recovery_test.go\\ \\&\\&\\ go\\ test\\ -race\\ -count=1\\ -parallel=4\\ -timeout=180s\\ -json\\ ./pkg/dsga/hostexec\\ ./pkg/dsga/hostscheduler\\ -run\\ \\'\\^\\(TestRetainedSourceNamesPreserveSingleSlotAcrossHistoryExpiryAndBudgetReplacement\\|TestInitialSourceCandidatesUseRetiredKeyAndNeverCollectRunnerReceipts\\|TestSourceCollectionDeleteKeepsExactUIDDigestAndUnknownReplies\\|TestInitialCollectionProgressIsIndependentAndRestartsAfterBoundedScan\\|TestInitialSourceCollectionPagesYieldResumeAndDiscoverLateOutside\\|TestCollectionProgressDiscardsOnlyDiscoveryOnWatermarkOrVMChange\\|TestSourceCollectionThroughKeyNeverOrdersConflictingOperationID\\|TestSchedulerRestoresAllWorkloadsAndCanonicalVMBeforeFirstGrant\\|TestSchedulerLegacyApprovalHoldsTargetBeforeOriginalVMCAS\\|TestSchedulerManagedFirstPlacementAndLegacyBypassExclusion\\|TestSchedulerWorkRetainsUnattemptedTailAcrossDeadline\\|TestSchedulerWorkPagesClosedHistoryWithoutLedgerExhaustion\\|TestSchedulerWorkExpiredDiscoveryDoesNotResetOriginalLedger\\|TestSourceCollectionProgressSurvivesPublisherRebuildAndRemainsBounded\\)\\$\\'",
+      "outer_exit_code": 0,
+      "passed_roots": {
+        "TestRetainedSourceNamesPreserveSingleSlotAcrossHistoryExpiryAndBudgetReplacement": {
+          "elapsed_seconds": 0.03
+        },
+        "TestInitialSourceCandidatesUseRetiredKeyAndNeverCollectRunnerReceipts": {
+          "elapsed_seconds": 0.03
+        },
+        "TestSourceCollectionDeleteKeepsExactUIDDigestAndUnknownReplies": {
+          "elapsed_seconds": 0.03
+        },
+        "TestInitialCollectionProgressIsIndependentAndRestartsAfterBoundedScan": {
+          "elapsed_seconds": 0
+        },
+        "TestInitialSourceCollectionPagesYieldResumeAndDiscoverLateOutside": {
+          "elapsed_seconds": 0.03
+        },
+        "TestSourceCollectionThroughKeyNeverOrdersConflictingOperationID": {
+          "elapsed_seconds": 0
+        },
+        "TestCollectionProgressDiscardsOnlyDiscoveryOnWatermarkOrVMChange": {
+          "elapsed_seconds": 0
+        },
+        "TestSchedulerRestoresAllWorkloadsAndCanonicalVMBeforeFirstGrant": {
+          "elapsed_seconds": 4.6
+        },
+        "TestSchedulerLegacyApprovalHoldsTargetBeforeOriginalVMCAS": {
+          "elapsed_seconds": 4.2
+        },
+        "TestSchedulerManagedFirstPlacementAndLegacyBypassExclusion": {
+          "elapsed_seconds": 1.43
+        },
+        "TestSchedulerWorkRetainsUnattemptedTailAcrossDeadline": {
+          "elapsed_seconds": 1.6
+        },
+        "TestSchedulerWorkPagesClosedHistoryWithoutLedgerExhaustion": {
+          "elapsed_seconds": 6
+        },
+        "TestSchedulerWorkExpiredDiscoveryDoesNotResetOriginalLedger": {
+          "elapsed_seconds": 0.6
+        },
+        "TestSourceCollectionProgressSurvivesPublisherRebuildAndRemainsBounded": {
+          "elapsed_seconds": 0
+        }
+      },
+      "subtest_pass_count": 13,
+      "failed_events": [],
+      "actual_copy_source_sha256": {
+        "pkg/dsga/admissionexec/service_retained.go": "c5a6e4e3772ae3ac3bda3101d931b98bb146ffb04b935d4e34897e3a3929ef02",
+        "pkg/dsga/budget/host_barrier.go": "e2620195cd1220addcb44b4c6ba4d72525d9f540df1072507c4f3397053d7cb5",
+        "pkg/dsga/budgetclaims/prepared_barrier.go": "637391aefe097cc3a1ed337aecb1fa716533624c184898beefea6dbe9072f78b",
+        "pkg/dsga/budgetclaims/reader.go": "e819142d732677f99cb2b9f5792fa74892ede13d566b4b7a7c615657287b6da0",
+        "pkg/dsga/hostexec/prepared_barrier.go": "4a014c7cd107ca2f1414c571b421465464803c98896beae48d2343874e900f54",
+        "pkg/dsga/hostexec/retained_source_gc_test.go": "d6cc7bd2a35437ac043f5d14d6caea7ef22b2b03b15e15971d13b165b20222fc",
+        "pkg/dsga/hostexec/settle.go": "196b9471e09aaf48ec7ec6125b76dd3733c778cdcabb9b6b3d4184a1b4fbbd60",
+        "pkg/dsga/hostexec/source_gc.go": "997e6a2b5d3f1e7cc9ae68e951bb41f0efaa85dfd34caefb0eb2f6645f4d7c59",
+        "pkg/dsga/hostguard/model.go": "f4467c0bda04bde3cbd962ab758b5540e499289e8241f8f0fe0ede190088ded6",
+        "pkg/dsga/hostguard/placement.go": "de7fc2a4be85718259bdfb23f2b0d8e3c937ebc2b6b2131792612027107274ca",
+        "pkg/dsga/hostguard/prepared_barrier.go": "1dcb21781078e150bcce63b5dcf9dcf7163abc1098ac3234ec7fb6047649baa8",
+        "pkg/dsga/hostguard/prepared_barrier_test.go": "c423cf94484863f66425a789f1e20bca1bf0550b109f7456d42b7b0e27e7a065",
+        "pkg/dsga/hostguard/store.go": "1faca279a60e95a8db7946662dfe645c2dc7b11aae4b0398112b15dadf3347f5",
+        "pkg/dsga/hostguard/store_test.go": "883c4ccb746aa115abbfd8f9aa4bac858b6a97d35eb136be9c505fdfc1951fd5",
+        "pkg/dsga/hostscheduler/service.go": "f1b46d908837d5bb4f4cab57debf1974a777cc730a03260a6a8077d224e76242",
+        "pkg/dsga/hostscheduler/work.go": "439198c731e488c30cdd4eddf44885dc037b644803fcf79ed8b161e8837aae25",
+        "pkg/dsga/journal/retained_service_completion.go": "4b35971077e2c00f187e4da5ca89b3cfd5f7ac707fd047579f5c1e6999a12764",
+        "pkg/dsga/journal/service_prepared_host.go": "a8639ba6c3e963bc60be4e82956bcd318436f652bf178a73fd22d4b221bcb388",
+        "pkg/dsga/journal/service_prepared_host_test.go": "a91be118ae1f58db4751d20836bc760c320543e11126ffd5ca8efc8705810889",
+        "pkg/dsga/journal/service_retained_recovery.go": "1b70da63615f87586bb9bb3f00cee039fec66319f7fb232701039a4510bf298c",
+        "pkg/dsga/owner/host_source_test.go": "5a12e2d6d25de440087549f3d7c35f027d8b3cfdbf25cc50e489c3bc3f19f34f",
+        "pkg/dsga/owner/initial_cancel_test.go": "ad692c19ff2cdbf8546ad3847bc707593f5af1ceb5aaa6c042df547881946189",
+        "pkg/dsga/owner/initial_service_test.go": "71819a77c7fe1e2572ca9e8dbb3f1a5a2f035ba757fc9127cd942ea3651464e4",
+        "pkg/dsga/owner/owner.go": "da817124b0a5f772fcd96f0bdf31d1c0fdd12205282fe9299bda7ad1a7563580",
+        "pkg/dsga/owner/owner_test.go": "bfa29b3809254d4c68fb9c7a3da9f4187f631d91b17653e0bea78fcb0d80ee5c",
+        "pkg/dsga/owner/pg.go": "1fee44dfecb1b67cfa11cc5f8205eff11e29b87e72a836d705aa89fb00cbf4d6",
+        "pkg/dsga/owner/pg_business_takeover_test.go": "bee7cd5b5b182051485ba2e0378da97540c5cb2b1fbefdf474830532cabd3666",
+        "pkg/dsga/owner/prepared_host_barrier_test.go": "bb5fb6eb19fb6b00eb2189728361f32d2bce358190f135bb601be905074b7bff",
+        "pkg/dsga/owner/service_reopen_dispatch.go": "43954811786063d6ac69f22fc5540d2f5e640fd8d40f65ec14cc097b44a2d9de",
+        "pkg/dsga/owner/service_retained_recovery_test.go": "fbffbc3ba4a0f99fa35fa5621a747dd8197a865967bdef548ae6df12a42b5647"
+      },
+      "dockerfile_sha256": "6c09fcc672d7c95cc5d79ba4a40df2a319c77cc0a34371bb611aed9515302821",
+      "log_sha256": "5278837f521e12996c5936d72988df1f5923dffb68db67bffcb37bf7a7eb2568",
+      "module_download_messages": 0,
+      "go_race_enabled": true
+    },
+    "takeover_boundary": {
+      "directory": "/data/neon-build/validation/go-1793367344028361292",
+      "source_head": "ab9d058ce0e7650f8f8dee13b39b18d565159bce",
+      "command": "bash -c sha256sum\\ pkg/dsga/admissionexec/service_retained.go\\ pkg/dsga/budget/host_barrier.go\\ pkg/dsga/budgetclaims/prepared_barrier.go\\ pkg/dsga/budgetclaims/reader.go\\ pkg/dsga/hostexec/prepared_barrier.go\\ pkg/dsga/hostexec/retained_source_gc_test.go\\ pkg/dsga/hostexec/settle.go\\ pkg/dsga/hostexec/source_gc.go\\ pkg/dsga/hostguard/model.go\\ pkg/dsga/hostguard/placement.go\\ pkg/dsga/hostguard/prepared_barrier.go\\ pkg/dsga/hostguard/prepared_barrier_test.go\\ pkg/dsga/hostguard/store.go\\ pkg/dsga/hostguard/store_test.go\\ pkg/dsga/hostscheduler/service.go\\ pkg/dsga/hostscheduler/work.go\\ pkg/dsga/journal/retained_service_completion.go\\ pkg/dsga/journal/service_prepared_host.go\\ pkg/dsga/journal/service_prepared_host_test.go\\ pkg/dsga/journal/service_retained_recovery.go\\ pkg/dsga/owner/host_source_test.go\\ pkg/dsga/owner/initial_cancel_test.go\\ pkg/dsga/owner/initial_service_test.go\\ pkg/dsga/owner/owner.go\\ pkg/dsga/owner/owner_test.go\\ pkg/dsga/owner/pg.go\\ pkg/dsga/owner/pg_business_takeover_test.go\\ pkg/dsga/owner/prepared_host_barrier_test.go\\ pkg/dsga/owner/service_reopen_dispatch.go\\ pkg/dsga/owner/service_retained_recovery_test.go\\ \\&\\&\\ go\\ test\\ -race\\ -count=1\\ -parallel=4\\ -timeout=180s\\ -json\\ ./pkg/dsga/journal\\ -run\\ \\'\\^\\(TestPG17UP1SealBeforeProofTakeoverKeepsConfirmedSelection\\)\\$\\'",
+      "outer_exit_code": 0,
+      "passed_roots": {
+        "TestPG17UP1SealBeforeProofTakeoverKeepsConfirmedSelection": {
+          "elapsed_seconds": 2.39
+        }
+      },
+      "subtest_pass_count": 2,
+      "failed_events": [],
+      "actual_copy_source_sha256": {
+        "pkg/dsga/admissionexec/service_retained.go": "993ecdb06f58928752eadcb05c95a3a729e882aa8cf48fc24648374ef40a53b9",
+        "pkg/dsga/budget/host_barrier.go": "e2620195cd1220addcb44b4c6ba4d72525d9f540df1072507c4f3397053d7cb5",
+        "pkg/dsga/budgetclaims/prepared_barrier.go": "637391aefe097cc3a1ed337aecb1fa716533624c184898beefea6dbe9072f78b",
+        "pkg/dsga/budgetclaims/reader.go": "e819142d732677f99cb2b9f5792fa74892ede13d566b4b7a7c615657287b6da0",
+        "pkg/dsga/hostexec/prepared_barrier.go": "4a014c7cd107ca2f1414c571b421465464803c98896beae48d2343874e900f54",
+        "pkg/dsga/hostexec/retained_source_gc_test.go": "d6cc7bd2a35437ac043f5d14d6caea7ef22b2b03b15e15971d13b165b20222fc",
+        "pkg/dsga/hostexec/settle.go": "813345cfaabae5286d98729fc362320e2d1386d6057385ca3efe431ea1f5df48",
+        "pkg/dsga/hostexec/source_gc.go": "997e6a2b5d3f1e7cc9ae68e951bb41f0efaa85dfd34caefb0eb2f6645f4d7c59",
+        "pkg/dsga/hostguard/model.go": "f4467c0bda04bde3cbd962ab758b5540e499289e8241f8f0fe0ede190088ded6",
+        "pkg/dsga/hostguard/placement.go": "de7fc2a4be85718259bdfb23f2b0d8e3c937ebc2b6b2131792612027107274ca",
+        "pkg/dsga/hostguard/prepared_barrier.go": "1dcb21781078e150bcce63b5dcf9dcf7163abc1098ac3234ec7fb6047649baa8",
+        "pkg/dsga/hostguard/prepared_barrier_test.go": "c423cf94484863f66425a789f1e20bca1bf0550b109f7456d42b7b0e27e7a065",
+        "pkg/dsga/hostguard/store.go": "1faca279a60e95a8db7946662dfe645c2dc7b11aae4b0398112b15dadf3347f5",
+        "pkg/dsga/hostguard/store_test.go": "883c4ccb746aa115abbfd8f9aa4bac858b6a97d35eb136be9c505fdfc1951fd5",
+        "pkg/dsga/hostscheduler/service.go": "f1b46d908837d5bb4f4cab57debf1974a777cc730a03260a6a8077d224e76242",
+        "pkg/dsga/hostscheduler/work.go": "439198c731e488c30cdd4eddf44885dc037b644803fcf79ed8b161e8837aae25",
+        "pkg/dsga/journal/retained_service_completion.go": "4b35971077e2c00f187e4da5ca89b3cfd5f7ac707fd047579f5c1e6999a12764",
+        "pkg/dsga/journal/service_prepared_host.go": "a8639ba6c3e963bc60be4e82956bcd318436f652bf178a73fd22d4b221bcb388",
+        "pkg/dsga/journal/service_prepared_host_test.go": "60d21b6638f2a5f9454f3b0e18d375e5a9edd82c269f2f6ac4f98b105f1d5c69",
+        "pkg/dsga/journal/service_retained_recovery.go": "1b70da63615f87586bb9bb3f00cee039fec66319f7fb232701039a4510bf298c",
+        "pkg/dsga/owner/host_source_test.go": "5a12e2d6d25de440087549f3d7c35f027d8b3cfdbf25cc50e489c3bc3f19f34f",
+        "pkg/dsga/owner/initial_cancel_test.go": "ad692c19ff2cdbf8546ad3847bc707593f5af1ceb5aaa6c042df547881946189",
+        "pkg/dsga/owner/initial_service_test.go": "71819a77c7fe1e2572ca9e8dbb3f1a5a2f035ba757fc9127cd942ea3651464e4",
+        "pkg/dsga/owner/owner.go": "da817124b0a5f772fcd96f0bdf31d1c0fdd12205282fe9299bda7ad1a7563580",
+        "pkg/dsga/owner/owner_test.go": "bfa29b3809254d4c68fb9c7a3da9f4187f631d91b17653e0bea78fcb0d80ee5c",
+        "pkg/dsga/owner/pg.go": "1fee44dfecb1b67cfa11cc5f8205eff11e29b87e72a836d705aa89fb00cbf4d6",
+        "pkg/dsga/owner/pg_business_takeover_test.go": "bee7cd5b5b182051485ba2e0378da97540c5cb2b1fbefdf474830532cabd3666",
+        "pkg/dsga/owner/prepared_host_barrier_test.go": "bb5fb6eb19fb6b00eb2189728361f32d2bce358190f135bb601be905074b7bff",
+        "pkg/dsga/owner/service_reopen_dispatch.go": "43954811786063d6ac69f22fc5540d2f5e640fd8d40f65ec14cc097b44a2d9de",
+        "pkg/dsga/owner/service_retained_recovery_test.go": "fbffbc3ba4a0f99fa35fa5621a747dd8197a865967bdef548ae6df12a42b5647"
+      },
+      "dockerfile_sha256": "6c09fcc672d7c95cc5d79ba4a40df2a319c77cc0a34371bb611aed9515302821",
+      "log_sha256": "0c41dee40c54c7edc235903d94c82d6231dc4720a0d292132d87dd16638f64d5",
+      "module_download_messages": 0,
+      "go_race_enabled": true
+    },
+    "bound_retry": {
+      "directory": "/data/neon-build/validation/go-1793367551253478994",
+      "source_head": "ab9d058ce0e7650f8f8dee13b39b18d565159bce",
+      "command": "bash -c sha256sum\\ pkg/dsga/admissionexec/service_retained.go\\ pkg/dsga/budget/host_barrier.go\\ pkg/dsga/budgetclaims/prepared_barrier.go\\ pkg/dsga/budgetclaims/reader.go\\ pkg/dsga/hostexec/prepared_barrier.go\\ pkg/dsga/hostexec/retained_source_gc_test.go\\ pkg/dsga/hostexec/settle.go\\ pkg/dsga/hostexec/source_gc.go\\ pkg/dsga/hostguard/model.go\\ pkg/dsga/hostguard/placement.go\\ pkg/dsga/hostguard/prepared_barrier.go\\ pkg/dsga/hostguard/prepared_barrier_test.go\\ pkg/dsga/hostguard/store.go\\ pkg/dsga/hostguard/store_test.go\\ pkg/dsga/hostscheduler/service.go\\ pkg/dsga/hostscheduler/work.go\\ pkg/dsga/journal/retained_service_completion.go\\ pkg/dsga/journal/service_prepared_host.go\\ pkg/dsga/journal/service_prepared_host_test.go\\ pkg/dsga/journal/service_retained_recovery.go\\ pkg/dsga/owner/host_source_test.go\\ pkg/dsga/owner/initial_cancel_test.go\\ pkg/dsga/owner/initial_service_test.go\\ pkg/dsga/owner/owner.go\\ pkg/dsga/owner/owner_test.go\\ pkg/dsga/owner/pg.go\\ pkg/dsga/owner/pg_business_takeover_test.go\\ pkg/dsga/owner/prepared_host_barrier_test.go\\ pkg/dsga/owner/service_reopen_dispatch.go\\ pkg/dsga/owner/service_retained_recovery_test.go\\ \\&\\&\\ go\\ test\\ -race\\ -count=1\\ -parallel=4\\ -timeout=600s\\ -json\\ ./pkg/dsga/owner\\ -run\\ \\'\\^\\(TestPG17EP1FinalizedBoundHostAndRealSuccessor\\)\\$\\'",
+      "outer_exit_code": 0,
+      "passed_roots": {
+        "TestPG17EP1FinalizedBoundHostAndRealSuccessor": {
+          "elapsed_seconds": 308.25
+        }
+      },
+      "subtest_pass_count": 0,
+      "failed_events": [],
+      "actual_copy_source_sha256": {
+        "pkg/dsga/admissionexec/service_retained.go": "993ecdb06f58928752eadcb05c95a3a729e882aa8cf48fc24648374ef40a53b9",
+        "pkg/dsga/budget/host_barrier.go": "e2620195cd1220addcb44b4c6ba4d72525d9f540df1072507c4f3397053d7cb5",
+        "pkg/dsga/budgetclaims/prepared_barrier.go": "637391aefe097cc3a1ed337aecb1fa716533624c184898beefea6dbe9072f78b",
+        "pkg/dsga/budgetclaims/reader.go": "e819142d732677f99cb2b9f5792fa74892ede13d566b4b7a7c615657287b6da0",
+        "pkg/dsga/hostexec/prepared_barrier.go": "4a014c7cd107ca2f1414c571b421465464803c98896beae48d2343874e900f54",
+        "pkg/dsga/hostexec/retained_source_gc_test.go": "d6cc7bd2a35437ac043f5d14d6caea7ef22b2b03b15e15971d13b165b20222fc",
+        "pkg/dsga/hostexec/settle.go": "813345cfaabae5286d98729fc362320e2d1386d6057385ca3efe431ea1f5df48",
+        "pkg/dsga/hostexec/source_gc.go": "997e6a2b5d3f1e7cc9ae68e951bb41f0efaa85dfd34caefb0eb2f6645f4d7c59",
+        "pkg/dsga/hostguard/model.go": "f4467c0bda04bde3cbd962ab758b5540e499289e8241f8f0fe0ede190088ded6",
+        "pkg/dsga/hostguard/placement.go": "de7fc2a4be85718259bdfb23f2b0d8e3c937ebc2b6b2131792612027107274ca",
+        "pkg/dsga/hostguard/prepared_barrier.go": "1dcb21781078e150bcce63b5dcf9dcf7163abc1098ac3234ec7fb6047649baa8",
+        "pkg/dsga/hostguard/prepared_barrier_test.go": "c423cf94484863f66425a789f1e20bca1bf0550b109f7456d42b7b0e27e7a065",
+        "pkg/dsga/hostguard/store.go": "1faca279a60e95a8db7946662dfe645c2dc7b11aae4b0398112b15dadf3347f5",
+        "pkg/dsga/hostguard/store_test.go": "883c4ccb746aa115abbfd8f9aa4bac858b6a97d35eb136be9c505fdfc1951fd5",
+        "pkg/dsga/hostscheduler/service.go": "f1b46d908837d5bb4f4cab57debf1974a777cc730a03260a6a8077d224e76242",
+        "pkg/dsga/hostscheduler/work.go": "439198c731e488c30cdd4eddf44885dc037b644803fcf79ed8b161e8837aae25",
+        "pkg/dsga/journal/retained_service_completion.go": "4b35971077e2c00f187e4da5ca89b3cfd5f7ac707fd047579f5c1e6999a12764",
+        "pkg/dsga/journal/service_prepared_host.go": "a8639ba6c3e963bc60be4e82956bcd318436f652bf178a73fd22d4b221bcb388",
+        "pkg/dsga/journal/service_prepared_host_test.go": "60d21b6638f2a5f9454f3b0e18d375e5a9edd82c269f2f6ac4f98b105f1d5c69",
+        "pkg/dsga/journal/service_retained_recovery.go": "1b70da63615f87586bb9bb3f00cee039fec66319f7fb232701039a4510bf298c",
+        "pkg/dsga/owner/host_source_test.go": "5a12e2d6d25de440087549f3d7c35f027d8b3cfdbf25cc50e489c3bc3f19f34f",
+        "pkg/dsga/owner/initial_cancel_test.go": "ad692c19ff2cdbf8546ad3847bc707593f5af1ceb5aaa6c042df547881946189",
+        "pkg/dsga/owner/initial_service_test.go": "71819a77c7fe1e2572ca9e8dbb3f1a5a2f035ba757fc9127cd942ea3651464e4",
+        "pkg/dsga/owner/owner.go": "da817124b0a5f772fcd96f0bdf31d1c0fdd12205282fe9299bda7ad1a7563580",
+        "pkg/dsga/owner/owner_test.go": "adf88863070ac4389c95f68ec338928a4914cdc071a491dcfb90d6d654991f71",
+        "pkg/dsga/owner/pg.go": "1fee44dfecb1b67cfa11cc5f8205eff11e29b87e72a836d705aa89fb00cbf4d6",
+        "pkg/dsga/owner/pg_business_takeover_test.go": "bee7cd5b5b182051485ba2e0378da97540c5cb2b1fbefdf474830532cabd3666",
+        "pkg/dsga/owner/prepared_host_barrier_test.go": "c7ec830df5dd81ddb0150990b3f020bc14da7e21d1fd6db6eb0064b498511729",
+        "pkg/dsga/owner/service_reopen_dispatch.go": "43954811786063d6ac69f22fc5540d2f5e640fd8d40f65ec14cc097b44a2d9de",
+        "pkg/dsga/owner/service_retained_recovery_test.go": "fbffbc3ba4a0f99fa35fa5621a747dd8197a865967bdef548ae6df12a42b5647"
+      },
+      "dockerfile_sha256": "6c09fcc672d7c95cc5d79ba4a40df2a319c77cc0a34371bb611aed9515302821",
+      "log_sha256": "f22f01b94923aac1d6f998372a4ef557570bc3dc67b977988fcc4371ebe1da98",
+      "module_download_messages": 0,
+      "go_race_enabled": true
+    }
+  },
+  "phase1_receipt": "/data/neon-build/validation/p1-node-v9-20261030/receipt.json",
+  "historical_attempts": [
+    {
+      "directory": "/data/neon-build/validation/go-1793364288873629702",
+      "status": "FAILED",
+      "reason": "Previously selected legacy multi-domain matrix exceeded 180s test budget; not counted as a passed root; unexecuted remaining matrix stays unverified"
+    },
+    {
+      "directory": "/data/neon-build/validation/go-1793365463818707149",
+      "status": "GO_PASS_WRAPPER_127",
+      "reason": "Both Go roots passed, but running shell script was overwritten in place by main execution; p_proxy command error. Accepted evidence uses immutable runner snapshots and later exit0 runs"
+    },
+    {
+      "directory": "/data/neon-build/validation/go-1793366835559849241",
+      "status": "PARTIAL_PASS_OVERALL_FAILED",
+      "reason": "I001/I002/S001 passed; I003 failed because fake unconditional Host Lease renewal could overwrite transient UID injection. Production authorization unchanged; fixed peer UID-response fault then only I003 rerun exit0"
+    }
+  ],
+  "source_difference_notes": [
+    "Final bound_retry RUN hashes all 30 P1 .go files from its actual COPY; these exactly equal the current working tree.",
+    "Earlier accepted U/affected/I004/mixed runs predate only two production comment corrections, added precise U012 test, and the test-only stable Host Lease read-fault correction; production expressions in accepted paths are unchanged. Per-run actual COPY hashes remain preserved.",
+    "Legacy E-P1 log IDs are aliases only; all three fixture protocol chains are I-P1 and never counted as real PG/Guest/VM/K8s end-to-end passes."
+  ],
+  "not_executed_or_not_claimed": [
+    "Real PG17+Guest/QEMU/KVM/HugeTLB/native physical memory return end-to-end",
+    "Real Kubernetes apiserver/etcd/RBAC/Helm deployment or image/runtime rollback regression",
+    "Whole unchanged legacy Journal multi-domain matrix after its initial 180s timeout",
+    "Race run of I004 natural-owner takeover path: I004 intentionally uses the normal compiler with production 10s reconciliation deadline; all constituent Node/Journal/auth gates and I001..003 ran race"
+  ],
+  "deployment_boundary": [
+    "Existing hostscheduler bootstrapAssigned/reconcileWork enumerate all namespaces and protectPod may add Host finalizers to ordinary kube-system Pods; this original non-P1 behavior is unchanged and must be resolved before live deployment.",
+    "Agent needs GET on each configured original Host Lease; no new Node/Seal/Fence/Create/GC writes. Helm reviewer confirmed namespace+resourceName scoped lease GET roles.",
+    "P1 does not authorize CPU/RO/HA/other PG versions. SourceSeal only revokes execution; capacity retirement requires complete authenticated Initial/current-budget closure and preserves placement."
+  ]
+}

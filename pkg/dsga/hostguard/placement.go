@@ -57,6 +57,9 @@ type Placement struct {
 	HostOverheadBytes control.Uint64 `json:"host_overhead_bytes"`
 	// 仅v4原owner结清时设置；普通容量写者不可构造或清除它。
 	Settled *Settlement `json:"settled,omitempty"`
+	// Barrier由Node原owner封存。普通容量写者不得构造、替换或清空；
+	// 它独立于结清水位，原Hold退休后仍永久阻止旧Key执行。
+	Barrier *budget.HostReservationBarrier `json:"barrier,omitempty"`
 }
 
 func (p Placement) Bytes() (control.Uint64, error) {
@@ -77,6 +80,9 @@ func (p Placement) Bytes() (control.Uint64, error) {
 	if p.Settled != nil && (!p.Managed || p.Settled.Validate() != nil || p.Settled.Request.Key.Instance.VMUID != p.VMUID || p.MemoryBytes < p.Settled.MemoryBytes()) {
 		return 0, fmt.Errorf("pod placement changed original closed budget watermark")
 	}
+	if p.Barrier != nil && (!p.Managed || p.Barrier.Validate() != nil || p.Barrier.Namespace != p.Namespace || p.Barrier.VMName != p.VMName || p.Barrier.RunnerPodUID != p.PodUID || p.Barrier.Request.Key.Instance.VMUID != p.VMUID || p.Barrier.Incarnation != p.Incarnation || p.Barrier.HostOverheadBytes != p.HostOverheadBytes) {
+		return 0, fmt.Errorf("pod placement changed original prepared barrier domain")
+	}
 	return p.MemoryBytes + p.HostOverheadBytes, nil
 }
 
@@ -94,6 +100,7 @@ func (p *Placement) UnmarshalJSON(raw []byte) error {
 func (p Placement) sameOriginal(q Placement) bool {
 	p.MemoryBytes, q.MemoryBytes = 0, 0
 	p.Settled, q.Settled = nil, nil
+	p.Barrier, q.Barrier = nil, nil
 	return p == q
 }
 
@@ -108,6 +115,9 @@ func (m Model) validatePlacements() error {
 		return fmt.Errorf("host allocation ledger requires complete v3 profile/placements")
 	}
 	for i, p := range *m.Placements {
+		if err := m.validatePreparedBarrier(p); err != nil {
+			return err
+		}
 		var noInitial budget.InitialVMSources
 		if p.Settled != nil && p.Settled.InitialVM != noInitial && m.ProtocolVersion < 8 {
 			return fmt.Errorf("initial-source settlement requires Node v8")
@@ -181,6 +191,10 @@ func (m Model) Placement(podUID string) (Placement, error) {
 					copySettlement := *p.Settled
 					p.Settled = &copySettlement
 				}
+				if p.Barrier != nil {
+					barrier := p.Barrier.Clone()
+					p.Barrier = &barrier
+				}
 				return p, nil
 			}
 		}
@@ -192,11 +206,20 @@ func (m Model) Placement(podUID string) (Placement, error) {
 // 来源发布/释放资格；因此不借全局Scheduler leader和节点owner恰好同副本才能
 // 调度。Actor/Node由Store跨网络核验，只有原UID/RV写确认后才能返回调度成功。
 func (m Model) reservePlacement(p Placement, capacity control.Uint64) (Model, error) {
-	if m.Validate() != nil || m.ProtocolVersion < 3 || p.Settled != nil {
+	return m.reservePlacementFor(p, nil, capacity)
+}
+
+// key只由可信Scheduler从本次真实原VM Active派生，数值目标不是新请求授权。
+// nil保留旧入口，但在已有永久水位的Managed行上仅允许保留旧容量。
+func (m Model) reservePlacementFor(p Placement, key *control.Key, capacity control.Uint64) (Model, error) {
+	if m.Validate() != nil || m.ProtocolVersion < 3 || p.Settled != nil || p.Barrier != nil {
 		return m, fmt.Errorf("pod allocation requires original complete v3 Host domain")
 	}
 	if _, err := p.Bytes(); err != nil {
 		return m, err
+	}
+	if key != nil && (key.Validate() != nil || !p.Managed || key.Instance.VMUID != p.VMUID) {
+		return m, fmt.Errorf("keyed placement requires complete original managed VM request")
 	}
 	if used, err := m.UsedBytes(); err != nil || used > capacity {
 		return m, fmt.Errorf("existing Host allocations exceed current Node capacity")
@@ -211,6 +234,11 @@ func (m Model) reservePlacement(p Placement, capacity control.Uint64) (Model, er
 			return m, fmt.Errorf("same Pod UID changed original allocation context")
 		}
 		found = true
+		// 检查必须先于同数值幂等返回：旧Key不能通过目标未变化重获资格；
+		// 无Key只允许保留旧额度，不能清空或跨越Barrier/Through。
+		if err := old.checkPlacementKey(key, p.MemoryBytes); err != nil {
+			return m, err
+		}
 		if p.MemoryBytes <= old.MemoryBytes {
 			return m, nil
 		}
@@ -243,6 +271,10 @@ func clonePlacements(p *[]Placement) *[]Placement {
 	}
 	copyRows := slices.Clone(*p)
 	for i := range copyRows {
+		if copyRows[i].Barrier != nil {
+			barrier := copyRows[i].Barrier.Clone()
+			copyRows[i].Barrier = &barrier
+		}
 		if copyRows[i].Settled != nil {
 			copySettlement := *copyRows[i].Settled
 			copyRows[i].Settled = &copySettlement

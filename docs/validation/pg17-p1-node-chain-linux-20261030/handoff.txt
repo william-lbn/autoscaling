@@ -1,0 +1,6 @@
+P1 Node v9 / Completed Prepare恢复链已在Linux功能分支形成可审查代码；未commit/push。
+当前HEAD ab9d058ce0e7650f8f8dee13b39b18d565159bce，30个P1源文件的最终SHA等于go-1793367551253478994实际COPY。
+{"unit": 47, "service-integration": 1, "protocol-integration": 4}；真实端到端E通过=0。
+详见catalog.json、test-index.tsv与各run原始command/run.log/exit-code/Go-test.Dockerfile。
+保留了大矩阵超时、wrapper127及故障注入失败历史；没有将其抹去或计为通过。
+现有全namespace普通Pod Host finalizer影响未在P1修改，live部署前仍需处理。

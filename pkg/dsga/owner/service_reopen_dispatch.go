@@ -128,8 +128,8 @@ func (w *PGWorker) ensureServiceFinalization(ctx context.Context, s *journal.Sna
 	if m.ServiceClosure != nil && m.ServiceClosure.Reason == "active_source_unconfirmed" {
 		if _, err := m.RetainedServiceSource(); err == nil {
 			// 最早期操作不要求不存在的新Prepare/Host；沿用真实原预算。
-			// 只有此严格形状可走该分支，已完成Prepare或任何资源派发
-			// 仍走其原完整实际预算/领域屏障，不能按当前数值降级。
+			// Completed Prepare另须Scheduler已落账的完整Node屏障；
+			// 任何其它资源派发仍拒绝，不能按当前数值降级或补Host成功。
 			if w.admission == nil {
 				return nil, ErrServiceSafety
 			}

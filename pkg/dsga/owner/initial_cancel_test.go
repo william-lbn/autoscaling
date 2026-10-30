@@ -261,7 +261,7 @@ func verifyInitialCancelledGrow(t *testing.T, ctx context.Context, api *ownerAPI
 // 多操作组合超过原单操作夹具的60秒静态Lease寿命。直接复用正式Host
 // LeaseLock/client-go选主续约，固定原UID/holder/Node，不反复创建同名Lease
 // 或延长生产有效期。Kube写入仍是明确fixture；真实RBAC/etcd后验。
-func keepInitialHostOwner(t *testing.T, ctx context.Context, client *kubefake.Clientset, allocator *hostguard.Store) {
+func keepInitialHostOwner(t *testing.T, ctx context.Context, client *kubefake.Clientset, allocator *hostguard.Store) func() {
 	t.Helper()
 	lock, err := hostguard.NewLeaseLock(client.CoordinationV1(), allocator.Binding(), "host-fixture-holder")
 	require.NoError(t, err)
@@ -271,17 +271,19 @@ func keepInitialHostOwner(t *testing.T, ctx context.Context, client *kubefake.Cl
 	runCtx, cancel := context.WithCancel(ctx)
 	done := make(chan struct{})
 	go func() { defer close(done); elector.Run(runCtx) }()
-	t.Cleanup(func() {
+	stop := func() {
 		cancel()
 		select {
 		case <-done:
 		case <-time.After(5 * time.Second):
 			t.Error("original Host fixture owner did not stop")
 		}
-	})
+	}
+	t.Cleanup(stop)
 	select {
 	case <-ready:
 	case <-ctx.Done():
 		t.Fatal("original Host fixture owner was not acquired")
 	}
+	return stop
 }

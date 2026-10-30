@@ -1,0 +1,239 @@
+{
+  "scope": "PG17 Node v9 unit/real HTTP RFC6902 CAS only; no Publisher/Journal business completion claim",
+  "platform": "Linux amd64; Go1.24.3; GCC12.2.0; race enabled; count=1",
+  "repo": "/data/neon-build/src/autoscaling",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "head": "02a1b0c90e58e3dfed2bb9f2c7c44e98a207ca28",
+  "working_tree_changes_uncommitted": true,
+  "not_executed": [
+    "PG17 single-service/E2E new Completed Prepare recovery",
+    "real K8s/RBAC/KVM/HugeTLB/physical memory return",
+    "images/Helm deployment"
+  ],
+  "caller_preconditions": [
+    "SealPrepared: trusted Publisher authenticates original VM Prepare, operation and confirmed category16 closure after supplied Node snapshot",
+    "RetireSealedHolds: trusted production caller authenticates no Active/current closure, exact complete RetainedCoverage and current Initial/Runner/VM/Node/Lease sources; bare Barrier is not proof"
+  ],
+  "recorded_at_utc": "2026-10-30T12:29:08.154950+00:00",
+  "files_sha256": {
+    "pkg/dsga/budget/host_barrier.go": "e2620195cd1220addcb44b4c6ba4d72525d9f540df1072507c4f3397053d7cb5",
+    "pkg/dsga/hostguard/model.go": "f4467c0bda04bde3cbd962ab758b5540e499289e8241f8f0fe0ede190088ded6",
+    "pkg/dsga/hostguard/placement.go": "de7fc2a4be85718259bdfb23f2b0d8e3c937ebc2b6b2131792612027107274ca",
+    "pkg/dsga/hostguard/store.go": "1faca279a60e95a8db7946662dfe645c2dc7b11aae4b0398112b15dadf3347f5",
+    "pkg/dsga/hostguard/store_test.go": "883c4ccb746aa115abbfd8f9aa4bac858b6a97d35eb136be9c505fdfc1951fd5",
+    "pkg/dsga/hostguard/prepared_barrier.go": "85dd1f484d17bb87f440abc5bb68bd0d7b29ce0e6b3aa2ea0e7a0c54a813a869",
+    "pkg/dsga/hostguard/prepared_barrier_test.go": "c423cf94484863f66425a789f1e20bca1bf0550b109f7456d42b7b0e27e7a065"
+  },
+  "final_validation": {
+    "directory": "/data/neon-build/validation/go-1793363224278729296",
+    "command": "go test -race -count=1 -timeout=180s -json ./pkg/dsga/hostguard -run \\^\\(TestNodeLedgerRejectsChangedAliasesBootsAndOverflow\\|TestNodeLedgerStrictSourcesAndBoundNeverEvictHeldMemory\\|TestNodeLedgerPublishedClaimKeepsOriginalUIDAndIndependentCopies\\|TestNodeLedgerPublicationLostReplyAndSourceFailuresNeverRebind\\|TestNodeLedgerOriginalHoldLostRepliesAndReadOnlyRetry\\|TestNodeLedgerCountsSameVMByPeakAndRetainsOldPod\\|TestNodeLedgerConcurrentCASNeverGrantsSameCapacityTwice\\|TestNodeLedgerTakeoverPreservesHoldAndFencesLateOldPatch\\|TestNodeLedgerNeverResetsLostChangedOrExpiredSources\\|TestCompletePlacementsMultiWriterCASAndUnknownRecovery\\|TestInitialVMRequiresOriginalCompletePlacement\\|TestBoundHostElectionPreservesOriginalUIDAndEpoch\\|TestPlacementSchemaBoundsAndRoundTripRemainStrict\\|TestHostClosedThroughSettlesCancelledPeakAndRejectsDelayedReserve\\|TestHostClosedThroughRejectsForgedOrNonMonotonicWitness\\|TestHostClosedThroughUnknownCASPreservesFenceAndFutureBudget\\|TestHostSettlementDropsOnlyClosedPeakAndCannotReopenExecution\\|TestHostSettlementUnknownCASAndNewGrantRemainConservative\\|TestHostSettlementCompactsBeyondOperationBoundButKeepsWatermark\\|TestHostActualCapacitySettlementRetainsCancelledShrinkBefore\\|TestHostActualCapacityCannotRegressOrLoseUnknownSettlement\\|TestInitialHostSettlementRequiresV8AndPreservesComparableSource\\|TestSuccessfulSettlementPreservesRetirementVersionBarrier\\|TestPG17UP1SealBeforeReserveAndPlacementBarrier\\|TestPG17UP1ReservedSealUnknownAndLateBind\\|TestPG17UP1BoundSealPreservesRetainedBudgetAndSettlement\\|TestPG17UP1LatestBarrierRetiresTrustedInitialPrefix\\|TestPG17UP1BarrierCodecCloneAndSourceDrift\\|TestPG17UP1SealRejectsChangedNodeLeaseAndOwner\\|TestPG17UP1KeyedPlacementHonorsClosedThroughWithoutSeal\\)\\$",
+    "regex": "^(TestNodeLedgerRejectsChangedAliasesBootsAndOverflow|TestNodeLedgerStrictSourcesAndBoundNeverEvictHeldMemory|TestNodeLedgerPublishedClaimKeepsOriginalUIDAndIndependentCopies|TestNodeLedgerPublicationLostReplyAndSourceFailuresNeverRebind|TestNodeLedgerOriginalHoldLostRepliesAndReadOnlyRetry|TestNodeLedgerCountsSameVMByPeakAndRetainsOldPod|TestNodeLedgerConcurrentCASNeverGrantsSameCapacityTwice|TestNodeLedgerTakeoverPreservesHoldAndFencesLateOldPatch|TestNodeLedgerNeverResetsLostChangedOrExpiredSources|TestCompletePlacementsMultiWriterCASAndUnknownRecovery|TestInitialVMRequiresOriginalCompletePlacement|TestBoundHostElectionPreservesOriginalUIDAndEpoch|TestPlacementSchemaBoundsAndRoundTripRemainStrict|TestHostClosedThroughSettlesCancelledPeakAndRejectsDelayedReserve|TestHostClosedThroughRejectsForgedOrNonMonotonicWitness|TestHostClosedThroughUnknownCASPreservesFenceAndFutureBudget|TestHostSettlementDropsOnlyClosedPeakAndCannotReopenExecution|TestHostSettlementUnknownCASAndNewGrantRemainConservative|TestHostSettlementCompactsBeyondOperationBoundButKeepsWatermark|TestHostActualCapacitySettlementRetainsCancelledShrinkBefore|TestHostActualCapacityCannotRegressOrLoseUnknownSettlement|TestInitialHostSettlementRequiresV8AndPreservesComparableSource|TestSuccessfulSettlementPreservesRetirementVersionBarrier|TestPG17UP1SealBeforeReserveAndPlacementBarrier|TestPG17UP1ReservedSealUnknownAndLateBind|TestPG17UP1BoundSealPreservesRetainedBudgetAndSettlement|TestPG17UP1LatestBarrierRetiresTrustedInitialPrefix|TestPG17UP1BarrierCodecCloneAndSourceDrift|TestPG17UP1SealRejectsChangedNodeLeaseAndOwner|TestPG17UP1KeyedPlacementHonorsClosedThroughWithoutSeal)$",
+    "source_head": "02a1b0c90e58e3dfed2bb9f2c7c44e98a207ca28",
+    "exit_code": 0,
+    "root_results": [
+      {
+        "id": "PG17-U-P1-008-01",
+        "root": "TestHostActualCapacitySettlementRetainsCancelledShrinkBefore",
+        "result": "PASS",
+        "elapsed_seconds": 1.21
+      },
+      {
+        "id": "PG17-U-P1-008-02",
+        "root": "TestHostActualCapacityCannotRegressOrLoseUnknownSettlement",
+        "result": "PASS",
+        "elapsed_seconds": 2.81
+      },
+      {
+        "id": "PG17-U-P1-008-03",
+        "root": "TestInitialHostSettlementRequiresV8AndPreservesComparableSource",
+        "result": "PASS",
+        "elapsed_seconds": 0.42
+      },
+      {
+        "id": "PG17-U-P1-008-04",
+        "root": "TestNodeLedgerRejectsChangedAliasesBootsAndOverflow",
+        "result": "PASS",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "id": "PG17-U-P1-008-05",
+        "root": "TestNodeLedgerStrictSourcesAndBoundNeverEvictHeldMemory",
+        "result": "PASS",
+        "elapsed_seconds": 6.61
+      },
+      {
+        "id": "PG17-U-P1-008-06",
+        "root": "TestCompletePlacementsMultiWriterCASAndUnknownRecovery",
+        "result": "PASS",
+        "elapsed_seconds": 0.04
+      },
+      {
+        "id": "PG17-U-P1-008-07",
+        "root": "TestInitialVMRequiresOriginalCompletePlacement",
+        "result": "PASS",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "id": "PG17-U-P1-008-08",
+        "root": "TestBoundHostElectionPreservesOriginalUIDAndEpoch",
+        "result": "PASS",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "id": "PG17-U-P1-008-09",
+        "root": "TestPlacementSchemaBoundsAndRoundTripRemainStrict",
+        "result": "PASS",
+        "elapsed_seconds": 0.2
+      },
+      {
+        "id": "PG17-U-P1-001",
+        "root": "TestPG17UP1SealBeforeReserveAndPlacementBarrier",
+        "result": "PASS",
+        "elapsed_seconds": 0.63
+      },
+      {
+        "id": "PG17-U-P1-002",
+        "root": "TestPG17UP1ReservedSealUnknownAndLateBind",
+        "result": "PASS",
+        "elapsed_seconds": 0.04
+      },
+      {
+        "id": "PG17-U-P1-003",
+        "root": "TestPG17UP1BoundSealPreservesRetainedBudgetAndSettlement",
+        "result": "PASS",
+        "elapsed_seconds": 3.22
+      },
+      {
+        "id": "PG17-U-P1-004",
+        "root": "TestPG17UP1LatestBarrierRetiresTrustedInitialPrefix",
+        "result": "PASS",
+        "elapsed_seconds": 4
+      },
+      {
+        "id": "PG17-U-P1-005",
+        "root": "TestPG17UP1BarrierCodecCloneAndSourceDrift",
+        "result": "PASS",
+        "elapsed_seconds": 0.1
+      },
+      {
+        "id": "PG17-U-P1-006",
+        "root": "TestPG17UP1SealRejectsChangedNodeLeaseAndOwner",
+        "result": "PASS",
+        "elapsed_seconds": 0.18
+      },
+      {
+        "id": "PG17-U-P1-007",
+        "root": "TestPG17UP1KeyedPlacementHonorsClosedThroughWithoutSeal",
+        "result": "PASS",
+        "elapsed_seconds": 0.82
+      },
+      {
+        "id": "PG17-U-P1-008-10",
+        "root": "TestNodeLedgerPublishedClaimKeepsOriginalUIDAndIndependentCopies",
+        "result": "PASS",
+        "elapsed_seconds": 0.04
+      },
+      {
+        "id": "PG17-U-P1-008-11",
+        "root": "TestNodeLedgerPublicationLostReplyAndSourceFailuresNeverRebind",
+        "result": "PASS",
+        "elapsed_seconds": 0.08
+      },
+      {
+        "id": "PG17-U-P1-008-12",
+        "root": "TestSuccessfulSettlementPreservesRetirementVersionBarrier",
+        "result": "PASS",
+        "elapsed_seconds": 0.21
+      },
+      {
+        "id": "PG17-U-P1-008-13",
+        "root": "TestHostSettlementDropsOnlyClosedPeakAndCannotReopenExecution",
+        "result": "PASS",
+        "elapsed_seconds": 1.61
+      },
+      {
+        "id": "PG17-U-P1-008-14",
+        "root": "TestHostSettlementUnknownCASAndNewGrantRemainConservative",
+        "result": "PASS",
+        "elapsed_seconds": 1.61
+      },
+      {
+        "id": "PG17-U-P1-008-15",
+        "root": "TestHostSettlementCompactsBeyondOperationBoundButKeepsWatermark",
+        "result": "PASS",
+        "elapsed_seconds": 0.37
+      },
+      {
+        "id": "PG17-U-P1-008-16",
+        "root": "TestNodeLedgerOriginalHoldLostRepliesAndReadOnlyRetry",
+        "result": "PASS",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "id": "PG17-U-P1-008-17",
+        "root": "TestNodeLedgerCountsSameVMByPeakAndRetainsOldPod",
+        "result": "PASS",
+        "elapsed_seconds": 0.04
+      },
+      {
+        "id": "PG17-U-P1-008-18",
+        "root": "TestNodeLedgerConcurrentCASNeverGrantsSameCapacityTwice",
+        "result": "PASS",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "id": "PG17-U-P1-008-19",
+        "root": "TestNodeLedgerTakeoverPreservesHoldAndFencesLateOldPatch",
+        "result": "PASS",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "id": "PG17-U-P1-008-20",
+        "root": "TestNodeLedgerNeverResetsLostChangedOrExpiredSources",
+        "result": "PASS",
+        "elapsed_seconds": 0.17
+      },
+      {
+        "id": "PG17-U-P1-008-21",
+        "root": "TestHostClosedThroughSettlesCancelledPeakAndRejectsDelayedReserve",
+        "result": "PASS",
+        "elapsed_seconds": 4.01
+      },
+      {
+        "id": "PG17-U-P1-008-22",
+        "root": "TestHostClosedThroughRejectsForgedOrNonMonotonicWitness",
+        "result": "PASS",
+        "elapsed_seconds": 2.81
+      },
+      {
+        "id": "PG17-U-P1-008-23",
+        "root": "TestHostClosedThroughUnknownCASPreservesFenceAndFutureBudget",
+        "result": "PASS",
+        "elapsed_seconds": 2.81
+      }
+    ],
+    "root_count": 30,
+    "subtest_pass_count": 66,
+    "fail_events": [],
+    "package_results": [
+      {
+        "Time": "2026-10-30T12:28:46.712390437Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/hostguard",
+        "Elapsed": 35.276
+      }
+    ],
+    "module_download_messages": 0,
+    "log_sha256": "dcbf1af8b64b8fd404c9c0886108928bacbdd2a791749d0efb9350788d0d9fb4"
+  },
+  "superseded_runs": [
+    {
+      "directory": "/data/neon-build/validation/go-1793362758845491567",
+      "reason": "Passed before final idempotent Reserve Claim clone fix; final combined validation supersedes source evidence"
+    },
+    {
+      "directory": "/data/neon-build/validation/go-1793362949356591719",
+      "reason": "Passed before final idempotent Reserve Claim clone fix; final combined validation supersedes source evidence"
+    }
+  ]
+}

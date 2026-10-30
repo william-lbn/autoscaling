@@ -36,6 +36,7 @@ var ErrUninitialized = errors.New("original Host allocator is not initialized")
 var (
 	ErrUnpublished = errors.New("original Host capacity is held but claim UID is not yet published")
 	ErrSettled     = errors.New("original Host peak is settled; only current budget reads are permitted")
+	ErrSealed      = errors.New("original Host request is sealed; execution cannot reopen")
 )
 
 type Store struct {
@@ -98,6 +99,13 @@ func (s *Store) BindClaim(ctx context.Context, snapshot *Snapshot, p Plan, ref b
 	actor, err := s.authorize(ctx, snapshot.node)
 	if err != nil || actor != snapshot.model.LeaseFloor {
 		return nil, fmt.Errorf("host publication owner is no longer original fenced holder")
+	}
+	// 包括已有准确Claim的幂等Bind也必须经过最终Node执行门禁。
+	if err := snapshot.model.checkPreparedBarrier(p); err != nil {
+		return nil, err
+	}
+	if _, closed := snapshot.model.settledPlacement(p); closed {
+		return nil, ErrSettled
 	}
 	h, err := snapshot.Hold(p)
 	if err != nil {
@@ -169,6 +177,11 @@ func inspectClaim(n *core.Node, p Plan, source string, ref budget.ObjectRef, exp
 	}
 	if m.ProtocolVersion < 2 || *h.Claim != ref {
 		return fmt.Errorf("original Host claim UID differs from published Node hold")
+	}
+	// 只有显式当前旧预算读者可核原持有；它须先给出准确预算/Claim。
+	// 执行读者即使看到原CM及原Claim也不能越过Node封存水位。
+	if err := m.checkPreparedBarrier(p); err != nil && (expected == nil || !errors.Is(err, ErrSealed)) {
+		return err
 	}
 	if closed, settled := m.settledPlacement(p); settled {
 		if expected == nil {
@@ -387,6 +400,16 @@ func (s *Store) initialize(ctx context.Context, expectedVersion string, outside 
 // 节点lease holder可以是不同副本；只有“增加/保留容量”可由任一可信Scheduler
 // 写者执行，发布和释放仍要求原holder。网络间无本地锁，任何未知保持原记账。
 func (s *Store) HoldPlacement(ctx context.Context, snapshot *Snapshot, p Placement) (*Snapshot, Placement, error) {
+	return s.holdPlacementFor(ctx, snapshot, p, nil)
+}
+
+// HoldPlacementFor保留原多写者容量CAS；key须来自当前原VM Active，不能
+// 由调用方拿更大目标数值代替授权。它不授Host发布、封存或容量退还权。
+func (s *Store) HoldPlacementFor(ctx context.Context, snapshot *Snapshot, p Placement, key control.Key) (*Snapshot, Placement, error) {
+	return s.holdPlacementFor(ctx, snapshot, p, &key)
+}
+
+func (s *Store) holdPlacementFor(ctx context.Context, snapshot *Snapshot, p Placement, key *control.Key) (*Snapshot, Placement, error) {
 	var none Placement
 	if snapshot == nil || snapshot.model.Binding != s.binding || snapshot.model.ProtocolVersion < 3 {
 		return nil, none, fmt.Errorf("pod allocation requires original initialized v3 Node snapshot")
@@ -419,7 +442,7 @@ func (s *Store) HoldPlacement(ctx context.Context, snapshot *Snapshot, p Placeme
 	if err != nil {
 		return nil, none, err
 	}
-	m, err := snapshot.model.reservePlacement(p, total)
+	m, err := snapshot.model.reservePlacementFor(p, key, total)
 	if err != nil {
 		return nil, none, err
 	}

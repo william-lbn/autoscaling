@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -363,11 +364,11 @@ func productionInitialService(t *testing.T, mode string) {
 	vmRecovery := strings.HasPrefix(mode, "vm-safety-recover-")
 	actualRecovery := strings.HasPrefix(mode, "actual-safety-recover-")
 	actualShrinkRecovery := mode == "actual-shrink-recover"
-	hostServiceClosure := mode == "host-service-closure"
+	hostServiceClosure := strings.HasPrefix(mode, "host-service-closure")
 	retainedService := strings.HasPrefix(mode, "retained-safety-")
 	retainedInitial := strings.HasPrefix(mode, "retained-safety-initial-")
 	retainedCapacity := strings.HasPrefix(mode, "retained-safety-capacity-")
-	retainedFinalized := mode == "retained-safety-finalized-unknown"
+	retainedFinalized := strings.HasPrefix(mode, "retained-safety-finalized-")
 	actualLatePG := actualRecovery && strings.Contains(mode, "pg-late-commit")
 	pgRecoveryTransfer := pgRecovery && (strings.Contains(mode, "unreceived") || strings.Contains(mode, "expired") || strings.Contains(mode, "takeover"))
 	closureTransfer := (retainedCapacity || actualRecovery || vmRecovery) && strings.HasSuffix(mode, "takeover") || pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
@@ -381,6 +382,7 @@ func productionInitialService(t *testing.T, mode string) {
 	api, store, coord := newAPI(t)
 	client := vmCore(t)
 	api.mu.Lock()
+	api.hostCoord = client.CoordinationV1()
 	cpuMode := vmv1.CpuScalingModeSysfs
 	api.vm.Spec.CpuScalingMode = &cpuMode
 	api.vm.Spec.ServiceAccountName = "dsga-runner-test"
@@ -391,7 +393,13 @@ func productionInitialService(t *testing.T, mode string) {
 	api.vm.Status.Node = "node-one"
 	api.vm.Status.MemorySize = resource.NewQuantity(512<<20, resource.BinarySI)
 	api.mu.Unlock()
-	dir, err := os.MkdirTemp("/private/tmp", "dsga-first-")
+	// Mac默认临时目录可能超出Unix socket路径上限，保留其短路径；
+	// Linux使用真实/tmp，不在目标机制造Mac专属/private/tmp目录。
+	tempBase := "/tmp"
+	if runtime.GOOS == "darwin" {
+		tempBase = "/private/tmp"
+	}
+	dir, err := os.MkdirTemp(tempBase, "dsga-first-")
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = os.RemoveAll(dir) })
 	runner, err := vmguard.Initialize(context.Background(), store, client.CoreV1(), coord, vmguard.Config{StateDir: dir, PodName: "runner", PodUID: "runner-uid", NodeName: "node-one", MinimumBytes: 512 << 20, MaximumBytes: 2 << 30})
@@ -460,6 +468,12 @@ func productionInitialService(t *testing.T, mode string) {
 		// 独立新根串联正常Grow真实前驱及Shrink实际恢复；仅扩大
 		// 整体测试上限，不改生产请求、Kube限流或Lease时限。
 		deadline = 6 * time.Minute
+	}
+	if strings.Contains(mode, "completed-bound") {
+		// Linux race实测本根含普通成功前驱、独立恢复和完整2048后继，
+		// 每次完整来源审计19～27秒；只扩整根上限，单RPC/Lease及
+		// 每阶段30秒诊断期限保持不变，不用no-op减掉真实后继。
+		deadline = 8 * time.Minute
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), deadline)
 	defer cancel()
@@ -578,7 +592,7 @@ func productionInitialService(t *testing.T, mode string) {
 		if automaticMode || actualShrinkRecovery {
 			extra = []budget.QualifiedTarget{{VMMemoryBytes: 1 << 30, GuestUsableMemoryBytes: 768 << 20, Limits: p.Limits, SystemOutsidePGBytes: 24 << 20, TransitionBytes: 4 << 20, SafetyBytes: 4 << 20}}
 		}
-		if finalizationCancel {
+		if finalizationCancel || strings.Contains(mode, "completed-bound") {
 			// 新取消目标在首次绑定前就具有独立平台资格；不能在取消后
 			// 按实际占用补造新规格，或把旧1GiB预算冒充2GiB成功。
 			extra = []budget.QualifiedTarget{{VMMemoryBytes: 2 << 30, GuestUsableMemoryBytes: (2 << 30) - (256 << 20), Limits: p.Limits, SystemOutsidePGBytes: 24 << 20, TransitionBytes: 4 << 20, SafetyBytes: 4 << 20}}
@@ -757,7 +771,7 @@ func productionInitialService(t *testing.T, mode string) {
 		if hostServiceClosure {
 			// 原Initial及首次开放、Prepare均由正式生产者完成；在本请求
 			// 尚未发布Host之前独立验证关闭门禁，不借领域夹具补永久头。
-			verifyHostPublisherServiceClosure(t, ctx, client, coord, store, session, worker, prepared, qmp)
+			verifyHostPublisherServiceClosure(t, ctx, client, coord, store, session, worker, prepared, qmp, api, strings.HasSuffix(mode, "seal"))
 			return nil
 		}
 		if successorHost != nil {
@@ -771,7 +785,12 @@ func productionInitialService(t *testing.T, mode string) {
 			// 可能超过静态夹具Lease的60秒寿命。用原UID/holder的真实
 			// 选主续租维持Host，不放宽生产过期校验，也不重建同名来源。
 			if retainedService || actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || finalizationCancel || strings.HasPrefix(mode, "cleanup-safety-") {
-				keepPGTakeoverHostOwner(t, ctx, client)
+				stopHost := keepPGTakeoverHostOwner(t, ctx, client)
+				if strings.Contains(mode, "completed-bound") {
+					api.mu.Lock()
+					api.p1HostStop = stopHost
+					api.mu.Unlock()
+				}
 			}
 		}
 		for _, action := range []journal.Action{journal.ReserveHost, journal.ResizeVM} {

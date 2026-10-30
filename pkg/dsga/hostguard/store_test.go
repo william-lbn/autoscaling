@@ -30,6 +30,7 @@ import (
 type nodeAPI struct {
 	mu          sync.Mutex
 	node        core.Node
+	pods        map[string]core.Pod
 	lease       coord.Lease
 	version     int
 	patches     int
@@ -49,7 +50,7 @@ func newNodeAPI(t *testing.T) (*nodeAPI, *Store) {
 	controller, holder, transitions, duration := true, "host-controller-one", int32(0), int32(60)
 	stamp := metav1.NewMicroTime(time.Now())
 	l := coord.Lease{TypeMeta: metav1.TypeMeta{Kind: "Lease", APIVersion: "coordination.k8s.io/v1"}, ObjectMeta: metav1.ObjectMeta{Name: b.LeaseName, Namespace: b.Namespace, UID: b.LeaseUID, ResourceVersion: "lease-rv-1", Annotations: map[string]string{LeaseAnnotation: LeaseMarker(b)}, OwnerReferences: []metav1.OwnerReference{{APIVersion: "v1", Kind: "Node", Name: b.NodeName, UID: b.NodeUID, Controller: &controller, BlockOwnerDeletion: nil}}}, Spec: coord.LeaseSpec{HolderIdentity: &holder, LeaseDurationSeconds: &duration, AcquireTime: &stamp, RenewTime: &stamp, LeaseTransitions: &transitions, Strategy: nil, PreferredHolder: nil}}
-	f := &nodeAPI{mu: sync.Mutex{}, node: n, lease: l, version: 1, patches: 0, loseReply: false, beforePatch: nil, config: nil}
+	f := &nodeAPI{mu: sync.Mutex{}, node: n, pods: make(map[string]core.Pod), lease: l, version: 1, patches: 0, loseReply: false, beforePatch: nil, config: nil}
 	server := httptest.NewServer(http.HandlerFunc(f.serve))
 	t.Cleanup(server.Close)
 	f.config = new(rest.Config)
@@ -95,6 +96,19 @@ func (f *nodeAPI) serve(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		_ = json.NewEncoder(w).Encode(f.lease)
+		return
+	}
+	// v9容量写入仍必须真实GET同UID的受保护原Pod；与Node共用同一HTTP
+	// peer与互斥状态，不用另一个脱离Node CAS的fake视图代替来源。
+	if strings.HasPrefix(r.URL.Path, "/api/v1/namespaces/") {
+		parts := strings.Split(r.URL.Path, "/")
+		if r.Method == http.MethodGet && len(parts) == 7 && parts[5] == "pods" {
+			if pod, ok := f.pods[parts[4]+"/"+parts[6]]; ok {
+				_ = json.NewEncoder(w).Encode(pod)
+				return
+			}
+		}
+		http.Error(w, "original Pod unavailable", http.StatusNotFound)
 		return
 	}
 	if r.URL.Path != "/api/v1/nodes/node-one" {

@@ -40,6 +40,10 @@ type ServiceRetainedRecovery struct {
 	NativeVMCancellation  *RetainedRunnerCancellation `json:"native_vm_cancellation"`
 	TailVM                *budget.NativeCapacity      `json:"tail_vm"`
 	TailVMCancellation    *RetainedRunnerCancellation `json:"tail_vm_cancellation"`
+	// Completed Prepare必须保存独立完整Node封存，不能借Host404或Planned
+	// 放宽原分支。可选字段缺省保留旧JSON形状；旧严格读者拒绝新字段。
+	PreparedHostBarrier *budget.HostReservationBarrier `json:"prepared_host_barrier,omitempty"`
+	ClosedCommandSHA256 string                         `json:"closed_command_sha256,omitempty"`
 }
 
 func earlyRetainedOperation(op Operation) error {
@@ -171,7 +175,7 @@ func (p ServiceRetainedRecovery) ValidateFor(op Operation) error {
 	hash, err := operationClosureDigest(&op)
 	leaf, factErr := p.Source.validatedLeaf()
 	facts := leaf.facts
-	if err != nil || factErr != nil || earlyRetainedOperation(op) != nil || hash != p.OperationSHA256 || !validIncarnation(p.Incarnation) || !recoveryOwnerAt(p.Origin, op.Origin, p.Origin) || !recoveryOwnerAt(p.Origin, p.ClosedOrigin, p.Origin) || p.Closed.Validate() != nil || p.Closed.Open || p.Closed.Instance != op.Request.Key.Instance || facts.instance != op.Request.Key.Instance || p.Closed.BudgetCommitmentID != op.Request.BudgetCommitmentID || p.Closed.IssuerEpoch != p.ClosedOrigin.Epoch || p.Closed.ExpectedCapacityGeneration != facts.generation || op.Request.ExpectedCapacityGeneration != facts.generation || p.Source.RecordedSequence >= p.ClosedStartedSequence || p.ClosedStartedSequence == 0 || p.ClosedSequence <= p.ClosedStartedSequence || p.RecordedSequence <= p.ClosedSequence {
+	if err != nil || factErr != nil || p.validatePreparedHost(op, leaf) != nil || hash != p.OperationSHA256 || !validIncarnation(p.Incarnation) || !recoveryOwnerAt(p.Origin, op.Origin, p.Origin) || !recoveryOwnerAt(p.Origin, p.ClosedOrigin, p.Origin) || p.Closed.Validate() != nil || p.Closed.Open || p.Closed.Instance != op.Request.Key.Instance || facts.instance != op.Request.Key.Instance || p.Closed.BudgetCommitmentID != op.Request.BudgetCommitmentID || p.Closed.IssuerEpoch != p.ClosedOrigin.Epoch || p.Closed.ExpectedCapacityGeneration != facts.generation || op.Request.ExpectedCapacityGeneration != facts.generation || p.Source.RecordedSequence >= p.ClosedStartedSequence || p.ClosedStartedSequence == 0 || p.ClosedSequence <= p.ClosedStartedSequence || p.RecordedSequence <= p.ClosedSequence {
 		return fmt.Errorf("retained recovery changed original early operation, closed selection or prior budget")
 	}
 	if p.Fence.Disposition != control.Fenced || p.Fence.ValidateFor(control.FenceRequest{ProtocolVersion: 1, Instance: facts.instance, IssuerEpoch: p.Origin.Epoch}, facts.instance) != nil || !control.SameResizeRecoveryBoundary(p.Fence.Observed, p.Current.Observed) || p.Current.Observed.AdmissionOpen || p.Current.Observed.AdmissionRevision != p.Closed.Revision || p.validateCurrentWithLeaf(p.Current, p.Root, p.Origin, facts.memory, facts.usable, leaf) != nil {
@@ -204,6 +208,10 @@ func cloneServiceRetainedRecovery(p *ServiceRetainedRecovery) *ServiceRetainedRe
 		return nil
 	}
 	n := *p
+	if p.PreparedHostBarrier != nil {
+		b := p.PreparedHostBarrier.Clone()
+		n.PreparedHostBarrier = &b
+	}
 	n.Source = *cloneRetainedBudgetSource(&p.Source)
 	n.Current.Observed = cloneActualSnapshot(p.Current.Observed)
 	n.Fence.Observed = cloneActualSnapshot(p.Fence.Observed)
@@ -256,6 +264,12 @@ func (m Model) validateServiceRetainedRecovery() error {
 	if m.serviceClosureVersion() != 16 || c.Pending() || m.Active == nil || m.ResourceIdentity == nil || c.ActualRecovery != nil || c.Finalization != nil || c.CleanupRecovery != nil || c.ResourceRecovery != nil || c.PGRecovery != nil || c.PGRejection != nil || c.VMRecovery != nil || p.RecordedSequence > m.Sequence || p.Incarnation != m.Incarnation || p.Root.Identity != *m.ResourceIdentity || !recoveryOwnerAt(m.Owner, p.Origin, m.Owner) || p.ClosedOrigin != origin || p.Closed != closed || p.ClosedStartedSequence != c.StartedSequence || p.ClosedSequence != at || p.OperationSHA256 != c.OperationSHA256 || m.checkRetainedSource(p.Source) != nil || !reflect.DeepEqual(p.Anchor, anchor) {
 		return fmt.Errorf("retained recovery replaced original confirmed closure or current permanent source")
 	}
+	if p.PreparedHostBarrier != nil {
+		_, _, _, selected := c.Selection()
+		if p.ClosedCommandSHA256 != selected || m.checkPreparedHostBarrier(*p.PreparedHostBarrier) != nil {
+			return fmt.Errorf("retained Host barrier changed original selected closure")
+		}
+	}
 	return p.ValidateFor(*m.Active)
 }
 
@@ -281,13 +295,16 @@ func (m Model) RecordServiceRetainedRecovery(actor Owner, selector string, input
 	// 未落账输入必须没有自报metadata，避免静默接受相互矛盾的原命令引用。
 	var noOwner Owner
 	var noAdmission control.AdmissionRequest
-	if p.RecordedSequence != 0 || p.Origin != noOwner || p.Incarnation != "" || p.OperationSHA256 != "" || p.ClosedSequence != 0 || p.ClosedStartedSequence != 0 || p.ClosedOrigin != noOwner || p.Closed != noAdmission {
+	if p.RecordedSequence != 0 || p.Origin != noOwner || p.Incarnation != "" || p.OperationSHA256 != "" || p.ClosedSequence != 0 || p.ClosedStartedSequence != 0 || p.ClosedOrigin != noOwner || p.Closed != noAdmission || p.ClosedCommandSHA256 != "" {
 		return m, fmt.Errorf("retained recovery metadata must come from original WAL")
 	}
 	p.Origin, p.RecordedSequence, p.Incarnation, p.OperationSHA256 = actor, next.Sequence, m.Incarnation, c.OperationSHA256
 	p.ClosedOrigin, p.Closed, p.ClosedStartedSequence, p.ClosedSequence = origin, closed, c.StartedSequence, c.RecordedSequence
 	if c.Continuation != nil {
 		p.ClosedSequence = c.Continuation.RecordedSequence
+	}
+	if p.PreparedHostBarrier != nil {
+		p.ClosedCommandSHA256 = selected
 	}
 	next.ServiceClosure.RetainedRecovery = p
 	return next, next.Validate()

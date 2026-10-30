@@ -53,6 +53,10 @@ type CollectionProgress struct {
 // 不将它编码成Settlement，更不把该水位用于释放原Node placement。
 // 当前Source与slot完整证明另由每次真实Model/网络读取认证；游标仅存有界标识。
 type initialCollectionWatermark struct {
+	// 仅控制有界发现的种类；所有删除仍独立重读完整来源。带Node
+	// 屏障的Initial要扫描Outside/跳过receipt/Host三段，不能在中段
+	// 错误重置，也不能完成后永久跳过迟到CREATE的重新发现。
+	HostSources      bool
 	SourceSHA256     string
 	RecordedSequence control.Uint64
 	ThroughKey       control.Key
@@ -91,8 +95,12 @@ func (p *CollectionProgress) prepare(binding journal.Binding, closed hostguard.S
 }
 
 func (p *CollectionProgress) prepareInitial(binding journal.Binding, watermark initialCollectionWatermark) {
-	if p.binding != binding || p.initial != watermark || p.kind == 1 {
-		var noSettlement hostguard.Settlement
+	var noSettlement hostguard.Settlement
+	kinds := 1
+	if watermark.HostSources {
+		kinds = 3
+	}
+	if p.binding != binding || p.initial != watermark || p.closed != noSettlement || p.kind == kinds {
 		p.binding, p.closed, p.initial = binding, noSettlement, watermark
 		p.kind, p.continuation, p.end, p.retry, p.pending = 0, "", false, false, nil
 	}
@@ -485,7 +493,7 @@ func initialSourceWatermark(m journal.Model) (initialCollectionWatermark, error)
 		return none, fmt.Errorf("initial source collection lost exact current permanent source")
 	}
 	source := coverage.RetainedRecovery.Source
-	return initialCollectionWatermark{SourceSHA256: source.SourceSHA256, RecordedSequence: source.RecordedSequence, ThroughKey: record.Operation.Request.Key, ClosedSequence: record.ClosedSequence}, nil
+	return initialCollectionWatermark{HostSources: coverage.RetainedRecovery.PreparedHostBarrier != nil, SourceSHA256: source.SourceSHA256, RecordedSequence: source.RecordedSequence, ThroughKey: record.Operation.Request.Key, ClosedSequence: record.ClosedSequence}, nil
 }
 
 // 预算来源与原Runner的当前终态分别认证。InitialVM必须从未有命令；合法
@@ -562,10 +570,21 @@ func (p *Publisher) collectRetainedInitialSources(ctx context.Context, s *journa
 		return err
 	}
 	progress.prepareInitial(p.vm.Binding(), watermark)
+	barrier := m.RetainedCoverage.Record.ServiceCoverage.RetainedRecovery.PreparedHostBarrier
 	eligible := func(cm *core.ConfigMap) (string, bool) {
-		return p.oldSourceThrough(cm, m, birth, ref, watermark.ThroughKey, watermark.ClosedSequence, keep, false)
+		if finalizer, ok := p.oldSourceThrough(cm, m, birth, ref, watermark.ThroughKey, watermark.ClosedSequence, keep, false); ok {
+			return finalizer, true
+		}
+		if barrier != nil {
+			return p.oldInitialSealedHost(cm, m, *barrier, keep)
+		}
+		return "", false
 	}
-	collected := p.collectSourcePages(ctx, progress, 1, eligible, func(candidate collectionCandidate) error {
+	kinds := 1
+	if barrier != nil {
+		kinds = 3
+	} // 第2类只扫描而不授权Runner receipt；第3类为Host。
+	collected := p.collectSourcePages(ctx, progress, kinds, eligible, func(candidate collectionCandidate) error {
 		return p.deleteCollectedSource(ctx, candidate, eligible, func() error {
 			return p.initialSourceCollectionBoundary(ctx, s)
 		})
@@ -632,6 +651,8 @@ func (p *Publisher) collectSourcePages(ctx context.Context, progress *Collection
 			selector := budgetclaims.ClaimLabel + "=" + budgetclaims.OutsideKind
 			if progress.kind == 1 {
 				selector = vmguard.ClaimLabel + "=" + vmguard.ReceiptKind
+			} else if progress.kind == 2 {
+				selector = budgetclaims.ClaimLabel + "=" + budgetclaims.HostKind
 			}
 			list, err := p.core.ConfigMaps(p.vm.Binding().Namespace).List(ctx, metav1.ListOptions{LabelSelector: selector, Limit: sourcePageSize, Continue: progress.continuation})
 			if err != nil {

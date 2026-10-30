@@ -161,7 +161,7 @@ func (m Model) validateRetainedCoverage() error {
 func (m Model) retainedServiceSource() (RetainedBudgetSource, error) {
 	var none RetainedBudgetSource
 	c := m.ServiceClosure
-	if c == nil || m.serviceClosureVersion() != 16 || m.Active == nil || earlyRetainedOperation(*m.Active) != nil || c.ActualRecovery != nil || c.Finalization != nil || c.CleanupRecovery != nil || c.ResourceRecovery != nil || c.PGRecovery != nil || c.PGRejection != nil || c.VMRecovery != nil {
+	if c == nil || m.serviceClosureVersion() != 16 || m.Active == nil || retainedOperationCandidate(*m.Active) != nil || c.ActualRecovery != nil || c.Finalization != nil || c.CleanupRecovery != nil || c.ResourceRecovery != nil || c.PGRecovery != nil || c.PGRejection != nil || c.VMRecovery != nil {
 		return none, fmt.Errorf("retained recovery requires original early category16 closure")
 	}
 	return m.currentRetainedSource()

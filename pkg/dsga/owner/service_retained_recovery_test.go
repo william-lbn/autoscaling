@@ -103,6 +103,9 @@ func verifyProductionRetainedSuccessor(t *testing.T, ctx context.Context, mode s
 		// 同1GiB原资格且normal上限不降；这里只准备一个不同的新目标，
 		// 原Shrink尚未执行，不能借它重算旧1GiB预算或提前释放Host。
 		next.Kind, next.TargetBuffers = control.Shrink, 512
+		if strings.Contains(mode, "completed-bound") {
+			next.Kind, next.TargetBuffers, next.TargetVMMemoryBytes = control.Grow, 2048, 2<<30
+		}
 	}
 	pg.mu.Lock()
 	pg.request, pg.before, pg.after, pg.resized = next, current, current, false
@@ -132,6 +135,7 @@ func retainedHostPublisher(t *testing.T, ctx context.Context, core *kubefake.Cli
 func verifyProductionServiceRetainedRecovery(t *testing.T, ctx context.Context, mode string, api *ownerAPI, store *journal.Store, core *kubefake.Clientset, coord coordclient.CoordinationV1Interface, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, qualification budget.QualificationSource, pg *initialServicePG, root *guestRootFixture, runner *vmguard.Runner, qmp *vmQMPPeer, transfer *businessOwnerTransfer) {
 	t.Helper()
 	initial := strings.Contains(mode, "initial")
+	completed := strings.Contains(mode, "completed-")
 	unknown := strings.Contains(mode, "unknown")
 	lateCreate := initial && unknown
 	before, err := store.Load(ctx)
@@ -141,6 +145,13 @@ func verifyProductionServiceRetainedRecovery(t *testing.T, ctx context.Context, 
 	oldID, err := source.BudgetCommitmentID()
 	require.NoError(t, err)
 	require.NotEqual(t, oldID, before.State().Active.Request.BudgetCommitmentID)
+	var hostCase *preparedHostBusiness
+	if completed {
+		progress, prepareErr := worker.Advance(ctx)
+		require.NoError(t, prepareErr)
+		require.Equal(t, pgexec.Recorded, progress, "Prepare由正式生产者完成而非填回执")
+		hostCase = prepareHostBusiness(t, ctx, mode, api, core, coord, store, session)
+	}
 	var late *corev1.ConfigMap
 	var releaseOnce sync.Once
 	release, persisted := make(chan struct{}), make(chan error, 1)
@@ -188,6 +199,9 @@ func verifyProductionServiceRetainedRecovery(t *testing.T, ctx context.Context, 
 	if unknown {
 		wantedPhase = journal.Unconfirmed
 	}
+	if completed {
+		wantedPhase = journal.Settled
+	}
 	require.Equal(t, wantedPhase, original.Active.Steps[0].Phase)
 	for _, step := range original.Active.Steps[1:] {
 		require.Equal(t, journal.Planned, step.Phase)
@@ -221,6 +235,14 @@ func verifyProductionServiceRetainedRecovery(t *testing.T, ctx context.Context, 
 	pg.mu.Lock()
 	pg.reopenFixture = &reopening
 	pg.mu.Unlock()
+	if hostCase != nil {
+		_, rejectedErr := worker.executeControl(ctx, closureControl(session, config.Instance, control.CoordinationReopenService, selector))
+		require.ErrorIs(t, rejectedErr, ErrServiceSafety, "Completed Prepare缺Node屏障必须拒绝原预算恢复")
+		unchanged, readErr := store.Load(ctx)
+		require.NoError(t, readErr)
+		require.Nil(t, unchanged.State().ServiceClosure.RetainedRecovery)
+		hostCase.seal(t, ctx, store)
+	}
 	if source.Finalization != nil {
 		var command budget.FinalizationCommand
 		require.NoError(t, json.Unmarshal(source.Finalization.Command, &command))
@@ -245,6 +267,9 @@ func verifyProductionServiceRetainedRecovery(t *testing.T, ctx context.Context, 
 	require.NoError(t, err)
 	proof := s.State().ServiceClosure.RetainedRecovery
 	require.NotNil(t, proof)
+	if hostCase != nil {
+		hostCase.checkProof(t, ctx, s, store, worker)
+	}
 	require.Equal(t, source, proof.Source)
 	require.Equal(t, original.Active, s.State().Active)
 	require.Equal(t, original.InitialHeld, s.State().InitialHeld)
@@ -345,7 +370,9 @@ func verifyProductionServiceRetainedRecovery(t *testing.T, ctx context.Context, 
 	}
 	var publisher *hostexec.Publisher
 	var allocator *hostguard.Store
-	if initial {
+	if hostCase != nil {
+		publisher, allocator = hostCase.publisher, hostCase.allocator
+	} else if initial {
 		publisher, allocator = actualHostPublisher(t, core, coord, store, session)
 	} else {
 		publisher, allocator = retainedHostPublisher(t, ctx, core, coord, store, session)
@@ -388,6 +415,9 @@ func verifyProductionServiceRetainedRecovery(t *testing.T, ctx context.Context, 
 		_, err = core.CoreV1().ConfigMaps(late.Namespace).Get(ctx, late.Name, metav1.GetOptions{})
 		require.True(t, apierrors.IsNotFound(err), "完整初始覆盖后仅回收原Key迟到Outside，原资格/出生继续持有")
 	}
+	if hostCase != nil {
+		hostCase.checkRetired(t, ctx, done, settled)
+	}
 	t.Log("Host原实际预算/初始持有与精确来源回收已确认")
 	root.mu.Lock()
 	require.Equal(t, rootWrites, root.posts)
@@ -403,11 +433,11 @@ func verifyProductionServiceRetainedRecovery(t *testing.T, ctx context.Context, 
 	require.Equal(t, vmWrites, qmp.writes, "早期恢复没有原VM命令，不补发或合成取消")
 	qmp.mu.Unlock()
 	if strings.Contains(mode, "finalized") {
-		verifyRetainedNormalSuccessor(t, ctx, api, store, core, session, resources, worker, qualification, pg, runner, publisher)
+		verifyRetainedNormalSuccessor(t, ctx, api, store, core, session, resources, worker, qualification, pg, runner, publisher, hostCase)
 	}
 }
 
-func verifyRetainedNormalSuccessor(t *testing.T, ctx context.Context, api *ownerAPI, store *journal.Store, core *kubefake.Clientset, session *Session, resources *ResourceWorker, worker *PGWorker, qualification budget.QualificationSource, pg *initialServicePG, runner *vmguard.Runner, publisher *hostexec.Publisher) {
+func verifyRetainedNormalSuccessor(t *testing.T, ctx context.Context, api *ownerAPI, store *journal.Store, core *kubefake.Clientset, session *Session, resources *ResourceWorker, worker *PGWorker, qualification budget.QualificationSource, pg *initialServicePG, runner *vmguard.Runner, publisher *hostexec.Publisher, hostCase *preparedHostBusiness) {
 	t.Helper()
 	s, err := store.Load(ctx)
 	require.NoError(t, err)
@@ -487,6 +517,10 @@ func verifyRetainedNormalSuccessor(t *testing.T, ctx context.Context, api *owner
 	require.Nil(t, s.State().Active)
 	require.Equal(t, journal.Succeeded, s.State().History[len(s.State().History)-1].Outcome)
 	require.NoError(t, s.State().CheckClosedBudget(request))
-	_, err = publisher.SettleCurrent(ctx)
-	require.NoError(t, err)
+	if hostCase != nil && strings.HasSuffix(hostCase.mode, "-scheduler") {
+		hostCase.checkSchedulerLateSettlement(t, ctx, api, store, session)
+	} else {
+		_, err = publisher.SettleCurrent(ctx)
+		require.NoError(t, err)
+	}
 }

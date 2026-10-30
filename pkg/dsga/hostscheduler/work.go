@@ -133,9 +133,18 @@ func (s *Service) reconcileWork(ctx context.Context, d domain, snapshot *hostgua
 		if pod.Status.Phase == core.PodSucceeded || pod.Status.Phase == core.PodFailed {
 			err = s.retirePod(ctx, d, &pod)
 		} else {
+			// 已有永久水位的managed行若错过Active阶段，真实新预算可能
+			// 已完成而placement仍是旧额度。Node owner先走完整当前预算
+			// 认证/结清，避免无Key增量拒绝把后面的Settle永远挡住；普通
+			// Pod与共享Framework.Reserve不获得发布或退还资格。
+			if row, rowErr := snapshot.State().Placement(string(pod.UID)); rowErr == nil && row.Managed && (row.Barrier != nil || row.Settled != nil) {
+				err = s.settleBeforeRetainedPlacement(ctx, d, &pod, row)
+			}
 			var canonical *core.Pod
 			var held hostguard.Placement
-			canonical, held, err = s.Reserve(ctx, d.config.Binding.NodeName, &pod, 0)
+			if err == nil {
+				canonical, held, err = s.Reserve(ctx, d.config.Binding.NodeName, &pod, 0)
+			}
 			if err == nil && held.Managed {
 				err = s.publish(ctx, d, canonical, held)
 			}

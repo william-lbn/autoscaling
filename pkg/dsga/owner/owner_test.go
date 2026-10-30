@@ -33,19 +33,22 @@ import (
 // 仅本机HTTP/RFC6902和Lease UID/RV语义夹具，不是apiserver/etcd、真实RBAC或
 // VM许可。选主循环使用锁定版本的生产client-go，journal走真实生成clientset。
 type ownerAPI struct {
-	mu                sync.Mutex
-	vm                *vmv1.VirtualMachine
-	lease             *coordination.Lease
-	vmVersion         int
-	leaseVersion      int
-	denyLeaseWrites   bool
-	denyLeaseHolder   string
-	loseJournalReply  bool
-	loseLeaseReply    bool
-	calls             int
-	config            *rest.Config
-	blockVMGet        bool
-	blockVMGetStarted chan<- struct{}
+	mu                 sync.Mutex
+	vm                 *vmv1.VirtualMachine
+	lease              *coordination.Lease
+	hostCoord          coordclient.CoordinationV1Interface
+	p1HostStop         func()
+	p1HostLeaseReadUID types.UID
+	vmVersion          int
+	leaseVersion       int
+	denyLeaseWrites    bool
+	denyLeaseHolder    string
+	loseJournalReply   bool
+	loseLeaseReply     bool
+	calls              int
+	config             *rest.Config
+	blockVMGet         bool
+	blockVMGetStarted  chan<- struct{}
 }
 
 func binding() journal.Binding {
@@ -67,6 +70,28 @@ func status(w http.ResponseWriter, code int) {
 
 func (api *ownerAPI) serve(w http.ResponseWriter, r *http.Request) {
 	// 不持fixture锁阻塞VM读，让Lease续约仍正常，避免靠失租掩盖检查自身没期限。
+	api.mu.Lock()
+	hostCoord := api.hostCoord
+	hostReadUID := api.p1HostLeaseReadUID
+	api.mu.Unlock()
+	// 不持owner peer锁调用另一来源，避免fake reactor重入或跨域等待。
+	if hostCoord != nil && r.Method == http.MethodGet && strings.HasPrefix(r.URL.Path, "/apis/coordination.k8s.io/v1/namespaces/host-fixture-system/leases/") {
+		parts := strings.Split(r.URL.Path, "/")
+		lease, err := hostCoord.Leases("host-fixture-system").Get(r.Context(), parts[len(parts)-1], metav1.GetOptions{})
+		if err != nil {
+			status(w, http.StatusNotFound)
+			return
+		}
+		// 新P1源读取故障仅改变此固定HTTP读者的响应；canonical Host
+		// owner继续正常续租，避免fake无条件Update把注入的UID覆盖。
+		if hostReadUID != "" {
+			lease = lease.DeepCopy()
+			lease.UID = hostReadUID
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(lease)
+		return
+	}
 	api.mu.Lock()
 	blocked := api.blockVMGet && r.Method == http.MethodGet && strings.HasPrefix(r.URL.Path, "/apis/vm.neon.tech/")
 	blockedStarted := api.blockVMGetStarted

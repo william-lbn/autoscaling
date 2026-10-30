@@ -326,7 +326,7 @@ func (session *Session) NewProductionPGWorker(ctx context.Context, config comput
 	if err != nil {
 		return nil, err
 	}
-	claims, err := budgetclaims.New(core, session.binding)
+	claims, err := budgetclaims.NewWithCoord(core, session.coord, session.binding)
 	var runner *vmguard.Reader
 	if err == nil {
 		runner, err = vmguard.NewReader(core, session.binding, string(session.leaseUID))

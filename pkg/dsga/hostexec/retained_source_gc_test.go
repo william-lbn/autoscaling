@@ -243,6 +243,18 @@ func TestInitialCollectionProgressIsIndependentAndRestartsAfterBoundedScan(t *te
 	progress.kind = 1
 	progress.prepareInitial(p.vm.Binding(), mark)
 	require.Zero(t, progress.kind, "完整扫完后仍重启发现，允许迟到CREATE下轮被精确发现")
+	// PG17-U-P1-011：带屏障的三段发现中，receipt段不是完成，不能
+	// 丢分页尾游标；真正扫完Host段后必须重启，以发现更晚的CREATE。
+	mark.HostSources = true
+	progress.prepareInitial(p.vm.Binding(), mark)
+	progress.kind, progress.continuation = 1, "intermediate-receipt-page"
+	progress.prepareInitial(p.vm.Binding(), mark)
+	require.Equal(t, 1, progress.kind)
+	require.Equal(t, "intermediate-receipt-page", progress.continuation)
+	progress.kind = 3
+	progress.prepareInitial(p.vm.Binding(), mark)
+	require.Zero(t, progress.kind)
+	require.Empty(t, progress.continuation)
 	progress.prepare(p.vm.Binding(), closed)
 	var noInitial initialCollectionWatermark
 	require.Equal(t, noInitial, progress.initial, "普通预算使用自己的Settlement游标")

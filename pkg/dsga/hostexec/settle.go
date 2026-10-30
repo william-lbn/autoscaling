@@ -53,13 +53,18 @@ func (p *Publisher) SettleCurrentWithCollection(ctx context.Context, progress *C
 	m := s.State()
 	if m.Active == nil && m.InitialHeld != nil {
 		// 首次预算持续消费原placement而无Resize结清格式。完整独立
-		// 覆盖后只收该早期请求的Outside垃圾，不生成Settlement、不
-		// 释放placement或Host峰值。未扫完将原ErrCollectionPending
+		// 覆盖后不生成Settlement、不降低placement；带完整Node屏障
+		// 的新分支先独立退休已封原Hold前缀，再精确回收无引用的迟到
+		// Host/Outside。旧分支仍只回收Outside。未扫完将ErrCollectionPending
 		// 传回Scheduler继续有界工作，changed仍只表示Node结清变动。
 		if err := p.checkInitial(ctx, s); err != nil {
 			return false, err
 		}
-		return false, p.collectRetainedInitialSources(ctx, s, progress)
+		changed, err := p.retireInitialSealedHolds(ctx, s, n)
+		if err != nil {
+			return false, err
+		}
+		return changed, p.collectRetainedInitialSources(ctx, s, progress)
 	}
 	if m.Active != nil || m.BudgetHeld == nil && m.CapacityHeld == nil {
 		return false, nil
@@ -135,6 +140,20 @@ func (p *Publisher) SettleCurrentWithCollection(ctx context.Context, progress *C
 // 的Host CM；当前预算、另一Pod/Node/boot和Outside/Runner来源一律不动。
 // 这里删除的是已失执行资格的垃圾，不将其同名新UID“收养”为任何原有效回执。
 func (p *Publisher) collectOldClaims(ctx context.Context, s *journal.Snapshot, closed hostguard.Settlement, podUID string) error {
+	// 永久slot及原Unknown可能继续引用已封存Claim，水位关闭只撤执行
+	// 资格，不取消这些审计/恢复来源的寿命，不能先按Key删掉再扫引用。
+	birth := closed.Runner.BirthClaim
+	if closed.InitialVM.BirthClaim != (budget.ObjectRef{}) {
+		birth = closed.InitialVM.BirthClaim
+	}
+	_, _, published, err := p.runner.Inspect(ctx, &birth, s.State().Owner)
+	if err != nil {
+		return err
+	}
+	keep, err := retainedSourceNames(s.State(), published)
+	if err != nil {
+		return err
+	}
 	options := metav1.ListOptions{LabelSelector: budgetclaims.ClaimLabel + "=" + budgetclaims.HostKind, Limit: 64}
 	for {
 		list, err := p.core.ConfigMaps(p.vm.Binding().Namespace).List(ctx, options)
@@ -143,6 +162,9 @@ func (p *Publisher) collectOldClaims(ctx context.Context, s *journal.Snapshot, c
 		}
 		for i := range list.Items {
 			cm := &list.Items[i]
+			if _, referenced := keep[cm.Name]; referenced {
+				continue
+			}
 			if !p.oldClaim(cm, closed, podUID) {
 				continue
 			}

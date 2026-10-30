@@ -324,7 +324,7 @@ func TestHostPublisherOriginalSourcesAndLostWrites(t *testing.T) {
 // 本窗口复用正式首次预算/开放及Prepare前驱，PG/Root/QMP/Kube仍为明确peer。
 // 关闭是独立Store写前CAS、正式SDK setter及完整回执落账；只认证Host写者闭门，
 // 不扩展Node已在途Reserve的物理/持久屏障，也不将关闭当成Host结清证明。
-func verifyHostPublisherServiceClosure(t *testing.T, ctx context.Context, client *kubefake.Clientset, vmCoord coordclient.CoordinationV1Interface, store *journal.Store, session *Session, worker *PGWorker, p budget.Prepared, peer *vmQMPPeer) {
+func verifyHostPublisherServiceClosure(t *testing.T, ctx context.Context, client *kubefake.Clientset, vmCoord coordclient.CoordinationV1Interface, store *journal.Store, session *Session, worker *PGWorker, p budget.Prepared, peer *vmQMPPeer, api *ownerAPI, sealing ...bool) {
 	t.Helper()
 	publisher, allocator := actualHostPublisher(t, client, vmCoord, store, session)
 	preclose, err := store.Load(ctx)
@@ -381,6 +381,25 @@ func verifyHostPublisherServiceClosure(t *testing.T, ctx context.Context, client
 	require.Zero(t, peer.writes)
 	require.EqualValues(t, p.VMBeforeMemoryBytes, peer.actual)
 	peer.mu.Unlock()
+	if len(sealing) == 1 && sealing[0] {
+		plan := hostguard.Plan{Namespace: store.Binding().Namespace, VMName: store.Binding().Name, Incarnation: store.Binding().Incarnation, RunnerPodUID: "runner-uid", Request: p.Request, BeforeBytes: p.VMBeforeMemoryBytes, HostOverheadBytes: 64 << 20}
+		barrier := schedulerSealsPreparedHost(t, ctx, api, client, vmCoord, allocator, plan)
+		require.Nil(t, barrier.Held)
+		reader, err := budgetclaims.NewWithCoord(client.CoreV1(), vmCoord, store.Binding())
+		require.NoError(t, err)
+		observed, err := reader.ReadPreparedBarrier(ctx, closed)
+		require.NoError(t, err)
+		require.Equal(t, barrier, observed, "固定Agent读者只读认证原完整封存")
+		sealed, err := allocator.Load(ctx)
+		require.NoError(t, err)
+		require.EqualValues(t, 9, sealed.State().ProtocolVersion)
+		require.Empty(t, sealed.State().Holds)
+		require.Equal(t, (*nodeBefore.State().Placements)[0].MemoryBytes, (*sealed.State().Placements)[0].MemoryBytes)
+		current, err := store.Load(ctx)
+		require.NoError(t, err)
+		require.Equal(t, closed.State(), current.State(), "封存只改Node，不保存恢复、不改原WAL")
+		require.Zero(t, creates)
+	}
 }
 
 // 组合实际Service.Run/client-go节点选主→Fence/恢复→Publisher→原CM/Node
