@@ -181,6 +181,9 @@ func verifyUnchangedBudgetAbort(t *testing.T, ctx context.Context, api *ownerAPI
 			require.Error(t, err)
 		}
 		verifyCapacityCleanupSourceFailure(t, ctx, store, session, resources, worker, config, client, root, pg, shared, priorRequest.BudgetCommitmentID, readonly, settled)
+		if strings.Contains(mode, "-recover-") {
+			verifyActualOrUnchangedCleanupRecovery(t, ctx, api, client, coord, store, session, resources, root, pg, shared)
+		}
 		peer.mu.Lock()
 		require.Equal(t, 1, peer.writes, "取消未发送，安全关闭不增加VM反向写")
 		peer.mu.Unlock()

@@ -8,7 +8,8 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
 
-// ReconcileServiceRecovery仅在13/14已结算资源的独立关闭边界核验原PG终态。
+// ReconcileServiceRecovery在13～15已明确资源或18取消预算复核后的独立
+// 关闭边界核验原PG终态；仍未知的资源不在此处重新派发或补造结果。
 // SDK重建仍须恢复原Resize栅栏，不能只凭WAL中的Settled省略它；这里复用
 // 当前owner fence及完整原Key只读查询，解除完全相同的本地Resize pending。
 // 不调用Advance、不发送Resize/开放、不修改原WAL或预算。任何缺失、矛盾、

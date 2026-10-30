@@ -54,6 +54,8 @@ type ServiceClosure struct {
 	// 类别15恢复后独立保留完整结算；原Active/Finalize未知及旧预算仍不改。
 	// 只有后继开放完成CAS可以把它安装为当前永久预算。
 	Finalization *ServiceFinalization `json:"finalization,omitempty"`
+	// 类别18只读复核的独立取消预算；原Cleanup仍保持原相位/完整原文。
+	CleanupRecovery *ServiceCleanupRecovery `json:"cleanup_recovery,omitempty"`
 }
 
 // ProtectedAdmission返回本关闭保护的最初意图。v10/11原意图就是关闭；
@@ -86,7 +88,8 @@ func cloneAdmissionResponse(original *control.AdmissionResponse) *control.Admiss
 // 不将其补成已结算预算。不能由错误文字、RSS或当前资格派生新承诺。
 // 本函数不认证外部对象，也不向Root/Host发出释放许可。
 func (model Model) ServiceBudgetID() (string, error) {
-	if model.ClosureFormatVersion() == 18 {
+	// rearm/reopen是外层恢复阶段，不能把类别18的旧预算ID改成新Active目标。
+	if model.serviceClosureVersion() == 18 {
 		boundary, err := model.cleanupServiceBoundary()
 		return boundary.BudgetCommitmentID, err
 	}
@@ -208,6 +211,9 @@ func (model Model) validateServiceClosure() error {
 		return err
 	}
 	if err := model.validateServiceFinalization(); err != nil {
+		return err
+	}
+	if err := model.validateServiceCleanupRecovery(); err != nil {
 		return err
 	}
 	if err := model.validateServiceRearm(); err != nil {

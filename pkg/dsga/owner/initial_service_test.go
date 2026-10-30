@@ -354,12 +354,12 @@ func productionInitialService(t *testing.T, mode string) {
 	}
 	expiredRetry := strings.HasPrefix(mode, "service-retry-expired-")
 	committedExpiry := mode == "resume-safety-recover-expired" || mode == "finalize-safety-recover-expired"
-	automaticMode := mode == "finalize-safety-recover-automatic" || mode == "resume-safety-recover-automatic" || mode == "service-retry-expired-automatic" || mode == "automatic-policy" || mode == "service-lifecycle-first-unknown-automatic" || mode == "service-retry-first-unknown-automatic"
+	automaticMode := mode == "cleanup-safety-recover-automatic" || mode == "finalize-safety-recover-automatic" || mode == "resume-safety-recover-automatic" || mode == "service-retry-expired-automatic" || mode == "automatic-policy" || mode == "service-lifecycle-first-unknown-automatic" || mode == "service-retry-first-unknown-automatic"
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
 	committedCompletionTransfer := mode == "resume-safety-recover-complete-takeover"
 	finalizationTransfer := strings.HasPrefix(mode, "finalize-safety-recover-") && strings.HasSuffix(mode, "takeover")
 	finalizationCancel := mode == "finalize-safety-recover-planned-unchanged-takeover"
-	closureTransfer := finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
+	closureTransfer := mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
 	pgSafety := strings.HasPrefix(mode, "active-safety-pg-")
 	pgTakeover := mode == "owner-transfer-after-pg"
 	unreceivedGuest := mode == "owner-transfer-before-guest-delivery"
@@ -727,7 +727,21 @@ func productionInitialService(t *testing.T, mode string) {
 				return nil
 			}
 			if action == journal.ResumeAdmission && strings.HasPrefix(mode, "cleanup-safety-") {
-				verifyCleanupServiceSafety(t, ctx, strings.TrimPrefix(mode, "cleanup-safety-"), api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
+				cleanupMode := strings.TrimPrefix(mode, "cleanup-safety-")
+				if strings.HasPrefix(cleanupMode, "recover-") {
+					recoveryMode := strings.TrimPrefix(cleanupMode, "recover-")
+					closureMode := "applied"
+					if recoveryMode == "settled" {
+						closureMode, recoveryMode = "settled", "normal"
+					}
+					verifyCleanupServiceSafety(t, ctx, closureMode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
+					worker = verifyProductionCommittedServiceRecovery(t, ctx, "resume-safety-recover-"+recoveryMode, api, store, client, session, resources, config, source, pg, root, transfer, runner)
+					if automaticMode {
+						verifyProductionAutomaticSuccessor(t, ctx, client, coord, store, session, resources, worker, config, source, pg, runner, qmp)
+					}
+				} else {
+					verifyCleanupServiceSafety(t, ctx, cleanupMode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
+				}
 				return nil
 			}
 			s, err = store.Load(ctx)

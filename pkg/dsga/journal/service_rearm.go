@@ -74,7 +74,7 @@ func (m Model) validateServiceRearm() error {
 		closedAt = c.Continuation.RecordedSequence
 	}
 	rearmVersion := m.ClosureFormatVersion() == 19 || m.ClosureFormatVersion() == 20 && c.Reopen != nil && c.Reopen.ClosureVersion == 19
-	if !rearmVersion || r.ClosureVersion < 10 || r.ClosureVersion > 15 || m.stableServiceRecovery() != nil || c.Pending() || closureErr != nil || heldErr != nil || commandErr != nil || r.ClosureSHA256 != closureHash || r.HeldSHA256 != heldHash || r.CommandSHA256 != rawDigest(raw) || r.Origin.Validate() != nil || r.Origin.Epoch > m.Owner.Epoch || r.Origin.Epoch == m.Owner.Epoch && r.Origin != m.Owner || r.StartedSequence <= closedAt || r.StartedSequence > m.Sequence {
+	if !rearmVersion || !stableClosureVersion(r.ClosureVersion) || m.stableServiceRecovery() != nil || c.Pending() || closureErr != nil || heldErr != nil || commandErr != nil || r.ClosureSHA256 != closureHash || r.HeldSHA256 != heldHash || r.CommandSHA256 != rawDigest(raw) || r.Origin.Validate() != nil || r.Origin.Epoch > m.Owner.Epoch || r.Origin.Epoch == m.Owner.Epoch && r.Origin != m.Owner || r.StartedSequence <= closedAt || r.StartedSequence > m.Sequence {
 		return fmt.Errorf("service rearm changed original closed service, held budget or owner")
 	}
 	b := r.Before
@@ -102,7 +102,7 @@ func (m Model) StartServiceRearm(actor Owner, selector string, before control.Ad
 		return m, err
 	}
 	c := m.ServiceClosure
-	if c == nil || c.Rearm != nil || c.Pending() || m.stableServiceRecovery() != nil || m.ClosureFormatVersion() < 10 || m.ClosureFormatVersion() > 15 {
+	if c == nil || c.Rearm != nil || c.Pending() || m.stableServiceRecovery() != nil || !stableClosureVersion(m.ClosureFormatVersion()) {
 		return m, fmt.Errorf("rearm requires original confirmed stable closure without another selection")
 	}
 	_, _, _, selected := c.Selection()

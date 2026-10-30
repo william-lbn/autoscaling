@@ -13,20 +13,24 @@ import (
 )
 
 // HeldCapacity是部分效果取消后实际完整预算的独立永久头；不改写普通Finalized
-// 或原目标。Cleanup完整回执和替换当前预算在同一Record CAS落账；原始WAL、
-// 来源及owner保留，历史淘汰不能清除。它不代表业务Succeeded或Host已释放。
+// 或原目标。普通取消在同一Record CAS保存完整Cleanup和预算；独立恢复
+// 则在新开放完成CAS保存原Cleanup及Recovery，Unknown保持Unknown。来源、
+// owner和原操作不随历史淘汰清除；本头不代表业务Succeeded或Host已释放。
 type HeldCapacity struct {
-	ProtocolVersion  uint32                 `json:"protocol_version"`
-	Identity         resourceguard.Identity `json:"identity"`
-	Origin           Owner                  `json:"origin"`
-	RecordedSequence control.Uint64         `json:"recorded_sequence"`
-	Cleanup          Step                   `json:"cleanup"`
+	ProtocolVersion  uint32                   `json:"protocol_version"`
+	Identity         resourceguard.Identity   `json:"identity"`
+	Origin           Owner                    `json:"origin"`
+	RecordedSequence control.Uint64           `json:"recorded_sequence"`
+	Cleanup          Step                     `json:"cleanup"`
+	Recovery         *RecoveredCapacityOrigin `json:"recovery,omitempty"`
 }
 
 func (v *HeldCapacity) UnmarshalJSON(raw []byte) error {
 	type plain HeldCapacity
 	var p plain
-	if err := control.UnmarshalObject(raw, &p); err != nil {
+	// 独立恢复头另含完整原操作和有界证明，和普通64KiB响应分开设限；
+	// 总Model/注解预算及Proof各自上限仍须通过，不能借此放大网络请求。
+	if err := control.UnmarshalObjectBounded(raw, &p, MaxRawBytes/2, 16384); err != nil {
 		return err
 	}
 	*v = HeldCapacity(p)
@@ -42,12 +46,18 @@ func rawDigest(raw []byte) string {
 // 容量有部分效果可以结算，但任何未确认动作都不能被Cleanup跨过。旧Finalize/
 // Resume已经派发的情形由原完整预算恢复处理，不能在这里替换其未知命令。
 func (model Model) reconciledPattern(op Operation, command budget.ReconciledAbortCommand) error {
+	if err := model.checkInitialOutside(command.Capacity); err != nil {
+		return err
+	}
+	return model.reconciledResourcePattern(op, command)
+}
+
+// 资源前驱结构可在永久恢复证明中独立核验。当前保存/执行入口仍须先经过
+// reconciledPattern核原Initial持有来源；历史校验不重新收养当前外部来源。
+func (model Model) reconciledResourcePattern(op Operation, command budget.ReconciledAbortCommand) error {
 	c := command.Capacity
 	if !op.AbortRequested || c.Request != op.Request || model.ResourceIdentity == nil || model.PGInstance == nil || *model.PGInstance != op.Request.Key.Instance || c.Validate() != nil {
 		return fmt.Errorf("reconciled capacity changed original aborted operation")
-	}
-	if err := model.checkInitialOutside(c); err != nil {
-		return err
 	}
 	var prepare, vm *Step
 	for i := range op.Steps {
@@ -128,6 +138,9 @@ func (model Model) validateHeldCapacity() error {
 	h := model.CapacityHeld
 	if h == nil {
 		return nil
+	}
+	if h.ProtocolVersion == 2 || h.Recovery != nil {
+		return model.validateRecoveredCapacity()
 	}
 	if model.ProtocolVersion < 8 || model.BudgetHeld != nil || h.ProtocolVersion != 1 || h.Origin.Validate() != nil || h.RecordedSequence == 0 || h.RecordedSequence > model.Sequence || model.ResourceIdentity == nil || h.Identity != *model.ResourceIdentity || model.PGInstance == nil || model.HighWater == nil || h.Cleanup.DispatchedBy == nil || h.Cleanup.Observation == nil {
 		return fmt.Errorf("invalid permanent reconciled capacity header")

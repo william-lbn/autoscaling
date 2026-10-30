@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	kubefake "k8s.io/client-go/kubernetes/fake"
+	coordclient "k8s.io/client-go/kubernetes/typed/coordination/v1"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
@@ -20,7 +21,7 @@ import (
 // 真实VM扩容后、Guest/PG仍未变时固定取消Cleanup，Start已提交但丢回复。
 // 重建生产worker必须从原WAL恢复同一实际代次开放命令；不需要旧Finalized，
 // 不准为简化恢复使用空SDK。此阶段仅测恢复pending，尚不称取消已闭合。
-func verifyPartialCapacityPending(t *testing.T, ctx context.Context, api *ownerAPI, store *journal.Store, session *Session, worker *PGWorker, resources *ResourceWorker, config compute.Config, core *kubefake.Clientset, p budget.Prepared, outside budget.OutsideReservation, outRef budget.ObjectRef, host budget.HostReservation, mode string, pg *committedAbortPG, root *guestRootFixture) {
+func verifyPartialCapacityPending(t *testing.T, ctx context.Context, api *ownerAPI, store *journal.Store, session *Session, worker *PGWorker, resources *ResourceWorker, config compute.Config, core *kubefake.Clientset, p budget.Prepared, outside budget.OutsideReservation, outRef budget.ObjectRef, host budget.HostReservation, mode string, pg *committedAbortPG, root *guestRootFixture, coord coordclient.CoordinationV1Interface) {
 	t.Helper()
 	step := budgetStep(t, store, journal.ResizeVM)
 	var native vmguard.Command
@@ -65,6 +66,9 @@ func verifyPartialCapacityPending(t *testing.T, ctx context.Context, api *ownerA
 			require.Error(t, err, "原Cleanup已写前但回复丢失")
 		}
 		verifyCapacityCleanupSourceFailure(t, ctx, store, session, resources, worker, config, core, root, pg, shared, p.Request.BudgetCommitmentID, readonly, settled)
+		if strings.Contains(mode, "-recover-") {
+			verifyActualOrUnchangedCleanupRecovery(t, ctx, api, core, coord, store, session, resources, root, pg, shared)
+		}
 		return
 	}
 	if strings.HasPrefix(mode, "partial-auto") {

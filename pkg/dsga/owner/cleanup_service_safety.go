@@ -20,6 +20,10 @@ func (w *PGWorker) inspectCleanupService(ctx context.Context, s *journal.Snapsho
 	if err := w.admission.CheckCleanupService(ctx, s); err != nil {
 		return err
 	}
+	return w.inspectCleanupQualification(ctx, s)
+}
+
+func (w *PGWorker) inspectCleanupQualification(ctx context.Context, s *journal.Snapshot) error {
 	if w.qualification == nil {
 		return nil
 	}

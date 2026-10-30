@@ -178,7 +178,7 @@ func verifyProductionAutomaticSuccessor(t *testing.T, ctx context.Context, clien
 		// 不调用普通Finish再把它投影成Succeeded；后继Shrink与Host
 		// 仍走相同生产协议，不能通过手填资源Completed继续。
 		require.Len(t, s.State().History, 1)
-		require.Equal(t, journal.RecoveredAfterResourceCommit, s.State().History[0].Outcome)
+		require.Contains(t, []journal.Outcome{journal.RecoveredAfterResourceCommit, journal.RecoveredAfterCancellation}, s.State().History[0].Outcome)
 		require.NotNil(t, s.State().History[0].ServiceCoverage)
 	}
 	require.Nil(t, s.State().Active)

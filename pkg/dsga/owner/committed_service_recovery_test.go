@@ -48,6 +48,10 @@ func verifyProductionCommittedServiceRecovery(t *testing.T, ctx context.Context,
 	recoveryMode := strings.TrimPrefix(mode, "resume-safety-recover-")
 	require.NotNil(t, original.Active)
 	pendingFinalization := original.ServiceClosure.Reason == "finalize_source_unconfirmed"
+	expectedOutcome := journal.RecoveredAfterResourceCommit
+	if original.ServiceClosure.Reason == "cleanup_source_unconfirmed" {
+		expectedOutcome = journal.RecoveredAfterCancellation
+	}
 	if pendingFinalization {
 		require.Nil(t, original.BudgetHeld)
 		require.NotNil(t, original.InitialHeld)
@@ -165,7 +169,7 @@ func verifyProductionCommittedServiceRecovery(t *testing.T, ctx context.Context,
 			require.Equal(t, original.BudgetHeld, done.State().BudgetHeld)
 		}
 		record := done.State().History[len(done.State().History)-1]
-		require.Equal(t, journal.RecoveredAfterResourceCommit, record.Outcome)
+		require.Equal(t, expectedOutcome, record.Outcome)
 		require.Equal(t, *original.Active, record.Operation)
 		require.NoError(t, done.State().CheckClosedBudget(original.Active.Request))
 		return worker
@@ -246,7 +250,7 @@ func verifyProductionCommittedServiceRecovery(t *testing.T, ctx context.Context,
 	}
 	require.Equal(t, original.HighWater, s.State().HighWater)
 	record := s.State().History[len(s.State().History)-1]
-	require.Equal(t, journal.RecoveredAfterResourceCommit, record.Outcome)
+	require.Equal(t, expectedOutcome, record.Outcome)
 	require.Equal(t, *original.Active, record.Operation)
 	require.NotNil(t, record.ServiceCoverage)
 	require.NoError(t, s.State().CheckClosedBudget(original.Active.Request))

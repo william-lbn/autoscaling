@@ -50,6 +50,11 @@ func TestRetainedSourceNamesWalksRawHeadsAndHistory(t *testing.T) {
 	recovered.Original.Steps = []journal.Step{step("recovered-original-command", "recovered-original-audit")}
 	normal.Recovery = &recovered
 	capacity.Cleanup = step("capacity-command", "capacity-audit")
+	var recoveredCapacity journal.RecoveredCapacityOrigin
+	recoveredCapacity.Original.Steps = []journal.Step{step("capacity-original-command", "capacity-original-audit")}
+	originalCleanup := step("capacity-original-cleanup", "capacity-original-cleanup-audit")
+	recoveredCapacity.Original.Cleanup = &originalCleanup
+	capacity.Recovery = &recoveredCapacity
 	initial.Budget = ref("initial-budget")
 	admission.Command, admission.Receipt = ref("initial-command"), ref("initial-audit")
 	initial.Admission = &admission
@@ -63,6 +68,10 @@ func TestRetainedSourceNamesWalksRawHeadsAndHistory(t *testing.T) {
 	proof.Command.Finalized.Sources = &sources
 	var coverage journal.CommittedServiceCoverage
 	coverage.Finalization = &proof
+	var cleanupProof journal.ServiceCleanupRecovery
+	cleanupBudget := step("history-cleanup-budget-command", "history-cleanup-budget-audit")
+	cleanupProof.Finalization = &cleanupBudget
+	coverage.CleanupRecovery = &cleanupProof
 	history.ServiceCoverage = &coverage
 	m.BudgetHeld, m.CapacityHeld, m.InitialHeld, m.History = &normal, &capacity, &initial, []journal.Record{history}
 	birth := budget.ObjectRef{Name: "original-birth", UID: "birth-uid"}
@@ -70,7 +79,7 @@ func TestRetainedSourceNamesWalksRawHeadsAndHistory(t *testing.T) {
 	published.BindingClaim = &birth
 	refs, err := retainedSourceNames(m, published)
 	require.NoError(t, err)
-	for _, name := range []string{"normal-command", "normal-audit", "recovered-original-command", "recovered-original-audit", "history-proof-outside", "history-proof-host", "capacity-command", "capacity-audit", "initial-budget", "initial-command", "initial-audit", "history-command", "history-audit", "history-cleanup", "cleanup-audit", birth.Name} {
+	for _, name := range []string{"normal-command", "normal-audit", "recovered-original-command", "recovered-original-audit", "history-proof-outside", "history-proof-host", "history-cleanup-budget-command", "history-cleanup-budget-audit", "capacity-command", "capacity-audit", "capacity-original-command", "capacity-original-audit", "capacity-original-cleanup", "capacity-original-cleanup-audit", "initial-budget", "initial-command", "initial-audit", "history-command", "history-audit", "history-cleanup", "cleanup-audit", birth.Name} {
 		require.Contains(t, refs, name)
 	}
 	// 历史淘汰只减历史引用；当前预算即使完全不在History中也继续保留。

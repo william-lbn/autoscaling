@@ -20,7 +20,7 @@ func (model Model) retainedInitialOutside() (budget.Initial, error) {
 	}
 	if h := model.CapacityHeld; h != nil {
 		var c budget.ReconciledAbortCommand
-		if h.Cleanup.Phase == Settled && json.Unmarshal(h.Cleanup.Command, &c) == nil && c.Capacity.InitialOutside != nil {
+		if (h.Cleanup.Phase == Settled || h.Recovery != nil && h.Recovery.Proof.Kind == "actual") && json.Unmarshal(h.Cleanup.Command, &c) == nil && c.Capacity.InitialOutside != nil {
 			return *c.Capacity.InitialOutside, nil
 		}
 	}

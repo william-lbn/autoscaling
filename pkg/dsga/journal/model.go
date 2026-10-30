@@ -76,6 +76,8 @@ const (
 	AbortedAfterReconcile Outcome = "aborted_after_reconcile"
 	// 全部资源已完整提交，最后准入由独立更高revision覆盖；原步骤不改。
 	RecoveredAfterResourceCommit Outcome = "recovered_after_resource_commit"
+	// 原取消清理未确认，资源/预算独立复核后恢复服务；仍是取消，非目标成功。
+	RecoveredAfterCancellation Outcome = "recovered_after_cancellation"
 )
 
 type Disposition string
@@ -413,7 +415,7 @@ func (model Model) validateCore() error {
 	// 旧v2实际容量Cleanup可能尚无永久头。v18仅允许其独立安全关闭：完整
 	// 原Cleanup及实际预算由validateCleanupServiceClosure继续严格验证，
 	// 不把无头状态升级成已持有预算，也不放宽其他格式的永久头要求。
-	cleanupClosureOnly := model.ClosureFormatVersion() == 18 && model.ServiceClosure != nil
+	cleanupClosureOnly := model.serviceClosureVersion() == 18 && model.ServiceClosure != nil
 	if (model.ProtocolVersion < 3 && model.BudgetHeld != nil) || (model.CapacityHeld != nil && (model.ProtocolVersion < 8 || model.BudgetHeld != nil || model.InitialHeld != nil)) || (model.InitialHeld != nil && (model.ProtocolVersion < 9 || model.BudgetHeld != nil)) || (model.ProtocolVersion >= 3 && ((model.BudgetHeld == nil && model.CapacityHeld == nil && model.InitialHeld == nil && !cleanupClosureOnly) || model.ResourceIdentity == nil)) {
 		return fmt.Errorf("journal version does not preserve required held budget")
 	}
@@ -566,6 +568,7 @@ func (model Model) Clone() Model {
 	if model.ServiceClosure != nil {
 		closure := *model.ServiceClosure
 		closure.Finalization = cloneServiceFinalization(closure.Finalization)
+		closure.CleanupRecovery = cloneServiceCleanupRecovery(closure.CleanupRecovery)
 		if closure.Reopen != nil {
 			reopen := *closure.Reopen
 			if reopen.PriorClose != nil {
@@ -634,6 +637,7 @@ func (model Model) Clone() Model {
 	if model.CapacityHeld != nil {
 		held := *model.CapacityHeld
 		held.Cleanup = cloneStep(held.Cleanup)
+		held.Recovery = cloneRecoveredCapacity(held.Recovery)
 		model.CapacityHeld = &held
 	}
 	if model.PGInstance != nil {

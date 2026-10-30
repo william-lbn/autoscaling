@@ -9,7 +9,8 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 )
 
-// CommittedServiceCoverage只覆盖已完整提交全部资源的最后准入步骤。
+// CommittedServiceCoverage保留独立服务覆盖：普通资源已完整提交时只覆盖
+// 最后准入；取消时另存CleanupRecovery并使用独立取消终态，不改原Cleanup。
 // 原Operation和Resume的Planned/Unknown/Settled逐字保留；这份独立证据
 // 说明更高原生revision已恢复同一预算的服务，不声称原Resume曾成功。
 // Origin是完成CAS的当前owner，Request保留原开放issuer；接管只审计旧
@@ -24,6 +25,8 @@ type CommittedServiceCoverage struct {
 	Current            control.AdmissionLeaseResponse `json:"current"`
 	// 仅类别15：独立结算不回写原Finalize未知，完整证据随终态保存。
 	Finalization *ServiceFinalization `json:"finalization,omitempty"`
+	// 取消的独立服务覆盖与目标成功分开，不把原Cleanup未知改成Completed。
+	CleanupRecovery *ServiceCleanupRecovery `json:"cleanup_recovery,omitempty"`
 }
 
 // committedResourceBudget不递归调用Model.Validate。只有全部资源及完整
@@ -51,6 +54,9 @@ func (m Model) stableServiceRecovery() error {
 		return nil
 	}
 	v := m.serviceClosureVersion()
+	if v == 18 && m.ServiceClosure != nil && m.ServiceClosure.CleanupRecovery != nil {
+		return m.validateServiceCleanupRecovery()
+	}
 	if v == 15 && m.ServiceClosure != nil && m.ServiceClosure.Finalization != nil {
 		return m.validateServiceFinalization()
 	}
@@ -67,7 +73,8 @@ func (m Model) stableServiceRecovery() error {
 }
 
 // CheckStableServiceRecovery供生产入口核对原WAL，不生成派发许可。
-// 无Active继续既有稳定协议；有Active仅接受13/14完整结算或15独立证明。
+// 无Active继续既有稳定协议；有Active接受13/14完整结算、15独立结算，
+// 或18重新认证三类取消预算的独立证明；16/17资源未知不能借此退休。
 func (m Model) CheckStableServiceRecovery() error {
 	if err := m.Validate(); err != nil {
 		return err
@@ -83,6 +90,7 @@ func cloneCommittedCoverage(p *CommittedServiceCoverage) *CommittedServiceCovera
 	n.Receipt = *cloneAdmissionResponse(&p.Receipt)
 	n.Current = cloneLeaseResponse(p.Current)
 	n.Finalization = cloneServiceFinalization(p.Finalization)
+	n.CleanupRecovery = cloneServiceCleanupRecovery(p.CleanupRecovery)
 	return &n
 }
 
@@ -90,6 +98,9 @@ func (record Record) closingOutcome() (Outcome, error) {
 	p := record.ServiceCoverage
 	if p == nil {
 		return record.Operation.closingOutcome()
+	}
+	if p.CleanupRecovery != nil {
+		return record.cancelledClosingOutcome()
 	}
 	f, err := committedResourceBudget(record.Operation)
 	var finalHash string
@@ -128,6 +139,9 @@ func (m Model) committedCompletionRecord(actor Owner, current control.AdmissionL
 	if err := m.stableServiceRecovery(); err != nil {
 		return nil, err
 	}
+	if m.ServiceClosure.CleanupRecovery != nil {
+		return m.cancelledCompletionRecord(actor, current, sequence)
+	}
 	r := m.ServiceClosure.Reopen
 	if r == nil || r.Phase != Settled || r.Receipt == nil || r.Closing != nil {
 		return nil, fmt.Errorf("committed service completion requires confirmed independent reopen")
@@ -157,7 +171,14 @@ func (m Model) validateCommittedLifecycle(c Model, l *ServiceLifecycle) error {
 	}
 	// 完成本身必须同时建立永久预算关闭证明。后续Start可以撤销它，
 	// 但HWM尚未推进且没有新Active时，删掉水位不能成为合法完成投影。
-	if m.Active == nil && m.HighWater != nil && *m.HighWater == want.Operation.Request.Key && (m.BudgetBoundary == nil || m.BudgetBoundary.SucceededSequence != want.ClosedSequence) {
+	boundaryAt := control.Uint64(0)
+	if m.BudgetBoundary != nil {
+		boundaryAt = m.BudgetBoundary.SucceededSequence
+		if p := want.ServiceCoverage.CleanupRecovery; p != nil && p.Kind == "unchanged" {
+			boundaryAt = m.BudgetBoundary.ThroughSequence
+		}
+	}
+	if m.Active == nil && m.HighWater != nil && *m.HighWater == want.Operation.Request.Key && boundaryAt != want.ClosedSequence {
 		return fmt.Errorf("committed service completion lost atomic closed budget boundary")
 	}
 	for _, record := range m.History {

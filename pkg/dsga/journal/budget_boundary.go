@@ -16,6 +16,8 @@ import (
 // 它证明容量结清资格，不把业务结果AbortedAfterReconcile改成Succeeded。
 // 13～15恢复的SucceededSequence则指独立准入覆盖完成点，原Operation和
 // Resume未知逐字保留；只有该覆盖和完整资源预算同CAS才取得结清资格。
+// 类别18独立取消覆盖按真实实际/完整目标/旧容量预算建立或推进水位，
+// 不将原Cleanup未知改成成功，也不把被取消目标当作实际容量。
 //
 // 该永久水位解决结果历史淘汰和后续零派发取消导致Host峰值无法结清的问题。
 // Host仍须认证原Runner实际值、当前预算来源与原Node，不能仅凭本结构释放容量。
@@ -164,12 +166,16 @@ func (model Model) validateBudgetBoundary() error {
 			continue
 		}
 		if key == b.BudgetKey {
-			capacityClosed := record.Outcome == Succeeded || (record.Outcome == RecoveredAfterResourceCommit && record.ServiceCoverage != nil) || (model.ProtocolVersion >= 6 && record.Outcome == AbortedAfterReconcile && model.validateCommittedAbort(record.Operation) == nil) || (model.ProtocolVersion >= 8 && record.Outcome == AbortedAfterReconcile && model.validateReconciledAbort(record.Operation) == nil)
+			cancelled := record.Outcome == RecoveredAfterCancellation && record.ServiceCoverage != nil && record.ServiceCoverage.CleanupRecovery != nil && record.ServiceCoverage.CleanupRecovery.Kind != "unchanged"
+			capacityClosed := record.Outcome == Succeeded || cancelled || (record.Outcome == RecoveredAfterResourceCommit && record.ServiceCoverage != nil) || (model.ProtocolVersion >= 6 && record.Outcome == AbortedAfterReconcile && model.validateCommittedAbort(record.Operation) == nil) || (model.ProtocolVersion >= 8 && record.Outcome == AbortedAfterReconcile && model.validateReconciledAbort(record.Operation) == nil)
 			if record.Operation.Request != request || !capacityClosed || record.ClosedSequence != b.SucceededSequence {
 				return fmt.Errorf("closed budget boundary contradicts original successful history")
 			}
-		} else if (record.Outcome != AbortedBeforeDispatch && (record.Outcome != AbortedAfterReconcile || model.validateUnchangedAbort(record.Operation) != nil)) || record.ClosedSequence <= b.SucceededSequence || record.ClosedSequence > b.ThroughSequence {
-			return fmt.Errorf("closed budget boundary crosses a dispatched or contradictory history")
+		} else {
+			cancelled := record.Outcome == RecoveredAfterCancellation && record.ServiceCoverage != nil && record.ServiceCoverage.CleanupRecovery != nil && record.ServiceCoverage.CleanupRecovery.Kind == "unchanged" && record.ServiceCoverage.FinalizationSHA256 == b.FinalizationSHA256
+			if !cancelled && record.Outcome != AbortedBeforeDispatch && (record.Outcome != AbortedAfterReconcile || model.validateUnchangedAbort(record.Operation) != nil) || record.ClosedSequence <= b.SucceededSequence || record.ClosedSequence > b.ThroughSequence {
+				return fmt.Errorf("closed budget boundary crosses a dispatched or contradictory history")
+			}
 		}
 		if compareKeys(key, b.ThroughKey) == 0 && (key != b.ThroughKey || record.ClosedSequence != b.ThroughSequence) {
 			return fmt.Errorf("closed budget boundary differs from terminal high water")

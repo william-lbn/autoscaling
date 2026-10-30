@@ -22,7 +22,8 @@ import (
 // Previous水位与完整原生边界；不把旧Unknown改成成功、NoEffect或资源释放。
 // 首次未知另在InitialHeld.Covered保存覆盖证明，直到正常预算协议原子替换
 // 原预算。13/14依赖完整资源结算，15另须完整独立结算证明；同CAS保存
-// 原Operation和覆盖终态。16～18资源仍在途/取消，不能借本归档裁掉未知。
+// 原Operation和覆盖终态。18取消另保存准确预算复核与独立取消结果，原
+// Cleanup不改；16/17资源仍在途时不能借本归档裁掉未知。
 type ServiceLifecycle struct {
 	// 必填门禁阶段独立于可选当前关闭，防止删除新关闭字段后投影为
 	// 上一周期已经恢复服务。只有新关闭写前或完整完成CAS可以改变。
@@ -120,6 +121,19 @@ func (m Model) reopenCompletionCapacity() error {
 			// 它与结果/生命周期各负其责，预留不能只按历史原Active一份。
 			extra += len(original) + 3*MaxObservationBytes + MaxCommandBytes
 		}
+		if p := frozen.ServiceClosure.CleanupRecovery; p != nil {
+			original, err := json.Marshal(frozen.Active)
+			if err != nil {
+				return err
+			}
+			proof, err := json.Marshal(p)
+			if err != nil {
+				return err
+			}
+			// 取消覆盖另存原Operation与独立证明；实际容量永久头还保存
+			// 原未知及同一证明。开放前预留，不能完成时截断原资源证据。
+			extra += len(original) + 2*len(proof)
+		}
 		if future+base64.StdEncoding.EncodedLen(future)+extra > MaxRawBytes {
 			return fmt.Errorf("committed service cannot retain atomic operation coverage")
 		}
@@ -143,7 +157,7 @@ func (m Model) validateServiceLifecycle() error {
 		// Lifecycle并降级格式冒充普通预算。冻结上下文有意不递归
 		// 保存旧Lifecycle，只由recoveryContext调用validateCore校验；
 		// 不能把这个当前服务要求放进永久预算的结构自洽检查。
-		if m.BudgetHeld != nil && m.BudgetHeld.Recovery != nil {
+		if m.BudgetHeld != nil && m.BudgetHeld.Recovery != nil || m.CapacityHeld != nil && m.CapacityHeld.Recovery != nil {
 			return fmt.Errorf("recovered budget requires retained service lifecycle")
 		}
 		for _, record := range m.History {
@@ -217,6 +231,13 @@ func (m Model) validateServiceLifecycle() error {
 		heldAt = h.RecordedSequence
 	}
 	if heldAt <= l.RecordedSequence {
+		if p := c.ServiceClosure.CleanupRecovery; p != nil && p.Kind == "actual" {
+			expected, err := p.held(*c.Active)
+			if err != nil || !reflect.DeepEqual(m.CapacityHeld, expected) || m.InitialHeld != nil || m.BudgetHeld != nil {
+				return fmt.Errorf("cancelled completion lost exact independently recovered actual budget")
+			}
+			return nil
+		}
 		if p := c.ServiceClosure.Finalization; p != nil {
 			expected, err := p.held(c)
 			if err != nil || !reflect.DeepEqual(m.BudgetHeld, expected) || m.InitialHeld != nil || m.CapacityHeld != nil {
@@ -256,7 +277,8 @@ func (m Model) InitialAdmissionReady() bool {
 }
 
 // CompleteServiceReopen只处理原新开放已确认且未再关闭的稳定边界：无
-// Active沿用既有规则；有Active仅接受13/14完整结算或15独立结算证明。
+// Active沿用既有规则；有Active接受13/14完整结算、15独立结算或18独立
+// 取消预算证明。取消仍按真实容量结案，不投影成新目标成功。
 // 调用方必须刚完成全部生产来源审计，再提供当前准确observe；同一UID/RV
 // 原子保存完整证据、独立覆盖/预算水位并撤销关闭。失败原输入不变。
 // 只读查询不会调用本入口，完成写丢回复只能重读，不能再次开放或续租。
@@ -296,6 +318,15 @@ func (m Model) CompleteServiceReopen(actor Owner, selector string, current contr
 	if record, err := m.committedCompletionRecord(actor, current, next.Sequence); err != nil {
 		return m, err
 	} else if record != nil {
+		if p := m.ServiceClosure.CleanupRecovery; p != nil && p.Kind == "actual" {
+			held, err := p.held(*m.Active)
+			if err != nil {
+				return m, err
+			}
+			// 原实际容量Cleanup未知保存在新永久头，独立预算和原取消
+			// 终态同CAS安装；不先投影成旧Cleanup Completed再调用Finish。
+			next.CapacityHeld, next.BudgetHeld, next.InitialHeld, next.BudgetBoundary = held, nil, nil, nil
+		}
 		if p := m.ServiceClosure.Finalization; p != nil {
 			held, err := p.held(m)
 			if err != nil {
@@ -307,8 +338,14 @@ func (m Model) CompleteServiceReopen(actor Owner, selector string, current contr
 		}
 		// 完整原Active、独立覆盖、永久预算关闭水位和业务完成必须同CAS。
 		// 不调用普通Finish去伪造原Resume成功，失败也不清原关闭或预算。
-		if err := next.closeBudgetBoundary(RecoveredAfterResourceCommit); err != nil {
-			return m, err
+		if p := m.ServiceClosure.CleanupRecovery; p != nil {
+			if err := next.closeCancelledBudget(*p); err != nil {
+				return m, err
+			}
+		} else {
+			if err := next.closeBudgetBoundary(RecoveredAfterResourceCommit); err != nil {
+				return m, err
+			}
 		}
 		next.History = append(next.History, *record)
 		next.Active = nil

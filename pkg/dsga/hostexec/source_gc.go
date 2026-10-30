@@ -159,6 +159,20 @@ func retainedSourceNames(m journal.Model, published vmguard.Publication) (source
 		if err := refs.step(h.Cleanup); err != nil {
 			return nil, err
 		}
+		if h.Recovery != nil {
+			// 独立实际预算保存原Cleanup未知，原资源前驱仍须可审计；
+			// 结果缓存淘汰不等于这些持有来源已经可以删除。
+			for _, step := range h.Recovery.Original.Steps {
+				if err := refs.step(step); err != nil {
+					return nil, err
+				}
+			}
+			if step := h.Recovery.Original.Cleanup; step != nil {
+				if err := refs.step(*step); err != nil {
+					return nil, err
+				}
+			}
+		}
 	}
 	if h := m.InitialHeld; h != nil {
 		payloads := [][]byte{h.Budget}
@@ -172,6 +186,11 @@ func retainedSourceNames(m journal.Model, published vmguard.Publication) (source
 		}
 	}
 	for _, h := range m.History {
+		if h.ServiceCoverage != nil && h.ServiceCoverage.CleanupRecovery != nil && h.ServiceCoverage.CleanupRecovery.Finalization != nil {
+			if err := refs.step(*h.ServiceCoverage.CleanupRecovery.Finalization); err != nil {
+				return nil, err
+			}
+		}
 		if h.ServiceCoverage != nil && h.ServiceCoverage.Finalization != nil {
 			raw, err := json.Marshal(h.ServiceCoverage.Finalization.Command)
 			if err != nil {

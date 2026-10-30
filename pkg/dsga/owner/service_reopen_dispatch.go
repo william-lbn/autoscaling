@@ -59,10 +59,21 @@ func (w *PGWorker) reopenSourcesAvailable() bool {
 
 // 稳定资源恢复比普通空闲服务多一项原PG终态对账。先审完整来源，再以
 // 当前owner隔离并只读核验原终态，最后由调用方检查相同UID/RV。这个顺序
-// 不修改原Unknown；15先保存独立结算证明，16～18不能借当前容量绕过原账本。
+// 不修改原Unknown；15先保存独立结算，18先复核三类原取消预算。16/17
+// 资源在途仍不得借当前容量绕过原账本；18也不能复写原Cleanup。
 func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapshot) error {
 	m := s.State()
-	if m.ServiceClosure != nil && m.ServiceClosure.Finalization != nil {
+	if m.ServiceClosure != nil && m.ServiceClosure.CleanupRecovery != nil {
+		if w.admission == nil {
+			return ErrServiceSafety
+		}
+		if err := w.admission.CheckCleanupServiceRecovery(ctx, s); err != nil {
+			return err
+		}
+		if err := w.inspectCleanupQualification(ctx, s); err != nil {
+			return err
+		}
+	} else if m.ServiceClosure != nil && m.ServiceClosure.Finalization != nil {
 		if w.finalize == nil {
 			return ErrServiceSafety
 		}
@@ -81,10 +92,22 @@ func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapsh
 }
 
 // 明确恢复管理动作先完成原预算结算的独立证据；普通Run轮询不自动调用。
-// 只有类别15且未选择rearm/reopen时可新增Proof；原Active/预算不会被改写。
+// 类别15/18且未选择rearm/reopen时可新增Proof；原Active/预算不会被改写。
 // CAS丢回复停止本次管理，重读后再次显式恢复沿用已保存Proof和原selector。
 func (w *PGWorker) ensureServiceFinalization(ctx context.Context, s *journal.Snapshot, selector string) (*journal.Snapshot, error) {
 	m := s.State()
+	if m.ServiceClosure != nil && m.ServiceClosure.Reason == "cleanup_source_unconfirmed" && m.ServiceClosure.CleanupRecovery == nil {
+		if w.admission == nil {
+			return nil, ErrServiceSafety
+		}
+		if err := w.inspectCleanupQualification(ctx, s); err != nil {
+			return nil, err
+		}
+		if err := w.admission.RecoverServiceCleanup(ctx, s, selector); err != nil {
+			return nil, err
+		}
+		return w.session.store.Load(ctx)
+	}
 	if m.ServiceClosure == nil || m.ServiceClosure.Reason != "finalize_source_unconfirmed" || m.ServiceClosure.Finalization != nil {
 		return s, nil
 	}

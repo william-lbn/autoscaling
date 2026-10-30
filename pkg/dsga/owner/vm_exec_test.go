@@ -174,7 +174,7 @@ func vmReservation(t *testing.T, client *kubefake.Clientset, name, kind string, 
 }
 
 func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testing.T) {
-	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late", "abort-committed", "abort-after-open", "abort-replies", "abort-original-open-lost", "partial-pending-restore", "partial-host-settle", "partial-auto", "partial-auto-start-lost", "partial-auto-record-lost", "partial-auto-source-gone", "partial-auto-selected-replies", "partial-safety-readonly-unknown", "partial-safety-readonly-settled", "partial-safety-opening-unknown", "partial-safety-opening-settled", "shrink-partial-after-grow", "trusted-prepare-replies"} {
+	for _, mode := range []string{"complete", "qmp-lost-reply", "start-lost-reply", "VM-record-lost-reply", "loop-waits-for-runner", "loop-holds-not-sent", "loop-explicit-VM-replay", "loop-explicit-VM-replay-lost-selection", "loop-explicit-VM-replay-host-gone-before", "loop-explicit-VM-replay-host-gone-after", "reject-VM-replay-may-have-sent", "cancel-before-runner", "cancel-not-sent", "cancel-record-lost", "cancel-receipt-gone", "cancel-too-late", "abort-committed", "abort-after-open", "abort-replies", "abort-original-open-lost", "partial-pending-restore", "partial-host-settle", "partial-auto", "partial-auto-start-lost", "partial-auto-record-lost", "partial-auto-source-gone", "partial-auto-selected-replies", "partial-safety-readonly-unknown", "partial-safety-readonly-settled", "partial-safety-opening-unknown", "partial-safety-opening-settled", "partial-safety-recover-opening-unknown", "partial-safety-recover-readonly-settled", "shrink-partial-after-grow", "trusted-prepare-replies"} {
 		t.Run(mode, func(t *testing.T) {
 			trustedPrepare := mode == "trusted-prepare-replies"
 			cleanupSafety := strings.HasPrefix(mode, "partial-safety-")
@@ -233,6 +233,9 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 				// 同一次真实资源链串联四次丢回复与worker重建；只放大组合
 				// 总期限，不改变生产Lease/客户端超时，也不声称性能认证。
 				timeout = 120 * time.Second
+			}
+			if strings.HasPrefix(mode, "partial-safety-recover-") {
+				timeout = 4 * time.Minute // 新增完整恢复/丢回复/Host结清组合，生产期限不变。
 			}
 			if mode == "abort-replies" {
 				// 独立Cleanup安全预审增加原来源读取；旧45秒总期限已在
@@ -579,7 +582,7 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 					}
 					require.Equal(t, journal.Settled, budgetStep(t, store, journal.ResizeVM).Phase)
 					if strings.HasPrefix(mode, "partial-") {
-						verifyPartialCapacityPending(t, ctx, api, store, session, worker, resources, config, client, p, out, outRef, host, mode, abortPG, root)
+						verifyPartialCapacityPending(t, ctx, api, store, session, worker, resources, config, client, p, out, outRef, host, mode, abortPG, root, coord)
 						require.Zero(t, resizePosts.Load())
 						if cleanupSafety {
 							peer.mu.Lock()
@@ -657,7 +660,7 @@ func vmDSM(s control.Snapshot) control.DSMResponse {
 }
 
 func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T) {
-	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost", "explicit-original-replay", "host-settle", "host-settle-lost", "host-settle-source-gone", "host-settle-runner-drift", "host-settle-gc-lost", "host-settle-scheduler-loop", "host-settle-after-cancel-history", "cancel-before-runner", "abort-committed", "abort-root-drift", "restore-prior", "restore-prior-replies", "restore-prior-negative", "restore-prior-safety-readonly-unknown", "restore-prior-safety-readonly-settled", "restore-prior-safety-opening-unknown", "restore-prior-safety-opening-settled"} {
+	for _, mode := range []string{"complete", "gate-reopened-before-VM", "root-drift-after-VM", "observe-start-lost", "explicit-original-replay", "host-settle", "host-settle-lost", "host-settle-source-gone", "host-settle-runner-drift", "host-settle-gc-lost", "host-settle-scheduler-loop", "host-settle-after-cancel-history", "cancel-before-runner", "abort-committed", "abort-root-drift", "restore-prior", "restore-prior-replies", "restore-prior-negative", "restore-prior-safety-readonly-unknown", "restore-prior-safety-readonly-settled", "restore-prior-safety-opening-unknown", "restore-prior-safety-opening-settled", "restore-prior-safety-recover-opening-unknown", "restore-prior-safety-recover-readonly-settled"} {
 		t.Run(mode, func(t *testing.T) {
 			api, store, coord := newAPI(t)
 			client := vmCore(t)
@@ -706,6 +709,9 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 			}
 			if strings.HasPrefix(mode, "restore-prior") {
 				options, timeout = DefaultOptions(), 2*time.Minute
+			}
+			if strings.HasPrefix(mode, "restore-prior-safety-recover-") {
+				timeout = 4 * time.Minute // 新组合增加取消关闭后恢复与来源复核。
 			}
 			if mode == "host-settle-scheduler-loop" {
 				// 此组合额外等待真实2秒Scheduler轮询与2.2秒GC节流观察，
