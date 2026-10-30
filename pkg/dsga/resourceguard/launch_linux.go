@@ -58,6 +58,12 @@ func ExecPostgres(args []string) error {
 	if err != nil {
 		return err
 	}
+	// 在保存出生意图和改变内核状态前完成净化；拒绝重复/畸形环境时不留下
+	// 新 Birth。PG 仍得到原存储 token，但不能继承 loader 或 caller profile。
+	environment, err := postgresExecEnvironment(os.Environ(), source.Limits.AddressSpaceMaxBytes)
+	if err != nil {
+		return err
+	}
 	config := source.Config
 	if err := secureParents(config.StateDir); err != nil {
 		return err
@@ -128,7 +134,6 @@ func ExecPostgres(args []string) error {
 		// 由原生PG在main最早阶段落实AS；不能在仍有GC/多线程的Go helper里
 		// 压低整个进程AS再继续分配。root原创建覆盖同名环境，普通调用者不能
 		// 放宽、删除或选择另一额度。原生旧PG忽略此项时，Root真实读回会拒绝。
-		environment := addressSpaceEnvironment(os.Environ(), source.Limits.AddressSpaceMaxBytes)
 		return syscall.Exec(FixedPostgresPath, argv, environment)
 	})
 }

@@ -1,0 +1,2327 @@
+[
+  {
+    "Time": "2026-10-30T16:01:27.306139364Z",
+    "Action": "start",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.320735709Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.320773591Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321158225Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-limit"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321180707Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-limit",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-limit\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321381069Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-limit",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-limit (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321389392Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-limit",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321396448Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/unlimited"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321399145Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/unlimited",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/unlimited\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.32140478Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/unlimited",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/unlimited (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321410618Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/unlimited",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321463865Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/duplicate-limit"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321481275Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/duplicate-limit",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/duplicate-limit\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321490377Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/duplicate-limit",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/duplicate-limit (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321495107Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/duplicate-limit",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.32154307Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/noncanonical-limit"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321554928Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/noncanonical-limit",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/noncanonical-limit\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321615028Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/noncanonical-limit",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/noncanonical-limit (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321626209Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/noncanonical-limit",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321653238Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/above-original"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321662777Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/above-original",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/above-original\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321714475Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/above-original",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/above-original (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321816706Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/above-original",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.32182446Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/soft-over-hard"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321826971Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/soft-over-hard",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/soft-over-hard\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321831104Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/soft-over-hard",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/soft-over-hard (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321834925Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/soft-over-hard",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321891222Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/wrong-limit-unit"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321896345Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/wrong-limit-unit",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/wrong-limit-unit\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321959139Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/wrong-limit-unit",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/wrong-limit-unit (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.321974642Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/wrong-limit-unit",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322093736Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/zero-limit"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322098953Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/zero-limit",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/zero-limit\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322164197Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/zero-limit",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/zero-limit (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322170804Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/zero-limit",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322201373Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/overflow"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322205726Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/overflow",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/overflow\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322310027Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/overflow",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/overflow (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322335932Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/overflow",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322339525Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-status"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322342192Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-status",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-status\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322363584Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-status",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-status (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322386424Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-status",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322441778Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/new-privs"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322447269Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/new-privs",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/new-privs\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322589259Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/new-privs",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/new-privs (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322611394Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/new-privs",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322616534Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/duplicate-nnp"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322622706Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/duplicate-nnp",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/duplicate-nnp\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322643296Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/duplicate-nnp",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/duplicate-nnp (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322690781Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/duplicate-nnp",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322704578Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/existing-va-exceeded"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322708336Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/existing-va-exceeded",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/existing-va-exceeded\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322789579Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/existing-va-exceeded",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/existing-va-exceeded (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.32280926Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/existing-va-exceeded",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322835637Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/wrong-size-unit"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322841566Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/wrong-size-unit",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/wrong-size-unit\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322901291Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/wrong-size-unit",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/wrong-size-unit (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.322936442Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/wrong-size-unit",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323041686Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/noncanonical-size"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323053064Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/noncanonical-size",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/noncanonical-size\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323215569Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/noncanonical-size",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/noncanonical-size (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323225275Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/noncanonical-size",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.32322947Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/zero-size"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323232195Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/zero-size",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/zero-size\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.3232693Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/zero-size",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/zero-size (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323298587Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/zero-size",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323336879Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapInh"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323342504Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapInh",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapInh\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323463621Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapInh",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapInh (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323484388Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapInh",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323932579Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapInh"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323944176Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapInh",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapInh\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323948867Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapInh",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapInh (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323951829Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapInh",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323954851Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapPrm"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323957217Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapPrm",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapPrm\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323960541Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapPrm",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapPrm (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.32396721Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapPrm",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323992006Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapPrm"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.323998266Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapPrm",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapPrm\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.32400532Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapPrm",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapPrm (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.32400872Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapPrm",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.324012812Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapEff"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.32401587Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapEff",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapEff\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.324030498Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapEff",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapEff (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.324049928Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapEff",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.324141739Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapEff"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.324154387Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapEff",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapEff\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.324218462Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapEff",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapEff (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.324226911Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapEff",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.324277132Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapAmb"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.324284567Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapAmb",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapAmb\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.324353619Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapAmb",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapAmb (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.324362897Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-CapAmb",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.324399688Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapAmb"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.324411697Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapAmb",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapAmb\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.32535147Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapAmb",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapAmb (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325381485Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/retained-CapAmb",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325385295Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-VmSize"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325387845Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-VmSize",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-VmSize\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325391386Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-VmSize",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-VmSize (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325394055Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-VmSize",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.32539687Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-NoNewPrivs"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325398945Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-NoNewPrivs",
+    "Output": "=== RUN   TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-NoNewPrivs\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325401917Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-NoNewPrivs",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-NoNewPrivs (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325411142Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings/missing-NoNewPrivs",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325414442Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings",
+    "Output": "--- PASS: TestAddressSpaceProcStrictPrivilegesAndExistingMappings (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325417165Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325419697Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325422094Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation",
+    "Output": "=== RUN   TestAddressSpacePIDListsAndBoundedStableObservation\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325424377Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/reorder"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325426278Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/reorder",
+    "Output": "=== RUN   TestAddressSpacePIDListsAndBoundedStableObservation/reorder\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325428806Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/reorder",
+    "Output": "--- PASS: TestAddressSpacePIDListsAndBoundedStableObservation/reorder (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325431119Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/reorder",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.32543334Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/empty"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325435058Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/empty",
+    "Output": "=== RUN   TestAddressSpacePIDListsAndBoundedStableObservation/empty\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325437635Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/empty",
+    "Output": "--- PASS: TestAddressSpacePIDListsAndBoundedStableObservation/empty (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.325448599Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/empty",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326056724Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/fork-once"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326074666Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/fork-once",
+    "Output": "=== RUN   TestAddressSpacePIDListsAndBoundedStableObservation/fork-once\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326080266Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/fork-once",
+    "Output": "--- PASS: TestAddressSpacePIDListsAndBoundedStableObservation/fork-once (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326083222Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/fork-once",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326089357Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/exit-once"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326091638Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/exit-once",
+    "Output": "=== RUN   TestAddressSpacePIDListsAndBoundedStableObservation/exit-once\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326094759Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/exit-once",
+    "Output": "--- PASS: TestAddressSpacePIDListsAndBoundedStableObservation/exit-once (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326214464Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/exit-once",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326308811Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/reuse-once"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326441539Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/reuse-once",
+    "Output": "=== RUN   TestAddressSpacePIDListsAndBoundedStableObservation/reuse-once\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326463085Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/reuse-once",
+    "Output": "--- PASS: TestAddressSpacePIDListsAndBoundedStableObservation/reuse-once (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326471668Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/reuse-once",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326482419Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/duplicate-once"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326489964Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/duplicate-once",
+    "Output": "=== RUN   TestAddressSpacePIDListsAndBoundedStableObservation/duplicate-once\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.32649806Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/duplicate-once",
+    "Output": "--- PASS: TestAddressSpacePIDListsAndBoundedStableObservation/duplicate-once (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326503758Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/duplicate-once",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326506382Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/busy"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.32650866Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/busy",
+    "Output": "=== RUN   TestAddressSpacePIDListsAndBoundedStableObservation/busy\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326511752Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/busy",
+    "Output": "--- PASS: TestAddressSpacePIDListsAndBoundedStableObservation/busy (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326514626Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/busy",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326519575Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/bad-limit"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326522485Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/bad-limit",
+    "Output": "=== RUN   TestAddressSpacePIDListsAndBoundedStableObservation/bad-limit\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326537985Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/bad-limit",
+    "Output": "--- PASS: TestAddressSpacePIDListsAndBoundedStableObservation/bad-limit (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326542148Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation/bad-limit",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326545393Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation",
+    "Output": "--- PASS: TestAddressSpacePIDListsAndBoundedStableObservation (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326549319Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpacePIDListsAndBoundedStableObservation",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326551753Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.326554017Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment",
+    "Output": "=== RUN   TestAddressSpaceOriginalSourceAndEnvironment\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.46697292Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/legacy"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467026855Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/legacy",
+    "Output": "=== RUN   TestAddressSpaceOriginalSourceAndEnvironment/legacy\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467045142Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/legacy",
+    "Output": "--- PASS: TestAddressSpaceOriginalSourceAndEnvironment/legacy (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467049822Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/legacy",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.46705939Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/finite"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467062844Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/finite",
+    "Output": "=== RUN   TestAddressSpaceOriginalSourceAndEnvironment/finite\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467067588Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/finite",
+    "Output": "--- PASS: TestAddressSpaceOriginalSourceAndEnvironment/finite (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467081259Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/finite",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467098048Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/no-tasks"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467105725Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/no-tasks",
+    "Output": "=== RUN   TestAddressSpaceOriginalSourceAndEnvironment/no-tasks\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467111282Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/no-tasks",
+    "Output": "--- PASS: TestAddressSpaceOriginalSourceAndEnvironment/no-tasks (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467115085Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/no-tasks",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467122073Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/unaligned"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467125089Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/unaligned",
+    "Output": "=== RUN   TestAddressSpaceOriginalSourceAndEnvironment/unaligned\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467127926Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/unaligned",
+    "Output": "--- PASS: TestAddressSpaceOriginalSourceAndEnvironment/unaligned (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467131115Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/unaligned",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.46713327Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/overflow"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.46713555Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/overflow",
+    "Output": "=== RUN   TestAddressSpaceOriginalSourceAndEnvironment/overflow\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467138286Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/overflow",
+    "Output": "--- PASS: TestAddressSpaceOriginalSourceAndEnvironment/overflow (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467141319Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment/overflow",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:27.46781369Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment",
+    "Output": "--- PASS: TestAddressSpaceOriginalSourceAndEnvironment (0.14s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467854307Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceOriginalSourceAndEnvironment",
+    "Elapsed": 0.14
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467937789Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceFreezeBirthAndRuntimeBeforeWAL"
+  },
+  {
+    "Time": "2026-10-30T16:01:27.467944299Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceFreezeBirthAndRuntimeBeforeWAL",
+    "Output": "=== RUN   TestAddressSpaceFreezeBirthAndRuntimeBeforeWAL\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.161000879Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceFreezeBirthAndRuntimeBeforeWAL",
+    "Output": "--- PASS: TestAddressSpaceFreezeBirthAndRuntimeBeforeWAL (0.69s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.161048811Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceFreezeBirthAndRuntimeBeforeWAL",
+    "Elapsed": 0.69
+  },
+  {
+    "Time": "2026-10-30T16:01:28.161062231Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.161065962Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair",
+    "Output": "=== RUN   TestAddressSpaceDriftBlocksWriteReadbackAndRepair\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.161586552Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/missing"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.161644185Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/missing",
+    "Output": "=== RUN   TestAddressSpaceDriftBlocksWriteReadbackAndRepair/missing\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.313058262Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/missing",
+    "Output": "--- PASS: TestAddressSpaceDriftBlocksWriteReadbackAndRepair/missing (0.15s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.313163412Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/missing",
+    "Elapsed": 0.15
+  },
+  {
+    "Time": "2026-10-30T16:01:28.313215995Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/reversible"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.313220286Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/reversible",
+    "Output": "=== RUN   TestAddressSpaceDriftBlocksWriteReadbackAndRepair/reversible\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.429148376Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/reversible",
+    "Output": "--- PASS: TestAddressSpaceDriftBlocksWriteReadbackAndRepair/reversible (0.12s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.429242036Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/reversible",
+    "Elapsed": 0.12
+  },
+  {
+    "Time": "2026-10-30T16:01:28.429260513Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/hard-drift"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.429284345Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/hard-drift",
+    "Output": "=== RUN   TestAddressSpaceDriftBlocksWriteReadbackAndRepair/hard-drift\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.558454154Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/hard-drift",
+    "Output": "--- PASS: TestAddressSpaceDriftBlocksWriteReadbackAndRepair/hard-drift (0.13s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.558529783Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/hard-drift",
+    "Elapsed": 0.13
+  },
+  {
+    "Time": "2026-10-30T16:01:28.55855119Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/existing-va"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.558559857Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/existing-va",
+    "Output": "=== RUN   TestAddressSpaceDriftBlocksWriteReadbackAndRepair/existing-va\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.628716515Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/existing-va",
+    "Output": "--- PASS: TestAddressSpaceDriftBlocksWriteReadbackAndRepair/existing-va (0.07s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.628756375Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/existing-va",
+    "Elapsed": 0.07
+  },
+  {
+    "Time": "2026-10-30T16:01:28.628763674Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/empty-inconsistent"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.628766823Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/empty-inconsistent",
+    "Output": "=== RUN   TestAddressSpaceDriftBlocksWriteReadbackAndRepair/empty-inconsistent\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.702834437Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/empty-inconsistent",
+    "Output": "--- PASS: TestAddressSpaceDriftBlocksWriteReadbackAndRepair/empty-inconsistent (0.07s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.702903244Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/empty-inconsistent",
+    "Elapsed": 0.07
+  },
+  {
+    "Time": "2026-10-30T16:01:28.702948087Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/too-many"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.70300883Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/too-many",
+    "Output": "=== RUN   TestAddressSpaceDriftBlocksWriteReadbackAndRepair/too-many\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.795863014Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/too-many",
+    "Output": "--- PASS: TestAddressSpaceDriftBlocksWriteReadbackAndRepair/too-many (0.09s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.795947809Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/too-many",
+    "Elapsed": 0.09
+  },
+  {
+    "Time": "2026-10-30T16:01:28.795957283Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/no-task"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.795960805Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/no-task",
+    "Output": "=== RUN   TestAddressSpaceDriftBlocksWriteReadbackAndRepair/no-task\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.874132217Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/no-task",
+    "Output": "--- PASS: TestAddressSpaceDriftBlocksWriteReadbackAndRepair/no-task (0.08s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.874172667Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/no-task",
+    "Elapsed": 0.08
+  },
+  {
+    "Time": "2026-10-30T16:01:28.874178736Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/populated"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.874181781Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/populated",
+    "Output": "=== RUN   TestAddressSpaceDriftBlocksWriteReadbackAndRepair/populated\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.960638168Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/populated",
+    "Output": "--- PASS: TestAddressSpaceDriftBlocksWriteReadbackAndRepair/populated (0.09s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.960679776Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair/populated",
+    "Elapsed": 0.09
+  },
+  {
+    "Time": "2026-10-30T16:01:28.960688926Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair",
+    "Output": "--- PASS: TestAddressSpaceDriftBlocksWriteReadbackAndRepair (0.80s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.960692557Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair",
+    "Elapsed": 0.8
+  },
+  {
+    "Time": "2026-10-30T16:01:28.960695823Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapUnknownRetainsOriginalAndLegacyCannotUpgrade"
+  },
+  {
+    "Time": "2026-10-30T16:01:28.960698244Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapUnknownRetainsOriginalAndLegacyCannotUpgrade",
+    "Output": "=== RUN   TestAddressSpaceBootstrapUnknownRetainsOriginalAndLegacyCannotUpgrade\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.037737138Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapUnknownRetainsOriginalAndLegacyCannotUpgrade",
+    "Output": "--- PASS: TestAddressSpaceBootstrapUnknownRetainsOriginalAndLegacyCannotUpgrade (0.08s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.037778089Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapUnknownRetainsOriginalAndLegacyCannotUpgrade",
+    "Elapsed": 0.08
+  },
+  {
+    "Time": "2026-10-30T16:01:29.037785746Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.037789464Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource",
+    "Output": "=== RUN   TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.037942806Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/cancel"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.037962602Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/cancel",
+    "Output": "=== RUN   TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/cancel\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.115979744Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/cancel",
+    "Output": "--- PASS: TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/cancel (0.08s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.116026573Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/cancel",
+    "Elapsed": 0.08
+  },
+  {
+    "Time": "2026-10-30T16:01:29.116035096Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/changed-cancel"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.116037833Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/changed-cancel",
+    "Output": "=== RUN   TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/changed-cancel\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.237041129Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/changed-cancel",
+    "Output": "--- PASS: TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/changed-cancel (0.12s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.237088299Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/changed-cancel",
+    "Elapsed": 0.12
+  },
+  {
+    "Time": "2026-10-30T16:01:29.23709717Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/drift-cancel"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.237100041Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/drift-cancel",
+    "Output": "=== RUN   TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/drift-cancel\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.370253529Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/drift-cancel",
+    "Output": "--- PASS: TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/drift-cancel (0.13s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.370337873Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/drift-cancel",
+    "Elapsed": 0.13
+  },
+  {
+    "Time": "2026-10-30T16:01:29.370360844Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/unknown-readback"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.370363767Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/unknown-readback",
+    "Output": "=== RUN   TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/unknown-readback\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.559070521Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/unknown-readback",
+    "Output": "--- PASS: TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/unknown-readback (0.19s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.559111281Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource/unknown-readback",
+    "Elapsed": 0.19
+  },
+  {
+    "Time": "2026-10-30T16:01:29.559119479Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource",
+    "Output": "--- PASS: TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource (0.52s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.559123416Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource",
+    "Elapsed": 0.52
+  },
+  {
+    "Time": "2026-10-30T16:01:29.559630488Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.559649999Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL",
+    "Output": "=== RUN   TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.55965609Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/missing"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.559673629Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/missing",
+    "Output": "=== RUN   TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/missing\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.656385589Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/missing",
+    "Output": "--- PASS: TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/missing (0.10s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.656430147Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/missing",
+    "Elapsed": 0.1
+  },
+  {
+    "Time": "2026-10-30T16:01:29.656446066Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/reversible"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.656448794Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/reversible",
+    "Output": "=== RUN   TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/reversible\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.666417056Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/reversible",
+    "Output": "--- PASS: TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/reversible (0.01s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.666445883Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/reversible",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-30T16:01:29.666528706Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/nonempty-va"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.666570213Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/nonempty-va",
+    "Output": "=== RUN   TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/nonempty-va\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.688317858Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/nonempty-va",
+    "Output": "--- PASS: TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/nonempty-va (0.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.68835914Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/nonempty-va",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-30T16:01:29.688942764Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/nonempty-processes"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.688980386Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/nonempty-processes",
+    "Output": "=== RUN   TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/nonempty-processes\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.697494934Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/nonempty-processes",
+    "Output": "--- PASS: TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/nonempty-processes (0.01s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.697584085Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL/nonempty-processes",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-30T16:01:29.697617192Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL",
+    "Output": "--- PASS: TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL (0.14s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.697626794Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL",
+    "Elapsed": 0.14
+  },
+  {
+    "Time": "2026-10-30T16:01:29.697660578Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.697668101Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval",
+    "Output": "=== RUN   TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.697675468Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/birth"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.697682502Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/birth",
+    "Output": "=== RUN   TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/birth\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.886838714Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/birth",
+    "Output": "--- PASS: TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/birth (0.19s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.88687865Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/birth",
+    "Elapsed": 0.19
+  },
+  {
+    "Time": "2026-10-30T16:01:29.887006289Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/original"
+  },
+  {
+    "Time": "2026-10-30T16:01:29.88703737Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/original",
+    "Output": "=== RUN   TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/original\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.139529906Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/original",
+    "Output": "--- PASS: TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/original (0.25s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.139580176Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/original",
+    "Elapsed": 0.25
+  },
+  {
+    "Time": "2026-10-30T16:01:30.139587681Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/held"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.139590958Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/held",
+    "Output": "=== RUN   TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/held\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.330577887Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/held",
+    "Output": "--- PASS: TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/held (0.19s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.330689718Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/held",
+    "Elapsed": 0.19
+  },
+  {
+    "Time": "2026-10-30T16:01:30.331172875Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/cancelled"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.331187872Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/cancelled",
+    "Output": "=== RUN   TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/cancelled\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.637608064Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/cancelled",
+    "Output": "--- PASS: TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/cancelled (0.31s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.637656264Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval/cancelled",
+    "Elapsed": 0.31
+  },
+  {
+    "Time": "2026-10-30T16:01:30.637667039Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval",
+    "Output": "--- PASS: TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval (0.94s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.637672128Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval",
+    "Elapsed": 0.94
+  },
+  {
+    "Time": "2026-10-30T16:01:30.637677499Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativePostgresExecEnvironmentBlocksActualPreMainLoader"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.637681264Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativePostgresExecEnvironmentBlocksActualPreMainLoader",
+    "Output": "=== RUN   TestNativePostgresExecEnvironmentBlocksActualPreMainLoader\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727198239Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativePostgresExecEnvironmentBlocksActualPreMainLoader",
+    "Output": "PG17_NATIVE_EXEC_ENVIRONMENT: baseline constructor=ran; sanitized constructor=absent; business token=preserved\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.72725004Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativePostgresExecEnvironmentBlocksActualPreMainLoader",
+    "Output": "--- PASS: TestNativePostgresExecEnvironmentBlocksActualPreMainLoader (0.09s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727255023Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativePostgresExecEnvironmentBlocksActualPreMainLoader",
+    "Elapsed": 0.09
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727262041Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRemovesPreMainInjectionAndCallerProfile"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727264534Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRemovesPreMainInjectionAndCallerProfile",
+    "Output": "=== RUN   TestPostgresExecEnvironmentRemovesPreMainInjectionAndCallerProfile\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727267887Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRemovesPreMainInjectionAndCallerProfile",
+    "Output": "--- PASS: TestPostgresExecEnvironmentRemovesPreMainInjectionAndCallerProfile (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727279454Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRemovesPreMainInjectionAndCallerProfile",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727282441Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.72728441Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput",
+    "Output": "=== RUN   TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727287601Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/duplicate-token"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727289829Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/duplicate-token",
+    "Output": "=== RUN   TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/duplicate-token\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727293325Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/duplicate-token",
+    "Output": "--- PASS: TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/duplicate-token (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727295769Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/duplicate-token",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727299338Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/duplicate-loader"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727301225Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/duplicate-loader",
+    "Output": "=== RUN   TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/duplicate-loader\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727304247Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/duplicate-loader",
+    "Output": "--- PASS: TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/duplicate-loader (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727311114Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/duplicate-loader",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727318155Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/missing-equals"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727320178Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/missing-equals",
+    "Output": "=== RUN   TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/missing-equals\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727323343Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/missing-equals",
+    "Output": "--- PASS: TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/missing-equals (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727333147Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/missing-equals",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727335845Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/empty-key"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727337823Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/empty-key",
+    "Output": "=== RUN   TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/empty-key\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727528443Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/empty-key",
+    "Output": "--- PASS: TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/empty-key (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.72755004Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/empty-key",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727556202Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/nul"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.72755866Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/nul",
+    "Output": "=== RUN   TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/nul\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727562016Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/nul",
+    "Output": "--- PASS: TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/nul (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727576303Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/nul",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727578969Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/invalid-key"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.72758117Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/invalid-key",
+    "Output": "=== RUN   TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/invalid-key\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.72758582Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/invalid-key",
+    "Output": "--- PASS: TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/invalid-key (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.72759397Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/invalid-key",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727964237Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/initial-digit"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.72797679Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/initial-digit",
+    "Output": "=== RUN   TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/initial-digit\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727981672Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/initial-digit",
+    "Output": "--- PASS: TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/initial-digit (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.727984951Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/initial-digit",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:30.728001603Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/oversized"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.728004058Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/oversized",
+    "Output": "=== RUN   TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/oversized\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.728007967Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/oversized",
+    "Output": "--- PASS: TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/oversized (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.728025624Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput/oversized",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:30.728028661Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput",
+    "Output": "--- PASS: TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.728031089Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:30.728036571Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentFixedByteBoundary"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.728038749Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentFixedByteBoundary",
+    "Output": "=== RUN   TestPostgresExecEnvironmentFixedByteBoundary\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.729203759Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentFixedByteBoundary",
+    "Output": "--- PASS: TestPostgresExecEnvironmentFixedByteBoundary (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.729228464Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPostgresExecEnvironmentFixedByteBoundary",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:01:30.729495846Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.729506379Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite",
+    "Output": "=== RUN   TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.72958933Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/bootstrap"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.729594483Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/bootstrap",
+    "Output": "=== RUN   TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/bootstrap\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.95589065Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/bootstrap",
+    "Output": "--- PASS: TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/bootstrap (0.23s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.955959579Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/bootstrap",
+    "Elapsed": 0.23
+  },
+  {
+    "Time": "2026-10-30T16:01:30.955972474Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/runtime-held"
+  },
+  {
+    "Time": "2026-10-30T16:01:30.955975266Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/runtime-held",
+    "Output": "=== RUN   TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/runtime-held\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:31.140131638Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/runtime-held",
+    "Output": "--- PASS: TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/runtime-held (0.18s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:31.140173819Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/runtime-held",
+    "Elapsed": 0.18
+  },
+  {
+    "Time": "2026-10-30T16:01:31.1401827Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/actual-drift"
+  },
+  {
+    "Time": "2026-10-30T16:01:31.140185486Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/actual-drift",
+    "Output": "=== RUN   TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/actual-drift\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:31.221807179Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/actual-drift",
+    "Output": "--- PASS: TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/actual-drift (0.08s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:31.221867606Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/actual-drift",
+    "Elapsed": 0.08
+  },
+  {
+    "Time": "2026-10-30T16:01:31.221882367Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite",
+    "Output": "--- PASS: TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite (0.49s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:31.221887277Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite",
+    "Elapsed": 0.49
+  },
+  {
+    "Time": "2026-10-30T16:01:31.22198163Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestLegacyPendingNormalDecreaseRemainsObservableWithoutReplay"
+  },
+  {
+    "Time": "2026-10-30T16:01:31.222003543Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestLegacyPendingNormalDecreaseRemainsObservableWithoutReplay",
+    "Output": "=== RUN   TestLegacyPendingNormalDecreaseRemainsObservableWithoutReplay\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:31.412073356Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestLegacyPendingNormalDecreaseRemainsObservableWithoutReplay",
+    "Output": "--- PASS: TestLegacyPendingNormalDecreaseRemainsObservableWithoutReplay (0.19s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:31.412114891Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestLegacyPendingNormalDecreaseRemainsObservableWithoutReplay",
+    "Elapsed": 0.19
+  },
+  {
+    "Time": "2026-10-30T16:01:31.412121882Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Output": "PASS\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:32.416095132Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Output": "ok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/resourceguard\t5.110s\n"
+  },
+  {
+    "Time": "2026-10-30T16:01:32.416148219Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Elapsed": 5.11
+  }
+]

@@ -1,0 +1,56 @@
+{
+  "status": "PASS_COMPONENT_ONLY",
+  "created_utc": "2026-10-30T16:03:47.894523+00:00",
+  "source_head": "22299cfd807d545d2214e48dffb926de4c0795ea",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "actual_run": "/data/neon-build/validation/go-1793376084614353531",
+  "initial_smoke_run": "/data/neon-build/validation/go-1793375999586220690",
+  "actual_toolchain": "go1.24.3 linux/amd64",
+  "race": true,
+  "count": 1,
+  "module_network": "GOPROXY=off GOSUMDB=off; module/build caches reused",
+  "build_run_network": "host (existing runner); no dependency downloads attempted",
+  "copied_go_mod_file_count": 680,
+  "root_count": 15,
+  "subcase_count": 70,
+  "new_unit_roots": 3,
+  "new_native_component_roots": 1,
+  "existing_regression_roots": 11,
+  "failures": 0,
+  "skips": 0,
+  "cases": [
+    {
+      "id": "PG17-U-BIRTH-001",
+      "layer": "unit",
+      "status": "PASS",
+      "root": "TestPostgresExecEnvironmentRemovesPreMainInjectionAndCallerProfile"
+    },
+    {
+      "id": "PG17-U-BIRTH-002",
+      "layer": "unit",
+      "status": "PASS",
+      "root": "TestPostgresExecEnvironmentRejectsAmbiguityAndMalformedInput"
+    },
+    {
+      "id": "PG17-U-BIRTH-003",
+      "layer": "unit",
+      "status": "PASS",
+      "root": "TestPostgresExecEnvironmentFixedByteBoundary"
+    },
+    {
+      "id": "PG17-S-BIRTH-001",
+      "layer": "single-service-component",
+      "status": "PASS_COMPONENT_ONLY",
+      "root": "TestNativePostgresExecEnvironmentBlocksActualPreMainLoader"
+    }
+  ],
+  "all_copied_files_match_at_archive": true,
+  "production_changed_files": [
+    "pkg/dsga/resourceguard/exec_environment.go",
+    "pkg/dsga/resourceguard/launch_linux.go"
+  ],
+  "normal_decrease_authorized": false,
+  "native_pg_birth_enrollment_verified": false,
+  "kvm_or_k8s_e2e": false,
+  "official_loader_reference": "https://sourceware.org/glibc/manual/latest/html_node/Dynamic-Linker-Hardening.html"
+}
