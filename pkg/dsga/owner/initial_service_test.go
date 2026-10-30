@@ -362,6 +362,7 @@ func productionInitialService(t *testing.T, mode string) {
 	pgRecovery := strings.HasPrefix(mode, "pg-safety-recover-")
 	vmRecovery := strings.HasPrefix(mode, "vm-safety-recover-")
 	actualRecovery := strings.HasPrefix(mode, "actual-safety-recover-")
+	actualShrinkRecovery := mode == "actual-shrink-recover"
 	actualLatePG := actualRecovery && strings.Contains(mode, "pg-late-commit")
 	pgRecoveryTransfer := pgRecovery && (strings.Contains(mode, "unreceived") || strings.Contains(mode, "expired") || strings.Contains(mode, "takeover"))
 	closureTransfer := (actualRecovery || vmRecovery) && strings.HasSuffix(mode, "takeover") || pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
@@ -450,6 +451,11 @@ func productionInitialService(t *testing.T, mode string) {
 		// 仅给测试总期限留余量，生产单轮请求、限流和Lease均不变。
 		deadline = 4 * time.Minute
 	}
+	if actualShrinkRecovery {
+		// 独立新根串联正常Grow真实前驱及Shrink实际恢复；仅扩大
+		// 整体测试上限，不改生产请求、Kube限流或Lease时限。
+		deadline = 6 * time.Minute
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), deadline)
 	defer cancel()
 	run := elector.Run
@@ -469,7 +475,7 @@ func productionInitialService(t *testing.T, mode string) {
 		require.NoError(t, err)
 		defer resources.CloseIdleConnections()
 		request := pgRequest(t, session.Actor())
-		if automaticMode {
+		if automaticMode || actualShrinkRecovery {
 			request.TargetVMMemoryBytes = 2 << 30
 		}
 		p, before := preparedGuest(t, request, root.view.Identity)
@@ -564,7 +570,7 @@ func productionInitialService(t *testing.T, mode string) {
 		defer worker.CloseIdleConnections()
 		require.NoError(t, runner.Tick(ctx))
 		var extra []budget.QualifiedTarget
-		if automaticMode {
+		if automaticMode || actualShrinkRecovery {
 			extra = []budget.QualifiedTarget{{VMMemoryBytes: 1 << 30, GuestUsableMemoryBytes: 768 << 20, Limits: p.Limits, SystemOutsidePGBytes: 24 << 20, TransitionBytes: 4 << 20, SafetyBytes: 4 << 20}}
 		}
 		if finalizationCancel {
@@ -682,7 +688,7 @@ func productionInitialService(t *testing.T, mode string) {
 		var successorHost *hostexec.Publisher
 		if lifecycleMode {
 			// 已由完整生产恢复链完成首次服务；继续原预算Grow，无重复初开。
-		} else if actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
+		} else if actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
 			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -749,7 +755,7 @@ func productionInitialService(t *testing.T, mode string) {
 			// 完整结案/自动Grow→Shrink会经过多次正式来源预审，race运行
 			// 可能超过静态夹具Lease的60秒寿命。用原UID/holder的真实
 			// 选主续租维持Host，不放宽生产过期校验，也不重建同名来源。
-			if actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || finalizationCancel || strings.HasPrefix(mode, "cleanup-safety-") {
+			if actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || finalizationCancel || strings.HasPrefix(mode, "cleanup-safety-") {
 				keepPGTakeoverHostOwner(t, ctx, client)
 			}
 		}
@@ -984,7 +990,7 @@ func productionInitialService(t *testing.T, mode string) {
 		posts, _, resizes := pg.counts()
 		if lifecycleMode {
 			require.Equal(t, lifecyclePosts+1, posts)
-		} else if cancelled || mode == "auto-finish" || automaticMode {
+		} else if actualShrinkRecovery || cancelled || mode == "auto-finish" || automaticMode {
 			require.Equal(t, 2, posts, "取消时已开放不新增setter，后继正常扩容只再开放一次")
 		} else {
 			require.Equal(t, 3, posts, "首次setter发送前/后各丢一次，正常后继只再开放一次")
@@ -993,6 +999,10 @@ func productionInitialService(t *testing.T, mode string) {
 		qmp.mu.Lock()
 		require.Equal(t, 1, qmp.writes)
 		qmp.mu.Unlock()
+		if actualShrinkRecovery {
+			verifyProductionShrinkActualRecovery(t, ctx, api, client, coord, store, session, resources, worker, source, pg, root, runner, qmp)
+			return nil
+		}
 		if mode == "auto-finish" {
 			worker = verifyAutomaticNormalFinish(t, ctx, api, client, store, session, resources, worker, config, source, pg, root)
 		}
