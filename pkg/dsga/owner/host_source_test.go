@@ -28,6 +28,7 @@ import (
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	vmclient "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned"
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostexec"
@@ -115,8 +116,12 @@ func actualHostPublisher(t *testing.T, client *kubefake.Clientset, vmCoord coord
 // 真实Node/VM存储、Host生产者、Runner出生/文件WAL和Unix QMP读取参与。
 // Kube服务、QEMU peer及资格上界仍为显式fixture，不声称已接生产Scheduler。
 func TestHostPublisherOriginalSourcesAndLostWrites(t *testing.T) {
-	for _, mode := range []string{"complete", "create-lost", "publish-lost", "published-source-missing", "same-name-new-uid", "outside-missing", "before-memory-drift", "VM-intent-changes", "consumer-start-lost", "consumer-record-lost", "consumer-source-gone", "consumer-waits-unpublished", "actual-scheduler-loop"} {
+	for _, mode := range []string{"complete", "create-lost", "publish-lost", "published-source-missing", "same-name-new-uid", "outside-missing", "before-memory-drift", "VM-intent-changes", "consumer-start-lost", "consumer-record-lost", "consumer-source-gone", "consumer-waits-unpublished", "actual-scheduler-loop", "service-closure"} {
 		t.Run(mode, func(t *testing.T) {
+			if mode == "service-closure" {
+				productionInitialService(t, "host-service-closure")
+				return
+			}
 			api, store, vmCoord := newAPI(t)
 			client := vmCore(t)
 			api.mu.Lock()
@@ -314,6 +319,68 @@ func TestHostPublisherOriginalSourcesAndLostWrites(t *testing.T) {
 			peer.mu.Unlock()
 		})
 	}
+}
+
+// 本窗口复用正式首次预算/开放及Prepare前驱，PG/Root/QMP/Kube仍为明确peer。
+// 关闭是独立Store写前CAS、正式SDK setter及完整回执落账；只认证Host写者闭门，
+// 不扩展Node已在途Reserve的物理/持久屏障，也不将关闭当成Host结清证明。
+func verifyHostPublisherServiceClosure(t *testing.T, ctx context.Context, client *kubefake.Clientset, vmCoord coordclient.CoordinationV1Interface, store *journal.Store, session *Session, worker *PGWorker, p budget.Prepared, peer *vmQMPPeer) {
+	t.Helper()
+	publisher, allocator := actualHostPublisher(t, client, vmCoord, store, session)
+	preclose, err := store.Load(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, preclose.State().InitialHeld)
+	require.True(t, preclose.State().InitialAdmissionReady())
+	require.Equal(t, journal.Settled, preclose.State().Active.Steps[0].Phase)
+	require.Equal(t, journal.Planned, budgetStep(t, store, journal.ReserveHost).Phase)
+	require.Equal(t, journal.Planned, budgetStep(t, store, journal.ResizeVM).Phase)
+	nodeBefore, err := allocator.Load(ctx)
+	require.NoError(t, err)
+	require.Empty(t, nodeBefore.State().Holds)
+	creates := 0
+	client.PrependReactor("create", "configmaps", func(action kt.Action) (bool, runtime.Object, error) {
+		if action.(kt.CreateAction).GetObject().(*core.ConfigMap).Labels[budgetclaims.ClaimLabel] == budgetclaims.HostKind {
+			creates++
+		}
+		return false, nil, nil
+	})
+	var closed *journal.Snapshot
+	client.PrependReactor("get", "configmaps", func(action kt.Action) (bool, runtime.Object, error) {
+		if closed != nil || action.(kt.GetAction).GetName() != p.OutsideClaim.Name {
+			return false, nil, nil
+		}
+		// client-go fake回调持其自身锁；这里只访问独立typed VM Store
+		// 和PG TLS peer，不递归调用Core客户端或整轮worker造成锁重入。
+		request := control.AdmissionRequest{ProtocolVersion: 1, Instance: p.Request.Key.Instance, IssuerEpoch: session.Actor().Epoch, Revision: p.Shared.Observed.AdmissionRevision + 1, ExpectedCapacityGeneration: p.Request.ExpectedCapacityGeneration, Open: false, BudgetCommitmentID: p.Request.BudgetCommitmentID}
+		pending, _, err := store.StartActiveServiceClosure(ctx, preclose, session.Actor(), request)
+		require.NoError(t, err)
+		fact, err := worker.client.SetAdmission(ctx, request)
+		require.NoError(t, err)
+		require.True(t, fact.Confirms())
+		closed, err = store.RecordServiceClosure(ctx, pending, session.Actor(), fact, false)
+		require.NoError(t, err)
+		return false, nil, nil
+	})
+	_, err = publisher.Reconcile(ctx)
+	require.ErrorContains(t, err, "intent changed", "关闭期间取得的旧快照不能发布新持有")
+	require.NotNil(t, closed)
+	require.EqualValues(t, 16, closed.State().ClosureFormatVersion())
+	require.False(t, closed.State().ServiceClosure.Pending())
+	require.Equal(t, preclose.State().Active, closed.State().Active)
+	_, err = publisher.Reconcile(ctx)
+	require.ErrorContains(t, err, "service closure", "最新关闭快照也不能把Completed Prepare当新Host授权")
+	nodeAfter, err := allocator.Load(ctx)
+	require.NoError(t, err)
+	require.Equal(t, nodeBefore.ResourceVersion(), nodeAfter.ResourceVersion())
+	require.Equal(t, nodeBefore.State(), nodeAfter.State(), "关闭前后均零Node Reserve/BindClaim")
+	require.Zero(t, creates, "完整关闭不撤销原Prepare，但禁止任何新Host CREATE")
+	current, err := store.Load(ctx)
+	require.NoError(t, err)
+	require.Equal(t, closed.State(), current.State(), "拒绝发布不得改原Active/关闭WAL")
+	peer.mu.Lock()
+	require.Zero(t, peer.writes)
+	require.EqualValues(t, p.VMBeforeMemoryBytes, peer.actual)
+	peer.mu.Unlock()
 }
 
 // 组合实际Service.Run/client-go节点选主→Fence/恢复→Publisher→原CM/Node

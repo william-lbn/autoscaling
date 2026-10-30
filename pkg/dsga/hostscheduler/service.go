@@ -237,6 +237,12 @@ func (s *Service) publish(ctx context.Context, d domain, pod *core.Pod, p hostgu
 		return err
 	}
 	m := snapshot.State()
+	if m.Active != nil && m.ServiceClosure != nil {
+		// 关闭后原Prepare仍可能是Completed，不能据此继续发布新的
+		// Host目标持有。最终Publisher也独立拒绝，保护直接调用入口；
+		// 无Active的原永久预算结清仍走下方原有完整来源/水位路径。
+		return nil
+	}
 	if m.Active == nil && m.BudgetHeld == nil && m.CapacityHeld == nil && m.InitialHeld == nil || m.Active != nil && m.Active.AbortRequested {
 		return nil
 	}

@@ -363,6 +363,7 @@ func productionInitialService(t *testing.T, mode string) {
 	vmRecovery := strings.HasPrefix(mode, "vm-safety-recover-")
 	actualRecovery := strings.HasPrefix(mode, "actual-safety-recover-")
 	actualShrinkRecovery := mode == "actual-shrink-recover"
+	hostServiceClosure := mode == "host-service-closure"
 	actualLatePG := actualRecovery && strings.Contains(mode, "pg-late-commit")
 	pgRecoveryTransfer := pgRecovery && (strings.Contains(mode, "unreceived") || strings.Contains(mode, "expired") || strings.Contains(mode, "takeover"))
 	closureTransfer := (actualRecovery || vmRecovery) && strings.HasSuffix(mode, "takeover") || pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
@@ -688,7 +689,7 @@ func productionInitialService(t *testing.T, mode string) {
 		var successorHost *hostexec.Publisher
 		if lifecycleMode {
 			// 已由完整生产恢复链完成首次服务；继续原预算Grow，无重复初开。
-		} else if actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
+		} else if hostServiceClosure || actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
 			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -745,6 +746,12 @@ func productionInitialService(t *testing.T, mode string) {
 		}
 		var prepared budget.Prepared
 		require.NoError(t, json.Unmarshal(budgetStep(t, store, journal.PrepareBudget).Observation.Data, &prepared))
+		if hostServiceClosure {
+			// 原Initial及首次开放、Prepare均由正式生产者完成；在本请求
+			// 尚未发布Host之前独立验证关闭门禁，不借领域夹具补永久头。
+			verifyHostPublisherServiceClosure(t, ctx, client, coord, store, session, worker, prepared, qmp)
+			return nil
+		}
 		if successorHost != nil {
 			// 取消到后继操作复用同一真实Host owner/Lease/Node账本，
 			// 不重复初始化夹具或重建同名Lease来掩盖生命周期。

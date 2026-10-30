@@ -73,6 +73,12 @@ func (p *Publisher) currentOwner(ctx context.Context, s *journal.Snapshot) error
 func (p *Publisher) prepared(s *journal.Snapshot) (budget.Prepared, error) {
 	var out budget.Prepared
 	m := s.State()
+	if m.ServiceClosure != nil {
+		// 独立关闭冻结完整原操作。即使Prepare已完成且当前实际VM
+		// 仍等于before，也不能借旧目标在关闭后新Reserve或发布Host。
+		// 已在途持有继续保留；其结清/回收仍走各自完整水位核验。
+		return out, fmt.Errorf("host publisher blocked by retained service closure")
+	}
 	if !s.Dispatchable() || m.Active == nil || m.Active.AbortRequested || m.ResourceIdentity == nil || m.PGInstance == nil || *m.PGInstance != m.Active.Request.Key.Instance || m.Owner != m.Active.Origin || m.Active.Request.Key.IssuerEpoch != m.Owner.Epoch {
 		return out, fmt.Errorf("host publisher lacks current original dispatchable operation")
 	}

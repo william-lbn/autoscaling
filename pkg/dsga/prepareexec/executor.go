@@ -83,6 +83,9 @@ func (c command) outside(incarnation string) budget.OutsideReservation {
 // 原生floor仍由各自执行器持久化，本函数不把一次观察当永久许可。
 func (e *Executor) inspect(ctx context.Context, s *journal.Snapshot) (command, error) {
 	var c command
+	if err := e.checkSnapshot(ctx, s); err != nil {
+		return c, err
+	}
 	m, vm := s.State(), s.VirtualMachine()
 	instance, _ := e.pg.Binding()
 	id, _ := e.resources.Binding()
@@ -185,6 +188,31 @@ func (e *Executor) inspect(ctx context.Context, s *journal.Snapshot) (command, e
 	return c, err
 }
 
+// checkSnapshot在任何新来源读取/创建前重新GET原VM。独立关闭冻结原操作，
+// 不能拿关闭前的Snapshot或已覆盖的原操作读回继续Prepare。跨对象不持本地
+// 锁，RV改变只保留原Unknown；这里不能撤销已经在网络中的Outside CREATE，
+// 所以CREATE晚到后仍要再检查，最终Record还必须通过同UID/RV原子条件写。
+func (e *Executor) checkSnapshot(ctx context.Context, s *journal.Snapshot) error {
+	if s == nil || !s.Dispatchable() || s.State().Owner != e.actor || s.State().Active == nil {
+		return fmt.Errorf("prepare producer requires original active VM snapshot")
+	}
+	if s.State().ServiceClosure != nil {
+		return fmt.Errorf("prepare producer blocked by retained service closure")
+	}
+	current, err := e.store.Load(ctx)
+	if err != nil {
+		return err
+	}
+	m := current.State()
+	if m.ServiceClosure != nil {
+		return fmt.Errorf("prepare producer blocked by retained service closure")
+	}
+	if current.ResourceVersion() != s.ResourceVersion() || !current.Dispatchable() || m.Owner != e.actor || m.Active == nil {
+		return fmt.Errorf("prepare producer original VM UID/RV or operation changed")
+	}
+	return nil
+}
+
 func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) { return e.advance(ctx, nil) }
 
 // ReplayOriginal只选择原Key，不接受另一份额度或资格。普通轮询/404/超时不会
@@ -204,6 +232,11 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	m := s.State()
 	if m.Owner != e.actor {
 		return pgexec.AwaitingFact, fmt.Errorf("prepare producer owner changed")
+	}
+	if m.ServiceClosure != nil {
+		// 普通查询和显式原重放均不能越过独立关闭再创建Outside。原
+		// Prepare的Planned/Unknown逐字保留，不按来源缺失造NoEffect。
+		return pgexec.AwaitingFact, fmt.Errorf("prepare producer blocked by retained service closure")
 	}
 	if m.Active == nil {
 		return pgexec.Idle, nil
