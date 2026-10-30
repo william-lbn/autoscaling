@@ -1,0 +1,27 @@
+{
+  "scope": "independent read-only review of component-only stage; no build/test rerun",
+  "reviewUTC": "2026-10-30T17:57:48.788255+00:00",
+  "reviewedFiles": {
+    "pkg/dsga/resourceguard/prebootstrap_system.go": "ab88f7dd5627f5198f20573c293161117f1e2511822bc625f7f334be7544fc71",
+    "pkg/dsga/resourceguard/prebootstrap_system_linux.go": "33cf8ee39c2001372b6172de9b17add1d7f53a41b1d048e7cff9f75cd08ba76a",
+    "pkg/dsga/resourceguard/prebootstrap_system_test.go": "c6f2000035c028b4d419115e8ce38c8dd022fbe6efa05981e073e8027fbac2af"
+  },
+  "blockingNewFindings": [],
+  "conclusion": "Component may be committed separately with production integration still gated. No normal/VM permit claimed.",
+  "confirmed": [
+    "Original Origin bytes and confirmation re-read within resource state flock; locked directory dev/inode checked against backend path",
+    "Intent O_EXCL, file and directory fsync precedes System writes",
+    "Pending existing intent refuses implicit Prepare replay; explicit Replay retains original nonce/source/policy",
+    "Completion after kernel readback, base-only empty-PG/System placement checks, then file and directory fsync",
+    "Observe never claims durability; Prepare/Replay of completed stage resync original files",
+    "No state.json/Bootstrap/RootHeld/PG Birth or shrink permit creation",
+    "Existing resource state can only be observed after completed original stage with matching Bootstrap source"
+  ],
+  "requiredFutureGates": [
+    "Current old normal-v1 profile lacks immutable early PID source; pid_max+census must not qualify normal. Adopt separate PID-capped tuple after real KVM proof.",
+    "Real persistent ext4/read-only ISO/rootfs/base-only S has not run; five U roots use model kernel/ISO and actual temporary WAL.",
+    "No sysinit or Runner integration in reviewed batch; full allocator/FS/System runtime qualifications still separate."
+  ],
+  "writesToReviewedFiles": false,
+  "newTestsExecuted": false
+}

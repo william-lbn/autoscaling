@@ -1,0 +1,74 @@
+{
+  "scope": "Linux Go unit component only: model kernel/ISO/namespaces/filesystem facts plus real temporary WAL flock/fsync",
+  "status": "PASS_UNIT_COMPONENT",
+  "roots": 5,
+  "subcases": 25,
+  "skips": 0,
+  "command": "bash -c set\\ -euo\\ pipefail\\;\\ echo\\ COPY_SOURCE_SHA256_BEGIN\\;\\ find\\ .\\ -type\\ f\\ \\\\\\(\\ -name\\ \\\"\\*.go\\\"\\ -o\\ -name\\ go.mod\\ -o\\ -name\\ go.sum\\ \\\\\\)\\ -not\\ -path\\ \\\"./.git/\\*\\\"\\ -print0\\ \\|\\ sort\\ -z\\ \\|\\ xargs\\ -0\\ sha256sum\\;\\ echo\\ COPY_SOURCE_SHA256_END\\;\\ go\\ version\\;\\ env\\ GOPROXY=off\\ GOSUMDB=off\\ go\\ test\\ -mod=readonly\\ -race\\ -json\\ -count=1\\ -timeout=90s\\ ./pkg/dsga/resourceguard\\ -run\\ \\\"\\^TestPrebootstrapSystem\\\"\n",
+  "exit_code": 0,
+  "package_elapsed_seconds": 2.735,
+  "tested_source_commit": "7ed9356424474f64489dec1f92a9eb864aaead71",
+  "tested_source_status_sha256": "2f519819758277ccc1a3f773d3ad97fb6b956922f9f5e9bc9ba57ab236d18d56",
+  "source_snapshot_was_dirty": true,
+  "executed_copy_current_go_tree_equal": true,
+  "executed_go_files_and_module_files": 696,
+  "executed_go_manifest_sha256": "9d873d5efe625f6e5fc26467202fbc238c6b5cbfbb72fed4a169abd9755645d9",
+  "component_source_sha256": {
+    "pkg/dsga/resourceguard/prebootstrap_system.go": "ab88f7dd5627f5198f20573c293161117f1e2511822bc625f7f334be7544fc71",
+    "pkg/dsga/resourceguard/prebootstrap_system_linux.go": "33cf8ee39c2001372b6172de9b17add1d7f53a41b1d048e7cff9f75cd08ba76a",
+    "pkg/dsga/resourceguard/prebootstrap_system_test.go": "c6f2000035c028b4d419115e8ce38c8dd022fbe6efa05981e073e8027fbac2af"
+  },
+  "raw_evidence_path": "/data/neon-build/validation/go-1793382803556989464",
+  "run_log_sha256": "3017a51b8082dd9481856802da0686f3dc84f9e5ae3e64bee67cc9edda8f15cb",
+  "dockerfile_sha256": "6c09fcc672d7c95cc5d79ba4a40df2a319c77cc0a34371bb611aed9515302821",
+  "metadata_sha256": "8fee90d230690c655e347a836576e8787d9d10bfe98150346208f2970d5e345a",
+  "independent_review_path": "/data/neon-build/validation/pg17-pre-system-readonly-review-20261030T180000Z/review.json",
+  "independent_review_sha256": "d0db78eed7fd171fc70803fed69b7200587e9190fa055a81ba29d876bfdc9844",
+  "all_sources_closed": false,
+  "vm_shrink_permit": false,
+  "not_qualified": [
+    "real base-only Guest ext4/ISO/System placement",
+    "sysinit/Runner boot channel",
+    "immutable early PID profile integration",
+    "full FS/IO/inflight/VM sources",
+    "normal decrease",
+    "Kubernetes E2E"
+  ],
+  "cases": [
+    {
+      "id": "PG17-U-PRESYS-001",
+      "test": "TestPrebootstrapSystemRecordsOnlyOriginalStageBeforeFullBudget",
+      "status": "PASS",
+      "subcases": 0,
+      "type": "unit"
+    },
+    {
+      "id": "PG17-U-PRESYS-002",
+      "test": "TestPrebootstrapSystemUnknownRequiresSameOriginalReplay",
+      "status": "PASS",
+      "subcases": 3,
+      "type": "unit"
+    },
+    {
+      "id": "PG17-U-PRESYS-003",
+      "test": "TestPrebootstrapSystemRejectsHistoryAndSourceDriftWithoutWrites",
+      "status": "PASS",
+      "subcases": 16,
+      "type": "unit"
+    },
+    {
+      "id": "PG17-U-PRESYS-004",
+      "test": "TestPrebootstrapSystemKeepsPendingOnEarlyMovableOrCorruptFiles",
+      "status": "PASS",
+      "subcases": 6,
+      "type": "unit"
+    },
+    {
+      "id": "PG17-U-PRESYS-005",
+      "test": "TestPrebootstrapSystemSerializesOriginalWALAndAllowsOnlyPostCompleteGrowth",
+      "status": "PASS",
+      "subcases": 0,
+      "type": "unit"
+    }
+  ]
+}
