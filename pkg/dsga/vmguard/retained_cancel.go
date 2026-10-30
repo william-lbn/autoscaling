@@ -31,29 +31,17 @@ func (r *Reader) CheckCurrentBudget(ctx context.Context, m journal.Model) (Curre
 		if err != nil || m.CheckClosedCapacity(capacity.Request) != nil {
 			return out, fmt.Errorf("current Runner actual capacity lacks original closed permanent budget")
 		}
-		if capacity.InitialVM != nil {
-			if capacity.InitialOutside == nil {
-				return out, fmt.Errorf("initial VM capacity lost complete original boot budget")
-			}
-			proof, err := r.CheckInitialCapacity(ctx, *capacity.InitialVM, *capacity.InitialOutside, m.Owner)
-			if err != nil {
-				return out, err
-			}
-			out.Initial = &proof
-			return out, nil
-		}
-		proof, err := r.CheckCapacity(ctx, capacity.VM, m.Owner)
-		if err != nil {
-			return out, err
-		}
-		// 当前实际预算的原生来源本身可以是不可再发送取消，不能标成
-		// 普通Completed。额外Cancellation仅保留旧普通预算的较新尾证据。
-		return CurrentBudgetVM{Budget: proof, Cancellation: nil}, nil
+		return r.checkHeldCapacity(ctx, capacity, m.Owner)
 	}
 	var final budget.FinalizationCommand
 	if m.BudgetHeld == nil || json.Unmarshal(m.BudgetHeld.Finalization.Command, &final) != nil || final.Validate() != nil || final.Finalized.Sources == nil || final.Finalized.Sources.Runner == nil || m.CheckClosedBudget(final.Finalized.Request) != nil {
 		return out, fmt.Errorf("current Runner budget requires original closed VM boundary")
 	}
+	return r.checkHeldFinalization(ctx, m, final, m.BudgetBoundary)
+}
+
+func (r *Reader) checkHeldFinalization(ctx context.Context, m journal.Model, final budget.FinalizationCommand, boundary *journal.ClosedBudgetBoundary) (CurrentBudgetVM, error) {
+	var out CurrentBudgetVM
 	sources, request := *final.Finalized.Sources.Runner, final.Finalized.Request
 	_, _, publication, err := r.Inspect(ctx, &sources.BirthClaim, m.Owner)
 	if err != nil {
@@ -64,17 +52,91 @@ func (r *Reader) CheckCurrentBudget(ctx context.Context, m journal.Model) (Curre
 		if err != nil {
 			return out, err
 		}
-		return CurrentBudgetVM{Budget: confirmed, Cancellation: nil}, nil
+		return CurrentBudgetVM{Budget: confirmed, Cancellation: nil, Initial: nil}, nil
 	}
 	last := publication.State.Last
-	if m.ProtocolVersion < 7 || m.BudgetBoundary == nil || last == nil || last.Kind != cancelledBeforeSend || last.Cancellation == nil || last.Cancellation.VMSequence <= m.BudgetHeld.RecordedSequence || last.Cancellation.VMSequence >= m.BudgetBoundary.ThroughSequence || last.Intent.Command.Request.Key.Instance != request.Key.Instance || compareKey(last.Intent.Command.Request.Key, m.BudgetBoundary.ThroughKey) > 0 || compareKey(last.Intent.Command.Request.Key, m.BudgetBoundary.ThroughKey) == 0 && last.Intent.Command.Request.Key != m.BudgetBoundary.ThroughKey {
+	if m.ProtocolVersion < 7 || boundary == nil || last == nil || last.Kind != cancelledBeforeSend || last.Cancellation == nil || last.Cancellation.VMSequence <= m.BudgetHeld.RecordedSequence || last.Cancellation.VMSequence >= boundary.ThroughSequence || last.Intent.Command.Request.Key.Instance != request.Key.Instance || compareKey(last.Intent.Command.Request.Key, boundary.ThroughKey) > 0 || compareKey(last.Intent.Command.Request.Key, boundary.ThroughKey) == 0 && last.Intent.Command.Request.Key != boundary.ThroughKey {
 		return out, fmt.Errorf("current native cancellation is outside original closed VM budget chain")
 	}
 	joint, err := r.CheckRetainedAfterCancelled(ctx, sources, request, final.PreparedSHA256, final.GuestSHA256, final.Finalized.Sources.HostClaim, last.Intent.Command, last.Intent.JournalSHA256, m.Owner)
 	if err != nil {
 		return out, err
 	}
-	return CurrentBudgetVM{Budget: joint.Prior, Cancellation: &joint.Cancellation}, nil
+	return CurrentBudgetVM{Budget: joint.Prior, Cancellation: &joint.Cancellation, Initial: nil}, nil
+}
+
+// CheckActiveHeldBudget只核新请求尚保留的旧完整永久预算。它不把Active
+// 投影成已关闭Model，也不调用结清/释放接口；来源认证成功仍不是新派发许可。
+// Begin尚未Start时使用原全局水位，Start后只使用原子捕获的Prior水位；
+// 两者都必须逐字段绑定原预算，绝不以新Active的Key或目标数值补造关闭链。
+func (r *Reader) CheckActiveHeldBudget(ctx context.Context, m journal.Model) (CurrentBudgetVM, error) {
+	var out CurrentBudgetVM
+	if err := m.Validate(); err != nil {
+		return out, err
+	}
+	if m.Active == nil || m.Active.Cleanup != nil {
+		return out, fmt.Errorf("active retained Runner budget requires original operation without cleanup")
+	}
+	source, err := m.CurrentRetainedSource()
+	if err != nil {
+		return out, err
+	}
+	if source.Initial != nil {
+		return out, fmt.Errorf("initial retained budget requires original boot reader")
+	}
+	var final budget.FinalizationCommand
+	var request control.Request
+	if source.Capacity != nil {
+		request = source.Capacity.Request
+	} else if source.Finalization != nil && json.Unmarshal(source.Finalization.Command, &final) == nil && final.Validate() == nil && final.Finalized.Sources != nil && final.Finalized.Sources.Runner != nil {
+		request = final.Finalized.Request
+	} else {
+		return out, fmt.Errorf("active retained Runner budget lacks complete original source")
+	}
+	boundary := m.BudgetBoundary
+	if prior := m.Active.PriorBudgetBoundary; prior != nil {
+		if boundary != nil {
+			return out, fmt.Errorf("active retained Runner budget has ambiguous closed anchors")
+		}
+		boundary = prior
+	} else if boundary != nil {
+		// 全局旧水位只在Begin后、首次Start前仍有效。已派发操作不能
+		// 将撤销过的全局水位重新挂回，以逃过原子捕获的Prior认证。
+		for _, step := range m.Active.Steps {
+			if step.Phase != journal.Planned {
+				return out, fmt.Errorf("dispatched active Runner budget lacks captured original anchor")
+			}
+		}
+	}
+	if boundary == nil || boundary.BudgetKey != request.Key || boundary.FinalizationSHA256 != source.SourceSHA256 || boundary.RecordedSequence != source.RecordedSequence || boundary.ThroughKey.Instance != request.Key.Instance || compareKey(boundary.ThroughKey, m.Active.Request.Key) >= 0 {
+		return out, fmt.Errorf("active retained Runner budget lacks exact original closed anchor")
+	}
+	if source.Capacity != nil {
+		return r.checkHeldCapacity(ctx, *source.Capacity, m.Owner)
+	}
+	return r.checkHeldFinalization(ctx, m, final, boundary)
+}
+
+// 实际预算已固定原Completed/Cancelled或Initial来源；继续走各自严格读者，
+// 不因新增Active入口放宽CheckCapacity的当前State.Last及不可变回执约束。
+func (r *Reader) checkHeldCapacity(ctx context.Context, capacity budget.ReconciledCapacity, owner journal.Owner) (CurrentBudgetVM, error) {
+	var out CurrentBudgetVM
+	if capacity.InitialVM != nil {
+		if capacity.InitialOutside == nil {
+			return out, fmt.Errorf("initial VM capacity lost complete original boot budget")
+		}
+		proof, err := r.CheckInitialCapacity(ctx, *capacity.InitialVM, *capacity.InitialOutside, owner)
+		if err != nil {
+			return out, err
+		}
+		out.Initial = &proof
+		return out, nil
+	}
+	proof, err := r.CheckCapacity(ctx, capacity.VM, owner)
+	if err != nil {
+		return out, err
+	}
+	return CurrentBudgetVM{Budget: proof, Cancellation: nil, Initial: nil}, nil
 }
 
 // RetainedAfterCancel明确保留两个不同原意图的证明，不把较新取消回执替换成

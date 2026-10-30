@@ -22,6 +22,13 @@ func (r *Reader) ReadActiveHeld(ctx context.Context, s *journal.Snapshot) (*Curr
 	return r.readCurrent(ctx, s, currentActiveHold)
 }
 
+// RecheckActiveHeld在其它领域认证后重读同一旧永久预算及原Host来源。
+// 继续使用Active的原关闭锚，不借普通ReadCurrent恢复全局闭合或结清资格；
+// 原UID、保护或完整声明变化即拒绝，仍保留当前操作与原峰值。
+func (r *Reader) RecheckActiveHeld(ctx context.Context, s *journal.Snapshot, original *Current) error {
+	return r.recheckCurrent(ctx, s, original, currentActiveHold)
+}
+
 // 只能选择原永久头和Start前已存在的完整关闭链。未派发时用顶层边界，
 // 已Start时用同CAS捕获的PriorBudgetBoundary；绝不把它写回Model来复活
 // 全局结清资格。原摘要/落账序列逐项匹配，Through只引用旧Key及旧序列。

@@ -191,8 +191,30 @@ func finishTrustedPrepareHost(t *testing.T, ctx context.Context, api *ownerAPI, 
 	next.Kind, next.TargetBuffers = control.Shrink, 512
 	next.ExpectedCapacityGeneration++
 	next.BudgetCommitmentID = "trusted-next-shrink"
-	_, _, err = store.Begin(ctx, s, session.Actor(), next, 0)
+	s, _, err = store.Begin(ctx, s, session.Actor(), next, 0)
 	require.NoError(t, err)
+	// 普通永久预算与实际预算都必须区分空闲结清和在途原持有。
+	// Begin未派发时仍有原全局anchor；Prepare Start后改用同CAS捕获的
+	// PriorBudgetBoundary。两者只认证旧来源，不能给当前操作补结清。
+	_, err = claims.ReadCurrent(ctx, s)
+	require.Error(t, err, "普通永久预算的空闲读者不得跨过新Active")
+	held, err := claims.ReadActiveHeld(ctx, s)
+	require.NoError(t, err)
+	require.NoError(t, claims.RecheckActiveHeld(ctx, s, held))
+	t.Run("ordinary-active-held-rejects-host-replacement", func(t *testing.T) {
+		original, err := client.CoreV1().ConfigMaps(binding().Namespace).Get(ctx, held.Closed.HostClaim.Name, metav1.GetOptions{})
+		require.NoError(t, err)
+		changed := original.DeepCopy()
+		changed.UID = "ordinary-active-held-same-name-new-uid"
+		require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("configmaps"), changed, changed.Namespace))
+		defer func() {
+			require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("configmaps"), original, original.Namespace))
+		}()
+		require.Error(t, claims.RecheckActiveHeld(ctx, s, held), "同数值、同名Host不能取代原UID")
+		current, err := store.Load(ctx)
+		require.NoError(t, err)
+		require.Equal(t, s.State(), current.State(), "读者拒绝不得改变原WAL或结清水位")
+	})
 	_, err = worker.Advance(ctx)
 	require.NoError(t, err)
 	prepared := budgetStep(t, store, journal.PrepareBudget)
@@ -204,6 +226,11 @@ func finishTrustedPrepareHost(t *testing.T, ctx context.Context, api *ownerAPI, 
 	require.NoError(t, claims.CheckOutside(ctx, shrink))
 	latest, err := store.Load(ctx)
 	require.NoError(t, err)
+	_, err = claims.ReadCurrent(ctx, latest)
+	require.Error(t, err, "Prepare已完成也不恢复旧全局结清资格")
+	held, err = claims.ReadActiveHeld(ctx, latest)
+	require.NoError(t, err)
+	require.NoError(t, claims.RecheckActiveHeld(ctx, latest, held))
 	for _, step := range latest.State().Active.Steps[1:] {
 		require.Equal(t, journal.Planned, step.Phase)
 	}

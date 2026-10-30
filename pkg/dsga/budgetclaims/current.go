@@ -69,6 +69,14 @@ func (r *Reader) readCurrent(ctx context.Context, s *journal.Snapshot, purpose c
 			return nil, err
 		}
 	}
+	if purpose == currentIdle {
+		// 普通永久头与实际预算的空闲合同一致：有Active或缺关闭水位
+		// 时不能借旧Host来源冒充当前已结清。新在途读者只读其捕获的
+		// 原anchor，另走currentActiveHold，不恢复全局释放/执行资格。
+		if err := m.CheckClosedBudget(closed.Request); err != nil {
+			return nil, err
+		}
+	}
 	if purpose == currentPriorCancellation {
 		if _, err := m.UnchangedAbortBudget(); err != nil {
 			return nil, err

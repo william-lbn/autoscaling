@@ -172,8 +172,29 @@ func verifyLostGuestTakeoverSettlement(t *testing.T, ctx context.Context, api *o
 	require.NoError(t, err)
 	_, err = claims.ReadCurrent(ctx, snapshot)
 	require.Error(t, err, "旧全局闭合读者仍须拒绝新Active，不放宽结清条件")
-	_, err = claims.ReadActiveHeld(ctx, snapshot)
+	activeHeld, err := claims.ReadActiveHeld(ctx, snapshot)
 	require.NoError(t, err, "新在途读者只认证旧永久头来源，不授予旧操作执行权")
+	if !unreceived {
+		// 只挂在已执行Guest的独立接管根：前驱由正式Cleanup/Finish和
+		// Host结清形成真实CapacityHeld，Begin仍保有旧全局关闭锚。
+		// 本次复核不修改任何WAL或Host对象，不另造一套来源夹具。
+		require.NotNil(t, snapshot.State().BudgetBoundary)
+		require.NoError(t, claims.RecheckActiveHeld(ctx, snapshot, activeHeld))
+		t.Run("active-held-host-replacement-rejected", func(t *testing.T) {
+			original, err := client.CoreV1().ConfigMaps(binding().Namespace).Get(ctx, activeHeld.Closed.HostClaim.Name, metav1.GetOptions{})
+			require.NoError(t, err)
+			changed := original.DeepCopy()
+			changed.UID = "same-name-host-replacement"
+			require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("configmaps"), changed, changed.Namespace))
+			defer func() {
+				require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("configmaps"), original, original.Namespace))
+			}()
+			require.Error(t, claims.RecheckActiveHeld(ctx, snapshot, activeHeld), "原Host不能按同名同数值替换UID")
+			after, err := store.Load(ctx)
+			require.NoError(t, err)
+			require.Equal(t, snapshot.State(), after.State(), "拒绝来源替换不能改原Active/预算/关闭锚")
+		})
+	}
 	t.Run("active-held-original-source-required", func(t *testing.T) {
 		original, err := client.CoreV1().ConfigMaps(binding().Namespace).Get(ctx, current.Closed.HostClaim.Name, metav1.GetOptions{})
 		require.NoError(t, err)
@@ -199,5 +220,16 @@ func verifyLostGuestTakeoverSettlement(t *testing.T, ctx context.Context, api *o
 	require.NoError(t, claims.CheckOutside(ctx, following))
 	snapshot, err = store.Load(ctx)
 	require.NoError(t, err)
+	if !unreceived {
+		// Prepare写前Start同CAS撤销顶层水位并捕获旧锚；再次复核
+		// 必须使用PriorBudgetBoundary，不能要求Active=nil或补回水位。
+		require.Nil(t, snapshot.State().BudgetBoundary)
+		require.NotNil(t, snapshot.State().Active.PriorBudgetBoundary)
+		priorHeld, err := claims.ReadActiveHeld(ctx, snapshot)
+		require.NoError(t, err)
+		require.NoError(t, claims.RecheckActiveHeld(ctx, snapshot, priorHeld))
+		_, err = claims.ReadCurrent(ctx, snapshot)
+		require.Error(t, err, "旧空闲读者不能借捕获的前驱关闭锚越权")
+	}
 	require.NoError(t, worker.inspectActiveService(ctx, snapshot), "新Start已捕获原关闭链，不能因顶层边界撤销而误关合法后继")
 }
