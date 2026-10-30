@@ -1,0 +1,58 @@
+{
+  "status": "PASS_COMPONENT_ONLY",
+  "source_head": "0a9735ee26769f7e92b1965fec8057de36d1c066",
+  "created_utc": "2026-10-30T16:17:46.801663+00:00",
+  "actual_run": "/data/neon-build/validation/go-1793376809998645110",
+  "actual_toolchain": "go1.24.3 linux/amd64",
+  "actual_host_kernel": "6.8.0-147-generic",
+  "race": true,
+  "count": 1,
+  "roots": 4,
+  "subcases": 41,
+  "failures": 0,
+  "skips": 0,
+  "copied_go_mod_file_count": 687,
+  "all_copied_sources_match_at_archive": true,
+  "cases": [
+    {
+      "id": "PG17-U-WIRE-001",
+      "layer": "unit",
+      "root": "TestNativeBirthWireExactOriginalContextAndRanges",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-WIRE-002",
+      "layer": "unit",
+      "root": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-WIRE-003",
+      "layer": "unit",
+      "root": "TestNativeBirthWireRequiresIndependentOriginalGeometry",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-S-WIRE-001",
+      "layer": "single-service-component",
+      "root": "TestNativeBirthWireKernelPeerAndMalformedFrames",
+      "status": "PASS_COMPONENT_ONLY"
+    }
+  ],
+  "request_bytes": 232,
+  "ack_bytes": 112,
+  "endian": "network big-endian",
+  "production_listener_installed": false,
+  "native_pg_enrolled": false,
+  "original_maps_filter_verified": false,
+  "memory_limit_written": false,
+  "vm_resize_authorized": false,
+  "kvm_k8s_e2e": false,
+  "guest_kernel_target_run": "NOT_RUN; Linux host kernel evidence only",
+  "root_wire_code_files": [
+    "pkg/dsga/resourceguard/native_birth_wire.go",
+    "pkg/dsga/resourceguard/native_birth_wire_linux.go",
+    "pkg/dsga/resourceguard/native_birth_wire_test.go",
+    "pkg/dsga/resourceguard/native_birth_wire_native_test.go"
+  ]
+}

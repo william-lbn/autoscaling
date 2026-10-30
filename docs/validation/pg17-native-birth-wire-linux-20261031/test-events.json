@@ -1,0 +1,1247 @@
+[
+  {
+    "Time": "2026-10-30T16:13:33.151788991Z",
+    "Action": "start",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+  },
+  {
+    "Time": "2026-10-30T16:13:33.166586694Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames"
+  },
+  {
+    "Time": "2026-10-30T16:13:33.166683077Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames",
+    "Output": "=== RUN   TestNativeBirthWireKernelPeerAndMalformedFrames\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:33.178780581Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/valid"
+  },
+  {
+    "Time": "2026-10-30T16:13:33.178819295Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/valid",
+    "Output": "=== RUN   TestNativeBirthWireKernelPeerAndMalformedFrames/valid\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:34.195555152Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/valid",
+    "Output": "--- PASS: TestNativeBirthWireKernelPeerAndMalformedFrames/valid (1.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:34.195626144Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/valid",
+    "Elapsed": 1.02
+  },
+  {
+    "Time": "2026-10-30T16:13:34.195636244Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-pid"
+  },
+  {
+    "Time": "2026-10-30T16:13:34.195639038Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-pid",
+    "Output": "=== RUN   TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-pid\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:35.211628431Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-pid",
+    "Output": "--- PASS: TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-pid (1.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:35.211665842Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-pid",
+    "Elapsed": 1.02
+  },
+  {
+    "Time": "2026-10-30T16:13:35.21167873Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-uid"
+  },
+  {
+    "Time": "2026-10-30T16:13:35.211682542Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-uid",
+    "Output": "=== RUN   TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-uid\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:36.229151508Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-uid",
+    "Output": "--- PASS: TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-uid (1.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:36.229197375Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-uid",
+    "Elapsed": 1.02
+  },
+  {
+    "Time": "2026-10-30T16:13:36.229205418Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-gid"
+  },
+  {
+    "Time": "2026-10-30T16:13:36.229208916Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-gid",
+    "Output": "=== RUN   TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-gid\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:37.244766588Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-gid",
+    "Output": "--- PASS: TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-gid (1.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:37.244809914Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/wrong-gid",
+    "Elapsed": 1.02
+  },
+  {
+    "Time": "2026-10-30T16:13:37.244818263Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/oversized"
+  },
+  {
+    "Time": "2026-10-30T16:13:37.24482142Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/oversized",
+    "Output": "=== RUN   TestNativeBirthWireKernelPeerAndMalformedFrames/oversized\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:38.260650372Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/oversized",
+    "Output": "--- PASS: TestNativeBirthWireKernelPeerAndMalformedFrames/oversized (1.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:38.260693209Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/oversized",
+    "Elapsed": 1.02
+  },
+  {
+    "Time": "2026-10-30T16:13:38.26070227Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/short"
+  },
+  {
+    "Time": "2026-10-30T16:13:38.260708996Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/short",
+    "Output": "=== RUN   TestNativeBirthWireKernelPeerAndMalformedFrames/short\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:39.277067057Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/short",
+    "Output": "--- PASS: TestNativeBirthWireKernelPeerAndMalformedFrames/short (1.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:39.277109408Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/short",
+    "Elapsed": 1.02
+  },
+  {
+    "Time": "2026-10-30T16:13:39.27711725Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/rights"
+  },
+  {
+    "Time": "2026-10-30T16:13:39.277121367Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/rights",
+    "Output": "=== RUN   TestNativeBirthWireKernelPeerAndMalformedFrames/rights\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:40.293495151Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/rights",
+    "Output": "--- PASS: TestNativeBirthWireKernelPeerAndMalformedFrames/rights (1.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:40.293560837Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/rights",
+    "Elapsed": 1.02
+  },
+  {
+    "Time": "2026-10-30T16:13:40.293569078Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/truncated-rights"
+  },
+  {
+    "Time": "2026-10-30T16:13:40.293571373Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/truncated-rights",
+    "Output": "=== RUN   TestNativeBirthWireKernelPeerAndMalformedFrames/truncated-rights\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:41.31222653Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/truncated-rights",
+    "Output": "--- PASS: TestNativeBirthWireKernelPeerAndMalformedFrames/truncated-rights (1.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:41.312269064Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/truncated-rights",
+    "Elapsed": 1.02
+  },
+  {
+    "Time": "2026-10-30T16:13:41.31228359Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/stream"
+  },
+  {
+    "Time": "2026-10-30T16:13:41.312286331Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/stream",
+    "Output": "=== RUN   TestNativeBirthWireKernelPeerAndMalformedFrames/stream\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:42.33004658Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/stream",
+    "Output": "--- PASS: TestNativeBirthWireKernelPeerAndMalformedFrames/stream (1.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:42.330139779Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/stream",
+    "Elapsed": 1.02
+  },
+  {
+    "Time": "2026-10-30T16:13:42.330182587Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/deadline"
+  },
+  {
+    "Time": "2026-10-30T16:13:42.330185674Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/deadline",
+    "Output": "=== RUN   TestNativeBirthWireKernelPeerAndMalformedFrames/deadline\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.500982682Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/deadline",
+    "Output": "--- PASS: TestNativeBirthWireKernelPeerAndMalformedFrames/deadline (1.17s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501017675Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames/deadline",
+    "Elapsed": 1.17
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501023135Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames",
+    "Output": "PG17_NATIVE_BIRTH_WIRE: real unprivileged peer; exact seqpacket; wrong peer/length/ancillary/type/deadline rejected; received rights closed\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501028385Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames",
+    "Output": "--- PASS: TestNativeBirthWireKernelPeerAndMalformedFrames (10.33s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501031248Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireKernelPeerAndMalformedFrames",
+    "Elapsed": 10.33
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501035023Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireExactOriginalContextAndRanges"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501038361Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireExactOriginalContextAndRanges",
+    "Output": "=== RUN   TestNativeBirthWireExactOriginalContextAndRanges\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.50104178Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireExactOriginalContextAndRanges",
+    "Output": "--- PASS: TestNativeBirthWireExactOriginalContextAndRanges (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501044102Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireExactOriginalContextAndRanges",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501046475Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501048328Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501050774Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/short"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501055262Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/short",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/short\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.50106081Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/short",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/short (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501063481Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/short",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501074085Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/tail"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501076312Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/tail",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/tail\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501444974Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/tail",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/tail (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501461949Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/tail",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501465863Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/magic"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501469138Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/magic",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/magic\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501472516Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/magic",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/magic (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501474994Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/magic",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501477574Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/version"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501479424Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/version",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/version\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501482157Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/version",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/version (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501506357Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/version",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501509127Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/ack-as-request"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501511239Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/ack-as-request",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/ack-as-request\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501519729Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/ack-as-request",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/ack-as-request (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501522413Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/ack-as-request",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501525229Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/nonce"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501527303Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/nonce",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/nonce\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501577985Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/nonce",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/nonce (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501581182Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/nonce",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501605075Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/source"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501610337Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/source",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/source\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501690304Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/source",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/source (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501726084Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/source",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501731435Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/profile"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501733919Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/profile",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/profile\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501771336Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/profile",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/profile (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.501789698Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/profile",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502030045Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/AS"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.50204415Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/AS",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/AS\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502049307Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/AS",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/AS (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502052005Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/AS",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502054995Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/maximum"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502057045Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/maximum",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/maximum\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502060426Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/maximum",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/maximum (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502070497Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/maximum",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502074546Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/page"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502076556Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/page",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/page\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.50209962Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/page",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/page (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502131075Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/page",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502159225Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/total"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502163266Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/total",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/total\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.50218776Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/total",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/total (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.50220646Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/total",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502230775Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/null-base"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502236115Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/null-base",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/null-base\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502306564Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/null-base",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/null-base (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502327265Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/null-base",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502331761Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/unaligned-base"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502336658Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/unaligned-base",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/unaligned-base\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502392Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/unaligned-base",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/unaligned-base (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502448999Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/unaligned-base",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502461629Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/high-base"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502465198Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/high-base",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/high-base\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502526506Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/high-base",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/high-base (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502559287Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/high-base",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502564391Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/overflow-base"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502566444Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/overflow-base",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/overflow-base\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502596963Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/overflow-base",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/overflow-base (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502632745Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/overflow-base",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502635225Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/length"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.50263777Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/length",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/length\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.50270324Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/length",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/length (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502709803Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/length",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.50278651Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/element"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502814822Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/element",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/element\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.50282725Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/element",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/element (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502848582Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/element",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502882563Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/overlap"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.502890554Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/overlap",
+    "Output": "=== RUN   TestNativeBirthWireRejectsForgedOrAmbiguousFrames/overlap\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.503948653Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/overlap",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames/overlap (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.503966788Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames/overlap",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.5039738Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames",
+    "Output": "--- PASS: TestNativeBirthWireRejectsForgedOrAmbiguousFrames (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.503977323Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRejectsForgedOrAmbiguousFrames",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.503999172Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504002293Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry",
+    "Output": "=== RUN   TestNativeBirthWireRequiresIndependentOriginalGeometry\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504005166Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/nonce"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504007023Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/nonce",
+    "Output": "=== RUN   TestNativeBirthWireRequiresIndependentOriginalGeometry/nonce\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504010033Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/nonce",
+    "Output": "--- PASS: TestNativeBirthWireRequiresIndependentOriginalGeometry/nonce (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504013488Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/nonce",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504015832Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/source"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504017767Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/source",
+    "Output": "=== RUN   TestNativeBirthWireRequiresIndependentOriginalGeometry/source\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504020835Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/source",
+    "Output": "--- PASS: TestNativeBirthWireRequiresIndependentOriginalGeometry/source (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504023372Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/source",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504025559Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/profile"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.50402736Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/profile",
+    "Output": "=== RUN   TestNativeBirthWireRequiresIndependentOriginalGeometry/profile\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504030033Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/profile",
+    "Output": "--- PASS: TestNativeBirthWireRequiresIndependentOriginalGeometry/profile (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504032465Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/profile",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504036797Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-zero"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504040398Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-zero",
+    "Output": "=== RUN   TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-zero\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504046238Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-zero",
+    "Output": "--- PASS: TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-zero (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504048578Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-zero",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504050611Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-alignment"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504052825Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-alignment",
+    "Output": "=== RUN   TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-alignment\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504055453Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-alignment",
+    "Output": "--- PASS: TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-alignment (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.50410534Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-alignment",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504119337Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-overflow"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504131084Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-overflow",
+    "Output": "=== RUN   TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-overflow\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504136748Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-overflow",
+    "Output": "--- PASS: TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-overflow (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504139356Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/AS-overflow",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504141782Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/R-equals-AS"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504144091Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/R-equals-AS",
+    "Output": "=== RUN   TestNativeBirthWireRequiresIndependentOriginalGeometry/R-equals-AS\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504146979Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/R-equals-AS",
+    "Output": "--- PASS: TestNativeBirthWireRequiresIndependentOriginalGeometry/R-equals-AS (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504149576Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/R-equals-AS",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504151928Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/buffers-zero"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504154695Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/buffers-zero",
+    "Output": "=== RUN   TestNativeBirthWireRequiresIndependentOriginalGeometry/buffers-zero\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504157703Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/buffers-zero",
+    "Output": "--- PASS: TestNativeBirthWireRequiresIndependentOriginalGeometry/buffers-zero (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504159972Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/buffers-zero",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504162527Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/buffers-overflow"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504169626Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/buffers-overflow",
+    "Output": "=== RUN   TestNativeBirthWireRequiresIndependentOriginalGeometry/buffers-overflow\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504176319Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/buffers-overflow",
+    "Output": "--- PASS: TestNativeBirthWireRequiresIndependentOriginalGeometry/buffers-overflow (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504182938Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/buffers-overflow",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504185177Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/page"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504187197Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/page",
+    "Output": "=== RUN   TestNativeBirthWireRequiresIndependentOriginalGeometry/page\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504190094Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/page",
+    "Output": "--- PASS: TestNativeBirthWireRequiresIndependentOriginalGeometry/page (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504197464Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/page",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504255126Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/ABI-zero"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504266963Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/ABI-zero",
+    "Output": "=== RUN   TestNativeBirthWireRequiresIndependentOriginalGeometry/ABI-zero\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504320236Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/ABI-zero",
+    "Output": "--- PASS: TestNativeBirthWireRequiresIndependentOriginalGeometry/ABI-zero (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504330004Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/ABI-zero",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504336308Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/ABI-overflow"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504348049Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/ABI-overflow",
+    "Output": "=== RUN   TestNativeBirthWireRequiresIndependentOriginalGeometry/ABI-overflow\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504393253Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/ABI-overflow",
+    "Output": "--- PASS: TestNativeBirthWireRequiresIndependentOriginalGeometry/ABI-overflow (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504406355Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry/ABI-overflow",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504463011Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry",
+    "Output": "--- PASS: TestNativeBirthWireRequiresIndependentOriginalGeometry (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504469669Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestNativeBirthWireRequiresIndependentOriginalGeometry",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T16:13:43.504662313Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Output": "PASS\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:44.507310561Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Output": "ok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/resourceguard\t11.355s\n"
+  },
+  {
+    "Time": "2026-10-30T16:13:44.507363112Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Elapsed": 11.356
+  }
+]
