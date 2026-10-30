@@ -91,11 +91,25 @@ func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapsh
 	return nil
 }
 
-// 明确恢复管理动作先完成原预算结算的独立证据；普通Run轮询不自动调用。
-// 类别15/18且未选择rearm/reopen时可新增Proof；原Active/预算不会被改写。
+// 明确恢复管理先补独立领域证据；普通Run不自动创建新选择。17先隔离/
+// 对账PG，再对账Guest；15/18分别固定完整结算/取消预算。单领域证明不
+// 授予开放，原Active/预算不改写，未选择rearm/reopen时才可新增Proof。
 // CAS丢回复停止本次管理，重读后再次显式恢复沿用已保存Proof和原selector。
 func (w *PGWorker) ensureServiceFinalization(ctx context.Context, s *journal.Snapshot, selector string) (*journal.Snapshot, error) {
 	m := s.State()
+	if m.ServiceClosure != nil && m.ServiceClosure.Reason == "active_pg_source_unconfirmed" {
+		// 先隔离/核验原PG，不能让Root部分效果遮住原PG查询。独立证明
+		// 不改外层Unknown；其余资源和完整实际预算仍须后继分别闭合。
+		var err error
+		s, err = w.executor.RecoverServiceRejection(ctx, s, selector)
+		if err == nil {
+			s, err = w.executor.RecoverServicePG(ctx, s, selector, true)
+		}
+		if err != nil {
+			return nil, err
+		}
+		m = s.State()
+	}
 	if m.ServiceClosure != nil && (m.ServiceClosure.Reason == "active_source_unconfirmed" || m.ServiceClosure.Reason == "active_pg_source_unconfirmed") && w.resources != nil {
 		var err error
 		s, _, err = w.resources.RecoverServiceGuest(ctx, s, selector, true)
@@ -104,7 +118,7 @@ func (w *PGWorker) ensureServiceFinalization(ctx context.Context, s *journal.Sna
 		}
 		m = s.State()
 	}
-	if m.ServiceClosure != nil && (m.ServiceClosure.Reason == "cleanup_source_unconfirmed" || m.ServiceClosure.Reason == "active_pg_source_unconfirmed") && m.ServiceClosure.PGRejection == nil {
+	if m.ServiceClosure != nil && m.ServiceClosure.Reason == "cleanup_source_unconfirmed" && m.ServiceClosure.PGRejection == nil {
 		var err error
 		s, err = w.executor.RecoverServiceRejection(ctx, s, selector)
 		if err != nil {

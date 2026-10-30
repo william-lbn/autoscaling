@@ -571,6 +571,7 @@ func (model Model) Clone() Model {
 		closure.CleanupRecovery = cloneServiceCleanupRecovery(closure.CleanupRecovery)
 		closure.PGRejection = cloneServicePGRejection(closure.PGRejection)
 		closure.ResourceRecovery = cloneServiceResourceRecovery(closure.ResourceRecovery)
+		closure.PGRecovery = cloneServicePGRecovery(closure.PGRecovery)
 		if closure.Reopen != nil {
 			reopen := *closure.Reopen
 			if reopen.PriorClose != nil {

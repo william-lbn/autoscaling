@@ -359,8 +359,10 @@ func productionInitialService(t *testing.T, mode string) {
 	committedCompletionTransfer := mode == "resume-safety-recover-complete-takeover"
 	finalizationTransfer := strings.HasPrefix(mode, "finalize-safety-recover-") && strings.HasSuffix(mode, "takeover")
 	finalizationCancel := mode == "finalize-safety-recover-planned-unchanged-takeover"
-	closureTransfer := strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
-	pgSafety := strings.HasPrefix(mode, "active-safety-pg-")
+	pgRecovery := strings.HasPrefix(mode, "pg-safety-recover-")
+	pgRecoveryTransfer := pgRecovery && (strings.Contains(mode, "unreceived") || strings.Contains(mode, "expired") || strings.Contains(mode, "takeover"))
+	closureTransfer := pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
+	pgSafety := strings.HasPrefix(mode, "active-safety-pg-") || pgRecovery
 	guestRecovery := strings.HasPrefix(mode, "guest-safety-recover-")
 	guestRecoveryUnreceived := guestRecovery && strings.Contains(mode, "unreceived")
 	pgTakeover := mode == "owner-transfer-after-pg"
@@ -478,6 +480,24 @@ func productionInitialService(t *testing.T, mode string) {
 			nativeFence = pg.ownerFence(t)
 		}
 		config := pgConfigWithFence(t, request, func(w http.ResponseWriter, r *http.Request) {
+			if pgRecovery && (strings.Contains(mode, "unreceived") || strings.Contains(mode, "expired")) && r.URL.Path == "/dsg/v1/resize/status" {
+				var query control.Query
+				require.NoError(t, json.NewDecoder(r.Body).Decode(&query))
+				require.Equal(t, pg.request.Key, query.Key)
+				pg.mu.Lock()
+				pg.resizeQueries++
+				current := pg.current().Observed
+				pg.mu.Unlock()
+				disposition := control.ReceiptResultExpired
+				if strings.Contains(mode, "unreceived") {
+					disposition = control.ReceiptNotFound
+				}
+				if current.IssuerFloorEpoch > request.Key.IssuerEpoch {
+					disposition = control.ReceiptStale
+				}
+				pgReply(w, control.ControlResponse{ProtocolVersion: 1, VMShrinkPermit: false, Receipt: control.Receipt{Key: query.Key, Disposition: disposition, HasResult: false, Result: nil}, Observed: current})
+				return
+			}
 			if automaticMode && r.URL.Path == "/dsg/v1/work/state" {
 				serveAutomaticWork(w, pg)
 				return
@@ -800,6 +820,9 @@ func productionInitialService(t *testing.T, mode string) {
 			if pgSafety && action == journal.ResizePG {
 				require.Error(t, err, "原PG派发WAL或实际提交回复未知必须保留")
 				verifyPGActiveServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
+				if pgRecovery {
+					verifyProductionPGResourceRecovery(t, ctx, mode, api, store, session, resources, worker, config, client, source, pg, root, qmp, transfer)
+				}
 				return nil
 			}
 			if guestTakeover && action == journal.GuestReady {
