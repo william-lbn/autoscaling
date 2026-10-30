@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "branch": "codex/dsga-autoscaling-20261019",
+  "base_head": "02a1b0c90e58e3dfed2bb9f2c7c44e98a207ca28",
+  "source_sha256": {
+    "pkg/neonvm/controllers/vm_controller.go": "4c2365f5ea713a869e2d22f8e17a0a7d2c0627b67277644b87580e0800088add",
+    "pkg/neonvm/controllers/vm_dsga_placement.go": "e1cb66220cddbb9310fc694eeb13a56de3f0bd7a465951d448e425dc1243e355",
+    "pkg/neonvm/controllers/vm_dsga_placement_test.go": "b2a690f2b594208291587fb9dc8ed118f3f971023a26204dfdab7a45dbfd36da"
+  },
+  "scope": "仅DSGA Runner required节点约束；Kubernetes实际matcher+正式podSpec，无真实scheduler/集群",
+  "passed": true,
+  "race": true,
+  "count": 1,
+  "root_count": 3,
+  "subcase_count": 13,
+  "tests": [
+    {
+      "id": "PG17-U-VM-001",
+      "root": "TestPG17DSGAPlacementCannotBypassRequiredNodeAllowlist",
+      "result": "PASS"
+    },
+    {
+      "id": "PG17-U-VM-002",
+      "root": "TestPG17DSGAPlacementPreservesEmptyAndConflictingSelectors",
+      "result": "PASS"
+    },
+    {
+      "id": "PG17-U-VM-003",
+      "root": "TestPG17DSGARunnerPodKeepsPlacementWithoutMutatingVM",
+      "result": "PASS"
+    }
+  ],
+  "raw_directory": "/data/neon-build/validation/go-1793365826775420789",
+  "log_sha256": "dc7954a520a15fd6d18833f7883318676746ec8cce44f60713907af28296d9f0",
+  "prior_attempts": [
+    {
+      "directory": "/data/neon-build/validation/go-1793365211622428107",
+      "status": "FAIL",
+      "reason": "new podSpec fixture omitted required Sysfs mode; first two behavior roots passed"
+    },
+    {
+      "directory": "/data/neon-build/validation/go-1793365709033414782",
+      "status": "PASS",
+      "reason": "before adding nil-Affinity boundary; final run supersedes"
+    }
+  ],
+  "not_run": [
+    "real K8s scheduler placement",
+    "117/118/119 deployment",
+    "KVM/VM memory regression"
+  ]
+}

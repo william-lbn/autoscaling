@@ -1261,6 +1261,9 @@ func annotationsForVirtualMachine(vm *vmv1.VirtualMachine) map[string]string {
 }
 
 func affinityForVirtualMachine(vm *vmv1.VirtualMachine) *corev1.Affinity {
+	if vm.Spec.DSGABootstrap != nil {
+		return dsgaAffinityForVirtualMachine(vm)
+	}
 	a := vm.Spec.Affinity
 	if a == nil {
 		a = &corev1.Affinity{}
