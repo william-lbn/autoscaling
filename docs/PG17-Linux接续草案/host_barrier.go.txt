@@ -1,0 +1,155 @@
+// 未实现 / 未验收：PG17 Linux接续设计文本草案，不参与Go构建。
+// 生产归档基线：00eda3d5e5fc6ecb76e6e01fcbbf569e85609bda。
+// 本文件原为未跟踪的pkg/dsga/budget/host_barrier.go；仅拟定共享DTO，
+// Node v9、Store屏障、生产者、journal接入及业务/竞态验证均未实施。
+// 历史仅有budget包compile-only（-run '^$'），没有执行任何业务测试。
+// 禁止将此草案或编译结果表述为Node屏障已经实现或已经验收。
+// 原文SHA256：e2620195cd1220addcb44b4c6ba4d72525d9f540df1072507c4f3397053d7cb5。
+// 接续设计见：../PG17-Linux接续-Node屏障设计-20261030.md。
+
+package budget
+
+import (
+	"fmt"
+	"math"
+
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+)
+
+// BarrierOwner只描述已经认证的一个域的持久owner，不赋予执行权限。
+// VMOwner与HostOwner分属不同Lease；epoch之间不可比较或互相替代。
+// 本包不依赖journal/hostguard，避免共享合同与两侧账本形成导入环。
+type BarrierOwner struct {
+	HolderID string         `json:"holder_id"`
+	Epoch    control.Uint64 `json:"epoch"`
+}
+
+func (o BarrierOwner) Validate() error {
+	if control.ValidateID(o.HolderID, "original barrier owner") != nil || o.Epoch == 0 {
+		return fmt.Errorf("invalid original barrier owner")
+	}
+	return nil
+}
+
+// HostBarrierHold保留封存CAS实际看见的原持有及已固定Claim UID。
+// Claim=nil表示原持有尚未发布，不能当成未预留；外层Held=nil才表示
+// 真实Node快照中没有此完整请求。404/取消标签或ReserveHost Planned均不够。
+type HostBarrierHold struct {
+	SourceID string     `json:"source_id"`
+	Claim    *ObjectRef `json:"claim"`
+}
+
+// HostReservationBarrier是Node持久封存的完整原请求，不是Host完成回执。
+// Seal只阻断迟到Reserve/Bind/执行，原Hold/Claim/placement全部保留；
+// 准入重开、旧预算认证及显式退还仍由各自协议完成，不能据此释放容量。
+//
+// NodeSequence是封存后的Node账本序列；NodeResourceVersion明确记录
+// 该CAS使用的原Node RV，因写后RV不能预知而不伪造。真正读者仍须
+// 认证原Node/Lease UID和当前Node账本，结构合法不等于网络认证。
+type HostReservationBarrier struct {
+	ProtocolVersion     uint32           `json:"protocol_version"`
+	Namespace           string           `json:"namespace"`
+	VMName              string           `json:"vm_name"`
+	Incarnation         string           `json:"incarnation"`
+	RunnerPodUID        string           `json:"runner_pod_uid"`
+	Request             control.Request  `json:"request"`
+	BeforeMemoryBytes   control.Uint64   `json:"before_memory_bytes"`
+	HostOverheadBytes   control.Uint64   `json:"host_overhead_bytes"`
+	PreparedSHA256      string           `json:"prepared_sha256"`
+	OperationSHA256     string           `json:"operation_sha256"`
+	VMOwner             BarrierOwner     `json:"vm_owner"`
+	VMSequence          control.Uint64   `json:"vm_sequence"`
+	VMResourceVersion   string           `json:"vm_resource_version"`
+	ClosedSHA256        string           `json:"closed_sha256"`
+	ClosedSequence      control.Uint64   `json:"closed_sequence"`
+	NodeName            string           `json:"node_name"`
+	NodeUID             string           `json:"node_uid"`
+	LeaseNamespace      string           `json:"lease_namespace"`
+	LeaseName           string           `json:"lease_name"`
+	LeaseUID            string           `json:"lease_uid"`
+	NodeOrigin          string           `json:"node_origin"`
+	HostOwner           BarrierOwner     `json:"host_owner"`
+	NodeSequence        control.Uint64   `json:"node_sequence"`
+	NodeResourceVersion string           `json:"node_resource_version"`
+	Held                *HostBarrierHold `json:"held"`
+}
+
+func (b HostReservationBarrier) Validate() error {
+	if b.ProtocolVersion != 1 || b.Request.Validate() != nil || control.ValidateIncarnation(b.Incarnation) != nil || control.ValidateIncarnation(b.NodeOrigin) != nil || b.VMOwner.Validate() != nil || b.HostOwner.Validate() != nil || b.VMOwner.Epoch < b.Request.Key.IssuerEpoch || b.VMSequence == 0 || b.ClosedSequence == 0 || b.ClosedSequence > b.VMSequence || b.NodeSequence < 2 || !unchangedDigest(b.PreparedSHA256) || !unchangedDigest(b.OperationSHA256) || !unchangedDigest(b.ClosedSHA256) {
+		return fmt.Errorf("host reservation barrier lacks original request, owner or durable closure")
+	}
+	for _, id := range []string{b.Namespace, b.VMName, b.RunnerPodUID, b.VMResourceVersion, b.NodeName, b.NodeUID, b.LeaseNamespace, b.LeaseName, b.LeaseUID, b.NodeResourceVersion} {
+		if control.ValidateID(id, "original Host reservation barrier") != nil {
+			return fmt.Errorf("host reservation barrier lost exact original source identity")
+		}
+	}
+	if b.BeforeMemoryBytes == 0 || b.HostOverheadBytes == 0 || b.Request.Kind == control.Grow && b.Request.TargetVMMemoryBytes < b.BeforeMemoryBytes || b.Request.Kind == control.Shrink && b.Request.TargetVMMemoryBytes > b.BeforeMemoryBytes || b.HostOverheadBytes > control.Uint64(math.MaxUint64)-max(b.BeforeMemoryBytes, b.Request.TargetVMMemoryBytes) {
+		return fmt.Errorf("host reservation barrier changed complete original capacity plan")
+	}
+	if h := b.Held; h != nil && (!unchangedDigest(h.SourceID) || h.Claim != nil && h.Claim.Validate() != nil) {
+		return fmt.Errorf("host reservation barrier lost original held source or claim UID")
+	}
+	return nil
+}
+
+// ValidateFor只核完整原Prepared的计划维度；PreparedSHA保留原Observation
+// 字节摘要，由journal交叉核对，不从规范化叶子冒充原始WAL摘要。
+func (b HostReservationBarrier) ValidateFor(p Prepared, incarnation string) error {
+	if b.Validate() != nil || p.ValidateFor(p.Request, p.Identity) != nil || b.Request != p.Request || b.Incarnation != incarnation || b.BeforeMemoryBytes != p.VMBeforeMemoryBytes {
+		return fmt.Errorf("host reservation barrier differs from original completed Prepare")
+	}
+	return nil
+}
+
+func (b HostReservationBarrier) Clone() HostReservationBarrier {
+	if b.Held != nil {
+		h := *b.Held
+		if h.Claim != nil {
+			ref := *h.Claim
+			h.Claim = &ref
+		}
+		b.Held = &h
+	}
+	return b
+}
+
+func (o *BarrierOwner) UnmarshalJSON(raw []byte) error {
+	type plain BarrierOwner
+	var v plain
+	if err := control.UnmarshalObject(raw, &v); err != nil {
+		return err
+	}
+	next := BarrierOwner(v)
+	if err := next.Validate(); err != nil {
+		return err
+	}
+	*o = next
+	return nil
+}
+
+func (h *HostBarrierHold) UnmarshalJSON(raw []byte) error {
+	type plain HostBarrierHold
+	var v plain
+	if err := control.UnmarshalObject(raw, &v); err != nil {
+		return err
+	}
+	if !unchangedDigest(v.SourceID) || v.Claim != nil && v.Claim.Validate() != nil {
+		return fmt.Errorf("invalid original held Host source")
+	}
+	*h = HostBarrierHold(v)
+	return nil
+}
+
+func (b *HostReservationBarrier) UnmarshalJSON(raw []byte) error {
+	type plain HostReservationBarrier
+	var v plain
+	if err := control.UnmarshalObjectBounded(raw, &v, 16*1024, 2048); err != nil {
+		return err
+	}
+	next := HostReservationBarrier(v)
+	if err := next.Validate(); err != nil {
+		return err
+	}
+	*b = next
+	return nil
+}
