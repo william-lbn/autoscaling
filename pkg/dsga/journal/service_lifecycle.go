@@ -27,14 +27,15 @@ import (
 type ServiceLifecycle struct {
 	// 必填门禁阶段独立于可选当前关闭，防止删除新关闭字段后投影为
 	// 上一周期已经恢复服务。只有新关闭写前或完整完成CAS可以改变。
-	SafetyStage      string                         `json:"safety_stage"`
-	Cycle            control.Uint64                 `json:"cycle"`
-	Origin           Owner                          `json:"origin"`
-	RecordedSequence control.Uint64                 `json:"recorded_sequence"`
-	Context          []byte                         `json:"context"`
-	ContextSHA256    string                         `json:"context_sha256"`
-	Current          control.AdmissionLeaseResponse `json:"current"`
-	Previous         *ServiceRetirement             `json:"previous"`
+	SafetyStage           string                         `json:"safety_stage"`
+	Cycle                 control.Uint64                 `json:"cycle"`
+	Origin                Owner                          `json:"origin"`
+	RecordedSequence      control.Uint64                 `json:"recorded_sequence"`
+	Context               []byte                         `json:"context"`
+	ContextSHA256         string                         `json:"context_sha256"`
+	Current               control.AdmissionLeaseResponse `json:"current"`
+	Previous              *ServiceRetirement             `json:"previous"`
+	ContextRetainedSHA256 string                         `json:"context_retained_sha256,omitempty"`
 }
 
 type ServiceRetirement struct {
@@ -60,7 +61,7 @@ func (m Model) ClosureFormatVersion() uint32 {
 	if m.ServiceClosure == nil {
 		return 0
 	}
-	if m.ProtocolVersion == 21 {
+	if m.ProtocolVersion >= 21 {
 		return m.ServiceClosure.FormatVersion
 	}
 	return m.ProtocolVersion
@@ -69,6 +70,9 @@ func (m Model) ClosureFormatVersion() uint32 {
 func (m *Model) setClosureFormatVersion(version uint32) {
 	if m.ServiceLifecycle != nil {
 		m.ProtocolVersion = 21
+		if m.RetainedCoverage != nil {
+			m.ProtocolVersion = 22
+		}
 		m.ServiceClosure.FormatVersion = version
 		m.ServiceLifecycle.SafetyStage = "closing"
 	} else {
@@ -98,6 +102,14 @@ func recoveryContext(raw []byte) (Model, error) {
 func (m Model) reopenCompletionCapacity() error {
 	frozen := m.Clone()
 	frozen.ProtocolVersion, frozen.ServiceLifecycle = 20, nil
+	if frozen.RetainedCoverage != nil {
+		raw, err := json.Marshal(frozen.RetainedCoverage)
+		if err != nil {
+			return err
+		}
+		frozen.RetainedContextSHA256 = rawDigest(raw)
+	}
+	frozen.RetainedCoverage = nil
 	frozen.ServiceClosure.FormatVersion = 0
 	raw, err := json.Marshal(frozen)
 	if err != nil {
@@ -134,6 +146,17 @@ func (m Model) reopenCompletionCapacity() error {
 			// 原未知及同一证明。开放前预留，不能完成时截断原资源证据。
 			extra += len(original) + 2*len(proof)
 		}
+		if p := frozen.ServiceClosure.RetainedRecovery; p != nil {
+			proof, err := json.Marshal(p)
+			if err != nil {
+				return err
+			}
+			original, err := json.Marshal(frozen.Active)
+			if err != nil {
+				return err
+			}
+			extra += len(original) + 2*len(proof)
+		}
 		if p := frozen.ServiceClosure.ActualRecovery; p != nil {
 			original, err := json.Marshal(frozen.Active)
 			if err != nil {
@@ -162,7 +185,7 @@ func validLiveReopen(b control.AdmissionLeaseResponse, q control.AdmissionReques
 
 func (m Model) validateServiceLifecycle() error {
 	l := m.ServiceLifecycle
-	if (m.ProtocolVersion == 21) != (l != nil) {
+	if (m.ProtocolVersion >= 21) != (l != nil) {
 		return fmt.Errorf("journal must retain required service lifecycle evidence")
 	}
 	if l == nil {
@@ -191,6 +214,15 @@ func (m Model) validateServiceLifecycle() error {
 		return err
 	}
 	r := c.ServiceClosure.Reopen
+	if m.RetainedContextSHA256 != "" || c.RetainedContextSHA256 != l.ContextRetainedSHA256 {
+		return fmt.Errorf("retained lifecycle context lost exact frozen slot retirement digest")
+	}
+	if c.ServiceClosure.RetainedRecovery != nil && m.RetainedCoverage == nil {
+		return fmt.Errorf("retained lifecycle lost permanent original coverage")
+	}
+	if err := m.validateContextRetained(l); err != nil {
+		return err
+	}
 	if l.Cycle == 0 || l.Origin.Validate() != nil || l.Origin != c.Owner || l.Origin.Epoch > m.Owner.Epoch || l.Origin.Epoch == m.Owner.Epoch && l.Origin != m.Owner || l.RecordedSequence <= c.Sequence || l.RecordedSequence > m.Sequence || l.ContextSHA256 != rawDigest(l.Context) || c.VMUID != m.VMUID || c.Incarnation != m.Incarnation || c.PGInstance == nil || m.PGInstance == nil || *c.PGInstance != *m.PGInstance || !reflect.DeepEqual(c.ResourceIdentity, m.ResourceIdentity) || c.stableServiceRecovery() != nil || r == nil || r.Phase != Settled || r.Closing != nil || !validLiveReopen(l.Current, r.Request, l.Origin) || l.Current.DeadlineNS < r.Before.DeadlineNS || l.Current.LeaseEpoch < r.Before.LeaseEpoch {
 		return fmt.Errorf("service lifecycle lacks exact audited original completion")
 	}
@@ -318,6 +350,14 @@ func (m Model) CompleteServiceReopen(actor Owner, selector string, current contr
 	contextModel.ProtocolVersion = m.ClosureFormatVersion()
 	contextModel.ServiceClosure.FormatVersion = 0
 	contextModel.ServiceLifecycle = nil
+	if contextModel.RetainedCoverage != nil {
+		prior, err := json.Marshal(contextModel.RetainedCoverage)
+		if err != nil {
+			return m, err
+		}
+		contextModel.RetainedContextSHA256 = rawDigest(prior)
+	}
+	contextModel.RetainedCoverage = nil
 	raw, err := json.Marshal(contextModel)
 	if err != nil {
 		return m, err
@@ -334,7 +374,17 @@ func (m Model) CompleteServiceReopen(actor Owner, selector string, current contr
 		l.Cycle = old.Cycle + 1
 		l.Previous = &ServiceRetirement{Cycle: old.Cycle, RecordedSequence: old.RecordedSequence, EvidenceSHA256: rawDigest(prior), Current: cloneLeaseResponse(old.Current)}
 	}
+	if m.RetainedCoverage != nil {
+		priorRaw, err := json.Marshal(m.RetainedCoverage)
+		if err != nil {
+			return m, err
+		}
+		l.ContextRetainedSHA256 = rawDigest(priorRaw)
+	}
 	next.ProtocolVersion, next.ServiceLifecycle, next.ServiceClosure = 21, l, nil
+	if next.RetainedCoverage != nil {
+		next.ProtocolVersion = 22
+	}
 	if record, err := m.committedCompletionRecord(actor, current, next.Sequence); err != nil {
 		return m, err
 	} else if record != nil {
@@ -365,7 +415,15 @@ func (m Model) CompleteServiceReopen(actor Owner, selector string, current contr
 		}
 		// 完整原Active、独立覆盖、永久预算关闭水位和业务完成必须同CAS。
 		// 不调用普通Finish去伪造原Resume成功，失败也不清原关闭或预算。
-		if p := m.ServiceClosure.CleanupRecovery; p != nil {
+		if p := m.ServiceClosure.RetainedRecovery; p != nil {
+			if err := next.closeRetainedBudget(*p); err != nil {
+				return m, err
+			}
+			if err := next.installRetainedCoverage(*record); err != nil {
+				return m, err
+			}
+			next.ProtocolVersion = 22
+		} else if p := m.ServiceClosure.CleanupRecovery; p != nil {
 			if err := next.closeCancelledBudget(*p); err != nil {
 				return m, err
 			}
@@ -382,7 +440,7 @@ func (m Model) CompleteServiceReopen(actor Owner, selector string, current contr
 			}
 		}
 	}
-	if next.InitialHeld != nil && next.InitialHeld.Admission.Phase == Unconfirmed && next.InitialHeld.Covered == nil {
+	if next.InitialHeld != nil && next.InitialHeld.Admission != nil && next.InitialHeld.Admission.Phase == Unconfirmed && next.InitialHeld.Covered == nil {
 		r := c.Reopen
 		next.InitialHeld.Covered = &InitialCoverage{RecordedSequence: next.Sequence, Request: r.Request, Receipt: *cloneAdmissionResponse(r.Receipt), Query: r.Query}
 	}

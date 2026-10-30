@@ -114,7 +114,8 @@ func (m Model) validateServiceReopenRecord(archived bool) error {
 	// 只派生完整实际预算中的准确容量，不改原关闭请求的expected代次。
 	// 后续再关闭/重试自己的容量仍须等于该永久资源边界。
 	capacity := m.effectiveServiceCapacity()
-	if m.PGInstance == nil || b.ValidateFor(b.Request, *m.PGInstance) != nil || b.Request.Action != "observe" || !b.Armed || b.Expired || b.Observed.AdmissionOpen || b.LeaseEpoch > r.Origin.Epoch || b.Observed.IssuerFloorEpoch != r.Origin.Epoch || b.Request.IssuerEpoch != r.Origin.Epoch || b.Observed.CapacityGeneration != capacity || b.Observed.AdmissionRevision != closed.Revision || b.Observed.AdmissionRevision == control.Uint64(math.MaxUint64) || !q.Open || q.Instance != *m.PGInstance || q.IssuerEpoch != r.Origin.Epoch || q.Revision != b.Observed.AdmissionRevision+1 || q.ExpectedCapacityGeneration != b.Observed.CapacityGeneration || q.BudgetCommitmentID != closed.BudgetCommitmentID {
+	budgetID, budgetErr := m.effectiveServiceBudgetID()
+	if m.PGInstance == nil || b.ValidateFor(b.Request, *m.PGInstance) != nil || b.Request.Action != "observe" || !b.Armed || b.Expired || b.Observed.AdmissionOpen || b.LeaseEpoch > r.Origin.Epoch || b.Observed.IssuerFloorEpoch != r.Origin.Epoch || b.Request.IssuerEpoch != r.Origin.Epoch || b.Observed.CapacityGeneration != capacity || b.Observed.AdmissionRevision != closed.Revision || b.Observed.AdmissionRevision == control.Uint64(math.MaxUint64) || !q.Open || q.Instance != *m.PGInstance || q.IssuerEpoch != r.Origin.Epoch || q.Revision != b.Observed.AdmissionRevision+1 || q.ExpectedCapacityGeneration != b.Observed.CapacityGeneration || budgetErr != nil || q.BudgetCommitmentID != budgetID {
 		return fmt.Errorf("service reopen lacks exact live native lease and next admission context")
 	}
 	if c.Rearm != nil && (b.DeadlineNS < c.Rearm.Receipt.AppliedDeadlineNS || b.LeaseEpoch < c.Rearm.Origin.Epoch) {
@@ -163,7 +164,11 @@ func (m Model) StartServiceReopen(actor Owner, selector string, before control.A
 	if err != nil {
 		return m, err
 	}
-	request := control.AdmissionRequest{ProtocolVersion: 1, Instance: closed.Instance, IssuerEpoch: actor.Epoch, Revision: before.Observed.AdmissionRevision + 1, ExpectedCapacityGeneration: before.Observed.CapacityGeneration, Open: true, BudgetCommitmentID: closed.BudgetCommitmentID}
+	budgetID, err := m.effectiveServiceBudgetID()
+	if err != nil {
+		return m, err
+	}
+	request := control.AdmissionRequest{ProtocolVersion: 1, Instance: closed.Instance, IssuerEpoch: actor.Epoch, Revision: before.Observed.AdmissionRevision + 1, ExpectedCapacityGeneration: before.Observed.CapacityGeneration, Open: true, BudgetCommitmentID: budgetID}
 	closureHash, err := serviceReopenClosureDigest(*c)
 	if err != nil {
 		return m, err

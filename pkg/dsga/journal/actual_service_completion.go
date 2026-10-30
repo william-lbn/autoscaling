@@ -104,6 +104,10 @@ func (m Model) effectiveServiceCapacity() control.Uint64 {
 	if m.ServiceClosure == nil {
 		return 0
 	}
+	if p := m.ServiceClosure.RetainedRecovery; p != nil {
+		v, _ := p.Source.CapacityGeneration()
+		return v
+	}
 	if p := m.ServiceClosure.ActualRecovery; p != nil {
 		return p.Capacity.CapacityGeneration
 	}

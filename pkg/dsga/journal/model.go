@@ -79,7 +79,8 @@ const (
 	// 原取消清理未确认，资源/预算独立复核后恢复服务；仍是取消，非目标成功。
 	RecoveredAfterCancellation Outcome = "recovered_after_cancellation"
 	// 独立实际预算恢复保持原资源Unknown，不把原业务目标解释为成功。
-	RecoveredWithActualBudget Outcome = "recovered_with_actual_budget"
+	RecoveredWithActualBudget   Outcome = "recovered_with_actual_budget"
+	RecoveredWithRetainedBudget Outcome = "recovered_with_retained_budget"
 )
 
 type Disposition string
@@ -179,14 +180,17 @@ type Model struct {
 	ServiceClosure *ServiceClosure `json:"service_closure,omitempty"`
 	// 完成一次受控重开后永久保留最近完整恢复证据和退休水位。外层格式21
 	// 必须包含此字段；当前关闭类别独立保存，不能删除关闭后降回旧格式。
-	ServiceLifecycle *ServiceLifecycle `json:"service_lifecycle,omitempty"`
+	ServiceLifecycle *ServiceLifecycle        `json:"service_lifecycle,omitempty"`
+	RetainedCoverage *RetainedServiceCoverage `json:"retained_coverage,omitempty"`
+	// 仅非递归冻结Context保存被省略slot的摘要；顶层永远为空。
+	RetainedContextSHA256 string `json:"retained_context_sha256,omitempty"`
 }
 
 func New(vmUID, incarnation, holder string) (Model, error) {
 	model := Model{
 		ProtocolVersion: 1, VMUID: vmUID, Incarnation: incarnation, Sequence: 1,
 		Owner: Owner{HolderID: holder, Epoch: 1}, HighWater: nil, Active: nil, History: []Record{}, ExpiredResults: 0,
-		ResourceIdentity: nil, PGInstance: nil, BudgetHeld: nil, CapacityHeld: nil, InitialHeld: nil, BudgetBoundary: nil, ServiceClosure: nil, ServiceLifecycle: nil,
+		ResourceIdentity: nil, PGInstance: nil, BudgetHeld: nil, CapacityHeld: nil, InitialHeld: nil, BudgetBoundary: nil, ServiceClosure: nil, ServiceLifecycle: nil, RetainedCoverage: nil, RetainedContextSHA256: "",
 	}
 	return model, model.Validate()
 }
@@ -396,6 +400,12 @@ func compareKeys(left, right control.Key) int {
 }
 
 func (model Model) Validate() error {
+	// 摘要只属于内部非递归冻结上下文。顶层即使伪装成v20，也不能
+	// 省略永久slot后把该上下文当当前账本；recoveryContext专用入口
+	// 直接调用validateCore，保留其严格内部校验，不授予当前执行权。
+	if model.RetainedContextSHA256 != "" {
+		return fmt.Errorf("frozen retained context cannot become current journal")
+	}
 	if err := model.validateServiceLifecycle(); err != nil {
 		return err
 	}
@@ -405,7 +415,10 @@ func (model Model) Validate() error {
 // validateCore只供顶层和已去除生命周期嵌套的冻结上下文调用。上下文不赋
 // 当前许可；其字节摘要、归属和有界性必须先由validateServiceLifecycle核验。
 func (model Model) validateCore() error {
-	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 21) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
+	if model.RetainedContextSHA256 != "" && (model.ProtocolVersion != 20 || model.ServiceLifecycle != nil || !lifecycleDigest(model.RetainedContextSHA256)) {
+		return fmt.Errorf("retained context digest is not a current model field")
+	}
+	if (model.ProtocolVersion < 1 || model.ProtocolVersion > 22) || model.Sequence == 0 || !validIncarnation(model.Incarnation) {
 		return fmt.Errorf("invalid journal version/sequence/incarnation")
 	}
 	// 旧Model已有严格字段解码，会拒绝pg_instance；这里另用v2明确标识
@@ -504,6 +517,9 @@ func (model Model) validateCore() error {
 	if err := model.validateServiceClosure(); err != nil {
 		return err
 	}
+	if err := model.validateRetainedCoverage(); err != nil {
+		return err
+	}
 	return model.validateBudgetBoundary()
 }
 
@@ -556,6 +572,7 @@ func cloneOperation(operation Operation) Operation {
 }
 
 func (model Model) Clone() Model {
+	model.RetainedCoverage = cloneRetainedCoverage(model.RetainedCoverage)
 	if model.ServiceLifecycle != nil {
 		lifecycle := *model.ServiceLifecycle
 		lifecycle.Context = append([]byte(nil), lifecycle.Context...)
@@ -576,6 +593,7 @@ func (model Model) Clone() Model {
 		closure.PGRecovery = cloneServicePGRecovery(closure.PGRecovery)
 		closure.VMRecovery = cloneServiceVMRecovery(closure.VMRecovery)
 		closure.ActualRecovery = cloneServiceActualRecovery(closure.ActualRecovery)
+		closure.RetainedRecovery = cloneServiceRetainedRecovery(closure.RetainedRecovery)
 		if closure.Reopen != nil {
 			reopen := *closure.Reopen
 			if reopen.PriorClose != nil {

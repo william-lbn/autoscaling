@@ -39,7 +39,8 @@ func (m Model) validateServiceReopenRetirement(archived bool) error {
 	}
 	p := r.PriorClose
 	_, _, originalClosed, _ := m.ServiceClosure.Selection()
-	if p == nil || p.Validate() != nil || p.Open || p.Instance != r.Request.Instance || p.BudgetCommitmentID != r.Request.BudgetCommitmentID || p.BudgetCommitmentID != originalClosed.BudgetCommitmentID || p.ExpectedCapacityGeneration != r.Request.ExpectedCapacityGeneration || p.ExpectedCapacityGeneration != originalClosed.ExpectedCapacityGeneration || p.IssuerEpoch > r.Origin.Epoch || p.Revision <= originalClosed.Revision || r.PriorClosedAt <= m.ServiceClosure.StartedSequence || r.PriorClosedAt >= r.StartedSequence {
+	budgetID, budgetErr := m.effectiveServiceBudgetID()
+	if p == nil || p.Validate() != nil || p.Open || p.Instance != r.Request.Instance || p.BudgetCommitmentID != r.Request.BudgetCommitmentID || budgetErr != nil || p.BudgetCommitmentID != budgetID || p.ExpectedCapacityGeneration != r.Request.ExpectedCapacityGeneration || p.ExpectedCapacityGeneration != originalClosed.ExpectedCapacityGeneration || p.IssuerEpoch > r.Origin.Epoch || p.Revision <= originalClosed.Revision || r.PriorClosedAt <= m.ServiceClosure.StartedSequence || r.PriorClosedAt >= r.StartedSequence {
 		return fmt.Errorf("reopen retry lost exact prior closed boundary")
 	}
 	if archived {

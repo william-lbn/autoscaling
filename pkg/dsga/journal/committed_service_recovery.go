@@ -26,8 +26,9 @@ type CommittedServiceCoverage struct {
 	// 仅类别15：独立结算不回写原Finalize未知，完整证据随终态保存。
 	Finalization *ServiceFinalization `json:"finalization,omitempty"`
 	// 取消的独立服务覆盖与目标成功分开，不把原Cleanup未知改成Completed。
-	CleanupRecovery *ServiceCleanupRecovery `json:"cleanup_recovery,omitempty"`
-	ActualRecovery  *ServiceActualRecovery  `json:"actual_recovery,omitempty"`
+	CleanupRecovery  *ServiceCleanupRecovery  `json:"cleanup_recovery,omitempty"`
+	ActualRecovery   *ServiceActualRecovery   `json:"actual_recovery,omitempty"`
+	RetainedRecovery *ServiceRetainedRecovery `json:"retained_recovery,omitempty"`
 }
 
 // committedResourceBudget不递归调用Model.Validate。只有全部资源及完整
@@ -55,6 +56,9 @@ func (m Model) stableServiceRecovery() error {
 		return nil
 	}
 	v := m.serviceClosureVersion()
+	if v == 16 && m.ServiceClosure != nil && m.ServiceClosure.RetainedRecovery != nil {
+		return m.validateServiceRetainedRecovery()
+	}
 	if (v == 16 || v == 17) && m.ServiceClosure != nil && m.ServiceClosure.ActualRecovery != nil {
 		return m.validateServiceActualRecovery()
 	}
@@ -96,6 +100,7 @@ func cloneCommittedCoverage(p *CommittedServiceCoverage) *CommittedServiceCovera
 	n.Finalization = cloneServiceFinalization(p.Finalization)
 	n.CleanupRecovery = cloneServiceCleanupRecovery(p.CleanupRecovery)
 	n.ActualRecovery = cloneServiceActualRecovery(p.ActualRecovery)
+	n.RetainedRecovery = cloneServiceRetainedRecovery(p.RetainedRecovery)
 	return &n
 }
 
@@ -103,6 +108,9 @@ func (record Record) closingOutcome() (Outcome, error) {
 	p := record.ServiceCoverage
 	if p == nil {
 		return record.Operation.closingOutcome()
+	}
+	if p.RetainedRecovery != nil {
+		return record.retainedClosingOutcome()
 	}
 	if p.ActualRecovery != nil {
 		return record.actualClosingOutcome()
@@ -147,6 +155,9 @@ func (m Model) committedCompletionRecord(actor Owner, current control.AdmissionL
 	if err := m.stableServiceRecovery(); err != nil {
 		return nil, err
 	}
+	if m.ServiceClosure.RetainedRecovery != nil {
+		return m.retainedCompletionRecord(actor, current, sequence)
+	}
 	if m.ServiceClosure.ActualRecovery != nil {
 		return m.actualCompletionRecord(actor, current, sequence)
 	}
@@ -180,16 +191,22 @@ func (m Model) validateCommittedLifecycle(c Model, l *ServiceLifecycle) error {
 	if err != nil {
 		return err
 	}
+	if want.ServiceCoverage.RetainedRecovery != nil && (m.RetainedCoverage == nil || !reflect.DeepEqual(m.RetainedCoverage.Record, *want)) {
+		return fmt.Errorf("retained lifecycle differs from permanent original coverage")
+	}
 	// 完成本身必须同时建立永久预算关闭证明。后续Start可以撤销它，
 	// 但HWM尚未推进且没有新Active时，删掉水位不能成为合法完成投影。
 	boundaryAt := control.Uint64(0)
 	if m.BudgetBoundary != nil {
 		boundaryAt = m.BudgetBoundary.SucceededSequence
+		if want.ServiceCoverage.RetainedRecovery != nil {
+			boundaryAt = m.BudgetBoundary.ThroughSequence
+		}
 		if p := want.ServiceCoverage.CleanupRecovery; p != nil && p.Kind == "unchanged" {
 			boundaryAt = m.BudgetBoundary.ThroughSequence
 		}
 	}
-	if m.Active == nil && m.HighWater != nil && *m.HighWater == want.Operation.Request.Key && boundaryAt != want.ClosedSequence {
+	if m.Active == nil && m.HighWater != nil && *m.HighWater == want.Operation.Request.Key && boundaryAt != want.ClosedSequence && (want.ServiceCoverage.RetainedRecovery == nil || want.ServiceCoverage.RetainedRecovery.Source.Initial == nil) {
 		return fmt.Errorf("committed service completion lost atomic closed budget boundary")
 	}
 	for _, record := range m.History {
@@ -211,8 +228,11 @@ func (m Model) validateCommittedLifecycle(c Model, l *ServiceLifecycle) error {
 func (p *CommittedServiceCoverage) UnmarshalJSON(raw []byte) error {
 	type plain CommittedServiceCoverage
 	var next plain
-	if err := control.UnmarshalObjectBounded(raw, &next, MaxObservationBytes*4+4096, 16384); err != nil {
+	if err := control.UnmarshalObjectBounded(raw, &next, MaxRawBytes/2, 16384); err != nil {
 		return err
+	}
+	if next.RetainedRecovery == nil && control.ValidateJSON(raw, MaxObservationBytes*4+4096, 16384) != nil {
+		return fmt.Errorf("legacy service coverage exceeds original bound")
 	}
 	*p = CommittedServiceCoverage(next)
 	return nil

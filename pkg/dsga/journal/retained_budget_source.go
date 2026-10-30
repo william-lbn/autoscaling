@@ -35,30 +35,52 @@ type RetainedBudgetSource struct {
 	Capacity         *budget.ReconciledCapacity `json:"capacity,omitempty"`
 }
 
-func (s RetainedBudgetSource) Validate() error {
+// retainedBudgetLeaf只在同一次同步校验内复用完整叶子和派生标量。
+// 不持久化、不跨调用/RPC缓存；public入口每次仍从原Source重新校验。
+// Finalization的命令/观察只完整解码一次，避免严格JSON校验被每个标量重复触发。
+type retainedBudgetLeaf struct {
+	facts        retainedBudgetFacts
+	finalization *budget.FinalizationCommand
+}
+
+func (s RetainedBudgetSource) validatedLeaf() (retainedBudgetLeaf, error) {
+	var leaf retainedBudgetLeaf
 	if s.RecordedSequence == 0 || !lifecycleDigest(s.SourceSHA256) {
-		return fmt.Errorf("retained budget source lacks original digest or recorded sequence")
+		return leaf, fmt.Errorf("retained budget source lacks original digest or recorded sequence")
 	}
 	switch s.Kind {
 	case RetainedInitialV1:
 		if s.Initial == nil || s.Finalization != nil || s.Capacity != nil || s.Initial.Validate() != nil {
-			return fmt.Errorf("retained initial source lost exclusive complete original budget")
+			return leaf, fmt.Errorf("retained initial source lost exclusive complete original budget")
 		}
+		i := s.Initial
+		leaf.facts = retainedBudgetFacts{instance: i.Instance, budgetID: i.PGAggregate.Bootstrap.BudgetCommitmentID, generation: i.Shared.Observed.CapacityGeneration, memory: i.VMMemoryBytes, usable: i.GuestUsableMemoryBytes, runner: i.RunnerPodName, restarts: i.RunnerRestartCount}
 	case RetainedFinalizationV1, RetainedFinalizationV2:
 		if s.Initial != nil || s.Finalization == nil || s.Capacity != nil {
-			return fmt.Errorf("retained finalization source mixed another permanent header")
+			return leaf, fmt.Errorf("retained finalization source mixed another permanent header")
 		}
-		if _, err := s.finalizationCommand(); err != nil {
-			return err
+		c, err := s.finalizationCommand()
+		if err != nil {
+			return leaf, err
 		}
+		leaf.finalization = &c
+		f := c.Finalized
+		leaf.facts = retainedBudgetFacts{instance: f.Request.Key.Instance, budgetID: f.Request.BudgetCommitmentID, generation: f.Shared.Observed.CapacityGeneration, memory: f.Request.TargetVMMemoryBytes, usable: f.GuestUsableMemoryBytes, runner: f.RunnerPodName, restarts: f.RunnerRestartCount}
 	case RetainedCapacityV1, RetainedCapacityV2, RetainedCapacityV3:
 		if s.Initial != nil || s.Finalization != nil || s.Capacity == nil || s.Capacity.Validate() != nil || (s.Kind == RetainedCapacityV3) != (s.Capacity.ProtocolVersion == 4) {
-			return fmt.Errorf("retained actual capacity source lost original format or complete leaf")
+			return leaf, fmt.Errorf("retained actual capacity source lost original format or complete leaf")
 		}
+		c := s.Capacity
+		leaf.facts = retainedBudgetFacts{instance: c.Request.Key.Instance, budgetID: c.Request.BudgetCommitmentID, generation: c.CapacityGeneration, memory: c.VMMemoryBytes, usable: c.GuestUsableMemoryBytes, runner: c.RunnerPodName, restarts: c.RunnerRestartCount}
 	default:
-		return fmt.Errorf("unknown retained budget header format")
+		return leaf, fmt.Errorf("unknown retained budget header format")
 	}
-	return nil
+	return leaf, nil
+}
+
+func (s RetainedBudgetSource) Validate() error {
+	_, err := s.validatedLeaf()
+	return err
 }
 
 // finalizationCommand同时核完整原命令/回执及Step摘要域。独立结算Step保留
@@ -213,31 +235,8 @@ type retainedBudgetFacts struct {
 }
 
 func (s RetainedBudgetSource) facts() (retainedBudgetFacts, error) {
-	var facts retainedBudgetFacts
-	if err := s.Validate(); err != nil {
-		return facts, err
-	}
-	if i := s.Initial; i != nil {
-		facts.instance, facts.budgetID = i.Instance, i.PGAggregate.Bootstrap.BudgetCommitmentID
-		facts.generation, facts.memory, facts.usable = i.Shared.Observed.CapacityGeneration, i.VMMemoryBytes, i.GuestUsableMemoryBytes
-		facts.runner, facts.restarts = i.RunnerPodName, i.RunnerRestartCount
-		return facts, nil
-	}
-	if c := s.Capacity; c != nil {
-		facts.instance, facts.budgetID = c.Request.Key.Instance, c.Request.BudgetCommitmentID
-		facts.generation, facts.memory, facts.usable = c.CapacityGeneration, c.VMMemoryBytes, c.GuestUsableMemoryBytes
-		facts.runner, facts.restarts = c.RunnerPodName, c.RunnerRestartCount
-		return facts, nil
-	}
-	c, err := s.finalizationCommand()
-	if err != nil {
-		return facts, err
-	}
-	f := c.Finalized
-	facts.instance, facts.budgetID = f.Request.Key.Instance, f.Request.BudgetCommitmentID
-	facts.generation, facts.memory, facts.usable = f.Shared.Observed.CapacityGeneration, f.Request.TargetVMMemoryBytes, f.GuestUsableMemoryBytes
-	facts.runner, facts.restarts = f.RunnerPodName, f.RunnerRestartCount
-	return facts, nil
+	leaf, err := s.validatedLeaf()
+	return leaf.facts, err
 }
 
 func (s RetainedBudgetSource) BudgetCommitmentID() (string, error) {

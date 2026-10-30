@@ -175,6 +175,7 @@ func (model Model) validateBudgetBoundary() error {
 			}
 		} else {
 			cancelled := record.Outcome == RecoveredAfterCancellation && record.ServiceCoverage != nil && record.ServiceCoverage.CleanupRecovery != nil && record.ServiceCoverage.CleanupRecovery.Kind == "unchanged" && record.ServiceCoverage.FinalizationSHA256 == b.FinalizationSHA256
+			cancelled = cancelled || record.Outcome == RecoveredWithRetainedBudget && record.ServiceCoverage != nil && record.ServiceCoverage.RetainedRecovery != nil && record.ServiceCoverage.FinalizationSHA256 == b.FinalizationSHA256
 			if !cancelled && record.Outcome != AbortedBeforeDispatch && (record.Outcome != AbortedAfterReconcile || model.validateUnchangedAbort(record.Operation) != nil) || record.ClosedSequence <= b.SucceededSequence || record.ClosedSequence > b.ThroughSequence {
 				return fmt.Errorf("closed budget boundary crosses a dispatched or contradictory history")
 			}
