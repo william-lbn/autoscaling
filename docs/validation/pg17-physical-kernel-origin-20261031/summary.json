@@ -1,0 +1,37 @@
+{
+  "status": "component-only-pass-default-unwired",
+  "test_class": "PG17 U; real Linux file lock/fsync syscalls but modeled kernel/source inputs, not real ISO/Origin Guest S",
+  "head_at_run": "1f57705491a5407bbea3496460b0d96e5c58cc64",
+  "actual_toolchain": "go1.24.3 linux/amd64",
+  "race": true,
+  "count": 1,
+  "roots": 4,
+  "subcases": 18,
+  "failures": 0,
+  "skips": 0,
+  "receipt": "/data/neon-build/validation/p2-physical-kernel-origin-20261030T162322Z",
+  "first_pass_receipt": "/data/neon-build/validation/p2-physical-kernel-origin-20261030T161246Z",
+  "first_pass_roots": 4,
+  "first_pass_subcases": 17,
+  "tested_package_source_files": 57,
+  "current_source_difference_outside_owned_files": [],
+  "owned_files": [
+    {
+      "path": "pkg/dsga/resourceguard/physical_kernel_origin.go",
+      "sha256": "31aff27e76f62b59b7745657add3ba53b7d93cc5bc710e53302a9a53a45ac999"
+    },
+    {
+      "path": "pkg/dsga/resourceguard/physical_kernel_origin_linux.go",
+      "sha256": "98d232f86d12eb8fcd84a8eb8ef209f7e3550c0e7811775b7a8c62058f3f01c9"
+    },
+    {
+      "path": "pkg/dsga/resourceguard/physical_kernel_origin_test.go",
+      "sha256": "04cbfc0eb0e9669eb92d5897410b8be75a9b67a97b08b1fe673a8a9ca8c8ef6d"
+    }
+  ],
+  "production_consumers": [],
+  "provision_hook": "not implemented",
+  "full_envelope_or_normal_authorization": false,
+  "real_readonly_iso_policy_and_pending_origin_restart_S": "NotRun",
+  "kernel_observation_S": "separate PG17-S-KERNEL-001, does not exercise Origin"
+}

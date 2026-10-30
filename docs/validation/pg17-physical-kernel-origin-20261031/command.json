@@ -1,0 +1,7 @@
+[
+  "/data/neon-build/scripts/dev-run.sh",
+  "autoscaling",
+  "sh",
+  "-ec",
+  "sha256sum pkg/dsga/resourceguard/*.go; go version; go test -race -json -count=1 ./pkg/dsga/resourceguard -run '^TestPhysicalKernelOrigin'"
+]

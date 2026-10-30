@@ -1,0 +1,112 @@
+[
+  {
+    "Test": "TestPhysicalKernelOriginCapturesAndKeepsOriginal",
+    "Action": "pass",
+    "Elapsed": 0.09
+  },
+  {
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/old-journal",
+    "Action": "pass",
+    "Elapsed": 0.03
+  },
+  {
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/populated",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/missing-marker",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/wrong-policy-runtime",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/kernel-notes",
+    "Action": "pass",
+    "Elapsed": 0.03
+  },
+  {
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/fixed-zone",
+    "Action": "pass",
+    "Elapsed": 0.03
+  },
+  {
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/cpu",
+    "Action": "pass",
+    "Elapsed": 0.03
+  },
+  {
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/source-bytes",
+    "Action": "pass",
+    "Elapsed": 0.03
+  },
+  {
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/cgroup",
+    "Action": "pass",
+    "Elapsed": 0.03
+  },
+  {
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/wrong-config-artifact",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift",
+    "Action": "pass",
+    "Elapsed": 0.2
+  },
+  {
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/replay-original",
+    "Action": "pass",
+    "Elapsed": 0.04
+  },
+  {
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/pending-after-resource-init",
+    "Action": "pass",
+    "Elapsed": 0.06
+  },
+  {
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/populated-replay",
+    "Action": "pass",
+    "Elapsed": 0.04
+  },
+  {
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/malformed-data",
+    "Action": "pass",
+    "Elapsed": 0.02
+  },
+  {
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/noncanonical-data",
+    "Action": "pass",
+    "Elapsed": 0.03
+  },
+  {
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/wrong-confirmation",
+    "Action": "pass",
+    "Elapsed": 0.03
+  },
+  {
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/orphan-confirmation",
+    "Action": "pass",
+    "Elapsed": 0.02
+  },
+  {
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/symlink-data",
+    "Action": "pass",
+    "Elapsed": 0.02
+  },
+  {
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay",
+    "Action": "pass",
+    "Elapsed": 0.26
+  },
+  {
+    "Test": "TestPhysicalKernelOriginSerializesWithOriginalResourceLock",
+    "Action": "pass",
+    "Elapsed": 0.13
+  }
+]
