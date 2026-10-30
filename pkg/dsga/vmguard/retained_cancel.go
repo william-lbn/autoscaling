@@ -27,22 +27,22 @@ type CurrentBudgetVM struct {
 func (r *Reader) CheckCurrentBudget(ctx context.Context, m journal.Model) (CurrentBudgetVM, error) {
 	var out CurrentBudgetVM
 	if m.CapacityHeld != nil {
-		var command budget.ReconciledAbortCommand
-		if json.Unmarshal(m.CapacityHeld.Cleanup.Command, &command) != nil || m.CheckClosedCapacity(command.Capacity.Request) != nil {
+		capacity, err := m.CurrentCapacity()
+		if err != nil || m.CheckClosedCapacity(capacity.Request) != nil {
 			return out, fmt.Errorf("current Runner actual capacity lacks original closed permanent budget")
 		}
-		if command.Capacity.InitialVM != nil {
-			if command.Capacity.InitialOutside == nil {
+		if capacity.InitialVM != nil {
+			if capacity.InitialOutside == nil {
 				return out, fmt.Errorf("initial VM capacity lost complete original boot budget")
 			}
-			proof, err := r.CheckInitialCapacity(ctx, *command.Capacity.InitialVM, *command.Capacity.InitialOutside, m.Owner)
+			proof, err := r.CheckInitialCapacity(ctx, *capacity.InitialVM, *capacity.InitialOutside, m.Owner)
 			if err != nil {
 				return out, err
 			}
 			out.Initial = &proof
 			return out, nil
 		}
-		proof, err := r.CheckCapacity(ctx, command.Capacity.VM, m.Owner)
+		proof, err := r.CheckCapacity(ctx, capacity.VM, m.Owner)
 		if err != nil {
 			return out, err
 		}

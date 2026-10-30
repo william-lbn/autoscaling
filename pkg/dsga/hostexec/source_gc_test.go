@@ -102,6 +102,77 @@ func TestRetainedSourceNamesWalksRawHeadsAndHistory(t *testing.T) {
 	require.Error(t, err)
 }
 
+// 精确绑定永久独立Proof与其原Unknown payload中的来源；不LIST/扫任选CM。
+// 领域夹具只验证保留集合，不把畸形的其它零值Model字段当作有效预算或删除许可。
+func TestRetainedSourceNamesKeepIndependentActualProofAfterHistoryEviction(t *testing.T) {
+	raw, err := os.ReadFile("../admissionexec/testdata/reconciled-domain.json")
+	require.NoError(t, err)
+	var domain struct {
+		Capacity budget.ReconciledCapacity `json:"capacity"`
+	}
+	// 原文件另含Prepared/Root；这里只提取完整合法容量，忽略无关领域输入。
+	require.NoError(t, json.Unmarshal(raw, &domain))
+	capacity := domain.Capacity
+	originalRef := budget.ObjectRef{Name: "actual-original-command", UID: "original-command-uid"}
+	auditRef := budget.ObjectRef{Name: "actual-original-audit", UID: "original-audit-uid"}
+	commandRaw, err := json.Marshal(map[string]any{"nested": []budget.ObjectRef{originalRef}})
+	require.NoError(t, err)
+	auditRaw, err := json.Marshal(map[string]budget.ObjectRef{"audit_source": auditRef})
+	require.NoError(t, err)
+	var originalStep journal.Step
+	var originalAudit journal.Observation
+	originalStep.Command, originalAudit.Data = commandRaw, auditRaw
+	originalStep.Observation = &originalAudit
+	cleanupRef := budget.ObjectRef{Name: "actual-original-cleanup", UID: "original-cleanup-uid"}
+	cleanupRaw, err := json.Marshal(cleanupRef)
+	require.NoError(t, err)
+	var cleanup journal.Step
+	cleanup.Command = cleanupRaw
+	var origin journal.RecoveredResourceOrigin
+	origin.Original.Steps, origin.Original.Cleanup = []journal.Step{originalStep}, &cleanup
+	origin.Proof.Capacity = capacity
+	// 单独存入VMProof的不可变回执也要保留，不能只扫最外层Capacity。
+	vm := capacity.VM
+	vm.Sources.ReceiptClaim = budget.ObjectRef{Name: "actual-independent-vm-receipt", UID: "independent-vm-receipt-uid"}
+	var vmProof journal.ServiceVMRecovery
+	vmProof.Capacity = &vm
+	origin.Proof.VM = &vmProof
+	var m journal.Model
+	var held journal.HeldCapacity
+	held.ActiveRecovery = &origin
+	m.CapacityHeld = &held
+	var coverage journal.CommittedServiceCoverage
+	var historyProof journal.ServiceActualRecovery
+	historyProof.Capacity = capacity
+	historyRef := budget.ObjectRef{Name: "history-independent-outside", UID: "history-independent-outside-uid"}
+	historyProof.Capacity.OutsideClaim = historyRef
+	coverage.ActualRecovery = &historyProof
+	var history journal.Record
+	history.ServiceCoverage = &coverage
+	m.History = []journal.Record{history}
+	var publication vmguard.Publication
+	refs, err := retainedSourceNames(m, publication)
+	require.NoError(t, err)
+	for _, name := range []string{originalRef.Name, auditRef.Name, cleanupRef.Name, capacity.HostClaim.Name, capacity.OutsideClaim.Name, capacity.VM.Sources.ReceiptClaim.Name, vm.Sources.ReceiptClaim.Name, historyRef.Name} {
+		require.Contains(t, refs, name)
+	}
+	m.History = nil
+	refs, err = retainedSourceNames(m, publication)
+	require.NoError(t, err)
+	for _, name := range []string{originalRef.Name, auditRef.Name, cleanupRef.Name, capacity.HostClaim.Name, capacity.OutsideClaim.Name, capacity.VM.Sources.ReceiptClaim.Name, vm.Sources.ReceiptClaim.Name} {
+		require.Contains(t, refs, name, "结果缓存淘汰不能裁永久原Unknown或独立预算仍引用的来源")
+	}
+	require.NotContains(t, refs, historyRef.Name)
+	m.CapacityHeld = nil
+	refs, err = retainedSourceNames(m, publication)
+	require.NoError(t, err)
+	require.Empty(t, refs, "只有持久引用才保留，不能按相近名称泛留整个命名空间")
+	m.CapacityHeld = &held
+	origin.Original.Steps[0].Command = []byte(`{"broken":`)
+	_, err = retainedSourceNames(m, publication)
+	require.Error(t, err, "原Unknown payload损坏必须阻止GC计算可删除集合")
+}
+
 func TestSettledRunnerReceiptCollectionRequiresOriginalBirthAndContentName(t *testing.T) {
 	for _, what := range []string{"old", "not-sent", "retained-name", "another-pod", "another-node", "another-runner-boot", "another-birth", "same-position-other-id", "wrong-content-name"} {
 		t.Run(what, func(t *testing.T) {

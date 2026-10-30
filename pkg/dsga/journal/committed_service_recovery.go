@@ -27,6 +27,7 @@ type CommittedServiceCoverage struct {
 	Finalization *ServiceFinalization `json:"finalization,omitempty"`
 	// 取消的独立服务覆盖与目标成功分开，不把原Cleanup未知改成Completed。
 	CleanupRecovery *ServiceCleanupRecovery `json:"cleanup_recovery,omitempty"`
+	ActualRecovery  *ServiceActualRecovery  `json:"actual_recovery,omitempty"`
 }
 
 // committedResourceBudget不递归调用Model.Validate。只有全部资源及完整
@@ -54,6 +55,9 @@ func (m Model) stableServiceRecovery() error {
 		return nil
 	}
 	v := m.serviceClosureVersion()
+	if (v == 16 || v == 17) && m.ServiceClosure != nil && m.ServiceClosure.ActualRecovery != nil {
+		return m.validateServiceActualRecovery()
+	}
 	if v == 18 && m.ServiceClosure != nil && m.ServiceClosure.CleanupRecovery != nil {
 		return m.validateServiceCleanupRecovery()
 	}
@@ -91,6 +95,7 @@ func cloneCommittedCoverage(p *CommittedServiceCoverage) *CommittedServiceCovera
 	n.Current = cloneLeaseResponse(p.Current)
 	n.Finalization = cloneServiceFinalization(p.Finalization)
 	n.CleanupRecovery = cloneServiceCleanupRecovery(p.CleanupRecovery)
+	n.ActualRecovery = cloneServiceActualRecovery(p.ActualRecovery)
 	return &n
 }
 
@@ -98,6 +103,9 @@ func (record Record) closingOutcome() (Outcome, error) {
 	p := record.ServiceCoverage
 	if p == nil {
 		return record.Operation.closingOutcome()
+	}
+	if p.ActualRecovery != nil {
+		return record.actualClosingOutcome()
 	}
 	if p.CleanupRecovery != nil {
 		return record.cancelledClosingOutcome()
@@ -138,6 +146,9 @@ func (m Model) committedCompletionRecord(actor Owner, current control.AdmissionL
 	}
 	if err := m.stableServiceRecovery(); err != nil {
 		return nil, err
+	}
+	if m.ServiceClosure.ActualRecovery != nil {
+		return m.actualCompletionRecord(actor, current, sequence)
 	}
 	if m.ServiceClosure.CleanupRecovery != nil {
 		return m.cancelledCompletionRecord(actor, current, sequence)

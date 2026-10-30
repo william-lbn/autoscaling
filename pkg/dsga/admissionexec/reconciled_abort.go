@@ -31,20 +31,20 @@ func (e *Executor) reconciledNative(ctx context.Context, m journal.Model) (budge
 		return source, nil, err
 	}
 	if m.CapacityHeld != nil {
-		var saved budget.ReconciledAbortCommand
-		if m.CapacityHeld.Cleanup.DispatchedBy == nil || json.Unmarshal(m.CapacityHeld.Cleanup.Command, &saved) != nil || saved.ValidateFor(m.CapacityHeld.Cleanup.DispatchedBy.Epoch) != nil {
+		saved, err := m.CurrentCapacity()
+		if err != nil {
 			return none, nil, fmt.Errorf("actual recovery lost retained native capacity")
 		}
-		if saved.Capacity.InitialVM != nil {
+		if saved.InitialVM != nil {
 			initial, err := m.RetainedInitialOutside()
 			if err != nil {
 				return none, nil, err
 			}
-			proof, err := e.runner.CheckInitialCapacity(ctx, *saved.Capacity.InitialVM, initial, e.actor)
+			proof, err := e.runner.CheckInitialCapacity(ctx, *saved.InitialVM, initial, e.actor)
 			return none, &proof.Sources, err
 		}
-		_, err := e.runner.CheckCapacity(ctx, saved.Capacity.VM, e.actor)
-		return saved.Capacity.VM, nil, err
+		_, err = e.runner.CheckCapacity(ctx, saved.VM, e.actor)
+		return saved.VM, nil, err
 	}
 	if m.BudgetHeld != nil {
 		var saved budget.FinalizationCommand

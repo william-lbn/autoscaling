@@ -63,6 +63,20 @@ func (w *PGWorker) reopenSourcesAvailable() bool {
 // 资源在途仍不得借当前容量绕过原账本；18也不能复写原Cleanup。
 func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapshot) error {
 	m := s.State()
+	if m.ServiceClosure != nil && m.ServiceClosure.ActualRecovery != nil {
+		if w.admission == nil {
+			return ErrServiceSafety
+		}
+		// SDK重建先用独立完整预算对账原PG，原缓存淘汰不能再把恢复
+		// 卡回原Unknown；随后仍重新认证所有当前资源及准确WAL门禁。
+		if err := w.executor.ReconcileServiceRecovery(ctx); err != nil {
+			return err
+		}
+		if err := w.admission.CheckServiceActual(ctx, s); err != nil {
+			return err
+		}
+		return w.inspectCleanupQualification(ctx, s)
+	}
 	if m.ServiceClosure != nil && m.ServiceClosure.CleanupRecovery != nil {
 		if w.admission == nil {
 			return ErrServiceSafety
@@ -97,7 +111,10 @@ func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapsh
 // CAS丢回复停止本次管理，重读后再次显式恢复沿用已保存Proof和原selector。
 func (w *PGWorker) ensureServiceFinalization(ctx context.Context, s *journal.Snapshot, selector string) (*journal.Snapshot, error) {
 	m := s.State()
-	if m.ServiceClosure != nil && m.ServiceClosure.Reason == "active_pg_source_unconfirmed" {
+	if m.ServiceClosure != nil && m.ServiceClosure.ActualRecovery != nil {
+		return s, nil
+	}
+	if m.ServiceClosure != nil && m.ServiceClosure.Reason == "active_pg_source_unconfirmed" && m.ServiceClosure.PGRecovery == nil && m.ServiceClosure.PGRejection == nil {
 		// 先隔离/核验原PG，不能让Root部分效果遮住原PG查询。独立证明
 		// 不改外层Unknown；其余资源和完整实际预算仍须后继分别闭合。
 		var err error
@@ -127,6 +144,18 @@ func (w *PGWorker) ensureServiceFinalization(ctx context.Context, s *journal.Sna
 			return nil, err
 		}
 		m = s.State()
+	}
+	if m.ServiceClosure != nil && (m.ServiceClosure.Reason == "active_source_unconfirmed" || m.ServiceClosure.Reason == "active_pg_source_unconfirmed") {
+		if w.admission == nil {
+			return nil, ErrServiceSafety
+		}
+		if err := w.inspectCleanupQualification(ctx, s); err != nil {
+			return nil, err
+		}
+		if err := w.admission.RecoverServiceActual(ctx, s, selector); err != nil {
+			return nil, err
+		}
+		return w.session.store.Load(ctx)
 	}
 	if m.ServiceClosure != nil && m.ServiceClosure.Reason == "cleanup_source_unconfirmed" && m.ServiceClosure.PGRejection == nil {
 		var err error

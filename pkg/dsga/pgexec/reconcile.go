@@ -23,6 +23,34 @@ func (e *Executor) ReconcileServiceRecovery(ctx context.Context) error {
 	if !s.Dispatchable() || m.Owner != e.actor || m.Active == nil || m.ServiceClosure == nil || m.ServiceClosure.Pending() || m.CheckStableServiceRecovery() != nil {
 		return fmt.Errorf("PG service recovery requires exact committed resource closure")
 	}
+	if actual := m.ServiceClosure.ActualRecovery; actual != nil {
+		// 完整实际预算已有独立持久来源，不再要求可淘汰缓存永远保留原结果。
+		// 原Planned和已派发分别复核；这里不补写原步骤，不走旧终态替换规则。
+		var pg *journal.Step
+		for i := range m.Active.Steps {
+			if m.Active.Steps[i].Action == journal.ResizePG {
+				pg = &m.Active.Steps[i]
+				break
+			}
+		}
+		capacity := actual.Capacity
+		if pg == nil || capacity.UnchangedPG != nil && (pg.Phase != journal.Planned || e.client.Pending() != nil) || capacity.RecoveryPG != nil && pg.Phase == journal.Planned {
+			return fmt.Errorf("actual service PG source differs from original dispatch or SDK slot")
+		}
+		fence, err := e.client.Fence(ctx, control.FenceRequest{ProtocolVersion: 1, Instance: e.instance, IssuerEpoch: e.actor.Epoch})
+		if err != nil {
+			return err
+		}
+		current, err := e.store.Load(ctx)
+		if err != nil {
+			return err
+		}
+		if !current.Dispatchable() || current.ResourceVersion() != s.ResourceVersion() || current.State().Owner != e.actor {
+			return fmt.Errorf("actual service PG original VM UID/RV changed before reconciliation")
+		}
+		_, err = e.client.ReconcileActualBudget(ctx, m.Active.Request, capacity, fence)
+		return err
+	}
 	if m.ServiceClosure.PGRejection != nil && e.client.Pending() != nil {
 		if err := e.reconcileRejectedService(ctx, m); err != nil {
 			return err

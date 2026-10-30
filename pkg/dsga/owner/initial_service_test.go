@@ -286,7 +286,7 @@ func initialAndGrowQualification(t *testing.T, ctx context.Context, client *kube
 	require.NoError(t, err)
 	q := budget.PlatformQualification{ProtocolVersion: 1, Identity: p.Identity, Incarnation: binding().Incarnation, ReportID: "explicit-initial-and-grow-platform-fixture", RootBootstrapSHA256: vmguard.SourceDigest(bootstrapRaw), RunnerBirth: ref, RunnerIdentitySHA256: vmguard.SourceDigest(identityRaw), RunnerPodName: p.RunnerPodName, RunnerPodUID: birth.Identity.RunnerPodUID, RunnerRestartCount: 0, NodeName: "node-one", NodeUID: birth.Identity.NodeUID, HoldUntilExplicitSettlement: true, Targets: []budget.QualifiedTarget{
 		{VMMemoryBytes: 512 << 20, GuestUsableMemoryBytes: 480 << 20, Limits: bootstrap.Limits, SystemOutsidePGBytes: 24 << 20, TransitionBytes: 4 << 20, SafetyBytes: 4 << 20},
-		{VMMemoryBytes: p.Request.TargetVMMemoryBytes, GuestUsableMemoryBytes: p.GuestUsableMemoryBytes, Limits: p.Limits, SystemOutsidePGBytes: 24 << 20, TransitionBytes: 4 << 20, SafetyBytes: 4 << 20},
+		{VMMemoryBytes: p.Request.TargetVMMemoryBytes, GuestUsableMemoryBytes: p.GuestUsableMemoryBytes, Limits: p.Limits, SystemOutsidePGBytes: p.SystemOutsidePG.UpperBytes, TransitionBytes: p.Transition.UpperBytes, SafetyBytes: p.Safety.UpperBytes},
 	}}
 	if len(extra) > 0 {
 		// 仅新自动缩VM组合显式加入中间规格；这些数字仍是独立平台peer
@@ -361,9 +361,11 @@ func productionInitialService(t *testing.T, mode string) {
 	finalizationCancel := mode == "finalize-safety-recover-planned-unchanged-takeover"
 	pgRecovery := strings.HasPrefix(mode, "pg-safety-recover-")
 	vmRecovery := strings.HasPrefix(mode, "vm-safety-recover-")
+	actualRecovery := strings.HasPrefix(mode, "actual-safety-recover-")
+	actualLatePG := actualRecovery && strings.Contains(mode, "pg-late-commit")
 	pgRecoveryTransfer := pgRecovery && (strings.Contains(mode, "unreceived") || strings.Contains(mode, "expired") || strings.Contains(mode, "takeover"))
-	closureTransfer := vmRecovery && strings.HasSuffix(mode, "takeover") || pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
-	pgSafety := strings.HasPrefix(mode, "active-safety-pg-") || pgRecovery
+	closureTransfer := (actualRecovery || vmRecovery) && strings.HasSuffix(mode, "takeover") || pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
+	pgSafety := actualLatePG || strings.HasPrefix(mode, "active-safety-pg-") || pgRecovery
 	guestRecovery := strings.HasPrefix(mode, "guest-safety-recover-")
 	guestRecoveryUnreceived := guestRecovery && strings.Contains(mode, "unreceived")
 	pgTakeover := mode == "owner-transfer-after-pg"
@@ -443,6 +445,11 @@ func productionInitialService(t *testing.T, mode string) {
 		// 总期限留出race调度余量；不改各生产请求或30/20/2秒租约。
 		deadline = 4 * time.Minute
 	}
+	if actualRecovery {
+		// 新组合追加完整独立预算/开放、Host结清及一个后继正常请求。
+		// 仅给测试总期限留余量，生产单轮请求、限流和Lease均不变。
+		deadline = 4 * time.Minute
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), deadline)
 	defer cancel()
 	run := elector.Run
@@ -469,6 +476,13 @@ func productionInitialService(t *testing.T, mode string) {
 		p.Limits.PidsMaxTasks = 128
 		p.Limits.AddressSpaceMaxBytes = root.view.Bootstrap.Limits.AddressSpaceMaxBytes
 		p.Limits.SystemMemoryMaxBytes = 16 << 20
+		if actualRecovery && strings.Contains(mode, "guest-unreceived") {
+			// 只给新组合固定不同规格的真实平台peer输入：启动Outside32MiB，
+			// 扩大后40MiB。Guest取消后Root仍原32MiB声明，独立预算必须
+			// 取actual VM的原40MiB资格，不能因旧normal改借小VM来源。
+			p.SystemOutsidePG.UpperBytes = 32 << 20
+			p.Limits.OutsideUpperBytes = 40 << 20
+		}
 		after := before
 		after.Observed = pgResponse(t, request).Observed
 		after.CurrentMainAndArraysUpperBytes = after.StartupMainUpperBytes
@@ -481,6 +495,46 @@ func productionInitialService(t *testing.T, mode string) {
 			nativeFence = pg.ownerFence(t)
 		}
 		config := pgConfigWithFence(t, request, func(w http.ResponseWriter, r *http.Request) {
+			if actualLatePG && r.URL.Path == "/dsg/v1/resize" {
+				// 原POST已经到达但返回未知，原执行的效果稍后才在关闭
+				// 确认后提交。只模拟明确协议peer中的原执行，不补外层
+				// Completed、不生成第二条Resize请求。
+				var original control.Request
+				require.NoError(t, json.NewDecoder(r.Body).Decode(&original))
+				require.Equal(t, request, original)
+				require.Equal(t, journal.Unconfirmed, budgetStep(t, store, journal.ResizePG).Phase)
+				pg.mu.Lock()
+				pg.resizePosts++
+				pg.mu.Unlock()
+				w.WriteHeader(http.StatusServiceUnavailable)
+				return
+			}
+			if actualRecovery && r.URL.Path == "/dsg/v1/resize/status" {
+				pg.mu.Lock()
+				unreceived := pg.resizeReceipt == nil
+				current := pg.current().Observed
+				pg.mu.Unlock()
+				if actualLatePG && strings.HasSuffix(mode, "-expired") && current.Operation != nil && current.Operation.Key != request.Key {
+					// 仅新窗口显式推进同容量较新原生终态后，原Key缓存
+					// 已淘汰。外层保存的完整终态不因此降级成隔离Unknown。
+					var query control.Query
+					require.NoError(t, json.NewDecoder(r.Body).Decode(&query))
+					require.Equal(t, request.Key, query.Key)
+					pgReply(w, control.ControlResponse{ProtocolVersion: 1, VMShrinkPermit: false, Receipt: control.Receipt{Key: query.Key, Disposition: control.ReceiptResultExpired, HasResult: false, Result: nil}, Observed: current})
+					return
+				}
+				if unreceived {
+					var query control.Query
+					require.NoError(t, json.NewDecoder(r.Body).Decode(&query))
+					require.Equal(t, request.Key, query.Key)
+					disposition := control.ReceiptNotFound
+					if current.IssuerFloorEpoch > query.Key.IssuerEpoch {
+						disposition = control.ReceiptStale
+					}
+					pgReply(w, control.ControlResponse{ProtocolVersion: 1, VMShrinkPermit: false, Receipt: control.Receipt{Key: query.Key, Disposition: disposition, HasResult: false, Result: nil}, Observed: current})
+					return
+				}
+			}
 			if pgRecovery && (strings.Contains(mode, "unreceived") || strings.Contains(mode, "expired")) && r.URL.Path == "/dsg/v1/resize/status" {
 				var query control.Query
 				require.NoError(t, json.NewDecoder(r.Body).Decode(&query))
@@ -517,6 +571,11 @@ func productionInitialService(t *testing.T, mode string) {
 			// 新取消目标在首次绑定前就具有独立平台资格；不能在取消后
 			// 按实际占用补造新规格，或把旧1GiB预算冒充2GiB成功。
 			extra = []budget.QualifiedTarget{{VMMemoryBytes: 2 << 30, GuestUsableMemoryBytes: (2 << 30) - (256 << 20), Limits: p.Limits, SystemOutsidePGBytes: 24 << 20, TransitionBytes: 4 << 20, SafetyBytes: 4 << 20}}
+		}
+		if actualRecovery && strings.HasSuffix(mode, "-consumer") {
+			// 仅新永久头消费者组合在原绑定前固定后继2GiB规格，不能
+			// 在第一次恢复后临时修改原immutable资格来补目标。
+			extra = []budget.QualifiedTarget{{VMMemoryBytes: 2 << 30, GuestUsableMemoryBytes: (2 << 30) - (256 << 20), Limits: p.Limits, SystemOutsidePGBytes: p.SystemOutsidePG.UpperBytes, TransitionBytes: p.Transition.UpperBytes, SafetyBytes: p.Safety.UpperBytes}}
 		}
 		source := initialAndGrowQualification(t, ctx, client, root, p, extra...)
 		rebuild := func() *PGWorker {
@@ -623,7 +682,7 @@ func productionInitialService(t *testing.T, mode string) {
 		var successorHost *hostexec.Publisher
 		if lifecycleMode {
 			// 已由完整生产恢复链完成首次服务；继续原预算Grow，无重复初开。
-		} else if vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
+		} else if actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
 			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -690,17 +749,41 @@ func productionInitialService(t *testing.T, mode string) {
 			// 完整结案/自动Grow→Shrink会经过多次正式来源预审，race运行
 			// 可能超过静态夹具Lease的60秒寿命。用原UID/holder的真实
 			// 选主续租维持Host，不放宽生产过期校验，也不重建同名来源。
-			if vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || finalizationCancel || strings.HasPrefix(mode, "cleanup-safety-") {
+			if actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || finalizationCancel || strings.HasPrefix(mode, "cleanup-safety-") {
 				keepPGTakeoverHostOwner(t, ctx, client)
 			}
 		}
 		for _, action := range []journal.Action{journal.ReserveHost, journal.ResizeVM} {
+			if actualRecovery && strings.HasSuffix(mode, "vm-planned") && action == journal.ResizeVM {
+				// Host已真实持有原峰值，但原ResizeVM尚无派发。保留真正
+				// InitialVM来源，不用取消回执或虚构Completed代替首次状态。
+				verifyProductionServiceActualRecovery(t, ctx, mode, api, store, client, coord, session, resources, worker, config, source, pg, root, runner, qmp, transfer)
+				return nil
+			}
 			progress, err = worker.Advance(ctx)
 			require.NoError(t, err, string(action))
 			require.Equal(t, pgexec.Recorded, progress)
 		}
 		if vmRecovery {
 			verifyProductionVMServiceRecovery(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, runner, qmp, transfer)
+			return nil
+		}
+		if actualRecovery && !actualLatePG {
+			if strings.Contains(mode, "guest-unreceived") {
+				require.NoError(t, runner.Tick(ctx))
+				progress, err = worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress)
+				// 原Guest写前CAS真实落盘但丢回复，Root尚未收到；不能
+				// 用测试手填NoEffect，也不能让恢复补发原Apply。
+				api.mu.Lock()
+				api.loseJournalReply = true
+				api.mu.Unlock()
+				_, err = worker.Advance(ctx)
+				var lost *journal.UnconfirmedWrite
+				require.ErrorAs(t, err, &lost)
+			}
+			verifyProductionServiceActualRecovery(t, ctx, mode, api, store, client, coord, session, resources, worker, config, source, pg, root, runner, qmp, transfer)
 			return nil
 		}
 		if strings.HasPrefix(mode, "active-safety-vm-unknown-") {
@@ -798,7 +881,7 @@ func productionInitialService(t *testing.T, mode string) {
 				pg.loseResize = true
 				pg.mu.Unlock()
 			}
-			if pgSafety && action == journal.ResizePG {
+			if pgSafety && !actualLatePG && action == journal.ResizePG {
 				if strings.Contains(mode, "unreceived") || strings.Contains(mode, "race") {
 					api.mu.Lock()
 					api.loseJournalReply = true
@@ -817,6 +900,11 @@ func productionInitialService(t *testing.T, mode string) {
 				api.mu.Unlock()
 			}
 			progress, err = worker.Advance(ctx)
+			if actualLatePG && action == journal.ResizePG {
+				require.Error(t, err)
+				verifyProductionServiceActualRecovery(t, ctx, mode, api, store, client, coord, session, resources, worker, config, source, pg, root, runner, qmp, transfer)
+				return nil
+			}
 			if guestRecovery && action == journal.GuestReady {
 				require.Error(t, err, "原Guest写前/应用回复必须未知")
 				verifyProductionGuestServiceRecovery(t, ctx, mode, api, store, session, resources, worker, resourceConfig, config, client, source, pg, root, qmp, transfer, runner)

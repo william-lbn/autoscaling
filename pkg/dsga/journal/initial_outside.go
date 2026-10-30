@@ -19,17 +19,18 @@ func (model Model) retainedInitialOutside() (budget.Initial, error) {
 		return i, nil
 	}
 	if h := model.CapacityHeld; h != nil {
-		var c budget.ReconciledAbortCommand
-		if (h.Cleanup.Phase == Settled || h.Recovery != nil && h.Recovery.Proof.Kind == "actual") && json.Unmarshal(h.Cleanup.Command, &c) == nil && c.Capacity.InitialOutside != nil {
-			return *c.Capacity.InitialOutside, nil
+		c, _, _, err := model.currentCapacityRecord()
+		if err == nil && (h.Cleanup.Phase == Settled || h.Recovery != nil && h.Recovery.Proof.Kind == "actual" || h.ActiveRecovery != nil) && c.InitialOutside != nil {
+			return *c.InitialOutside, nil
 		}
 	}
 	return i, fmt.Errorf("no complete original initial outside budget is retained")
 }
 
 // RetainedInitialOutside只返回通过整个模型校验后的深解码副本。原初始头
-// 被实际预算同CAS替换后，仍可认证其永久持有的启动资格；并不放宽当前Root/
-// PG/VM必须仍符合该原预算的要求，也不提供派发或来源释放票据。
+// 被实际预算同CAS替换后，仍可认证其永久持有的启动资格。旧v2/v3仍要求
+// 当前Root/PG符合原Initial；v4只复用同规格Outside/usable资格，当前PG和
+// Root由独立完整实际预算重新认证。该访问器不提供派发或来源释放票据。
 func (model Model) RetainedInitialOutside() (budget.Initial, error) {
 	if err := model.Validate(); err != nil {
 		return budget.Initial{}, err

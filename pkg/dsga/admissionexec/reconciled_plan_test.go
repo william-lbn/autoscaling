@@ -31,6 +31,69 @@ func recoveryDomain(t *testing.T) (budget.Prepared, budget.RootAggregate, budget
 	return fixture.Prepared, fixture.Root, fixture.Capacity
 }
 
+// 现有领域数据仍作为显式输入，但永久头通过完整公开Model流程生成。
+// 避免用零Model+一段Cleanup绕过CurrentCapacity的整模校验，也不复制一份
+// 大型静态账本。这里只验证原引用选择，不将领域回执称为网络来源认证。
+func retainedRecoveryModel(t *testing.T, p budget.Prepared, root budget.RootAggregate, capacity budget.ReconciledCapacity) journal.Model {
+	t.Helper()
+	// 原文件来自该原owner的完整命令摘要，不能为复用数据换holder后
+	// 仍沿用旧VM来源SHA；这里逐字复现领域夹具的原派发身份。
+	m, err := journal.New(p.Identity.VMUID, "1234567890abcdef1234567890abcdef", "process-a")
+	require.NoError(t, err)
+	m, err = m.BindResource(m.Owner, p.Identity)
+	require.NoError(t, err)
+	m, err = m.BindPG(m.Owner, p.Request.Key.Instance)
+	require.NoError(t, err)
+	m, disposition, err := m.Begin(m.Owner, p.Request, 0)
+	require.NoError(t, err)
+	require.Equal(t, journal.Accepted, disposition)
+	host := budget.HostReservation{ProtocolVersion: 2, VMShrinkPermit: false, Request: p.Request, Identity: p.Identity, Incarnation: m.Incarnation, SourceID: capacity.HostReservationID, RunnerPodName: p.RunnerPodName, RunnerPodUID: "runner-uid", NodeName: "node", NodeUID: "node-uid", ReservedMemoryBytes: max(p.VMBeforeMemoryBytes, p.Request.TargetVMMemoryBytes) + (64 << 20), HostOverheadBytes: 64 << 20, HoldUntilExplicitSettlement: true}
+	record := func(action journal.Action, target string, body any, cleanup bool) {
+		var step journal.Step
+		if cleanup {
+			raw, err := json.Marshal(body)
+			require.NoError(t, err)
+			m, err = m.StartCleanup(m.Owner, p.Request.Key, target, raw)
+			require.NoError(t, err)
+			step = *m.Active.Cleanup
+		} else {
+			m, err = m.Start(m.Owner, p.Request.Key, action, target, []byte(`{"model_test":true}`))
+			require.NoError(t, err)
+			for _, candidate := range m.Active.Steps {
+				if candidate.Action == action {
+					step = candidate
+				}
+			}
+		}
+		raw, err := json.Marshal(body)
+		require.NoError(t, err)
+		if cleanup {
+			command, ok := body.(budget.ReconciledAbortCommand)
+			require.True(t, ok)
+			receipt := budget.ReconciledAbortReceipt{ProtocolVersion: 1, Command: command, Query: true, Fence: control.FenceResponse{ProtocolVersion: 1, RequestedInstance: p.Request.Key.Instance, RequestedEpoch: m.Owner.Epoch, Disposition: control.Fenced, Observed: p.Shared.Observed, VMShrinkPermit: false}, Shared: p.Shared, Response: nil, PGAggregate: root, ResourceEpoch: m.Owner.Epoch}
+			raw, err = json.Marshal(receipt)
+			require.NoError(t, err)
+		}
+		m, err = m.Record(m.Owner, p.Request.Key, journal.Observation{Key: p.Request.Key, RequestSHA256: m.Active.RequestSHA256, CommandSHA256: step.CommandSHA256, Ordinal: step.Ordinal, Action: step.Action, Result: journal.Completed, SourceID: step.TargetID, Data: raw})
+		require.NoError(t, err)
+	}
+	record(journal.PrepareBudget, p.Request.Key.Instance.ComputeInstanceID, p, false)
+	record(journal.ReserveHost, host.SourceID, host, false)
+	record(journal.ResizeVM, host.RunnerPodUID, map[string]bool{"explicit_native_capacity_domain_fixture": true}, false)
+	for _, step := range m.Active.Steps {
+		if step.Action == journal.ResizeVM {
+			require.Equal(t, capacity.VM.Sources.JournalSHA256, step.CommandSHA256)
+		}
+	}
+	m, err = m.RequestAbort(m.Owner, p.Request.Key)
+	require.NoError(t, err)
+	record(journal.AbortReconcile, p.Request.Key.Instance.ComputeInstanceID, budget.ReconciledAbortCommand{ProtocolVersion: 1, Capacity: capacity, PreparedSHA256: capacity.VM.PreparedSHA256, Admission: nil}, true)
+	m, err = m.Finish(m.Owner, p.Request.Key)
+	require.NoError(t, err)
+	require.NoError(t, m.Validate())
+	return m
+}
+
 func TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization(t *testing.T) {
 	var original journal.Operation
 	original.AbortRequested = true
@@ -70,11 +133,12 @@ func TestReconciledEligibilityNeverCrossesAnyOriginalUnknownOrFinalization(t *te
 }
 
 func TestReconciledOutsideSelectsExactActualVMAndRetainsOriginalReference(t *testing.T) {
-	p, _, c := recoveryDomain(t)
+	p, root, c := recoveryDomain(t)
 	var model journal.Model
 	ref, err := reconciledOutside(model, p, p.Request.TargetVMMemoryBytes)
 	require.NoError(t, err)
 	require.Equal(t, *p.OutsideClaim, ref)
+	complete := retainedRecoveryModel(t, p, root, c)
 	// 后继目标更大，当前VM仍是上次实际值；只能采用永久实际预算的原资格。
 	p.VMBeforeMemoryBytes = c.VMMemoryBytes
 	p.Request.TargetVMMemoryBytes += 256 << 20
@@ -88,12 +152,14 @@ func TestReconciledOutsideSelectsExactActualVMAndRetainsOriginalReference(t *tes
 	held.Cleanup = cleanup
 	model.CapacityHeld = &held
 	ref, err = reconciledOutside(model, p, c.VMMemoryBytes)
+	require.Error(t, err, "只有Cleanup片段而无完整Model不能生成永久来源")
+	ref, err = reconciledOutside(complete, p, c.VMMemoryBytes)
 	require.NoError(t, err)
 	require.Equal(t, c.OutsideClaim, ref)
-	_, err = reconciledOutside(model, p, c.VMMemoryBytes+1)
+	_, err = reconciledOutside(complete, p, c.VMMemoryBytes+1)
 	require.Error(t, err, "同一资格不能按相近容量外推")
-	model.CapacityHeld.Cleanup.DispatchedBy = nil
-	_, err = reconciledOutside(model, p, c.VMMemoryBytes)
+	complete.CapacityHeld.Cleanup.DispatchedBy = nil
+	_, err = reconciledOutside(complete, p, c.VMMemoryBytes)
 	require.Error(t, err, "不完整原头不能变为新资格")
 }
 

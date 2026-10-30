@@ -23,6 +23,9 @@ type HeldCapacity struct {
 	RecordedSequence control.Uint64           `json:"recorded_sequence"`
 	Cleanup          Step                     `json:"cleanup"`
 	Recovery         *RecoveredCapacityOrigin `json:"recovery,omitempty"`
+	// v3为资源在途关闭后的独立实际预算；Cleanup必须零值，不能伪造
+	// 原AbortReconcile成功。原操作与独立领域证明永久保留，不递归旧Model。
+	ActiveRecovery *RecoveredResourceOrigin `json:"active_recovery,omitempty"`
 }
 
 func (v *HeldCapacity) UnmarshalJSON(raw []byte) error {
@@ -139,6 +142,9 @@ func (model Model) validateHeldCapacity() error {
 	if h == nil {
 		return nil
 	}
+	if h.ProtocolVersion == 3 || h.ActiveRecovery != nil {
+		return model.validateActiveRecoveredCapacity()
+	}
 	if h.ProtocolVersion == 2 || h.Recovery != nil {
 		return model.validateRecoveredCapacity()
 	}
@@ -191,11 +197,11 @@ func (model Model) validateHeldCapacity() error {
 // CapacityFor只返回准确原请求的实际预算，绝不投影成目标已成功的Finalized。
 // 返回值重新严格解码，不共享PGOperation指针；网络来源仍须每次独立核验。
 func (model Model) CapacityFor(request control.Request) (budget.ReconciledCapacity, error) {
-	var c budget.ReconciledAbortCommand
-	if model.Validate() != nil || model.CapacityHeld == nil || json.Unmarshal(model.CapacityHeld.Cleanup.Command, &c) != nil || c.Capacity.Request != request {
+	c, err := model.CurrentCapacity()
+	if err != nil || c.Request != request {
 		return budget.ReconciledCapacity{}, fmt.Errorf("no exact permanently retained reconciled capacity")
 	}
-	return c.Capacity, nil
+	return c, nil
 }
 
 // CheckReconciledPlan给SDK恢复/生产执行器验证原Cleanup的容量计划，不返回任何

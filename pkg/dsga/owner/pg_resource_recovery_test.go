@@ -23,10 +23,10 @@ func TestProductionPGResourceRecovery(t *testing.T) {
 	}
 }
 
-// 正式首次预算/Host/Runner/Guest/PG写前后失败关闭，再走原管理入口。
+// 正式首次预算/Host/Runner/Guest/PG写前后失败关闭，再走单PG生产执行器。
 // 真实Elector、Session、SDK和typed CAS；PG/Root/QMP/Kube为明确协议peer。
 // 更高floor隔离不造原PG终态，完整实际预算/其他资源仍由后继恢复处理。
-func verifyProductionPGResourceRecovery(t *testing.T, ctx context.Context, mode string, api *ownerAPI, store *journal.Store, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, core *kubefake.Clientset, source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture, qmp *vmQMPPeer, transfer *businessOwnerTransfer, runner *vmguard.Runner) {
+func verifyProductionPGResourceRecovery(t *testing.T, ctx context.Context, mode string, api *ownerAPI, store *journal.Store, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, core *kubefake.Clientset, source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture, qmp *vmQMPPeer, transfer *businessOwnerTransfer, _ *vmguard.Runner) {
 	t.Helper()
 	s, err := store.Load(ctx)
 	require.NoError(t, err)
@@ -52,16 +52,16 @@ func verifyProductionPGResourceRecovery(t *testing.T, ctx context.Context, mode 
 		pg.after.Observed.Operation = &op
 		pg.mu.Unlock()
 	}
-	request := closureControl(session, config.Instance, control.CoordinationReopenService, selector)
 	if isolated {
-		_, err = worker.executeControl(ctx, request)
+		s, err = store.Load(ctx)
+		require.NoError(t, err)
+		_, err = worker.executor.RecoverServicePG(ctx, s, selector, true)
 		require.Error(t, err, "相同owner不能用缺历史清原PG未知")
 		s, err = store.Load(ctx)
 		require.NoError(t, err)
 		require.Nil(t, s.State().ServiceClosure.PGRecovery)
 		require.NotNil(t, worker.client.Pending())
 		session, resources, worker = transfer.takeoverClosure(t, ctx, session, resources, worker, config, core, source)
-		request = closureControl(session, config.Instance, control.CoordinationReopenService, selector)
 	}
 	posts, _, resizePosts := pg.counts()
 	root.mu.Lock()
@@ -75,18 +75,25 @@ func verifyProductionPGResourceRecovery(t *testing.T, ctx context.Context, mode 
 		api.loseJournalReply = true
 		api.mu.Unlock()
 	}
-	_, err = worker.executeControl(ctx, request)
-	require.Error(t, err, "单PG事实仍缺完整独立实际预算，不授予开放")
+	// 每次显式单PG恢复采用当前Store快照及原selector；不借完整管理
+	// Reopen入口同时创建VM/Guest/Actual证明，使故障CAS准确落在本域。
+	s, err = store.Load(ctx)
+	require.NoError(t, err)
+	_, err = worker.executor.RecoverServicePG(ctx, s, selector, true)
 	if strings.Contains(mode, "lost-proof") {
 		var lost *journal.UnconfirmedWrite
 		require.ErrorAs(t, err, &lost)
 		require.NotNil(t, worker.client.Pending(), "证明CAS未确认不得提前清SDK")
 	} else {
+		require.NoError(t, err, "完整单PG来源可以独立成功，但不开放服务")
 		require.Nil(t, worker.client.Pending(), "当前原Key重新查询后只清相同原SDK项")
 	}
 	s, err = store.Load(ctx)
 	require.NoError(t, err)
 	require.NotNil(t, s.State().ServiceClosure.PGRecovery)
+	require.Nil(t, s.State().ServiceClosure.VMRecovery)
+	require.Nil(t, s.State().ServiceClosure.ActualRecovery)
+	require.Nil(t, s.State().ServiceClosure.Reopen)
 	require.Equal(t, original.Active, s.State().Active)
 	require.Equal(t, original.InitialHeld, s.State().InitialHeld)
 	want := control.ResizeRecoveredCommitted
@@ -98,11 +105,6 @@ func verifyProductionPGResourceRecovery(t *testing.T, ctx context.Context, mode 
 	if strings.HasSuffix(mode, "takeover") {
 		_, _, worker = transfer.takeoverClosure(t, ctx, session, resources, worker, config, core, source)
 		require.NotNil(t, worker.client.Pending(), "新SDK先从原WAL恢复未知")
-		// VM独立来源也须由原Runner持久承认新floor；新Session自身不能
-		// 替最终写者完成认证。首轮应等待，原Tick仅更新floor并发布读回。
-		_, err = worker.Advance(ctx)
-		require.ErrorIs(t, err, ErrServiceSafety)
-		require.NoError(t, runner.Tick(ctx))
 	} else {
 		worker.CloseIdleConnections()
 		worker, err = session.NewProductionPGWorker(ctx, config, resources, core.CoreV1(), source)
@@ -118,6 +120,8 @@ func verifyProductionPGResourceRecovery(t *testing.T, ctx context.Context, mode 
 	require.NoError(t, err)
 	require.Equal(t, s.State().ServiceClosure.PGRecovery, after.State().ServiceClosure.PGRecovery)
 	require.Equal(t, original.Active, after.State().Active)
+	require.Nil(t, after.State().ServiceClosure.ActualRecovery, "普通轮询只复核已持久单PG证明")
+	require.Nil(t, after.State().ServiceClosure.Reopen)
 	require.Error(t, after.State().CheckStableServiceRecovery())
 	// 同SDK Pending已清也必须复核当前来源；不能借空Pending忽略门禁漂移。
 	pg.mu.Lock()

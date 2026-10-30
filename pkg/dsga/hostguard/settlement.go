@@ -149,15 +149,22 @@ func SettlementFor(m journal.Model) (Settlement, error) {
 		return none, fmt.Errorf("host settlement requires current complete Runner-backed VM budget")
 	}
 	if m.CapacityHeld != nil {
-		var c budget.ReconciledAbortCommand
 		h := m.CapacityHeld
-		if json.Unmarshal(h.Cleanup.Command, &c) != nil || c.ValidateFor(h.Cleanup.DispatchedBy.Epoch) != nil {
-			return none, fmt.Errorf("host settlement lost original actual-capacity command")
+		c, err := m.CurrentCapacity()
+		if err != nil {
+			return none, err
+		}
+		sourceSHA, err := m.CapacitySourceSHA256()
+		if err != nil {
+			return none, err
 		}
 		var empty control.Key
-		s := Settlement{Request: c.Capacity.Request, HostClaim: c.Capacity.HostClaim, Runner: c.Capacity.VM.Sources, BudgetSequence: h.RecordedSequence, FinalizationSHA: h.Cleanup.CommandSHA256, ActualMemoryBytes: c.Capacity.VMMemoryBytes, ThroughKey: empty, ThroughSequence: 0}
-		if c.Capacity.InitialVM != nil {
-			s.InitialVM = *c.Capacity.InitialVM
+		var noInitial budget.InitialVMSources
+		// 统一预算读取不把独立资源恢复投影成原Cleanup已完成。Node水位
+		// 仍绑定原Request、准确实际值和该永久头自己的预算来源摘要。
+		s := Settlement{Request: c.Request, HostClaim: c.HostClaim, Runner: c.VM.Sources, InitialVM: noInitial, BudgetSequence: h.RecordedSequence, FinalizationSHA: sourceSHA, ActualMemoryBytes: c.VMMemoryBytes, ThroughKey: empty, ThroughSequence: 0}
+		if c.InitialVM != nil {
+			s.InitialVM = *c.InitialVM
 		}
 		if b := m.BudgetBoundary; b != nil && b.ThroughKey != s.Request.Key {
 			s.ThroughKey, s.ThroughSequence = b.ThroughKey, b.ThroughSequence

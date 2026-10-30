@@ -43,11 +43,11 @@ func (b *ClosedBudgetBoundary) UnmarshalJSON(data []byte) error {
 
 func (model Model) retainedRequest() (control.Request, error) {
 	if model.CapacityHeld != nil {
-		var c budget.ReconciledAbortCommand
-		if json.Unmarshal(model.CapacityHeld.Cleanup.Command, &c) != nil {
+		c, _, _, err := model.currentCapacityRecord()
+		if err != nil {
 			return control.Request{}, fmt.Errorf("original reconciled budget command unavailable")
 		}
-		return c.Capacity.Request, nil
+		return c.Request, nil
 	}
 	var command budget.FinalizationCommand
 	if model.BudgetHeld == nil || json.Unmarshal(model.BudgetHeld.Finalization.Command, &command) != nil {
@@ -58,7 +58,8 @@ func (model Model) retainedRequest() (control.Request, error) {
 
 func (model Model) budgetRecord() (string, control.Uint64) {
 	if model.CapacityHeld != nil {
-		return model.CapacityHeld.Cleanup.CommandSHA256, model.CapacityHeld.RecordedSequence
+		_, hash, at, _ := model.currentCapacityRecord()
+		return hash, at
 	}
 	if model.BudgetHeld != nil {
 		return model.BudgetHeld.Finalization.CommandSHA256, model.BudgetHeld.RecordedSequence
@@ -100,7 +101,7 @@ func (model *Model) closeBudgetBoundary(outcome Outcome) error {
 		return err
 	}
 	switch outcome {
-	case Succeeded, RecoveredAfterResourceCommit:
+	case Succeeded, RecoveredAfterResourceCommit, RecoveredWithActualBudget:
 		if request != model.Active.Request {
 			return fmt.Errorf("successful closure does not match current complete budget")
 		}
@@ -167,7 +168,8 @@ func (model Model) validateBudgetBoundary() error {
 		}
 		if key == b.BudgetKey {
 			cancelled := record.Outcome == RecoveredAfterCancellation && record.ServiceCoverage != nil && record.ServiceCoverage.CleanupRecovery != nil && record.ServiceCoverage.CleanupRecovery.Kind != "unchanged"
-			capacityClosed := record.Outcome == Succeeded || cancelled || (record.Outcome == RecoveredAfterResourceCommit && record.ServiceCoverage != nil) || (model.ProtocolVersion >= 6 && record.Outcome == AbortedAfterReconcile && model.validateCommittedAbort(record.Operation) == nil) || (model.ProtocolVersion >= 8 && record.Outcome == AbortedAfterReconcile && model.validateReconciledAbort(record.Operation) == nil)
+			actual := record.Outcome == RecoveredWithActualBudget && record.ServiceCoverage != nil && record.ServiceCoverage.ActualRecovery != nil
+			capacityClosed := record.Outcome == Succeeded || cancelled || actual || (record.Outcome == RecoveredAfterResourceCommit && record.ServiceCoverage != nil) || (model.ProtocolVersion >= 6 && record.Outcome == AbortedAfterReconcile && model.validateCommittedAbort(record.Operation) == nil) || (model.ProtocolVersion >= 8 && record.Outcome == AbortedAfterReconcile && model.validateReconciledAbort(record.Operation) == nil)
 			if record.Operation.Request != request || !capacityClosed || record.ClosedSequence != b.SucceededSequence {
 				return fmt.Errorf("closed budget boundary contradicts original successful history")
 			}

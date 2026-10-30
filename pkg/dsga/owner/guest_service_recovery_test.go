@@ -9,7 +9,6 @@ import (
 
 	kubefake "k8s.io/client-go/kubernetes/fake"
 
-	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
@@ -31,7 +30,7 @@ func TestProductionGuestServiceRecoveryTakeover(t *testing.T) {
 }
 
 // 正式首次服务、Prepare、Host、Runner和Guest写前后形成故障，再走真实
-// Session/SDK/typed CAS/管理入口；PG/Root/Kube/QMP为显式协议peer。独立
+// Session/SDK/typed CAS/单Guest执行器；PG/Root/Kube/QMP为显式协议peer。独立
 // Guest对账完成仍不开放：PG/VM及完整实际预算须由后继恢复模块单独确认。
 func verifyProductionGuestServiceRecovery(t *testing.T, ctx context.Context, mode string, api *ownerAPI, store *journal.Store, session *Session, resources *ResourceWorker, worker *PGWorker, resourceConfig resourceguard.ClientConfig, config compute.Config, client *kubefake.Clientset, source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture, qmp *vmQMPPeer, transfer *businessOwnerTransfer, runner *vmguard.Runner) {
 	t.Helper()
@@ -74,7 +73,6 @@ func verifyProductionGuestServiceRecovery(t *testing.T, ctx context.Context, mod
 	s, _, err = worker.vm.RecoverServiceVM(ctx, s, selector, true)
 	require.NoError(t, err)
 	require.Equal(t, journal.Settled, s.State().ServiceClosure.VMRecovery.Phase)
-	request := closureControl(session, config.Instance, control.CoordinationReopenService, selector)
 	if lostSelect {
 		api.mu.Lock()
 		api.loseJournalReply = true
@@ -104,11 +102,19 @@ func verifyProductionGuestServiceRecovery(t *testing.T, ctx context.Context, mod
 		}
 		root.mu.Unlock()
 	}
-	_, err = worker.executeControl(ctx, request)
-	require.Error(t, err, "单Guest对账不授予开放")
+	// 本根只验证单Guest故障边界；完整Reopen管理现已可继续实际预算和
+	// 开放，另由完整ActualRecovery组合覆盖，不能借该入口截断业务。
+	_, _, err = worker.resources.RecoverServiceGuest(ctx, s, selector, true)
+	if lostSelect || lostRecord || strings.HasSuffix(mode, "lost-cancel") || strings.HasSuffix(mode, "partial") || applyWins {
+		require.Error(t, err)
+	} else {
+		require.NoError(t, err, "单域成功只保存独立Guest证明")
+	}
 	s, loadErr := store.Load(ctx)
 	require.NoError(t, loadErr)
 	require.NotNil(t, s.State().ServiceClosure.ResourceRecovery)
+	require.Nil(t, s.State().ServiceClosure.ActualRecovery)
+	require.Nil(t, s.State().ServiceClosure.Reopen)
 	g := s.State().ServiceClosure.ResourceRecovery.Guest
 	if lostSelect || strings.HasSuffix(mode, "lost-cancel") || strings.HasSuffix(mode, "partial") || applyWins {
 		require.Equal(t, journal.Unconfirmed, g.Phase)
@@ -152,7 +158,6 @@ func verifyProductionGuestServiceRecovery(t *testing.T, ctx context.Context, mod
 		_, err = worker.Advance(ctx)
 		require.ErrorIs(t, err, ErrServiceSafety, "Runner尚未承认新owner时保留原关闭/未知")
 		require.NoError(t, runner.Tick(ctx))
-		request = closureControl(session, config.Instance, control.CoordinationReopenService, selector)
 	} else {
 		worker.CloseIdleConnections()
 		restored, err = session.NewResourceWorker(ctx, resourceConfig)
@@ -163,11 +168,16 @@ func verifyProductionGuestServiceRecovery(t *testing.T, ctx context.Context, mod
 		defer worker.CloseIdleConnections()
 	}
 	if lostSelect {
-		_, err = worker.executeControl(ctx, request)
+		// 丢回复只重读同VM快照及原选择，再显式单Guest重试；不进入
+		// 完整业务重开，也不让普通Advance替我们生成Root取消。
+		s, err = store.Load(ctx)
+		require.NoError(t, err)
+		_, _, err = worker.resources.RecoverServiceGuest(ctx, s, selector, true)
+		require.NoError(t, err)
 	} else {
 		_, err = worker.Advance(ctx)
+		require.ErrorIs(t, err, ErrServiceSafety)
 	}
-	require.ErrorIs(t, err, ErrServiceSafety)
 	s, err = store.Load(ctx)
 	require.NoError(t, err)
 	g = s.State().ServiceClosure.ResourceRecovery.Guest
@@ -176,6 +186,8 @@ func verifyProductionGuestServiceRecovery(t *testing.T, ctx context.Context, mod
 	require.Equal(t, original.Active, s.State().Active)
 	require.Equal(t, original.InitialHeld, s.State().InitialHeld)
 	require.Equal(t, original.BudgetBoundary, s.State().BudgetBoundary)
+	require.Nil(t, s.State().ServiceClosure.ActualRecovery, "普通轮询不自动选择完整实际预算")
+	require.Nil(t, s.State().ServiceClosure.Reopen)
 	require.Nil(t, restored.client.Pending())
 	require.False(t, pg.shared().Observed.AdmissionOpen)
 	require.Error(t, s.State().CheckStableServiceRecovery())

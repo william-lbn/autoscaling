@@ -107,12 +107,8 @@ func (r *Reader) readReconciledSources(ctx context.Context, s *journal.Snapshot,
 // 当前实际预算只从永久头取得，不能由调用者传一份与原VM不同的数值来释放
 // 容量。结清后的来源只供只读维持预算，不恢复已结清的执行权限。
 func (r *Reader) readCurrentCapacity(ctx context.Context, s *journal.Snapshot) (*Current, error) {
-	var command budget.ReconciledAbortCommand
 	m := s.State()
-	if m.CapacityHeld == nil || json.Unmarshal(m.CapacityHeld.Cleanup.Command, &command) != nil {
-		return nil, fmt.Errorf("current actual budget lacks original permanent command")
-	}
-	capacity, err := m.CapacityFor(command.Capacity.Request)
+	capacity, err := m.CurrentCapacity()
 	if err != nil {
 		return nil, err
 	}

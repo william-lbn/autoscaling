@@ -13,6 +13,7 @@ import (
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/api"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
@@ -105,7 +106,13 @@ func (s *Service) allocation(ctx context.Context, n NodeConfig, expected *core.P
 			if err != nil {
 				return nil, none, nil, err
 			}
-			_, _, publication, err := vmguard.ReadPublished(ctx, s.core, binding, &closed.Runner.BirthClaim)
+			// 实际预算也可保留从未有内存命令的原启动来源。两种来源
+			// 在Settlement中互斥，不能读取零Runner引用或合成Completed。
+			birth := closed.Runner.BirthClaim
+			if closed.InitialVM.BirthClaim != (budget.ObjectRef{Name: "", UID: ""}) {
+				birth = closed.InitialVM.BirthClaim
+			}
+			_, _, publication, err := vmguard.ReadPublished(ctx, s.core, binding, &birth)
 			if err != nil {
 				return nil, none, nil, err
 			}

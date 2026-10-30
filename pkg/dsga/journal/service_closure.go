@@ -64,6 +64,8 @@ type ServiceClosure struct {
 	PGRecovery *ServicePGRecovery `json:"pg_recovery,omitempty"`
 	// Runner独立选择/实际容量，不覆盖原ResizeVM/ObserveVM未知或Abort。
 	VMRecovery *ServiceVMRecovery `json:"vm_recovery,omitempty"`
+	// 全领域来源认证后的准确实际预算；尚不安装永久头或解除原关闭。
+	ActualRecovery *ServiceActualRecovery `json:"actual_recovery,omitempty"`
 }
 
 // ProtectedAdmission返回本关闭保护的最初意图。v10/11原意图就是关闭；
@@ -116,9 +118,9 @@ func (model Model) ServiceBudgetID() (string, error) {
 			return finalized.Request.BudgetCommitmentID, nil
 		}
 	case model.CapacityHeld != nil:
-		var command budget.ReconciledAbortCommand
-		if json.Unmarshal(model.CapacityHeld.Cleanup.Command, &command) == nil {
-			return command.Capacity.Request.BudgetCommitmentID, nil
+		capacity, _, _, err := model.currentCapacityRecord()
+		if err == nil {
+			return capacity.Request.BudgetCommitmentID, nil
 		}
 	}
 	return "", fmt.Errorf("service closure lacks original retained budget")
@@ -228,6 +230,9 @@ func (model Model) validateServiceClosure() error {
 		return err
 	}
 	if err := model.validateServiceVMRecovery(); err != nil {
+		return err
+	}
+	if err := model.validateServiceActualRecovery(); err != nil {
 		return err
 	}
 	if err := model.validateServicePGRejection(); err != nil {

@@ -9,7 +9,6 @@ import (
 
 	kubefake "k8s.io/client-go/kubernetes/fake"
 
-	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
@@ -24,7 +23,7 @@ func TestProductionVMServiceRecovery(t *testing.T) {
 }
 
 // 使用正式首次服务/Prepare/Host/ResizeVM写前WAL，再在资源异常关闭后通过
-// 真实管理入口保存独立选择。Runner的flock、持久记录、QMP适配器、Session、
+// 单VM生产执行器保存独立选择。Runner的flock、持久记录、QMP适配器、Session、
 // Lease与UID/RV CAS均走产品代码；QMP/PG/Root/Kube仍为明确协议peer，不是
 // Linux/KVM物理返还证明。原ResizeVM始终Unknown，单VM证明不授予开放。
 func verifyProductionVMServiceRecovery(t *testing.T, ctx context.Context, mode string, api *ownerAPI, store *journal.Store, core *kubefake.Clientset, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture, runner *vmguard.Runner, qmp *vmQMPPeer, transfer *businessOwnerTransfer) {
@@ -73,16 +72,25 @@ func verifyProductionVMServiceRecovery(t *testing.T, ctx context.Context, mode s
 		api.loseJournalReply = true
 		api.mu.Unlock()
 	}
-	_, err = worker.executeControl(ctx, closureControl(session, config.Instance, control.CoordinationReopenService, selector))
-	require.Error(t, err, "完整实际预算尚未形成，管理不能重开")
+	s, err := store.Load(ctx)
+	require.NoError(t, err)
+	// 完整管理入口已能继续ActualRecovery和业务重开，本根显式只进入
+	// 原VM域，不能靠旧“Reopen永远报错”断言收窄已实现的产品功能。
+	_, _, err = worker.vm.RecoverServiceVM(ctx, s, selector, true)
 	if lostSelect {
 		var lost *journal.UnconfirmedWrite
 		require.ErrorAs(t, err, &lost)
+	} else if completed {
+		require.NoError(t, err, "原Runner完整完成可独立保存VM证明")
+	} else {
+		require.ErrorIs(t, err, vmguard.ErrUnknown)
 	}
-	s, err := store.Load(ctx)
+	s, err = store.Load(ctx)
 	require.NoError(t, err)
 	selection := s.State().ServiceClosure.VMRecovery
 	require.NotNil(t, selection)
+	require.Nil(t, s.State().ServiceClosure.ActualRecovery)
+	require.Nil(t, s.State().ServiceClosure.Reopen)
 	require.True(t, selection.CancelUnsent)
 	if completed {
 		require.Equal(t, journal.Settled, selection.Phase)
@@ -152,6 +160,8 @@ func verifyProductionVMServiceRecovery(t *testing.T, ctx context.Context, mode s
 	require.NoError(t, err)
 	require.Equal(t, proof, after.State().ServiceClosure.VMRecovery, "重建/接管不能重写原观察者与原证明")
 	require.Equal(t, original.Active, after.State().Active)
+	require.Nil(t, after.State().ServiceClosure.ActualRecovery, "普通轮询不能自动创建完整实际预算或新开放")
+	require.Nil(t, after.State().ServiceClosure.Reopen)
 	require.False(t, pg.shared().Observed.AdmissionOpen)
 	// 当前物理观测漂移不能被已保存Settled或相同原目标掩盖，拒绝时
 	// 原独立证明仍不可变；完成回执不是未来无限期容量授权。

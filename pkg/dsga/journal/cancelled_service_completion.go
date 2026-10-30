@@ -11,7 +11,7 @@ import (
 )
 
 func stableClosureVersion(version uint32) bool {
-	return version >= 10 && version <= 15 || version == 18
+	return version >= 10 && version <= 18
 }
 
 func cloneRecoveredCapacity(p *RecoveredCapacityOrigin) *RecoveredCapacityOrigin {

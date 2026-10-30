@@ -78,6 +78,8 @@ const (
 	RecoveredAfterResourceCommit Outcome = "recovered_after_resource_commit"
 	// 原取消清理未确认，资源/预算独立复核后恢复服务；仍是取消，非目标成功。
 	RecoveredAfterCancellation Outcome = "recovered_after_cancellation"
+	// 独立实际预算恢复保持原资源Unknown，不把原业务目标解释为成功。
+	RecoveredWithActualBudget Outcome = "recovered_with_actual_budget"
 )
 
 type Disposition string
@@ -573,6 +575,7 @@ func (model Model) Clone() Model {
 		closure.ResourceRecovery = cloneServiceResourceRecovery(closure.ResourceRecovery)
 		closure.PGRecovery = cloneServicePGRecovery(closure.PGRecovery)
 		closure.VMRecovery = cloneServiceVMRecovery(closure.VMRecovery)
+		closure.ActualRecovery = cloneServiceActualRecovery(closure.ActualRecovery)
 		if closure.Reopen != nil {
 			reopen := *closure.Reopen
 			if reopen.PriorClose != nil {
@@ -642,6 +645,7 @@ func (model Model) Clone() Model {
 		held := *model.CapacityHeld
 		held.Cleanup = cloneStep(held.Cleanup)
 		held.Recovery = cloneRecoveredCapacity(held.Recovery)
+		held.ActiveRecovery = cloneRecoveredResource(held.ActiveRecovery)
 		model.CapacityHeld = &held
 	}
 	if model.PGInstance != nil {

@@ -85,10 +85,16 @@ func (p *CollectionProgress) prepare(binding journal.Binding, closed hostguard.S
 type sourceReferences map[string]struct{}
 
 func (refs sourceReferences) add(raw []byte) error {
+	return refs.addBounded(raw, journal.MaxObservationBytes, 2048)
+}
+
+// 独立Proof具有多个完整领域，使用其持久合同的专属有界上限；普通Step
+// payload继续使用原32KiB/2048边界，不因新增恢复来源放宽旧输入。
+func (refs sourceReferences) addBounded(raw []byte, maxBytes, maxValues int) error {
 	if len(raw) == 0 {
 		return nil
 	}
-	if err := control.ValidateJSON(raw, journal.MaxObservationBytes, 2048); err != nil {
+	if err := control.ValidateJSON(raw, maxBytes, maxValues); err != nil {
 		return err
 	}
 	var value any
@@ -173,6 +179,28 @@ func retainedSourceNames(m journal.Model, published vmguard.Publication) (source
 				}
 			}
 		}
+		if h.ActiveRecovery != nil {
+			// v3没有原Cleanup成功；原Unknown与独立实际预算分别保留。
+			// 原Operation中的[]byte仍须逐份解码，Proof则扫描完整结构，
+			// 使历史淘汰不能裁掉原VM取消屏障/实际预算仍引用的原来源。
+			for _, step := range h.ActiveRecovery.Original.Steps {
+				if err := refs.step(step); err != nil {
+					return nil, err
+				}
+			}
+			if step := h.ActiveRecovery.Original.Cleanup; step != nil {
+				if err := refs.step(*step); err != nil {
+					return nil, err
+				}
+			}
+			raw, err := json.Marshal(h.ActiveRecovery.Proof)
+			if err != nil {
+				return nil, err
+			}
+			if err := refs.addBounded(raw, journal.MaxRawBytes/2, 16384); err != nil {
+				return nil, err
+			}
+		}
 	}
 	if h := m.InitialHeld; h != nil {
 		payloads := [][]byte{h.Budget}
@@ -186,6 +214,15 @@ func retainedSourceNames(m journal.Model, published vmguard.Publication) (source
 		}
 	}
 	for _, h := range m.History {
+		if h.ServiceCoverage != nil && h.ServiceCoverage.ActualRecovery != nil {
+			raw, err := json.Marshal(h.ServiceCoverage.ActualRecovery)
+			if err != nil {
+				return nil, err
+			}
+			if err := refs.addBounded(raw, journal.MaxRawBytes/2, 16384); err != nil {
+				return nil, err
+			}
+		}
 		if h.ServiceCoverage != nil && h.ServiceCoverage.CleanupRecovery != nil && h.ServiceCoverage.CleanupRecovery.Finalization != nil {
 			if err := refs.step(*h.ServiceCoverage.CleanupRecovery.Finalization); err != nil {
 				return nil, err

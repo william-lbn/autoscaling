@@ -2,10 +2,8 @@ package budgetclaims
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
-	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
@@ -49,7 +47,7 @@ func activeHeldSettlement(m journal.Model) (hostguard.Settlement, error) {
 	return closed, closed.Validate()
 }
 
-// 从原永久Cleanup严格解码实际预算，再共用原CM/Pod/Node/Host读取；本
+// 从原永久头严格取得实际预算，再共用原CM/Pod/Node/Host读取；本
 // 路径不放宽ReadCurrent的全局闭合条件，也不以当前VM值补造原容量。
 func (r *Reader) readActiveCapacity(ctx context.Context, s *journal.Snapshot) (*Current, error) {
 	m := s.State()
@@ -57,11 +55,7 @@ func (r *Reader) readActiveCapacity(ctx context.Context, s *journal.Snapshot) (*
 	if err != nil {
 		return nil, err
 	}
-	var command budget.ReconciledAbortCommand
-	if m.CapacityHeld == nil || json.Unmarshal(m.CapacityHeld.Cleanup.Command, &command) != nil {
-		return nil, fmt.Errorf("active retained source lost original actual-capacity command")
-	}
-	c, err := m.CapacityFor(command.Capacity.Request)
+	c, err := m.CurrentCapacity()
 	if err != nil {
 		return nil, err
 	}

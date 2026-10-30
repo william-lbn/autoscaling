@@ -126,9 +126,9 @@ func idleServiceBound(m journal.Model) (budget.Bound, control.Uint64, error) {
 		}
 	}
 	if m.CapacityHeld != nil {
-		var command budget.ReconciledAbortCommand
-		if json.Unmarshal(m.CapacityHeld.Cleanup.Command, &command) == nil {
-			return command.Capacity.PGAggregate, command.Capacity.GuestUsableMemoryBytes, nil
+		capacity, err := m.CurrentCapacity()
+		if err == nil {
+			return capacity.PGAggregate, capacity.GuestUsableMemoryBytes, nil
 		}
 	}
 	return budget.Bound{}, 0, fmt.Errorf("idle service has no exact retained Root aggregate")
@@ -166,6 +166,13 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 			return true, pgexec.AwaitingFact, fmt.Errorf("service closure replay differs from original owner/command")
 		}
 		if !c.Pending() {
+			if replay == "" && c.ActualRecovery != nil {
+				// 普通循环只复核已保存完整实际预算，不能自行开放或释放。
+				if err := w.inspectServiceRecovery(ctx, s); err != nil {
+					return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+				}
+				return true, pgexec.Reconciled, ErrServiceSafety
+			}
 			if replay == "" && c.PGRecovery != nil {
 				// 普通轮询只复核已持久PG证明，原Active未知及关闭保持。
 				_, err := w.executor.RecoverServicePG(ctx, s, digest, false)

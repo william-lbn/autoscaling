@@ -79,7 +79,7 @@ func (m Model) validateServiceRearm() error {
 	}
 	b := r.Before
 	q := r.Request
-	if m.PGInstance == nil || b.ValidateFor(b.Request, *m.PGInstance) != nil || b.Request.Action != "observe" || !b.Armed || !b.Expired || b.Observed.AdmissionOpen || b.Observed.IssuerFloorEpoch != r.Origin.Epoch || b.Request.IssuerEpoch != r.Origin.Epoch || r.Origin.Epoch <= b.LeaseEpoch || b.Observed.CapacityGeneration != closeRequest.ExpectedCapacityGeneration || b.Observed.AdmissionRevision < closeRequest.Revision || q.Validate() != nil || q.Action != "rearm" || q.Instance != *m.PGInstance || q.IssuerEpoch != r.Origin.Epoch || q.ExpectedCapacityGeneration != b.Observed.CapacityGeneration || q.ExpectedAdmissionRevision != b.Observed.AdmissionRevision || q.ExpectedDeadlineNS != b.DeadlineNS {
+	if m.PGInstance == nil || b.ValidateFor(b.Request, *m.PGInstance) != nil || b.Request.Action != "observe" || !b.Armed || !b.Expired || b.Observed.AdmissionOpen || b.Observed.IssuerFloorEpoch != r.Origin.Epoch || b.Request.IssuerEpoch != r.Origin.Epoch || r.Origin.Epoch <= b.LeaseEpoch || b.Observed.CapacityGeneration != m.effectiveServiceCapacity() || b.Observed.AdmissionRevision < closeRequest.Revision || q.Validate() != nil || q.Action != "rearm" || q.Instance != *m.PGInstance || q.IssuerEpoch != r.Origin.Epoch || q.ExpectedCapacityGeneration != b.Observed.CapacityGeneration || q.ExpectedAdmissionRevision != b.Observed.AdmissionRevision || q.ExpectedDeadlineNS != b.DeadlineNS {
 		return fmt.Errorf("service rearm lacks original expired native CAS context")
 	}
 	switch r.Phase {

@@ -134,6 +134,19 @@ func (m Model) reopenCompletionCapacity() error {
 			// 原未知及同一证明。开放前预留，不能完成时截断原资源证据。
 			extra += len(original) + 2*len(proof)
 		}
+		if p := frozen.ServiceClosure.ActualRecovery; p != nil {
+			original, err := json.Marshal(frozen.Active)
+			if err != nil {
+				return err
+			}
+			proof, err := json.Marshal(p)
+			if err != nil {
+				return err
+			}
+			// 原操作、完整实际预算、永久头和覆盖各自承担责任，预留
+			// 原文及base64开销，不能先开放再截断原Unknown或来源证明。
+			extra += len(original) + 2*len(proof)
+		}
 		if future+base64.StdEncoding.EncodedLen(future)+extra > MaxRawBytes {
 			return fmt.Errorf("committed service cannot retain atomic operation coverage")
 		}
@@ -157,7 +170,7 @@ func (m Model) validateServiceLifecycle() error {
 		// Lifecycle并降级格式冒充普通预算。冻结上下文有意不递归
 		// 保存旧Lifecycle，只由recoveryContext调用validateCore校验；
 		// 不能把这个当前服务要求放进永久预算的结构自洽检查。
-		if m.BudgetHeld != nil && m.BudgetHeld.Recovery != nil || m.CapacityHeld != nil && m.CapacityHeld.Recovery != nil {
+		if m.BudgetHeld != nil && m.BudgetHeld.Recovery != nil || m.CapacityHeld != nil && (m.CapacityHeld.Recovery != nil || m.CapacityHeld.ActiveRecovery != nil) {
 			return fmt.Errorf("recovered budget requires retained service lifecycle")
 		}
 		for _, record := range m.History {
@@ -231,6 +244,13 @@ func (m Model) validateServiceLifecycle() error {
 		heldAt = h.RecordedSequence
 	}
 	if heldAt <= l.RecordedSequence {
+		if p := c.ServiceClosure.ActualRecovery; p != nil {
+			expected, err := p.held(*c.Active)
+			if err != nil || !reflect.DeepEqual(m.CapacityHeld, expected) || m.InitialHeld != nil || m.BudgetHeld != nil {
+				return fmt.Errorf("actual completion lost atomic independent budget installation")
+			}
+			return nil
+		}
 		if p := c.ServiceClosure.CleanupRecovery; p != nil && p.Kind == "actual" {
 			expected, err := p.held(*c.Active)
 			if err != nil || !reflect.DeepEqual(m.CapacityHeld, expected) || m.InitialHeld != nil || m.BudgetHeld != nil {
@@ -318,6 +338,13 @@ func (m Model) CompleteServiceReopen(actor Owner, selector string, current contr
 	if record, err := m.committedCompletionRecord(actor, current, next.Sequence); err != nil {
 		return m, err
 	} else if record != nil {
+		if p := m.ServiceClosure.ActualRecovery; p != nil {
+			held, err := p.held(*m.Active)
+			if err != nil {
+				return m, err
+			}
+			next.CapacityHeld, next.BudgetHeld, next.InitialHeld, next.BudgetBoundary = held, nil, nil, nil
+		}
 		if p := m.ServiceClosure.CleanupRecovery; p != nil && p.Kind == "actual" {
 			held, err := p.held(*m.Active)
 			if err != nil {
@@ -343,7 +370,7 @@ func (m Model) CompleteServiceReopen(actor Owner, selector string, current contr
 				return m, err
 			}
 		} else {
-			if err := next.closeBudgetBoundary(RecoveredAfterResourceCommit); err != nil {
+			if err := next.closeBudgetBoundary(record.Outcome); err != nil {
 				return m, err
 			}
 		}

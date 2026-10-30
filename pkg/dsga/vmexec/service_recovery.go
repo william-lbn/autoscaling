@@ -28,6 +28,11 @@ func (e *Executor) RecoverServiceVM(ctx context.Context, s *journal.Snapshot, se
 	dispatched := false
 	if m.Active != nil {
 		for _, step := range m.Active.Steps {
+			// 原域封存已正式落账的NoEffect由完整预算读者重新认证，
+			// 无须再制造独立选择或把该终态改写为未知。
+			if step.Action == journal.ResizeVM && step.Phase == journal.Settled && step.Observation != nil && step.Observation.Result == journal.NoEffect {
+				return s, pgexec.ExternalStep, nil
+			}
 			dispatched = dispatched || step.Action == journal.ResizeVM && step.Phase != journal.Planned
 		}
 	}

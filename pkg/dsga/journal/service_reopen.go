@@ -111,7 +111,10 @@ func (m Model) validateServiceReopenRecord(archived bool) error {
 	if r.Attempt != 0 && r.PriorClose != nil {
 		closed = *r.PriorClose
 	}
-	if m.PGInstance == nil || b.ValidateFor(b.Request, *m.PGInstance) != nil || b.Request.Action != "observe" || !b.Armed || b.Expired || b.Observed.AdmissionOpen || b.LeaseEpoch > r.Origin.Epoch || b.Observed.IssuerFloorEpoch != r.Origin.Epoch || b.Request.IssuerEpoch != r.Origin.Epoch || b.Observed.CapacityGeneration != closed.ExpectedCapacityGeneration || b.Observed.AdmissionRevision != closed.Revision || b.Observed.AdmissionRevision == control.Uint64(math.MaxUint64) || !q.Open || q.Instance != *m.PGInstance || q.IssuerEpoch != r.Origin.Epoch || q.Revision != b.Observed.AdmissionRevision+1 || q.ExpectedCapacityGeneration != b.Observed.CapacityGeneration || q.BudgetCommitmentID != closed.BudgetCommitmentID {
+	// 只派生完整实际预算中的准确容量，不改原关闭请求的expected代次。
+	// 后续再关闭/重试自己的容量仍须等于该永久资源边界。
+	capacity := m.effectiveServiceCapacity()
+	if m.PGInstance == nil || b.ValidateFor(b.Request, *m.PGInstance) != nil || b.Request.Action != "observe" || !b.Armed || b.Expired || b.Observed.AdmissionOpen || b.LeaseEpoch > r.Origin.Epoch || b.Observed.IssuerFloorEpoch != r.Origin.Epoch || b.Request.IssuerEpoch != r.Origin.Epoch || b.Observed.CapacityGeneration != capacity || b.Observed.AdmissionRevision != closed.Revision || b.Observed.AdmissionRevision == control.Uint64(math.MaxUint64) || !q.Open || q.Instance != *m.PGInstance || q.IssuerEpoch != r.Origin.Epoch || q.Revision != b.Observed.AdmissionRevision+1 || q.ExpectedCapacityGeneration != b.Observed.CapacityGeneration || q.BudgetCommitmentID != closed.BudgetCommitmentID {
 		return fmt.Errorf("service reopen lacks exact live native lease and next admission context")
 	}
 	if c.Rearm != nil && (b.DeadlineNS < c.Rearm.Receipt.AppliedDeadlineNS || b.LeaseEpoch < c.Rearm.Origin.Epoch) {

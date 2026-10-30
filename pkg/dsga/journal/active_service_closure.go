@@ -91,7 +91,7 @@ func (model Model) validateActiveServiceClosure() error {
 	if model.activePGDispatched() {
 		reason, version = "active_pg_source_unconfirmed", 17
 	}
-	if err != nil || hashErr != nil || model.ClosureFormatVersion() != version || c.Reason != reason || c.OperationSHA256 != digest || (original == nil) != (c.Original == nil) || original != nil && *original != *c.Original {
+	if err != nil || hashErr != nil || model.serviceClosureVersion() != version || c.Reason != reason || c.OperationSHA256 != digest || (original == nil) != (c.Original == nil) || original != nil && *original != *c.Original {
 		return fmt.Errorf("active closure changed original operation or admission unknown")
 	}
 	if !model.activeServiceCapacityAllowed(c.Request.ExpectedCapacityGeneration) {
