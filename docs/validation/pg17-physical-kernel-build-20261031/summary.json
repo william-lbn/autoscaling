@@ -1,0 +1,20 @@
+{
+  "scope": "PG17-U: exact build-reference component only; normal-v1 deliberately unavailable until new artifact is locked",
+  "status": "PASS",
+  "roots": [
+    "TestPhysicalKernelBuildLookupKeepsExactReference",
+    "TestPhysicalKernelBuildLookupRejectsUnbuiltAndAliases"
+  ],
+  "root_count": 2,
+  "subcase_count": 6,
+  "go_version": "go1.24.3 linux/amd64",
+  "race": true,
+  "count": 1,
+  "actual_copy_go_files": 59,
+  "owned_actual_copy_matches": true,
+  "source_head": "7ed9356424474f64489dec1f92a9eb864aaead71",
+  "go_receipt": "/data/neon-build/validation/go-1793380058623828392",
+  "physical_normal_decrease": "NOT_IMPLEMENTED_NOT_RUN",
+  "kernel_variant_build": "external receipt pending; not part of this Go U",
+  "origin_native_new_profile": "NOT_RUN"
+}

@@ -1,0 +1,2617 @@
+[
+  {
+    "Time": "2026-10-30T17:28:28.086800159Z",
+    "Action": "start",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104003573Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupKeepsExactReference"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104049779Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupKeepsExactReference",
+    "Output": "=== RUN   TestPhysicalKernelBuildLookupKeepsExactReference\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.1040906Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupKeepsExactReference",
+    "Output": "--- PASS: TestPhysicalKernelBuildLookupKeepsExactReference (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104094058Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupKeepsExactReference",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104120716Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104128912Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases",
+    "Output": "=== RUN   TestPhysicalKernelBuildLookupRejectsAliases\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104136372Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/#00"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104139876Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/#00",
+    "Output": "=== RUN   TestPhysicalKernelBuildLookupRejectsAliases/#00\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.10414729Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/#00",
+    "Output": "--- PASS: TestPhysicalKernelBuildLookupRejectsAliases/#00 (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104159042Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/#00",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.10416252Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104164823Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26",
+    "Output": "=== RUN   TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104175435Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26",
+    "Output": "--- PASS: TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26 (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104183647Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104192079Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/6.12.26"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104197196Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/6.12.26",
+    "Output": "=== RUN   TestPhysicalKernelBuildLookupRejectsAliases/6.12.26\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104202786Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/6.12.26",
+    "Output": "--- PASS: TestPhysicalKernelBuildLookupRejectsAliases/6.12.26 (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104205961Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/6.12.26",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104208569Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26-physical-component-v1_"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.10421083Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26-physical-component-v1_",
+    "Output": "=== RUN   TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26-physical-component-v1_\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104217378Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26-physical-component-v1_",
+    "Output": "--- PASS: TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26-physical-component-v1_ (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104223482Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26-physical-component-v1_",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104229782Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26-normal-v1-copy"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104233712Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26-normal-v1-copy",
+    "Output": "=== RUN   TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26-normal-v1-copy\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104242717Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26-normal-v1-copy",
+    "Output": "--- PASS: TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26-normal-v1-copy (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104247554Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases/pg17-linux-6.12.26-normal-v1-copy",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104258084Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases",
+    "Output": "--- PASS: TestPhysicalKernelBuildLookupRejectsAliases (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104263361Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelBuildLookupRejectsAliases",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.10427007Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1BuildAndObservation"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.104276969Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1BuildAndObservation",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1BuildAndObservation\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.106347737Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1BuildAndObservation",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1BuildAndObservation (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.106433745Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1BuildAndObservation",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.106492766Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.106512478Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.106590236Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/scale-invalid"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.106599467Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/scale-invalid",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/scale-invalid\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.106892097Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/scale-invalid",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/scale-invalid (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.106959907Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/scale-invalid",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.107113227Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/fraction-drift"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.107122795Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/fraction-drift",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/fraction-drift\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.107374822Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/fraction-drift",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/fraction-drift (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.107450684Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/fraction-drift",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.107524945Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/release-prefix"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.10753556Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/release-prefix",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/release-prefix\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.107722737Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/release-prefix",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/release-prefix (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.107745495Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/release-prefix",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.107833641Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/old-build-new-capability"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.107847678Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/old-build-new-capability",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/old-build-new-capability\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.10803488Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/old-build-new-capability",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/old-build-new-capability (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.108056414Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/old-build-new-capability",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.108073289Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/abi"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.108077378Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/abi",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/abi\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.10829753Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/abi",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/abi (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.108323925Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/abi",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.108405877Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/lsm-missing"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.108428138Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/lsm-missing",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/lsm-missing\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.108588882Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/lsm-missing",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/lsm-missing (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.108609126Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/lsm-missing",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.10869815Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/fraction-invalid"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.108714989Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/fraction-invalid",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/fraction-invalid\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.108880519Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/fraction-invalid",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/fraction-invalid (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.108905287Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/fraction-invalid",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.108960715Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/min-free-drift"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.108980653Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/min-free-drift",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/min-free-drift\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.109208757Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/min-free-drift",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/min-free-drift (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.109233053Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/min-free-drift",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.109258279Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/proactive-drift"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.109267719Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/proactive-drift",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/proactive-drift\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.11094186Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/proactive-drift",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/proactive-drift (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.11096188Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/proactive-drift",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.110969418Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/capabilities-missing"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.11097944Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/capabilities-missing",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/capabilities-missing\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.110985833Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/capabilities-missing",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/capabilities-missing (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.110991648Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/capabilities-missing",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.110997391Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/lsm-reordered"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.111007769Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/lsm-reordered",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/lsm-reordered\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.11101378Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/lsm-reordered",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/lsm-reordered (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.111016437Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/lsm-reordered",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.111024754Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/proactive-invalid"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.111032903Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/proactive-invalid",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/proactive-invalid\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.111038752Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/proactive-invalid",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/proactive-invalid (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.111041255Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/proactive-invalid",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.111044083Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/scale-drift"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.111047691Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/scale-drift",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/scale-drift\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.111050586Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/scale-drift",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/scale-drift (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.111054957Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/scale-drift",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.111057012Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/boost-drift"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.11106106Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/boost-drift",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/boost-drift\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.111179917Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/boost-drift",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/boost-drift (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.111237105Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/boost-drift",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.111275645Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/notes"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.111318227Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/notes",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/notes\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112046964Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/notes",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/notes (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112202555Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/notes",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112303043Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/pid-namespace"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112377066Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/pid-namespace",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/pid-namespace\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.11269645Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/pid-namespace",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/pid-namespace (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112709708Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/pid-namespace",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112713983Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/namespace-device"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112716078Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/namespace-device",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/namespace-device\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112722056Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/namespace-device",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/namespace-device (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112725305Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/namespace-device",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112728032Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/memory-high"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112730126Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/memory-high",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1RejectsSourceDrift/memory-high\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112741044Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/memory-high",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift/memory-high (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112744048Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift/memory-high",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.11274725Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1RejectsSourceDrift (0.01s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112750068Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1RejectsSourceDrift",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112756876Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112759393Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1StrictJSONAndBootPolicy\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112763494Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-watermark_boost_factor"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.112766016Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-watermark_boost_factor",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-watermark_boost_factor\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.113938902Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-watermark_boost_factor",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-watermark_boost_factor (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.113956613Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-watermark_boost_factor",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.11396094Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-compaction_proactiveness"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.11396476Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-compaction_proactiveness",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-compaction_proactiveness\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.113971673Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-compaction_proactiveness",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-compaction_proactiveness (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.113987251Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-compaction_proactiveness",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.113992277Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-percpu_pagelist_high_fraction"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.113997082Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-percpu_pagelist_high_fraction",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-percpu_pagelist_high_fraction\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.114405524Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-percpu_pagelist_high_fraction",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-percpu_pagelist_high_fraction (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.114454529Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/missing-percpu_pagelist_high_fraction",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.114514801Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/null-zero"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.114522392Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/null-zero",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/null-zero\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.114874484Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/null-zero",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/null-zero (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.114888814Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/null-zero",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.115110114Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/duplicate-zero"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.115120292Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/duplicate-zero",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/duplicate-zero\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.115197621Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/duplicate-zero",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/duplicate-zero (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.115264275Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/duplicate-zero",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.115279846Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/unknown"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.115290797Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/unknown",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/unknown\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.115493058Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/unknown",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/unknown (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.115503699Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/unknown",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.115707133Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=landlock,yama"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.115717384Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=landlock,yama",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=landlock,yama\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.115789057Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=landlock,yama",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=landlock,yama (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.115846644Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=landlock,yama",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.115856951Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm="
+  },
+  {
+    "Time": "2026-10-30T17:28:28.115859488Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116079836Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm= (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116119188Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116138709Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/security=apparmor"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116142517Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/security=apparmor",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/security=apparmor\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116146503Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/security=apparmor",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/security=apparmor (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116149308Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/security=apparmor",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116154156Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=landlock_lsm=landlock"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116156636Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=landlock_lsm=landlock",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=landlock_lsm=landlock\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116163441Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=landlock_lsm=landlock",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=landlock_lsm=landlock (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.11616819Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm=landlock_lsm=landlock",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116210611Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116244884Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116274551Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116289573Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy/lsm",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116303067Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1StrictJSONAndBootPolicy (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.11631583Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116332303Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116357839Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116370479Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/new-capture-reference-replay"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.116385098Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/new-capture-reference-replay",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/new-capture-reference-replay\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.176626538Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/new-capture-reference-replay",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/new-capture-reference-replay (0.06s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.176680079Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/new-capture-reference-replay",
+    "Elapsed": 0.06
+  },
+  {
+    "Time": "2026-10-30T17:28:28.176693671Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/old-source-cannot-upgrade"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.176708066Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/old-source-cannot-upgrade",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/old-source-cannot-upgrade\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.199194763Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/old-source-cannot-upgrade",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/old-source-cannot-upgrade (0.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.199217063Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/old-source-cannot-upgrade",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-30T17:28:28.199221785Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/cross-build-first-fact"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.199224149Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/cross-build-first-fact",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/cross-build-first-fact\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.217706422Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/cross-build-first-fact",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/cross-build-first-fact (0.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.217726447Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/cross-build-first-fact",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-30T17:28:28.217731591Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-artifact"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.217734144Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-artifact",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-artifact\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.224386156Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-artifact",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-artifact (0.01s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.224401526Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-artifact",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-30T17:28:28.224406171Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-config"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.224426027Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-config",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-config\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.230944553Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-config",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-config (0.01s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.230962191Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-config",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-30T17:28:28.230966786Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-notes"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.230969479Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-notes",
+    "Output": "=== RUN   TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-notes\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.237981984Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-notes",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-notes (0.01s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.238000897Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory/wrong-notes",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-30T17:28:28.238142489Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory",
+    "Output": "--- PASS: TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory (0.12s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.238180024Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory",
+    "Elapsed": 0.12
+  },
+  {
+    "Time": "2026-10-30T17:28:28.238193217Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginCapturesAndKeepsOriginal"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.238198432Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginCapturesAndKeepsOriginal",
+    "Output": "=== RUN   TestPhysicalKernelOriginCapturesAndKeepsOriginal\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.302021023Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginCapturesAndKeepsOriginal",
+    "Output": "--- PASS: TestPhysicalKernelOriginCapturesAndKeepsOriginal (0.06s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.302060068Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginCapturesAndKeepsOriginal",
+    "Elapsed": 0.06
+  },
+  {
+    "Time": "2026-10-30T17:28:28.302067305Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.302070959Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift",
+    "Output": "=== RUN   TestPhysicalKernelOriginRejectsSourceAndHistoryDrift\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.302074425Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/old-journal"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.302076866Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/old-journal",
+    "Output": "=== RUN   TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/old-journal\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.327975836Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/old-journal",
+    "Output": "--- PASS: TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/old-journal (0.03s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.327998092Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/old-journal",
+    "Elapsed": 0.03
+  },
+  {
+    "Time": "2026-10-30T17:28:28.328006745Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/populated"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.328009801Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/populated",
+    "Output": "=== RUN   TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/populated\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.335962745Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/populated",
+    "Output": "--- PASS: TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/populated (0.01s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.335994436Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/populated",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-30T17:28:28.336005478Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/missing-marker"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.336013136Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/missing-marker",
+    "Output": "=== RUN   TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/missing-marker\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.344670618Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/missing-marker",
+    "Output": "--- PASS: TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/missing-marker (0.01s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.344697046Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/missing-marker",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-30T17:28:28.344703343Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/wrong-policy-runtime"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.344706232Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/wrong-policy-runtime",
+    "Output": "=== RUN   TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/wrong-policy-runtime\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.354059714Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/wrong-policy-runtime",
+    "Output": "--- PASS: TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/wrong-policy-runtime (0.01s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.354078548Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/wrong-policy-runtime",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-30T17:28:28.354083431Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/kernel-notes"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.354085913Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/kernel-notes",
+    "Output": "=== RUN   TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/kernel-notes\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.378073415Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/kernel-notes",
+    "Output": "--- PASS: TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/kernel-notes (0.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.378099971Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/kernel-notes",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-30T17:28:28.378105121Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/fixed-zone"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.378108184Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/fixed-zone",
+    "Output": "=== RUN   TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/fixed-zone\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.407999885Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/fixed-zone",
+    "Output": "--- PASS: TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/fixed-zone (0.03s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.40801795Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/fixed-zone",
+    "Elapsed": 0.03
+  },
+  {
+    "Time": "2026-10-30T17:28:28.408022816Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/cpu"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.408025741Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/cpu",
+    "Output": "=== RUN   TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/cpu\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.43374152Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/cpu",
+    "Output": "--- PASS: TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/cpu (0.03s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.433762731Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/cpu",
+    "Elapsed": 0.03
+  },
+  {
+    "Time": "2026-10-30T17:28:28.433767335Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/source-bytes"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.433769757Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/source-bytes",
+    "Output": "=== RUN   TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/source-bytes\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.459013124Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/source-bytes",
+    "Output": "--- PASS: TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/source-bytes (0.03s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.459053363Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/source-bytes",
+    "Elapsed": 0.03
+  },
+  {
+    "Time": "2026-10-30T17:28:28.459059596Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/cgroup"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.459062583Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/cgroup",
+    "Output": "=== RUN   TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/cgroup\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.481240213Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/cgroup",
+    "Output": "--- PASS: TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/cgroup (0.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.481274442Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/cgroup",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-30T17:28:28.481294954Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/wrong-config-artifact"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.481297406Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/wrong-config-artifact",
+    "Output": "=== RUN   TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/wrong-config-artifact\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.489060522Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/wrong-config-artifact",
+    "Output": "--- PASS: TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/wrong-config-artifact (0.01s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.48913093Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift/wrong-config-artifact",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-30T17:28:28.489146367Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift",
+    "Output": "--- PASS: TestPhysicalKernelOriginRejectsSourceAndHistoryDrift (0.19s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.489158196Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift",
+    "Elapsed": 0.19
+  },
+  {
+    "Time": "2026-10-30T17:28:28.489163399Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.48918187Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay",
+    "Output": "=== RUN   TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.48918883Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/replay-original"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.48920112Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/replay-original",
+    "Output": "=== RUN   TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/replay-original\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.528589982Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/replay-original",
+    "Output": "--- PASS: TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/replay-original (0.04s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.528627345Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/replay-original",
+    "Elapsed": 0.04
+  },
+  {
+    "Time": "2026-10-30T17:28:28.528639013Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/pending-after-resource-init"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.528653782Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/pending-after-resource-init",
+    "Output": "=== RUN   TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/pending-after-resource-init\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.578969487Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/pending-after-resource-init",
+    "Output": "--- PASS: TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/pending-after-resource-init (0.05s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.57902311Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/pending-after-resource-init",
+    "Elapsed": 0.05
+  },
+  {
+    "Time": "2026-10-30T17:28:28.579031621Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/populated-replay"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.579034108Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/populated-replay",
+    "Output": "=== RUN   TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/populated-replay\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.608970797Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/populated-replay",
+    "Output": "--- PASS: TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/populated-replay (0.03s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.609001531Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/populated-replay",
+    "Elapsed": 0.03
+  },
+  {
+    "Time": "2026-10-30T17:28:28.609007297Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/malformed-data"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.609009515Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/malformed-data",
+    "Output": "=== RUN   TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/malformed-data\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.627004332Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/malformed-data",
+    "Output": "--- PASS: TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/malformed-data (0.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.627064534Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/malformed-data",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-30T17:28:28.627076128Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/noncanonical-data"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.627079251Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/noncanonical-data",
+    "Output": "=== RUN   TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/noncanonical-data\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.657053669Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/noncanonical-data",
+    "Output": "--- PASS: TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/noncanonical-data (0.03s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.657111415Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/noncanonical-data",
+    "Elapsed": 0.03
+  },
+  {
+    "Time": "2026-10-30T17:28:28.657151797Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/wrong-confirmation"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.657210436Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/wrong-confirmation",
+    "Output": "=== RUN   TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/wrong-confirmation\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.689084641Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/wrong-confirmation",
+    "Output": "--- PASS: TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/wrong-confirmation (0.03s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.689117586Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/wrong-confirmation",
+    "Elapsed": 0.03
+  },
+  {
+    "Time": "2026-10-30T17:28:28.689123702Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/orphan-confirmation"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.689126347Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/orphan-confirmation",
+    "Output": "=== RUN   TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/orphan-confirmation\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.706112447Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/orphan-confirmation",
+    "Output": "--- PASS: TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/orphan-confirmation (0.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.706157842Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/orphan-confirmation",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-30T17:28:28.70619057Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/symlink-data"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.706194987Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/symlink-data",
+    "Output": "=== RUN   TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/symlink-data\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.723022198Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/symlink-data",
+    "Output": "--- PASS: TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/symlink-data (0.02s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.723042491Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay/symlink-data",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-30T17:28:28.723048773Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay",
+    "Output": "--- PASS: TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay (0.23s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.723057915Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay",
+    "Elapsed": 0.23
+  },
+  {
+    "Time": "2026-10-30T17:28:28.723061463Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginSerializesWithOriginalResourceLock"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.723064205Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginSerializesWithOriginalResourceLock",
+    "Output": "=== RUN   TestPhysicalKernelOriginSerializesWithOriginalResourceLock\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852078089Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginSerializesWithOriginalResourceLock",
+    "Output": "--- PASS: TestPhysicalKernelOriginSerializesWithOriginalResourceLock (0.13s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852147754Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelOriginSerializesWithOriginalResourceLock",
+    "Elapsed": 0.13
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852188172Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852194233Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers",
+    "Output": "=== RUN   TestPhysicalKernelObservationParsers\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852197751Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/present-not-managed-or-free"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852200646Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/present-not-managed-or-free",
+    "Output": "=== RUN   TestPhysicalKernelObservationParsers/present-not-managed-or-free\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852205606Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/present-not-managed-or-free",
+    "Output": "--- PASS: TestPhysicalKernelObservationParsers/present-not-managed-or-free (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852208547Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/present-not-managed-or-free",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852212069Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/duplicate-present"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852227064Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/duplicate-present",
+    "Output": "=== RUN   TestPhysicalKernelObservationParsers/duplicate-present\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852231109Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/duplicate-present",
+    "Output": "--- PASS: TestPhysicalKernelObservationParsers/duplicate-present (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852233781Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/duplicate-present",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852236506Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/numa-out-of-profile"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.85223882Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/numa-out-of-profile",
+    "Output": "=== RUN   TestPhysicalKernelObservationParsers/numa-out-of-profile\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.85224166Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/numa-out-of-profile",
+    "Output": "--- PASS: TestPhysicalKernelObservationParsers/numa-out-of-profile (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852243966Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/numa-out-of-profile",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852249576Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/only-movable"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852251531Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/only-movable",
+    "Output": "=== RUN   TestPhysicalKernelObservationParsers/only-movable\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852254733Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/only-movable",
+    "Output": "--- PASS: TestPhysicalKernelObservationParsers/only-movable (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852257321Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/only-movable",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852263121Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/missing-present"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852265112Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/missing-present",
+    "Output": "=== RUN   TestPhysicalKernelObservationParsers/missing-present\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852267838Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/missing-present",
+    "Output": "--- PASS: TestPhysicalKernelObservationParsers/missing-present (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852271175Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/missing-present",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852319741Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/duplicate-zone"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852333266Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/duplicate-zone",
+    "Output": "=== RUN   TestPhysicalKernelObservationParsers/duplicate-zone\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852381191Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/duplicate-zone",
+    "Output": "--- PASS: TestPhysicalKernelObservationParsers/duplicate-zone (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852416961Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/duplicate-zone",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852434122Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/device-out-of-profile"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852479212Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/device-out-of-profile",
+    "Output": "=== RUN   TestPhysicalKernelObservationParsers/device-out-of-profile\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852497905Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/device-out-of-profile",
+    "Output": "--- PASS: TestPhysicalKernelObservationParsers/device-out-of-profile (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852507111Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/device-out-of-profile",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852557425Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/overflow"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852569941Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/overflow",
+    "Output": "=== RUN   TestPhysicalKernelObservationParsers/overflow\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852611351Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/overflow",
+    "Output": "--- PASS: TestPhysicalKernelObservationParsers/overflow (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852630112Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/overflow",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.85267523Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/unbound-present"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852685221Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/unbound-present",
+    "Output": "=== RUN   TestPhysicalKernelObservationParsers/unbound-present\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852729038Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/unbound-present",
+    "Output": "--- PASS: TestPhysicalKernelObservationParsers/unbound-present (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852734209Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/unbound-present",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852762383Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/noncanonical"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.852771857Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/noncanonical",
+    "Output": "=== RUN   TestPhysicalKernelObservationParsers/noncanonical\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.853014094Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/noncanonical",
+    "Output": "--- PASS: TestPhysicalKernelObservationParsers/noncanonical (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.853031328Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/noncanonical",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.853043314Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/cpu-possible-not-online"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.853053213Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/cpu-possible-not-online",
+    "Output": "=== RUN   TestPhysicalKernelObservationParsers/cpu-possible-not-online\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.853062611Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/cpu-possible-not-online",
+    "Output": "--- PASS: TestPhysicalKernelObservationParsers/cpu-possible-not-online (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.853081813Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/cpu-possible-not-online",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.853086141Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/boot-explicit-and-unambiguous"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.853088314Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/boot-explicit-and-unambiguous",
+    "Output": "=== RUN   TestPhysicalKernelObservationParsers/boot-explicit-and-unambiguous\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.853949751Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/boot-explicit-and-unambiguous",
+    "Output": "--- PASS: TestPhysicalKernelObservationParsers/boot-explicit-and-unambiguous (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.853970722Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers/boot-explicit-and-unambiguous",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.853976231Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers",
+    "Output": "--- PASS: TestPhysicalKernelObservationParsers (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.853983093Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationParsers",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.853986369Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.853988302Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift",
+    "Output": "=== RUN   TestPhysicalKernelObservationMatchRejectsDrift\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.85399105Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/movable-may-grow-or-shrink"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.853993534Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/movable-may-grow-or-shrink",
+    "Output": "=== RUN   TestPhysicalKernelObservationMatchRejectsDrift/movable-may-grow-or-shrink\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.85399992Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/movable-may-grow-or-shrink",
+    "Output": "--- PASS: TestPhysicalKernelObservationMatchRejectsDrift/movable-may-grow-or-shrink (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.854007431Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/movable-may-grow-or-shrink",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.854010497Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/forged-total"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.854018612Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/forged-total",
+    "Output": "=== RUN   TestPhysicalKernelObservationMatchRejectsDrift/forged-total\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.854022475Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/forged-total",
+    "Output": "--- PASS: TestPhysicalKernelObservationMatchRejectsDrift/forged-total (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.85402824Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/forged-total",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.854031011Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/forged-stock"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.854033344Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/forged-stock",
+    "Output": "=== RUN   TestPhysicalKernelObservationMatchRejectsDrift/forged-stock\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.854038695Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/forged-stock",
+    "Output": "--- PASS: TestPhysicalKernelObservationMatchRejectsDrift/forged-stock (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.854043944Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/forged-stock",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.854101193Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/permit"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.854132771Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/permit",
+    "Output": "=== RUN   TestPhysicalKernelObservationMatchRejectsDrift/permit\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.854206586Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/permit",
+    "Output": "--- PASS: TestPhysicalKernelObservationMatchRejectsDrift/permit (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.854220387Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/permit",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856562872Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/cgroup"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856579304Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/cgroup",
+    "Output": "=== RUN   TestPhysicalKernelObservationMatchRejectsDrift/cgroup\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856585065Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/cgroup",
+    "Output": "--- PASS: TestPhysicalKernelObservationMatchRejectsDrift/cgroup (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856587986Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/cgroup",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856608921Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/notes"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856611285Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/notes",
+    "Output": "=== RUN   TestPhysicalKernelObservationMatchRejectsDrift/notes\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856618339Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/notes",
+    "Output": "--- PASS: TestPhysicalKernelObservationMatchRejectsDrift/notes (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856621329Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/notes",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856623863Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/pid-space"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856627635Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/pid-space",
+    "Output": "=== RUN   TestPhysicalKernelObservationMatchRejectsDrift/pid-space\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856631128Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/pid-space",
+    "Output": "--- PASS: TestPhysicalKernelObservationMatchRejectsDrift/pid-space (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856633513Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/pid-space",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.85663591Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/wrong-release"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856637839Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/wrong-release",
+    "Output": "=== RUN   TestPhysicalKernelObservationMatchRejectsDrift/wrong-release\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856640787Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/wrong-release",
+    "Output": "--- PASS: TestPhysicalKernelObservationMatchRejectsDrift/wrong-release (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856643596Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/wrong-release",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856655345Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/guest-boot"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.85665875Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/guest-boot",
+    "Output": "=== RUN   TestPhysicalKernelObservationMatchRejectsDrift/guest-boot\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.85666328Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/guest-boot",
+    "Output": "--- PASS: TestPhysicalKernelObservationMatchRejectsDrift/guest-boot (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856666986Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/guest-boot",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856670549Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/boot-controls"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856673612Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/boot-controls",
+    "Output": "=== RUN   TestPhysicalKernelObservationMatchRejectsDrift/boot-controls\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856679628Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/boot-controls",
+    "Output": "--- PASS: TestPhysicalKernelObservationMatchRejectsDrift/boot-controls (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856683785Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/boot-controls",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856702227Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/possible-cpu"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856716262Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/possible-cpu",
+    "Output": "=== RUN   TestPhysicalKernelObservationMatchRejectsDrift/possible-cpu\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.85672245Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/possible-cpu",
+    "Output": "--- PASS: TestPhysicalKernelObservationMatchRejectsDrift/possible-cpu (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856725265Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/possible-cpu",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856727695Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/physical-growth"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856762175Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/physical-growth",
+    "Output": "=== RUN   TestPhysicalKernelObservationMatchRejectsDrift/physical-growth\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.85679149Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/physical-growth",
+    "Output": "--- PASS: TestPhysicalKernelObservationMatchRejectsDrift/physical-growth (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856804205Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/physical-growth",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.85682134Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/physical-shrink"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856835208Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/physical-shrink",
+    "Output": "=== RUN   TestPhysicalKernelObservationMatchRejectsDrift/physical-shrink\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856849825Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/physical-shrink",
+    "Output": "--- PASS: TestPhysicalKernelObservationMatchRejectsDrift/physical-shrink (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856883376Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift/physical-shrink",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856898805Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift",
+    "Output": "--- PASS: TestPhysicalKernelObservationMatchRejectsDrift (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856938933Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationMatchRejectsDrift",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856952049Z",
+    "Action": "run",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationRejectsSummedCapacityOverflow"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856961513Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationRejectsSummedCapacityOverflow",
+    "Output": "=== RUN   TestPhysicalKernelObservationRejectsSummedCapacityOverflow\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856975176Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationRejectsSummedCapacityOverflow",
+    "Output": "--- PASS: TestPhysicalKernelObservationRejectsSummedCapacityOverflow (0.00s)\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:28.856993605Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Test": "TestPhysicalKernelObservationRejectsSummedCapacityOverflow",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-30T17:28:28.857005268Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Output": "PASS\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:29.861190614Z",
+    "Action": "output",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Output": "ok  \tgithub.com/neondatabase/autoscaling/pkg/dsga/resourceguard\t1.774s\n"
+  },
+  {
+    "Time": "2026-10-30T17:28:29.861234975Z",
+    "Action": "pass",
+    "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "Elapsed": 1.774
+  }
+]

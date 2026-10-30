@@ -40,8 +40,19 @@ type PhysicalKernelOriginPolicy struct {
 }
 
 func (p PhysicalKernelOriginPolicy) Validate() error {
-	if p.ProtocolVersion != 1 || p.ProfileID != physicalOriginProfileID || p.KernelRelease != physicalKernelRelease || p.KernelArtifactSHA256 != physicalKernelArtifactSHA || p.KernelConfigSHA256 != physicalKernelConfigSHA || !physicalDigestValid(p.KernelNotesSHA256) || !physicalDigestValid(p.RuntimeDocumentSHA256) {
+	if p.ProtocolVersion != 1 || !physicalDigestValid(p.KernelNotesSHA256) || !physicalDigestValid(p.RuntimeDocumentSHA256) {
 		return fmt.Errorf("invalid exact physical component policy")
+	}
+	if p.ProfileID == physicalOriginProfileID {
+		// 保留旧组件策略的原字节/语义；旧记录不能借新 lookup 自动升级资格。
+		if p.KernelRelease != physicalKernelRelease || p.KernelArtifactSHA256 != physicalKernelArtifactSHA || p.KernelConfigSHA256 != physicalKernelConfigSHA {
+			return fmt.Errorf("historical physical component build differs")
+		}
+	} else {
+		ref, err := LookupPhysicalKernelBuild(p.ProfileID)
+		if err != nil || p.ProfileID != NormalV1PhysicalKernelProfileID || p.KernelRelease != ref.KernelRelease || p.KernelArtifactSHA256 != ref.KernelArtifactSHA256 || p.KernelConfigSHA256 != ref.KernelConfigSHA256 || p.KernelNotesSHA256 != ref.KernelNotesSHA256 {
+			return fmt.Errorf("normal-v1 exact physical component build differs")
+		}
 	}
 	return nil
 }
@@ -80,7 +91,7 @@ type PhysicalKernelOrigin struct {
 }
 
 func (o PhysicalKernelOrigin) Validate() error {
-	if o.ProtocolVersion != 1 || o.VMShrinkPermit || o.Scope != physicalOriginScope || control.ValidateIncarnation(o.Nonce) != nil || o.Nonce == "00000000000000000000000000000000" || o.Policy.Validate() != nil || !physicalDigestValid(o.PolicySHA256) || !physicalDigestValid(o.ResourceSourceSHA256) || o.RuntimeDocumentSHA256 != o.Policy.RuntimeDocumentSHA256 || control.ValidateIncarnation(o.RuntimeIncarnation) != nil || control.ValidateID(o.ConfigSecretUID, "original config Secret UID") != nil || o.First.Validate() != nil || o.ExpectedBootstrap.Validate() != nil || o.ExpectedBootstrap.Identity != o.First.Identity || o.Config.VMUID != o.First.Identity.VMUID || o.Config.ComputeInstanceID != o.First.Identity.ComputeInstanceID || o.First.KernelNotesSHA256 != o.Policy.KernelNotesSHA256 {
+	if o.ProtocolVersion != 1 || o.VMShrinkPermit || o.Scope != physicalOriginScope || control.ValidateIncarnation(o.Nonce) != nil || o.Nonce == "00000000000000000000000000000000" || o.Policy.Validate() != nil || !physicalDigestValid(o.PolicySHA256) || !physicalDigestValid(o.ResourceSourceSHA256) || o.RuntimeDocumentSHA256 != o.Policy.RuntimeDocumentSHA256 || control.ValidateIncarnation(o.RuntimeIncarnation) != nil || control.ValidateID(o.ConfigSecretUID, "original config Secret UID") != nil || o.First.Validate() != nil || o.ExpectedBootstrap.Validate() != nil || o.ExpectedBootstrap.Identity != o.First.Identity || o.Config.VMUID != o.First.Identity.VMUID || o.Config.ComputeInstanceID != o.First.Identity.ComputeInstanceID || o.First.KernelNotesSHA256 != o.Policy.KernelNotesSHA256 || o.First.KernelRelease != o.Policy.KernelRelease {
 		return fmt.Errorf("invalid original physical component capture")
 	}
 	return nil

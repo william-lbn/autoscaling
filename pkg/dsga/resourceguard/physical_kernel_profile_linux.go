@@ -36,8 +36,9 @@ func readPhysicalKernelComponent(id Identity) (PhysicalKernelObservation, error)
 	if err != nil {
 		return o, err
 	}
-	if release != physicalKernelRelease {
-		return o, fmt.Errorf("physical profile requires exact kernel artifact release %s", physicalKernelRelease)
+	normal, err := LookupPhysicalKernelBuild(NormalV1PhysicalKernelProfileID)
+	if err != nil || (release != physicalKernelRelease && release != normal.KernelRelease) {
+		return o, fmt.Errorf("physical profile requires an exact reviewed kernel artifact release")
 	}
 	boot, err := kernelText("/proc/sys/kernel/random/boot_id")
 	if err != nil {
@@ -105,6 +106,16 @@ func readPhysicalKernelComponent(id Identity) (PhysicalKernelObservation, error)
 		return o, err
 	}
 	o = PhysicalKernelObservation{ProtocolVersion: 1, Scope: physicalKernelObservationScope, Identity: id, KernelRelease: release, KernelNotesSHA256: physicalDigest(notes), CommandLineSHA256: physicalDigest([]byte(cmdline)), PageSizeBytes: 4096, PossibleCPUs: cpus, PIDMax: uint32(pidMax), Zones: zones, NonMovableUpperBytes: control.Uint64(k), CPUChargeStockUpperBytes: control.Uint64(cpus) * 64 * 4096}
+	if release == normal.KernelRelease {
+		if err := physicalNormalV1BootPolicy(cmdline); err != nil {
+			return PhysicalKernelObservation{}, err
+		}
+		capabilities, err := readPhysicalKernelRuntimeCapabilities()
+		if err != nil {
+			return PhysicalKernelObservation{}, err
+		}
+		o.RuntimeCapabilities = &capabilities
+	}
 	return o, o.Validate()
 }
 

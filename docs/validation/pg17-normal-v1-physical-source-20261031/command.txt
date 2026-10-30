@@ -1,0 +1,1 @@
+sh -c $'go version\nsha256sum pkg/dsga/resourceguard/*.go\ngo test -race -count=1 -json ./pkg/dsga/resourceguard -run \'^TestPhysicalKernel(Observation|Origin|BuildLookup|NormalV1)\''

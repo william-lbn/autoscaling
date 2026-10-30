@@ -56,6 +56,9 @@ type PhysicalKernelObservation struct {
 	// active_memcg worker 也未必计入 PG pids。未来消费者必须独立证明全部
 	// 在途/延迟 folio/上下文包络，不能将本字段改名当作完整安全余量。
 	CPUChargeStockUpperBytes control.Uint64 `json:"cpu_charge_stock_upper_bytes"`
+	// 旧 component JSON 保持省略。新 normal-v1 实际读回能力/调优来源，但这些字段
+	// 不证明 FS 规则已安装、未来 Root 写者已封闭或整个 I/目标 Movable 已成立。
+	RuntimeCapabilities *PhysicalKernelRuntimeCapabilities `json:"runtime_capabilities,omitempty"`
 }
 
 func physicalDigest(b []byte) string { sum := sha256.Sum256(b); return hex.EncodeToString(sum[:]) }
@@ -90,8 +93,19 @@ func physicalNonMovable(zones []PhysicalKernelZone) (uint64, error) {
 }
 
 func (o PhysicalKernelObservation) Validate() error {
-	if o.ProtocolVersion != 1 || o.VMShrinkPermit || o.Scope != physicalKernelObservationScope || o.Identity.Validate() != nil || o.KernelRelease != physicalKernelRelease || !physicalDigestValid(o.KernelNotesSHA256) || !physicalDigestValid(o.CommandLineSHA256) || o.PageSizeBytes != 4096 || o.PossibleCPUs == 0 || o.PossibleCPUs > 1024 || o.PIDMax < 301 || o.PIDMax > 4096 || len(o.Zones) == 0 || len(o.Zones) > 4 {
+	if o.ProtocolVersion != 1 || o.VMShrinkPermit || o.Scope != physicalKernelObservationScope || o.Identity.Validate() != nil || !physicalDigestValid(o.KernelNotesSHA256) || !physicalDigestValid(o.CommandLineSHA256) || o.PageSizeBytes != 4096 || o.PossibleCPUs == 0 || o.PossibleCPUs > 1024 || o.PIDMax < 301 || o.PIDMax > 4096 || len(o.Zones) == 0 || len(o.Zones) > 4 {
 		return fmt.Errorf("invalid restricted physical kernel component observation")
+	}
+	profile, err := physicalKernelObservationBuild(o.KernelRelease, o.KernelNotesSHA256)
+	if err != nil {
+		return err
+	}
+	if profile == NormalV1PhysicalKernelProfileID {
+		if o.RuntimeCapabilities == nil || o.RuntimeCapabilities.Validate() != nil {
+			return fmt.Errorf("normal-v1 runtime capabilities missing or invalid")
+		}
+	} else if o.RuntimeCapabilities != nil {
+		return fmt.Errorf("historical physical component cannot acquire normal-v1 capabilities")
 	}
 	k, err := physicalNonMovable(o.Zones)
 	if err != nil {

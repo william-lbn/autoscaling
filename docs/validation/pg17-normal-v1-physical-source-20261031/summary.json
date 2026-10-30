@@ -1,0 +1,33 @@
+{
+  "scope": "PG17-U exact normal-v1 physical source and directly affected historical observation/Origin component",
+  "status": "PASS",
+  "roots": [
+    "TestPhysicalKernelBuildLookupKeepsExactReference",
+    "TestPhysicalKernelBuildLookupRejectsAliases",
+    "TestPhysicalKernelNormalV1BuildAndObservation",
+    "TestPhysicalKernelNormalV1RejectsSourceDrift",
+    "TestPhysicalKernelNormalV1StrictJSONAndBootPolicy",
+    "TestPhysicalKernelNormalV1OriginBindsBuildAndKeepsHistory",
+    "TestPhysicalKernelOriginCapturesAndKeepsOriginal",
+    "TestPhysicalKernelOriginRejectsSourceAndHistoryDrift",
+    "TestPhysicalKernelOriginPendingRequiresExplicitOriginalReplay",
+    "TestPhysicalKernelOriginSerializesWithOriginalResourceLock",
+    "TestPhysicalKernelObservationParsers",
+    "TestPhysicalKernelObservationMatchRejectsDrift",
+    "TestPhysicalKernelObservationRejectsSummedCapacityOverflow"
+  ],
+  "root_count": 13,
+  "subcase_count": 83,
+  "go_version": "go1.24.3 linux/amd64",
+  "race": true,
+  "count": 1,
+  "actual_copy_go_files": 64,
+  "owned_actual_copy_matches": true,
+  "source_head": "7ed9356424474f64489dec1f92a9eb864aaead71",
+  "go_receipt": "/data/neon-build/validation/go-1793381303553263697",
+  "new_runtime_reader_kvm": "NOT_RUN by this U; delegated real S pending",
+  "normal_decrease_authorization": false,
+  "five_rejection_guards": "unchanged",
+  "new_build_capability_source": "/data/neon-build/validation/pg17-normal-v1-kernel-20261030T165552Z/runtime-proof.json",
+  "runtime_proof_sha256": "fa2673dca4ed6c4d173733e2c9dfea5092ba611101dc3d421b3975d235ca774a"
+}

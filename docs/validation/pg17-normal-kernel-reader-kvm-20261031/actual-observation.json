@@ -1,0 +1,72 @@
+{
+  "case": "PG17-S-KERNEL-002 actual normal-v1 reader component",
+  "reviewed_build_reference": {
+    "profile_id": "pg17-linux-6.12.26-normal-v1",
+    "kernel_release": "6.12.26-william-normal-v1-b20ac4f85d74",
+    "kernel_artifact_sha256": "552ffabd096736e38d2d4b6c119533e4a26c2b9a47f6e04a8e1795a084f8d85d",
+    "kernel_config_sha256": "935e43773879d6a4f5c27c2ef966314de7e0e463a4a9bebefa3dc5dcf283ce5b",
+    "kernel_notes_sha256": "3d22f15739bcd10735099d344c1c306f6bd7eccfbed8b3e4f1295e5893036d6b"
+  },
+  "observation": {
+    "protocol_version": 1,
+    "vm_shrink_permit": false,
+    "scope": "linux-6.12.26-physical-component-observation-only",
+    "identity": {
+      "vm_uid": "test-harness-pg17-normal-kernel-reader",
+      "compute_instance_id": "test-harness-isolated-component",
+      "guest_boot_id": "8399cd77-e96a-4dd6-9ab7-b1432068abbc",
+      "cgroup_device": "23",
+      "cgroup_inode": "28"
+    },
+    "kernel_release": "6.12.26-william-normal-v1-b20ac4f85d74",
+    "kernel_notes_sha256": "3d22f15739bcd10735099d344c1c306f6bd7eccfbed8b3e4f1295e5893036d6b",
+    "command_line_sha256": "fbc2a0f8e478555035a8130eac48b261be8620f0c38c06bedf89fcf1022267ab",
+    "page_size_bytes": "4096",
+    "possible_cpus": 2,
+    "pid_max": 512,
+    "zones": [
+      {
+        "node": 0,
+        "name": "DMA32",
+        "present_pages": "66462"
+      },
+      {
+        "node": 0,
+        "name": "Movable",
+        "present_pages": "195551"
+      },
+      {
+        "node": 0,
+        "name": "Normal",
+        "present_pages": "0"
+      }
+    ],
+    "non_movable_upper_bytes": "272228352",
+    "cpu_charge_stock_upper_bytes": "524288",
+    "runtime_capabilities": {
+      "active_lsms": [
+        "lockdown",
+        "capability",
+        "landlock",
+        "yama",
+        "apparmor"
+      ],
+      "landlock_abi": 6,
+      "initial_pid_namespace_device": "4",
+      "initial_pid_namespace_inode": "4026531836",
+      "memory_high": "max",
+      "min_free_kbytes": "2059",
+      "watermark_scale_factor": 10,
+      "watermark_boost_factor": 15000,
+      "percpu_pagelist_high_fraction": 0,
+      "compaction_proactiveness": 20
+    }
+  },
+  "production_identity": false,
+  "root_enrolled": false,
+  "pg_started": false,
+  "runtime_controls_written": false,
+  "full_allocator_qualification_performed": false,
+  "normal_decrease_authorized": false,
+  "e2e": false
+}

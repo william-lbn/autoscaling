@@ -15,7 +15,8 @@ import (
 const FixedPhysicalKernelPolicyPath = "/neonvm/runtime/dsga-physical-kernel.json"
 
 // 三入口均不接收请求 policy/path。当前无 provision/HTTP/CLI/预算消费者，缺省关闭；
-// 未来原顺序必须是建空组→首次组件捕获→Bootstrap→完整出生/约束封存，不能事后补签。
+// normal-v1 原顺序须建空组→首次组件捕获→非授权预归组→首次 Movable→正式 Bootstrap
+// →完整出生/约束封存，不能事后补签；旧组件本身不证明任何该历史。
 // 返回对象仍 vm_shrink_permit=false；它不证明 Guest 全部历史或未来特权写者受约束。
 func (g *Guard) CapturePhysicalKernelOrigin(ctx context.Context) (PhysicalKernelOrigin, error) {
 	return g.physicalOriginFromRuntime(ctx, physicalOriginCapture)

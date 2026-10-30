@@ -1,0 +1,145 @@
+{
+  "id": "PG17-S-KERNEL-002",
+  "status": "PASS_COMPONENT_ONLY",
+  "nativeRoot": "TestPG17NativeNormalKernelComponent",
+  "GuestTestExitCode": 0,
+  "rootCount": 1,
+  "skips": 0,
+  "actualGoTestTimeoutSeconds": 60,
+  "rawRunTimeoutMetadataNote": "kvm-run.json inherited goTestTimeoutSeconds90 from prior wrapper; actual guest-init.sh sets60; no failure ignored",
+  "actualObservation": {
+    "case": "PG17-S-KERNEL-002 actual normal-v1 reader component",
+    "reviewed_build_reference": {
+      "profile_id": "pg17-linux-6.12.26-normal-v1",
+      "kernel_release": "6.12.26-william-normal-v1-b20ac4f85d74",
+      "kernel_artifact_sha256": "552ffabd096736e38d2d4b6c119533e4a26c2b9a47f6e04a8e1795a084f8d85d",
+      "kernel_config_sha256": "935e43773879d6a4f5c27c2ef966314de7e0e463a4a9bebefa3dc5dcf283ce5b",
+      "kernel_notes_sha256": "3d22f15739bcd10735099d344c1c306f6bd7eccfbed8b3e4f1295e5893036d6b"
+    },
+    "observation": {
+      "protocol_version": 1,
+      "vm_shrink_permit": false,
+      "scope": "linux-6.12.26-physical-component-observation-only",
+      "identity": {
+        "vm_uid": "test-harness-pg17-normal-kernel-reader",
+        "compute_instance_id": "test-harness-isolated-component",
+        "guest_boot_id": "8399cd77-e96a-4dd6-9ab7-b1432068abbc",
+        "cgroup_device": "23",
+        "cgroup_inode": "28"
+      },
+      "kernel_release": "6.12.26-william-normal-v1-b20ac4f85d74",
+      "kernel_notes_sha256": "3d22f15739bcd10735099d344c1c306f6bd7eccfbed8b3e4f1295e5893036d6b",
+      "command_line_sha256": "fbc2a0f8e478555035a8130eac48b261be8620f0c38c06bedf89fcf1022267ab",
+      "page_size_bytes": "4096",
+      "possible_cpus": 2,
+      "pid_max": 512,
+      "zones": [
+        {
+          "node": 0,
+          "name": "DMA32",
+          "present_pages": "66462"
+        },
+        {
+          "node": 0,
+          "name": "Movable",
+          "present_pages": "195551"
+        },
+        {
+          "node": 0,
+          "name": "Normal",
+          "present_pages": "0"
+        }
+      ],
+      "non_movable_upper_bytes": "272228352",
+      "cpu_charge_stock_upper_bytes": "524288",
+      "runtime_capabilities": {
+        "active_lsms": [
+          "lockdown",
+          "capability",
+          "landlock",
+          "yama",
+          "apparmor"
+        ],
+        "landlock_abi": 6,
+        "initial_pid_namespace_device": "4",
+        "initial_pid_namespace_inode": "4026531836",
+        "memory_high": "max",
+        "min_free_kbytes": "2059",
+        "watermark_scale_factor": 10,
+        "watermark_boost_factor": 15000,
+        "percpu_pagelist_high_fraction": 0,
+        "compaction_proactiveness": 20
+      }
+    },
+    "production_identity": false,
+    "root_enrolled": false,
+    "pg_started": false,
+    "runtime_controls_written": false,
+    "full_allocator_qualification_performed": false,
+    "normal_decrease_authorized": false,
+    "e2e": false
+  },
+  "sourceProof": {
+    "sourceBaseCommit": "7ed9356424474f64489dec1f92a9eb864aaead71",
+    "frozenOwnerFiles": {
+      "pkg/dsga/resourceguard/physical_kernel_build.go": "65cf7e6e641a92ac3691dec355fafce826657b2867aa10c68e65d9e8033753c3",
+      "pkg/dsga/resourceguard/physical_kernel_build_test.go": "021c1c44972282e5053a1ac3e35df432f8bbd50b5c95b51dd680447622ee67aa",
+      "pkg/dsga/resourceguard/physical_kernel_profile.go": "6567cde6b46be2af71f03f9567abfd403dee4d7f166b53d67d07d603f279a6b0",
+      "pkg/dsga/resourceguard/physical_kernel_profile_linux.go": "1b193c910bda90fd7207db8012a868c6c58775f88048db68dede789f1d1913f5",
+      "pkg/dsga/resourceguard/physical_kernel_origin.go": "c7349026a9ff3d6a878561d09d98f5684bd9a2a404bd83bfd9a4a5d2d67f8cc9",
+      "pkg/dsga/resourceguard/physical_kernel_origin_linux.go": "01e43282985c0ae9e00cab1fab8412233590baec9af3462bc6153e87e5dc8503",
+      "pkg/dsga/resourceguard/physical_kernel_capabilities.go": "982fec6319a7739f89c48578a52776266fd3382e460166825b63cdf8a6ad4d19",
+      "pkg/dsga/resourceguard/physical_kernel_capabilities_linux.go": "af0f2a6c31f098b5277d6845ad4093d8816ed1525da1520e6dcab84c0e4024dc",
+      "pkg/dsga/resourceguard/physical_kernel_normal_v1_test.go": "46ff11d5c64c54926d7cbeb1c065a2f4ee90f7a040cde0ffba629a8b71b26dc7"
+    },
+    "newNativeTest": {
+      "pkg/dsga/resourceguard/physical_kernel_profile_normal_native_test.go": "059ae3c56ac24efa4e8315311a854d2b758a55f78d762920a22a61f9a779690e"
+    },
+    "copiedGoModFileCount": 693,
+    "copiedManifestRawSha256": "29c62bebedc10bd945097dac36b525c59ee7fab833a559e7c8e8a416b845b565",
+    "allCopiedSourcesMatchReadOnlySnapshot": true,
+    "activePrebootstrapExcluded": true
+  },
+  "artifacts": {
+    "startUTC": "2026-10-30T17:41:05.952591+00:00",
+    "endUTC": "2026-10-30T17:41:08.374743+00:00",
+    "elapsedSeconds": 2.422146757999144,
+    "hostDockerExitCode": 0,
+    "timeoutSeconds": 150,
+    "goTestTimeoutSeconds": 90,
+    "accel": "kvm",
+    "TCGFallback": false,
+    "NIC": "none",
+    "guestMemoryBytes": 1073741824,
+    "guestVCPUs": 2,
+    "image": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+    "kernelSha256": "552ffabd096736e38d2d4b6c119533e4a26c2b9a47f6e04a8e1795a084f8d85d",
+    "initramfsSha256": "61ae210cfde879db48508d3ab2124d1e57a7095bf7fe37502732bfaf07c37bcb",
+    "binarySha256": "b0fd24229d08d18930452c3a6d6b8ff62193dff87bf7781b7b645b34a892f211",
+    "rawConsoleSha256": "0dde17fce1d4352f83c3816696ec67259ca48b592e207d72825bb1949e17525a",
+    "E2E": false
+  },
+  "validatedActualRuntimeChecks": [
+    "swap absent",
+    "THP/KSM sysfs absent",
+    "exact kernel release/notes/build lookup",
+    "online_movable boot and runtime",
+    "2 possible CPU/pid_max512",
+    "initial PID ns dev/inode matches PID1 and nsfs",
+    "fixed PG cgroup memory.high",
+    "all5 allocator knob values read without writes",
+    "repeat read Match",
+    "strict JSON roundtrip Match",
+    "same empty cgroup identity/population/limit after observation"
+  ],
+  "boundaries": {
+    "productionRootEnrolled": false,
+    "PGStarted": false,
+    "normalLimitsWritten": false,
+    "runtimeAllocatorControlsWritten": false,
+    "fullAllocatorQualified": false,
+    "VMResizeAuthorized": false,
+    "K8sE2E": false
+  },
+  "completedUTC": "2026-10-30T17:45:03.388450+00:00"
+}
