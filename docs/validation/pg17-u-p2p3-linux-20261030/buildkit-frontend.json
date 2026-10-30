@@ -1,0 +1,9 @@
+{
+  "observed_at_utc": "2026-10-30T12:49:55.412555+00:00",
+  "file": "/data/neon-build/config/dev/Go-test.Dockerfile",
+  "before_sha256": "4338c9593679e8758afffd7f6027b2c0245dd5b3d692326960f3e14c81fade66",
+  "after_sha256": "a175e39d2f47165e73e5df89ee26213b4ec8304f61bf47bdb7cb7db9bdcbebd2",
+  "changed": true,
+  "change": "仅删除外部#syntax标签，使用已安装BuildKit builtin Dockerfile frontend；现有RUN cache保持；不修改业务源码或重启daemon。",
+  "existing_runs": "r3 owner及native exporter已加载旧模板并越过解析，不取消或重复；其实际构建模板仍是旧hash。"
+}

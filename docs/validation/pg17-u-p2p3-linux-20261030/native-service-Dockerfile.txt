@@ -1,0 +1,13 @@
+FROM 127.0.0.1:5001/neon/pg17-native-test:79367196-injection-v1
+WORKDIR /home/nonroot
+COPY --from=go-native --chown=1000:1000 /quiesce-native.test /home/nonroot/quiesce-native.test
+ENV RUSTUP_TOOLCHAIN=1.88.0 CARGO_NET_OFFLINE=true CARGO_BUILD_JOBS=3 CARGO_PROFILE_RELEASE_DEBUG=0
+ENV NEON_TEST_DSG_EXPECTED_SHA=79367196a74eef82e67cac917877d2e6271d3e70 NEON_TEST_DSG_GO_BIN=/home/nonroot/quiesce-native.test
+ARG VALIDATION_NONCE
+RUN --network=none \
+ --mount=type=cache,id=neon-cargo-registry-amd64,target=/home/nonroot/.cargo/registry,uid=1000,gid=1000,sharing=locked \
+ --mount=type=cache,id=neon-cargo-git-amd64,target=/home/nonroot/.cargo/git,uid=1000,gid=1000,sharing=locked \
+ --mount=type=cache,id=neon-core-target-amd64,target=/home/nonroot/target,uid=1000,gid=1000,sharing=locked \
+ echo "ACTUAL_PG17_S_P2_004_RUN=$VALIDATION_NONCE" && \
+ RUSTFLAGS="-Clinker=clang -Clink-arg=-fuse-ld=mold -Clink-arg=-Wl,--no-rosegment -Cforce-frame-pointers=yes" \
+ cargo test --locked --offline --release -p compute_tools --test dsg_go_http native_go_quiesce_consumes_real_close_and_keeps_retained_costs -- --ignored --exact --nocapture

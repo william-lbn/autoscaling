@@ -1,0 +1,223 @@
+{
+  "observed_at_utc": "2026-10-30T12:53:45.381823+00:00",
+  "checks": [
+    {
+      "id": "P2-prepare-reject",
+      "repository": "autoscaling",
+      "path": "pkg/dsga/prepareexec/executor.go",
+      "sha256": "9aca22e5769366e69f0236608b7681cce3a8a9aa883c8dc40f188711f478bb4d",
+      "matches": [
+        {
+          "line": 163,
+          "text": "return c, fmt.Errorf(\"qualified target changes fixed limits or requires unsupported normal-cap decrease\")"
+        }
+      ],
+      "found": true,
+      "matches_test_snapshot": true,
+      "matches_adopted_contexts": [
+        true,
+        true
+      ]
+    },
+    {
+      "id": "P2-quiesce-reject",
+      "repository": "autoscaling",
+      "path": "pkg/dsga/budget/quiesced.go",
+      "sha256": "0329e8edcaf047077f2ef1d074b9d2ae6a9cd135a4786357f88f8d2c570d01ba",
+      "matches": [
+        {
+          "line": 41,
+          "text": "return fmt.Errorf(\"continuous aggregate quiesce cannot authorize memory.max decrease\")"
+        }
+      ],
+      "found": true,
+      "matches_test_snapshot": true,
+      "matches_adopted_contexts": [
+        true,
+        true
+      ]
+    },
+    {
+      "id": "P2-resourceexec-reject",
+      "repository": "autoscaling",
+      "path": "pkg/dsga/resourceexec/executor.go",
+      "sha256": "83a57114f87a8e3f3274e64182ce85761e003bb5928db6e65c73f49012b1aa82",
+      "matches": [
+        {
+          "line": 153,
+          "text": "return pgexec.AwaitingFact, fmt.Errorf(\"continuous aggregate cannot authorize memory.max decrease\")"
+        }
+      ],
+      "found": true,
+      "matches_test_snapshot": true,
+      "matches_adopted_contexts": [
+        true,
+        true
+      ]
+    },
+    {
+      "id": "P2-root-reject-held",
+      "repository": "autoscaling",
+      "path": "pkg/dsga/resourceguard/guard.go",
+      "sha256": "1192aeec792ff19b213baf3065207ba7ea5b766babad7362393c8ccb570f334a",
+      "matches": [
+        {
+          "line": 446,
+          "text": "return fmt.Errorf(\"%w: target is below original held normal limit\", decreaseErr)"
+        }
+      ],
+      "found": true,
+      "matches_test_snapshot": true,
+      "matches_adopted_contexts": [
+        true,
+        true
+      ]
+    },
+    {
+      "id": "P2-root-reject-actual",
+      "repository": "autoscaling",
+      "path": "pkg/dsga/resourceguard/guard.go",
+      "sha256": "1192aeec792ff19b213baf3065207ba7ea5b766babad7362393c8ccb570f334a",
+      "matches": [
+        {
+          "line": 458,
+          "text": "return fmt.Errorf(\"%w: target is below actual normal limit\", decreaseErr)"
+        }
+      ],
+      "found": true,
+      "matches_test_snapshot": true,
+      "matches_adopted_contexts": [
+        true,
+        true
+      ]
+    },
+    {
+      "id": "P2-policy-filter",
+      "repository": "autoscaling",
+      "path": "pkg/dsga/owner/automatic.go",
+      "sha256": "a88cb1431bfdf057b25e2e8bc5754eb5663ea77f460d6d31f035c4f59d25de44",
+      "matches": [
+        {
+          "line": 136,
+          "text": "eligible[i] = qualified.Limits.MemoryMaxBytes >= limits.MemoryMaxBytes && qualified.Limits.AddressSpaceMaxBytes == limits.AddressSpaceMaxBytes && qualified.Limits.PidsMaxTasks == limits.PidsMaxTasks && qualified.Limits.SystemMemoryMaxBytes == limits.SystemMemoryMaxBytes && len(qualified.Limits.HugePools) == len(limits.HugePools)"
+        }
+      ],
+      "found": true,
+      "matches_test_snapshot": true,
+      "matches_adopted_contexts": [
+        true,
+        true
+      ]
+    },
+    {
+      "id": "P2-physical-writer",
+      "repository": "autoscaling",
+      "path": "pkg/dsga/resourceguard/kernel_linux.go",
+      "sha256": "e2855011bb88fcdfd4def86102c972c2df24b37fcf6711130bb4addc326e2bb5",
+      "matches": [
+        {
+          "line": 555,
+          "text": "return writeNumber(filepath.Join(pgCgroup, \"memory.max\"), uint64(c.MemoryMaxBytes))"
+        }
+      ],
+      "found": true,
+      "matches_test_snapshot": true,
+      "matches_adopted_contexts": [
+        true,
+        true
+      ]
+    },
+    {
+      "id": "P2-original-single-domain",
+      "repository": "autoscaling",
+      "path": "pkg/dsga/resourceguard/kernel_linux.go",
+      "sha256": "e2855011bb88fcdfd4def86102c972c2df24b37fcf6711130bb4addc326e2bb5",
+      "matches": [
+        {
+          "line": 19,
+          "text": "const pgCgroup = \"/sys/fs/cgroup/neon-postgres\""
+        }
+      ],
+      "found": true,
+      "matches_test_snapshot": true,
+      "matches_adopted_contexts": [
+        true,
+        true
+      ]
+    },
+    {
+      "id": "P3-agent-automatic-config",
+      "repository": "autoscaling",
+      "path": "pkg/agent/dsga.go",
+      "sha256": "e1f2a15f1080020d7705ab2be9bed9916489f9a6bf12ec9a3db18d1ed650f592",
+      "matches": [
+        {
+          "line": 44,
+          "text": "AutomaticMemory map[string]policy.Config `json:\"automaticMemory,omitempty\"`"
+        }
+      ],
+      "found": true,
+      "matches_test_snapshot": true,
+      "matches_adopted_contexts": [
+        true,
+        true
+      ]
+    },
+    {
+      "id": "P3-agent-production-worker",
+      "repository": "autoscaling",
+      "path": "pkg/agent/dsga.go",
+      "sha256": "e1f2a15f1080020d7705ab2be9bed9916489f9a6bf12ec9a3db18d1ed650f592",
+      "matches": [
+        {
+          "line": 141,
+          "text": "if err := worker.ConfigureAutomaticMemory(automatic, r.global.kubeClient.CoreV1()); err != nil {"
+        }
+      ],
+      "found": true,
+      "matches_test_snapshot": true,
+      "matches_adopted_contexts": [
+        true,
+        true
+      ]
+    },
+    {
+      "id": "P3-single-runner",
+      "repository": "autoscaling",
+      "path": "pkg/agent/runner.go",
+      "sha256": "2190e91b71d931941ae68ef48b31ef5262d691fb729150cf7ea10e6c2fab1e46",
+      "matches": [
+        {
+          "line": 191,
+          "text": "if managed, err := r.runDSGA(ctx, logger, vmInfoUpdated); managed || err != nil {"
+        }
+      ],
+      "found": true,
+      "matches_test_snapshot": true,
+      "matches_adopted_contexts": [
+        true,
+        true
+      ]
+    },
+    {
+      "id": "P3-managed-monitor-disabled",
+      "repository": "neon",
+      "path": "compute_tools/src/compute.rs",
+      "sha256": "92b4ae142ecfc7a0644f1108bb2e3fd53fb3c61d06b9d42e2b5373998bc6f312",
+      "matches": [
+        {
+          "line": 1217,
+          "text": "&& self.frozen_dsg_startup().is_none() {"
+        }
+      ],
+      "found": true
+    }
+  ],
+  "p2_conclusion": "正式出生生产模式的Prepare/Quiesce/resourceexec/Root仍明确拒绝降低normal；不存在可签收的正常降限profile。本轮不改动这些检查。",
+  "p3_conclusion": "可信Agent automaticMemory已进入原ProductionPGWorker和同一owner执行链；managed Compute不启动旧Monitor是安全设计。",
+  "candidate_four": {
+    "implementation_status": "未实现、未执行、未签发真实物理cap/瞬态余量来源",
+    "scope_if_implemented": "原出生固定工作叶子M之上的normal父预算余量回收，不是动态降低叶子M",
+    "remaining_gate": "原出生拓扑/唯一叶子持续约束，以及支持内核force-charge与层级计数瞬态的真实父内margin；不能仅凭M和写前current发证"
+  }
+}

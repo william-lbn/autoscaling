@@ -1,0 +1,294 @@
+{
+  "schema_version": 1,
+  "feature": "PG17 P2/P3精确Linux Go验收",
+  "passed": true,
+  "counts": {
+    "root": {
+      "pass": 17,
+      "fail": 0,
+      "skip": 0
+    },
+    "subcase": {
+      "pass": 64,
+      "fail": 0,
+      "skip": 0
+    }
+  },
+  "groups": [
+    {
+      "id": "PG17-U-P3-001",
+      "package": "pkg/dsga/policy",
+      "description": "策略窗口、冷却、低压客户端约束、资格与采样失效",
+      "roots": [
+        "TestMemoryPolicyRejectsAmbiguousConfiguration",
+        "TestMemoryPolicyWindowsClientsCooldownAndEmergency",
+        "TestMemoryPolicyResetsOnChangedOrInterruptedFacts",
+        "TestMemoryPolicyRejectsStaleContradictoryAndRepeatedSamples",
+        "TestMemoryPolicyExactBoundsAndSliceIsolation",
+        "TestMemoryPolicySelectsNearestEligibleAndRestartsAfterNeutralLoad"
+      ],
+      "root_counts": {
+        "pass": 6,
+        "fail": 0,
+        "skip": 0
+      },
+      "subcase_counts": {
+        "pass": 28,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    {
+      "id": "PG17-U-P3-002",
+      "package": "pkg/dsga/journal",
+      "description": "未接受Begin原CAS迟到屏障、原身份和恢复",
+      "roots": [
+        "TestUnacceptedBeginFenceOrdersDelayedCASAndRecoversLostReply",
+        "TestUnacceptedBeginFenceRejectsUnexpiredAndDifferentIdentityWithoutWrite"
+      ],
+      "root_counts": {
+        "pass": 2,
+        "fail": 0,
+        "skip": 0
+      },
+      "subcase_counts": {
+        "pass": 7,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    {
+      "id": "PG17-U-P3-003",
+      "package": "pkg/dsga/owner",
+      "description": "同一正式owner自动Grow/Shrink控制组合及来源失效",
+      "roots": [
+        "TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain",
+        "TestProductionAutomaticMemoryKeepsOriginalAddressSpaceAcrossGrowShrink",
+        "TestAutomaticMemoryPendingRejectsLostSessionBeforeAnyIO"
+      ],
+      "root_counts": {
+        "pass": 3,
+        "fail": 0,
+        "skip": 0
+      },
+      "subcase_counts": {
+        "pass": 8,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    {
+      "id": "PG17-U-P3-004",
+      "package": "pkg/agent",
+      "description": "Agent可信自动配置入口与UDS缺省关闭",
+      "roots": [
+        "TestDSGAAutomaticPolicyConfigRequiresExplicitTargetsAndOriginalQualification",
+        "TestDSGALocalControlConfigKeepsDefaultOffAndRejectsUnsafePaths"
+      ],
+      "root_counts": {
+        "pass": 2,
+        "fail": 0,
+        "skip": 0
+      },
+      "subcase_counts": {
+        "pass": 4,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    {
+      "id": "PG17-U-P2-001",
+      "package": "pkg/dsga/resourceguard",
+      "description": "无证明normal下降写前拒绝、旧未知可Observe而不可Replay",
+      "roots": [
+        "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite",
+        "TestLegacyPendingNormalDecreaseRemainsObservableWithoutReplay"
+      ],
+      "root_counts": {
+        "pass": 2,
+        "fail": 0,
+        "skip": 0
+      },
+      "subcase_counts": {
+        "pass": 3,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    {
+      "id": "PG17-U-P2-002",
+      "package": "pkg/dsga/budget",
+      "description": "持续聚合保留成本和无证明降限拒绝",
+      "roots": [
+        "TestContinuousQuiesceKeepsRetainedCostsAndRejectsUnprovedLowerLimit"
+      ],
+      "root_counts": {
+        "pass": 1,
+        "fail": 0,
+        "skip": 0
+      },
+      "subcase_counts": {
+        "pass": 0,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    {
+      "id": "PG17-U-P2-003",
+      "package": "pkg/dsga/owner",
+      "description": "原关闭命令/持续聚合接线保留其他成本",
+      "roots": [
+        "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts"
+      ],
+      "root_counts": {
+        "pass": 1,
+        "fail": 0,
+        "skip": 0
+      },
+      "subcase_counts": {
+        "pass": 14,
+        "fail": 0,
+        "skip": 0
+      }
+    }
+  ],
+  "source_contexts": [
+    {
+      "report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+      "manifest": {
+        "count": 921,
+        "sha256": "62b821f596080f03eb4e9a2800b9e6eb7e540487d839bb2da9efdb86a0116080"
+      },
+      "adopted_root_count": 15,
+      "source_start": {
+        "autoscaling": {
+          "commit": "02a1b0c90e58e3dfed2bb9f2c7c44e98a207ca28",
+          "branch": "codex/dsga-autoscaling-20261019",
+          "status": "## codex/dsga-autoscaling-20261019\n M pkg/dsga/hostguard/model.go\n M pkg/dsga/hostguard/placement.go\n M pkg/dsga/hostguard/store.go\n M pkg/dsga/hostguard/store_test.go\n?? docs/validation/\n?? pkg/dsga/budget/host_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier_test.go"
+        },
+        "neon": {
+          "commit": "3aa86c056ee34bf2c8d4bda1659e897fdbf9e0d9",
+          "branch": "codex/dsga-neon-v3-20261019",
+          "status": "## codex/dsga-neon-v3-20261019...origin/codex/dsga-neon-v3-20261019"
+        },
+        "neon/vendor/postgres-v17": {
+          "commit": "79367196a74eef82e67cac917877d2e6271d3e70",
+          "branch": "",
+          "status": "## HEAD (no branch)"
+        }
+      },
+      "source_end": {
+        "autoscaling": {
+          "commit": "02a1b0c90e58e3dfed2bb9f2c7c44e98a207ca28",
+          "branch": "codex/dsga-autoscaling-20261019",
+          "status": "## codex/dsga-autoscaling-20261019\n M pkg/dsga/hostguard/model.go\n M pkg/dsga/hostguard/placement.go\n M pkg/dsga/hostguard/store.go\n M pkg/dsga/hostguard/store_test.go\n?? docs/validation/\n?? pkg/dsga/budget/host_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier_test.go"
+        },
+        "neon": {
+          "commit": "3aa86c056ee34bf2c8d4bda1659e897fdbf9e0d9",
+          "branch": "codex/dsga-neon-v3-20261019",
+          "status": "## codex/dsga-neon-v3-20261019...origin/codex/dsga-neon-v3-20261019"
+        },
+        "neon/vendor/postgres-v17": {
+          "commit": "79367196a74eef82e67cac917877d2e6271d3e70",
+          "branch": "",
+          "status": "## HEAD (no branch)"
+        }
+      }
+    },
+    {
+      "report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124458z",
+      "manifest": {
+        "count": 924,
+        "sha256": "08f8f257b67ebab05ddfdda24a5d46e5573ec540236c709dd92b0fdb99c5b23c"
+      },
+      "adopted_root_count": 2,
+      "source_start": {
+        "autoscaling": {
+          "commit": "02a1b0c90e58e3dfed2bb9f2c7c44e98a207ca28",
+          "branch": "codex/dsga-autoscaling-20261019",
+          "status": "## codex/dsga-autoscaling-20261019\n M pkg/dsga/admissionexec/service_retained.go\n M pkg/dsga/budgetclaims/reader.go\n M pkg/dsga/hostexec/settle.go\n M pkg/dsga/hostexec/source_gc.go\n M pkg/dsga/hostguard/model.go\n M pkg/dsga/hostguard/placement.go\n M pkg/dsga/hostguard/store.go\n M pkg/dsga/hostguard/store_test.go\n M pkg/dsga/hostscheduler/service.go\n M pkg/dsga/journal/retained_service_completion.go\n M pkg/dsga/journal/service_retained_recovery.go\n M pkg/dsga/owner/initial_service_test.go\n M pkg/dsga/owner/owner.go\n M pkg/dsga/owner/owner_test.go\n M pkg/dsga/owner/pg.go\n M pkg/dsga/owner/service_reopen_dispatch.go\n?? docs/validation/\n?? pkg/dsga/budget/host_barrier.go\n?? pkg/dsga/budgetclaims/prepared_barrier.go\n?? pkg/dsga/hostexec/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier_test.go\n?? pkg/dsga/journal/service_prepared_host.go"
+        },
+        "neon": {
+          "commit": "3aa86c056ee34bf2c8d4bda1659e897fdbf9e0d9",
+          "branch": "codex/dsga-neon-v3-20261019",
+          "status": "## codex/dsga-neon-v3-20261019...origin/codex/dsga-neon-v3-20261019\n M control_plane/src/endpoint.rs\n M pgxn/neon/dsg_control.c\n M pgxn/neon_walredo/inmem_smgr.c"
+        },
+        "neon/vendor/postgres-v17": {
+          "commit": "79367196a74eef82e67cac917877d2e6271d3e70",
+          "branch": "",
+          "status": "## HEAD (no branch)"
+        }
+      },
+      "source_end": {
+        "autoscaling": {
+          "commit": "02a1b0c90e58e3dfed2bb9f2c7c44e98a207ca28",
+          "branch": "codex/dsga-autoscaling-20261019",
+          "status": "## codex/dsga-autoscaling-20261019\n M pkg/dsga/admissionexec/service_retained.go\n M pkg/dsga/budgetclaims/reader.go\n M pkg/dsga/hostexec/settle.go\n M pkg/dsga/hostexec/source_gc.go\n M pkg/dsga/hostguard/model.go\n M pkg/dsga/hostguard/placement.go\n M pkg/dsga/hostguard/store.go\n M pkg/dsga/hostguard/store_test.go\n M pkg/dsga/hostscheduler/service.go\n M pkg/dsga/journal/retained_service_completion.go\n M pkg/dsga/journal/service_retained_recovery.go\n M pkg/dsga/owner/initial_service_test.go\n M pkg/dsga/owner/owner.go\n M pkg/dsga/owner/owner_test.go\n M pkg/dsga/owner/pg.go\n M pkg/dsga/owner/service_reopen_dispatch.go\n?? docs/validation/\n?? pkg/dsga/budget/host_barrier.go\n?? pkg/dsga/budgetclaims/prepared_barrier.go\n?? pkg/dsga/hostexec/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier_test.go\n?? pkg/dsga/journal/service_prepared_host.go"
+        },
+        "neon": {
+          "commit": "3aa86c056ee34bf2c8d4bda1659e897fdbf9e0d9",
+          "branch": "codex/dsga-neon-v3-20261019",
+          "status": "## codex/dsga-neon-v3-20261019...origin/codex/dsga-neon-v3-20261019\n M control_plane/src/endpoint.rs\n M pgxn/neon/dsg_control.c\n M pgxn/neon_walredo/inmem_smgr.c\n?? ci/pg17_memory_cases.json\n?? ci/run_pg17_memory_cases.py"
+        },
+        "neon/vendor/postgres-v17": {
+          "commit": "79367196a74eef82e67cac917877d2e6271d3e70",
+          "branch": "",
+          "status": "## HEAD (no branch)"
+        }
+      }
+    }
+  ],
+  "attempt_history": [
+    {
+      "report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t123952z",
+      "classification": "工具无python3，实际root 0/NotRun"
+    },
+    {
+      "report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+      "counts": {
+        "root": {
+          "pass": 15,
+          "fail": 2,
+          "skip": 0
+        },
+        "subcase": {
+          "pass": 56,
+          "fail": 0,
+          "skip": 0
+        }
+      },
+      "classification": "2个owner根因Mac绝对/private/tmp夹具失败；native根有dsga_native_e2e标签，未进入普通U批次"
+    },
+    {
+      "report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124458z",
+      "counts": {
+        "root": {
+          "pass": 2,
+          "fail": 0,
+          "skip": 0
+        },
+        "subcase": {
+          "pass": 8,
+          "fail": 0,
+          "skip": 0
+        }
+      },
+      "classification": "P1独占代理修跨平台短Unixsocket夹具，仅重跑2个失败根；未全局创建/private/tmp"
+    }
+  ],
+  "boundary": "真实Linux Go race执行；PG/Root/Kube/QMP为明确protocol peers；Root拒绝测试不写真实memory.max；不是Postgres单服务或KVM E2E。",
+  "native_service": {
+    "id": "PG17-S-P2-004",
+    "status": "PASS：真实PG17/生产Router/JWT单服务门禁，Root/Outside仍为模型",
+    "binary": "/data/neon-build/validation/pg17-s-p2-004-native-go-20261030t124719z/export/quiesce-native.test",
+    "binary_sha256": "a601939398b1537c48e2a8f8f716427a3eaf7853159b8b19644242e435af6b94",
+    "runner": "/data/neon-build/scripts/run-native-go-http.sh",
+    "log": "/data/neon-build/logs/native-go-http.log",
+    "receipt": "native-service.json",
+    "raw_report": "/data/neon-build/validation/pg17-s-p2-004-http-20261030T125326Z",
+    "go_root_pass_count": 1,
+    "rust_harness_pass_count": 1
+  },
+  "p2_status": "未完成：无证明normal下降仍被五层拒绝；没有有真实cap来源的新降限profile。",
+  "implementation_edited_by_this_agent": false
+}

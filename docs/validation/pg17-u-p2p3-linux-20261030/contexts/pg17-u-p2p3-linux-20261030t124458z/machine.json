@@ -1,0 +1,15 @@
+{
+  "observed_at_utc": "2026-10-30T12:44:58.848801+00:00",
+  "host_kernel": "6.8.0-147-generic",
+  "architecture": "x86_64",
+  "cpu_count": 16,
+  "meminfo": "MemTotal:       24621936 kB\nMemFree:          451292 kB\nMemAvailable:   22079636 kB\nBuffers:          852096 kB\nCached:         18689680 kB\nSwapCached:            4 kB\nActive:          3186332 kB\nInactive:       17591792 kB\nActive(anon):    1230120 kB\nInactive(anon):    19384 kB\nActive(file):    1956212 kB\nInactive(file): 17572408 kB\nUnevictable:       28876 kB\nMlocked:           27292 kB\nSwapTotal:       8388604 kB\nSwapFree:        8388592 kB\nZswap:                 0 kB\nZswapped:              0 kB\nDirty:             64052 kB\nWriteback:             0 kB\nAnonPages:       1265672 kB\nMapped:           906320 kB\nShmem:              4344 kB\nKReclaimable:    2519968 kB\nSlab:            2899668 kB\nSReclaimable:    2519968 kB\nSUnreclaim:       379700 kB\nKernelStack:       13304 kB\nPageTables:        15392 kB\nSecPageTables:         0 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:    20699572 kB\nCommitted_AS:    4341184 kB\nVmallocTotal:   34359738367 kB\nVmallocUsed:      158372 kB\nVmallocChunk:          0 kB\nPercpu:           111360 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:         0 kB\nShmemHugePages:        0 kB\nShmemPmdMapped:        0 kB\nFileHugePages:         0 kB\nFilePmdMapped:         0 kB\nUnaccepted:            0 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\nDirectMap4k:      266076 kB\nDirectMap2M:     6025216 kB\nDirectMap1G:    20971520 kB\n",
+  "cgroup_fs": "cgroup2fs",
+  "kvm_exists": true,
+  "data_disk": "Filesystem         1B-blocks        Used    Available Use% Mounted on\n/dev/vdb       1055740657664 92821897216 914562658304  10% /data",
+  "hugepages": {
+    "/sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages": "0",
+    "/sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages": "0"
+  },
+  "boundary": "Go测试容器使用宿主内核；本记录不启动真实PG/Guest/KVM/QMP，不写物理memory.max。"
+}

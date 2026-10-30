@@ -1,0 +1,543 @@
+[
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/dsga/policy",
+    "root": "TestMemoryPolicyRejectsAmbiguousConfiguration",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestMemoryPolicyRejectsAmbiguousConfiguration/short-deadline",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsAmbiguousConfiguration/one-target",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsAmbiguousConfiguration/duplicate",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsAmbiguousConfiguration/dimension-reversal",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsAmbiguousConfiguration/size-overflow",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsAmbiguousConfiguration/no-interval",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsAmbiguousConfiguration/no-hysteresis",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsAmbiguousConfiguration/threshold-order",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsAmbiguousConfiguration/missing-targets",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsAmbiguousConfiguration/zero-size",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsAmbiguousConfiguration/buffer-bound",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsAmbiguousConfiguration/gap-too-short",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsAmbiguousConfiguration/threshold-overflow",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsAmbiguousConfiguration",
+        "status": "pass",
+        "elapsed": 0
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/dsga/policy",
+    "root": "TestMemoryPolicyWindowsClientsCooldownAndEmergency",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestMemoryPolicyWindowsClientsCooldownAndEmergency",
+        "status": "pass",
+        "elapsed": 0
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/dsga/policy",
+    "root": "TestMemoryPolicyResetsOnChangedOrInterruptedFacts",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestMemoryPolicyResetsOnChangedOrInterruptedFacts/new-boot",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyResetsOnChangedOrInterruptedFacts/new-generation",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyResetsOnChangedOrInterruptedFacts/new-cap",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyResetsOnChangedOrInterruptedFacts/eligible-changed",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyResetsOnChangedOrInterruptedFacts/sample-gap",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyResetsOnChangedOrInterruptedFacts/current-size",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyResetsOnChangedOrInterruptedFacts",
+        "status": "pass",
+        "elapsed": 0
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/dsga/policy",
+    "root": "TestMemoryPolicyRejectsStaleContradictoryAndRepeatedSamples",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestMemoryPolicyRejectsStaleContradictoryAndRepeatedSamples/current-over-bound",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsStaleContradictoryAndRepeatedSamples/stale",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsStaleContradictoryAndRepeatedSamples/unknown-instance",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsStaleContradictoryAndRepeatedSamples/unknown-generation",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsStaleContradictoryAndRepeatedSamples/no-normal-bound",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsStaleContradictoryAndRepeatedSamples/unconfigured-size",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsStaleContradictoryAndRepeatedSamples/missing-eligibility",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsStaleContradictoryAndRepeatedSamples/unqualified-current",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsStaleContradictoryAndRepeatedSamples/future",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestMemoryPolicyRejectsStaleContradictoryAndRepeatedSamples",
+        "status": "pass",
+        "elapsed": 0
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/dsga/policy",
+    "root": "TestMemoryPolicyExactBoundsAndSliceIsolation",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestMemoryPolicyExactBoundsAndSliceIsolation",
+        "status": "pass",
+        "elapsed": 0
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/dsga/policy",
+    "root": "TestMemoryPolicySelectsNearestEligibleAndRestartsAfterNeutralLoad",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestMemoryPolicySelectsNearestEligibleAndRestartsAfterNeutralLoad",
+        "status": "pass",
+        "elapsed": 0
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+    "root": "TestUnacceptedBeginFenceOrdersDelayedCASAndRecoversLostReply",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestUnacceptedBeginFenceOrdersDelayedCASAndRecoversLostReply/fence-first",
+        "status": "pass",
+        "elapsed": 0.05
+      },
+      {
+        "name": "TestUnacceptedBeginFenceOrdersDelayedCASAndRecoversLostReply/begin-first",
+        "status": "pass",
+        "elapsed": 0.04
+      },
+      {
+        "name": "TestUnacceptedBeginFenceOrdersDelayedCASAndRecoversLostReply/fence-reply-lost",
+        "status": "pass",
+        "elapsed": 0.04
+      },
+      {
+        "name": "TestUnacceptedBeginFenceOrdersDelayedCASAndRecoversLostReply",
+        "status": "pass",
+        "elapsed": 0.13
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/dsga/journal",
+    "root": "TestUnacceptedBeginFenceRejectsUnexpiredAndDifferentIdentityWithoutWrite",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestUnacceptedBeginFenceRejectsUnexpiredAndDifferentIdentityWithoutWrite/unexpired",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestUnacceptedBeginFenceRejectsUnexpiredAndDifferentIdentityWithoutWrite/other-owner",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestUnacceptedBeginFenceRejectsUnexpiredAndDifferentIdentityWithoutWrite/other-boot",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestUnacceptedBeginFenceRejectsUnexpiredAndDifferentIdentityWithoutWrite/other-epoch",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestUnacceptedBeginFenceRejectsUnexpiredAndDifferentIdentityWithoutWrite",
+        "status": "pass",
+        "elapsed": 0.02
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+    "root": "TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124458z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain/root-limit-drift-no-begin",
+        "status": "pass",
+        "elapsed": 0.01
+      },
+      {
+        "name": "TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain/qualification-releasing-no-begin",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain/unqualified-target-no-begin",
+        "status": "pass",
+        "elapsed": 0.03
+      },
+      {
+        "name": "TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain/expired-unaccepted-begin-lost-fence-reply",
+        "status": "pass",
+        "elapsed": 0.22
+      },
+      {
+        "name": "TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain",
+        "status": "pass",
+        "elapsed": 43.16
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+    "root": "TestProductionAutomaticMemoryKeepsOriginalAddressSpaceAcrossGrowShrink",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124458z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestProductionAutomaticMemoryKeepsOriginalAddressSpaceAcrossGrowShrink/root-limit-drift-no-begin",
+        "status": "pass",
+        "elapsed": 0.01
+      },
+      {
+        "name": "TestProductionAutomaticMemoryKeepsOriginalAddressSpaceAcrossGrowShrink/qualification-releasing-no-begin",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestProductionAutomaticMemoryKeepsOriginalAddressSpaceAcrossGrowShrink/unqualified-target-no-begin",
+        "status": "pass",
+        "elapsed": 0.03
+      },
+      {
+        "name": "TestProductionAutomaticMemoryKeepsOriginalAddressSpaceAcrossGrowShrink/expired-unaccepted-begin-lost-fence-reply",
+        "status": "pass",
+        "elapsed": 0.21
+      },
+      {
+        "name": "TestProductionAutomaticMemoryKeepsOriginalAddressSpaceAcrossGrowShrink",
+        "status": "pass",
+        "elapsed": 43.23
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+    "root": "TestAutomaticMemoryPendingRejectsLostSessionBeforeAnyIO",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestAutomaticMemoryPendingRejectsLostSessionBeforeAnyIO",
+        "status": "pass",
+        "elapsed": 0
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/agent",
+    "root": "TestDSGAAutomaticPolicyConfigRequiresExplicitTargetsAndOriginalQualification",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestDSGAAutomaticPolicyConfigRequiresExplicitTargetsAndOriginalQualification/missing-source",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestDSGAAutomaticPolicyConfigRequiresExplicitTargetsAndOriginalQualification/bad-vm-uid",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestDSGAAutomaticPolicyConfigRequiresExplicitTargetsAndOriginalQualification/bad-threshold",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestDSGAAutomaticPolicyConfigRequiresExplicitTargetsAndOriginalQualification/bad-source",
+        "status": "pass",
+        "elapsed": 0
+      },
+      {
+        "name": "TestDSGAAutomaticPolicyConfigRequiresExplicitTargetsAndOriginalQualification",
+        "status": "pass",
+        "elapsed": 0.01
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/agent",
+    "root": "TestDSGALocalControlConfigKeepsDefaultOffAndRejectsUnsafePaths",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestDSGALocalControlConfigKeepsDefaultOffAndRejectsUnsafePaths",
+        "status": "pass",
+        "elapsed": 0
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "root": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/bootstrap",
+        "status": "pass",
+        "elapsed": 0.07
+      },
+      {
+        "name": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/runtime-held",
+        "status": "pass",
+        "elapsed": 0.08
+      },
+      {
+        "name": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite/actual-drift",
+        "status": "pass",
+        "elapsed": 0.11
+      },
+      {
+        "name": "TestProductionNormalDecreaseRejectsBeforeIntentAndKernelWrite",
+        "status": "pass",
+        "elapsed": 0.26
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+    "root": "TestLegacyPendingNormalDecreaseRemainsObservableWithoutReplay",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestLegacyPendingNormalDecreaseRemainsObservableWithoutReplay",
+        "status": "pass",
+        "elapsed": 0.17
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/dsga/budget",
+    "root": "TestContinuousQuiesceKeepsRetainedCostsAndRejectsUnprovedLowerLimit",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestContinuousQuiesceKeepsRetainedCostsAndRejectsUnprovedLowerLimit",
+        "status": "pass",
+        "elapsed": 0.19
+      }
+    ]
+  },
+  {
+    "package": "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+    "root": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts",
+    "source_report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "status": "pass",
+    "terminal_cases": [
+      {
+        "name": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts/retained",
+        "status": "pass",
+        "elapsed": 0.44
+      },
+      {
+        "name": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts/reply-lost-restart",
+        "status": "pass",
+        "elapsed": 0.54
+      },
+      {
+        "name": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts/dispatch-lost-replay",
+        "status": "pass",
+        "elapsed": 0.51
+      },
+      {
+        "name": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts/busy",
+        "status": "pass",
+        "elapsed": 0.5
+      },
+      {
+        "name": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts/ack-pending",
+        "status": "pass",
+        "elapsed": 0.53
+      },
+      {
+        "name": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts/root-drift",
+        "status": "pass",
+        "elapsed": 0.35
+      },
+      {
+        "name": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts/runner-drift",
+        "status": "pass",
+        "elapsed": 0.33
+      },
+      {
+        "name": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts/lower-normal",
+        "status": "pass",
+        "elapsed": 0.26
+      },
+      {
+        "name": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts/post-quiesce-drift",
+        "status": "pass",
+        "elapsed": 0.49
+      },
+      {
+        "name": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts/drain-dispatch",
+        "status": "pass",
+        "elapsed": 0.71
+      },
+      {
+        "name": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts/concurrent",
+        "status": "pass",
+        "elapsed": 0.4
+      },
+      {
+        "name": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts/incomplete-prepared",
+        "status": "pass",
+        "elapsed": 0.21
+      },
+      {
+        "name": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts/unknown-root-replaced",
+        "status": "pass",
+        "elapsed": 0.42
+      },
+      {
+        "name": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts/legacy-close-only",
+        "status": "pass",
+        "elapsed": 0.3
+      },
+      {
+        "name": "TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts",
+        "status": "pass",
+        "elapsed": 6
+      }
+    ]
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t123952z",
+    "classification": "工具无python3，实际root 0/NotRun"
+  },
+  {
+    "report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124057z",
+    "counts": {
+      "root": {
+        "pass": 15,
+        "fail": 2,
+        "skip": 0
+      },
+      "subcase": {
+        "pass": 56,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    "classification": "2个owner根因Mac绝对/private/tmp夹具失败；native根有dsga_native_e2e标签，未进入普通U批次"
+  },
+  {
+    "report": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124458z",
+    "counts": {
+      "root": {
+        "pass": 2,
+        "fail": 0,
+        "skip": 0
+      },
+      "subcase": {
+        "pass": 8,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    "classification": "P1独占代理修跨平台短Unixsocket夹具，仅重跑2个失败根；未全局创建/private/tmp"
+  }
+]

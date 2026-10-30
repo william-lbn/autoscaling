@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "run_id": "pg17-u-p2p3-linux-20261030t124458z",
+  "started_at_utc": "20261030T124458Z",
+  "elapsed_wall_seconds": 284.3449863629976,
+  "dev_exit_code": 0,
+  "command": [
+    "go",
+    "test",
+    "-mod=readonly",
+    "-json",
+    "-race",
+    "-count=1",
+    "-p=2",
+    "-timeout=15m",
+    "./pkg/dsga/owner",
+    "-run",
+    "^(TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain|TestProductionAutomaticMemoryKeepsOriginalAddressSpaceAcrossGrowShrink)$"
+  ],
+  "toolchain": {
+    "go_env": {
+      "CGO_ENABLED": "1",
+      "GOARCH": "amd64",
+      "GOCACHE": "/root/.cache/go-build",
+      "GOMODCACHE": "/go/pkg/mod",
+      "GOOS": "linux",
+      "GOPATH": "/go",
+      "GOVERSION": "go1.24.3"
+    },
+    "go_version": "go version go1.24.3 linux/amd64",
+    "kernel": "6.8.0-147-generic"
+  },
+  "source_manifest_verified": true,
+  "source_manifest": {
+    "count": 924,
+    "sha256": "08f8f257b67ebab05ddfdda24a5d46e5573ec540236c709dd92b0fdb99c5b23c"
+  },
+  "source_start": {
+    "autoscaling": {
+      "commit": "02a1b0c90e58e3dfed2bb9f2c7c44e98a207ca28",
+      "branch": "codex/dsga-autoscaling-20261019",
+      "status": "## codex/dsga-autoscaling-20261019\n M pkg/dsga/admissionexec/service_retained.go\n M pkg/dsga/budgetclaims/reader.go\n M pkg/dsga/hostexec/settle.go\n M pkg/dsga/hostexec/source_gc.go\n M pkg/dsga/hostguard/model.go\n M pkg/dsga/hostguard/placement.go\n M pkg/dsga/hostguard/store.go\n M pkg/dsga/hostguard/store_test.go\n M pkg/dsga/hostscheduler/service.go\n M pkg/dsga/journal/retained_service_completion.go\n M pkg/dsga/journal/service_retained_recovery.go\n M pkg/dsga/owner/initial_service_test.go\n M pkg/dsga/owner/owner.go\n M pkg/dsga/owner/owner_test.go\n M pkg/dsga/owner/pg.go\n M pkg/dsga/owner/service_reopen_dispatch.go\n?? docs/validation/\n?? pkg/dsga/budget/host_barrier.go\n?? pkg/dsga/budgetclaims/prepared_barrier.go\n?? pkg/dsga/hostexec/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier_test.go\n?? pkg/dsga/journal/service_prepared_host.go"
+    },
+    "neon": {
+      "commit": "3aa86c056ee34bf2c8d4bda1659e897fdbf9e0d9",
+      "branch": "codex/dsga-neon-v3-20261019",
+      "status": "## codex/dsga-neon-v3-20261019...origin/codex/dsga-neon-v3-20261019\n M control_plane/src/endpoint.rs\n M pgxn/neon/dsg_control.c\n M pgxn/neon_walredo/inmem_smgr.c"
+    },
+    "neon/vendor/postgres-v17": {
+      "commit": "79367196a74eef82e67cac917877d2e6271d3e70",
+      "branch": "",
+      "status": "## HEAD (no branch)"
+    }
+  },
+  "source_end": {
+    "autoscaling": {
+      "commit": "02a1b0c90e58e3dfed2bb9f2c7c44e98a207ca28",
+      "branch": "codex/dsga-autoscaling-20261019",
+      "status": "## codex/dsga-autoscaling-20261019\n M pkg/dsga/admissionexec/service_retained.go\n M pkg/dsga/budgetclaims/reader.go\n M pkg/dsga/hostexec/settle.go\n M pkg/dsga/hostexec/source_gc.go\n M pkg/dsga/hostguard/model.go\n M pkg/dsga/hostguard/placement.go\n M pkg/dsga/hostguard/store.go\n M pkg/dsga/hostguard/store_test.go\n M pkg/dsga/hostscheduler/service.go\n M pkg/dsga/journal/retained_service_completion.go\n M pkg/dsga/journal/service_retained_recovery.go\n M pkg/dsga/owner/initial_service_test.go\n M pkg/dsga/owner/owner.go\n M pkg/dsga/owner/owner_test.go\n M pkg/dsga/owner/pg.go\n M pkg/dsga/owner/service_reopen_dispatch.go\n?? docs/validation/\n?? pkg/dsga/budget/host_barrier.go\n?? pkg/dsga/budgetclaims/prepared_barrier.go\n?? pkg/dsga/hostexec/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier_test.go\n?? pkg/dsga/journal/service_prepared_host.go"
+    },
+    "neon": {
+      "commit": "3aa86c056ee34bf2c8d4bda1659e897fdbf9e0d9",
+      "branch": "codex/dsga-neon-v3-20261019",
+      "status": "## codex/dsga-neon-v3-20261019...origin/codex/dsga-neon-v3-20261019\n M control_plane/src/endpoint.rs\n M pgxn/neon/dsg_control.c\n M pgxn/neon_walredo/inmem_smgr.c\n?? ci/pg17_memory_cases.json\n?? ci/run_pg17_memory_cases.py"
+    },
+    "neon/vendor/postgres-v17": {
+      "commit": "79367196a74eef82e67cac917877d2e6271d3e70",
+      "branch": "",
+      "status": "## HEAD (no branch)"
+    }
+  },
+  "expected_root_count": 2,
+  "observed_root_count": 2,
+  "missing_roots": [],
+  "unexpected_roots": [],
+  "total_counts": {
+    "root": {
+      "pass": 2,
+      "fail": 0,
+      "skip": 0
+    },
+    "subcase": {
+      "pass": 8,
+      "fail": 0,
+      "skip": 0
+    }
+  },
+  "groups": [
+    {
+      "id": "PG17-U-P3-003",
+      "package": "pkg/dsga/owner",
+      "description": "同一正式owner自动Grow/Shrink控制组合及来源失效",
+      "roots": [
+        "TestProductionAutomaticMemoryPolicyUsesOriginalOwnerAndBudgetChain",
+        "TestProductionAutomaticMemoryKeepsOriginalAddressSpaceAcrossGrowShrink"
+      ],
+      "root_counts": {
+        "pass": 2,
+        "fail": 0,
+        "skip": 0
+      },
+      "subcase_counts": {
+        "pass": 8,
+        "fail": 0,
+        "skip": 0
+      },
+      "terminal_records": 10
+    }
+  ],
+  "raw_report_directory": "/data/neon-build/validation/pg17-u-p2p3-linux-20261030t124458z",
+  "test_boundary": "真实Linux进程中执行Go race测试；PG/Root/Kube/QMP等在自动组合中为明确protocol peers；不等于真实Postgres单服务或KVM E2E。",
+  "p2_status": "未完成：当前生产代码仍拒绝无证明normal下降；没有已接线且具有真实物理cap来源的新normal降限profile。",
+  "p2_required_gates": [
+    "持续私有/后台/PG域kernel与IO完整上界，以及必要后台和恢复活性",
+    "真实Root cap来源、原出生/floor/完整原命令绑定、所有最终写者和Unknown恢复",
+    "若采用固定叶子/可降父profile：原出生前完整拓扑，固定叶子cap和父内force-charge/计数瞬态余量的真实依据",
+    "真实Linux memory.max下降且无OOM/PG重启代偿；然后才可进行真实Guest/VM/Host端到端签收"
+  ],
+  "passed": true
+}

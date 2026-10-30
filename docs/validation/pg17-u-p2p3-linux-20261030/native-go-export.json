@@ -1,0 +1,48 @@
+{
+  "classification": "PG17-S-P2-004 preparation only",
+  "go_compile_command": [
+    "go",
+    "test",
+    "-mod=readonly",
+    "-c",
+    "-race",
+    "-tags",
+    "dsga_native_e2e",
+    "-o",
+    "/out/quiesce-native.test",
+    "./pkg/dsga/budget"
+  ],
+  "source_start": {
+    "commit": "02a1b0c90e58e3dfed2bb9f2c7c44e98a207ca28",
+    "branch": "codex/dsga-autoscaling-20261019",
+    "status": "## codex/dsga-autoscaling-20261019\n M pkg/dsga/admissionexec/service_retained.go\n M pkg/dsga/budgetclaims/reader.go\n M pkg/dsga/hostexec/settle.go\n M pkg/dsga/hostexec/source_gc.go\n M pkg/dsga/hostguard/model.go\n M pkg/dsga/hostguard/placement.go\n M pkg/dsga/hostguard/store.go\n M pkg/dsga/hostguard/store_test.go\n M pkg/dsga/hostscheduler/service.go\n M pkg/dsga/journal/retained_service_completion.go\n M pkg/dsga/journal/service_retained_recovery.go\n M pkg/dsga/owner/initial_service_test.go\n M pkg/dsga/owner/owner.go\n M pkg/dsga/owner/owner_test.go\n M pkg/dsga/owner/pg.go\n M pkg/dsga/owner/service_reopen_dispatch.go\n?? docs/validation/\n?? pkg/dsga/budget/host_barrier.go\n?? pkg/dsga/budgetclaims/prepared_barrier.go\n?? pkg/dsga/hostexec/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier_test.go\n?? pkg/dsga/journal/service_prepared_host.go"
+  },
+  "source_end": {
+    "commit": "02a1b0c90e58e3dfed2bb9f2c7c44e98a207ca28",
+    "branch": "codex/dsga-autoscaling-20261019",
+    "status": "## codex/dsga-autoscaling-20261019\n M pkg/dsga/admissionexec/service_retained.go\n M pkg/dsga/budgetclaims/reader.go\n M pkg/dsga/hostexec/settle.go\n M pkg/dsga/hostexec/source_gc.go\n M pkg/dsga/hostguard/model.go\n M pkg/dsga/hostguard/placement.go\n M pkg/dsga/hostguard/store.go\n M pkg/dsga/hostguard/store_test.go\n M pkg/dsga/hostscheduler/service.go\n M pkg/dsga/journal/retained_service_completion.go\n M pkg/dsga/journal/service_retained_recovery.go\n M pkg/dsga/owner/initial_service_test.go\n M pkg/dsga/owner/owner.go\n M pkg/dsga/owner/owner_test.go\n M pkg/dsga/owner/pg.go\n M pkg/dsga/owner/service_reopen_dispatch.go\n?? docs/validation/\n?? pkg/dsga/budget/host_barrier.go\n?? pkg/dsga/budgetclaims/prepared_barrier.go\n?? pkg/dsga/hostexec/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier_test.go\n?? pkg/dsga/journal/service_prepared_host.go"
+  },
+  "exit_code": 0,
+  "report": "/data/neon-build/validation/pg17-s-p2-004-native-go-20261030t124719z",
+  "native_service_executed": false,
+  "boundary": "仅编译dsga_native_e2e tagged race测试；真实PG/生产Rust Router/JWT由后续单根cargo harness执行，Root/Outside仍是明确模型，不是KVM/物理cap E2E。",
+  "binary": "/data/neon-build/validation/pg17-s-p2-004-native-go-20261030t124719z/export/quiesce-native.test",
+  "binary_sha256": "a601939398b1537c48e2a8f8f716427a3eaf7853159b8b19644242e435af6b94",
+  "source_manifest_sha256": "08f8f257b67ebab05ddfdda24a5d46e5573ec540236c709dd92b0fdb99c5b23c",
+  "source_file_count": 924,
+  "source_manifest_verified": true,
+  "toolchain": {
+    "go_env": {
+      "CGO_ENABLED": "1",
+      "GOARCH": "amd64",
+      "GOCACHE": "/root/.cache/go-build",
+      "GOMODCACHE": "/go/pkg/mod",
+      "GOOS": "linux",
+      "GOPATH": "/go",
+      "GOVERSION": "go1.24.3"
+    },
+    "go_version": "go version go1.24.3 linux/amd64",
+    "kernel": "6.8.0-147-generic"
+  },
+  "dockerfile_sha256": "1df881df7d8d98488fbbfd14fec7e8c117b38b9f1edba84d1d49e568623c4880"
+}

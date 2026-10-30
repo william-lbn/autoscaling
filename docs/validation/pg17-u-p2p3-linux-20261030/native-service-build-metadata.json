@@ -1,0 +1,65 @@
+{
+  "buildx.build.provenance": {
+    "builder": {
+      "id": ""
+    },
+    "buildType": "https://mobyproject.org/buildkit@v1",
+    "materials": [
+      {
+        "uri": "pkg:docker/127.0.0.1:5001/neon/pg17-native-test@79367196-injection-v1?platform=linux%2Famd64",
+        "digest": {
+          "sha256": "b2c2014bee547ed105d299429771124b626cf5464fa8d640f5eca38e6601af71"
+        }
+      }
+    ],
+    "invocation": {
+      "configSource": {
+        "entryPoint": "Dockerfile"
+      },
+      "parameters": {
+        "frontend": "dockerfile.v0",
+        "args": {
+          "build-arg:VALIDATION_NONCE": "1793364806099300575",
+          "context:go-native": "local:go-native",
+          "force-network-mode": "host",
+          "frontend.caps": "moby.buildkit.frontend.contexts+forward",
+          "sharedkey:localdir:go-native": "export:59a551837939fa4b"
+        },
+        "locals": [
+          {
+            "name": "context"
+          },
+          {
+            "name": "dockerfile"
+          },
+          {
+            "name": "go-native"
+          }
+        ],
+        "root": {
+          "configSource": {
+            "path": "Dockerfile"
+          },
+          "request": {
+            "args": {
+              "build-arg:VALIDATION_NONCE": "1793364806099300575",
+              "context:go-native": "local:go-native",
+              "force-network-mode": "host",
+              "frontend.caps": "moby.buildkit.frontend.contexts+forward",
+              "sharedkey:localdir:go-native": "export:59a551837939fa4b",
+              "vcs:localdir:context": ".",
+              "vcs:revision": "3aa86c056ee34bf2c8d4bda1659e897fdbf9e0d9",
+              "vcs:source": "https://github.com/william-lbn/neon.git"
+            }
+          }
+        },
+        "compatibilityVersion": 30
+      },
+      "environment": {
+        "dockerfileVersion": "1.28.0",
+        "platform": "linux/amd64"
+      }
+    }
+  },
+  "buildx.build.ref": "neon-data/neon-data0/ag0ujvd8q41tihsc74bvyjjpr"
+}

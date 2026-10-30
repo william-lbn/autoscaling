@@ -1,0 +1,17 @@
+{
+  "autoscaling": {
+    "commit": "02a1b0c90e58e3dfed2bb9f2c7c44e98a207ca28",
+    "branch": "codex/dsga-autoscaling-20261019",
+    "status": "## codex/dsga-autoscaling-20261019\n M pkg/dsga/admissionexec/service_retained.go\n M pkg/dsga/budgetclaims/reader.go\n M pkg/dsga/hostexec/settle.go\n M pkg/dsga/hostexec/source_gc.go\n M pkg/dsga/hostguard/model.go\n M pkg/dsga/hostguard/placement.go\n M pkg/dsga/hostguard/store.go\n M pkg/dsga/hostguard/store_test.go\n M pkg/dsga/hostscheduler/service.go\n M pkg/dsga/journal/retained_service_completion.go\n M pkg/dsga/journal/service_retained_recovery.go\n M pkg/dsga/owner/initial_service_test.go\n M pkg/dsga/owner/owner.go\n M pkg/dsga/owner/owner_test.go\n M pkg/dsga/owner/pg.go\n M pkg/dsga/owner/service_reopen_dispatch.go\n?? docs/validation/\n?? pkg/dsga/budget/host_barrier.go\n?? pkg/dsga/budgetclaims/prepared_barrier.go\n?? pkg/dsga/hostexec/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier.go\n?? pkg/dsga/hostguard/prepared_barrier_test.go\n?? pkg/dsga/journal/service_prepared_host.go"
+  },
+  "neon": {
+    "commit": "3aa86c056ee34bf2c8d4bda1659e897fdbf9e0d9",
+    "branch": "codex/dsga-neon-v3-20261019",
+    "status": "## codex/dsga-neon-v3-20261019...origin/codex/dsga-neon-v3-20261019\n M control_plane/src/endpoint.rs\n M pgxn/neon/dsg_control.c\n M pgxn/neon_walredo/inmem_smgr.c\n?? ci/pg17_memory_cases.json\n?? ci/run_pg17_memory_cases.py"
+  },
+  "neon/vendor/postgres-v17": {
+    "commit": "79367196a74eef82e67cac917877d2e6271d3e70",
+    "branch": "",
+    "status": "## HEAD (no branch)"
+  }
+}

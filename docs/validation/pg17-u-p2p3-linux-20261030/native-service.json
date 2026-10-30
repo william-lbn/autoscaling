@@ -1,0 +1,38 @@
+{
+  "id": "PG17-S-P2-004",
+  "passed": true,
+  "raw_report": "/data/neon-build/validation/pg17-s-p2-004-http-20261030T125326Z",
+  "exit_code": 0,
+  "go_root": "TestNativeQuiesceConsumptionKeepsRetainedPayload",
+  "go_root_pass_count": 1,
+  "go_elapsed_seconds": 0.06,
+  "rust_harness": "native_go_quiesce_consumes_real_close_and_keeps_retained_costs",
+  "rust_counts": {
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 9
+  },
+  "rust_elapsed_seconds": 6.97,
+  "image": {
+    "image_digest": "sha256:b2c2014bee547ed105d299429771124b626cf5464fa8d640f5eca38e6601af71",
+    "config_digest": "sha256:82676fd42057e84a3ec9f0c5570947eccacbcb824a39ddc2e00a617a177a9302",
+    "user": "nonroot",
+    "working_dir": "/workspace/neon"
+  },
+  "network": "RUN --network=none, only loopback within test",
+  "go_binary_sha256": "a601939398b1537c48e2a8f8f716427a3eaf7853159b8b19644242e435af6b94",
+  "native_pg_sha": "79367196a74eef82e67cac917877d2e6271d3e70",
+  "receipt_files": {
+    "run.log": "f450b987774253b9e608fb971296d103c128a73aafe0154f0c272345f33e0df8",
+    "build-metadata.json": "8d32451276f237b59cdee008885da9cf8b79b3c8dbfcf68854d777bc00caf9fb",
+    "neon-head.txt": "741c8701494a5a02211e9c5577e3ae17a509b403d1efa780fb8cbf66c9ddde18",
+    "scope.txt": "b9e474a78d3ce1e5686b551703b9f840c5442bf57c8c3a30010bac50aa652234",
+    "Dockerfile": "20b3847d7bfa589be1ffc2cd55723d144349ff86acb0e07fcbecef7b74c68d41",
+    "neon-source-status.txt": "2397d3a50e913d20a2184212cf4f02743f03e1552818b966bd820d3e2208695a",
+    "verified-image-user.json": "33522c99eaed27fa9628965a7f6d33768897143ff1d05d2e39fbc567a52e9efd",
+    "rust-test-source.txt": "47b0947ac68c92a1a5afd233157aaf449683648dde5c08b06df2bfcefc05b04c",
+    "exit-code.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  "scope": "真实隔离PG17→正式SQL→生产Rust Router/JWT→Go客户端；保留实际2PC/DSM并消费同点Quiesce。Root/Outside是明确Go模型；0 resize，不是物理normal cap下降或KVM/VM E2E。"
+}
