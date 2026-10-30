@@ -1,0 +1,204 @@
+{
+  "status": "PASS_CAPABILITY_COMPONENT_ONLY",
+  "TEST_ONLY": true,
+  "build": {
+    "exitCode": 0,
+    "elapsedSeconds": 396.55474272799984,
+    "TEST_ONLY": true,
+    "formalImagePublished": false,
+    "expectedRelease": "6.12.26-william-normal-v1-b20ac4f85d74",
+    "GuestBootExecuted": false,
+    "actualBuildRelease": "6.12.26-william-normal-v1-b20ac4f85d74",
+    "vmlinuzSha256": "552ffabd096736e38d2d4b6c119533e4a26c2b9a47f6e04a8e1795a084f8d85d",
+    "resolvedConfigSha256": "935e43773879d6a4f5c27c2ef966314de7e0e463a4a9bebefa3dc5dcf283ce5b",
+    "buildNotesSha256": "3d22f15739bcd10735099d344c1c306f6bd7eccfbed8b3e4f1295e5893036d6b"
+  },
+  "kernelTuple": {
+    "release": "6.12.26-william-normal-v1-b20ac4f85d74",
+    "artifactSha256": "552ffabd096736e38d2d4b6c119533e4a26c2b9a47f6e04a8e1795a084f8d85d",
+    "runningNotesSha256": "3d22f15739bcd10735099d344c1c306f6bd7eccfbed8b3e4f1295e5893036d6b",
+    "resolvedKernelConfigSha256": "935e43773879d6a4f5c27c2ef966314de7e0e463a4a9bebefa3dc5dcf283ce5b",
+    "sourceConfigSha256": "b20ac4f85d74b6dfca4f207cbee3cd72f6b34307fc1a4fee13519eba244ed1f5",
+    "patchSetCanonicalSha256": "d3b3b463402e6df0058d3a5fc3b6f944d0efda3183c00652fe6e50fb2d38a268",
+    "patchSetDigestMethod": "sha256 of JSON sorted compact map relative patch file path to file sha256",
+    "patchFiles": {
+      "patches/0001-x86-mm-Update-mapped-addresses-in-phys_-pmd-pud-_ini.patch": "01bd47eaea82fb99eea4cb25be1063e6f2f14e3e03289be644a9bac03edfba5e",
+      "patches/0002-x86-mm-Allow-error-returns-from-phys_-_init.patch": "b4cf630bf5cd5e64b6702cbc5aa952bc718c45d22bca5ec2fb082fede7d6d0d5",
+      "patches/0003-x86-mm-Handle-alloc-failure-in-phys_-_init.patch": "9ee75c0a474f68303ef8c32141445b687056c228cfe31f822e983206139112d0",
+      "patches/0004-x86-mm-Use-GFP_KERNEL-for-alloc_low_pages-after-boot.patch": "5ac67ef964af106fc5f36bdd3c711b9241bfdfac19b5c9faa6c162b765004ae8",
+      "patches/0005-Neon-mm-Add-debug-logs-for-kcompactd-offlining-race.patch": "959e9d4701586312a3dd9e03386c849efd3f7b78038fd13dd56c5e58d6d037e4"
+    }
+  },
+  "cases": {
+    "old-control": {
+      "release": "6.12.26-william-bd33f7c78026",
+      "runningNotesSha256": "b52a6321c44be2b8d138e9ca990ec86413c3744a189a118ed69aa295cb8ef03d",
+      "lsm": [
+        "lockdown",
+        "capability",
+        "yama",
+        "apparmor"
+      ],
+      "bootID": "1c65339e-5db4-44e5-bdcd-ed4a24ea1351",
+      "cmdline": "console=ttyS0,115200 rdinit=/init panic=-1 kernelcore=256M memhp_default_state=online_movable cgroup.memory=nokmem,nosocket,nobpf pg17_kernel_variant=1",
+      "possibleCPUs": "0-1",
+      "onlineMemoryPolicy": "online_movable",
+      "UMHReadback": "/umh-helper.sh",
+      "UMHTriggerExit": 0,
+      "UMHMarker": "present",
+      "targetUMHMarkerContentPresent": true,
+      "landlock": {
+        "scope": "single-process-capability-only",
+        "abi": -1,
+        "stage": "query-ABI",
+        "errno": 95,
+        "enforced": false,
+        "vm_shrink_permit": false
+      },
+      "landlockProbeExit": 2,
+      "GuestExit": 2,
+      "wireRootStatus": "PASS_COMPONENT_ONLY",
+      "wireSubcases": 10,
+      "directPID1AndShellExec": "PASS",
+      "zones": [
+        {
+          "node": 0,
+          "name": "DMA32",
+          "presentPages": 66462
+        },
+        {
+          "node": 0,
+          "name": "Normal",
+          "presentPages": 0
+        },
+        {
+          "node": 0,
+          "name": "Movable",
+          "presentPages": 195551
+        }
+      ],
+      "run": {
+        "variant": "old-control",
+        "hostQemuExitCode": 0,
+        "elapsedSeconds": 3.4492311060021166,
+        "startUTC": "2026-10-30T17:15:17.494753+00:00",
+        "endUTC": "2026-10-30T17:15:20.944006+00:00",
+        "kernelSha256": "0ab3f71456c783452a49d50752a9b1945c2da399588febed409637d7af6891a0",
+        "initramfsSha256": "b38c151fd8185699d2b8942aae8491d70920aff7054de8723f90e6d427d0494c",
+        "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+        "accel": "kvm",
+        "TCGFallback": false,
+        "GuestNIC": "none",
+        "consoleSha256": "9e4c013a31690f58f5804067aa707fd41761e94e0e553c7b3ef961d0cf1d2afb",
+        "GuestResultMustBeEvaluatedSeparately": true
+      },
+      "status": "PASS_UMH_POSITIVE_CONTROL; LANDLOCK_NOT_SUPPORTED"
+    },
+    "normal-v1": {
+      "release": "6.12.26-william-normal-v1-b20ac4f85d74",
+      "runningNotesSha256": "3d22f15739bcd10735099d344c1c306f6bd7eccfbed8b3e4f1295e5893036d6b",
+      "lsm": [
+        "lockdown",
+        "capability",
+        "landlock",
+        "yama",
+        "apparmor"
+      ],
+      "bootID": "b274b703-c1af-4ddd-b587-94370752f2b7",
+      "cmdline": "console=ttyS0,115200 rdinit=/init panic=-1 kernelcore=256M memhp_default_state=online_movable cgroup.memory=nokmem,nosocket,nobpf pg17_kernel_variant=1",
+      "possibleCPUs": "0-1",
+      "onlineMemoryPolicy": "online_movable",
+      "UMHReadback": "/umh-helper.sh",
+      "UMHTriggerExit": 0,
+      "UMHMarker": "absent",
+      "targetUMHMarkerContentPresent": false,
+      "landlock": {
+        "scope": "single-process-capability-only",
+        "abi": 6,
+        "stage": "deny-allow-complete",
+        "uid": 0,
+        "page_size": 4096,
+        "preflight_both_readable": true,
+        "allowed_read": true,
+        "denied_read_errno": 13,
+        "nnp": 1,
+        "enforced": true,
+        "vm_shrink_permit": false
+      },
+      "landlockProbeExit": 0,
+      "GuestExit": 0,
+      "wireRootStatus": "PASS_COMPONENT_ONLY",
+      "wireSubcases": 10,
+      "directPID1AndShellExec": "PASS",
+      "zones": [
+        {
+          "node": 0,
+          "name": "DMA32",
+          "presentPages": 66462
+        },
+        {
+          "node": 0,
+          "name": "Normal",
+          "presentPages": 0
+        },
+        {
+          "node": 0,
+          "name": "Movable",
+          "presentPages": 195551
+        }
+      ],
+      "run": {
+        "variant": "normal-v1",
+        "hostQemuExitCode": 0,
+        "elapsedSeconds": 8.439480273002118,
+        "startUTC": "2026-10-30T17:15:17.495937+00:00",
+        "endUTC": "2026-10-30T17:15:25.935433+00:00",
+        "kernelSha256": "552ffabd096736e38d2d4b6c119533e4a26c2b9a47f6e04a8e1795a084f8d85d",
+        "initramfsSha256": "b38c151fd8185699d2b8942aae8491d70920aff7054de8723f90e6d427d0494c",
+        "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+        "accel": "kvm",
+        "TCGFallback": false,
+        "GuestNIC": "none",
+        "consoleSha256": "f7616337cd139c7fa2fc949d996ceed39235d68a58417d5145b7465501efb9c7",
+        "GuestResultMustBeEvaluatedSeparately": true
+      },
+      "status": "PASS_CAPABILITY_COMPONENT_ONLY",
+      "pageSizeBytes": 4096,
+      "nonMovablePresentBytes": 272228352,
+      "movablePresentBytes": 800976896
+    }
+  },
+  "stableComponentCases": [
+    {
+      "id": "PG17-S-UMH-001",
+      "status": "PASS",
+      "scope": "same-initramfs old positive and normal-v1 negative uevent helper control; compile-time empty UMH path binding"
+    },
+    {
+      "id": "PG17-S-LANDLOCK-001",
+      "status": "PASS",
+      "scope": "normal active LSM + ABI6 + single-thread read allow/deny; old errno95 recorded unsupported"
+    },
+    {
+      "id": "PG17-S-WIRE-001",
+      "status": "PASS_COMPONENT_ONLY",
+      "scope": "existing ID extra kernel platform evidence",
+      "coverageDelta": 0
+    }
+  ],
+  "boundaries": {
+    "PGStarted": false,
+    "productionRootEnrolled": false,
+    "normalMemoryLimitWritten": false,
+    "VMResizeAuthorized": false,
+    "KubernetesE2E": false,
+    "oldPhysicalKernelGuardRelaxedOrRunOnVariant": false,
+    "completePhysicalOrInFlightBudgetCertified": false,
+    "hostNetworkConfigOrExistingVMChanged": false
+  },
+  "collectorNote": "lsm sysfs has no newline; raw output joins following BOOT_ID marker; parser delimits explicit marker, originals retained",
+  "unobservedInThisPair": [
+    "new normal runtime swap/THP/KSM guard checks not separately invoked; actual production observer must still execute all guards"
+  ],
+  "completedUTC": "2026-10-30T17:20:34.223758+00:00"
+}

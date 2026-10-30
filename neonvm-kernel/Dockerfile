@@ -65,7 +65,8 @@ RUN set -e \
 # Build the kernel on amd64
 FROM build-deps AS build_amd64
 ARG KERNEL_VERSION
-ADD linux-config-amd64-${KERNEL_VERSION} linux-${KERNEL_VERSION}/.config
+ARG AMD64_KERNEL_CONFIG=linux-config-amd64-${KERNEL_VERSION}
+ADD ${AMD64_KERNEL_CONFIG} linux-${KERNEL_VERSION}/.config
 ARG VERSION_SUFFIX
 RUN cd linux-${KERNEL_VERSION} \
 	&& make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION="$VERSION_SUFFIX" -j `nproc`

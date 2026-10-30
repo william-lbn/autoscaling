@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "scope": "config-only-not-boot-qualification",
+  "kernel_version": "6.12.26",
+  "architecture": "amd64",
+  "original_config": "neonvm-kernel/linux-config-amd64-6.12.26",
+  "original_sha256": "639ea751eb4ae7743e2695368286d1aeb0417f6680d6ac24ae3b051948a94b96",
+  "normal_v1_config": "neonvm-kernel/profiles/normal-v1/linux-config-amd64-6.12.26",
+  "normal_v1_sha256": "b20ac4f85d74b6dfca4f207cbee3cd72f6b34307fc1a4fee13519eba244ed1f5",
+  "semantic_changes": {
+    "CONFIG_STATIC_USERMODEHELPER": {
+      "from": "not set",
+      "to": "y"
+    },
+    "CONFIG_STATIC_USERMODEHELPER_PATH": {
+      "from": "not present",
+      "to": ""
+    },
+    "CONFIG_LSM": {
+      "from": "yama,loadpin,integrity,apparmor",
+      "to": "landlock,yama,loadpin,integrity,apparmor"
+    }
+  },
+  "old_artifact_qualified": false,
+  "kernel_build": "not_run",
+  "original_boot": "not_run",
+  "normal_decrease_authorized": false,
+  "landlock_source": {
+    "setup": "security/landlock/setup.c:75 (default MUTABLE; no LSM_ORDER_FIRST)",
+    "selection": "security/security.c:327; builtin CONFIG_LSM may be overridden by exact boot lsm=",
+    "runtime_qualification": "requires original boot LSM source and real landlock ABI/enforcement tests"
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "source_root": "/data/neon-build/cache/buildkit/runc-overlayfs/snapshots/snapshots/287/fs/build/linux-6.12.26",
+  "scope": "exact source audit; not running kernel proof",
+  "files": {
+    "security/Kconfig": {
+      "sha256": "8c7e3705e139d0bbc7593d0fed181309b648c8d6f9b94b52db9486f7bc05f723",
+      "bytes": 10466
+    },
+    "security/security.c": {
+      "sha256": "4502c95ba0a1ceeb3fb72bde8e2f5a8452fda859eb2454c318d72e09fba120b8",
+      "bytes": 176625
+    },
+    "security/landlock/setup.c": {
+      "sha256": "14d22c1192c363be9879cc9607ebf0ea808f96438a0f8786e41deeddfddcdbff",
+      "bytes": 1766
+    },
+    "security/landlock/syscalls.c": {
+      "sha256": "27d8291a0c2d65dec64e94ab33ce8acd62932f40eda8930809ee050177c9ad7c",
+      "bytes": 15885
+    },
+    "security/landlock/fs.c": {
+      "sha256": "d1e2f30497dcb07614d1af4ba82eb81ccc0222d405ba11e4f06197af1694bebf",
+      "bytes": 55782
+    },
+    "include/linux/lsm_hooks.h": {
+      "sha256": "714015cd264465662817df66f14961bfa0a095cffab8b3b21780d587d2aa60b2",
+      "bytes": 6135
+    },
+    "kernel/umh.c": {
+      "sha256": "f7d4a66641ed3a069f99a38ed6b174da78a9736933cd510c8c6f2ac1dba6d68f",
+      "bytes": 15631
+    },
+    "init/main.c": {
+      "sha256": "dfa6cecef3ee0c4ef3e9768d161f7739d9fbfa5c0a821c11ee53afde8dca3ec6",
+      "bytes": 39518
+    },
+    "mm/mm_init.c": {
+      "sha256": "be16002f99c4fe1b26067bc73f01ee79a649f8176c4f84ec9598c29cedb20b30",
+      "bytes": 76585
+    },
+    "include/asm-generic/tlb.h": {
+      "sha256": "7101ac0b6cbe4822ef326fcff481e766253742aa4d2a26497fcb66284506196f",
+      "bytes": 22010
+    },
+    "arch/x86/include/asm/tlb.h": {
+      "sha256": "18119e76adb028107dbef0d86507c5ea43007b4515e379048d14c6137d6d0f0a",
+      "bytes": 1207
+    },
+    "mm/mmu_gather.c": {
+      "sha256": "129bfb331764a879f2f2ad3ec9776f4fc813e16b2e256b6c62f26e9091ec58ea",
+      "bytes": 12555
+    },
+    "mm/madvise.c": {
+      "sha256": "a023125a13ecd35160ff8ba566967b225719d370fbe95178af536a81ffcf31e5",
+      "bytes": 41107
+    },
+    "mm/vmscan.c": {
+      "sha256": "9f36b31c5cbd6c430d8714e88e2465da7613862612c412e49bd1f33baac46275",
+      "bytes": 215787
+    },
+    "mm/page_alloc.c": {
+      "sha256": "1910e8ae784507957fe92351be7f0a075ab15498bc5f740384c57fc14ca45802",
+      "bytes": 202967
+    },
+    "mm/vmstat.c": {
+      "sha256": "1f4c70d1813b06de3481749c9488e65020a1fcbcc230b0fef9e2fc1cd327a13d",
+      "bytes": 58233
+    },
+    "mm/memory_hotplug.c": {
+      "sha256": "351267858c815b6b116477f8acb3df0f391570d438caee2f7762ff479a58e79c",
+      "bytes": 69079
+    },
+    "mm/compaction.c": {
+      "sha256": "9adbb239007de4112ca6f88307e33d72861ec7acc14a8acfee2d0dc3c31a65cf",
+      "bytes": 94932
+    },
+    "mm/shmem.c": {
+      "sha256": "db69c674ea4f5c07f8b8e0a13bb7f53cd16d81ea14ba2ed24a220a39edec7e1c",
+      "bytes": 145082
+    },
+    "mm/memory.c": {
+      "sha256": "f64f682650a71d6996ef88645fe4469827892117c531a840fc0afe2c948860b0",
+      "bytes": 195851
+    },
+    "mm/memcontrol.c": {
+      "sha256": "8f0e3aef837ebc67660372618a8394c17973c5c597811f7b96b6bce2f2b02e5e",
+      "bytes": 145397
+    },
+    "mm/page_counter.c": {
+      "sha256": "e84cd7e74e3edc9b049a2cad5ddf356bc5b15f750acbd8d778c3ad2a5d972eaf",
+      "bytes": 14100
+    },
+    "fs/file_table.c": {
+      "sha256": "797d7c508621a3e8f7ccefe36836eddf0093b661ec3e88701a097578c63580b7",
+      "bytes": 14093
+    },
+    "kernel/task_work.c": {
+      "sha256": "4472818f9e549cad13e846517559afeb621965f40f6633386d43059f943fd2b0",
+      "bytes": 6893
+    },
+    "drivers/virtio/virtio_mem.c": {
+      "sha256": "1d3b4dc332f1e8b7ce51e97267d5db811f6575131bafbc01fbf88c6b93de1de0",
+      "bytes": 84367
+    },
+    "block/bdev.c": {
+      "sha256": "e54a127360188cf3f8e99385e1bc53deec746b4d179a580aeb594b99c8d0c879",
+      "bytes": 34272
+    },
+    "fs/ext4/super.c": {
+      "sha256": "c0041c5a2662277cfdfc3ab1595eb32e08cd8f78ba9fa4bf54ee660df253865a",
+      "bytes": 212084
+    },
+    "fs/buffer.c": {
+      "sha256": "adaaa2c33de16df09ca53d05380151f5c89cb182d3c33aa8f5141ab8d26424fd",
+      "bytes": 85330
+    },
+    "lib/percpu_counter.c": {
+      "sha256": "2c26e67751f939dfb21ff6221884280ae84a2a94a54de4468fb9dc8746130d6d",
+      "bytes": 10932
+    }
+  }
+}

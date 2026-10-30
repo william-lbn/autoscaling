@@ -1,0 +1,17 @@
+{
+  "baseHead": "7ed9356424474f64489dec1f92a9eb864aaead71",
+  "sourceDockerfileBeforeSha256": "be8aaf29cd630420259cb1533896950ef3c31241faf38cdd23fcccb232f39b29",
+  "sourceDockerfileAfterSha256": "2f8434f5f39f3c7c1e4f513c3361ba971140c3ee60c3d562030b3ec285be4abe",
+  "onlyChange": "optional AMD64_KERNEL_CONFIG immediately before amd64 ADD; default original filename",
+  "ARMChanged": false,
+  "buildDepsOrSourceDownloadChanged": false,
+  "baseConfigSha256": "639ea751eb4ae7743e2695368286d1aeb0417f6680d6ac24ae3b051948a94b96",
+  "normalConfigSha256": "b20ac4f85d74b6dfca4f207cbee3cd72f6b34307fc1a4fee13519eba244ed1f5",
+  "configProducerOwner": "P2; reviewer did not modify config",
+  "normalConfigChanges": [
+    "CONFIG_STATIC_USERMODEHELPER=y",
+    "CONFIG_STATIC_USERMODEHELPER_PATH=\"\"",
+    "CONFIG_LSM=\"landlock,yama,loadpin,integrity,apparmor\""
+  ],
+  "guardConstantsChanged": false
+}

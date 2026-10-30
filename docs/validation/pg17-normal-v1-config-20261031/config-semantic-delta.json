@@ -1,0 +1,21 @@
+{
+  "original_sha256": "639ea751eb4ae7743e2695368286d1aeb0417f6680d6ac24ae3b051948a94b96",
+  "normal_v1_sha256": "b20ac4f85d74b6dfca4f207cbee3cd72f6b34307fc1a4fee13519eba244ed1f5",
+  "changes": {
+    "CONFIG_LSM": {
+      "old": "\"yama,loadpin,integrity,apparmor\"",
+      "new": "\"landlock,yama,loadpin,integrity,apparmor\""
+    },
+    "CONFIG_STATIC_USERMODEHELPER": {
+      "old": "n",
+      "new": "y"
+    },
+    "CONFIG_STATIC_USERMODEHELPER_PATH": {
+      "old": null,
+      "new": "\"\""
+    }
+  },
+  "all_other_options_identical": true,
+  "original_bytes_unchanged": true,
+  "scope": "static_config_review_only; build and KVM receipts owned by Helm"
+}
