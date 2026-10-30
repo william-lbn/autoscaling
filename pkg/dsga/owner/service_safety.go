@@ -166,6 +166,11 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 			return true, pgexec.AwaitingFact, fmt.Errorf("service closure replay differs from original owner/command")
 		}
 		if !c.Pending() {
+			if replay == "" && c.ResourceRecovery != nil && w.resources != nil {
+				// 只查已持久资源恢复，不在普通轮询中创建取消/重发Apply。
+				_, progress, err := w.resources.RecoverServiceGuest(ctx, s, digest, false)
+				return true, progress, errors.Join(ErrServiceSafety, err)
+			}
 			return true, pgexec.AwaitingFact, ErrServiceSafety
 		}
 		if n := c.Continuation; n != nil {

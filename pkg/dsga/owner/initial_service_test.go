@@ -359,8 +359,10 @@ func productionInitialService(t *testing.T, mode string) {
 	committedCompletionTransfer := mode == "resume-safety-recover-complete-takeover"
 	finalizationTransfer := strings.HasPrefix(mode, "finalize-safety-recover-") && strings.HasSuffix(mode, "takeover")
 	finalizationCancel := mode == "finalize-safety-recover-planned-unchanged-takeover"
-	closureTransfer := mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
+	closureTransfer := strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
 	pgSafety := strings.HasPrefix(mode, "active-safety-pg-")
+	guestRecovery := strings.HasPrefix(mode, "guest-safety-recover-")
+	guestRecoveryUnreceived := guestRecovery && strings.Contains(mode, "unreceived")
 	pgTakeover := mode == "owner-transfer-after-pg"
 	unreceivedGuest := mode == "owner-transfer-before-guest-delivery"
 	guestTakeover := mode == "owner-transfer-after-guest" || unreceivedGuest
@@ -753,7 +755,7 @@ func productionInitialService(t *testing.T, mode string) {
 					require.NotNil(t, s.State().InitialHeld)
 				}
 			}
-			if (cancelled || guestTakeover) && action == journal.GuestReady && !unreceivedGuest {
+			if (cancelled || guestTakeover || guestRecovery) && action == journal.GuestReady && !unreceivedGuest && !guestRecoveryUnreceived {
 				// 后继操作再覆盖一次真实root setter丢回复；外层WAL和
 				// 资源SDK必须保留未知。不能要求本机响应总在1秒内，
 				// 也不能把失败改成成功；恢复只能查询同一原命令。
@@ -782,7 +784,7 @@ func productionInitialService(t *testing.T, mode string) {
 					pg.mu.Unlock()
 				}
 			}
-			if unreceivedGuest && action == journal.GuestReady {
+			if (unreceivedGuest || guestRecoveryUnreceived) && action == journal.GuestReady {
 				// 完整首次/Prepare/Host/VM均由正式执行器推进；原GuestReady
 				// 写前CAS已经持久但回复丢失，Root尚未接收，不能补造NoEffect。
 				api.mu.Lock()
@@ -790,6 +792,11 @@ func productionInitialService(t *testing.T, mode string) {
 				api.mu.Unlock()
 			}
 			progress, err = worker.Advance(ctx)
+			if guestRecovery && action == journal.GuestReady {
+				require.Error(t, err, "原Guest写前/应用回复必须未知")
+				verifyProductionGuestServiceRecovery(t, ctx, mode, api, store, session, resources, worker, resourceConfig, config, client, source, pg, root, qmp, transfer)
+				return nil
+			}
 			if pgSafety && action == journal.ResizePG {
 				require.Error(t, err, "原PG派发WAL或实际提交回复未知必须保留")
 				verifyPGActiveServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)

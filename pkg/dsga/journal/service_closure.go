@@ -58,6 +58,8 @@ type ServiceClosure struct {
 	CleanupRecovery *ServiceCleanupRecovery `json:"cleanup_recovery,omitempty"`
 	// 原明确拒绝缺原生终态时的独立高floor屏障；不改原Step，不开放。
 	PGRejection *ServicePGRejection `json:"pg_rejection,omitempty"`
+	// 在途资源独立对账；原Active未知保留，不单独授予开放或预算释放。
+	ResourceRecovery *ServiceResourceRecovery `json:"resource_recovery,omitempty"`
 }
 
 // ProtectedAdmission返回本关闭保护的最初意图。v10/11原意图就是关闭；
@@ -213,6 +215,9 @@ func (model Model) validateServiceClosure() error {
 		return err
 	}
 	if err := model.validateServiceFinalization(); err != nil {
+		return err
+	}
+	if err := model.validateServiceResourceRecovery(); err != nil {
 		return err
 	}
 	if err := model.validateServicePGRejection(); err != nil {

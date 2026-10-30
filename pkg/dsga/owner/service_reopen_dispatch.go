@@ -96,6 +96,14 @@ func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapsh
 // CAS丢回复停止本次管理，重读后再次显式恢复沿用已保存Proof和原selector。
 func (w *PGWorker) ensureServiceFinalization(ctx context.Context, s *journal.Snapshot, selector string) (*journal.Snapshot, error) {
 	m := s.State()
+	if m.ServiceClosure != nil && (m.ServiceClosure.Reason == "active_source_unconfirmed" || m.ServiceClosure.Reason == "active_pg_source_unconfirmed") && w.resources != nil {
+		var err error
+		s, _, err = w.resources.RecoverServiceGuest(ctx, s, selector, true)
+		if err != nil {
+			return nil, err
+		}
+		m = s.State()
+	}
 	if m.ServiceClosure != nil && (m.ServiceClosure.Reason == "cleanup_source_unconfirmed" || m.ServiceClosure.Reason == "active_pg_source_unconfirmed") && m.ServiceClosure.PGRejection == nil {
 		var err error
 		s, err = w.executor.RecoverServiceRejection(ctx, s, selector)

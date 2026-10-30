@@ -36,6 +36,8 @@ type guestRootFixture struct {
 	cancellations   int
 	loseCancelReply bool
 	afterCancel     func()
+	// 确定性重现网络中原Apply先于Cancel获得Root锁，仍由完整原命令核验。
+	beforeCancel func(resourceguard.Command)
 	// 最终准入测试的独立读取/出生竞态钩子；均在fixture锁内访问。
 	afterProcess    func()
 	processOverride *resourceguard.ProcessIdentity
@@ -81,7 +83,9 @@ func guestRoot(t *testing.T, store *journal.Store) (*guestRootFixture, resourceg
 			op := snapshot.State().Active
 			require.NotNil(t, op)
 			if cancelOriginal {
-				require.True(t, op.AbortRequested, "Root取消必须来自持久原取消选择")
+				selected := snapshot.State().ServiceClosure
+				independent := selected != nil && !selected.Pending() && selected.ResourceRecovery != nil && selected.ResourceRecovery.Guest != nil && selected.ResourceRecovery.Guest.CancelUnreceived && selected.ResourceRecovery.Guest.Phase == journal.Unconfirmed
+				require.True(t, op.AbortRequested || independent, "Root取消必须来自持久原取消或独立恢复选择")
 			}
 			var found bool
 			for _, step := range op.Steps {
@@ -126,6 +130,10 @@ func guestRoot(t *testing.T, store *journal.Store) (*guestRootFixture, resourceg
 			}
 			pgReply(w, f.view.Actual)
 		case "/dsg/v1/resource/cancel-original":
+			if f.beforeCancel != nil {
+				f.beforeCancel(c)
+				f.beforeCancel = nil
+			}
 			f.cancellations++
 			require.Equal(t, f.view.IssuerFloorEpoch, cancellation.IssuerEpoch)
 			if f.view.Original != nil && (!f.view.Applied || f.view.Original.Revision >= c.Revision) {
