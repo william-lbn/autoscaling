@@ -14,6 +14,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -21,6 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 )
 
@@ -60,11 +62,15 @@ func TestNativeResizeRecovery(t *testing.T) {
 	defer transport.CloseIdleConnections()
 	proxy.Transport = transport
 	var writes atomic.Int32
+	var mutations atomic.Int32
 	var loseReply atomic.Bool
 	director := proxy.Director
 	proxy.Director = func(r *http.Request) {
 		if r.URL.Path == "/dsg/v1/resize" {
 			writes.Add(1)
+		}
+		if r.Method == http.MethodPost && r.URL.Path != "/dsg/v1/resize/status" && r.URL.Path != "/dsg/v1/issuer/fence" {
+			mutations.Add(1)
 		}
 		director(r)
 	}
@@ -165,4 +171,43 @@ func TestNativeResizeRecovery(t *testing.T) {
 		require.Nil(t, late.Receipt.Result)
 		require.Equal(t, status.Observed.CapacityGeneration, late.Observed.CapacityGeneration)
 	}
+
+	// 新完整实际预算的PG部分必须经过同一真实Router/JWT/SQL/PG来源；
+	// Root/Runner/Outside/Host以下均为明确合同夹具，绝不称作平台或物理
+	// 验收。真实history淘汰来自上面的原生no-op，不手填Expired响应。
+	shared, err := restored.SharedCost(ctx)
+	require.NoError(t, err)
+	require.Equal(t, control.Grow, input.Original.Kind)
+	host := budget.ObjectRef{Name: "native-fixture-host", UID: "native-fixture-host-uid"}
+	sources := budget.RunnerSources{BirthClaim: budget.ObjectRef{Name: "native-fixture-birth", UID: "native-fixture-birth-uid"}, StateClaim: budget.ObjectRef{Name: "native-fixture-state", UID: "native-fixture-state-uid"}, ReceiptClaim: budget.ObjectRef{Name: "native-fixture-receipt", UID: "native-fixture-receipt-uid"}, CommandSHA256: strings.Repeat("a", 64), JournalSHA256: strings.Repeat("b", 64)}
+	capacity := budget.ReconciledCapacity{
+		ProtocolVersion: 4, VMShrinkPermit: false, Request: input.Original, IssuerEpoch: config.IssuerEpoch, RunnerPodName: "native-fixture-runner", RunnerRestartCount: 0,
+		VMBeforeMemoryBytes: input.Original.TargetVMMemoryBytes, VMMemoryBytes: input.Original.TargetVMMemoryBytes, GuestUsableMemoryBytes: input.Original.TargetVMMemoryBytes - (128 << 20), CapacityGeneration: shared.Observed.CapacityGeneration, Buffers: shared.Observed.HighBuffers, MaximumBuffers: shared.Observed.MaximumBuffers,
+		StartupMainUpperBytes: shared.StartupMainUpperBytes, StartupArraysUpperBytes: shared.StartupArraysUpperBytes, RetainedSharedUpperBytes: shared.CurrentMainAndArraysUpperBytes, PGOperation: nil,
+		PGAggregate: budget.Bound{Kind: budget.HardLimit, UpperBytes: 256 << 20, SourceID: "native-fixture-root"}, RootSHA256: strings.Repeat("c", 64), OutsideClaim: budget.ObjectRef{Name: "native-fixture-outside", UID: "native-fixture-outside-uid"}, OutsideRequest: input.Original, ResidualProfileID: "native-fixture-qualified",
+		SystemOutsidePG: budget.Bound{Kind: budget.HardLimit, UpperBytes: 24 << 20, SourceID: "native-fixture-system"}, Transition: budget.Bound{Kind: budget.CommittedUpper, UpperBytes: 4 << 20, SourceID: "native-fixture-transition"}, Safety: budget.Bound{Kind: budget.CommittedUpper, UpperBytes: 4 << 20, SourceID: "native-fixture-safety"}, HostClaim: host, HostReservationID: "native-fixture-host-reservation",
+		VM: budget.NativeCapacity{Sources: sources, Request: input.Original, BeforeBytes: input.Original.TargetVMMemoryBytes, Cancelled: false, PreparedSHA256: strings.Repeat("d", 64), GuestSHA256: "", HostClaim: host}, InitialOutside: nil, InitialVM: nil, RecoveryPG: &budget.RecoveryPG{Fence: fence, Status: status}, UnchangedPG: nil,
+	}
+	require.NoError(t, capacity.Validate())
+	// 模拟进程重建：重新从持久原意图恢复Pending，而非沿用已清空的SDK。
+	actual, err := compute.New(ctx, config)
+	require.NoError(t, err)
+	defer actual.CloseIdleConnections()
+	require.Equal(t, &input.Original, actual.Pending())
+	currentFence, err := actual.Fence(ctx, fenceRequest)
+	require.NoError(t, err)
+	beforeMutations := mutations.Load()
+	fact, err := actual.ReconcileActualBudget(ctx, input.Original, capacity, currentFence)
+	require.NoError(t, err)
+	require.Nil(t, actual.Pending())
+	require.NoError(t, fact.ValidateResize(input.Original, input.Instance))
+	require.Equal(t, shared.Observed.CapacityGeneration, fact.Observed.CapacityGeneration)
+	require.Equal(t, beforeMutations, mutations.Load(), "完整实际预算对账不重发Resize/Cancel/准入setter")
+	if input.Mode == "expired" {
+		// 上面已在原floor确认真实ResultExpired；更高floor查询优先返回
+		// Stale，这是PG原生协议的准确结果，不将其解释为原动作NoEffect。
+		require.Contains(t, []control.ReceiptDisposition{control.ReceiptStale, control.ReceiptResultExpired}, fact.Receipt.Disposition)
+		require.Nil(t, fact.Receipt.Result)
+	}
+	t.Logf("actual-budget PG SDK recovery verified: mode=%s original_proof=%s capacity_generation=%d", input.Mode, effect, fact.Observed.CapacityGeneration)
 }
