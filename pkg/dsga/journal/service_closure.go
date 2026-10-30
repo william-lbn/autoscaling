@@ -2,11 +2,9 @@ package journal
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
-	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 )
 
 // ServiceClosure是空闲服务发现来源异常后的独立关闭WAL。它只
@@ -106,24 +104,14 @@ func (model Model) ServiceBudgetID() (string, error) {
 	if model.ClosureFormatVersion() >= 15 && model.Active != nil {
 		return model.Active.Request.BudgetCommitmentID, nil
 	}
-	switch {
-	case model.InitialHeld != nil:
-		var initial budget.Initial
-		if json.Unmarshal(model.InitialHeld.Budget, &initial) == nil {
-			return initial.PGAggregate.Bootstrap.BudgetCommitmentID, nil
-		}
-	case model.BudgetHeld != nil:
-		var finalized budget.Finalized
-		if o := model.BudgetHeld.Finalization.Observation; o != nil && json.Unmarshal(o.Data, &finalized) == nil {
-			return finalized.Request.BudgetCommitmentID, nil
-		}
-	case model.CapacityHeld != nil:
-		capacity, _, _, err := model.currentCapacityRecord()
-		if err == nil {
-			return capacity.Request.BudgetCommitmentID, nil
-		}
+	// 统一从原永久头取得身份，不能只取回执中的同名预算ID而漏核
+	// 完整命令/摘要或混合多个头。这里被Model.Validate调用，故使用
+	// 不递归Validate的私有getter；外层仍核完整Recovery/Original。
+	source, err := model.currentRetainedSource()
+	if err != nil {
+		return "", err
 	}
-	return "", fmt.Errorf("service closure lacks original retained budget")
+	return source.BudgetCommitmentID()
 }
 
 func (model Model) validateServiceClosure() error {
