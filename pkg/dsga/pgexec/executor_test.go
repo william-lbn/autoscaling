@@ -114,9 +114,9 @@ func request(t *testing.T, kind control.Kind) control.Request {
 
 // 这里的HTTP/RFC6902仅模拟持久API的线性化点，不声称真实apiserver/etcd。
 // 非PG前置领域明确为测试夹具；正式预算/Guest回执不能由这些body生成。
-func prepareStore(t *testing.T, intent control.Request) (*vmAPI, *journal.Store) {
+func prepareStore(t *testing.T, intent control.Request, initializers ...func(*journal.Store, *journal.Snapshot) *journal.Snapshot) (*vmAPI, *journal.Store) {
 	t.Helper()
-	api, store := prepareUnstartedStore(t, intent)
+	api, store := prepareUnstartedStore(t, intent, initializers...)
 	snapshot, err := store.Load(context.Background())
 	require.NoError(t, err)
 	actor := snapshot.State().Owner
@@ -135,7 +135,7 @@ func prepareStore(t *testing.T, intent control.Request) (*vmAPI, *journal.Store)
 
 // prepareUnstartedStore使用同一真实typed clientset和HTTP UID/RV CAS，但保持
 // 整个原计划Planned；取消用例不能借用已经手工结清非PG前置步骤的旧夹具。
-func prepareUnstartedStore(t *testing.T, intent control.Request) (*vmAPI, *journal.Store) {
+func prepareUnstartedStore(t *testing.T, intent control.Request, initializers ...func(*journal.Store, *journal.Snapshot) *journal.Snapshot) (*vmAPI, *journal.Store) {
 	t.Helper()
 	var status vmv1.VirtualMachineStatus
 	api := &vmAPI{mu: sync.Mutex{}, vm: &vmv1.VirtualMachine{
@@ -163,6 +163,9 @@ func prepareUnstartedStore(t *testing.T, intent control.Request) (*vmAPI, *journ
 	api.mu.Unlock()
 	snapshot, err := store.Load(context.Background())
 	require.NoError(t, err)
+	for _, initialize := range initializers {
+		snapshot = initialize(store, snapshot)
+	}
 	actor := snapshot.State().Owner
 	snapshot, disposition, err := store.Begin(context.Background(), snapshot, actor, intent, 0)
 	require.NoError(t, err)

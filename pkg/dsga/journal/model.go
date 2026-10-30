@@ -569,6 +569,7 @@ func (model Model) Clone() Model {
 		closure := *model.ServiceClosure
 		closure.Finalization = cloneServiceFinalization(closure.Finalization)
 		closure.CleanupRecovery = cloneServiceCleanupRecovery(closure.CleanupRecovery)
+		closure.PGRejection = cloneServicePGRejection(closure.PGRejection)
 		if closure.Reopen != nil {
 			reopen := *closure.Reopen
 			if reopen.PriorClose != nil {

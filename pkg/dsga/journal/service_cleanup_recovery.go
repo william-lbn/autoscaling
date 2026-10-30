@@ -27,6 +27,8 @@ type ServiceCleanupRecovery struct {
 	Current          control.SharedCostResponse `json:"current"`
 	PGAggregate      budget.RootAggregate       `json:"pg_aggregate"`
 	Finalization     *Step                      `json:"finalization,omitempty"`
+	// 随永久预算保留独立拒绝隔离，不借生命周期淘汰丢掉原拒绝的对账证据。
+	PGRejection *ServicePGRejection `json:"pg_rejection,omitempty"`
 }
 
 // 实际容量恢复的永久头保留原完整操作及原Cleanup（包括Unknown），独立证明
@@ -97,6 +99,12 @@ func (p ServiceCleanupRecovery) validate(op Operation) error {
 	if op.Validate() != nil || op.Cleanup == nil || op.Cleanup.DispatchedBy == nil || !op.AbortRequested || p.Origin.Validate() != nil || !validIncarnation(p.Incarnation) || p.RecordedSequence == 0 || p.Kind != cleanupKind(*op.Cleanup) || err != nil || p.OperationSHA256 != digest || p.basis(op).validateOwners(op) != nil || p.PGAggregate.Validate() != nil {
 		return fmt.Errorf("cleanup recovery changed original cancellation or authenticated resource binding")
 	}
+	if _, err := op.OriginalPGRejection(); err == nil && p.PGRejection == nil {
+		return fmt.Errorf("cleanup recovery cannot omit independent PG rejection barrier")
+	}
+	if p.PGRejection != nil && (p.PGRejection.validate(op) != nil || p.PGRejection.RecordedSequence >= p.RecordedSequence || p.PGRejection.Origin.Epoch > p.Origin.Epoch || p.PGRejection.Origin.Epoch == p.Origin.Epoch && p.PGRejection.Origin != p.Origin || p.PGRejection.Closed != p.Closed || p.PGRejection.ClosedSequence != p.ClosedSequence) {
+		return fmt.Errorf("cleanup recovery lost original independent PG rejection barrier")
+	}
 	b, err := p.boundary(op)
 	q, current := p.Closed, p.Current
 	if err != nil || q.Validate() != nil || q.Open || q.Instance != op.Request.Key.Instance || q.IssuerEpoch > p.Origin.Epoch || q.ExpectedCapacityGeneration != b.CapacityGeneration || q.BudgetCommitmentID != b.BudgetCommitmentID || p.ClosedSequence == 0 || p.ClosedSequence >= p.RecordedSequence || current.ValidateFor(q.Instance) != nil || current.Observed.AdmissionOpen || current.Observed.AdmissionRevision != q.Revision || current.Observed.CapacityGeneration != q.ExpectedCapacityGeneration || p.Fence.Disposition != control.Fenced || p.Fence.ValidateFor(control.FenceRequest{ProtocolVersion: 1, Instance: q.Instance, IssuerEpoch: p.Origin.Epoch}, q.Instance) != nil || current.Observed.CapacityGeneration < p.Fence.Observed.CapacityGeneration || p.PGAggregate.Identity.VMUID != q.Instance.VMUID || p.PGAggregate.Identity.ComputeInstanceID != q.Instance.ComputeInstanceID {
@@ -141,6 +149,7 @@ func cloneServiceCleanupRecovery(p *ServiceCleanupRecovery) *ServiceCleanupRecov
 		return nil
 	}
 	n := *p
+	n.PGRejection = cloneServicePGRejection(p.PGRejection)
 	var shared control.AdmissionResponse
 	shared.Observed = p.Fence.Observed
 	n.Fence.Observed = cloneAdmissionResponse(&shared).Observed
@@ -165,7 +174,7 @@ func (m Model) validateServiceCleanupRecovery() error {
 		return nil
 	}
 	c := m.ServiceClosure
-	if m.serviceClosureVersion() != 18 || m.Active == nil || c.Pending() || p.RecordedSequence > m.Sequence || p.Origin.Epoch > m.Owner.Epoch || p.Origin.Epoch == m.Owner.Epoch && p.Origin != m.Owner || p.Incarnation != m.Incarnation || p.OperationSHA256 != c.OperationSHA256 || m.ResourceIdentity == nil || p.PGAggregate.Identity != *m.ResourceIdentity {
+	if m.serviceClosureVersion() != 18 || m.Active == nil || c.Pending() || p.RecordedSequence > m.Sequence || p.Origin.Epoch > m.Owner.Epoch || p.Origin.Epoch == m.Owner.Epoch && p.Origin != m.Owner || p.Incarnation != m.Incarnation || p.OperationSHA256 != c.OperationSHA256 || !reflect.DeepEqual(p.PGRejection, c.PGRejection) || m.ResourceIdentity == nil || p.PGAggregate.Identity != *m.ResourceIdentity {
 		return fmt.Errorf("cleanup recovery lost current original closure or owner")
 	}
 	_, _, closed, _ := c.Selection()
@@ -202,7 +211,7 @@ func (m Model) RecordServiceCleanupRecovery(actor Owner, selector string, fence 
 	if c.Continuation != nil {
 		at = c.Continuation.RecordedSequence
 	}
-	p := &ServiceCleanupRecovery{Origin: actor, RecordedSequence: next.Sequence, Incarnation: m.Incarnation, OperationSHA256: c.OperationSHA256, Kind: cleanupKind(*m.Active.Cleanup), Closed: closed, ClosedSequence: at, Fence: fence, Current: current, PGAggregate: root, Finalization: nil}
+	p := &ServiceCleanupRecovery{Origin: actor, RecordedSequence: next.Sequence, Incarnation: m.Incarnation, OperationSHA256: c.OperationSHA256, Kind: cleanupKind(*m.Active.Cleanup), Closed: closed, ClosedSequence: at, Fence: fence, Current: current, PGAggregate: root, Finalization: nil, PGRejection: cloneServicePGRejection(c.PGRejection)}
 	if p.Kind != "actual" && m.BudgetHeld != nil {
 		s := cloneStep(m.BudgetHeld.Finalization)
 		p.Finalization = &s

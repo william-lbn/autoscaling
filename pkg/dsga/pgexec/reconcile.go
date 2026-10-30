@@ -23,7 +23,11 @@ func (e *Executor) ReconcileServiceRecovery(ctx context.Context) error {
 	if !s.Dispatchable() || m.Owner != e.actor || m.Active == nil || m.ServiceClosure == nil || m.ServiceClosure.Pending() || m.CheckStableServiceRecovery() != nil {
 		return fmt.Errorf("PG service recovery requires exact committed resource closure")
 	}
-	if _, err := e.reconcileSettled(ctx, m.Active); err != nil {
+	if m.ServiceClosure.PGRejection != nil && e.client.Pending() != nil {
+		if err := e.reconcileRejectedService(ctx, m); err != nil {
+			return err
+		}
+	} else if _, err := e.reconcileSettled(ctx, m.Active); err != nil {
 		return err
 	}
 	if e.client.Pending() != nil {
