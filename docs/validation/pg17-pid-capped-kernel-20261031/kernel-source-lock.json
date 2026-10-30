@@ -1,0 +1,39 @@
+{
+  "scope": "TEST_ONLY real isolated KVM kernel component; no full normal qualification",
+  "suggestedPhysicalProfileID": "pg17-linux-6.12.26-normal-v1-pid-capped",
+  "sourceGitBaseCommit": "7ed9356424474f64489dec1f92a9eb864aaead71",
+  "sourceKernelVersion": "6.12.26",
+  "kernelRelease": "6.12.26-william-normal-v1-pidcap-946be0d25506",
+  "kernelArtifactSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+  "kernelNotesSha256": "cbf448079077b712e5812d4c9c54a9ea3b4e3aacc76892699881c8aad57619dc",
+  "kernelConfigSha256": "7733d4e430a2102052dd97c8b3fa64ac2b5904fa6a4f394b5653b9fa5cccbf25",
+  "sourceConfigSha256": "b20ac4f85d74b6dfca4f207cbee3cd72f6b34307fc1a4fee13519eba244ed1f5",
+  "patchSetCanonicalSha256": "ec7ffb0690b4ec7f9d41001acda4779f961a39b1827f5c3c17e61751845b3d8a",
+  "patchSetDigestMethod": "sha256 of JSON sorted compact map relative patch file path to file sha256",
+  "patchFiles": {
+    "patches/0004-x86-mm-Use-GFP_KERNEL-for-alloc_low_pages-after-boot.patch": "5ac67ef964af106fc5f36bdd3c711b9241bfdfac19b5c9faa6c162b765004ae8",
+    "patches/0003-x86-mm-Handle-alloc-failure-in-phys_-_init.patch": "9ee75c0a474f68303ef8c32141445b687056c228cfe31f822e983206139112d0",
+    "patches/0005-Neon-mm-Add-debug-logs-for-kcompactd-offlining-race.patch": "959e9d4701586312a3dd9e03386c849efd3f7b78038fd13dd56c5e58d6d037e4",
+    "patches/0006-Neon-pid-Add-opt-in-early-global-PID-hard-limit.patch": "946be0d25506edae50217b976bdf3b02283e3236acefdc119648ba5172c5ab5a",
+    "patches/0002-x86-mm-Allow-error-returns-from-phys_-_init.patch": "b4cf630bf5cd5e64b6702cbc5aa952bc718c45d22bca5ec2fb082fede7d6d0d5",
+    "patches/0001-x86-mm-Update-mapped-addresses-in-phys_-pmd-pud-_ini.patch": "01bd47eaea82fb99eea4cb25be1063e6f2f14e3e03289be644a9bac03edfba5e"
+  },
+  "sourceDockerfileSha256": "2f8434f5f39f3c7c1e4f513c3361ba971140c3ee60c3d562030b3ec285be4abe",
+  "resolvedConfigChanges": {
+    "CONFIG_CC_VERSION_TEXT": {
+      "source": "\"gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0\"",
+      "resolved": "\"x86_64-linux-gnu-gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\""
+    }
+  },
+  "runtimeNotesEqualELFSectionAllFivePositiveBoots": true,
+  "runtimeProofPath": "runtime-proof.json",
+  "runtimeProofSHA256": "75e4011a6ba6af97565563e1de14c1ff5b78181257a356697411f08ebe57fee7",
+  "actualSourceProofPath": "actual-source-proof-final.json",
+  "actualSourceProofSHA256": "78e61cd1e81c0f4db2389cd00e62c3fd478ee6080494e4ad06e4891acd93733a",
+  "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+  "QEMUBinarySHA256": "8d8d8ee83471749d0b882ce34344638e0ac0fa2390cd822b98d9b6314e2f9cb5",
+  "QEMUContainerImageID": "sha256:6c14341670c3e9a2c9826132836e3e7f6481b4fbb708e780ca20c35bc52e1621",
+  "vmShrinkPermit": false,
+  "PGStarted": false,
+  "normalDecreaseExecuted": false
+}

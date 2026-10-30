@@ -1,0 +1,29 @@
+{
+  "case": "duplicate-different",
+  "negativeBoot": true,
+  "hostQemuExitCode": 0,
+  "elapsedSeconds": 0.9693071049987338,
+  "startUTC": "2026-10-30T17:59:01.260932+00:00",
+  "endUTC": "2026-10-30T17:59:02.230243+00:00",
+  "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+  "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+  "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+  "accel": "kvm",
+  "TCGFallback": false,
+  "GuestNIC": "none",
+  "consoleSha256": "19d917156d22d2c8bbc443b82e4ce0e5b654179608ea16366b6d8996e4f0181c",
+  "panicMessages": [
+    "neonvm.pid_max_limit: duplicate boot policy",
+    "neonvm.pid_max_limit: duplicate boot policy ]---"
+  ],
+  "intentionallyTerminatedAfterObservedPanic": true,
+  "guestInitMarkerPresent": false,
+  "kernelRunInitMarkerPresent": false,
+  "probe": [],
+  "panicStopCommand": {
+    "exitCode": 0,
+    "stdout": "pg17-pidcap-duplicate-different-20261030t175217z\n",
+    "stderr": ""
+  },
+  "pass": false
+}

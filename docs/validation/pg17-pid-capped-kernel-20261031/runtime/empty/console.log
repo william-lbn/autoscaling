@@ -1,0 +1,37 @@
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+Booting from ROM...
+c[?7l[2J[    0.000000] Linux version 6.12.26-william-normal-v1-pidcap-946be0d25506 (root@buildkitsandbox) (x86_64-linux-gnu-gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, GNU ld (GNU Binutils for Ubuntu) 2.42) #1 SMP PREEMPT_DYNAMIC Fri Oct 30 17:57:27 UTC 2026
+[    0.000000] Command line: console=ttyS0,115200 earlycon=uart8250,io,0x3f8,115200n8 rdinit=/init panic=-1 kernelcore=256M memhp_default_state=online_movable cgroup.memory=nokmem,nosocket,nobpf neonvm.pid_max_limit=
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+[    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+[    0.000000] BIOS-e820: [mem 0x0000000000100000-0x000000003ffdefff] usable
+[    0.000000] BIOS-e820: [mem 0x000000003ffdf000-0x000000003fffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000b0000000-0x00000000bfffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fed1c000-0x00000000fed1ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000feffc000-0x00000000feffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+[    0.000000] earlycon: uart8250 at I/O port 0x3f8 (options '115200n8')
+[    0.000000] printk: legacy bootconsole [uart8250] enabled
+[    0.000000] Kernel panic - not syncing: neonvm.pid_max_limit: canonical decimal value required
+[    0.000000] CPU: 0 UID: 0 PID: 0 Comm: swapper Not tainted 6.12.26-william-normal-v1-pidcap-946be0d25506 #1
+[    0.000000] Call Trace:
+[    0.000000]  <TASK>
+[    0.000000]  dump_stack_lvl+0x27/0x70
+[    0.000000]  dump_stack+0x10/0x20
+[    0.000000]  panic+0x2e8/0x300
+[    0.000000]  neonvm_setup_pid_max_limit+0xbc/0xe0
+[    0.000000]  do_early_param+0x86/0xc0
+[    0.000000]  parse_args+0x1fc/0x390
+[    0.000000]  ? __pfx_do_early_param+0x10/0x10
+[    0.000000]  parse_early_param+0x6a/0xa0
+[    0.000000]  ? __pfx_do_early_param+0x10/0x10
+[    0.000000]  setup_arch+0x59e/0xce0
+[    0.000000]  start_kernel+0x50/0xa40
+[    0.000000]  x86_64_start_reservations+0x18/0x30
+[    0.000000]  x86_64_start_kernel+0xca/0xe0
+[    0.000000]  common_startup_64+0x13b/0x148
+[    0.000000]  </TASK>
+[    0.000000] ---[ end Kernel panic - not syncing: neonvm.pid_max_limit: canonical decimal value required ]---
+qemu-system-x86_64: terminating on signal 15

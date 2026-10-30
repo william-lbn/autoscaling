@@ -1,0 +1,184 @@
+{
+  "id": "PG17-S-PIDCAP-001-INDEPENDENT-REVIEW",
+  "classification": "existing 17 real isolated KVM boots independently reevaluated; no Guest rerun",
+  "reviewed_at_utc": "2026-10-30T22:28:02.023161+00:00",
+  "review_head": "db732db119f0825e70a2430c34c0865091613df3",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "source_evidence_path": "/data/neon-build/validation/pg17-pid-capped-kernel-20261030T175217Z",
+  "status": "PASS_COMPONENT_EVIDENCE_REVIEW",
+  "counts": {
+    "boots": 17,
+    "positiveBoots": 5,
+    "negativeBoots": 12,
+    "passed": 17
+  },
+  "original_false_negatives_retained": 12,
+  "runtime_recomputed_bytes_identical": true,
+  "source_recomputed_bytes_identical": true,
+  "context_all_16_entries_hashed": 15,
+  "patch_set_canonical_sha256": "ec7ffb0690b4ec7f9d41001acda4779f961a39b1827f5c3c17e61751845b3d8a",
+  "patch_set_bare_filename_sha256": "e9c40ed637e9523b37a3d8587c93cca2d957360df19057668c3029c3967540f7",
+  "digest_algorithms_distinct": true,
+  "kernel_tuple": {
+    "kernelRelease": "6.12.26-william-normal-v1-pidcap-946be0d25506",
+    "kernelArtifactSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+    "kernelNotesSha256": "cbf448079077b712e5812d4c9c54a9ea3b4e3aacc76892699881c8aad57619dc",
+    "kernelConfigSha256": "7733d4e430a2102052dd97c8b3fa64ac2b5904fa6a4f394b5653b9fa5cccbf25",
+    "sourceConfigSha256": "b20ac4f85d74b6dfca4f207cbee3cd72f6b34307fc1a4fee13519eba244ed1f5"
+  },
+  "physical_nine_sources_before": {
+    "physical_kernel_build.go": "65cf7e6e641a92ac3691dec355fafce826657b2867aa10c68e65d9e8033753c3",
+    "physical_kernel_build_test.go": "021c1c44972282e5053a1ac3e35df432f8bbd50b5c95b51dd680447622ee67aa",
+    "physical_kernel_profile.go": "6567cde6b46be2af71f03f9567abfd403dee4d7f166b53d67d07d603f279a6b0",
+    "physical_kernel_profile_linux.go": "1b193c910bda90fd7207db8012a868c6c58775f88048db68dede789f1d1913f5",
+    "physical_kernel_origin.go": "c7349026a9ff3d6a878561d09d98f5684bd9a2a404bd83bfd9a4a5d2d67f8cc9",
+    "physical_kernel_origin_linux.go": "01e43282985c0ae9e00cab1fab8412233590baec9af3462bc6153e87e5dc8503",
+    "physical_kernel_capabilities.go": "982fec6319a7739f89c48578a52776266fd3382e460166825b63cdf8a6ad4d19",
+    "physical_kernel_capabilities_linux.go": "af0f2a6c31f098b5277d6845ad4093d8816ed1525da1520e6dcab84c0e4024dc",
+    "physical_kernel_normal_v1_test.go": "46ff11d5c64c54926d7cbeb1c065a2f4ee90f7a040cde0ffba629a8b71b26dc7"
+  },
+  "cases": [
+    {
+      "case": "cap512",
+      "class": "positive_boot",
+      "pass": true,
+      "original_parser_pass": true,
+      "console_sha256": "4081a0577445f458cde8033b70f5faed8b37a7a7b042a24ecbfdfe017d52fc48",
+      "command_sha256": "5aac3ee30b34be54bb7f75baef70e7b813cae25aabed79027eeeb63774282c33"
+    },
+    {
+      "case": "late-sysctl",
+      "class": "positive_boot",
+      "pass": true,
+      "original_parser_pass": true,
+      "console_sha256": "78e287d0534b43ac15b337dcb03b86fe416a2b3dd2e5a51ef781dcfa04c9fe76",
+      "command_sha256": "0319fe325553ef15b2e665494f8a3dc8a989f38a29bd583e460576c1b5f01317"
+    },
+    {
+      "case": "default-control",
+      "class": "positive_boot",
+      "pass": true,
+      "original_parser_pass": true,
+      "console_sha256": "04cb028b24469709210a011deaa2e602bc96db79d2809c32c28768cf1621e841",
+      "command_sha256": "263d5038b2d8b8db762a6f79b8a59835e76dccd087ccd839a19716c71fe8eb92"
+    },
+    {
+      "case": "boundary301",
+      "class": "positive_boot",
+      "pass": true,
+      "original_parser_pass": true,
+      "console_sha256": "ec21aec12805f08bfb2350e54f0c03715df0a6dfd40f59d500caaacb01b51a5b",
+      "command_sha256": "e9d65e177e1ba07102a63c9403195d16e16e0f27ea4d1b6052c6dd5d1be9c4e0"
+    },
+    {
+      "case": "boundary4096",
+      "class": "positive_boot",
+      "pass": true,
+      "original_parser_pass": true,
+      "console_sha256": "00e32dd6275ee9680a6aa663307c562a4a0a36c1715461c7e7940c6b992fff86",
+      "command_sha256": "6b7c8cc6fbf41f2eedae73c091a40167bd508492e2d77f26e328e5f84a2d6b55"
+    },
+    {
+      "case": "empty",
+      "class": "expected_early_PID0_panic",
+      "pass": true,
+      "original_parser_pass": false,
+      "console_sha256": "8dbe88d54525ff0e751af4a036927ba09f38e0d31a316fcefb8b70968cf2260b",
+      "command_sha256": "b71874575b871dfe3dac6e2f8dd1462e997783b57b45995d525354e93d4eee8a"
+    },
+    {
+      "case": "bare",
+      "class": "expected_early_PID0_panic",
+      "pass": true,
+      "original_parser_pass": false,
+      "console_sha256": "e4c78d5a85a08b37566753f7508c73edcb42f2e48287a3ae5587b7e42c4bfc21",
+      "command_sha256": "6317e7edb115b51a4e8f283a8aa45ce756c263b5bfbffc769294aa86652c9f0b"
+    },
+    {
+      "case": "leading-zero",
+      "class": "expected_early_PID0_panic",
+      "pass": true,
+      "original_parser_pass": false,
+      "console_sha256": "c8d037fa63f7d7e3d62bfa6edcf866e72bcc2c8f2c80cd7374effcfb04695bb7",
+      "command_sha256": "f004b3cbfbd69e30898a05c22d2a7706e7de6a07c6b2bb8280c01dd3c62caaaf"
+    },
+    {
+      "case": "zero",
+      "class": "expected_early_PID0_panic",
+      "pass": true,
+      "original_parser_pass": false,
+      "console_sha256": "2ec28eebc4aa113fcc7199c2ffbd938ab6a947f6fffa5153b5009ebc31aa9565",
+      "command_sha256": "e9b11c893b225ae590f09f3a47dc825f74501da675fce5e2583639ca36d675c4"
+    },
+    {
+      "case": "plus",
+      "class": "expected_early_PID0_panic",
+      "pass": true,
+      "original_parser_pass": false,
+      "console_sha256": "11d00a627960889bedbade036ef94917585963ec64afb91ea626da572ec24056",
+      "command_sha256": "27dc9aa19a60bc60dd8a727e4d52d4cdf7bbd527528e5e4f3257173475b5ca95"
+    },
+    {
+      "case": "negative",
+      "class": "expected_early_PID0_panic",
+      "pass": true,
+      "original_parser_pass": false,
+      "console_sha256": "87370d5544384b781cb3b975637d17056f2149d34ca63250567387563b1c5a86",
+      "command_sha256": "0d666c8b506cef4d42eca000cc9b99d4b0d4a102d558b5a6562533f5f5ff62b3"
+    },
+    {
+      "case": "nondecimal",
+      "class": "expected_early_PID0_panic",
+      "pass": true,
+      "original_parser_pass": false,
+      "console_sha256": "e1bd9a5d9f9699367397da3c7d31431b1c305aaca15301285b62068204d55c03",
+      "command_sha256": "e191cc6eb508edf14a334ffa3c647e53bc652b7ad51a0e5c3316ff20461b87d7"
+    },
+    {
+      "case": "overflow",
+      "class": "expected_early_PID0_panic",
+      "pass": true,
+      "original_parser_pass": false,
+      "console_sha256": "1e092e3617cf82656ded8e864110ab95dab0f0ef067ac89121a6c8b28b1fe91f",
+      "command_sha256": "19cdab17276c9a3eac965aa5f259f74196b9ace0ae633616a7c843be55f59f6c"
+    },
+    {
+      "case": "below301",
+      "class": "expected_early_PID0_panic",
+      "pass": true,
+      "original_parser_pass": false,
+      "console_sha256": "1a96372df07c8bde4aaeed150d8c51d34a731679d506eb55e4c9935a71c08840",
+      "command_sha256": "acfa1b8fcdc098c85838779b33f663f238e6293c2b6d0546dde78aa2662b0634"
+    },
+    {
+      "case": "above4096",
+      "class": "expected_early_PID0_panic",
+      "pass": true,
+      "original_parser_pass": false,
+      "console_sha256": "d846befd067b0d69739f6ab2236ddc5f2f5a4c6da1dfc1d3ae584e67cb4bbb3d",
+      "command_sha256": "4d585774f2778b85612376dd326a57e503dcbc7e512545bc238a77437be1e693"
+    },
+    {
+      "case": "duplicate",
+      "class": "expected_early_PID0_panic",
+      "pass": true,
+      "original_parser_pass": false,
+      "console_sha256": "bc6717e181dc736fbf35ec0d8fa24d3d6984cec7a17519c91afb3d8c0a80b219",
+      "command_sha256": "6a7e0492222e14b8a280c084b0eb198965b96efb3b5a61bc6faec1255bde3329"
+    },
+    {
+      "case": "duplicate-different",
+      "class": "expected_early_PID0_panic",
+      "pass": true,
+      "original_parser_pass": false,
+      "console_sha256": "19d917156d22d2c8bbc443b82e4ce0e5b654179608ea16366b6d8996e4f0181c",
+      "command_sha256": "6aaf783dd5b473272fd8b97dc03a1e759e7c763f923806890ad148fbba9bb7b8"
+    }
+  ],
+  "vm_shrink_permit": false,
+  "PG_started": false,
+  "normal_decrease_executed": false,
+  "production_profile_registered": false,
+  "kubernetes_deployed": false,
+  "original_preparation_failures_preserved": true
+}

@@ -1,0 +1,18 @@
+{
+  "patch": "neonvm-kernel/patches/0006-Neon-pid-Add-opt-in-early-global-PID-hard-limit.patch",
+  "patch_sha256": "946be0d25506edae50217b976bdf3b02283e3236acefdc119648ba5172c5ab5a",
+  "original_source": {
+    "kernel/pid.c": "3a9065c03bf74805a58ce3a372a69f911b3382db769237414aa2034fe218e60c",
+    "kernel/sysctl.c": "24ad78a45ff9a3dcded1a64e016c170861016addad8a1d79a84475c85bae580d",
+    "include/linux/pid.h": "bdbff03fdce4ca9ca3059fcc19a4da3990c2fbfc92847fffc88309002e009378"
+  },
+  "expected_patched_source": {
+    "kernel/pid.c": "e4c539d7d8f4ee1b7f6c6d2926c5d8d87ae0b2fad51d3ac981194c527114f980",
+    "kernel/sysctl.c": "dcd958820b0705716e512dbe2300b2372e0b0df8353fa1cb5f168d443eb8da04",
+    "include/linux/pid.h": "b0aed971fb986f197f9a93712180e9b27db0e3d1902794eca2d5e40b49140604"
+  },
+  "kernel_build": "NOT_RUN",
+  "kvm_positive_negative": "NOT_RUN",
+  "scope": "source+dry-apply only; no normal authorization",
+  "prior_candidate_receipt": "/data/neon-build/validation/pg17-pid-hard-limit-source-20261030T174731Z"
+}

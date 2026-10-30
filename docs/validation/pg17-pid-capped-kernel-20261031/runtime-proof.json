@@ -1,0 +1,680 @@
+{
+  "id": "PG17-S-PIDCAP-001",
+  "status": "PASS_COMPONENT_ONLY",
+  "scope": "17 real isolated KVM boots of new PID-capped TEST_ONLY kernel",
+  "originalMatrixPath": "runtime/matrix-result.json",
+  "originalMatrixPass": false,
+  "parserCorrection": "Original unanchored regex also collected kernel panic end trailer, causing all 12 genuine negative boots to be marked false. New evaluator anchors actual printk panic start, checks PID0/early_param call stack and no init markers. Original results/raw consoles retained; no Guest rerun.",
+  "kernel": {
+    "exitCode": 0,
+    "elapsedSeconds": 343.32809005899617,
+    "TEST_ONLY": true,
+    "formalImagePublished": false,
+    "expectedRelease": "6.12.26-william-normal-v1-pidcap-946be0d25506",
+    "GuestBootExecuted": false,
+    "actualBuildRelease": "6.12.26-william-normal-v1-pidcap-946be0d25506",
+    "vmlinuzSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+    "resolvedConfigSha256": "7733d4e430a2102052dd97c8b3fa64ac2b5904fa6a4f394b5653b9fa5cccbf25",
+    "buildNotesSha256": "cbf448079077b712e5812d4c9c54a9ea3b4e3aacc76892699881c8aad57619dc"
+  },
+  "sourceOverlay": {
+    "baseCommit": "7ed9356424474f64489dec1f92a9eb864aaead71",
+    "sourceDockerfileSha256": "2f8434f5f39f3c7c1e4f513c3361ba971140c3ee60c3d562030b3ec285be4abe",
+    "sourceConfigSha256": "b20ac4f85d74b6dfca4f207cbee3cd72f6b34307fc1a4fee13519eba244ed1f5",
+    "newPatchPath": "neonvm-kernel/patches/0006-Neon-pid-Add-opt-in-early-global-PID-hard-limit.patch",
+    "newPatchSha256": "946be0d25506edae50217b976bdf3b02283e3236acefdc119648ba5172c5ab5a",
+    "profileNotYetQualified": true,
+    "TEST_ONLY": true
+  },
+  "results": [
+    {
+      "case": "cap512",
+      "negativeBoot": false,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 8.111132847996487,
+      "startUTC": "2026-10-30T17:58:46.203121+00:00",
+      "endUTC": "2026-10-30T17:58:54.314244+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "4081a0577445f458cde8033b70f5faed8b37a7a7b042a24ecbfdfe017d52fc48",
+      "panicMessages": [],
+      "intentionallyTerminatedAfterObservedPanic": false,
+      "guestInitMarkerPresent": true,
+      "kernelRunInitMarkerPresent": true,
+      "probe": [
+        {
+          "scope": "isolated-kvm-kernel-component-only",
+          "hard_limit": 512,
+          "initial_pid_max": 512,
+          "readonly_fact": true,
+          "runtime_expand_rejected": true,
+          "normal_init_and_fork": true,
+          "legal_lower_restore_checked": true,
+          "vm_shrink_permit": false,
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "originalParserPass": true,
+      "panicStartMessages": [],
+      "runtimeNotesSha256": "cbf448079077b712e5812d4c9c54a9ea3b4e3aacc76892699881c8aad57619dc",
+      "runtimeNotesEqualELFSection": true,
+      "runtimeLSMs": "lockdown,capability,landlock,yama,apparmor",
+      "landlockProbe": {
+        "scope": "single-process-capability-only",
+        "abi": 6,
+        "stage": "deny-allow-complete",
+        "uid": 0,
+        "page_size": 4096,
+        "preflight_both_readable": true,
+        "allowed_read": true,
+        "denied_read_errno": 13,
+        "nnp": 1,
+        "enforced": true,
+        "vm_shrink_permit": false
+      },
+      "setTidProof": {
+        "cap_sys_admin_effective": true,
+        "cap_checkpoint_restore_effective": true,
+        "valid_same_namespace": true,
+        "exclusive_cap_errno": 22,
+        "valid_nested_namespace": true,
+        "ancestor_cap_errno": 22,
+        "nested_forks_strict": true
+      },
+      "forkProof": [
+        {
+          "iterations": 700,
+          "visible_max_child_pid": 511,
+          "exclusive_cap": 512,
+          "all_strict_wait": true
+        },
+        {
+          "iterations": 240,
+          "visible_max_child_pid": 241,
+          "exclusive_cap": 512,
+          "all_strict_wait": true
+        }
+      ]
+    },
+    {
+      "case": "late-sysctl",
+      "negativeBoot": false,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 2.922908065993397,
+      "startUTC": "2026-10-30T17:58:46.203405+00:00",
+      "endUTC": "2026-10-30T17:58:49.126314+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "78e287d0534b43ac15b337dcb03b86fe416a2b3dd2e5a51ef781dcfa04c9fe76",
+      "panicMessages": [],
+      "intentionallyTerminatedAfterObservedPanic": false,
+      "guestInitMarkerPresent": true,
+      "kernelRunInitMarkerPresent": true,
+      "probe": [
+        {
+          "scope": "isolated-kvm-kernel-component-only",
+          "hard_limit": 512,
+          "initial_pid_max": 512,
+          "readonly_fact": true,
+          "runtime_expand_rejected": true,
+          "normal_init_and_fork": true,
+          "legal_lower_restore_checked": true,
+          "vm_shrink_permit": false,
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "originalParserPass": true,
+      "panicStartMessages": [],
+      "runtimeNotesSha256": "cbf448079077b712e5812d4c9c54a9ea3b4e3aacc76892699881c8aad57619dc",
+      "runtimeNotesEqualELFSection": true
+    },
+    {
+      "case": "default-control",
+      "negativeBoot": false,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 2.4842085869968287,
+      "startUTC": "2026-10-30T17:58:49.127307+00:00",
+      "endUTC": "2026-10-30T17:58:51.611522+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "04cb028b24469709210a011deaa2e602bc96db79d2809c32c28768cf1621e841",
+      "panicMessages": [],
+      "intentionallyTerminatedAfterObservedPanic": false,
+      "guestInitMarkerPresent": true,
+      "kernelRunInitMarkerPresent": true,
+      "probe": [
+        {
+          "scope": "isolated-kvm-kernel-component-only",
+          "hard_limit": 0,
+          "initial_pid_max": 32768,
+          "default_can_set_4096": true,
+          "vm_shrink_permit": false,
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "originalParserPass": true,
+      "panicStartMessages": [],
+      "runtimeNotesSha256": "cbf448079077b712e5812d4c9c54a9ea3b4e3aacc76892699881c8aad57619dc",
+      "runtimeNotesEqualELFSection": true
+    },
+    {
+      "case": "boundary301",
+      "negativeBoot": false,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 2.414106575997721,
+      "startUTC": "2026-10-30T17:58:51.612111+00:00",
+      "endUTC": "2026-10-30T17:58:54.026223+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "ec21aec12805f08bfb2350e54f0c03715df0a6dfd40f59d500caaacb01b51a5b",
+      "panicMessages": [],
+      "intentionallyTerminatedAfterObservedPanic": false,
+      "guestInitMarkerPresent": true,
+      "kernelRunInitMarkerPresent": true,
+      "probe": [
+        {
+          "scope": "isolated-kvm-kernel-component-only",
+          "hard_limit": 301,
+          "initial_pid_max": 301,
+          "readonly_fact": true,
+          "runtime_expand_rejected": true,
+          "normal_init_and_fork": true,
+          "legal_lower_restore_checked": false,
+          "vm_shrink_permit": false,
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "originalParserPass": true,
+      "panicStartMessages": [],
+      "runtimeNotesSha256": "cbf448079077b712e5812d4c9c54a9ea3b4e3aacc76892699881c8aad57619dc",
+      "runtimeNotesEqualELFSection": true
+    },
+    {
+      "case": "boundary4096",
+      "negativeBoot": false,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 2.6642190010024933,
+      "startUTC": "2026-10-30T17:58:54.026761+00:00",
+      "endUTC": "2026-10-30T17:58:56.690984+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "00e32dd6275ee9680a6aa663307c562a4a0a36c1715461c7e7940c6b992fff86",
+      "panicMessages": [],
+      "intentionallyTerminatedAfterObservedPanic": false,
+      "guestInitMarkerPresent": true,
+      "kernelRunInitMarkerPresent": true,
+      "probe": [
+        {
+          "scope": "isolated-kvm-kernel-component-only",
+          "hard_limit": 4096,
+          "initial_pid_max": 4096,
+          "readonly_fact": true,
+          "runtime_expand_rejected": true,
+          "normal_init_and_fork": true,
+          "legal_lower_restore_checked": true,
+          "vm_shrink_permit": false,
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "originalParserPass": true,
+      "panicStartMessages": [],
+      "runtimeNotesSha256": "cbf448079077b712e5812d4c9c54a9ea3b4e3aacc76892699881c8aad57619dc",
+      "runtimeNotesEqualELFSection": true
+    },
+    {
+      "case": "empty",
+      "negativeBoot": true,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 1.0334123369975714,
+      "startUTC": "2026-10-30T17:58:54.314914+00:00",
+      "endUTC": "2026-10-30T17:58:55.348330+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "8dbe88d54525ff0e751af4a036927ba09f38e0d31a316fcefb8b70968cf2260b",
+      "panicMessages": [
+        "neonvm.pid_max_limit: canonical decimal value required",
+        "neonvm.pid_max_limit: canonical decimal value required ]---"
+      ],
+      "intentionallyTerminatedAfterObservedPanic": true,
+      "guestInitMarkerPresent": false,
+      "kernelRunInitMarkerPresent": false,
+      "probe": [],
+      "panicStopCommand": {
+        "exitCode": 0,
+        "stdout": "pg17-pidcap-empty-20261030t175217z\n",
+        "stderr": ""
+      },
+      "pass": true,
+      "originalParserPass": false,
+      "panicStartMessages": [
+        "neonvm.pid_max_limit: canonical decimal value required"
+      ],
+      "earlyPID0Panic": true,
+      "earlyParamStackProven": true
+    },
+    {
+      "case": "bare",
+      "negativeBoot": true,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 0.9780315099997097,
+      "startUTC": "2026-10-30T17:58:55.348797+00:00",
+      "endUTC": "2026-10-30T17:58:56.326833+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "e4c78d5a85a08b37566753f7508c73edcb42f2e48287a3ae5587b7e42c4bfc21",
+      "panicMessages": [
+        "neonvm.pid_max_limit: canonical decimal value required",
+        "neonvm.pid_max_limit: canonical decimal value required ]---"
+      ],
+      "intentionallyTerminatedAfterObservedPanic": true,
+      "guestInitMarkerPresent": false,
+      "kernelRunInitMarkerPresent": false,
+      "probe": [],
+      "panicStopCommand": {
+        "exitCode": 0,
+        "stdout": "pg17-pidcap-bare-20261030t175217z\n",
+        "stderr": ""
+      },
+      "pass": true,
+      "originalParserPass": false,
+      "panicStartMessages": [
+        "neonvm.pid_max_limit: canonical decimal value required"
+      ],
+      "earlyPID0Panic": true,
+      "earlyParamStackProven": true
+    },
+    {
+      "case": "leading-zero",
+      "negativeBoot": true,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 1.1275247570010833,
+      "startUTC": "2026-10-30T17:58:56.327370+00:00",
+      "endUTC": "2026-10-30T17:58:57.454898+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "c8d037fa63f7d7e3d62bfa6edcf866e72bcc2c8f2c80cd7374effcfb04695bb7",
+      "panicMessages": [
+        "neonvm.pid_max_limit: canonical decimal value required",
+        "neonvm.pid_max_limit: canonical decimal value required ]---"
+      ],
+      "intentionallyTerminatedAfterObservedPanic": true,
+      "guestInitMarkerPresent": false,
+      "kernelRunInitMarkerPresent": false,
+      "probe": [],
+      "panicStopCommand": {
+        "exitCode": 0,
+        "stdout": "pg17-pidcap-leading-zero-20261030t175217z\n",
+        "stderr": ""
+      },
+      "pass": true,
+      "originalParserPass": false,
+      "panicStartMessages": [
+        "neonvm.pid_max_limit: canonical decimal value required"
+      ],
+      "earlyPID0Panic": true,
+      "earlyParamStackProven": true
+    },
+    {
+      "case": "zero",
+      "negativeBoot": true,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 1.0703546779986937,
+      "startUTC": "2026-10-30T17:58:56.691745+00:00",
+      "endUTC": "2026-10-30T17:58:57.762103+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "2ec28eebc4aa113fcc7199c2ffbd938ab6a947f6fffa5153b5009ebc31aa9565",
+      "panicMessages": [
+        "neonvm.pid_max_limit: canonical decimal value required",
+        "neonvm.pid_max_limit: canonical decimal value required ]---"
+      ],
+      "intentionallyTerminatedAfterObservedPanic": true,
+      "guestInitMarkerPresent": false,
+      "kernelRunInitMarkerPresent": false,
+      "probe": [],
+      "panicStopCommand": {
+        "exitCode": 0,
+        "stdout": "pg17-pidcap-zero-20261030t175217z\n",
+        "stderr": ""
+      },
+      "pass": true,
+      "originalParserPass": false,
+      "panicStartMessages": [
+        "neonvm.pid_max_limit: canonical decimal value required"
+      ],
+      "earlyPID0Panic": true,
+      "earlyParamStackProven": true
+    },
+    {
+      "case": "plus",
+      "negativeBoot": true,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 1.299151992003317,
+      "startUTC": "2026-10-30T17:58:57.455689+00:00",
+      "endUTC": "2026-10-30T17:58:58.754844+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "11d00a627960889bedbade036ef94917585963ec64afb91ea626da572ec24056",
+      "panicMessages": [
+        "neonvm.pid_max_limit: canonical decimal value required",
+        "neonvm.pid_max_limit: canonical decimal value required ]---"
+      ],
+      "intentionallyTerminatedAfterObservedPanic": true,
+      "guestInitMarkerPresent": false,
+      "kernelRunInitMarkerPresent": false,
+      "probe": [],
+      "panicStopCommand": {
+        "exitCode": 0,
+        "stdout": "pg17-pidcap-plus-20261030t175217z\n",
+        "stderr": ""
+      },
+      "pass": true,
+      "originalParserPass": false,
+      "panicStartMessages": [
+        "neonvm.pid_max_limit: canonical decimal value required"
+      ],
+      "earlyPID0Panic": true,
+      "earlyParamStackProven": true
+    },
+    {
+      "case": "negative",
+      "negativeBoot": true,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 1.1998297080062912,
+      "startUTC": "2026-10-30T17:58:57.762807+00:00",
+      "endUTC": "2026-10-30T17:58:58.962640+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "87370d5544384b781cb3b975637d17056f2149d34ca63250567387563b1c5a86",
+      "panicMessages": [
+        "neonvm.pid_max_limit: canonical decimal value required",
+        "neonvm.pid_max_limit: canonical decimal value required ]---"
+      ],
+      "intentionallyTerminatedAfterObservedPanic": true,
+      "guestInitMarkerPresent": false,
+      "kernelRunInitMarkerPresent": false,
+      "probe": [],
+      "panicStopCommand": {
+        "exitCode": 0,
+        "stdout": "pg17-pidcap-negative-20261030t175217z\n",
+        "stderr": ""
+      },
+      "pass": true,
+      "originalParserPass": false,
+      "panicStartMessages": [
+        "neonvm.pid_max_limit: canonical decimal value required"
+      ],
+      "earlyPID0Panic": true,
+      "earlyParamStackProven": true
+    },
+    {
+      "case": "nondecimal",
+      "negativeBoot": true,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 1.3713625900054467,
+      "startUTC": "2026-10-30T17:58:58.755336+00:00",
+      "endUTC": "2026-10-30T17:59:00.126704+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "e1bd9a5d9f9699367397da3c7d31431b1c305aaca15301285b62068204d55c03",
+      "panicMessages": [
+        "neonvm.pid_max_limit: canonical decimal value required",
+        "neonvm.pid_max_limit: canonical decimal value required ]---"
+      ],
+      "intentionallyTerminatedAfterObservedPanic": true,
+      "guestInitMarkerPresent": false,
+      "kernelRunInitMarkerPresent": false,
+      "probe": [],
+      "panicStopCommand": {
+        "exitCode": 0,
+        "stdout": "pg17-pidcap-nondecimal-20261030t175217z\n",
+        "stderr": ""
+      },
+      "pass": true,
+      "originalParserPass": false,
+      "panicStartMessages": [
+        "neonvm.pid_max_limit: canonical decimal value required"
+      ],
+      "earlyPID0Panic": true,
+      "earlyParamStackProven": true
+    },
+    {
+      "case": "overflow",
+      "negativeBoot": true,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 1.3330377410020446,
+      "startUTC": "2026-10-30T17:58:58.963169+00:00",
+      "endUTC": "2026-10-30T17:59:00.296210+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "1e092e3617cf82656ded8e864110ab95dab0f0ef067ac89121a6c8b28b1fe91f",
+      "panicMessages": [
+        "neonvm.pid_max_limit: value outside supported range",
+        "neonvm.pid_max_limit: value outside supported range ]---"
+      ],
+      "intentionallyTerminatedAfterObservedPanic": true,
+      "guestInitMarkerPresent": false,
+      "kernelRunInitMarkerPresent": false,
+      "probe": [],
+      "panicStopCommand": {
+        "exitCode": 0,
+        "stdout": "pg17-pidcap-overflow-20261030t175217z\n",
+        "stderr": ""
+      },
+      "pass": true,
+      "originalParserPass": false,
+      "panicStartMessages": [
+        "neonvm.pid_max_limit: value outside supported range"
+      ],
+      "earlyPID0Panic": true,
+      "earlyParamStackProven": true
+    },
+    {
+      "case": "below301",
+      "negativeBoot": true,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 1.0325714070058893,
+      "startUTC": "2026-10-30T17:59:00.127591+00:00",
+      "endUTC": "2026-10-30T17:59:01.160153+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "1a96372df07c8bde4aaeed150d8c51d34a731679d506eb55e4c9935a71c08840",
+      "panicMessages": [
+        "neonvm.pid_max_limit: value outside supported range",
+        "neonvm.pid_max_limit: value outside supported range ]---"
+      ],
+      "intentionallyTerminatedAfterObservedPanic": true,
+      "guestInitMarkerPresent": false,
+      "kernelRunInitMarkerPresent": false,
+      "probe": [],
+      "panicStopCommand": {
+        "exitCode": 0,
+        "stdout": "pg17-pidcap-below301-20261030t175217z\n",
+        "stderr": ""
+      },
+      "pass": true,
+      "originalParserPass": false,
+      "panicStartMessages": [
+        "neonvm.pid_max_limit: value outside supported range"
+      ],
+      "earlyPID0Panic": true,
+      "earlyParamStackProven": true
+    },
+    {
+      "case": "above4096",
+      "negativeBoot": true,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 0.9634302519989433,
+      "startUTC": "2026-10-30T17:59:00.296938+00:00",
+      "endUTC": "2026-10-30T17:59:01.260371+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "d846befd067b0d69739f6ab2236ddc5f2f5a4c6da1dfc1d3ae584e67cb4bbb3d",
+      "panicMessages": [
+        "neonvm.pid_max_limit: value outside supported range",
+        "neonvm.pid_max_limit: value outside supported range ]---"
+      ],
+      "intentionallyTerminatedAfterObservedPanic": true,
+      "guestInitMarkerPresent": false,
+      "kernelRunInitMarkerPresent": false,
+      "probe": [],
+      "panicStopCommand": {
+        "exitCode": 0,
+        "stdout": "pg17-pidcap-above4096-20261030t175217z\n",
+        "stderr": ""
+      },
+      "pass": true,
+      "originalParserPass": false,
+      "panicStartMessages": [
+        "neonvm.pid_max_limit: value outside supported range"
+      ],
+      "earlyPID0Panic": true,
+      "earlyParamStackProven": true
+    },
+    {
+      "case": "duplicate",
+      "negativeBoot": true,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 0.9272267790001933,
+      "startUTC": "2026-10-30T17:59:01.160771+00:00",
+      "endUTC": "2026-10-30T17:59:02.088002+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "bc6717e181dc736fbf35ec0d8fa24d3d6984cec7a17519c91afb3d8c0a80b219",
+      "panicMessages": [
+        "neonvm.pid_max_limit: duplicate boot policy",
+        "neonvm.pid_max_limit: duplicate boot policy ]---"
+      ],
+      "intentionallyTerminatedAfterObservedPanic": true,
+      "guestInitMarkerPresent": false,
+      "kernelRunInitMarkerPresent": false,
+      "probe": [],
+      "panicStopCommand": {
+        "exitCode": 0,
+        "stdout": "pg17-pidcap-duplicate-20261030t175217z\n",
+        "stderr": ""
+      },
+      "pass": true,
+      "originalParserPass": false,
+      "panicStartMessages": [
+        "neonvm.pid_max_limit: duplicate boot policy"
+      ],
+      "earlyPID0Panic": true,
+      "earlyParamStackProven": true
+    },
+    {
+      "case": "duplicate-different",
+      "negativeBoot": true,
+      "hostQemuExitCode": 0,
+      "elapsedSeconds": 0.9693071049987338,
+      "startUTC": "2026-10-30T17:59:01.260932+00:00",
+      "endUTC": "2026-10-30T17:59:02.230243+00:00",
+      "kernelSha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+      "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+      "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+      "accel": "kvm",
+      "TCGFallback": false,
+      "GuestNIC": "none",
+      "consoleSha256": "19d917156d22d2c8bbc443b82e4ce0e5b654179608ea16366b6d8996e4f0181c",
+      "panicMessages": [
+        "neonvm.pid_max_limit: duplicate boot policy",
+        "neonvm.pid_max_limit: duplicate boot policy ]---"
+      ],
+      "intentionallyTerminatedAfterObservedPanic": true,
+      "guestInitMarkerPresent": false,
+      "kernelRunInitMarkerPresent": false,
+      "probe": [],
+      "panicStopCommand": {
+        "exitCode": 0,
+        "stdout": "pg17-pidcap-duplicate-different-20261030t175217z\n",
+        "stderr": ""
+      },
+      "pass": true,
+      "originalParserPass": false,
+      "panicStartMessages": [
+        "neonvm.pid_max_limit: duplicate boot policy"
+      ],
+      "earlyPID0Panic": true,
+      "earlyParamStackProven": true
+    }
+  ],
+  "counts": {
+    "boots": 17,
+    "positiveBoots": 5,
+    "negativeBoots": 12,
+    "passed": 17
+  },
+  "vmShrinkPermit": false,
+  "PGStarted": false,
+  "normalDecreaseExecuted": false,
+  "KubernetesDeployed": false
+}

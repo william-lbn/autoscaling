@@ -1,0 +1,77 @@
+{
+  ".gitignore": {
+    "mode": "0o664",
+    "bytes": 134,
+    "sha256": "e969dbed17cd8618dbb371ca2fd65b04312abf6528b7fe8b556af2614362160d"
+  },
+  "Dockerfile": {
+    "mode": "0o644",
+    "bytes": 4435,
+    "sha256": "c412b9cf4bdf8fa6437cefa6620de0b5a60072390c4bb499a6be2852bf1ccc76"
+  },
+  "README.md": {
+    "mode": "0o664",
+    "bytes": 3297,
+    "sha256": "4d962ed8ff4c3e5eda81645949b95f057b8e080ab67f89fe34c287fb52abd46a"
+  },
+  "echo-source-url.sh": {
+    "mode": "0o775",
+    "bytes": 504,
+    "sha256": "42b5afcfb6817ae0dec70b111417fb388f2cb61be93d13ca30c268eafe97b2e6"
+  },
+  "echo-version.sh": {
+    "mode": "0o775",
+    "bytes": 298,
+    "sha256": "047b4a3033370ce2b6cd28e3042e0a4ad36806207ac8e583417b1e1ed2a09fe0"
+  },
+  "linux-config-aarch64-6.12.26": {
+    "mode": "0o664",
+    "bytes": 93969,
+    "sha256": "08917eaf0aa2ead81717787e1bddfb135b9aa69a2d346689f4338a6f0e1c2905"
+  },
+  "linux-config-amd64-6.12.26": {
+    "mode": "0o664",
+    "bytes": 94147,
+    "sha256": "639ea751eb4ae7743e2695368286d1aeb0417f6680d6ac24ae3b051948a94b96"
+  },
+  "patches/0001-x86-mm-Update-mapped-addresses-in-phys_-pmd-pud-_ini.patch": {
+    "mode": "0o664",
+    "bytes": 13241,
+    "sha256": "01bd47eaea82fb99eea4cb25be1063e6f2f14e3e03289be644a9bac03edfba5e"
+  },
+  "patches/0002-x86-mm-Allow-error-returns-from-phys_-_init.patch": {
+    "mode": "0o664",
+    "bytes": 12133,
+    "sha256": "b4cf630bf5cd5e64b6702cbc5aa952bc718c45d22bca5ec2fb082fede7d6d0d5"
+  },
+  "patches/0003-x86-mm-Handle-alloc-failure-in-phys_-_init.patch": {
+    "mode": "0o664",
+    "bytes": 1760,
+    "sha256": "9ee75c0a474f68303ef8c32141445b687056c228cfe31f822e983206139112d0"
+  },
+  "patches/0004-x86-mm-Use-GFP_KERNEL-for-alloc_low_pages-after-boot.patch": {
+    "mode": "0o664",
+    "bytes": 1576,
+    "sha256": "5ac67ef964af106fc5f36bdd3c711b9241bfdfac19b5c9faa6c162b765004ae8"
+  },
+  "patches/0005-Neon-mm-Add-debug-logs-for-kcompactd-offlining-race.patch": {
+    "mode": "0o664",
+    "bytes": 2968,
+    "sha256": "959e9d4701586312a3dd9e03386c849efd3f7b78038fd13dd56c5e58d6d037e4"
+  },
+  "patches/0006-Neon-pid-Add-opt-in-early-global-PID-hard-limit.patch": {
+    "mode": "0o644",
+    "bytes": 5554,
+    "sha256": "946be0d25506edae50217b976bdf3b02283e3236acefdc119648ba5172c5ab5a"
+  },
+  "profiles/normal-v1/config-source.json": {
+    "mode": "0o644",
+    "bytes": 1244,
+    "sha256": "b4cd2048d1382ef18d9dc52f563d8521d51b1660cf32bc558766ce1de837402e"
+  },
+  "profiles/normal-v1/linux-config-amd64-6.12.26": {
+    "mode": "0o644",
+    "bytes": 94182,
+    "sha256": "b20ac4f85d74b6dfca4f207cbee3cd72f6b34307fc1a4fee13519eba244ed1f5"
+  }
+}

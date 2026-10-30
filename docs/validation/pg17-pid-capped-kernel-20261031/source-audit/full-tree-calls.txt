@@ -1,0 +1,13 @@
+mm/filemap.c:814:void replace_page_cache_folio(struct folio *old, struct folio *new)
+mm/filemap.c:829:	mem_cgroup_replace_folio(old, new);
+mm/memcontrol.c:4738:void mem_cgroup_replace_folio(struct folio *old, struct folio *new)
+mm/page_counter.c:54:void page_counter_cancel(struct page_counter *counter, unsigned long nr_pages)
+mm/page_counter.c:167:		page_counter_cancel(c, nr_pages);
+mm/page_counter.c:182:		page_counter_cancel(c, nr_pages);
+mm/shmem.c:1951:		mem_cgroup_replace_folio(old, new);
+mm/hugetlb_cgroup.c:223:	page_counter_cancel(counter, nr_pages);
+fs/fuse/dev.c:891:	replace_page_cache_folio(oldfolio, newfolio);
+include/linux/pagemap.h:1289:void replace_page_cache_folio(struct folio *old, struct folio *new);
+include/linux/page_counter.h:68:void page_counter_cancel(struct page_counter *counter, unsigned long nr_pages);
+include/linux/memcontrol.h:729:void mem_cgroup_replace_folio(struct folio *old, struct folio *new);
+include/linux/memcontrol.h:1227:static inline void mem_cgroup_replace_folio(struct folio *old,

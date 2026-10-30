@@ -1,0 +1,160 @@
+From: Neon PG17 memory validation <noreply@example.invalid>
+Subject: [PATCH] Neon pid: 增加原启动可选的全 Guest PID 硬上限
+
+仅 neonvm.pid_max_limit=<canonical 301..4096> 启用。非法/重复原参数 panic，
+缺省保持既有 PID/CPU 默认行为。此补丁不授权 normal 降限，也不覆盖 idle PID0、
+IRQ、folio 引用或其余内存包络；新增只读 sysctl 供原来源生产者机读。
+
+--- a/include/linux/pid.h
++++ b/include/linux/pid.h
+@@ -108,6 +108,8 @@
+ 
+ extern int pid_max;
+ extern int pid_max_min, pid_max_max;
++/* 原启动可选硬源，初始化后只读；0 表示未启用，不能从普通 pid_max 推断已启用。 */
++extern int neonvm_pid_max_limit;
+ 
+ /*
+  * look up a PID in the hash table. Must be called with the tasklist_lock
+--- a/kernel/pid.c
++++ b/kernel/pid.c
+@@ -31,6 +31,8 @@
+ #include <linux/export.h>
+ #include <linux/slab.h>
+ #include <linux/init.h>
++#include <linux/kstrtox.h>
++#include <linux/panic.h>
+ #include <linux/rculist.h>
+ #include <linux/memblock.h>
+ #include <linux/pid_namespace.h>
+@@ -63,7 +65,53 @@
+ int pid_max = PID_MAX_DEFAULT;
+ 
+ int pid_max_min = RESERVED_PIDS + 1;
+-int pid_max_max = PID_MAX_LIMIT;
++int pid_max_max __ro_after_init = PID_MAX_LIMIT;
++
++/*
++ * 仅原启动显式启用；0 保留既有 PID/CPU 默认行为。early_param 在 pid_idr_init
++ * 及 rest_init 首次用户/内核线程分配前执行，不能用启动后的 pid_max/census 补签。
++ * 上限为 exclusive：所有 namespace 的每层祖先 PID 分配都直接受同一只读硬源约束。
++ * 本字段只在唯一早期处理器写一次，初始化后只读；sysctl 只能观察，不能扩大/清除。
++ */
++int neonvm_pid_max_limit __ro_after_init;
++
++static int __init neonvm_setup_pid_max_limit(char *str)
++{
++	const char *cursor;
++	unsigned int limit;
++
++	/* 无效/重复不能只返回 -EINVAL 让内核警告后继续普通启动。 */
++	if (neonvm_pid_max_limit)
++		panic("neonvm.pid_max_limit: duplicate boot policy");
++	if (!str || !*str || *str == '0')
++		panic("neonvm.pid_max_limit: canonical decimal value required");
++	for (cursor = str; *cursor; cursor++) {
++		if (*cursor < '0' || *cursor > '9')
++			panic("neonvm.pid_max_limit: canonical decimal value required");
++	}
++	if (kstrtouint(str, 10, &limit) || limit <= RESERVED_PIDS || limit > 4096)
++		panic("neonvm.pid_max_limit: value outside supported range");
++
++	neonvm_pid_max_limit = limit;
++	pid_max = limit;
++	pid_max_max = limit;
++	pid_max_min = RESERVED_PIDS + 1;
++	pr_info("neonvm: PID hard limit %u installed before PID allocation\n", limit);
++	return 0;
++}
++early_param("neonvm.pid_max_limit", neonvm_setup_pid_max_limit);
++
++/* 在原 tid 检查/idr 分配点读取，不把缺省路径的读取提前到可睡眠的 idr_preload 前。
++ * 只读原硬源同时限制显式 set_tid 和每个 namespace 的祖先自动 ID 分配。
++ */
++static inline int neonvm_pid_alloc_limit(void)
++{
++	int limit = READ_ONCE(pid_max);
++
++	if (neonvm_pid_max_limit)
++		limit = min(limit, neonvm_pid_max_limit);
++	return limit;
++}
+ /*
+  * Pseudo filesystems start inode numbering after one. We use Reserved
+  * PIDs as a natural offset.
+@@ -198,7 +246,7 @@
+ 			tid = set_tid[ns->level - i];
+ 
+ 			retval = -EINVAL;
+-			if (tid < 1 || tid >= pid_max)
++			if (tid < 1 || tid >= neonvm_pid_alloc_limit())
+ 				goto out_free;
+ 			/*
+ 			 * Also fail if a PID != 1 is requested and
+@@ -238,7 +286,7 @@
+ 			 * a partially initialized PID (see below).
+ 			 */
+ 			nr = idr_alloc_cyclic(&tmp->idr, NULL, pid_min,
+-					      pid_max, GFP_ATOMIC);
++					      neonvm_pid_alloc_limit(), GFP_ATOMIC);
+ 		}
+ 		spin_unlock_irq(&pidmap_lock);
+ 		idr_preload_end();
+@@ -652,11 +700,20 @@
+ 	/* Verify no one has done anything silly: */
+ 	BUILD_BUG_ON(PID_MAX_LIMIT >= PIDNS_ADDING);
+ 
+-	/* bump default and minimum pid_max based on number of cpus */
+-	pid_max = min(pid_max_max, max_t(int, pid_max,
++	if (neonvm_pid_max_limit) {
++		/* 原 opt-in 策略先于任何 PID 分配；CPU 默认计算不能悄悄扩大它。
++		 * 极小策略若容纳不了系统启动会实际失败，不另造例外 PID 额度。
++		 */
++		pid_max = neonvm_pid_max_limit;
++		pid_max_max = neonvm_pid_max_limit;
++		pid_max_min = RESERVED_PIDS + 1;
++	} else {
++		/* bump default and minimum pid_max based on number of cpus */
++		pid_max = min(pid_max_max, max_t(int, pid_max,
+ 				PIDS_PER_CPU_DEFAULT * num_possible_cpus()));
+-	pid_max_min = max_t(int, pid_max_min,
++		pid_max_min = max_t(int, pid_max_min,
+ 				PIDS_PER_CPU_MIN * num_possible_cpus());
++	}
+ 	pr_info("pid_max: default: %u minimum: %u\n", pid_max, pid_max_min);
+ 
+ 	idr_init(&init_pid_ns.idr);
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1610,6 +1610,17 @@
+ 	return ret;
+ }
+ 
++/* 只读内核事实而非新的运行期控制：即使调用者绕过普通文件权限，处理器也拒写。
++ * 本值只在原 early_param 设置，缺省 0 不能被当成已强制的 PID 包络。
++ */
++static int proc_neonvm_pid_max_limit(const struct ctl_table *table, int write,
++				   void *buffer, size_t *lenp, loff_t *ppos)
++{
++	if (write)
++		return -EPERM;
++	return proc_dointvec(table, write, buffer, lenp, ppos);
++}
++
+ static struct ctl_table kern_table[] = {
+ 	{
+ 		.procname	= "panic",
+@@ -1804,6 +1815,13 @@
+ 		.proc_handler	= proc_dointvec,
+ 	},
+ #endif
++	{
++		.procname	= "neonvm_pid_max_limit",
++		.data		= &neonvm_pid_max_limit,
++		.maxlen		= sizeof(int),
++		.mode		= 0444,
++		.proc_handler	= proc_neonvm_pid_max_limit,
++	},
+ 	{
+ 		.procname	= "pid_max",
+ 		.data		= &pid_max,
