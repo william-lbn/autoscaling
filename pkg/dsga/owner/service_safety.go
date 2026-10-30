@@ -109,6 +109,24 @@ func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) 
 	if !exact || actual <= 0 || control.Uint64(actual) != published.Actual.ActualBytes {
 		return fmt.Errorf("idle service VM status differs from original Runner actual")
 	}
+	if m.InitialHeld != nil {
+		if last := published.State.Last; last != nil {
+			// Initial可在原未发送取消后继续持有，但同数值或Last文字
+			// 不是屏障。认证原不可变回执；未发送/在途仍保持关闭。
+			proof, err := w.safety.runner.ObserveAbortOriginal(ctx, last.Intent.Command, last.Intent.JournalSHA256, m.Owner)
+			if err != nil {
+				return err
+			}
+			if !proof.Receipt.Complete() && !proof.Receipt.CancelledBeforeSend() {
+				return vmguard.ErrUnknown
+			}
+		}
+	} else if _, err := w.safety.runner.CheckCurrentBudget(ctx, m); err != nil {
+		// 早期恢复完成后旧预算保持，不能只认证Birth/当前数值而漏掉
+		// 原完成回执或原取消尾UID。当前永久Through仍由Model严格核验，
+		// 不将本次只读成功提升为Host释放或旧资源重放许可。
+		return err
+	}
 	return nil
 }
 
@@ -166,8 +184,9 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 			return true, pgexec.AwaitingFact, fmt.Errorf("service closure replay differs from original owner/command")
 		}
 		if !c.Pending() {
-			if replay == "" && c.ActualRecovery != nil {
-				// 普通循环只复核已保存完整实际预算，不能自行开放或释放。
+			if replay == "" && (c.ActualRecovery != nil || c.RetainedRecovery != nil) {
+				// 普通循环只复核已保存的完整实际/原持有预算，不能
+				// 自行开放、重选来源、退休原Unknown或释放预算。
 				if err := w.inspectServiceRecovery(ctx, s); err != nil {
 					return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 				}

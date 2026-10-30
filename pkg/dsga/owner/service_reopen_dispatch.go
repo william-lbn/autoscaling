@@ -63,6 +63,17 @@ func (w *PGWorker) reopenSourcesAvailable() bool {
 // 资源在途仍不得借当前容量绕过原账本；18也不能复写原Cleanup。
 func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapshot) error {
 	m := s.State()
+	if m.ServiceClosure != nil && m.ServiceClosure.RetainedRecovery != nil {
+		if w.admission == nil {
+			return ErrServiceSafety
+		}
+		// 原PG/Guest/VM从未派发，不制造原Key终态或清SDK栅栏。
+		// 完整旧预算/Root/Runner与原关闭锚仍须每轮重新认证。
+		if err := w.admission.CheckServiceRetained(ctx, s); err != nil {
+			return err
+		}
+		return w.inspectCleanupQualification(ctx, s)
+	}
 	if m.ServiceClosure != nil && m.ServiceClosure.ActualRecovery != nil {
 		if w.admission == nil {
 			return ErrServiceSafety
@@ -111,8 +122,25 @@ func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapsh
 // CAS丢回复停止本次管理，重读后再次显式恢复沿用已保存Proof和原selector。
 func (w *PGWorker) ensureServiceFinalization(ctx context.Context, s *journal.Snapshot, selector string) (*journal.Snapshot, error) {
 	m := s.State()
-	if m.ServiceClosure != nil && m.ServiceClosure.ActualRecovery != nil {
+	if m.ServiceClosure != nil && (m.ServiceClosure.ActualRecovery != nil || m.ServiceClosure.RetainedRecovery != nil) {
 		return s, nil
+	}
+	if m.ServiceClosure != nil && m.ServiceClosure.Reason == "active_source_unconfirmed" {
+		if _, err := m.RetainedServiceSource(); err == nil {
+			// 最早期操作不要求不存在的新Prepare/Host；沿用真实原预算。
+			// 只有此严格形状可走该分支，已完成Prepare或任何资源派发
+			// 仍走其原完整实际预算/领域屏障，不能按当前数值降级。
+			if w.admission == nil {
+				return nil, ErrServiceSafety
+			}
+			if err := w.inspectCleanupQualification(ctx, s); err != nil {
+				return nil, err
+			}
+			if err := w.admission.RecoverServiceRetained(ctx, s, selector); err != nil {
+				return nil, err
+			}
+			return w.session.store.Load(ctx)
+		}
 	}
 	if m.ServiceClosure != nil && m.ServiceClosure.Reason == "active_pg_source_unconfirmed" && m.ServiceClosure.PGRecovery == nil && m.ServiceClosure.PGRejection == nil {
 		// 先隔离/核验原PG，不能让Root部分效果遮住原PG查询。独立证明

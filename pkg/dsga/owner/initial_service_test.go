@@ -364,9 +364,13 @@ func productionInitialService(t *testing.T, mode string) {
 	actualRecovery := strings.HasPrefix(mode, "actual-safety-recover-")
 	actualShrinkRecovery := mode == "actual-shrink-recover"
 	hostServiceClosure := mode == "host-service-closure"
+	retainedService := strings.HasPrefix(mode, "retained-safety-")
+	retainedInitial := strings.HasPrefix(mode, "retained-safety-initial-")
+	retainedCapacity := strings.HasPrefix(mode, "retained-safety-capacity-")
+	retainedFinalized := mode == "retained-safety-finalized-unknown"
 	actualLatePG := actualRecovery && strings.Contains(mode, "pg-late-commit")
 	pgRecoveryTransfer := pgRecovery && (strings.Contains(mode, "unreceived") || strings.Contains(mode, "expired") || strings.Contains(mode, "takeover"))
-	closureTransfer := (actualRecovery || vmRecovery) && strings.HasSuffix(mode, "takeover") || pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
+	closureTransfer := (retainedCapacity || actualRecovery || vmRecovery) && strings.HasSuffix(mode, "takeover") || pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
 	pgSafety := actualLatePG || strings.HasPrefix(mode, "active-safety-pg-") || pgRecovery
 	guestRecovery := strings.HasPrefix(mode, "guest-safety-recover-")
 	guestRecoveryUnreceived := guestRecovery && strings.Contains(mode, "unreceived")
@@ -452,7 +456,7 @@ func productionInitialService(t *testing.T, mode string) {
 		// 仅给测试总期限留余量，生产单轮请求、限流和Lease均不变。
 		deadline = 4 * time.Minute
 	}
-	if actualShrinkRecovery {
+	if actualShrinkRecovery || retainedService {
 		// 独立新根串联正常Grow真实前驱及Shrink实际恢复；仅扩大
 		// 整体测试上限，不改生产请求、Kube限流或Lease时限。
 		deadline = 6 * time.Minute
@@ -516,7 +520,7 @@ func productionInitialService(t *testing.T, mode string) {
 				w.WriteHeader(http.StatusServiceUnavailable)
 				return
 			}
-			if actualRecovery && r.URL.Path == "/dsg/v1/resize/status" {
+			if (actualRecovery || retainedCapacity) && r.URL.Path == "/dsg/v1/resize/status" {
 				pg.mu.Lock()
 				unreceived := pg.resizeReceipt == nil
 				current := pg.current().Observed
@@ -689,7 +693,7 @@ func productionInitialService(t *testing.T, mode string) {
 		var successorHost *hostexec.Publisher
 		if lifecycleMode {
 			// 已由完整生产恢复链完成首次服务；继续原预算Grow，无重复初开。
-		} else if hostServiceClosure || actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
+		} else if retainedService || hostServiceClosure || actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
 			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -728,6 +732,10 @@ func productionInitialService(t *testing.T, mode string) {
 			_, _, err = store.Begin(ctx, s, session.Actor(), request, 1)
 			require.NoError(t, err)
 		}
+		if retainedInitial {
+			verifyProductionServiceRetainedRecovery(t, ctx, mode, api, store, client, coord, session, resources, worker, config, source, pg, root, runner, qmp, transfer)
+			return nil
+		}
 		if strings.HasPrefix(mode, "active-safety-prepare-") {
 			verifyActiveServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
 			return nil
@@ -762,11 +770,18 @@ func productionInitialService(t *testing.T, mode string) {
 			// 完整结案/自动Grow→Shrink会经过多次正式来源预审，race运行
 			// 可能超过静态夹具Lease的60秒寿命。用原UID/holder的真实
 			// 选主续租维持Host，不放宽生产过期校验，也不重建同名来源。
-			if actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || finalizationCancel || strings.HasPrefix(mode, "cleanup-safety-") {
+			if retainedService || actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || finalizationCancel || strings.HasPrefix(mode, "cleanup-safety-") {
 				keepPGTakeoverHostOwner(t, ctx, client)
 			}
 		}
 		for _, action := range []journal.Action{journal.ReserveHost, journal.ResizeVM} {
+			if retainedCapacity && action == journal.ResizeVM {
+				// 先由正式完整实际恢复生成v3永久头，保留真正InitialVM；
+				// 本轮再验证其后继早期关闭，不手填Header或资源Completed。
+				verifyProductionServiceActualRecovery(t, ctx, "actual-safety-recover-vm-planned", api, store, client, coord, session, resources, worker, config, source, pg, root, runner, qmp, transfer)
+				verifyProductionRetainedSuccessor(t, ctx, mode, api, store, client, coord, session, resources, worker, config, source, pg, root, runner, qmp, transfer)
+				return nil
+			}
 			if actualRecovery && strings.HasSuffix(mode, "vm-planned") && action == journal.ResizeVM {
 				// Host已真实持有原峰值，但原ResizeVM尚无派发。保留真正
 				// InitialVM来源，不用取消回执或虚构Completed代替首次状态。
@@ -985,6 +1000,10 @@ func productionInitialService(t *testing.T, mode string) {
 		}
 		s, err = store.Load(ctx)
 		require.NoError(t, err)
+		if retainedFinalized {
+			verifyProductionRetainedSuccessor(t, ctx, mode, api, store, client, coord, session, resources, worker, config, source, pg, root, runner, qmp, transfer)
+			return nil
+		}
 		require.Nil(t, s.State().InitialHeld)
 		require.Nil(t, s.State().CapacityHeld)
 		require.NotNil(t, s.State().BudgetHeld)
