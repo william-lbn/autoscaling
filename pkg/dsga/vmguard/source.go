@@ -114,10 +114,26 @@ func (r *Runner) authorize(ctx context.Context) (authorization, error) {
 		return a, nil
 	}
 	a.Command, a.JournalSHA256 = &c, vmStep.CommandSHA256
-	if op.AbortRequested && s.Dispatchable() {
-		// 只认证原取消与原派发者，不授予预算/新QMP写。即使Host/PG暂失联，
-		// Runner仍可在原flock内证明该命令未跨发送屏障；不能由Denied推取消。
+	selectedCancel := false
+	if closed := model.ServiceClosure; closed != nil && closed.VMRecovery != nil {
+		choice := closed.VMRecovery
+		selectedCancel = choice.Phase == journal.Unconfirmed && choice.CancelUnsent && choice.CommandSHA256 == vmStep.CommandSHA256
+	}
+	if (op.AbortRequested || selectedCancel) && s.Dispatchable() {
+		// 只认证原取消，或同VM UID/RV已持久的独立未发送封存选择；二者
+		// 均逐字绑定原派发者/命令，不授予预算或新QMP写。独立选择不改
+		// 冻结Active.Abort，接管后见证仍记录本次真实owner/Sequence/RV。
+		// 即使Host/PG暂失联，Runner仍在原flock内证明从未跨发送屏障；
+		// 不能由Denied、单纯关闭或普通not_sent推导取消。
 		a.Abort = &cancellationAuthority{Origin: *vmStep.DispatchedBy, Witness: Cancellation{ProtocolVersion: 1, Owner: model.Owner, VMSequence: model.Sequence, VMResourceVersion: s.ResourceVersion()}}
+	}
+	if model.ServiceClosure != nil {
+		// 独立关闭写前点冻结原Active，来源恢复不能把原Unknown重新当成新
+		// 派发或消费旧not_sent重放选择。先保留完整原Command和明确Abort，
+		// 使engine仍可在原flock内只读对账may_have_sent，或封存原取消；
+		// 关闭本身不表示未发送，也不产生取消、预算释放或新QMP写许可。
+		a.Denied = fmt.Errorf("Runner service closure blocks new original ResizeVM dispatch or replay")
+		return a, nil
 	}
 	if op.AbortRequested || op.Origin != model.Owner || *vmStep.DispatchedBy != model.Owner || !s.Dispatchable() {
 		a.Denied = fmt.Errorf("Runner original ResizeVM is cancelled, old-owner or not dispatchable")

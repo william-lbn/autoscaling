@@ -97,13 +97,17 @@ func newRunnerFixture(t *testing.T) *runnerFixture {
 // initialize=false仅为新出生故障组合保留真实Initialize之前的原环境，
 // 不删除已存在的出生或WAL来冒充新实例；旧测试仍走完整成功构造。
 func runnerBirthFixture(t *testing.T, initialize bool) *runnerFixture {
+	return runnerBirthFixtureForCompute(t, initialize, "compute-instance")
+}
+
+func runnerBirthFixtureForCompute(t *testing.T, initialize bool, computeInstanceID string) *runnerFixture {
 	t.Helper()
 	ctx := context.Background()
 	id := fixtureIdentity()
 	binding := journal.Binding{Namespace: "testing", Name: "vm", VMUID: types.UID(id.VMUID), Incarnation: id.Incarnation}
 	mode := vmv1.CpuScalingModeSysfs
 	vm := &vmv1.VirtualMachine{ObjectMeta: metav1.ObjectMeta{Namespace: binding.Namespace, Name: binding.Name, UID: binding.VMUID, ResourceVersion: "1"}}
-	vm.Spec.DSGABootstrap = &vmv1.DSGABootstrap{ProtocolVersion: 1, Incarnation: binding.Incarnation, ComputeInstanceID: "compute-instance", VMUID: "", ConfigSecretUID: "", Ready: false}
+	vm.Spec.DSGABootstrap = &vmv1.DSGABootstrap{ProtocolVersion: 1, Incarnation: binding.Incarnation, ComputeInstanceID: computeInstanceID, VMUID: "", ConfigSecretUID: "", Ready: false}
 	vm.Spec.CpuScalingMode, vm.Spec.ServiceAccountName = &mode, "dsga-runner-test"
 	vm.Spec.Guest.MemorySlotSize = *resource.NewQuantity(1<<30, resource.BinarySI)
 	vm.Spec.Guest.MemorySlots.Min, vm.Spec.Guest.MemorySlots.Max, vm.Spec.Guest.MemorySlots.Use = 1, 4, 1
@@ -225,6 +229,12 @@ func (f *runnerFixture) beginKind(t *testing.T, kind control.Kind) (Command, str
 	id := resourceguard.Identity{VMUID: c.Identity.VMUID, ComputeInstanceID: c.Request.Key.Instance.ComputeInstanceID, GuestBootID: "12345678-1234-1234-1234-123456789abc", CgroupDevice: 2, CgroupInode: 3, SystemCgroupDevice: 0, SystemCgroupInode: 0}
 	s, err := f.store.Load(ctx)
 	require.NoError(t, err)
+	// 完整首次预算场景已经固定原PG/Root身份；复用其完整绑定，不在
+	// 创建新Resize时重新命名原boot或丢掉system cgroup身份。未绑定的
+	// 旧Runner领域夹具仍按上面的显式缺省身份初始化。
+	if bound := s.State(); bound.PGInstance != nil && bound.ResourceIdentity != nil {
+		c.Request.Key.Instance, id = *bound.PGInstance, *bound.ResourceIdentity
+	}
 	s, err = f.store.BindResource(ctx, s, f.actor, id)
 	require.NoError(t, err)
 	s, err = f.store.BindPG(ctx, s, f.actor, c.Request.Key.Instance)

@@ -14,6 +14,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
 
 func TestProductionPGResourceRecovery(t *testing.T) {
@@ -25,7 +26,7 @@ func TestProductionPGResourceRecovery(t *testing.T) {
 // 正式首次预算/Host/Runner/Guest/PG写前后失败关闭，再走原管理入口。
 // 真实Elector、Session、SDK和typed CAS；PG/Root/QMP/Kube为明确协议peer。
 // 更高floor隔离不造原PG终态，完整实际预算/其他资源仍由后继恢复处理。
-func verifyProductionPGResourceRecovery(t *testing.T, ctx context.Context, mode string, api *ownerAPI, store *journal.Store, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, core *kubefake.Clientset, source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture, qmp *vmQMPPeer, transfer *businessOwnerTransfer) {
+func verifyProductionPGResourceRecovery(t *testing.T, ctx context.Context, mode string, api *ownerAPI, store *journal.Store, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, core *kubefake.Clientset, source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture, qmp *vmQMPPeer, transfer *businessOwnerTransfer, runner *vmguard.Runner) {
 	t.Helper()
 	s, err := store.Load(ctx)
 	require.NoError(t, err)
@@ -96,13 +97,19 @@ func verifyProductionPGResourceRecovery(t *testing.T, ctx context.Context, mode 
 	require.Equal(t, want, s.State().ServiceClosure.PGRecovery.Effect)
 	if strings.HasSuffix(mode, "takeover") {
 		_, _, worker = transfer.takeoverClosure(t, ctx, session, resources, worker, config, core, source)
+		require.NotNil(t, worker.client.Pending(), "新SDK先从原WAL恢复未知")
+		// VM独立来源也须由原Runner持久承认新floor；新Session自身不能
+		// 替最终写者完成认证。首轮应等待，原Tick仅更新floor并发布读回。
+		_, err = worker.Advance(ctx)
+		require.ErrorIs(t, err, ErrServiceSafety)
+		require.NoError(t, runner.Tick(ctx))
 	} else {
 		worker.CloseIdleConnections()
 		worker, err = session.NewProductionPGWorker(ctx, config, resources, core.CoreV1(), source)
 		require.NoError(t, err)
 		defer worker.CloseIdleConnections()
+		require.NotNil(t, worker.client.Pending(), "SDK重建仍从原WAL恢复未知")
 	}
-	require.NotNil(t, worker.client.Pending(), "SDK重建仍从原WAL恢复未知")
 	progress, err := worker.Advance(ctx)
 	require.Equal(t, pgexec.Reconciled, progress)
 	require.ErrorIs(t, err, ErrServiceSafety)

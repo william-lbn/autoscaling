@@ -110,6 +110,16 @@ func (w *PGWorker) ensureServiceFinalization(ctx context.Context, s *journal.Sna
 		}
 		m = s.State()
 	}
+	if m.ServiceClosure != nil && (m.ServiceClosure.Reason == "active_source_unconfirmed" || m.ServiceClosure.Reason == "active_pg_source_unconfirmed") && w.vm != nil {
+		// 独立对账原Runner，不把Guest/PG的成功补成VM完成。取消授权
+		// 只写入独立选择，最终Runner在自己的原flock内裁决未发送屏障。
+		var err error
+		s, _, err = w.vm.RecoverServiceVM(ctx, s, selector, true)
+		if err != nil {
+			return nil, err
+		}
+		m = s.State()
+	}
 	if m.ServiceClosure != nil && (m.ServiceClosure.Reason == "active_source_unconfirmed" || m.ServiceClosure.Reason == "active_pg_source_unconfirmed") && w.resources != nil {
 		var err error
 		s, _, err = w.resources.RecoverServiceGuest(ctx, s, selector, true)

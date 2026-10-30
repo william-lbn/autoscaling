@@ -64,7 +64,9 @@ func (store *Store) SelectVMReplay(ctx context.Context, snapshot *Snapshot, acto
 		return nil, fmt.Errorf("VM replay selection requires original dispatchable owner snapshot")
 	}
 	op := snapshot.model.Active
-	if op == nil || op.Origin != actor || op.AbortRequested || op.Request.Key != v.Key {
+	// 服务关闭是独立的业务栅栏；来源恢复也不能创建或续用原重放选择。
+	// Runner仍在最后写者处重复核实关闭，覆盖关闭前已持久的旧提示。
+	if op == nil || snapshot.model.ServiceClosure != nil || op.Origin != actor || op.AbortRequested || op.Request.Key != v.Key {
 		return nil, fmt.Errorf("VM replay selection differs from active original operation")
 	}
 	var found bool

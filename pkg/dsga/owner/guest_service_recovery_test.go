@@ -15,6 +15,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
 
 func TestProductionGuestServiceRecovery(t *testing.T) {
@@ -32,7 +33,7 @@ func TestProductionGuestServiceRecoveryTakeover(t *testing.T) {
 // 正式首次服务、Prepare、Host、Runner和Guest写前后形成故障，再走真实
 // Session/SDK/typed CAS/管理入口；PG/Root/Kube/QMP为显式协议peer。独立
 // Guest对账完成仍不开放：PG/VM及完整实际预算须由后继恢复模块单独确认。
-func verifyProductionGuestServiceRecovery(t *testing.T, ctx context.Context, mode string, api *ownerAPI, store *journal.Store, session *Session, resources *ResourceWorker, worker *PGWorker, resourceConfig resourceguard.ClientConfig, config compute.Config, client *kubefake.Clientset, source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture, qmp *vmQMPPeer, transfer *businessOwnerTransfer) {
+func verifyProductionGuestServiceRecovery(t *testing.T, ctx context.Context, mode string, api *ownerAPI, store *journal.Store, session *Session, resources *ResourceWorker, worker *PGWorker, resourceConfig resourceguard.ClientConfig, config compute.Config, client *kubefake.Clientset, source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture, qmp *vmQMPPeer, transfer *businessOwnerTransfer, runner *vmguard.Runner) {
 	t.Helper()
 	unreceived := strings.Contains(mode, "unreceived")
 	lostSelect := strings.Contains(mode, "lost-select")
@@ -67,6 +68,12 @@ func verifyProductionGuestServiceRecovery(t *testing.T, ctx context.Context, mod
 	}
 	root.mu.Unlock()
 	_, _, _, selector := s.State().ServiceClosure.Selection()
+	// 本组故障注入专门覆盖Guest的选择/回执CAS；先经生产读者独立确认
+	// 已完成的原Runner，避免把更早VM选择的丢回复误标成Guest失败。
+	// 独立VM来源保留，不修改原Active或旧永久预算，也不提前开放。
+	s, _, err = worker.vm.RecoverServiceVM(ctx, s, selector, true)
+	require.NoError(t, err)
+	require.Equal(t, journal.Settled, s.State().ServiceClosure.VMRecovery.Phase)
 	request := closureControl(session, config.Instance, control.CoordinationReopenService, selector)
 	if lostSelect {
 		api.mu.Lock()
@@ -142,6 +149,9 @@ func verifyProductionGuestServiceRecovery(t *testing.T, ctx context.Context, mod
 	var restored *ResourceWorker
 	if strings.HasSuffix(mode, "takeover") {
 		session, restored, worker = transfer.takeoverClosure(t, ctx, session, resources, worker, config, client, source)
+		_, err = worker.Advance(ctx)
+		require.ErrorIs(t, err, ErrServiceSafety, "Runner尚未承认新owner时保留原关闭/未知")
+		require.NoError(t, runner.Tick(ctx))
 		request = closureControl(session, config.Instance, control.CoordinationReopenService, selector)
 	} else {
 		worker.CloseIdleConnections()

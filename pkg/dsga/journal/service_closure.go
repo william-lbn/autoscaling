@@ -62,6 +62,8 @@ type ServiceClosure struct {
 	ResourceRecovery *ServiceResourceRecovery `json:"resource_recovery,omitempty"`
 	// 原PG在途/终态淘汰的独立对账；隔离模式保留原Unknown，不制造NoEffect。
 	PGRecovery *ServicePGRecovery `json:"pg_recovery,omitempty"`
+	// Runner独立选择/实际容量，不覆盖原ResizeVM/ObserveVM未知或Abort。
+	VMRecovery *ServiceVMRecovery `json:"vm_recovery,omitempty"`
 }
 
 // ProtectedAdmission返回本关闭保护的最初意图。v10/11原意图就是关闭；
@@ -223,6 +225,9 @@ func (model Model) validateServiceClosure() error {
 		return err
 	}
 	if err := model.validateServicePGRecovery(); err != nil {
+		return err
+	}
+	if err := model.validateServiceVMRecovery(); err != nil {
 		return err
 	}
 	if err := model.validateServicePGRejection(); err != nil {

@@ -172,8 +172,21 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 				if err != nil {
 					return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 				}
-				if c.ResourceRecovery == nil {
+				if c.ResourceRecovery == nil && c.VMRecovery == nil {
 					return true, pgexec.Reconciled, ErrServiceSafety
+				}
+			}
+			if replay == "" && c.VMRecovery != nil && w.vm != nil {
+				// 普通循环只观察已持久选择；不创建取消选择，不重发QMP。
+				next, progress, err := w.vm.RecoverServiceVM(ctx, s, digest, false)
+				if err != nil {
+					return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+				}
+				// 单域落账增加RV，后续领域必须使用本次真实最新快照。
+				s = next
+				c = s.State().ServiceClosure
+				if c.ResourceRecovery == nil {
+					return true, progress, ErrServiceSafety
 				}
 			}
 			if replay == "" && c.ResourceRecovery != nil && w.resources != nil {

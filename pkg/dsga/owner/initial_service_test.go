@@ -360,8 +360,9 @@ func productionInitialService(t *testing.T, mode string) {
 	finalizationTransfer := strings.HasPrefix(mode, "finalize-safety-recover-") && strings.HasSuffix(mode, "takeover")
 	finalizationCancel := mode == "finalize-safety-recover-planned-unchanged-takeover"
 	pgRecovery := strings.HasPrefix(mode, "pg-safety-recover-")
+	vmRecovery := strings.HasPrefix(mode, "vm-safety-recover-")
 	pgRecoveryTransfer := pgRecovery && (strings.Contains(mode, "unreceived") || strings.Contains(mode, "expired") || strings.Contains(mode, "takeover"))
-	closureTransfer := pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
+	closureTransfer := vmRecovery && strings.HasSuffix(mode, "takeover") || pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
 	pgSafety := strings.HasPrefix(mode, "active-safety-pg-") || pgRecovery
 	guestRecovery := strings.HasPrefix(mode, "guest-safety-recover-")
 	guestRecoveryUnreceived := guestRecovery && strings.Contains(mode, "unreceived")
@@ -622,7 +623,7 @@ func productionInitialService(t *testing.T, mode string) {
 		var successorHost *hostexec.Publisher
 		if lifecycleMode {
 			// 已由完整生产恢复链完成首次服务；继续原预算Grow，无重复初开。
-		} else if pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
+		} else if vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
 			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -689,7 +690,7 @@ func productionInitialService(t *testing.T, mode string) {
 			// 完整结案/自动Grow→Shrink会经过多次正式来源预审，race运行
 			// 可能超过静态夹具Lease的60秒寿命。用原UID/holder的真实
 			// 选主续租维持Host，不放宽生产过期校验，也不重建同名来源。
-			if pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || finalizationCancel || strings.HasPrefix(mode, "cleanup-safety-") {
+			if vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || finalizationCancel || strings.HasPrefix(mode, "cleanup-safety-") {
 				keepPGTakeoverHostOwner(t, ctx, client)
 			}
 		}
@@ -697,6 +698,10 @@ func productionInitialService(t *testing.T, mode string) {
 			progress, err = worker.Advance(ctx)
 			require.NoError(t, err, string(action))
 			require.Equal(t, pgexec.Recorded, progress)
+		}
+		if vmRecovery {
+			verifyProductionVMServiceRecovery(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, runner, qmp, transfer)
+			return nil
 		}
 		if strings.HasPrefix(mode, "active-safety-vm-unknown-") {
 			verifyActiveServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
@@ -814,14 +819,14 @@ func productionInitialService(t *testing.T, mode string) {
 			progress, err = worker.Advance(ctx)
 			if guestRecovery && action == journal.GuestReady {
 				require.Error(t, err, "原Guest写前/应用回复必须未知")
-				verifyProductionGuestServiceRecovery(t, ctx, mode, api, store, session, resources, worker, resourceConfig, config, client, source, pg, root, qmp, transfer)
+				verifyProductionGuestServiceRecovery(t, ctx, mode, api, store, session, resources, worker, resourceConfig, config, client, source, pg, root, qmp, transfer, runner)
 				return nil
 			}
 			if pgSafety && action == journal.ResizePG {
 				require.Error(t, err, "原PG派发WAL或实际提交回复未知必须保留")
 				verifyPGActiveServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
 				if pgRecovery {
-					verifyProductionPGResourceRecovery(t, ctx, mode, api, store, session, resources, worker, config, client, source, pg, root, qmp, transfer)
+					verifyProductionPGResourceRecovery(t, ctx, mode, api, store, session, resources, worker, config, client, source, pg, root, qmp, transfer, runner)
 				}
 				return nil
 			}

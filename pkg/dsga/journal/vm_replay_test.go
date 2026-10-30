@@ -92,3 +92,35 @@ func TestVMReplaySelectionStrictWireRejectsAmbiguousChoice(t *testing.T) {
 		require.Error(t, err)
 	}
 }
+
+// 关门是独立业务栅栏；即使原owner、原Key及完整重放摘要仍相同，也不能
+// 利用旧not_sent提示重新取得派发资格。这里只检查Store条件写，不证明Runner。
+func TestVMReplaySelectionRejectsClosedOriginalOperation(t *testing.T) {
+	api, store := newStoreAPI(t)
+	_ = initializeStore(t, api, store)
+	m, closed, fact := activeClosureModel(t, control.Grow, ResizeVM, true)
+	var err error
+	m, err = m.StartActiveServiceClosure(m.Owner, closed)
+	require.NoError(t, err)
+	m, err = m.RecordServiceClosure(m.Owner, fact, false)
+	require.NoError(t, err)
+	_, raw, err := encode(m, MaxEncodedBytes)
+	require.NoError(t, err)
+	api.change(func(vm *vmv1.VirtualMachine) { vm.Annotations[control.JournalAnnotation] = raw })
+	s, err := store.Load(context.Background())
+	require.NoError(t, err)
+	choice := VMReplaySelection{ProtocolVersion: 1, Key: m.Active.Request.Key, Owner: m.Owner, Sources: runnerSources(), Nonce: strings.Repeat("9", 32)}
+	for _, step := range m.Active.Steps {
+		if step.Action == ResizeVM {
+			choice.Sources.JournalSHA256 = step.CommandSHA256
+		}
+	}
+	result, err := store.SelectVMReplay(context.Background(), s, m.Owner, choice)
+	require.Error(t, err)
+	require.Nil(t, result)
+	current, err := store.Load(context.Background())
+	require.NoError(t, err)
+	require.Equal(t, s.State(), current.State())
+	require.Equal(t, s.ResourceVersion(), current.ResourceVersion())
+	require.Empty(t, current.VirtualMachine().Annotations[VMReplayAnnotation])
+}
