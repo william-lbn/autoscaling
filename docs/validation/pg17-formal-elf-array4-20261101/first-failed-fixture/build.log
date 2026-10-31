@@ -1,0 +1,104 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.88kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for 127.0.0.1:5001/neon/compute-v17@sha256:47ef74c7bee6018c1e8578486d1196bd0c9b6d84040f6ccdba97823dcd019e55
+#2 DONE 0.0s
+
+#3 [internal] load metadata for 127.0.0.1:5001/neon/compute-v17-stage@sha256:4578312b21ccf702470ce42c41b46698d4eb5c02197cd83d324283b64ef0542e
+#3 DONE 0.1s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [module 1/2] FROM 127.0.0.1:5001/neon/compute-v17-stage@sha256:4578312b21ccf702470ce42c41b46698d4eb5c02197cd83d324283b64ef0542e
+#5 resolve 127.0.0.1:5001/neon/compute-v17-stage@sha256:4578312b21ccf702470ce42c41b46698d4eb5c02197cd83d324283b64ef0542e 0.0s done
+#5 DONE 0.1s
+
+#6 [final 1/5] FROM 127.0.0.1:5001/neon/compute-v17@sha256:47ef74c7bee6018c1e8578486d1196bd0c9b6d84040f6ccdba97823dcd019e55
+#6 resolve 127.0.0.1:5001/neon/compute-v17@sha256:47ef74c7bee6018c1e8578486d1196bd0c9b6d84040f6ccdba97823dcd019e55 0.1s done
+#6 ...
+
+#5 [module 1/2] FROM 127.0.0.1:5001/neon/compute-v17-stage@sha256:4578312b21ccf702470ce42c41b46698d4eb5c02197cd83d324283b64ef0542e
+#5 CACHED
+
+#6 [final 1/5] FROM 127.0.0.1:5001/neon/compute-v17@sha256:47ef74c7bee6018c1e8578486d1196bd0c9b6d84040f6ccdba97823dcd019e55
+#6 DONE 1.0s
+
+#7 [module 2/2] RUN --network=none set -eu; mkdir -p /proof; test "$(cat /sys/fs/cgroup/memory.max)" = 2147483648; cat /sys/fs/cgroup/memory.max >/proof/memory.max; cat /sys/fs/cgroup/cpu.max >/proof/cpu.max; printf '%s\n' "pg17-formal-elf-array4-20261031T202515Z-78e2ac" >/proof/nonce; gcc --version >/proof/compiler.txt; make -j2 -s -C /postgres/src/test/modules/test_dsg_region install; sha256sum /usr/local/pgsql/bin/postgres /usr/local/pgsql/lib/test_dsg_region.so >/proof/pgstage-sha256.txt; readelf -d /usr/local/pgsql/lib/test_dsg_region.so >/proof/module-dynamic.txt
+#7 DONE 1.7s
+
+#8 [final 2/5] RUN --network=host --mount=type=cache,id=pg17-formal-array-apt-lists,target=/var/lib/apt/lists --mount=type=cache,id=pg17-formal-array-apt-cache,target=/var/cache/apt set -eu; test "$(cat /sys/fs/cgroup/memory.max)" = 2147483648; export http_proxy="http://127.0.0.1:7890" https_proxy="http://127.0.0.1:7890" no_proxy="localhost,127.0.0.1,::1"; apt-get update -qq; DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y python3 procps; useradd -o -u 1000 -g 1000 -M -s /usr/sbin/nologin nonroot
+#8 5.947 Reading package lists...
+#8 6.445 Building dependency tree...
+#8 6.561 Reading state information...
+#8 6.687 procps is already the newest version (2:4.0.2-3).
+#8 6.687 The following additional packages will be installed:
+#8 6.687   libpython3-stdlib python3-minimal python3.11 python3.11-minimal
+#8 6.689 Suggested packages:
+#8 6.689   python3-doc python3-tk python3-venv python3.11-venv python3.11-doc binutils
+#8 6.689   binfmt-support
+#8 6.743 The following NEW packages will be installed:
+#8 6.743   libpython3-stdlib python3 python3-minimal python3.11 python3.11-minimal
+#8 7.029 0 upgraded, 5 newly installed, 0 to remove and 27 not upgraded.
+#8 7.029 Need to get 2,692 kB of archives.
+#8 7.029 After this operation, 7,796 kB of additional disk space will be used.
+#8 7.029 Get:1 http://deb.debian.org/debian-security bookworm-security/main amd64 python3.11-minimal amd64 3.11.2-6+deb12u9 [2,055 kB]
+#8 7.740 Get:2 http://deb.debian.org/debian bookworm/main amd64 python3-minimal amd64 3.11.2-1+b1 [26.3 kB]
+#8 8.053 Get:3 http://deb.debian.org/debian-security bookworm-security/main amd64 python3.11 amd64 3.11.2-6+deb12u9 [575 kB]
+#8 8.521 Get:4 http://deb.debian.org/debian bookworm/main amd64 libpython3-stdlib amd64 3.11.2-1+b1 [9,312 B]
+#8 8.799 Get:5 http://deb.debian.org/debian bookworm/main amd64 python3 amd64 3.11.2-1+b1 [26.3 kB]
+#8 9.059 debconf: delaying package configuration, since apt-utils is not installed
+#8 9.097 Fetched 2,692 kB in 2s (1,245 kB/s)
+#8 9.146 Selecting previously unselected package python3.11-minimal.
+#8 9.146 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 10068 files and directories currently installed.)
+#8 9.213 Preparing to unpack .../python3.11-minimal_3.11.2-6+deb12u9_amd64.deb ...
+#8 9.225 Unpacking python3.11-minimal (3.11.2-6+deb12u9) ...
+#8 11.69 Setting up python3.11-minimal (3.11.2-6+deb12u9) ...
+#8 13.57 Selecting previously unselected package python3-minimal.
+#8 13.57 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 10079 files and directories currently installed.)
+#8 13.57 Preparing to unpack .../python3-minimal_3.11.2-1+b1_amd64.deb ...
+#8 13.58 Unpacking python3-minimal (3.11.2-1+b1) ...
+#8 13.66 Selecting previously unselected package python3.11.
+#8 13.66 Preparing to unpack .../python3.11_3.11.2-6+deb12u9_amd64.deb ...
+#8 13.67 Unpacking python3.11 (3.11.2-6+deb12u9) ...
+#8 13.73 Selecting previously unselected package libpython3-stdlib:amd64.
+#8 13.73 Preparing to unpack .../libpython3-stdlib_3.11.2-1+b1_amd64.deb ...
+#8 13.74 Unpacking libpython3-stdlib:amd64 (3.11.2-1+b1) ...
+#8 13.81 Setting up python3-minimal (3.11.2-1+b1) ...
+#8 14.00 Selecting previously unselected package python3.
+#8 14.00 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 10128 files and directories currently installed.)
+#8 14.01 Preparing to unpack .../python3_3.11.2-1+b1_amd64.deb ...
+#8 14.02 Unpacking python3 (3.11.2-1+b1) ...
+#8 14.08 Setting up python3.11 (3.11.2-6+deb12u9) ...
+#8 15.27 Setting up libpython3-stdlib:amd64 (3.11.2-1+b1) ...
+#8 15.29 Setting up python3 (3.11.2-1+b1) ...
+#8 DONE 15.8s
+
+#9 [final 3/5] COPY --from=module /usr/local/pgsql/lib/test_dsg_region.so /usr/local/pgsql/lib/test_dsg_region.so
+#9 DONE 0.1s
+
+#10 [final 4/5] COPY --from=module /proof /test-build-proof
+#10 DONE 0.1s
+
+#11 [final 5/5] RUN --network=none set -eu; sha256sum /usr/local/bin/postgres /usr/local/pgsql/lib/test_dsg_region.so >/test-build-proof/runtime-sha256.txt; test "$(sha256sum /usr/local/bin/postgres | cut -d' ' -f1)" = 9f3b8eafeddcc37107e39158d1b6e30ad959bb385498db65526dc7436d2be9a7; dpkg-query -W -f='${binary:Package} ${Version}\n' python3 procps >/test-build-proof/test-tools-packages.txt
+#11 DONE 1.8s
+
+#12 exporting to docker image format
+#12 exporting layers
+#12 exporting layers 1.1s done
+#12 exporting manifest sha256:ecc33978c554b5cb55a6ba16a1e887be171179fc5edffd2e715c09344172845d 0.0s done
+#12 exporting config sha256:a7fd6ba0ca6fd8776f5e9de0e06c4a9ebc8325bf549ec137f84d39a0dae8449e 0.0s done
+#12 sending tarball
+#12 sending tarball 4.1s done
+#12 DONE 5.2s
+
+#13 importing to docker
+#13 loading layer 06a02345a43b 7.38MB / 7.38MB 0.5s done
+#13 loading layer b30f9a345711 216.29kB / 216.29kB 0.2s done
+#13 loading layer 13b73f025431 1.05kB / 1.05kB 0.2s done
+#13 loading layer a8a387e99f59 353B / 353B 0.1s done
+#13 DONE 0.5s

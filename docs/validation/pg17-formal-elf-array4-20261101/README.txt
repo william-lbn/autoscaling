@@ -1,0 +1,6 @@
+准确新runtime四数组4S归档
+原runtime固定digest47ef74c7…，PGstage4578312b…；PG ELF始终9f3b8eaf…，新增测试module由准确PGstage原源码make-j2 install编出，显式路径/usr/local/pgsql/lib/test_dsg_region.so（不是旧lib/postgresql.so）。原test_array_root.py与test_early_arrays.py均从Git b95b142190cdc51de0d5603bfb9c46a0e0e7051f读取，逐hash复核。
+代理健康检查通过后仅测试层安装Python3/procps，实际GNU12模块编译、BuildKit RUN硬限2GiB与CPU2；原正式runtime不改。独立测试层digest/ID与工具包版本、原PG ELF/module SHA见catalog与compiled-proof。
+首轮4S出现3error，原因是原fixture nonroot名称与正式runtime getpwuid(1000)=postgres不一致；原脚本显式-U USER，PGUSER环境不能覆盖。保留全部首失败日志。仅外部adapter导入原脚本后绑定真实postgres uid/gid1000与early.USER，未编辑Git脚本、断言、PG、账户或协议；新nonce4根全部PASS3.492s（容器总4.810s）。
+4个原稳定ID涵盖初始/增长/缩小/再增长真实backing与数据校验、坏摘要及丢启动回复关门、丢增长回复保Unknown成本、logger与三次真实PG内部重建保旧backing到新注册。后者属于PG服务恢复组件，不是VM/Root全状态机恢复。
+这里是Linux Host容器上的真实PG/map_files+TEST_ONLY Root responder，seccompunconfined/SYS_ADMIN/SYS_PTRACE是显式夹具条件；未声称369KVM、原Root source/budget/JWT/normal许可、磁盘耐久或Helm E2E。E仍0。

@@ -1,0 +1,7 @@
+新版正式NONE运行时四数组4S：Root独立复核
+
+58个原冻结路径及摘要全部重新核对，Git b95两个原测试逐字节一致，正式PG ELF9f3与新GCC12模块4fd7源码/编译层收据匹配。新nonce原unittest输出4根全部ok、3.492秒，外层exit0，已归档Root事件无异常。
+
+首轮三例fixture错误完整保留；正式passwd的uid/gid1000名字是postgres，原fixturenonroot名称不对应。只用外部adapter将ACCOUNT设真实原postgres且断言1000/1000，并将early.USER同名；原源码/断言/账户/PG/协议未改。显式-U不能用PGUSER覆盖的事实说明准确。
+
+本批是原4稳定S在新实际ELF的直接回归，新增ID0/E0；TEST_ONLY Root responder、Host内核map_files及显式SYS_ADMIN/PTRACE/unconfined夹具不是生产Root或369Guest资格。未证明预算/JWT、normal持续降限、磁盘掉电耐久或K8s。

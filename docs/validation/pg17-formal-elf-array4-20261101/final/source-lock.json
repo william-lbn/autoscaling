@@ -1,0 +1,35 @@
+{
+  "nonce": "20261031T202729Z-c8988e",
+  "PG_git": "b95b142190cdc51de0d5603bfb9c46a0e0e7051f",
+  "image_refs": {
+    "runtime": {
+      "tag": "127.0.0.1:5001/neon/compute-v17:no-rpath-pg-b95b142190cd-20261031t193328z-45711b",
+      "Id": "sha256:789ea19904a045bd9b5019cbc146e8a497c2195363f344f4e733b71cea59f65e",
+      "RepoDigests": [
+        "127.0.0.1:5001/neon/compute-v17@sha256:47ef74c7bee6018c1e8578486d1196bd0c9b6d84040f6ccdba97823dcd019e55"
+      ],
+      "pinned": "127.0.0.1:5001/neon/compute-v17@sha256:47ef74c7bee6018c1e8578486d1196bd0c9b6d84040f6ccdba97823dcd019e55"
+    },
+    "pgstage": {
+      "tag": "127.0.0.1:5001/neon/compute-v17-stage:no-rpath-pg-b95b142190cd-20261031t193328z-45711b-pg-build",
+      "Id": "sha256:a9d23c301193ca76c32394d5b7a6c78079ed0d4aef3409684e16f9cce1e32d02",
+      "RepoDigests": [
+        "127.0.0.1:5001/neon/compute-v17-stage@sha256:4578312b21ccf702470ce42c41b46698d4eb5c02197cd83d324283b64ef0542e"
+      ],
+      "pinned": "127.0.0.1:5001/neon/compute-v17-stage@sha256:4578312b21ccf702470ce42c41b46698d4eb5c02197cd83d324283b64ef0542e"
+    }
+  },
+  "test_inputs": {
+    "src/test/modules/test_dsg_region/t/test_array_root.py": "7e87d4d52e2e64709f383d21341995d9e676c126f33e5c796a18311dec4d7277",
+    "src/test/modules/test_dsg_region/t/test_early_arrays.py": "f23b43d6be6a21d829a3d01b83461a1572e065c6d79e136a1457efef0ecd0ee1"
+  },
+  "DockerfileSHA256": "9bde43b4e4c185ca0df06282d202444968daab1b66d17ad3a092a4aac2faeee0",
+  "scope": "TEST_ONLY exact formal 9f3 PG ELF + module + Root responder; no actual production Root/normal/durability",
+  "normal_permit": false,
+  "E": 0,
+  "prior_failed_run": "/data/neon-build/validation/pg17-formal-elf-array4-20261031T202515Z-78e2ac",
+  "prior_source_lock_sha256": "71f99e9e33313be799cb3646c01074ca012a6e9483cf45ac1ff00c1d3e5b4042",
+  "test_imageId": "sha256:a7fd6ba0ca6fd8776f5e9de0e06c4a9ebc8325bf549ec137f84d39a0dae8449e",
+  "adapter_sha256": "523cd77c6c1db142d5dac2ac79dc1ef4801855a924d8d7525e8d126b3ec7dff0",
+  "adapter_scope": "only actual uid1000 OS account postgres, no original tests/assertion edits; no production PG change"
+}

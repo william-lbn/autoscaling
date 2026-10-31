@@ -1,0 +1,51 @@
+{
+  "scope": "新正式NONE runtime中的准确9f3 PG ELF + b95 module + 真map_files测试Root responder组件；非生产Root/normal/KVM/E2E",
+  "PG_git": "b95b142190cdc51de0d5603bfb9c46a0e0e7051f",
+  "PG_ELF_SHA256": "9f3b8eafeddcc37107e39158d1b6e30ad959bb385498db65526dc7436d2be9a7",
+  "module_SHA256": "4fd7c70e81a4dfc93417cb859356eabf9c1940093558a390b0f9444927b4587b",
+  "compiler": "GNU GCC12.2.0 Debian12.2.0-14+deb12u1",
+  "test_tools": [
+    "procps 2:4.0.2-3",
+    "python3 3.11.2-1+b1"
+  ],
+  "original_runtime_ref": {
+    "tag": "127.0.0.1:5001/neon/compute-v17:no-rpath-pg-b95b142190cd-20261031t193328z-45711b",
+    "Id": "sha256:789ea19904a045bd9b5019cbc146e8a497c2195363f344f4e733b71cea59f65e",
+    "RepoDigests": [
+      "127.0.0.1:5001/neon/compute-v17@sha256:47ef74c7bee6018c1e8578486d1196bd0c9b6d84040f6ccdba97823dcd019e55"
+    ],
+    "pinned": "127.0.0.1:5001/neon/compute-v17@sha256:47ef74c7bee6018c1e8578486d1196bd0c9b6d84040f6ccdba97823dcd019e55"
+  },
+  "PG_stage_ref": {
+    "tag": "127.0.0.1:5001/neon/compute-v17-stage:no-rpath-pg-b95b142190cd-20261031t193328z-45711b-pg-build",
+    "Id": "sha256:a9d23c301193ca76c32394d5b7a6c78079ed0d4aef3409684e16f9cce1e32d02",
+    "RepoDigests": [
+      "127.0.0.1:5001/neon/compute-v17-stage@sha256:4578312b21ccf702470ce42c41b46698d4eb5c02197cd83d324283b64ef0542e"
+    ],
+    "pinned": "127.0.0.1:5001/neon/compute-v17-stage@sha256:4578312b21ccf702470ce42c41b46698d4eb5c02197cd83d324283b64ef0542e"
+  },
+  "test_imageId": "sha256:a7fd6ba0ca6fd8776f5e9de0e06c4a9ebc8325bf549ec137f84d39a0dae8449e",
+  "stable_ids": [
+    "PG17_S_ARRAY_ROOT_001",
+    "PG17_S_ARRAY_ROOT_002",
+    "PG17_S_ARRAY_ROOT_003",
+    "PG17_S_ARRAY_ROOT_004"
+  ],
+  "root_pass": 4,
+  "fail": 0,
+  "skip": 0,
+  "test_seconds": 3.492,
+  "total_container_seconds": 4.809757533002994,
+  "tests_unchanged_exact_Git": true,
+  "adapter_sha256": "523cd77c6c1db142d5dac2ac79dc1ef4801855a924d8d7525e8d126b3ec7dff0",
+  "adapter_reason": "Git fixture account nonroot vs formal runtime actual uid1000 canonical passwd name postgres; exact same uid/gid1000; original tests/assertions unchanged",
+  "test_limits": "docker --init/noNIC/4CPU/5GiB+totalSwap5GiB/tmp512MiB/pids512/CAP_SYS_ADMIN+SYS_PTRACE/explicitseccompunconfined fixture",
+  "build_limits": {
+    "actual_memory.max": "2147483648",
+    "actual_cpu.max": "200000 100000"
+  },
+  "first_failed_run": "/data/neon-build/validation/pg17-formal-elf-array4-20261031T202515Z-78e2ac",
+  "final_run": "/data/neon-build/validation/pg17-formal-elf-array4-20261031T202729Z-c8988e",
+  "normal_permit": false,
+  "E": 0
+}

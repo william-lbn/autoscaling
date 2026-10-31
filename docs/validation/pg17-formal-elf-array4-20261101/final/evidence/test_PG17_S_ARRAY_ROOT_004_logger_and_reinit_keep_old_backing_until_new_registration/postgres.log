@@ -1,0 +1,44 @@
+2026-10-31 20:27:34.139 GMT [132] LOG:  redirecting log output to logging collector process
+2026-10-31 20:27:34.139 GMT [132] HINT:  Future log output will appear in directory "owned-log".
+2026-10-31 20:27:34.139 GMT [132] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit
+2026-10-31 20:27:34.139 GMT [132] LOG:  listening on Unix socket "/tmp/pg17-array-root-h2xln486/s/.s.PGSQL.55432"
+2026-10-31 20:27:34.142 GMT [137] LOG:  database system was shut down at 2026-10-31 20:27:34 GMT
+2026-10-31 20:27:34.142 GMT [137] LOG:  Continue writing WAL at 0/14EE138
+2026-10-31 20:27:34.145 GMT [132] LOG:  database system is ready to accept connections
+2026-10-31 20:27:34.291 GMT [135] LOG:  checkpoint starting: immediate force wait
+2026-10-31 20:27:34.292 GMT [135] LOG:  checkpoint complete: wrote 32 buffers (12.5%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.001 s; sync files=25, longest=0.001 s, average=0.000 s; distance=168 kB, estimate=168 kB; lsn=0/1518208, redo lsn=0/1518180
+2026-10-31 20:27:34.294 GMT [132] LOG:  system logger process (PID 134) was terminated by signal 9: Killed
+2026-10-31 20:27:34.298 GMT [132] LOG:  server process (PID 145) was terminated by signal 9: Killed
+2026-10-31 20:27:34.298 GMT [132] LOG:  terminating any other active server processes
+2026-10-31 20:27:34.299 GMT [132] LOG:  all server processes terminated; reinitializing
+2026-10-31 20:27:34.309 GMT [154] LOG:  database system was interrupted; last known up at 2026-10-31 20:27:34 GMT
+2026-10-31 20:27:34.316 GMT [154] LOG:  database system was not properly shut down; automatic recovery in progress
+2026-10-31 20:27:34.316 GMT [154] LOG:  redo starts at 0/1518180
+2026-10-31 20:27:34.316 GMT [154] LOG:  invalid record length at 0/1518418: expected at least 24, got 0
+2026-10-31 20:27:34.316 GMT [154] LOG:  redo done at 0/1518280 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2026-10-31 20:27:34.316 GMT [154] LOG:  Continue writing WAL at 0/1518418
+2026-10-31 20:27:34.317 GMT [155] LOG:  checkpoint starting: end-of-recovery immediate wait
+2026-10-31 20:27:34.317 GMT [155] LOG:  checkpoint complete: wrote 3 buffers (1.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.001 s; sync files=2, longest=0.001 s, average=0.001 s; distance=0 kB, estimate=0 kB; lsn=0/1518418, redo lsn=0/1518418
+2026-10-31 20:27:34.320 GMT [132] LOG:  database system is ready to accept connections
+2026-10-31 20:27:34.355 GMT [132] LOG:  server process (PID 160) was terminated by signal 9: Killed
+2026-10-31 20:27:34.355 GMT [132] LOG:  terminating any other active server processes
+2026-10-31 20:27:34.355 GMT [132] LOG:  all server processes terminated; reinitializing
+2026-10-31 20:27:34.362 GMT [166] LOG:  database system was interrupted; last known up at 2026-10-31 20:27:34 GMT
+2026-10-31 20:27:34.368 GMT [166] LOG:  database system was not properly shut down; automatic recovery in progress
+2026-10-31 20:27:34.368 GMT [166] LOG:  invalid record length at 0/1518490: expected at least 24, got 0
+2026-10-31 20:27:34.368 GMT [166] LOG:  redo is not required
+2026-10-31 20:27:34.368 GMT [166] LOG:  Continue writing WAL at 0/1518490
+2026-10-31 20:27:34.369 GMT [167] LOG:  checkpoint starting: end-of-recovery immediate wait
+2026-10-31 20:27:34.369 GMT [167] LOG:  checkpoint complete: wrote 3 buffers (1.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.001 s; sync files=2, longest=0.001 s, average=0.001 s; distance=0 kB, estimate=0 kB; lsn=0/1518490, redo lsn=0/1518490
+2026-10-31 20:27:34.371 GMT [132] LOG:  database system is ready to accept connections
+2026-10-31 20:27:34.406 GMT [132] LOG:  server process (PID 172) was terminated by signal 9: Killed
+2026-10-31 20:27:34.406 GMT [132] LOG:  terminating any other active server processes
+2026-10-31 20:27:34.407 GMT [132] LOG:  all server processes terminated; reinitializing
+2026-10-31 20:27:34.413 GMT [178] LOG:  database system was interrupted; last known up at 2026-10-31 20:27:34 GMT
+2026-10-31 20:27:34.419 GMT [178] LOG:  database system was not properly shut down; automatic recovery in progress
+2026-10-31 20:27:34.419 GMT [178] LOG:  invalid record length at 0/1518508: expected at least 24, got 0
+2026-10-31 20:27:34.419 GMT [178] LOG:  redo is not required
+2026-10-31 20:27:34.419 GMT [178] LOG:  Continue writing WAL at 0/1518508
+2026-10-31 20:27:34.420 GMT [179] LOG:  checkpoint starting: end-of-recovery immediate wait
+2026-10-31 20:27:34.420 GMT [179] LOG:  checkpoint complete: wrote 3 buffers (1.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.001 s; sync files=2, longest=0.001 s, average=0.001 s; distance=0 kB, estimate=0 kB; lsn=0/1518508, redo lsn=0/1518508
+2026-10-31 20:27:34.422 GMT [132] LOG:  database system is ready to accept connections

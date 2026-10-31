@@ -1,0 +1,415 @@
+test_PG17_S_ARRAY_ROOT_001_initial_grow_shrink_regrow_real_backing (__main__.ArrayRootNative.test_PG17_S_ARRAY_ROOT_001_initial_grow_shrink_regrow_real_backing) ... ERROR
+test_PG17_S_ARRAY_ROOT_002_bad_or_lost_startup_reply_fails_closed (__main__.ArrayRootNative.test_PG17_S_ARRAY_ROOT_002_bad_or_lost_startup_reply_fails_closed) ... ok
+test_PG17_S_ARRAY_ROOT_003_lost_grow_reply_retains_unknown_cost (__main__.ArrayRootNative.test_PG17_S_ARRAY_ROOT_003_lost_grow_reply_retains_unknown_cost) ... ERROR
+test_PG17_S_ARRAY_ROOT_004_logger_and_reinit_keep_old_backing_until_new_registration (__main__.ArrayRootNative.test_PG17_S_ARRAY_ROOT_004_logger_and_reinit_keep_old_backing_until_new_registration) ... ERROR
+
+======================================================================
+ERROR: test_PG17_S_ARRAY_ROOT_001_initial_grow_shrink_regrow_real_backing (__main__.ArrayRootNative.test_PG17_S_ARRAY_ROOT_001_initial_grow_shrink_regrow_real_backing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/test/test_array_root.py", line 157, in test_PG17_S_ARRAY_ROOT_001_initial_grow_shrink_regrow_real_backing
+    root,pg=self.fixture();pg.start();pg.functions();root.assert_clean()
+                           ^^^^^^^^^^
+  File "/test/test_array_root.py", line 144, in start
+    raise RuntimeError('PG startup deadline: '+self.logs()[-9000:])
+RuntimeError: PG startup deadline: 2026-10-31 20:25:53.305 GMT [692] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.338 GMT [694] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.370 GMT [696] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.403 GMT [698] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.435 GMT [700] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.468 GMT [702] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.503 GMT [704] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.536 GMT [706] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.569 GMT [708] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.601 GMT [710] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.635 GMT [712] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.667 GMT [714] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.699 GMT [716] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.732 GMT [718] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.764 GMT [720] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.796 GMT [722] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.828 GMT [724] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.862 GMT [726] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.894 GMT [728] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.926 GMT [730] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.959 GMT [732] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:53.991 GMT [734] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.023 GMT [736] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.055 GMT [738] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.087 GMT [740] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.121 GMT [742] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.153 GMT [744] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.186 GMT [746] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.219 GMT [748] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.251 GMT [750] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.284 GMT [752] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.317 GMT [754] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.350 GMT [756] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.384 GMT [758] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.416 GMT [760] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.450 GMT [762] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.486 GMT [764] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.519 GMT [766] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.553 GMT [768] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.586 GMT [770] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.619 GMT [772] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.652 GMT [774] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.684 GMT [776] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.718 GMT [778] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.751 GMT [780] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.784 GMT [782] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.817 GMT [784] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.850 GMT [786] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.883 GMT [788] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.916 GMT [790] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.948 GMT [792] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:54.980 GMT [794] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.012 GMT [796] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.045 GMT [798] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.077 GMT [800] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.111 GMT [802] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.144 GMT [804] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.178 GMT [806] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.212 GMT [808] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.244 GMT [810] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.278 GMT [812] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.310 GMT [814] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.343 GMT [816] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.375 GMT [818] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.408 GMT [820] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.440 GMT [822] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.472 GMT [824] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.504 GMT [826] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.536 GMT [828] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.569 GMT [830] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.602 GMT [832] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.634 GMT [834] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.667 GMT [836] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.699 GMT [838] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.731 GMT [840] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.763 GMT [842] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.796 GMT [844] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.829 GMT [846] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.861 GMT [848] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.893 GMT [850] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.926 GMT [852] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.958 GMT [854] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:55.991 GMT [856] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.024 GMT [858] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.056 GMT [860] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.090 GMT [862] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.122 GMT [864] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.154 GMT [866] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.186 GMT [868] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.219 GMT [870] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.252 GMT [872] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.285 GMT [874] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.317 GMT [876] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.350 GMT [878] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.384 GMT [880] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.417 GMT [882] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.449 GMT [884] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.483 GMT [886] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.516 GMT [888] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.549 GMT [890] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.582 GMT [892] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.615 GMT [894] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.648 GMT [896] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.682 GMT [898] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.714 GMT [900] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.748 GMT [902] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.782 GMT [904] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.816 GMT [906] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.850 GMT [908] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.885 GMT [910] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.919 GMT [912] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.951 GMT [914] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:56.983 GMT [916] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:57.015 GMT [918] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:57.048 GMT [920] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:57.080 GMT [922] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:57.111 GMT [924] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:57.144 GMT [926] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:57.176 GMT [928] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:57.209 GMT [930] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:57.242 GMT [932] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:57.275 GMT [934] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:57.307 GMT [936] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:57.340 GMT [938] FATAL:  role "nonroot" does not exist
+2026-10-31 20:25:57.373 GMT [940] FATAL:  role "nonroot" does not exist
+
+
+======================================================================
+ERROR: test_PG17_S_ARRAY_ROOT_003_lost_grow_reply_retains_unknown_cost (__main__.ArrayRootNative.test_PG17_S_ARRAY_ROOT_003_lost_grow_reply_retains_unknown_cost)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/test/test_array_root.py", line 173, in test_PG17_S_ARRAY_ROOT_003_lost_grow_reply_retains_unknown_cost
+    root,pg=self.fixture('grow_drop');pg.start();pg.functions();before=pg.state();fact=pg.resize(1024,1,1)
+                                      ^^^^^^^^^^
+  File "/test/test_array_root.py", line 144, in start
+    raise RuntimeError('PG startup deadline: '+self.logs()[-9000:])
+RuntimeError: PG startup deadline: root" does not exist
+2026-10-31 20:26:10.105 GMT [1665] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.137 GMT [1667] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.170 GMT [1669] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.202 GMT [1671] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.235 GMT [1673] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.267 GMT [1675] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.300 GMT [1677] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.332 GMT [1679] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.364 GMT [1681] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.396 GMT [1683] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.428 GMT [1685] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.461 GMT [1687] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.494 GMT [1689] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.530 GMT [1691] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.563 GMT [1693] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.596 GMT [1695] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.629 GMT [1697] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.663 GMT [1699] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.697 GMT [1701] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.732 GMT [1703] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.765 GMT [1705] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.798 GMT [1707] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.831 GMT [1709] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.865 GMT [1711] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.898 GMT [1713] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.930 GMT [1715] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.963 GMT [1717] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:10.995 GMT [1719] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.028 GMT [1721] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.060 GMT [1723] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.093 GMT [1725] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.125 GMT [1727] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.159 GMT [1729] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.193 GMT [1731] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.226 GMT [1733] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.261 GMT [1735] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.294 GMT [1737] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.327 GMT [1739] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.359 GMT [1741] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.391 GMT [1743] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.424 GMT [1745] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.456 GMT [1747] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.488 GMT [1749] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.520 GMT [1751] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.552 GMT [1753] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.588 GMT [1755] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.620 GMT [1757] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.653 GMT [1759] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.685 GMT [1761] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.717 GMT [1763] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.750 GMT [1765] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.782 GMT [1767] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.816 GMT [1769] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.850 GMT [1771] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.883 GMT [1773] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.915 GMT [1775] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.948 GMT [1777] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:11.980 GMT [1779] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.013 GMT [1781] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.046 GMT [1783] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.078 GMT [1785] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.110 GMT [1787] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.142 GMT [1789] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.174 GMT [1791] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.206 GMT [1793] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.240 GMT [1795] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.273 GMT [1797] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.307 GMT [1799] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.340 GMT [1801] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.374 GMT [1803] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.406 GMT [1805] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.439 GMT [1807] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.471 GMT [1809] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.504 GMT [1811] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.537 GMT [1813] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.570 GMT [1815] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.603 GMT [1817] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.636 GMT [1819] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.669 GMT [1821] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.702 GMT [1823] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.734 GMT [1825] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.768 GMT [1827] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.800 GMT [1829] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.833 GMT [1831] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.868 GMT [1833] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.901 GMT [1835] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.933 GMT [1837] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.966 GMT [1839] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:12.998 GMT [1841] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.033 GMT [1843] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.065 GMT [1845] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.098 GMT [1847] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.131 GMT [1849] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.162 GMT [1851] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.194 GMT [1853] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.226 GMT [1855] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.258 GMT [1857] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.290 GMT [1859] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.321 GMT [1861] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.353 GMT [1863] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.386 GMT [1865] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.418 GMT [1867] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.451 GMT [1869] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.483 GMT [1871] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.515 GMT [1873] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.547 GMT [1875] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.579 GMT [1877] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.611 GMT [1879] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.644 GMT [1881] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.676 GMT [1883] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.709 GMT [1885] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.742 GMT [1887] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.774 GMT [1889] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.807 GMT [1891] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.839 GMT [1893] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.871 GMT [1895] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.903 GMT [1897] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.936 GMT [1899] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:13.969 GMT [1901] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:14.002 GMT [1903] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:14.034 GMT [1905] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:14.067 GMT [1907] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:14.100 GMT [1909] FATAL:  role "nonroot" does not exist
+
+
+======================================================================
+ERROR: test_PG17_S_ARRAY_ROOT_004_logger_and_reinit_keep_old_backing_until_new_registration (__main__.ArrayRootNative.test_PG17_S_ARRAY_ROOT_004_logger_and_reinit_keep_old_backing_until_new_registration)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/test/test_array_root.py", line 178, in test_PG17_S_ARRAY_ROOT_004_logger_and_reinit_keep_old_backing_until_new_registration
+    root,pg=self.fixture();pg.start();pg.functions();peer=pg.peer();logger=pg.logger();old=pg.state()['boot']
+                           ^^^^^^^^^^
+  File "/test/test_array_root.py", line 144, in start
+    raise RuntimeError('PG startup deadline: '+self.logs()[-9000:])
+RuntimeError: PG startup deadline: root" does not exist
+2026-10-31 20:26:25.665 GMT [2604] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:25.697 GMT [2606] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:25.729 GMT [2608] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:25.761 GMT [2610] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:25.793 GMT [2612] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:25.825 GMT [2614] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:25.858 GMT [2616] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:25.890 GMT [2618] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:25.922 GMT [2620] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:25.954 GMT [2622] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:25.986 GMT [2624] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.018 GMT [2626] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.051 GMT [2628] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.083 GMT [2630] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.115 GMT [2632] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.147 GMT [2634] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.179 GMT [2636] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.211 GMT [2638] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.243 GMT [2640] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.274 GMT [2642] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.306 GMT [2644] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.338 GMT [2646] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.370 GMT [2648] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.402 GMT [2650] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.434 GMT [2652] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.466 GMT [2654] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.498 GMT [2656] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.532 GMT [2658] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.565 GMT [2660] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.598 GMT [2662] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.630 GMT [2664] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.662 GMT [2666] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.694 GMT [2668] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.726 GMT [2670] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.759 GMT [2672] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.791 GMT [2674] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.824 GMT [2676] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.856 GMT [2678] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.889 GMT [2680] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.921 GMT [2682] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.955 GMT [2684] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:26.988 GMT [2686] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.021 GMT [2688] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.054 GMT [2690] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.086 GMT [2692] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.118 GMT [2694] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.150 GMT [2696] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.182 GMT [2698] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.214 GMT [2700] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.246 GMT [2702] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.278 GMT [2704] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.311 GMT [2706] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.345 GMT [2708] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.378 GMT [2710] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.411 GMT [2712] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.446 GMT [2714] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.478 GMT [2716] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.511 GMT [2718] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.544 GMT [2720] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.578 GMT [2722] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.613 GMT [2724] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.649 GMT [2726] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.682 GMT [2728] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.717 GMT [2730] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.750 GMT [2732] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.783 GMT [2734] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.816 GMT [2736] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.848 GMT [2738] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.880 GMT [2740] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.913 GMT [2742] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.946 GMT [2744] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:27.979 GMT [2746] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.012 GMT [2748] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.045 GMT [2750] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.078 GMT [2752] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.111 GMT [2754] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.144 GMT [2756] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.177 GMT [2758] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.211 GMT [2760] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.244 GMT [2762] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.278 GMT [2764] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.312 GMT [2766] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.345 GMT [2768] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.378 GMT [2770] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.411 GMT [2772] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.444 GMT [2774] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.477 GMT [2776] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.510 GMT [2778] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.542 GMT [2780] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.576 GMT [2782] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.608 GMT [2784] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.641 GMT [2786] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.676 GMT [2788] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.710 GMT [2790] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.744 GMT [2792] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.777 GMT [2794] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.811 GMT [2796] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.844 GMT [2798] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.878 GMT [2800] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.910 GMT [2802] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.943 GMT [2804] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:28.976 GMT [2806] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.008 GMT [2808] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.041 GMT [2810] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.074 GMT [2812] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.107 GMT [2814] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.141 GMT [2816] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.175 GMT [2818] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.208 GMT [2820] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.242 GMT [2822] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.275 GMT [2824] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.307 GMT [2826] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.339 GMT [2828] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.374 GMT [2830] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.407 GMT [2832] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.441 GMT [2834] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.475 GMT [2836] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.510 GMT [2838] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.544 GMT [2840] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.577 GMT [2842] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.611 GMT [2844] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.644 GMT [2846] FATAL:  role "nonroot" does not exist
+2026-10-31 20:26:29.676 GMT [2848] FATAL:  role "nonroot" does not exist
+
+
+----------------------------------------------------------------------
+Ran 4 tests in 47.900s
+
+FAILED (errors=3)
