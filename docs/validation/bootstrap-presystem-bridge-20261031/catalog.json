@@ -1,0 +1,33 @@
+{
+  "scope": "真实PreSys已完成到正式Bootstrap同源接续；非完整normal或E2E",
+  "new_unit_roots": 4,
+  "new_unit_subcases": 12,
+  "whole_unit_roots": 25,
+  "whole_unit_subcases": 93,
+  "fail": 0,
+  "skip": 0,
+  "cases": [
+    {
+      "id": "PG17-U-PRESYS-BOOTSTRAP-001",
+      "root": "TestBootstrapContinuesOnlyOriginalPreSystem",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-PRESYS-BOOTSTRAP-002",
+      "root": "TestBootstrapPreSystemRejectsUnboundAndChangedStage",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-PRESYS-BOOTSTRAP-003",
+      "root": "TestBootstrapPreSystemPendingKeepsOriginalReference",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-PRESYS-BOOTSTRAP-004",
+      "root": "TestBootstrapPreSystemCompletionNeverRepairsLostSources",
+      "status": "PASS"
+    }
+  ],
+  "real_native_peer_archive": "../presys-v2-20261031/",
+  "e2e_pass": 0
+}

@@ -32,7 +32,7 @@ type prebootstrapSystemPolicy struct {
 }
 
 func (p prebootstrapSystemPolicy) validate() error {
-	if p.ProtocolVersion != 1 || p.Scope != preSystemScope || p.PhysicalProfileID != NormalV1PhysicalKernelProfileID ||
+	if p.Scope != preSystemScope || !preSystemPolicyVersionMatches(p.PhysicalProfileID, p.ProtocolVersion) ||
 		!physicalDigestValid(p.RuntimeDocumentSHA256) || !physicalDigestValid(p.FilesystemProfileSHA256) ||
 		p.BootMemoryUpperBytes < 128<<20 || p.BootMemoryUpperBytes > 16<<30 || uint64(p.BootMemoryUpperBytes)%(128<<20) != 0 {
 		return fmt.Errorf("incomplete original pre-bootstrap System policy")
@@ -91,7 +91,7 @@ func (i prebootstrapSystemInputs) validate(config Config) error {
 	}
 	if i.source.Validate() != nil || i.source.Config != config || !config.SystemCgroup || i.source.Limits.SystemMemoryMaxBytes == 0 ||
 		i.policy.validate() != nil || !physicalDigestValid(i.policySHA) || !physicalDigestValid(i.originSHA) ||
-		i.origin.Validate() != nil || i.origin.Config != config || i.origin.Policy.ProfileID != NormalV1PhysicalKernelProfileID ||
+		i.origin.Validate() != nil || i.origin.Config != config || i.origin.Policy.ProfileID != i.policy.PhysicalProfileID ||
 		i.origin.RuntimeDocumentSHA256 != i.policy.RuntimeDocumentSHA256 ||
 		sameBootstrapSource(i.source, i.origin.ExpectedBootstrap) != nil {
 		return fmt.Errorf("pre-bootstrap System source is not the original normal-v1 binding")
@@ -342,8 +342,8 @@ func (g *Guard) prebootstrapSystemLocked(ctx context.Context, in prebootstrapSys
 		if err := preSystemPlaced(in, current); err != nil {
 			return zero, err
 		}
-		if r == nil && !current.PGEmpty {
-			return zero, fmt.Errorf("PG appeared before original resource bootstrap")
+		if !current.PGEmpty && (r == nil || r.Bootstrap == nil || !r.Bootstrap.Applied || !r.Bootstrap.SystemPlacementObserved) {
+			return zero, fmt.Errorf("PG roles appeared before original applied bootstrap and System placement")
 		}
 		if r != nil && (r.validate(in.origin.First.Identity) != nil || r.Bootstrap == nil || sameBootstrapSource(in.source, r.Bootstrap.Original) != nil) {
 			return zero, fmt.Errorf("resource state differs from original System stage")
@@ -410,4 +410,18 @@ func (g *Guard) prebootstrapSystemLocked(ctx context.Context, in prebootstrapSys
 		return zero, fmt.Errorf("%w: System completion persistence: %v", ErrUnknown, err)
 	}
 	return PrebootstrapSystemResult{ProtocolVersion: 1, Scope: preSystemScope, DurabilityConfirmed: true, IntentSHA256: physicalDigest(raw), CompletionSHA256: physicalDigest(done), Original: intent, Completion: complete, Current: current}, nil
+}
+
+// 内核profile适配在此一处显式选择；上层Prepare/Observe/Replay及结果合同不按PG版本分叉。
+// v1历史552字节/marker不改；v2必须369新Origin，不允许旧policy/nonce悄悄升级。
+func preSystemPolicyVersionMatches(profile string, version uint32) bool {
+	switch profile {
+	case NormalV1PhysicalKernelProfileID:
+		return version == 1
+	case NormalSplitV1PhysicalKernelProfileID:
+		ref, err := LookupPhysicalKernelBuild(profile)
+		return version == 2 && err == nil && ref.StrictPageCounterIRQBoundary()
+	default:
+		return false
+	}
 }

@@ -1,0 +1,185 @@
+{
+  "scope": "explicit PreSys v1/v2 adapters and actual original Bootstrap bridge component chain; not PG/normal qualification",
+  "immutable_base": "31a04d385750e24a268e9ceba31a89be6b858f93",
+  "owned_presys_files": {
+    "pkg/dsga/resourceguard/prebootstrap_system.go": "351c9d3eb2198e614621a8788c45a5d55095554081fc521fb606d8c81e3acc20",
+    "pkg/dsga/resourceguard/prebootstrap_system_linux.go": "6856e2ae135b1e8904069e449e7045f171adc59850d1dd051e900917ed5423ec",
+    "pkg/dsga/resourceguard/prebootstrap_system_test.go": "2f2118a1cb168e37fd982dfb0e5b2cd6fd45f422008d128cc45870a5ba944d8f",
+    "pkg/dsga/resourceguard/prebootstrap_system_native_test.go": "cc31eff89e76e469cea03962c67696642aea13156361b6f6cc9acd6524697d68"
+  },
+  "full_cohort_files": {
+    "pkg/dsga/resourceguard/physical_kernel_build.go": "139ecedb10d8fdbf32822b8078a2a279b9ad9a99d9701af54407b23bafa78153",
+    "pkg/dsga/resourceguard/physical_kernel_capabilities.go": "80cbc0be4fcc3c5a5424905340f871bde7ca5c89aa8e6b009f2edc2791d0eeb2",
+    "pkg/dsga/resourceguard/physical_kernel_capabilities_linux.go": "ce0d41406fefb9a1b0fd2eaaf2a02c5d11d83baa2f90c352770e4e1182a1e79a",
+    "pkg/dsga/resourceguard/physical_kernel_profile.go": "9810a156f7101cce3f66905c10f0dbd87946ef95ec258f9fd765f0be98ff914a",
+    "pkg/dsga/resourceguard/physical_kernel_profile_linux.go": "5d3b7dda6297d232955aa873402f084202920f0b939a329fb31d80fc5f319ada",
+    "pkg/dsga/resourceguard/physical_kernel_origin.go": "d18e1c39e70cb091dcd29a3983c5826fb411b52bfd1a7368aae9309d2c5e1dc7",
+    "pkg/dsga/resourceguard/physical_kernel_reviewed_build_test.go": "98ecebe9aa8305f998a2c0b87ea9afa1d28bacd7fc85fa18508795b3e100d58d",
+    "pkg/dsga/resourceguard/physical_kernel_profile_reviewed_native_test.go": "9ee09154e75a174b03e0ab8870b065387ff5eb3e9b94ce92f588e325560d5802",
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap.go": "0b5e361fb6a87a15fd2e3d913a48643159cebe63ea6015f9951b6ba6a059cf94",
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap_linux.go": "81a1c1af106e9ce07ba1e2d69d52678e9c41654514c9139e6fbe322942210e4a",
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap_test.go": "ad7f46922c138c4665c0ea77903c88519bb9a6e623c1dc93086fa7520ee3d905",
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap_native_test.go": "9227c2566a9015341276d3cce9b849a5e9c01744eb8f915e0a39d8c971f3b4d6",
+    "pkg/dsga/resourceguard/prebootstrap_system.go": "351c9d3eb2198e614621a8788c45a5d55095554081fc521fb606d8c81e3acc20",
+    "pkg/dsga/resourceguard/prebootstrap_system_linux.go": "6856e2ae135b1e8904069e449e7045f171adc59850d1dd051e900917ed5423ec",
+    "pkg/dsga/resourceguard/prebootstrap_system_test.go": "2f2118a1cb168e37fd982dfb0e5b2cd6fd45f422008d128cc45870a5ba944d8f",
+    "pkg/dsga/resourceguard/prebootstrap_system_native_test.go": "cc31eff89e76e469cea03962c67696642aea13156361b6f6cc9acd6524697d68",
+    "pkg/dsga/resourceguard/bootstrap.go": "1d4fc193cd00735e2fc5ad4a884d210544057998caf60ba2dcdfc5b0e6d6dcdd",
+    "pkg/dsga/resourceguard/guard.go": "c09a12c2a98ec941635b4c386027b5630993ac228b14e8af190f9e79893fff51",
+    "pkg/dsga/resourceguard/bootstrap_pre_system.go": "dbba027c40e12c03b1d725dd27ef12687d558f33503ac2b68fef1ba467b2e2d3",
+    "pkg/dsga/resourceguard/bootstrap_pre_system_linux.go": "8ecca250696ad499b3f2543daa999bf617bf243fc0c1e86a006294f6e3aa113c",
+    "pkg/dsga/resourceguard/bootstrap_pre_system_bridge_linux.go": "643eeb27c677480a4af79d1700ed3570bace48b4e9e4cecd0daed8065ec3d037",
+    "pkg/dsga/resourceguard/bootstrap_pre_system_unsupported.go": "997691fc47e7c4b99cce7fcea49ee819d14befcf54170de4f948055b1e77e043",
+    "pkg/dsga/resourceguard/bootstrap_pre_system_test.go": "5c8f7524109802f5b798d2f165c1ea5e1dc99381e244d964580e18000b8f2a4f",
+    "pkg/dsga/resourceguard/kernel_linux.go": "ff79e360f3c77faa2d37014ef8514155111df0787861eb589161d7c314d1ee53"
+  },
+  "root_bridge_source_overlay": {
+    "base": "31a04d385750e24a268e9ceba31a89be6b858f93",
+    "owned": {
+      "pkg/dsga/resourceguard/bootstrap.go": "1d4fc193cd00735e2fc5ad4a884d210544057998caf60ba2dcdfc5b0e6d6dcdd",
+      "pkg/dsga/resourceguard/guard.go": "c09a12c2a98ec941635b4c386027b5630993ac228b14e8af190f9e79893fff51",
+      "pkg/dsga/resourceguard/bootstrap_pre_system.go": "dbba027c40e12c03b1d725dd27ef12687d558f33503ac2b68fef1ba467b2e2d3",
+      "pkg/dsga/resourceguard/bootstrap_pre_system_linux.go": "8ecca250696ad499b3f2543daa999bf617bf243fc0c1e86a006294f6e3aa113c",
+      "pkg/dsga/resourceguard/bootstrap_pre_system_bridge_linux.go": "643eeb27c677480a4af79d1700ed3570bace48b4e9e4cecd0daed8065ec3d037",
+      "pkg/dsga/resourceguard/bootstrap_pre_system_unsupported.go": "997691fc47e7c4b99cce7fcea49ee819d14befcf54170de4f948055b1e77e043",
+      "pkg/dsga/resourceguard/bootstrap_pre_system_test.go": "5c8f7524109802f5b798d2f165c1ea5e1dc99381e244d964580e18000b8f2a4f",
+      "pkg/dsga/resourceguard/prebootstrap_system.go": "351c9d3eb2198e614621a8788c45a5d55095554081fc521fb606d8c81e3acc20",
+      "pkg/dsga/resourceguard/prebootstrap_system_linux.go": "6856e2ae135b1e8904069e449e7045f171adc59850d1dd051e900917ed5423ec",
+      "pkg/dsga/resourceguard/prebootstrap_system_test.go": "2f2118a1cb168e37fd982dfb0e5b2cd6fd45f422008d128cc45870a5ba944d8f"
+    }
+  },
+  "root_huge_writer_sha256": "ff79e360f3c77faa2d37014ef8514155111df0787861eb589161d7c314d1ee53",
+  "actual_COPY_all_go_files": 736,
+  "actual_COPY_matches": true,
+  "unit_command": "go test -mod=readonly -race -count=1 -json -run '^(TestPrebootstrapSystem|TestNormalKernelBootstrap|TestBootstrapContinuesOnlyOriginalPreSystem|TestBootstrapPreSystem)' ./pkg/dsga/resourceguard",
+  "U_roots": 20,
+  "U_subcases": 90,
+  "U_fail": 0,
+  "U_skip": 0,
+  "layer_breakdown": {
+    "PrebootstrapSystem": {
+      "root": 9,
+      "subcase": 44
+    },
+    "NormalKernelBootstrap": {
+      "root": 7,
+      "subcase": 34
+    },
+    "Bootstrap": {
+      "root": 4,
+      "subcase": 12
+    }
+  },
+  "unit_json_sha256": "cc01d849ff2345402e30c1050cd1a478723003f253028c84508ed23dca6e5fdf",
+  "native_binary_sha256": "f1db711b0eb5beab573c74f7fc549d1ff0d71cf982dc19145b0730e5d0db0e43",
+  "native_source_lock_sha256": "bd2c2bce5fa2aaaabea0fac872a4645ea08b02b0dc23f648aab8ad80f6460379",
+  "native_results_sha256": "f9ed096afd1a386d6d9b6cdb64c737b43474e47d70823dedddaea0ebdc516a29",
+  "native_cases": [
+    {
+      "mode": "completed-roles",
+      "elapsed_seconds": 2.9681590370018966,
+      "console_sha256": "5efa776854cc7880a2cd26c7afb84f504f86416314b86eceb1adb0a609dd447d",
+      "actual_qmp_kvm": {
+        "enabled": true,
+        "present": true
+      }
+    },
+    {
+      "mode": "initial-private-role",
+      "elapsed_seconds": 2.5954078970025876,
+      "console_sha256": "51aaf967af9a6c931cf5739de8ad4c9df0993410bbfcea9c98f12142ca4c6496",
+      "actual_qmp_kvm": {
+        "enabled": true,
+        "present": true
+      }
+    },
+    {
+      "mode": "overcommit-corrective",
+      "elapsed_seconds": 2.731911005001166,
+      "console_sha256": "5cb92120cfe02a32f4fb0c3773c9633d728b239761a75465965aef5910122e53",
+      "actual_qmp_kvm": {
+        "enabled": true,
+        "present": true
+      }
+    }
+  ],
+  "real_formal_WAL_extracted_and_verified": {
+    "completed-roles": {
+      "stage_version": 2,
+      "applied": true,
+      "system_placement_observed": true,
+      "original_four_reference": {
+        "protocol_version": 1,
+        "intent_sha256": "0f6aec5d115b737b0f48b270599e7a2b5147ca08e622bb08d296d931941abf63",
+        "completion_sha256": "1dea7659fb610d1eec0b4186fa4dbe0c6cdb31c61557aef726194d53566cb8e0",
+        "origin_sha256": "66fb869685cb1aafd5081cdf5afafe3b3177a8f96fa181161b7ebfa15a77aa8a",
+        "policy_sha256": "279957e8d3b191249fbc8cda67590b712445338c32351b23b29fbf62cd4b6d7f"
+      },
+      "extracted_files_sha256": {
+        "state.json": "5e86f6ce4db4a10d68e8de03609e2cd24b241c6a68f063b6d9bf42607afb4d79",
+        "pre-bootstrap-system.intent.json": "0f6aec5d115b737b0f48b270599e7a2b5147ca08e622bb08d296d931941abf63",
+        "pre-bootstrap-system.complete.json": "1dea7659fb610d1eec0b4186fa4dbe0c6cdb31c61557aef726194d53566cb8e0",
+        "physical-kernel-origin.json": "66fb869685cb1aafd5081cdf5afafe3b3177a8f96fa181161b7ebfa15a77aa8a",
+        "physical-kernel-origin.confirmed.json": "0fb45272d2d1ce0bf38dd3bb655b450249dec1e7308a6554800aa5964a45a748"
+      }
+    },
+    "overcommit-corrective": {
+      "stage_version": 2,
+      "applied": true,
+      "system_placement_observed": true,
+      "original_four_reference": {
+        "protocol_version": 1,
+        "intent_sha256": "b3a63ff7ec784264ad87d88d8ced68f2f2351669292deba6e05d0573773fa7de",
+        "completion_sha256": "1136b75116fd691ef0ce377f6ab2734ce59bfc39b11690a6fee9e5ca02c8215c",
+        "origin_sha256": "d2f27074db882e9d6215498854b9a6abcf777e835bf3a4faf18afac0e61ccec2",
+        "policy_sha256": "279957e8d3b191249fbc8cda67590b712445338c32351b23b29fbf62cd4b6d7f"
+      },
+      "extracted_files_sha256": {
+        "state.json": "d11c1f34e47e9d143c19b95d27e5db207d0b09ceb07eac57a3d2d30bceaf8503",
+        "pre-bootstrap-system.intent.json": "b3a63ff7ec784264ad87d88d8ced68f2f2351669292deba6e05d0573773fa7de",
+        "pre-bootstrap-system.complete.json": "1136b75116fd691ef0ce377f6ab2734ce59bfc39b11690a6fee9e5ca02c8215c",
+        "physical-kernel-origin.json": "d2f27074db882e9d6215498854b9a6abcf777e835bf3a4faf18afac0e61ccec2",
+        "physical-kernel-origin.confirmed.json": "fd1f1d6db61af2e6992aaceb1f6b6ebf94cd545611c8895e096a18d2f6058e99"
+      }
+    }
+  },
+  "overcommit_actual_correction": [
+    {
+      "page_size_kb": 2048,
+      "before": 1,
+      "after": 0,
+      "same_original_zero_plan": true
+    }
+  ],
+  "failure_receipts": [
+    {
+      "path": "/data/neon-build/validation/presys-v2-native-20261031T002422Z",
+      "result_sha256": "b2fb4ac3c1bf1dd26bff826121d4bcc680affa0b1f42cf0c7fa9dd24dd802de2",
+      "scope": "test init BusyBox one-argument remount before /proc; Go did not start",
+      "retained": true
+    },
+    {
+      "path": "/data/neon-build/validation/presys-v2-native-20261031T002516Z",
+      "result_sha256": "ebae49fb6e3ac89e9267d4b3fbee150e588af64e9ede51eedcf1816f6616d45b",
+      "scope": "actual old formal Bootstrap rejected already original-placed System; Root bridge subsequently fixed",
+      "retained": true
+    },
+    {
+      "path": "/data/neon-build/validation/presys-v2-native-20261031T004650Z",
+      "result_sha256": "c8d1e3fb4e4a9d2f9c205176b8034b8170a4a7b50474651920602fcf91b0d476",
+      "scope": "actual original1G0 plan hit gigantic overcommit write0 EINVAL after bridge; Root same-value read-only writer subsequently fixed",
+      "retained": true
+    }
+  ],
+  "earlier_main_PASS_preserved": "/data/neon-build/validation/presys-v2-native-20261031T005451Z",
+  "real_production_API_calls_used": true,
+  "formal_journal_fixture_used": false,
+  "role_processes": "sleep fixtures, not PG",
+  "test_harness_runtime_not_production_Host_source": true,
+  "rootfs_view": "real readonly bind remount in isolated initramfs; full immutable FS qualification not claimed",
+  "normal_permit": false,
+  "all_sources_closed": false,
+  "PG_started": false,
+  "Kubernetes_E2E": false,
+  "current_review_head": "2da9b775fe38038663016c1403941bf418479ff1"
+}

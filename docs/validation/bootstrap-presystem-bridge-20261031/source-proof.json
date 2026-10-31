@@ -1,0 +1,26 @@
+{
+  "unit_snapshot": "/data/neon-build/validation/bootstrap-presystem-bridge-20261031T004139Z",
+  "unit_actual_copy_source": "/data/neon-build/validation/bootstrap-presystem-bridge-20261031T004139Z/export/copied-source",
+  "unit_overlay": {
+    "base": "31a04d385750e24a268e9ceba31a89be6b858f93",
+    "owned": {
+      "pkg/dsga/resourceguard/bootstrap.go": "1d4fc193cd00735e2fc5ad4a884d210544057998caf60ba2dcdfc5b0e6d6dcdd",
+      "pkg/dsga/resourceguard/guard.go": "c09a12c2a98ec941635b4c386027b5630993ac228b14e8af190f9e79893fff51",
+      "pkg/dsga/resourceguard/bootstrap_pre_system.go": "dbba027c40e12c03b1d725dd27ef12687d558f33503ac2b68fef1ba467b2e2d3",
+      "pkg/dsga/resourceguard/bootstrap_pre_system_linux.go": "8ecca250696ad499b3f2543daa999bf617bf243fc0c1e86a006294f6e3aa113c",
+      "pkg/dsga/resourceguard/bootstrap_pre_system_bridge_linux.go": "643eeb27c677480a4af79d1700ed3570bace48b4e9e4cecd0daed8065ec3d037",
+      "pkg/dsga/resourceguard/bootstrap_pre_system_unsupported.go": "997691fc47e7c4b99cce7fcea49ee819d14befcf54170de4f948055b1e77e043",
+      "pkg/dsga/resourceguard/bootstrap_pre_system_test.go": "5c8f7524109802f5b798d2f165c1ea5e1dc99381e244d964580e18000b8f2a4f",
+      "pkg/dsga/resourceguard/prebootstrap_system.go": "351c9d3eb2198e614621a8788c45a5d55095554081fc521fb606d8c81e3acc20",
+      "pkg/dsga/resourceguard/prebootstrap_system_linux.go": "6856e2ae135b1e8904069e449e7045f171adc59850d1dd051e900917ed5423ec",
+      "pkg/dsga/resourceguard/prebootstrap_system_test.go": "2f2118a1cb168e37fd982dfb0e5b2cd6fd45f422008d128cc45870a5ba944d8f"
+    }
+  },
+  "final_writer_sha256": "ff79e360f3c77faa2d37014ef8514155111df0787861eb589161d7c314d1ee53",
+  "writer_changed_after_unit": "仅实际Huge sysfs同值写幂等；普通模型U不执行真实kernel.ApplyBounds。最终生产writer由P2完整真实Guest3独立cohort覆盖，不冒称25根在新writer快照重跑。",
+  "final_native_evidence": "/data/neon-build/validation/presys-v2-native-20261031T005721Z",
+  "final_native_cohort": "/data/neon-build/validation/presys-v2-bridge-go-20261031T005614Z",
+  "darwin_compile_only": true,
+  "darwin_test_binary_sha256": "ff272112ecd635506e9ac1f3cf77c9f7768bbd7cc41da259274af97cb472098c",
+  "no_mac_runtime_claim": true
+}

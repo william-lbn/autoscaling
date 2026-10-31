@@ -19,6 +19,7 @@ import (
 
 const FixedPrebootstrapSystemPolicyPath = "/neonvm/runtime/dsga-prebootstrap-system.json"
 const PrebootstrapSystemKernelArg = "neonvm.dsga.prebootstrap_system=normal-v1"
+const PrebootstrapSystemNormalSplitKernelArg = "neonvm.dsga.prebootstrap_system=normal-split-v1"
 
 // 三入口只读固定ISO来源，无policy/PID/path参数。当前尚未接sysinit/Runner；
 // 缺marker、准确normal-v1 Origin或持久state盘均失败，绝不生成legacy成功。
@@ -60,18 +61,6 @@ func (g *Guard) prebootstrapSystemInputs(ctx context.Context) (prebootstrapSyste
 	if err != nil {
 		return in, err
 	}
-	marker := false
-	for _, token := range strings.Fields(cmdline) {
-		if strings.HasPrefix(token, "neonvm.dsga.prebootstrap_system=") {
-			if token != PrebootstrapSystemKernelArg || marker {
-				return in, fmt.Errorf("ambiguous pre-bootstrap System marker")
-			}
-			marker = true
-		}
-	}
-	if !marker {
-		return in, fmt.Errorf("original pre-bootstrap System marker missing")
-	}
 	f, err := rootFile(FixedPrebootstrapSystemPolicyPath, false)
 	if err != nil {
 		return in, err
@@ -95,6 +84,9 @@ func (g *Guard) prebootstrapSystemInputs(ctx context.Context) (prebootstrapSyste
 	if err := json.Unmarshal(policyRaw, &policy); err != nil {
 		return in, err
 	}
+	if err := preSystemBootMarker(cmdline, policy); err != nil {
+		return in, err
+	}
 	if policy.RuntimeDocumentSHA256 != physicalDigest(runtimeRaw) {
 		return in, fmt.Errorf("pre-bootstrap System policy differs from original runtime bytes")
 	}
@@ -104,7 +96,7 @@ func (g *Guard) prebootstrapSystemInputs(ctx context.Context) (prebootstrapSyste
 	if err != nil {
 		return in, err
 	}
-	if origin.Policy.ProfileID != NormalV1PhysicalKernelProfileID {
+	if origin.Policy.ProfileID != policy.PhysicalProfileID {
 		return in, fmt.Errorf("old component Origin cannot enroll normal-v1 System phase")
 	}
 	ref, err := origin.ReferenceSHA256()
@@ -160,7 +152,17 @@ func (k *linuxKernel) prebootstrapSystemApply(cap control.Uint64) error {
 
 // /proc初始PID命名空间内所有TGID/线程做实际有界census，确认pid_max调低前
 // 没有遗留高PID；任务消失最多完整重读4轮，不将读不到的条目算成0任务。
+// 严格早期wrapper保留给KernelPrep，不能让PG任务进入原准备阶段。
 func preSystemTaskCensus(pidMax uint32) (control.Uint64, control.Uint64, error) {
+	return preSystemTaskCensusProfile(pidMax, "")
+}
+
+// 读取阶段中立：仅允许适配器声明的角色。首次/pending是否可有PG另由recursive
+// PGEmpty门禁控制；完成后还须同源正式Bootstrap.Applied及SystemObserved，绝不补出生。
+func preSystemTaskCensusProfile(pidMax uint32, profile string) (control.Uint64, control.Uint64, error) {
+	if profile != "" && !preSystemPolicyVersionMatches(profile, 1) && !preSystemPolicyVersionMatches(profile, 2) {
+		return 0, 0, fmt.Errorf("unrecognized System census profile")
+	}
 	for attempt := 0; attempt < 4; attempt++ {
 		entries, err := os.ReadDir("/proc")
 		if err != nil {
@@ -207,7 +209,7 @@ func preSystemTaskCensus(pidMax uint32) (control.Uint64, control.Uint64, error) 
 					if err != nil {
 						return 0, 0, err
 					}
-					if group != "/" && group != "/neon-system" {
+					if !preSystemTaskGroupAllowed(profile, group) {
 						return 0, 0, fmt.Errorf("ordinary task outside original pre-bootstrap domains")
 					}
 				}
@@ -295,19 +297,17 @@ func (k *linuxKernel) prebootstrapSystemRead() (prebootstrapSystemSnapshot, erro
 	s.RootFilesystemReadonly = true
 	s.StateDevice = control.Uint64(st.Dev)
 	s.StateInode = control.Uint64(st.Ino)
-	s.TaskCount, s.MaximumTaskID, err = preSystemTaskCensus(s.Physical.PIDMax)
+	profile, err := physicalKernelObservationBuild(s.Physical.KernelRelease, s.Physical.KernelNotesSHA256)
+	if err != nil || !preSystemPolicyVersionMatches(profile, 1) && !preSystemPolicyVersionMatches(profile, 2) {
+		return s, fmt.Errorf("unsupported pre-System physical profile")
+	}
+	s.TaskCount, s.MaximumTaskID, err = preSystemTaskCensusProfile(s.Physical.PIDMax, profile)
 	if err != nil {
 		return s, err
 	}
-	s.PGEmpty = true
-	for _, name := range []string{"cgroup.procs", "cgroup.threads"} {
-		text, err := kernelText(pgCgroup + "/" + name)
-		if err != nil {
-			return s, err
-		}
-		if text != "" {
-			s.PGEmpty = false
-		}
+	s.PGEmpty, err = preSystemRecursivePGEmpty()
+	if err != nil {
+		return s, err
 	}
 	s.MemoryHighUnlimited = true
 	for _, group := range []string{pgCgroup, systemCgroup} {
@@ -358,4 +358,106 @@ func preSystemLockedDirectory(s *lockedState, current prebootstrapSystemSnapshot
 		return fmt.Errorf("pre-bootstrap state path differs from original locked directory")
 	}
 	return nil
+}
+
+func preSystemBootMarker(cmdline string, p prebootstrapSystemPolicy) error {
+	if !preSystemPolicyVersionMatches(p.PhysicalProfileID, p.ProtocolVersion) {
+		return fmt.Errorf("unsupported original System policy version")
+	}
+	want := PrebootstrapSystemKernelArg
+	if p.PhysicalProfileID == NormalSplitV1PhysicalKernelProfileID {
+		want = PrebootstrapSystemNormalSplitKernelArg
+	}
+	count := 0
+	for _, token := range strings.Fields(cmdline) {
+		key, _, _ := strings.Cut(token, "=")
+		if key != "neonvm.dsga.prebootstrap_system" {
+			continue
+		}
+		count++
+		if token != want {
+			return fmt.Errorf("original System boot marker differs from policy version")
+		}
+	}
+	if count != 1 {
+		return fmt.Errorf("original System boot marker missing or duplicated")
+	}
+	return nil
+}
+
+func preSystemTaskGroupAllowed(profile, group string) bool {
+	if group == "/" || group == "/neon-system" {
+		return true
+	}
+	switch profile {
+	case NormalV1PhysicalKernelProfileID:
+		return group == "/neon-postgres"
+	case NormalSplitV1PhysicalKernelProfileID:
+		return group == "/neon-postgres/private" || group == "/neon-postgres/arrays"
+	default:
+		return false
+	}
+}
+
+// parent的procs/threads空不能代表split叶子空。先核真实递归populated，随后遍历
+// 所有目录逐个核procs/threads；未知/超界/符号链接读错误拒绝，不采样RSS作资格。
+func preSystemRecursivePGEmpty() (bool, error) {
+	events, err := kernelText(pgCgroup + "/cgroup.events")
+	if err != nil {
+		return false, err
+	}
+	empty, err := preSystemRecursiveEmptyEvents(events)
+	if err != nil {
+		return false, err
+	}
+	pending := []string{pgCgroup}
+	count := 0
+	for len(pending) > 0 {
+		path := pending[len(pending)-1]
+		pending = pending[:len(pending)-1]
+		count++
+		if count > 4096 || strings.Count(strings.TrimPrefix(path, pgCgroup), "/") > 16 {
+			return false, fmt.Errorf("pre-System PG subtree exceeds reviewed bound")
+		}
+		for _, name := range []string{"cgroup.procs", "cgroup.threads"} {
+			v, e := kernelText(path + "/" + name)
+			if e != nil {
+				return false, e
+			}
+			if v != "" {
+				empty = false
+			}
+		}
+		entries, e := os.ReadDir(path)
+		if e != nil {
+			return false, e
+		}
+		for _, entry := range entries {
+			if entry.Type()&os.ModeSymlink != 0 {
+				return false, fmt.Errorf("pre-System PG subtree symlink")
+			}
+			if entry.IsDir() {
+				pending = append(pending, path+"/"+entry.Name())
+			}
+		}
+	}
+	return empty, nil
+}
+func preSystemRecursiveEmptyEvents(text string) (bool, error) {
+	found := false
+	empty := false
+	for _, line := range strings.Split(text, "\n") {
+		f := strings.Fields(line)
+		if len(f) > 0 && f[0] == "populated" {
+			if found || len(f) != 2 || f[1] != "0" && f[1] != "1" {
+				return false, fmt.Errorf("invalid recursive PG populated fact")
+			}
+			found = true
+			empty = f[1] == "0"
+		}
+	}
+	if !found {
+		return false, fmt.Errorf("recursive PG populated fact missing")
+	}
+	return empty, nil
 }

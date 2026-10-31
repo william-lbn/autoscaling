@@ -287,6 +287,12 @@ func (r *record) validate(id Identity) error {
 	}
 	if r.Bootstrap != nil {
 		b := r.Bootstrap
+		if (b.PreSystemStageVersion != 0 && b.PreSystemStageVersion != 2) || (b.PreSystemStageVersion == 2) != (b.PreSystem != nil) {
+			return fmt.Errorf("original pre-System bootstrap stage version/reference mismatch")
+		}
+		if b.PreSystem != nil && (b.PreSystem.validate() != nil || b.Original.Limits.SystemMemoryMaxBytes == 0 || b.Applied && !b.SystemPlacementObserved) {
+			return fmt.Errorf("invalid original pre-System bootstrap reference")
+		}
 		if b.SystemPlacementObserved && (!b.Applied || b.Original.Limits.SystemMemoryMaxBytes == 0) {
 			return fmt.Errorf("invalid system placement journal")
 		}

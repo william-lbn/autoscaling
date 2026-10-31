@@ -1,0 +1,20 @@
+[
+  {
+    "path": "/data/neon-build/validation/presys-v2-native-20261031T002422Z",
+    "result_sha256": "b2fb4ac3c1bf1dd26bff826121d4bcc680affa0b1f42cf0c7fa9dd24dd802de2",
+    "scope": "test init BusyBox one-argument remount before /proc; Go did not start",
+    "retained": true
+  },
+  {
+    "path": "/data/neon-build/validation/presys-v2-native-20261031T002516Z",
+    "result_sha256": "ebae49fb6e3ac89e9267d4b3fbee150e588af64e9ede51eedcf1816f6616d45b",
+    "scope": "actual old formal Bootstrap rejected already original-placed System; Root bridge subsequently fixed",
+    "retained": true
+  },
+  {
+    "path": "/data/neon-build/validation/presys-v2-native-20261031T004650Z",
+    "result_sha256": "c8d1e3fb4e4a9d2f9c205176b8034b8170a4a7b50474651920602fcf91b0d476",
+    "scope": "actual original1G0 plan hit gigantic overcommit write0 EINVAL after bridge; Root same-value read-only writer subsequently fixed",
+    "retained": true
+  }
+]

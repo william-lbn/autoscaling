@@ -32,6 +32,10 @@ func copyPreSystemSnapshot(s prebootstrapSystemSnapshot) prebootstrapSystemSnaps
 	if c := s.Physical.RuntimeCapabilities; c != nil {
 		next := *c
 		next.ActiveLSMs = append([]string(nil), c.ActiveLSMs...)
+		if c.HardPIDMaxLimit != nil {
+			hard := *c.HardPIDMaxLimit
+			next.HardPIDMaxLimit = &hard
+		}
 		s.Physical.RuntimeCapabilities = &next
 	}
 	return s
@@ -98,6 +102,9 @@ type preSystemFixture struct {
 }
 
 func newPreSystemFixture(t *testing.T) *preSystemFixture {
+	return newPreSystemFixtureProfile(t, NormalV1PhysicalKernelProfileID)
+}
+func newPreSystemFixtureProfile(t *testing.T, profile string) *preSystemFixture {
 	t.Helper()
 	old, k, b, c := systemFixture(t)
 	directory := old.config.StateDir
@@ -116,6 +123,9 @@ func newPreSystemFixture(t *testing.T) *preSystemFixture {
 	source.Limits = b.Limits
 	require.NoError(t, source.Validate())
 	o := normalV1PhysicalFixture(t)
+	if profile == NormalSplitV1PhysicalKernelProfileID {
+		o = reviewedHardPIDFixture(t, profile)
+	}
 	o.Identity = b.Identity
 	for i := range o.Zones {
 		if o.Zones[i].Name == "Movable" {
@@ -123,7 +133,7 @@ func newPreSystemFixture(t *testing.T) *preSystemFixture {
 		}
 	}
 	require.NoError(t, o.Validate())
-	ref, err := LookupPhysicalKernelBuild(NormalV1PhysicalKernelProfileID)
+	ref, err := LookupPhysicalKernelBuild(profile)
 	require.NoError(t, err)
 	runtimeSHA := physicalDigest([]byte("explicit U runtime ISO model"))
 	policy := PhysicalKernelOriginPolicy{ProtocolVersion: 1, ProfileID: ref.ProfileID, KernelRelease: ref.KernelRelease, KernelNotesSHA256: ref.KernelNotesSHA256, KernelArtifactSHA256: ref.KernelArtifactSHA256, KernelConfigSHA256: ref.KernelConfigSHA256, RuntimeDocumentSHA256: runtimeSHA}
@@ -133,7 +143,11 @@ func newPreSystemFixture(t *testing.T) *preSystemFixture {
 	require.NoError(t, origin.Validate())
 	originSHA, err := origin.ReferenceSHA256()
 	require.NoError(t, err)
-	stagePolicy := prebootstrapSystemPolicy{ProtocolVersion: 1, Scope: preSystemScope, PhysicalProfileID: ref.ProfileID, RuntimeDocumentSHA256: runtimeSHA, FilesystemProfileSHA256: physicalDigest([]byte("explicit U filesystem reference, not qualified")), BootMemoryUpperBytes: 256 << 20}
+	version := uint32(1)
+	if profile == NormalSplitV1PhysicalKernelProfileID {
+		version = 2
+	}
+	stagePolicy := prebootstrapSystemPolicy{ProtocolVersion: version, Scope: preSystemScope, PhysicalProfileID: ref.ProfileID, RuntimeDocumentSHA256: runtimeSHA, FilesystemProfileSHA256: physicalDigest([]byte("explicit U filesystem reference, not qualified")), BootMemoryUpperBytes: 256 << 20}
 	rawPolicy, err := json.Marshal(stagePolicy)
 	require.NoError(t, err)
 	in := prebootstrapSystemInputs{source: source, sourceRaw: rawSource, policy: stagePolicy, policyRaw: rawPolicy, policySHA: physicalDigest(rawPolicy), origin: origin, originSHA: originSHA}
@@ -365,4 +379,123 @@ func TestPrebootstrapSystemSerializesOriginalWALAndAllowsOnlyPostCompleteGrowth(
 	f.k.snapshot.PGEmpty = false
 	_, err = f.run(context.Background(), preSystemObserve)
 	require.Error(t, err, "无正式Bootstrap时不能收养已运行PG")
+}
+
+func TestPrebootstrapSystemProfileVersionsAndOriginalMarkers(t *testing.T) {
+	for _, profile := range []string{NormalV1PhysicalKernelProfileID, NormalSplitV1PhysicalKernelProfileID} {
+		t.Run(profile, func(t *testing.T) {
+			f := newPreSystemFixtureProfile(t, profile)
+			want := PrebootstrapSystemKernelArg
+			version := uint32(1)
+			if profile == NormalSplitV1PhysicalKernelProfileID {
+				want = PrebootstrapSystemNormalSplitKernelArg
+				version = 2
+			}
+			require.Equal(t, version, f.in.policy.ProtocolVersion)
+			require.NoError(t, f.in.validate(f.g.config))
+			require.NoError(t, preSystemBootMarker(want, f.in.policy))
+			for _, bad := range []string{"", want + " " + want, "neonvm.dsga.prebootstrap_system", want + " neonvm.dsga.prebootstrap_system", "neonvm.dsga.prebootstrap_system=wrong"} {
+				require.Error(t, preSystemBootMarker(bad, f.in.policy))
+			}
+			policy := f.in.policy
+			policy.ProtocolVersion = 3 - version
+			require.Error(t, policy.validate())
+			require.Error(t, preSystemBootMarker(want, policy))
+		})
+	}
+	require.False(t, preSystemPolicyVersionMatches(NormalV1PIDCappedPhysicalKernelProfileID, 2))
+	require.False(t, preSystemPolicyVersionMatches(NormalV1PhysicalKernelProfileID, 2))
+	require.False(t, preSystemPolicyVersionMatches(NormalSplitV1PhysicalKernelProfileID, 1))
+}
+func TestPrebootstrapSystemSplitProfileSameOriginalRecovery(t *testing.T) {
+	f := newPreSystemFixtureProfile(t, NormalSplitV1PhysicalKernelProfileID)
+	result, err := f.run(context.Background(), preSystemPrepare)
+	require.NoError(t, err)
+	require.Equal(t, uint32(2), result.Original.Policy.ProtocolVersion)
+	require.False(t, result.VMShrinkPermit)
+	nonce := result.Original.Nonce
+	writes, moves := f.k.boundWrites, f.k.moves
+	for _, op := range []prebootstrapSystemOperation{preSystemObserve, preSystemReplay} {
+		got, e := f.run(context.Background(), op)
+		require.NoError(t, e)
+		require.Equal(t, nonce, got.Original.Nonce)
+	}
+	require.Equal(t, writes, f.k.boundWrites)
+	require.Equal(t, moves, f.k.moves)
+	old := newPreSystemFixture(t)
+	_, err = old.run(context.Background(), preSystemPrepare)
+	require.NoError(t, err)
+	before, _ := os.ReadFile(filepath.Join(old.directory, preSystemIntentName))
+	old.in.policy.ProtocolVersion = 2
+	old.in.policy.PhysicalProfileID = NormalSplitV1PhysicalKernelProfileID
+	old.in.policyRaw, _ = json.Marshal(old.in.policy)
+	old.in.policySHA = physicalDigest(old.in.policyRaw)
+	_, err = old.run(context.Background(), preSystemReplay)
+	require.Error(t, err)
+	after, _ := os.ReadFile(filepath.Join(old.directory, preSystemIntentName))
+	require.Equal(t, before, after, "old source must not upgrade its nonce/policy")
+}
+func TestPrebootstrapSystemCompletedPGRequiresAppliedOriginalBootstrap(t *testing.T) {
+	for _, profile := range []string{NormalV1PhysicalKernelProfileID, NormalSplitV1PhysicalKernelProfileID} {
+		t.Run(profile, func(t *testing.T) {
+			for _, stage := range []string{"no-formal", "pending", "applied-only", "applied-and-placement", "different-source"} {
+				t.Run(stage, func(t *testing.T) {
+					f := newPreSystemFixtureProfile(t, profile)
+					_, e := f.run(context.Background(), preSystemPrepare)
+					require.NoError(t, e)
+					f.k.snapshot.PGEmpty = false
+					if stage != "no-formal" {
+						b := f.in.origin.ExpectedBootstrap
+						if stage == "different-source" {
+							b.BudgetCommitmentID = "another-commitment"
+						}
+						record := &record{Version: 1, Identity: b.Identity, Floor: 1, Bootstrap: &bootstrapRecord{Original: b, Applied: stage != "pending", SystemPlacementObserved: stage == "applied-and-placement" || stage == "different-source"}}
+						s, e := lockState(context.Background(), f.directory)
+						require.NoError(t, e)
+						require.NoError(t, s.save(record))
+						s.close()
+					}
+					writes, moves := f.k.boundWrites, f.k.moves
+					got, e := f.run(context.Background(), preSystemObserve)
+					if stage == "applied-and-placement" {
+						require.NoError(t, e)
+						require.False(t, got.DurabilityConfirmed)
+						require.False(t, got.VMShrinkPermit)
+					} else {
+						require.Error(t, e)
+					}
+					require.Equal(t, writes, f.k.boundWrites)
+					require.Equal(t, moves, f.k.moves)
+				})
+			}
+		})
+	}
+}
+func TestPrebootstrapSystemKernelAdaptersKeepEarlyCensusAndRecursiveEmpty(t *testing.T) {
+	for _, group := range []string{"/neon-postgres", "/neon-postgres/private", "/neon-postgres/arrays", "/unknown", "/neon-postgres/private/child"} {
+		require.False(t, preSystemTaskGroupAllowed("", group), "KernelPrep early wrapper must remain strict")
+	}
+	require.True(t, preSystemTaskGroupAllowed(NormalV1PhysicalKernelProfileID, "/neon-postgres"))
+	require.False(t, preSystemTaskGroupAllowed(NormalSplitV1PhysicalKernelProfileID, "/neon-postgres"))
+	for _, group := range []string{"/neon-postgres/private", "/neon-postgres/arrays"} {
+		require.True(t, preSystemTaskGroupAllowed(NormalSplitV1PhysicalKernelProfileID, group))
+		require.False(t, preSystemTaskGroupAllowed(NormalV1PhysicalKernelProfileID, group))
+	}
+	_, _, e := preSystemTaskCensusProfile(512, "unsupported")
+	require.Error(t, e)
+	for name, raw := range map[string]string{"missing": "frozen 0", "duplicate": "populated 0\npopulated 0", "null": "populated null", "bad": "populated 2", "short": "populated"} {
+		t.Run(name, func(t *testing.T) { _, e := preSystemRecursiveEmptyEvents(raw); require.Error(t, e) })
+	}
+	empty, e := preSystemRecursiveEmptyEvents("populated 0\nfrozen 0")
+	require.NoError(t, e)
+	require.True(t, empty)
+	empty, e = preSystemRecursiveEmptyEvents("populated 1\nfrozen 0")
+	require.NoError(t, e)
+	require.False(t, empty)
+	f := newPreSystemFixtureProfile(t, NormalSplitV1PhysicalKernelProfileID)
+	f.k.snapshot.PGEmpty = false
+	_, e = f.run(context.Background(), preSystemPrepare)
+	require.Error(t, e)
+	require.Zero(t, f.k.boundWrites)
+	require.Zero(t, f.k.moves)
 }

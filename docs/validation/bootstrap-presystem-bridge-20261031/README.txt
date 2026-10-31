@@ -1,0 +1,13 @@
+PreSys→正式Bootstrap生产接续修复，2026-10-31
+
+真实369 Guest完成KernelPrep/Origin/PreSys后，正式Bootstrap旧空System guard拒绝已归组PID1。保留旧空域保护，新分支仅固定ISO同原Source、canonical Origin/confirm与完整PreSys完成来源；原resource flock内不重入公开Observe，重fsync四原文件后将原阶段引用随正式intent持久。实际System必须同cap/无swap/PID1归组/根用户态清空；完整预算仍须放入真实Guest MemTotal，PG必须递归空。实际限额和归组确认后同时Applied/SystemObserved，partial保原ref与Unknown。
+
+新私有record字段stageVersion2 iff PreSystemRef存在，legacy JSON都省略；缺失或漂移不回旧模式。上层Bootstrap API/请求协议不按PG大版本分叉。非Linux明确unsupported仅新分支，既有构建通过。
+
+新4根12子例，含旧直接回归合计25根93子例race/count1全部通过、0skip。第一次旧System persistence夹具在BuildKit Root DAC override下chmod故障失效；隔离dropDAC后重跑通过，不以改业务断言求绿。最终不可变Git31a+10准确COPY，Darwinarm64 CGO0只编译验证，不声称Mac运行。
+
+真实API链随后揭露gigantic1G hstate固定0但同值store也EINVAL。未删原2M0+1G0计划。kernel_linux.go只在准确read当前等目标时省同值写，非0 overcommit仍write0、不同pool目标仍真实write，原used/reserved及最终全hstate/nr/overcommit/surplus核验不变，不是物理释放证明。P1已独立读小diff无阻断。
+
+最终新writer由P2组合准确cohort实际20根90子例以及369三Guest覆盖：原KernelPrep→Origin→PreSys→Bootstrap成功，原阶段四摘要+stage2与Applied/SystemObserved落真ext4，placeSystem零迁移；初期private子域任务真实拒；独立校正2M overcommit1→0。最终raw目录见source-proof.json，详细小收据由P2归档。所有初次BusyBox/旧System guard/gigantic写失败保留，绝不假journal求绿。
+
+未运行PG，角色任务为明确sleep夹具；没有原Host保留/Runner初次grow、Source全部包络、normal下降或三节点K8s E2E许可。

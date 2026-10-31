@@ -2,6 +2,7 @@ package resourceguard
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"reflect"
@@ -39,6 +40,9 @@ type bootstrapRecord struct {
 	Applied  bool             `json:"applied"`
 	// 限额确认与启动归组是两个事实；归组未确认时不得出生PG。
 	SystemPlacementObserved bool `json:"system_placement_observed,omitempty"`
+	// 显式PreSys创建的原阶段引用先于正式资源写持久化；缺失/漂移不回落旧路径。
+	PreSystemStageVersion uint32                       `json:"pre_system_stage_version,omitempty"`
+	PreSystem             *bootstrapPreSystemReference `json:"pre_system,omitempty"`
 }
 
 func bootstrapMatches(e Evidence, id Identity, l Limits) error {
@@ -140,6 +144,15 @@ func (g *Guard) bootstrap(ctx context.Context, c BootstrapCommand, observe, repl
 		return evidence, err
 	}
 	defer s.close()
+	return g.bootstrapLocked(ctx, c, observe, replay, s)
+}
+
+// 已持同一resource flock的核心；生产公开入口与明确U的临时WAL注入共用。
+func (g *Guard) bootstrapLocked(ctx context.Context, c BootstrapCommand, observe, replay bool, s *lockedState) (Evidence, error) {
+	var evidence Evidence
+	if err := c.Validate(); err != nil {
+		return evidence, err
+	}
 	id, err := g.InspectIdentity()
 	if err != nil {
 		return evidence, err
@@ -168,7 +181,17 @@ func (g *Guard) bootstrap(ctx context.Context, c BootstrapCommand, observe, repl
 		if err := bootstrapMatches(evidence, id, c.Limits); err != nil {
 			return evidence, fmt.Errorf("%w: %v", ErrUnknown, err)
 		}
+		if r.Bootstrap.PreSystem != nil {
+			ref, sourceErr := g.bootstrapPreSystemLocked(ctx, s, c, false, false)
+			if sourceErr != nil || !reflect.DeepEqual(ref, r.Bootstrap.PreSystem) {
+				return evidence, fmt.Errorf("%w: retained pre-System bootstrap source differs: %v", ErrUnknown, sourceErr)
+			}
+			if sourceErr = evidence.systemPlacementMatches(c.Limits.SystemMemoryMaxBytes); sourceErr != nil {
+				return evidence, fmt.Errorf("%w: original pre-System placement: %v", ErrUnknown, sourceErr)
+			}
+		}
 		if !r.Bootstrap.Applied {
+			r.Bootstrap.SystemPlacementObserved = r.Bootstrap.PreSystem != nil
 			r.Bootstrap.Applied = true
 			if err := s.save(r); err != nil {
 				return evidence, fmt.Errorf("%w: bootstrap completion persistence: %v", ErrUnknown, err)
@@ -189,8 +212,25 @@ func (g *Guard) bootstrap(ctx context.Context, c BootstrapCommand, observe, repl
 	if err != nil || upper > uint64(before.GuestMemTotalBytes) || before.MemoryCurrentBytes > c.Limits.MemoryMaxBytes || before.SwapCurrentBytes != 0 || before.CgroupPopulated || (c.Limits.PidsMaxTasks != 0 && (before.TaskLimit == nil || before.TaskLimit.CurrentTasks != 0)) {
 		return evidence, fmt.Errorf("bootstrap target does not fit actual Guest occupancy")
 	}
-	if c.Limits.SystemMemoryMaxBytes != 0 && (before.System == nil || before.System.ProcessCount != 0) {
-		return evidence, fmt.Errorf("initial system cap requires empty charged domain")
+	var preSystem *bootstrapPreSystemReference
+	if r.Bootstrap != nil {
+		preSystem = r.Bootstrap.PreSystem
+	}
+	if c.Limits.SystemMemoryMaxBytes != 0 && (before.System == nil || before.System.ProcessCount != 0 || preSystem != nil) {
+		// 旧空域门槛保留；唯一新分支必须原PreSys已完成且现cap完全相同，
+		// 不能将任意旧非空System收养，也不能给原legacy未知Bootstrap加新来源。
+		if before.System == nil || (r.Bootstrap != nil && preSystem == nil) {
+			return evidence, fmt.Errorf("initial system cap requires empty charged domain or original PreSys")
+		}
+		expected := preSystem
+		ref, sourceErr := g.bootstrapPreSystemLocked(ctx, s, c, true, true)
+		if sourceErr != nil || expected != nil && !reflect.DeepEqual(expected, ref) {
+			return evidence, fmt.Errorf("original pre-System bootstrap source differs: %w", errors.Join(ErrUnknown, sourceErr))
+		}
+		if sourceErr = before.systemPlacementMatches(c.Limits.SystemMemoryMaxBytes); sourceErr != nil {
+			return evidence, sourceErr
+		}
+		preSystem = ref
 	}
 	// 空域也须来自完整读取；不能用缺失/伪造的AS事实先保存并写入新资源。
 	if err := before.matchesAddressSpace(c.Limits); err != nil {
@@ -201,7 +241,10 @@ func (g *Guard) bootstrap(ctx context.Context, c BootstrapCommand, observe, repl
 	}
 	copy := c
 	copy.Limits.HugePools = append([]HugePool(nil), c.Limits.HugePools...)
-	r.Bootstrap = &bootstrapRecord{Original: copy}
+	r.Bootstrap = &bootstrapRecord{Original: copy, PreSystem: preSystem}
+	if preSystem != nil {
+		r.Bootstrap.PreSystemStageVersion = 2
+	}
 	if err := s.save(r); err != nil {
 		return evidence, fmt.Errorf("%w: bootstrap intent persistence: %v", ErrUnknown, err)
 	}
@@ -214,6 +257,12 @@ func (g *Guard) bootstrap(ctx context.Context, c BootstrapCommand, observe, repl
 	}
 	if err := bootstrapMatches(evidence, id, c.Limits); err != nil {
 		return evidence, fmt.Errorf("%w: %v", ErrUnknown, err)
+	}
+	if preSystem != nil {
+		if err := evidence.systemPlacementMatches(c.Limits.SystemMemoryMaxBytes); err != nil {
+			return evidence, fmt.Errorf("%w: original pre-System final placement: %v", ErrUnknown, err)
+		}
+		r.Bootstrap.SystemPlacementObserved = true
 	}
 	r.Bootstrap.Applied = true
 	if err := s.save(r); err != nil {

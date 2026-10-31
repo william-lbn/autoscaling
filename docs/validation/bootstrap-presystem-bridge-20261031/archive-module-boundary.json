@@ -1,0 +1,10 @@
+{
+  "kind": "ENV_PACKAGE_DISCOVERY_ONLY",
+  "status": "PASS",
+  "command": "bash -ceu env\\ GOPROXY=off\\ GOSUMDB=off\\ go\\ list\\ -mod=readonly\\ -e\\ ./...\\ \\>\\ /tmp/dsga-package-list\\;\\ if\\ grep\\ -q\\ /docs/validation/\\ /tmp/dsga-package-list\\;\\ then\\ echo\\ ARCHIVE_PACKAGE_LEAK\\;\\ exit\\ 1\\;\\ fi\\;\\ echo\\ ARCHIVE_MODULE_BOUNDARY_PASS\\;\\ wc\\ -l\\ /tmp/dsga-package-list",
+  "raw_evidence": "/data/neon-build/validation/go-1793408883041718099",
+  "main_module_packages_listed": 72,
+  "archive_packages_in_main_module": 0,
+  "go_mod_sha256": "86f0694cb0df04f30b2436544671858192128d14730f265f29036287a70bfb97",
+  "not_a_unit_or_full_compile_test": true
+}

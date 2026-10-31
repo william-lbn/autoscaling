@@ -1,0 +1,121 @@
+{
+  "status": "PASS_COMPONENT_ONLY",
+  "cases": 3,
+  "passed": 3,
+  "results": [
+    {
+      "mode": "completed-roles",
+      "status": "PASS_COMPONENT_ONLY",
+      "host_qemu_exit": 0,
+      "actual_qmp_kvm": {
+        "enabled": true,
+        "present": true
+      },
+      "elapsed_seconds": 2.9681590370018966,
+      "record": [
+        {
+          "case": "completed-roles",
+          "nonce": "661a3d4257c7b8e4a4e77c1e6a86180a",
+          "identity": {
+            "vm_uid": "vm-one",
+            "compute_instance_id": "compute-one",
+            "guest_boot_id": "993c39fa-a161-43b6-8ab3-bf3ca9fecbd0",
+            "cgroup_device": "23",
+            "cgroup_inode": "28",
+            "system_cgroup_device": "23",
+            "system_cgroup_inode": "68"
+          },
+          "system": {
+            "scope": "system-cgroup-charged-pages",
+            "memory_max_bytes": "67108864",
+            "memory_current_bytes": "3674112",
+            "swap_max_bytes": "0",
+            "swap_current_bytes": "0",
+            "process_count": "2",
+            "pid1_member": true,
+            "root_userspace_count": "0"
+          },
+          "policy_version": 2,
+          "role_processes": "sleep fixtures PID 64",
+          "root_birth": false,
+          "normal_permit": false
+        }
+      ],
+      "console_sha256": "5efa776854cc7880a2cd26c7afb84f504f86416314b86eceb1adb0a609dd447d",
+      "binary_sha256": "f1db711b0eb5beab573c74f7fc549d1ff0d71cf982dc19145b0730e5d0db0e43",
+      "all_sources_closed": false,
+      "vm_shrink_permit": false,
+      "PG_started": false,
+      "E2E": false
+    },
+    {
+      "mode": "initial-private-role",
+      "status": "PASS_COMPONENT_ONLY",
+      "host_qemu_exit": 0,
+      "actual_qmp_kvm": {
+        "enabled": true,
+        "present": true
+      },
+      "elapsed_seconds": 2.5954078970025876,
+      "record": [
+        {
+          "case": "initial-private-role",
+          "parent_direct_empty": true,
+          "recursive_pg_empty": false,
+          "pass": true
+        }
+      ],
+      "console_sha256": "51aaf967af9a6c931cf5739de8ad4c9df0993410bbfcea9c98f12142ca4c6496",
+      "binary_sha256": "f1db711b0eb5beab573c74f7fc549d1ff0d71cf982dc19145b0730e5d0db0e43",
+      "all_sources_closed": false,
+      "vm_shrink_permit": false,
+      "PG_started": false,
+      "E2E": false
+    },
+    {
+      "mode": "overcommit-corrective",
+      "status": "PASS_COMPONENT_ONLY",
+      "host_qemu_exit": 0,
+      "actual_qmp_kvm": {
+        "enabled": true,
+        "present": true
+      },
+      "elapsed_seconds": 2.731911005001166,
+      "record": [
+        {
+          "case": "overcommit-corrective",
+          "nonce": "f98eafbcf4c14413523644ae0246030a",
+          "identity": {
+            "vm_uid": "vm-one",
+            "compute_instance_id": "compute-one",
+            "guest_boot_id": "c9364d48-3bdf-4ece-8f95-f5ea24e46c3e",
+            "cgroup_device": "23",
+            "cgroup_inode": "28",
+            "system_cgroup_device": "23",
+            "system_cgroup_inode": "68"
+          },
+          "system": {
+            "scope": "system-cgroup-charged-pages",
+            "memory_max_bytes": "67108864",
+            "memory_current_bytes": "3887104",
+            "swap_max_bytes": "0",
+            "swap_current_bytes": "0",
+            "process_count": "2",
+            "pid1_member": true,
+            "root_userspace_count": "0"
+          },
+          "policy_version": 2,
+          "role_processes": "sleep fixtures PID 63",
+          "root_birth": false,
+          "normal_permit": false
+        }
+      ],
+      "console_sha256": "5cb92120cfe02a32f4fb0c3773c9633d728b239761a75465965aef5910122e53",
+      "binary_sha256": "f1db711b0eb5beab573c74f7fc549d1ff0d71cf982dc19145b0730e5d0db0e43",
+      "all_sources_closed": false,
+      "vm_shrink_permit": false,
+      "PG_started": false,
+      "E2E": false
+    }
+  ]
+}

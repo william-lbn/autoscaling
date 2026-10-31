@@ -540,13 +540,32 @@ func (k *linuxKernel) ApplyBounds(c Limits) error {
 		}
 	}
 	for _, p := range c.HugePools {
-		if err := writeNumber(filepath.Join(poolDirectory(p.PageSizeKB), "nr_overcommit_hugepages"), 0); err != nil {
+		path := filepath.Join(poolDirectory(p.PageSizeKB), "nr_overcommit_hugepages")
+		actual, err := readNumber(path, false)
+		if err != nil {
 			return err
+		}
+		// gigantic hstate可真实固定0且拒绝store(包括写0)。只有准确读回0
+		// 才无需重写；非零仍实际禁用，未知/失败绝不猜为0或忽略错误。
+		if actual != 0 {
+			if err = writeNumber(path, 0); err != nil {
+				return err
+			}
 		}
 	}
 	for _, p := range c.HugePools {
-		if err := writeNumber(filepath.Join(poolDirectory(p.PageSizeKB), "nr_hugepages"), uint64(p.Pages)); err != nil {
+		path := filepath.Join(poolDirectory(p.PageSizeKB), "nr_hugepages")
+		actual, err := readNumber(path, false)
+		if err != nil {
 			return err
+		}
+		// 同值幂等不制造不支持的gigantic运行期调整。used/reserved先验保留，
+		// 最终ReadBounds仍核全hstate/overcommit/actual nr及surplus，不能借此
+		// 把计数相等当物理释放，也不会跳过任何真实目标变化。
+		if actual != uint64(p.Pages) {
+			if err = writeNumber(path, uint64(p.Pages)); err != nil {
+				return err
+			}
 		}
 	}
 	if err := writeNumber(filepath.Join(pgCgroup, "memory.swap.max"), 0); err != nil {
