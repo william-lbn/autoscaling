@@ -1,0 +1,23 @@
+Root共享Frame/Movable与Host初始通道六源独立审阅
+审阅者：p1_barrier_review；只读生产/测试、既有QEMU process reader及真实终态，未改代码/index/Git，未重复跑全套。
+
+结论：当前私有组件范围无新增提交阻断，可交Root统一阶段提交。它不是完整Host来源/Guest执行或normal许可。原423d74实际失败不采作通过；最终5781c4才对应本六源。
+
+一、完整实读与来源
+实读bootprotocol/frame.go650dad2e、frame_test.go493bb13c、movable.gob1f10973、movable_test.goa2c3ab5b；vmguard/initial_bootstrap_transport_linux.gode83c909及最终_test.go3d7b5289。另逐行复核既有initial_bootstrap_qmp.go的capture/alive/startTime/checkPeer作为依赖，不改它。六current SHA与最终source-lock owned相同、对应实际COPY；准确base ad96425bdbd9ec50aac988deb1079033e759937c。
+
+二、帧与投影
+frame.go16..43先Validate/Marshal+8192界，再固定12B magic/version/kind/size；header/body任一短写或错误直接返回，不自动重试。readFrame46..62对未知/错kind/超界在payload读取分配前拒绝，io.ReadFull允许单帧底层分片；JSON经原严格自定义Unmarshal及Validate，缺字段/未知/重复/不规范Uint64拒。连续不同kind的阶段不被借用。没有verified/permit字段或可配置路径/认证开关。
+movable.go24..55先Preboot.Validate约束base<=minimum<=MaxInt64，Target必须原minimum，差值4096整除；r只比expected/4096，不对任意输入页数做乘法，所以pages-overflow不能翻转。历史Preboot为完整原对象，PreparedReceiptSHA为其规范SHA，boot/Origin/PreSys引用逐项固定，当前Rootnonce另字段，不错误要求与历史相等。真正当前Root及Physical来源仍须Guest固定reader+可信通道，语法/SHA不是资格。Completion匹配原完整Movable及其SHA，Host complete_non_authorizing原链仍须外层先持久，不能仅传合法格式摘要冒充。
+
+三、原进程与单会话
+openInitialBootChannel40..91只在语义发送前重试ENOENT/ECONNREFUSED connect，不unlink旧socket。真实原Start-before-unique-Wait捕获的pidfd/procdir检查进程存活；checkPeer对同Unix SO_PEERCRED PID/UID与前后原pidfd存活、原proc startTicks、原exe dev/inode/size+完整SHA重核，因此不会numeric PID复用后接任另一实例。capture的Start-before-Wait唯一窗口是调用者原RunQEMU合同，不能拿HTTP PID或并行reap后补建。
+beginLocked121..140使用原会话绝对3min期限与每call更短deadline，ctx取消直接close原conn；单mu序列0→prepared1→movable2→complete3，错来源/错阶段/错frame/部分写/丢回复后failLocked关闭，不在同会话自动重发。prepare/movable读完完整匹配后再次peer核验，complete写后仍核peer；channel关闭不Wait、不杀原QEMU、不退Host预算。后继调用者必须先close并join通道方法再销毁p句柄，且不能通过新建channel绕过原WAL Unknown做自动语义重发；本组件不是进程级全局once/完整WAL执行器。
+
+四、真实测试终态
+shared4独立84be26：826实际COPY全OK，source-check/test/build0，10根61sub（含旧Preboot3根36sub直接回归），race无fail/skip，package1.070s。
+final6 5781c4：828实际COPY全OK，source-check.rc/test.rc/build0，13根64sub，race零fail/skip；bootprotocol1.079s、vmguard22.332s、整轮30.996s。新增Host3根3sub是真实Unix/子进程+模型Guest回执，不是真实QEMU/369Guest/PG或E。valid/foreign-receipt/stall均实际cmd.Wait退出0，子进程必须活到Host最终peer核验后主动close才退出。
+原423d74 test1：stall100ms可能耗在原exe hash，child在完整挑战前EOF，37行断言及parent129行Wait实际exit1抓到错误，没有把子进程失败当绿。生产de83不变；最终_test用额外测试FD3 pipe在child完整ReadChallenge后发1字节，parent确认后显式cancel，稳定覆盖等回复阶段取消；不靠延长超时或放宽Wait断言取绿。旧失败保留原始JSON/log。
+
+五、范围与后继
+本六源仍未证明真实GuestRoot程序/Kernel/WAL，也不替代Host Node-held/owner/RV/Lease/原QEMU来源预算。已知跨轨KernelBuildSHA tuple与ArtifactSHA差异由Helm独占修正，不能让Guest放宽双格式；后续必须同真实Guest producer/生产8MiB block/virtio-serial/CLI/sysinit联合验证。这里只允许当前组件阶段提交，不宣称完整initial启动或安全normal降限通过，E0。

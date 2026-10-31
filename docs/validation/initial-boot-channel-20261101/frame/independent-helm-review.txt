@@ -1,0 +1,15 @@
+共享frame两源独立只读审查
+审查者helm_scope_review，非作者；日期2026-11-01（Asia/Shanghai）。
+实际Linux完整读取：
+pkg/dsga/bootprotocol/frame.go SHA650dad2ede5ce90f80e21712f7326f809b5d81585734bb8375ecf10e40420aaf
+frame_test.go SHA493bb13c1889b1c432c4e17d55b15a7fb180b4d8777a114b575d92525322e3d6。
+并实际读取本次result/test.rc/source-check.rc及receipt/test.json。build/test/source均0；JSON重算整包7根45命名子项，fail/skip均0（其中旧协议3根36sub，新frame4根9sub）。本次独审不重复执行，不修改源码/Git。
+
+结论：当前共享帧组件范围无提交阻断。
+readFrame先在12B栈数组读取完整header，再核DSGB魔数、版本1、预期kind、size1..8192，之后才将size转换int并分配payload；uint32最大长度被分配前拒，无整数溢出窗口。未知/借用kind和错误magic/version在payload读取前立即拒绝，trap-reader测试实际证明没有越过header读payload。
+io.ReadFull允许同一frame正常分片（测试一字节一读）；frame截断EOF/UnexpectedEOF会直接返回，不重新发起整个frame/操作。不能将正常分片续读误称业务重试。失败只返回零challenge/receipt，不将部分JSON当有效来源。
+writeFrame在端点任何Write之前完成本地marshal/大小校验，公开writer还先调用typed Validate。header/payload各一次Write；n!=len或error均立即返回，不补发短写字节或重发语义操作。typed公开消息字段已被固定格式/有限身份长度约束；私有any marshal并非任意外部payload入口。
+read公开包装沿唯一严格JSON decoder且完成typed Validate；不会接受verified/未知字段，challenge/receipt kind不能互借。ReadReceipt本身不持expected/不认证Root，真实消费者仍须MatchChallenge并独立核来源。
+新4根覆盖连续challenge+receipt/分片读、不读坏header的payload、header/payload第1/2次短写与error不重试、多个截断点、非法输入写前拒、严格body和kind借用/写超限；未见Skip或把unit当KVM/E2E。
+
+后继边界：端点构造/期限/关闭/来源绑定不在此共享包内。Root固定transport须设置真实有界I/O期限，frame错误后关闭当前流，不能在已错位的payload后继续重用；部分写/丢回包是Unknown，不能单靠frame失败推NoEffect或自动重发。旧正常五拒绝、Guest真实阶段、Host qom-set和normal资格未由该U认证。

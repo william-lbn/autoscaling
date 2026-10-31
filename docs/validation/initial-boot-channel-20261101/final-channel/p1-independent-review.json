@@ -1,0 +1,18 @@
+{
+  "source_lock_sha256": "73787c5a183d5493009bb41877c42e193b9309dd1ec5f30dd78bab1dbc83f86e",
+  "owned_current_sha256": {
+    "pkg/dsga/bootprotocol/frame.go": "650dad2ede5ce90f80e21712f7326f809b5d81585734bb8375ecf10e40420aaf",
+    "pkg/dsga/bootprotocol/frame_test.go": "493bb13c1889b1c432c4e17d55b15a7fb180b4d8777a114b575d92525322e3d6",
+    "pkg/dsga/bootprotocol/movable.go": "b1f10973ce9856a11660ff78ab9ac10856fb0b67efbeb9fad6e1d29de3ed1458",
+    "pkg/dsga/bootprotocol/movable_test.go": "a2c3ab5b09f4d1fcc20e69514dd2627c0fc61306dbb7892f958305880ae479eb",
+    "pkg/dsga/vmguard/initial_bootstrap_transport_linux.go": "de83c909532d1d07c055ecf4bee5e92ffd257e5584b62d6127a1a7ed91e972cc",
+    "pkg/dsga/vmguard/initial_bootstrap_transport_linux_test.go": "3d7b52896d60fcdc1e65c22e4dff8c2966a07e891278a9775b0f30aa50ed5211"
+  },
+  "review_sha256": "785549cd21d0928a99763f0bf083519b90bd3ecb9ec68b32f59b6e80fd907e94",
+  "source_checked_actual": 828,
+  "actual_final_test_rc": 0,
+  "component_blockers": [],
+  "E": 0,
+  "reviewed_dependency": "initial_bootstrap_qmp.go (read only)",
+  "review_scope": "component only, pending real Guest/Source/sysinit composition"
+}

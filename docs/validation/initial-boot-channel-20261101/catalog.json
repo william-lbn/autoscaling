@@ -1,0 +1,83 @@
+{
+  "status": "PASS_FIXED_WIRE_AND_LINUX_ORIGINAL_PROCESS_COMPONENT_ONLY",
+  "base": "ad96425bdbd9ec50aac988deb1079033e759937c",
+  "owned": {
+    "pkg/dsga/bootprotocol/frame.go": "650dad2ede5ce90f80e21712f7326f809b5d81585734bb8375ecf10e40420aaf",
+    "pkg/dsga/bootprotocol/frame_test.go": "493bb13c1889b1c432c4e17d55b15a7fb180b4d8777a114b575d92525322e3d6",
+    "pkg/dsga/bootprotocol/movable.go": "b1f10973ce9856a11660ff78ab9ac10856fb0b67efbeb9fad6e1d29de3ed1458",
+    "pkg/dsga/bootprotocol/movable_test.go": "a2c3ab5b09f4d1fcc20e69514dd2627c0fc61306dbb7892f958305880ae479eb",
+    "pkg/dsga/vmguard/initial_bootstrap_transport_linux.go": "de83c909532d1d07c055ecf4bee5e92ffd257e5584b62d6127a1a7ed91e972cc",
+    "pkg/dsga/vmguard/initial_bootstrap_transport_linux_test.go": "3d7b52896d60fcdc1e65c22e4dff8c2966a07e891278a9775b0f30aa50ed5211"
+  },
+  "actual_COPY": 828,
+  "cases": [
+    {
+      "id": "PG17-U-BOOTFRAME-001",
+      "root": "TestInitialPrebootFramesRoundTrip",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-BOOTFRAME-002",
+      "root": "TestInitialPrebootFramesRejectHeaderBeforePayload",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-BOOTFRAME-003",
+      "root": "TestInitialPrebootFramesPartialNeverRetry",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-BOOTFRAME-004",
+      "root": "TestInitialPrebootFramesStrictBodyAndKinds",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-BOOTMOVABLE-001",
+      "root": "TestInitialMovableWireHistoricalAndCurrentRoot",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-BOOTMOVABLE-002",
+      "root": "TestInitialMovableWireRejectsDrift",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-BOOTMOVABLE-003",
+      "root": "TestInitialMovableWireRejectsAmbiguityAndStage",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-BOOTCHANNEL-001",
+      "root": "TestInitialBootTransportOriginalPeerFlow",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-BOOTCHANNEL-002",
+      "root": "TestInitialBootTransportRejectsWrongPeerAndCancellation",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-BOOTCHANNEL-003",
+      "root": "TestInitialBootTransportRejectsSourceAndPhase",
+      "status": "PASS"
+    }
+  ],
+  "new_U_roots": 10,
+  "new_named_subcases": 28,
+  "direct_preboot_regression_roots": 3,
+  "direct_preboot_regression_subcases": 36,
+  "whole_roots": 13,
+  "whole_subcases": 64,
+  "race": true,
+  "fail": 0,
+  "skip": 0,
+  "S_new": 0,
+  "E_pass": 0,
+  "real_Linux_Unix_peer": true,
+  "real_QEMU_or_Guest": false,
+  "source_or_normal_qualification": false,
+  "failure_history": [
+    "423d74 source0/test1: stall100ms expired during executable hash; child EOF/Wait1 correctly rejected, not accepted",
+    "5781c4 fixes only test with private pipe after complete challenge; production transport bytes unchanged"
+  ]
+}

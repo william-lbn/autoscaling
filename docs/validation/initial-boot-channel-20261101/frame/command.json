@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "docker",
+    "buildx",
+    "build",
+    "--builder",
+    "neon-data",
+    "--progress",
+    "plain",
+    "--build-arg",
+    "NONCE=20261031T164835Z-fa1fc6",
+    "--metadata-file",
+    "/data/neon-build/validation/initial-boot-frame-20261031T164835Z-fa1fc6/build-metadata.json",
+    "--output",
+    "type=local,dest=/data/neon-build/validation/initial-boot-frame-20261031T164835Z-fa1fc6/receipt",
+    "-f",
+    "/data/neon-build/validation/initial-boot-frame-20261031T164835Z-fa1fc6/Dockerfile",
+    "/data/neon-build/validation/initial-boot-frame-20261031T164835Z-fa1fc6"
+  ],
+  "test_network": "none",
+  "GOMAXPROCS": 2,
+  "GOMEMLIMIT": "512MiB per Go process",
+  "client_cgroup": "2CPU/2GiB; BuildKit worker separate shared service limits"
+}
