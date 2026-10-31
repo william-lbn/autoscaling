@@ -1,0 +1,5 @@
+mm/filemap.c:829:	mem_cgroup_replace_folio(old, new);
+mm/memcontrol.c:4738:void mem_cgroup_replace_folio(struct folio *old, struct folio *new)
+mm/shmem.c:1951:		mem_cgroup_replace_folio(old, new);
+include/linux/memcontrol.h:729:void mem_cgroup_replace_folio(struct folio *old, struct folio *new);
+include/linux/memcontrol.h:1227:static inline void mem_cgroup_replace_folio(struct folio *old,

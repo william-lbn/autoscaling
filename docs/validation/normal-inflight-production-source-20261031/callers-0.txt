@@ -1,0 +1,10 @@
+mm/filemap.c:974:		mem_cgroup_uncharge(folio);
+mm/memcontrol.c:4703:void __mem_cgroup_uncharge(struct folio *folio)
+mm/swap.c:111:	mem_cgroup_uncharge(folio);
+mm/memremap.c:465:	mem_cgroup_uncharge(folio);
+mm/hugetlb.c:1923:	mem_cgroup_uncharge(folio);
+mm/memory-failure.c:967:		mem_cgroup_uncharge(folio);
+include/linux/memcontrol.h:705:void __mem_cgroup_uncharge(struct folio *folio);
+include/linux/memcontrol.h:713:static inline void mem_cgroup_uncharge(struct folio *folio)
+include/linux/memcontrol.h:717:	__mem_cgroup_uncharge(folio);
+include/linux/memcontrol.h:1214:static inline void mem_cgroup_uncharge(struct folio *folio)

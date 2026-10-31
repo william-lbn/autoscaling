@@ -1,0 +1,10 @@
+mm/memcontrol.c:4716:void __mem_cgroup_uncharge_folios(struct folio_batch *folios)
+mm/swap.c:992:	mem_cgroup_uncharge_folios(folios);
+mm/vmscan.c:1495:			mem_cgroup_uncharge_folios(&free_folios);
+mm/vmscan.c:1564:	mem_cgroup_uncharge_folios(&free_folios);
+mm/vmscan.c:1885:				mem_cgroup_uncharge_folios(&free_folios);
+mm/vmscan.c:1907:		mem_cgroup_uncharge_folios(&free_folios);
+include/linux/memcontrol.h:720:void __mem_cgroup_uncharge_folios(struct folio_batch *folios);
+include/linux/memcontrol.h:721:static inline void mem_cgroup_uncharge_folios(struct folio_batch *folios)
+include/linux/memcontrol.h:725:	__mem_cgroup_uncharge_folios(folios);
+include/linux/memcontrol.h:1218:static inline void mem_cgroup_uncharge_folios(struct folio_batch *folios)

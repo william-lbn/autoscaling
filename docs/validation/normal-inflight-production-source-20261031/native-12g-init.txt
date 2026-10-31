@@ -1,0 +1,42 @@
+#!/bin/busybox sh
+set -eu
+export PATH=/bin
+/bin/busybox --install -s /bin
+mount -t devtmpfs devtmpfs /dev
+exec </dev/console >/dev/console 2>&1
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t securityfs securityfs /sys/kernel/security
+mount -t cgroup2 cgroup2 /sys/fs/cgroup
+echo +memory > /sys/fs/cgroup/cgroup.subtree_control
+mkdir /sys/fs/cgroup/neon-postgres
+echo 512 > /proc/sys/kernel/pid_max
+echo 0 > /proc/sys/kernel/numa_balancing
+echo false > /sys/kernel/mm/numa/demotion_enabled
+echo 0 > /proc/sys/vm/watermark_boost_factor
+echo 1024 > /proc/sys/vm/percpu_pagelist_high_fraction
+echo 4096 > /proc/sys/vm/min_free_kbytes
+echo 0 > /proc/sys/vm/compaction_proactiveness
+test -z "$(cat /proc/modules)"
+echo 1 > /proc/sys/kernel/modules_disabled
+n=0
+while ! awk '/MemTotal:/ {if ($2 > 11500000) exit 0; exit 1}' /proc/meminfo; do
+ n=$((n+1))
+ test "$n" -lt 200
+ usleep 100000
+done
+cat /proc/meminfo
+cat /proc/zoneinfo
+echo KERNEL_NOTES_BEGIN
+base64 /sys/kernel/notes
+echo KERNEL_NOTES_END
+export DSGA_NATIVE_INFLIGHT_COMPONENT=isolated-369-inflight-source-v1
+export DSGA_NATIVE_INFLIGHT_CANDIDATE_MAXIMUM=12884901888
+export DSGA_NATIVE_INFLIGHT_ARTIFACT=3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0
+set +e
+/inflight.test -test.run '^TestNativeNormalInflightSourceComponent$' -test.v -test.count=1 -test.timeout=30s
+result=$?
+set -e
+echo INFLIGHT_SOURCE_GUEST_EXIT=$result
+sync
+poweroff -f

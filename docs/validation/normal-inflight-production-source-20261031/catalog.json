@@ -1,0 +1,50 @@
+{
+  "scope": "conditional finite F/I source component, no normal write/qualification",
+  "base_git": "1a25125cc1d2b689803f250db08c7e2525c88271",
+  "current_git": "12ed1ad6aa9e7e4ac3065eeef1e0ec75c2be8c03",
+  "source_count": 812,
+  "owned_source": {
+    "pkg/dsga/resourceguard/normal_inflight_source.go": "c57dcf0da51ae474f992ddfdf8ec73ca24cb03086c400f786eace6266deaadc7",
+    "pkg/dsga/resourceguard/normal_inflight_source_linux.go": "4af11cf771b816a55cd8439b165e3d60ae521cc2637620492e9031242cd6f016",
+    "pkg/dsga/resourceguard/normal_inflight_source_native_test.go": "7702cdaa5aa01fe850c3c98f30b04ee0a90f1d38c516929136d1a100d2874877",
+    "pkg/dsga/resourceguard/normal_inflight_source_test.go": "dab08e3a3f783672fcd48f1bbfb81e690cbff48cc6938b7c4ee44f0dfeb8eb84"
+  },
+  "unit": {
+    "roots": [
+      "TestNormalInflightSourceExactTerms",
+      "TestNormalInflightSourceRejectDrift",
+      "TestNormalInflightSourceCheckedArithmetic",
+      "TestNormalInflightSourceMountParser",
+      "TestNormalInflightSourceCandidateBudget",
+      "TestNormalInflightSourceManagedParser"
+    ],
+    "root_count": 6,
+    "subcase_count": 18,
+    "race": true,
+    "fail": 0,
+    "skip": 0,
+    "path": "/data/neon-build/validation/normal-inflight-source-go-20261031T172547Z-df69d5"
+  },
+  "native": {
+    "12g": "/data/neon-build/validation/normal-inflight-source-native12g-20261031T172620Z-78b133",
+    "balloon": "/data/neon-build/validation/normal-inflight-source-balloon-20261031T172622Z-2c0f06",
+    "same_binary_sha256": "4537f114625501c4190af4650222013b4cb471af5839aac725b8000f56e5b7fa",
+    "guest_and_qemu_exit": 0,
+    "e2e": false
+  },
+  "H": 18944,
+  "C_compiled": 64,
+  "J_early_hard": 512,
+  "source_requirements_pending": [
+    "original full lifecycle/geometry",
+    "root/system immutable role closure",
+    "FS/native source and mutation closure",
+    "all cap/charge consumer integration"
+  ],
+  "all_sources_closed": false,
+  "normal_decrease_authorized": false,
+  "large_external_only": [
+    "/data/neon-build/validation/normal-inflight-compiled-abi-20261031T172033Z-d84115/export/kernel-debug.elf",
+    "/data/neon-build/validation/normal-inflight-kernel-source-20261031T172846Z-c8a045/export/kernel-source.tar.gz"
+  ]
+}

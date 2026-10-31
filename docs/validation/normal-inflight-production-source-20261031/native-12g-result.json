@@ -1,0 +1,235 @@
+{
+  "id": "NEON-S-INFLIGHT-SOURCE-002",
+  "observations": [
+    {
+      "id": "NEON-S-INFLIGHT-SOURCE-001",
+      "facts": {
+        "non_movable_managed_pages": 106082,
+        "no_balloon_device": true,
+        "no_xen_hypervisor": true,
+        "virtio_inventory_sha256": "37c4a796323aa6542658d4bccba230cff85f2adb630f54aa3c7440771eed6a87",
+        "build": {
+          "profile_id": "neon-linux-6.12.26-dsga-normal-split-v1",
+          "kernel_release": "6.12.26-william-normal-split-v1-e210f5e3ee94",
+          "kernel_artifact_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+          "kernel_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+          "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+        },
+        "physical": {
+          "protocol_version": 1,
+          "vm_shrink_permit": false,
+          "scope": "linux-6.12.26-physical-component-observation-only",
+          "identity": {
+            "vm_uid": "test-harness-inflight-source",
+            "compute_instance_id": "component-only-no-origin",
+            "guest_boot_id": "7421fbca-b252-4f37-954e-0ba1cce6ecf5",
+            "cgroup_device": "23",
+            "cgroup_inode": "28"
+          },
+          "kernel_release": "6.12.26-william-normal-split-v1-e210f5e3ee94",
+          "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+          "command_line_sha256": "893594816add2e986ba594f3757dfc30c558fa412bfd686809fced6a8c8a1a99",
+          "page_size_bytes": "4096",
+          "possible_cpus": 2,
+          "pid_max": 512,
+          "zones": [
+            {
+              "node": 0,
+              "name": "DMA32",
+              "present_pages": "130941"
+            },
+            {
+              "node": 0,
+              "name": "Movable",
+              "present_pages": "3014656"
+            },
+            {
+              "node": 0,
+              "name": "Normal",
+              "present_pages": "0"
+            }
+          ],
+          "non_movable_upper_bytes": "536334336",
+          "cpu_charge_stock_upper_bytes": "524288",
+          "runtime_capabilities": {
+            "active_lsms": [
+              "lockdown",
+              "capability",
+              "landlock",
+              "yama",
+              "apparmor"
+            ],
+            "landlock_abi": 6,
+            "initial_pid_namespace_device": "4",
+            "initial_pid_namespace_inode": "4026531836",
+            "memory_high": "max",
+            "min_free_kbytes": "4096",
+            "watermark_scale_factor": 10,
+            "watermark_boost_factor": 0,
+            "percpu_pagelist_high_fraction": 1024,
+            "compaction_proactiveness": 0,
+            "hard_pid_max_limit": 512
+          }
+        },
+        "modules_disabled": true,
+        "modules_empty": true,
+        "numa_balancing_disabled": true,
+        "demotion_disabled": true,
+        "memmap_on_memory_disabled": true,
+        "huge_states_zero": true,
+        "mountinfo_sha256": "acd5360287a0f671fa3d0efce9d3156bd38900ddd3475192b2969436f571c1d8",
+        "mount_filesystems": [
+          "cgroup2",
+          "devtmpfs",
+          "proc",
+          "rootfs",
+          "securityfs",
+          "sysfs"
+        ]
+      },
+      "terms": {
+        "irq_context_ceiling": 18944,
+        "irq_conditional_occupied_bytes": 2715811840,
+        "scope": "linux-6.12.26-inflight-source-component-v1",
+        "hard_task_ceiling": 512,
+        "compiled_cpu_ceiling": 64,
+        "current_possible_cpus": 2,
+        "page_bytes": 4096,
+        "migration_destinations_bytes": 1073741824,
+        "task_precharge_bytes": 2097152,
+        "task_retire_bytes": 69206016,
+        "task_speculative_lookup_bytes": 2097152,
+        "late_exit_stack_slots": 32735,
+        "late_exit_single_retire_bytes": 134082560,
+        "compaction_isolated_free_reserve_bytes": 3219128320,
+        "cpu_stock_paid_bytes": 16777216,
+        "counter_hierarchy_gap_bytes": 134217728,
+        "known_conditional_occupied_bytes": 3997036544,
+        "missing_sources": [
+          "original-Q1-data-FS-and-all-role-enforcement",
+          "immutable-x86-entry-no-alternate-stack-or-kernel-injection-role-source",
+          "post-transfer-speculative-reference-caller-closure",
+          "late-exit-pipe-ops-and-task-frag-role-closure",
+          "direct-compaction-capture-and-reentrancy-closure",
+          "force-Normal-folios-never-migrate-out-and-all-force-callers",
+          "original-cpuset-device-BPF-mount-and-future-control-writers",
+          "allocator-watermark-PCP-and-original-QMP-maximum-availability"
+        ],
+        "all_sources_closed": false,
+        "normal_decrease_authorized": false
+      }
+    }
+  ],
+  "binary_sha256": "4537f114625501c4190af4650222013b4cb471af5839aac725b8000f56e5b7fa",
+  "candidate_plans": [
+    {
+      "conditional_normal_target_bytes": 2281164800,
+      "conditional_force_charge_bytes": 536334336,
+      "pcp_total_free_reserve_bytes": 923009024,
+      "movable_watermark_reserve_bytes": 93814784,
+      "outside_kernel_and_initial_root_bytes": 1072668672,
+      "total_required_bytes": 12140470272,
+      "candidate_spare_bytes": 744431616,
+      "candidate_fits": true,
+      "candidate_only": true,
+      "mmax_authorized": false,
+      "normal_decrease_authorized": false
+    }
+  ],
+  "status": "PASS_COMPONENT_ONLY",
+  "host_qemu_exit": 0,
+  "elapsed_seconds": 4.421315011000843,
+  "actual_qmp": [
+    {
+      "command": "qmp_capabilities",
+      "response": {
+        "return": {}
+      }
+    },
+    {
+      "command": "query-kvm",
+      "response": {
+        "return": {
+          "enabled": true,
+          "present": true
+        }
+      }
+    },
+    {
+      "command": "query-version",
+      "response": {
+        "return": {
+          "qemu": {
+            "micro": 5,
+            "minor": 1,
+            "major": 8
+          },
+          "package": ""
+        }
+      }
+    },
+    {
+      "command": "query-memory-devices",
+      "response": {
+        "return": [
+          {
+            "type": "virtio-mem",
+            "data": {
+              "memdev": "/objects/vmem0",
+              "memaddr": 4294967296,
+              "block-size": 8388608,
+              "size": 0,
+              "node": 0,
+              "max-size": 12348030976,
+              "requested-size": 12348030976,
+              "id": "vm0"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "command": "query-memdev",
+      "response": {
+        "return": [
+          {
+            "share": false,
+            "reserve": true,
+            "prealloc": false,
+            "host-nodes": [],
+            "size": 12348030976,
+            "merge": true,
+            "dump": true,
+            "policy": "default",
+            "id": "vmem0"
+          },
+          {
+            "share": false,
+            "reserve": true,
+            "prealloc": false,
+            "host-nodes": [],
+            "size": 536870912,
+            "merge": true,
+            "dump": true,
+            "policy": "default",
+            "id": "pc.ram"
+          }
+        ]
+      }
+    },
+    {
+      "command": "query-memory-size-summary",
+      "response": {
+        "return": {
+          "base-memory": 536870912,
+          "plugged-memory": 0
+        }
+      }
+    }
+  ],
+  "runtime_kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "console_sha256": "11996f9408658b970d0cd5438b01b1f74b1834badf63f982d82d793b39ed8cbc",
+  "normal_permit": false,
+  "all_sources_closed": false,
+  "PG_started": false
+}

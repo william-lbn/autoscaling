@@ -1,0 +1,29 @@
+[
+  {
+    "path": "/data/neon-build/validation/normal-inflight-source-go-20261031T171028Z-d66246",
+    "result": {
+      "build_exit": 0,
+      "end_utc": "2026-10-31T17:10:37.329026+00:00",
+      "test_exit": 1
+    },
+    "result_sha256": "9f1c5c4b346cdac18a3cbe918098b5bc72406430df888790cb4897d822ddcf7b"
+  },
+  {
+    "path": "/data/neon-build/validation/normal-inflight-source-go-20261031T171107Z-60a14c",
+    "result": {
+      "build_exit": 0,
+      "end_utc": "2026-10-31T17:11:15.119630+00:00",
+      "test_exit": 1
+    },
+    "result_sha256": "f7f5cc259a7374c853c5f5130fc08f70bed7e68a6c10929f161947d1af141a18"
+  },
+  {
+    "path": "/data/neon-build/validation/normal-inflight-kernel-source-20261031T172751Z-44671e",
+    "result": {
+      "build_exit": 1,
+      "elapsed_seconds": 2.030637336007203,
+      "scope": "exact369 cached predecessor; only readonly ABI/debug export; no new kernel variant"
+    },
+    "result_sha256": "f60b6fc705890f17d5e50ea34c4aa1dff37f61b372a9894f44f127a40648643f"
+  }
+]

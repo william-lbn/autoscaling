@@ -1,0 +1,29 @@
+F/I34 独立只读审查，2026-11-01
+审查者 helm_scope_review，非作者。结论：在“有限只读来源+条件预算组件、绝不签normal”的当前作用域内，无提交阻断。可提交本34项；不能将其变成已闭合I/F/allocator或normal授权。
+
+来源实核
+逐项读取stage34并重算SHA：34存在唯一，全部等于final-source-and-docs.json，4生产/测试源也等于unit-source-lock.owned_overlay及实际编译SHA。actualCOPY812行全OK；独立重读unit-test JSON得6根18sub全PASS，无FAIL/SKIP，unit build/test均0。
+准确369三实物vmlinuz/config/notes已独立重hash，均等于原5tuple。kernel-source.tar.gz SHA c2151b601446b6debee7b5ea908eb6a3ebd6bb23050ccedcdc4f54f0a7cbdad6；仅内存读取36原源，每一项与kernel-source-reference.json逐hash一致，未提取到活动业务树/未编译。kernel-debug.elf实际290497328B已流式hash=fc6278196397d48825d08f7dd8922fa09171a61b3627f2b3d7545fb3aa55fecd；编译输入原bzImage/config SHA同369。compiled DWARF输出pt_regs168、exception_stacks32768、CEA entry4096；asm-offsets PTREGS_SIZE168吻合，不把另一个测试内核的结构大小套本artifact。
+
+原源与算式边界
+已实读entry_64.S/error_entry/paranoid_entry保存通用寄存器及IRET帧；irq_stack.h132..151在切IRQ栈前置inuse，nested IRQ不重置栈顶；softirq同IRQ栈置inuse，nested_nmi只写repeat返回并iret不再次进入C。H=64*(ceil((16384+32768)/168)+3)=18944，+3是外/task首入帧与softirq的保守槽；4096 entry栈不是额外独立无限C上下文容量。此条件界仍以准确可信kernel/无alternate stack注入为前提，MissingSources明确留空，未假称完整任意kernel证明。
+exit.c959 exit_notify后974..978仍有splice_pipe/task_frag put，代码没有误以J限制PID已释放的退出者；fork.c VMAP原16KiB栈仍活直到TASK_DEAD后释放，以floor(K/16384)补晚put保守槽。pagevec31、迁移512配对、单页failed/precharge/lookup、IRQ35分项独立；没有把已收费pin/pipe/IO容量再次当无账I。kernel支持范围/force/migrate/自定义pipe ops/投机refs/reentrancy均仍缺角色闭包，不能由普通JS/request bool补齐。
+compaction隔离free pool与占用dst影子明确分项；512+1024-1和J512的界有Q1、无再入/无未批准GFP/capture等前提，不把free pool称占用folio。PCP采用原Mmax和C64，不取当前CPU2/free/RSS；显式fraction、3类batch与插入窗口有预留。水位保留未截断tmp，经max(tmp/4,scale)后按PROMO三段，未误用min128/4。counter D=128*4*C*P仅父leaf正差；paid CPUstock另列。F<=K仍只是禁止Normal迁出和全force调用闭包前提，不把nokmem叫“无force”。
+
+数值独立重算
+直接从native12G真实facts脱离Go实现重算：
+K=536334336，managedNonMovable=106082，f=1024，minfree4096KiB，scale10，P4096，J512，C64。
+H18944；I_occ3997036544；compact3219128320；paidstock16777216；D134217728；
+normal候选2281164800；PCP923009024；watermark93814784；Outside2K1072668672；
+加System512MiB及normal leaves1536MiB后总12140470272，12GiB余744431616，逐项等于真实结果。
+Maximum12GiB/leaf1536MiB/System512MiB是明确候选规划输入，不是Root验证的同VM Mmax。reader不会把K_present/currentonline替代原maximum；原Host/QMP/Guest region、base-only顺序、future writers仍未闭。8GiB C64候选拒绝留存。不能把改变System/helper/AS预算或提高M上限偷换成首版normal验收。
+
+native实核
+12GiB和target0 balloon均为准确369 KVM：query-kvm enabled/present true、notes精确、同binary4537f114625501c4190af4650222013b4cb471af5839aac725b8000f56e5b7fa。console明确INFLIGHT_SOURCE_GUEST_EXIT=0与实际根PASS，QEMU0独立记录。12G有4个sub PASS且NUMA真实漂移拒绝；balloon实际virtio device0x0005且reader明确拒。启动脚本先请求整个region，非正式Origin/PreSys/base-only历史，文档如实说明；不能把早期QMP size0快照冒称最终actual或把12G启动当无OOM压力认证。
+生产源码检索没有新组件实际授权消费者；AllSourcesClosed/NormalDecreaseAuthorized始终false，planning CandidateOnly=true/MmaxAuthorized=false，没有打开normal五拒绝。旧失败路径都保留。本审查没有运行重复U/native、没有改业务源/Git/Host/集群。
+
+4源精确SHA：
+pkg/dsga/resourceguard/normal_inflight_source.go c57dcf0da51ae474f992ddfdf8ec73ca24cb03086c400f786eace6266deaadc7
+pkg/dsga/resourceguard/normal_inflight_source_linux.go 4af11cf771b816a55cd8439b165e3d60ae521cc2637620492e9031242cd6f016
+pkg/dsga/resourceguard/normal_inflight_source_native_test.go 7702cdaa5aa01fe850c3c98f30b04ee0a90f1d38c516929136d1a100d2874877
+pkg/dsga/resourceguard/normal_inflight_source_test.go dab08e3a3f783672fcd48f1bbfb81e690cbff48cc6938b7c4ee44f0dfeb8eb84

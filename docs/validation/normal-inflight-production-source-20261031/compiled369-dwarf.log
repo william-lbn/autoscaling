@@ -1,0 +1,51 @@
+PT_REGS_BYTES=168
+EXCEPTION_STACKS_BYTES=32768
+CEA_ENTRY_STACK_BYTES=4096
+type = struct pt_regs {
+    unsigned long r15;
+    unsigned long r14;
+    unsigned long r13;
+    unsigned long r12;
+    unsigned long bp;
+    unsigned long bx;
+    unsigned long r11;
+    unsigned long r10;
+    unsigned long r9;
+    unsigned long r8;
+    unsigned long ax;
+    unsigned long cx;
+    unsigned long dx;
+    unsigned long si;
+    unsigned long di;
+    unsigned long orig_ax;
+    unsigned long ip;
+    union {
+        u16 cs;
+        u64 csx;
+        struct fred_cs fred_cs;
+    };
+    unsigned long flags;
+    unsigned long sp;
+    union {
+        u16 ss;
+        u64 ssx;
+        struct fred_ss fred_ss;
+    };
+}
+/* offset      |    size */  type = struct exception_stacks {
+/*      0      |       0 */    char DF_stack_guard[0];
+/*      0      |    8192 */    char DF_stack[8192];
+/*   8192      |       0 */    char NMI_stack_guard[0];
+/*   8192      |    8192 */    char NMI_stack[8192];
+/*  16384      |       0 */    char DB_stack_guard[0];
+/*  16384      |    8192 */    char DB_stack[8192];
+/*  24576      |       0 */    char MCE_stack_guard[0];
+/*  24576      |    8192 */    char MCE_stack[8192];
+/*  32768      |       0 */    char VC_stack_guard[0];
+/*  32768      |       0 */    char VC_stack[0];
+/*  32768      |       0 */    char VC2_stack_guard[0];
+/*  32768      |       0 */    char VC2_stack[0];
+/*  32768      |       0 */    char IST_top_guard[0];
+
+                               /* total size (bytes): 32768 */
+                             }

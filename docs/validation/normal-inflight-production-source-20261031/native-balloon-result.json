@@ -1,0 +1,43 @@
+{
+  "id": "NEON-S-INFLIGHT-SOURCE-003",
+  "observations": [],
+  "binary_sha256": "4537f114625501c4190af4650222013b4cb471af5839aac725b8000f56e5b7fa",
+  "status": "PASS_COMPONENT_ONLY",
+  "host_qemu_exit": 0,
+  "elapsed_seconds": 3.1385752179921838,
+  "actual_qmp": [
+    {
+      "command": "qmp_capabilities",
+      "response": {
+        "return": {}
+      }
+    },
+    {
+      "command": "query-kvm",
+      "response": {
+        "return": {
+          "enabled": true,
+          "present": true
+        }
+      }
+    },
+    {
+      "command": "query-version",
+      "response": {
+        "return": {
+          "qemu": {
+            "micro": 5,
+            "minor": 1,
+            "major": 8
+          },
+          "package": ""
+        }
+      }
+    }
+  ],
+  "runtime_kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "console_sha256": "37dfc00e8c7db2072f2be1345f0c0d2e80dd8f0899e5a4218be050493fef9162",
+  "normal_permit": false,
+  "all_sources_closed": false,
+  "PG_started": false
+}
