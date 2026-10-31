@@ -1,0 +1,108 @@
+{
+  "scope": "PG17安全降限的只读QMP最大内存来源组件；非E2E认证",
+  "source_base": "410bcc63a5de44b26afd04e237854a9c5b1705ce",
+  "unit_new_roots": 3,
+  "unit_new_subcases": 75,
+  "direct_regression_roots": 3,
+  "direct_regression_nodes": 19,
+  "unit_total_pass_nodes": 97,
+  "native_scenarios": 8,
+  "native_root_pass": 1,
+  "e2e_pass": 0,
+  "skip": 0,
+  "cases": [
+    {
+      "id": "PG17-U-QMP-GEOMETRY-001",
+      "class": "U",
+      "name": "TestOriginalMemoryGeometryDecodesActualQEMUSchema",
+      "result": "PASS",
+      "subcases": 0,
+      "evidence": "/data/neon-build/validation/qmp-geometry-go-1793404797440795936"
+    },
+    {
+      "id": "PG17-U-QMP-GEOMETRY-002",
+      "class": "U",
+      "name": "TestOriginalMemoryGeometryRejectsIncompleteOrChangedSources",
+      "result": "PASS",
+      "subcases": 73,
+      "evidence": "/data/neon-build/validation/qmp-geometry-go-1793404797440795936"
+    },
+    {
+      "id": "PG17-U-QMP-GEOMETRY-003",
+      "class": "U",
+      "name": "TestOriginalMemoryGeometryUnixReadsOnlyAndBoundsFrames",
+      "result": "PASS",
+      "subcases": 2,
+      "evidence": "/data/neon-build/validation/qmp-geometry-go-1793404797440795936"
+    },
+    {
+      "id": "PG17-S-QMP-GEOMETRY-001",
+      "class": "S",
+      "name": "early-base",
+      "result": "PASS",
+      "evidence": "/data/neon-build/validation/qmp-geometry-native-20261031T001012Z",
+      "scope": "真实KVM/QEMU组件，CPU暂停，无Guest/PG/normal许可"
+    },
+    {
+      "id": "PG17-S-QMP-GEOMETRY-002",
+      "class": "S",
+      "name": "requested-is-not-actual-or-maximum",
+      "result": "PASS",
+      "evidence": "/data/neon-build/validation/qmp-geometry-native-20261031T001012Z",
+      "scope": "真实KVM/QEMU组件，CPU暂停，无Guest/PG/normal许可"
+    },
+    {
+      "id": "PG17-S-QMP-GEOMETRY-003",
+      "class": "S",
+      "name": "legacy-base",
+      "result": "PASS",
+      "evidence": "/data/neon-build/validation/qmp-geometry-native-20261031T001012Z",
+      "scope": "真实KVM/QEMU组件，CPU暂停，无Guest/PG/normal许可"
+    },
+    {
+      "id": "PG17-S-QMP-GEOMETRY-004",
+      "class": "S",
+      "name": "wrong-original-base",
+      "result": "PASS",
+      "evidence": "/data/neon-build/validation/qmp-geometry-native-20261031T001012Z",
+      "scope": "真实KVM/QEMU组件，CPU暂停，无Guest/PG/normal许可"
+    },
+    {
+      "id": "PG17-S-QMP-GEOMETRY-005",
+      "class": "S",
+      "name": "wrong-original-maximum",
+      "result": "PASS",
+      "evidence": "/data/neon-build/validation/qmp-geometry-native-20261031T001012Z",
+      "scope": "真实KVM/QEMU组件，CPU暂停，无Guest/PG/normal许可"
+    },
+    {
+      "id": "PG17-S-QMP-GEOMETRY-006",
+      "class": "S",
+      "name": "underprovisioned-backend",
+      "result": "PASS",
+      "evidence": "/data/neon-build/validation/qmp-geometry-native-20261031T001012Z",
+      "scope": "真实KVM/QEMU组件，CPU暂停，无Guest/PG/normal许可"
+    },
+    {
+      "id": "PG17-S-QMP-GEOMETRY-007",
+      "class": "S",
+      "name": "extra-backend",
+      "result": "PASS",
+      "evidence": "/data/neon-build/validation/qmp-geometry-native-20261031T001012Z",
+      "scope": "真实KVM/QEMU组件，CPU暂停，无Guest/PG/normal许可"
+    },
+    {
+      "id": "PG17-S-QMP-GEOMETRY-008",
+      "class": "S",
+      "name": "wrong-original-uuid",
+      "result": "PASS",
+      "evidence": "/data/neon-build/validation/qmp-geometry-native-20261031T001012Z",
+      "scope": "真实KVM/QEMU组件，CPU暂停，无Guest/PG/normal许可"
+    }
+  ],
+  "not_verified": [
+    "生产原QEMU进程/原ISO/Host保留与未来写者完整接线",
+    "Guest earlyboot和实际Movable上下界",
+    "PG/normal下降及单机/K8s真实端到端"
+  ]
+}
