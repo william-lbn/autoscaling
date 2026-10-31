@@ -1,0 +1,5 @@
+Root Go内核过滤器审计组件：原NDSGFP01严格ABI，三类完整BPF程序由独立原PG binary生成，按原native birth上下文/四数组几何逐字段校验。内核链按oldest base→final→child严格逐指令比较并核最后ENOENT，无多余链收养。EncodedSHA256只作诊断，不是Root认证。
+
+Linux读取必须原LockOSThread的TracerTID，current /proc/thread-self/status核权限，syscall参数持有类型指针并在同一Syscall6表达式转换，避免跨调用uintptr失活。独立审查发现并修正原leader能力读取和unsafe指针生存期问题，冻结3源与实际COPY日志SHA一致。
+
+实际race/count1：4新根41sub、3个直接wire回归根，合计79测试节点PASS，0skip；未测试原生特权PTRACE路径或持久Source/WAL，后续engine的真实Host/369Guest组件独立运行归档。这里的Kernel reader测试为明确模型，不冒充实际Root认证。没有生产listener接线、PG/normal下降或E2E许可。

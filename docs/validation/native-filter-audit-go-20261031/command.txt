@@ -1,0 +1,1 @@
+bash -ceu $'sha256sum pkg/dsga/resourceguard/native_filter_audit*.go pkg/dsga/resourceguard/native_birth_wire*.go go.mod go.sum\ngo version\nenv GOPROXY=off GOSUMDB=off go test -mod=readonly -race -json -count=1 -timeout=90s ./pkg/dsga/resourceguard -run "^TestNative(FilterAudit|BirthWire)"'

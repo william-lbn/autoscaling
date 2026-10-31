@@ -1,0 +1,45 @@
+{
+  "scope": "完整过滤器字节解码/比较与Linux原生读取组件；未启生产消费者、S/E未跑",
+  "source_sha256": {
+    "native_filter_audit.go": "e278ca7a4d8ef8d67a270c1a61b028c4b38fdc21b3b471aef9a5db2077bd8721",
+    "native_filter_audit_linux.go": "1c8a0074575df3bbb17c23883f9c248d6b878dfb4c9cfef28fc756852bba3714",
+    "native_filter_audit_test.go": "f5aaaa306a59a9ef5a19bd69b9b80c0e6bd1de922d41dffb29c6dc83f2b5b2ce"
+  },
+  "new_unit_roots": 4,
+  "new_subcases": 41,
+  "direct_wire_regression_roots": 3,
+  "actual_pass_nodes": 79,
+  "skip": 0,
+  "native_privileged_path_pass": 0,
+  "e2e_pass": 0,
+  "cases": [
+    {
+      "id": "PG17-U-FILTER-AUDIT-001",
+      "layer": "unit",
+      "result": "PASS",
+      "root": "TestNativeFilterAuditDecodesOriginalGeometryAndOwnsBytes",
+      "evidence": "/data/neon-build/validation/go-1793402194770767327"
+    },
+    {
+      "id": "PG17-U-FILTER-AUDIT-002",
+      "layer": "unit",
+      "result": "PASS",
+      "root": "TestNativeFilterAuditRejectsMalformedABIAndOriginalDrift",
+      "evidence": "/data/neon-build/validation/go-1793402194770767327"
+    },
+    {
+      "id": "PG17-U-FILTER-AUDIT-003",
+      "layer": "unit",
+      "result": "PASS",
+      "root": "TestNativeFilterAuditComparesCompleteOldestFirstKernelChain",
+      "evidence": "/data/neon-build/validation/go-1793402194770767327"
+    },
+    {
+      "id": "PG17-U-FILTER-AUDIT-004",
+      "layer": "unit",
+      "result": "PASS",
+      "root": "TestNativeFilterAuditRejectsUnknownKernelOrPartialComparison",
+      "evidence": "/data/neon-build/validation/go-1793402194770767327"
+    }
+  ]
+}
