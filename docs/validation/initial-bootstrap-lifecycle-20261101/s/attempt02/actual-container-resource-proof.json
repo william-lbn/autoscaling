@@ -1,0 +1,39 @@
+{
+  "ImageID": "sha256:6c14341670c3e9a2c9826132836e3e7f6481b4fbb708e780ca20c35bc52e1621",
+  "ImageInput": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+  "User": "0:0",
+  "NetworkMode": "none",
+  "ReadonlyRootfs": true,
+  "Memory": 2147483648,
+  "MemorySwap": 2147483648,
+  "NanoCpus": 2000000000,
+  "PidsLimit": 128,
+  "CapAdd": [
+    "CAP_DAC_OVERRIDE",
+    "CAP_KILL",
+    "CAP_SETGID",
+    "CAP_SETUID",
+    "CAP_SYS_PTRACE"
+  ],
+  "CapDrop": [
+    "ALL"
+  ],
+  "SecurityOpt": [
+    "no-new-privileges"
+  ],
+  "Devices": [
+    {
+      "PathOnHost": "/dev/kvm",
+      "PathInContainer": "/dev/kvm",
+      "CgroupPermissions": "rwm"
+    }
+  ],
+  "TerminalState": {
+    "Running": false,
+    "ExitCode": 0,
+    "OOMKilled": false,
+    "Error": "",
+    "StartedAt": "2026-10-31T18:28:46.426092759Z",
+    "FinishedAt": "2026-10-31T18:28:56.661212192Z"
+  }
+}

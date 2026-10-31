@@ -73,8 +73,11 @@ func initialBootFullRuntime(t *testing.T, f *runnerFixture) ([]byte, *corev1.Sec
 }
 
 func initialBootSourceFixture(t *testing.T) (*runnerFixture, []byte, *exec.Cmd) {
+	return initialBootFixture(t, true)
+}
+func initialBootFixture(t *testing.T, withLaunch bool) (*runnerFixture, []byte, *exec.Cmd) {
 	t.Helper()
-	f := newRunnerFixture(t)
+	f := runnerBirthFixture(t, false)
 	ctx := context.Background()
 	node, e := f.core.CoreV1().Nodes().Get(ctx, f.config.NodeName, metav1.GetOptions{})
 	require.NoError(t, e)
@@ -90,18 +93,29 @@ func initialBootSourceFixture(t *testing.T) (*runnerFixture, []byte, *exec.Cmd) 
 	raw, secret := initialBootFullRuntime(t, f)
 	_, e = f.core.CoreV1().Secrets(secret.Namespace).Create(ctx, secret, metav1.CreateOptions{})
 	require.NoError(t, e)
+	shortState, e := os.MkdirTemp("/tmp", "initial-source-")
+	require.NoError(t, e)
+	t.Cleanup(func() { _ = os.RemoveAll(shortState) })
+	f.config.StateDir = shortState
+	f.config.InitialBootstrap = &InitialBootstrapConfig{RuntimeJSON: append([]byte(nil), raw...), OriginalBaseBytes: 256 << 20}
+	f.runner, e = Initialize(ctx, f.store, f.core.CoreV1(), f.core.CoordinationV1(), f.config)
+	require.NoError(t, e)
 	path := filepath.Join(t.TempDir(), "qemu-system-x86_64")
 	require.NoError(t, os.WriteFile(path, []byte("NOT_A_QEMU_TEST_ONLY_SOURCE_FIXTURE\n"), 0700))
 	args := []string{path, "-m", "size=256M,slots=1,maxmem=4G", "-object", "memory-backend-ram,id=vmem0,size=3840M", "-device", "virtio-mem-pci,id=vm0,memdev=vmem0,node=0,block-size=8M,requested-size=0"}
+	args = append(args, "-smp", "cpus=2,maxcpus=2,sockets=1,cores=2,threads=1", "-monitor", "none")
 	args = append(args, f.runner.QMPArguments()...)
+	args = append(args, f.runner.BootChannelArguments()...)
 	cmd := &exec.Cmd{Path: path, Args: args}
 	digest, e := f.runner.validateProcessCommand(cmd)
 	require.NoError(t, e)
 	launch := processLaunch{Identity: f.runner.birth.Identity, BirthClaim: f.runner.engine.binding, Nonce: strings.Repeat("12", 16), CommandSHA256: digest, ContainerID: "containerd://model-only"}
-	e = f.runner.engine.withRecord(ctx, func(_ *record, s *lockedState) error {
-		return s.writeOnce("process-launch.json", initialBootCanonical(launch))
-	})
-	require.NoError(t, e)
+	if withLaunch {
+		e = f.runner.engine.withRecord(ctx, func(_ *record, s *lockedState) error {
+			return s.writeOnce("process-launch.json", initialBootCanonical(launch))
+		})
+		require.NoError(t, e)
+	}
 	return f, raw, cmd
 }
 func initialBootModelSource(t *testing.T) initialBootSource {
@@ -125,13 +139,33 @@ func TestInitialBootstrapV2ActualReadersBindOriginalSources(t *testing.T) {
 	again, e := f.runner.freezeInitialBootstrap(context.Background(), raw, cmd, 256<<20)
 	require.NoError(t, e)
 	require.Equal(t, ref, again)
+
+	// 跨轨合同：Guest严格核同一原Runtime派生的artifact，而非KernelRef对象哈希。
+	logical, e := resourceguard.RenderRuntimePolicyAssets(raw)
+	require.NoError(t, e)
+	logical[resourceguard.RuntimeResourceAssetName] = raw
+	plan, e := resourceguard.DeriveRuntimeBootRequirements(raw, logical)
+	require.NoError(t, e)
+	state, e := lockState(context.Background(), f.config.StateDir)
+	require.NoError(t, e)
+	entries, e := initialBootRead(state)
+	require.NoError(t, e)
+	require.Equal(t, plan.KernelBuildReference().KernelArtifactSHA256, entries[0].Source.KernelBuildSHA256)
+	require.NotEqual(t, initialBootSHA(initialBootCanonical(plan.KernelBuildReference())), entries[0].Source.KernelBuildSHA256)
+	baseRef, e := initialBootAppend(state, ref, json.RawMessage(`{"model_only":"cross-track source/challenge binding"}`))
+	require.NoError(t, e)
+	challenge, e := initialBootChallenge(entries[0].Source, baseRef)
+	require.NoError(t, e)
+	require.Equal(t, plan.KernelBuildReference().KernelArtifactSHA256, challenge.KernelBuildSHA256)
+	state.close()
 	require.Equal(t, "source_frozen", ref.Stage)
 	require.Len(t, ref.Nonce, 64)
 	for _, a := range f.core.Actions() {
 		require.NotEqual(t, "patch", a.GetVerb(), "Source不修改Node/Pod/容量")
 	}
 	// 冻结字节不因读取改变，原v1 birth仍原协议。
-	require.EqualValues(t, 1, f.runner.birth.ProtocolVersion)
+	require.EqualValues(t, 2, f.runner.birth.ProtocolVersion)
+	require.NotNil(t, f.runner.birth.InitialMode)
 }
 func TestInitialBootstrapV2RejectsSourceReplacementAndMissingClosure(t *testing.T) {
 	// PG17-U-INITIAL-H05：没有合法Source不创建initial阶段，旧日志/预算不重置。

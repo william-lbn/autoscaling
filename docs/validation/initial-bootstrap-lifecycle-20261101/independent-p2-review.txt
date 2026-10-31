@@ -1,0 +1,29 @@
+Host 初始低 base 生命周期独立只读审查（P2，2026-11-01）
+结论：本批明确的 Host 生命周期组件范围内，未发现阻止提交的源码问题。可以由 Root 按精确冻结图统一提交。不是完整 Host 资格、正式 Guest Provision、PG normal 降限或 K8s E2E 验收。
+
+审查对象与方式
+独立于 Helm 作者，只读实际 19 个 owned 源码及必要的原 transport/record 接口，核对最终 206 路径清单与源 manifest；没有改业务源码、测试、Git index 或执行 Git；本次没有重跑测试。Root4、DEV fixture 仅作为准确构建依赖和证据边界审查。
+冻结基线 12ed1ad6aa9e7e4ac3065eeef1e0ec75c2be8c03。
+review-stage-paths.txt SHA256 54d7a7e3f1ca08695b866cd189f791cb21e567725d99fd6b565736a0f0e3765e。
+review-stage-manifest.json SHA256 3bd67c1ba01cdf7c29f809b82ab594e6a783f1ec11158905787f456a8ce186df。
+review-owned-source-manifest.json SHA256 5e388a0002a9f55dc238b10b845eaf8f2e16a885797e38c154c96997c40759ec。
+
+关键源码结论
+1. 原进程：RunQEMU 独占同一 exec.Cmd，先 fsync 原 process-launch，再 freeze，随后唯一 Start；captureInitialBootProcess 在 Start 成功、唯一 Wait 前捕获原 pidfd 与 O_PATH procdir/start。checkPeer 在 SO_PEERCRED 读前后核原 pidfd 活性，并核当前四 UID/GID、原 exe dev/inode/hash；并不凭可重用 numeric PID 或 Unix socket 路径单独收养进程。cgexec 仍须是原受信 exec 包装，来源摘要不把任意程序认证成可信 QEMU。
+2. 初次写顺序：linuxInitialLifecycle.drive 持原 engine flock，链只允许 source_frozen 单阶段开始；完整 prepared 原回执与原 reservation/owner 再核后，先追加 grow_prepared，再在真实 base/peer/原几何再核后追加 grow_may_have_sent。initialBootAppend 对既有整个前缀逐 file.Sync/dir.Sync，新增文件先写+file.Sync，再不替换 Linkat+dir.Sync；成功返回后才可执行唯一固定 vm0 requested-size qom-set。错误、丢回复或已推进链不自动重发；等于 base 的 no-op 不写 QMP。
+3. 发布 gate：actual requested/actual 均到业务 Min，真实 Guest Movable 回执匹配后追加完整 typed complete，再发送 completion，随后仅本实例内存 ready 可开门。advance/publish 在原 flock 中核 gate；Read/Set 持原 processGuard、核本实例原进程/完整链/完成 entry。WAL 可见本身不能使重启 Runner 自动重获写权。普通 Observation/Set 仍保原业务 Min，不能使用初始低 base 绕过。
+4. 生命周期收尾：初始 worker 失败仅向原 pidfd 发 SIGKILL；RunQEMU 唯一 cmd.Wait 消费原退出，stopAndWait 取消并 join 实际 worker，再独占 processGuard 关闭原句柄；保留原 may-have-sent 与 Host reservation，不将 QMP 断线或取消解释成已结清。完整初次交换成功后常规 QEMU 停机仍沿调用者原 exec.CommandContext/固定 powerdown/唯一 Wait 合同；本审查没有把初始 worker 的取消逻辑宣称通用生命周期控制器。
+5. 版本：显式 InitialBootstrap 才生成 Birth/Publication v2；InitialMode 与 runtime/resource/config/kernel 原引用逐项绑定。v1 omit 新字段且明确拒出现新字段即使 null，失败出生/关闭来源同版本比较，既有 birth-intent/launch/WAL 不自动升级或重置。新 native adapter 在 Initialize 一次固定；不热换旧 native。
+6. 设备与 CPU：固定启动参数拒 balloon/Xen、额外 monitor/HMP、替代 memory surface；原 SMP 与实际 hotplug inventory 交叉，实际 inventory 再拒 balloon。该组件只验证固定 argv/QMP 读回，不代表全部 future writer/source 已闭，也未授权将 F/I C64 基线改成 C2。
+
+实际证据独立重算
+206 路径唯一；manifest 所列 204 文件逐 SHA256 重算全吻合（另外两个为清单/manifest 本身）。
+U attempt04-full-package-envfix：actual-source.sha256 780 项与 check 780 OK；18 个非 native owned 源全与冻结图吻合。原始 test.jsonl 实际 pass 77 roots、320 subcases，fail/skip 0；race/build/test 成功。没有把全包旧根称成新增覆盖。
+S attempt02：785 actual COPY/check 全 OK；19 owned 源与 Root4/DEV fixture 全匹配。实际 Host binary SHA b1dd0afc41cf8f60fcc154b7a3a4c4d1cc959f0503dad23064ca345355ee7e11；Guest binary SHA cee4c45f0aec51b2080cc0e93ee9dff273841ff2820a0819b1f81fc0f62739ba，均重新读取 export 二进制重算吻合。最终 cohort SHA 79a2bdc0b11d1adfcd6860a3009bb066facc38c52dbf52bfa08f8c3d86f6c9bb 实际匹配。
+真实 369 kernel/KVM enabled/present、QEMU -runas UID36/GID34，base256MiB → business1GiB、maximum4GiB/block8MiB；Host 原 Wait exit0、Guest fixture exit0，Host8阶段、Guest8 WAL。Guest offline ext4 proof 的8个 SHA 逐文件重算全吻合；真实 Movable196608页=768MiB。Docker2GiB/2CPU/零swap/no-network，Host API Node/VM/Lease/Secret/预留均明确模型。
+首次 /private/tmp 前置失败、早期编译/准备失败、第一次 S 成功均原样保留。最后 native 仅将负向 Set 放原 flock；最终静态编译和真实369重跑认证这个新 native 图，原18生产/模型源未变。Darwin/静态 compile 只为 ENV，不计 U/S。
+
+必须保留的资格边界（不构成本批组件提交阻断）
+本批没有新增 Host QEMU cgroup path/dev/inode 的持续硬cap认证；Host source 绑定 protected Node ledger/VM/Pod/HostLease、原预留和原 Start/QMP，不能冒称它已证明 Host cgroup。真实 cgroup dev/inode 是 Guest PhysicalOrigin/PreSys 的 PG/System 来源；两者不可混用。完整 HostProfile/原 Pod 硬cap来源仍需后续真实生产接线。
+Guest fixture 的固定 exchange 确实调用真实 KernelPrep/Origin/PreSys/Movable 组件，但止于 completion；没有正式 ProvisionGuest/CheckGuest、正式 resource journal、PG RootBirth 或 PG normal 实际下降。E=0，normal 五处拒绝未借本批放开。
+生产 Runner cmd、原 image/ISO/Host 权限及 future QMP writer 资格、完整 Source/FS 闭包仍由 Root 后继独立图验证。本报告只支持精确本批提交，不可给活动 main/未编译组合转签。

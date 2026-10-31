@@ -1,0 +1,28 @@
+{
+  "command": [
+    "docker",
+    "run",
+    "--rm",
+    "--pull=never",
+    "--network",
+    "none",
+    "--read-only",
+    "--cap-drop",
+    "ALL",
+    "--user",
+    "0:0",
+    "-v",
+    "/data/neon-build/validation/initial-lifecycle-native-20261031T181834Z:/work:rw",
+    "--entrypoint",
+    "genisoimage",
+    "sha256:cb6635e1790c7ceae132b6a75a61e85e33be1fde8dbd9c421a17a33cd2494b9d",
+    "-quiet",
+    "-R",
+    "-o",
+    "/work/runtime.iso",
+    "/work/isofiles"
+  ],
+  "exit": 0,
+  "stdout": "",
+  "stderr": ""
+}

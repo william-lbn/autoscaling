@@ -236,6 +236,11 @@ func (r *Runner) RunQEMU(ctx context.Context, cmd *exec.Cmd) error {
 	if err != nil {
 		return err
 	}
+	if r.initial != nil {
+		if err := r.initial.freeze(ctx, cmd); err != nil {
+			return r.finishProcess(launch, 2, 0, 0, 0, err)
+		}
+	}
 	if err := ctx.Err(); err != nil {
 		// 原启动意图已同步，但本调用明确还没进入Start。即使调用者已取消，
 		// 仍用独立有界上下文先保存关闭屏障；不能只退出并遗留永久容量持有。
@@ -250,7 +255,20 @@ func (r *Runner) RunQEMU(ctx context.Context, cmd *exec.Cmd) error {
 		}
 		return r.finishProcess(launch, 2, 0, 0, 0, err)
 	}
+	var initialRun initialLifecycleRun
+	var initialErr error
+	if r.initial != nil {
+		initialRun, initialErr = r.initial.started(ctx, cmd)
+		if initialErr != nil {
+			initialErr = errors.Join(initialErr, cmd.Process.Kill())
+		}
+	}
+	// 仍只有本调用消费原child.Wait；初始工作者只持pidfd，不得抢收退出。
 	waitErr := cmd.Wait()
+	if initialRun != nil {
+		initialErr = errors.Join(initialErr, initialRun.stopAndWait())
+	}
+	waitErr = errors.Join(waitErr, initialErr)
 	if cmd.ProcessState == nil || cmd.ProcessState.Pid() != cmd.Process.Pid || cmd.Process.Pid <= 0 || uint64(cmd.Process.Pid) > math.MaxUint32 {
 		return errors.Join(waitErr, fmt.Errorf("original QEMU child has no authoritative wait result"))
 	}

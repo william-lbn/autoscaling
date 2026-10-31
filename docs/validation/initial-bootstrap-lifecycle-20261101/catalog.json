@@ -1,0 +1,139 @@
+{
+  "newUnitRoots": [
+    {
+      "id": "PG17-U-INITIAL-L01",
+      "root": "TestInitialLifecycleHostConsumerWholeModelChain",
+      "status": "PASS",
+      "subcases": [],
+      "scope": "QEMU/Guest/API models; real fd/WAL/Unix/Start-Wait paths",
+      "source": "u/attempt04-full-package-envfix/test.jsonl"
+    },
+    {
+      "id": "PG17-U-INITIAL-L02",
+      "root": "TestInitialLifecycleUncertainGrowNeverRepeats",
+      "status": "PASS",
+      "subcases": [],
+      "scope": "QEMU/Guest/API models; real fd/WAL/Unix/Start-Wait paths",
+      "source": "u/attempt04-full-package-envfix/test.jsonl"
+    },
+    {
+      "id": "PG17-U-INITIAL-L03",
+      "root": "TestInitialLifecycleForeignReceiptAndCancellationCloseOriginal",
+      "status": "PASS",
+      "subcases": [
+        "TestInitialLifecycleForeignReceiptAndCancellationCloseOriginal/bad-prepared",
+        "TestInitialLifecycleForeignReceiptAndCancellationCloseOriginal/cancel-prepared"
+      ],
+      "scope": "QEMU/Guest/API models; real fd/WAL/Unix/Start-Wait paths",
+      "source": "u/attempt04-full-package-envfix/test.jsonl"
+    },
+    {
+      "id": "PG17-U-INITIAL-L04",
+      "root": "TestInitialLifecycleWireVersionsAndLegacyBytes",
+      "status": "PASS",
+      "subcases": [],
+      "scope": "QEMU/Guest/API models; real fd/WAL/Unix/Start-Wait paths",
+      "source": "u/attempt04-full-package-envfix/test.jsonl"
+    },
+    {
+      "id": "PG17-U-INITIAL-L05",
+      "root": "TestInitialLifecycleRejectsBalloonAndExternalCommandSurfaces",
+      "status": "PASS",
+      "subcases": [
+        "TestInitialLifecycleRejectsBalloonAndExternalCommandSurfaces/virtio-balloon",
+        "TestInitialLifecycleRejectsBalloonAndExternalCommandSurfaces/xen-balloon",
+        "TestInitialLifecycleRejectsBalloonAndExternalCommandSurfaces/dimm",
+        "TestInitialLifecycleRejectsBalloonAndExternalCommandSurfaces/alternate-driver",
+        "TestInitialLifecycleRejectsBalloonAndExternalCommandSurfaces/hmp",
+        "TestInitialLifecycleRejectsBalloonAndExternalCommandSurfaces/implicit-hmp",
+        "TestInitialLifecycleRejectsBalloonAndExternalCommandSurfaces/duplicate-port",
+        "TestInitialLifecycleRejectsBalloonAndExternalCommandSurfaces/extra-monitor"
+      ],
+      "scope": "QEMU/Guest/API models; real fd/WAL/Unix/Start-Wait paths",
+      "source": "u/attempt04-full-package-envfix/test.jsonl"
+    },
+    {
+      "id": "PG17-U-INITIAL-L06",
+      "root": "TestInitialLifecycleRejectsActualBalloonAndCPUInventory",
+      "status": "PASS",
+      "subcases": [
+        "TestInitialLifecycleRejectsActualBalloonAndCPUInventory/balloon-inventory",
+        "TestInitialLifecycleRejectsActualBalloonAndCPUInventory/cpu-maximum-drift"
+      ],
+      "scope": "QEMU/Guest/API models; real fd/WAL/Unix/Start-Wait paths",
+      "source": "u/attempt04-full-package-envfix/test.jsonl"
+    }
+  ],
+  "newSystemRoots": [
+    {
+      "id": "PG17-S-INITIAL-LIFECYCLE-001",
+      "HostRoot": "TestNativeInitialLifecycleComponent",
+      "GuestFixtureRoot": "TestNativeFixedInitialGuestExchange",
+      "status": "PASS_COMPONENT_ONLY",
+      "HostSourceAPI": "explicit fake Node/Lease/VM/Secret; not cluster qualification",
+      "kernelArtifactSHA256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+      "actualGuest": "base256MiB/business1GiB/maximum4GiB/block8MiB, virtio-mem, KVM, 2hard CPUs",
+      "actualRunAs": {
+        "uid": 36,
+        "gid": 34
+      },
+      "HostUniqueWaitExit": 0,
+      "GuestFixedExchangeExit": 0,
+      "WAL": {
+        "HostInitialStages": 8,
+        "GuestFiles": 8,
+        "GuestOfflineExt4HashesMatch": true
+      },
+      "formalBootstrap": false,
+      "normalAuthorized": false,
+      "E": 0,
+      "source": "s/attempt02/kvm-result.json",
+      "firstPASSPreserved": "s/kvm-result.json",
+      "sameIDMultipleAttemptsNotAdditionalCoverage": true,
+      "finalHostNativeSourceSHA256": "d0c8a65f8cfff2c47dd764ec4d544110c3591bc91c74ec3edbe99b0a9ccb7937",
+      "finalHostBinarySHA256": "b1dd0afc41cf8f60fcc154b7a3a4c4d1cc959f0503dad23064ca345355ee7e11",
+      "finalGuestBinarySHA256": "cee4c45f0aec51b2080cc0e93ee9dff273841ff2820a0819b1f81fc0f62739ba",
+      "lastSeconds": 13.284595706005348
+    }
+  ],
+  "wholeVMGuardRegression": {
+    "roots": 77,
+    "subcases": 320,
+    "failed": 0,
+    "skipped": 0,
+    "race": true,
+    "network": "none",
+    "actualCopiedGoModFiles": 780,
+    "notAllNewCoverage": true
+  },
+  "crossCompile": {
+    "platform": "darwin/amd64",
+    "exit": 0,
+    "execution": false,
+    "id": "PG17-ENV-INITIAL-LIFECYCLE-DARWIN",
+    "notUorS": true
+  },
+  "staticCompile": {
+    "id": "PG17-ENV-INITIAL-LIFECYCLE-STATIC",
+    "HostCompileExit": 0,
+    "GuestCompileExit": 0,
+    "actualCopiedGoModFiles": 785,
+    "genericWrapperScopeLabelWasU": true,
+    "actualClassification": "ENV compile only; see exact go test -c Dockerfile"
+  },
+  "history": {
+    "firstFullRegression": "FAIL preserved: /private/tmp absent in sandbox, old fixture roots never reached QMP; next RUN only adds /private/tmp1777; business/test bytes unchanged",
+    "nativePreparation": "FAIL preserved: Root test filename initially misspelled; corrected actual _linux_test path; no payload executed in preparation failure",
+    "previousCompileFailure": "external /validation/initial-lifecycle-compile-20261031T174627Z preserved unused-import compile failure before exact source regression; not counted test coverage",
+    "nativeOriginalLock": "After first S PASS only native negative Set wrapped in original engine flock; exact new static compile+369 rerun PASS. Production/model18 unchanged and remain full77/320 U cohort."
+  },
+  "notRun": [
+    "real K8s Host Node/Lease eligibility",
+    "production Runnercmd consumer build, owner Root next phase",
+    "formal Guest Provision/CheckGuest",
+    "PG native Root/Birth integration",
+    "real PG normal hard limit decrease",
+    "K8s E2E"
+  ],
+  "normalFiveDenialsUnchanged": true
+}

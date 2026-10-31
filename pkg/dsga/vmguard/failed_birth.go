@@ -23,13 +23,14 @@ import (
 // 原始无ref选择先原子fsync为birth-intent，直接崩溃后也只允许转为NoStart
 // 关闭；已确认ref再独立fsync。本地屏障不可撤销，补齐来源不能返回为可执行Runner。
 type failedBirth struct {
-	ProtocolVersion uint32            `json:"protocol_version"`
-	Identity        Identity          `json:"identity"`
-	Owner           journal.Owner     `json:"owner"`
-	PodName         string            `json:"pod_name"`
-	NodeName        string            `json:"node_name"`
-	StateClaim      *budget.ObjectRef `json:"state_claim"`
-	BindingClaim    *budget.ObjectRef `json:"binding_claim"`
+	ProtocolVersion uint32                `json:"protocol_version"`
+	Identity        Identity              `json:"identity"`
+	Owner           journal.Owner         `json:"owner"`
+	PodName         string                `json:"pod_name"`
+	NodeName        string                `json:"node_name"`
+	StateClaim      *budget.ObjectRef     `json:"state_claim"`
+	BindingClaim    *budget.ObjectRef     `json:"binding_claim"`
+	InitialMode     *InitialBootstrapMode `json:"initial_mode,omitempty"`
 }
 
 func (f *failedBirth) UnmarshalJSON(raw []byte) error {
@@ -38,13 +39,23 @@ func (f *failedBirth) UnmarshalJSON(raw []byte) error {
 	if err := control.UnmarshalObject(raw, &next); err != nil {
 		return err
 	}
+	if e := rejectLegacyInitialField(raw, next.ProtocolVersion, "initial_mode"); e != nil {
+		return e
+	}
 	*f = failedBirth(next)
 	return nil
 }
 
 func (f failedBirth) validate(b journal.Binding, c Config) error {
-	if f.ProtocolVersion != 1 || f.Identity.Validate() != nil || f.Owner.Validate() != nil || f.Identity.VMUID != string(b.VMUID) || f.Identity.Incarnation != b.Incarnation || f.Identity.RunnerPodUID != c.PodUID || f.Identity.MinimumBytes != c.MinimumBytes || f.Identity.MaximumBytes != c.MaximumBytes || f.PodName != c.PodName || f.NodeName != c.NodeName || control.ValidateID(f.PodName, "original failed Runner Pod") != nil || control.ValidateID(f.NodeName, "original failed Runner Node") != nil {
+	if !initialVersionMatches(f.ProtocolVersion, f.InitialMode, f.Identity) || f.Identity.Validate() != nil || f.Owner.Validate() != nil || f.Identity.VMUID != string(b.VMUID) || f.Identity.Incarnation != b.Incarnation || f.Identity.RunnerPodUID != c.PodUID || f.Identity.MinimumBytes != c.MinimumBytes || f.Identity.MaximumBytes != c.MaximumBytes || f.PodName != c.PodName || f.NodeName != c.NodeName || control.ValidateID(f.PodName, "original failed Runner Pod") != nil || control.ValidateID(f.NodeName, "original failed Runner Node") != nil {
 		return fmt.Errorf("failed Runner birth lost original identity or geometry")
+	}
+	expected, e := initialModeForConfig(c)
+	if e != nil {
+		return e
+	}
+	if !sameInitialMode(f.InitialMode, expected) {
+		return fmt.Errorf("failed birth original initial mode changed")
 	}
 	if f.StateClaim != nil && (f.StateClaim.Validate() != nil || f.StateClaim.Name != stateName(b)) || f.BindingClaim != nil && (f.BindingClaim.Validate() != nil || f.BindingClaim.Name != BindingName(b) || f.StateClaim == nil) {
 		return fmt.Errorf("failed Runner birth changed confirmed source references")
@@ -65,7 +76,7 @@ func sealFailedBirth(s *lockedState, f failedBirth) error {
 	if json.Unmarshal(raw, &selected) == nil {
 		// 原选择没有已确认ref；它们只能来自后续独立检查点或原失败屏障。
 		// 不接受另一个owner/Pod/Node借相同nonce封存本出生。
-		if selected.ProtocolVersion != 1 || selected.Identity != f.Identity || selected.Owner != f.Owner || selected.PodName != f.PodName || selected.NodeName != f.NodeName || selected.StateClaim != nil || selected.BindingClaim != nil {
+		if selected.ProtocolVersion != f.ProtocolVersion || !sameInitialMode(selected.InitialMode, f.InitialMode) || selected.Identity != f.Identity || selected.Owner != f.Owner || selected.PodName != f.PodName || selected.NodeName != f.NodeName || selected.StateClaim != nil || selected.BindingClaim != nil {
 			return fmt.Errorf("failed birth differs from original durable selection")
 		}
 	} else if json.Unmarshal(raw, &original) != nil || original != f.Identity {
@@ -154,7 +165,7 @@ func recoverFailedBirth(ctx context.Context, store *journal.Store, coreClient co
 		bindingRef = &prior.BindingClaim
 	}
 	b := store.Binding()
-	initial := Publication{ProtocolVersion: 1, Identity: original.Identity, BindingClaim: nil, State: nil, Actual: nil}
+	initial := Publication{ProtocolVersion: original.ProtocolVersion, Identity: original.Identity, BindingClaim: nil, State: nil, Actual: nil}
 	raw, err := json.Marshal(initial)
 	if err != nil {
 		return nil, err
@@ -171,7 +182,7 @@ func recoverFailedBirth(ctx context.Context, store *journal.Store, coreClient co
 	if err := s.writeOnce("birth-close-state.json", raw); err != nil {
 		return nil, err
 	}
-	birth := Birth{ProtocolVersion: 1, Identity: original.Identity, StateClaim: confirmedState}
+	birth := Birth{ProtocolVersion: original.ProtocolVersion, InitialMode: cloneInitialMode(original.InitialMode), Identity: original.Identity, StateClaim: confirmedState}
 	raw, err = json.Marshal(birth)
 	if err != nil {
 		return nil, err

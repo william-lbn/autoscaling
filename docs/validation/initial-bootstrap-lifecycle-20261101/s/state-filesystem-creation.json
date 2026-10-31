@@ -1,0 +1,11 @@
+{
+  "command": [
+    "mkfs.ext4",
+    "-q",
+    "-F",
+    "/data/neon-build/validation/initial-lifecycle-native-20261031T181834Z/state.ext4"
+  ],
+  "exit": 0,
+  "bytes": 33554432,
+  "scope": "isolated file disk only; no Host mount/cgroup modifications"
+}

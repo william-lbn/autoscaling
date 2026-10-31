@@ -35,13 +35,14 @@ const (
 // Birth是启动QEMU之前一次性创建并读回的不可变来源。原Pod/boot/Node、几何和
 // mutable状态对象UID均固定。同名Runner重启不自动收养此来源，必须另走受控恢复。
 type Birth struct {
-	ProtocolVersion uint32           `json:"protocol_version"`
-	Identity        Identity         `json:"identity"`
-	StateClaim      budget.ObjectRef `json:"state_claim"`
+	ProtocolVersion uint32                `json:"protocol_version"`
+	Identity        Identity              `json:"identity"`
+	StateClaim      budget.ObjectRef      `json:"state_claim"`
+	InitialMode     *InitialBootstrapMode `json:"initial_mode,omitempty"`
 }
 
 func (b Birth) Validate() error {
-	if b.ProtocolVersion != 1 || b.Identity.Validate() != nil || b.StateClaim.Validate() != nil {
+	if !initialVersionMatches(b.ProtocolVersion, b.InitialMode, b.Identity) || b.Identity.Validate() != nil || b.StateClaim.Validate() != nil {
 		return fmt.Errorf("incomplete original Runner birth source")
 	}
 	return nil
@@ -96,11 +97,12 @@ func (r *Receipt) UnmarshalJSON(raw []byte) error {
 }
 
 type Publication struct {
-	ProtocolVersion uint32            `json:"protocol_version"`
-	Identity        Identity          `json:"identity"`
-	BindingClaim    *budget.ObjectRef `json:"binding_claim"`
-	State           *View             `json:"state"`
-	Actual          *Observation      `json:"actual"`
+	ProtocolVersion  uint32                       `json:"protocol_version"`
+	Identity         Identity                     `json:"identity"`
+	BindingClaim     *budget.ObjectRef            `json:"binding_claim"`
+	State            *View                        `json:"state"`
+	Actual           *Observation                 `json:"actual"`
+	InitialBootstrap *InitialBootstrapPublication `json:"initial_bootstrap,omitempty"`
 }
 
 func (v *Birth) UnmarshalJSON(raw []byte) error {
@@ -110,6 +112,9 @@ func (v *Birth) UnmarshalJSON(raw []byte) error {
 		return err
 	}
 	next := Birth(p)
+	if e := rejectLegacyInitialField(raw, next.ProtocolVersion, "initial_mode"); e != nil {
+		return e
+	}
 	if err := next.Validate(); err != nil {
 		return err
 	}
@@ -122,6 +127,9 @@ func (v *Publication) UnmarshalJSON(raw []byte) error {
 	var p plain
 	if err := strictDecode(raw, &p); err != nil {
 		return err
+	}
+	if e := rejectLegacyInitialField(raw, p.ProtocolVersion, "initial_bootstrap"); e != nil {
+		return e
 	}
 	*v = Publication(p)
 	return nil
@@ -266,7 +274,7 @@ func inspectBirthState(cm *core.ConfigMap, binding journal.Binding, original *bu
 
 func InspectPublication(cm *core.ConfigMap, binding journal.Binding, birth Birth, ref budget.ObjectRef) (Publication, error) {
 	var p Publication
-	if birth.Validate() != nil || validClaim(cm, binding, birth.StateClaim, stateKind, false) != nil || json.Unmarshal([]byte(cm.Data[ClaimKey]), &p) != nil || p.ProtocolVersion != 1 || p.Identity != birth.Identity || p.BindingClaim == nil || *p.BindingClaim != ref || p.State == nil || p.State.Validate() != nil || p.State.Identity != birth.Identity || p.State.BindingClaim != ref || p.Actual == nil || p.Actual.validate(birth.Identity) != nil {
+	if birth.Validate() != nil || validClaim(cm, binding, birth.StateClaim, stateKind, false) != nil || json.Unmarshal([]byte(cm.Data[ClaimKey]), &p) != nil || initialPublicationMatches(p, birth, &ref, false) != nil || p.Identity != birth.Identity || p.BindingClaim == nil || *p.BindingClaim != ref || p.State == nil || p.State.Validate() != nil || p.State.Identity != birth.Identity || p.State.BindingClaim != ref || p.Actual == nil || p.Actual.validate(birth.Identity) != nil {
 		return p, fmt.Errorf("original Runner has no complete private QMP publication")
 	}
 	return p, nil
@@ -305,6 +313,11 @@ func (r *Runner) publish(ctx context.Context) error {
 				return err
 			}
 		}
+		if r.initial != nil {
+			if err := r.initial.gate(s); err != nil {
+				return err
+			}
+		}
 		actual, err := r.engine.native.Read(ctx)
 		if err != nil {
 			return err
@@ -313,7 +326,14 @@ func (r *Runner) publish(ctx context.Context) error {
 			return err
 		}
 		view := View(state.clone())
-		publication := Publication{ProtocolVersion: 1, Identity: r.birth.Identity, BindingClaim: &r.engine.binding, State: &view, Actual: &actual}
+		publication := Publication{ProtocolVersion: r.birth.ProtocolVersion, Identity: r.birth.Identity, BindingClaim: &r.engine.binding, State: &view, Actual: &actual}
+		if r.initial != nil {
+			proof, e := r.initial.publication(s)
+			if e != nil {
+				return e
+			}
+			publication.InitialBootstrap = proof
+		}
 		raw, err := json.Marshal(publication)
 		if err != nil || len(raw) > journal.MaxObservationBytes {
 			return fmt.Errorf("Runner publication exceeds bounded state body")
@@ -323,7 +343,7 @@ func (r *Runner) publish(ctx context.Context) error {
 			return err
 		}
 		var prior Publication
-		if json.Unmarshal([]byte(cm.Data[ClaimKey]), &prior) != nil || prior.Identity != r.birth.Identity || prior.ProtocolVersion != 1 || prior.State != nil && prior.State.Sequence > state.Sequence {
+		if json.Unmarshal([]byte(cm.Data[ClaimKey]), &prior) != nil || prior.Identity != r.birth.Identity || initialPublicationMatches(prior, r.birth, &r.engine.binding, true) != nil || prior.State != nil && prior.State.Sequence > state.Sequence {
 			return fmt.Errorf("Runner published state is malformed or newer than local durable state")
 		}
 		if cm.Data[ClaimKey] == string(raw) {
@@ -337,4 +357,8 @@ func (r *Runner) publish(ctx context.Context) error {
 		}
 		return err
 	})
+}
+
+func sameBirth(a, b Birth) bool {
+	return a.ProtocolVersion == b.ProtocolVersion && a.Identity == b.Identity && a.StateClaim == b.StateClaim && sameInitialMode(a.InitialMode, b.InitialMode)
 }

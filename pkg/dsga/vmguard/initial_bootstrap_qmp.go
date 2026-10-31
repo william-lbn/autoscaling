@@ -21,11 +21,13 @@ import (
 // 即使已退出也是未回收zombie，PID不能复用。不要从HTTP PID或并行Wait后补建句柄。
 // 后继观察不消费Wait，只持原pidfd/procdir；关闭句柄不杀进程/不释放Host预留。
 type initialBootProcess struct {
-	pid   int
-	pidfd int
-	proc  *os.File
-	start uint64
-	uid   uint32
+	pid        int
+	pidfd      int
+	proc       *os.File
+	start      uint64
+	uid        uint32
+	gid        uint32
+	creatorUID uint32
 }
 
 func captureInitialBootProcess(cmd *exec.Cmd, source initialBootSource) (*initialBootProcess, error) {
@@ -40,7 +42,7 @@ func captureInitialBootProcess(cmd *exec.Cmd, source initialBootSource) (*initia
 	if e != nil {
 		return nil, e
 	}
-	p := &initialBootProcess{pid: cmd.Process.Pid, pidfd: fd, uid: uint32(os.Geteuid())}
+	p := &initialBootProcess{pid: cmd.Process.Pid, pidfd: fd, uid: source.ProcessUID, gid: source.ProcessGID, creatorUID: uint32(os.Geteuid())}
 	d, e := unix.Open(fmt.Sprintf("/proc/%d", p.pid), unix.O_PATH|unix.O_DIRECTORY|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0)
 	if e != nil {
 		p.close()
@@ -131,11 +133,14 @@ func (p *initialBootProcess) checkPeer(c *qmpConnection, source initialBootSourc
 	var peer *unix.Ucred
 	var inner error
 	e = raw.Control(func(fd uintptr) { peer, inner = unix.GetsockoptUcred(int(fd), unix.SOL_SOCKET, unix.SO_PEERCRED) })
-	if e != nil || inner != nil || peer == nil || int(peer.Pid) != p.pid || peer.Uid != p.uid {
+	if e != nil || inner != nil || peer == nil || int(peer.Pid) != p.pid || (peer.Uid != p.uid && peer.Uid != p.creatorUID) {
 		return fmt.Errorf("QMP peer differs from original live Start child")
 	}
 	// pidfd在peer读前后均存活，不能用已回收PID的新进程伪造同一numeric身份。
 	if e = p.alive(); e != nil {
+		return e
+	}
+	if e = p.currentCredentials(); e != nil {
 		return e
 	}
 	fd, e := unix.Openat(int(p.proc.Fd()), "exe", unix.O_RDONLY|unix.O_CLOEXEC, 0)
@@ -226,4 +231,54 @@ func initialBootTargetOffset(source initialBootSource, target control.Uint64) (c
 		return 0, fmt.Errorf("business target outside original minimum/maximum")
 	}
 	return target - source.OriginalBase, nil
+}
+
+// Unix peer cred可保留listen时的root凭据；仍须同原pidfd/procdir/start，并独立
+// 核QEMU -runas后的真实四个uid/gid。跨UID exe读需要原Runner实际ptrace能力；
+// 权限不足明确拒绝，不能用旧root-sleep模型外推真实Runner资格。
+func (p *initialBootProcess) currentCredentials() error {
+	fd, e := unix.Openat(int(p.proc.Fd()), "status", unix.O_RDONLY|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0)
+	if e != nil {
+		return e
+	}
+	f := os.NewFile(uintptr(fd), "original-qemu-status")
+	defer f.Close()
+	b, e := io.ReadAll(io.LimitReader(f, 16385))
+	if e != nil || len(b) > 16384 {
+		return fmt.Errorf("bounded original credentials unavailable")
+	}
+	seenUID, seenGID := false, false
+	for _, line := range strings.Split(string(b), "\n") {
+		var expected uint32
+		switch {
+		case strings.HasPrefix(line, "Uid:"):
+			if seenUID {
+				return fmt.Errorf("duplicate original UID")
+			}
+			seenUID = true
+			expected = p.uid
+		case strings.HasPrefix(line, "Gid:"):
+			if seenGID {
+				return fmt.Errorf("duplicate original GID")
+			}
+			seenGID = true
+			expected = p.gid
+		default:
+			continue
+		}
+		fs := strings.Fields(line)
+		if len(fs) != 5 {
+			return fmt.Errorf("original credential tuple incomplete")
+		}
+		for _, v := range fs[1:] {
+			n, e := strconv.ParseUint(v, 10, 32)
+			if e != nil || uint32(n) != expected {
+				return fmt.Errorf("original QEMU runas credentials differ")
+			}
+		}
+	}
+	if !seenUID || !seenGID {
+		return fmt.Errorf("original QEMU credentials absent")
+	}
+	return p.alive()
 }

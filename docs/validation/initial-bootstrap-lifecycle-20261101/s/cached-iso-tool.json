@@ -1,0 +1,38 @@
+{
+  "Id": "sha256:cb6635e1790c7ceae132b6a75a61e85e33be1fde8dbd9c421a17a33cd2494b9d",
+  "RepoDigests": [],
+  "RepoTags": [
+    "neon-test-only/dsga-kernel-bootstrap-iso:20261031"
+  ],
+  "Config": {
+    "User": "root",
+    "Env": [
+      "PATH=/opt/go/bin:/home/nonroot/.cargo/bin:/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "RUSTUP_HOME=/home/nonroot/.rustup",
+      "CARGO_BUILD_JOBS=2",
+      "CARGO_PROFILE_RELEASE_DEBUG=0",
+      "CCACHE_DIR=/home/nonroot/.cache/ccache",
+      "GOROOT=/opt/go",
+      "CGO_ENABLED=1",
+      "GOMAXPROCS=3",
+      "GOFLAGS=-p=3 -mod=readonly"
+    ],
+    "Cmd": [
+      "bash"
+    ],
+    "WorkingDir": "/workspace",
+    "Labels": {
+      "io.neon.autoscaling.revision": "d7946ec6175d2905d081c76685fc51726432190e",
+      "io.neon.build.dockerfile.sha256": "7dda01f114086a550be9fcecc729b30724d04356133a95ea31a06189e9720216",
+      "io.neon.build.scope": "initial-environment-pg17-not-production",
+      "org.opencontainers.image.revision": "7bbabd0f986918bdc30bcd96205d0b7699ca05c2",
+      "org.opencontainers.image.source": "https://github.com/william-lbn/neon"
+    },
+    "Shell": [
+      "/bin/bash",
+      "-euo",
+      "pipefail",
+      "-c"
+    ]
+  }
+}

@@ -32,23 +32,25 @@ const (
 // Config由Controller原VM快照和Downward API提供，不接受远程请求决定路径、
 // VM UID或Kube端点。Min/Max用真实VM重新核验，防止旧flag启动不同几何QEMU。
 type Config struct {
-	StateDir     string
-	PodName      string
-	PodUID       string
-	NodeName     string
-	MinimumBytes control.Uint64
-	MaximumBytes control.Uint64
+	StateDir         string
+	PodName          string
+	PodUID           string
+	NodeName         string
+	MinimumBytes     control.Uint64
+	MaximumBytes     control.Uint64
+	InitialBootstrap *InitialBootstrapConfig
 }
 
 type Runner struct {
-	engine *engine
-	store  *journal.Store
-	core   coreclient.CoreV1Interface
-	coord  coordclient.CoordinationV1Interface
-	birth  Birth
-	pod    string
-	node   string
-	claims *budgetclaims.Reader
+	engine  *engine
+	store   *journal.Store
+	core    coreclient.CoreV1Interface
+	coord   coordclient.CoordinationV1Interface
+	birth   Birth
+	pod     string
+	node    string
+	claims  *budgetclaims.Reader
+	initial initialLifecycle
 }
 
 // Initialize只用于一次明确的原Runner出生，必须在QEMU启动之前。目录由启动
@@ -60,6 +62,15 @@ type Runner struct {
 func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient.CoreV1Interface, coord coordclient.CoordinationV1Interface, c Config) (result *Runner, initErr error) {
 	if store == nil || coreClient == nil || coord == nil || !filepath.IsAbs(c.StateDir) || control.ValidateID(c.PodName, "Runner Pod name") != nil || control.ValidateID(c.PodUID, "Runner Pod UID") != nil || control.ValidateID(c.NodeName, "Node") != nil {
 		return nil, fmt.Errorf("original Runner requires fixed Kubernetes clients, directory and Downward API identity")
+	}
+	mode, modeErr := initialModeForConfig(c)
+	if modeErr != nil {
+		return nil, modeErr
+	}
+	if c.InitialBootstrap != nil {
+		v := *c.InitialBootstrap
+		v.RuntimeJSON = append([]byte(nil), v.RuntimeJSON...)
+		c.InitialBootstrap = &v
 	}
 	callCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
@@ -173,12 +184,17 @@ func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient
 	if err := id.Validate(); err != nil {
 		return nil, err
 	}
-	original := failedBirth{ProtocolVersion: 1, Identity: id, Owner: model.Owner, PodName: c.PodName, NodeName: c.NodeName, StateClaim: nil, BindingClaim: nil}
+	if mode != nil {
+		if e := mode.validate(id); e != nil {
+			return nil, e
+		}
+	}
+	original := failedBirth{ProtocolVersion: initialBirthVersion(mode), InitialMode: cloneInitialMode(mode), Identity: id, Owner: model.Owner, PodName: c.PodName, NodeName: c.NodeName, StateClaim: nil, BindingClaim: nil}
 	if err := s.birthIntent(original); err != nil {
 		return nil, err
 	}
 	failed = &original
-	initial := Publication{ProtocolVersion: 1, Identity: id, BindingClaim: nil, State: nil, Actual: nil}
+	initial := Publication{ProtocolVersion: initialBirthVersion(mode), Identity: id, BindingClaim: nil, State: nil, Actual: nil}
 	raw, err := json.Marshal(initial)
 	if err != nil {
 		return nil, err
@@ -198,7 +214,7 @@ func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient
 	if err := s.writeOnce("birth-close-state.json", raw); err != nil {
 		return nil, err
 	}
-	birth := Birth{ProtocolVersion: 1, Identity: id, StateClaim: budget.ObjectRef{Name: state.Name, UID: string(state.UID)}}
+	birth := Birth{ProtocolVersion: initialBirthVersion(mode), InitialMode: cloneInitialMode(mode), Identity: id, StateClaim: budget.ObjectRef{Name: state.Name, UID: string(state.UID)}}
 	raw, err = json.Marshal(birth)
 	if err != nil {
 		return nil, err
@@ -230,6 +246,16 @@ func boundRunner(store *journal.Store, coreClient coreclient.CoreV1Interface, co
 	r := &Runner{store: store, core: coreClient, coord: coord, birth: birth, pod: c.PodName, node: c.NodeName, claims: claims, engine: nil}
 	r.engine = &engine{dir: c.StateDir, id: birth.Identity, binding: ref, native: &nativeQMP{id: birth.Identity, path: filepath.Join(c.StateDir, "qmp.sock"), timeout: 2 * time.Second}, now: time.Now, read: nil}
 	r.engine.read = r.authorize
+	r.engine.initialMode = cloneInitialMode(birth.InitialMode)
+	if birth.InitialMode != nil {
+		lifecycle, e := newInitialLifecycle(r, c.InitialBootstrap)
+		if e != nil {
+			return nil, e
+		}
+		r.initial = lifecycle
+		r.engine.native = lifecycle
+		r.engine.initialGate = lifecycle.gate
+	}
 	return r, nil
 }
 
@@ -295,4 +321,12 @@ func (r *Runner) Run(ctx context.Context, report func(error)) {
 		case <-timer.C:
 		}
 	}
+}
+
+// BootChannelArguments只在显式新mode提供固定私有virtio端口，不接受HTTP路径。
+func (r *Runner) BootChannelArguments() []string {
+	if r == nil || r.initial == nil {
+		return nil
+	}
+	return append([]string(nil), r.initial.arguments()...)
 }

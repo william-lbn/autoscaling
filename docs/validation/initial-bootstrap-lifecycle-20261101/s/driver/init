@@ -1,0 +1,26 @@
+#!/bin/busybox sh
+set -eu
+export PATH=/bin
+/bin/busybox --install -s /bin
+mount -o bind / /
+mount -o remount,bind,ro / /
+mount -t devtmpfs devtmpfs /dev
+exec </dev/console >/dev/console 2>&1
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t securityfs none /sys/kernel/security
+mount -t cgroup2 none /sys/fs/cgroup
+mount -t tmpfs -o size=64m,mode=1777 tmpfs /tmp
+mount -t tmpfs -o size=1m,mode=755 tmpfs /etc/neon-dsga
+mount -t ext4 /dev/vda /var/lib/neon-dsga
+mount -t iso9660 -o ro /dev/vdb /neonvm/runtime
+echo INITIAL_FIXED_GUEST_RELEASE=$(uname -r)
+echo INITIAL_FIXED_GUEST_NOTES=$(sha256sum /sys/kernel/notes | cut -d' ' -f1)
+export DSGA_FIXED_INITIAL_GUEST_NATIVE=isolated369-fixed-v1
+set +e
+/guest.test -test.run '^TestNativeFixedInitialGuestExchange$' -test.count=1 -test.v -test.timeout=85s
+rc=$?
+set -e
+echo INITIAL_FIXED_GUEST_EXIT=$rc
+sync
+poweroff -f

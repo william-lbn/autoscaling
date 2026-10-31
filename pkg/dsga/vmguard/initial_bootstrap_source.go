@@ -11,6 +11,7 @@ import (
 	"math"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -52,12 +53,26 @@ type initialBootSource struct {
 	QEMUPath          string            `json:"qemu_path"`
 	QEMUDevice        uint64            `json:"qemu_device"`
 	QEMUInode         uint64            `json:"qemu_inode"`
+	SMPMaximum        uint32            `json:"smp_maximum_cpus"`
+	SMPArgument       string            `json:"smp_argument"`
+	ProcessUID        uint32            `json:"process_uid"`
+	ProcessGID        uint32            `json:"process_gid"`
 	QEMUSHA256        string            `json:"qemu_sha256"`
 }
 
 func (s initialBootSource) validate() error {
 	if s.ProtocolVersion != 2 || s.Identity.Validate() != nil || s.Identity.BlockBytes != VirtioBlockBytes || s.BirthClaim.Validate() != nil || s.StateClaim.Validate() != nil || s.OriginalBase == 0 || s.OriginalBase > s.Identity.MinimumBytes || s.OriginalBase%s.Identity.BlockBytes != 0 || (s.Identity.MinimumBytes-s.OriginalBase)%s.Identity.BlockBytes != 0 || s.Identity.MaximumBytes == s.OriginalBase || s.HostBinding.Validate() != nil || string(s.HostBinding.NodeUID) != s.Identity.NodeUID || control.ValidateIncarnation(s.HostOrigin) != nil || control.ValidateIncarnation(s.LaunchNonce) != nil || s.QEMUDevice == 0 || s.QEMUInode == 0 || !filepath.IsAbs(s.QEMUPath) || filepath.Clean(s.QEMUPath) != s.QEMUPath {
 		return fmt.Errorf("incomplete original initial bootstrap source")
+	}
+	if s.SMPMaximum == 0 {
+		if s.SMPArgument != "" {
+			return fmt.Errorf("SMP source is half present")
+		}
+	} else {
+		n, _, e := initialBootSMPFromCommand(&exec.Cmd{Args: []string{"qemu", "-smp", s.SMPArgument}}, true)
+		if e != nil || n != s.SMPMaximum {
+			return fmt.Errorf("original SMP source differs")
+		}
 	}
 	for _, v := range []string{s.Owner.HolderID, s.LeaseUID, s.ConfigSecretUID, s.HostProfile, s.ContainerID} {
 		if control.ValidateID(v, "initial source") != nil {
@@ -238,7 +253,18 @@ func (r *Runner) freezeInitialBootstrap(ctx context.Context, runtimeRaw []byte, 
 		if reservation.Owner != last.Owner || reservation.LeaseUID != last.LeaseUID || reservation.Host.Binding != last.Host.Binding || reservation.Host.Origin != last.Host.Origin || *reservation.Host.Profile != *last.Host.Profile || !bytes.Equal(initialBootCanonical(reservation.Placement), initialBootCanonical(last.Placement)) {
 			return fmt.Errorf("original initial reservation changed during source read")
 		}
-		source := initialBootSource{ProtocolVersion: 2, Identity: r.birth.Identity, BirthClaim: r.engine.binding, StateClaim: r.birth.StateClaim, Owner: last.Owner, LeaseUID: last.LeaseUID, OriginalBase: base, RuntimeSHA256: initialBootSHA(runtimeRaw), ResourceSHA256: doc.SourceSHA256, ConfigSecretUID: doc.ConfigSecretUID, TemplatesSHA256: doc.PolicyTemplatesSHA256, KernelBuildSHA256: initialBootSHA(initialBootCanonical(plan.KernelBuildReference())), HostBinding: last.Host.Binding, HostOrigin: last.Host.Origin, HostProfile: last.Host.Profile.ID, PlacementSHA256: initialBootSHA(initialBootCanonical(last.Placement)), ReservedBytes: last.Placement.MemoryBytes, HostOverheadBytes: last.Placement.HostOverheadBytes, CommandSHA256: digest, LaunchNonce: launch.Nonce, ContainerID: launch.ContainerID, QEMUPath: qemu, QEMUDevice: device, QEMUInode: inode, QEMUSHA256: qemuSHA}
+		uid, gid, e := initialBootRunAs(cmd)
+		if e != nil {
+			return e
+		}
+		smp, smpArg, e := initialBootSMPFromCommand(cmd, false)
+		if e != nil {
+			return e
+		}
+		source := initialBootSource{ProtocolVersion: 2, Identity: r.birth.Identity, BirthClaim: r.engine.binding, StateClaim: r.birth.StateClaim, Owner: last.Owner, LeaseUID: last.LeaseUID, OriginalBase: base, RuntimeSHA256: initialBootSHA(runtimeRaw), ResourceSHA256: doc.SourceSHA256, ConfigSecretUID: doc.ConfigSecretUID, TemplatesSHA256: doc.PolicyTemplatesSHA256, KernelBuildSHA256: plan.KernelBuildReference().KernelArtifactSHA256, HostBinding: last.Host.Binding, HostOrigin: last.Host.Origin, HostProfile: last.Host.Profile.ID, PlacementSHA256: initialBootSHA(initialBootCanonical(last.Placement)), ReservedBytes: last.Placement.MemoryBytes, HostOverheadBytes: last.Placement.HostOverheadBytes, CommandSHA256: digest, LaunchNonce: launch.Nonce, ContainerID: launch.ContainerID, QEMUPath: qemu, QEMUDevice: device, QEMUInode: inode, QEMUSHA256: qemuSHA, ProcessUID: uid, ProcessGID: gid, SMPMaximum: smp, SMPArgument: smpArg}
+		if r.birth.InitialMode != nil && !initialSourceMatchesMode(source, r.birth, r.engine.binding) {
+			return fmt.Errorf("initial Source differs from original static mode")
+		}
 		var e2 error
 		ref, e2 = initialBootFreeze(s, source)
 		return e2
@@ -377,4 +403,37 @@ func initialBootExecutable(path string) (uint64, uint64, string, error) {
 		return 0, 0, "", fmt.Errorf("original QEMU bytes changed")
 	}
 	return uint64(st.Dev), st.Ino, initialBootSHA(b), nil
+}
+
+// -runas在真实Runner图中是qemu；UID/GID按原受信镜像的账户表固定，不能按
+// 连接上报的当前uid反向改Source。无-run as只供仍受信的明确root执行配置。
+func initialBootRunAs(cmd *exec.Cmd) (uint32, uint32, error) {
+	uid, gid := uint64(os.Geteuid()), uint64(os.Getegid())
+	seen := false
+	for i := 1; i < len(cmd.Args); i++ {
+		if cmd.Args[i] != "-runas" {
+			continue
+		}
+		if seen || i+1 >= len(cmd.Args) {
+			return 0, 0, fmt.Errorf("duplicate/incomplete original runas")
+		}
+		seen = true
+		i++
+		if cmd.Args[i] != "qemu" {
+			return 0, 0, fmt.Errorf("unsupported original QEMU runas account")
+		}
+		account, e := user.Lookup("qemu")
+		if e != nil {
+			return 0, 0, e
+		}
+		uid, e = strconv.ParseUint(account.Uid, 10, 32)
+		if e != nil {
+			return 0, 0, e
+		}
+		gid, e = strconv.ParseUint(account.Gid, 10, 32)
+		if e != nil {
+			return 0, 0, e
+		}
+	}
+	return uint32(uid), uint32(gid), nil
 }

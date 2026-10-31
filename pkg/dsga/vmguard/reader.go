@@ -37,7 +37,7 @@ func (r *Reader) Inspect(ctx context.Context, original *budget.ObjectRef, actor 
 		// Initialize先持久真实出生，再启动QEMU和首次完整发布。只有经过
 		// 原Birth/State对象校验、且严格匹配初始化空发布的这一种状态可等待；
 		// 丢对象、换UID、错误几何或畸形/半截发布不降级成暂态。
-		if actor.Validate() == nil && birth.Validate() == nil && ref.Validate() == nil && p.ProtocolVersion == 1 && p.Identity == birth.Identity && p.BindingClaim == nil && p.State == nil && p.Actual == nil {
+		if actor.Validate() == nil && birth.Validate() == nil && ref.Validate() == nil && p.ProtocolVersion == birth.ProtocolVersion && p.InitialBootstrap == nil && p.Identity == birth.Identity && p.BindingClaim == nil && p.State == nil && p.Actual == nil {
 			return birth, ref, p, fmt.Errorf("%w: original Runner awaits first QMP publication", ErrUnknown)
 		}
 		return birth, ref, p, err

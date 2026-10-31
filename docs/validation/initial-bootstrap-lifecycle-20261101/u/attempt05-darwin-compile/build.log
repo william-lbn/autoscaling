@@ -1,0 +1,44 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.30kB done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context:
+#3 transferring context: 50B done
+#3 DONE 0.1s
+
+#4 [run 1/4] FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#4 resolve 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 7.91MB 0.2s done
+#5 DONE 0.3s
+
+#6 [run 2/4] WORKDIR /workspace
+#6 CACHED
+
+#7 [run 3/4] COPY . .
+#7 CACHED
+
+#8 [run 3/4] COPY . .
+#8 CACHED
+
+#9 [run 4/4] RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared  --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared  set -eu; mkdir -p /private/tmp; chmod 1777 /private/tmp; mkdir /testreceipt; printf '%s\n' "20261031T175932Z-model-a05-darwin" > /testreceipt/nonce.txt;  test "$(cat /sys/fs/cgroup/memory.max)" = 4294967296; test "$(cat /sys/fs/cgroup/memory.swap.max)" = 0;  cat /sys/fs/cgroup/cpu.max > /testreceipt/cpu.max;  sha256sum -c cohort-inputs.sha256 > /testreceipt/actual-source.check; cp cohort-inputs.sha256 /testreceipt/actual-source.sha256;  /opt/go/bin/go version > /testreceipt/go-version.txt;  set +e; CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 /opt/go/bin/go test -c -o /testreceipt/vmguard-darwin.test ./pkg/dsga/vmguard > /testreceipt/test.jsonl 2> /testreceipt/test.stderr; rc=$?; set -e; printf '%s\n' "$rc" > /testreceipt/test.rc
+#9 DONE 59.3s
+
+#10 [stage-1 1/1] COPY --from=run /testreceipt/ /
+#10 DONE 0.4s
+
+#11 exporting to client directory
+#11 copying files 18.11MB 0.1s
+#11 copying files 56.29MB 0.3s done
+#11 DONE 0.3s
+
+#12 resolving provenance for metadata file
+#12 DONE 0.0s

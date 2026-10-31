@@ -1,0 +1,40 @@
+{
+  "base": "12ed1ad6aa9e7e4ac3065eeef1e0ec75c2be8c03",
+  "ownedFiles": {
+    "pkg/dsga/vmguard/engine.go": "a210444ba410428cf9f66c5cbd90153acfbfcfeebdd20a8cc29f40df841c42b3",
+    "pkg/dsga/vmguard/failed_birth.go": "d29d25b10f7abde1af8f114699483b9bfe0fcb5c93329b501101a360c93f7d1e",
+    "pkg/dsga/vmguard/initial_bootstrap.go": "2b89113724905edfd2551e50de602bbddcf5ddfe0ac134f76d2f2419e37afd7d",
+    "pkg/dsga/vmguard/initial_bootstrap_lifecycle.go": "5a3c639fddbc96ddf1b3f4e0e340032e84c31a04fc83564cba57b9e937da78c3",
+    "pkg/dsga/vmguard/initial_bootstrap_lifecycle_hardware_linux.go": "b820492ca4ebe23c1cc92a7c038f37948b4ab58264e5a76728f8d73956408c0c",
+    "pkg/dsga/vmguard/initial_bootstrap_lifecycle_linux.go": "e0a1618e9b12748c7366ad4d79ba3f6cc52a0112c4c2dda7f96c49b8a6da73f7",
+    "pkg/dsga/vmguard/initial_bootstrap_lifecycle_native_test.go": "d0c8a65f8cfff2c47dd764ec4d544110c3591bc91c74ec3edbe99b0a9ccb7937",
+    "pkg/dsga/vmguard/initial_bootstrap_lifecycle_test.go": "236c796759baf0fccae97e729522e3903b26e9a6fe7e2f6ed8fd1cfe894d606f",
+    "pkg/dsga/vmguard/initial_bootstrap_lifecycle_unsupported.go": "1155ad1513ac88f415b1d8de1c62d3cc9abf8424972122693f1bb894ad40de0e",
+    "pkg/dsga/vmguard/initial_bootstrap_qmp.go": "6acc08392840e05f8311cf91e928fb935b481d9d62946178cca8dc38c3104fb6",
+    "pkg/dsga/vmguard/initial_bootstrap_qmp_test.go": "c7999b1e2de677e6b096979d83e26ce2dce255502002e07d1022d761d5dd90f8",
+    "pkg/dsga/vmguard/initial_bootstrap_source.go": "fbffc5694b217aba5b58b20a17400c613aa1a0c92c7d60b081adefa9f5b0b3cd",
+    "pkg/dsga/vmguard/initial_bootstrap_source_test.go": "cef43a0407c327944b55f51560195a52cacd54ae3e67393eee48a7b31d0ed9ff",
+    "pkg/dsga/vmguard/initial_bootstrap_test.go": "7e0465cf3a529b5915be75511e3d88672476e40528f63f9abe100bd66f705aff",
+    "pkg/dsga/vmguard/process.go": "4cb2ddf50ce7ededbbd2d808f2ae8299c90ba3b25c77a8d81d03284179bd2c56",
+    "pkg/dsga/vmguard/publication.go": "72c8466c7722bb9faec855558c73ce47b1dc7cb244085f8c37a38ab72ac176a7",
+    "pkg/dsga/vmguard/reader.go": "7e675cfed47b7519261e70f7e1e734977155514370167f2c1c5ea9de0bf80960",
+    "pkg/dsga/vmguard/runner.go": "7d8e1542512974895d2b1d97880b622f35a3919f00cd8e1722818b163e7c50a5",
+    "pkg/dsga/vmguard/source.go": "cbc21d056210c419c61c8f903818767898711d87d7b602a251008d299d4b0aba"
+  },
+  "Root4Dependency": {
+    "pkg/dsga/resourceguard/initial_preboot_channel_linux_test.go": "160c616370be5b1b243f8b3c2f3495d188e7663766cd1440d3047eeb2a075e8c",
+    "pkg/dsga/resourceguard/initial_preboot_guest_linux.go": "1deb74c7026f61e104f46fd0743d6aae829d6453548cdf74a22e88be748493c7",
+    "pkg/dsga/resourceguard/initial_preboot_channel_linux.go": "17bc792053a8d412487a3c0bd5f8753c387cd3ccd8a291fec0f69b0ebbfe3675",
+    "pkg/dsga/resourceguard/initial_preboot_channel_unsupported.go": "99a8c6f01ee325e582e0a834f24f1847b435d9ae85c0e08580adac02019613f5"
+  },
+  "DEVOnlyGuestFixture": {
+    "path": "pkg/dsga/resourceguard/initial_preboot_host_channel_native_test.go",
+    "sha256": "c5f9b6db03bfc4fa8a243686b4b50868ba89099573253bfaacc061577e56eca2",
+    "trackedBusinessSource": false
+  },
+  "frozenForReview": true,
+  "scope": "Host lifecycle component; not authorization/normal/E",
+  "finalNativeCohort": "/data/neon-build/validation/initial-lifecycle-native-20261031T181834Z/attempt02/cohort.json",
+  "finalNativeCohortSHA256": "79a2bdc0b11d1adfcd6860a3009bb066facc38c52dbf52bfa08f8c3d86f6c9bb",
+  "firstKVMPreserved": "/data/neon-build/validation/initial-lifecycle-native-20261031T181834Z/kvm-result.json"
+}

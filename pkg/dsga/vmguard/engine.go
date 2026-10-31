@@ -45,12 +45,14 @@ type authorization struct {
 type authority func(context.Context) (authorization, error)
 
 type engine struct {
-	dir     string
-	id      Identity
-	binding budget.ObjectRef
-	native  nativeMemory
-	read    authority
-	now     func() time.Time
+	dir         string
+	id          Identity
+	binding     budget.ObjectRef
+	native      nativeMemory
+	read        authority
+	now         func() time.Time
+	initialMode *InitialBootstrapMode
+	initialGate func(*lockedState) error
 }
 
 func (e *engine) withRecord(ctx context.Context, fn func(*record, *lockedState) error) error {
@@ -80,7 +82,7 @@ func (e *engine) withRecordState(ctx context.Context, allowStopped bool, fn func
 		return err
 	} else if raw != nil {
 		var aborted failedBirth
-		if json.Unmarshal(raw, &aborted) != nil || aborted.ProtocolVersion != 1 || aborted.Identity != e.id || aborted.Owner != r.Floor || r.Sequence != 1 || r.HighWater != nil || r.Pending != nil || r.Last != nil || r.LastPublished != nil {
+		if json.Unmarshal(raw, &aborted) != nil || !initialVersionMatches(aborted.ProtocolVersion, aborted.InitialMode, e.id) || !sameInitialMode(aborted.InitialMode, e.initialMode) || aborted.Identity != e.id || aborted.Owner != r.Floor || r.Sequence != 1 || r.HighWater != nil || r.Pending != nil || r.Last != nil || r.LastPublished != nil {
 			return fmt.Errorf("original failed birth barrier differs")
 		}
 		// 出生失败后的来源补齐只服务于NoStart关闭，不能借获得完整
@@ -149,6 +151,11 @@ func (e *engine) observe(ctx context.Context, r *record, s *lockedState) error {
 
 func (e *engine) advance(ctx context.Context) error {
 	return e.withRecord(ctx, func(r *record, s *lockedState) error {
+		if e.initialGate != nil {
+			if err := e.initialGate(s); err != nil {
+				return err
+			}
+		}
 		a, err := e.read(ctx)
 		if err != nil {
 			return err

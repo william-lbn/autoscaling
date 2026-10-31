@@ -1,0 +1,45 @@
+{
+  "source": "original stopped QEMU file disk; readonly debugfs; no mount",
+  "files": [
+    {
+      "name": "initial-preboot-guest.complete.json",
+      "sha256": "b8e4cc1c95361897f77536dfa6690f44abb1b69fcc1076aae185b8e16ac8ee1c",
+      "debugfsExit": 0
+    },
+    {
+      "name": "initial-preboot-guest.intent.json",
+      "sha256": "b44500ddb5a4b10abb394a9336f0866f0cc849345f00555453fce0848b47f46b",
+      "debugfsExit": 0
+    },
+    {
+      "name": "kernel-bootstrap-complete.json",
+      "sha256": "1bb08d58b64fdc62b5d1c0788105898c40887e51d4a09ab733c6015a3a9882f0",
+      "debugfsExit": 0
+    },
+    {
+      "name": "kernel-bootstrap-intent.json",
+      "sha256": "bf1ec51ef46aba90c99a5582354d41716a4a68fe875942241f8aec6c7e40aac9",
+      "debugfsExit": 0
+    },
+    {
+      "name": "physical-kernel-origin.confirmed.json",
+      "sha256": "3bd0a0707053663814255ae91dfe5d9d13278a1f87a680630faa320f815ef60c",
+      "debugfsExit": 0
+    },
+    {
+      "name": "physical-kernel-origin.json",
+      "sha256": "5f751e1a90f2141675ed0a127af1c6a1ea338792abe37ad0391793d500479066",
+      "debugfsExit": 0
+    },
+    {
+      "name": "pre-bootstrap-system.complete.json",
+      "sha256": "7dd9d8ce45bc8e4a4bbda418e2a9d8abf52bee1adfdb33f686f6e7553faacd40",
+      "debugfsExit": 0
+    },
+    {
+      "name": "pre-bootstrap-system.intent.json",
+      "sha256": "ef25019477534f7c8e259e641b3a7b13a33a24ddff365c195df68376fe607186",
+      "debugfsExit": 0
+    }
+  ]
+}

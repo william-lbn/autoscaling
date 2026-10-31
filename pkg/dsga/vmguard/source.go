@@ -59,7 +59,7 @@ func (r *Runner) authorize(ctx context.Context) (authorization, error) {
 		return a, err
 	}
 	var birth Birth
-	if json.Unmarshal([]byte(cm.Data[ClaimKey]), &birth) != nil || birth != r.birth {
+	if json.Unmarshal([]byte(cm.Data[ClaimKey]), &birth) != nil || !sameBirth(birth, r.birth) {
 		return a, fmt.Errorf("Runner original Birth changed")
 	}
 	stateCM, err := readClaim(ctx, r.core, r.store.Binding(), r.birth.StateClaim, stateKind, false)
@@ -67,7 +67,7 @@ func (r *Runner) authorize(ctx context.Context) (authorization, error) {
 		return a, err
 	}
 	var published Publication
-	if json.Unmarshal([]byte(stateCM.Data[ClaimKey]), &published) != nil || published.ProtocolVersion != 1 || published.Identity != r.birth.Identity || published.BindingClaim != nil && *published.BindingClaim != r.engine.binding {
+	if json.Unmarshal([]byte(stateCM.Data[ClaimKey]), &published) != nil || initialPublicationMatches(published, r.birth, &r.engine.binding, true) != nil || published.Identity != r.birth.Identity || published.BindingClaim != nil && *published.BindingClaim != r.engine.binding {
 		return a, fmt.Errorf("Runner original publication source changed before dispatch")
 	}
 	pod, err := r.core.Pods(r.store.Binding().Namespace).Get(ctx, r.pod, metav1.GetOptions{})
