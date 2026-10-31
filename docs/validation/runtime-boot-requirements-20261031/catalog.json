@@ -1,0 +1,78 @@
+{
+  "status": "PASS_PURE_STATIC_PLANNING_U_ONLY",
+  "source_base": "508235d4520ff0db94f525f047a1ebe877c7bf9b",
+  "owned": {
+    "pkg/dsga/resourceguard/runtime_boot_requirements.go": "e90ff8425d4db5f1f3a2c2c8f3c7a3ed249b902997b39a2d0426d189dfb71f25",
+    "pkg/dsga/resourceguard/runtime_boot_requirements_linux.go": "1bbbb442eee002b43762bad5e141a3a07a7abf79c64175d9b64c01d6a38d9e86",
+    "pkg/dsga/resourceguard/runtime_boot_requirements_unsupported.go": "eaf3b55428565e202f6136bd9b120c649add98f827d3a693c19625f17a6596e5",
+    "pkg/dsga/resourceguard/runtime_boot_requirements_test.go": "8d2245174024a321b6b6a404d3be9901f92e90102665aaf45e5b39399c847d37"
+  },
+  "source_files": 4,
+  "actual_COPY": {
+    "inputs": 797,
+    "matches": true
+  },
+  "U": {
+    "new_roots": 5,
+    "new_named_subcases": 47,
+    "cases": [
+      {
+        "id": "PG17-U-BOOT-001",
+        "root": "TestRuntimeBootRequirementsNormalSplit",
+        "status": "PASS"
+      },
+      {
+        "id": "PG17-U-BOOT-002",
+        "root": "TestRuntimeBootRequirementsV1NoNewMode",
+        "status": "PASS"
+      },
+      {
+        "id": "PG17-U-BOOT-003",
+        "root": "TestRuntimeBootRequirementsRejectsSourceAndAssets",
+        "status": "PASS"
+      },
+      {
+        "id": "PG17-U-BOOT-004",
+        "root": "TestRuntimeBootRequirementsRejectsKernelOverrides",
+        "status": "PASS"
+      },
+      {
+        "id": "PG17-U-BOOT-005",
+        "root": "TestRuntimeBootRequirementsUpperIsNotObservedBase",
+        "status": "PASS"
+      }
+    ],
+    "direct_regression_roots": 5,
+    "direct_regression_named_subcases": 66,
+    "whole_cohort_roots": 10,
+    "whole_cohort_subcases": 113,
+    "race": true,
+    "fail": 0,
+    "skip": 0,
+    "receipt": "/data/neon-build/validation/pg17-runtime-boot-requirements-20261031T153818Z-4ad311",
+    "source_test_rc": 0,
+    "seconds": 10.94798636098858
+  },
+  "ENV": {
+    "Darwin_amd64_compile_only": true,
+    "rc": 0,
+    "Mac_runtime_executed": false
+  },
+  "S": {
+    "new": 0,
+    "Guest_started": false
+  },
+  "E": {
+    "passed": 0,
+    "normal_decrease": false
+  },
+  "failure_history": [],
+  "consumer_or_sysinit_modified": false,
+  "public_protocol_or_record_or_locks_modified": false,
+  "not_proven": [
+    "Runner consumer integration",
+    "Guest sysinit stage ordering and recovery",
+    "original Host reservation authorized first grow",
+    "whole FS/I and normal safety"
+  ]
+}

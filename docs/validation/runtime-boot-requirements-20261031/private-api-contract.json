@@ -1,0 +1,29 @@
+{
+  "kind": "internal opaque Go planning object, no public HTTP/schema/record changes",
+  "version": 1,
+  "function": "DeriveRuntimeBootRequirements(raw []byte, logicalAssets map[string][]byte) (RuntimeBootRequirements,error)",
+  "input": "bounded original RuntimeDocument and exact full logical assets including resource; caller skips unmanaged nil; helper never silently accepts missing raw",
+  "methods": {
+    "ProtocolVersion": "internal version1, not RuntimeDocument protocol version",
+    "Enabled": "full five-policy canonical normal-split-v1 only; v1 false",
+    "RequiredKernelArgs": "private copy of eight exact required tokens; caller must suppress old auto-movable branch",
+    "BootMemoryUpperBoundBytes": "static pre-system original upper bound only; no QMP base observation or chosen base",
+    "ProfileID": "exact reviewed369 profile",
+    "RuntimeDocumentSHA256": "exact original runtime bytes SHA; not Kubernetes authorization",
+    "ResourceSourceSHA256": "exact original resource.json bytes SHA",
+    "ConfigSecretUID": "original document field; caller still needs original Ready/owner/API validation",
+    "PIDMaxLimit": "original explicit kernel controls.PIDMax, fixture512; not Host/sysctl/RSS guess",
+    "KernelBuildReference": "fixed reviewed tuple value copy; actual Guest build/notes remain separate",
+    "ValidateKernelCommandLine": "last final-append static conflict check before QEMU; not actual kernel stage evidence"
+  },
+  "no_fields": [
+    "ObservedBase",
+    "ActualQMPBase",
+    "BusinessMin",
+    "BusinessMax",
+    "Permit",
+    "Enrolled",
+    "normal qualification"
+  ],
+  "platform": "v1 unchanged; v2 normal profile Linux only, accurate369 x86 kernel reference; Root must bind Runner target architecture/image independently"
+}

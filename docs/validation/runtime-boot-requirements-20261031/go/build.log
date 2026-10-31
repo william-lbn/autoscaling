@@ -1,0 +1,40 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.30kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context:
+#3 transferring context: 2B done
+#3 DONE 0.1s
+
+#4 [build 1/4] FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#4 resolve 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 22.64MB 0.3s done
+#5 DONE 0.4s
+
+#6 [build 2/4] WORKDIR /workspace
+#6 CACHED
+
+#7 [build 3/4] COPY source/ .
+#7 DONE 1.3s
+
+#8 [build 4/4] RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared  set +e; mkdir /out; printf '%s\n' "pg17-runtime-boot-requirements-20261031T153818Z-4ad311" > /out/nonce.txt; go version > /out/go-version.txt;  sha256sum -c cohort.sha256 > /out/source-check.txt 2>&1; src=$?; echo "$src" > /out/source-check.rc;  find . -type f \( -name '*.go' -o -name go.mod -o -name go.sum \) -print0 | sort -z | xargs -0 sha256sum > /out/actual-source.sha256;  go test -mod=readonly -race -p=2 -count=1 -timeout=90s -json -run '^(TestRuntimeBootRequirements|TestRuntimePolicyTemplates)' ./pkg/dsga/resourceguard > /out/unit.json 2> /out/unit.stderr; echo "$?" > /out/unit.rc;  CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -mod=readonly -p=2 ./pkg/dsga/resourceguard > /out/darwin-build.stdout 2> /out/darwin-build.stderr; echo "$?" > /out/darwin-build.rc; true
+#8 DONE 8.2s
+
+#9 [stage-1 1/1] COPY --from=build /out/ /
+#9 DONE 0.1s
+
+#10 exporting to client directory
+#10 copying files 259.69kB done
+#10 DONE 0.0s
+
+#11 resolving provenance for metadata file
+#11 DONE 0.0s

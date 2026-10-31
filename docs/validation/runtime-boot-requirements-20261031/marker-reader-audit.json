@@ -1,0 +1,119 @@
+{
+  "scope": "exact508 baseline before Root consumer/sysinit integration; readonly review only",
+  "base": "508235d4520ff0db94f525f047a1ebe877c7bf9b",
+  "files": {
+    "pkg/dsga/resourceguard/provision.go": {
+      "sha256": "aaba50feda74ba29378f59e1806b44bafba9bc270566e50fc8b585551fa5170e",
+      "functions_or_points": [
+        "ManagedKernelArg"
+      ]
+    },
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap_linux.go": {
+      "sha256": "81a1c1af106e9ce07ba1e2d69d52678e9c41654514c9139e6fbe322942210e4a",
+      "functions_or_points": [
+        "NormalV1KernelBootstrapArg",
+        "kernelBootstrapMarker"
+      ]
+    },
+    "pkg/dsga/resourceguard/physical_kernel_origin_linux.go": {
+      "sha256": "01e43282985c0ae9e00cab1fab8412233590baec9af3462bc6153e87e5dc8503",
+      "functions_or_points": [
+        "physicalOriginRuntimeInputs"
+      ]
+    },
+    "pkg/dsga/resourceguard/physical_kernel_origin.go": {
+      "sha256": "d18e1c39e70cb091dcd29a3983c5826fb411b52bfd1a7368aae9309d2c5e1dc7",
+      "functions_or_points": [
+        "PhysicalKernelOriginArg"
+      ]
+    },
+    "pkg/dsga/resourceguard/prebootstrap_system_linux.go": {
+      "sha256": "d984f06bda2dd59a10536fa14cf049e6786a6562bc958ca2e3ac1d2429e43fea",
+      "functions_or_points": [
+        "PrebootstrapSystemNormalSplitKernelArg",
+        "preSystemBootMarker"
+      ]
+    },
+    "pkg/dsga/resourceguard/normal_split_topology_linux.go": {
+      "sha256": "c6a9e1ccfb93baab7828a2a368b8f8df7979e3bc85decdf603e8c38f84622ece",
+      "functions_or_points": [
+        "NormalSplitTopologyKernelArg",
+        "normalSplitBootMarker"
+      ]
+    },
+    "pkg/dsga/resourceguard/physical_kernel_profile.go": {
+      "sha256": "9810a156f7101cce3f66905c10f0dbd87946ef95ec258f9fd765f0be98ff914a",
+      "functions_or_points": [
+        "physicalBootPolicy"
+      ]
+    },
+    "pkg/dsga/resourceguard/physical_kernel_capabilities.go": {
+      "sha256": "80cbc0be4fcc3c5a5424905340f871bde7ca5c89aa8e6b009f2edc2791d0eeb2",
+      "functions_or_points": [
+        "physicalPIDCappedBootPolicy"
+      ]
+    },
+    "pkg/dsga/resourceguard/physical_kernel_build.go": {
+      "sha256": "139ecedb10d8fdbf32822b8078a2a279b9ad9a99d9701af54407b23bafa78153",
+      "functions_or_points": [
+        "LookupPhysicalKernelBuild"
+      ]
+    },
+    "pkg/dsga/resourceguard/provision_linux.go": {
+      "sha256": "21213ecae41c958b498c6056ffe84b6a38e2b00643cae5ea7630a4349fb26d86",
+      "functions_or_points": [
+        "ProvisionGuest",
+        "CheckGuest"
+      ]
+    },
+    "neonvm-runner/cmd/main.go": {
+      "sha256": "27433180922e703511fa6fdcb0c56b3156bad2136feda121c96b12110afaa551",
+      "functions_or_points": [
+        "makeKernelCmdline"
+      ]
+    },
+    "neonvm-daemon/cmd/resource-guard/main.go": {
+      "sha256": "5fc4d65819b7d8c1064fef3ac261c405690b696b48fdfbcd3026d0a1535bb153",
+      "functions_or_points": [
+        "provision-guest"
+      ]
+    },
+    "vm-builder/files/vminit": {
+      "sha256": "1ba51b2e02fa33b273bc55f9fdcef6128a9025fe57778cb86facf61605995162",
+      "functions_or_points": [
+        "sysinit"
+      ]
+    },
+    "vm-builder/files/inittab": {
+      "sha256": "562d55d373928a475565241799a7bcfdd2872599111a861f234ddda2d91ee164",
+      "functions_or_points": [
+        "sysinit"
+      ]
+    },
+    "vm-builder/files/vmstart": {
+      "sha256": "ec6d379d5cdf33fbe54eb832d5416dc53aeaaa32df35ad94c44bd27b17277f86",
+      "functions_or_points": [
+        "check-guest"
+      ]
+    }
+  },
+  "baseline_gaps": [
+    "makeKernelCmdline adds only Managed marker and unconditional old online/auto-movable ratio; appended args can conflict",
+    "vminit mounts ISO and calls old ProvisionGuest but not KernelPrepare→Origin→PreSys→Bootstrap→Split; securityfs missing",
+    "BusyBox ordinary services follow sysinit; vmstart independently check-guest blocks PG on unavailable retained source"
+  ],
+  "not_fixed_by_this_batch": [
+    "Runner consumer integration",
+    "Guest sysinit stage ordering and recovery",
+    "original Host reservation authorized first grow",
+    "whole FS/I and normal safety"
+  ],
+  "x86_command_line_limit_source": {
+    "path": "/data/neon-build/cache/buildkit/runc-overlayfs/snapshots/snapshots/287/fs/build/linux-6.12.26/arch/x86/include/asm/setup.h",
+    "sha256": "7c690c3b92f435fff7c8c6aeec47837ee84bfcd730f16e13d040b750a4027415",
+    "line": 7,
+    "bytes_including_NUL": 2048,
+    "helper_max_bytes": 2047,
+    "not_new_kernel_build_or_runtime_proof": true
+  }
+}
