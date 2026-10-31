@@ -1,0 +1,18 @@
+Runner启动计划消费与最终参数拒绝（PG17组件归档）
+
+原DecodeRuntimeAssets完成VM/Secret绑定后，用同份原raw和完整资产派生私有计划。
+managed无计划或派生失败拒绝，失败先清旧计划；unmanaged不承接旧计划。
+新normal-split只在managed amd64使用，8个准确参数替换旧auto-movable分支，
+在buildQEMUCmd最终-append写入前检查整段。重复、别名覆盖、旧策略、阶段漂移、
+超长与v1混入新模式均拒绝。旧v1与unmanaged模式保留。未从规划上界捏造base。
+
+原始cohort是Git508235d+本批3源+当时P1启动计划4源，不能称b893原生cohort；
+后者现已提交b893且4文件字节准确一致。799实际Go/mod输入逐hash匹配，
+networknone，Go1.24.3 race，6根34命名sub全部通过，无fail/skip，57.107秒。
+新增3根分别有稳定PG17-U-RUNNERBOOT编号；另3根是原ISO直接回归，不重复算新覆盖。
+systemd真实success/0，完整命令、客户端与BuildKit资源范围、源码锁、实际输入、
+原始test JSON、终态与P2独审原文存于相邻validation目录。
+
+本批仅静态生产接线。未认证KernelPath镜像、QMP原base、Host预算或Guest早期执行；
+不提供normal授权，不改变账本/发行锁，S0/E0，不能代表安全降限或真实端到端。
+后续须真实KernelPrep→Origin→PreSys固定生产者、初次grow、完整F/I与PG闭环。

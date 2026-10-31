@@ -1,0 +1,23 @@
+独立只读审阅：Runner runtime boot consumer三文件
+审阅人：p2_p3_scope_review；范围：静态启动命令行接线组件；没有修改源码/Git，没有启动QEMU。
+
+结论：本批组件范围内无阻断，可交Root归档提交。不是实际kernel image/QMP/base/Guest阶段或normal资格。
+
+准确当前、immutable snapshot与source-lock逐项相等：
+neonvm-runner/cmd/main.go b6beebcf4cebfea24845e13e28611d00fd9b34e2a720a5c453e9965ab584c07f
+neonvm-runner/cmd/dsga_runtime_boot.go 49c58430576bb819ec2e2daf3765ceafa56d9e5e65dc5a31c1d39bffd784c1e1
+neonvm-runner/cmd/dsga_runtime_boot_test.go a4cdf619a51c35ccddc5c2d9e9cf720d731d574463366185cd19a0934684035e
+P1 runtime_boot_requirements四源也逐SHA相等，以同目录source-lock.json为准。
+
+实际receipt source-check799行全部OK；test/source-check exit0；六根34子例，零fail/skip。
+三根旧ISO、三根新Boot名字由receipt/test.json逐行核过，不把模型叫真实QEMU/Guest。
+
+main235 DecodeRuntimeAssets之后240才从同份资产派生私有plan；配置失败先清cfg.runtimeBoot，
+managed缺plan拒绝，没有错误退回legacy。unmanaged不带plan；v1保原auto-movable路径，v2明确省旧auto策略。
+已实际全cmd包搜索：makeKernelCmdline唯一生产调用在checkedRuntimeKernelCmdline；唯一最终-append在main479。
+完整最终cmdline包括额外append再Validate，新profile的重复/冲突/连字符别名/--和长输入反例均在准确组合中PASS。
+architectureAmd64只是配置门，新profile不借arm64资格；旧makeKernelCmdline string签名保留。
+
+限制：baseKernelCmdline仍rw，KernelPath实际所指实物/ELF来源、QMP base/max与原instance、
+Guest KernelPrep/Origin/PreSys/首次Movable等不在这三文件获得事实。未执行normal/VM下降或K8s。
+本批不修改这些原来源检查，不以静态字符串配置代替真实物理布局或许可。

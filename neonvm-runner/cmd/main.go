@@ -107,6 +107,8 @@ type Config struct {
 	vmSpecDump   string
 	vmStatusDump string
 	resourceDump string
+	// 静态启动需求由同份Runtime文档派生；不是已完成的Guest/Host来源。
+	runtimeBoot *resourceguard.RuntimeBootRequirements
 	// 仅ready DSGA VM拥有此实例；Kube完整原意图驱动，不能接旧spec/QMP写路径。
 	managedMemory        *vmguard.Runner
 	kernelPath           string
@@ -233,6 +235,10 @@ func run(logger *zap.Logger) (runErr error) {
 	runtimeAssets, err := bootstrap.DecodeRuntimeAssets(vmSpec, cfg.resourceDump)
 	if err != nil {
 		return fmt.Errorf("original Guest resource source unavailable: %w", err)
+	}
+
+	if err := configureRuntimeBootRequirements(cfg, runtimeAssets); err != nil {
+		return fmt.Errorf("original Guest boot requirements unavailable: %w", err)
 	}
 
 	var enableSSH bool
@@ -465,12 +471,12 @@ func buildQEMUCmd(
 	}
 	qemuCmd = append(qemuCmd, qemuNetArgs...)
 
-	// kernel details
-	qemuCmd = append(
-		qemuCmd,
-		"-kernel", cfg.kernelPath,
-		"-append", makeKernelCmdline(cfg, logger, vmSpec, vmStatus, hostname),
-	)
+	// 校验完整最终命令行，追加参数也不能覆盖原profile约束。
+	kernelCmdline, err := checkedRuntimeKernelCmdline(cfg, logger, vmSpec, vmStatus, hostname)
+	if err != nil {
+		return nil, err
+	}
+	qemuCmd = append(qemuCmd, "-kernel", cfg.kernelPath, "-append", kernelCmdline)
 
 	// should runner receive migration ?
 	if os.Getenv("RECEIVE_MIGRATION") == "true" {
@@ -489,11 +495,14 @@ const (
 func makeKernelCmdline(cfg *Config, logger *zap.Logger, vmSpec *vmv1.VirtualMachineSpec, vmStatus *vmv1.VirtualMachineStatus, hostname string) string {
 	cmdlineParts := []string{baseKernelCmdline}
 	// 仅用于收紧Guest旧入口；配置/日志丢失也不退回legacy。标记本身不授权预算。
-	if vmSpec.DSGABootstrap != nil {
-		cmdlineParts = append(cmdlineParts, resourceguard.ManagedKernelArg)
+	if cfg.runtimeBoot != nil && cfg.runtimeBoot.Enabled() {
+		cmdlineParts = append(cmdlineParts, cfg.runtimeBoot.RequiredKernelArgs()...)
+	} else {
+		if vmSpec.DSGABootstrap != nil {
+			cmdlineParts = append(cmdlineParts, resourceguard.ManagedKernelArg)
+		}
+		cmdlineParts = append(cmdlineParts, fmt.Sprintf(kernelCmdlineVirtioMemTmpl, cfg.autoMovableRatio))
 	}
-
-	cmdlineParts = append(cmdlineParts, fmt.Sprintf(kernelCmdlineVirtioMemTmpl, cfg.autoMovableRatio))
 
 	if vmSpec.ExtraNetwork != nil && vmSpec.ExtraNetwork.Enable {
 		netDetails := fmt.Sprintf("ip=%s:::%s:%s:eth1:off", vmStatus.ExtraNetIP, vmStatus.ExtraNetMask, vmStatus.PodName)

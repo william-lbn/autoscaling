@@ -1,0 +1,17 @@
+{
+  "base": "508235d4520ff0db94f525f047a1ebe877c7bf9b",
+  "nonce": "20261031T160410Z-64a921",
+  "owned": {
+    "neonvm-runner/cmd/main.go": "b6beebcf4cebfea24845e13e28611d00fd9b34e2a720a5c453e9965ab584c07f",
+    "neonvm-runner/cmd/dsga_runtime_boot.go": "49c58430576bb819ec2e2daf3765ceafa56d9e5e65dc5a31c1d39bffd784c1e1",
+    "neonvm-runner/cmd/dsga_runtime_boot_test.go": "a4cdf619a51c35ccddc5c2d9e9cf720d731d574463366185cd19a0934684035e"
+  },
+  "peer_boot_requirements": {
+    "pkg/dsga/resourceguard/runtime_boot_requirements.go": "e90ff8425d4db5f1f3a2c2c8f3c7a3ed249b902997b39a2d0426d189dfb71f25",
+    "pkg/dsga/resourceguard/runtime_boot_requirements_linux.go": "1bbbb442eee002b43762bad5e141a3a07a7abf79c64175d9b64c01d6a38d9e86",
+    "pkg/dsga/resourceguard/runtime_boot_requirements_unsupported.go": "eaf3b55428565e202f6136bd9b120c649add98f827d3a693c19625f17a6596e5",
+    "pkg/dsga/resourceguard/runtime_boot_requirements_test.go": "8d2245174024a321b6b6a404d3be9901f92e90102665aaf45e5b39399c847d37"
+  },
+  "expected_go_inputs": 799,
+  "scope": "Runner static commandline integration only; no QMP base/kernel image/Guest stage or normal evidence"
+}

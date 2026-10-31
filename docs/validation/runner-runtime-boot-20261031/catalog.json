@@ -1,0 +1,62 @@
+{
+  "status": "PASS_RUNNER_STATIC_COMMANDLINE_COMPONENT_ONLY",
+  "base": "508235d4520ff0db94f525f047a1ebe877c7bf9b",
+  "owned": {
+    "neonvm-runner/cmd/main.go": "b6beebcf4cebfea24845e13e28611d00fd9b34e2a720a5c453e9965ab584c07f",
+    "neonvm-runner/cmd/dsga_runtime_boot.go": "49c58430576bb819ec2e2daf3765ceafa56d9e5e65dc5a31c1d39bffd784c1e1",
+    "neonvm-runner/cmd/dsga_runtime_boot_test.go": "a4cdf619a51c35ccddc5c2d9e9cf720d731d574463366185cd19a0934684035e"
+  },
+  "dependency_overlay": {
+    "pkg/dsga/resourceguard/runtime_boot_requirements.go": "e90ff8425d4db5f1f3a2c2c8f3c7a3ed249b902997b39a2d0426d189dfb71f25",
+    "pkg/dsga/resourceguard/runtime_boot_requirements_linux.go": "1bbbb442eee002b43762bad5e141a3a07a7abf79c64175d9b64c01d6a38d9e86",
+    "pkg/dsga/resourceguard/runtime_boot_requirements_unsupported.go": "eaf3b55428565e202f6136bd9b120c649add98f827d3a693c19625f17a6596e5",
+    "pkg/dsga/resourceguard/runtime_boot_requirements_test.go": "8d2245174024a321b6b6a404d3be9901f92e90102665aaf45e5b39399c847d37"
+  },
+  "dependency_now_committed": "b8933f8df151719792efd187f16a14be8ff2bc04",
+  "actual_COPY": {
+    "count": 799,
+    "all_match": true
+  },
+  "U": {
+    "new_roots": 3,
+    "cases": [
+      {
+        "id": "PG17-U-RUNNERBOOT-001",
+        "root": "TestRunnerRuntimeBootFinalCommandLine",
+        "status": "PASS"
+      },
+      {
+        "id": "PG17-U-RUNNERBOOT-002",
+        "root": "TestRunnerRuntimeBootRejectsFinalOverrides",
+        "status": "PASS"
+      },
+      {
+        "id": "PG17-U-RUNNERBOOT-003",
+        "root": "TestRunnerRuntimeBootFailureCannotFallBack",
+        "status": "PASS"
+      }
+    ],
+    "direct_regression_roots": 3,
+    "whole_roots": 6,
+    "whole_named_subcases": 34,
+    "race": true,
+    "fail": 0,
+    "skip": 0,
+    "seconds": 57.10715828998946
+  },
+  "S": {
+    "new": 0,
+    "QEMU_started": false
+  },
+  "E": {
+    "pass": 0,
+    "normal_decrease": false
+  },
+  "scope_exclusions": [
+    "actual kernel artifact binding",
+    "original QMP base/reservation and first grow",
+    "Guest KernelPrep→Origin→PreSys execution",
+    "full F/I and normal safety",
+    "Linux full E2E and K8s regression"
+  ]
+}
