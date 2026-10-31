@@ -24,6 +24,12 @@ func run() error {
 	if os.Getuid() != 0 {
 		return fmt.Errorf("resource operations require real root")
 	}
+	if len(os.Args) == 2 && os.Args[1] == "initial-boot" {
+		return resourceguard.RunInitialBootGuest(context.Background())
+	}
+	if len(os.Args) == 2 && os.Args[1] == "recover-initial-boot" {
+		return resourceguard.RecoverInitialBootGuest(context.Background())
+	}
 	if len(os.Args) == 2 && os.Args[1] == "serve" {
 		return resourceguard.ServeGuest(context.Background())
 	}

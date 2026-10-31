@@ -1,0 +1,31 @@
+Runner initial production6 独立只读审查，2026-11-01
+审查者helm_scope_review。结论：当前正式代码接线/静态选择与编译范围无提交阻断，可阶段提交准确6源；不声称真实完整Runner启动/网络/磁盘/Guest formalCheck/PG/normal/E通过。未改源码/Git/Host，未重复跑测试。
+
+来源与终态
+固定base12742c82e5595e99ba35db42d362652da149251b +仅6；当前Linux六源逐hash等于source-lock。原实际COPY3035完整文件（包含embed，不只是Go）每行OK；source-check/test/entry-build rc全0、build0。独立重算test JSON6root20sub全部PASS，零skip。新3Root初始base选择模型、旧Boot3直接回归，不虚增6个新增覆盖。原Dockerfile实际RUN2CPU/2GiB零额外swap、70.954s，静态Runner/CLI编译成功，不是执行成功。
+
+提前decode与不可回退
+run181..223先解析VM spec/status、强制受管sysfs模式、设置umask，随后DecodeRuntimeAssets→configureRuntimeBootRequirements→initializeManagedMemory；均在runInitScript285、ISO/根盘与网络/QEMU生成之前。初始化错误不开始上述动作；初始化后错误走原CloseUnlaunched原flock关闭，已有launch不会伪造NoStart。
+配置每次先清runtimeBoot/initialBootstrap，错误不留上份计划；只有完整已验证full5 Enabled派生新mode。复制原RuntimeJSON字节，不marshal重造；原Runtime SHA由static plan核，数据/资产缺失或混合不能fallback legacy。旧v1/不启新plan时initial=nil，保旧memory分支。
+
+base和实际命令接线
+明确base256MiB仅选择，BootUpper约束该选择而不是actual observation；真正base由vmguard原QMP/Guest链另核。initialBootMemoryArguments要求managed amd64/sysfs、固定base、原Runtime SHA、正slot/min/max checked multiplication、8MiB全边界；不能从spec.Use/RSS/current requested-size猜Origin。
+新-m size=base,slots1,maxmem=原Max；vmem0 backend=Max-base；唯一virtio-mem vm0,node0,block8M,requested0。maximum必须大于base，异常返回nil args；未把业务Min塞进base。旧v1原Min-based分支保持。新分支显式-monitor none，不开放HMP；run341..343在managedMemory实例上真实追加QMPArguments和BootChannelArguments，最终runQEMU仍用原单执行者/唯一Start-Wait，没有另起exec或通用QMP写者。
+CPU/设备未来写者及真实Host硬cap资格仍靠既有来源，本静态构建不会补签。
+
+CLI
+resource-guard main18..32保SUID唯一launch-postgres分流；非root realUID先拒。新增仅len(args)==2的initial-boot/recover-initial-boot固定动作，直接调用固定通道API，不接stdin JSON/路径/verified参数；API自身再强验real/effectiveUID0。附加--config不进入这两个精确动作，没有把旧root-config任意参数映射成initial成功。
+底层Guest4已独立审过：completion之后仍ProvisionGuest→PrepareNormalSplitTopology→CheckGuest原错误返回；本CLI没有ACK即就绪或legacy fallback。
+
+实际测试的界
+新模型覆盖base与业务Min区分、原raw复制/漂移、失plan/失initial、base错、unmanaged/arm/QMP CPU模式、Min低于base、8MiB off-grid、乘法溢出、v1以及错误后清旧计划；旧Boot3最终cmdline/override回归同图执行。
+buildQEMUCmd包含真实网络设置，故本批U没有运行它的全实机路径；静态源码追加与CLI二进制编译不代替真实完整Run。已有Host native组件证明固定底层生命周期/真实369通道，但不是本Runner main的实机接线认证。
+fixed assets Decode/原Secret/VM UID由现有严格函数负责，没有将planning bool升级Host预算/Root来源/normal资格。单机全链和三节点Helm E2E仍未由本批满足。
+
+6源SHA：
+neonvm-runner/cmd/main.go 2fd062ad9e9b7a840a8a48325b3eb67cd8ff7b9ae87740801729588a8b776a62
+neonvm-runner/cmd/dsga_memory.go e0cf4027f8f0e5fd6bd26b114065510221eb76cbc42a0c772c618b92b19d7f96
+neonvm-runner/cmd/dsga_runtime_boot.go 25d5b0a16cd42656446de6778808c64f16bd41e87cce0093b14901a3eb82024d
+neonvm-runner/cmd/dsga_initial_boot.go ebac54dd19d84a497b879e2acada03951829a09c752df7c6b13f4a97b463fa4c
+neonvm-runner/cmd/dsga_initial_boot_test.go f1e6aa62cbc49f08c4a271def28a91b83a504f33c705653b32a8e41edf6dd24d
+neonvm-daemon/cmd/resource-guard/main.go c5ca491145b8138b9f13c83c79d8950f7dbee46d9dc2a6b907e260e16f58f444

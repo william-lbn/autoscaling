@@ -1,0 +1,33 @@
+{
+  "scope": "production Runner static entry wiring and exact binary compilation only",
+  "base": "12742c82e5595e99ba35db42d362652da149251b",
+  "owned": {
+    "neonvm-runner/cmd/main.go": "2fd062ad9e9b7a840a8a48325b3eb67cd8ff7b9ae87740801729588a8b776a62",
+    "neonvm-runner/cmd/dsga_memory.go": "e0cf4027f8f0e5fd6bd26b114065510221eb76cbc42a0c772c618b92b19d7f96",
+    "neonvm-runner/cmd/dsga_runtime_boot.go": "25d5b0a16cd42656446de6778808c64f16bd41e87cce0093b14901a3eb82024d",
+    "neonvm-runner/cmd/dsga_initial_boot.go": "ebac54dd19d84a497b879e2acada03951829a09c752df7c6b13f4a97b463fa4c",
+    "neonvm-runner/cmd/dsga_initial_boot_test.go": "f1e6aa62cbc49f08c4a271def28a91b83a504f33c705653b32a8e41edf6dd24d",
+    "neonvm-daemon/cmd/resource-guard/main.go": "c5ca491145b8138b9f13c83c79d8950f7dbee46d9dc2a6b907e260e16f58f444"
+  },
+  "actualCOPY_all_files": 3035,
+  "source_lock_key_note": "all_go_mod_inputs is legacy key name; this cohort covers all files including embeds",
+  "U_roots": [
+    "TestRunnerInitialBaseUsesOriginalRuntimeAndSeparateBusinessMinimum",
+    "TestRunnerInitialBaseRejectsLostOrMixedSourceAndGeometry",
+    "TestRunnerInitialBaseLegacyAndFailedReconfigure",
+    "TestRunnerRuntimeBootFinalCommandLine",
+    "TestRunnerRuntimeBootRejectsFinalOverrides",
+    "TestRunnerRuntimeBootFailureCannotFallBack"
+  ],
+  "U_roots_total": 6,
+  "new_roots": 3,
+  "direct_Boot_regression_roots": 3,
+  "subcases_total": 20,
+  "race": true,
+  "fail": 0,
+  "skip": 0,
+  "static_entry_binary_count": 2,
+  "S_pass_new": 0,
+  "E_pass": 0,
+  "formal_Source_or_normal_authorized": false
+}

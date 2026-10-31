@@ -4,6 +4,7 @@ import (
 	"fmt"
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 	"go.uber.org/zap"
 )
 
@@ -14,12 +15,19 @@ func configureRuntimeBootRequirements(cfg *Config, assets map[string][]byte) err
 		return fmt.Errorf("Runner configuration required")
 	}
 	cfg.runtimeBoot = nil
+	cfg.initialBootstrap = nil
 	if len(assets) == 0 {
 		return nil
 	}
 	plan, err := resourceguard.DeriveRuntimeBootRequirements(assets[resourceguard.RuntimeResourceAssetName], assets)
 	if err != nil {
 		return err
+	}
+	if plan.Enabled() {
+		if plan.BootMemoryUpperBoundBytes() < managedInitialBaseBytes {
+			return fmt.Errorf("fixed initial base exceeds original boot upper")
+		}
+		cfg.initialBootstrap = &vmguard.InitialBootstrapConfig{RuntimeJSON: append([]byte(nil), assets[resourceguard.RuntimeResourceAssetName]...), OriginalBaseBytes: managedInitialBaseBytes}
 	}
 	cfg.runtimeBoot = &plan
 	return nil

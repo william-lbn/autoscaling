@@ -108,7 +108,8 @@ type Config struct {
 	vmStatusDump string
 	resourceDump string
 	// 静态启动需求由同份Runtime文档派生；不是已完成的Guest/Host来源。
-	runtimeBoot *resourceguard.RuntimeBootRequirements
+	runtimeBoot      *resourceguard.RuntimeBootRequirements
+	initialBootstrap *vmguard.InitialBootstrapConfig
 	// 仅ready DSGA VM拥有此实例；Kube完整原意图驱动，不能接旧spec/QMP写路径。
 	managedMemory        *vmguard.Runner
 	kernelPath           string
@@ -208,7 +209,15 @@ func run(logger *zap.Logger) (runErr error) {
 	// 在任何init脚本、磁盘/网络及命令生成前固定唯一出生。失败后如果尚无
 	// 原launch，延迟清理用同目录flock持久关闭，防容量和来源永久遗留。
 	// 已有launch只返回未关闭，不能借清理推断QEMU没有运行或代替真实Wait。
-	cfg.managedMemory, err = initializeManagedMemory(vmSpec)
+	runtimeAssets, err := bootstrap.DecodeRuntimeAssets(vmSpec, cfg.resourceDump)
+	if err != nil {
+		return fmt.Errorf("original Guest resource source unavailable: %w", err)
+	}
+
+	if err := configureRuntimeBootRequirements(cfg, runtimeAssets); err != nil {
+		return fmt.Errorf("original Guest boot requirements unavailable: %w", err)
+	}
+	cfg.managedMemory, err = initializeManagedMemory(vmSpec, cfg.initialBootstrap)
 	if err != nil {
 		return fmt.Errorf("original Runner memory birth unavailable: %w", err)
 	}
@@ -231,14 +240,6 @@ func run(logger *zap.Logger) (runErr error) {
 			}
 			runErr = errors.Join(runErr, closeErr)
 		}()
-	}
-	runtimeAssets, err := bootstrap.DecodeRuntimeAssets(vmSpec, cfg.resourceDump)
-	if err != nil {
-		return fmt.Errorf("original Guest resource source unavailable: %w", err)
-	}
-
-	if err := configureRuntimeBootRequirements(cfg, runtimeAssets); err != nil {
-		return fmt.Errorf("original Guest boot requirements unavailable: %w", err)
 	}
 
 	var enableSSH bool
@@ -339,6 +340,7 @@ func run(logger *zap.Logger) (runErr error) {
 	}
 	if cfg.managedMemory != nil {
 		qemuCmd = append(qemuCmd, cfg.managedMemory.QMPArguments()...)
+		qemuCmd = append(qemuCmd, cfg.managedMemory.BootChannelArguments()...)
 	}
 
 	err = runQEMU(cfg, logger, vmSpec, qemuCmd)
@@ -445,24 +447,35 @@ func buildQEMUCmd(
 		panic(fmt.Errorf("unknown CPU scaling mode %q", cfg.cpuScalingMode))
 	}
 
-	// memory details
-	qemuCmd = append(qemuCmd, "-m", fmt.Sprintf(
-		"size=%db,slots=%d,maxmem=%db",
-		vmSpec.Guest.MemorySlotSize.Value()*int64(vmSpec.Guest.MemorySlots.Min),
-		vmSpec.Guest.MemorySlots.Max-vmSpec.Guest.MemorySlots.Min,
-		vmSpec.Guest.MemorySlotSize.Value()*int64(vmSpec.Guest.MemorySlots.Max),
-	))
-	// we don't actually have any slots because it's virtio-mem, but we're still using the API
-	// designed around DIMM slots, so we need to use them to calculate how much memory we expect
-	// to be able to plug in.
-	numSlots := vmSpec.Guest.MemorySlots.Max - vmSpec.Guest.MemorySlots.Min
-	virtioMemSize := int64(numSlots) * vmSpec.Guest.MemorySlotSize.Value()
-	// We can add virtio-mem if it actually needs to be a non-zero size.
-	// Otherwise, QEMU fails with:
-	//   property 'size' of memory-backend-ram doesn't take value '0'
-	if virtioMemSize != 0 {
-		qemuCmd = append(qemuCmd, "-object", fmt.Sprintf("memory-backend-ram,id=vmem0,size=%db", virtioMemSize))
-		qemuCmd = append(qemuCmd, "-device", "virtio-mem-pci,id=vm0,memdev=vmem0,block-size=8M,requested-size=0")
+	// 新模式从明确base启动，最终Min由原Host/Guest握手增长后互证；不是把Min伪装Origin。
+	initialMemory, err := initialBootMemoryArguments(cfg, vmSpec)
+	if err != nil {
+		return nil, err
+	}
+	if initialMemory != nil {
+		qemuCmd = append(qemuCmd, "-monitor", "none")
+		qemuCmd = append(qemuCmd, initialMemory...)
+	} else {
+		// memory details
+		qemuCmd = append(qemuCmd, "-m", fmt.Sprintf(
+			"size=%db,slots=%d,maxmem=%db",
+			vmSpec.Guest.MemorySlotSize.Value()*int64(vmSpec.Guest.MemorySlots.Min),
+			vmSpec.Guest.MemorySlots.Max-vmSpec.Guest.MemorySlots.Min,
+			vmSpec.Guest.MemorySlotSize.Value()*int64(vmSpec.Guest.MemorySlots.Max),
+		))
+		// we don't actually have any slots because it's virtio-mem, but we're still using the API
+		// designed around DIMM slots, so we need to use them to calculate how much memory we expect
+		// to be able to plug in.
+		numSlots := vmSpec.Guest.MemorySlots.Max - vmSpec.Guest.MemorySlots.Min
+		virtioMemSize := int64(numSlots) * vmSpec.Guest.MemorySlotSize.Value()
+		// We can add virtio-mem if it actually needs to be a non-zero size.
+		// Otherwise, QEMU fails with:
+		//   property 'size' of memory-backend-ram doesn't take value '0'
+		if virtioMemSize != 0 {
+			qemuCmd = append(qemuCmd, "-object", fmt.Sprintf("memory-backend-ram,id=vmem0,size=%db", virtioMemSize))
+			qemuCmd = append(qemuCmd, "-device", "virtio-mem-pci,id=vm0,memdev=vmem0,block-size=8M,requested-size=0")
+		}
+
 	}
 
 	qemuNetArgs, err := setupVMNetworks(logger, vmSpec.Guest.Ports, vmSpec.ExtraNetwork)

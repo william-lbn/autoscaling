@@ -20,7 +20,7 @@ import (
 // initializeManagedMemory在原QEMU启动前完成Runner唯一出生绑定。Kube端点/CA/
 // token只取固定InClusterConfig，不接收HTTP调用者选择cluster或提供Bearer。
 // 该入口没有普通QMP重试/旧spec缩容回退；已有出生或丢WAL必须受控恢复。
-func initializeManagedMemory(spec *vmv1.VirtualMachineSpec) (*vmguard.Runner, error) {
+func initializeManagedMemory(spec *vmv1.VirtualMachineSpec, initial *vmguard.InitialBootstrapConfig) (*vmguard.Runner, error) {
 	if spec.DSGABootstrap == nil {
 		return nil, nil
 	}
@@ -61,5 +61,5 @@ func initializeManagedMemory(spec *vmv1.VirtualMachineSpec) (*vmguard.Runner, er
 	if minimum < 1 || maximum < minimum || uint64(maximum) > uint64(^uint64(0)>>1)/uint64(slot) {
 		return nil, fmt.Errorf("DSGA Runner memory geometry overflows")
 	}
-	return vmguard.Initialize(context.Background(), store, core.CoreV1(), core.CoordinationV1(), vmguard.Config{StateDir: vmguard.FixedStateDir, PodName: os.Getenv("K8S_POD_NAME"), PodUID: os.Getenv("K8S_POD_UID"), NodeName: os.Getenv("K8S_NODE_NAME"), MinimumBytes: control.Uint64(uint64(minimum) * uint64(slot)), MaximumBytes: control.Uint64(uint64(maximum) * uint64(slot))})
+	return vmguard.Initialize(context.Background(), store, core.CoreV1(), core.CoordinationV1(), vmguard.Config{StateDir: vmguard.FixedStateDir, InitialBootstrap: initial, PodName: os.Getenv("K8S_POD_NAME"), PodUID: os.Getenv("K8S_POD_UID"), NodeName: os.Getenv("K8S_NODE_NAME"), MinimumBytes: control.Uint64(uint64(minimum) * uint64(slot)), MaximumBytes: control.Uint64(uint64(maximum) * uint64(slot))})
 }
