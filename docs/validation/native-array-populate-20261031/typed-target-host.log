@@ -1,0 +1,12 @@
+=== RUN   TestNativeTraceOriginalStoppedKernelTarget
+    native_trace_target_native_test.go:21: actual NNP launcher C SHA256=fc7b493b50e159aa27d94a6f947689db6bebc519ac4a0af880cf8feab548b5e6 binarySHA256=d908a89d467e65b4ea01b9e52a8bb82559463b3aa82df8e293359481431d696a
+=== RUN   TestNativeTraceOriginalStoppedKernelTarget/valid
+=== RUN   TestNativeTraceOriginalStoppedKernelTarget/wrong-start
+=== RUN   TestNativeTraceOriginalStoppedKernelTarget/callback-cancel
+=== RUN   TestNativeTraceOriginalStoppedKernelTarget/callback-panic
+--- PASS: TestNativeTraceOriginalStoppedKernelTarget (3.39s)
+    --- PASS: TestNativeTraceOriginalStoppedKernelTarget/valid (0.71s)
+    --- PASS: TestNativeTraceOriginalStoppedKernelTarget/wrong-start (0.71s)
+    --- PASS: TestNativeTraceOriginalStoppedKernelTarget/callback-cancel (0.71s)
+    --- PASS: TestNativeTraceOriginalStoppedKernelTarget/callback-panic (0.71s)
+PASS

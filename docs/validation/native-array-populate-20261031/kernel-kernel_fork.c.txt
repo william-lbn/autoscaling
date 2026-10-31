@@ -1,0 +1,156 @@
+2422: 	 * This has to happen after we've potentially unshared the file
+2423: 	 * descriptor table (so that the pidfd doesn't leak into the child
+2424: 	 * if the fd table isn't shared).
+2425: 	 */
+2426: 	if (clone_flags & CLONE_PIDFD) {
+2427: 		int flags = (clone_flags & CLONE_THREAD) ? PIDFD_THREAD : 0;
+2428: 
+2429: 		/* Note that no task has been attached to @pid yet. */
+2430: 		retval = __pidfd_prepare(pid, flags, &pidfile);
+2431: 		if (retval < 0)
+2432: 			goto bad_fork_free_pid;
+2433: 		pidfd = retval;
+2434: 
+2435: 		retval = put_user(pidfd, args->pidfd);
+2436: 		if (retval)
+2437: 			goto bad_fork_put_pidfd;
+2438: 	}
+2487: 	/*
+2488: 	 * Ensure that the cgroup subsystem policies allow the new process to be
+2489: 	 * forked. It should be noted that the new process's css_set can be changed
+2490: 	 * between here and cgroup_post_fork() if an organisation operation is in
+2491: 	 * progress.
+2492: 	 */
+2493: 	retval = cgroup_can_fork(p, args);
+2494: 	if (retval)
+2495: 		goto bad_fork_put_pidfd;
+2496: 
+2497: 	/*
+2498: 	 * Now that the cgroups are pinned, re-clone the parent cgroup and put
+2499: 	 * the new task on the correct runqueue. All this *before* the task
+2500: 	 * becomes visible.
+2501: 	 *
+2502: 	 * This isn't part of ->can_fork() because while the re-cloning is
+2503: 	 * cgroup specific, it unconditionally needs to place the task on a
+2504: 	 * runqueue.
+2505: 	 */
+2506: 	retval = sched_cgroup_fork(p, args);
+2507: 	if (retval)
+2508: 		goto bad_fork_cancel_cgroup;
+2615: 	syscall_tracepoint_update(p);
+2616: 	write_unlock_irq(&tasklist_lock);
+2617: 
+2618: 	if (pidfile)
+2619: 		fd_install(pidfd, pidfile);
+2620: 
+2621: 	proc_fork_connector(p);
+2622: 	sched_post_fork(p);
+2623: 	cgroup_post_fork(p, args);
+2624: 	perf_event_fork(p);
+2625: 
+2626: 	trace_task_newtask(p, clone_flags);
+2627: 	uprobe_copy_process(p, clone_flags);
+2628: 	user_events_fork(p, clone_flags);
+2629: 
+2630: 	copy_oom_score_adj(clone_flags, p);
+2631: 
+2632: 	return p;
+2710: 
+2711: static int idle_dummy(void *dummy)
+2712: {
+2713: 	/* This function is never called */
+2714: 	return 0;
+2715: }
+2716: 
+2717: struct task_struct * __init fork_idle(int cpu)
+2718: {
+2719: 	struct task_struct *task;
+2720: 	struct kernel_clone_args args = {
+2721: 		.flags		= CLONE_VM,
+2722: 		.fn		= &idle_dummy,
+2723: 		.fn_arg		= NULL,
+2724: 		.kthread	= 1,
+2725: 		.idle		= 1,
+2726: 	};
+2727: 
+2728: 	task = copy_process(&init_struct_pid, 0, cpu_to_node(cpu), &args);
+2729: 	if (!IS_ERR(task)) {
+2730: 		init_idle_pids(task);
+2731: 		init_idle(task, cpu);
+2732: 	}
+2733: 
+2734: 	return task;
+2735: }
+2736: 
+2737: /*
+2738:  * This is like kernel_clone(), but shaved down and tailored to just
+2739:  * creating io_uring workers. It returns a created task, or an error pointer.
+2740:  * The returned task is inactive, and the caller must fire it up through
+2741:  * wake_up_new_task(p). All signals are blocked in the created task.
+2742:  */
+2743: struct task_struct *create_io_thread(int (*fn)(void *), void *arg, int node)
+2744: {
+2745: 	unsigned long flags = CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|
+2746: 				CLONE_IO;
+2747: 	struct kernel_clone_args args = {
+2748: 		.flags		= ((lower_32_bits(flags) | CLONE_VM |
+2749: 				    CLONE_UNTRACED) & ~CSIGNAL),
+2750: 		.exit_signal	= (lower_32_bits(flags) & CSIGNAL),
+2751: 		.fn		= fn,
+2752: 		.fn_arg		= arg,
+2753: 		.io_thread	= 1,
+2754: 		.user_worker	= 1,
+2755: 	};
+2756: 
+2757: 	return copy_process(NULL, 0, node, &args);
+2758: }
+2759: 
+2760: /*
+2761:  *  Ok, this is the main fork-routine.
+2762:  *
+2763:  * It copies the process, and if successful kick-starts
+2764:  * it and waits for it to finish using the VM if required.
+2765:  *
+2766:  * args->exit_signal is expected to be checked for sanity by the caller.
+2767:  */
+2768: pid_t kernel_clone(struct kernel_clone_args *args)
+2769: {
+2770: 	u64 clone_flags = args->flags;
+2771: 	struct completion vfork;
+2772: 	struct pid *pid;
+2773: 	struct task_struct *p;
+2774: 	int trace = 0;
+2775: 	pid_t nr;
+2776: 
+2777: 	/*
+2778: 	 * For legacy clone() calls, CLONE_PIDFD uses the parent_tid argument
+2779: 	 * to return the pidfd. Hence, CLONE_PIDFD and CLONE_PARENT_SETTID are
+2780: 	 * mutually exclusive. With clone3() CLONE_PIDFD has grown a separate
+2781: 	 * field in struct clone_args and it still doesn't make sense to have
+2782: 	 * them both point at the same memory location. Performing this check
+2783: 	 * here has the advantage that we don't need to have a separate helper
+2784: 	 * to check for legacy clone().
+2785: 	 */
+2786: 	if ((clone_flags & CLONE_PIDFD) &&
+2787: 	    (clone_flags & CLONE_PARENT_SETTID) &&
+2788: 	    (args->pidfd == args->parent_tid))
+2994: 	if (unlikely((args.exit_signal & ~((u64)CSIGNAL)) ||
+2995: 		     !valid_signal(args.exit_signal)))
+2996: 		return -EINVAL;
+2997: 
+2998: 	if ((args.flags & CLONE_INTO_CGROUP) &&
+2999: 	    (args.cgroup > INT_MAX || usize < CLONE_ARGS_SIZE_VER2))
+3000: 		return -EINVAL;
+3001: 
+3002: 	*kargs = (struct kernel_clone_args){
+3003: 		.flags		= args.flags,
+3004: 		.pidfd		= u64_to_user_ptr(args.pidfd),
+3005: 		.child_tid	= u64_to_user_ptr(args.child_tid),
+3006: 		.parent_tid	= u64_to_user_ptr(args.parent_tid),
+3007: 		.exit_signal	= args.exit_signal,
+3008: 		.stack		= args.stack,
+3009: 		.stack_size	= args.stack_size,
+3010: 		.tls		= args.tls,
+3011: 		.set_tid_size	= args.set_tid_size,
+3012: 		.cgroup		= args.cgroup,
+3013: 	};

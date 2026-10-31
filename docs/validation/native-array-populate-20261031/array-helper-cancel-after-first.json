@@ -1,0 +1,64 @@
+{
+  "actual_first_last_pfns": [
+    [
+      {
+        "PFN": 261972,
+        "owner_inode": 148,
+        "virtual": 140308331753472
+      },
+      {
+        "PFN": 196795,
+        "owner_inode": 148,
+        "virtual": 140308332797952
+      }
+    ],
+    null,
+    null,
+    null
+  ],
+  "actual_helper_image_owners": {
+    "actualRootCgroupInode": 1,
+    "helperReserveIsConservativeNotChargeMigration": true,
+    "originalSystemInode": "68",
+    "readonlyLOADOwnerInodes": {
+      "400000": 1,
+      "401000": 1,
+      "402000": 1
+    },
+    "readonlyOwner0NotClassifiedAsK": true,
+    "writableLOADPagesAllA": 18
+  },
+  "arrays_inode": "148",
+  "error": "resource command requires original readback or explicit replay\ncontext canceled",
+  "helper_reserve_bytes": "68157440",
+  "physical_free_proved": false,
+  "resident_target_pages": [
+    256,
+    0,
+    0,
+    0
+  ],
+  "result": {
+    "nonce": "c41dcade11a2c5d1cb5ffded5a562c01dd6129bf88c95007ecabfe7a3fbb68e6",
+    "child": {
+      "protocol_version": 1,
+      "pending_sha256": "80fab6bd80b673a4f8f6161c98aed37ad4193e2e21e46e45d4105045d5f7ce14",
+      "pid": 86,
+      "start_ticks": "143",
+      "pidfd_device": "5",
+      "pidfd_inode": "386"
+    },
+    "progress": [
+      true,
+      false,
+      false,
+      false
+    ],
+    "helper_locked_bytes": "86016",
+    "exit_observed": true,
+    "completed": false,
+    "all_sources_closed": false,
+    "normal_authorized": false
+  },
+  "scope": "REAL369_GO_C_ATOMIC_A_COMPONENT_FIXTURE_PG_SOURCE_NO_NORMAL"
+}

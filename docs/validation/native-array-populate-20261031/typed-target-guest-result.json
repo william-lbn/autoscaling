@@ -1,0 +1,52 @@
+{
+  "id": [
+    "NEON-S-TRACE-TARGET-001"
+  ],
+  "passed": true,
+  "status": "PASS_COMPONENT_ONLY",
+  "scope": "accurate369 Guest new typed stopped target/ptrace only; no array helper; synthetic Source/fixture WAL, no production Source/normal/K8s",
+  "startUTC": "2026-10-31T14:29:31.540429+00:00",
+  "endUTC": "2026-10-31T14:29:40.911027+00:00",
+  "seconds": 9.370596237000427,
+  "hostQemuExitCode": 0,
+  "actualGuestExitCodes": [
+    0
+  ],
+  "queryKVM": {
+    "enabled": true,
+    "present": true
+  },
+  "TCGFallback": false,
+  "kernelReleaseObserved": [
+    "6.12.26-william-normal-split-v1-e210f5e3ee94"
+  ],
+  "kernelNotesObserved": [
+    "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+  ],
+  "earlyPIDHardcapObserved": [
+    "512"
+  ],
+  "sameHostAndGuestTestBinarySHA256": [
+    "99411ea102df28e695e4529869d634888eee965cc32a230f510ecfd153691d1a"
+  ],
+  "GoRootsPassed": [
+    "TestNativeTraceOriginalStoppedKernelTarget"
+  ],
+  "GoNamedSubcasesPassed": 4,
+  "GuestReportsVerified": 4,
+  "kernelSourceLock": {
+    "directory": "/data/neon-build/validation/normal-split-kernel-20261030T224843Z/export",
+    "sha256": {
+      "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+      "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+      "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+    },
+    "release": "6.12.26-william-normal-split-v1-e210f5e3ee94"
+  },
+  "initramfsSHA256": "cd2db2b0892356ebadf9f6044f3de727d2c03f873d9bb37b7f6ee70d8bf4ac18",
+  "consoleSHA256": "40a0d653a5adb94e5801965d3fb8ad4a51d1931cafc3fdec303d9bb4c43105f4",
+  "errors": [],
+  "normalDecreaseExecuted": false,
+  "productionWALSourceIntegrated": false,
+  "VMShrinkPermit": false
+}

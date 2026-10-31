@@ -1,0 +1,69 @@
+10: #define CSIGNAL		0x000000ff	/* signal mask to be sent at exit */
+11: #define CLONE_VM	0x00000100	/* set if VM shared between processes */
+12: #define CLONE_FS	0x00000200	/* set if fs info shared between processes */
+13: #define CLONE_FILES	0x00000400	/* set if open files shared between processes */
+14: #define CLONE_SIGHAND	0x00000800	/* set if signal handlers and blocked signals shared */
+15: #define CLONE_PIDFD	0x00001000	/* set if a pidfd should be placed in parent */
+16: #define CLONE_PTRACE	0x00002000	/* set if we want to let tracing continue on the child too */
+17: #define CLONE_VFORK	0x00004000	/* set if the parent wants the child to wake it up on mm_release */
+18: #define CLONE_PARENT	0x00008000	/* set if we want to have the same parent as the cloner */
+36: /* Flags for the clone3() syscall. */
+37: #define CLONE_CLEAR_SIGHAND 0x100000000ULL /* Clear any signal handler and reset to SIG_DFL. */
+38: #define CLONE_INTO_CGROUP 0x200000000ULL /* Clone into a specific cgroup given the right permissions. */
+39: 
+47: /**
+48:  * struct clone_args - arguments for the clone3 syscall
+49:  * @flags:        Flags for the new process as listed above.
+50:  *                All flags are valid except for CSIGNAL and
+51:  *                CLONE_DETACHED.
+52:  * @pidfd:        If CLONE_PIDFD is set, a pidfd will be
+53:  *                returned in this argument.
+54:  * @child_tid:    If CLONE_CHILD_SETTID is set, the TID of the
+55:  *                child process will be returned in the child's
+56:  *                memory.
+57:  * @parent_tid:   If CLONE_PARENT_SETTID is set, the TID of
+58:  *                the child process will be returned in the
+59:  *                parent's memory.
+60:  * @exit_signal:  The exit_signal the parent process will be
+61:  *                sent when the child exits.
+62:  * @stack:        Specify the location of the stack for the
+63:  *                child process.
+64:  *                Note, @stack is expected to point to the
+65:  *                lowest address. The stack direction will be
+66:  *                determined by the kernel and set up
+67:  *                appropriately based on @stack_size.
+68:  * @stack_size:   The size of the stack for the child process.
+69:  * @tls:          If CLONE_SETTLS is set, the tls descriptor
+70:  *                is set to tls.
+71:  * @set_tid:      Pointer to an array of type *pid_t. The size
+72:  *                of the array is defined using @set_tid_size.
+73:  *                This array is used to select PIDs/TIDs for
+74:  *                newly created processes. The first element in
+75:  *                this defines the PID in the most nested PID
+76:  *                namespace. Each additional element in the array
+77:  *                defines the PID in the parent PID namespace of
+78:  *                the original PID namespace. If the array has
+79:  *                less entries than the number of currently
+80:  *                nested PID namespaces only the PIDs in the
+81:  *                corresponding namespaces are set.
+82:  * @set_tid_size: This defines the size of the array referenced
+83:  *                in @set_tid. This cannot be larger than the
+84:  *                kernel's limit of nested PID namespaces.
+85:  * @cgroup:       If CLONE_INTO_CGROUP is specified set this to
+86:  *                a file descriptor for the cgroup.
+87:  *
+88:  * The structure is versioned by size and thus extensible.
+89:  * New struct members must go at the end of the struct and
+90:  * must be properly 64bit aligned.
+91:  */
+92: struct clone_args {
+93: 	__aligned_u64 flags;
+94: 	__aligned_u64 pidfd;
+95: 	__aligned_u64 child_tid;
+96: 	__aligned_u64 parent_tid;
+97: 	__aligned_u64 exit_signal;
+98: 	__aligned_u64 stack;
+99: 	__aligned_u64 stack_size;
+100: 	__aligned_u64 tls;
+101: 	__aligned_u64 set_tid;
+102: 	__aligned_u64 set_tid_size;

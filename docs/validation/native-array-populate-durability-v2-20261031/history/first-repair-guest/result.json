@@ -1,0 +1,37 @@
+{
+  "id": "NEON-S-ARRAY-HELPER-001",
+  "additional_case_id": "NEON-S-ARRAY-DURABILITY-001",
+  "status": "PASS_COMPONENT_ONLY",
+  "host_qemu_exit": 0,
+  "actual_guest_exits": [
+    "0"
+  ],
+  "actual_qmp_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "seconds": 3.522711615994922,
+  "roots": [
+    "TestNativeArrayPopulateKernelComponent"
+  ],
+  "subcases": [
+    "TestNativeArrayPopulateKernelComponent/root-death",
+    "TestNativeArrayPopulateKernelComponent/valid",
+    "TestNativeArrayPopulateKernelComponent/valid/new-root-recovery",
+    "TestNativeArrayPopulateKernelComponent/cancel-after-first"
+  ],
+  "reports": [
+    "array-helper-cancel-after-first.json",
+    "array-helper-new-root-recovery.json",
+    "array-helper-root-death.json",
+    "array-helper-valid.json"
+  ],
+  "errors": [],
+  "go_binary_sha256": "25b62ca16b05c7d6a910a3b5a530ebaba959b5128ec7881d232a31cc46552673",
+  "helper_ELF_sha256": "a186e9e072f052d33fb6598d6a8fc81235eef093ce9ef7697684dc3a5b5af157",
+  "console_sha256": "5e7fbf3b8e7e23bc61a5657f999a22042f4b76fc7e2aa740a7f1b4ea1aad504f",
+  "all_sources_closed": false,
+  "normal_authorized": false,
+  "PG_started": false,
+  "physical_free_proved": false
+}

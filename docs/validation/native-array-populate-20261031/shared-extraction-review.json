@@ -1,0 +1,68 @@
+{
+  "original_tracer_sha256": "b56199224b1451819b7aa3e5d2eb8f853b436f65995692ac7c374c443c330c1e",
+  "current_source_hashes": {
+    "native/array-populate/Makefile": "a3ae4424078d957a3affe3f5a209309f41ae306b664b6587513de0678ef2602f",
+    "native/array-populate/array_populate.c": "8d5c7fc52c5a907ed41302904bbb712f3aa1e9bd921f6a344a58b7b3a1bb6cb5",
+    "pkg/dsga/resourceguard/native_array_populate.go": "de973d1f0bdc7d7399996957173a1851ad8de869226e0af78a4a77b61254a1a4",
+    "pkg/dsga/resourceguard/native_array_populate_elf_linux.go": "77630c6589d67c0384d51c3d1cfd9e04d4e9eb68fef03310b7cfd908446b7461",
+    "pkg/dsga/resourceguard/native_array_populate_linux.go": "f5633cd43048c5315698091a1fec5a77119ecdf4d56f98ad0423946937bbf8f4",
+    "pkg/dsga/resourceguard/native_array_populate_native_test.go": "4febb12c353b9da5dad64085d920d68db4d2b58ab1abc1280c198ec86b2bb4bc",
+    "pkg/dsga/resourceguard/native_array_populate_test.go": "b1167ae2cbf1f54d19733eba25c0497953f1891a99beadebbc6317742441b5e9",
+    "pkg/dsga/resourceguard/native_birth_tracer_linux.go": "9cbe89ae7036708501711ac23f3ee02daa68fe94e4270f5edf64430bb66f7d73",
+    "pkg/dsga/resourceguard/native_birth_tracer_native_test.go": "7daabcdf1f57920f145acc6149dfbb1fb301a65a79566c2918abdb3d11bf25ae",
+    "pkg/dsga/resourceguard/native_trace_target_linux.go": "4bfe5037792aee24fdeed1763e91a4358cee8089ee113557e79282e468dd1cf3",
+    "pkg/dsga/resourceguard/native_trace_target_linux_test.go": "3568b0b1bc7aa1e9cca5928e80c737384f2451b90201a343a7c14a341d0694e9",
+    "pkg/dsga/resourceguard/native_trace_target_native_test.go": "0b8a856c0654886ee595c00ff998c4cc7c39404cb4935b31786350b31fba975d"
+  },
+  "nine_control_methods": {
+    "seize": {
+      "normalized_text_equal": true,
+      "old_normalized_sha256": "5cd4c5e851d4d0cc6dfb0c2c9abd38d3dfd5d8c8b4b0b9c807d35958ecf04b2a",
+      "new_normalized_sha256": "5cd4c5e851d4d0cc6dfb0c2c9abd38d3dfd5d8c8b4b0b9c807d35958ecf04b2a"
+    },
+    "interrupt": {
+      "normalized_text_equal": true,
+      "old_normalized_sha256": "354570aaab4c85e9a80134ea82cf7b73b94cb105b3575045f4dec94953c37f4d",
+      "new_normalized_sha256": "354570aaab4c85e9a80134ea82cf7b73b94cb105b3575045f4dec94953c37f4d"
+    },
+    "exitKill": {
+      "normalized_text_equal": true,
+      "old_normalized_sha256": "0a0756fb14d51347790ad9aa8684b8af448fa6ee27da64adb6f30693c2f6522e",
+      "new_normalized_sha256": "0a0756fb14d51347790ad9aa8684b8af448fa6ee27da64adb6f30693c2f6522e"
+    },
+    "cont": {
+      "normalized_text_equal": true,
+      "old_normalized_sha256": "dcba8271a547cbcf0cc021f1d5a7b030283a9dc96260e06cf6d84aa675699d2b",
+      "new_normalized_sha256": "dcba8271a547cbcf0cc021f1d5a7b030283a9dc96260e06cf6d84aa675699d2b"
+    },
+    "detach": {
+      "normalized_text_equal": true,
+      "old_normalized_sha256": "c9519a237858e1048baa21aad7d1b46a9c63c55ebd8d54b35b19165af8e9f913",
+      "new_normalized_sha256": "c9519a237858e1048baa21aad7d1b46a9c63c55ebd8d54b35b19165af8e9f913"
+    },
+    "cleanup": {
+      "normalized_text_equal": true,
+      "old_normalized_sha256": "197b882ffde887eb5bcdd61d0579e6fdce05fe7f0837d6e0051e65667f2b1083",
+      "new_normalized_sha256": "197b882ffde887eb5bcdd61d0579e6fdce05fe7f0837d6e0051e65667f2b1083"
+    },
+    "waitAnyStop": {
+      "normalized_text_equal": true,
+      "old_normalized_sha256": "110cdf4cd178240f80c558410a1540ecee8b0ea86925dc117285ac3f616ed61b",
+      "new_normalized_sha256": "110cdf4cd178240f80c558410a1540ecee8b0ea86925dc117285ac3f616ed61b"
+    },
+    "rememberStop": {
+      "normalized_text_equal": true,
+      "old_normalized_sha256": "208cf584fee73c4908dcea8b356403d518bd43291be00e2c77e730b31dec4edc",
+      "new_normalized_sha256": "208cf584fee73c4908dcea8b356403d518bd43291be00e2c77e730b31dec4edc"
+    },
+    "waitOriginal": {
+      "normalized_text_equal": true,
+      "old_normalized_sha256": "e9a45d46637085066b36935556a0707a40b6f78247712d89ab435c364859a05e",
+      "new_normalized_sha256": "e9a45d46637085066b36935556a0707a40b6f78247712d89ab435c364859a05e"
+    }
+  },
+  "normalization": "receiver/cfg fields renamed; rememberStop additionally stores lastStop; gofmt whitespace normalized; static review only",
+  "worker": "one shared generic nonleader M runner; retains m0 avoidance and actual pinned-thread disappearance; old Birth wrapper/flow/PMbase-final/JSON remain",
+  "Root_independent_source_review": "accepted for helper component, not complete Source/normal",
+  "native_test_compatibility": "one embedded-control composite literal, old assertions unchanged"
+}

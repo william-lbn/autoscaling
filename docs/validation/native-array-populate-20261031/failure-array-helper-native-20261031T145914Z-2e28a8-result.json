@@ -1,0 +1,24 @@
+{
+  "id": "NEON-S-ARRAY-HELPER-001",
+  "status": "FAIL_COMPONENT",
+  "host_qemu_exit": 0,
+  "actual_guest_exits": [
+    "1"
+  ],
+  "actual_qmp_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "seconds": 2.944343363997177,
+  "roots": [],
+  "subcases": [],
+  "reports": [],
+  "errors": [],
+  "go_binary_sha256": "33b9d107e512c6ef43d5c06e7cc90092c1cf7f2ac8b2c9a1bdaacf26eb2e518f",
+  "helper_ELF_sha256": "a186e9e072f052d33fb6598d6a8fc81235eef093ce9ef7697684dc3a5b5af157",
+  "console_sha256": "4af059b59f7c331464d5bd92a045be5f9686ed24a0253be9bc2270eb801aa7a9",
+  "all_sources_closed": false,
+  "normal_authorized": false,
+  "PG_started": false,
+  "physical_free_proved": false
+}

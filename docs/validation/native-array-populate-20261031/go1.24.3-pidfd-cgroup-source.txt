@@ -1,0 +1,135 @@
+78b4e3924e57b184e257c2e44965e9ccdd2ee4b3fa3cb0823b16ccd9bed2b99a  /opt/go/src/syscall/exec_linux.go
+9cff4fca76c6778741947fbcf362530a5259b050cc7643838d6feeaa77df905a  /opt/go/src/runtime/proc.go
+604693bc2f83db22fc919da1db743c0ef909fcfba24d8728879cc59e90d61054  /opt/go/src/os/pidfd_linux.go
+89a8587e134c07caec0606fe9f472c32ef7cff21f411f8b98d5ffcfbc8838b6a  /opt/go/src/os/exec_posix.go
+	GidMappings  []SysProcIDMap // Group ID mappings for user namespaces.
+	// GidMappingsEnableSetgroups enabling setgroups syscall.
+	// If false, then setgroups syscall will be disabled for the child process.
+	// This parameter is no-op if GidMappings == nil. Otherwise for unprivileged
+	// users this should be set to false for mappings work.
+	GidMappingsEnableSetgroups bool
+	AmbientCaps                []uintptr // Ambient capabilities.
+	UseCgroupFD                bool      // Whether to make use of the CgroupFD field.
+	CgroupFD                   int       // File descriptor of a cgroup to put the new process into.
+	// PidFD, if not nil, is used to store the pidfd of a child, if the
+	// functionality is supported by the kernel, or -1. Note *PidFD is
+	// changed only if the process starts successfully.
+	PidFD *int
+}
+	flags = sys.Cloneflags
+	if sys.Cloneflags&CLONE_NEWUSER == 0 && sys.Unshareflags&CLONE_NEWUSER == 0 {
+		flags |= CLONE_VFORK | CLONE_VM
+	}
+	if sys.PidFD != nil {
+		flags |= CLONE_PIDFD
+	}
+	// Whether to use clone3.
+	if sys.UseCgroupFD || flags&CLONE_NEWTIME != 0 || forceClone3 {
+		clone3 = &cloneArgs{
+			flags:      uint64(flags),
+			exitSignal: uint64(SIGCHLD),
+		}
+		if sys.UseCgroupFD {
+			clone3.flags |= CLONE_INTO_CGROUP
+			clone3.cgroup = uint64(sys.CgroupFD)
+		}
+		if sys.PidFD != nil {
+			clone3.pidFD = uint64(uintptr(unsafe.Pointer(&pidfd)))
+		}
+	}
+
+	// About to call fork.
+	// No more allocation or calls of non-assembly functions.
+	runtime_BeforeFork()
+	locked = true
+	if clone3 != nil {
+		pid, err1 = rawVforkSyscall(_SYS_clone3, uintptr(unsafe.Pointer(clone3)), unsafe.Sizeof(*clone3), 0)
+	} else {
+		// N.B. Keep in sync with doCheckClonePidfd.
+		flags |= uintptr(SIGCHLD)
+		if runtime.GOARCH == "s390x" {
+			// On Linux/s390, the first two arguments of clone(2) are swapped.
+			pid, err1 = rawVforkSyscall(SYS_CLONE, 0, flags, uintptr(unsafe.Pointer(&pidfd)))
+		} else {
+			pid, err1 = rawVforkSyscall(SYS_CLONE, flags, 0, uintptr(unsafe.Pointer(&pidfd)))
+		}
+	}
+	if err1 != 0 || pid != 0 {
+		// If we're in the parent, we must return immediately
+		// so we're not in the same stack frame as the child.
+// ensurePidfd initializes the PidFD field in sysAttr if it is not already set.
+// It returns the original or modified SysProcAttr struct and a flag indicating
+// whether the PidFD should be duplicated before using.
+func ensurePidfd(sysAttr *syscall.SysProcAttr) (*syscall.SysProcAttr, bool) {
+	if !pidfdWorks() {
+		return sysAttr, false
+	}
+
+	var pidfd int
+
+	if sysAttr == nil {
+		return &syscall.SysProcAttr{
+			PidFD: &pidfd,
+		}, false
+	}
+	if sysAttr.PidFD == nil {
+		newSys := *sysAttr // copy
+		newSys.PidFD = &pidfd
+		return &newSys, false
+	}
+
+	return sysAttr, true
+}
+
+// getPidfd returns the value of sysAttr.PidFD (or its duplicate if needDup is
+// set) and a flag indicating whether the value can be used.
+func getPidfd(sysAttr *syscall.SysProcAttr, needDup bool) (uintptr, bool) {
+	if !pidfdWorks() {
+		return 0, false
+	}
+
+	h := *sysAttr.PidFD
+	if needDup {
+		dupH, e := unix.Fcntl(h, syscall.F_DUPFD_CLOEXEC, 0)
+		if e != nil {
+			return 0, false
+		}
+		h = dupH
+	}
+	return uintptr(h), true
+	attrSys, shouldDupPidfd := ensurePidfd(attr.Sys)
+	sysattr := &syscall.ProcAttr{
+		Dir: attr.Dir,
+		Env: attr.Env,
+		Sys: attrSys,
+	}
+	if sysattr.Env == nil {
+		sysattr.Env, err = execenv.Default(sysattr.Sys)
+		if err != nil {
+			return nil, err
+		}
+	}
+	sysattr.Files = make([]uintptr, 0, len(attr.Files))
+	for _, f := range attr.Files {
+		sysattr.Files = append(sysattr.Files, f.Fd())
+	}
+
+	pid, h, e := syscall.StartProcess(name, argv, sysattr)
+
+	// Make sure we don't run the finalizers of attr.Files.
+	runtime.KeepAlive(attr)
+
+	if e != nil {
+		return nil, &PathError{Op: "fork/exec", Path: name, Err: e}
+	}
+
+	// For Windows, syscall.StartProcess above already returned a process handle.
+	if runtime.GOOS != "windows" {
+		var ok bool
+		h, ok = getPidfd(sysattr.Sys, shouldDupPidfd)
+		if !ok {
+			return newPIDProcess(pid), nil
+		}
+	}
+
+	return newHandleProcess(pid, h), nil

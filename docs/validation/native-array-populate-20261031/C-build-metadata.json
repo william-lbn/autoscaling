@@ -1,0 +1,45 @@
+{
+  "nonce": "20261031T144424Z-d3ca81",
+  "scope": "C_ELF_BUILD_ONLY_NOT_HELPER_GO_OR_KVM",
+  "host": "worker-118",
+  "git_head": "b1771c9c1f745b623aa6489d7bee8fc8c6517e26",
+  "source_sha256": {
+    "array_populate.c": "8d5c7fc52c5a907ed41302904bbb712f3aa1e9bd921f6a344a58b7b3a1bb6cb5",
+    "Makefile": "a3ae4424078d957a3affe3f5a209309f41ae306b664b6587513de0678ef2602f"
+  },
+  "resource_limits": {
+    "cpus": 1,
+    "memory_bytes": 536870912,
+    "pids": 128,
+    "network": "none"
+  },
+  "unit": "neon-array-c-20261031t144424z-d3ca81",
+  "command": [
+    "docker",
+    "run",
+    "--rm",
+    "--name",
+    "neon-array-c-20261031t144424z-d3ca81",
+    "--network=none",
+    "--read-only",
+    "--cpus=1",
+    "--memory=512m",
+    "--pids-limit=128",
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges",
+    "--tmpfs",
+    "/tmp:rw,nosuid,nodev,size=32m",
+    "-v",
+    "/data/neon-build/validation/array-populate-c-20261031T144424Z-d3ca81/source:/src:ro",
+    "-v",
+    "/data/neon-build/validation/array-populate-c-20261031T144424Z-d3ca81/export:/out:rw",
+    "-w",
+    "/out",
+    "--entrypoint",
+    "/bin/sh",
+    "sha256:641ed0bef5386c99a90812d05c278e7cc2b469b9a0419f1a747440cab0deebeb",
+    "-c",
+    "set -eu; gcc --version; make -f /src/Makefile VPATH=/src; readelf -W -h -l -S -s -d neon-dsga-array-populate > readelf.txt; objdump -d neon-dsga-array-populate > objdump.txt; sha256sum neon-dsga-array-populate > binary.sha256"
+  ],
+  "start_utc": "2026-10-31T14:44:25.040092+00:00"
+}

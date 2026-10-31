@@ -1,0 +1,75 @@
+{
+  "source_callers": [
+    {
+      "file": "pkg/dsga/resourceguard/native_array_populate_test.go",
+      "line": 208,
+      "source": "if e := rejectOutstandingArrayPopulateLocked(s); e != nil {"
+    },
+    {
+      "file": "pkg/dsga/resourceguard/native_array_populate_test.go",
+      "line": 215,
+      "source": "if e := rejectOutstandingArrayPopulateLocked(s); !errors.Is(e, ErrUnknown) {"
+    },
+    {
+      "file": "pkg/dsga/resourceguard/native_array_populate_test.go",
+      "line": 231,
+      "source": "if e := rejectOutstandingArrayPopulateLocked(s); !errors.Is(e, ErrUnknown) {"
+    },
+    {
+      "file": "pkg/dsga/resourceguard/native_array_populate_test.go",
+      "line": 238,
+      "source": "if e := rejectOutstandingArrayPopulateLocked(s); e != nil {"
+    },
+    {
+      "file": "pkg/dsga/resourceguard/native_array_populate_test.go",
+      "line": 244,
+      "source": "if e := rejectOutstandingArrayPopulateLocked(s); !errors.Is(e, ErrUnknown) {"
+    },
+    {
+      "file": "pkg/dsga/resourceguard/native_array_populate_linux.go",
+      "line": 79,
+      "source": "func rejectOutstandingArrayPopulateLocked(s *lockedState) error {"
+    },
+    {
+      "file": "pkg/dsga/resourceguard/native_array_populate_linux.go",
+      "line": 525,
+      "source": "func runNativeArrayPopulate(ctx context.Context, s *lockedState, c arrayPopulateContext, files [4]*os.File, observe arrayPopulateProgressObserver) (result arrayPopulateResult, err error) {"
+    },
+    {
+      "file": "pkg/dsga/resourceguard/native_array_populate_linux.go",
+      "line": 547,
+      "source": "if e := rejectOutstandingArrayPopulateLocked(s); e != nil {"
+    },
+    {
+      "file": "pkg/dsga/resourceguard/native_array_populate_native_test.go",
+      "line": 223,
+      "source": "result, runErr := runNativeArrayPopulate(ctx, s, c, files, func(result arrayPopulateResult, index, pidfd int) error {"
+    },
+    {
+      "file": "pkg/dsga/resourceguard/native_array_populate_native_test.go",
+      "line": 243,
+      "source": "if err = rejectOutstandingArrayPopulateLocked(s); err != nil {"
+    },
+    {
+      "file": "pkg/dsga/resourceguard/native_array_populate_native_test.go",
+      "line": 250,
+      "source": "if !errors.Is(rejectOutstandingArrayPopulateLocked(s), ErrUnknown) {"
+    },
+    {
+      "file": "pkg/dsga/resourceguard/native_array_populate_native_test.go",
+      "line": 282,
+      "source": "_, err = runNativeArrayPopulate(ctx, s, c, files, func(result arrayPopulateResult, index, pidfd int) error {"
+    },
+    {
+      "file": "pkg/dsga/resourceguard/native_array_populate_native_test.go",
+      "line": 412,
+      "source": "if !errors.Is(rejectOutstandingArrayPopulateLocked(s), ErrUnknown) {"
+    }
+  ],
+  "production_service_launcher_record_integrated": false,
+  "all_cap_writers_pending_gate_integrated": false,
+  "ordinary_System_program_syscall_closure": false,
+  "normal_five_guards_modified_by_this_batch": false,
+  "all_sources_closed": false,
+  "normal_authorized": false
+}

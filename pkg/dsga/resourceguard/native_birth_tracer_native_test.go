@@ -500,7 +500,7 @@ func TestNativeBirthTracerKernelPidfdReaper(t *testing.T) {
 		fresh := exec.Command("/bin/true")
 		require.NoError(t, fresh.Start())
 		reused = fresh.Process.Pid == oldPID
-		k := &nativeBirthTraceKernel{pidfd: fd, cfg: nativeBirthTraceConfig{Original: ProcessIdentity{PostmasterPID: oldPID}, PeerUID: uint32(os.Getuid())}}
+		k := &nativeBirthTraceKernel{nativeTraceOriginalControl: nativeTraceOriginalControl{pid: oldPID, uid: uint32(os.Getuid()), pidfd: fd}, cfg: nativeBirthTraceConfig{Original: ProcessIdentity{PostmasterPID: oldPID}, PeerUID: uint32(os.Getuid())}}
 		got, _, waitErr := k.waitOriginal()
 		freshWait := fresh.Wait()
 		require.NoError(t, unix.Close(fd))

@@ -1,0 +1,70 @@
+{
+  "scope": "COMPONENT_DURABILITY_ONLY_NOT_PG_NORMAL_VM_K8S",
+  "source_proof": "source-proof.json",
+  "unit": {
+    "roots": 24,
+    "subcases": 119,
+    "skip": 0,
+    "fail": 0,
+    "new_roots": 5,
+    "new_subcases": 18,
+    "direct_regression_roots": 19,
+    "direct_regression_subcases": 101,
+    "elapsed_seconds": 2.927,
+    "cohort": "/data/neon-build/validation/array-populate-durability-go-20261031T162751Z-ecdfda",
+    "IDs": [
+      {
+        "id": "PG17-U-ARRAY-DURABILITY-001",
+        "test": "TestNativeArrayPopulateDurabilityVisibleFailure",
+        "layer": "unit_io_model_and_real_process_filesystem_fixture"
+      },
+      {
+        "id": "PG17-U-ARRAY-DURABILITY-002",
+        "test": "TestNativeArrayPopulateDurabilityRecoveryFailures",
+        "layer": "unit_io_model_and_real_process_filesystem_fixture"
+      },
+      {
+        "id": "PG17-U-ARRAY-DURABILITY-003",
+        "test": "TestNativeArrayPopulateDurabilityProcessRecovery",
+        "layer": "unit_io_model_and_real_process_filesystem_fixture"
+      },
+      {
+        "id": "PG17-U-ARRAY-DURABILITY-004",
+        "test": "TestNativeArrayPopulateDurabilityPartialAndInvalid",
+        "layer": "unit_io_model_and_real_process_filesystem_fixture"
+      },
+      {
+        "id": "PG17-U-ARRAY-DURABILITY-005",
+        "test": "TestNativeArrayPopulateDurabilityWitnessIsolation",
+        "layer": "unit_io_model_and_real_process_filesystem_fixture"
+      }
+    ]
+  },
+  "native": {
+    "cohort": "/data/neon-build/validation/array-helper-durability-native-20261031T162828Z-1e8412",
+    "existing_root_ID": "NEON-S-ARRAY-HELPER-001",
+    "roots": 1,
+    "named_subcases": 4,
+    "old_subcases_repeated": 3,
+    "new_named_case": {
+      "ID": "NEON-S-ARRAY-DURABILITY-001",
+      "test": "TestNativeArrayPopulateKernelComponent/valid/new-root-recovery",
+      "new_root_count": 0,
+      "same_helper_root_not_double_counted": true
+    },
+    "real_kvm": true,
+    "Guest_exit": 0,
+    "QEMU_exit": 0,
+    "disk_sync_fault_experiment": false,
+    "PG_started": false
+  },
+  "E": 0,
+  "all_sources_closed": false,
+  "normal_authorized": false,
+  "physical_free_proved": false,
+  "ordinary_observe_writes": false,
+  "private_recover_starts_helper": false,
+  "production_launcher_integrated": false,
+  "all_cap_writers_pending_gate_integrated": false,
+  "five_guards_changed": false
+}

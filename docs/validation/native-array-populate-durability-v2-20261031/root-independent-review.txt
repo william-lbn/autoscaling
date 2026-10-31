@@ -1,0 +1,19 @@
+Root独立审查：数组预触持久恢复v2（2026-10-31 UTC）
+
+范围：P1原先独立审查P2原12源发现的完成同步阻断由P1修复；Root独立实读本批
+四源、生产diff、同步底层实现、五根故障模型与实际新Root case。不是作者自签。
+原13源准确SHA、146路径/145项hash、772实际输入校验、24根119sub及KVM四case
+原始结果已重核；收费/CLONE/ptrace/原PIDFD等待主体与修前逐字相同。
+
+结果：本组件无剩余提交阻断。普通gate只有读链与私有内存见证查询，零写；
+见证绑定state/lock dev+inode、nonce、四SHA和每个JSON dev/inode/size/ctime。
+原fd读前后fstat稳定，文件替换/同字节写回不借旧见证。原complete成功后以及
+显式Recover均先验证完整ExitObserved四链，固定逐文件fsync+目录同步，再完整
+重读同一key后登记；任意失败保持Unknown。底层syncPhysicalFile实际Sync原文件
+而非仅同步目录。Recover不创建helper、不补partial、不改JSON/nonce；新进程
+没有旧Root见证。fsync故障为U确定性模型，真实Guest只认证新Root显式恢复正控。
+
+边界：仍无生产PG四数组注册/启动消费、全部capwriter门禁、完整F/I/Source与
+normal许可。KVM Root/helper不等于PG或E2E；新恢复case在原同S根，不重复新增根。
+本审查不改变五处normal拒绝、不认证物理free、不封版或部署。E通过仍0。
+原79/旧manifest和所有失败/中间轮均作为历史保留，当前锁以v2新manifest为准。

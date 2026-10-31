@@ -1,0 +1,97 @@
+{
+  "actual_first_last_pfns": [
+    [
+      {
+        "PFN": 261792,
+        "owner_inode": 148,
+        "virtual": 140141684002816
+      },
+      {
+        "PFN": 197107,
+        "owner_inode": 148,
+        "virtual": 140141685047296
+      }
+    ],
+    [
+      {
+        "PFN": 195796,
+        "owner_inode": 148,
+        "virtual": 140141682954240
+      },
+      {
+        "PFN": 196833,
+        "owner_inode": 148,
+        "virtual": 140141683998720
+      }
+    ],
+    [
+      {
+        "PFN": 68613,
+        "owner_inode": 148,
+        "virtual": 140141681905664
+      },
+      {
+        "PFN": 68868,
+        "owner_inode": 148,
+        "virtual": 140141682950144
+      }
+    ],
+    [
+      {
+        "PFN": 68869,
+        "owner_inode": 148,
+        "virtual": 140141680857088
+      },
+      {
+        "PFN": 69124,
+        "owner_inode": 148,
+        "virtual": 140141681901568
+      }
+    ]
+  ],
+  "actual_helper_image_owners": {
+    "actualRootCgroupInode": 1,
+    "helperReserveIsConservativeNotChargeMigration": true,
+    "originalSystemInode": "68",
+    "readonlyLOADOwnerInodes": {
+      "400000": 1,
+      "401000": 1,
+      "402000": 1
+    },
+    "readonlyOwner0NotClassifiedAsK": true,
+    "writableLOADPagesAllA": 18
+  },
+  "arrays_inode": "148",
+  "error": "",
+  "helper_reserve_bytes": "68157440",
+  "physical_free_proved": false,
+  "resident_target_pages": [
+    256,
+    256,
+    256,
+    256
+  ],
+  "result": {
+    "nonce": "c12c858ee8278c587f2e87fa889b8997ad84c3f1397bb884fec061e728dd9f61",
+    "child": {
+      "protocol_version": 1,
+      "pending_sha256": "0ec41c2af01f29c5c20f0ac9432400e861587df388cfc0e977228b0fd24e2902",
+      "pid": 84,
+      "start_ticks": "135",
+      "pidfd_device": "5",
+      "pidfd_inode": "384"
+    },
+    "progress": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "helper_locked_bytes": "86016",
+    "exit_observed": true,
+    "completed": true,
+    "all_sources_closed": false,
+    "normal_authorized": false
+  },
+  "scope": "REAL369_GO_C_ATOMIC_A_COMPONENT_FIXTURE_PG_SOURCE_NO_NORMAL"
+}

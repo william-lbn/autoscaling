@@ -1,0 +1,93 @@
+{
+  "scope": "COMPONENT_ONLY_NOT_PG_NORMAL_VM_OR_K8S",
+  "unit": {
+    "roots": 19,
+    "named_subcases": 101,
+    "skip": 0,
+    "test_names": [
+      "TestNativeArrayPopulateOriginalPlanWire",
+      "TestNativeArrayPopulatePreparedResponse",
+      "TestNativeArrayPopulateExactFilterProperties",
+      "TestNativeArrayPopulateAppendOnlyHistory",
+      "TestNativeArrayPopulateOFDLastClose",
+      "TestNativeArrayPopulateWholeImageLocked",
+      "TestNativeArrayPopulateKernelFilterComparison",
+      "TestNativeArrayPopulateExplicitReserveAndCaps",
+      "TestNativeArrayPopulateOriginalTerminalWait",
+      "TestNativeBirthTracerModelSuccessOrdering",
+      "TestNativeBirthTracerModelFaultsCannotReleaseOrKillReusedTarget",
+      "TestNativeBirthTracerModelTentativeDAndSETOPTIONSBoundary",
+      "TestNativeBirthTracerModelCancellationWaitsForCleanup",
+      "TestNativeBirthTracerModelStrictStatusAndReservationMaps",
+      "TestNativeBirthTracerModelPidfdWaitDecodeAndReaperReuse",
+      "TestNativeTraceOriginalStoppedModelOrdering",
+      "TestNativeTraceOriginalStoppedModelFaults",
+      "TestNativeTraceOriginalStoppedCancellationJoinsCleanup",
+      "TestNativeTraceOriginalStoppedRejectsMissingSource"
+    ],
+    "cohort": "/data/neon-build/validation/array-populate-go-20261031T154201Z-9d774c",
+    "source_count": 771,
+    "actual_COPY_equal": true,
+    "command": "go test -race -count=1 -json -run '^(TestNativeArrayPopulate|TestNativeTraceOriginalStopped|TestNativeBirthTracerModel)' ./pkg/dsga/resourceguard && CGO_ENABLED=0 go test -c -tags=dsga_native_birth_tracer,dsga_native_array_populate -o /out/native-tracer.test ./pkg/dsga/resourceguard && /out/native-tracer.test -test.list '^TestNativeArrayPopulateKernelComponent$' > /out/native-test-list.txt && grep -Fqx TestNativeArrayPopulateKernelComponent /out/native-test-list.txt"
+  },
+  "native": {
+    "existing_birth_regression": {
+      "IDs": [
+        "PG17-S-TRACER-001",
+        "PG17-S-TRACER-002",
+        "PG17-S-TRACER-003"
+      ],
+      "cohort": "/data/neon-build/validation/array-trace-native-20261031T142453Z-e5bdc3",
+      "host_roots": 3,
+      "host_subcases": 13,
+      "Guest_roots": 3,
+      "Guest_subcases": 13
+    },
+    "new_typed_target": {
+      "ID": "NEON-S-TRACE-TARGET-001",
+      "cohort": "/data/neon-build/validation/array-trace-target-native-20261031T142908Z-f82d2e",
+      "Host_roots": 1,
+      "Host_subcases": 4,
+      "Guest_roots": 1,
+      "Guest_subcases": 4
+    },
+    "new_array_helper": {
+      "id": "NEON-S-ARRAY-HELPER-001",
+      "status": "PASS_COMPONENT_ONLY",
+      "host_qemu_exit": 0,
+      "actual_guest_exits": [
+        "0"
+      ],
+      "actual_qmp_kvm": {
+        "enabled": true,
+        "present": true
+      },
+      "seconds": 3.44491344600101,
+      "roots": [
+        "TestNativeArrayPopulateKernelComponent"
+      ],
+      "subcases": [
+        "TestNativeArrayPopulateKernelComponent/root-death",
+        "TestNativeArrayPopulateKernelComponent/valid",
+        "TestNativeArrayPopulateKernelComponent/cancel-after-first"
+      ],
+      "reports": [
+        "array-helper-cancel-after-first.json",
+        "array-helper-root-death.json",
+        "array-helper-valid.json"
+      ],
+      "errors": [],
+      "go_binary_sha256": "3e2b6546d2eddfed6536496d526d9b6fd1e36edb6244a9506015fde02c973d18",
+      "helper_ELF_sha256": "a186e9e072f052d33fb6598d6a8fc81235eef093ce9ef7697684dc3a5b5af157",
+      "console_sha256": "fc8ba580cf8dd08615a07269f657af5c0f193c4325dad791d120548c68a99021",
+      "all_sources_closed": false,
+      "normal_authorized": false,
+      "PG_started": false,
+      "physical_free_proved": false
+    }
+  },
+  "all_sources_closed": false,
+  "normal_authorized": false,
+  "physical_free_proved": false,
+  "E2E": false
+}

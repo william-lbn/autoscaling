@@ -1,0 +1,73 @@
+{
+  "kernel": "exact v6.12.26+original369 patches, no new kernel",
+  "sources": {
+    "kernel/fork.c": {
+      "sha256": "cc74d2293e9960db61f154c18f38c5e1658a5e98f03131f3085e27872e487f9e",
+      "cached_source": "/data/neon-build/cache/buildkit/runc-overlayfs/snapshots/snapshots/747/fs/build/linux-6.12.26/kernel/fork.c",
+      "line_ranges": [
+        [
+          2422,
+          2438
+        ],
+        [
+          2487,
+          2508
+        ],
+        [
+          2615,
+          2632
+        ],
+        [
+          2710,
+          2788
+        ],
+        [
+          2994,
+          3013
+        ]
+      ]
+    },
+    "kernel/cgroup/cgroup.c": {
+      "sha256": "820d8583e48ebba4d960d1ea9c63243367c6bdfff49988dc8f81afb76209cb29",
+      "cached_source": "/data/neon-build/cache/buildkit/runc-overlayfs/snapshots/snapshots/747/fs/build/linux-6.12.26/kernel/cgroup/cgroup.c",
+      "line_ranges": [
+        [
+          6490,
+          6508
+        ],
+        [
+          6529,
+          6603
+        ],
+        [
+          6635,
+          6662
+        ],
+        [
+          6706,
+          6788
+        ]
+      ]
+    },
+    "include/uapi/linux/sched.h": {
+      "sha256": "2081b07cee6adab443e4ba320d0ccb13db4c97bed64f3eefafbfde2f25c833a4",
+      "cached_source": "/data/neon-build/cache/buildkit/runc-overlayfs/snapshots/snapshots/747/fs/build/linux-6.12.26/include/uapi/linux/sched.h",
+      "line_ranges": [
+        [
+          10,
+          18
+        ],
+        [
+          36,
+          39
+        ],
+        [
+          47,
+          102
+        ]
+      ]
+    }
+  },
+  "invariant": "CLONE_PIDFD and CLONE_INTO_CGROUP same clone3; fd-anchored cgroup2 can_fork target cset before cgroup_post_fork/wake; no numeric helper migration",
+  "late_go_os_exec_duplicate_failure": "getPidfd can fall back numeric os.Process, so helper uses external original WAITID P_PIDFD directly and only Process.Release"
+}

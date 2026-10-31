@@ -48,12 +48,6 @@ type nativeBirthTraceTranscript struct {
 	TracerThreadRetired           bool
 }
 
-type nativeBirthTraceResult struct {
-	transcript nativeBirthTraceTranscript
-	err        error
-	thread     *os.File
-}
-
 // 整个会话在专用非leader G/M上锁线程；ctx取消只能触发同步cleanup，不能
 // select抢先返回遗留写者。成功必须detach；不确定清理的M必须退役且观察原
 // thread目录消失。Go1.24.3的m0只wedge不退出，因此m0永不进行SEIZE。
@@ -90,87 +84,15 @@ func runNativeBirthTraceSession(ctx context.Context, conn *net.UnixConn, cfg nat
 
 type nativeTraceWorkerBody func(int) (nativeBirthTraceTranscript, error, bool)
 
-// 单一线程寿命实现，供生产私有会话及明确native机械组件测试复用。
-// 不能从cfg/HTTP/native帧取得body；callback不构成Root/normal资格。
+// 保留Birth私有入口及原结果形态；专用M寿命由同一公共实现承担。
 func nativeTraceRunLockedWorker(body nativeTraceWorkerBody) (nativeBirthTraceTranscript, error) {
-	results := make(chan nativeBirthTraceResult, 1)
-	go nativeBirthTraceWorker(body, results, nil)
-	result := <-results
-	if result.thread != nil {
-		defer result.thread.Close()
-		until := time.Now().Add(5 * time.Second)
-		for {
-			_, err := nativeTraceProcText(int(result.thread.Fd()), "status")
-			if errors.Is(err, unix.ENOENT) || errors.Is(err, unix.ESRCH) {
-				result.transcript.TracerThreadRetired = true
-				break
-			}
-			if err != nil || !time.Now().Before(until) {
-				result.err = errors.Join(result.err, ErrUnknown, fmt.Errorf("original tracer thread retirement not confirmed"))
-				break
-			}
-			time.Sleep(time.Millisecond)
-		}
+	tr, err, meta := nativeTraceRunTypedLockedWorker(body)
+	if meta.Unexpected {
+		tr.TracerTID = meta.TID
+		tr.Cleanup = "unexpected-worker-exit-unknown"
 	}
-	return result.transcript, result.err
-}
-
-func nativeBirthTraceWorker(body nativeTraceWorkerBody, results chan<- nativeBirthTraceResult, ready chan<- struct{}) {
-	runtime.LockOSThread()
-	if unix.Gettid() == os.Getpid() {
-		// 占住m0，第二G只能在另一M锁定；第一G从不碰ptrace。
-		started := make(chan struct{})
-		go nativeBirthTraceWorker(body, results, started)
-		<-started
-		runtime.UnlockOSThread()
-		return
-	}
-	if ready != nil {
-		close(ready)
-	}
-	var thread *os.File
-	sent := false
-	// 持久callback的panic/Goexit也不能让调用者永等channel；意外路径不
-	// Unlock受污染M，按原真实EXITKILL状态退役。不得回显潜在敏感panic值。
-	defer func() {
-		_ = recover()
-		if !sent {
-			if thread == nil {
-				runtime.UnlockOSThread()
-			}
-			results <- nativeBirthTraceResult{
-				transcript: nativeBirthTraceTranscript{TracerTID: unix.Gettid(), Cleanup: "unexpected-worker-exit-unknown"},
-				err:        errors.Join(ErrUnknown, fmt.Errorf("unexpected native tracer worker termination")), thread: thread,
-			}
-		}
-	}()
-	if err := nativeTraceCaller(); err != nil {
-		runtime.UnlockOSThread()
-		sent = true
-		results <- nativeBirthTraceResult{err: err}
-		return
-	}
-	fd, err := unix.Open("/proc/thread-self", unix.O_PATH|unix.O_DIRECTORY|unix.O_CLOEXEC, 0)
-	if err != nil {
-		runtime.UnlockOSThread()
-		sent = true
-		results <- nativeBirthTraceResult{err: err}
-		return
-	}
-	thread = os.NewFile(uintptr(fd), "original-native-tracer-thread")
-	transcript, flowErr, retire := body(unix.Gettid())
-	if !retire {
-		_ = thread.Close()
-		runtime.UnlockOSThread()
-		sent = true
-		results <- nativeBirthTraceResult{transcript: transcript, err: flowErr}
-		return
-	}
-	// 故意不Unlock：专用G返回让runtime销毁非m0的M；kernel按真实已设置的
-	// EXITKILL决定杀已确认原target，否则仅auto-detach不确定numeric新target。
-	// 接收channel还不算终态；外层必须核固定旧thread对象真正消失。
-	sent = true
-	results <- nativeBirthTraceResult{transcript: transcript, err: flowErr, thread: thread}
+	tr.TracerThreadRetired = meta.Retired
+	return tr, err
 }
 
 // interface只隔离明确模型U；生产入口永远构造真实kernel driver，不从配置/帧
@@ -323,17 +245,16 @@ func nativeTraceCaller() error {
 const nativeTracePeerPIDFD = 77 // Linux6.12.26 include/uapi/asm-generic/socket.h SO_PEERPIDFD.
 
 type nativeBirthTraceKernel struct {
-	conn                            *net.UnixConn
-	cfg                             nativeBirthTraceConfig
-	tid                             int
-	pidfd, procfd                   int
-	binary                          *os.File
-	attached, stopped, observedExit bool
-	undeliveredSignal               int
+	nativeTraceOriginalControl
+	conn   *net.UnixConn
+	cfg    nativeBirthTraceConfig
+	tid    int
+	procfd int
+	binary *os.File
 }
 
 func newNativeBirthTraceKernel(conn *net.UnixConn, cfg nativeBirthTraceConfig, tid int) (*nativeBirthTraceKernel, error) {
-	k := &nativeBirthTraceKernel{conn: conn, cfg: cfg, tid: tid, pidfd: -1, procfd: -1}
+	k := &nativeBirthTraceKernel{nativeTraceOriginalControl: nativeTraceOriginalControl{pid: cfg.Original.PostmasterPID, uid: cfg.PeerUID, pidfd: -1}, conn: conn, cfg: cfg, tid: tid, procfd: -1}
 	ok := false
 	defer func() {
 		if !ok {
@@ -690,34 +611,6 @@ func nativeTracePtrace(op uint, pid int, data uintptr) error {
 	}
 	return nil
 }
-func (k *nativeBirthTraceKernel) seize() error {
-	if err := nativeTracePtrace(unix.PTRACE_SEIZE, k.cfg.Original.PostmasterPID, 0); err != nil {
-		return err
-	}
-	k.attached = true
-	return nil
-}
-func (k *nativeBirthTraceKernel) interrupt() error {
-	return nativeTracePtrace(unix.PTRACE_INTERRUPT, k.cfg.Original.PostmasterPID, 0)
-}
-func (k *nativeBirthTraceKernel) exitKill() error {
-	return nativeTracePtrace(unix.PTRACE_SETOPTIONS, k.cfg.Original.PostmasterPID, unix.PTRACE_O_EXITKILL)
-}
-func (k *nativeBirthTraceKernel) cont() error {
-	if err := nativeTracePtrace(unix.PTRACE_CONT, k.cfg.Original.PostmasterPID, 0); err != nil {
-		return err
-	}
-	k.stopped = false
-	return nil
-}
-func (k *nativeBirthTraceKernel) detach() error {
-	if err := nativeTracePtrace(unix.PTRACE_DETACH, k.cfg.Original.PostmasterPID, 0); err != nil {
-		return err
-	}
-	k.attached, k.stopped = false, false
-	return nil
-}
-
 func (k *nativeBirthTraceKernel) waitStop(ctx context.Context, final bool) error {
 	for {
 		if err := ctx.Err(); err != nil {
@@ -809,119 +702,11 @@ func (k *nativeBirthTraceKernel) closed198() error {
 	return nil
 }
 
-// 不确认numeric新target就绝不kill/EXITKILL；只尝试停止后detach。期限不确定则
-// 退役专用M，让kernel auto-detach。确认原对象后只能原peer pidfd发SIGKILL，
-// 严格wait exit；发出kill而未见exit仍是Unknown，账本不得据此归零或重放。
-func (k *nativeBirthTraceKernel) cleanup(ctx context.Context, confirmed bool) (bool, string, error) {
-	if !k.attached || k.observedExit {
-		return false, "original-exit-observed", nil
-	}
-	if !confirmed {
-		if !k.stopped {
-			if err := k.interrupt(); err == nil {
-				_ = k.waitAnyStop(ctx)
-			}
-		}
-		if k.observedExit {
-			return false, "tentative-exit-observed", nil
-		}
-		if k.stopped && k.undeliveredSignal != int(unix.SIGKILL) {
-			// 不确定target的真实signal-delivery-stop必须保留原信号，
-			// 不能用最终原生门禁的detach0规则吞掉其SIGTERM等信号。
-			if err := nativeTracePtrace(unix.PTRACE_DETACH, k.cfg.Original.PostmasterPID, uintptr(k.undeliveredSignal)); err == nil {
-				k.attached, k.stopped = false, false
-				return false, "tentative-detached-without-kill", nil
-			}
-		}
-		return true, "tentative-retire-without-exitkill", fmt.Errorf("tentative detach unconfirmed; retire original tracer thread")
-	}
-	err := unix.PidfdSendSignal(k.pidfd, unix.SIGKILL, nil, 0)
-	if err != nil && !errors.Is(err, unix.ESRCH) {
-		return true, "original-pidfd-kill-unknown", err
-	}
-	for {
-		if err := ctx.Err(); err != nil {
-			return true, "original-pidfd-kill-exit-unconfirmed", err
-		}
-		pid, status, err := k.waitOriginal()
-		if err == unix.EINTR {
-			continue
-		}
-		if err != nil {
-			return true, "original-pidfd-kill-wait-unknown", err
-		}
-		if pid == 0 {
-			time.Sleep(time.Millisecond)
-			continue
-		}
-		if pid != k.cfg.Original.PostmasterPID {
-			return true, "original-wait-identity-unknown", fmt.Errorf("unexpected original wait target")
-		}
-		if status.Exited() || status.Signaled() {
-			k.observedExit = true
-			k.attached = false
-			return false, "original-pidfd-killed-and-exit-observed", nil
-		}
-		// 不通过numeric PID发kill。原pidfd上的SIGKILL在内核排队，stop/迟到事件
-		// 不是退出证明；只继续读wait，期限到则Unknown且退役原tracer M。
-	}
-}
-func (k *nativeBirthTraceKernel) waitAnyStop(ctx context.Context) error {
-	for {
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-		pid, status, err := k.waitOriginal()
-		if err == unix.EINTR {
-			continue
-		}
-		if err != nil {
-			return err
-		}
-		if pid == 0 {
-			time.Sleep(time.Millisecond)
-			continue
-		}
-		if status.Exited() || status.Signaled() {
-			k.observedExit = true
-			k.attached = false
-			return nil
-		}
-		if status.Stopped() {
-			k.stopped = true
-			k.rememberStop(status)
-			return nil
-		}
-		return fmt.Errorf("unknown tentative trace wait state")
-	}
-}
-
-// SEIZE的group/event stop带非零高16位；只有signal-delivery-stop保留信号。
-func (k *nativeBirthTraceKernel) rememberStop(status unix.WaitStatus) {
-	k.undeliveredSignal = 0
-	if status.Stopped() && uint32(status)>>16 == 0 {
-		k.undeliveredSignal = int(status.StopSignal())
-	}
-}
-
 // 原SO_PEERPIDFD绑定的wait；绝不以numeric PID重查。其他Go线程可能已reap
 // 原child且数字被新child复用，P_PIDFD仍只引用原struct pid；ECHILD/不支持都
 // 是Unknown，不fallback Wait4/P_PID。Linux6.12.26 exit.c1740..1747/1783..1808。
 // amd64 LP64 siginfo_t=128B，signo/errno/code=0/4/8，pid/uid/status=16/20/24。
 type nativeOriginalWaitCall func(int, int, *[128]byte, int) error
-
-func (k *nativeBirthTraceKernel) waitOriginal() (int, unix.WaitStatus, error) {
-	return nativePollOriginalWait(k.pidfd, k.cfg.Original.PostmasterPID, k.cfg.PeerUID,
-		func(which, id int, info *[128]byte, options int) error {
-			_, _, errno := unix.Syscall6(unix.SYS_WAITID, uintptr(which), uintptr(id),
-				uintptr(unsafe.Pointer(&info[0])), uintptr(options), 0, 0)
-			runtime.KeepAlive(info)
-			if errno != 0 {
-				return errno
-			}
-			return nil
-		})
-}
 
 // read seam仅供明确模型U；生产构造器只使用上面固定SYS_WAITID，不接caller
 // 回调/HTTP reader。P_PIDFD=3和原fd是核心，不因numeric PID相等认新incarnation。

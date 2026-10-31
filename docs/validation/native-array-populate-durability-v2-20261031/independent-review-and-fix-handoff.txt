@@ -1,0 +1,11 @@
+P2原12源独立审查及v2修复交接（组件边界）
+
+最初独立实读P2生产/测试12源、原79清单、旧9d774c/d24644及原tracer/target回归。发现唯一提交阻断：原complete create后fsync失败仍可见，原rejectOutstanding仅验证可见四链就返回nil。作者确认无隐藏durability来源；Root授权本审查者独占修复，所以本v2修复不自称独立审查通过，等待Root独立复核。
+
+原其它直接机制无新增组件阻断：原clone3 CLONE_INTO_CGROUP+CLONE_PIDFD、固定C ELF与四FD、先AS后mmap、21页完整LOAD锁定、降权/NNP/118条独立cBPF、停点读回及KCMP原OFD、原PIDFD实际终态等待、Root死亡保pending与新Root拒partial，均有真实来源或明确fixture边界。只读LOAD owner1不等于System inode68，不把它称全部System/K；A reserve是保守重复预留，未证明普通System调用图/I/force/normal。
+
+v2生产差异仅原append/gate前缀：见证为Root进程私有sync.Map，key为实际state/lock dev+ino、nonce、四SHA、各JSON dev+ino+size+ctime；读前后Fstat及同步后完整重读。普通gate不create/sync/登记；原complete创建成功后逐四文件+dir同步才登记。新Root无见证Unknown。私有显式Recover只对完整原ExitObserved四链逐文件/dir同步后重核登记，不启动helper、不发送token、不改JSON/nonce、不删除partial。任何失败返回Unknown。收费/clone/ptrace/退出等待主体与原v1逐字节相同。
+
+实际新精确cohort24U/119sub，772输入全部实际COPY一致，source/test/build0，零skip；新5U/18sub，原19U/101sub为直接回归。故障注入仅U模型，不是Guest磁盘故障。真实3691根4case：原Root-death/valid/cancel三个重跑，加新Root普通gate Unknown→显式Recover→gate成功，原JSON字节/nonce、驻留数组和空A叶均不变；没有新helper/populate。新case属于原同一S根，不再新增S root。全部Source/normal/physicalfree仍false，E0。
+
+保留：首gofmt路径127（tools GOROOT实际/opt/go，正确入口0）；09cfed 24U/118sub过但全文件SOURCE清单包含Docker忽略的23.github文件，旧AND-list遮核验失败，此cohort不采纳；998067与1b9938第一修轮真实通过但由最终inode/ctime硬化新轮替代；原79所有历史与原失败仍保留。最终Dockerfile独立set-e核验，772实际Go输入精确匹配；无凭据/env/完整第三方树入档。

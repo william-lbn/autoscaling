@@ -1,0 +1,205 @@
+6490: /**
+6491:  * cgroup_css_set_fork - find or create a css_set for a child process
+6492:  * @kargs: the arguments passed to create the child process
+6493:  *
+6494:  * This functions finds or creates a new css_set which the child
+6495:  * process will be attached to in cgroup_post_fork(). By default,
+6496:  * the child process will be given the same css_set as its parent.
+6497:  *
+6498:  * If CLONE_INTO_CGROUP is specified this function will try to find an
+6499:  * existing css_set which includes the requested cgroup and if not create
+6500:  * a new css_set that the child will be attached to later. If this function
+6501:  * succeeds it will hold cgroup_threadgroup_rwsem on return. If
+6502:  * CLONE_INTO_CGROUP is requested this function will grab cgroup mutex
+6503:  * before grabbing cgroup_threadgroup_rwsem and will hold a reference
+6504:  * to the target cgroup.
+6505:  */
+6506: static int cgroup_css_set_fork(struct kernel_clone_args *kargs)
+6507: 	__acquires(&cgroup_mutex) __acquires(&cgroup_threadgroup_rwsem)
+6508: {
+6529: 	if (!(kargs->flags & CLONE_INTO_CGROUP)) {
+6530: 		kargs->cset = cset;
+6531: 		return 0;
+6532: 	}
+6533: 
+6534: 	f = fget_raw(kargs->cgroup);
+6535: 	if (!f) {
+6536: 		ret = -EBADF;
+6537: 		goto err;
+6538: 	}
+6539: 	sb = f->f_path.dentry->d_sb;
+6540: 
+6541: 	dst_cgrp = cgroup_get_from_file(f);
+6542: 	if (IS_ERR(dst_cgrp)) {
+6543: 		ret = PTR_ERR(dst_cgrp);
+6544: 		dst_cgrp = NULL;
+6545: 		goto err;
+6546: 	}
+6547: 
+6548: 	if (cgroup_is_dead(dst_cgrp)) {
+6549: 		ret = -ENODEV;
+6550: 		goto err;
+6551: 	}
+6552: 
+6553: 	/*
+6554: 	 * Verify that we the target cgroup is writable for us. This is
+6555: 	 * usually done by the vfs layer but since we're not going through
+6556: 	 * the vfs layer here we need to do it "manually".
+6557: 	 */
+6558: 	ret = cgroup_may_write(dst_cgrp, sb);
+6559: 	if (ret)
+6560: 		goto err;
+6561: 
+6562: 	/*
+6563: 	 * Spawning a task directly into a cgroup works by passing a file
+6564: 	 * descriptor to the target cgroup directory. This can even be an O_PATH
+6565: 	 * file descriptor. But it can never be a cgroup.procs file descriptor.
+6566: 	 * This was done on purpose so spawning into a cgroup could be
+6567: 	 * conceptualized as an atomic
+6568: 	 *
+6569: 	 *   fd = openat(dfd_cgroup, "cgroup.procs", ...);
+6570: 	 *   write(fd, <child-pid>, ...);
+6571: 	 *
+6572: 	 * sequence, i.e. it's a shorthand for the caller opening and writing
+6573: 	 * cgroup.procs of the cgroup indicated by @dfd_cgroup. This allows us
+6574: 	 * to always use the caller's credentials.
+6575: 	 */
+6576: 	ret = cgroup_attach_permissions(cset->dfl_cgrp, dst_cgrp, sb,
+6577: 					!(kargs->flags & CLONE_THREAD),
+6578: 					current->nsproxy->cgroup_ns);
+6579: 	if (ret)
+6580: 		goto err;
+6581: 
+6582: 	kargs->cset = find_css_set(cset, dst_cgrp);
+6583: 	if (!kargs->cset) {
+6584: 		ret = -ENOMEM;
+6585: 		goto err;
+6586: 	}
+6587: 
+6588: 	put_css_set(cset);
+6589: 	fput(f);
+6590: 	kargs->cgrp = dst_cgrp;
+6591: 	return ret;
+6592: 
+6593: err:
+6594: 	cgroup_threadgroup_change_end(current);
+6595: 	cgroup_unlock();
+6596: 	if (f)
+6597: 		fput(f);
+6598: 	if (dst_cgrp)
+6599: 		cgroup_put(dst_cgrp);
+6600: 	put_css_set(cset);
+6601: 	if (kargs->cset)
+6602: 		put_css_set(kargs->cset);
+6603: 	return ret;
+6635: /**
+6636:  * cgroup_can_fork - called on a new task before the process is exposed
+6637:  * @child: the child process
+6638:  * @kargs: the arguments passed to create the child process
+6639:  *
+6640:  * This prepares a new css_set for the child process which the child will
+6641:  * be attached to in cgroup_post_fork().
+6642:  * This calls the subsystem can_fork() callbacks. If the cgroup_can_fork()
+6643:  * callback returns an error, the fork aborts with that error code. This
+6644:  * allows for a cgroup subsystem to conditionally allow or deny new forks.
+6645:  */
+6646: int cgroup_can_fork(struct task_struct *child, struct kernel_clone_args *kargs)
+6647: {
+6648: 	struct cgroup_subsys *ss;
+6649: 	int i, j, ret;
+6650: 
+6651: 	ret = cgroup_css_set_fork(kargs);
+6652: 	if (ret)
+6653: 		return ret;
+6654: 
+6655: 	do_each_subsys_mask(ss, i, have_canfork_callback) {
+6656: 		ret = ss->can_fork(child, kargs->cset);
+6657: 		if (ret)
+6658: 			goto out_revert;
+6659: 	} while_each_subsys_mask();
+6660: 
+6661: 	return 0;
+6662: 
+6706: void cgroup_post_fork(struct task_struct *child,
+6707: 		      struct kernel_clone_args *kargs)
+6708: 	__releases(&cgroup_threadgroup_rwsem) __releases(&cgroup_mutex)
+6709: {
+6710: 	unsigned int cgrp_kill_seq = 0;
+6711: 	unsigned long cgrp_flags = 0;
+6712: 	bool kill = false;
+6713: 	struct cgroup_subsys *ss;
+6714: 	struct css_set *cset;
+6715: 	int i;
+6716: 
+6717: 	cset = kargs->cset;
+6718: 	kargs->cset = NULL;
+6719: 
+6720: 	spin_lock_irq(&css_set_lock);
+6721: 
+6722: 	/* init tasks are special, only link regular threads */
+6723: 	if (likely(child->pid)) {
+6724: 		if (kargs->cgrp) {
+6725: 			cgrp_flags = kargs->cgrp->flags;
+6726: 			cgrp_kill_seq = kargs->cgrp->kill_seq;
+6727: 		} else {
+6728: 			cgrp_flags = cset->dfl_cgrp->flags;
+6729: 			cgrp_kill_seq = cset->dfl_cgrp->kill_seq;
+6730: 		}
+6731: 
+6732: 		WARN_ON_ONCE(!list_empty(&child->cg_list));
+6733: 		cset->nr_tasks++;
+6734: 		css_set_move_task(child, NULL, cset, false);
+6735: 	} else {
+6736: 		put_css_set(cset);
+6737: 		cset = NULL;
+6738: 	}
+6739: 
+6740: 	if (!(child->flags & PF_KTHREAD)) {
+6741: 		if (unlikely(test_bit(CGRP_FREEZE, &cgrp_flags))) {
+6742: 			/*
+6743: 			 * If the cgroup has to be frozen, the new task has
+6744: 			 * too. Let's set the JOBCTL_TRAP_FREEZE jobctl bit to
+6745: 			 * get the task into the frozen state.
+6746: 			 */
+6747: 			spin_lock(&child->sighand->siglock);
+6748: 			WARN_ON_ONCE(child->frozen);
+6749: 			child->jobctl |= JOBCTL_TRAP_FREEZE;
+6750: 			spin_unlock(&child->sighand->siglock);
+6751: 
+6752: 			/*
+6753: 			 * Calling cgroup_update_frozen() isn't required here,
+6754: 			 * because it will be called anyway a bit later from
+6755: 			 * do_freezer_trap(). So we avoid cgroup's transient
+6756: 			 * switch from the frozen state and back.
+6757: 			 */
+6758: 		}
+6759: 
+6760: 		/*
+6761: 		 * If the cgroup is to be killed notice it now and take the
+6762: 		 * child down right after we finished preparing it for
+6763: 		 * userspace.
+6764: 		 */
+6765: 		kill = kargs->kill_seq != cgrp_kill_seq;
+6766: 	}
+6767: 
+6768: 	spin_unlock_irq(&css_set_lock);
+6769: 
+6770: 	/*
+6771: 	 * Call ss->fork().  This must happen after @child is linked on
+6772: 	 * css_set; otherwise, @child might change state between ->fork()
+6773: 	 * and addition to css_set.
+6774: 	 */
+6775: 	do_each_subsys_mask(ss, i, have_fork_callback) {
+6776: 		ss->fork(child);
+6777: 	} while_each_subsys_mask();
+6778: 
+6779: 	/* Make the new cset the root_cset of the new cgroup namespace. */
+6780: 	if (kargs->flags & CLONE_NEWCGROUP) {
+6781: 		struct css_set *rcset = child->nsproxy->cgroup_ns->root_cset;
+6782: 
+6783: 		get_css_set(cset);
+6784: 		child->nsproxy->cgroup_ns->root_cset = cset;
+6785: 		put_css_set(rcset);
+6786: 	}
+6787: 
+6788: 	/* Cgroup has to be killed so take down child immediately. */

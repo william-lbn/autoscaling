@@ -1,0 +1,22 @@
+{
+  "unit": "neon-array-durability-20261031t162751z-ecdfda",
+  "nonce": "20261031T162751Z-ecdfda",
+  "host": "worker-118",
+  "source_count": 772,
+  "command": "go test -race -count=1 -json -run '^(TestNativeArrayPopulate|TestNativeTraceOriginalStopped|TestNativeBirthTracerModel)' ./pkg/dsga/resourceguard; then static native compile",
+  "source_lock_sha256": "ec8b1498384dc60e8a961a3f5fe0c366a3e653c95392ee9445dbe3bba5811038",
+  "client_limits": {
+    "CPUQuota": "200%",
+    "MemoryMax": "2G",
+    "TasksMax": 256
+  },
+  "executor_limits": {
+    "GOMAXPROCS": 2,
+    "hard_memory_cap": "NOT_SET_BUILDKIT_EXECUTOR_IS_SEPARATE"
+  },
+  "gofmt_first_attempt": {
+    "entrypoint": "/usr/local/go/bin/gofmt",
+    "exit": 127,
+    "reason": "tools image actual GOROOT is /opt/go; corrected /opt/go/bin/gofmt exit0; no compilation executed"
+  }
+}

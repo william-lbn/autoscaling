@@ -1,0 +1,18 @@
+{
+  "nonce": "20261031T154201Z-9d774c",
+  "unit": "neon-array-go-20261031t154201z-9d774c",
+  "command": "go test -race -count=1 -json -run '^(TestNativeArrayPopulate|TestNativeTraceOriginalStopped|TestNativeBirthTracerModel)' ./pkg/dsga/resourceguard && CGO_ENABLED=0 go test -c -tags=dsga_native_birth_tracer,dsga_native_array_populate -o /out/native-tracer.test ./pkg/dsga/resourceguard && /out/native-tracer.test -test.list '^TestNativeArrayPopulateKernelComponent$' > /out/native-test-list.txt && grep -Fqx TestNativeArrayPopulateKernelComponent /out/native-test-list.txt",
+  "git": "adcc2c1f6666a798b2db0bdb2b9b5d70fa8a7421",
+  "host": "worker-118",
+  "source_count": 771,
+  "dockerfile_sha256": "0252a732c79a5ea02126afe3dbec9b9221efaf9fb1efc017a090d42c399779e3",
+  "client_cgroup_limits": {
+    "CPUQuota": "200%",
+    "MemoryMax": "2G",
+    "TasksMax": 256
+  },
+  "executor_limits": {
+    "GOMAXPROCS": 2,
+    "hard_memory_cap": "NOT_SET_BUILDKIT_EXECUTOR_IS_SEPARATE"
+  }
+}

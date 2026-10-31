@@ -1,0 +1,294 @@
+--- original-v1/pkg/dsga/resourceguard/native_array_populate_linux.go
++++ durability-v2/pkg/dsga/resourceguard/native_array_populate_linux.go
+@@ -14,6 +14,7 @@
+ 	"runtime"
+ 	"strconv"
+ 	"strings"
++	"sync"
+ 	"syscall"
+ 	"time"
+ 	"unsafe"
+@@ -66,29 +67,150 @@
+ func arrayPopulateName(nonce, phase string) string {
+ 	return "array-populate." + nonce + "." + phase + ".json"
+ }
+-func arrayPopulateRaw(s *lockedState, name string) ([]byte, error) {
+-	raw, found, e := s.readPhysicalFile(name)
+-	if e != nil || !found {
+-		return nil, errors.Join(ErrUnknown, fmt.Errorf("original array operation unreadable: %s", name), e)
+-	}
+-	return raw, nil
++
++// 文件身份和ctime随原字节一起绑定进内存见证。同字节的新inode/重写文件
++// 仍须显式恢复；不能仅因hash相同就沿用旧文件的fsync证明。
++type arrayPopulateHistoryIdentity struct {
++	Device            uint64
++	Inode             uint64
++	Bytes             int64
++	ChangeSeconds     int64
++	ChangeNanoseconds int64
++}
++
++func arrayPopulateHistoryStat(st unix.Stat_t) arrayPopulateHistoryIdentity {
++	return arrayPopulateHistoryIdentity{st.Dev, st.Ino, st.Size, st.Ctim.Sec, st.Ctim.Nsec}
++}
++func arrayPopulateHistoryRaw(s *lockedState, name string) ([]byte, arrayPopulateHistoryIdentity, error) {
++	var zero arrayPopulateHistoryIdentity
++	fd, err := unix.Openat(int(s.dir.Fd()), name, unix.O_RDONLY|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0)
++	if err != nil {
++		return nil, zero, errors.Join(ErrUnknown, err)
++	}
++	f := os.NewFile(uintptr(fd), name)
++	defer f.Close()
++	var before, after unix.Stat_t
++	if err := unix.Fstat(fd, &before); err != nil {
++		return nil, zero, errors.Join(ErrUnknown, err)
++	}
++	if err := privateRegular(fd, unix.S_IFREG); err != nil {
++		return nil, zero, errors.Join(ErrUnknown, err)
++	}
++	raw, err := io.ReadAll(io.LimitReader(f, 64*1024+1))
++	if err != nil || len(raw) > 64*1024 {
++		return nil, zero, errors.Join(ErrUnknown, fmt.Errorf("array history unreadable or exceeds bound"), err)
++	}
++	if err := unix.Fstat(fd, &after); err != nil {
++		return nil, zero, errors.Join(ErrUnknown, err)
++	}
++	if arrayPopulateHistoryStat(before) != arrayPopulateHistoryStat(after) || privateRegular(fd, unix.S_IFREG) != nil {
++		return nil, zero, errors.Join(ErrUnknown, fmt.Errorf("original array file changed while read"))
++	}
++	return raw, arrayPopulateHistoryStat(after), nil
+ }
+ 
+ // 完成记录只说明本次helper已同步退出；不认证PG当前容量、不产生normal许可。
+-// pending/partial/Root重启不重放，不删除原nonce。后继所有cap写者仍须明确接本门禁。
++// 磁盘四链可见不等于原fsync已经成功。仅本Root进程内的私有见证可让普通
++// 门禁通过；Root重启后必须显式Recover，pending/partial从不重放或删除。
++type arrayPopulateDurabilityKey struct {
++	StateDevice uint64
++	StateInode  uint64
++	LockDevice  uint64
++	LockInode   uint64
++	Nonce       string
++	ChainSHA256 [4]string
++	Files       [4]arrayPopulateHistoryIdentity
++}
++
++// 仅内存持有，故exec/Root重启不会继承；不是可由JSON/marker重建的授权。
++// key覆盖实际原目录/锁身份、nonce及四链原字节，不能跨目录或代次借用。
++var arrayPopulateDurabilityWitnesses sync.Map
++
++func arrayPopulateStateKey(s *lockedState, nonce string) (arrayPopulateDurabilityKey, error) {
++	var key arrayPopulateDurabilityKey
++	if s == nil || s.dir == nil || s.lock == nil {
++		return key, errors.Join(ErrUnknown, fmt.Errorf("array operation requires original resource lock"))
++	}
++	if _, err := nativeBirthDigest(nonce); err != nil {
++		return key, errors.Join(ErrUnknown, err)
++	}
++	var dir, lock unix.Stat_t
++	if err := unix.Fstat(int(s.dir.Fd()), &dir); err != nil {
++		return key, errors.Join(ErrUnknown, err)
++	}
++	if err := unix.Fstat(int(s.lock.Fd()), &lock); err != nil {
++		return key, errors.Join(ErrUnknown, err)
++	}
++	if privateRegular(int(s.dir.Fd()), unix.S_IFDIR) != nil || privateRegular(int(s.lock.Fd()), unix.S_IFREG) != nil || dir.Dev != lock.Dev {
++		return key, errors.Join(ErrUnknown, fmt.Errorf("original array state identity differs"))
++	}
++	key.StateDevice, key.StateInode = dir.Dev, dir.Ino
++	key.LockDevice, key.LockInode, key.Nonce = lock.Dev, lock.Ino, nonce
++	return key, nil
++}
++
++// 完整链只读验证：ExitObserved只能来自原helper终态记录，不能由恢复再运行helper补齐。
++func arrayPopulateCompleteKeyLocked(s *lockedState, nonce string) (arrayPopulateDurabilityKey, error) {
++	var zero arrayPopulateDurabilityKey
++	key, err := arrayPopulateStateKey(s, nonce)
++	if err != nil {
++		return zero, err
++	}
++	pending, pendingIdentity, e := arrayPopulateHistoryRaw(s, arrayPopulateName(nonce, "pending"))
++	if e != nil {
++		return zero, e
++	}
++	var p arrayPopulatePending
++	if control.UnmarshalObject(pending, &p) != nil || p.validate() != nil || p.Nonce != nonce || uint64(p.StateDevice) != key.StateDevice || uint64(p.StateInode) != key.StateInode || uint64(p.LockDevice) != key.LockDevice || uint64(p.LockInode) != key.LockInode {
++		return zero, ErrUnknown
++	}
++	child, childIdentity, e := arrayPopulateHistoryRaw(s, arrayPopulateName(nonce, "child"))
++	if e != nil {
++		return zero, e
++	}
++	var c arrayPopulateChild
++	if control.UnmarshalObject(child, &c) != nil || c.ProtocolVersion != 1 || c.PendingSHA256 != physicalDigest(pending) || c.PID <= 1 || c.StartTicks == 0 || c.PIDFDDevice == 0 || c.PIDFDInode == 0 {
++		return zero, ErrUnknown
++	}
++	prepared, preparedIdentity, e := arrayPopulateHistoryRaw(s, arrayPopulateName(nonce, "prepared"))
++	if e != nil {
++		return zero, e
++	}
++	var q arrayPopulatePrepared
++	if control.UnmarshalObject(prepared, &q) != nil || q.ProtocolVersion != 1 || q.TracerTID <= 0 || q.ChildSHA256 != physicalDigest(child) || !physicalDigestValid(q.StatusSHA256) || !physicalDigestValid(q.FilterSHA256) || q.VmSizeBytes > p.Context.AddressSpaceMaxBytes || q.LockedBytes == 0 || q.LockedBytes > p.Context.MemlockUpperBytes {
++		return zero, ErrUnknown
++	}
++	complete, completeIdentity, e := arrayPopulateHistoryRaw(s, arrayPopulateName(nonce, "complete"))
++	if e != nil {
++		return zero, e
++	}
++	var z arrayPopulateComplete
++	if control.UnmarshalObject(complete, &z) != nil || z.ProtocolVersion != 1 || z.PreparedSHA256 != physicalDigest(prepared) || z.PID != c.PID || !z.ExitObserved {
++		return zero, ErrUnknown
++	}
++	for i, spec := range p.Context.Files {
++		if z.Progress[i] != (spec.Length != 0) {
++			return zero, ErrUnknown
++		}
++	}
++	key.ChainSHA256 = [4]string{physicalDigest(pending), physicalDigest(child), physicalDigest(prepared), physicalDigest(complete)}
++	key.Files = [4]arrayPopulateHistoryIdentity{pendingIdentity, childIdentity, preparedIdentity, completeIdentity}
++	return key, nil
++}
++
+ func rejectOutstandingArrayPopulateLocked(s *lockedState) error {
+ 	if s == nil || s.dir == nil || s.lock == nil {
+-		return fmt.Errorf("array operation requires original resource lock")
++		return errors.Join(ErrUnknown, fmt.Errorf("array operation requires original resource lock"))
+ 	}
+ 	fd, e := unix.Openat(int(s.dir.Fd()), ".", unix.O_RDONLY|unix.O_DIRECTORY|unix.O_CLOEXEC, 0)
+ 	if e != nil {
+-		return e
++		return errors.Join(ErrUnknown, e)
+ 	}
+ 	f := os.NewFile(uintptr(fd), "array-operation-scan")
+ 	names, e := f.Readdirnames(-1)
+ 	f.Close()
+ 	if e != nil {
+-		return e
++		return errors.Join(ErrUnknown, e)
+ 	}
+ 	if len(names) > 4096 {
+ 		return errors.Join(ErrUnknown, fmt.Errorf("array history exceeds bound"))
+@@ -117,53 +239,85 @@
+ 		if len(files) != 4 {
+ 			return errors.Join(ErrUnknown, fmt.Errorf("original array operation pending/partial; no automatic replay"))
+ 		}
+-		pending, e := arrayPopulateRaw(s, arrayPopulateName(nonce, "pending"))
+-		if e != nil {
+-			return e
+-		}
+-		var p arrayPopulatePending
+-		if control.UnmarshalObject(pending, &p) != nil || p.validate() != nil || p.Nonce != nonce {
+-			return ErrUnknown
+-		}
+-		child, e := arrayPopulateRaw(s, arrayPopulateName(nonce, "child"))
+-		if e != nil {
+-			return e
+-		}
+-		var c arrayPopulateChild
+-		if control.UnmarshalObject(child, &c) != nil || c.ProtocolVersion != 1 || c.PendingSHA256 != physicalDigest(pending) || c.PID <= 1 || c.StartTicks == 0 || c.PIDFDDevice == 0 || c.PIDFDInode == 0 {
+-			return ErrUnknown
+-		}
+-		prepared, e := arrayPopulateRaw(s, arrayPopulateName(nonce, "prepared"))
+-		if e != nil {
+-			return e
+-		}
+-		var q arrayPopulatePrepared
+-		if control.UnmarshalObject(prepared, &q) != nil || q.ProtocolVersion != 1 || q.TracerTID <= 0 || q.ChildSHA256 != physicalDigest(child) || !physicalDigestValid(q.StatusSHA256) || !physicalDigestValid(q.FilterSHA256) || q.VmSizeBytes > p.Context.AddressSpaceMaxBytes || q.LockedBytes == 0 || q.LockedBytes > p.Context.MemlockUpperBytes {
+-			return ErrUnknown
+-		}
+-		complete, e := arrayPopulateRaw(s, arrayPopulateName(nonce, "complete"))
+-		if e != nil {
+-			return e
+-		}
+-		var z arrayPopulateComplete
+-		if control.UnmarshalObject(complete, &z) != nil || z.ProtocolVersion != 1 || z.PreparedSHA256 != physicalDigest(prepared) || z.PID != c.PID || !z.ExitObserved {
+-			return ErrUnknown
+-		}
+-		for i, spec := range p.Context.Files {
+-			if z.Progress[i] != (spec.Length != 0) {
+-				return ErrUnknown
+-			}
++		key, err := arrayPopulateCompleteKeyLocked(s, nonce)
++		if err != nil {
++			return errors.Join(ErrUnknown, err)
++		}
++		// 普通Observe/gate必须零写；绝不以可见complete、后继fsync或新marker猜原完成持久。
++		if _, ok := arrayPopulateDurabilityWitnesses.Load(key); !ok {
++			return errors.Join(ErrUnknown, fmt.Errorf("complete array chain lacks this Root durability witness; explicit recovery required"))
+ 		}
+ 	}
+ 	return nil
+ }
++
++// 私有IO边界仅供精确故障模型；生产Append/Recover始终使用下面固定实现。
++// 不暴露HTTP/config布尔开关，不允许调用者注入成功见证或省略文件同步。
++type arrayPopulateDurabilityIO struct {
++	create   func(*lockedState, string, []byte) error
++	syncFile func(*lockedState, string) error
++	syncDir  func(*lockedState) error
++}
++
++func arrayPopulateDiskDurability() arrayPopulateDurabilityIO {
++	return arrayPopulateDurabilityIO{
++		create:   func(s *lockedState, name string, raw []byte) error { return s.createPhysicalFile(name, raw) },
++		syncFile: func(s *lockedState, name string) error { return s.syncPhysicalFile(name) },
++		syncDir:  func(s *lockedState) error { return s.dir.Sync() },
++	}
++}
++
++// 原完成与显式恢复共用完整持久前缀：先验证原四链，逐文件+目录fsync，再
++// 重新读取相同身份/原字节后登记本进程见证。任何失败只留Unknown，绝不删partial。
++func arrayPopulateConfirmDurableLocked(s *lockedState, nonce string, disk arrayPopulateDurabilityIO) error {
++	before, err := arrayPopulateCompleteKeyLocked(s, nonce)
++	if err != nil {
++		return errors.Join(ErrUnknown, err)
++	}
++	arrayPopulateDurabilityWitnesses.Delete(before)
++	if disk.syncFile == nil || disk.syncDir == nil {
++		return errors.Join(ErrUnknown, fmt.Errorf("original array durability IO missing"))
++	}
++	for _, phase := range []string{"pending", "child", "prepared", "complete"} {
++		if err := disk.syncFile(s, arrayPopulateName(nonce, phase)); err != nil {
++			return errors.Join(ErrUnknown, fmt.Errorf("array completion prefix sync %s: %w", phase, err))
++		}
++	}
++	if err := disk.syncDir(s); err != nil {
++		return errors.Join(ErrUnknown, fmt.Errorf("array completion directory sync: %w", err))
++	}
++	after, err := arrayPopulateCompleteKeyLocked(s, nonce)
++	if err != nil || after != before {
++		return errors.Join(ErrUnknown, fmt.Errorf("array completion changed during durability confirmation"), err)
++	}
++	arrayPopulateDurabilityWitnesses.Store(after, struct{}{})
++	return nil
++}
++
++// 显式私有恢复仅确认已退出的完整原四链。旧Root的完成文件不能自动解除Unknown；
++// 本入口不启动helper、不发送populate token、不补缺失记录、不重放或修改原nonce。
++func recoverArrayPopulateCompletedLocked(s *lockedState, nonce string) error {
++	return arrayPopulateConfirmDurableLocked(s, nonce, arrayPopulateDiskDurability())
++}
++
+ func arrayPopulateAppend(s *lockedState, nonce, phase string, v any) ([]byte, error) {
++	return arrayPopulateAppendWithDurability(s, nonce, phase, v, arrayPopulateDiskDurability())
++}
++func arrayPopulateAppendWithDurability(s *lockedState, nonce, phase string, v any, disk arrayPopulateDurabilityIO) ([]byte, error) {
+ 	b, e := json.Marshal(v)
+ 	if e != nil {
+ 		return nil, e
+ 	}
+-	if e = s.createPhysicalFile(arrayPopulateName(nonce, phase), b); e != nil {
++	if disk.create == nil {
++		return nil, errors.Join(ErrUnknown, fmt.Errorf("original array create IO missing"))
++	}
++	if e = disk.create(s, arrayPopulateName(nonce, phase), b); e != nil {
+ 		return nil, errors.Join(ErrUnknown, e)
++	}
++	if phase == "complete" {
++		if e = arrayPopulateConfirmDurableLocked(s, nonce, disk); e != nil {
++			return nil, e
++		}
+ 	}
+ 	return b, nil
+ }

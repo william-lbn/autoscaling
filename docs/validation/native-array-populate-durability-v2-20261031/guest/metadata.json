@@ -1,0 +1,18 @@
+{
+  "unit": "neon-array-durability-guest-20261031t162828z-1e8412",
+  "nonce": "20261031T162828Z-1e8412",
+  "client_limits": {
+    "CPUQuota": "200%",
+    "MemoryMax": "2G"
+  },
+  "docker_limits": {
+    "cpus": 2,
+    "memory": "2g",
+    "guest_memory_mib": 1024,
+    "guest_cpus": 2
+  },
+  "qemu_accelerator_required": "kvm",
+  "original_three_cases_preserved": true,
+  "added_case": "valid/new-root-recovery",
+  "disk_sync_failure_is_only_U_model": true
+}

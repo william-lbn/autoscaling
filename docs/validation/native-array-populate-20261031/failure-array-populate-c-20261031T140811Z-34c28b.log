@@ -1,0 +1,15 @@
+gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+Copyright (C) 2022 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+cc -std=gnu11 -Os -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -fno-pie -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -msoft-float -nostdlib -static -no-pie -Wl,--build-id=sha1,-z,noexecstack,-z,max-page-size=0x1000,-z,common-page-size=0x1000 /src/array_populate.c -o neon-dsga-array-populate
+/src/array_populate.c: In function 'lock_image':
+/src/array_populate.c:91:3: error: this 'if' clause does not guard... [-Werror=misleading-indentation]
+   91 |   if(end<p[i].p_vaddr||end>UINT64_MAX-(PAGE-1))fail(22);end=(end+PAGE-1)&~(PAGE-1);
+      |   ^~
+/src/array_populate.c:91:57: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'
+   91 |   if(end<p[i].p_vaddr||end>UINT64_MAX-(PAGE-1))fail(22);end=(end+PAGE-1)&~(PAGE-1);
+      |                                                         ^~~
+cc1: all warnings being treated as errors
+make: *** [/src/Makefile:7: neon-dsga-array-populate] Error 1
