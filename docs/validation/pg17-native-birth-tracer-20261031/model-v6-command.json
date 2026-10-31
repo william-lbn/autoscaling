@@ -1,0 +1,20 @@
+[
+  "docker",
+  "buildx",
+  "build",
+  "--builder",
+  "neon-data",
+  "--network",
+  "none",
+  "--progress",
+  "plain",
+  "--build-arg",
+  "NONCE=model-pidfd-v6-20261031",
+  "--metadata-file",
+  "/data/neon-build/validation/pg17-go-native-tracer-20261030T235629Z/model-v6-build-metadata.json",
+  "--output",
+  "type=local,dest=/data/neon-build/validation/pg17-go-native-tracer-20261030T235629Z/model-v6-artifact",
+  "-f",
+  "/data/neon-build/validation/pg17-go-native-tracer-20261030T235629Z/Dockerfile-model-v6",
+  "/data/neon-build/dev/pg17-go-native-tracer-20261030T235629Z/cohort-410bcc"
+]

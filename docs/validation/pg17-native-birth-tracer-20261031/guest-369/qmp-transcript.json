@@ -1,0 +1,83 @@
+[
+  {
+    "receive": {
+      "QMP": {
+        "version": {
+          "qemu": {
+            "micro": 5,
+            "minor": 1,
+            "major": 8
+          },
+          "package": ""
+        },
+        "capabilities": [
+          "oob"
+        ]
+      }
+    }
+  },
+  {
+    "send": {
+      "execute": "qmp_capabilities",
+      "id": "capabilities"
+    }
+  },
+  {
+    "receive": {
+      "return": {},
+      "id": "capabilities"
+    }
+  },
+  {
+    "send": {
+      "execute": "query-kvm",
+      "id": "actual-kvm"
+    }
+  },
+  {
+    "receive": {
+      "return": {
+        "enabled": true,
+        "present": true
+      },
+      "id": "actual-kvm"
+    }
+  },
+  {
+    "send": {
+      "execute": "query-status",
+      "id": "before-cont"
+    }
+  },
+  {
+    "receive": {
+      "return": {
+        "status": "prelaunch",
+        "singlestep": false,
+        "running": false
+      },
+      "id": "before-cont"
+    }
+  },
+  {
+    "send": {
+      "execute": "cont",
+      "id": "run-Guest"
+    }
+  },
+  {
+    "receive": {
+      "timestamp": {
+        "seconds": 1793407580,
+        "microseconds": 724064
+      },
+      "event": "RESUME"
+    }
+  },
+  {
+    "receive": {
+      "return": {},
+      "id": "run-Guest"
+    }
+  }
+]

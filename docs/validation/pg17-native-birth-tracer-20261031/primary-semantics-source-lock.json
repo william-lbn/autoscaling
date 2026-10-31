@@ -1,0 +1,125 @@
+[
+  {
+    "name": "linux-6.12.26-ptrace.c",
+    "url": "https://raw.githubusercontent.com/gregkh/linux/v6.12.26/kernel/ptrace.c",
+    "retrievedAtUTC": "2026-10-30T23:30:52.708901+00:00",
+    "status": 200,
+    "sha256": "ddb8bf50294bac786b3f0ed62f94e0753ec6bd3add6800f65f82e4bd31e730bd",
+    "bytes": 37691,
+    "proxy": "http://127.0.0.1:7890",
+    "lines": "530..605",
+    "finding": "tracer exit traverses own ptraced list; EXITKILL sends SIGKILL then detach; without option detach only"
+  },
+  {
+    "name": "go1.24.3-proc.go",
+    "url": "https://raw.githubusercontent.com/golang/go/go1.24.3/src/runtime/proc.go",
+    "retrievedAtUTC": "2026-10-30T23:30:53.682292+00:00",
+    "status": 200,
+    "sha256": "9cff4fca76c6778741947fbcf362530a5259b050cc7643838d6feeaa77df905a",
+    "bytes": 214687,
+    "proxy": "http://127.0.0.1:7890",
+    "lines": "1896..2004,4310..4405,5314..5340",
+    "finding": "locked G exit retires M; m0 special branch wedges, so never attach on TGID leader"
+  },
+  {
+    "name": "go1.24.3-os_linux.go",
+    "url": "https://raw.githubusercontent.com/golang/go/go1.24.3/src/runtime/os_linux.go",
+    "retrievedAtUTC": "2026-10-30T23:30:54.348970+00:00",
+    "status": 200,
+    "sha256": "bca5f40d1154071a3fa57627e25acb7b2eb4dbb68c3aaf65acaa9011dd740ebf",
+    "bytes": 27632,
+    "proxy": "http://127.0.0.1:7890",
+    "lines": "actual /opt/go source bytes verified by compile image",
+    "finding": "exact Go runtime Linux source, retained input for runtime contract"
+  },
+  {
+    "name": "go1.24.3-sys_linux_amd64.s",
+    "url": "https://raw.githubusercontent.com/golang/go/go1.24.3/src/runtime/sys_linux_amd64.s",
+    "retrievedAtUTC": "2026-10-31T00:05:13.752867+00:00",
+    "status": 200,
+    "sha256": "606a963e795a1ed9cfa9393c824f27d02e31cd003ef13329d4424ca7de44a4bf",
+    "bytes": 16750,
+    "proxy": "http://127.0.0.1:7890",
+    "lines": "53..81",
+    "finding": "exitThread executes thread SYS_exit rather than exit_group"
+  },
+  {
+    "name": "linux-6.12.26-socket.h",
+    "url": "https://raw.githubusercontent.com/gregkh/linux/v6.12.26/include/uapi/asm-generic/socket.h",
+    "retrievedAtUTC": "2026-10-31T00:05:14.360249+00:00",
+    "status": 200,
+    "sha256": "4bc992a69d9fd537d955b1bf8fb91f2140667afb3fc84930af5205e54835b615",
+    "bytes": 3988,
+    "proxy": "http://127.0.0.1:7890",
+    "lines": "136",
+    "finding": "SO_PEERPIDFD is 77"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/gregkh/linux/v6.12.26/include/uapi/asm-generic/siginfo.h",
+    "sha256": "18625c075e9ee00c53f0389f50bfca3b85da648bb994383acfc106c5dde5dce0",
+    "exactCachePath": "/data/neon-build/cache/buildkit/runc-overlayfs/snapshots/snapshots/287/fs/build/linux-6.12.26/include/uapi/asm-generic/siginfo.h",
+    "lines": [
+      [
+        55,
+        70
+      ],
+      [
+        110,
+        125
+      ],
+      [
+        273,
+        289
+      ]
+    ],
+    "finding": "P_PIDFD holds original struct pid; exact amd64 LP64 siginfo and full ptrace event status; no numeric PID lookup"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/gregkh/linux/v6.12.26/arch/x86/include/uapi/asm/siginfo.h",
+    "sha256": "9bdbf34cba5d10fd6fed612d6d7d8096f38e2e1d2993af5f25ee4423c1db1ea6",
+    "exactCachePath": "/data/neon-build/cache/buildkit/runc-overlayfs/snapshots/snapshots/287/fs/build/linux-6.12.26/arch/x86/include/uapi/asm/siginfo.h",
+    "lines": [
+      [
+        1,
+        45
+      ]
+    ],
+    "finding": "P_PIDFD holds original struct pid; exact amd64 LP64 siginfo and full ptrace event status; no numeric PID lookup"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/gregkh/linux/v6.12.26/include/uapi/linux/wait.h",
+    "sha256": "5aef6849976f461a6a202d92c4f37de8d0550b66699efc398ada9e906047fdc3",
+    "exactCachePath": "/data/neon-build/cache/buildkit/runc-overlayfs/snapshots/snapshots/287/fs/build/linux-6.12.26/include/uapi/linux/wait.h",
+    "lines": [
+      [
+        1,
+        45
+      ]
+    ],
+    "finding": "P_PIDFD holds original struct pid; exact amd64 LP64 siginfo and full ptrace event status; no numeric PID lookup"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/gregkh/linux/v6.12.26/kernel/exit.c",
+    "sha256": "7c28bfc644117470b9cbe6d46c84580de98225755bbb227e61d638ea7104025d",
+    "exactCachePath": "/data/neon-build/cache/buildkit/runc-overlayfs/snapshots/snapshots/287/fs/build/linux-6.12.26/kernel/exit.c",
+    "lines": [
+      [
+        1310,
+        1359
+      ],
+      [
+        1593,
+        1628
+      ],
+      [
+        1710,
+        1755
+      ],
+      [
+        1779,
+        1810
+      ]
+    ],
+    "finding": "P_PIDFD holds original struct pid; exact amd64 LP64 siginfo and full ptrace event status; no numeric PID lookup"
+  }
+]

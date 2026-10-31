@@ -1,0 +1,102 @@
+PG17 原生出生 Tracer 会话：Linux 组件验收（2026-10-31）
+
+结论：私有 Go tracer 会话组件的模型、Host 和准确 369 内核 KVM 验证通过。
+本阶段没有生产 Root/WAL/Source 接线，没有运行 PG normal 降限、正式 PG 服务或 K8s。
+DetachedNonAuthorizing 只表示组件按约定释放停点，不产生 Root 完整 Birth 或缩容资格。
+所有历史失败和已被独立审查否决的旧 Wait4 版本收据均保留。
+
+一、唯一源码集合
+测试只从 Linux 已提交 AS 410bcc63a5de44b26afd04e237854a9c5b1705ce 导出完整来源，
+叠加 Root 冻结的 audit 三文件和本批 tracer 三文件。排除其他并行未提交模块。
+cohort-410bcc-lock-v6.json 锁定六个 overlay；702 份 Go/mod/sum 的实际 COPY 摘要在模型
+和静态构建两条路径逐项相等。native-binary-source-proof-v6.json 记录产物与来源。
+本批只新增 native_birth_tracer_linux.go、native_birth_tracer_linux_test.go、
+native_birth_tracer_native_test.go；后者需显式 dsga_native_birth_tracer tag 和环境门禁。
+Go1.24.3/CGO0 静态测试二进制：
+efe10aade0f0d1a431c42c661447579c518030d46aac5717436df390a5ac0a45。
+Host 与准确 Guest 使用同一二进制，不按平台重复增加功能覆盖数。
+
+PG 是明确 TEST_ONLY 原生 C14 组件镜像：
+127.0.0.1:5001/neon/pg17-native-root-wire@sha256:af97e387041b349d0138b39b9a7c90c9d612db3ef07906fe1271db7162ee414d
+ELF=c990ed4251edb270d37894036c70d90e012fea2bb441a7a48faeb0ed6375be53。
+运行输出内嵌旧 7936719 版本串，不能将其误说为新提交版本证明。C14 实际源码/镜像 COPY
+核验另见 pg-c14 的原冻结 14 文件来源及 7196 文件映射收据。本批不改 PG C14。
+Kernel/QEMU/BusyBox/launcher/PG 动态库均以 guest-369/runtime-dependency-lock.json、
+qemu-proof.txt 和 initramfs-manifest.json 锁定；没有构建所有 Compute 扩展。
+
+二、会话与错误边界
+私有 runNativeBirthTraceSession 接受已由 Root 原 pending 得到的 SOCK_SEQPACKET、
+ProcessIdentity/PID-start/UID/GID、原可信 expected、原不可变 ELF FD/hash 和非 nil Persist。
+不接受 HTTP 自选 PID，不把 native 帧的 SourceSHA 或请求 bool 当可信 builder。
+原 SO_PEERPIDFD 必须实际可取；固定 /proc 目录及 start/exe/uid/gid/boot/单线程反复复核。
+ELF 是原只读 mount 上的 regular FD，实际 hash 相符；环境只给 PATH/LANG/LC_ALL，
+清空 LD_* 等，预期 BPF 由同原 ELF 的 root-only audit 命令编译，比较真实内核完整指令。
+
+整个 ptrace 流程在专用 G 的非 TGID OS 线程上 LockOSThread：
+SEIZE(options=0) → INTERRUPT/event stop → 原对象复核 → SETOPTIONS(EXITKILL) →
+完整 base BPF → base Persist → 再核 → CONT0/ACK112 → 原生 self SIGSTOP delivery stop →
+完整 final BPF/AS/R/198 已关闭 → final Persist → 再核 → DETACH0。
+base/final 都不能绕过 Persist。final 状态是可恢复的待释放阶段，不可仅凭 fsync 回调或 ACK
+将外部 ledger 晋级完整 Birth。回调 panic/Goexit 也是 Unknown，不吞成无效果。
+final 停点真实 GETSIGINFO 必须是原 peer UID/PID 的 SI_TKILL SIGSTOP；其他同 UID 信号不算。
+
+失败时未确认原对象只尝试保信号 detach，不设置 EXITKILL、不 numeric kill；
+不确定时退役原 tracer 非 leader M，原线程目录真正消失后才返回。已确认对象才用原
+pidfd SIGKILL，必须实际观察原退出；无法证明仍 Unknown，外层保留预算。
+Go1.24.3 m0 特例不会退出，故 m0 只占位让第二 G 得到非 leader M，从不 SEIZE。
+channel 收到结果不代表 M 已死；固定原 /proc/thread-self FD 观察目录消失才记退役。
+官方准确 Go/Linux 源的 URL、SHA、行号及结论见 primary-semantics-source-lock.json，
+实际工具镜像 /opt/go 源摘要与上述 Go source 相同。
+
+三、独立审查发现及修复
+旧版 Wait4(numeric PID) 默认可等待同 TGID 其他线程的 child；原退出被其他 reaper 收走后，
+相同数字可能已属于新 child，存在误 reap 风险。旧 Host PASS 不覆盖此反例。
+新版本三条等待路径统一 SYS_WAITID(P_PIDFD, 原 SO_PEERPIDFD,
+WEXITED|WSTOPPED|WNOHANG|__WALL)，无 numeric fallback。
+ECHILD/EINVAL/ENOSYS 保持 Unknown。amd64 siginfo 128B，准确解码 SIGCHLD、UID/PID、
+CLD_EXITED/KILLED/DUMPED；CLD_TRAPPED 保留 SIGTRAP|(PTRACE_EVENT_STOP<<8) 高位，
+不能截成 signal byte。WNOHANG 零事件单独处理。
+独立 reviewer 核源码后关闭该代码阻断；真实验证另行执行，不以审阅代替 S。
+
+四、实际验收
+PG17-U-TRACER-001：禁网 race 模型，6 根/32 子场景、0 skip，package 1.065s。
+含步骤故障顺序、取消同步 cleanup、tentative D/SETOPTIONS 边界、严格 maps/status、
+Waitid 完整 event 解码与原 reaped 后数字复用不 fallback 的明确模型。
+PG17-S-TRACER-001：真实 PG wire/ptrace 11 模式。valid 只有独立真实 base/final 核验和
+两次 callback 后 detach；错 nonce/start/peer/ELF hash、两阶段持久故障/取消、
+base callback panic/Goexit 都不晋级成功，实际 child Wait 结果必须核对。
+PG17-S-TRACER-002：真实非 leader 线程退役两模式。tentative 无 EXITKILL 自动 detach，
+PG 得不到 ACK 后退出；confirmed 已设置 EXITKILL 的原 PG 实际 SIGKILL，固定旧线程消失。
+PG17-S-TRACER-003：真实同 TGID 不同线程 reaper 收走原 child 后，旧 pidfd ECHILD，
+fresh child 自身 Wait 仍可成功。Host 不写任何 sysctl；仅独立369 Guest允许 ns_last_pid
+强制复用，实际 oldPID=183=freshPID、otherReaperTID=181、parentTID=85，不能猜测通过。
+
+Host：3 根/13 命名子场景，0 skip，真实运行 5.682s，见 host/result.json。
+准确369 Guest：3 根/13 命名子场景，14/14 报告 SHA 验证，Guest rc0/QEMU rc0，13.624s。
+QMP query-kvm 必须 present/enabled=true，-accel kvm 无 TCG fallback；2CPU/1GiB、NIC none。
+release=6.12.26-william-normal-split-v1-e210f5e3ee94；
+kernel SHA=3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0；
+config SHA=11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be；
+notes SHA=7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828；
+Guest 实读 release/notes/早期 PID 硬值512，内核路径再次实际 hash 后启动。
+QEMU 只直接使用 Runner 镜像里的准确二进制，未运行旧 Runner 业务或改宿主网络。
+
+五、复现、历史与后继必须条件
+build-v6.sh、Dockerfile-v2、Dockerfile-model-v6、model-run-v6.py 保存实际禁网构建命令。
+host/command.json 是隔离容器的实际参数，rootfs 只读，独立 /tmp exec 与 /run tmpfs。
+guest-369/run-kvm.py、guest-init.sh、QMP transcript 与原始 console 保存准确 KVM 运行方式。
+所有进程由独立 systemd unit 有界异步运行，unit/nonce/资源限制/日志/终态均留存。
+原完整外部目录：
+/data/neon-build/validation/pg17-go-native-tracer-20261030T235629Z
+其中 native-attempt-01/02 的权限/noexec 失败、v5 旧 Wait4 Host PASS 和
+guest-369-attempt-01 报告传输失败都保留。旧 Guest 虽测试 rc0/QEMU0，但仅12/13报告完整，
+结论仍 FAIL；新独立 Guest02 只在 Guest 内安静 printk 和关机前排空串口，14/14真实验证。
+
+本阶段的 Source/nonce/profile、cgroup身份和 callback WAL 明确为 fixture；未完成正式
+Immutable Source、ELF依赖闭包/FS/I、原资源 flock 下出生迁组与耐久状态 consumer。
+后继生产接线必须由原 Pending 唯一接受连接，持原 resource flock 验证 Source/cgroup/
+完整 ELF 依赖与 Root 原 builder，并串行化 base/final WAL/ledger 耐久性。
+若 PG 由同 Go TGID 的 os/exec 启动，必须另外明确 Wait 与 ptrace 退出事件的唯一消费；
+本组件 fixture 使用分离的 parent TGID 避免竞争，不能将该架构前提遗漏到生产。
+Root 重启不得隐式重放出生，更不能凭 final-persisted/ACK/hash 将 pending-release 记完成。
+normal、FS/I、VM 缩容及上层接口资格维持拒绝；本批不更改原五拒绝，不宣称 E2E 通过。

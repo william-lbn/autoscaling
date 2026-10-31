@@ -1,0 +1,54 @@
+{
+  "id": [
+    "PG17-S-TRACER-001",
+    "PG17-S-TRACER-002"
+  ],
+  "passed": false,
+  "status": "FAIL_COMPONENT_OR_ENV",
+  "scope": "accurate369 Guest Go+PG wire/ptrace only; synthetic Source/fixture WAL, no production Source/normal/K8s",
+  "startUTC": "2026-10-31T00:31:58.309535+00:00",
+  "endUTC": "2026-10-31T00:32:10.017034+00:00",
+  "seconds": 11.707484817001387,
+  "hostQemuExitCode": 0,
+  "actualGuestExitCodes": [
+    0
+  ],
+  "queryKVM": {
+    "enabled": true,
+    "present": true
+  },
+  "TCGFallback": false,
+  "kernelReleaseObserved": [
+    "6.12.26-william-normal-split-v1-e210f5e3ee94"
+  ],
+  "kernelNotesObserved": [
+    "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+  ],
+  "earlyPIDHardcapObserved": [
+    "512"
+  ],
+  "sameHostAndGuestTestBinarySHA256": [
+    "ee8f05b925b5b382177a3e4179dbc8f6dd2883c52943b81cd5a4b4769e9793fe"
+  ],
+  "GoRootsPassed": [
+    "TestNativeBirthTracerKernelSession",
+    "TestNativeBirthTracerKernelThreadRetirement"
+  ],
+  "GoNamedSubcasesPassed": 13,
+  "GuestReportsVerified": 12,
+  "kernelSourceLock": {
+    "directory": "/data/neon-build/validation/normal-split-kernel-20261030T224843Z/export",
+    "sha256": {
+      "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+      "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+      "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+    },
+    "release": "6.12.26-william-normal-split-v1-e210f5e3ee94"
+  },
+  "initramfsSHA256": "4c54efe7532dd6573dc91569ce8cd1630ffeebd8de967913afb0b3676f1f2ac7",
+  "consoleSHA256": "83eb1ac5481e2b3530a21f956ba533d335f8dc24e59c8ba2d3fc13cf1bc788fb",
+  "errors": [],
+  "normalDecreaseExecuted": false,
+  "productionWALSourceIntegrated": false,
+  "VMShrinkPermit": false
+}

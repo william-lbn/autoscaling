@@ -1,0 +1,11 @@
+FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 AS compile
+WORKDIR /workspace
+COPY . .
+ARG NONCE
+RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared \
+ echo ACTUAL_NATIVE_TRACER_BUILD=$NONCE && mkdir -p /out && \
+ find . -type f \( -name '*.go' -o -name go.mod -o -name go.sum \) -print0 | sort -z | xargs -0 sha256sum > /out/actual-copy-go-source.sha256 && \
+ go version > /out/toolchain.txt && sha256sum /opt/go/src/runtime/proc.go /opt/go/src/runtime/os_linux.go > /out/toolchain-source.sha256 && \
+ CGO_ENABLED=0 GOPATH=/go GOPROXY=off GOSUMDB=off GOTOOLCHAIN=local go test -mod=readonly -tags dsga_native_birth_tracer -c -o /out/tracer.test ./pkg/dsga/resourceguard
+FROM scratch AS artifact
+COPY --from=compile /out/ /

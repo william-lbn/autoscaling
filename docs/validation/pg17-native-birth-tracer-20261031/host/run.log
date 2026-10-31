@@ -1,0 +1,35 @@
+=== RUN   TestNativeBirthTracerKernelSession
+    native_birth_tracer_native_test.go:253: actual NNP launcher C SHA256=fc7b493b50e159aa27d94a6f947689db6bebc519ac4a0af880cf8feab548b5e6 binarySHA256=d908a89d467e65b4ea01b9e52a8bb82559463b3aa82df8e293359481431d696a
+=== RUN   TestNativeBirthTracerKernelSession/valid
+=== RUN   TestNativeBirthTracerKernelSession/wrong-nonce
+=== RUN   TestNativeBirthTracerKernelSession/wrong-start
+=== RUN   TestNativeBirthTracerKernelSession/wrong-peer
+=== RUN   TestNativeBirthTracerKernelSession/wrong-binary-sha
+=== RUN   TestNativeBirthTracerKernelSession/base-persist-fail
+=== RUN   TestNativeBirthTracerKernelSession/final-persist-fail
+=== RUN   TestNativeBirthTracerKernelSession/base-cancel
+=== RUN   TestNativeBirthTracerKernelSession/final-cancel
+=== RUN   TestNativeBirthTracerKernelSession/base-panic
+=== RUN   TestNativeBirthTracerKernelSession/base-goexit
+--- PASS: TestNativeBirthTracerKernelSession (4.19s)
+    --- PASS: TestNativeBirthTracerKernelSession/valid (0.37s)
+    --- PASS: TestNativeBirthTracerKernelSession/wrong-nonce (0.36s)
+    --- PASS: TestNativeBirthTracerKernelSession/wrong-start (0.36s)
+    --- PASS: TestNativeBirthTracerKernelSession/wrong-peer (0.01s)
+    --- PASS: TestNativeBirthTracerKernelSession/wrong-binary-sha (0.36s)
+    --- PASS: TestNativeBirthTracerKernelSession/base-persist-fail (0.36s)
+    --- PASS: TestNativeBirthTracerKernelSession/final-persist-fail (0.36s)
+    --- PASS: TestNativeBirthTracerKernelSession/base-cancel (0.37s)
+    --- PASS: TestNativeBirthTracerKernelSession/final-cancel (0.37s)
+    --- PASS: TestNativeBirthTracerKernelSession/base-panic (0.37s)
+    --- PASS: TestNativeBirthTracerKernelSession/base-goexit (0.37s)
+=== RUN   TestNativeBirthTracerKernelThreadRetirement
+    native_birth_tracer_native_test.go:350: actual NNP launcher C SHA256=fc7b493b50e159aa27d94a6f947689db6bebc519ac4a0af880cf8feab548b5e6 binarySHA256=d908a89d467e65b4ea01b9e52a8bb82559463b3aa82df8e293359481431d696a
+=== RUN   TestNativeBirthTracerKernelThreadRetirement/confirmed-false
+=== RUN   TestNativeBirthTracerKernelThreadRetirement/confirmed-true
+--- PASS: TestNativeBirthTracerKernelThreadRetirement (1.16s)
+    --- PASS: TestNativeBirthTracerKernelThreadRetirement/confirmed-false (0.36s)
+    --- PASS: TestNativeBirthTracerKernelThreadRetirement/confirmed-true (0.37s)
+=== RUN   TestNativeBirthTracerKernelPidfdReaper
+--- PASS: TestNativeBirthTracerKernelPidfdReaper (0.02s)
+PASS

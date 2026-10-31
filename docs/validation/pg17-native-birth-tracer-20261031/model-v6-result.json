@@ -1,0 +1,24 @@
+{
+  "status": "PASS_MODEL_UNIT_ONLY",
+  "roots": [
+    "TestNativeBirthTracerModelSuccessOrdering",
+    "TestNativeBirthTracerModelFaultsCannotReleaseOrKillReusedTarget",
+    "TestNativeBirthTracerModelTentativeDAndSETOPTIONSBoundary",
+    "TestNativeBirthTracerModelCancellationWaitsForCleanup",
+    "TestNativeBirthTracerModelStrictStatusAndReservationMaps",
+    "TestNativeBirthTracerModelPidfdWaitDecodeAndReaperReuse"
+  ],
+  "namedSubcasesPassed": 32,
+  "race": true,
+  "skip": 0,
+  "actualCOPYGoSources": 702,
+  "scope": "No native kernel claims",
+  "packagePass": [
+    {
+      "Time": "2026-10-31T00:44:30.586952855Z",
+      "Action": "pass",
+      "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "Elapsed": 1.065
+    }
+  ]
+}

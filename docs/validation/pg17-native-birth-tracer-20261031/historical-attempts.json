@@ -1,0 +1,44 @@
+[
+  {
+    "attempt": "build initial",
+    "result": "ENV_FAIL",
+    "reason": "tool image has no python3; Dockerfile-v2 removed Python prerequisite",
+    "externalLog": "/data/neon-build/validation/pg17-go-native-tracer-20261030T235629Z/build.log"
+  },
+  {
+    "attempt": "build-v2",
+    "result": "SOURCE_COHORT_FAIL",
+    "reason": "active tree included unrelated uncommitted normal/bootstrap/split dependencies; replaced by parent-approved immutable410bcc plus exactly6 overlay files",
+    "externalLog": "/data/neon-build/validation/pg17-go-native-tracer-20261030T235629Z/build-v2.log"
+  },
+  {
+    "attempt": "native-attempt-01",
+    "result": "FAIL",
+    "reason": "nonroot child executable tmp ancestor permissions/noexec",
+    "externalDirectory": "/data/neon-build/validation/pg17-go-native-tracer-20261030T235629Z/native-attempt-01"
+  },
+  {
+    "attempt": "native-attempt-02",
+    "result": "FAIL",
+    "reason": "actual Docker tmpfs noexec; own isolated tmpfs explicitly exec in attempt03",
+    "externalDirectory": "/data/neon-build/validation/pg17-go-native-tracer-20261030T235629Z/native-attempt-02"
+  },
+  {
+    "attempt": "native-attempt-03-v5",
+    "result": "PASS_SUPERSEDED_SOURCE",
+    "reason": "numeric Wait4 independently found capable of wrong-child reap; not final certification",
+    "externalDirectory": "/data/neon-build/validation/pg17-go-native-tracer-20261030T235629Z/native-attempt-03"
+  },
+  {
+    "attempt": "guest-369-attempt-01-v5",
+    "result": "FAIL_INCOMPLETE_RECEIPT",
+    "reason": "Guest tests0/QEMU0 but only12/13 reports verified: ACPI printk interrupted final base64 line; preserve false result",
+    "externalDirectory": "/data/neon-build/validation/pg17-go-native-tracer-20261030T235629Z/guest-369-attempt-01"
+  },
+  {
+    "attempt": "v6-model/Host/Guest02",
+    "result": "PASS_COMPONENT_ONLY",
+    "reason": "all numeric waits replaced by original pidfd; Guest only printk quiet and serial drain before poweroff;14/14 report SHA verified",
+    "externalDirectory": "/data/neon-build/validation/pg17-go-native-tracer-20261030T235629Z"
+  }
+]

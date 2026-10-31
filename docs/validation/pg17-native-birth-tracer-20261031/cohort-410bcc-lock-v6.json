@@ -1,0 +1,16 @@
+{
+  "baseCommittedSHA": "410bcc63a5de44b26afd04e237854a9c5b1705ce",
+  "overlay": {
+    "pkg/dsga/resourceguard/native_filter_audit.go": "e278ca7a4d8ef8d67a270c1a61b028c4b38fdc21b3b471aef9a5db2077bd8721",
+    "pkg/dsga/resourceguard/native_filter_audit_linux.go": "1c8a0074575df3bbb17c23883f9c248d6b878dfb4c9cfef28fc756852bba3714",
+    "pkg/dsga/resourceguard/native_filter_audit_test.go": "f5aaaa306a59a9ef5a19bd69b9b80c0e6bd1de922d41dffb29c6dc83f2b5b2ce",
+    "pkg/dsga/resourceguard/native_birth_tracer_linux.go": "b56199224b1451819b7aa3e5d2eb8f853b436f65995692ac7c374c443c330c1e",
+    "pkg/dsga/resourceguard/native_birth_tracer_linux_test.go": "3cdd124e98cf11662bfeba0ef19fac78362a2b363828482b770c9f0e722852aa",
+    "pkg/dsga/resourceguard/native_birth_tracer_native_test.go": "5b933defd61ca5f5e02d9b92e8ce86109c92c04b41d0285c59577eedd2ea5c6a"
+  },
+  "goSourceFiles": 702,
+  "excludedUncommittedOtherModules": true,
+  "snapshot": "/data/neon-build/dev/pg17-go-native-tracer-20261030T235629Z/cohort-410bcc",
+  "rootApproval": "explicit parent 410bcc63 immutable cohort; only audit3+owned3 overlaid",
+  "fix": "P_PIDFD waitid original struct pid; no numeric fallback; exact full ptrace status"
+}

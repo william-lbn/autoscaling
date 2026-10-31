@@ -1,0 +1,13 @@
+{
+  "expectedSourceFileCount": 7196,
+  "actualFileCount": 7197,
+  "allExpectedFileSHA256Match": true,
+  "missing": [],
+  "different": {},
+  "extraFiles": [
+    ".git"
+  ],
+  "postgresSHA256": "c990ed4251edb270d37894036c70d90e012fea2bb441a7a48faeb0ed6375be53",
+  "testLibrarySHA256": "00b967d942b53adad84c86e9205a98ac0a35f5fd4e958ae12231f5ad09b9ad23",
+  "runtimePythonSources": "Latest three Python test files are readonly-mounted from evidence; audit/compile image contains older fixture Python. Runtime source SHA recorded separately; never claim latest fixture compiled into image."
+}

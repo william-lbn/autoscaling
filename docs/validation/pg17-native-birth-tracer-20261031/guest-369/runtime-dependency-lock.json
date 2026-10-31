@@ -1,0 +1,84 @@
+{
+  "PGImage": "127.0.0.1:5001/neon/pg17-native-root-wire@sha256:af97e387041b349d0138b39b9a7c90c9d612db3ef07906fe1271db7162ee414d",
+  "PGDependencyFiles": [
+    {
+      "sourceImage": "127.0.0.1:5001/neon/pg17-native-root-wire@sha256:af97e387041b349d0138b39b9a7c90c9d612db3ef07906fe1271db7162ee414d",
+      "sourcePath": "/home/nonroot/pg_install/v17/bin/postgres",
+      "guestPath": "/payload/pg/bin/postgres",
+      "bytes": 129046152,
+      "sha256": "c990ed4251edb270d37894036c70d90e012fea2bb441a7a48faeb0ed6375be53"
+    },
+    {
+      "sourceImage": "127.0.0.1:5001/neon/pg17-native-root-wire@sha256:af97e387041b349d0138b39b9a7c90c9d612db3ef07906fe1271db7162ee414d",
+      "sourcePath": "/lib/x86_64-linux-gnu/libc.so.6",
+      "guestPath": "/lib/x86_64-linux-gnu/libc.so.6",
+      "bytes": 1926232,
+      "sha256": "6b4a45352fd0c540a9c7c718f35ce8c8e46a4e482f9d3885a910c32d1a0e1421"
+    },
+    {
+      "sourceImage": "127.0.0.1:5001/neon/pg17-native-root-wire@sha256:af97e387041b349d0138b39b9a7c90c9d612db3ef07906fe1271db7162ee414d",
+      "sourcePath": "/lib/x86_64-linux-gnu/libcrypto.so.3",
+      "guestPath": "/lib/x86_64-linux-gnu/libcrypto.so.3",
+      "bytes": 4742424,
+      "sha256": "aa01e614af634bc7c8b678c9250b5c4f613c61989bacf0a5d6aed6570e7dcabd"
+    },
+    {
+      "sourceImage": "127.0.0.1:5001/neon/pg17-native-root-wire@sha256:af97e387041b349d0138b39b9a7c90c9d612db3ef07906fe1271db7162ee414d",
+      "sourcePath": "/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "guestPath": "/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "bytes": 125312,
+      "sha256": "2bd1552c47799ef67e701e81d4383061fd76059868e446e63560f0dd0d5ec14e"
+    },
+    {
+      "sourceImage": "127.0.0.1:5001/neon/pg17-native-root-wire@sha256:af97e387041b349d0138b39b9a7c90c9d612db3ef07906fe1271db7162ee414d",
+      "sourcePath": "/lib/x86_64-linux-gnu/libm.so.6",
+      "guestPath": "/lib/x86_64-linux-gnu/libm.so.6",
+      "bytes": 911904,
+      "sha256": "7f2ca87f652f56b094462474b076749e90e689d0ecb9cb63c7679820b271b4e7"
+    },
+    {
+      "sourceImage": "127.0.0.1:5001/neon/pg17-native-root-wire@sha256:af97e387041b349d0138b39b9a7c90c9d612db3ef07906fe1271db7162ee414d",
+      "sourcePath": "/lib/x86_64-linux-gnu/libssl.so.3",
+      "guestPath": "/lib/x86_64-linux-gnu/libssl.so.3",
+      "bytes": 688160,
+      "sha256": "cab3f5b0a1febd4a80db5319f3bca4a9378c797dc6e5dc8bce36a575eaa77e78"
+    },
+    {
+      "sourceImage": "127.0.0.1:5001/neon/pg17-native-root-wire@sha256:af97e387041b349d0138b39b9a7c90c9d612db3ef07906fe1271db7162ee414d",
+      "sourcePath": "/lib/x86_64-linux-gnu/libstdc++.so.6",
+      "guestPath": "/lib/x86_64-linux-gnu/libstdc++.so.6",
+      "bytes": 2190440,
+      "sha256": "e7848e32af4932840ba775169041759a2a8dd5a008af360e5c55bce506eebcf4"
+    },
+    {
+      "sourceImage": "127.0.0.1:5001/neon/pg17-native-root-wire@sha256:af97e387041b349d0138b39b9a7c90c9d612db3ef07906fe1271db7162ee414d",
+      "sourcePath": "/lib/x86_64-linux-gnu/libz.so.1",
+      "guestPath": "/lib/x86_64-linux-gnu/libz.so.1",
+      "bytes": 121280,
+      "sha256": "7e2a72b4c4b38c61e6962de6e3f4a5e9ae692e732c68deead10a7ce2135a7f68"
+    },
+    {
+      "sourceImage": "127.0.0.1:5001/neon/pg17-native-root-wire@sha256:af97e387041b349d0138b39b9a7c90c9d612db3ef07906fe1271db7162ee414d",
+      "sourcePath": "/lib64/ld-linux-x86-64.so.2",
+      "guestPath": "/lib64/ld-linux-x86-64.so.2",
+      "bytes": 215000,
+      "sha256": "02bcda52c1a5dfc236f94d9e5255b4a0e26347d8a372a5223b650e31f291ce3c"
+    }
+  ],
+  "staticTestBinarySHA256": "efe10aade0f0d1a431c42c661447579c518030d46aac5717436df390a5ac0a45",
+  "kernel": {
+    "directory": "/data/neon-build/validation/normal-split-kernel-20261030T224843Z/export",
+    "sha256": {
+      "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+      "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+      "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+    },
+    "release": "6.12.26-william-normal-split-v1-e210f5e3ee94"
+  },
+  "notIncluded": [
+    "gcc in Guest",
+    "all Compute extensions",
+    "old Runner business",
+    "PG normal resize"
+  ]
+}

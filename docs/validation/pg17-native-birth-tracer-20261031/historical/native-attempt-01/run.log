@@ -1,0 +1,111 @@
+=== RUN   TestNativeBirthTracerKernelSession
+    native_birth_tracer_native_test.go:221: actual NNP launcher C SHA256=fc7b493b50e159aa27d94a6f947689db6bebc519ac4a0af880cf8feab548b5e6 binarySHA256=d908a89d467e65b4ea01b9e52a8bb82559463b3aa82df8e293359481431d696a
+=== RUN   TestNativeBirthTracerKernelSession/valid
+    native_birth_tracer_native_test.go:224: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:180
+        	            				/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:224
+        	Error:      	Received unexpected error:
+        	            	EOF
+        	Test:       	TestNativeBirthTracerKernelSession/valid
+=== RUN   TestNativeBirthTracerKernelSession/wrong-nonce
+    native_birth_tracer_native_test.go:224: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:180
+        	            				/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:224
+        	Error:      	Received unexpected error:
+        	            	EOF
+        	Test:       	TestNativeBirthTracerKernelSession/wrong-nonce
+=== RUN   TestNativeBirthTracerKernelSession/wrong-start
+    native_birth_tracer_native_test.go:224: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:180
+        	            				/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:224
+        	Error:      	Received unexpected error:
+        	            	EOF
+        	Test:       	TestNativeBirthTracerKernelSession/wrong-start
+=== RUN   TestNativeBirthTracerKernelSession/wrong-peer
+    native_birth_tracer_native_test.go:224: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:180
+        	            				/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:224
+        	Error:      	Received unexpected error:
+        	            	EOF
+        	Test:       	TestNativeBirthTracerKernelSession/wrong-peer
+=== RUN   TestNativeBirthTracerKernelSession/wrong-binary-sha
+    native_birth_tracer_native_test.go:224: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:180
+        	            				/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:224
+        	Error:      	Received unexpected error:
+        	            	EOF
+        	Test:       	TestNativeBirthTracerKernelSession/wrong-binary-sha
+=== RUN   TestNativeBirthTracerKernelSession/base-persist-fail
+    native_birth_tracer_native_test.go:224: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:180
+        	            				/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:224
+        	Error:      	Received unexpected error:
+        	            	EOF
+        	Test:       	TestNativeBirthTracerKernelSession/base-persist-fail
+=== RUN   TestNativeBirthTracerKernelSession/final-persist-fail
+    native_birth_tracer_native_test.go:224: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:180
+        	            				/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:224
+        	Error:      	Received unexpected error:
+        	            	EOF
+        	Test:       	TestNativeBirthTracerKernelSession/final-persist-fail
+=== RUN   TestNativeBirthTracerKernelSession/base-cancel
+    native_birth_tracer_native_test.go:224: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:180
+        	            				/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:224
+        	Error:      	Received unexpected error:
+        	            	EOF
+        	Test:       	TestNativeBirthTracerKernelSession/base-cancel
+=== RUN   TestNativeBirthTracerKernelSession/final-cancel
+    native_birth_tracer_native_test.go:224: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:180
+        	            				/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:224
+        	Error:      	Received unexpected error:
+        	            	EOF
+        	Test:       	TestNativeBirthTracerKernelSession/final-cancel
+=== RUN   TestNativeBirthTracerKernelSession/base-panic
+    native_birth_tracer_native_test.go:224: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:180
+        	            				/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:224
+        	Error:      	Received unexpected error:
+        	            	EOF
+        	Test:       	TestNativeBirthTracerKernelSession/base-panic
+=== RUN   TestNativeBirthTracerKernelSession/base-goexit
+    native_birth_tracer_native_test.go:224: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:180
+        	            				/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:224
+        	Error:      	Received unexpected error:
+        	            	EOF
+        	Test:       	TestNativeBirthTracerKernelSession/base-goexit
+--- FAIL: TestNativeBirthTracerKernelSession (0.74s)
+    --- FAIL: TestNativeBirthTracerKernelSession/valid (0.00s)
+    --- FAIL: TestNativeBirthTracerKernelSession/wrong-nonce (0.00s)
+    --- FAIL: TestNativeBirthTracerKernelSession/wrong-start (0.00s)
+    --- FAIL: TestNativeBirthTracerKernelSession/wrong-peer (0.00s)
+    --- FAIL: TestNativeBirthTracerKernelSession/wrong-binary-sha (0.00s)
+    --- FAIL: TestNativeBirthTracerKernelSession/base-persist-fail (0.00s)
+    --- FAIL: TestNativeBirthTracerKernelSession/final-persist-fail (0.00s)
+    --- FAIL: TestNativeBirthTracerKernelSession/base-cancel (0.00s)
+    --- FAIL: TestNativeBirthTracerKernelSession/final-cancel (0.00s)
+    --- FAIL: TestNativeBirthTracerKernelSession/base-panic (0.00s)
+    --- FAIL: TestNativeBirthTracerKernelSession/base-goexit (0.00s)
+=== RUN   TestNativeBirthTracerKernelThreadRetirement
+    native_birth_tracer_native_test.go:318: actual NNP launcher C SHA256=fc7b493b50e159aa27d94a6f947689db6bebc519ac4a0af880cf8feab548b5e6 binarySHA256=d908a89d467e65b4ea01b9e52a8bb82559463b3aa82df8e293359481431d696a
+=== RUN   TestNativeBirthTracerKernelThreadRetirement/confirmed-false
+    native_birth_tracer_native_test.go:321: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:180
+        	            				/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:321
+        	Error:      	Received unexpected error:
+        	            	EOF
+        	Test:       	TestNativeBirthTracerKernelThreadRetirement/confirmed-false
+=== RUN   TestNativeBirthTracerKernelThreadRetirement/confirmed-true
+    native_birth_tracer_native_test.go:321: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:180
+        	            				/workspace/pkg/dsga/resourceguard/native_birth_tracer_native_test.go:321
+        	Error:      	Received unexpected error:
+        	            	EOF
+        	Test:       	TestNativeBirthTracerKernelThreadRetirement/confirmed-true
+--- FAIL: TestNativeBirthTracerKernelThreadRetirement (0.42s)
+    --- FAIL: TestNativeBirthTracerKernelThreadRetirement/confirmed-false (0.00s)
+    --- FAIL: TestNativeBirthTracerKernelThreadRetirement/confirmed-true (0.00s)
+FAIL

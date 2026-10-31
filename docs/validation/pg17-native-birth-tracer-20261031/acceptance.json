@@ -1,0 +1,81 @@
+{
+  "status": "PASS_COMPONENT_ONLY_PENDING_PARENT_COMMIT",
+  "dateUTC": "2026-10-31T00:50:01.342436+00:00",
+  "source": {
+    "baseCommittedSHA": "410bcc63a5de44b26afd04e237854a9c5b1705ce",
+    "overlay": {
+      "pkg/dsga/resourceguard/native_filter_audit.go": "e278ca7a4d8ef8d67a270c1a61b028c4b38fdc21b3b471aef9a5db2077bd8721",
+      "pkg/dsga/resourceguard/native_filter_audit_linux.go": "1c8a0074575df3bbb17c23883f9c248d6b878dfb4c9cfef28fc756852bba3714",
+      "pkg/dsga/resourceguard/native_filter_audit_test.go": "f5aaaa306a59a9ef5a19bd69b9b80c0e6bd1de922d41dffb29c6dc83f2b5b2ce",
+      "pkg/dsga/resourceguard/native_birth_tracer_linux.go": "b56199224b1451819b7aa3e5d2eb8f853b436f65995692ac7c374c443c330c1e",
+      "pkg/dsga/resourceguard/native_birth_tracer_linux_test.go": "3cdd124e98cf11662bfeba0ef19fac78362a2b363828482b770c9f0e722852aa",
+      "pkg/dsga/resourceguard/native_birth_tracer_native_test.go": "5b933defd61ca5f5e02d9b92e8ce86109c92c04b41d0285c59577eedd2ea5c6a"
+    },
+    "goSourceFiles": 702,
+    "excludedUncommittedOtherModules": true,
+    "snapshot": "/data/neon-build/dev/pg17-go-native-tracer-20261030T235629Z/cohort-410bcc",
+    "rootApproval": "explicit parent 410bcc63 immutable cohort; only audit3+owned3 overlaid",
+    "fix": "P_PIDFD waitid original struct pid; no numeric fallback; exact full ptrace status"
+  },
+  "tests": [
+    {
+      "id": "PG17-U-TRACER-001",
+      "kind": "MODEL_UNIT_RACE",
+      "roots": 6,
+      "namedSubcases": 32,
+      "skip": 0,
+      "status": "PASS",
+      "proof": "model-v6-result.json"
+    },
+    {
+      "id": "PG17-S-TRACER-001",
+      "kind": "REAL_PG_BIRTH_PTRACE_COMPONENT",
+      "cases": 11,
+      "platforms": [
+        "HOST_DOCKER",
+        "ACCURATE369_KVM"
+      ],
+      "status": "PASS",
+      "proof": [
+        "host/result.json",
+        "guest-369/result.json"
+      ]
+    },
+    {
+      "id": "PG17-S-TRACER-002",
+      "kind": "REAL_NONLEADER_THREAD_RETIREMENT",
+      "cases": 2,
+      "platforms": [
+        "HOST_DOCKER",
+        "ACCURATE369_KVM"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-S-TRACER-003",
+      "kind": "REAL_PIDFD_CROSS_THREAD_REAPER",
+      "cases": 1,
+      "platforms": [
+        "HOST_DOCKER",
+        "ACCURATE369_KVM"
+      ],
+      "status": "PASS",
+      "actualNumericReuse": "ONLY_ACCURATE369_KVM oldPID183=freshPID183; ECHILD old pidfd, fresh Wait success"
+    }
+  ],
+  "sourceFiles": 3,
+  "actualCOPYGoFiles": 702,
+  "staticBinarySHA256": "efe10aade0f0d1a431c42c661447579c518030d46aac5717436df390a5ac0a45",
+  "normalDecreaseExecuted": false,
+  "productionSourceWALIntegrated": false,
+  "VMShrinkPermit": false,
+  "productionPGStarted": false,
+  "K8sDeployed": false,
+  "remaining": [
+    "formal Persist under original resource flock, protected Source/immutable ELF dependency closure, original cgroup/FS/I audit",
+    "initial accepted peer from original pending; no HTTP PID",
+    "single ownership of os/exec Wait and ptrace events; separate parent TGID or formally coordinated reaper",
+    "recover durable final-ready as pending release, never infer complete Birth from callback/ACK/hash",
+    "all original hard-cap normal gates remain closed"
+  ]
+}

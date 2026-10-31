@@ -1,0 +1,49 @@
+{
+  "id": [
+    "PG17-S-TRACER-001",
+    "PG17-S-TRACER-002",
+    "PG17-S-TRACER-003"
+  ],
+  "status": "PASS_COMPONENT_ONLY",
+  "passed": true,
+  "platform": "HOST_DOCKER_KERNEL_6.8.0-147-generic",
+  "hostKernelSourceQualification": "NOT_ASSERTED_FOR_NORMAL",
+  "GoRootsPassed": [
+    "TestNativeBirthTracerKernelSession",
+    "TestNativeBirthTracerKernelThreadRetirement",
+    "TestNativeBirthTracerKernelPidfdReaper"
+  ],
+  "GoNamedSubcasesPassed": 13,
+  "skip": 0,
+  "caseReports": 14,
+  "staticTestBinarySHA256": "efe10aade0f0d1a431c42c661447579c518030d46aac5717436df390a5ac0a45",
+  "nnpLauncher": {
+    "binarySHA256": "d908a89d467e65b4ea01b9e52a8bb82559463b3aa82df8e293359481431d696a",
+    "scope": "TEST_ONLY_STATIC_NNP_HELPER_NOT_PRODUCTION_ROOT_LAUNCHER",
+    "sourceSHA256": "fc7b493b50e159aa27d94a6f947689db6bebc519ac4a0af880cf8feab548b5e6"
+  },
+  "run": {
+    "exitCode": 0,
+    "elapsedSeconds": 5.682046890258789,
+    "kind": "REAL_NATIVE_HOST_COMPONENT_NOT_E2E"
+  },
+  "reaper": {
+    "actualNumericReuse": false,
+    "facts": [
+      {
+        "actualOtherReaperTID": 143,
+        "freshOwnWaitSucceeded": true,
+        "freshPID": 144,
+        "numericPIDReused": false,
+        "oldPID": 142,
+        "originalPidfdWait": "ECHILD",
+        "parentTID": 7
+      }
+    ],
+    "forcedReuseGuestOnly": false,
+    "scope": "REAL_PIDFD_WAIT_REAPER_COMPONENT_NOT_PRODUCTION_ROOT_WAL_OR_NORMAL"
+  },
+  "productionSourceWAL": false,
+  "normalDecreaseExecuted": false,
+  "VMShrinkPermit": false
+}
