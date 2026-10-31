@@ -1,0 +1,160 @@
+{
+  "mode": "positive",
+  "status": "PASS_COMPONENT_ONLY",
+  "host_qemu_exit": 0,
+  "actual_qmp_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "elapsed_seconds": 2.975326669999049,
+  "record": [
+    {
+      "mode": "positive",
+      "before": {
+        "identity": {
+          "vm_uid": "vm-one",
+          "compute_instance_id": "compute-one",
+          "guest_boot_id": "4cc41de9-61d8-4bc7-bfb6-1504b74cf623",
+          "cgroup_device": "23",
+          "cgroup_inode": "28"
+        },
+        "kernel_release": "6.12.26-william-normal-split-v1-e210f5e3ee94",
+        "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+        "command_line": "console=ttyS0,115200 rdinit=/init panic=-1 kernelcore=256M memhp_default_state=online_movable cgroup.memory=nokmem,nosocket,nobpf neonvm.pid_max_limit=512 neonvm.dsga.kernel_bootstrap=normal-split-v1",
+        "possible_cpus": 2,
+        "pid_max": 512,
+        "hard_pid_max": 512,
+        "capabilities": {
+          "active_lsms": [
+            "lockdown",
+            "capability",
+            "landlock",
+            "yama",
+            "apparmor"
+          ],
+          "landlock_abi": 6,
+          "initial_pid_namespace_device": "4",
+          "initial_pid_namespace_inode": "4026531836",
+          "memory_high": "max",
+          "min_free_kbytes": "1883",
+          "watermark_scale_factor": 10,
+          "watermark_boost_factor": 15000,
+          "percpu_pagelist_high_fraction": 0,
+          "compaction_proactiveness": 20,
+          "hard_pid_max_limit": 512
+        },
+        "zones": [
+          {
+            "node": 0,
+            "name": "DMA32",
+            "present_pages": "65399"
+          },
+          {
+            "node": 0,
+            "name": "Movable",
+            "present_pages": "0"
+          },
+          {
+            "node": 0,
+            "name": "Normal",
+            "present_pages": "0"
+          }
+        ],
+        "modules_disabled": 0,
+        "loaded_modules": [],
+        "numa_balancing": 0,
+        "demotion_enabled": false,
+        "namespaces": [
+          "4026531836",
+          "4026531841",
+          "4026531839",
+          "4026531837"
+        ],
+        "state_device": "65024",
+        "state_inode": "12"
+      },
+      "evidence": {
+        "protocol_version": 1,
+        "scope": "pre-origin-kernel-preparation-only",
+        "vm_shrink_permit": false,
+        "all_sources_closed": false,
+        "nonce": "d416a2726b9cba82a622d669c1a59400",
+        "intent_sha256": "2d32eb79adcb05891130596c4b350a2be743177ce97c668f47b9e212df93fbfa",
+        "policy_sha256": "e3981b919ea3058dd61d6a4b072f5607ace0cb37d8037cc7e474200d71d08e64",
+        "runtime_document_sha256": "e7afb62ae15a5bbca130e4fcccebe59fdffec2e8b6948a2e8b2c8cd8cea4f7d3",
+        "physical_origin_policy_sha256": "06c8fe0da25cec2ec3425da7636a5583d07f2613007c510a8feb040648ac2384",
+        "after": {
+          "identity": {
+            "vm_uid": "vm-one",
+            "compute_instance_id": "compute-one",
+            "guest_boot_id": "4cc41de9-61d8-4bc7-bfb6-1504b74cf623",
+            "cgroup_device": "23",
+            "cgroup_inode": "28"
+          },
+          "kernel_release": "6.12.26-william-normal-split-v1-e210f5e3ee94",
+          "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+          "command_line": "console=ttyS0,115200 rdinit=/init panic=-1 kernelcore=256M memhp_default_state=online_movable cgroup.memory=nokmem,nosocket,nobpf neonvm.pid_max_limit=512 neonvm.dsga.kernel_bootstrap=normal-split-v1",
+          "possible_cpus": 2,
+          "pid_max": 512,
+          "hard_pid_max": 512,
+          "capabilities": {
+            "active_lsms": [
+              "lockdown",
+              "capability",
+              "landlock",
+              "yama",
+              "apparmor"
+            ],
+            "landlock_abi": 6,
+            "initial_pid_namespace_device": "4",
+            "initial_pid_namespace_inode": "4026531836",
+            "memory_high": "max",
+            "min_free_kbytes": "4096",
+            "watermark_scale_factor": 10,
+            "watermark_boost_factor": 0,
+            "percpu_pagelist_high_fraction": 128,
+            "compaction_proactiveness": 0,
+            "hard_pid_max_limit": 512
+          },
+          "zones": [
+            {
+              "node": 0,
+              "name": "DMA32",
+              "present_pages": "65399"
+            },
+            {
+              "node": 0,
+              "name": "Movable",
+              "present_pages": "0"
+            },
+            {
+              "node": 0,
+              "name": "Normal",
+              "present_pages": "0"
+            }
+          ],
+          "modules_disabled": 1,
+          "loaded_modules": [],
+          "numa_balancing": 0,
+          "demotion_enabled": false,
+          "namespaces": [
+            "4026531836",
+            "4026531841",
+            "4026531839",
+            "4026531837"
+          ],
+          "state_device": "65024",
+          "state_inode": "12"
+        }
+      },
+      "replay_durability_confirmed": true,
+      "all_sources_closed": false
+    }
+  ],
+  "console_sha256": "335c725f7e603caeca001541d5d0fa15f6360efcf356267cc80b64f45e8a1114",
+  "binary_sha256": "c729b60598e3954c6f9d440c617c354629879c5ab10c0c53f51374f0ac653967",
+  "all_sources_closed": false,
+  "vm_shrink_permit": false,
+  "PG_started": false,
+  "E2E": false
+}

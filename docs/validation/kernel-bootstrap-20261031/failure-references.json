@@ -1,0 +1,30 @@
+[
+  {
+    "path": "/data/neon-build/validation/kernel-bootstrap-go-20261030T235336Z",
+    "class": "U fixture reused already-formal journal; production rejection correct",
+    "build_log_sha256": "5d7e990ee497b8bd7620665f777e889d8a6e3011c9a31125c5be7ac7ac2a0079",
+    "exitcode": "1",
+    "retained": true
+  },
+  {
+    "path": "/data/neon-build/validation/kernel-bootstrap-go-20261030T235436Z",
+    "class": "new U temp directory had0755; production private directory rejection correct",
+    "build_log_sha256": "01a27fa3e71121747061fe2469efdfd8dcb19bd1a30c0e3210f4d800eca06afb",
+    "exitcode": "1",
+    "retained": true
+  },
+  {
+    "path": "/data/neon-build/validation/kernel-bootstrap-go-20261030T235523Z",
+    "class": "implementation exported json:- transient flag incompatible with strict decoder; changed private getter",
+    "build_log_sha256": "6b7cc8b7660f03683fe83c065e1bd0b3aaca3cdc00a65fbc99cf4eac14467fad",
+    "exitcode": "1",
+    "retained": true
+  },
+  {
+    "path": "/data/neon-build/validation/kernel-bootstrap-go-20261030T235601Z",
+    "class": "implementation exact text replacement missed gofmt-aligned field; field/method compile conflict; fixed before freeze",
+    "build_log_sha256": "539a3a798479c827db4a4e2f60d553c40cf7cca8471d0bad7b82d4b964bf7cb0",
+    "exitcode": "1",
+    "retained": true
+  }
+]

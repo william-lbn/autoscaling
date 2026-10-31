@@ -1,0 +1,106 @@
+{
+  "scope": "pre-Origin strict369 kernel-control preparation component only",
+  "base_head": "410bcc63a5de44b26afd04e237854a9c5b1705ce",
+  "owned_new_files": {
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap.go": "0b5e361fb6a87a15fd2e3d913a48643159cebe63ea6015f9951b6ba6a059cf94",
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap_linux.go": "81a1c1af106e9ce07ba1e2d69d52678e9c41654514c9139e6fbe322942210e4a",
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap_test.go": "ad7f46922c138c4665c0ea77903c88519bb9a6e623c1dc93086fa7520ee3d905",
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap_native_test.go": "9227c2566a9015341276d3cce9b849a5e9c01744eb8f915e0a39d8c971f3b4d6"
+  },
+  "all_go_COPY_files": 702,
+  "actual_COPY_hashes_match": true,
+  "unit_command": "go test -mod=readonly -race -count=1 -json -run '^TestNormalKernelBootstrap' ./pkg/dsga/resourceguard",
+  "U_root_pass": 7,
+  "U_subcase_pass": 34,
+  "U_failed": 0,
+  "U_skipped": 0,
+  "native_binary_sha256": "c729b60598e3954c6f9d440c617c354629879c5ab10c0c53f51374f0ac653967",
+  "kernel_artifact_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+  "kernel_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+  "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "native_results": [
+    {
+      "mode": "positive",
+      "seconds": 2.975326669999049,
+      "result_sha256": "8f2e32839fc9552448224173719b65a4cbbf4504aaa0f6c5ef0eff0566c577a5",
+      "console_sha256": "335c725f7e603caeca001541d5d0fa15f6360efcf356267cc80b64f45e8a1114",
+      "actual_qmp_kvm": {
+        "enabled": true,
+        "present": true
+      }
+    },
+    {
+      "mode": "partial-replay",
+      "seconds": 2.786321608000435,
+      "result_sha256": "713236842fd44415a5a43046c0b6bb4304c0062eff48b0680daf5c56e04002af",
+      "console_sha256": "cd4e3cc37e926c665e3b751e2107a5b6f0653b9e361190c35670fcb04cb43087",
+      "actual_qmp_kvm": {
+        "enabled": true,
+        "present": true
+      }
+    },
+    {
+      "mode": "modules-already-disabled",
+      "seconds": 2.5262260649979,
+      "result_sha256": "5325da72fa09321f95057ee0b63ce6b00198f4e9e5685b734ce421508a2a1c3c",
+      "console_sha256": "68ce9c814da3699a62e499f9a1d1ff1365daee93c5a8bd55a8b02758aa1a029d",
+      "actual_qmp_kvm": {
+        "enabled": true,
+        "present": true
+      }
+    },
+    {
+      "mode": "Movable",
+      "seconds": 2.545037839001452,
+      "result_sha256": "79c6b2471a270d77d795839856fd6eeca62a778b9d4bf2838132876a23d5715c",
+      "console_sha256": "74126d593e8b70d1fe195abd1fe9b0af061fa313421f58f6697db97d3a60bc41",
+      "actual_qmp_kvm": {
+        "enabled": true,
+        "present": true
+      }
+    }
+  ],
+  "native_source_lock_sha256": "9a66bda07378ade69a9201c77d6e3f28a634e517ea1847c6a18190f5f0b76e63",
+  "failure_receipts": [
+    {
+      "path": "/data/neon-build/validation/kernel-bootstrap-go-20261030T235336Z",
+      "class": "U fixture reused already-formal journal; production rejection correct",
+      "build_log_sha256": "5d7e990ee497b8bd7620665f777e889d8a6e3011c9a31125c5be7ac7ac2a0079",
+      "exitcode": "1",
+      "retained": true
+    },
+    {
+      "path": "/data/neon-build/validation/kernel-bootstrap-go-20261030T235436Z",
+      "class": "new U temp directory had0755; production private directory rejection correct",
+      "build_log_sha256": "01a27fa3e71121747061fe2469efdfd8dcb19bd1a30c0e3210f4d800eca06afb",
+      "exitcode": "1",
+      "retained": true
+    },
+    {
+      "path": "/data/neon-build/validation/kernel-bootstrap-go-20261030T235523Z",
+      "class": "implementation exported json:- transient flag incompatible with strict decoder; changed private getter",
+      "build_log_sha256": "6b7cc8b7660f03683fe83c065e1bd0b3aaca3cdc00a65fbc99cf4eac14467fad",
+      "exitcode": "1",
+      "retained": true
+    },
+    {
+      "path": "/data/neon-build/validation/kernel-bootstrap-go-20261030T235601Z",
+      "class": "implementation exact text replacement missed gofmt-aligned field; field/method compile conflict; fixed before freeze",
+      "build_log_sha256": "539a3a798479c827db4a4e2f60d553c40cf7cca8471d0bad7b82d4b964bf7cb0",
+      "exitcode": "1",
+      "retained": true
+    }
+  ],
+  "prior_PASS_preserved": {
+    "go": "/data/neon-build/validation/kernel-bootstrap-go-20261030T235726Z",
+    "native": "/data/neon-build/validation/kernel-bootstrap-native-20261030T235950Z",
+    "reason_for_final_nonce": "tighten third-party demotion=false->true replay refusal, zero nonce and cancellation completion boundary"
+  },
+  "all_sources_closed": false,
+  "vm_shrink_permit": false,
+  "PG_started": false,
+  "RootOrigin_created": false,
+  "production_entry_provisioning_connected": false,
+  "Mmax_source_created": false,
+  "current_review_head": "0428dd91d43c61097963123004fcc5ec52e8e80f"
+}
