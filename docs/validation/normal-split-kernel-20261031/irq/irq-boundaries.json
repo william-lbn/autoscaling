@@ -1,0 +1,1643 @@
+{
+  "id": "PG17-S-IRQCOUNTER-002",
+  "scope": "same exact kernel hardware-breakpoint CPU IF boundary injection; not natural-caller census or production Root qualification",
+  "status": "PASS_REGISTER_COMPONENT",
+  "qemu_single_step_no_irq": true,
+  "qemu_notimer_requested": false,
+  "qemu_sstepbits_actual_reply": "sending: qqemu.sstepbits\nreceived: \"ENABLE=1,NOIRQ=2\"\n",
+  "results": [
+    {
+      "site": "uncharge",
+      "entry_if_requested": false,
+      "natural_entry_if": true,
+      "entry_if_injected": true,
+      "original_rflags": "0x202",
+      "test_entry_rflags": "0x2",
+      "returned_rflags": "0x46",
+      "caller_if_restored_before_continue": true,
+      "real_ancestor_count": 3,
+      "real_nr_pages": 7,
+      "before": [
+        {
+          "address": "0xffff888000e62900",
+          "usage": 1024
+        },
+        {
+          "address": "0xffff888000e5a100",
+          "usage": 2048
+        },
+        {
+          "address": "0xffff888000154900",
+          "usage": 2048
+        }
+      ],
+      "after": [
+        {
+          "address": "0xffff888000e62900",
+          "usage": 1017
+        },
+        {
+          "address": "0xffff888000e5a100",
+          "usage": 2041
+        },
+        {
+          "address": "0xffff888000154900",
+          "usage": 2041
+        }
+      ],
+      "cli_observed_if_zero": true,
+      "exact_restore_branch_seen": false,
+      "instruction_steps": 86,
+      "instructions": [
+        {
+          "rip": "0xffffffff813334bb",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334bc",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334be",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334bf",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334c2",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334c5",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334c8",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334cb",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334ce",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334de",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e1",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e6",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e9",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334eb",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f2",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f4",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f7",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333210",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333218",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321d",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333224",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333228",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333232",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333240",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333247",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324a",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324e",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333252",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333255",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133326f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334fc",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333503",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333506",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334de",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e1",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e6",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e9",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334eb",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f2",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f4",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f7",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333210",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333218",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321d",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333224",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333228",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333232",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333240",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333247",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324a",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324e",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333252",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333255",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133326f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334fc",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333503",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333506",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334de",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e1",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e6",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e9",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334eb",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f2",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f4",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f7",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333210",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333218",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133326f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334fc",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333503",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333506",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333508",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133350f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333512",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333513",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333515",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333517",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333519",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133351a",
+          "if": false
+        }
+      ],
+      "guest_function_called_by_debugger": false,
+      "guest_counter_or_text_written": false,
+      "pass": true
+    },
+    {
+      "site": "uncharge",
+      "entry_if_requested": true,
+      "natural_entry_if": true,
+      "entry_if_injected": false,
+      "original_rflags": "0x202",
+      "test_entry_rflags": "0x202",
+      "returned_rflags": "0x206",
+      "caller_if_restored_before_continue": true,
+      "real_ancestor_count": 3,
+      "real_nr_pages": 31,
+      "before": [
+        {
+          "address": "0xffff888000e62900",
+          "usage": 1017
+        },
+        {
+          "address": "0xffff888000e5a100",
+          "usage": 2041
+        },
+        {
+          "address": "0xffff888000154900",
+          "usage": 2041
+        }
+      ],
+      "after": [
+        {
+          "address": "0xffff888000e62900",
+          "usage": 986
+        },
+        {
+          "address": "0xffff888000e5a100",
+          "usage": 2010
+        },
+        {
+          "address": "0xffff888000154900",
+          "usage": 2010
+        }
+      ],
+      "cli_observed_if_zero": true,
+      "exact_restore_branch_seen": true,
+      "instruction_steps": 87,
+      "instructions": [
+        {
+          "rip": "0xffffffff813334bb",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff813334bc",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff813334be",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff813334bf",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334c2",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334c5",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334c8",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334cb",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334ce",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334de",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e1",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e6",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e9",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334eb",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f2",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f4",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f7",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333210",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333218",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321d",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333224",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333228",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333232",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333240",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333247",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324a",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324e",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333252",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333255",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133326f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334fc",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333503",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333506",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334de",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e1",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e6",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e9",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334eb",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f2",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f4",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f7",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333210",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333218",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321d",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333224",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333228",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333232",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333240",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333247",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324a",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324e",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333252",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333255",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133326f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334fc",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333503",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333506",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334de",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e1",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e6",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334e9",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334eb",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f2",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f4",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334f7",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333210",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333218",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133326f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813334fc",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333503",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333506",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333508",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133350f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333511",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333512",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff81333513",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff81333515",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff81333517",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff81333519",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff8133351a",
+          "if": true
+        }
+      ],
+      "guest_function_called_by_debugger": false,
+      "guest_counter_or_text_written": false,
+      "pass": true
+    },
+    {
+      "site": "rollback",
+      "entry_if_requested": false,
+      "natural_entry_if": true,
+      "entry_if_injected": true,
+      "original_rflags": "0x202",
+      "test_entry_rflags": "0x2",
+      "returned_rflags": "0x46",
+      "caller_if_restored_before_continue": true,
+      "real_ancestor_count": 2,
+      "real_nr_pages": 64,
+      "before": [
+        {
+          "address": "0xffff888000e65100",
+          "usage": 64
+        },
+        {
+          "address": "0xffff888000e60100",
+          "usage": 64
+        }
+      ],
+      "after": [
+        {
+          "address": "0xffff888000e65100",
+          "usage": 0
+        },
+        {
+          "address": "0xffff888000e60100",
+          "usage": 0
+        }
+      ],
+      "cli_observed_if_zero": true,
+      "exact_restore_branch_seen": false,
+      "instruction_steps": 94,
+      "instructions": [
+        {
+          "rip": "0xffffffff81333456",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333457",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333458",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333459",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133345c",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133345e",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333461",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333464",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a0",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a1",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a4",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a7",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332aa",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332ab",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332ae",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332b3",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332b6",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332b8",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332bf",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332cb",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332ce",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333210",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333218",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321d",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333224",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333228",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333232",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333240",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333247",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324a",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324e",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333252",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333255",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133326f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332d3",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332d7",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332d8",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333469",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133346d",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333474",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333477",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133345e",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333461",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333464",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a0",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a1",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a4",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a7",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332aa",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332ab",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332ae",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332b3",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332b6",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332b8",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332bf",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332cb",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332ce",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333210",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333218",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321d",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333224",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333228",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333232",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333240",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333247",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324a",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324e",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333252",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333255",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133326f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332d3",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332d7",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332d8",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333469",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133346d",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333474",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333477",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333479",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133347c",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133347f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333483",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333485",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333486",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333488",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133348a",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133348c",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133348e",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133348f",
+          "if": false
+        }
+      ],
+      "guest_function_called_by_debugger": false,
+      "guest_counter_or_text_written": false,
+      "pass": true
+    },
+    {
+      "site": "rollback",
+      "entry_if_requested": true,
+      "natural_entry_if": true,
+      "entry_if_injected": false,
+      "original_rflags": "0x202",
+      "test_entry_rflags": "0x202",
+      "returned_rflags": "0x246",
+      "caller_if_restored_before_continue": true,
+      "real_ancestor_count": 2,
+      "real_nr_pages": 1,
+      "before": [
+        {
+          "address": "0xffff888000e65100",
+          "usage": 1
+        },
+        {
+          "address": "0xffff888000e60100",
+          "usage": 1
+        }
+      ],
+      "after": [
+        {
+          "address": "0xffff888000e65100",
+          "usage": 0
+        },
+        {
+          "address": "0xffff888000e60100",
+          "usage": 0
+        }
+      ],
+      "cli_observed_if_zero": true,
+      "exact_restore_branch_seen": true,
+      "instruction_steps": 95,
+      "instructions": [
+        {
+          "rip": "0xffffffff81333456",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff81333457",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff81333458",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff81333459",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133345c",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133345e",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333461",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333464",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a0",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a1",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a4",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a7",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332aa",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332ab",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332ae",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332b3",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332b6",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332b8",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332bf",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332cb",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332ce",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333210",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333218",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321d",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333224",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333228",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333232",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333240",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333247",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324a",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324e",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333252",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333255",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133326f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332d3",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332d7",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332d8",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333469",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133346d",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333474",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333477",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133345e",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333461",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333464",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a0",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a1",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a4",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332a7",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332aa",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332ab",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332ae",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332b3",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332b6",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332b8",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332bf",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332cb",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332ce",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333210",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333218",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133321d",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333224",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333228",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322b",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133322f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333232",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333240",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333247",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324a",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133324e",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333252",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333255",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133326f",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332d3",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332d7",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff813332d8",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333469",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133346d",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333474",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333477",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff81333479",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133347c",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133347e",
+          "if": false
+        },
+        {
+          "rip": "0xffffffff8133347f",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff81333483",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff81333485",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff81333486",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff81333488",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff8133348a",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff8133348c",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff8133348e",
+          "if": true
+        },
+        {
+          "rip": "0xffffffff8133348f",
+          "if": true
+        }
+      ],
+      "guest_function_called_by_debugger": false,
+      "guest_counter_or_text_written": false,
+      "pass": true
+    }
+  ],
+  "counts": {
+    "sites": 2,
+    "entry_states_each": 2,
+    "passed": 4
+  },
+  "kernel_text_modified": false,
+  "counter_arguments_or_memory_modified": false,
+  "vm_shrink_permit": false,
+  "all_sources_closed": false
+}

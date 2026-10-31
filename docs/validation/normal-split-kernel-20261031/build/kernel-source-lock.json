@@ -1,0 +1,73 @@
+{
+  "scope": "accurate normal-split kernel component only; no Root/PG/force/I authorization",
+  "physical_profile_id": "neon-linux-6.12.26-dsga-normal-split-v1",
+  "kernel_source_version": "6.12.26",
+  "kernel_release": "6.12.26-william-normal-split-v1-e210f5e3ee94",
+  "kernel_artifact_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+  "kernel_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+  "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "source_config_sha256": "de98f51a2ac4c7d3d3b8472993fd716b62584a3a0607257301a7ecd612316855",
+  "patch_set_canonical_sha256": "de01c7bbe6fce8bc06e26c442463e138142080d9c5ede4a44681ea3fbf8ec742",
+  "patch_set_digest_method": "sha256 of sorted compact JSON map relative patches/filename to file sha256",
+  "patch_files": {
+    "patches/0001-x86-mm-Update-mapped-addresses-in-phys_-pmd-pud-_ini.patch": "01bd47eaea82fb99eea4cb25be1063e6f2f14e3e03289be644a9bac03edfba5e",
+    "patches/0002-x86-mm-Allow-error-returns-from-phys_-_init.patch": "b4cf630bf5cd5e64b6702cbc5aa952bc718c45d22bca5ec2fb082fede7d6d0d5",
+    "patches/0003-x86-mm-Handle-alloc-failure-in-phys_-_init.patch": "9ee75c0a474f68303ef8c32141445b687056c228cfe31f822e983206139112d0",
+    "patches/0004-x86-mm-Use-GFP_KERNEL-for-alloc_low_pages-after-boot.patch": "5ac67ef964af106fc5f36bdd3c711b9241bfdfac19b5c9faa6c162b765004ae8",
+    "patches/0005-Neon-mm-Add-debug-logs-for-kcompactd-offlining-race.patch": "959e9d4701586312a3dd9e03386c849efd3f7b78038fd13dd56c5e58d6d037e4",
+    "patches/0006-Neon-pid-Add-opt-in-early-global-PID-hard-limit.patch": "946be0d25506edae50217b976bdf3b02283e3236acefdc119648ba5172c5ab5a",
+    "patches/0007-Neon-mm-Bound-hierarchical-page-counter-cancel-IRQ-gap.patch": "e210f5e3ee9436089be24b318aa6e10019f4014303f26e5964a994a0f717cb88"
+  },
+  "actual_source_hashes": {
+    "init/Kconfig": "16f90ca98b6b9378df80b2c971dd1df45e3c199bcd30f27b5743eb197f0c8c7c",
+    "mm/page_counter.c": "d93ef617a216fe05d88e75da40546776a1c16569c6332bf30c2e12a564f81e79",
+    "mm/hugetlb_cgroup.c": "014306cc4a3c95fc93018f69c11da7361d5baea06faa6962de1aa3b84b440e28",
+    "kernel/pid.c": "e4c539d7d8f4ee1b7f6c6d2926c5d8d87ae0b2fad51d3ac981194c527114f980",
+    "include/linux/pid.h": "b0aed971fb986f197f9a93712180e9b27db0e3d1902794eca2d5e40b49140604",
+    "kernel/sysctl.c": "dcd958820b0705716e512dbe2300b2372e0b0df8353fa1cb5f168d443eb8da04",
+    "/build/patches/0001-x86-mm-Update-mapped-addresses-in-phys_-pmd-pud-_ini.patch": "01bd47eaea82fb99eea4cb25be1063e6f2f14e3e03289be644a9bac03edfba5e",
+    "/build/patches/0002-x86-mm-Allow-error-returns-from-phys_-_init.patch": "b4cf630bf5cd5e64b6702cbc5aa952bc718c45d22bca5ec2fb082fede7d6d0d5",
+    "/build/patches/0003-x86-mm-Handle-alloc-failure-in-phys_-_init.patch": "9ee75c0a474f68303ef8c32141445b687056c228cfe31f822e983206139112d0",
+    "/build/patches/0004-x86-mm-Use-GFP_KERNEL-for-alloc_low_pages-after-boot.patch": "5ac67ef964af106fc5f36bdd3c711b9241bfdfac19b5c9faa6c162b765004ae8",
+    "/build/patches/0005-Neon-mm-Add-debug-logs-for-kcompactd-offlining-race.patch": "959e9d4701586312a3dd9e03386c849efd3f7b78038fd13dd56c5e58d6d037e4",
+    "/build/patches/0006-Neon-pid-Add-opt-in-early-global-PID-hard-limit.patch": "946be0d25506edae50217b976bdf3b02283e3236acefdc119648ba5172c5ab5a",
+    "/build/patches/0007-Neon-mm-Bound-hierarchical-page-counter-cancel-IRQ-gap.patch": "e210f5e3ee9436089be24b318aa6e10019f4014303f26e5964a994a0f717cb88",
+    ".config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "arch/x86/boot/bzImage": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0"
+  },
+  "actual_source_receipt_sha256": "c3aea5bf585b44197fdd636753517364afd53a11334f6f37cb0592642c609437",
+  "legacy_make_cached": true,
+  "new_make_jobs": 8,
+  "new_build_elapsed_seconds": 81.10696101399662,
+  "resolved_semantic_delta_from_3b": {
+    "CONFIG_NEON_DSGA_STRICT_PAGE_COUNTER": {
+      "legacy": null,
+      "split": "y"
+    }
+  },
+  "default_config_strict_disabled": true,
+  "source_head_at_context": "410bcc63a5de44b26afd04e237854a9c5b1705ce",
+  "source_dockerfile_incremental_sha256": "4a31010ab0fa32a0f53e85c3f61abb876b16fcf19e8ee7457b9cd51361aff550",
+  "runtime_proofs": [
+    {
+      "id": "PG17-S-PIDCAP-002",
+      "path": "/data/neon-build/validation/normal-split-pid17-20261030T225434Z/runtime-proof.json",
+      "sha256": "c63627d1a0fbdc6260fd098568b5792bcc6887e94c6f1f80a33377e764f2858f"
+    },
+    {
+      "id": "PG17-S-IRQCOUNTER-001",
+      "path": "/data/neon-build/validation/normal-split-counter-runtime-20261030T225941Z/pressure/result.json",
+      "sha256": "832018ea2ac2385d1ec3a16f31833feb0f323d7f3055c61f33bc59077ea0a9e7"
+    },
+    {
+      "id": "PG17-S-IRQCOUNTER-002",
+      "path": "/data/neon-build/validation/normal-split-counter-runtime-20261030T230244Z/irq-boundary-230928/result.json",
+      "sha256": "3203e1ed718e8e21dab137e85f88756db5f421c7338f29ab30e0d3250136abfc",
+      "boundary_json_sha256": "e2a7bd1294556c6676e855d901a19d8b02d8842bbc7b13b615c5130b4c21033d",
+      "raw_rsp_sha256": "eab98648c5e35f457693e71e5a3fb996b69dda07f5a8e49fea7aca85398c7695"
+    }
+  ],
+  "formal_image_published": false,
+  "vm_shrink_permit": false,
+  "all_sources_closed": false
+}

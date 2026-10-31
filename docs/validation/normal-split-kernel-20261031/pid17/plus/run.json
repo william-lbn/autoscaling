@@ -1,0 +1,32 @@
+{
+  "case": "plus",
+  "actualQMPKVM": {
+    "enabled": true,
+    "present": true
+  },
+  "negativeBoot": true,
+  "hostQemuExitCode": 0,
+  "elapsedSeconds": 0.9638250060015707,
+  "startUTC": "2026-10-30T22:54:47.006892+00:00",
+  "endUTC": "2026-10-30T22:54:47.970720+00:00",
+  "kernelSha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+  "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+  "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+  "accel": "kvm",
+  "TCGFallback": false,
+  "GuestNIC": "none",
+  "consoleSha256": "69c6913ec943ad1ac5c93ebeb7113aac5a03802976a59d450ea70947c2158b1e",
+  "panicMessages": [
+    "neonvm.pid_max_limit: canonical decimal value required"
+  ],
+  "intentionallyTerminatedAfterObservedPanic": true,
+  "guestInitMarkerPresent": false,
+  "kernelRunInitMarkerPresent": false,
+  "probe": [],
+  "panicStopCommand": {
+    "exitCode": 0,
+    "stdout": "pg17-pidcap-plus-normal-split-pid17-20261030t225434z\n",
+    "stderr": ""
+  },
+  "pass": true
+}

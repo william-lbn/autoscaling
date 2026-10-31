@@ -1,0 +1,101 @@
+From: Neon DSGA memory validation <noreply@example.invalid>
+Subject: [PATCH] Neon mm: 可选封闭层级 page counter 取消段 IRQ 窗口
+
+默认关闭；仅新显式 normal-split profile 启用。两处完整 ancestor 取消循环
+保存/关闭并恢复本地 IRQ，保留已有入口 IF，失败回滚也覆盖。非 RT/x86_64，
+不增加普通 API，不改 HugeTLB 本地 cancel，不把 counter 边际冒充 force/I
+或完整 normal 许可。所有新增关键逻辑以中文说明。
+
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -996,6 +996,20 @@
+ 	select SLAB_OBJ_EXT
+ 	help
+ 	  Provides control over the memory footprint of tasks in a cgroup.
++
++config NEON_DSGA_STRICT_PAGE_COUNTER
++	bool "Bound hierarchical page counter cancellation IRQ gaps"
++	depends on X86_64 && MEMCG && !PREEMPT_RT
++	default n
++	help
++	  仅用于显式受支持的 Neon DSGA normal-split 内核。保存并关闭本地
++	  IRQ，覆盖普通层级 uncharge 与失败回滚的完整 ancestor 取消循环，
++	  完成后恢复入口 IRQ 状态，避免同一 CPU 的任意 task/IRQ 在中间
++	  挂起叶子已扣而祖先尚未扣的短窗口。循环只有 atomic/READ_ONCE，
++	  不增加新锁、不睡眠；x86 的单层 latched NMI 仍须单独留边际。
++	  现有 HugeTLB 的本地 cancel 迁账语义和普通公开 API 保持原样。
++	  此选项不关闭 force charge，也不单独授予 normal/VM 降限许可。
++	  未显式选择时保持原内核行为。不能把旧构建补签为已启用。
+ 
+ config MEMCG_V1
+ 	bool "Legacy cgroup v1 memory controller"
+--- a/mm/page_counter.c
++++ b/mm/page_counter.c
+@@ -12,6 +12,10 @@
+ #include <linux/sched.h>
+ #include <linux/bug.h>
+ #include <asm/page.h>
++
++#ifdef CONFIG_NEON_DSGA_STRICT_PAGE_COUNTER
++#include <linux/irqflags.h>
++#endif
+ 
+ static bool track_protection(struct page_counter *c)
+ {
+@@ -121,6 +125,9 @@
+ {
+ 	struct page_counter *c;
+ 	bool protection = track_protection(counter);
++#ifdef CONFIG_NEON_DSGA_STRICT_PAGE_COUNTER
++	unsigned long irq_flags;
++#endif
+ 
+ 	for (c = counter; c; c = c->parent) {
+ 		long new;
+@@ -163,8 +170,21 @@
+ 	return true;
+ 
+ failed:
++#ifdef CONFIG_NEON_DSGA_STRICT_PAGE_COUNTER
++	/*
++	 * 失败点可能在观察域之上的祖先，回滚仍会先扣叶子、后扣中间祖先；
++	 * 不能误当成所有失败都只有负差。整个取消循环共用一次入口 IRQ
++	 * 保存/恢复，不在每层之间重新开 IRQ。这里没有分配、锁或调度点；
++	 * 正常 counter 不下溢。原已关 IRQ 的 caller 返回时仍保持关闭。
++	 * NMI 不受 local_irq_save 阻止，独立来源仍须承担其单层在途量。
++	 */
++	local_irq_save(irq_flags);
++#endif
+ 	for (c = counter; c != *fail; c = c->parent)
+ 		page_counter_cancel(c, nr_pages);
++#ifdef CONFIG_NEON_DSGA_STRICT_PAGE_COUNTER
++	local_irq_restore(irq_flags);
++#endif
+ 
+ 	return false;
+ }
+@@ -177,9 +197,23 @@
+ void page_counter_uncharge(struct page_counter *counter, unsigned long nr_pages)
+ {
+ 	struct page_counter *c;
+-
++#ifdef CONFIG_NEON_DSGA_STRICT_PAGE_COUNTER
++	unsigned long irq_flags;
++
++	/*
++	 * 固定的两子域包络依赖祖先与叶子计数差额的硬界。只在完整的
++	 * child -> root 取消段关 IRQ，不能逐层保护后又允许窗口重入。
++	 * 保存入口 IF 并恢复原值，支持已有 stock/hugetlb IRQ-off caller；
++	 * 不改变 nr_pages、protection 更新、HugeTLB 本地迁账或公开 API。
++	 * force/物理释放/迁移影子均不在这里解决，未闭来源继续拒绝降限。
++	 */
++	local_irq_save(irq_flags);
++#endif
+ 	for (c = counter; c; c = c->parent)
+ 		page_counter_cancel(c, nr_pages);
++#ifdef CONFIG_NEON_DSGA_STRICT_PAGE_COUNTER
++	local_irq_restore(irq_flags);
++#endif
+ }
+ 
+ /**

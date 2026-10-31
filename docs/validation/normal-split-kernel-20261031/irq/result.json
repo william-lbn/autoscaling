@@ -1,0 +1,48 @@
+{
+  "id": "PG17-S-IRQCOUNTER-002",
+  "scope": "actual same369 kernel registers and multi-ancestor deltas; explicit IF boundary injection, not production caller qualification",
+  "status": "PASS_COMPONENT_ONLY",
+  "host_qemu_exit": 0,
+  "gdb_exit": 0,
+  "actual_qmp_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "elapsed_seconds": 5.151759651002067,
+  "kernel": {
+    "exit_code": 0,
+    "elapsed_seconds": 81.10696101399662,
+    "jobs": 8,
+    "guest_started": false,
+    "vm_shrink_permit": false,
+    "formal_image_published": false,
+    "artifact_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+    "resolved_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+    "symbols_sha256": "f62eda517fe3f8e73640ef0c74cb73e3192ba6bc4c1ed5d8a0a9506aba4b9fc9",
+    "release": "6.12.26-william-normal-split-v1-e210f5e3ee94"
+  },
+  "runtime_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "console_sha256": "0dcc89a43e72ad189a43a4d7b8c25a943d702c6902cb946873316e912119c61f",
+  "gdb_driver_sha256": "d25a5f9ae1cf81d3219561ce5736f66641ff6ca405081f3318589ee733749195",
+  "gdb_image_id": "sha256:ebaeba1cc3372b303db000f2379d75e466dd0bcc86705caa716c7c9d42962d7b",
+  "boundary_counts": {
+    "sites": 2,
+    "entry_states_each": 2,
+    "passed": 4
+  },
+  "probe": [
+    {
+      "scope": "kernel-counter-component-only",
+      "mode": "irq-trigger-workload",
+      "expected_failed_children": 4,
+      "strictly_reaped": true,
+      "vm_shrink_permit": false,
+      "all_sources_closed": false,
+      "pass": true
+    }
+  ],
+  "vm_shrink_permit": false,
+  "all_sources_closed": false,
+  "PG_started": false
+}

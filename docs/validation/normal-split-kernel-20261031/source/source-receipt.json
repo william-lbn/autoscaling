@@ -1,0 +1,28 @@
+{
+  "source_head": "09e60fbba71f4bf9bde054d5b8e484f1bce9a1d0",
+  "scope": "new explicit normal-split kernel source; build/KVM NOT_RUN; non-authorizing",
+  "physical_profile_id": "neon-linux-6.12.26-dsga-normal-split-v1",
+  "base_config_sha256": "b20ac4f85d74b6dfca4f207cbee3cd72f6b34307fc1a4fee13519eba244ed1f5",
+  "source_config_sha256": "de98f51a2ac4c7d3d3b8472993fd716b62584a3a0607257301a7ecd612316855",
+  "patch_sha256": "e210f5e3ee9436089be24b318aa6e10019f4014303f26e5964a994a0f717cb88",
+  "patch_path": "neonvm-kernel/patches/0007-Neon-mm-Bound-hierarchical-page-counter-cancel-IRQ-gap.patch",
+  "selector_delta": {
+    "CONFIG_NEON_DSGA_STRICT_PAGE_COUNTER": "y"
+  },
+  "preempt_defaults_unchanged": true,
+  "static_none_applied": false,
+  "historical_build_tuples_unchanged": true,
+  "base_source_sha256": {
+    "init/Kconfig": "54fac2a42a7ef596da891fe9a20d571d2accd657700450b0f5ff1f817e34b04d",
+    "mm/page_counter.c": "e84cd7e74e3edc9b049a2cad5ddf356bc5b15f750acbd8d778c3ad2a5d972eaf"
+  },
+  "patched_source_sha256": {
+    "init/Kconfig": "16f90ca98b6b9378df80b2c971dd1df45e3c199bcd30f27b5743eb197f0c8c7c",
+    "mm/page_counter.c": "d93ef617a216fe05d88e75da40546776a1c16569c6332bf30c2e12a564f81e79"
+  },
+  "source_validation": "/data/neon-build/validation/normal-split-irq-source-20261030T224308Z",
+  "dry_apply": "PASS_SOURCE_ONLY",
+  "actual_build_tuple": null,
+  "all_sources_closed": false,
+  "vm_shrink_permit": false
+}

@@ -1,0 +1,37 @@
+{
+  "case": "cap512",
+  "actualQMPKVM": {
+    "enabled": true,
+    "present": true
+  },
+  "negativeBoot": false,
+  "hostQemuExitCode": 0,
+  "elapsedSeconds": 9.499051366998174,
+  "startUTC": "2026-10-30T22:54:34.446087+00:00",
+  "endUTC": "2026-10-30T22:54:43.945131+00:00",
+  "kernelSha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+  "initramfsSha256": "70dab4e211200b6cfdcc62e9c00c6568d27f9be1e22adb620816e13b728678d2",
+  "QEMUImage": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+  "accel": "kvm",
+  "TCGFallback": false,
+  "GuestNIC": "none",
+  "consoleSha256": "4710658f9209c7a3666fce559d3c5f840bb75911ff731db207c50e5f5276c29b",
+  "panicMessages": [],
+  "intentionallyTerminatedAfterObservedPanic": false,
+  "guestInitMarkerPresent": true,
+  "kernelRunInitMarkerPresent": true,
+  "probe": [
+    {
+      "scope": "isolated-kvm-kernel-component-only",
+      "hard_limit": 512,
+      "initial_pid_max": 512,
+      "readonly_fact": true,
+      "runtime_expand_rejected": true,
+      "normal_init_and_fork": true,
+      "legal_lower_restore_checked": true,
+      "vm_shrink_permit": false,
+      "pass": true
+    }
+  ],
+  "pass": true
+}

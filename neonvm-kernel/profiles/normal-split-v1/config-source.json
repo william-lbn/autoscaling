@@ -1,0 +1,41 @@
+{
+  "source_head": "09e60fbba71f4bf9bde054d5b8e484f1bce9a1d0",
+  "scope": "new explicit normal-split kernel component build/KVM validated; not Root/PG/force/I authorization",
+  "physical_profile_id": "neon-linux-6.12.26-dsga-normal-split-v1",
+  "base_config_sha256": "b20ac4f85d74b6dfca4f207cbee3cd72f6b34307fc1a4fee13519eba244ed1f5",
+  "source_config_sha256": "de98f51a2ac4c7d3d3b8472993fd716b62584a3a0607257301a7ecd612316855",
+  "patch_sha256": "e210f5e3ee9436089be24b318aa6e10019f4014303f26e5964a994a0f717cb88",
+  "patch_path": "neonvm-kernel/patches/0007-Neon-mm-Bound-hierarchical-page-counter-cancel-IRQ-gap.patch",
+  "selector_delta": {
+    "CONFIG_NEON_DSGA_STRICT_PAGE_COUNTER": "y"
+  },
+  "preempt_defaults_unchanged": true,
+  "static_none_applied": false,
+  "historical_build_tuples_unchanged": true,
+  "base_source_sha256": {
+    "init/Kconfig": "54fac2a42a7ef596da891fe9a20d571d2accd657700450b0f5ff1f817e34b04d",
+    "mm/page_counter.c": "e84cd7e74e3edc9b049a2cad5ddf356bc5b15f750acbd8d778c3ad2a5d972eaf"
+  },
+  "patched_source_sha256": {
+    "init/Kconfig": "16f90ca98b6b9378df80b2c971dd1df45e3c199bcd30f27b5743eb197f0c8c7c",
+    "mm/page_counter.c": "d93ef617a216fe05d88e75da40546776a1c16569c6332bf30c2e12a564f81e79"
+  },
+  "source_validation": "/data/neon-build/validation/normal-split-irq-source-20261030T224308Z",
+  "dry_apply": "PASS_SOURCE_ONLY",
+  "actual_build_tuple": {
+    "kernel_release": "6.12.26-william-normal-split-v1-e210f5e3ee94",
+    "kernel_artifact_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+    "kernel_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+  },
+  "all_sources_closed": false,
+  "vm_shrink_permit": false,
+  "kernel_source_lock_path": "/data/neon-build/validation/normal-split-kernel-20261030T224843Z/kernel-source-lock.json",
+  "kernel_source_lock_sha256": "49a8a0ea7e342547256340e3e10731d1198bfc35d84662583597e69f32c9b791",
+  "validation_ids": [
+    "PG17-U-KCFG-007",
+    "PG17-S-PIDCAP-002",
+    "PG17-S-IRQCOUNTER-001",
+    "PG17-S-IRQCOUNTER-002"
+  ]
+}

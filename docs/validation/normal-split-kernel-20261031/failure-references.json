@@ -1,0 +1,75 @@
+[
+  {
+    "path": "/data/neon-build/validation/normal-split-kernel-20261030T224809Z",
+    "class": "runner-template-syntax-before-proxy-or-make",
+    "files": {
+      "runner.log": {
+        "sha256": "e403c709feed695c0e22891b434dfaf9531f0dcc83e92aebed3a97694b998755",
+        "bytes": 501
+      }
+    },
+    "retained": true
+  },
+  {
+    "path": "/data/neon-build/validation/normal-split-counter-runtime-20261030T230244Z/irq-boundary-230535",
+    "class": "unsupported-KVM-NOTIMER-before-Guest-init",
+    "files": {
+      "exitcode": {
+        "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "bytes": 2
+      },
+      "gdb.log": {
+        "sha256": "6672bc4c4eeef2766ee70729138eccebe0d9c82994bb70f4556f52ee5a1c8304",
+        "bytes": 309
+      },
+      "result.json": {
+        "sha256": "ecb196d1a49d0f588173075e3d51ee072a5b6e040f516ddb091e8586461385e0",
+        "bytes": 1406
+      },
+      "console.log": {
+        "sha256": "d617d9d00fcf0df07635133f648d774a79cb54cdeb6345ad47fc54b90e60ac40",
+        "bytes": 156
+      },
+      "irq-boundaries.json": {
+        "sha256": "f50799718a98acbf3d214363c0ef66c9391867647e9468ee86e24302a6f30f9b",
+        "bytes": 429
+      },
+      "runner.log": {
+        "sha256": "c9b2c38cf7e1df3edbc1067d7a0ed172f8d3b6ee100f5f95c8b369199c30e032",
+        "bytes": 1310
+      }
+    },
+    "retained": true
+  },
+  {
+    "path": "/data/neon-build/validation/normal-split-counter-runtime-20261030T230244Z/irq-boundary-230738",
+    "class": "signed-kernel-address-decoder-before-IF-injection",
+    "files": {
+      "exitcode": {
+        "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "bytes": 2
+      },
+      "gdb.log": {
+        "sha256": "22f83eb9b161b6eb0b8d3b40103c744dd46349b24c1f2113de712cfe30dd0da6",
+        "bytes": 444
+      },
+      "result.json": {
+        "sha256": "85a56a83593b20dcb6dfc1a52e77f9bd0183c72aad44a02d48a919a0d3feddbb",
+        "bytes": 1467
+      },
+      "console.log": {
+        "sha256": "af04be9578e9e32b4e9bcd46fef524f2b9cc2ddab00418e983b039c47676a620",
+        "bytes": 27570
+      },
+      "irq-boundaries.json": {
+        "sha256": "b84b4ece57dc7ee9f56ca9132fc7fcbe2ffe73b64fc57a70770f64e97845cc77",
+        "bytes": 435
+      },
+      "runner.log": {
+        "sha256": "0d589a70e30b564ca6a9fb8a0c71eb2b484b84ac95008a6d61252050fd7bba9b",
+        "bytes": 1371
+      }
+    },
+    "retained": true
+  }
+]
