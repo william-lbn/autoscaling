@@ -1,0 +1,35 @@
+{
+  "status": "PASS_U_COMPONENT_ONLY_PENDING_INDEPENDENT_REVIEW",
+  "roots": [
+    "TestNativeBirthSourceELFDynamicMetadata",
+    "TestNativeBirthSourceExactBytesAndUnsupportedABI",
+    "TestNativeBirthSourceNonceAndGeometryStrict",
+    "TestNativeBirthSourceManifestIsBoundedAndStrict",
+    "TestNativeBirthStageWALOrderedAndNonAuthorizing",
+    "TestNativeBirthStageWALRejectsOrphanPartialAndGap",
+    "TestNativeBirthStageWALOriginalConsumerAndSource",
+    "TestNativeBirthStageWALFailuresPoisonWriterNoReplay",
+    "TestNativeBirthSourceLinuxReaderRejectsUnqualifiedFiles"
+  ],
+  "rootCount": 9,
+  "namedSubcases": 45,
+  "skip": 0,
+  "race": true,
+  "package": [
+    {
+      "Time": "2026-10-31T01:33:12.35958262Z",
+      "Action": "pass",
+      "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "Elapsed": 1.924
+    }
+  ],
+  "actualCOPYGoSources": 740,
+  "actualCOPYExact": true,
+  "genuineDynamicELF": "/bin/true; metadata read only; sha256 c79bf44242829108e323378531f4ac839513ca1fba45efd6583643526e1e9fd2",
+  "malformedELFsExecuted": false,
+  "GoParserUsedForMutatedELFs": false,
+  "formalRuntimeClosureS": "NOT_RUN",
+  "productionBirthConsumer": "NOT_WIRED",
+  "normalDecreaseExecuted": false,
+  "VMShrinkPermit": false
+}

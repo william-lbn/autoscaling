@@ -1,0 +1,135 @@
+PG 原生出生：原 Source 与 append-only 阶段 WAL（2026-10-31）
+
+本批：7 个独占文件（原6+ELF反例1），9 根/47 子场景 race U 全过，0 skip，package 1.673s。
+740 份 Go/mod/sum 实际 COPY 逐项匹配固定 AS 2da9b775fe38038663016c1403941bf418479ff1
+叠加本批7文件。原始日志、命令、精确哈希与实际 JSON 测试事件见同名 validation 目录。
+本批没有改 guard record/version、launcher/env/server/CLI/Runner、公共协议或冻结 engine3；
+没有 PG/ptrace/cgroup 写，没有正式 Source listener consumer、normal 降限或 K8s。
+Linux 临时目录的 flock/O_EXCL/fsync 为真实操作；原ISO、PG、cgroup与构建摘要是明确模型，
+不能将本 U 记作真实 ISO/ext4/发行装载闭包 S，更不是 E2E 或完整 Birth。
+
+文件与接口：
+native_birth_source.go：严格原字节 policy/build manifest、PG ABI、32-byte nonce；
+NativeBirthRef 为中性的 typed reference，只引用 nonce+原Pending字节 SHA，不携带许可。
+native_birth_source_linux.go：固定原ISO与封存 runtime、明确受限RO pre-main loader reader。
+native_birth_source_test.go：精确字节、未知/重复字段、ABI未实现、nonce及几何反例。
+native_birth_stage.go：Pending/阶段链与严格 engine transcript/原wire几何验证。
+native_birth_stage_linux.go：同原resource锁下 create/open-pristine/observe/Persist/released。
+native_birth_stage_test.go：真实私有WAL、partial/orphan/gap/变源/实例重启/重放失败测试。
+
+Source 和原 nonce：
+固定 policy /neonvm/runtime/dsga-native-birth.json 必须来自原只读 ISO。
+固定构建文件 /usr/share/neon-dsga/native-build.json 及声明的ELF必须实际原只读。
+policy绑定原runtime document SHA、原resource.json SHA、构建manifest SHA、M/N0/page/ABI。
+wire SourceSHA=原resource.json精确字节SHA；ProfileSHA=原policy精确字节SHA，不形成自引用。
+birth nonce由crypto/rand生成32 bytes、hex64，严格非零小写；不能套16-byte Incarnation验证器。
+PGmajor只选择已有原生ABI，统一上层阶段不按PG版本分叉；18没有Root ABI时明确unsupported。
+当前17 ABI源自已核C14的64/8192/16/20与4KiB构建事实，绝不从peer自报字段补预期。
+
+Pending 保存原ProcessIdentity、Source绑定、peer UID/GID、private组和state目录dev/inode、
+资源floor、原消费者Root PID/start及独立Root instance_nonce。后者每Root进程sync.Once
+生成32随机bytes，绝不从WAL恢复；PID/start tick在同tick复用也不能收养旧Pending。
+后继可信launcher须从固定root-controlled listener真实SO_PEERCRED和原实例元数据取得消费者，
+不得让HTTP选择PID或nonce。任何PG exec前先fsync原Pending，后继共享record必须配对显式v3。
+
+阶段锁与恢复：
+外层唯一server.lock管理listener寿命；原resource flock覆盖Source/Bootstrap/Birth只读核验、
+整个engine与两个Persist。内部stage mutex只串行同对象阶段，不能从Persist重入withRecord。
+createNativeBirthPendingLocked 先写唯一原Pending并fsync文件和目录，不修改共享record。
+openNativeBirthPendingLocked 要求原Birth已配对、原Source/floor/目录inode匹配、当前真实
+Root PID/start/私有instance_nonce和Guest boot全匹配，且只有pristine Pending。
+stage.persist只有base→final顺序，严格核原wire几何、原builder摘要、同tracer/原四R。
+base是enrolled-pending；final是verified-pending-release，必须fsync后engine才detach。
+stage.released只能接本次engine真实detach的完整回执，在同一原writer中写released-non-authorizing。
+这些动作没有完整Birth或缩容授权位。Parent正式consumer仍须在每次Persist之前独立核
+原Source/PreSys/split/实际private组/ELF闭包/全部实际BPF，不能将这些状态函数当核验替代品。
+
+每阶段只O_EXCL新建，不覆盖旧阶段。O_EXCL/写/fsync/取消/不一致等任何失败后writer不再重试。
+Observe仅读原文件，无可写恢复对象或DurabilityConfirmed标志。partial、orphan、gap、未知文件、
+变Source、变目录和变实例保持Unknown。base/final/released任一已存在都不得重开writer。
+Root重启后的final-ready不能判断是在detach之前还是之后；不能凭PG还活/TracerPid0猜成功。
+原预算/nonce保留，不numeric kill/reap、不自动ACK/重放/晋级；需明确的原Guest受控恢复。
+本批只允许单个原阶段family，terminal历史归档后新Postmaster轮转尚未实现，不能误称重启全闭环。
+真实ext4掉电/真实fsync EIO注入与完整原生生产listener消费链仍NOT_RUN。
+
+受限loader边界与准确发行缺口：
+当前v1只接受明确默认搜索目录、无cache/preload/RPATH/RUNPATH/hwcaps/audit/filter的闭包。
+原RO路径逐父目录核root/不可改，规范软链实际目标再核；整个原RootFS只读。
+每ELF先固定大小预检header/section/program范围及字符串表上限，PT_DYNAMIC必须有
+匹配SHT_DYNAMIC，避免无section被误当静态或损坏长度诱发不受控分配，然后读实际依赖。
+这不是通用发行loader resolver，不证明post-GUC/plugins、动态constructor行为或完整FS/I。
+
+只读盘点实际Docker和127.0.0.1:5001 registry：没有compute-v17正式runtime镜像。
+因此没有“现正式发行image已通过”的事实。仅对准确锁定TEST_ONLY C14镜像做只读参考：
+ELF c990ed4251edb270d37894036c70d90e012fea2bb441a7a48faeb0ed6375be53；
+interpreter=/lib64/ld-linux-x86-64.so.2；
+RUNPATH=/home/nonroot/pg_install/v17/lib；
+ld.so.cache存在，SHA=d492b59b7448e91bfa5dc6cab93eabea8ca368348f4bef6692219fcf59511ddb；
+preload不存在，两处glibc-hwcaps目录不存在。该参考明确不符合本v1，不能被自动封生产。
+发行Dockerfile compute/compute-node.Dockerfile SHA
+753d0d8b9a7df66a7e38e037230520553df8f5c52a0375c70c8ef9188d8504c6：
+2009 COPY --chown=postgres整个PG树，2014..2018只强化PG17 postgres ELF/bin目录；
+2039拷00-neon.conf为0666，2040运行ldconfig。本批不修改这些生产文件。
+
+下一步真实closure producer必须在最终runtime层完成COPY/ldconfig后生成准确manifest：
+1. 固定最终PG/loader/每个DT_NEEDED实际解析路径、RPATH/RUNPATH、cache/preload/hwcaps、
+   软链和全部pre-main代码字节/ABI；可信构建来源同时绑定最终image digest和manifest SHA。
+2. 由原immutable配置/Controller→Runner生成固定ISO policy并核原UID/owner/immutable，
+   不让Guest临时自报目录/ELF摘要决定expected。manifest不内嵌自身image digest形成循环。
+3. 对实际发行所需RUNPATH/cache解析实现独立版本化profile并实证，当前严格unsupported
+   不能代替最终实现；可先最小PG17验证runtime，不需全量无关扩展。
+4. 固定Root只读pre-main代码/alias/cache目录归属和loader语义；不能通过post-main maps
+   证明未知constructor此前没执行。动态初始化与原TCB代码审查也不能由NEEDED表替代。
+5. 原资源锁下接显式record v3↔NativeBirthRef、launcher可信env/NOFILE>198/关闭继承198、
+   split原出生前private、固定seqpacket listener及本stage。C198由原生自行connect/dup3，
+   不从Go注入。普通Child Wait仍由已有Rust compute_ctl独占，Root另TGID只P_PIDFD ptrace wait。
+
+阶段通过并未删除五拒绝；所有normal/VM/FS/I完整资格与Linux/K8s E2E均保持未完成。
+
+生产producer补正（Root联合设计裁决）：
+前述“原immutable配置新增最终native-birth.json”不能直接执行。effective policy引用
+RuntimeDocumentSHA，而RuntimeDocument含ConfigSecretUID；尚未CREATE的Secret没有UID，
+若将含该最终引用的policy预置同一个immutable Secret会形成UID自引用环。
+正确后继流程仍未实现：Secret只冻结不含动态引用的严格policy template；Controller/Runner
+核原UID、owner、immutable后，按固定拓扑渲染effective ISO policies。RuntimeDocument必须
+版本化绑定原template SHA集合，不把effective policy反向放入自己的SHA依赖。
+本批只消费固定有效ISO policy并做严格绑定，不修改共享RuntimeBundle/RuntimeDocument版本
+或producer。现v1字节模型U不证明上述生产拓扑已接；该共享版本合同由Root后续统一，
+须跨PG保持中性。design-before-implementation下的早期方案仅历史草案，以本补正为准。
+
+交叉独立审查后的ELF最小修复（最终来源）：
+旧8根U虽通过，但缺少dynamic正例/恶意metadata，独立审查发现三个真实阻断：
+DT_STRTAB/DT_STRSZ与section.Link可不一致；DynString仅支持四tag而错误被section名称
+错误控制；SHF_COMPRESSED可使小raw sh_size在Go解析时膨胀。旧PASS不作为最终来源认证，
+已归档historical/20261031T011639Z-before-independent-ELF-review，保留原始结果与缺口。
+
+最终仅修改native_birth_source_linux.go并新增native_birth_source_elf_linux_test.go；
+原其余5文件字节不变。生产完全不再调用elf.NewFile/DynString/ImportedLibraries：
+按raw PT_DYNAMIC读依赖/禁tag，真实DT_STRTAB+DT_STRSZ必须经过唯一PT_LOAD文件映射，
+与SHT_DYNAMIC.Link strtab的虚拟地址/文件offset/size完全相同；dynamic段自己的虚拟地址
+也须唯一映回其真实p_offset。错误一律按SHT类型处理，不取决于.dynamic这个名字。
+所用shstr/dynstr/dynamic拒SHF_COMPRESSED及legacy .z*压缩，不进入Go解压器；
+header数量最多4096、字符串表1MiB、NEEDED最多64，全部file/address范围checked。
+
+新U从实际/bin/true读取正常动态ELF（SHA
+c79bf44242829108e323378531f4ac839513ca1fba45efd6583643526e1e9fd2），不执行它。
+仅未变原件用标准库独立比对NEEDED；所有变异只交本raw解析器，绝不交Go解压器。
+19个命名子场景覆盖合法dynamic改名、错Link、改名损坏、真实STRTAB/STRSZ错配、
+六个禁tag直接存在、压缩/legacy字符串metadata、重复PT_LOAD和dynamic虚拟映射错配。
+最终740份actual COPY逐项匹配，9根47sub race1.673s，无skip。正式发行完整closure S
+和正常五拒绝状态不因此改变；真实Source producer和共享消费仍按前文待实现。
+
+同页LOAD补充独立审查与最终闭合：
+中间a884 raw解析仍只统计能完整覆盖target的PT_LOAD，漏后续只覆盖1byte的segment：
+Linux page-rounded MAP_FIXED仍能从不同file页覆写此前审计的字符串页，BSS零填充也相同。
+故中间9/45通过已保留并标注为有独立源码阻断，不认证最终版本。
+最终1707 parser要求4KiB页内p_offset/p_vaddr一致，并对所有PT_LOAD的p_memsz整区（含BSS）
+checked向外取整后两两拒绝页虚址交叠，明确不支持部分合法重叠ELF布局。
+新增spare PT_NOTE改成1byte异filepage同虚页与filesz=0/memsz=1同页零填充两精准反例。
+最终native_birth_source_linux.go SHA=
+1707efee3f10c58944bd5549faaa3ee6f8a5e9c8aeb0949fc7b04377aa04790d；
+native_birth_source_elf_linux_test.go SHA=
+d574f7236255bd9bca8a1343c423c88ce0baedda43270d64b835211153904777。
+原五文件字节仍未变。P2独立只读复审确认三原缺口及同页/BSS反例已闭合、组件范围无余阻断。
+最终精确740 actual COPY、9根47sub race1.673s，无skip；旧FAIL/PASS都保留。
+此复审结论仍不是实际RO发行闭包S、完整FS/I、生产Birth或normal下降资格。

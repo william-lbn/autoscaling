@@ -1,0 +1,11 @@
+FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 AS unit
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+WORKDIR /workspace
+COPY . .
+ARG NONCE
+RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared \
+ echo ACTUAL_SOURCE_STAGE_U=$NONCE && mkdir -p /out && \
+ find . -type f \( -name '*.go' -o -name go.mod -o -name go.sum \) -print0 | sort -z | xargs -0 sha256sum > /out/actual-copy-go-source.sha256 && \
+ GOMAXPROCS=2 GOPATH=/go GOPROXY=off GOSUMDB=off GOTOOLCHAIN=local go test -mod=readonly -p=2 -race -json ./pkg/dsga/resourceguard -run '^TestNativeBirth(Source|Stage)' -count=1 | tee /out/model-test.jsonl
+FROM scratch AS artifact
+COPY --from=unit /out/ /

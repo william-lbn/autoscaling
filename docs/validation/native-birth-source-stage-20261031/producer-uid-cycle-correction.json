@@ -1,0 +1,14 @@
+{
+  "status": "NOT_IMPLEMENTED",
+  "owner": "Root future RuntimeBundle/shared wiring batch",
+  "blocks": "effective policy references RuntimeDocumentSHA; RuntimeDocument contains server-assigned ConfigSecretUID; pre-creating final effective policy in same immutable Secret is cyclic",
+  "required": [
+    "Secret stores strict templates without dynamic references",
+    "Controller/Runner verifies original secret UID/owner/immutable",
+    "versioned RuntimeDocument binds original template SHA set",
+    "fixed topological render of effective ISO policies after actual UID exists",
+    "no effective policy back-reference enters its own RuntimeDocument digest"
+  ],
+  "currentStage": "fixed ISO source/stage only; shared producer not implemented; original v1 model U not producer proof",
+  "earlierPlan": "design-before-implementation is historical, superseded for producer ordering"
+}

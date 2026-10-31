@@ -1,0 +1,17 @@
+{
+  "baseCommittedSHA": "2da9b775fe38038663016c1403941bf418479ff1",
+  "overlay": {
+    "pkg/dsga/resourceguard/native_birth_source.go": "a88252575eb4b3759ef421199a625867d7cf271e181ef395599d273d57eda3f0",
+    "pkg/dsga/resourceguard/native_birth_source_linux.go": "e0ec6b675668a95d590ad8addda924b946e85cb6672b158da96a45df0a070027",
+    "pkg/dsga/resourceguard/native_birth_source_test.go": "e54b7e099703ff7550b7d261707ba406901e889353712839a418c8bc9ac3e768",
+    "pkg/dsga/resourceguard/native_birth_stage.go": "ad1e49029b3fd8382970085f16ccbf43907a5242d06fcad91c25abf8b8b82c23",
+    "pkg/dsga/resourceguard/native_birth_stage_linux.go": "2c45adc5b27e8408d0574ae4558975d996e22a2f15a4166781118d5c8dcb7849",
+    "pkg/dsga/resourceguard/native_birth_stage_test.go": "d4438f10f9314fe0104b28ac2714bcce53927469c953c40ec8fbb143c4ed3440"
+  },
+  "sourceFiles": 739,
+  "snapshot": "/data/neon-build/dev/native-birth-source-stage-20261031T011152Z",
+  "scope": "only new private source+stage; shared files unchanged",
+  "previousFailedAttempt": "/data/neon-build/validation/native-birth-source-stage-20261031T010740Z",
+  "fix": "Root private instance nonce closes same-tick PID reuse; standard RO symlink handling; exact four glibc default directories; writable fake ISO/build reader negative",
+  "previousAttempt": "/data/neon-build/validation/native-birth-source-stage-20261031T010832Z"
+}

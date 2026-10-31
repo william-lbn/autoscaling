@@ -1,0 +1,16 @@
+{
+  "baseCommittedSHA": "2da9b775fe38038663016c1403941bf418479ff1",
+  "overlay": {
+    "pkg/dsga/resourceguard/native_birth_source.go": "a88252575eb4b3759ef421199a625867d7cf271e181ef395599d273d57eda3f0",
+    "pkg/dsga/resourceguard/native_birth_source_linux.go": "2331c3d8d1f8c94ef4af08a0f5bb8f56d9fbb0141e2a948be18ba3190fca1da8",
+    "pkg/dsga/resourceguard/native_birth_source_test.go": "e54b7e099703ff7550b7d261707ba406901e889353712839a418c8bc9ac3e768",
+    "pkg/dsga/resourceguard/native_birth_stage.go": "c7363c489aeef5a2e76446b2acd1a5f5273e8cc270441f3c4cbd1cc89a277f4f",
+    "pkg/dsga/resourceguard/native_birth_stage_linux.go": "cdf6dcecc128e4a4848f19ba9248322408dc19c82215e73ad68ae9f6ce4ca81d",
+    "pkg/dsga/resourceguard/native_birth_stage_test.go": "6812b5b62f3c2ead8d9c1c702cb16d75775af466286797a7c1ba73df8ffda951"
+  },
+  "sourceFiles": 739,
+  "snapshot": "/data/neon-build/dev/native-birth-source-stage-20261031T010832Z",
+  "scope": "only new private source+stage; shared files unchanged",
+  "previousFailedAttempt": "/data/neon-build/validation/native-birth-source-stage-20261031T010740Z",
+  "fix": "RuntimeDocument has strict UnmarshalJSON already; use json.Unmarshal instead of alias-only control.UnmarshalObject top-level"
+}

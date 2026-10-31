@@ -1,0 +1,103 @@
+{
+  "status": "PASS_U_COMPONENT_ONLY_P2_INDEPENDENT_SOURCE_REVIEW_CLOSED",
+  "dateUTC": "2026-10-31T01:18:07.658936+00:00",
+  "tests": [
+    {
+      "id": "PG17-U-BIRTHSOURCE-001",
+      "roots": 4,
+      "kind": "strict byte/ABI/nonce source model and actual writable nonISO/RO negative"
+    },
+    {
+      "id": "PG17-U-BIRTHSTAGE-001",
+      "roots": 4,
+      "kind": "actual Linux private dirfd/flock/O_EXCL/fsync WAL with explicit model original PG/cgroup/source"
+    },
+    {
+      "id": "PG17-U-BIRTHSOURCE-ELF-001",
+      "kind": "actual genuine dynamic ELF metadata positive plus hostile bounded raw metadata mutants; no ELF exec/no Go decompression",
+      "roots": 1,
+      "namedSubcases": 19
+    }
+  ],
+  "actualResult": {
+    "status": "PASS_U_COMPONENT_ONLY_P2_SOURCE_REVIEW_CLOSED",
+    "rootCount": 9,
+    "roots": [
+      "TestNativeBirthSourceELFDynamicMetadata",
+      "TestNativeBirthSourceExactBytesAndUnsupportedABI",
+      "TestNativeBirthSourceNonceAndGeometryStrict",
+      "TestNativeBirthSourceManifestIsBoundedAndStrict",
+      "TestNativeBirthStageWALOrderedAndNonAuthorizing",
+      "TestNativeBirthStageWALRejectsOrphanPartialAndGap",
+      "TestNativeBirthStageWALOriginalConsumerAndSource",
+      "TestNativeBirthStageWALFailuresPoisonWriterNoReplay",
+      "TestNativeBirthSourceLinuxReaderRejectsUnqualifiedFiles"
+    ],
+    "namedSubcases": 47,
+    "newELFNamedSubcases": 19,
+    "skip": 0,
+    "race": true,
+    "package": [
+      {
+        "Time": "2026-10-31T01:37:40.71013667Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Elapsed": 1.673
+      }
+    ],
+    "actualCOPYGoSources": 740,
+    "actualCOPYExact": true,
+    "sourceLockSHA256": "84447a33be2c94dde28a60bdaddee016db4eb6110cba4541d4fd45b5e7e01407",
+    "normalDecreaseExecuted": false,
+    "VMShrinkPermit": false,
+    "formalRuntimeClosureS": "NOT_RUN",
+    "genuineDynamicELF": "/bin/true c79bf44242829108e323378531f4ac839513ca1fba45efd6583643526e1e9fd2 metadata only",
+    "malformedELFsExecuted": false,
+    "GoParserUsedForMutatedELFs": false
+  },
+  "sharedProductionFilesChanged": false,
+  "frozenEngineChanged": false,
+  "productionBirthSourceListenerConsumer": "NOT_WIRED",
+  "actualFormalRuntimeClosureS": "NOT_RUN",
+  "newPostmasterAfterTerminalFamily": "CONTROLLED_HISTORY_ROTATION_NOT_IMPLEMENTED",
+  "normalDecreaseExecuted": false,
+  "VMShrinkPermit": false,
+  "historical": [
+    {
+      "path": "historical/20261031T010740Z",
+      "status": "FAIL",
+      "reason": "used alias-only control.UnmarshalObject for RuntimeDocument which already has strict UnmarshalJSON; corrected to json.Unmarshal invoking original method"
+    },
+    {
+      "path": "historical/20261031T010832Z",
+      "status": "PASS_SUPERSEDED_SOURCE",
+      "reason": "new Root private instance nonce and readonly-symlink/default-loader reader strengthening subsequently added"
+    },
+    {
+      "path": "historical/20261031T011152Z",
+      "status": "PASS_SUPERSEDED_SOURCE",
+      "reason": "subsequent bounded raw ELF metadata preflight before parser allocations/real PT_DYNAMIC matching added"
+    },
+    {
+      "path": "historical/20261031T011639Z-before-independent-ELF-review",
+      "status": "PASS_OLD_TEST_SET_KNOWN_ELF_REVIEW_BLOCKERS",
+      "reason": "not final source; DT_STRTAB/STRSZ vs Link mismatch, unsupported DynString tags, compressed string expanded lengths not covered then"
+    },
+    {
+      "path": "historical/20261031T013304Z-before-page-overlap-review",
+      "status": "PASS_OLD_TEST_SET_KNOWN_PARTIAL_PAGE_LOAD_BLOCKER",
+      "reason": "full-target mapping count missed later partial same-page MAP_FIXED or BSS overwrite; final strict p_memsz page interval rule and 2 exact negative cases replace this source"
+    }
+  ],
+  "sourceFiles": 7,
+  "realFsyncEIOInjection": "NOT_RUN; actual fsync calls and partial file handling covered, not a power-loss/ext4 S",
+  "versionedRuntimeBundleTemplateProducer": "NOT_IMPLEMENTED; root handles UID-cycle-free template/topological render",
+  "independentReview": {
+    "reviewer": "/root/p2_p3_scope_review",
+    "reviewedSHA": [
+      "1707efee3f10c58944bd5549faaa3ee6f8a5e9c8aeb0949fc7b04377aa04790d",
+      "d574f7236255bd9bca8a1343c423c88ce0baedda43270d64b835211153904777"
+    ],
+    "conclusion": "original three ELF blockers plus partial/same-page/BSS overwrite closed; no remaining component source blocker; real runtime RO closure S not complete"
+  }
+}

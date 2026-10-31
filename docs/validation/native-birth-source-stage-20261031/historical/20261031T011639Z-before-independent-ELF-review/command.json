@@ -1,0 +1,20 @@
+[
+  "docker",
+  "buildx",
+  "build",
+  "--builder",
+  "neon-data",
+  "--network",
+  "none",
+  "--progress",
+  "plain",
+  "--build-arg",
+  "20261031T011639Z=20261031T011639Z",
+  "--metadata-file",
+  "/data/neon-build/validation/native-birth-source-stage-20261031T011639Z/build-metadata.json",
+  "--output",
+  "type=local,dest=/data/neon-build/validation/native-birth-source-stage-20261031T011639Z/artifact",
+  "-f",
+  "/data/neon-build/validation/native-birth-source-stage-20261031T011639Z/Dockerfile",
+  "/data/neon-build/dev/native-birth-source-stage-20261031T011639Z"
+]

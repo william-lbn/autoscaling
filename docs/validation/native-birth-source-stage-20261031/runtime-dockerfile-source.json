@@ -1,0 +1,94 @@
+{
+  "path": "/data/neon-build/src/neon/compute/compute-node.Dockerfile",
+  "sha256": "753d0d8b9a7df66a7e38e037230520553df8f5c52a0375c70c8ef9188d8504c6",
+  "selectedLines": [
+    {
+      "line": 1926,
+      "text": "FROM $BASE_IMAGE_SHA"
+    },
+    {
+      "line": 2002,
+      "text": "    mkdir /usr/local/download_extensions && \\"
+    },
+    {
+      "line": 2003,
+      "text": "    chown -R postgres:postgres /usr/local/download_extensions"
+    },
+    {
+      "line": 2006,
+      "text": "COPY --from=pgbouncer         /usr/local/pgbouncer/bin/pgbouncer /usr/local/bin/pgbouncer"
+    },
+    {
+      "line": 2007,
+      "text": "COPY --chmod=0666 --chown=postgres compute/etc/pgbouncer.ini /etc/pgbouncer.ini"
+    },
+    {
+      "line": 2009,
+      "text": "COPY --from=postgres-cleanup-layer --chown=postgres /usr/local/pgsql /usr/local"
+    },
+    {
+      "line": 2016,
+      "text": "      chown root:root /usr/local /usr/local/bin /usr/local/bin/postgres && \\"
+    },
+    {
+      "line": 2017,
+      "text": "      chmod go-w /usr/local /usr/local/bin /usr/local/bin/postgres; \\"
+    },
+    {
+      "line": 2019,
+      "text": "COPY --from=compute-tools --chown=postgres /home/nonroot/target-bin/compute_ctl /usr/local/bin/compute_ctl"
+    },
+    {
+      "line": 2020,
+      "text": "COPY --from=compute-tools --chown=postgres /home/nonroot/target-bin/fast_import /usr/local/bin/fast_import"
+    },
+    {
+      "line": 2023,
+      "text": "COPY --from=compute-tools --chown=postgres /home/nonroot/target-bin/local_proxy /usr/local/bin/local_proxy"
+    },
+    {
+      "line": 2027,
+      "text": "COPY --from=exporters ./postgres_exporter /bin/postgres_exporter"
+    },
+    {
+      "line": 2028,
+      "text": "COPY --from=exporters ./pgbouncer_exporter /bin/pgbouncer_exporter"
+    },
+    {
+      "line": 2029,
+      "text": "COPY --from=exporters ./sql_exporter /bin/sql_exporter"
+    },
+    {
+      "line": 2031,
+      "text": "COPY --chown=postgres compute/etc/postgres_exporter.yml /etc/postgres_exporter.yml"
+    },
+    {
+      "line": 2033,
+      "text": "COPY --from=sql_exporter_preprocessor --chmod=0644 /home/nonroot/compute/etc/sql_exporter.yml               /etc/sql_exporter.yml"
+    },
+    {
+      "line": 2034,
+      "text": "COPY --from=sql_exporter_preprocessor --chmod=0644 /home/nonroot/compute/etc/neon_collector.yml             /etc/neon_collector.yml"
+    },
+    {
+      "line": 2035,
+      "text": "COPY --from=sql_exporter_preprocessor --chmod=0644 /home/nonroot/compute/etc/sql_exporter_autoscaling.yml   /etc/sql_exporter_autoscaling.yml"
+    },
+    {
+      "line": 2036,
+      "text": "COPY --from=sql_exporter_preprocessor --chmod=0644 /home/nonroot/compute/etc/neon_collector_autoscaling.yml /etc/neon_collector_autoscaling.yml"
+    },
+    {
+      "line": 2039,
+      "text": "COPY --chmod=0666 compute/etc/ld.so.conf.d/00-neon.conf /etc/ld.so.conf.d/00-neon.conf"
+    },
+    {
+      "line": 2040,
+      "text": "RUN /sbin/ldconfig"
+    },
+    {
+      "line": 2051,
+      "text": "ENTRYPOINT [\"/usr/local/bin/compute_ctl\"]"
+    }
+  ]
+}

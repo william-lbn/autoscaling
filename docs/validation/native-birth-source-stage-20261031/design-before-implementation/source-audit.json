@@ -1,0 +1,65 @@
+{
+  "timestampUTC": "2026-10-31T00:57:48.912424+00:00",
+  "kind": "READ_ONLY_SOURCE_AUDIT_NOT_TEST",
+  "autoscalingHEAD": "2da9b775fe38038663016c1403941bf418479ff1",
+  "autoscalingBranch": "codex/dsga-autoscaling-20261019",
+  "files": {
+    "/data/neon-build/src/autoscaling/pkg/dsga/resourceguard/launch.go": "c0188c39c5a4ba2e5466df9b86204bbfa3609ed30a8d01e538282e98ad7b38da",
+    "/data/neon-build/src/autoscaling/pkg/dsga/resourceguard/launch_linux.go": "76df53c28c6f6afe67de64faaf13e931c233c85f769d8cb1d57cf0b96ffcb014",
+    "/data/neon-build/src/autoscaling/pkg/dsga/resourceguard/address_space.go": "ab143fd02e670fd36a4d9ae36d1f416dd7e10f22ed924b114f773bac749b5d0b",
+    "/data/neon-build/src/autoscaling/pkg/dsga/resourceguard/address_space_linux.go": "316c1219a03813c915bb5a00fe93fd7a7f093624c103446ba8553a23b6ccaefb",
+    "/data/neon-build/src/autoscaling/pkg/dsga/resourceguard/provision.go": "41b25e8d84d23f2d7db8adb062ea66d6833b9c26d9cbd384ee64e4be92fcbd25",
+    "/data/neon-build/src/autoscaling/pkg/dsga/resourceguard/provision_linux.go": "21213ecae41c958b498c6056ffe84b6a38e2b00643cae5ea7630a4349fb26d86",
+    "/data/neon-build/src/autoscaling/pkg/dsga/resourceguard/server_linux.go": "ba9cf005278d5d33f2ca92a44ebf197085c88f874c8b3f7267b280e565a17152",
+    "/data/neon-build/src/autoscaling/pkg/dsga/resourceguard/state_unix.go": "221e8f5a9a6cb63f8526ea1d30829db723e298aebd6c90c447f7ee0a3fd68624",
+    "/data/neon-build/src/autoscaling/pkg/dsga/resourceguard/process.go": "31866dc781568e0b49ab660efc8b3f7e260c23a68ac8d5e3c222f0cda5b310c9",
+    "/data/neon-build/src/autoscaling/pkg/dsga/resourceguard/exec_environment.go": "e94f26f20345959a1e6be41cf5221c6df92944a65838264a217a4bb7c18dd805",
+    "/data/neon-build/src/autoscaling/pkg/dsga/resourceguard/guard.go": "c09a12c2a98ec941635b4c386027b5630993ac228b14e8af190f9e79893fff51",
+    "/data/neon-build/src/autoscaling/pkg/dsga/resourceguard/normal_split_topology_linux.go": "c6a9e1ccfb93baab7828a2a368b8f8df7979e3bc85decdf603e8c38f84622ece",
+    "/data/neon-build/src/autoscaling/pkg/dsga/bootstrap/runtime.go": "c36f908df17bc8d6185b4ed76e1d35fd14bb837946491b4ff1188243e319aa9a",
+    "/data/neon-build/src/autoscaling/neonvm-runner/cmd/disks.go": "5c240a2437fa87581449220798689a164c8a4c205229bd33ecc82aeb35a0b908",
+    "/data/neon-build/src/autoscaling/neonvm-daemon/cmd/resource-guard/main.go": "5fc4d65819b7d8c1064fef3ac261c405690b696b48fdfbcd3026d0a1535bb153",
+    "/data/neon-build/src/autoscaling/vm-builder/files/dsga-resource-service": "a91ee32f29753caa8cb9cd40f058c5d8007deb26eed468ad69da558338b042c1",
+    "/data/neon-build/src/autoscaling/vm-builder/files/vminit": "1ba51b2e02fa33b273bc55f9fdcef6128a9025fe57778cb86facf61605995162",
+    "/data/neon-build/src/autoscaling/vm-builder/files/vmstart": "ec6d379d5cdf33fbe54eb832d5416dc53aeaaa32df35ad94c44bd27b17277f86",
+    "/data/neon-build/src/neon/vendor/postgres-v17/src/backend/main/main.c": "dd5dd0143f10f810afdbf58e6baa5097dccf3b0ada1bf81a951dfe897ba5b62f",
+    "/data/neon-build/src/neon/vendor/postgres-v17/src/backend/storage/buffer/dsg_native_birth_wire.c": "4ba5b3aa7c33395678aeea95eddecfdb3a710b358e0a7d787f6d4bcc8e68ee71",
+    "/data/neon-build/src/neon/vendor/postgres-v17/src/backend/storage/buffer/dsg_envelope_birth.c": "6cb4b482d21f8621c65d05a5d4727a19b1c2f9b0aa598b5be75af822fa724dc2",
+    "/data/neon-build/src/neon/vendor/postgres-v17/src/include/storage/dsg_native_birth_wire.h": "9e22682ca423165eda27be010e3cd2b3d3a2ee54e33901dbafd00226456c52ef",
+    "/data/neon-build/src/neon/compute_tools/src/dsg_launch.rs": "1e5d92a54b3ffb67d13f6218f8a97eccb19aef490bd32cbf94031c11c87d7511",
+    "/data/neon-build/src/neon/compute_tools/src/compute.rs": "92b4ae142ecfc7a0644f1108bb2e3fd53fb3c61d06b9d42e2b5373998bc6f312"
+  },
+  "findings": [
+    {
+      "id": "SOURCE-PENDING-01",
+      "path": "launch_linux.go",
+      "finding": "ProcessIdentity-only Birth; native policy/nonce/M/N0/build refs absent"
+    },
+    {
+      "id": "SOURCE-PENDING-02",
+      "path": "exec_environment.go",
+      "finding": "all NEON_DSGA caller env removed; only original AS re-added; nativeRoot transport not enabled in production"
+    },
+    {
+      "id": "SOURCE-PENDING-03",
+      "path": "server_linux.go",
+      "finding": "only stream HTTP resource.sock; no birth.sock unixpacket listener"
+    },
+    {
+      "id": "SOURCE-PENDING-04",
+      "path": "dsg_native_birth_wire.c:427..451",
+      "finding": "Native must create fixed CLOEXEC198 after validating inherited fd198 absent; do not inject198 from Go"
+    },
+    {
+      "id": "SOURCE-PENDING-05",
+      "path": "launch_linux.go:99..103",
+      "finding": "Legacy launcher enters parent PG cgroup; normal split requires private child from before PG exec"
+    },
+    {
+      "id": "SOURCE-PENDING-06",
+      "path": "compute.rs:1972..2002 / dsga-resource-service",
+      "finding": "existing Rust parent owns ordinary Child Wait; Root separate TGID enables unique ptrace waiter without new PG supervisor"
+    }
+  ],
+  "sharedFileChangesPendingRootReview": true
+}

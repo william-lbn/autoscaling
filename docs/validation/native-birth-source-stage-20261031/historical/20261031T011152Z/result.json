@@ -1,0 +1,33 @@
+{
+  "status": "PASS_U_COMPONENT_ONLY",
+  "sourceKinds": "strict byte/nonce/ABI models; actual Linux private dirfd/flock/O_EXCL/fsync WAL; no true ISO/ext4/source-loader S",
+  "roots": [
+    "TestNativeBirthSourceExactBytesAndUnsupportedABI",
+    "TestNativeBirthSourceNonceAndGeometryStrict",
+    "TestNativeBirthSourceManifestIsBoundedAndStrict",
+    "TestNativeBirthStageWALOrderedAndNonAuthorizing",
+    "TestNativeBirthStageWALRejectsOrphanPartialAndGap",
+    "TestNativeBirthStageWALOriginalConsumerAndSource",
+    "TestNativeBirthStageWALFailuresPoisonWriterNoReplay",
+    "TestNativeBirthSourceLinuxReaderRejectsUnqualifiedFiles"
+  ],
+  "rootCount": 8,
+  "namedSubcases": 28,
+  "skip": 0,
+  "race": true,
+  "package": [
+    {
+      "Time": "2026-10-31T01:12:00.563959007Z",
+      "Action": "pass",
+      "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "Elapsed": 1.97
+    }
+  ],
+  "actualCOPYGoSources": 739,
+  "actualCOPYExact": true,
+  "sourceLockSHA256": "73c49758a448dc9e822230729cdfe31a46f6c3f5e2dd9508c63371b68e0683b8",
+  "formalRuntimeClosureS": "NOT_RUN",
+  "productionBirthSourceConsumer": "NOT_WIRED",
+  "normalDecreaseExecuted": false,
+  "VMShrinkPermit": false
+}

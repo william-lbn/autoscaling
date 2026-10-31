@@ -1,0 +1,84 @@
+{
+  "status": "DESIGN_PENDING_SHARED_OWNER_DECISION_NOT_RUN",
+  "exclusiveNewFilesProposed": [
+    "pkg/dsga/resourceguard/native_birth_source.go",
+    "pkg/dsga/resourceguard/native_birth_source_linux.go",
+    "pkg/dsga/resourceguard/native_birth_source_test.go",
+    "pkg/dsga/resourceguard/native_birth_stage.go",
+    "pkg/dsga/resourceguard/native_birth_stage_linux.go",
+    "pkg/dsga/resourceguard/native_birth_stage_test.go"
+  ],
+  "frozenDoNotModify": [
+    "native_birth_tracer_linux.go",
+    "native_birth_tracer_linux_test.go",
+    "native_birth_tracer_native_test.go",
+    "bootstrap.go",
+    "guard.go",
+    "kernel_linux.go",
+    "bootstrap_pre_system*",
+    "prebootstrap_system*",
+    "PG18",
+    "public control protocol"
+  ],
+  "sharedFilesNeedRootOwner": [
+    "guard.go record version/native ref validation",
+    "launch.go and launch_linux.go trusted pending/env/private placement",
+    "exec_environment.go add root original fields only after caller sanitation",
+    "server_linux.go unique birth seqpacket listener lifecycle",
+    "neonvm-daemon/cmd/resource-guard/main.go action/serve wiring",
+    "pkg/dsga/bootstrap/runtime.go immutable native policy production",
+    "neonvm-runner/cmd/disks.go exact policy ISO propagation"
+  ],
+  "source": {
+    "resource": "existing immutable SourceConfig bytes and RuntimeDocument+secret UID/incarnation",
+    "nativePolicyFixedPath": "/neonvm/runtime/dsga-native-birth.json",
+    "buildManifestProposedFixedPath": "/usr/share/neon-dsga/native-build.json",
+    "policyBinding": [
+      "runtimeDocumentSHA256",
+      "resourceSourceSHA256",
+      "pgMajor",
+      "maxBuffers",
+      "startupBuffers",
+      "nativeBuildManifestSHA256"
+    ],
+    "buildClosure": [
+      "PG ELF SHA and fixed canonical root-controlled path",
+      "exact interpreter and all pre-main DT_NEEDED/runtime dependency closure",
+      "RPATH/RUNPATH/SONAME and ld.so.cache/preload policy",
+      "actual readonly pinned files and parent permissions",
+      "compiler-derived wire/filter ABI and element bytes; no peer/caller-supplied geometry"
+    ],
+    "wireSourceSHA": "SHA256 exact original resource.json bytes",
+    "wireProfileSHA": "SHA256 exact immutable native policy bytes",
+    "nonce": "crypto/rand 32 bytes; persist before any PG exec; never env request source"
+  },
+  "lockOrder": [
+    "root service server.lock held for listener lifetime",
+    "one original VM resource flock",
+    "strict original source/identity/bootstrap/PreSys/split/WAL read",
+    "append/fsync original pending and source bindings",
+    "record Birth+NativeRef fsync; only then private cgroup/drop IDs/NNP/exec",
+    "accepted original SO_PEERCRED under same resource flock -> frozen engine",
+    "base Persist locked callback rechecks original sources and membership; never withRecord reentry",
+    "final verified-pending-release fsync before detach",
+    "engine actual detached return -> released stage fsync, still non-authorizing"
+  ],
+  "crashRules": [
+    "orphan/partial/foreign/unknown phase is blocked unknown, not pristine retry",
+    "no nonce replacement or replay/ACK on daemon restart",
+    "final-ready may be before or after detach: restart never infers completion from still-alive PID or TracerPid0",
+    "no numeric kill/reap after original pidfd lost",
+    "budget retained; unresolved original requires explicit controlled original Guest recovery",
+    "rollback old binary rejected by explicit version/native-ref barrier"
+  ],
+  "uniqueWait": "existing Rust compute_ctl owns PG Child normal wait; independent Root daemon TGID only original P_PIDFD ptrace wait; do not add Go PG parent",
+  "FD198": "Native C creates connect+dup3(CLOEXEC)198; launcher clears caller inherited198 but does not pass Root fd198; verify hard NOFILE>198",
+  "pg17pg18": "same private source/stage contract with explicit pgMajor+build ABI; PG18 lacking supported native C/build closure stays unsupported",
+  "nextTests": [
+    "U exact-byte hashes/unknown keys/nonce geometry/stage ordering and duplicate phase conflicts",
+    "U actual private WAL fsync/partial/orphan/restart non-adoption, model kernel explicitly separated",
+    "S original-source ISO readonly + ext4 WAL + actual privileged launcher+daemon+PG, process ancestry/PID unchanged, libc closure and nonroot denial",
+    "S Host then exact369 KVM; source files/actual COPY/image/kernel/console/unit/termination locked",
+    "production normal and K8s remain separate unmet gates"
+  ]
+}
