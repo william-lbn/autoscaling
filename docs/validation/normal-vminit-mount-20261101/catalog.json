@@ -1,0 +1,51 @@
+{
+  "scope": "actual exact frozen vminit on disposable single ext4; DEV initial-boot diagnostic only",
+  "stable_cases": [
+    {
+      "id": "NEON-S-BUILDER-MOUNT-001",
+      "status": "PASS_MECHANISM_ONLY",
+      "run": "/data/neon-build/validation/normal-vminit-mount-20261031T194910Z-4f3732",
+      "seconds": 3.1659818769985577,
+      "invariants": [
+        "12 static paths logical/canonical full ancestors RO; write-open EROFS except current text ETXTBSY with RO statfs",
+        "6 RW persistent holes remain same ext4 device",
+        "nonroot UID/GID1000 PGDATA create/remove/recreate and .warmup sibling fsync",
+        "run/tmp/shm actual TMPFS",
+        "success point full RW view absent, no retained RW ext4 FD including O_PATH, shared writable map, other user child/TID",
+        "initial-boot DEV forced42,11 role check-guest DEV43 => fixed dispatcher1",
+        "offline readonly debugfs 4 exact durable payloads and 4 ephemeral paths absent"
+      ]
+    },
+    {
+      "id": "NEON-S-BUILDER-MOUNT-002",
+      "status": "PASS_EARLY_REJECT_ONLY",
+      "run": "/data/neon-build/validation/normal-vminit-mount-negative-20261031T195133Z-386ed8",
+      "seconds": 2.8802468909998424,
+      "invariants": [
+        "existing PGDATA parent symlink points to valid tmpfs /tmp",
+        "actual vminit1 before initial-boot guard",
+        "all11 role gates still refuse"
+      ],
+      "partial_state_unknown": true,
+      "partial_rw_view_retained": true,
+      "not_a_successful_RO_mount_graph": true
+    }
+  ],
+  "original_guard_executed": false,
+  "PG_executed": false,
+  "normal_permit": false,
+  "AllSourcesClosed": false,
+  "E": 0,
+  "history": [
+    "attempt01 diag self write-open returned ETXTBSY26 before EROFS; actual production script not changed",
+    "attempt02 evaluator incorrectly expected dispatcher43 while real fixed script normalizes guard43 to1; raw FAIL preserved",
+    "final fresh nonce fixed only external diagnostic/evaluator, production13-source freeze identical"
+  ],
+  "not_proven": [
+    "real initial-boot/Provision/Split/CheckGuest",
+    "continuously closed future Root/System writer source",
+    "normal authorization",
+    "crash/power-loss durability",
+    "K8s E2E"
+  ]
+}

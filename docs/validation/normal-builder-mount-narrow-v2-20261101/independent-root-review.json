@@ -1,0 +1,31 @@
+{
+  "status": "PASS_COMPONENT_REVIEW_ONLY",
+  "owned": {
+    "vm-builder/main.go": "725d95a11aaba59cc9aaca657c186deebc546059308902a39bd5bcc419322be6",
+    "vm-builder/normal_split.go": "c3f871d662d4d3cf8ca4df1ea64f1b23ef403efbbc5d80959d64cf0d3ab6994c",
+    "vm-builder/normal_split_test.go": "a969bc439ffaf0e3c2c4ac4863647f56117d4a516a0d62850fc5f49729def436",
+    "vm-builder/files/img.Dockerfile": "f5c0210fe4517d390c585546f261f0db5078c7c047856c521076c5deab5f68b6",
+    "vm-builder/files/normal-split/dsga-resource-service": "ff1a6ba0a72285e12d82a9284f05b359dd6c5e2759854ff552ada95502d8a46c",
+    "vm-builder/files/normal-split/prepare-root.sh": "fb5be1e9f4219bc9cd22dbf248eaa37cb40809d0dd693934c8401b1592b3d68c",
+    "vm-builder/files/normal-split/udev-init.sh": "59335d647f72eeff6f8025af7f526e0b4766beb365ba21b19ce64ce137490320",
+    "vm-builder/files/normal-split/vminit": "46d358d2287a264c7f9a549bef0555aa791862755831ad8f3d8553b53a604b2a",
+    "vm-builder/files/normal-split/vmshutdown": "9b1a0450b05913c0e487dc2869349e04a27b1390d76664df6f6e0ddbeec06444",
+    "pkg/dsga/resourceguard/normal_system_source.go": "36d368d866891a1ec514361211226e693039fc3958da185297afaf8155ceacfd",
+    "pkg/dsga/resourceguard/normal_system_source_linux.go": "277ff25bacd70392687fe883a0f7eea054448f2cb4df3a74e0f7c810a671f583",
+    "pkg/dsga/resourceguard/normal_system_source_v2_test.go": "6b57890c1ac35bc359b78c22d36d47e172f22974f1c25da8c13032c118ccc28b",
+    "pkg/dsga/resourceguard/normal_system_source_v2_native_test.go": "4b13604b70587e252bc2dbf65c65cecf21915934e55551979987bcef56f4b853"
+  },
+  "stage_before_review": 293,
+  "actual_COPY": 882,
+  "Go_roots": 18,
+  "Go_named_subcases": 83,
+  "new_Go_roots": 11,
+  "direct_changed_System_roots": 7,
+  "new_mount_component_S_IDs": 2,
+  "Source13_or_normal_qualified": false,
+  "E": 0,
+  "native_diagnostic_not_actual_guard": true,
+  "negative_no_RW_view": true,
+  "SIGKILL_or_powerloss_trap_guarantee": false,
+  "runtime_fsync_is_not_powerloss_certification": true
+}

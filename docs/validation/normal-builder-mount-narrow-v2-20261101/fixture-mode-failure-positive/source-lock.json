@@ -1,0 +1,30 @@
+{
+  "source": {
+    "vm-builder/files/normal-split/dsga-resource-service": "ff1a6ba0a72285e12d82a9284f05b359dd6c5e2759854ff552ada95502d8a46c",
+    "vm-builder/files/normal-split/prepare-root.sh": "fb5be1e9f4219bc9cd22dbf248eaa37cb40809d0dd693934c8401b1592b3d68c",
+    "vm-builder/files/normal-split/udev-init.sh": "59335d647f72eeff6f8025af7f526e0b4766beb365ba21b19ce64ce137490320",
+    "vm-builder/files/normal-split/vminit": "46d358d2287a264c7f9a549bef0555aa791862755831ad8f3d8553b53a604b2a",
+    "vm-builder/files/normal-split/vmshutdown": "9b1a0450b05913c0e487dc2869349e04a27b1390d76664df6f6e0ddbeec06444"
+  },
+  "runtime_iso_original": "/data/neon-build/validation/initial-lifecycle-native-20261031T181834Z/attempt02/runtime.iso",
+  "runtime_iso_sha256": "bc95fa81c80ebd654add979266871660e1993bc80b8be1afb13eb40de780074c",
+  "runtime_original_assets": {
+    "dsga-normal-split.json": "f40b22189be55d8bd857d415e1aba3bbdfa7e35379f2678831e60eee8b954ccb",
+    "dsga-physical-kernel.json": "004e15f66356d10a928a1c1e1f97d97ddc8099e15a9da48e0afec4756d6f3f82",
+    "dsga-resource.json": "f621889da462070435b759521bf9a5f9a8bd54f7a4883ca1f702056a8f5445a7",
+    "dsga-pre-system.json": "13de192705b1a5847b9091f601eea40cc62f803539f4abbee7e96ea7c981978e",
+    "dsga-native-birth.json": "020767b64a0335916a0812bc100a4a9368bf9076b3793f6d09980bdf1b365352",
+    "dsga-kernel-bootstrap.json": "91870f67fbeea7b34db879560549aed9a3ddc5cbfb52039877608aa4c658659c"
+  },
+  "scope": "DEV disposable one-ext4 exact frozen vminit before real initial-boot; no business disk/cluster",
+  "new_cohort": "/data/neon-build/validation/normal-builder-narrow-20261031T202152Z-70d40d",
+  "new_cohort_source_lock_sha256": "8f7baec98e636d9aefd2a6bf38a5d0d2a14ffaf46632e58aca69d4af2e1c2168",
+  "base_git": "cf3691e4757a4627dee0d386a0059189c8c0b720",
+  "diagnostic_source_sha256": "615fce66119d0006da0cf436f79ad07617fef72c0fb14023c7ea5afa60dd85b2",
+  "worker_sha256": "228807f5f3e595b56230d133aa651f66e03a38d5b04bdde394df17c385c71a56",
+  "driver_init_sha256": "eb129d72e933d07295a8e4ccdc9628193ba1dbd2906cfdf28f5cd0855e854595",
+  "preserved_old_receipts": [
+    "/data/neon-build/validation/normal-vminit-mount-20261031T194910Z-4f3732",
+    "/data/neon-build/validation/normal-vminit-mount-negative-20261031T195133Z-386ed8"
+  ]
+}

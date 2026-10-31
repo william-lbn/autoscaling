@@ -1,0 +1,22 @@
+固定normal构建/启动模式与System v2，2026-11-01
+本批不认证完整镜像、Source闭包、normal降限或E2E。所有Git由Root统一。
+
+构建选择
+vm-builder新增 --system-mode=normal-split-v1 --normal-build-plan=<JSON>；默认legacy保持旧入口。新模式仅linux/amd64；拒所有spec（空spec也拒）、custom inittab/Build/Merge/Files/ShutdownHook及build-arg覆盖。normal不继承image Entrypoint/Cmd/env，不生成可变vmstarter.sh，不读旧runtime mounts/sysctl/env/command/args/resize-swap脚本。
+计划protocol1，显式非root ComputeUID/GID、ComputeArgv（固定/usr/local/bin/compute_ctl、显式--pgdata/-D且路径是/var/db/postgres直接child）、排序唯一安全ComputeEnv和LoaderPaths。值仅构建输入，不认证身份；不打印env值。vmstart生成shell正确引用的literal内容，禁止二次Go模板解释，用env -i及固定su-exec；marker/lock均移至/run/neon-dsga，不让/neonvm/bin可写。
+新mode基于同次ImageInspect选择同repo不可变RepoDigest作为FROM；无digest拒，DeclaredImageSHA是原ImageInspect.ID的config SHA声明，既不是最终image自哈希，也不混称RepoDigest。daemon/Busybox/Alpine必须immutable sha256引用（现有ldflags pin可复用），避免tag在inspect与build之间漂移；legacy不改。
+
+固定服务与生产者
+System v2 profile neon-dsga-normal-system-source-v2，manifest.protocol_version=2；旧v1表、JSON规则和wrapper保留。仍13行，11个常规role均固定sh dispatcher，自己check-guest成功才exec准确固定程序/argv；sysinit vminit和shutdown也固定。没有sshd、agetty、root登录/custom条目；未知role拒。v2文件只新增su-exec作为明确依赖；逐层精确JSON拒大小写别名。Kernel仍准确369，不改旧tuple。
+构建期在最终rootdisk合并和库alias之后，用CGO0静态builder自身的构建专用manifest命令扫描实际文件：真实regular/ELF/大小/hash/canonicalpath与四棵配置树完整库存，限文件数/总字节/深度/alias次数，绝对symlink在image root内解析，不落到Host。O_EXCL产清单，拒重复覆盖；工具不进入最终Guest，不连接Docker/网络，不代表ELF完整闭包。最终只读来源仍须原ISO/NativePolicy绑定清单SHA，不能信raw声明。
+
+启动脚本与明确未验边界
+新vminit先必要proc/sys/dev/cgroup/runtime挂载；旧可执行覆盖连symlink也拒。拟使用原同ext4持久孔 /etc/neon-dsga、/var/lib/neon-dsga、/var/db/postgres父目录、log/chrony/resolv；run/tmp/shm为临时域。PGDATA本身不挂载，保remove/create和.warmup兄弟目录。临时全RW root bind视图在initial-boot之前必须umount并删除，根以per-mount RO保静态祖先；不靠单文件RO。静态lib alias/udev规则移构建期，不运行旧CPU auto-online/ssh key生成。
+这些脚本已语法检查及每role失败门禁model验证，但实际369挂载图、无遗留RW OFD/映射/子进程、Rootstate跨Pod持久源仍未验证；不能据此发布Source资格。ext4 superblock RW供必要孔，不得混称superblock全RO。挂载失败关门；后继BusyBox动作仍各自真实check-guest。initial-boot CLI必须完整Provision→Split→CheckGuest，不能单ACK；本批未在正式image跑该链。
+动态扩展仍是准确阻断：原/usr/local/download_extensions→lib/share/extension需同mount rename；三个独立bind可EXDEV而旧代码只warn。整个/usr/local RW又破静态祖先。不能为了取绿放开大树、全chown、改tmpfs PGDATA或假称插件闭包；Root后继需真实静态core/插件/安全rename合同。本批没有扩展RW豁免。
+
+验证分类
+首轮42.400s通过（软GOMEMLIMIT，executor没有硬限，历史保留）；第二轮25.293s加入真实RUN硬限和v2 native导出；final pin修复13.752s，16根78sub race0fail0skip、868实际COPY逐项相符，RUN memory.max=2147483648、cpu.max=200000 100000，静态builder92fc735fb2684a9ce1a755542a0a0eb194df2af0586dfcee8e3803cf7a7b19cd。
+新增Builder7 U根、System v2 2 U根；原System v1 7根直接回归不重复计新覆盖。实际静态清单命令在明确合成root文件执行，22文件manifest生成成功，重复命令O_EXCL exit1；不是实际image build。
+NEON-S-SYSTEM-SOURCE-V2-001真实369/KVM 1root8sub、11.701s，Guest/QEMU0，实际notes7cf...；binary4894f65dbb0050595b887bc9ef0e2dc8ebd04b74e13092814b79911384acd606。所有服务是测试ELF，真实readonly检查/登录与override等负例执行，未运行真实System服务/PG。final builder pin只改builder，System四源完全未变，final导出native二进制逐字节等真实S旧导出，cohort-relation.json准确区分，不将builder更改转签为Guest执行。
+AllSourcesClosed=false、NormalDecreaseAuthorized=false、E=0；normal五拒绝未动。正式完整image/Root来源/实际normal/K8s仍待主线推进。

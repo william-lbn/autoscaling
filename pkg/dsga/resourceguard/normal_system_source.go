@@ -4,12 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"io"
 	"path/filepath"
 	"strings"
 )
 
 const NormalSystemSourceProfileID = "neon-dsga-normal-system-source-v1"
+
+// V2只收紧固定System启动：每个非sysinit服务独立过门，不把BusyBox继续init当许可。
+const NormalSystemSourceV2ProfileID = "neon-dsga-normal-system-source-v2"
 const NormalSystemSourceManifestPath = "/neonvm/config/dsga-normal-system-source.json"
 const normalSystemSourceScope = "fixed-system-startup-source-component-only"
 
@@ -81,6 +85,43 @@ func NormalSystemSourceInitEntries() []string {
 		"::shutdown:/neonvm/bin/vmshutdown",
 	}
 }
+
+// 版本选择只选固定表，不来自请求里的命令或可执行路径；旧v1表原样保留。
+func NormalSystemSourceInitEntriesForVersion(version uint32) ([]string, error) {
+	if version == 1 {
+		return NormalSystemSourceInitEntries(), nil
+	}
+	if version != 2 {
+		return nil, fmt.Errorf("unsupported System source version")
+	}
+	return []string{
+		"::sysinit:/neonvm/bin/vminit",
+		"::once:/neonvm/bin/sh /neonvm/bin/dsga-resource-service allow-start",
+		"::once:/neonvm/bin/sh /neonvm/bin/dsga-resource-service kernel-version",
+		"::respawn:/neonvm/bin/sh /neonvm/bin/dsga-resource-service network",
+		"::respawn:/neonvm/bin/sh /neonvm/bin/dsga-resource-service udev",
+		"::wait:/neonvm/bin/sh /neonvm/bin/dsga-resource-service udev-init",
+		"::respawn:/neonvm/bin/sh /neonvm/bin/dsga-resource-service acpi",
+		"::respawn:/neonvm/bin/sh /neonvm/bin/dsga-resource-service logs",
+		"::respawn:/neonvm/bin/sh /neonvm/bin/dsga-resource-service clock",
+		"::respawn:/neonvm/bin/sh /neonvm/bin/dsga-resource-service daemon",
+		"::respawn:/neonvm/bin/sh /neonvm/bin/dsga-resource-service resource",
+		"::respawn:/neonvm/bin/sh /neonvm/bin/dsga-resource-service compute",
+		"::shutdown:/neonvm/bin/vmshutdown",
+	}, nil
+}
+
+// Builder只取路径/类别副本；返回表本身不认证最终镜像或其依赖闭包。
+func NormalSystemSourceRequiredFilesForVersion(version uint32) (map[string]string, error) {
+	if version != 1 && version != 2 {
+		return nil, fmt.Errorf("unsupported System source version")
+	}
+	m := normalSystemRequiredPaths()
+	if version == 2 {
+		m["/neonvm/bin/su-exec"] = "exec"
+	}
+	return m, nil
+}
 func normalSystemRequiredPaths() map[string]string {
 	return map[string]string{
 		"/etc/inittab": "config", "/neonvm/bin/busybox": "exec",
@@ -92,11 +133,16 @@ func normalSystemRequiredPaths() map[string]string {
 func normalSystemCleanPath(p string) bool {
 	return p != "" && len(p) <= 4096 && filepath.IsAbs(p) && filepath.Clean(p) == p && !strings.ContainsAny(p, "\x00\r\n") && p != "/"
 }
-func normalSystemAllowedFile(p, kind string) bool {
+func normalSystemAllowedFile(p, kind string) bool { return normalSystemAllowedVersionFile(1, p, kind) }
+func normalSystemAllowedVersionFile(version uint32, p, kind string) bool {
 	if !normalSystemCleanPath(p) {
 		return false
 	}
-	if k, ok := normalSystemRequiredPaths()[p]; ok {
+	required, e := NormalSystemSourceRequiredFilesForVersion(version)
+	if e != nil {
+		return false
+	}
+	if k, ok := required[p]; ok {
 		return k == kind
 	}
 	if kind == "loader" {
@@ -118,7 +164,7 @@ func normalSystemAllowedFile(p, kind string) bool {
 }
 func (m NormalSystemSourceManifest) Validate() error {
 	ref, e := LookupPhysicalKernelBuild(NormalSplitV1PhysicalKernelProfileID)
-	if e != nil || m.ProtocolVersion != 1 || m.ProfileID != NormalSystemSourceProfileID || m.Kernel != ref || m.ComputePath != "/usr/local/bin/compute_ctl" {
+	if e != nil || !((m.ProtocolVersion == 1 && m.ProfileID == NormalSystemSourceProfileID) || (m.ProtocolVersion == 2 && m.ProfileID == NormalSystemSourceV2ProfileID)) || m.Kernel != ref || m.ComputePath != "/usr/local/bin/compute_ctl" {
 		return fmt.Errorf("system source requires versioned fixed normal profile")
 	}
 	for _, d := range []string{m.DeclaredImageSHA256, m.ComputeArgvSHA256, m.ComputeEnvironmentSHA256} {
@@ -126,14 +172,15 @@ func (m NormalSystemSourceManifest) Validate() error {
 			return fmt.Errorf("system source digest absent")
 		}
 	}
-	if len(m.Files) < len(normalSystemRequiredPaths()) || len(m.Files) > 256 {
+	required, _ := NormalSystemSourceRequiredFilesForVersion(m.ProtocolVersion)
+	if len(m.Files) < len(required) || len(m.Files) > 256 {
 		return fmt.Errorf("system source file inventory outside bound")
 	}
 	seen := map[string]bool{}
 	var total uint64
 	prev := ""
 	for _, f := range m.Files {
-		if !normalSystemAllowedFile(f.Path, f.Kind) || !normalSystemCleanPath(f.CanonicalPath) || !physicalDigestValid(f.SHA256) || f.Bytes == 0 || f.Bytes > 256<<20 || f.Path <= prev || seen[f.Path] {
+		if !normalSystemAllowedVersionFile(m.ProtocolVersion, f.Path, f.Kind) || !normalSystemCleanPath(f.CanonicalPath) || !physicalDigestValid(f.SHA256) || f.Bytes == 0 || f.Bytes > 256<<20 || f.Path <= prev || seen[f.Path] {
 			return fmt.Errorf("system source file is invalid/duplicate/unordered")
 		}
 		if f.Kind == "exec" {
@@ -144,7 +191,7 @@ func (m NormalSystemSourceManifest) Validate() error {
 		if f.Kind == "script" && f.CanonicalPath != f.Path {
 			return fmt.Errorf("system script alias is unsupported")
 		}
-		if f.Kind == "loader" && !normalSystemAllowedFile(f.CanonicalPath, "loader") {
+		if f.Kind == "loader" && !normalSystemAllowedVersionFile(m.ProtocolVersion, f.CanonicalPath, "loader") {
 			return fmt.Errorf("system loader canonical path is unsupported")
 		}
 		total += f.Bytes
@@ -154,7 +201,7 @@ func (m NormalSystemSourceManifest) Validate() error {
 		seen[f.Path] = true
 		prev = f.Path
 	}
-	for p := range normalSystemRequiredPaths() {
+	for p := range required {
 		if !seen[p] {
 			return fmt.Errorf("system source required file absent: %s", p)
 		}
@@ -225,9 +272,40 @@ func DecodeNormalSystemSourceManifest(raw []byte) (NormalSystemSourceManifest, e
 	if e := d.Decode(&m); e != nil {
 		return m, e
 	}
+	// 新v2逐层精确键，不把Go大小写别名/空slice语义偷偷带入新合同；旧v1仍原规则。
+	if m.ProtocolVersion == 2 {
+		type plain NormalSystemSourceManifest
+		var next plain
+		if e := control.UnmarshalObjectBounded(raw, &next, 1<<20, 65536); e != nil {
+			return m, e
+		}
+		var fields map[string]json.RawMessage
+		if e := json.Unmarshal(raw, &fields); e != nil {
+			return m, e
+		}
+		var kernel PhysicalKernelBuildReference
+		if e := control.UnmarshalObject(fields["kernel"], &kernel); e != nil {
+			return m, e
+		}
+		var files []json.RawMessage
+		if e := json.Unmarshal(fields["files"], &files); e != nil {
+			return m, e
+		}
+		if files == nil {
+			return m, fmt.Errorf("v2 file inventory requires array")
+		}
+		for _, rawFile := range files {
+			var f NormalSystemSourceFile
+			if e := control.UnmarshalObject(rawFile, &f); e != nil {
+				return m, e
+			}
+		}
+		m = NormalSystemSourceManifest(next)
+	}
 	return m, m.Validate()
 }
-func normalSystemCheckInittab(raw []byte) error {
+func normalSystemCheckInittab(raw []byte) error { return normalSystemCheckVersionInittab(1, raw) }
+func normalSystemCheckVersionInittab(version uint32, raw []byte) error {
 	if len(raw) == 0 || len(raw) > 64<<10 || bytes.ContainsRune(raw, '\r') {
 		return fmt.Errorf("system inittab outside fixed format")
 	}
@@ -242,7 +320,10 @@ func normalSystemCheckInittab(raw []byte) error {
 		}
 		entries = append(entries, line)
 	}
-	want := NormalSystemSourceInitEntries()
+	want, e := NormalSystemSourceInitEntriesForVersion(version)
+	if e != nil {
+		return e
+	}
 	if len(entries) != len(want) {
 		return fmt.Errorf("system inittab contains missing/custom/interactive entry")
 	}

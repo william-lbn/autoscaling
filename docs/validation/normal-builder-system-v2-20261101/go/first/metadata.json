@@ -1,0 +1,16 @@
+{
+  "nonce": "20261031T191332Z-dc32ce",
+  "unit": "normal-builder-go-20261031t191332z-dc32ce",
+  "command": "go test -race -count=1 -json ./vm-builder && go test -race -count=1 -json -run '^TestNormalSystemSource' ./pkg/dsga/resourceguard && CGO_ENABLED=0 go build -o /out/vm-builder ./vm-builder && /out/vm-builder -version >/out/version.txt && for f in vm-builder/files/normal-split/*; do /bin/sh -n $f || exit; done",
+  "source_count": 867,
+  "base_git": "2aaa5b34c75b8253cb6694432a2fbf1ac9c9b253",
+  "host": "worker-118",
+  "limits": {
+    "systemd_client_memory": "2G",
+    "systemd_client_CPU": "200%",
+    "BuildKit_executor_GOMAXPROCS": 2,
+    "BuildKit_GOMEMLIMIT": "1500MiB soft",
+    "BuildKit_hard_memory": "not set; separate cached executor"
+  },
+  "dockerfileSHA256": "bac9bf4591d844eb9fcb9bad64037804e75b538415f2f215502e4843ad41725f"
+}

@@ -1,0 +1,72 @@
+[
+  {
+    "Id": "ec959cd34b6a32dc5a45b34304d69c183a64b246bee8c690bdccde52c01f34ac",
+    "State": {
+      "Status": "exited",
+      "Running": false,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 0,
+      "ExitCode": 0,
+      "Error": "",
+      "StartedAt": "2026-10-31T20:23:39.314586678Z",
+      "FinishedAt": "2026-10-31T20:23:42.063829273Z"
+    },
+    "Path": "/usr/bin/qemu-system-x86_64",
+    "Args": [
+      "-machine",
+      "q35",
+      "-accel",
+      "kvm",
+      "-cpu",
+      "host",
+      "-smp",
+      "2,maxcpus=2",
+      "-m",
+      "512M",
+      "-nographic",
+      "-monitor",
+      "none",
+      "-no-reboot",
+      "-no-user-config",
+      "-nic",
+      "none",
+      "-qmp",
+      "unix:/proof/qmp.sock,server=on,wait=off",
+      "-drive",
+      "file=/proof/root.ext4,if=virtio,format=raw,cache=none",
+      "-drive",
+      "file=/proof/runtime.iso,if=virtio,format=raw,readonly=on",
+      "-kernel",
+      "/kernel/vmlinuz",
+      "-initrd",
+      "/proof/initramfs.cpio.gz",
+      "-append",
+      "console=ttyS0,115200 rdinit=/init panic=-1 kernelcore=512M memhp_default_state=online_movable cgroup.memory=nokmem,nosocket,nobpf neonvm.pid_max_limit=512"
+    ],
+    "HostConfig": {
+      "Memory": 2147483648,
+      "MemorySwap": 2147483648,
+      "NanoCpus": 2000000000,
+      "PidsLimit": 128,
+      "NetworkMode": "none",
+      "ReadonlyRootfs": true,
+      "CapAdd": null,
+      "CapDrop": [
+        "ALL"
+      ],
+      "SecurityOpt": [
+        "no-new-privileges"
+      ],
+      "Devices": [
+        {
+          "PathOnHost": "/dev/kvm",
+          "PathInContainer": "/dev/kvm",
+          "CgroupPermissions": "rwm"
+        }
+      ]
+    }
+  }
+]

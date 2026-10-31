@@ -1,0 +1,30 @@
+{
+  "root_pass": 18,
+  "subcase_pass": 83,
+  "fail": 0,
+  "skip": 0,
+  "roots": [
+    "TestNormalSplitBuildSelection",
+    "TestNormalSplitPlanRejectsMutableOrAmbiguousInput",
+    "TestNormalSplitFinalInventoryAndCanonicalRoot",
+    "TestNormalSplitFixedScriptsFailClosedPerRole",
+    "TestNormalSplitTemplateAndFixedComputeBytes",
+    "TestNormalSplitDockerTemplateRetainsLegacyAndFinalInventoryOrder",
+    "TestNormalSplitPinsOriginalBaseAndRuntimeImages",
+    "TestNormalSplitInventoryRejectsFIFOWithoutBlocking",
+    "TestNormalSplitVmInitPrevalidatesAndCleansRootView",
+    "TestNormalSystemSourceRuntimeOverrides",
+    "TestNormalSystemSourceCancellation",
+    "TestNormalSystemSourceConfigInventory",
+    "TestNormalSystemSourceManifestStrict",
+    "TestNormalSystemSourceManifestRejectDrift",
+    "TestNormalSystemSourceFixedInittab",
+    "TestNormalSystemSourceCatalogCopy",
+    "TestNormalSystemSourceV2FixedGatesAndV1Compatibility",
+    "TestNormalSystemSourceV2ExactJSON"
+  ],
+  "actual_COPY_count": 882,
+  "memory.max": "2147483648",
+  "cpu.max": "200000 100000",
+  "static_builder_sha256": "fe901833d5dc1d9a35c4b1d81c7e0b2660fecb8a9f8d7b3e1686a5c53e95b143"
+}

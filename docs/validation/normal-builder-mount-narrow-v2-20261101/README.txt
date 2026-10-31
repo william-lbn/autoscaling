@@ -1,0 +1,7 @@
+本批关闭两项准确实现缺口：
+一、清单读取O_NONBLOCK|O_NOFOLLOW打开后以同FD fstat核regular，真实FIFO负例及时拒绝；这是私有固定构建树边界，不自证运行时Source。
+二、vminit先整体验证五个固定持久目录与resolv的完整canonical路径，之后才建短暂全RW别名；在bind前装EXIT trap，普通失败尝试卸载并保持原错误码，成功显式卸载且移除视图后才exec真实initial-boot。SIGKILL/掉电不由trap承诺；清理失败仍Unknown，不发许可。早失败可能根仍RW，但没有Guard/服务放行。
+新cf369+13源：Go race18根83子用例，0失败0skip；实际882输入COPY逐项核验；BuildKit RUN硬限2GiB、cpu.max200000/100000；静态Builder编译0。脚本机制5场景包含good诊断出口、PG末端/祖先alias、resolv alias、bind失败23保原码且视图清退；其mock只测控制流，不冒充Guest。
+真实369 KVM两个独立512MiB/2CPU、Docker2GiB、无NIC、无TCG、单全新128MiB ext4，纯6资产ISO。正例真实根及静态完整祖先RO、五目录及resolv同原ext4 RW、PG父可remove/create且.warmup兄弟持久、run/tmp/shm临时孔；无残余全RW挂载/FD/额外child；诊断强制42，11后续角色独立check拒绝。Host停止后debugfs只读4持久字节与uid/gid1000吻合，4临时路径缺席。不是掉电耐久。
+真实坏PG父symlink负例在全RW视图创建前exit1；目录/挂载均不存在，11角色拒绝。原195133Z的partial_rw_view_retained=true必须保留为修前发现，不能转签。新首轮两个202247Z仅夹具用repo0644覆盖构建期0755导致126，原console/result保留；外部夹具修0755后202336Z新nonce才为最终通过。
+原80与102路径归档全部保留历史语义，本批联合stage包含历史档案和准确当前13源，不把旧13/source-lock改成新快照。动态扩展可写孔与静态lib冲突、完整实际Root Source/PG Birth/持续I与安全normal及Helm E2E仍需后继真实生产链验证；许可仍false/E0。

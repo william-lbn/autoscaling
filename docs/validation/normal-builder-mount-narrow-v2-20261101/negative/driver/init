@@ -1,0 +1,39 @@
+#!/bin/busybox sh
+set -eu
+export PATH=/bin
+/bin/busybox --install -s /bin
+mount -t devtmpfs devtmpfs /dev
+exec </dev/console >/dev/console 2>&1
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+echo KERNEL_RELEASE=$(uname -r)
+echo KERNEL_NOTES_BEGIN
+base64 /sys/kernel/notes
+echo KERNEL_NOTES_END
+mkdir -p /newroot
+mount -t ext4 /dev/vda /newroot
+set +e
+chroot /newroot /neonvm/bin/vminit
+r=$?
+set -e
+echo DEV_VMINIT_EXIT=$r
+if [ "$r" = 1 ]; then
+ if [ ! -e /newroot/run/neon-dsga/root-writable ] && [ ! -L /newroot/run/neon-dsga/root-writable ]; then echo DEV_RW_VIEW_ABSENT=1; fi
+ echo DEV_EARLY_ROOT_MOUNTINFO_BEGIN
+ cat /proc/self/mountinfo
+ echo DEV_EARLY_ROOT_MOUNTINFO_END
+ if chroot /newroot /neonvm/bin/busybox mountpoint -q /run/neon-dsga/root-writable; then echo DEV_PARTIAL_RW_VIEW_RETAINED=1; fi
+fi
+if [ "$r" = 1 ]; then
+ for role in allow-start kernel-version network udev udev-init acpi logs clock daemon resource compute; do
+  set +e
+  chroot /newroot /neonvm/bin/sh /neonvm/bin/dsga-resource-service "$role"
+  rc=$?
+  set -e
+  echo DEV_ROLE_RESULT=$role:$rc
+ done
+ [ ! -e /newroot/run/neon-dsga/vmstart.allowed ] || exit 82
+fi
+echo DEV_GUEST_HARNESS_FINISHED=1
+sync
+poweroff -f

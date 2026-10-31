@@ -1,0 +1,22 @@
+#!/neonvm/bin/sh
+# 固定角色分派，不接受可执行路径/参数；BusyBox继续init时每个角色仍必须过门。
+set -eu
+[ "$#" -eq 1 ] || exit 1
+case "$1" in allow-start|kernel-version|network|udev|udev-init|acpi|logs|clock|daemon|resource|compute) ;; *) exit 1 ;; esac
+/neonvm/bin/dsga-resource-guard check-guest >/dev/null || exit 1
+case "$1" in
+ allow-start) exec /neonvm/bin/busybox touch /run/neon-dsga/vmstart.allowed ;;
+ kernel-version) exec /neonvm/bin/busybox cat /proc/version ;;
+ network) /neonvm/bin/busybox ip link set up dev lo
+ /neonvm/bin/busybox ip link set up dev eth0
+ exec /neonvm/bin/udhcpc -t 1 -T 1 -A 1 -f -i eth0 -O 121 -O 119 -s /neonvm/bin/udhcpc.script ;;
+ udev) exec /neonvm/bin/udevd ;;
+ udev-init) exec /neonvm/bin/udev-init.sh ;;
+ acpi) exec /neonvm/bin/acpid -f -c /neonvm/acpi ;;
+ logs) exec /neonvm/bin/vector -c /neonvm/config/vector.yaml --config-dir /etc/vector --color never ;;
+ clock) exec /neonvm/bin/chronyd -n -f /neonvm/config/chrony.conf -l /var/log/chrony/chrony.log ;;
+ daemon) exec /neonvm/bin/neonvmd --addr=0.0.0.0:25183 ;;
+ resource) exec /neonvm/bin/dsga-resource-guard serve ;;
+ compute) exec /neonvm/bin/vmstart ;;
+esac
+exit 1

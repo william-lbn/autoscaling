@@ -8,6 +8,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 	"io"
 	"log"
 	"os"
@@ -48,6 +49,16 @@ var (
 	scriptVmInit string
 	//go:embed files/dsga-resource-service
 	scriptDSGAResourceService string
+	//go:embed files/normal-split/vminit
+	scriptNormalVmInit string
+	//go:embed files/normal-split/dsga-resource-service
+	scriptNormalResourceService string
+	//go:embed files/normal-split/vmshutdown
+	scriptNormalShutdown string
+	//go:embed files/normal-split/udev-init.sh
+	scriptNormalUdevInit string
+	//go:embed files/normal-split/prepare-root.sh
+	scriptNormalPrepareRoot string
 	//go:embed files/udev-init.sh
 	scriptUdevInit string
 	//go:embed files/resize-swap.sh
@@ -79,15 +90,19 @@ var (
 	AlpineImageShaAmd64 string
 	AlpineImageShaArm64 string
 
-	srcImage  = flag.String("src", "", `Docker image used as source for virtual machine disk image: --src=alpine:3.19`)
-	dstImage  = flag.String("dst", "", `Docker image with resulting disk image: --dst=vm-alpine:3.19`)
-	size      = flag.String("size", "1G", `Size for disk image: --size=1G`)
-	outFile   = flag.String("file", "", `Save disk image as file: --file=vm-alpine.qcow2`)
-	buildArgs = MultiStringFlag("build-arg", "Docker build-args to use during the build (multiple allowed)")
-	specFile  = flag.String("spec", "", `File containing additional customization: --spec=spec.yaml`)
-	quiet     = flag.Bool("quiet", false, `Show less output from the docker build process`)
-	forcePull = flag.Bool("pull", false, `Pull src image even if already present locally`)
-	version   = flag.Bool("version", false, `Print vm-builder version`)
+	systemModeFlag     = flag.String("system-mode", "legacy", "Fixed System build selector: legacy | normal-split-v1 (not runtime authorization)")
+	normalPlanFlag     = flag.String("normal-build-plan", "", "Explicit versioned fixed compute build plan; values are not logged")
+	normalManifestRoot = flag.String("normal-manifest-root", "", "Build-container-only final root inventory command")
+	normalBaseDigest   = flag.String("normal-base-image-sha", "", "Original base image declaration for final inventory; not final image self hash")
+	srcImage           = flag.String("src", "", `Docker image used as source for virtual machine disk image: --src=alpine:3.19`)
+	dstImage           = flag.String("dst", "", `Docker image with resulting disk image: --dst=vm-alpine:3.19`)
+	size               = flag.String("size", "1G", `Size for disk image: --size=1G`)
+	outFile            = flag.String("file", "", `Save disk image as file: --file=vm-alpine.qcow2`)
+	buildArgs          = MultiStringFlag("build-arg", "Docker build-args to use during the build (multiple allowed)")
+	specFile           = flag.String("spec", "", `File containing additional customization: --spec=spec.yaml`)
+	quiet              = flag.Bool("quiet", false, `Show less output from the docker build process`)
+	forcePull          = flag.Bool("pull", false, `Pull src image even if already present locally`)
+	version            = flag.Bool("version", false, `Print vm-builder version`)
 
 	daemonImageFlag  = flag.String("daemon-image", "", `Specify the neonvm-daemon image: --daemon-image=neonvm-daemon:dev`)
 	alpineImageFlag  = flag.String("alpine-image", "alpine", `Specify the alpine image: --alpine-image=docker.io/library/alpine`)
@@ -146,6 +161,10 @@ type TemplatesContext struct {
 	InittabCommands []inittabCommand
 	AgettyTTY       string
 	ShutdownHook    string
+	NormalSplit     bool
+	NormalBaseSHA   string
+	NormalUID       uint32
+	NormalGID       uint32
 }
 
 type inittabCommand struct {
@@ -156,6 +175,32 @@ type inittabCommand struct {
 
 func main() {
 	flag.Parse()
+	// 仅构建容器的固定库存命令，发生在完整rootdisk和库alias之后；不连接Docker/网络。
+	if *normalManifestRoot != "" {
+		raw, e := os.ReadFile(*normalPlanFlag)
+		if e != nil {
+			log.Fatal("normal plan unavailable")
+		}
+		plan, e := decodeNormalBuildPlan(raw)
+		if e != nil {
+			log.Fatal(e)
+		}
+		b, e := generateNormalSystemManifest(*normalManifestRoot, plan, *normalBaseDigest)
+		if e != nil {
+			log.Fatal(e)
+		}
+		f, e := os.OpenFile(filepath.Join(*normalManifestRoot, resourceguard.NormalSystemSourceManifestPath), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0444)
+		if e != nil {
+			log.Fatal(e)
+		}
+		if _, e = f.Write(append(b, '\n')); e != nil {
+			log.Fatal(e)
+		}
+		if e = f.Close(); e != nil {
+			log.Fatal(e)
+		}
+		return
+	}
 	var dstIm string
 	if *version {
 		fmt.Println(Version)
@@ -209,6 +254,21 @@ func main() {
 		}
 	}
 
+	var normalRaw []byte
+	var normalPlan normalBuildPlan
+	if *normalPlanFlag != "" {
+		var e error
+		normalRaw, e = os.ReadFile(*normalPlanFlag)
+		if e != nil {
+			log.Fatal("normal build plan unavailable")
+		}
+	}
+	if e := validateNormalBuildSelection(*systemModeFlag, *targetArch, spec, *buildArgs, normalRaw); e != nil {
+		log.Fatal(e)
+	}
+	if *systemModeFlag == normalSplitBuildMode {
+		normalPlan, _ = decodeNormalBuildPlan(normalRaw)
+	}
 	log.Println("Load docker credentials")
 	dockerConfig, err := cliconfig.Load("" /* auto-detect right directory */)
 	if err != nil {
@@ -377,6 +437,27 @@ func main() {
 		tmplArgs.User = imageSpec.Config.User
 	}
 
+	if *systemModeFlag == normalSplitBuildMode {
+		tmplArgs.NormalSplit = true
+		tmplArgs.NormalUID = normalPlan.ComputeUID
+		tmplArgs.NormalGID = normalPlan.ComputeGID
+		tmplArgs.User = fmt.Sprintf("%d:%d", normalPlan.ComputeUID, normalPlan.ComputeGID)
+		tmplArgs.Entrypoint = nil
+		tmplArgs.Cmd = nil
+		tmplArgs.Env = nil
+		tmplArgs.AgettyTTY = ""
+		pinned, declared, e := normalPinnedBase(*srcImage, imageSpec.ID, imageSpec.RepoDigests)
+		if e != nil {
+			log.Fatal(e)
+		}
+		tmplArgs.RootDiskImage = pinned
+		tmplArgs.NormalBaseSHA = declared
+		for _, v := range []string{neonvmDaemonImage, busyboxImage + ":" + BusyboxImageTag + tmplArgs.BusyboxImageSha, alpineImage + ":" + AlpineImageTag + tmplArgs.AlpineImageSha} {
+			if e := normalRequirePinnedImage(v); e != nil {
+				log.Fatal(e)
+			}
+		}
+	}
 	tarBuffer := new(bytes.Buffer)
 	tw := tar.NewWriter(tarBuffer)
 	defer tw.Close()
@@ -438,9 +519,41 @@ func main() {
 		{"set-disk-quota.sh", scriptSetDiskQuota},
 	}
 
+	normalLiteralFiles := map[string]bool{}
+	if tmplArgs.NormalSplit {
+		entries, e := resourceguard.NormalSystemSourceInitEntriesForVersion(2)
+		if e != nil {
+			log.Fatal(e)
+		}
+		replacements := map[string]string{"inittab": strings.Join(entries, "\n") + "\n", "vminit": scriptNormalVmInit, "vmstart": normalComputeScript(normalPlan), "dsga-resource-service": scriptNormalResourceService, "vmshutdown": scriptNormalShutdown, "udev-init.sh": scriptNormalUdevInit}
+		for i := range files {
+			if v, ok := replacements[files[i].filename]; ok {
+				files[i].tmpl = v
+				normalLiteralFiles[files[i].filename] = true
+			}
+		}
+		tool, e := normalBuilderExecutable()
+		if e != nil {
+			log.Fatal(e)
+		}
+		for _, f := range []struct {
+			n string
+			b []byte
+		}{{"normal-manifest-tool", tool}, {"normal-build-plan.json", normalRaw}, {"normal-prepare-root.sh", []byte(scriptNormalPrepareRoot)}} {
+			if e := addFileToTar(tw, f.n, f.b); e != nil {
+				log.Fatal(e)
+			}
+		}
+	}
 	for _, f := range files {
-		if err := AddTemplatedFileToTar(tw, tmplArgs, f.filename, f.tmpl); err != nil {
-			log.Fatalln(err)
+		var e error
+		if normalLiteralFiles[f.filename] {
+			e = addFileToTar(tw, f.filename, []byte(f.tmpl))
+		} else {
+			e = AddTemplatedFileToTar(tw, tmplArgs, f.filename, f.tmpl)
+		}
+		if e != nil {
+			log.Fatalln(e)
 		}
 	}
 

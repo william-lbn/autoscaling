@@ -1,0 +1,21 @@
+{
+  "source": {
+    "vm-builder/files/normal-split/vminit": "0670148334a1a926140ee1095d46e8f319d3209937e4ccb85dcefc832bf2765c",
+    "vm-builder/files/normal-split/dsga-resource-service": "ff1a6ba0a72285e12d82a9284f05b359dd6c5e2759854ff552ada95502d8a46c",
+    "vm-builder/files/normal-split/udev-init.sh": "59335d647f72eeff6f8025af7f526e0b4766beb365ba21b19ce64ce137490320",
+    "vm-builder/files/normal-split/vmshutdown": "9b1a0450b05913c0e487dc2869349e04a27b1390d76664df6f6e0ddbeec06444",
+    "vm-builder/files/normal-split/prepare-root.sh": "fb5be1e9f4219bc9cd22dbf248eaa37cb40809d0dd693934c8401b1592b3d68c"
+  },
+  "freeze_manifest_sha256": "b6f41f07b8c237cd389c8eb2531a86edd1ab9d508a03d853b05b8cb052020c5e",
+  "runtime_iso_original": "/data/neon-build/validation/initial-lifecycle-native-20261031T181834Z/attempt02/runtime.iso",
+  "runtime_iso_sha256": "bc95fa81c80ebd654add979266871660e1993bc80b8be1afb13eb40de780074c",
+  "runtime_original_assets": {
+    "dsga-normal-split.json": "f40b22189be55d8bd857d415e1aba3bbdfa7e35379f2678831e60eee8b954ccb",
+    "dsga-physical-kernel.json": "004e15f66356d10a928a1c1e1f97d97ddc8099e15a9da48e0afec4756d6f3f82",
+    "dsga-resource.json": "f621889da462070435b759521bf9a5f9a8bd54f7a4883ca1f702056a8f5445a7",
+    "dsga-pre-system.json": "13de192705b1a5847b9091f601eea40cc62f803539f4abbee7e96ea7c981978e",
+    "dsga-native-birth.json": "020767b64a0335916a0812bc100a4a9368bf9076b3793f6d09980bdf1b365352",
+    "dsga-kernel-bootstrap.json": "91870f67fbeea7b34db879560549aed9a3ddc5cbfb52039877608aa4c658659c"
+  },
+  "scope": "DEV disposable one-ext4 exact frozen vminit before real initial-boot; no business disk/cluster"
+}

@@ -1,0 +1,21 @@
+[
+  "docker",
+  "run",
+  "--rm",
+  "--pull=never",
+  "--network",
+  "none",
+  "--memory",
+  "1g",
+  "--memory-swap",
+  "1g",
+  "--cpus",
+  "1",
+  "-v",
+  "/data/neon-build/validation/normal-vminit-mount-narrow-negative-20261031T202336Z-95fb90:/proof:rw",
+  "--entrypoint",
+  "/bin/bash",
+  "127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1",
+  "-c",
+  "set -eu; gcc-12 --version >/proof/compiler.txt; gcc-12 -static -O2 -Wall -Wextra -Werror -o /proof/guard-diag /proof/guard-diag.c; readelf -l /proof/guard-diag >/proof/guard-readelf.txt; ! grep -q INTERP /proof/guard-readelf.txt"
+]

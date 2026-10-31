@@ -64,11 +64,13 @@ RUN set -e \
        && /helper.move-bins.sh chronyd chronyc
 
 # ssh server
+{{if not .NormalSplit}}
 RUN set -e \
 	&& apk add --no-cache --no-progress --quiet \
 		openssh-server \
 	&& /helper.move-bins.sh sshd ssh-keygen
 
+{{end}}
 # quota tools
 RUN set -e \
 	&& apk add --no-cache --no-progress --quiet \
@@ -110,13 +112,24 @@ RUN set -e \
     && /neonvm/bin/chown chrony:chrony /var/lib/chrony \
     && /neonvm/bin/mkdir -p /var/log/chrony
 # setup sshd user and group to support sshd UsePrivilegeSeparation
+{{if not .NormalSplit}}
 RUN set -e \
     && /neonvm/bin/id -g sshd > /dev/null 2>&1 || /neonvm/bin/addgroup sshd \
     && /neonvm/bin/id -u sshd > /dev/null 2>&1 || /neonvm/bin/adduser -D -H -G sshd -g 'sshd privsep' -s /neonvm/bin/nologin sshd
 
+{{end}}
 FROM {{.AlpineImage}}:{{.AlpineImageTag}}{{.AlpineImageSha}} AS builder
 ARG VM_BUILDER_DISK_SIZE
 COPY --from=rootdisk-mod / /rootdisk
+{{if .NormalSplit}}
+# 最终merge/库alias后才生成事实清单；原base声明不自哈希最终镜像。
+COPY normal-manifest-tool /normal-manifest-tool
+COPY normal-build-plan.json /normal-build-plan.json
+COPY normal-prepare-root.sh /normal-prepare-root.sh
+RUN /rootdisk/neonvm/bin/busybox sh /normal-prepare-root.sh {{.NormalUID}} {{.NormalGID}}
+RUN /normal-manifest-tool --normal-manifest-root=/rootdisk --normal-build-plan=/normal-build-plan.json --normal-base-image-sha={{.NormalBaseSHA}}
+{{end}}
+
 
 # tools for qemu disk creation
 RUN set -e \

@@ -1,0 +1,18 @@
+{
+  "nonce": "20261031T202152Z-70d40d",
+  "unit": "normal-builder-narrow-20261031t202152z-70d40d",
+  "base_git": "cf3691e4757a4627dee0d386a0059189c8c0b720",
+  "host": "worker-118",
+  "source_count": 882,
+  "systemd_limits": {
+    "MemoryMax": "2G",
+    "CPUQuota": "200%"
+  },
+  "executor_limits": {
+    "memory": "2g",
+    "swap_total": "2g",
+    "cpuquota": 200000
+  },
+  "source_lock_sha256": "8f7baec98e636d9aefd2a6bf38a5d0d2a14ffaf46632e58aca69d4af2e1c2168",
+  "command": "exact historical Dockerfile test roots + narrow FIFO/script tests"
+}

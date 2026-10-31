@@ -1,0 +1,58 @@
+{
+  "Id": "791e7d83d049d983929d40e0e7189937cd05bb604bff6de501cc0c75a23ecf87",
+  "Image": "sha256:6c14341670c3e9a2c9826132836e3e7f6481b4fbb708e780ca20c35bc52e1621",
+  "State": {
+    "Status": "exited",
+    "Running": false,
+    "Paused": false,
+    "Restarting": false,
+    "OOMKilled": false,
+    "Dead": false,
+    "Pid": 0,
+    "ExitCode": 0,
+    "Error": "",
+    "StartedAt": "2026-10-31T19:44:52.213638951Z",
+    "FinishedAt": "2026-10-31T19:44:55.830740506Z"
+  },
+  "HostConfig": {
+    "Memory": 2147483648,
+    "MemorySwap": 2147483648,
+    "NanoCpus": 2000000000,
+    "PidsLimit": 128,
+    "NetworkMode": "none",
+    "ReadonlyRootfs": true,
+    "CapAdd": null,
+    "CapDrop": [
+      "ALL"
+    ],
+    "SecurityOpt": [
+      "no-new-privileges"
+    ],
+    "Devices": [
+      {
+        "PathOnHost": "/dev/kvm",
+        "PathInContainer": "/dev/kvm",
+        "CgroupPermissions": "rwm"
+      }
+    ]
+  },
+  "Mounts": [
+    {
+      "Type": "bind",
+      "Source": "/data/neon-build/validation/normal-vminit-mount-20261031T194449Z-562f80",
+      "Destination": "/proof",
+      "Mode": "rw",
+      "RW": true,
+      "Propagation": "rprivate"
+    },
+    {
+      "Type": "bind",
+      "Source": "/data/neon-build/validation/normal-split-kernel-20261030T224843Z/export",
+      "Destination": "/kernel",
+      "Mode": "ro",
+      "RW": false,
+      "Propagation": "rprivate"
+    }
+  ],
+  "privacy": "explicit whitelist; Config.Env never retained"
+}

@@ -1,0 +1,50 @@
+{
+  "scope": "DEV bad PGDATA-parent symlink early-failure: no real Guard/PG/normal; upfront refusal, view absent; early root remains RW and boot Unknown",
+  "id": "NEON-S-BUILDER-MOUNT-002",
+  "status": "FAIL_MECHANISM",
+  "qemu_exit": 0,
+  "actual_qmp": [
+    {
+      "command": "qmp_capabilities",
+      "response": {
+        "return": {}
+      }
+    },
+    {
+      "command": "query-kvm",
+      "response": {
+        "return": {
+          "enabled": true,
+          "present": true
+        }
+      }
+    },
+    {
+      "command": "query-version",
+      "response": {
+        "return": {
+          "qemu": {
+            "micro": 5,
+            "minor": 1,
+            "major": 8
+          },
+          "package": ""
+        }
+      }
+    }
+  ],
+  "vminit_exit": [
+    "126"
+  ],
+  "rw_view_directory_absent": false,
+  "partial_rw_view_retained": false,
+  "role_results": [],
+  "seconds": 5.483220523005002,
+  "runtime_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "diagnostic_source_sha256": "615fce66119d0006da0cf436f79ad07617fef72c0fb14023c7ea5afa60dd85b2",
+  "diagnostic_binary_sha256": "933ea2e50e51e511f72a28f00d1fb88148bbc2f74965961f98a14df24b6bc9d6",
+  "normal_permit": false,
+  "original_guard_executed": false,
+  "PG_executed": false,
+  "E": 0
+}

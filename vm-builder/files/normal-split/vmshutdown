@@ -1,0 +1,4 @@
+#!/neonvm/bin/sh
+set -eu
+/neonvm/bin/dsga-resource-guard check-guest >/dev/null || exit 1
+exec /neonvm/bin/busybox rm -f /run/neon-dsga/vmstart.allowed

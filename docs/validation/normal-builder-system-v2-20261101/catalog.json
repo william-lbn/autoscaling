@@ -1,0 +1,126 @@
+{
+  "scope": "fixed build/start mode and System v2 components only; not image/normal/E qualification",
+  "base_git": "2aaa5b34c75b8253cb6694432a2fbf1ac9c9b253",
+  "owned_source_count": 13,
+  "owned_source_hashes": {
+    "vm-builder/main.go": "725d95a11aaba59cc9aaca657c186deebc546059308902a39bd5bcc419322be6",
+    "vm-builder/normal_split.go": "9f632595e340c08b94d7ce2e09b91f1eaac0694bed0ed375357bf931a68bd5e4",
+    "vm-builder/normal_split_test.go": "81d1c65c67b8b475579732fcac948dfdb7ebef8979e926abc52a8ff53ad9aa6c",
+    "vm-builder/files/img.Dockerfile": "f5c0210fe4517d390c585546f261f0db5078c7c047856c521076c5deab5f68b6",
+    "vm-builder/files/normal-split/dsga-resource-service": "ff1a6ba0a72285e12d82a9284f05b359dd6c5e2759854ff552ada95502d8a46c",
+    "vm-builder/files/normal-split/prepare-root.sh": "fb5be1e9f4219bc9cd22dbf248eaa37cb40809d0dd693934c8401b1592b3d68c",
+    "vm-builder/files/normal-split/udev-init.sh": "59335d647f72eeff6f8025af7f526e0b4766beb365ba21b19ce64ce137490320",
+    "vm-builder/files/normal-split/vminit": "0670148334a1a926140ee1095d46e8f319d3209937e4ccb85dcefc832bf2765c",
+    "vm-builder/files/normal-split/vmshutdown": "9b1a0450b05913c0e487dc2869349e04a27b1390d76664df6f6e0ddbeec06444",
+    "pkg/dsga/resourceguard/normal_system_source.go": "36d368d866891a1ec514361211226e693039fc3958da185297afaf8155ceacfd",
+    "pkg/dsga/resourceguard/normal_system_source_linux.go": "277ff25bacd70392687fe883a0f7eea054448f2cb4df3a74e0f7c810a671f583",
+    "pkg/dsga/resourceguard/normal_system_source_v2_test.go": "6b57890c1ac35bc359b78c22d36d47e172f22974f1c25da8c13032c118ccc28b",
+    "pkg/dsga/resourceguard/normal_system_source_v2_native_test.go": "4b13604b70587e252bc2dbf65c65cecf21915934e55551979987bcef56f4b853"
+  },
+  "new_builder_U": [
+    {
+      "id": "NEON-U-BUILDER-NORMAL-001",
+      "root": "TestNormalSplitBuildSelection",
+      "status": "PASS"
+    },
+    {
+      "id": "NEON-U-BUILDER-NORMAL-002",
+      "root": "TestNormalSplitPlanRejectsMutableOrAmbiguousInput",
+      "status": "PASS"
+    },
+    {
+      "id": "NEON-U-BUILDER-NORMAL-003",
+      "root": "TestNormalSplitFinalInventoryAndCanonicalRoot",
+      "status": "PASS"
+    },
+    {
+      "id": "NEON-U-BUILDER-NORMAL-004",
+      "root": "TestNormalSplitFixedScriptsFailClosedPerRole",
+      "status": "PASS"
+    },
+    {
+      "id": "NEON-U-BUILDER-NORMAL-005",
+      "root": "TestNormalSplitTemplateAndFixedComputeBytes",
+      "status": "PASS"
+    },
+    {
+      "id": "NEON-U-BUILDER-NORMAL-006",
+      "root": "TestNormalSplitDockerTemplateRetainsLegacyAndFinalInventoryOrder",
+      "status": "PASS"
+    },
+    {
+      "id": "NEON-U-BUILDER-NORMAL-007",
+      "root": "TestNormalSplitPinsOriginalBaseAndRuntimeImages",
+      "status": "PASS"
+    }
+  ],
+  "new_System_v2_U": [
+    {
+      "id": "NEON-U-SYSTEM-V2-001",
+      "root": "TestNormalSystemSourceV2FixedGatesAndV1Compatibility",
+      "status": "PASS"
+    },
+    {
+      "id": "NEON-U-SYSTEM-V2-002",
+      "root": "TestNormalSystemSourceV2ExactJSON",
+      "status": "PASS"
+    }
+  ],
+  "direct_regression_System_v1_roots": [
+    "TestNormalSystemSourceRuntimeOverrides",
+    "TestNormalSystemSourceCancellation",
+    "TestNormalSystemSourceConfigInventory",
+    "TestNormalSystemSourceManifestStrict",
+    "TestNormalSystemSourceManifestRejectDrift",
+    "TestNormalSystemSourceFixedInittab",
+    "TestNormalSystemSourceCatalogCopy"
+  ],
+  "final_U": {
+    "roots": 16,
+    "subcases": 78,
+    "failed": 0,
+    "skipped": 0,
+    "race": true,
+    "actual_COPY_files": 868,
+    "memory_max": 2147483648,
+    "cpu_max": "200000 100000",
+    "run": "/data/neon-build/validation/normal-builder-go-20261031T192738Z-85b336"
+  },
+  "actual_static_tool_on_synthetic_files": {
+    "component": "actual statically compiled builder final inventory command on explicitly synthetic root files",
+    "exit": 0,
+    "seconds": 1.4861561870056903,
+    "actual_image_build": false,
+    "actual_services": false,
+    "normal_permit": false,
+    "generated_manifest_sha256": "abfea20464c18ac628b347747bcc9610bdb10ba996719fce12bc8d01173014fe",
+    "protocol_version": 2,
+    "profile_id": "neon-dsga-normal-system-source-v2",
+    "files": 22,
+    "declared_image": "explicit synthetic ab model, not actual image digest",
+    "repeat_exit": 1
+  },
+  "new_native_System_v2": {
+    "id": "NEON-S-SYSTEM-SOURCE-V2-001",
+    "root": "TestNativeNormalSystemV2Component",
+    "roots": 1,
+    "subcases": 8,
+    "status": "PASS_FIXTURE_COMPONENT_ONLY",
+    "run": "/data/neon-build/validation/normal-system-v2-native-20261031T192132Z-bb29ab",
+    "binary_sha256": "4894f65dbb0050595b887bc9ef0e2dc8ebd04b74e13092814b79911384acd606",
+    "actual_services_or_PG": false
+  },
+  "builder_binary_sha256": "92fc735fb2684a9ce1a755542a0a0eb194df2af0586dfcee8e3803cf7a7b19cd",
+  "not_run": [
+    "full normal VM image build",
+    "actual vminit root-RO and persistent-hole mount graph",
+    "actual fixed System service startup",
+    "formal initial-boot/Provision/CheckGuest integration on image",
+    "dynamic extensions compatibility and immutable plugin source closure",
+    "PG normal actual cap decrease",
+    "K8s E2E"
+  ],
+  "normal_authorized": false,
+  "AllSourcesClosed": false,
+  "E": 0
+}

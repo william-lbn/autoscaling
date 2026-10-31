@@ -1,0 +1,40 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.59kB done
+#1 DONE 0.3s
+
+#2 [internal] load metadata for 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 343B done
+#3 DONE 0.0s
+
+#4 [test 1/4] FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#4 resolve 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 449.71kB 0.1s done
+#5 DONE 0.2s
+
+#6 [test 2/4] WORKDIR /workspace
+#6 CACHED
+
+#7 [test 3/4] COPY . .
+#7 DONE 1.0s
+
+#8 [test 4/4] RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared set -eu; mkdir -p /out; cat /sys/fs/cgroup/memory.max >/out/memory.max; cat /sys/fs/cgroup/cpu.max >/out/cpu.max; test $(cat /out/memory.max) = 2147483648; sha256sum -c actual-source-sha256.txt >/out/actual-copy-verification.txt; cp actual-source-sha256.txt /out/compiled-source-sha256.txt; go version >/out/go-version.txt; printf '%s\n' "normal-builder-go-20261031T192012Z-ceebd5" >/out/nonce; set +e; ( go test -race -count=1 -json ./vm-builder && go test -race -count=1 -json -run '^TestNormalSystemSource' ./pkg/dsga/resourceguard && CGO_ENABLED=0 go build -o /out/vm-builder ./vm-builder && /out/vm-builder -version >/out/version.txt && CGO_ENABLED=0 go test -c -tags=dsga_native_normal_system_source -o /out/normal-system-source.test ./pkg/dsga/resourceguard && DSGA_NATIVE_SYSTEM_FIXTURE_OUTPUT=/out/system-fixture /out/normal-system-source.test -test.run '^TestNativeNormalSystemV2Fixture$' -test.v -test.count=1 >/out/fixture-build.log && for f in vm-builder/files/normal-split/*; do /bin/sh -n $f || exit; done ) >/out/test.json 2>/out/test.stderr; echo $? >/out/test.exitcode
+#8 DONE 20.3s
+
+#9 [stage-1 1/1] COPY --from=test /out/ /
+#9 DONE 0.2s
+
+#10 exporting to client directory
+#10 copying files 23.28MB 0.1s
+#10 copying files 144.14MB 0.7s done
+#10 DONE 0.7s
+
+#11 resolving provenance for metadata file
+#11 DONE 0.0s

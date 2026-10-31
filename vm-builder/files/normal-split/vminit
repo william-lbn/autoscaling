@@ -1,0 +1,66 @@
+#!/neonvm/bin/sh
+# 仅显式新镜像使用。挂载准备时没有普通服务/PG；任何错误均停止sysinit，
+# 后继每个角色还要独立check-guest，不能把BusyBox继续init解释成成功。
+set -eu
+export PATH=/neonvm/bin
+bb=/neonvm/bin/busybox
+$bb mountpoint -q /proc || $bb mount -t proc proc /proc
+$bb mountpoint -q /sys || $bb mount -t sysfs sysfs /sys
+$bb mountpoint -q /dev || $bb mount -t devtmpfs devtmpfs /dev
+$bb mkdir -p /sys/fs/cgroup /dev/pts /dev/shm /run /tmp /neonvm/runtime
+$bb mountpoint -q /sys/fs/cgroup || $bb mount -t cgroup2 cgroup2 /sys/fs/cgroup
+$bb mountpoint -q /dev/pts || $bb mount -t devpts -o noexec,nosuid devpts /dev/pts
+$bb mountpoint -q /run || $bb mount -t tmpfs -o noexec,nosuid,nodev,mode=0755 run /run
+$bb mountpoint -q /tmp || $bb mount -t tmpfs -o noexec,nosuid,nodev,mode=1777 tmp /tmp
+$bb mountpoint -q /dev/shm || $bb mount -t tmpfs -o noexec,nosuid,nodev,mode=1777 shm /dev/shm
+$bb mount -t iso9660 -o ro,mode=0644 /dev/vdb /neonvm/runtime
+# 所有旧执行/调优覆盖连symlink也拒，且不先执行任何一项。
+for n in mounts.sh sysctl.conf env.sh command.sh args.sh resize-swap-internal.sh; do
+ [ ! -e "/neonvm/runtime/$n" ] && [ ! -L "/neonvm/runtime/$n" ] || exit 1
+done
+$bb chmod go-w /sys/fs/cgroup/cgroup.procs /sys/fs/cgroup/cgroup.threads
+# 只克隆原同一个ext4作短暂准备视图，不改变PGDATA/Root WAL持久语义。
+# 各孔为原固定目录；不把PGDATA本身挂载，保remove/create及.warmup兄弟目录。
+# 临时全RW别名必须在initial-boot之前消失，不能留给后续服务绕过RO祖先。
+# 整体验证先于全RW别名创建；readlink核完整父链，不能只拒末端symlink。
+for p in /etc/neon-dsga /var/lib/neon-dsga /var/db/postgres /var/log /var/lib/chrony; do
+ [ -d "$p" ] && [ ! -L "$p" ] || exit 1
+ [ "$( $bb readlink -f "$p" )" = "$p" ] || exit 1
+done
+[ -f /etc/resolv.conf ] && [ ! -L /etc/resolv.conf ] || exit 1
+[ "$( $bb readlink -f /etc/resolv.conf )" = /etc/resolv.conf ] || exit 1
+$bb mount --make-rprivate /
+$bb mkdir -p /run/neon-dsga
+[ "$( $bb readlink -f /run/neon-dsga )" = /run/neon-dsga ] || exit 1
+view=/run/neon-dsga/root-writable
+[ ! -e "$view" ] && [ ! -L "$view" ] || exit 1
+$bb mkdir "$view"
+# 在bind之前安装退出处理，覆盖bind成功后尚未执行下一行的窗口。
+# 仅清理本次固定视图且保留原失败码；清理失败仍是Unknown，不发许可。
+# SIGKILL/掉电不受shell trap保证，恢复仍须原阶段协议核验。
+cleanup_root_view() {
+ rc=$?
+ trap - 0 1 2 15
+ if $bb mountpoint -q "$view"; then
+  $bb umount "$view" || :
+ fi
+ $bb rmdir "$view" 2>/dev/null || :
+ [ "$rc" -ne 0 ] || rc=1
+ exit "$rc"
+}
+trap cleanup_root_view 0
+trap 'exit 129' 1
+trap 'exit 130' 2
+trap 'exit 143' 15
+$bb mount --bind / "$view"
+for p in /etc/neon-dsga /var/lib/neon-dsga /var/db/postgres /var/log /var/lib/chrony; do
+ $bb mount --bind "$view$p" "$p"
+done
+$bb mount --bind "$view/etc/resolv.conf" /etc/resolv.conf
+$bb mount -o remount,bind,ro /
+$bb umount "$view"
+$bb rmdir "$view"
+trap - 0 1 2 15
+# 不以ACK/ready文件放行：CLI必须实际完成Provision→Split→CheckGuest。
+# 动态extension与静态/usr/local的RO闭包仍须原policy真实核验；此脚本不豁免。
+exec /neonvm/bin/dsga-resource-guard initial-boot

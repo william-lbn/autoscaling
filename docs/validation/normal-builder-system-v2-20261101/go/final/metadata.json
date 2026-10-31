@@ -1,0 +1,16 @@
+{
+  "nonce": "20261031T192738Z-85b336",
+  "unit": "normal-builder-go-20261031t192738z-85b336",
+  "command": "go test -race -count=1 -json ./vm-builder && go test -race -count=1 -json -run '^TestNormalSystemSource' ./pkg/dsga/resourceguard && CGO_ENABLED=0 go build -o /out/vm-builder ./vm-builder && /out/vm-builder -version >/out/version.txt && CGO_ENABLED=0 go test -c -tags=dsga_native_normal_system_source -o /out/normal-system-source.test ./pkg/dsga/resourceguard && DSGA_NATIVE_SYSTEM_FIXTURE_OUTPUT=/out/system-fixture /out/normal-system-source.test -test.run '^TestNativeNormalSystemV2Fixture$' -test.v -test.count=1 >/out/fixture-build.log && for f in vm-builder/files/normal-split/*; do /bin/sh -n $f || exit; done",
+  "source_count": 868,
+  "base_git": "2aaa5b34c75b8253cb6694432a2fbf1ac9c9b253",
+  "host": "worker-118",
+  "limits": {
+    "systemd_client_memory": "2G",
+    "systemd_client_CPU": "200%",
+    "BuildKit_executor_GOMAXPROCS": 2,
+    "BuildKit_GOMEMLIMIT": "1500MiB soft",
+    "BuildKit_hard_memory": "2g with RUN memory.max assertion; swap2g; cpu-quota200000"
+  },
+  "dockerfileSHA256": "0400520280e4eccf541b4951a0a8f193204a0f07b0b006b57d4a15717bd80f94"
+}

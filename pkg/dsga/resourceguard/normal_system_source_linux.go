@@ -93,7 +93,7 @@ func InspectNormalSystemSource(ctx context.Context, raw []byte) (NormalSystemSou
 				h.Close()
 				return NormalSystemSourceObservation{}, e
 			}
-			if e = normalSystemCheckInittab(b); e != nil {
+			if e = normalSystemCheckVersionInittab(m.ProtocolVersion, b); e != nil {
 				h.Close()
 				return NormalSystemSourceObservation{}, e
 			}
