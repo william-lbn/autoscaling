@@ -1,0 +1,1319 @@
+[
+  {
+    "file": "pkg/dsga/resourceguard/array_registry_wire.go",
+    "sha256": "7a74ea85fae3f579c415ccaa25f0f27de2f9db110dc9d107f3bf09a92af35dc0",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 37,
+        "declaration": "func (r arrayRegistryWireRequest) keyZero() bool {"
+      },
+      {
+        "line": 40,
+        "declaration": "func (r arrayRegistryWireRequest) validate() error {"
+      },
+      {
+        "line": 102,
+        "declaration": "func decodeArrayRegistryWire(raw []byte) (arrayRegistryWireRequest, error) {"
+      },
+      {
+        "line": 143,
+        "declaration": "func encodeArrayRegistryWire(r arrayRegistryWireRequest) ([]byte, error) {"
+      },
+      {
+        "line": 180,
+        "declaration": "func (r arrayRegistryWireReply) encode() ([]byte, error) {"
+      },
+      {
+        "line": 197,
+        "declaration": "func arrayRegistryRequestSHA(raw []byte) [32]byte { return sha256.Sum256(raw) }"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_auth.go",
+    "sha256": "b54741a78e7a769d13d1c8bacc29cac9915f8b34369769d19bef370c6e381bc7",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 25,
+        "declaration": "func (b *signedArrayRequest) UnmarshalJSON(raw []byte) error {"
+      },
+      {
+        "line": 34,
+        "declaration": "func arrayAuthorityPath(path string) bool {"
+      },
+      {
+        "line": 41,
+        "declaration": "func (b signedArrayRequest) matches(r *http.Request, raw []byte) bool {"
+      },
+      {
+        "line": 60,
+        "declaration": "func (c ArrayAuthorityCommand) Validate() error {"
+      },
+      {
+        "line": 66,
+        "declaration": "func (c *ArrayAuthorityCommand) UnmarshalJSON(raw []byte) error {"
+      },
+      {
+        "line": 89,
+        "declaration": "func (e ArrayAuthorityEvidence) validateFor(c ArrayAuthorityCommand) error {"
+      },
+      {
+        "line": 96,
+        "declaration": "func (e *ArrayAuthorityEvidence) UnmarshalJSON(raw []byte) error {"
+      },
+      {
+        "line": 114,
+        "declaration": "func (v View) ArrayAuthorityReference() (string, error) {"
+      },
+      {
+        "line": 123,
+        "declaration": "func arrayAuthorityRecordReference(r record) (string, error) {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_client.go",
+    "sha256": "b9168dfb9083dfec789ef97a847b6d57c8732382340f7ae9f8d30690a42c681e",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 17,
+        "declaration": "func (c *Client) ArrayAuthorityEnabled() bool {"
+      },
+      {
+        "line": 22,
+        "declaration": "func (c *Client) ArrayAuthorityPending() *ArrayAuthorityCommand {"
+      },
+      {
+        "line": 31,
+        "declaration": "func (c *Client) arrayAuthorityOriginal(ctx context.Context, request control.Request) (ArrayAuthorityCommand, error) {"
+      },
+      {
+        "line": 45,
+        "declaration": "func (c *Client) AuthorizeArrayRequest(ctx context.Context, request control.Request) (ArrayAuthorityEvidence, error) {"
+      },
+      {
+        "line": 52,
+        "declaration": "func (c *Client) ReplayArrayRequest(ctx context.Context, request control.Request) (ArrayAuthorityEvidence, error) {"
+      },
+      {
+        "line": 73,
+        "declaration": "func (c *Client) ObserveArrayAuthority(ctx context.Context, command ArrayAuthorityCommand) (ArrayAuthorityEvidence, error) {"
+      },
+      {
+        "line": 76,
+        "declaration": "func (c *Client) arrayAuthorityCall(parent context.Context, command ArrayAuthorityCommand, action string, replay bool) (ArrayAuthorityEvidence, error) {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/http.go",
+    "sha256": "4e05b89ee56d15eb33356cbda58a8aaaa1d0b70492181a41c2e241e36c6669ec",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 29,
+        "declaration": "func (v *FenceRequest) UnmarshalJSON(b []byte) error {"
+      },
+      {
+        "line": 78,
+        "declaration": "func newResourceHandler(source SourceConfig, guard resourceBackend) (*resourceHTTP, error) {"
+      },
+      {
+        "line": 87,
+        "declaration": "func canonicalJWTPart(s string, maximum int) ([]byte, error) {"
+      },
+      {
+        "line": 98,
+        "declaration": "func (h *resourceHTTP) verify(r *http.Request) (resourceClaims, error) {"
+      },
+      {
+        "line": 135,
+        "declaration": "func (h *resourceHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/client.go",
+    "sha256": "498ca0fbde18ced0560c9daeac5bbe5c6e6bb6c77c5751610cff5c008ef60ff6",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 39,
+        "declaration": "func (e *ClientError) Error() string { return \"DSGA resource call: \" + e.Code }"
+      },
+      {
+        "line": 53,
+        "declaration": "func cloneCommand(c Command) Command { c.HugePools = append([]HugePool(nil), c.HugePools...); return c }"
+      },
+      {
+        "line": 55,
+        "declaration": "func NewClient(c ClientConfig) (*Client, error) {"
+      },
+      {
+        "line": 59,
+        "declaration": "func newClient(c ClientConfig, discovery bool) (*Client, error) {"
+      },
+      {
+        "line": 95,
+        "declaration": "func DiscoverIdentity(ctx context.Context, config ClientConfig) (Identity, error) {"
+      },
+      {
+        "line": 111,
+        "declaration": "func (c *Client) Binding() (Identity, control.Uint64) { return c.config.Identity, c.config.IssuerEpoch }"
+      },
+      {
+        "line": 113,
+        "declaration": "func (c *Client) InspectState(ctx context.Context) (View, error) {"
+      },
+      {
+        "line": 133,
+        "declaration": "func (c *Client) CloseIdleConnections() {"
+      },
+      {
+        "line": 139,
+        "declaration": "func (c *Client) call(ctx context.Context, observer bool, path string, body any, result any) error {"
+      },
+      {
+        "line": 193,
+        "declaration": "func (c *Client) InspectIdentity(ctx context.Context) (Identity, error) {"
+      },
+      {
+        "line": 206,
+        "declaration": "func (c *Client) InspectProcess(ctx context.Context) (ProcessIdentity, error) {"
+      },
+      {
+        "line": 217,
+        "declaration": "func (c *Client) Fence(ctx context.Context) error {"
+      },
+      {
+        "line": 229,
+        "declaration": "func (c *Client) Apply(ctx context.Context, command Command) (Evidence, error) {"
+      },
+      {
+        "line": 232,
+        "declaration": "func (c *Client) ReplayOriginal(ctx context.Context, command Command) (Evidence, error) {"
+      },
+      {
+        "line": 235,
+        "declaration": "func (c *Client) Observe(ctx context.Context, command Command) (Evidence, error) {"
+      },
+      {
+        "line": 242,
+        "declaration": "func (c *Client) RetainOriginal(command Command) error {"
+      },
+      {
+        "line": 260,
+        "declaration": "func (c *Client) DeliverOriginal(ctx context.Context, command Command) (Evidence, error) {"
+      },
+      {
+        "line": 264,
+        "declaration": "func (c *Client) command(ctx context.Context, command Command, action string, explicit bool) (Evidence, error) {"
+      },
+      {
+        "line": 307,
+        "declaration": "func (c *Client) Pending() *Command {"
+      },
+      {
+        "line": 317,
+        "declaration": "func (c *Client) String() string { return \"DSGA resource client (redacted)\" }"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/credential/array_authority.go",
+    "sha256": "5eaa77ac61d7125c5e7a53ff19ac0a56bce07d0b0d25e55da4189f30396d6e8b",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 29,
+        "declaration": "func (b *arrayCredentialBinding) UnmarshalJSON(raw []byte) error {"
+      },
+      {
+        "line": 38,
+        "declaration": "func (b arrayCredentialBinding) validate() error {"
+      },
+      {
+        "line": 74,
+        "declaration": "func (client *Client) ArrayAuthorityToken(parent context.Context, method, path, bodySHA string) (string, error) {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/pgexec/executor.go",
+    "sha256": "79fb7c4007a6705e0127aed6e8d47764104194763561df9a17933ce7efb02428",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 54,
+        "declaration": "func (executor *Executor) ReplayOriginal(ctx context.Context) (Progress, error) {"
+      },
+      {
+        "line": 142,
+        "declaration": "func New(store *journal.Store, client *compute.Client, actor journal.Owner, resources ...*resourceguard.Client) (*Executor, error) {"
+      },
+      {
+        "line": 170,
+        "declaration": "func (executor *Executor) Advance(ctx context.Context) (Progress, error) {"
+      },
+      {
+        "line": 294,
+        "declaration": "func (executor *Executor) checkQuiesce(ctx context.Context, op *journal.Operation) error {"
+      },
+      {
+        "line": 347,
+        "declaration": "func (executor *Executor) checkResources(ctx context.Context) error {"
+      },
+      {
+        "line": 365,
+        "declaration": "func (executor *Executor) record(ctx context.Context, snapshot *journal.Snapshot, intent control.Request, step journal.Step, fence control.FenceResponse, fact control.ControlResponse, fromResize bool) (Progress, error) {"
+      },
+      {
+        "line": 430,
+        "declaration": "func releaseVerified(intent control.Request, fence control.FenceResponse, fact control.ControlResponse) bool {"
+      },
+      {
+        "line": 453,
+        "declaration": "func releaseCurrent(intent control.Request, fence control.FenceResponse, fact control.ControlResponse) bool {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/agent/dsga.go",
+    "sha256": "93afb36e7d9a5214c2b4b2d81518b7a87b51dd5ac4e0284371252f0b72da82dd",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 53,
+        "declaration": "func (r *Runner) dsgaState(ctx context.Context, state DSGARunnerState) {"
+      },
+      {
+        "line": 63,
+        "declaration": "func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.CondChannelReceiver) (bool, error) {"
+      },
+      {
+        "line": 170,
+        "declaration": "func (r *Runner) awaitDSGAResources(ctx context.Context, config *DSGAConfig, resources *owner.ResourceWorker) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_registry_linux.go",
+    "sha256": "bf88d7fc6b4d69bba3ee4525f2e9576a1437bfbbff14bd90e656680225326110",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 42,
+        "declaration": "func (g *arrayRegistryGeneration) close() {"
+      },
+      {
+        "line": 52,
+        "declaration": "func (o *arrayRegistryOriginal) close() {"
+      },
+      {
+        "line": 73,
+        "declaration": "func arrayRegistryPIDFDAlive(fd int) error {"
+      },
+      {
+        "line": 87,
+        "declaration": "func arrayRegistryDup(fd int) (int, error) {"
+      },
+      {
+        "line": 97,
+        "declaration": "func runArrayRegistryBirthTraceSession(ctx context.Context, conn *net.UnixConn, cfg nativeBirthTraceConfig, stage *nativeBirthStage, guard *Guard, splitInputs normalSplitInputs, launchPin *arrayLaunchPin) (nativeBirthTraceTranscript, *arrayRegistryOriginal, error) {"
+      },
+      {
+        "line": 176,
+        "declaration": "func (o *arrayRegistryOriginal) verifyOriginal() error {"
+      },
+      {
+        "line": 206,
+        "declaration": "func arrayRegistryOpenMappings(procfd int, pidfd int, request arrayRegistryWireRequest) ([4]*os.File, [4]arrayPopulateFile, error) {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/native_birth_source.go",
+    "sha256": "47fb16498172370f04a575299ac732d5882f4f19284191c10ba853d0d6983c70",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 68,
+        "declaration": "func nativeBirthDigest(raw string) ([32]byte, error) {"
+      },
+      {
+        "line": 80,
+        "declaration": "func newNativeBirthNonce() (string, error) {"
+      },
+      {
+        "line": 90,
+        "declaration": "func (p nativeBirthPolicy) validate() error {"
+      },
+      {
+        "line": 106,
+        "declaration": "func nativeBirthCleanPath(s string) bool {"
+      },
+      {
+        "line": 109,
+        "declaration": "func (m nativeBirthBuildManifest) validate() error {"
+      },
+      {
+        "line": 140,
+        "declaration": "func (b nativeBirthSourceBinding) expected(nonce string, as control.Uint64) (nativeBirthExpected, error) {"
+      },
+      {
+        "line": 167,
+        "declaration": "func decodeNativeBirthSource(runtimeRaw, policyRaw, manifestRaw []byte) (nativeBirthSource, error) {"
+      },
+      {
+        "line": 223,
+        "declaration": "func (r NativeBirthRef) validate() error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_helper_policy.go",
+    "sha256": "408ff6e10b4a2c22d266fd390297f0dbb12f5c932d29fd11b7f6c740102dc427",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 14,
+        "declaration": "func validateNativeArrayHelperPolicy(p nativeBirthPolicy, required bool) error {"
+      },
+      {
+        "line": 29,
+        "declaration": "func (p *nativeBirthPolicy) UnmarshalJSON(raw []byte) error {"
+      },
+      {
+        "line": 71,
+        "declaration": "func (h nativeArrayHelperBuild) validate() error {"
+      },
+      {
+        "line": 78,
+        "declaration": "func (h *nativeArrayHelperBuild) UnmarshalJSON(raw []byte) error {"
+      },
+      {
+        "line": 91,
+        "declaration": "func (m *nativeBirthBuildManifest) UnmarshalJSON(raw []byte) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_authority_linux.go",
+    "sha256": "39f7f92233b72467fcca3b687964cc0415a4aacb20b3b5236986c8e09912d2a9",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 30,
+        "declaration": "func (b arrayAuthorityOriginal) validate() error {"
+      },
+      {
+        "line": 70,
+        "declaration": "func arrayAuthorityDiskIO() arrayAuthorityIO {"
+      },
+      {
+        "line": 73,
+        "declaration": "func arrayAuthorityKey(c ArrayAuthorityCommand) string {"
+      },
+      {
+        "line": 77,
+        "declaration": "func arrayAuthorityName(key, phase string) string {"
+      },
+      {
+        "line": 80,
+        "declaration": "func arrayAuthorityEvidence(c ArrayAuthorityCommand) ArrayAuthorityEvidence {"
+      },
+      {
+        "line": 85,
+        "declaration": "func arrayAuthorityReadLocked(s *lockedState, key string) (arrayAuthorityIntent, *arrayAuthorityComplete, arrayAuthorityWitness, error) {"
+      },
+      {
+        "line": 132,
+        "declaration": "func (j *arrayAuthorityJournal) confirmLocked(s *lockedState, key string, disk arrayAuthorityIO) error {"
+      },
+      {
+        "line": 160,
+        "declaration": "func (j *arrayAuthorityJournal) applyLocked(ctx context.Context, s *lockedState, bound arrayAuthorityOriginal, mode string, disk arrayAuthorityIO) (ArrayAuthorityEvidence, error) {"
+      },
+      {
+        "line": 267,
+        "declaration": "func arrayAuthorityMatchesPopulate(c ArrayAuthorityCommand, r arrayRegistryWireRequest) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/native_birth_source_linux.go",
+    "sha256": "11ab64d2baa19920535cbae77c2c5eefb072d1ca8702a96c827752c8679eab22",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 26,
+        "declaration": "func nativeBirthReadBounded(f *os.File, n int64) ([]byte, error) {"
+      },
+      {
+        "line": 36,
+        "declaration": "func nativeBirthReadISO(path string, n int64) ([]byte, error) {"
+      },
+      {
+        "line": 54,
+        "declaration": "func nativeBirthReadonlyPath(path string) error {"
+      },
+      {
+        "line": 81,
+        "declaration": "func nativeBirthOpenRO(path string) (*os.File, error) {"
+      },
+      {
+        "line": 97,
+        "declaration": "func nativeBirthFileHash(f *os.File) (string, error) {"
+      },
+      {
+        "line": 108,
+        "declaration": "func nativeBirthCanonical(path string) (string, error) {"
+      },
+      {
+        "line": 137,
+        "declaration": "func nativeBirthParseELF(f *os.File) (nativeBirthELFMetadata, error) {"
+      },
+      {
+        "line": 420,
+        "declaration": "func nativeBirthBoundedELF(f *os.File) error { _, err := nativeBirthParseELF(f); return err }"
+      },
+      {
+        "line": 422,
+        "declaration": "func nativeBirthVerifyClosure(m nativeBirthBuildManifest) (*os.File, error) {"
+      },
+      {
+        "line": 549,
+        "declaration": "func readNativeBirthOriginalSource() (nativeBirthSource, *os.File, error) {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_source_linux.go",
+    "sha256": "64fd44a81f5d3a37cd9c7f7ad55dfd3d65124d16b6aa97966f77d769fc462254",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 12,
+        "declaration": "func verifyNativeArrayHelperOriginal(source nativeBirthSource) error {"
+      },
+      {
+        "line": 54,
+        "declaration": "func arrayAuthorityRuntimeProtocol(sealed SourceConfig) (uint32, error) {"
+      },
+      {
+        "line": 67,
+        "declaration": "func deriveArrayAuthorityRuntimeProtocol(raw []byte, sealed SourceConfig) (uint32, error) {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/view.go",
+    "sha256": "2e8ca0965478394abbeea7e1de00effe24dc7161f5d6bd40add5e3bc9e12915c",
+    "root_shared_frozen_dependency": true,
+    "functions": [
+      {
+        "line": 31,
+        "declaration": "func (v View) Validate() error {"
+      },
+      {
+        "line": 41,
+        "declaration": "func (v *View) UnmarshalJSON(b []byte) error {"
+      },
+      {
+        "line": 58,
+        "declaration": "func (v View) ConfirmedLimits() (Limits, error) {"
+      },
+      {
+        "line": 81,
+        "declaration": "func (g *Guard) InspectState(ctx context.Context) (View, error) {"
+      },
+      {
+        "line": 103,
+        "declaration": "func (r *record) view(actual Evidence) View {"
+      },
+      {
+        "line": 109,
+        "declaration": "func (v View) NextRevision() (control.Uint64, error) {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/server_linux.go",
+    "sha256": "b7478f9e40ea69383a147b8246cae4a3f01670c5903997ee9e5582d14eeed7eb",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 23,
+        "declaration": "func ServeGuest(ctx context.Context) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/runtime_policy_templates_linux.go",
+    "sha256": "5c56632d0eaa81f714a71b2e75bfb3ad8e2a2a3546d99295fb6f28394a2b4363",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 12,
+        "declaration": "func validateRenderedRuntimePolicyAssets(raw []byte, _ RuntimeDocument, source SourceConfig, assets map[string][]byte) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_guard_linux.go",
+    "sha256": "138fd1524156ac370ffa442143c08b8e59581fdab4866af78dffdbd6d9723dbe",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 27,
+        "declaration": "func bindArrayRegistryGuardLocked(g *Guard, s *lockedState, r *record, o *arrayRegistryOriginal) error {"
+      },
+      {
+        "line": 49,
+        "declaration": "func (g *Guard) arrayAuthorityOriginalLocked(ctx context.Context, s *lockedState, r *record, c ArrayAuthorityCommand, b *arrayGuardBinding) (arrayAuthorityOriginal, error) {"
+      },
+      {
+        "line": 117,
+        "declaration": "func (g *Guard) arrayAuthority(ctx context.Context, c ArrayAuthorityCommand, mode string) (ArrayAuthorityEvidence, error) {"
+      },
+      {
+        "line": 142,
+        "declaration": "func (g *Guard) AuthorizeArrays(ctx context.Context, c ArrayAuthorityCommand) (ArrayAuthorityEvidence, error) {"
+      },
+      {
+        "line": 145,
+        "declaration": "func (g *Guard) ObserveArrayAuthority(ctx context.Context, c ArrayAuthorityCommand) (ArrayAuthorityEvidence, error) {"
+      },
+      {
+        "line": 148,
+        "declaration": "func (g *Guard) ReplayArrayAuthority(ctx context.Context, c ArrayAuthorityCommand) (ArrayAuthorityEvidence, error) {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/launch_linux.go",
+    "sha256": "0441cd8cda998c08d2d3ed57886b4fe6c73f2c96e332909b60d76484cdb3c198",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 22,
+        "declaration": "func ExecPostgres(args []string) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_registry_registration_linux.go",
+    "sha256": "e4a316d98995ecafff43519e5628a37f18d69aa85feea9fe764efae6b3b971a5",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 18,
+        "declaration": "func (o *arrayRegistryOriginal) matchesBirth(q arrayRegistryWireRequest) error {"
+      },
+      {
+        "line": 37,
+        "declaration": "func arrayRegistryPeer(o *arrayRegistryOriginal, conn *net.UnixConn) (*unix.Ucred, int, int, error) {"
+      },
+      {
+        "line": 100,
+        "declaration": "func arrayRegistryName(nonce string, generation uint64, phase string) string {"
+      },
+      {
+        "line": 103,
+        "declaration": "func (o *arrayRegistryOriginal) registerLocked(s *lockedState, q arrayRegistryWireRequest, raw []byte, peer *unix.Ucred, pidfd, procfd int) error {"
+      },
+      {
+        "line": 173,
+        "declaration": "func (o *arrayRegistryOriginal) retireLocked(s *lockedState, q arrayRegistryWireRequest, raw []byte, peer *unix.Ucred, pidfd int) error {"
+      },
+      {
+        "line": 200,
+        "declaration": "func (o *arrayRegistryOriginal) matchesCurrent(q arrayRegistryWireRequest) error {"
+      },
+      {
+        "line": 211,
+        "declaration": "func (s *arrayNativeServices) handleArrays(ctx context.Context, conn *net.UnixConn) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_launch_linux.go",
+    "sha256": "4060937f7613abd31cb4e3af484648448924c4254e064a0d1d3979f8d008dda6",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 32,
+        "declaration": "func (m arrayBirthConsumerMetadata) validate() error {"
+      },
+      {
+        "line": 49,
+        "declaration": "func readArrayBirthConsumer(source nativeBirthSource) (arrayBirthConsumerMetadata, error) {"
+      },
+      {
+        "line": 77,
+        "declaration": "func arrayRootEnvironment(clean []string, p nativeBirthPending) []string {"
+      },
+      {
+        "line": 92,
+        "declaration": "func (g *Guard) launchArrayRoot(ctx context.Context, source SourceConfig, server bool, args, environment []string, uid, gid int) error {"
+      },
+      {
+        "line": 117,
+        "declaration": "func arrayRootDropAndExec(args, environment []string, uid, gid int) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_birth_linux.go",
+    "sha256": "ea5ddd57ecfc7e32a43c1ee81a0407297ed2f0e1ae6fefd992582c707993ff67",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 29,
+        "declaration": "func arrayBirthMigrationName(nonce, phase string) string {"
+      },
+      {
+        "line": 36,
+        "declaration": "func moveArrayNativeBirthPrivateLocked(ctx context.Context, g *Guard, stage *nativeBirthStage, driver *nativeBirthTraceKernel, in normalSplitInputs, tr nativeBirthTraceTranscript) error {"
+      },
+      {
+        "line": 107,
+        "declaration": "func publishArrayBirthConsumer(source nativeBirthSource) (arrayBirthConsumerMetadata, error) {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_socket_linux.go",
+    "sha256": "cb7d3a273d6ca56a5254397494fb2dd5a446037416d17b5370b2902da1473e55",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 32,
+        "declaration": "func arrayFixedListener(path string) (*net.UnixListener, error) {"
+      },
+      {
+        "line": 69,
+        "declaration": "func startArrayNativeServices(parent context.Context, g *Guard, sealed SourceConfig) (*arrayNativeServices, error) {"
+      },
+      {
+        "line": 103,
+        "declaration": "func (s *arrayNativeServices) close() {"
+      },
+      {
+        "line": 115,
+        "declaration": "func (s *arrayNativeServices) serve(ctx context.Context, listener *net.UnixListener, birth bool) {"
+      },
+      {
+        "line": 136,
+        "declaration": "func arrayServicePacket(conn *net.UnixConn, deadline time.Time, size int, peek bool) ([]byte, error) {"
+      },
+      {
+        "line": 188,
+        "declaration": "func (s *arrayNativeServices) handleBirth(ctx context.Context, conn *net.UnixConn) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_preexec_linux.go",
+    "sha256": "e7a42c400dab3c3b7a2780f4cef2ece39acb39d94460969e33e3e825c51ce5c9",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 30,
+        "declaration": "func (p *arrayLaunchPin) close() {"
+      },
+      {
+        "line": 43,
+        "declaration": "func arraySocketPeer(conn *net.UnixConn) (*unix.Ucred, int, error) {"
+      },
+      {
+        "line": 75,
+        "declaration": "func arrayServicePeekMagic(conn *net.UnixConn, deadline time.Time) (string, error) {"
+      },
+      {
+        "line": 120,
+        "declaration": "func arrayMatchPIDFD(a, b int) error {"
+      },
+      {
+        "line": 136,
+        "declaration": "func arrayPreexecPin(ctx context.Context, p nativeBirthPending) error {"
+      },
+      {
+        "line": 193,
+        "declaration": "func (s *arrayNativeServices) handlePreexec(ctx context.Context, conn *net.UnixConn) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_populate_linux.go",
+    "sha256": "ad9daaa8c529cd34563a3603e80b8634aed19d8a60b3690081e56e47f2762669",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 44,
+        "declaration": "func arrayRPCName(key, phase string) string { return \"array-rpc.\" + key + \".\" + phase + \".json\" }"
+      },
+      {
+        "line": 45,
+        "declaration": "func arrayRPCRead(s *lockedState, key string) (arrayRPCIntent, *arrayRPCComplete, arrayRPCWitness, error) {"
+      },
+      {
+        "line": 113,
+        "declaration": "func (j *arrayRPCJournal) known(s *lockedState, key string, expected arrayRPCIntent) error {"
+      },
+      {
+        "line": 123,
+        "declaration": "func (j *arrayRPCJournal) confirm(s *lockedState, key string) error {"
+      },
+      {
+        "line": 145,
+        "declaration": "func (b *arrayGuardBinding) rejectRPCUnknown(s *lockedState) error {"
+      },
+      {
+        "line": 180,
+        "declaration": "func (s *arrayNativeServices) populateAuthorityLocked(ctx context.Context, state *lockedState, r *record, b *arrayGuardBinding, q arrayRegistryWireRequest, peer *unix.Ucred) (string, error) {"
+      },
+      {
+        "line": 234,
+        "declaration": "func (s *arrayNativeServices) populateLocked(ctx context.Context, state *lockedState, r *record, b *arrayGuardBinding, q arrayRegistryWireRequest, raw []byte, peer *unix.Ucred, pidfd, procfd int) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_kernel_linux.go",
+    "sha256": "cc79b940f4fc895615c291ab65863af41050a56403c7467ddb0a33b6c5259ab0",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 18,
+        "declaration": "func arraySplitKernelLayout(config Config) (NormalSplitTopologySnapshot, error) {"
+      },
+      {
+        "line": 127,
+        "declaration": "func readArraySplitAddressSpaces(l Limits) (*AddressSpaceEvidence, error) {"
+      },
+      {
+        "line": 157,
+        "declaration": "func arrayKernelPostmasterGroup(k *linuxKernel, actual string) error {"
+      },
+      {
+        "line": 171,
+        "declaration": "func arrayAllowedAddressGroup(group string) bool {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_pending_linux.go",
+    "sha256": "2d067556a3475db923d2d1ee4ec927f6a2a1a6669d876809dfbdddb8a867d63e",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 15,
+        "declaration": "func (g *Guard) rejectArrayPendingLocked(s *lockedState, r *record) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_pending_unsupported.go",
+    "sha256": "9de381547303c5b74c2dd36d49e75ff0e804aefc8d37f1d31fc6f95bfa7a9869",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 6,
+        "declaration": "func (g *Guard) rejectArrayPendingLocked(s *lockedState, r *record) error { return nil }"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/kernel_linux.go",
+    "sha256": "7a497c2f900edf4de5aa255bf586f8ade906b7e64586a54b6c32ba114f104b8e",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 27,
+        "declaration": "func Open(config Config) (*Guard, error) {"
+      },
+      {
+        "line": 43,
+        "declaration": "func secureParents(path string) error {"
+      },
+      {
+        "line": 62,
+        "declaration": "func rootFile(path string, write bool) (*os.File, error) {"
+      },
+      {
+        "line": 87,
+        "declaration": "func kernelText(path string) (string, error) {"
+      },
+      {
+        "line": 103,
+        "declaration": "func readNumber(path string, unlimited bool) (uint64, error) {"
+      },
+      {
+        "line": 118,
+        "declaration": "func writeNumber(path string, n uint64) error {"
+      },
+      {
+        "line": 137,
+        "declaration": "func (k *linuxKernel) Identity() (Identity, error) {"
+      },
+      {
+        "line": 205,
+        "declaration": "func (k *linuxKernel) postmaster(c Command) error {"
+      },
+      {
+        "line": 282,
+        "declaration": "func (k *linuxKernel) VerifyProcess(p ProcessIdentity) error {"
+      },
+      {
+        "line": 297,
+        "declaration": "func poolDirectory(size control.Uint64) string {"
+      },
+      {
+        "line": 301,
+        "declaration": "func allPools() ([]HugePool, error) {"
+      },
+      {
+        "line": 332,
+        "declaration": "func (k *linuxKernel) Read(c Command) (Evidence, error) {"
+      },
+      {
+        "line": 346,
+        "declaration": "func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (Evidence, error) {"
+      },
+      {
+        "line": 491,
+        "declaration": "func (k *linuxKernel) Apply(c Command) error {"
+      },
+      {
+        "line": 498,
+        "declaration": "func (k *linuxKernel) ApplyBounds(c Limits) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/address_space_linux.go",
+    "sha256": "4148cf0b977424edccc06d9924ee1b239ede817bee2e272d4a14eab3b9a94424",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 20,
+        "declaration": "func boundedProcessText(pid int, name string) (string, error) {"
+      },
+      {
+        "line": 38,
+        "declaration": "func inspectProcessAddressSpace(pid int, ceiling control.Uint64, uid uint64) (processAddressSample, error) {"
+      },
+      {
+        "line": 42,
+        "declaration": "func inspectProcessAddressSpaceGroup(pid int, ceiling control.Uint64, uid uint64, expectedGroup string) (processAddressSample, error) {"
+      },
+      {
+        "line": 87,
+        "declaration": "func postgresUID() (uint64, error) {"
+      },
+      {
+        "line": 103,
+        "declaration": "func readAddressSpaces(l Limits) (*AddressSpaceEvidence, error) {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/guard.go",
+    "sha256": "6a7d9a9dfdf7fc86ef2f6005d8ee98c8c22df2472f59e4f7f8b75d56ea266bca",
+    "root_shared_frozen_dependency": true,
+    "functions": [
+      {
+        "line": 46,
+        "declaration": "func (id Identity) Validate() error { return validateResourceContext(id, 1, \"identity\") }"
+      },
+      {
+        "line": 101,
+        "declaration": "func (v *Evidence) UnmarshalJSON(data []byte) error {"
+      },
+      {
+        "line": 147,
+        "declaration": "func (c Command) Validate() error {"
+      },
+      {
+        "line": 160,
+        "declaration": "func validateResourceContext(id Identity, epoch control.Uint64, budget string) error {"
+      },
+      {
+        "line": 171,
+        "declaration": "func validGuestBoot(s string) bool {"
+      },
+      {
+        "line": 175,
+        "declaration": "func (c Command) totalUpper() (uint64, error) { return c.limits().totalUpper() }"
+      },
+      {
+        "line": 177,
+        "declaration": "func (e Evidence) matches(c Command) error {"
+      },
+      {
+        "line": 186,
+        "declaration": "func (e Evidence) ValidateFor(c Command) error {"
+      },
+      {
+        "line": 193,
+        "declaration": "func (e Evidence) matchesLimits(id Identity, c Limits) error {"
+      },
+      {
+        "line": 222,
+        "declaration": "func (g *Guard) withRecord(ctx context.Context, fn func(*record, *lockedState) error) error {"
+      },
+      {
+        "line": 248,
+        "declaration": "func (r *record) validate(id Identity) error {"
+      },
+      {
+        "line": 318,
+        "declaration": "func (g *Guard) Initialize(ctx context.Context, epoch control.Uint64) (Identity, error) {"
+      },
+      {
+        "line": 348,
+        "declaration": "func (g *Guard) Fence(ctx context.Context, epoch control.Uint64) (Identity, error) {"
+      },
+      {
+        "line": 354,
+        "declaration": "func (g *Guard) FenceBound(ctx context.Context, id Identity, epoch control.Uint64) (Identity, error) {"
+      },
+      {
+        "line": 358,
+        "declaration": "func (g *Guard) fence(ctx context.Context, expected *Identity, epoch control.Uint64) (Identity, error) {"
+      },
+      {
+        "line": 382,
+        "declaration": "func (g *Guard) Apply(ctx context.Context, command Command) (Evidence, error) {"
+      },
+      {
+        "line": 388,
+        "declaration": "func (g *Guard) ReplayOriginal(ctx context.Context, command Command) (Evidence, error) {"
+      },
+      {
+        "line": 392,
+        "declaration": "func (g *Guard) apply(ctx context.Context, command Command, replay bool) (Evidence, error) {"
+      },
+      {
+        "line": 522,
+        "declaration": "func (g *Guard) Observe(ctx context.Context, command Command) (Evidence, error) {"
+      },
+      {
+        "line": 549,
+        "declaration": "func sortedPools(p []HugePool) {"
+      },
+      {
+        "line": 553,
+        "declaration": "func (v *Command) UnmarshalJSON(data []byte) error {"
+      },
+      {
+        "line": 563,
+        "declaration": "func (v *Config) UnmarshalJSON(data []byte) error {"
+      },
+      {
+        "line": 572,
+        "declaration": "func (v *Identity) UnmarshalJSON(data []byte) error {"
+      },
+      {
+        "line": 581,
+        "declaration": "func (v *HugePool) UnmarshalJSON(data []byte) error {"
+      },
+      {
+        "line": 590,
+        "declaration": "func (v *record) UnmarshalJSON(data []byte) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/bootstrap.go",
+    "sha256": "e30c97675d8013f2e11b97676103491b058ef8c60ce96c9e721e83daba57bd79",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 48,
+        "declaration": "func bootstrapMatches(e Evidence, id Identity, l Limits) error {"
+      },
+      {
+        "line": 55,
+        "declaration": "func (c Command) limits() Limits {"
+      },
+      {
+        "line": 59,
+        "declaration": "func (l Limits) Validate() error {"
+      },
+      {
+        "line": 83,
+        "declaration": "func (l Limits) totalUpper() (uint64, error) {"
+      },
+      {
+        "line": 98,
+        "declaration": "func (c BootstrapCommand) Validate() error {"
+      },
+      {
+        "line": 113,
+        "declaration": "func (g *Guard) InspectIdentity() (Identity, error) {"
+      },
+      {
+        "line": 127,
+        "declaration": "func (g *Guard) Bootstrap(ctx context.Context, c BootstrapCommand) (Evidence, error) {"
+      },
+      {
+        "line": 130,
+        "declaration": "func (g *Guard) ObserveBootstrap(ctx context.Context, c BootstrapCommand) (Evidence, error) {"
+      },
+      {
+        "line": 133,
+        "declaration": "func (g *Guard) ReplayBootstrap(ctx context.Context, c BootstrapCommand) (Evidence, error) {"
+      },
+      {
+        "line": 137,
+        "declaration": "func (g *Guard) bootstrap(ctx context.Context, c BootstrapCommand, observe, replay bool) (Evidence, error) {"
+      },
+      {
+        "line": 151,
+        "declaration": "func (g *Guard) bootstrapLocked(ctx context.Context, c BootstrapCommand, observe, replay bool, s *lockedState) (Evidence, error) {"
+      },
+      {
+        "line": 277,
+        "declaration": "func (v *Limits) UnmarshalJSON(data []byte) error {"
+      },
+      {
+        "line": 286,
+        "declaration": "func (v *BootstrapCommand) UnmarshalJSON(data []byte) error {"
+      },
+      {
+        "line": 295,
+        "declaration": "func (v *bootstrapRecord) UnmarshalJSON(data []byte) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/repair.go",
+    "sha256": "87f844629865c3f39b58cfc956fd3ada12a740b2414d44710d7fa5016d2df551",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 24,
+        "declaration": "func (v HeldRepairRequest) Validate() error {"
+      },
+      {
+        "line": 35,
+        "declaration": "func (v *HeldRepairRequest) UnmarshalJSON(raw []byte) error {"
+      },
+      {
+        "line": 53,
+        "declaration": "func HeldSourceSHA256(v View) (string, error) {"
+      },
+      {
+        "line": 71,
+        "declaration": "func heldLimits(v View) Limits {"
+      },
+      {
+        "line": 82,
+        "declaration": "func repairPreflight(e Evidence, id Identity, limits Limits) error {"
+      },
+      {
+        "line": 128,
+        "declaration": "func (g *Guard) RepairHeld(ctx context.Context, request HeldRepairRequest) (Evidence, error) {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/normal_split_topology.go",
+    "sha256": "497806adc0493aee3b7c104a6d1ea1568ae110c368a20434c9c43dbcd61ff2e0",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 36,
+        "declaration": "func (p NormalSplitTopologyPolicy) validate() error {"
+      },
+      {
+        "line": 45,
+        "declaration": "func (p *NormalSplitTopologyPolicy) UnmarshalJSON(b []byte) error {"
+      },
+      {
+        "line": 92,
+        "declaration": "func (i normalSplitInputs) validate(c Config) error {"
+      },
+      {
+        "line": 162,
+        "declaration": "func splitIdentityName(name string) string { return \"normal-split-topology.\" + name + \".identity.json\" }"
+      },
+      {
+        "line": 163,
+        "declaration": "func splitSameNode(a, b normalSplitNode) bool {"
+      },
+      {
+        "line": 166,
+        "declaration": "func splitBasic(s NormalSplitTopologySnapshot) error {"
+      },
+      {
+        "line": 173,
+        "declaration": "func splitStable(a, b NormalSplitTopologySnapshot) error {"
+      },
+      {
+        "line": 179,
+        "declaration": "func splitEmpty(s NormalSplitTopologySnapshot) error {"
+      },
+      {
+        "line": 190,
+        "declaration": "func splitPlaced(p NormalSplitTopologyPolicy, s NormalSplitTopologySnapshot) error {"
+      },
+      {
+        "line": 210,
+        "declaration": "func (g *Guard) normalSplit(ctx context.Context, in normalSplitInputs, op normalSplitOperation) (NormalSplitTopologyResult, error) {"
+      },
+      {
+        "line": 223,
+        "declaration": "func (g *Guard) normalSplitLocked(ctx context.Context, in normalSplitInputs, op normalSplitOperation, s *lockedState) (NormalSplitTopologyResult, error) {"
+      },
+      {
+        "line": 472,
+        "declaration": "func splitCheckIdentity(s *lockedState, name string, n *normalSplitNode, intentSHA string) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/prebootstrap_system.go",
+    "sha256": "dbf7a8087ddd7712087074597070490b97f0febf1eb66d2ca999a67d47a33ea2",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 34,
+        "declaration": "func (p prebootstrapSystemPolicy) validate() error {"
+      },
+      {
+        "line": 43,
+        "declaration": "func (p *prebootstrapSystemPolicy) UnmarshalJSON(b []byte) error {"
+      },
+      {
+        "line": 82,
+        "declaration": "func (i prebootstrapSystemInputs) validate(config Config) error {"
+      },
+      {
+        "line": 164,
+        "declaration": "func preSystemCanonical(v any) ([]byte, error) { return json.Marshal(v) }"
+      },
+      {
+        "line": 166,
+        "declaration": "func preSystemMatchSource(i prebootstrapSystemInputs, v prebootstrapSystemIntent) error {"
+      },
+      {
+        "line": 175,
+        "declaration": "func preSystemSnapshotMatches(i prebootstrapSystemInputs, s prebootstrapSystemSnapshot) error {"
+      },
+      {
+        "line": 193,
+        "declaration": "func preSystemBase(i prebootstrapSystemInputs, s prebootstrapSystemSnapshot) error {"
+      },
+      {
+        "line": 208,
+        "declaration": "func preSystemStable(original, current prebootstrapSystemSnapshot) error {"
+      },
+      {
+        "line": 215,
+        "declaration": "func preSystemPlaced(i prebootstrapSystemInputs, s prebootstrapSystemSnapshot) error {"
+      },
+      {
+        "line": 229,
+        "declaration": "func (g *Guard) prebootstrapSystem(ctx context.Context, in prebootstrapSystemInputs, op prebootstrapSystemOperation) (PrebootstrapSystemResult, error) {"
+      },
+      {
+        "line": 243,
+        "declaration": "func (g *Guard) prebootstrapSystemLocked(ctx context.Context, in prebootstrapSystemInputs, op prebootstrapSystemOperation, s *lockedState) (PrebootstrapSystemResult, error) {"
+      },
+      {
+        "line": 420,
+        "declaration": "func preSystemPolicyVersionMatches(profile string, version uint32) bool {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_runtime_closure.go",
+    "sha256": "94a4bc9c74901343121608d341d0205cb90ab0ec9167868ed3332fb97cf4cfda",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 17,
+        "declaration": "func (c nativeRuntimeClosureBuild) validate() error {"
+      },
+      {
+        "line": 26,
+        "declaration": "func (c *nativeRuntimeClosureBuild) UnmarshalJSON(raw []byte) error {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/normal_split_quota_state.go",
+    "sha256": "8285b38fa6dcce05ff8c0e0489a46b91ce3aceb02c86636d80708e2e6610f485",
+    "root_shared_frozen_dependency": true,
+    "functions": [
+      {
+        "line": 18,
+        "declaration": "func (r *record) validateNormalSplitQuotaState() error {"
+      },
+      {
+        "line": 45,
+        "declaration": "func normalSplitQuotaCommandKey(c Command) string { b, _ := json.Marshal(c); return physicalDigest(b) }"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/cancel.go",
+    "sha256": "d71b5501fbd6ff2ead7cc474dba54875d41cd7befe7ec5b36f0965b619a83c58",
+    "root_shared_frozen_dependency": true,
+    "functions": [
+      {
+        "line": 21,
+        "declaration": "func (r CancelRequest) Validate() error {"
+      },
+      {
+        "line": 28,
+        "declaration": "func (r *CancelRequest) UnmarshalJSON(raw []byte) error {"
+      },
+      {
+        "line": 52,
+        "declaration": "func (c Cancellation) ValidateFor(command Command, epoch control.Uint64) error {"
+      },
+      {
+        "line": 60,
+        "declaration": "func (c *Cancellation) UnmarshalJSON(raw []byte) error {"
+      },
+      {
+        "line": 74,
+        "declaration": "func (r *record) nextRevision() (control.Uint64, error) {"
+      },
+      {
+        "line": 78,
+        "declaration": "func nextResourceRevision(original, cancelled *Command) (control.Uint64, error) {"
+      },
+      {
+        "line": 96,
+        "declaration": "func (g *Guard) CancelOriginal(ctx context.Context, request CancelRequest) (Cancellation, error) {"
+      }
+    ]
+  },
+  {
+    "file": "pkg/dsga/resourceguard/array_service_preexec_begin_linux.go",
+    "sha256": "51e414a88c28632fc5e5a8debb9e55b11797bae5b205e0f35188de59799f53a4",
+    "root_shared_frozen_dependency": false,
+    "functions": [
+      {
+        "line": 31,
+        "declaration": "func readArrayBirthConsumerForLaunch(source SourceConfig) (arrayBirthConsumerMetadata, error) {"
+      },
+      {
+        "line": 63,
+        "declaration": "func arrayPreexecBegin(ctx context.Context, m arrayBirthConsumerMetadata, server bool, pgUID, pgGID int) (NativeBirthRef, error) {"
+      },
+      {
+        "line": 186,
+        "declaration": "func (s *arrayNativeServices) handlePreexecBegin(ctx context.Context, conn *net.UnixConn) error {"
+      }
+    ]
+  }
+]

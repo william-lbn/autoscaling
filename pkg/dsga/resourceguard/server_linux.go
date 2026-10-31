@@ -44,6 +44,12 @@ func ServeGuest(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	// 能力元数据只来自同一原只读ISO/封存Source。不是由client callback、
+	// packet或Registry当前ready猜出；缺服务时仍必须required并保持Unknown。
+	handler.arrayProtocolVersion, err = arrayAuthorityRuntimeProtocol(source)
+	if err != nil {
+		return err
+	}
 	// 此锁位于既有root私有持久目录，和资源日志不同文件，避免长持日志锁造成
 	// 自身死锁。进程退出内核释放flock；崩溃留下socket可在唯一服务锁内安全清理。
 	lockPath := filepath.Join(source.Config.StateDir, "server.lock")
@@ -62,6 +68,13 @@ func ServeGuest(ctx context.Context) error {
 	defer unix.Flock(fd, unix.LOCK_UN)
 	if err := rootDirectory(filepath.Dir(FixedSocketPath), 0755); err != nil {
 		return err
+	}
+	if handler.arrayProtocolVersion == 1 {
+		native, err := startArrayNativeServices(ctx, g, source)
+		if err != nil {
+			return err
+		}
+		defer native.close()
 	}
 	if err := unix.Lstat(FixedSocketPath, &st); err == nil {
 		if st.Uid != 0 || st.Mode&unix.S_IFMT != unix.S_IFSOCK {

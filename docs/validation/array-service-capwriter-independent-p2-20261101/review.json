@@ -1,0 +1,20 @@
+{
+  "review_sha256": "f12dd76fdd506bbc2fa40ebfa506fb735af270ebf17ec9cce123e5937670c613",
+  "finding_shrink_authority_cycle": "CLOSED_BY_EXACT_CODE_AND_REQUIRED_MODE_CAS_REPLAY_TEST",
+  "legacy_33_run": "/data/neon-build/validation/array-service-capwriter-regression-20261031T210709Z-a7d3db",
+  "legacy_33_roots": 33,
+  "legacy_33_subcases": 103,
+  "legacy_actual_COPY": 888,
+  "legacy_source": "/data/neon-build/validation/array-service-go-20261031T205830Z-849da7",
+  "new4_source": "/data/neon-build/validation/array-service-go-20261031T210646Z-a2abcb",
+  "new4_owned_digests": {
+    "pkg/dsga/resourceguard/array_service_pending_linux_test.go": "3a661fdc92607aee38ed67fedb07ed3c62a45037643e36d183f40cca88a812cc",
+    "pkg/dsga/pgexec/array_authority_test.go": "9106164f232c59d703e2c47815edca96a43fdaa6e98c79f1418877e9644c5f59"
+  },
+  "changed_production_between_cohorts": [
+    "pkg/dsga/resourceguard/native_birth_source_linux.go"
+  ],
+  "actual_drop_DAC_caps": "CapInh:\t0000000000000000\nCapPrm:\t00000000a80425f9\nCapEff:\t00000000a80425f9\nCapBnd:\t00000000a80425f9\nCapAmb:\t0000000000000000\n",
+  "normal_permit": false,
+  "E": 0
+}

@@ -26,7 +26,9 @@ type ClientConfig struct {
 	Timeout     time.Duration
 	Transport   *http.Transport
 	Token       func(context.Context) (string, error)
-	Pending     *Command
+	// 专用原正文签名供应；不复用通用Token缓存，缺省保持旧profile兼容。
+	ArrayAuthorityToken func(context.Context, string, string, string) (string, error)
+	Pending             *Command
 }
 
 type ClientError struct {
@@ -37,13 +39,15 @@ type ClientError struct {
 func (e *ClientError) Error() string { return "DSGA resource call: " + e.Code }
 
 type Client struct {
-	config    ClientConfig
-	http      [2]*http.Client
-	transport [2]*http.Transport
-	mu        sync.Mutex
-	busy      bool
-	pending   *Command
-	repair    *HeldRepairRequest
+	config               ClientConfig
+	http                 [2]*http.Client
+	transport            [2]*http.Transport
+	mu                   sync.Mutex
+	busy                 bool
+	pending              *Command
+	repair               *HeldRepairRequest
+	arrayPending         *ArrayAuthorityCommand
+	arrayProtocolVersion uint32
 }
 
 func cloneCommand(c Command) Command { c.HugePools = append([]HugePool(nil), c.HugePools...); return c }
@@ -114,6 +118,15 @@ func (c *Client) InspectState(ctx context.Context) (View, error) {
 	if v.Validate() != nil || v.Identity != c.config.Identity {
 		return View{}, &ClientError{Code: "resource_state_unconfirmed"}
 	}
+	c.mu.Lock()
+	if c.arrayProtocolVersion == 1 && v.ArrayAuthorityProtocolVersion != 1 {
+		c.mu.Unlock()
+		return View{}, &ClientError{Code: "array_original_profile_downgraded"}
+	}
+	if v.ArrayAuthorityProtocolVersion == 1 {
+		c.arrayProtocolVersion = 1
+	}
+	c.mu.Unlock()
 	return v, nil
 }
 
@@ -256,7 +269,7 @@ func (c *Client) command(ctx context.Context, command Command, action string, ex
 		return e, &ClientError{Code: "invalid_command"}
 	}
 	c.mu.Lock()
-	if !observe && (c.busy || c.repair != nil || (c.pending != nil && (!explicit || !reflect.DeepEqual(*c.pending, command)))) {
+	if !observe && (c.busy || c.arrayPending != nil || c.repair != nil || (c.pending != nil && (!explicit || !reflect.DeepEqual(*c.pending, command)))) {
 		c.mu.Unlock()
 		return e, &ClientError{Code: "original_pending"}
 	}

@@ -1,0 +1,195 @@
+//go:build linux && dsga_native_normal_split_quota
+
+package resourceguard
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/stretchr/testify/require"
+)
+
+// 此文件仅外部DEV夹具：真实cgroup/WAL/backend，授权来源明确fake且没有PG/JWT。
+type quotaNativeKernel struct {
+	*linuxKernel
+	writes      []string
+	failAfter   string
+	cancelAfter func()
+}
+
+func (k *quotaNativeKernel) normalSplitQuotaWrite(name string, n normalSplitNode, target control.Uint64) error {
+	if e := k.linuxKernel.normalSplitQuotaWrite(name, n, target); e != nil {
+		return e
+	}
+	k.writes = append(k.writes, name)
+	if k.cancelAfter != nil {
+		f := k.cancelAfter
+		k.cancelAfter = nil
+		f()
+	}
+	if k.failAfter == name {
+		k.failAfter = ""
+		return fmt.Errorf("DEV post-effect error")
+	}
+	return nil
+}
+func quotaNativeFixture(t *testing.T, label string) (*Guard, *quotaNativeKernel, normalSplitQuotaAuthorization) {
+	t.Helper()
+	// 新Guest内固定同名cgroup；每case先清空已结束的空叶再重建，绝不触Host。
+	for _, p := range []string{pgCgroup + "/arrays", pgCgroup + "/private"} {
+		if e := os.Remove(p); e != nil && !os.IsNotExist(e) {
+			t.Fatal(e)
+		}
+	}
+	require.NoError(t, os.WriteFile(pgCgroup+"/memory.max", []byte("134217728"), 0600))
+	require.NoError(t, os.WriteFile(pgCgroup+"/memory.swap.max", []byte("0"), 0600))
+	require.NoError(t, os.WriteFile(pgCgroup+"/pids.max", []byte("16"), 0600))
+	require.NoError(t, os.WriteFile(pgCgroup+"/cgroup.subtree_control", []byte("+memory +pids"), 0600))
+	for _, name := range []string{"private", "arrays"} {
+		path := pgCgroup + "/" + name
+		require.NoError(t, os.Mkdir(path, 0755))
+		cap, pids := "16777216", "8"
+		if name == "arrays" {
+			cap, pids = "33554432", "1"
+		}
+		for f, value := range map[string]string{"memory.max": cap, "memory.swap.max": "0", "pids.max": pids} {
+			require.NoError(t, os.WriteFile(path+"/"+f, []byte(value), 0600))
+		}
+	}
+	dir := filepath.Join("/var/lib/neon-dsga/state", label)
+	require.NoError(t, os.Mkdir(dir, 0700))
+	cfg := Config{VMUID: "quota-dev-vm", ComputeInstanceID: "quota-dev-compute", StateDir: dir}
+	k := &quotaNativeKernel{linuxKernel: &linuxKernel{config: cfg}}
+	g := &Guard{config: cfg, kernel: k}
+	now, e := k.normalSplitRead()
+	require.NoError(t, e)
+	cmd := Command{ProtocolVersion: 1, Identity: now.Identity, IssuerEpoch: 1, Revision: 1, BudgetCommitmentID: "DEV-QUOTA-NO-PRODUCTION-SOURCE", PostmasterPID: 2, PostmasterStartTicks: 1, MemoryMaxBytes: 64 << 20, PidsMaxTasks: 16, AddressSpaceMaxBytes: 512 << 20, OutsideUpperBytes: 32 << 20, HugePools: []HugePool{{PageSizeKB: 2048, Pages: 0}}}
+	v := normalSplitQuotaOriginal{Command: cmd, SourceSHA256: strings.Repeat("ab", 32), SplitIntentSHA256: strings.Repeat("cd", 32), SplitCompletionSHA256: strings.Repeat("ef", 32), PGRequestSHA256: strings.Repeat("12", 32), MappingGeneration: 1, Original: now, TargetArraysBytes: 16 << 20, ForceUpperBytes: 64 << 10, CounterGapBytes: 64 << 10}
+	require.NoError(t, v.validate())
+	return g, k, normalSplitQuotaAuthorization{original: v, check: func(ctx context.Context, _ *lockedState, _ *record, _ normalSplitQuotaOriginal) error {
+		return ctx.Err()
+	}}
+}
+func quotaNativeRun(g *Guard, ctx context.Context, a normalSplitQuotaAuthorization, mode string) (NormalSplitTopologySnapshot, error) {
+	s, e := lockState(ctx, g.config.StateDir)
+	if e != nil {
+		return NormalSplitTopologySnapshot{}, e
+	}
+	defer s.close()
+	return g.normalSplitQuotaLocked(ctx, s, nil, a, mode, normalSplitQuotaDiskIO())
+}
+func TestNativeNormalSplitQuotaActualGuestKernel(t *testing.T) {
+	require.Equal(t, "DEV-369-QUOTA-NO-PG-NO-SOURCE", os.Getenv("NEON_NATIVE_QUOTA_DEV"))
+	var facts []map[string]any
+	record := func(id string, g *Guard, k *quotaNativeKernel) {
+		now, e := k.normalSplitRead()
+		require.NoError(t, e)
+		for _, p := range []string{pgCgroup, pgCgroup + "/arrays", pgCgroup + "/private"} {
+			b, e := os.ReadFile(p + "/memory.events.local")
+			require.NoError(t, e)
+			for _, line := range strings.Split(strings.TrimSpace(string(b)), "\n") {
+				fields := strings.Fields(line)
+				require.Len(t, fields, 2)
+				require.Equal(t, "0", fields[1], p+" "+line)
+			}
+		}
+		_, e = os.Stat(filepath.Join(g.config.StateDir, "state.json"))
+		require.True(t, os.IsNotExist(e))
+		facts = append(facts, map[string]any{"id": id, "actual": now, "writes": append([]string(nil), k.writes...), "normal_permit": false, "Source": "DEV_FAKE", "PG": false})
+		fmt.Printf("%s PASS\n", id)
+	}
+	t.Run("actual-ordered-shrink-grow", func(t *testing.T) {
+		g, k, a := quotaNativeFixture(t, "ordered")
+		p := *a.original.Original.Private
+		now, e := quotaNativeRun(g, context.Background(), a, "apply")
+		require.NoError(t, e)
+		require.Equal(t, []string{"arrays", "normal"}, k.writes)
+		require.Equal(t, control.Uint64(64<<20), now.Parent.MemoryMaxBytes)
+		require.Equal(t, control.Uint64(16<<20), now.Arrays.MemoryMaxBytes)
+		require.Equal(t, p.MemoryMaxBytes, now.Private.MemoryMaxBytes)
+		a.original.Original = now
+		a.original.Command.Revision = 2
+		a.original.Command.MemoryMaxBytes = 128 << 20
+		a.original.TargetArraysBytes = 32 << 20
+		now, e = quotaNativeRun(g, context.Background(), a, "apply")
+		require.NoError(t, e)
+		require.Equal(t, []string{"arrays", "normal", "normal", "arrays"}, k.writes)
+		require.Equal(t, p.MemoryMaxBytes, now.Private.MemoryMaxBytes)
+		record("NEON-S-QUOTA-001", g, k)
+	})
+	t.Run("post-effect-unknown-exact-replay", func(t *testing.T) {
+		g, k, a := quotaNativeFixture(t, "partial")
+		k.failAfter = "arrays"
+		_, e := quotaNativeRun(g, context.Background(), a, "apply")
+		require.ErrorIs(t, e, ErrUnknown)
+		require.Equal(t, []string{"arrays"}, k.writes)
+		_, e = quotaNativeRun(g, context.Background(), a, "apply")
+		require.ErrorIs(t, e, ErrUnknown)
+		require.Len(t, k.writes, 1)
+		_, e = quotaNativeRun(g, context.Background(), a, "replay")
+		require.NoError(t, e)
+		require.Equal(t, []string{"arrays", "normal"}, k.writes)
+		record("NEON-S-QUOTA-002", g, k)
+	})
+	t.Run("cancel-after-A-has-no-late-N", func(t *testing.T) {
+		g, k, a := quotaNativeFixture(t, "cancel")
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		k.cancelAfter = cancel
+		_, e := quotaNativeRun(g, ctx, a, "apply")
+		require.ErrorIs(t, e, ErrUnknown)
+		require.Equal(t, []string{"arrays"}, k.writes)
+		now, e := k.normalSplitRead()
+		require.NoError(t, e)
+		require.Equal(t, control.Uint64(128<<20), now.Parent.MemoryMaxBytes)
+		_, e = quotaNativeRun(g, context.Background(), a, "replay")
+		require.NoError(t, e)
+		require.Equal(t, []string{"arrays", "normal"}, k.writes)
+		record("NEON-S-QUOTA-003", g, k)
+	})
+	t.Run("new-Guard-cannot-observe-visible-as-durable", func(t *testing.T) {
+		g, k, a := quotaNativeFixture(t, "witness")
+		_, e := quotaNativeRun(g, context.Background(), a, "apply")
+		require.NoError(t, e)
+		g = &Guard{config: g.config, kernel: k}
+		_, e = quotaNativeRun(g, context.Background(), a, "observe")
+		require.ErrorIs(t, e, ErrUnknown)
+		_, e = quotaNativeRun(g, context.Background(), a, "replay")
+		require.NoError(t, e)
+		require.Equal(t, []string{"arrays", "normal"}, k.writes)
+		record("NEON-S-QUOTA-004", g, k)
+	})
+	t.Run("missing-source-and-inode-drift-no-write", func(t *testing.T) {
+		g, k, a := quotaNativeFixture(t, "reject")
+		bad := a
+		bad.check = nil
+		_, e := quotaNativeRun(g, context.Background(), bad, "apply")
+		require.Error(t, e)
+		require.Empty(t, k.writes)
+		bad = a
+		copyNode := *a.original.Original.Arrays
+		copyNode.Inode++
+		bad.original.Original.Arrays = &copyNode
+		_, e = quotaNativeRun(g, context.Background(), bad, "apply")
+		require.Error(t, e)
+		require.Empty(t, k.writes)
+		bad = a
+		bad.check = func(context.Context, *lockedState, *record, normalSplitQuotaOriginal) error {
+			return errors.New("DEV Source deliberately not closed")
+		}
+		_, e = quotaNativeRun(g, context.Background(), bad, "apply")
+		require.Error(t, e)
+		require.Empty(t, k.writes)
+		record("NEON-S-QUOTA-005", g, k)
+	})
+	b, e := json.Marshal(map[string]any{"scope": "DEV true cgroup2 writer+ext4 WAL; Source fake/no PG/no production permission", "cases": facts, "normal_permit": false, "E": 0})
+	require.NoError(t, e)
+	fmt.Printf("PG17_SPLIT_TOPOLOGY_RESULT=%s\n", b)
+}

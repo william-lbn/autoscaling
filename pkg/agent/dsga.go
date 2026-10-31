@@ -116,7 +116,7 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		}
 		// 资源身份先于PG客户端恢复，Root floor不随SQL断连/PG boot变化清空。
 		// 必须同一已确认Session，缺root来源/未知旧Guest时失败关闭，不走legacy。
-		resources, err := session.NewResourceRecoveryWorker(ownerCtx, resourceguard.ClientConfig{Context: nil, BaseURL: config.GatewayURL, Identity: resourceguard.Identity{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID, GuestBootID: "", CgroupDevice: 0, CgroupInode: 0, SystemCgroupDevice: 0, SystemCgroupInode: 0}, IssuerEpoch: 0, Timeout: time.Duration(config.ComputeTimeoutSeconds) * time.Second, Transport: credentials.ManagementTransport(), Token: credentials.Token, Pending: nil})
+		resources, err := session.NewResourceRecoveryWorker(ownerCtx, resourceguard.ClientConfig{Context: nil, BaseURL: config.GatewayURL, Identity: resourceguard.Identity{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID, GuestBootID: "", CgroupDevice: 0, CgroupInode: 0, SystemCgroupDevice: 0, SystemCgroupInode: 0}, IssuerEpoch: 0, Timeout: time.Duration(config.ComputeTimeoutSeconds) * time.Second, Transport: credentials.ManagementTransport(), Token: credentials.Token, ArrayAuthorityToken: credentials.ArrayAuthorityToken, Pending: nil})
 		if err != nil {
 			return err
 		}

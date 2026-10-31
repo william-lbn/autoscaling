@@ -27,19 +27,29 @@ type nativeBirthPolicy struct {
 	StartupBuffers        uint32    `json:"startup_buffers"`
 	PageBytes             uint32    `json:"page_bytes"`
 	ElementBytes          [4]uint64 `json:"element_bytes"`
+	// 独立helper ABI版本只来自原只读policy/manifest。全0省略保持旧v1
+	// pre-main来源/WAL兼容；旧profile不能因此获得normal或数组收费资格。
+	ArrayHelperProtocolVersion      uint32         `json:"array_helper_protocol_version,omitempty"`
+	ArrayHelperPath                 string         `json:"array_helper_path,omitempty"`
+	ArrayHelperELFSHA256            string         `json:"array_helper_elf_sha256,omitempty"`
+	ArrayHelperAddressSpaceMaxBytes control.Uint64 `json:"array_helper_address_space_max_bytes,omitempty"`
+	ArrayHelperMemlockUpperBytes    control.Uint64 `json:"array_helper_memlock_upper_bytes,omitempty"`
+	ArrayHelperReserveBytes         control.Uint64 `json:"array_helper_reserve_bytes,omitempty"`
 }
 type nativeBirthBuildFile struct {
 	Path   string `json:"path"`
 	SHA256 string `json:"sha256"`
 }
 type nativeBirthBuildManifest struct {
-	ProtocolVersion uint32                 `json:"protocol_version"`
-	Scope           string                 `json:"scope"`
-	PGmajor         uint32                 `json:"pg_major"`
-	LaunchPath      string                 `json:"launch_path"`
-	PostgresPath    string                 `json:"postgres_path"`
-	InterpreterPath string                 `json:"interpreter_path"`
-	Files           []nativeBirthBuildFile `json:"files"`
+	ProtocolVersion uint32                     `json:"protocol_version"`
+	Scope           string                     `json:"scope"`
+	PGmajor         uint32                     `json:"pg_major"`
+	LaunchPath      string                     `json:"launch_path"`
+	PostgresPath    string                     `json:"postgres_path"`
+	InterpreterPath string                     `json:"interpreter_path"`
+	Files           []nativeBirthBuildFile     `json:"files"`
+	ArrayHelper     *nativeArrayHelperBuild    `json:"array_helper,omitempty"`
+	RuntimeClosure  *nativeRuntimeClosureBuild `json:"runtime_closure,omitempty"`
 }
 
 // Binding保留精确字节摘要与固定ABI；读取闭包不证明post-GUC插件或完整FS/I。
@@ -83,6 +93,9 @@ func (p nativeBirthPolicy) validate() error {
 		p.MaxBuffers == 0 || p.MaxBuffers > 0x7fffffff || p.StartupBuffers == 0 || p.StartupBuffers > p.MaxBuffers {
 		return fmt.Errorf("unsupported original native birth ABI or geometry")
 	}
+	if err := validateNativeArrayHelperPolicy(p, false); err != nil {
+		return err
+	}
 	for _, s := range []string{p.RuntimeDocumentSHA256, p.ResourceSourceSHA256, p.BuildManifestSHA256} {
 		if _, err := nativeBirthDigest(s); err != nil {
 			return err
@@ -98,6 +111,16 @@ func (m nativeBirthBuildManifest) validate() error {
 		m.LaunchPath != FixedPostgresPath || !nativeBirthCleanPath(m.PostgresPath) ||
 		len(m.Files) == 0 || len(m.Files) > 64 || m.InterpreterPath != "" && !nativeBirthCleanPath(m.InterpreterPath) {
 		return fmt.Errorf("unsupported native pre-main build manifest")
+	}
+	if m.ArrayHelper != nil {
+		if err := m.ArrayHelper.validate(); err != nil {
+			return err
+		}
+	}
+	if m.RuntimeClosure != nil {
+		if err := m.RuntimeClosure.validate(); err != nil {
+			return err
+		}
 	}
 	seen := map[string]bool{}
 	for i, f := range m.Files {
@@ -155,19 +178,27 @@ func decodeNativeBirthSource(runtimeRaw, policyRaw, manifestRaw []byte) (nativeB
 		return out, err
 	}
 	var p nativeBirthPolicy
-	if err := control.UnmarshalObject(policyRaw, &p); err != nil {
+	if err := json.Unmarshal(policyRaw, &p); err != nil {
 		return out, err
 	}
 	if p.validate() != nil || p.RuntimeDocumentSHA256 != physicalDigest(runtimeRaw) || p.ResourceSourceSHA256 != document.SourceSHA256 || p.BuildManifestSHA256 != physicalDigest(manifestRaw) {
 		return out, fmt.Errorf("native birth exact original source binding differs")
 	}
 	var m nativeBirthBuildManifest
-	if err := control.UnmarshalObject(manifestRaw, &m); err != nil {
+	if err := json.Unmarshal(manifestRaw, &m); err != nil {
 		return out, err
 	}
 	if m.validate() != nil || m.PGmajor != p.PGmajor {
 		return out, fmt.Errorf("native birth pre-main build ABI differs")
 	}
+	if p.ArrayHelperProtocolVersion != 0 {
+		if m.ArrayHelper == nil || m.ArrayHelper.Path != p.ArrayHelperPath || m.ArrayHelper.SHA256 != p.ArrayHelperELFSHA256 {
+			return out, fmt.Errorf("native helper original build entry differs from policy")
+		}
+	} else if m.ArrayHelper != nil {
+		return out, fmt.Errorf("native helper build entry has no original policy ABI")
+	}
+
 	binary := ""
 	for _, f := range m.Files {
 		if f.Path == m.PostgresPath {

@@ -5,8 +5,6 @@ package resourceguard
 import (
 	"encoding/json"
 	"fmt"
-
-	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 )
 
 // 只复用原严格策略类型，不复制其ABI/build白名单或放宽既有资格。
@@ -56,7 +54,7 @@ func validateRenderedRuntimePolicyAssets(raw []byte, _ RuntimeDocument, source S
 	}
 	if policy, ok := assets["dsga-native-birth.json"]; ok {
 		var p nativeBirthPolicy
-		if err := control.UnmarshalObject(policy, &p); err != nil {
+		if err := json.Unmarshal(policy, &p); err != nil {
 			return err
 		}
 		if err := p.validate(); err != nil {

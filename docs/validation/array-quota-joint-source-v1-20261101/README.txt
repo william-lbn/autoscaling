@@ -1,0 +1,12 @@
+最新P1生产数组链与quota交接同源联合验证（2026-11-01）
+
+固定2fe36基线，原8b3 selected51中47当前源加Root quota/handoff准确11源，合为58。四共同文件guard/cancel/view/quota_state由Root最新版本覆盖历史5fa，绝不回写旧依赖。排除在研FS、SystemLifecycle、SystemRole和memory-origin源码。实际3488输入COPY hash逐项通过，BuildKit真实2CPU/2GiB/noextraswap、race GOMAXPROCS2，默认禁网。
+联合131根544子例全部PASS，零skip/fail，agent编译0。只选最新P1相关根、原五写者33根与quota/cancellation/View，不重跑无关Neon功能。131是去重后的同图直接验证总数，新增逻辑覆盖计0；新增用例各自原catalog单列。
+同58再在真实移除DAC_OVERRIDE/DAC_READ_SEARCH的子进程，仅重跑原写者33根103子例，全PASS零skip；CapEff/CapBnd实际a80425f9，9.365s，3488 COPY相同。这样保留原权限负例执行条件，不将默认root能力的结果代替权限负例。
+早先准备阶段错误递归读到source/docs历史test.json，尚未启动unit或测试即断言停止；原PREPARATION_ABORTED保留。改为原a7d3db/export/test.json准确33根后新nonce执行，没有删除或改旧结果。
+
+Root独立读审Begin固定80B/112B帧、同SO_PEERPIDFD/静态原ELF/原real UID PG及有效root、原nonce与Source、daemon同flock生成Pending/Birth并持久后ACK；SUID不持锁等待、真实UID不升root，最后全降PG/NNP/固定PG exec。numeric迁private仅同原ptrace独占M和原pidfd/proc、目标停住且EXITKILL，在真实wait/detach之前，源/目的inode和任务集前后均核。AS reader只从已核group选择flat/private固定组，没有任意cgroup路径。
+旧preexec-v1 handler保留；新launch唯一调用Begin2，arrayPreexecPin producer无调用者，没有生产回退。三项被拒安全变更未执行，原拒绝及替代方案另档保留。Socket Root:原PG主组0660与原不可写父目录。本文不授权删除旧代码或真实UID升root。
+Root再核quota v3原标记、四阶段quota和state双耐久见证、public Observe零写/全Applied见证、same-cap metadata历史恢复/Fence/cancel及原数组只读门禁。具体新handoff9根14子例和独立复审另档；原quota4实际369五S另档。
+
+P1真实服务S只绑定8b3静态ELF1a0df3与f8811b（共同四源为原5fa），不是这份联合58二进制的真实S。它证明实际出生/收费/JWT处理器组件，Host/issuer仍fixture、8条PFN采样为7distinct；没有在S中实际StartCAS/Grow/normal下降。本联合源码验证不会替它改来源、重签二进制或把组件升级为端到端。完整Source/System/FI、normal持续安全、最终Linux/K8s尚未完成，E0。发行锁不变。

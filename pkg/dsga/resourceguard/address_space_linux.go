@@ -36,6 +36,13 @@ func boundedProcessText(pid int, name string) (string, error) {
 }
 
 func inspectProcessAddressSpace(pid int, ceiling control.Uint64, uid uint64) (processAddressSample, error) {
+	return inspectProcessAddressSpaceGroup(pid, ceiling, uid, "0::/neon-postgres\n")
+}
+
+func inspectProcessAddressSpaceGroup(pid int, ceiling control.Uint64, uid uint64, expectedGroup string) (processAddressSample, error) {
+	if !arrayAllowedAddressGroup(expectedGroup) {
+		return processAddressSample{}, fmt.Errorf("unsupported fixed process domain")
+	}
 	first, err := boundedProcessText(pid, "stat")
 	if err != nil {
 		return processAddressSample{}, err
@@ -48,7 +55,7 @@ func inspectProcessAddressSpace(pid int, ceiling control.Uint64, uid uint64) (pr
 	if err != nil {
 		return processAddressSample{}, err
 	}
-	if group != "0::/neon-postgres\n" {
+	if group != expectedGroup {
 		return processAddressSample{}, fmt.Errorf("address space process left original cgroup")
 	}
 	status, err := boundedProcessText(pid, "status")
@@ -106,7 +113,10 @@ func readAddressSpaces(l Limits) (*AddressSpaceEvidence, error) {
 	}
 	for _, entry := range entries {
 		if entry.IsDir() || entry.Type()&os.ModeSymlink != 0 {
-			return nil, fmt.Errorf("address space domain has an unaccounted child cgroup or link")
+			if entry.Type()&os.ModeSymlink != 0 {
+				return nil, fmt.Errorf("address space domain contains a link")
+			}
+			return readArraySplitAddressSpaces(l)
 		}
 	}
 	uid, err := postgresUID()

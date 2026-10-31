@@ -11,23 +11,25 @@ import (
 // 的资源域，不能从Native PG revision推导资源revision，也不能因外层历史淘汰
 // 猜测计数。它不是原命令完成回执，尤其不能拿新PG的Actual替代旧PID的Observe。
 type View struct {
-	ProtocolVersion         uint32           `json:"protocol_version"`
-	VMShrinkPermit          bool             `json:"vm_shrink_permit"`
-	Identity                Identity         `json:"identity"`
-	IssuerFloorEpoch        control.Uint64   `json:"issuer_floor_epoch"`
-	Bootstrap               BootstrapCommand `json:"bootstrap"`
-	BootstrapApplied        bool             `json:"bootstrap_applied"`
-	SystemPlacementObserved bool             `json:"system_placement_observed,omitempty"`
-	Original                *Command         `json:"original"`
-	Held                    *Command         `json:"held"`
-	Applied                 bool             `json:"applied"`
-	Cancelled               *Command         `json:"cancelled,omitempty"`
-	Birth                   *ProcessIdentity `json:"birth"`
-	Actual                  Evidence         `json:"actual"`
+	ProtocolVersion uint32 `json:"protocol_version"`
+	// 原只读创建profile所需内部协议，不是授权/normal许可；旧v1精确省略。
+	ArrayAuthorityProtocolVersion uint32           `json:"array_authority_protocol_version,omitempty"`
+	VMShrinkPermit                bool             `json:"vm_shrink_permit"`
+	Identity                      Identity         `json:"identity"`
+	IssuerFloorEpoch              control.Uint64   `json:"issuer_floor_epoch"`
+	Bootstrap                     BootstrapCommand `json:"bootstrap"`
+	BootstrapApplied              bool             `json:"bootstrap_applied"`
+	SystemPlacementObserved       bool             `json:"system_placement_observed,omitempty"`
+	Original                      *Command         `json:"original"`
+	Held                          *Command         `json:"held"`
+	Applied                       bool             `json:"applied"`
+	Cancelled                     *Command         `json:"cancelled,omitempty"`
+	Birth                         *ProcessIdentity `json:"birth"`
+	Actual                        Evidence         `json:"actual"`
 }
 
 func (v View) Validate() error {
-	if v.ProtocolVersion != 1 || v.VMShrinkPermit || v.Actual.ProtocolVersion != 1 || v.Actual.VMShrinkPermit || v.Actual.Identity != v.Identity {
+	if v.ArrayAuthorityProtocolVersion > 1 || v.ProtocolVersion != 1 || v.VMShrinkPermit || v.Actual.ProtocolVersion != 1 || v.Actual.VMShrinkPermit || v.Actual.Identity != v.Identity {
 		return fmt.Errorf("invalid resource journal observation")
 	}
 	r := record{Version: 1, Identity: v.Identity, Floor: v.IssuerFloorEpoch, Original: v.Original, Held: v.Held, Applied: v.Applied, Cancelled: v.Cancelled, Bootstrap: &bootstrapRecord{Original: v.Bootstrap, Applied: v.BootstrapApplied, SystemPlacementObserved: v.SystemPlacementObserved}, Birth: v.Birth}
@@ -78,7 +80,10 @@ func (v View) ConfirmedLimits() (Limits, error) {
 
 func (g *Guard) InspectState(ctx context.Context) (View, error) {
 	var v View
-	err := g.withRecord(ctx, func(r *record, _ *lockedState) error {
+	err := g.withRecord(ctx, func(r *record, s *lockedState) error {
+		if err := g.checkNormalQuotaObservationLocked(s, r); err != nil {
+			return err
+		}
 		if r.Bootstrap == nil {
 			return fmt.Errorf("original resource bootstrap missing")
 		}

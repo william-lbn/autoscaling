@@ -379,6 +379,9 @@ func (g *Guard) prebootstrapSystemLocked(ctx context.Context, in prebootstrapSys
 	if err := s.syncPhysicalFile(preSystemIntentName); err != nil {
 		return zero, fmt.Errorf("%w: original System intent sync: %v", ErrUnknown, err)
 	}
+	if err := g.rejectArrayPendingLocked(s, nil); err != nil {
+		return zero, err
+	}
 	if err := k.prebootstrapSystemApply(in.source.Limits.SystemMemoryMaxBytes); err != nil {
 		return zero, fmt.Errorf("%w: partial System bound: %v", ErrUnknown, err)
 	}

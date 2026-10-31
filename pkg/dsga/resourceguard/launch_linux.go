@@ -69,6 +69,15 @@ func ExecPostgres(args []string) error {
 		return err
 	}
 	g := &Guard{config: config, kernel: &linuxKernel{config: config}}
+	// 启用由同一原只读Doc/封存policy派生，绝不是caller环境或callback选择。
+	arrayProtocol, err := arrayAuthorityRuntimeProtocol(source)
+	if err != nil {
+		return err
+	}
+	if arrayProtocol == 1 {
+		return g.launchArrayRoot(context.Background(), source, server, args, environment, uid, gid)
+	}
+
 	var birth *ProcessIdentity
 	if server {
 		id, err := g.InspectIdentity()

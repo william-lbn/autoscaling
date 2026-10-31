@@ -1,0 +1,21 @@
+{
+  "command": [
+    "docker",
+    "run",
+    "--rm",
+    "--network",
+    "none",
+    "--pull=never",
+    "--entrypoint",
+    "/opt/go/bin/go",
+    "-v",
+    "/data/neon-build/validation/array-service-go-20261031T221130Z-8b3b02/export:/receipt:ro",
+    "127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1",
+    "version",
+    "-m",
+    "/receipt/array-service.test"
+  ],
+  "exit": 0,
+  "stdout": "/receipt/array-service.test: go1.24.3\n\tpath\tgithub.com/neondatabase/autoscaling/pkg/dsga/resourceguard.test\n\tmod\tgithub.com/neondatabase/autoscaling\t(devel)\t\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-tags=dsga_native_array_service\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n",
+  "stderr": ""
+}

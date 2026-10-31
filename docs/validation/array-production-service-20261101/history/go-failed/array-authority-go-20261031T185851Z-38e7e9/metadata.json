@@ -1,0 +1,16 @@
+{
+  "unit": "neon-array-authority-20261031t185851z-38e7e9",
+  "nonce": "20261031T185851Z-38e7e9",
+  "source_count": 842,
+  "source_lock_sha256": "d2b3e6869e9797e5bf56dcfc6aa46cdf7d71e834d6dfc674c8256dce22e71409",
+  "client_limits": {
+    "CPUQuota": "200%",
+    "MemoryMax": "2G"
+  },
+  "executor": {
+    "GOMAXPROCS": 2,
+    "GOMEMLIMIT": "512MiB soft per process",
+    "hard_memory": "NOT_SET_BUILDKIT_SEPARATE"
+  },
+  "scope": "BODY_BOUND_AUTH_AND_CLIENT_COMPONENT_NO_ROOT_REGISTRY_OR_NORMAL_AUTHORITY"
+}

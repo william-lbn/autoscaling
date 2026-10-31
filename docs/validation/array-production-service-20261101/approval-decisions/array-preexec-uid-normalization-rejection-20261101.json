@@ -1,0 +1,10 @@
+{
+  "automatic_review": "REJECTED_BEFORE_EXECUTION",
+  "action": "proposed production Setresuid(0,0,0) normalization",
+  "reason": "high privilege boundary change; specific real/saved UID elevation not explicitly authorized by user",
+  "production_code_written": false,
+  "syscall_executed": false,
+  "parent_resolution": "proposal explicitly withdrawn; no retry or indirect execution",
+  "safe_alternative": "existing real-root daemon owns Source/split/original Pending+Birth fsync under resource flock; SUID real UID remains trusted postgres, verifies static self/Root kernel peer and receives original nonce, finally drops to PG before exec",
+  "general_Source_real_UID_root_requirement": "UNCHANGED"
+}

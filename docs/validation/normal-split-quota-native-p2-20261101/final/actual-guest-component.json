@@ -1,0 +1,306 @@
+{
+  "E": 0,
+  "cases": [
+    {
+      "PG": false,
+      "Source": "DEV_FAKE",
+      "actual": {
+        "identity": {
+          "vm_uid": "quota-dev-vm",
+          "compute_instance_id": "quota-dev-compute",
+          "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+          "cgroup_device": "23",
+          "cgroup_inode": "28"
+        },
+        "parent": {
+          "device": "23",
+          "inode": "28",
+          "memory_max_bytes": "134217728",
+          "pids_max_tasks": "16",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": "memory pids"
+        },
+        "private": {
+          "device": "23",
+          "inode": "108",
+          "memory_max_bytes": "16777216",
+          "pids_max_tasks": "8",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "arrays": {
+          "device": "23",
+          "inode": "148",
+          "memory_max_bytes": "33554432",
+          "pids_max_tasks": "1",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "state_device": "65024",
+        "state_inode": "12"
+      },
+      "id": "NEON-S-QUOTA-001",
+      "normal_permit": false,
+      "writes": [
+        "arrays",
+        "normal",
+        "normal",
+        "arrays"
+      ]
+    },
+    {
+      "PG": false,
+      "Source": "DEV_FAKE",
+      "actual": {
+        "identity": {
+          "vm_uid": "quota-dev-vm",
+          "compute_instance_id": "quota-dev-compute",
+          "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+          "cgroup_device": "23",
+          "cgroup_inode": "28"
+        },
+        "parent": {
+          "device": "23",
+          "inode": "28",
+          "memory_max_bytes": "67108864",
+          "pids_max_tasks": "16",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": "memory pids"
+        },
+        "private": {
+          "device": "23",
+          "inode": "188",
+          "memory_max_bytes": "16777216",
+          "pids_max_tasks": "8",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "arrays": {
+          "device": "23",
+          "inode": "228",
+          "memory_max_bytes": "16777216",
+          "pids_max_tasks": "1",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "state_device": "65024",
+        "state_inode": "22"
+      },
+      "id": "NEON-S-QUOTA-002",
+      "normal_permit": false,
+      "writes": [
+        "arrays",
+        "normal"
+      ]
+    },
+    {
+      "PG": false,
+      "Source": "DEV_FAKE",
+      "actual": {
+        "identity": {
+          "vm_uid": "quota-dev-vm",
+          "compute_instance_id": "quota-dev-compute",
+          "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+          "cgroup_device": "23",
+          "cgroup_inode": "28"
+        },
+        "parent": {
+          "device": "23",
+          "inode": "28",
+          "memory_max_bytes": "67108864",
+          "pids_max_tasks": "16",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": "memory pids"
+        },
+        "private": {
+          "device": "23",
+          "inode": "268",
+          "memory_max_bytes": "16777216",
+          "pids_max_tasks": "8",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "arrays": {
+          "device": "23",
+          "inode": "308",
+          "memory_max_bytes": "16777216",
+          "pids_max_tasks": "1",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "state_device": "65024",
+        "state_inode": "28"
+      },
+      "id": "NEON-S-QUOTA-003",
+      "normal_permit": false,
+      "writes": [
+        "arrays",
+        "normal"
+      ]
+    },
+    {
+      "PG": false,
+      "Source": "DEV_FAKE",
+      "actual": {
+        "identity": {
+          "vm_uid": "quota-dev-vm",
+          "compute_instance_id": "quota-dev-compute",
+          "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+          "cgroup_device": "23",
+          "cgroup_inode": "28"
+        },
+        "parent": {
+          "device": "23",
+          "inode": "28",
+          "memory_max_bytes": "67108864",
+          "pids_max_tasks": "16",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": "memory pids"
+        },
+        "private": {
+          "device": "23",
+          "inode": "348",
+          "memory_max_bytes": "16777216",
+          "pids_max_tasks": "8",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "arrays": {
+          "device": "23",
+          "inode": "388",
+          "memory_max_bytes": "16777216",
+          "pids_max_tasks": "1",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "state_device": "65024",
+        "state_inode": "34"
+      },
+      "id": "NEON-S-QUOTA-004",
+      "normal_permit": false,
+      "writes": [
+        "arrays",
+        "normal"
+      ]
+    },
+    {
+      "PG": false,
+      "Source": "DEV_FAKE",
+      "actual": {
+        "identity": {
+          "vm_uid": "quota-dev-vm",
+          "compute_instance_id": "quota-dev-compute",
+          "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+          "cgroup_device": "23",
+          "cgroup_inode": "28"
+        },
+        "parent": {
+          "device": "23",
+          "inode": "28",
+          "memory_max_bytes": "134217728",
+          "pids_max_tasks": "16",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": "memory pids"
+        },
+        "private": {
+          "device": "23",
+          "inode": "428",
+          "memory_max_bytes": "16777216",
+          "pids_max_tasks": "8",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "arrays": {
+          "device": "23",
+          "inode": "468",
+          "memory_max_bytes": "33554432",
+          "pids_max_tasks": "1",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "state_device": "65024",
+        "state_inode": "40"
+      },
+      "id": "NEON-S-QUOTA-005",
+      "normal_permit": false,
+      "writes": null
+    }
+  ],
+  "normal_permit": false,
+  "scope": "DEV true cgroup2 writer+ext4 WAL; Source fake/no PG/no production permission"
+}

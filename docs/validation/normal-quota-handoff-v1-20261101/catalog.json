@@ -1,0 +1,174 @@
+{
+  "scope": "private quota/resource state handoff component; actual WAL/flock/fsync, modeled kernel/process/Source; no public normal producer",
+  "base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f",
+  "final_cohort": "/data/neon-build/validation/normal-quota-handoff-20261031T215919Z-2e0474",
+  "new_U_roots": 9,
+  "new_U_subtests": 14,
+  "direct_Quota4_roots": 6,
+  "direct_Quota4_subtests": 21,
+  "direct_Cancellation_roots": 7,
+  "direct_Cancellation_subtests": 16,
+  "direct_View_roots": 3,
+  "direct_View_subtests": 9,
+  "actual_total_roots": 25,
+  "actual_total_subtests": 60,
+  "new_S": 0,
+  "E": 0,
+  "skip": 0,
+  "actual_source_checked_files": 3485,
+  "production_normal_qualified": false,
+  "retained_failures": [
+    {
+      "cohort": "normal-quota-handoff-20261031T213636Z-c8df0c",
+      "classification": "compile-unused-import",
+      "original_result_sha256": "b19111369dd91d99c2ed6c4e13ca537d51c56f51882ea4387b0a8a850a8d12b6",
+      "PASS": false
+    },
+    {
+      "cohort": "normal-quota-handoff-20261031T215551Z-fa0804",
+      "classification": "compile-embedded-counter",
+      "original_result_sha256": "3855582e7ed4e2403ff0e607a5ac1a118c1347e77abdf2a3eb25fe4ca8a81978",
+      "PASS": false
+    },
+    {
+      "cohort": "normal-quota-handoff-20261031T215646Z-3ebe51",
+      "classification": "fixture-missing-AS",
+      "original_result_sha256": "5e6f5e55e202861256b0d1288de3b403be0277b07d2708bdd772c38872b6d016",
+      "PASS": false
+    },
+    {
+      "cohort": "normal-quota-handoff-20261031T215807Z-229094",
+      "classification": "fixture-missing-StateDir",
+      "original_result_sha256": "bf0b78493861dfe48d808cd970efc41991b477bd5ebb48e96ef20561ca3e458d",
+      "PASS": false
+    }
+  ],
+  "cases": [
+    {
+      "root": "TestResourceCancellationClientRetainsLostReplyAndOnlyReadsOriginalBarrier",
+      "result": "PASS",
+      "new": false
+    },
+    {
+      "root": "TestResourceCancellationClientDoesNotAcceptAbsenceOrAnotherOriginal",
+      "result": "PASS",
+      "new": false
+    },
+    {
+      "root": "TestResourceCancellationDurablyRejectsLateApplyAndAdvancesRevision",
+      "result": "PASS",
+      "new": false
+    },
+    {
+      "root": "TestResourceCancellationRejectsIncompleteSourceAndUnknownEffects",
+      "result": "PASS",
+      "new": false
+    },
+    {
+      "root": "TestResourceCancellationPersistenceFailureDoesNotIssueNoEffect",
+      "result": "PASS",
+      "new": false
+    },
+    {
+      "root": "TestResourceCancellationWaitsForInFlightApplyInsteadOfDeclaringNoEffect",
+      "result": "PASS",
+      "new": false
+    },
+    {
+      "root": "TestResourceCancellationHTTPAuthenticatesCurrentOwnerAndOriginalEpoch",
+      "result": "PASS",
+      "new": false
+    },
+    {
+      "root": "TestResourceViewCloneOwnsEveryNestedSourceAndEvidence",
+      "result": "PASS",
+      "new": false
+    },
+    {
+      "root": "TestNormalQuotaHandoffPublishesSameOriginalHeld",
+      "result": "PASS",
+      "new": true
+    },
+    {
+      "root": "TestNormalQuotaHandoffPendingAndLostStateReply",
+      "result": "PASS",
+      "new": true
+    },
+    {
+      "root": "TestNormalQuotaHandoffPartialCapPreservesOldHeld",
+      "result": "PASS",
+      "new": true
+    },
+    {
+      "root": "TestNormalQuotaHandoffNewGuardMultiHistoryAndFence",
+      "result": "PASS",
+      "new": true
+    },
+    {
+      "root": "TestNormalQuotaHandoffRejectsChangedBudgetAndMissingSource",
+      "result": "PASS",
+      "new": true
+    },
+    {
+      "root": "TestNormalQuotaStateVersionAndCancellationPreserveMarker",
+      "result": "PASS",
+      "new": true
+    },
+    {
+      "root": "TestNormalQuotaPublicConfirmationRequiresDurableHandoff",
+      "result": "PASS",
+      "new": true
+    },
+    {
+      "root": "TestNormalQuotaMetadataRestartRecoversRetainedQuotaWithoutCapReplay",
+      "result": "PASS",
+      "new": true
+    },
+    {
+      "root": "TestNormalQuotaPendingMetadataFenceDoesNotSignUnknown",
+      "result": "PASS",
+      "new": true
+    },
+    {
+      "root": "TestNormalSplitQuotaActualDomainsOrderedAndGrow",
+      "result": "PASS",
+      "new": false
+    },
+    {
+      "root": "TestNormalSplitQuotaPartialWritesOnlyExactReplay",
+      "result": "PASS",
+      "new": false
+    },
+    {
+      "root": "TestNormalSplitQuotaVisibleCompleteNeverReplacesDurability",
+      "result": "PASS",
+      "new": false
+    },
+    {
+      "root": "TestNormalSplitQuotaWriteAheadAndCancellation",
+      "result": "PASS",
+      "new": false
+    },
+    {
+      "root": "TestNormalSplitQuotaRejectsDriftAndIncompleteEnvelope",
+      "result": "PASS",
+      "new": false
+    },
+    {
+      "root": "TestNormalSplitQuotaOrphansAndOtherPendingFence",
+      "result": "PASS",
+      "new": false
+    },
+    {
+      "root": "TestResourceViewPreservesUnknownInsteadOfBorrowingHeldCompletion",
+      "result": "PASS",
+      "new": false
+    },
+    {
+      "root": "TestResourceViewDiscoveryAndClientDoNotSilentlyRebind",
+      "result": "PASS",
+      "new": false
+    }
+  ],
+  "independent_review_sha256": "85c7541f95ec6859750cb2f3996700441fd6314a36468d3941f9c5d9aae847ec"
+}

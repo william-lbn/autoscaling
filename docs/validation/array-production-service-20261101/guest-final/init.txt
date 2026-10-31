@@ -1,0 +1,54 @@
+#!/bin/busybox sh
+set -eu
+export PATH=/bin:/usr/local/bin
+/bin/busybox --install -s /bin
+mount -o bind / /
+mount -o remount,bind,ro / /
+mount -t devtmpfs devtmpfs /dev
+mkdir -p /dev/shm
+mkdir -p /dev/shm
+mkdir -p /dev/shm
+mkdir -p /dev/shm
+mkdir -p /dev/shm
+mkdir -p /dev/shm
+mkdir -p /dev/shm
+mount -t ext4 -o ro,noload /dev/vdc /usr
+exec </dev/console >/dev/console 2>&1
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t securityfs none /sys/kernel/security
+mount -t cgroup2 none /sys/fs/cgroup
+mount -t tmpfs -o size=64m,mode=1777 tmpfs /tmp
+mount -t tmpfs -o size=64m,mode=1777 tmpfs /dev/shm
+mount -t tmpfs -o size=16m,mode=755 tmpfs /evidence
+mount -t tmpfs -o size=8m,mode=755 tmpfs /run
+mount -t tmpfs -o size=1m,mode=755 tmpfs /etc/neon-dsga
+mount -t tmpfs -o size=128m,mode=700,uid=1000,gid=1000 tmpfs /data
+mount -t ext4 /dev/vda /var/lib/neon-dsga
+mkdir /var/lib/neon-dsga/state
+chmod 700 /var/lib/neon-dsga/state
+mount -t iso9660 -o ro /dev/vdb /neonvm/runtime
+echo '+memory +pids' >/sys/fs/cgroup/cgroup.subtree_control
+mkdir /sys/fs/cgroup/neon-postgres /sys/fs/cgroup/neon-system
+echo ARRAY_SERVICE_RELEASE=$(uname -r)
+echo ARRAY_SERVICE_NOTES=$(sha256sum /sys/kernel/notes | cut -d' ' -f1)
+export DSGA_ARRAY_SERVICE_NATIVE=isolated369-real-array-service-v1
+set +e
+/neonvm/bin/resource-guard -test.run '^TestNativeArrayServiceBirthAndPopulate$' -test.count=1 -test.v -test.timeout=110s
+rc=$?
+echo ARRAY_SERVICE_PATH_PROBE=1
+ls -ld /lib /lib/x86_64-linux-gnu /usr /usr/lib /usr/lib/x86_64-linux-gnu
+readlink /lib
+readlink /lib/x86_64-linux-gnu
+stat -f /lib/x86_64-linux-gnu
+set -e
+echo ARRAY_SERVICE_GUEST_EXIT=$rc
+for file in /evidence/*; do
+ test -f "$file" || continue
+ name=$(basename "$file")
+ hash=$(sha256sum "$file" | cut -d' ' -f1)
+ blob=$(base64 "$file" | tr -d '\n')
+ echo "ARRAY_SERVICE_FILE=$name:$hash:$blob"
+done
+sync
+poweroff -f

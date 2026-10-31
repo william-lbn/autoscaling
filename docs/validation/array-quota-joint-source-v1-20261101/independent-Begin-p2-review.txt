@@ -1,0 +1,9 @@
+独立只读审查：原Root daemon代办Begin（2026-11-01）
+范围：准确 ab905f immutable source 中4文件；没有改源、没有新增执行或Git。早期Setresuid(0,0,0)方案已撤回，本报告不接受也未执行该方案。
+结论：本批原身份/锁序/持久回复组件无新增提交阻断；并非完整Source/normal/K8s资格。
+1. arrayPreexecBegin只发80B v2固定consumer nonce/runtime SHA和server/aux枚举，无PID/path/budget/自选Birth nonce。请求端核实际Root SO_PEERPIDFD、原metadata PID/start和同静态ELF，失败不exec。请求侧不持resource flock，避免等daemon时自锁。
+2. handlePreexecBegin从原SO_PEERPIDFD取原task，保持ruid=PG/euid=0，不把ruid改0；核四UID/GID、System组、同Root ELF与存活，再在resource flock内重读Source、Bootstrap/actual cap/System与空split、helper pending和N0+helper余量。原任务死亡/原start变化拒绝。
+3. server nonce由Root生成；pending持久成功后state.Birth保存，再保存内存原pidfd/proc pin，最后出ACK。任何pending/state/pin/回复失败留下原WAL/Birth或Unknown，不发新nonce重试；Root重启无原pin不能接管Native。aux只核约束、零Birth WAL，不注入root-v1。
+4. Native连接必须原pending和同SO_PEERPIDFD kernelobject，arrayMatchPIDFD比原pin；Base之前核实际Native过滤链，原flock内写迁private意图/实际回读/完成，再Base。Final/released完整持久后才移交registry原task。Begin ACK不等于Native资格。
+5. SUID继续原最终降权链：清keep/ambient caps、补充组/GID/UID实际下降、核uid/gid、NNP，然后固定Postgres exec；无新增root CLI入口。
+限制/后继门槛：本报告未执行ab905f新S；P1后继真实服务收据需另核；numeric private migration仍需要原不可变Root代码所有sameTGID wait调用图/原目标未被第三wait者reap的持续事实，ptrace停点本身不是防PID复用证明。全部FS/role/kernel持续writer与force/I最终producer未因此闭合。首次原Root nonce/ISO与正式Host生命周期仍须原来源。已有5 capwriter的849 exact33/103和a2 Grow-only独审收据单列，不能转签本快照。

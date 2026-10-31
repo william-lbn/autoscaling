@@ -1,0 +1,1940 @@
+{
+  "scope": "stopped disposable ext4 readonly debugfs; not crash durability",
+  "state_disk_sha256": "15fe3ae49a6925d9a52a9439a29e1ed5da652ed8c655cd5aced81555e3599a29",
+  "chains": [
+    {
+      "directory": "ordered",
+      "key": "8083dcee2569971b8ab56e0f8325c7dca4c94c7ab0cb937cee1a201ad952e280",
+      "stages": {
+        "pending": {
+          "raw_sha256": "02208d35ddd815275d1082cc16b9a31db6c73accc8b91d75b86ab06d4380013c",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "pending",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "108",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "148",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "12"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": ""
+          },
+          "bytes": 2079
+        },
+        "first-applied": {
+          "raw_sha256": "a1b4782104d4a800e3354f4e8cdb521c4bea2180b004e4d970adedd822cebd17",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "first-applied",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "108",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "148",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "12"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": "02208d35ddd815275d1082cc16b9a31db6c73accc8b91d75b86ab06d4380013c"
+          },
+          "bytes": 2149
+        },
+        "second-applied": {
+          "raw_sha256": "277ec8da96198cb2eac7bf4e69ce61990c6af114a8fb68d072a578edad6fb1b1",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "second-applied",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "108",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "148",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "12"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": "a1b4782104d4a800e3354f4e8cdb521c4bea2180b004e4d970adedd822cebd17"
+          },
+          "bytes": 2150
+        },
+        "complete": {
+          "raw_sha256": "1492f3594f799f840aa7c3b39386a508be6afae0266fd04d1924c51046edd823",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "complete",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "108",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "148",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "12"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": "277ec8da96198cb2eac7bf4e69ce61990c6af114a8fb68d072a578edad6fb1b1"
+          },
+          "bytes": 2144
+        }
+      }
+    },
+    {
+      "directory": "ordered",
+      "key": "39785a7344ba288b375a66af9ad5442fc97260c0d55e92384f22a7099ca01c09",
+      "stages": {
+        "pending": {
+          "raw_sha256": "2e3531cb0656e5ff2be26003b7b7d407f2bee9ba9ac3b58707623a90ce9e6094",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "pending",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "2",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "134217728",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "67108864",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "108",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "148",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "12"
+              },
+              "target_arrays_bytes": "33554432",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": ""
+          },
+          "bytes": 2079
+        },
+        "first-applied": {
+          "raw_sha256": "42820f7933ecb1e1fc62919f0f2cf0749dc711eb03c4682a0517a8071cf3eb27",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "first-applied",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "2",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "134217728",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "67108864",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "108",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "148",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "12"
+              },
+              "target_arrays_bytes": "33554432",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": "2e3531cb0656e5ff2be26003b7b7d407f2bee9ba9ac3b58707623a90ce9e6094"
+          },
+          "bytes": 2149
+        },
+        "second-applied": {
+          "raw_sha256": "8e000eddc727f49d29beb19e38d71cbb31a19cd365853267efd0088ec15a8b42",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "second-applied",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "2",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "134217728",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "67108864",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "108",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "148",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "12"
+              },
+              "target_arrays_bytes": "33554432",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": "42820f7933ecb1e1fc62919f0f2cf0749dc711eb03c4682a0517a8071cf3eb27"
+          },
+          "bytes": 2150
+        },
+        "complete": {
+          "raw_sha256": "06bb95f21bed2e5440b7a0ffe79674013748ff2bd2b2c20660799f0ba00d6a61",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "complete",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "2",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "134217728",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "67108864",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "108",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "148",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "12"
+              },
+              "target_arrays_bytes": "33554432",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": "8e000eddc727f49d29beb19e38d71cbb31a19cd365853267efd0088ec15a8b42"
+          },
+          "bytes": 2144
+        }
+      }
+    },
+    {
+      "directory": "partial",
+      "key": "8083dcee2569971b8ab56e0f8325c7dca4c94c7ab0cb937cee1a201ad952e280",
+      "stages": {
+        "pending": {
+          "raw_sha256": "e87ab8578c2abbcfc754d384af33465b17a390478bb692d7cc73e85698da64a4",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "pending",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "188",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "228",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "22"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": ""
+          },
+          "bytes": 2079
+        },
+        "first-applied": {
+          "raw_sha256": "02fcade912bb313ac4540b171a1c77cce29976707af190c30c6ebef3c7efb455",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "first-applied",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "188",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "228",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "22"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": "e87ab8578c2abbcfc754d384af33465b17a390478bb692d7cc73e85698da64a4"
+          },
+          "bytes": 2149
+        },
+        "second-applied": {
+          "raw_sha256": "0b654d435297d73781b4dd745a4be2013e400a6a6dd7603abae37850f74d0dfd",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "second-applied",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "188",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "228",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "22"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": "02fcade912bb313ac4540b171a1c77cce29976707af190c30c6ebef3c7efb455"
+          },
+          "bytes": 2150
+        },
+        "complete": {
+          "raw_sha256": "a2dfb898ede539f2e13e406973ab9681f6fd7da5be0ae23ebc069e2307e5c03a",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "complete",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "188",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "228",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "22"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": "0b654d435297d73781b4dd745a4be2013e400a6a6dd7603abae37850f74d0dfd"
+          },
+          "bytes": 2144
+        }
+      }
+    },
+    {
+      "directory": "cancel",
+      "key": "8083dcee2569971b8ab56e0f8325c7dca4c94c7ab0cb937cee1a201ad952e280",
+      "stages": {
+        "pending": {
+          "raw_sha256": "9b7ac3e195b51ddb9431f8c49394fb71d8bddafcbfedfa81874f4e5bdbdb13e1",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "pending",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "268",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "308",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "28"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": ""
+          },
+          "bytes": 2079
+        },
+        "first-applied": {
+          "raw_sha256": "8c7079b960df72b86d1fdcc80b1f7eb7d0b57293776b58bdd9f5a217842183bf",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "first-applied",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "268",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "308",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "28"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": "9b7ac3e195b51ddb9431f8c49394fb71d8bddafcbfedfa81874f4e5bdbdb13e1"
+          },
+          "bytes": 2149
+        },
+        "second-applied": {
+          "raw_sha256": "cd5cab92127e7e05d5700c1d3dc411985fc7c66eac748061db783c1cb9253a2a",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "second-applied",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "268",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "308",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "28"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": "8c7079b960df72b86d1fdcc80b1f7eb7d0b57293776b58bdd9f5a217842183bf"
+          },
+          "bytes": 2150
+        },
+        "complete": {
+          "raw_sha256": "16f891786f523b9fecfc8ede7ba33cd66eee9d672cc6de3524e98590bff81e59",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "complete",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "268",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "308",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "28"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": "cd5cab92127e7e05d5700c1d3dc411985fc7c66eac748061db783c1cb9253a2a"
+          },
+          "bytes": 2144
+        }
+      }
+    },
+    {
+      "directory": "witness",
+      "key": "8083dcee2569971b8ab56e0f8325c7dca4c94c7ab0cb937cee1a201ad952e280",
+      "stages": {
+        "pending": {
+          "raw_sha256": "44e476edddf798dc5f051383a7f6b54a52cd62efba3ce9a23ff8a6a860936680",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "pending",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "348",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "388",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "34"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": ""
+          },
+          "bytes": 2079
+        },
+        "first-applied": {
+          "raw_sha256": "bbb0247b91b2613006990e6b95068a37c0ebd0f52ccec36dea4ab4089650fc1b",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "first-applied",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "348",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "388",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "34"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": "44e476edddf798dc5f051383a7f6b54a52cd62efba3ce9a23ff8a6a860936680"
+          },
+          "bytes": 2149
+        },
+        "second-applied": {
+          "raw_sha256": "32fa991853ffcdc43f3de24484f9eab27eb116ae7ca3515667c41825c62f58f3",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "second-applied",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "348",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "388",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "34"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": "bbb0247b91b2613006990e6b95068a37c0ebd0f52ccec36dea4ab4089650fc1b"
+          },
+          "bytes": 2150
+        },
+        "complete": {
+          "raw_sha256": "bddf5ef87eea8a34e13871a010008a240ad50cf0c18ecc055e58a81c131da417",
+          "entry": {
+            "protocol_version": 1,
+            "scope": "original-normal-split-quota-v1",
+            "stage": "complete",
+            "original": {
+              "command": {
+                "protocol_version": 1,
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "issuer_epoch": "1",
+                "revision": "1",
+                "budget_commitment_id": "DEV-QUOTA-NO-PRODUCTION-SOURCE",
+                "postmaster_pid": 2,
+                "postmaster_start_ticks": "1",
+                "memory_max_bytes": "67108864",
+                "pids_max_tasks": "16",
+                "address_space_max_bytes": "536870912",
+                "outside_upper_bytes": "33554432",
+                "huge_pools": [
+                  {
+                    "page_size_kb": "2048",
+                    "pages": "0"
+                  }
+                ]
+              },
+              "source_sha256": "abababababababababababababababababababababababababababababababab",
+              "split_intent_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+              "split_completion_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+              "pg_request_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+              "mapping_generation": "1",
+              "original": {
+                "identity": {
+                  "vm_uid": "quota-dev-vm",
+                  "compute_instance_id": "quota-dev-compute",
+                  "guest_boot_id": "fffd9f3d-7a8d-46fc-9438-c4796fed91d9",
+                  "cgroup_device": "23",
+                  "cgroup_inode": "28"
+                },
+                "parent": {
+                  "device": "23",
+                  "inode": "28",
+                  "memory_max_bytes": "134217728",
+                  "pids_max_tasks": "16",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": "memory pids"
+                },
+                "private": {
+                  "device": "23",
+                  "inode": "348",
+                  "memory_max_bytes": "16777216",
+                  "pids_max_tasks": "8",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "arrays": {
+                  "device": "23",
+                  "inode": "388",
+                  "memory_max_bytes": "33554432",
+                  "pids_max_tasks": "1",
+                  "memory_current_bytes": "0",
+                  "swap_current_bytes": "0",
+                  "swap_max_bytes": "0",
+                  "memory_high_unlimited": true,
+                  "empty": true,
+                  "root_controlled": true,
+                  "controllers": ""
+                },
+                "state_device": "65024",
+                "state_inode": "34"
+              },
+              "target_arrays_bytes": "16777216",
+              "force_upper_bytes": "65536",
+              "counter_gap_bytes": "65536"
+            },
+            "previous_sha256": "32fa991853ffcdc43f3de24484f9eab27eb116ae7ca3515667c41825c62f58f3"
+          },
+          "bytes": 2144
+        }
+      }
+    }
+  ],
+  "complete_chains": 5,
+  "files": 20,
+  "fsck_exit": 0,
+  "normal_permit": false
+}

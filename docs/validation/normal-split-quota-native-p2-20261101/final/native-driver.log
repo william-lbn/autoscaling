@@ -1,0 +1,47 @@
+{
+  "status": "PASS_COMPONENT_ONLY",
+  "pass": true,
+  "rc": 0,
+  "timeout": false,
+  "seconds": 4.257571669004392,
+  "actualKVM": {
+    "enabled": true,
+    "present": true
+  },
+  "GuestMemoryMiB": 1024,
+  "GuestCPUs": 2,
+  "kernelTuple": {
+    "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+    "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+  },
+  "guestNotesSHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "GuestRelease": [
+    "6.12.26-william-normal-split-v1-e210f5e3ee94"
+  ],
+  "GuestExit": [
+    "0"
+  ],
+  "TestExit": [
+    "0"
+  ],
+  "caseIDs": [
+    "NEON-S-QUOTA-001",
+    "NEON-S-QUOTA-002",
+    "NEON-S-QUOTA-003",
+    "NEON-S-QUOTA-004",
+    "NEON-S-QUOTA-005"
+  ],
+  "testBinarySHA256": "e6ed575934dbdbc7ca45a736305de985858ee61c76061b93e62595ae52fa0311",
+  "stateDiskSHA256": "15fe3ae49a6925d9a52a9439a29e1ed5da652ed8c655cd5aced81555e3599a29",
+  "fsckExit": 0,
+  "normalDecreasePermit": false,
+  "notProven": [
+    "production fixed ISO loader and original Source issuance",
+    "Root Birth/Enrollment",
+    "continuous force/I/K envelope and no added OOM",
+    "safe normal decrease",
+    "real PG workload",
+    "Kubernetes E2E"
+  ]
+}

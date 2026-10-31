@@ -1,0 +1,13 @@
+P2独立只读初审：P1实际数组服务/出生链
+准确范围：cf369 + array-authority-go-20261031T202629Z-f3f686/source 原owned33冻结图；逐hash实核。其source/test/build0只是该旧图。后继private reader/cap gate与Grow-only改动尚属P1 WIP，不以本收据认证。
+已确认真实阻断并作者接受：pgexec在全部ResizePG（含Shrink）StartCAS后调用新增ArrayAuthority，而arrayAuthorityOriginalLocked要求旧held.totalUpper <= Request.TargetVMMemoryBytes。旧held上界8GiB→先缩PG再降Root/VM到6GiB时授权先拒，形成顺序环；且新C Root populate仅Grow需要。P1已接手只对Grow派发/原Unconfirmed重放新数组授权并让Root端明确只收Grow；保留旧Shrink排空、预算、资源门槛、五层normal拒绝。修后必须新准确cohort验证，旧f3不能转签。
+其余已读主体在当前组件边界暂未发现确定阻断：
+1 Pending及record Birth fsync在Go helper原flock内先完成；preexec endpoint有意不取同锁，只核原持久Pending、当前Root实例与真实SO_PEERPIDFD，钉原Task。Native返回后pidfd需双Alive且dev/inode与原pin相等，无从数字PID/WAL重造pin路径。
+2 Base已在原专用M确认stop、完整核身份/过滤器后才存迁private intent→写组→读回→complete→Base；Final与released耐久完成后才在同原flock发布registry。Root重启丢pin保持Unknown。
+3 四FD来源是已钉procdir的map_files精确magic link，不是readlink文本或客户端SCM_RIGHTS；真实maps rw-s/offset0、TMPFS regular/devino/span/四去重与两端pidfdAlive均核。新四inode注册持久后才close旧Root FD；不把close/retire当实际folio释放。
+4 startup packet严格原N0四prefix；runtime packet按完整Key/context/Target及已持久签名Start授权匹配，RPC/helper pending/complete有进程私有durability见证，普通观察不隐式fsync或重跑helper。
+仍须后继准确图复审/实际369：
+- 同TGID所有wait调用图闭合，才可用原ptrace停点的numeric cgroup.procs写。不能仅靠“本M不reap”注释。当前正式tracer与helper实际P_PIDFD wait不按复用numeric等待，有利于闭合；Root完整程序必须没有generic wait(-1)重收原PM。
+- P1新private reader与Apply/Bootstrap/Repair/Split Set/PreSys最终capwriter pending/retiring门禁尚在WIP，初审看到调用点但无冻结/本批认证。
+- 真实369服务最短链未在此图执行；无fixtureRootACK等价资格。完整normal/I/System/Host源及恢复/Helm E2E均未完成，不签normal许可。
+本收据只读，无源码/Git修改；后续最终独审必须引用修后实际hash与运行收据。

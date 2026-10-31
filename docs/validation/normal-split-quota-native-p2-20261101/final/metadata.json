@@ -1,0 +1,13 @@
+{
+  "unit": "normal-split-quota-native-20261031t205506z-e221c1",
+  "nonce": "20261031T205506Z-e221c1",
+  "compile_limits": "BuildKit2CPU2GiB noextraswap/RUN memory.max assertion",
+  "Guest_limits": "1024MiB2CPU KVM-only noNIC Docker2GiB noextraswap",
+  "source_lock_sha256": "c970ee06c017211ab7c97773d3f8f2ba62cb231a9592df78502824f54a9db8f7",
+  "Root4": {
+    "pkg/dsga/resourceguard/normal_split_quota_linux.go": "aa3f2c3aae054c1384069756f3b4acb421025d2c6f28a3eaece9b3939104182f",
+    "pkg/dsga/resourceguard/normal_split_quota_kernel_linux.go": "9264e2cc4fd67b48cceec98ca327831fbe6a5c59bc0b7977703b06291ec91fe8",
+    "pkg/dsga/resourceguard/normal_split_quota_test.go": "8f521bc56c2478dbbb55f3ed1cffe393c2cd186c75bf94092136e05d85913cc6",
+    "pkg/dsga/resourceguard/normal_split_quota_unsupported.go": "46cabc53bde4d8f3d974cc3bdd2016073ebeb173ef7001ecbad26c0562b2561f"
+  }
+}

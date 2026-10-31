@@ -433,6 +433,9 @@ func (g *Guard) normalSplitLocked(ctx context.Context, in normalSplitInputs, op 
 		if name == "arrays" {
 			cap, pids = in.policy.InitialArraysMemoryMaxBytes, 1
 		}
+		if err := g.rejectArrayPendingLocked(s, history); err != nil {
+			return unknown(err)
+		}
 		if err := k.normalSplitSet(name, cap, pids); err != nil {
 			return unknown(err)
 		}

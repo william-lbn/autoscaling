@@ -108,6 +108,13 @@ func (executor *Executor) ReplayOriginal(ctx context.Context) (Progress, error) 
 	if fence.Disposition != control.Fenced {
 		return AwaitingFact, nil
 	}
+	// 只在完整原step.Command==Active.Request且原资源仍确认后，显式恢复
+	// 同一数组授权。Root按完整Key/ref/WAL再核，不由PG packet补原来源。
+	if step.Phase == journal.Unconfirmed && intent.Kind == control.Grow && executor.resources != nil && executor.resources.ArrayAuthorityEnabled() {
+		if _, err := executor.resources.ReplayArrayRequest(ctx, intent); err != nil {
+			return AwaitingFact, err
+		}
+	}
 	// 只有调用者选择显式重放才重新POST。任何错误仍保留原journal；PG返回
 	// Stale/Conflict/Expired等缺结果状态不能据此关闭旧操作或重建空Client。
 	fact, err := executor.client.Resize(ctx, intent)
@@ -251,6 +258,13 @@ func (executor *Executor) Advance(ctx context.Context) (Progress, error) {
 		}
 		step = &dispatch.Step
 		if step.Action == journal.ResizePG {
+			// 真Start CAS成功之后才为准确原命令签发body绑定凭据。Unknown不派发PG，
+			// 原journal/Root WAL/SDK Pending全部保留，不以Status未找到当NoEffect。
+			if intent.Kind == control.Grow && executor.resources != nil && executor.resources.ArrayAuthorityEnabled() {
+				if _, err := executor.resources.AuthorizeArrayRequest(ctx, intent); err != nil {
+					return AwaitingFact, err
+				}
+			}
 			fact, err := executor.client.Resize(ctx, intent)
 			if err != nil {
 				return AwaitingFact, err

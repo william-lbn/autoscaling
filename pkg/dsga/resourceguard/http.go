@@ -40,14 +40,15 @@ func (v *FenceRequest) UnmarshalJSON(b []byte) error {
 // token。独立root服务重新验Ed25519签名、固定aud/scope/实例和时间；Compute已
 // 验签不是root跳过校验的理由。epoch只是调用权限，实际执行仍由持久floor裁决。
 type resourceClaims struct {
-	Audience          string         `json:"aud"`
-	Scope             string         `json:"scope"`
-	ComputeID         string         `json:"compute_id"`
-	VMUID             string         `json:"vm_uid"`
-	ComputeInstanceID string         `json:"compute_instance_id"`
-	IssuerEpoch       control.Uint64 `json:"issuer_epoch"`
-	Expires           uint64         `json:"exp"`
-	NotBefore         uint64         `json:"nbf"`
+	Audience          string              `json:"aud"`
+	Scope             string              `json:"scope"`
+	ComputeID         string              `json:"compute_id"`
+	VMUID             string              `json:"vm_uid"`
+	ComputeInstanceID string              `json:"compute_instance_id"`
+	IssuerEpoch       control.Uint64      `json:"issuer_epoch"`
+	Expires           uint64              `json:"exp"`
+	NotBefore         uint64              `json:"nbf"`
+	Request           *signedArrayRequest `json:"request,omitempty"`
 }
 
 type resourceBackend interface {
@@ -63,11 +64,12 @@ type resourceBackend interface {
 }
 
 type resourceHTTP struct {
-	source SourceConfig
-	key    ed25519.PublicKey
-	kid    string
-	guard  resourceBackend
-	now    func() time.Time
+	source               SourceConfig
+	key                  ed25519.PublicKey
+	kid                  string
+	guard                resourceBackend
+	now                  func() time.Time
+	arrayProtocolVersion uint32
 }
 
 // newResourceHandler只能由root生产入口使用封存原来源创建。没有initialize或
@@ -124,7 +126,7 @@ func (h *resourceHTTP) verify(r *http.Request) (resourceClaims, error) {
 		return c, fmt.Errorf("invalid claims")
 	}
 	now := h.now().Unix()
-	if now < 0 || c.Audience != "neon-dsga" || c.Scope != "compute_ctl:dsga" || control.ValidateID(c.ComputeID, "Compute") != nil || c.VMUID != h.source.Config.VMUID || c.ComputeInstanceID != h.source.Config.ComputeInstanceID || c.IssuerEpoch == 0 || c.Expires <= c.NotBefore || c.Expires-c.NotBefore > 300 || uint64(now) < c.NotBefore || uint64(now) >= c.Expires {
+	if now < 0 || c.Audience != "neon-dsga" || (c.Scope != "compute_ctl:dsga" && c.Scope != arrayAuthorityScope) || control.ValidateID(c.ComputeID, "Compute") != nil || c.VMUID != h.source.Config.VMUID || c.ComputeInstanceID != h.source.Config.ComputeInstanceID || c.IssuerEpoch == 0 || c.Expires <= c.NotBefore || c.Expires-c.NotBefore > 300 || uint64(now) < c.NotBefore || uint64(now) >= c.Expires {
 		return resourceClaims{}, fmt.Errorf("unauthorized resource credential")
 	}
 	return c, nil
@@ -148,13 +150,58 @@ func (h *resourceHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		deny(http.StatusBadRequest)
 		return
 	}
+	// 专用scope不能进入普通apply，通用scope也不能进入数组授权。签名绑定
+	// 必须按收到的准确原字节比较；验证失败前不调用backend/触任何WAL。
+	if arrayAuthorityPath(r.URL.Path) {
+		if claims.Scope != arrayAuthorityScope || claims.Request == nil || r.Method != http.MethodPost || r.Header.Get("Content-Type") != "application/json" {
+			deny(http.StatusForbidden)
+			return
+		}
+		raw, readErr := io.ReadAll(http.MaxBytesReader(w, r.Body, arrayAuthorityMaximumBodyBytes))
+		if readErr != nil || !claims.Request.matches(r, raw) {
+			deny(http.StatusForbidden)
+			return
+		}
+		var command ArrayAuthorityCommand
+		if json.Unmarshal(raw, &command) != nil || command.Identity.VMUID != claims.VMUID || command.Identity.ComputeInstanceID != claims.ComputeInstanceID || command.IssuerEpoch != claims.IssuerEpoch {
+			deny(http.StatusForbidden)
+			return
+		}
+		backend, ok := h.guard.(arrayAuthorityBackend)
+		if !ok {
+			deny(http.StatusConflict)
+			return
+		}
+		var evidence ArrayAuthorityEvidence
+		switch r.URL.Path {
+		case "/dsg/v1/resource/array-authorize":
+			evidence, err = backend.AuthorizeArrays(r.Context(), command)
+		case "/dsg/v1/resource/array-observe":
+			evidence, err = backend.ObserveArrayAuthority(r.Context(), command)
+		case "/dsg/v1/resource/array-replay-original":
+			evidence, err = backend.ReplayArrayAuthority(r.Context(), command)
+		}
+		if err != nil || evidence.validateFor(command) != nil {
+			deny(http.StatusConflict)
+			return
+		}
+		_ = json.NewEncoder(w).Encode(evidence)
+		return
+	}
+	if claims.Scope != "compute_ctl:dsga" || claims.Request != nil {
+		deny(http.StatusForbidden)
+		return
+	}
 	var result any
 	if r.URL.Path == "/dsg/v1/resource/identity" && r.Method == http.MethodGet {
 		result, err = h.guard.InspectIdentity()
 	} else if r.URL.Path == "/dsg/v1/resource/process" && r.Method == http.MethodGet {
 		result, err = h.guard.InspectProcess(r.Context())
 	} else if r.URL.Path == "/dsg/v1/resource/state" && r.Method == http.MethodGet {
-		result, err = h.guard.InspectState(r.Context())
+		var state View
+		state, err = h.guard.InspectState(r.Context())
+		state.ArrayAuthorityProtocolVersion = h.arrayProtocolVersion
+		result = state
 	} else {
 		if r.Method != http.MethodPost {
 			deny(http.StatusNotFound)

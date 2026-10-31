@@ -429,7 +429,7 @@ func nativeBirthVerifyClosure(m nativeBirthBuildManifest) (*os.File, error) {
 			return nil, fmt.Errorf("native default-loader profile rejects cache/preload or unknown")
 		}
 		if err := nativeBirthReadonlyPath(path); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("native loader control parents %s: %w", path, err)
 		}
 	}
 	for _, dir := range nativeBirthLoaderDirs {
@@ -439,7 +439,7 @@ func nativeBirthVerifyClosure(m nativeBirthBuildManifest) (*os.File, error) {
 			return nil, err
 		}
 		if err := nativeBirthReadonlyPath(filepath.Join(dir, "placeholder")); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("native loader directory %s: %w", dir, err)
 		}
 		if _, err := os.Lstat(filepath.Join(dir, "glibc-hwcaps")); !os.IsNotExist(err) {
 			return nil, fmt.Errorf("native default-loader profile rejects hwcaps")
@@ -466,7 +466,7 @@ func nativeBirthVerifyClosure(m nativeBirthBuildManifest) (*os.File, error) {
 		}
 		f, err := nativeBirthOpenRO(item.Path)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("native closure file %s: %w", item.Path, err)
 		}
 		files[item.Path] = f
 		h, err := nativeBirthFileHash(f)
@@ -504,7 +504,7 @@ func nativeBirthVerifyClosure(m nativeBirthBuildManifest) (*os.File, error) {
 				}
 				resolved, err := nativeBirthCanonical(candidate)
 				if err != nil {
-					return err
+					return fmt.Errorf("native needed candidate %s: %w", candidate, err)
 				}
 				found = resolved
 				break
@@ -523,7 +523,7 @@ func nativeBirthVerifyClosure(m nativeBirthBuildManifest) (*os.File, error) {
 	if entry.Interpreter != "" {
 		actualInterpreter, err = nativeBirthCanonical(entry.Interpreter)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("native interpreter %s: %w", entry.Interpreter, err)
 		}
 	}
 	if actualInterpreter != m.InterpreterPath {
@@ -553,18 +553,18 @@ func readNativeBirthOriginalSource() (nativeBirthSource, *os.File, error) {
 	}
 	runtimeRaw, err := nativeBirthReadISO(FixedRuntimePath, 64<<10)
 	if err != nil {
-		return zero, nil, err
+		return zero, nil, fmt.Errorf("native original runtime ISO: %w", err)
 	}
 	if err := matchSealedFile(FixedSealedRuntimePath, runtimeRaw); err != nil {
-		return zero, nil, err
+		return zero, nil, fmt.Errorf("native original runtime seal: %w", err)
 	}
 	policyRaw, err := nativeBirthReadISO(fixedNativeBirthPolicyPath, 16<<10)
 	if err != nil {
-		return zero, nil, err
+		return zero, nil, fmt.Errorf("native original policy ISO: %w", err)
 	}
 	f, err := nativeBirthOpenRO(fixedNativeBirthBuildPath)
 	if err != nil {
-		return zero, nil, err
+		return zero, nil, fmt.Errorf("native original manifest RO: %w", err)
 	}
 	manifestRaw, err := nativeBirthReadBounded(f, 32<<10)
 	f.Close()
@@ -579,9 +579,12 @@ func readNativeBirthOriginalSource() (nativeBirthSource, *os.File, error) {
 	if err != nil || !reflect.DeepEqual(source.resource, sealed) {
 		return zero, nil, fmt.Errorf("native sealed resource source differs")
 	}
+	if err := verifyNativeArrayHelperOriginal(source); err != nil {
+		return zero, nil, fmt.Errorf("native original helper RO: %w", err)
+	}
 	pg, err := nativeBirthVerifyClosure(source.manifest)
 	if err != nil {
-		return zero, nil, err
+		return zero, nil, fmt.Errorf("native original loader closure: %w", err)
 	}
 	return source, pg, nil
 }

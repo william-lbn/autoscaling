@@ -1,0 +1,47 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 966B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 343B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [test 1/4] FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#5 resolve 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#5 resolve 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 0.0s done
+#5 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 332.47kB 0.1s done
+#4 DONE 0.1s
+
+#6 [test 2/4] WORKDIR /workspace
+#6 CACHED
+
+#7 [test 3/4] COPY . .
+#7 DONE 0.9s
+
+#8 [test 4/4] RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared set -eu; mkdir -p /out; test "$(cat /sys/fs/cgroup/memory.max)" = 2147483648; cat /sys/fs/cgroup/memory.max >/out/memory.max; cat /sys/fs/cgroup/cpu.max >/out/cpu.max; printf "%s\n" "array-service-capwriter-regression-20261031T210443Z-3d795c" >/out/nonce; sha256sum -c actual-source-sha256.txt >/out/actual-copy-verification.txt; cp actual-source-sha256.txt /out/compiled-source-sha256.txt; capsh --drop=cap_dac_override,cap_dac_read_search -- -c "bash /workspace/run-capwriter.sh"
+#8 0.192 /bin/bash: line 1: capsh: command not found
+#8 ERROR: process "/bin/bash -euo pipefail -c set -eu; mkdir -p /out; test \"$(cat /sys/fs/cgroup/memory.max)\" = 2147483648; cat /sys/fs/cgroup/memory.max >/out/memory.max; cat /sys/fs/cgroup/cpu.max >/out/cpu.max; printf \"%s\\n\" \"$NONCE\" >/out/nonce; sha256sum -c actual-source-sha256.txt >/out/actual-copy-verification.txt; cp actual-source-sha256.txt /out/compiled-source-sha256.txt; capsh --drop=cap_dac_override,cap_dac_read_search -- -c \"bash /workspace/run-capwriter.sh\"" did not complete successfully: exit code: 127
+------
+ > [test 4/4] RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared set -eu; mkdir -p /out; test "$(cat /sys/fs/cgroup/memory.max)" = 2147483648; cat /sys/fs/cgroup/memory.max >/out/memory.max; cat /sys/fs/cgroup/cpu.max >/out/cpu.max; printf "%s\n" "array-service-capwriter-regression-20261031T210443Z-3d795c" >/out/nonce; sha256sum -c actual-source-sha256.txt >/out/actual-copy-verification.txt; cp actual-source-sha256.txt /out/compiled-source-sha256.txt; capsh --drop=cap_dac_override,cap_dac_read_search -- -c "bash /workspace/run-capwriter.sh":
+0.192 /bin/bash: line 1: capsh: command not found
+------
+Dockerfile:6
+--------------------
+   4 |     COPY . .
+   5 |     ARG NONCE
+   6 | >>> RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared set -eu; mkdir -p /out; test "$(cat /sys/fs/cgroup/memory.max)" = 2147483648; cat /sys/fs/cgroup/memory.max >/out/memory.max; cat /sys/fs/cgroup/cpu.max >/out/cpu.max; printf "%s\n" "$NONCE" >/out/nonce; sha256sum -c actual-source-sha256.txt >/out/actual-copy-verification.txt; cp actual-source-sha256.txt /out/compiled-source-sha256.txt; capsh --drop=cap_dac_override,cap_dac_read_search -- -c "bash /workspace/run-capwriter.sh"
+   7 |     FROM scratch
+   8 |     COPY --from=test /out/ /
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/bash -euo pipefail -c set -eu; mkdir -p /out; test \"$(cat /sys/fs/cgroup/memory.max)\" = 2147483648; cat /sys/fs/cgroup/memory.max >/out/memory.max; cat /sys/fs/cgroup/cpu.max >/out/cpu.max; printf \"%s\\n\" \"$NONCE\" >/out/nonce; sha256sum -c actual-source-sha256.txt >/out/actual-copy-verification.txt; cp actual-source-sha256.txt /out/compiled-source-sha256.txt; capsh --drop=cap_dac_override,cap_dac_read_search -- -c \"bash /workspace/run-capwriter.sh\"" did not complete successfully: exit code: 127

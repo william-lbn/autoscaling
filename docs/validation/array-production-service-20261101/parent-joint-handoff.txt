@@ -1,0 +1,7 @@
+本批冻结交接（不改业务源/不Git）
+
+1. 取native-build-final/source-lock.json的51个selected hash；其中47为P1当前源，另4共同依赖为历史5fa。原包894 actualCOPY完全通过。最终S仅8b3/nativeELF1a0df3/f8811b有效；U9120生产完全同字节、唯一差异native测试探针见diff。
+2. Root后继joint需用47当前P1+Root已冻结11源（包括最新guard/cancel/view/quota_state），不从活动FS或P2 SystemLifecycle WIP混拍。不修改本历史selected51。共同Root源请由Root独立stage，不采用此脚本stage清单覆盖。
+3. 全部入口门禁inventory为function-inventory.json。数组入口仍需与Root最终quota/handoff hook联合：arrayAuthorityOriginalLocked、array服务populate、实际四组注册/retiring与Guard Apply/Bootstrap/Repair/Split/PreSys finalwriters。g.rejectArrayPendingLocked只检查array持久/pin/RPC/retiring；Root g.checkNormalQuotaResourceLocked是独立额度有效性门，不能互相替代。InspectState须Root g.checkNormalQuotaObservationLocked，不能visibleApplied或小actualcap替代原Held。
+4. normal public consumer仍拒绝；原ErrUnsafeNormalDecrease未放宽。回收quota primitive与Held handoff原Source生产者、持续包络/真实normal正向由Root/P2后续闭。测试Source fixture不生产真实权限。后继公共上层协议保持PG中立，PG17/18 API6/Work2不随此组件改变。
+5. Root完成独立读审和joint验证后才中文提交/远端核SHA；本脚本只生成精确列表与hash，未接触index。

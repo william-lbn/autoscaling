@@ -1,0 +1,12 @@
+{"ImportPath":"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard","Action":"build-output","Output":"# github.com/neondatabase/autoscaling/pkg/dsga/resourceguard\n"}
+{"ImportPath":"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard","Action":"build-output","Output":"pkg/dsga/resourceguard/array_registry_registration_linux.go:15:2: \"github.com/neondatabase/autoscaling/pkg/api/dsga\" imported as control and not used\n"}
+{"ImportPath":"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard","Action":"build-fail"}
+{"Time":"2026-10-31T20:24:15.398607876Z","Action":"start","Package":"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"}
+{"Time":"2026-10-31T20:24:15.398648026Z","Action":"output","Package":"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard","Output":"FAIL\tgithub.com/neondatabase/autoscaling/pkg/dsga/resourceguard [build failed]\n"}
+{"Time":"2026-10-31T20:24:15.398654872Z","Action":"fail","Package":"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard","Elapsed":0,"FailedBuild":"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"}
+{"Time":"2026-10-31T20:24:20.880937438Z","Action":"start","Package":"github.com/neondatabase/autoscaling/pkg/dsga/credential"}
+{"Time":"2026-10-31T20:24:20.880994815Z","Action":"output","Package":"github.com/neondatabase/autoscaling/pkg/dsga/credential","Output":"FAIL\tgithub.com/neondatabase/autoscaling/pkg/dsga/credential [build failed]\n"}
+{"Time":"2026-10-31T20:24:20.88100844Z","Action":"fail","Package":"github.com/neondatabase/autoscaling/pkg/dsga/credential","Elapsed":0,"FailedBuild":"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"}
+{"Time":"2026-10-31T20:24:21.511828961Z","Action":"start","Package":"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"}
+{"Time":"2026-10-31T20:24:21.511871621Z","Action":"output","Package":"github.com/neondatabase/autoscaling/pkg/dsga/pgexec","Output":"FAIL\tgithub.com/neondatabase/autoscaling/pkg/dsga/pgexec [build failed]\n"}
+{"Time":"2026-10-31T20:24:21.511882597Z","Action":"fail","Package":"github.com/neondatabase/autoscaling/pkg/dsga/pgexec","Elapsed":0,"FailedBuild":"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"}

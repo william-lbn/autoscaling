@@ -1,0 +1,10 @@
+quota与原资源Original/Held交接组件（2026-11-01）
+
+同原flock内先持久原v3 Unknown，再按四阶段quota事务写实际A/N，最后只为同原命令持久Held。保留不可变Bootstrap/AS/System/pids/Birth，版本中性View不增加PG分支字段；旧v1/v2不升级。内部v3明确使旧程序拒绝回滚，取消不能降版本。
+完整quota四前缀与state原inode/字节/fsync成功必须都有本Guard见证。rename后可见、原内容换inode、新Guard都不能由public Apply/Replay/Observe/InspectState借用ConfirmedLimits。普通Observe严格零写；只有显式私有recover重核Source/当前真实cap并同步完整原前缀和状态，可恢复确认，不重写任何旧epoch cap。
+真实N/A升降都走quota同一事务；generic仅同额度预算/元数据续接，不把真实Grow改成仅增加父N。历史Q→预算G→新Guard可以精确recover保留Q并确认当前G，全部Applied=true状态均需state见证。Fence即使pending元数据仍推进owner且不补签Unknown；取消屏障保留v3并仅在原已确认后刷新状态见证。
+
+本批9个新单元根14子例，原Quota4 6根21子例、取消7根16子例和View3根9子例直接回归，共25根60子例全部race通过，零skip。实际3485冻结输入hash核验，BuildKit真实2CPU/2GiB无额外swap。内核、进程与完整Source均是模型；真实文件flock/WAL/O_EXCL/rename/fsync在Linux执行。独立复审已核精确tuple与所有公共正负入口，不重复运行无关Neon逻辑。
+四次先前失败原日志保留：两个测试编译问题、缺出生AS事实、临时StateDir未接；均未改旧结果、未弱化生产门禁。最终新nonce通过才归档。
+
+本档不包括生产opaque Source producer，也没有public正常降限旁路、normal许可、VM伸缩或K8s验收。Quota4实际369原5S另档，不能拿它的fake Source称持续安全证明。后续需与最新P1生产链做精确联合源码验证后才合并提交；本归档尚不修改发行锁。

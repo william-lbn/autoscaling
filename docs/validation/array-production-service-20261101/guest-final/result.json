@@ -1,0 +1,61 @@
+{
+  "id": "PG17-S-ARRAY-SERVICE-001",
+  "status": "PASS_COMPONENT_ONLY",
+  "host_qemu_exit": 0,
+  "Guest_exits": [
+    "0"
+  ],
+  "actual_qmp_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "actual_initial_base": {
+    "base-memory": 268435456,
+    "plugged-memory": 0
+  },
+  "grow_sent": true,
+  "actual_target": {
+    "summary": {
+      "base-memory": 268435456,
+      "plugged-memory": 1342177280
+    },
+    "devices": [
+      {
+        "type": "virtio-mem",
+        "data": {
+          "memdev": "/objects/mem0",
+          "memaddr": 4294967296,
+          "block-size": 8388608,
+          "size": 1342177280,
+          "node": 0,
+          "max-size": 1342177280,
+          "requested-size": 1342177280,
+          "id": "vmem0"
+        }
+      }
+    ]
+  },
+  "qmp_errors": [
+    "[Errno 2] No such file or directory"
+  ],
+  "seconds": 21.050676535000093,
+  "roots": [
+    "TestNativeArrayServiceBirthAndPopulate"
+  ],
+  "subcases": [],
+  "reports": [
+    "array-service-diagnostics.json",
+    "array-service-real.json",
+    "postgres.log"
+  ],
+  "errors": [],
+  "go_binary_sha256": "1a0df3fdf2ac07435199249de53282a1189534e38c9e57228bd13cacc99a364f",
+  "kernel_image_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+  "kernel_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+  "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "console_sha256": "f7ea6e482de613158a8c75950e858dc5331096c73fd04ed3fd81b5d71f83643e",
+  "Host_source_fixture": true,
+  "PG_started": true,
+  "normal_authorized": false,
+  "E": 0
+}

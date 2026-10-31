@@ -100,6 +100,9 @@ func (g *Guard) CancelOriginal(ctx context.Context, request CancelRequest) (Canc
 	}
 	err := g.withRecord(ctx, func(r *record, state *lockedState) error {
 		command := request.Command
+		if err := g.checkNormalQuotaResourceLocked(state, r); err != nil {
+			return err
+		}
 		if request.IssuerEpoch != r.Floor || command.Identity != r.Identity || r.Bootstrap == nil || !r.Bootstrap.Applied || r.Birth == nil || !r.Birth.matches(command) || command.PidsMaxTasks != r.taskLimit() || command.SystemMemoryMaxBytes != r.systemLimit() || command.AddressSpaceMaxBytes != r.addressSpaceLimit() {
 			return fmt.Errorf("resource cancellation original source or floor differs")
 		}
@@ -136,9 +139,14 @@ func (g *Guard) CancelOriginal(ctx context.Context, request CancelRequest) (Canc
 			r.Cancelled = &cancelled
 			// 格式升级与屏障同一次原子rename/fsync，不能让旧程序在回滚后
 			// 把新字段当作可忽略metadata，从而失去防迟到执行的硬约束。
-			r.Version = 2
+			if r.NormalSplitQuota == nil {
+				r.Version = 2
+			} // quota v3不可被取消屏障降回旧版本。
 			if err := state.save(r); err != nil {
 				return fmt.Errorf("%w: resource cancellation persistence: %w", ErrUnknown, err)
+			}
+			if err := g.confirmNormalQuotaMetadataLocked(ctx, state, r); err != nil {
+				return err
 			}
 			view.Cancelled = r.Cancelled
 		}

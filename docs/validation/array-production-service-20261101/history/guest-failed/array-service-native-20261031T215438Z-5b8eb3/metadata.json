@@ -1,0 +1,19 @@
+{
+  "unit": "neon-array-service-native-20261031t215438z-5b8eb3",
+  "nonce": "20261031T215438Z-5b8eb3",
+  "guest": {
+    "vcpus": 2,
+    "base_bytes": 268435456,
+    "target_bytes": 1610612736
+  },
+  "docker_hard_limits": {
+    "cpus": 2,
+    "memory": "2g",
+    "memory_swap": "2g"
+  },
+  "outer_unit": {
+    "CPUQuota": "200%",
+    "MemoryMax": "2G"
+  },
+  "scope": "REAL_PRODUCTION_FUNCTIONS_ISOLATED_GUEST_TEST_HOST_ISSUER_NOT_NORMAL_OR_E"
+}

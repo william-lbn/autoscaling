@@ -248,6 +248,9 @@ func (g *Guard) bootstrapLocked(ctx context.Context, c BootstrapCommand, observe
 	if err := s.save(r); err != nil {
 		return evidence, fmt.Errorf("%w: bootstrap intent persistence: %v", ErrUnknown, err)
 	}
+	if err := g.rejectArrayPendingLocked(s, r); err != nil {
+		return evidence, err
+	}
 	if err := g.kernel.ApplyBounds(c.Limits); err != nil {
 		return evidence, fmt.Errorf("%w: bootstrap write may have applied: %v", ErrUnknown, err)
 	}

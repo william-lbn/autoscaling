@@ -1,0 +1,7 @@
+P2独立复审：P1数组生产链新授权/五capwriter直接回归
+已关闭原f3初审的真实Shrink顺序阻断：pgexec新数组授权与原Unconfirmed授权重放均只对Grow启用，Root端也明确只收Grow。a2新TestArrayAuthorityExecutorEnabledGrowAndShrinkStartReplay真实required=1 Client+TLS、typed UID/RV StartCAS，Grow只在Unconfirmed之后到凭据边界且错误时零PG派发；Shrink完整Prepared/Quiesced/DSM和原Root资源检查均保留，首派发丢回复后显式Replay成功，两次均零新授权回调。不是resources=nil/v1旧夹具。
+同a2另外三根真实磁盘O_EXCL/flock测试覆盖四族orphan对Apply/Replay阻写、旧无历史gate零写、RPC完整可见未见证/新Root/同字节新inode/不同nonce不能补耐久。backend/Source明确模型，不当真实cgroup或PG。
+我独占执行的旧5capwriter33根103sub全部race PASS/0skip，原849不可变图888COPY，实际2GiB/CPU200000100000；setpriv降DAC_OVERRIDE/DAC_READ_SEARCH后真实权限故障旧根通过。未改生产或测试源码。首3d795c缓存工具缺capsh退出127保留，新a7d3db才通过。
+a2相对849生产仅native_birth_source_linux.go错误阶段%w补充变化，另新增上述两个_test文件；capwriter五源、pin/registry/授权生产字段与Grow-only规则均同。此处不把33旧图重新标成a2一次运行；逐源关系见review.json。
+已读的生产链顺序：原Pending/Birth持久→真实preexec SO_PEERPIDFD pin→Native同对象→完整Base停点迁private→Final/released持久→原flock发布四FD registry；map_files真实TMPFS/devino/span/四去重、PeerAlive、注册代/retiring/RPC/helper私有耐久门禁均有实际代码，无日志numeric PID重开pin入口。
+仍不作最终生产服务S通过：真实369当前到8WAL/Split后Bootstrap原loader closure ENOENT，PG尚未启动；由P1继续精确诊断。sameTGID所有wait者的闭包与后继Source/预算/持续F/I/System必须单独原来源，不能以本单元/初审或opaque scalar代签。当前只关闭发现的功能回归，非完整normal/Root恢复/Helm E2E资格。

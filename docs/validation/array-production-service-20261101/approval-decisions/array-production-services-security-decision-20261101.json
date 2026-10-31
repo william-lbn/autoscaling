@@ -1,0 +1,15 @@
+{
+  "initial_action": "proposed new birth/array unix sockets mode0666",
+  "automatic_review": "REJECTED_BEFORE_EXECUTION",
+  "reason": "world-writable new privileged Birth/cgroup service has narrower authorized alternative",
+  "executed": false,
+  "replacement": {
+    "parent": "root-owned0755 fixed directory",
+    "socket_mode": "0660",
+    "socket_owner": "root",
+    "socket_group": "trusted postgres primary GID from actual account",
+    "mandatory_authority": "actual UID/GID+kernel SO_PEERPIDFD+original immutable Pending+original Source; connect permission not authorization"
+  },
+  "unchanged_existing_service": "resource.sock original permissions/claims unchanged",
+  "host_or_other_service_permission_changes": false
+}

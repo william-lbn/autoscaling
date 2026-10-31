@@ -1,0 +1,15 @@
+{
+  "status": "ENV_PREPARE_FAILED_NOT_KVM_RUN",
+  "command": [
+    "docker",
+    "cp",
+    "-L",
+    "<ephemeral-readonly-runtime-container>:/usr/local/share/postgresql",
+    "<newroot>/usr/local/share/postgresql"
+  ],
+  "exit": 1,
+  "cause": "guessed share directory absent; actual immutable runtime pg_config --sharedir=/usr/local/share",
+  "host_cgroup_mutated": false,
+  "guest_started": false,
+  "container_removed_in_finally": true
+}

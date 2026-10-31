@@ -1,0 +1,733 @@
+{
+  "scope": "PG17_PRODUCTION_FUNCTION_COMPONENT_NOT_FINAL_NORMAL_OR_E2E",
+  "new_unit_ids": [
+    {
+      "id": "PG17-U-ARRAY-SERVICE-001",
+      "root": "TestArrayCredentialExactBindingNoGenericCache",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/credential",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 0,
+      "source": {
+        "file": "pkg/dsga/credential/array_authority_test.go",
+        "line": 18
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-002",
+      "root": "TestArrayCredentialRejectsBindingAndGrantDrift",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/credential",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 14,
+      "source": {
+        "file": "pkg/dsga/credential/array_authority_test.go",
+        "line": 45
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-003",
+      "root": "TestArrayAuthorityExecutorEnabledGrowAndShrinkStartReplay",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/pgexec",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 2,
+      "source": {
+        "file": "pkg/dsga/pgexec/array_authority_test.go",
+        "line": 58
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-004",
+      "root": "TestArrayAuthorityCapabilityDerivedFromOriginalRuntimeAndHelperABI",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 3,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_source_linux_test.go",
+        "line": 33
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-005",
+      "root": "TestArrayAuthorityCapabilityRejectsBrokenDeclaredProfile",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 7,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_source_linux_test.go",
+        "line": 67
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-006",
+      "root": "TestArrayAuthorityClientLostReplyRetainsOriginalAndExplicitObserve",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 0,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_auth_test.go",
+        "line": 113
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-007",
+      "root": "TestArrayAuthorityClientModeRequiresRootSourceAndNeverDowngrades",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 0,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_mode_test.go",
+        "line": 12
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-008",
+      "root": "TestArrayAuthorityHTTPExactSignedBodyAndScopeIsolation",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 12,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_auth_test.go",
+        "line": 61
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-009",
+      "root": "TestArrayAuthorityHTTPStrictCommandBeforeBackend",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 4,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_auth_test.go",
+        "line": 168
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-010",
+      "root": "TestArrayAuthoritySignedPacketCannotConstructOriginalRegistry",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 3,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_auth_test.go",
+        "line": 188
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-011",
+      "root": "TestArrayAuthorityViewVersionAndLegacyOmission",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 0,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_mode_test.go",
+        "line": 68
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-012",
+      "root": "TestArrayAuthorityWALOriginalBytesAndNoImplicitReplacement",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 5,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_authority_linux_test.go",
+        "line": 41
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-013",
+      "root": "TestArrayAuthorityWALPopulateMatchesOriginalSignedRequest",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 9,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_authority_linux_test.go",
+        "line": 175
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-014",
+      "root": "TestArrayAuthorityWALRestartIdentityAndPartialRemainUnknown",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 4,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_authority_linux_test.go",
+        "line": 130
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-015",
+      "root": "TestArrayAuthorityWALVisibleCompleteNeedsDurabilityAndExplicitReplay",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 4,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_authority_linux_test.go",
+        "line": 78
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-016",
+      "root": "TestArrayHelperOriginalPolicyVersionAndLegacyOmission",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 11,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_helper_policy_test.go",
+        "line": 10
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-017",
+      "root": "TestArrayHelperPolicyJSONCannotSilentlyDowngrade",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 0,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_helper_policy_test.go",
+        "line": 61
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-018",
+      "root": "TestArrayRPCDurabilityAndOriginalFileIdentity",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 0,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_pending_linux_test.go",
+        "line": 74
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-019",
+      "root": "TestArrayRegistryWireRejectsMalformed",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 26,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_registry_wire_test.go",
+        "line": 66
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-020",
+      "root": "TestArrayRegistryWireReplyBindings",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 8,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_registry_wire_test.go",
+        "line": 123
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-021",
+      "root": "TestArrayRegistryWireRoundTrip",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 4,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_registry_wire_test.go",
+        "line": 23
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-022",
+      "root": "TestArrayRuntimeClosureOriginalManifestAndLegacyShape",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 0,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_runtime_closure_test.go",
+        "line": 12
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-023",
+      "root": "TestArrayRuntimeClosureRejectsMalformed",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 10,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_runtime_closure_test.go",
+        "line": 53
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-024",
+      "root": "TestArrayServiceLegacyGateHasNoEffects",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 0,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_pending_linux_test.go",
+        "line": 48
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    },
+    {
+      "id": "PG17-U-ARRAY-SERVICE-025",
+      "root": "TestArrayServiceOrphanHistoryPreventsCapWrites",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "layer": "unit_or_protocol_integration_fixture",
+      "named_subcases": 4,
+      "source": {
+        "file": "pkg/dsga/resourceguard/array_service_pending_linux_test.go",
+        "line": 19
+      },
+      "receipt": "unit-final/export/test.json",
+      "new_against_base": "2fe36f12a970b5a7d7606425a5f09a0982f91b3f"
+    }
+  ],
+  "unit": {
+    "cohort": "/data/neon-build/validation/array-service-go-20261031T220005Z-9120c2",
+    "roots": 73,
+    "named_subcases": 381,
+    "new_roots": 25,
+    "new_named_subcases": 130,
+    "direct_regression_roots": 48,
+    "direct_regression_named_subcases": 251,
+    "fail": 0,
+    "skip": 0,
+    "race": true,
+    "packages": [
+      "github.com/neondatabase/autoscaling/pkg/dsga/credential",
+      "github.com/neondatabase/autoscaling/pkg/dsga/pgexec",
+      "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+    ],
+    "existing_roots": [
+      {
+        "Time": "2026-10-31T22:00:25.394174477Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestAddressSpaceProcStrictPrivilegesAndExistingMappings",
+        "Elapsed": 0.01
+      },
+      {
+        "Time": "2026-10-31T22:00:25.396370196Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestAddressSpacePIDListsAndBoundedStableObservation",
+        "Elapsed": 0
+      },
+      {
+        "Time": "2026-10-31T22:00:25.436995178Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestAddressSpaceOriginalSourceAndEnvironment",
+        "Elapsed": 0.04
+      },
+      {
+        "Time": "2026-10-31T22:00:25.964727035Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestAddressSpaceFreezeBirthAndRuntimeBeforeWAL",
+        "Elapsed": 0.53
+      },
+      {
+        "Time": "2026-10-31T22:00:26.649432949Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestAddressSpaceDriftBlocksWriteReadbackAndRepair",
+        "Elapsed": 0.68
+      },
+      {
+        "Time": "2026-10-31T22:00:26.73784845Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestAddressSpaceBootstrapUnknownRetainsOriginalAndLegacyCannotUpgrade",
+        "Elapsed": 0.09
+      },
+      {
+        "Time": "2026-10-31T22:00:27.066334748Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestAddressSpaceCancellationAndUnknownOriginalKeepExactSource",
+        "Elapsed": 0.33
+      },
+      {
+        "Time": "2026-10-31T22:00:27.094679237Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestAddressSpaceBootstrapRejectsIncompleteFactsBeforeCreatingWAL",
+        "Elapsed": 0.03
+      },
+      {
+        "Time": "2026-10-31T22:00:27.369484451Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestAddressSpaceDurableBirthOriginalHeldAndCancellationRejectFieldRemoval",
+        "Elapsed": 0.27
+      },
+      {
+        "Time": "2026-10-31T22:00:29.204259939Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/credential",
+        "Test": "TestConcurrentCallbacksShareMintAndRefreshProjectedFile",
+        "Elapsed": 0.02
+      },
+      {
+        "Time": "2026-10-31T22:00:29.236329849Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/credential",
+        "Test": "TestGuestCertificateRejectedBeforeProjectedBearerSent",
+        "Elapsed": 0.01
+      },
+      {
+        "Time": "2026-10-31T22:00:29.364504474Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/credential",
+        "Test": "TestGrantRejectsWrongBindingSchemaExpiryAndNoCache",
+        "Elapsed": 0.13
+      },
+      {
+        "Time": "2026-10-31T22:00:29.378540149Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/credential",
+        "Test": "TestComputeIdentityChangePermanentlyClosesThisClient",
+        "Elapsed": 0.01
+      },
+      {
+        "Time": "2026-10-31T22:00:29.407977439Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/credential",
+        "Test": "TestOwnerCancellationStopsCacheAndInFlightMint",
+        "Elapsed": 0.03
+      },
+      {
+        "Time": "2026-10-31T22:00:29.486963064Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites",
+        "Elapsed": 0.05
+      },
+      {
+        "Time": "2026-10-31T22:00:29.502965264Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/credential",
+        "Test": "TestAuthorityAndWaiterDeadlinesAreIndependent",
+        "Elapsed": 0.1
+      },
+      {
+        "Time": "2026-10-31T22:00:29.517774262Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/credential",
+        "Test": "TestChangedAuthorityNeverReturnsCachedToken",
+        "Elapsed": 0.01
+      },
+      {
+        "Time": "2026-10-31T22:00:29.540144637Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestResourceHTTPBoundFenceRetainsOriginalAcrossLargeEpoch",
+        "Elapsed": 0.05
+      },
+      {
+        "Time": "2026-10-31T22:00:29.610174874Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestResourceHTTPClientUnknownHasNoAutomaticReplayAndRestoresOriginal",
+        "Elapsed": 0.07
+      },
+      {
+        "Time": "2026-10-31T22:00:29.676526843Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestResourceHTTPClientLostCompletionUsesReadbackAndRejectsIncompleteEvidence",
+        "Elapsed": 0.07
+      },
+      {
+        "Time": "2026-10-31T22:00:29.709879331Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestNativeBirthSourceELFDynamicMetadata",
+        "Elapsed": 0.03
+      },
+      {
+        "Time": "2026-10-31T22:00:29.737770895Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestNativeBirthSourceExactBytesAndUnsupportedABI",
+        "Elapsed": 0.03
+      },
+      {
+        "Time": "2026-10-31T22:00:29.747982075Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestNativeBirthSourceNonceAndGeometryStrict",
+        "Elapsed": 0.01
+      },
+      {
+        "Time": "2026-10-31T22:00:29.756903289Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestNativeBirthSourceManifestIsBoundedAndStrict",
+        "Elapsed": 0.01
+      },
+      {
+        "Time": "2026-10-31T22:00:29.822704879Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestNativeBirthStageWALOrderedAndNonAuthorizing",
+        "Elapsed": 0.07
+      },
+      {
+        "Time": "2026-10-31T22:00:30.312272227Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestNativeBirthStageWALRejectsOrphanPartialAndGap",
+        "Elapsed": 0.49
+      },
+      {
+        "Time": "2026-10-31T22:00:30.550104943Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestNativeBirthStageWALOriginalConsumerAndSource",
+        "Elapsed": 0.24
+      },
+      {
+        "Time": "2026-10-31T22:00:30.725649161Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestNativeBirthStageWALFailuresPoisonWriterNoReplay",
+        "Elapsed": 0.18
+      },
+      {
+        "Time": "2026-10-31T22:00:30.726468199Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestNativeBirthSourceLinuxReaderRejectsUnqualifiedFiles",
+        "Elapsed": 0
+      },
+      {
+        "Time": "2026-10-31T22:00:30.726741574Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestNativeBirthTracerModelSuccessOrdering",
+        "Elapsed": 0
+      },
+      {
+        "Time": "2026-10-31T22:00:30.73082869Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestNativeBirthTracerModelFaultsCannotReleaseOrKillReusedTarget",
+        "Elapsed": 0
+      },
+      {
+        "Time": "2026-10-31T22:00:30.731428113Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestNativeBirthTracerModelTentativeDAndSETOPTIONSBoundary",
+        "Elapsed": 0
+      },
+      {
+        "Time": "2026-10-31T22:00:30.772780379Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestNativeBirthTracerModelCancellationWaitsForCleanup",
+        "Elapsed": 0.04
+      },
+      {
+        "Time": "2026-10-31T22:00:30.774595573Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestNativeBirthTracerModelStrictStatusAndReservationMaps",
+        "Elapsed": 0
+      },
+      {
+        "Time": "2026-10-31T22:00:30.776978373Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestNativeBirthTracerModelPidfdWaitDecodeAndReaperReuse",
+        "Elapsed": 0
+      },
+      {
+        "Time": "2026-10-31T22:00:30.850520368Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestRuntimePolicyTemplatesRenderFullPrefixWithoutUIDCycle",
+        "Elapsed": 0.07
+      },
+      {
+        "Time": "2026-10-31T22:00:31.040685279Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestRuntimePolicyTemplatesTypedPolicyRejectsUnsupportedOrOverBudget",
+        "Elapsed": 0.19
+      },
+      {
+        "Time": "2026-10-31T22:00:31.045273646Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestRuntimePolicyTemplatesV1ExactBytesAndFieldPresence",
+        "Elapsed": 0
+      },
+      {
+        "Time": "2026-10-31T22:00:31.087749343Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestRuntimePolicyTemplatesStrictEnvelopeAndDependencies",
+        "Elapsed": 0.04
+      },
+      {
+        "Time": "2026-10-31T22:00:31.096359321Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Test": "TestRuntimePolicyTemplatesDocumentRejectsRawDriftAndUnknownFields",
+        "Elapsed": 0.01
+      },
+      {
+        "Time": "2026-10-31T22:00:36.696504931Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/pgexec",
+        "Test": "TestResizeIsWriteAheadAndLostReplyRecoversOnlyByFullIntentQuery",
+        "Elapsed": 3.41
+      },
+      {
+        "Time": "2026-10-31T22:00:39.100892361Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/pgexec",
+        "Test": "TestUnconfirmedWriteGivesNoDispatchAndNotFoundDoesNotEraseIntent",
+        "Elapsed": 2.41
+      },
+      {
+        "Time": "2026-10-31T22:00:46.722216987Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/pgexec",
+        "Test": "TestCompleteIntentHashMismatchAndOwnerChangeCannotPersistSuccess",
+        "Elapsed": 7.62
+      },
+      {
+        "Time": "2026-10-31T22:00:54.146416504Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/pgexec",
+        "Test": "TestProviderStepCannotAdvanceOnLogicalCommitOrUnsupportedRelease",
+        "Elapsed": 7.42
+      },
+      {
+        "Time": "2026-10-31T22:00:59.766560556Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/pgexec",
+        "Test": "TestOldOwnerBootAndMismatchedPersistedCommandAreFrozenBeforeRPC",
+        "Elapsed": 5.62
+      },
+      {
+        "Time": "2026-10-31T22:00:59.935154736Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/pgexec",
+        "Test": "TestProviderRequiresAllCurrentArrayFactsAndCannotBorrowHistory",
+        "Elapsed": 0.17
+      },
+      {
+        "Time": "2026-10-31T22:01:02.538851776Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/pgexec",
+        "Test": "TestNewOwnerReconcilesOldUnconfirmedByCancelWithoutRedispatch",
+        "Elapsed": 2.6
+      },
+      {
+        "Time": "2026-10-31T22:01:08.568747972Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/pgexec",
+        "Test": "TestExplicitReplayRejectsUndispatchedDeletingAbortedAndNonNativeRejection",
+        "Elapsed": 6.03
+      }
+    ],
+    "counting_rule": "against fixed base definitions; same logical root across cohorts/environments counted once"
+  },
+  "capwriter_direct_regression": {
+    "source_cohort": "/data/neon-build/validation/array-service-go-20261031T205830Z-849da7",
+    "receipt_cohort": "/data/neon-build/validation/array-service-capwriter-regression-20261031T210709Z-a7d3db",
+    "roots": 33,
+    "named_subcases": 103,
+    "new_roots": 0,
+    "same_exact_current_51_claimed": false,
+    "archive": "../array-service-capwriter-independent-p2-20261101",
+    "permission_fault_fixture": "drop DAC_OVERRIDE and DAC_READ_SEARCH; permission-failure roots actually execute"
+  },
+  "native": {
+    "id": "PG17-S-ARRAY-SERVICE-001",
+    "root": "TestNativeArrayServiceBirthAndPopulate",
+    "cohort": "/data/neon-build/validation/array-service-native-20261031T221332Z-f8811b",
+    "roots": 1,
+    "named_subcases": 0,
+    "real_kvm": true,
+    "guest_exit": 0,
+    "qemu_exit": 0,
+    "Host_source_fixture": true,
+    "issuer_fixture": true,
+    "actual_production_functions": true,
+    "actual_shipped_daemon_main": false,
+    "journal_StartCAS_in_this_S": false,
+    "actual_runtime_Grow_in_this_S": false,
+    "four_original_map_files_and_helpers": true,
+    "original_prefix_all_resident_before_observer_fault": [
+      4,
+      512,
+      1,
+      2
+    ],
+    "Root_readonly_observer_mapping_PFN_owner_samples": 8,
+    "PM_original_PTE_proof": false,
+    "authorization_via_real_HTTP_handler_and_WAL": true,
+    "normal_authorized": false,
+    "Root_readonly_observer_mapping_distinct_PFNs": 7,
+    "single_page_array_first_last_samples_are_same_page": true
+  },
+  "environment_only": {
+    "8b3_ordinary_U_roots": 0,
+    "agent_compile": true,
+    "static_native_compile": true,
+    "fixture_export": true,
+    "PG_existing_noRUNPATH_16_ELF_runtime_reused_unchanged": true
+  },
+  "E": 0
+}

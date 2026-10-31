@@ -1,0 +1,10 @@
+{
+  "status": "AUTO_REVIEW_REJECTED_NOT_EXECUTED",
+  "reason_summary": "远程截断删除核心 preexec/Birth/socket 路径，服务测试失败尚未形成可回滚验证，拒绝整项变更。",
+  "rejected_operation": "删除旧preexec-v1生产代码与同时混入测试probe修改",
+  "source_delete_applied": false,
+  "parent_decision": "全保留旧v1；只允许独立最小测试纠正，不间接替换或绕过删除拒绝。",
+  "safe_separate_change": "8b3仅native test：原FD完整prefix mincore驻留后只读fault并核Root映射PFN owner=A；生产字节不变。",
+  "verbatim_reviewer_payload_available": false,
+  "note": "此文件为当时拒绝事实与原因摘要，不伪称完整原始工具响应。"
+}

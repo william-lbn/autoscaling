@@ -225,8 +225,8 @@ func (k *linuxKernel) postmaster(c Command) error {
 	if err != nil {
 		return err
 	}
-	if group != "0::/neon-postgres" {
-		return fmt.Errorf("Postmaster is not in the guarded cgroup")
+	if err := arrayKernelPostmasterGroup(k, group); err != nil {
+		return err
 	}
 	account, err := user.Lookup("postgres")
 	if err != nil {
@@ -264,7 +264,7 @@ func (k *linuxKernel) postmaster(c Command) error {
 		return fmt.Errorf("original Postmaster has not execed the fixed PG program")
 	}
 	if c.AddressSpaceMaxBytes != 0 {
-		if _, err := inspectProcessAddressSpace(c.PostmasterPID, c.AddressSpaceMaxBytes, uid); err != nil {
+		if _, err := inspectProcessAddressSpaceGroup(c.PostmasterPID, c.AddressSpaceMaxBytes, uid, group+"\n"); err != nil {
 			return err
 		}
 	}

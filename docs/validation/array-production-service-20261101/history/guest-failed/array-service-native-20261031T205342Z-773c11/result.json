@@ -1,0 +1,55 @@
+{
+  "id": "PG17-S-ARRAY-SERVICE-001",
+  "status": "FAIL_COMPONENT",
+  "host_qemu_exit": 0,
+  "Guest_exits": [
+    "1"
+  ],
+  "actual_qmp_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "actual_initial_base": {
+    "base-memory": 268435456,
+    "plugged-memory": 0
+  },
+  "grow_sent": true,
+  "actual_target": {
+    "summary": {
+      "base-memory": 268435456,
+      "plugged-memory": 1342177280
+    },
+    "devices": [
+      {
+        "type": "virtio-mem",
+        "data": {
+          "memdev": "/objects/mem0",
+          "memaddr": 4294967296,
+          "block-size": 8388608,
+          "size": 1342177280,
+          "node": 0,
+          "max-size": 1342177280,
+          "requested-size": 1342177280,
+          "id": "vmem0"
+        }
+      }
+    ]
+  },
+  "qmp_errors": [
+    "[Errno 2] No such file or directory"
+  ],
+  "seconds": 6.480543987010606,
+  "roots": [],
+  "subcases": [],
+  "reports": [],
+  "errors": [],
+  "go_binary_sha256": "53d6d3ccf7884db599be5535a4a5e448427130e4df319b4097c4c04ba5b99448",
+  "kernel_image_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+  "kernel_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+  "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "console_sha256": "47652348fbfd4f48550562769b68ea33357f92aedefd321560d4c7fdb8ccce43",
+  "Host_source_fixture": true,
+  "PG_started": null,
+  "normal_authorized": false,
+  "E": 0
+}

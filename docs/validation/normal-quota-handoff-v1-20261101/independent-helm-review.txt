@@ -1,0 +1,47 @@
+Quota状态交接最终独立只读审查（2026-11-01）
+审查者 helm_scope_review，非作者。结论：本批组件源码与精确U范围未见剩余提交阻断，QH-R01/R02/R03关闭，可由Root按原分支阶段归档。未改业务源码/Git，未重复运行测试或操作内核/集群。
+
+最终输入：
+/data/neon-build/validation/normal-quota-handoff-20261031T215919Z-2e0474/source-lock.json
+SHA 6f52356671254f179f9f04875eeccb557958824bc11f99d7db8ec1b7cbb45322
+base 2fe36f12a970b5a7d7606425a5f09a0982f91b3f + Root11精确overlay + P1冻结46依赖。Root guard/view覆盖P1两同名输入，其他44依赖一致；Root11在readonly source/当前工作树/actualCOPY逐项无漂移。原Quota4保持aa3/926/8f52/46ca锁，不拿后继工作区转签。
+
+最终新7关键SHA（完整11见源锁）：
+state 7ac4b151521ad1c27304b89b55255fc498b712c52d95c57456a369bea18b77f0
+handoff_linux 4197c705d6020806869b4efb8b4cc4fa79096ed0e4b0cb9345f949006aaf43e3
+handoff_unsupported fb5af29fb435acc81a7d6ed117cbf511a21464e4af5a327092a00a9427141de7
+handoff_test 3bbf52c7a313e0ab9d3027a32e629a6f7ef0e9725c4f919043f6491024d4ba39
+guard ebe7479928c5c2afc3267967bc6d2c51ca0848fd7de83cf423690303a0fbd2be
+cancel d36018a8e14cdb2ac3cebfb4d36c2c5f5893699040c058711366c06d886de7f9
+view 8b526643db5e758a435b689e795885cd9d57669e88a12e40bf0113db36e41b32
+
+QH-R01关闭：
+公共Apply/Replay在同resource flock内、幂等返回/新Unknown保存前核v3 generic命令及quota耐久门。v3 Observe对未Applied严格Unknown、零写；Applied仍要求本Guard完整quota族和当前state inode/size/SHA/fsync见证。InspectState实接只读门，未用测试f.view替代；Original已是metadata G也必须核当前state见证。
+Cancel先核原门，保存屏障保v3后刷新state见证；Fence仅从旧Applied且有本Guard确认的原事实转移见证。newGuard、同字节换inode、after-held-rename、final-state-sync失败不能借普通观察/Apply洗Unknown。
+公共测试模型Read/ReadBounds同看当前snapshot，负例先断言Read(c).matches(c)成功，避免陈旧N假绿。直接Observe/Apply/ReplayOriginal/Inspect负控核state字节与写次数不变，显式恢复后有公共正控。
+
+QH-R02关闭：
+v3 validator与generic写前门要求同原N/Outside/Huge。真实Grow N→A、Shrink A→N继续统一走quota，不是固定normal上限或删除Grow；generic仅同额度预算/metadata续接。
+显式恢复匹配保留refQ和完整旧链，不再强制当前Original必须等Q。Q→同额度预算G→新Guard，普通方法拒，recoverQ按当前原G limits实际读回且不改其Budget/epoch/命令。已Applied G恢复仅fsync、state原字节不变；pending同额度G可在精确读回后持久完成原G，绝不重写旧Q cap、造新预算命令。跨floor仅显式恢复旧事实，普通旧epoch不能重写cap。历史按同原Identity/parent+两叶inode/Source/Split/P及revision/cap连续性核验，partial/外来/更新历史拒绝。
+
+QH-R03关闭：
+checkNormalQuotaResourceLocked对pending generic G的nil仅为同原Replay入口，不等于Applied确认。Fence quotaConfirmed已显式要求r.Applied，pending G可升floor而不补签。
+新增真实公共Apply注入失败保Gpending→FenceBound epoch2成功→仍Applied=false且Observe Unknown→recoverQ零quota cap写。准确原命令与Held保留。该窄发现有生产修复及针对性根。
+
+其他检查：
+v3缺ref、v1/v2带ref、同revision异命令、丢旧Held/Bootstrap/Birth及不可变PIDs/System/AS漂移拒绝；pending先原子fileSync/rename/dirSync，A/N部分效果保旧Held，不产生NoEffect。完整四阶段/精确读回后才同命令Held。
+quota与state分别使用本Guard durable map，不能从可见文件或SHA补资格。State同步固定FD核privateRegular、file.Sync再dir.Sync并前后目录/lock/state身份和bytes一致，未用目录Sync替代文件Sync。恢复依然要求非nil完整Source检查和原进程/拓扑/限额，不替换原epoch/nonce/预算命令。
+
+实际验证只读独立重算（未重跑）：
+固定工具digest c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1；RUN network=none/GOPROXY=off，2CPU/2GiB硬限，保原Go共享缓存。
+go test -race -count=1 -timeout=180s -json -run '^Test(NormalSplitQuota|NormalQuota|ResourceCancellation|ResourceView)' ./pkg/dsga/resourceguard
+actual-source3485项与源锁3485项逐项完全一致，无多余项；source-check3485行全OK。build_exit=0、test.rc=0、stderr0B，wrapper19.166539563秒，原GoJSON package pass9.219s。
+逐事件独算25根60子场景全PASS，fail0/skip0：
+新handoff9根14子场景；原Quota4直接6根21子场景；Cancellation直接7根16子场景；View直接3根9子场景。
+test.json SHA 376bb3b2e664f5487f8d18216f749b4d81b7a3752d9ac0e7b81f1d2ec48dbbd6
+actual-source.sha256 SHA ea476baea3d010a9048db0c171b43b5a35624853eb3a989d36672fd857081eb4
+source-check.txt SHA a6526c127dfb6cba37c5e1b2eed742c4d51ebad7da05bfc77fe341f8630b4594
+分类为9新U+16直接U回归，不新增S/E；历史c8df/fa0804编译失败和229094模型AS/StateDir失败不算执行通过或覆盖副本。
+
+限制：
+内核/进程/完整Source callback为明确模型；真实的是flock/state原子rename/四阶段WAL/fsync及公共控制流。生产NormalSource producer/normal公共调用仍缺，原五拒绝保留；本组件结构、SHA、回调、current或v3/Held确认均不能独签安全normal/VM shrink许可。不是物理盘断电认证、真实PG normal硬降限、完整Root/System/FI或三节点K8s E2E。!linux显式拒绝源码已读，本Linuxcohort不冒称Darwin编译验证。PG17/PG18锁未动。

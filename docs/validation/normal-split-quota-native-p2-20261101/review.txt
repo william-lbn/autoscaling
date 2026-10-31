@@ -1,0 +1,7 @@
+独立只读审查：normal split quota 私有事务组件（最终4源）
+结论：当前组件范围无提交阻断。此结论不赋予normal许可；opaque auth.check尚无生产Source producer，不能将合法结构、SHA/current或DEV回调作为权限。
+已核：P固定且N/A都必须真实改变，缩容A→N、扩容N→A；sum(P,A,F,counter)溢出/目标校验；同resource flock内先O_EXCL pending与fsync，再同步写原inode下memory.max，期间不放锁/不拆后台写。每个write前重新Source check与真实helper/RPC/pin/retiring门禁；仅接受原步骤精确before/after，已生效后错误/取消均留原前缀Unknown，普通Apply不重放。
+完整四阶段canonical原意图/previousSHA链与原state/lock devino保留。complete可见不等于成功fsync；perGuard见证、新Guard需显式Replay同步同原四链。完成观察及重复调用不写cap。真实backend只允许固定normal/arrays目录、原cgroup2 devino/Root mode，拒private或任意路径，原FD同步write并检查短写。
+生产接入仍缺：真原Birth/pin/PG已提交与原映射代、owner/floor/预算/命令及原拓扑来源、369持续force/I八项与System四项来源闭合；A_target自身必须覆盖旧代仍收费页+helper及force/counter余量且无未来未控收费者，不能只凭N等式或current采样。另所有普通capwriter须消费quota pending gate，不能把该gate无条件塞入quota自身Replay所调用的arrayPending造成自拒。模块不改state.json/Held，正式资源handoff必须后继原协议完成，五层normal拒绝未改。
+真实DEV S：最终4源/P1旧9a43/独立native891COPY，静态CGO0。369 KVM真/sys/cgroup与同一个linuxKernel writer +全新ext4 WAL；5case包括实际N/A降升、P不变、A后错误/取消无N迟到写、仅精确Replay、新Guard可见完成仍Unknown、inode/无Source拒写；各层memory.events.local全0检查真实执行。无PG/JWT/完整Source，auth.check明确fake，因此仍非normal资格。Guest/QEMU/Test全部0；正常关机后debugfs独立核5条完整四阶段链20文件，不外推掉电。
+原0f9d99仅外部测试record局部变量遮蔽record类型编译错，日志保留；修外部夹具新noncee221c1才通过，Root生产4源未变。未编辑生产源码、版本锁或Git。

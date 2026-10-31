@@ -176,6 +176,9 @@ func (g *Guard) RepairHeld(ctx context.Context, request HeldRepairRequest) (Evid
 		if err := s.save(r); err != nil {
 			return fmt.Errorf("%w: held repair persistence: %w", ErrUnknown, err)
 		}
+		if err := g.rejectArrayPendingLocked(s, r); err != nil {
+			return err
+		}
 		if err := g.kernel.ApplyBounds(limits); err != nil {
 			return fmt.Errorf("%w: held repair may have applied: %w", ErrUnknown, err)
 		}

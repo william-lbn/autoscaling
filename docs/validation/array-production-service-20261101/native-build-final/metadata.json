@@ -1,0 +1,18 @@
+{
+  "unit": "neon-array-service-go-20261031t221130z-8b3b02",
+  "nonce": "20261031T221130Z-8b3b02",
+  "source_count": 894,
+  "source_lock_sha256": "1fabb3d658cd46f3d179c15c8a80c0d7c7f4cd695e4381f86254c70a6df7ec25",
+  "client_limits": {
+    "CPUQuota": "200%",
+    "MemoryMax": "2G"
+  },
+  "executor": {
+    "GOMAXPROCS": 2,
+    "GOMEMLIMIT": "512MiB soft per process",
+    "hard_memory": "2147483648_buildx_resource_asserted_in_RUN",
+    "hard_swap_total": "2147483648",
+    "hard_cpu_quota": 200000
+  },
+  "scope": "P1_PRODUCTION_SERVICE_BUILD_AND_DIRECT_TESTS_NO_NORMAL_AUTHORITY"
+}

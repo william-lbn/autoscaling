@@ -108,13 +108,13 @@ func TestResourceHTTPAuthenticatesOriginalKeyScopeAndTimeBeforeWrites(t *testing
 			t.Fatalf("unsafe path accepted %s", path)
 		}
 	}
-	if k.writes != 0 {
+	if resourceHTTPKernelWrites(k) != 0 {
 		t.Fatal("unauthorized write")
 	}
 	if w := resourceRequest(h, "/dsg/v1/resource/apply", token, body); w.Code != 200 {
 		t.Fatalf("valid original rejected %d %s", w.Code, w.Body)
 	}
-	if k.writes != 1 {
+	if resourceHTTPKernelWrites(k) != 1 {
 		t.Fatal("expected one actual executor call")
 	}
 }
@@ -152,7 +152,7 @@ func TestResourceHTTPBoundFenceRetainsOriginalAcrossLargeEpoch(t *testing.T) {
 	if w := resourceRequest(h, "/dsg/v1/resource/apply", resourceToken(t, h, key, nil), raw); w.Code != 409 {
 		t.Fatalf("stale signed owner wrote %d", w.Code)
 	}
-	if k.writes != 1 {
+	if resourceHTTPKernelWrites(k) != 1 {
 		t.Fatal("fence/readback caused unexpected write")
 	}
 }
@@ -178,7 +178,7 @@ func TestResourceHTTPClientUnknownHasNoAutomaticReplayAndRestoresOriginal(t *tes
 	if _, err := client.Apply(context.Background(), c); err == nil || client.Pending() == nil {
 		t.Fatal("partial write lost original")
 	}
-	if _, err := client.Apply(context.Background(), c); err == nil || k.writes != 1 {
+	if _, err := client.Apply(context.Background(), c); err == nil || resourceHTTPKernelWrites(k) != 1 {
 		t.Fatal("ordinary apply replayed unknown")
 	}
 	p := client.Pending()
@@ -193,7 +193,7 @@ func TestResourceHTTPClientUnknownHasNoAutomaticReplayAndRestoresOriginal(t *tes
 	if _, err := restored.ReplayOriginal(context.Background(), c); err != nil {
 		t.Fatal(err)
 	}
-	if restored.Pending() != nil || k.writes != 2 {
+	if restored.Pending() != nil || resourceHTTPKernelWrites(k) != 2 {
 		t.Fatal("explicit original not completed")
 	}
 	if _, err := restored.InspectIdentity(context.Background()); err != nil {
@@ -223,10 +223,10 @@ func TestResourceHTTPClientLostCompletionUsesReadbackAndRejectsIncompleteEvidenc
 		h.ServeHTTP(w, r)
 	})
 	client := resourceClientFixture(t, drop, c, resourceToken(t, h, key, nil), nil)
-	if _, err := client.Apply(context.Background(), c); err == nil || client.Pending() == nil || calls.Load() != 1 || k.writes != 1 {
+	if _, err := client.Apply(context.Background(), c); err == nil || client.Pending() == nil || calls.Load() != 1 || resourceHTTPKernelWrites(k) != 1 {
 		t.Fatal("lost reply was replayed or original lost")
 	}
-	if _, err := client.Observe(context.Background(), c); err != nil || client.Pending() != nil || k.writes != 1 {
+	if _, err := client.Observe(context.Background(), c); err != nil || client.Pending() != nil || resourceHTTPKernelWrites(k) != 1 {
 		t.Fatal("readback failed or caused write", err)
 	}
 	bad := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -238,4 +238,12 @@ func TestResourceHTTPClientLostCompletionUsesReadbackAndRejectsIncompleteEvidenc
 	if _, err := malformed.Apply(context.Background(), c); err == nil || malformed.Pending() == nil {
 		t.Fatal("incomplete evidence cleared pending")
 	}
+}
+
+// HTTP回复丢失/ctx超时可能早于服务端apply返回；计数必须与fixture写方同锁，
+// 不靠网络完成时序建立Go内存HB，也不放宽原作用次数断言。
+func resourceHTTPKernelWrites(k *fixtureKernel) int {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+	return k.writes
 }

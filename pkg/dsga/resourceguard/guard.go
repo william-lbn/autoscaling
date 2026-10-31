@@ -109,12 +109,14 @@ func (v *Evidence) UnmarshalJSON(data []byte) error {
 }
 
 type record struct {
-	Version  uint32         `json:"version"`
-	Identity Identity       `json:"identity"`
-	Floor    control.Uint64 `json:"floor"`
-	Original *Command       `json:"original"`
-	Held     *Command       `json:"held"`
-	Applied  bool           `json:"applied"`
+	// v3保留真实quota写入的原引用；缺省不升级旧profile。
+	NormalSplitQuota *normalSplitQuotaStateReference `json:"normal_split_quota,omitempty"`
+	Version          uint32                          `json:"version"`
+	Identity         Identity                        `json:"identity"`
+	Floor            control.Uint64                  `json:"floor"`
+	Original         *Command                        `json:"original"`
+	Held             *Command                        `json:"held"`
+	Applied          bool                            `json:"applied"`
 	// Cancelled只保存最近一个“Root从未接收”的完整原命令。它是fsync后的
 	// 防迟到屏障，消耗独立资源revision，但不替换Original/Held、不写内核。
 	// 后续revision继续单调增加，因此不需要随请求历史无限保存取消正文。
@@ -246,7 +248,7 @@ func (g *Guard) withRecord(ctx context.Context, fn func(*record, *lockedState) e
 func (r *record) validate(id Identity) error {
 	// 一旦有取消屏障即升级v2。旧Guard只接受v1，因此回滚旧二进制必须
 	// 失败关闭，不能忽略可选Cancelled后重新执行那个已取消revision。
-	validVersion := r.Version == 1 && r.Cancelled == nil || r.Version == 2 && r.Cancelled != nil
+	validVersion := (r.Version == 1 && r.Cancelled == nil || r.Version == 2 && r.Cancelled != nil || r.Version == 3) && r.validateNormalSplitQuotaState() == nil
 	if !validVersion || r.Floor == 0 || r.Identity != id || (r.Applied && r.Original == nil) {
 		return fmt.Errorf("resource journal identity changed; controlled recovery required")
 	}
@@ -365,10 +367,17 @@ func (g *Guard) fence(ctx context.Context, expected *Identity, epoch control.Uin
 		if epoch < r.Floor {
 			return fmt.Errorf("stale resource epoch")
 		}
+		// 围栏即使quota未知也必须推进；仅已确认原事实可刷新元数据见证。
+		quotaConfirmed := r.Applied && r.NormalSplitQuota != nil && g.checkNormalQuotaResourceLocked(s, r) == nil
 		if epoch > r.Floor {
 			r.Floor = epoch
 			if err := s.save(r); err != nil {
 				return err
+			}
+			if quotaConfirmed {
+				if err := g.confirmNormalQuotaMetadataLocked(ctx, s, r); err != nil {
+					return err
+				}
 			}
 		}
 		id = r.Identity
@@ -414,6 +423,17 @@ func (g *Guard) apply(ctx context.Context, command Command, replay bool) (Eviden
 			}
 		}
 		same := r.Original != nil && reflect.DeepEqual(*r.Original, command)
+		if r.NormalSplitQuota != nil {
+			if err := normalQuotaGenericCommand(r, command); err != nil {
+				if command.MemoryMaxBytes < r.NormalSplitQuota.Command.MemoryMaxBytes {
+					return errors.Join(ErrUnsafeNormalDecrease, err)
+				}
+				return err
+			}
+			if err := g.checkNormalQuotaResourceLocked(s, r); err != nil {
+				return err
+			}
+		}
 		if r.Original != nil && !r.Applied && (!same || !replay) {
 			return ErrUnknown
 		}
@@ -492,6 +512,9 @@ func (g *Guard) apply(ctx context.Context, command Command, replay bool) (Eviden
 		if err := s.save(r); err != nil {
 			return fmt.Errorf("%w: original resource intent persistence: %v", ErrUnknown, err)
 		}
+		if err := g.rejectArrayPendingLocked(s, r); err != nil {
+			return err
+		}
 		if err := g.kernel.Apply(command); err != nil {
 			return fmt.Errorf("%w: resource write may have applied: %v", ErrUnknown, err)
 		}
@@ -506,6 +529,9 @@ func (g *Guard) apply(ctx context.Context, command Command, replay bool) (Eviden
 		r.Held = r.Original
 		if err := s.save(r); err != nil {
 			return fmt.Errorf("%w: resource completion persistence: %v", ErrUnknown, err)
+		}
+		if err := g.confirmNormalQuotaMetadataLocked(ctx, s, r); err != nil {
+			return err
 		}
 		return nil
 	})
@@ -522,6 +548,14 @@ func (g *Guard) Observe(ctx context.Context, command Command) (Evidence, error) 
 	err := g.withRecord(ctx, func(r *record, s *lockedState) error {
 		if r.Original == nil || !reflect.DeepEqual(*r.Original, command) {
 			return ErrUnknown
+		}
+		if r.NormalSplitQuota != nil {
+			if !r.Applied {
+				return ErrUnknown
+			} // v3普通Observe严格零写，不能代签quota/元数据原Unknown。
+			if err := g.checkNormalQuotaResourceLocked(s, r); err != nil {
+				return err
+			}
 		}
 		var err error
 		evidence, err = g.kernel.Read(command)
