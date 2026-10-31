@@ -1,0 +1,54 @@
+{
+  "source": "original powered-off Guest separate ext4 state disk; readonly debugfs extraction",
+  "verified_files": [
+    {
+      "name": "initial-preboot-guest.complete.json",
+      "sha256": "775ceab84704cb92bb9e5697e7bdb7bdd036ea84f1a37f257fd5dd0ac003dee5",
+      "bytes": 1824,
+      "debugfs_exit": 0
+    },
+    {
+      "name": "initial-preboot-guest.intent.json",
+      "sha256": "3b5f020192a238eac5b484d9f8a0038b95a3d9301bdd5ae2af84b828af08d2d4",
+      "bytes": 1414,
+      "debugfs_exit": 0
+    },
+    {
+      "name": "kernel-bootstrap-complete.json",
+      "sha256": "a8faeafea0c60370d5f4fa5e6436ab9bd67649c209c448b46da171c777250c13",
+      "bytes": 2033,
+      "debugfs_exit": 0
+    },
+    {
+      "name": "kernel-bootstrap-intent.json",
+      "sha256": "d88496d1f8aaf5f7d73ff03f65fcbb6eec6bbbf4502f11bedbf3143529268f16",
+      "bytes": 7648,
+      "debugfs_exit": 0
+    },
+    {
+      "name": "physical-kernel-origin.confirmed.json",
+      "sha256": "4bc0b107b9bf9a53c92c82253fc98af81fecae66e1e731c2813e21de92ea056f",
+      "bytes": 105,
+      "debugfs_exit": 0
+    },
+    {
+      "name": "physical-kernel-origin.json",
+      "sha256": "1280870f285aaecb2e25959b5f4ac38a6040d0cb48e5a0d7f100cec1533eaabd",
+      "bytes": 3006,
+      "debugfs_exit": 0
+    },
+    {
+      "name": "pre-bootstrap-system.complete.json",
+      "sha256": "18cabba1a25727e95158e6baedc737523a7dc3bfea681b96da65300f05d80808",
+      "bytes": 1896,
+      "debugfs_exit": 0
+    },
+    {
+      "name": "pre-bootstrap-system.intent.json",
+      "sha256": "c912783aea5ab7b35b1d56bead5cc7cfcdf7cc0d0b4524f1db896f33cf95b5c2",
+      "bytes": 2976,
+      "debugfs_exit": 0
+    }
+  ],
+  "all_match_prepared_and_final_unchanged": true
+}

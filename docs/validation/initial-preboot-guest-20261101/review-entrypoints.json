@@ -1,0 +1,71 @@
+{
+  "production_functions": [
+    {
+      "line": 34,
+      "function": "func initialPrebootBindInputs(c bootprotocol.InitialPrebootChallenge, raw []byte, assets map[string][]byte, config Config) (initialPrebootGuestInputs, error) {"
+    },
+    {
+      "line": 60,
+      "function": "func (g *Guard) initialPrebootInputs(c bootprotocol.InitialPrebootChallenge) (initialPrebootGuestInputs, error) {"
+    },
+    {
+      "line": 147,
+      "function": "func initialPrebootReadRecord(s *lockedState, name string, value any) ([]byte, bool, error) {"
+    },
+    {
+      "line": 161,
+      "function": "func initialPrebootStateIdentity(s *lockedState) (unix.Stat_t, error) {"
+    },
+    {
+      "line": 174,
+      "function": "func initialPrebootIntentMatch(s *lockedState, in initialPrebootGuestInputs, intent initialPrebootGuestIntent, boot, kernelSHA string) error {"
+    },
+    {
+      "line": 187,
+      "function": "func (g *Guard) PrepareInitialPreboot(ctx context.Context, c bootprotocol.InitialPrebootChallenge) (bootprotocol.InitialPrebootReceipt, error) {"
+    },
+    {
+      "line": 190,
+      "function": "func (g *Guard) ObserveInitialPreboot(ctx context.Context, c bootprotocol.InitialPrebootChallenge) (bootprotocol.InitialPrebootReceipt, error) {"
+    },
+    {
+      "line": 193,
+      "function": "func (g *Guard) RecoverInitialPreboot(ctx context.Context, c bootprotocol.InitialPrebootChallenge) (bootprotocol.InitialPrebootReceipt, error) {"
+    },
+    {
+      "line": 197,
+      "function": "func (g *Guard) initialPrebootGuest(ctx context.Context, c bootprotocol.InitialPrebootChallenge, op initialPrebootGuestOperation) (bootprotocol.InitialPrebootReceipt, error) {"
+    },
+    {
+      "line": 367,
+      "function": "func (g *Guard) initialPrebootFactsLocked(ctx context.Context, s *lockedState, in initialPrebootGuestInputs, allowMovable bool) (initialPrebootGuestIntent, initialPrebootGuestComplete, []byte, error) {"
+    },
+    {
+      "line": 433,
+      "function": "func initialPrebootGuestWitnessLocked(s *lockedState, c bootprotocol.InitialPrebootChallenge) (initialPrebootGuestWitnessKey, error) {"
+    },
+    {
+      "line": 455,
+      "function": "func (g *Guard) initialPrebootReceiptLocked(ctx context.Context, s *lockedState, in initialPrebootGuestInputs, durable bool) (bootprotocol.InitialPrebootReceipt, error) {"
+    },
+    {
+      "line": 532,
+      "function": "func (g *Guard) InspectInitialPrebootMovable(ctx context.Context, prepared bootprotocol.InitialPrebootReceipt) (InitialPrebootMovableObservation, error) {"
+    },
+    {
+      "line": 581,
+      "function": "func initialPrebootOriginalReceipt(intent initialPrebootGuestIntent, complete initialPrebootGuestComplete) (bootprotocol.InitialPrebootReceipt, error) {"
+    },
+    {
+      "line": 595,
+      "function": "func initialPrebootMatchHistoricalComplete(current, original initialPrebootGuestComplete) error {"
+    },
+    {
+      "line": 609,
+      "function": "func initialPrebootMovablePages(c bootprotocol.InitialPrebootChallenge, before, current PhysicalKernelObservation) (uint64, error) {"
+    }
+  ],
+  "independent_review_pending": false,
+  "source_proof_sha256": "a27bd1e72e48a812995381aef494366e4c3f5304ebb795f25d1a3bdee2b6c903",
+  "root_independent_review": "root-independent-review.txt"
+}

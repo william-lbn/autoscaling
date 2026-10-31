@@ -1,0 +1,21 @@
+{
+  "summary": {
+    "base-memory": 268435456,
+    "plugged-memory": 805306368
+  },
+  "devices": [
+    {
+      "type": "virtio-mem",
+      "data": {
+        "memdev": "/objects/mem0",
+        "memaddr": 4294967296,
+        "block-size": 2097152,
+        "size": 805306368,
+        "node": 0,
+        "max-size": 805306368,
+        "requested-size": 805306368,
+        "id": "vmem0"
+      }
+    }
+  ]
+}

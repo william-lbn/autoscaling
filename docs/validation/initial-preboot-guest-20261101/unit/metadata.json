@@ -1,0 +1,16 @@
+{
+  "unit": "neon-initial-guest-20261031t165549z-3b387e",
+  "nonce": "20261031T165549Z-3b387e",
+  "base_git": "e28f5607763dff86efe96427e44243a74f77f89c",
+  "source_count": 815,
+  "command": "go test -race -count=1 -timeout=120s -json -run '^(TestInitialPrebootGuest|TestRuntimeBootRequirements)' ./pkg/dsga/resourceguard && CGO_ENABLED=0 go test -c -tags=dsga_native_initial_preboot_guest -o /out/initial-guest.test ./pkg/dsga/resourceguard && DSGA_INITIAL_GUEST_EXPORT=/out/isofiles /out/initial-guest.test -test.run '^TestExportInitialPrebootGuestFixture$' -test.v >/out/fixture-export.log 2>&1",
+  "source_lock_sha256": "1a5bb73d687cb08e516898dd80847a5bcb5f603711007940fca8b17576cec68e",
+  "client_limits": {
+    "CPUQuota": "200%",
+    "MemoryMax": "2G"
+  },
+  "executor": {
+    "GOMAXPROCS": 2,
+    "hard_memory_cap": "NOT_SET_BUILDKIT_EXECUTOR_SEPARATE"
+  }
+}

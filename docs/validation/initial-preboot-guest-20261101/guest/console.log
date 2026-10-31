@@ -1,0 +1,386 @@
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+Booting from ROM...
+c[?7l[2J[    0.000000] Linux version 6.12.26-william-normal-split-v1-e210f5e3ee94 (root@buildkitsandbox) (x86_64-linux-gnu-gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, GNU ld (GNU Binutils for Ubuntu) 2.42) #2 SMP PREEMPT_DYNAMIC Fri Oct 30 22:49:17 UTC 2026
+[    0.000000] Command line: console=ttyS0,115200 rdinit=/init panic=-1 kernelcore=256M neonvm.dsga=1 neonvm.dsga.kernel_bootstrap=normal-split-v1 neonvm.dsga.physical_profile=kernel-v1 neonvm.dsga.prebootstrap_system=normal-split-v1 neonvm.dsga.normal_split=split-v1 neonvm.pid_max_limit=512 memhp_default_state=online_movable cgroup.memory=nokmem,nosocket,nobpf
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+[    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+[    0.000000] BIOS-e820: [mem 0x0000000000100000-0x000000000ffd8fff] usable
+[    0.000000] BIOS-e820: [mem 0x000000000ffd9000-0x000000000fffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000b0000000-0x00000000bfffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fed1c000-0x00000000fed1ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000feffc000-0x00000000feffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+[    0.000000] neonvm: PID hard limit 512 installed before PID allocation
+[    0.000000] NX (Execute Disable) protection: active
+[    0.000000] APIC: Static calls initialized
+[    0.000000] SMBIOS 3.0.0 present.
+[    0.000000] DMI: QEMU Standard PC (Q35 + ICH9, 2009), BIOS rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org 04/01/2014
+[    0.000000] DMI: Memory slots populated: 1/1
+[    0.000000] Hypervisor detected: KVM
+[    0.000000] kvm-clock: Using msrs 4b564d01 and 4b564d00
+[    0.000001] kvm-clock: using sched offset of 359037193 cycles
+[    0.000005] clocksource: kvm-clock: mask: 0xffffffffffffffff max_cycles: 0x1cd42e4dffb, max_idle_ns: 881590591483 ns
+[    0.000011] tsc: Detected 2399.998 MHz processor
+[    0.001007] last_pfn = 0xffd9 max_arch_pfn = 0x400000000
+[    0.001321] MTRR map: 4 entries (3 fixed + 1 variable; max 19), built from 8 variable MTRRs
+[    0.001337] x86/PAT: Configuration [0-7]: WB  WC  UC- UC  WB  WP  UC- WT  
+[    0.008086] found SMP MP-table at [mem 0x000f5b90-0x000f5b9f]
+[    0.008110] Using GB pages for direct mapping
+[    0.008283] RAMDISK: [mem 0x0f785000-0x0ffcffff]
+[    0.008291] ACPI: Early table checksum verification disabled
+[    0.008310] ACPI: RSDP 0x00000000000F59B0 000014 (v00 BOCHS )
+[    0.008314] ACPI: RSDT 0x000000000FFE28C8 00003C (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008328] ACPI: FACP 0x000000000FFE25C8 0000F4 (v03 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008334] ACPI: DSDT 0x000000000FFE0040 002588 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008342] ACPI: FACS 0x000000000FFE0000 000040
+[    0.008344] ACPI: APIC 0x000000000FFE26BC 000080 (v03 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008347] ACPI: HPET 0x000000000FFE273C 000038 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008350] ACPI: SRAT 0x000000000FFE2774 0000F0 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008353] ACPI: MCFG 0x000000000FFE2864 00003C (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008356] ACPI: WAET 0x000000000FFE28A0 000028 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008358] ACPI: Reserving FACP table memory at [mem 0xffe25c8-0xffe26bb]
+[    0.008359] ACPI: Reserving DSDT table memory at [mem 0xffe0040-0xffe25c7]
+[    0.008360] ACPI: Reserving FACS table memory at [mem 0xffe0000-0xffe003f]
+[    0.008360] ACPI: Reserving APIC table memory at [mem 0xffe26bc-0xffe273b]
+[    0.008361] ACPI: Reserving HPET table memory at [mem 0xffe273c-0xffe2773]
+[    0.008362] ACPI: Reserving SRAT table memory at [mem 0xffe2774-0xffe2863]
+[    0.008362] ACPI: Reserving MCFG table memory at [mem 0xffe2864-0xffe289f]
+[    0.008363] ACPI: Reserving WAET table memory at [mem 0xffe28a0-0xffe28c7]
+[    0.008515] ACPI: SRAT: Node 0 PXM 0 [mem 0x00000000-0x0009ffff]
+[    0.008518] ACPI: SRAT: Node 0 PXM 0 [mem 0x00100000-0x0fffffff]
+[    0.008519] ACPI: SRAT: Node 0 PXM 0 [mem 0x100000000-0x16fffffff] hotplug
+[    0.008521] NUMA: Node 0 [mem 0x00001000-0x0009ffff] + [mem 0x00100000-0x0ffd8fff] -> [mem 0x00001000-0x0ffd8fff]
+[    0.008524] NODE_DATA(0) allocated [mem 0x0ffd62c0-0x0ffd8fff]
+[    0.008562] Zone ranges:
+[    0.008563]   DMA32    [mem 0x0000000000001000-0x000000000ffd8fff]
+[    0.008565]   Normal   empty
+[    0.008565] Movable zone start for each node
+[    0.008566] Early memory node ranges
+[    0.008566]   node   0: [mem 0x0000000000001000-0x000000000009efff]
+[    0.008568]   node   0: [mem 0x0000000000100000-0x000000000ffd8fff]
+[    0.008569] Initmem setup node 0 [mem 0x0000000000001000-0x000000000ffd8fff]
+[    0.009438] On node 0, zone DMA32: 1 pages in unavailable ranges
+[    0.010540] On node 0, zone DMA32: 97 pages in unavailable ranges
+[    0.010543] On node 0, zone DMA32: 39 pages in unavailable ranges
+[    0.013258] ACPI: LAPIC_NMI (acpi_id[0xff] dfl dfl lint[0x1])
+[    0.013441] IOAPIC[0]: apic_id 0, version 17, address 0xfec00000, GSI 0-23
+[    0.013444] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.013446] ACPI: INT_SRC_OVR (bus 0 bus_irq 5 global_irq 5 high level)
+[    0.013447] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+[    0.013455] ACPI: INT_SRC_OVR (bus 0 bus_irq 10 global_irq 10 high level)
+[    0.013456] ACPI: INT_SRC_OVR (bus 0 bus_irq 11 global_irq 11 high level)
+[    0.013460] ACPI: Using ACPI (MADT) for SMP configuration information
+[    0.013461] ACPI: HPET id: 0x8086a201 base: 0xfed00000
+[    0.013466] TSC deadline timer available
+[    0.013471] CPU topo: Max. logical packages:   1
+[    0.013471] CPU topo: Max. logical dies:       1
+[    0.013472] CPU topo: Max. dies per package:   1
+[    0.013477] CPU topo: Max. threads per core:   1
+[    0.013478] CPU topo: Num. cores per package:     2
+[    0.013479] CPU topo: Num. threads per package:   2
+[    0.013479] CPU topo: Allowing 2 present CPUs plus 0 hotplug CPUs
+[    0.013517] kvm-guest: APIC: eoi() replaced with kvm_guest_apic_eoi_write()
+[    0.013558] kvm-guest: KVM setup pv remote TLB flush
+[    0.013585] kvm-guest: setup PV sched yield
+[    0.013592] [mem 0x10000000-0xafffffff] available for PCI devices
+[    0.013593] Booting paravirtualized kernel on KVM
+[    0.013595] clocksource: refined-jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645519600211568 ns
+[    0.013631] setup_percpu: NR_CPUS:64 nr_cpumask_bits:2 nr_cpu_ids:2 nr_node_ids:1
+[    0.014748] percpu: Embedded 57 pages/cpu s192600 r8192 d32680 u1048576
+[    0.014867] kvm-guest: PV spinlocks enabled
+[    0.014874] PV qspinlock hash table entries: 256 (order: 0, 4096 bytes, linear)
+[    0.014876] Kernel command line: console=ttyS0,115200 rdinit=/init panic=-1 kernelcore=256M neonvm.dsga=1 neonvm.dsga.kernel_bootstrap=normal-split-v1 neonvm.dsga.physical_profile=kernel-v1 neonvm.dsga.prebootstrap_system=normal-split-v1 neonvm.dsga.normal_split=split-v1 neonvm.pid_max_limit=512 memhp_default_state=online_movable cgroup.memory=nokmem,nosocket,nobpf
+[    0.015003] random: crng init done
+[    0.015044] Dentry cache hash table entries: 32768 (order: 6, 262144 bytes, linear)
+[    0.015058] Inode-cache hash table entries: 16384 (order: 5, 131072 bytes, linear)
+[    0.015170] Fallback order for Node 0: 0 
+[    0.015173] Built 1 zonelists, mobility grouping on.  Total pages: 65399
+[    0.015174] Policy zone: DMA32
+[    0.015175] mem auto-init: stack:off, heap alloc:on, heap free:off
+[    0.015176] software IO TLB: area num 2.
+[    0.218334] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+[    0.219949] Dynamic Preempt: voluntary
+[    0.219995] rcu: Preemptible hierarchical RCU implementation.
+[    0.219995] rcu: 	RCU restricting CPUs from NR_CPUS=64 to nr_cpu_ids=2.
+[    0.219997] 	Trampoline variant of Tasks RCU enabled.
+[    0.219998] 	Tracing variant of Tasks RCU enabled.
+[    0.219999] rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+[    0.220000] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=2
+[    0.220006] RCU Tasks: Setting shift to 1 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=2.
+[    0.220008] RCU Tasks Trace: Setting shift to 1 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=2.
+[    0.221248] NR_IRQS: 4352, nr_irqs: 440, preallocated irqs: 16
+[    0.221577] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.221906] printk: legacy console [ttyS0] enabled
+[    0.669795] ACPI: Core revision 20240827
+[    0.673032] clocksource: hpet: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604467 ns
+[    0.679022] APIC: Switch to symmetric I/O mode setup
+[    0.683183] x2apic enabled
+[    0.686185] APIC: Switched APIC routing to: physical x2apic
+[    0.689436] kvm-guest: APIC: send_IPI_mask() replaced with kvm_send_ipi_mask()
+[    0.693647] kvm-guest: APIC: send_IPI_mask_allbutself() replaced with kvm_send_ipi_mask_allbutself()
+[    0.698930] kvm-guest: setup PV IPIs
+[    0.706253] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+[    0.709964] clocksource: tsc-early: mask: 0xffffffffffffffff max_cycles: 0x229835b7123, max_idle_ns: 440795242976 ns
+[    0.716228] Calibrating delay loop (skipped) preset value.. 4799.99 BogoMIPS (lpj=9599992)
+[    0.721123] x86/cpu: User Mode Instruction Prevention (UMIP) activated
+[    0.724264] Last level iTLB entries: 4KB 0, 2MB 0, 4MB 0
+[    0.728229] Last level dTLB entries: 4KB 0, 2MB 0, 4MB 0, 1GB 0
+[    0.732292] Spectre V1 : Mitigation: usercopy/swapgs barriers and __user pointer sanitization
+[    0.736243] Spectre V2 : Spectre BHI mitigation: SW BHB clearing on syscall and VM exit
+[    0.740229] Spectre V2 : Mitigation: Enhanced / Automatic IBRS
+[    0.744231] Spectre V2 : Spectre v2 / PBRSB-eIBRS: Retire a single CALL on VMEXIT
+[    0.748229] RETBleed: Mitigation: Enhanced IBRS
+[    0.751034] Spectre V2 : mitigation: Enabling conditional Indirect Branch Prediction Barrier
+[    0.752232] Speculative Store Bypass: Mitigation: Speculative Store Bypass disabled via prctl
+[    0.756230] TAA: Mitigation: TSX disabled
+[    0.760228] MMIO Stale Data: Vulnerable: Clear CPU buffers attempted, no microcode
+[    0.764228] GDS: Unknown: Dependent on hypervisor status
+[    0.768399] x86/fpu: Supporting XSAVE feature 0x001: 'x87 floating point registers'
+[    0.772229] x86/fpu: Supporting XSAVE feature 0x002: 'SSE registers'
+[    0.776228] x86/fpu: Supporting XSAVE feature 0x004: 'AVX registers'
+[    0.780229] x86/fpu: Supporting XSAVE feature 0x020: 'AVX-512 opmask'
+[    0.784229] x86/fpu: Supporting XSAVE feature 0x040: 'AVX-512 Hi256'
+[    0.788229] x86/fpu: Supporting XSAVE feature 0x080: 'AVX-512 ZMM_Hi256'
+[    0.792229] x86/fpu: xstate_offset[2]:  576, xstate_sizes[2]:  256
+[    0.796229] x86/fpu: xstate_offset[5]:  832, xstate_sizes[5]:   64
+[    0.800228] x86/fpu: xstate_offset[6]:  896, xstate_sizes[6]:  512
+[    0.804228] x86/fpu: xstate_offset[7]: 1408, xstate_sizes[7]: 1024
+[    0.808228] x86/fpu: Enabled xstate features 0xe7, context size is 2432 bytes, using 'compacted' format.
+[    0.836831] Freeing SMP alternatives memory: 40K
+[    0.839865] pid_max: default: 512 minimum: 301
+[    0.840323] LSM: initializing lsm=lockdown,capability,landlock,yama,apparmor
+[    0.844310] landlock: Up and running.
+[    0.848229] Yama: becoming mindful.
+[    0.852403] AppArmor: AppArmor initialized
+[    0.855190] Mount-cache hash table entries: 512 (order: 0, 4096 bytes, linear)
+[    0.856230] Mountpoint-cache hash table entries: 512 (order: 0, 4096 bytes, linear)
+[    0.860965] smpboot: CPU0: Intel Xeon Processor (Cascadelake) (family: 0x6, model: 0x55, stepping: 0x5)
+[    0.864528] Performance Events: unsupported p6 CPU model 85 no PMU driver, software events only.
+[    0.868383] signal: max sigframe size: 3632
+[    0.871194] rcu: Hierarchical SRCU implementation.
+[    0.872240] rcu: 	Max phase no-delay instances is 1000.
+[    0.875700] Timer migration: 1 hierarchy levels; 8 children per group; 1 crossnode level
+[    0.876282] dyndbg: Ignore empty _ddebug table in a CONFIG_DYNAMIC_DEBUG_CORE build
+[    0.880299] smp: Bringing up secondary CPUs ...
+[    0.883502] smpboot: x86: Booting SMP configuration:
+[    0.884243] .... node  #0, CPUs:      #1
+[    0.884969] smp: Brought up 1 node, 2 CPUs
+[    0.891022] smpboot: Total of 2 processors activated (9599.99 BogoMIPS)
+[    0.893097] Memory: 152072K/261596K available (14336K kernel code, 1799K rwdata, 4900K rodata, 2400K init, 1792K bss, 107088K reserved, 0K cma-reserved)
+[    0.896341] devtmpfs: initialized
+[    0.898464] x86/mm: Memory block size: 128MB
+[    0.900483] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    0.904258] futex hash table entries: 512 (order: 3, 32768 bytes, linear)
+[    0.908626] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.912377] audit: initializing netlink subsys (disabled)
+[    0.915912] audit: type=2000 audit(1793465820.749:1): state=initialized audit_enabled=0 res=1
+[    0.915912] thermal_sys: Registered thermal governor 'step_wise'
+[    0.916252] cpuidle: using governor ladder
+[    0.920247] cpuidle: using governor menu
+[    0.922907] acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+[    0.924420] PCI: Using configuration type 1 for base access
+[    0.928429] HugeTLB: registered 1.00 GiB page size, pre-allocated 0 pages
+[    0.932240] HugeTLB: 16380 KiB vmemmap can be freed for a 1.00 GiB page
+[    0.936242] HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
+[    0.940240] HugeTLB: 28 KiB vmemmap can be freed for a 2.00 MiB page
+[    0.944533] ACPI: Added _OSI(Module Device)
+[    0.947474] ACPI: Added _OSI(Processor Device)
+[    0.948246] ACPI: Added _OSI(3.0 _SCP Extensions)
+[    0.951286] ACPI: Added _OSI(Processor Aggregator Device)
+[    0.952917] ACPI: 1 ACPI AML tables successfully acquired and loaded
+[    0.957667] ACPI: Interpreter enabled
+[    0.960246] ACPI: PM: (supports S0 S5)
+[    0.962726] ACPI: Using IOAPIC for interrupt routing
+[    0.964263] PCI: Using host bridge windows from ACPI; if necessary, use "pci=nocrs" and report a bug
+[    0.968241] PCI: Using E820 reservations for host bridge windows
+[    0.972311] ACPI: Enabled 3 GPEs in block 00 to 3F
+[    0.979848] ACPI: PCI Root Bridge [PCI0] (domain 0000 [bus 00-ff])
+[    0.980249] acpi PNP0A08:00: _OSC: OS supports [ASPM ClockPM Segments MSI HPX-Type3]
+[    0.984243] acpi PNP0A08:00: _OSC: not requesting OS control; OS requires [ExtendedConfig ASPM ClockPM MSI]
+[    0.988855] PCI host bridge to bus 0000:00
+[    0.991556] pci_bus 0000:00: root bus resource [io  0x0000-0x0cf7 window]
+[    0.992243] pci_bus 0000:00: root bus resource [io  0x0d00-0xffff window]
+[    0.996243] pci_bus 0000:00: root bus resource [mem 0x000a0000-0x000bffff window]
+[    1.000240] pci_bus 0000:00: root bus resource [mem 0x10000000-0xafffffff window]
+[    1.004240] pci_bus 0000:00: root bus resource [mem 0xc0000000-0xfebfffff window]
+[    1.008242] pci_bus 0000:00: root bus resource [mem 0x180000000-0x97fffffff window]
+[    1.012241] pci_bus 0000:00: root bus resource [bus 00-ff]
+[    1.015969] pci 0000:00:00.0: [8086:29c0] type 00 class 0x060000 conventional PCI endpoint
+[    1.018877] pci 0000:00:01.0: [1234:1111] type 00 class 0x030000 conventional PCI endpoint
+[    1.024377] pci 0000:00:01.0: BAR 0 [mem 0xfd000000-0xfdffffff pref]
+[    1.033748] pci 0000:00:01.0: BAR 2 [mem 0xfebf0000-0xfebf0fff]
+[    1.047365] pci 0000:00:01.0: ROM [mem 0xfebe0000-0xfebeffff pref]
+[    1.048777] pci 0000:00:01.0: Video device with shadowed ROM at [mem 0x000c0000-0x000dffff]
+[    1.054338] pci 0000:00:02.0: [1af4:1058] type 00 class 0x00ff00 conventional PCI endpoint
+[    1.062520] pci 0000:00:02.0: BAR 4 [mem 0xfe000000-0xfe003fff 64bit pref]
+[    1.069956] pci 0000:00:03.0: [1af4:1001] type 00 class 0x010000 conventional PCI endpoint
+[    1.075517] pci 0000:00:03.0: BAR 0 [io  0xc000-0xc07f]
+[    1.079095] pci 0000:00:03.0: BAR 1 [mem 0xfebf1000-0xfebf1fff]
+[    1.088242] pci 0000:00:03.0: BAR 4 [mem 0xfe004000-0xfe007fff 64bit pref]
+[    1.098891] pci 0000:00:04.0: [1af4:1001] type 00 class 0x010000 conventional PCI endpoint
+[    1.103079] pci 0000:00:04.0: BAR 0 [io  0xc080-0xc0ff]
+[    1.107706] pci 0000:00:04.0: BAR 1 [mem 0xfebf2000-0xfebf2fff]
+[    1.116241] pci 0000:00:04.0: BAR 4 [mem 0xfe008000-0xfe00bfff 64bit pref]
+[    1.128560] pci 0000:00:1f.0: [8086:2918] type 00 class 0x060100 conventional PCI endpoint
+[    1.135094] pci 0000:00:1f.0: quirk: [io  0x0600-0x067f] claimed by ICH6 ACPI/GPIO/TCO
+[    1.137673] pci 0000:00:1f.2: [8086:2922] type 00 class 0x010601 conventional PCI endpoint
+[    1.149091] pci 0000:00:1f.2: BAR 4 [io  0xc140-0xc15f]
+[    1.153849] pci 0000:00:1f.2: BAR 5 [mem 0xfebf3000-0xfebf3fff]
+[    1.159818] pci 0000:00:1f.3: [8086:2930] type 00 class 0x0c0500 conventional PCI endpoint
+[    1.165524] pci 0000:00:1f.3: BAR 4 [io  0x0700-0x073f]
+[    1.171502] ACPI: PCI: Interrupt link LNKA configured for IRQ 10
+[    1.172510] ACPI: PCI: Interrupt link LNKB configured for IRQ 10
+[    1.176492] ACPI: PCI: Interrupt link LNKC configured for IRQ 11
+[    1.180491] ACPI: PCI: Interrupt link LNKD configured for IRQ 11
+[    1.184488] ACPI: PCI: Interrupt link LNKE configured for IRQ 10
+[    1.188477] ACPI: PCI: Interrupt link LNKF configured for IRQ 10
+[    1.192488] ACPI: PCI: Interrupt link LNKG configured for IRQ 11
+[    1.196466] ACPI: PCI: Interrupt link LNKH configured for IRQ 11
+[    1.200377] ACPI: PCI: Interrupt link GSIA configured for IRQ 16
+[    1.204248] ACPI: PCI: Interrupt link GSIB configured for IRQ 17
+[    1.208152] ACPI: PCI: Interrupt link GSIC configured for IRQ 18
+[    1.208248] ACPI: PCI: Interrupt link GSID configured for IRQ 19
+[    1.212272] ACPI: PCI: Interrupt link GSIE configured for IRQ 20
+[    1.216192] ACPI: PCI: Interrupt link GSIF configured for IRQ 21
+[    1.216250] ACPI: PCI: Interrupt link GSIG configured for IRQ 22
+[    1.220266] ACPI: PCI: Interrupt link GSIH configured for IRQ 23
+[    1.225102] iommu: Default domain type: Translated
+[    1.227405] iommu: DMA domain TLB invalidation policy: lazy mode
+[    1.232958] SCSI subsystem initialized
+[    1.235474] pps_core: LinuxPPS API ver. 1 registered
+[    1.236249] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    1.240243] PTP clock support registered
+[    1.243233] NetLabel: Initializing
+[    1.244241] NetLabel:  domain hash size = 128
+[    1.247067] NetLabel:  protocols = UNLABELED CIPSOv4 CALIPSO
+[    1.248268] NetLabel:  unlabeled traffic allowed by default
+[    1.251956] PCI: Using ACPI for IRQ routing
+[    1.253101] pci 0000:00:01.0: vgaarb: setting as boot VGA device
+[    1.256188] pci 0000:00:01.0: vgaarb: bridge control possible
+[    1.256226] pci 0000:00:01.0: vgaarb: VGA device added: decodes=io+mem,owns=io+mem,locks=none
+[    1.256272] vgaarb: loaded
+[    1.258439] clocksource: Switched to clocksource kvm-clock
+[    1.261566] VFS: Disk quotas dquot_6.6.0
+[    1.264248] VFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+[    1.269408] AppArmor: AppArmor Filesystem Enabled
+[    1.272550] pnp: PnP ACPI init
+[    1.275094] system 00:05: [mem 0xb0000000-0xbfffffff window] has been reserved
+[    1.280617] pnp: PnP ACPI: found 6 devices
+[    1.284590] NET: Registered PF_INET protocol family
+[    1.288389] IP idents hash table entries: 4096 (order: 3, 32768 bytes, linear)
+[    1.293800] tcp_listen_portaddr_hash hash table entries: 256 (order: 0, 4096 bytes, linear)
+[    1.300902] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    1.306694] TCP established hash table entries: 2048 (order: 2, 16384 bytes, linear)
+[    1.312423] TCP bind hash table entries: 2048 (order: 4, 65536 bytes, linear)
+[    1.317468] TCP: Hash tables configured (established 2048 bind 2048)
+[    1.323672] MPTCP token hash table entries: 256 (order: 0, 6144 bytes, linear)
+[    1.328982] UDP hash table entries: 256 (order: 1, 8192 bytes, linear)
+[    1.333913] UDP-Lite hash table entries: 256 (order: 1, 8192 bytes, linear)
+[    1.339127] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    1.343247] pci_bus 0000:00: resource 4 [io  0x0000-0x0cf7 window]
+[    1.347726] pci_bus 0000:00: resource 5 [io  0x0d00-0xffff window]
+[    1.352119] pci_bus 0000:00: resource 6 [mem 0x000a0000-0x000bffff window]
+[    1.356727] pci_bus 0000:00: resource 7 [mem 0x10000000-0xafffffff window]
+[    1.361224] pci_bus 0000:00: resource 8 [mem 0xc0000000-0xfebfffff window]
+[    1.365650] pci_bus 0000:00: resource 9 [mem 0x180000000-0x97fffffff window]
+[    1.370659] PCI: CLS 0 bytes, default 64
+[    1.373304] PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
+[    1.373721] Trying to unpack rootfs image as initramfs...
+[    1.377441] software IO TLB: mapped [mem 0x000000000b000000-0x000000000f000000] (64MB)
+[    1.386280] RAPL PMU: API unit is 2^-32 Joules, 0 fixed counters, 10737418240 ms ovfl timer
+[    1.391705] clocksource: tsc: mask: 0xffffffffffffffff max_cycles: 0x229835b7123, max_idle_ns: 440795242976 ns
+[    1.398722] Initialise system trusted keyrings
+[    1.401813] Key type blacklist registered
+[    1.404910] workingset: timestamp_bits=40 max_order=16 bucket_order=0
+[    1.409729] squashfs: version 4.0 (2009/01/31) Phillip Lougher
+[    1.413576] fuse: init (API version 7.41)
+[    1.416458] integrity: Platform Keyring initialized
+[    1.429316] Key type asymmetric registered
+[    1.432070] Asymmetric key parser 'x509' registered
+[    1.435431] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 247)
+[    1.444953] io scheduler mq-deadline registered
+[    1.448046] io scheduler kyber registered
+[    1.453057] shpchp: Standard Hot Plug PCI Controller Driver version: 0.4
+[    1.457763] input: Power Button as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input0
+[    1.462742] ACPI: button: Power Button [PWRF]
+[    1.467129] ACPI: \_SB_.GSIG: Enabled at IRQ 22
+[    1.475669] ACPI: \_SB_.GSIH: Enabled at IRQ 23
+[    1.483886] ACPI: \_SB_.GSIE: Enabled at IRQ 20
+[    1.493632] virtio_mem virtio0: start address: 0x100000000
+[    1.497278] virtio_mem virtio0: region size: 0x30000000
+[    1.500558] Freeing initrd memory: 8492K
+[    1.500723] virtio_mem virtio0: device block size: 0x200000
+[    1.507063] virtio_mem virtio0: nid: 0
+[    1.509506] virtio_mem virtio0: memory block size: 0x8000000
+[    1.513391] virtio_mem virtio0: subblock size: 0x200000
+[    1.517226] virtio_mem virtio0: plugged size: 0x0
+[    1.518802] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    1.520322] virtio_mem virtio0: requested size: 0x0
+[    1.559703] 00:03: ttyS0 at I/O 0x3f8 (irq = 4, base_baud = 115200) is a 16550A
+[    1.570832] brd: module loaded
+[    1.577583] loop: module loaded
+[    1.580835] virtio_blk virtio1: 2/0/0 default/read/poll queues
+[    1.590161] virtio_blk virtio1: [vda] 65536 512-byte logical blocks (33.6 MB/32.0 MiB)
+[    1.597861] virtio_blk virtio2: 2/0/0 default/read/poll queues
+[    1.608413] virtio_blk virtio2: [vdb] 752 512-byte logical blocks (385 kB/376 KiB)
+[    1.615201] Loading iSCSI transport class v2.0-870.
+[    1.619051] tun: Universal TUN/TAP device driver, 1.6
+[    1.623908] VFIO - User Level meta-driver version: 0.3
+[    1.627657] intel_pstate: CPU model not supported
+[    1.631888] xt_time: kernel timezone is -0000
+[    1.635005] ipip: IPv4 and MPLS over IPv4 tunneling driver
+[    1.638866] NET: Registered PF_INET6 protocol family
+[    1.643752] Segment Routing with IPv6
+[    1.646210] In-situ OAM (IOAM) with IPv6
+[    1.648952] NET: Registered PF_PACKET protocol family
+[    1.652779] 9pnet: Installing 9P2000 support
+[    1.655942] Key type dns_resolver registered
+[    1.658995] NET: Registered PF_VSOCK protocol family
+[    1.662819] IPI shorthand broadcast: enabled
+[    1.668273] registered taskstats version 1
+[    1.671271] Loading compiled-in X.509 certificates
+[    1.680801] Demotion targets for Node 0: null
+[    1.684127] AppArmor: AppArmor sha256 policy hashing enabled
+[    1.688306] Unstable clock detected, switching default tracing clock to "global"
+[    1.688306] If you want to keep using the local clock, then add:
+[    1.688306]   "trace_clock=local"
+[    1.688306] on the kernel command line
+[    1.702527] clk: Disabling unused clocks
+[    1.708243] Freeing unused kernel image (initmem) memory: 2400K
+[    1.710814] Write protecting the kernel read-only data: 20480k
+[    1.713965] Freeing unused kernel image (rodata/data gap) memory: 1244K
+[    1.727164] x86/mm: Checked W+X mappings: passed, no W+X pages found.
+[    1.729807] Run /init as init process
+[    1.760814] EXT4-fs (vda): mounted filesystem 637ecd66-ff78-47c4-b72f-6d936d8bc63c r/w with ordered data mode. Quota mode: none.
+INITIAL_GUEST_RELEASE=6.12.26-william-normal-split-v1-e210f5e3ee94
+INITIAL_GUEST_NOTES=7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828
+=== RUN   TestNativeInitialPrebootGuestComponent
+=== RUN   TestNativeInitialPrebootGuestComponent/changed-source-before-writes
+=== RUN   TestNativeInitialPrebootGuestComponent/real-prepare-grow-and-recovery
+INITIAL_PREBOOT_READY_FOR_HOST_QMP_GROW=1
+[    2.235601] virtio_mem virtio0: plugged size: 0x0
+[    2.238238] virtio_mem virtio0: requested size: 0x30000000
+[    2.266235] Fallback order for Node 0: 0 
+[    2.266239] Built 1 zonelists, mobility grouping on.  Total pages: 73629
+[    2.271851] Policy zone: DMA32
+[    2.273507] min_free_kbytes is not updated to 1617 because user defined value 2048 is preferred
+[    2.291984] min_free_kbytes is not updated to 1617 because user defined value 2048 is preferred
+[    2.309922] min_free_kbytes is not updated to 1617 because user defined value 2048 is preferred
+[    2.327141] min_free_kbytes is not updated to 1617 because user defined value 2048 is preferred
+[    2.343085] min_free_kbytes is not updated to 1617 because user defined value 2048 is preferred
+[    2.348543] min_free_kbytes is not updated to 1617 because user defined value 2048 is preferred
+--- PASS: TestNativeInitialPrebootGuestComponent (0.81s)
+    --- PASS: TestNativeInitialPrebootGuestComponent/changed-source-before-writes (0.01s)
+    --- PASS: TestNativeInitialPrebootGuestComponent/real-prepare-grow-and-recovery (0.80s)
+PASS
+INITIAL_GUEST_EXIT=0
+INITIAL_GUEST_FILE=initial-guest-movable.json:e735f294dce680ebc4ef73bb92438c8d807780623d41a1b6e40616eec5d80e5e:ewogICJIb3N0U291cmNlSXNGaXh0dXJlIjogdHJ1ZSwKICAiUEdfc3RhcnRlZCI6IGZhbHNlLAogICJmb3JtYWxfcmVzb3VyY2Vfam91cm5hbF9jcmVhdGVkIjogZmFsc2UsCiAgIm5vcm1hbEF1dGhvcml6ZWQiOiBmYWxzZSwKICAib2JzZXJ2YXRpb24iOiB7CiAgICAicHJvdG9jb2xfdmVyc2lvbiI6IDEsCiAgICAic2NvcGUiOiAiaW5pdGlhbC1wcmVib290LW1vdmFibGUtb2JzZXJ2YXRpb24tb25seSIsCiAgICAiY2hhbGxlbmdlIjogewogICAgICAiaG9zdF9zdGFnZV9zaGEyNTYiOiAiMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMCIsCiAgICAgICJwcm90b2NvbF92ZXJzaW9uIjogMSwKICAgICAgInNjb3BlIjogIm5lb24taW5pdGlhbC1wcmVib290LWNoYWxsZW5nZS12MSIsCiAgICAgICJzb3VyY2Vfc2hhMjU2IjogIjIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAiLAogICAgICAibm9uY2UiOiAiMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMCIsCiAgICAgICJpZGVudGl0eSI6IHsKICAgICAgICAidm1fdWlkIjogInRlbXBsYXRlLXZtIiwKICAgICAgICAiaW5jYXJuYXRpb24iOiAiMTIzNDU2Nzg5MGFiY2RlZjEyMzQ1Njc4OTBhYmNkZWYiLAogICAgICAgICJydW5uZXJfcG9kX3VpZCI6ICJpbml0aWFsLXJ1bm5lciIsCiAgICAgICAgInJ1bm5lcl9ib290X2lkIjogIjEyMzQ1Njc4OTBhYmNkZWYxMjM0NTY3ODkwYWJjZGVmIiwKICAgICAgICAibm9kZV91aWQiOiAiaW5pdGlhbC1ub2RlIiwKICAgICAgICAibWluaW11bV9ieXRlcyI6ICIxMDczNzQxODI0IiwKICAgICAgICAibWF4aW11bV9ieXRlcyI6ICIyMTQ3NDgzNjQ4IiwKICAgICAgICAiYmxvY2tfYnl0ZXMiOiAiMjA5NzE1MiIKICAgICAgfSwKICAgICAgInJ1bnRpbWVfZG9jdW1lbnRfc2hhMjU2IjogIjI3NzIwNGQ3ZDI3NzFiY2MxMjNiZGUxNDcyMjAwNjhiYjg4NzZhOWM3M2Y0YjFiYTUyNDU5NGE2ZmU1YjgxYTQiLAogICAgICAicmVzb3VyY2Vfc291cmNlX3NoYTI1NiI6ICJjNGZmODc1MjNmZDcwNzMyYzIzZWI4MDQwYjFlMTA2ODg4ZjU4ZjNkNDRmZTM3NzdjYjI3ZmMwZDcxNWU0ZmQ1IiwKICAgICAgImNvbmZpZ19zZWNyZXRfdWlkIjogInRlbXBsYXRlLWNvbmZpZy11aWQiLAogICAgICAia2VybmVsX2J1aWxkX3NoYTI1NiI6ICIzNjkzMjAwYmIxMDk5Nzk4ODEyOTk1NTc1MDM4MmU1ODZkMTNlZWY3NWUwNmY0NmFhM2I5ZjU2YzZmODgzM2YwIiwKICAgICAgIm9yaWdpbmFsX2Jhc2VfYnl0ZXMiOiAiMjY4NDM1NDU2IiwKICAgICAgImJ1c2luZXNzX21pbmltdW1fYnl0ZXMiOiAiMTA3Mzc0MTgyNCIsCiAgICAgICJtYXhpbXVtX2J5dGVzIjogIjIxNDc0ODM2NDgiCiAgICB9LAogICAgInByZXBhcmVkX3JlY2VpcHRfc2hhMjU2IjogImFkY2FkMTMxNjM5MDFlMjBjMWUwMTRmNDBhOGZjNGYyMDM5Mzk0MDk4ZWY5Mjc5ZjNiNjJjM2RiMjJlNTg4NjIiLAogICAgImd1ZXN0X2Jvb3RfaWQiOiAiMmZlNDViNmMtMThiNi00MzBhLWEyYmUtODIzYzAyNjAyYmE3IiwKICAgICJyb290X2luc3RhbmNlX25vbmNlIjogIjI4NDFlODNjNGMzODQ4ZGFkMTAxYzU5MmVjYTRmMWMzYmJiNzVlOGRiMzRmMzFhNTU1M2FhZjJiZWUyMTBiNWEiLAogICAgInBoeXNpY2FsX29yaWdpbl9zaGEyNTYiOiAiMTI4MDg3MGYyODVhYWVjYjJlMjU5NTliNWY0YWMzOGE2MDQwZDBjYjQ4ZTVhMGQ3ZjEwMGNlYzE1MzNlYWFiZCIsCiAgICAicHJlX3N5c3RlbV9zaGEyNTYiOiAiMThjYWJiYTFhMjU3MjdlOTUxNThlNmJhZWRjNzM3NTIzYTdkYzNiZmVhNjgxYjk2ZGE2NTMwMGYwNWQ4MDgwOCIsCiAgICAiY3VycmVudF9waHlzaWNhbCI6IHsKICAgICAgInByb3RvY29sX3ZlcnNpb24iOiAxLAogICAgICAidm1fc2hyaW5rX3Blcm1pdCI6IGZhbHNlLAogICAgICAic2NvcGUiOiAibGludXgtNi4xMi4yNi1waHlzaWNhbC1jb21wb25lbnQtb2JzZXJ2YXRpb24tb25seSIsCiAgICAgICJpZGVudGl0eSI6IHsKICAgICAgICAidm1fdWlkIjogInRlbXBsYXRlLXZtIiwKICAgICAgICAiY29tcHV0ZV9pbnN0YW5jZV9pZCI6ICJ0ZW1wbGF0ZS1jb21wdXRlIiwKICAgICAgICAiZ3Vlc3RfYm9vdF9pZCI6ICIyZmU0NWI2Yy0xOGI2LTQzMGEtYTJiZS04MjNjMDI2MDJiYTciLAogICAgICAgICJjZ3JvdXBfZGV2aWNlIjogIjIzIiwKICAgICAgICAiY2dyb3VwX2lub2RlIjogIjI4IiwKICAgICAgICAic3lzdGVtX2Nncm91cF9kZXZpY2UiOiAiMjMiLAogICAgICAgICJzeXN0ZW1fY2dyb3VwX2lub2RlIjogIjY4IgogICAgICB9LAogICAgICAia2VybmVsX3JlbGVhc2UiOiAiNi4xMi4yNi13aWxsaWFtLW5vcm1hbC1zcGxpdC12MS1lMjEwZjVlM2VlOTQiLAogICAgICAia2VybmVsX25vdGVzX3NoYTI1NiI6ICI3Y2Y0NWNlZDI0YzgwMGVjODM5MGZjN2YwNGYwN2I4ZGM5ZTczYWMwZWZhNGJmOGFiZDExZDg1MTNjOGViODI4IiwKICAgICAgImNvbW1hbmRfbGluZV9zaGEyNTYiOiAiMDE3YjEyMjI5NjczM2IyZDIyNzE3NmRjN2UwYTg0ZjBhMjhmOWFkY2NiNjI5MDEwZmU2MTA2MjE5YzdjOTBjZiIsCiAgICAgICJwYWdlX3NpemVfYnl0ZXMiOiAiNDA5NiIsCiAgICAgICJwb3NzaWJsZV9jcHVzIjogMiwKICAgICAgInBpZF9tYXgiOiA1MTIsCiAgICAgICJ6b25lcyI6IFsKICAgICAgICB7CiAgICAgICAgICAibm9kZSI6IDAsCiAgICAgICAgICAibmFtZSI6ICJETUEzMiIsCiAgICAgICAgICAicHJlc2VudF9wYWdlcyI6ICI2NTM5OSIKICAgICAgICB9LAogICAgICAgIHsKICAgICAgICAgICJub2RlIjogMCwKICAgICAgICAgICJuYW1lIjogIk1vdmFibGUiLAogICAgICAgICAgInByZXNlbnRfcGFnZXMiOiAiMTk2NjA4IgogICAgICAgIH0sCiAgICAgICAgewogICAgICAgICAgIm5vZGUiOiAwLAogICAgICAgICAgIm5hbWUiOiAiTm9ybWFsIiwKICAgICAgICAgICJwcmVzZW50X3BhZ2VzIjogIjAiCiAgICAgICAgfQogICAgICBdLAogICAgICAibm9uX21vdmFibGVfdXBwZXJfYnl0ZXMiOiAiMjY3ODc0MzA0IiwKICAgICAgImNwdV9jaGFyZ2Vfc3RvY2tfdXBwZXJfYnl0ZXMiOiAiNTI0Mjg4IiwKICAgICAgInJ1bnRpbWVfY2FwYWJpbGl0aWVzIjogewogICAgICAgICJhY3RpdmVfbHNtcyI6IFsKICAgICAgICAgICJsb2NrZG93biIsCiAgICAgICAgICAiY2FwYWJpbGl0eSIsCiAgICAgICAgICAibGFuZGxvY2siLAogICAgICAgICAgInlhbWEiLAogICAgICAgICAgImFwcGFybW9yIgogICAgICAgIF0sCiAgICAgICAgImxhbmRsb2NrX2FiaSI6IDYsCiAgICAgICAgImluaXRpYWxfcGlkX25hbWVzcGFjZV9kZXZpY2UiOiAiNCIsCiAgICAgICAgImluaXRpYWxfcGlkX25hbWVzcGFjZV9pbm9kZSI6ICI0MDI2NTMxODM2IiwKICAgICAgICAibWVtb3J5X2hpZ2giOiAibWF4IiwKICAgICAgICAibWluX2ZyZWVfa2J5dGVzIjogIjIwNDgiLAogICAgICAgICJ3YXRlcm1hcmtfc2NhbGVfZmFjdG9yIjogMTAsCiAgICAgICAgIndhdGVybWFya19ib29zdF9mYWN0b3IiOiAwLAogICAgICAgICJwZXJjcHVfcGFnZWxpc3RfaGlnaF9mcmFjdGlvbiI6IDE2LAogICAgICAgICJjb21wYWN0aW9uX3Byb2FjdGl2ZW5lc3MiOiAwLAogICAgICAgICJoYXJkX3BpZF9tYXhfbGltaXQiOiA1MTIKICAgICAgfQogICAgfSwKICAgICJjdXJyZW50X3BoeXNpY2FsX3NoYTI1NiI6ICI2MzAzYmFjZjExNjc4MGJjYjM5MzYxZDU0OGJhODU5MzU3YzVhNDhhZjE3YmQwN2RlOTNkZDUxY2Y1ZmJmZWRhIiwKICAgICJleHBlY3RlZF9pbmNyZW1lbnRfYnl0ZXMiOiAiODA1MzA2MzY4IiwKICAgICJtb3ZhYmxlX3ByZXNlbnRfcGFnZXMiOiAiMTk2NjA4IgogIH0sCiAgIm9yaWdpbmFsX3dhbF9ieXRlc191bmNoYW5nZWQiOiB0cnVlCn0K
+INITIAL_GUEST_FILE=initial-guest-prepared.json:7524b3eed1e0baa7181ea00e70f3afbb04b312e2d94d773aa47ee5b58f35c46f:ewogICJIb3N0U291cmNlSXNGaXh0dXJlIjogdHJ1ZSwKICAibm9ybWFsQXV0aG9yaXplZCI6IGZhbHNlLAogICJyZWNlaXB0IjogewogICAgImNoYWxsZW5nZSI6IHsKICAgICAgImhvc3Rfc3RhZ2Vfc2hhMjU2IjogIjEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAiLAogICAgICAicHJvdG9jb2xfdmVyc2lvbiI6IDEsCiAgICAgICJzY29wZSI6ICJuZW9uLWluaXRpYWwtcHJlYm9vdC1jaGFsbGVuZ2UtdjEiLAogICAgICAic291cmNlX3NoYTI1NiI6ICIyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwIiwKICAgICAgIm5vbmNlIjogIjMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAiLAogICAgICAiaWRlbnRpdHkiOiB7CiAgICAgICAgInZtX3VpZCI6ICJ0ZW1wbGF0ZS12bSIsCiAgICAgICAgImluY2FybmF0aW9uIjogIjEyMzQ1Njc4OTBhYmNkZWYxMjM0NTY3ODkwYWJjZGVmIiwKICAgICAgICAicnVubmVyX3BvZF91aWQiOiAiaW5pdGlhbC1ydW5uZXIiLAogICAgICAgICJydW5uZXJfYm9vdF9pZCI6ICIxMjM0NTY3ODkwYWJjZGVmMTIzNDU2Nzg5MGFiY2RlZiIsCiAgICAgICAgIm5vZGVfdWlkIjogImluaXRpYWwtbm9kZSIsCiAgICAgICAgIm1pbmltdW1fYnl0ZXMiOiAiMTA3Mzc0MTgyNCIsCiAgICAgICAgIm1heGltdW1fYnl0ZXMiOiAiMjE0NzQ4MzY0OCIsCiAgICAgICAgImJsb2NrX2J5dGVzIjogIjIwOTcxNTIiCiAgICAgIH0sCiAgICAgICJydW50aW1lX2RvY3VtZW50X3NoYTI1NiI6ICIyNzcyMDRkN2QyNzcxYmNjMTIzYmRlMTQ3MjIwMDY4YmI4ODc2YTljNzNmNGIxYmE1MjQ1OTRhNmZlNWI4MWE0IiwKICAgICAgInJlc291cmNlX3NvdXJjZV9zaGEyNTYiOiAiYzRmZjg3NTIzZmQ3MDczMmMyM2ViODA0MGIxZTEwNjg4OGY1OGYzZDQ0ZmUzNzc3Y2IyN2ZjMGQ3MTVlNGZkNSIsCiAgICAgICJjb25maWdfc2VjcmV0X3VpZCI6ICJ0ZW1wbGF0ZS1jb25maWctdWlkIiwKICAgICAgImtlcm5lbF9idWlsZF9zaGEyNTYiOiAiMzY5MzIwMGJiMTA5OTc5ODgxMjk5NTU3NTAzODJlNTg2ZDEzZWVmNzVlMDZmNDZhYTNiOWY1NmM2Zjg4MzNmMCIsCiAgICAgICJvcmlnaW5hbF9iYXNlX2J5dGVzIjogIjI2ODQzNTQ1NiIsCiAgICAgICJidXNpbmVzc19taW5pbXVtX2J5dGVzIjogIjEwNzM3NDE4MjQiLAogICAgICAibWF4aW11bV9ieXRlcyI6ICIyMTQ3NDgzNjQ4IgogICAgfSwKICAgICJndWVzdF9ib290X2lkIjogIjJmZTQ1YjZjLTE4YjYtNDMwYS1hMmJlLTgyM2MwMjYwMmJhNyIsCiAgICAicm9vdF9pbnN0YW5jZV9ub25jZSI6ICIyODQxZTgzYzRjMzg0OGRhZDEwMWM1OTJlY2E0ZjFjM2JiYjc1ZThkYjM0ZjMxYTU1NTNhYWYyYmVlMjEwYjVhIiwKICAgICJrZXJuZWxfcHJlcGFyYXRpb25fc2hhMjU2IjogImE4ZmFlYWZlYTBjNjAzNzBkNWY0ZmE1ZTY0MzZhYjliZDY3NjQ5YzIwOWM0NDhiNDZkYTE3MWM3NzcyNTBjMTMiLAogICAgInBoeXNpY2FsX29yaWdpbl9zaGEyNTYiOiAiMTI4MDg3MGYyODVhYWVjYjJlMjU5NTliNWY0YWMzOGE2MDQwZDBjYjQ4ZTVhMGQ3ZjEwMGNlYzE1MzNlYWFiZCIsCiAgICAicHJlX3N5c3RlbV9zaGEyNTYiOiAiMThjYWJiYTFhMjU3MjdlOTUxNThlNmJhZWRjNzM3NTIzYTdkYzNiZmVhNjgxYjk2ZGE2NTMwMGYwNWQ4MDgwOCIsCiAgICAiY3VycmVudF9waHlzaWNhbF9zaGEyNTYiOiAiM2FiM2QyNTljYmRmZGQ1MGVmZWQ1NjY1OTlkZjQwYjhkNzY2NmRlMzM5MDMxNGEzNTc2Njk5ZTAwNTI1OWQyOCIKICB9LAogICJzdGFnZV9maWxlcyI6IHsKICAgICJpbml0aWFsLXByZWJvb3QtZ3Vlc3QuY29tcGxldGUuanNvbiI6ICI3NzVjZWFiODQ3MDRjYjkyYmI5ZTU2OTdlN2JkYjdiZGQwMzZlYTg0ZjFhMzdmMjU3ZmQ1ZGQwYWMwMDNkZWU1IiwKICAgICJpbml0aWFsLXByZWJvb3QtZ3Vlc3QuaW50ZW50Lmpzb24iOiAiM2I1ZjAyMDE5MmEyMzhlYWM1YjQ4NGQ5ZjhhMDAzOGI5NWEzZDkzMDFiZGQ1YWUyYWY4NGI4MjhhZjA4ZDJkNCIsCiAgICAia2VybmVsLWJvb3RzdHJhcC1jb21wbGV0ZS5qc29uIjogImE4ZmFlYWZlYTBjNjAzNzBkNWY0ZmE1ZTY0MzZhYjliZDY3NjQ5YzIwOWM0NDhiNDZkYTE3MWM3NzcyNTBjMTMiLAogICAgImtlcm5lbC1ib290c3RyYXAtaW50ZW50Lmpzb24iOiAiZDg4NDk2ZDFmOGFhZjVmN2Q3M2ZmMDNmNjVmY2JiNmVlYzZiYmJmNDUwMmYxMWJlZGJmMzE0MzUyOTI2OGYxNiIsCiAgICAicGh5c2ljYWwta2VybmVsLW9yaWdpbi5jb25maXJtZWQuanNvbiI6ICI0YmMwYjEwN2I5YmY5YTUzYzkyYzgyMjUzZmM5OGFmODFmZWNhZTY2ZTFlNzMxYzI4MTNlMjFkZTkyZWEwNTZmIiwKICAgICJwaHlzaWNhbC1rZXJuZWwtb3JpZ2luLmpzb24iOiAiMTI4MDg3MGYyODVhYWVjYjJlMjU5NTliNWY0YWMzOGE2MDQwZDBjYjQ4ZTVhMGQ3ZjEwMGNlYzE1MzNlYWFiZCIsCiAgICAicHJlLWJvb3RzdHJhcC1zeXN0ZW0uY29tcGxldGUuanNvbiI6ICIxOGNhYmJhMWEyNTcyN2U5NTE1OGU2YmFlZGM3Mzc1MjNhN2RjM2JmZWE2ODFiOTZkYTY1MzAwZjA1ZDgwODA4IiwKICAgICJwcmUtYm9vdHN0cmFwLXN5c3RlbS5pbnRlbnQuanNvbiI6ICJjOTEyNzgzYWVhNWFiN2IzNWIxZDU2YmVhZDVjYzdjZmNkZjdjYzBkMGI0NTI0ZjFkYjg5NmYzM2NmOTViNWMyIgogIH0KfQo=
+INITIAL_GUEST_FILE=initial-guest-recovery-after-grow.json:ecb091dd226c29b39de4c0510f186a9e52df5bd427b9b99de8b3e26c0f3adf9b:ewogICJIb3N0U291cmNlSXNGaXh0dXJlIjogdHJ1ZSwKICAiZXhwbGljaXRfcmVjb3ZlcnkiOiB0cnVlLAogICJtb3ZhYmxlIjogewogICAgInByb3RvY29sX3ZlcnNpb24iOiAxLAogICAgInNjb3BlIjogImluaXRpYWwtcHJlYm9vdC1tb3ZhYmxlLW9ic2VydmF0aW9uLW9ubHkiLAogICAgImNoYWxsZW5nZSI6IHsKICAgICAgImhvc3Rfc3RhZ2Vfc2hhMjU2IjogIjEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAiLAogICAgICAicHJvdG9jb2xfdmVyc2lvbiI6IDEsCiAgICAgICJzY29wZSI6ICJuZW9uLWluaXRpYWwtcHJlYm9vdC1jaGFsbGVuZ2UtdjEiLAogICAgICAic291cmNlX3NoYTI1NiI6ICIyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwIiwKICAgICAgIm5vbmNlIjogIjMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAiLAogICAgICAiaWRlbnRpdHkiOiB7CiAgICAgICAgInZtX3VpZCI6ICJ0ZW1wbGF0ZS12bSIsCiAgICAgICAgImluY2FybmF0aW9uIjogIjEyMzQ1Njc4OTBhYmNkZWYxMjM0NTY3ODkwYWJjZGVmIiwKICAgICAgICAicnVubmVyX3BvZF91aWQiOiAiaW5pdGlhbC1ydW5uZXIiLAogICAgICAgICJydW5uZXJfYm9vdF9pZCI6ICIxMjM0NTY3ODkwYWJjZGVmMTIzNDU2Nzg5MGFiY2RlZiIsCiAgICAgICAgIm5vZGVfdWlkIjogImluaXRpYWwtbm9kZSIsCiAgICAgICAgIm1pbmltdW1fYnl0ZXMiOiAiMTA3Mzc0MTgyNCIsCiAgICAgICAgIm1heGltdW1fYnl0ZXMiOiAiMjE0NzQ4MzY0OCIsCiAgICAgICAgImJsb2NrX2J5dGVzIjogIjIwOTcxNTIiCiAgICAgIH0sCiAgICAgICJydW50aW1lX2RvY3VtZW50X3NoYTI1NiI6ICIyNzcyMDRkN2QyNzcxYmNjMTIzYmRlMTQ3MjIwMDY4YmI4ODc2YTljNzNmNGIxYmE1MjQ1OTRhNmZlNWI4MWE0IiwKICAgICAgInJlc291cmNlX3NvdXJjZV9zaGEyNTYiOiAiYzRmZjg3NTIzZmQ3MDczMmMyM2ViODA0MGIxZTEwNjg4OGY1OGYzZDQ0ZmUzNzc3Y2IyN2ZjMGQ3MTVlNGZkNSIsCiAgICAgICJjb25maWdfc2VjcmV0X3VpZCI6ICJ0ZW1wbGF0ZS1jb25maWctdWlkIiwKICAgICAgImtlcm5lbF9idWlsZF9zaGEyNTYiOiAiMzY5MzIwMGJiMTA5OTc5ODgxMjk5NTU3NTAzODJlNTg2ZDEzZWVmNzVlMDZmNDZhYTNiOWY1NmM2Zjg4MzNmMCIsCiAgICAgICJvcmlnaW5hbF9iYXNlX2J5dGVzIjogIjI2ODQzNTQ1NiIsCiAgICAgICJidXNpbmVzc19taW5pbXVtX2J5dGVzIjogIjEwNzM3NDE4MjQiLAogICAgICAibWF4aW11bV9ieXRlcyI6ICIyMTQ3NDgzNjQ4IgogICAgfSwKICAgICJwcmVwYXJlZF9yZWNlaXB0X3NoYTI1NiI6ICJhZGNhZDEzMTYzOTAxZTIwYzFlMDE0ZjQwYThmYzRmMjAzOTM5NDA5OGVmOTI3OWYzYjYyYzNkYjIyZTU4ODYyIiwKICAgICJndWVzdF9ib290X2lkIjogIjJmZTQ1YjZjLTE4YjYtNDMwYS1hMmJlLTgyM2MwMjYwMmJhNyIsCiAgICAicm9vdF9pbnN0YW5jZV9ub25jZSI6ICIwYmExMzc2MDU2YzI4ZDM0YTE3Mzk2OTAwZDUxODhiZDhmYzcxYzg4OWQ0MzU5YTM3OTU2ZDExNjE4YTNjOTQwIiwKICAgICJwaHlzaWNhbF9vcmlnaW5fc2hhMjU2IjogIjEyODA4NzBmMjg1YWFlY2IyZTI1OTU5YjVmNGFjMzhhNjA0MGQwY2I0OGU1YTBkN2YxMDBjZWMxNTMzZWFhYmQiLAogICAgInByZV9zeXN0ZW1fc2hhMjU2IjogIjE4Y2FiYmExYTI1NzI3ZTk1MTU4ZTZiYWVkYzczNzUyM2E3ZGMzYmZlYTY4MWI5NmRhNjUzMDBmMDVkODA4MDgiLAogICAgImN1cnJlbnRfcGh5c2ljYWwiOiB7CiAgICAgICJwcm90b2NvbF92ZXJzaW9uIjogMSwKICAgICAgInZtX3Nocmlua19wZXJtaXQiOiBmYWxzZSwKICAgICAgInNjb3BlIjogImxpbnV4LTYuMTIuMjYtcGh5c2ljYWwtY29tcG9uZW50LW9ic2VydmF0aW9uLW9ubHkiLAogICAgICAiaWRlbnRpdHkiOiB7CiAgICAgICAgInZtX3VpZCI6ICJ0ZW1wbGF0ZS12bSIsCiAgICAgICAgImNvbXB1dGVfaW5zdGFuY2VfaWQiOiAidGVtcGxhdGUtY29tcHV0ZSIsCiAgICAgICAgImd1ZXN0X2Jvb3RfaWQiOiAiMmZlNDViNmMtMThiNi00MzBhLWEyYmUtODIzYzAyNjAyYmE3IiwKICAgICAgICAiY2dyb3VwX2RldmljZSI6ICIyMyIsCiAgICAgICAgImNncm91cF9pbm9kZSI6ICIyOCIsCiAgICAgICAgInN5c3RlbV9jZ3JvdXBfZGV2aWNlIjogIjIzIiwKICAgICAgICAic3lzdGVtX2Nncm91cF9pbm9kZSI6ICI2OCIKICAgICAgfSwKICAgICAgImtlcm5lbF9yZWxlYXNlIjogIjYuMTIuMjYtd2lsbGlhbS1ub3JtYWwtc3BsaXQtdjEtZTIxMGY1ZTNlZTk0IiwKICAgICAgImtlcm5lbF9ub3Rlc19zaGEyNTYiOiAiN2NmNDVjZWQyNGM4MDBlYzgzOTBmYzdmMDRmMDdiOGRjOWU3M2FjMGVmYTRiZjhhYmQxMWQ4NTEzYzhlYjgyOCIsCiAgICAgICJjb21tYW5kX2xpbmVfc2hhMjU2IjogIjAxN2IxMjIyOTY3MzNiMmQyMjcxNzZkYzdlMGE4NGYwYTI4ZjlhZGNjYjYyOTAxMGZlNjEwNjIxOWM3YzkwY2YiLAogICAgICAicGFnZV9zaXplX2J5dGVzIjogIjQwOTYiLAogICAgICAicG9zc2libGVfY3B1cyI6IDIsCiAgICAgICJwaWRfbWF4IjogNTEyLAogICAgICAiem9uZXMiOiBbCiAgICAgICAgewogICAgICAgICAgIm5vZGUiOiAwLAogICAgICAgICAgIm5hbWUiOiAiRE1BMzIiLAogICAgICAgICAgInByZXNlbnRfcGFnZXMiOiAiNjUzOTkiCiAgICAgICAgfSwKICAgICAgICB7CiAgICAgICAgICAibm9kZSI6IDAsCiAgICAgICAgICAibmFtZSI6ICJNb3ZhYmxlIiwKICAgICAgICAgICJwcmVzZW50X3BhZ2VzIjogIjE5NjYwOCIKICAgICAgICB9LAogICAgICAgIHsKICAgICAgICAgICJub2RlIjogMCwKICAgICAgICAgICJuYW1lIjogIk5vcm1hbCIsCiAgICAgICAgICAicHJlc2VudF9wYWdlcyI6ICIwIgogICAgICAgIH0KICAgICAgXSwKICAgICAgIm5vbl9tb3ZhYmxlX3VwcGVyX2J5dGVzIjogIjI2Nzg3NDMwNCIsCiAgICAgICJjcHVfY2hhcmdlX3N0b2NrX3VwcGVyX2J5dGVzIjogIjUyNDI4OCIsCiAgICAgICJydW50aW1lX2NhcGFiaWxpdGllcyI6IHsKICAgICAgICAiYWN0aXZlX2xzbXMiOiBbCiAgICAgICAgICAibG9ja2Rvd24iLAogICAgICAgICAgImNhcGFiaWxpdHkiLAogICAgICAgICAgImxhbmRsb2NrIiwKICAgICAgICAgICJ5YW1hIiwKICAgICAgICAgICJhcHBhcm1vciIKICAgICAgICBdLAogICAgICAgICJsYW5kbG9ja19hYmkiOiA2LAogICAgICAgICJpbml0aWFsX3BpZF9uYW1lc3BhY2VfZGV2aWNlIjogIjQiLAogICAgICAgICJpbml0aWFsX3BpZF9uYW1lc3BhY2VfaW5vZGUiOiAiNDAyNjUzMTgzNiIsCiAgICAgICAgIm1lbW9yeV9oaWdoIjogIm1heCIsCiAgICAgICAgIm1pbl9mcmVlX2tieXRlcyI6ICIyMDQ4IiwKICAgICAgICAid2F0ZXJtYXJrX3NjYWxlX2ZhY3RvciI6IDEwLAogICAgICAgICJ3YXRlcm1hcmtfYm9vc3RfZmFjdG9yIjogMCwKICAgICAgICAicGVyY3B1X3BhZ2VsaXN0X2hpZ2hfZnJhY3Rpb24iOiAxNiwKICAgICAgICAiY29tcGFjdGlvbl9wcm9hY3RpdmVuZXNzIjogMCwKICAgICAgICAiaGFyZF9waWRfbWF4X2xpbWl0IjogNTEyCiAgICAgIH0KICAgIH0sCiAgICAiY3VycmVudF9waHlzaWNhbF9zaGEyNTYiOiAiNjMwM2JhY2YxMTY3ODBiY2IzOTM2MWQ1NDhiYTg1OTM1N2M1YTQ4YWYxN2JkMDdkZTkzZGQ1MWNmNWZiZmVkYSIsCiAgICAiZXhwZWN0ZWRfaW5jcmVtZW50X2J5dGVzIjogIjgwNTMwNjM2OCIsCiAgICAibW92YWJsZV9wcmVzZW50X3BhZ2VzIjogIjE5NjYwOCIKICB9LAogICJub3JtYWxBdXRob3JpemVkIjogZmFsc2UsCiAgIm9sZF9yZWNlaXB0X2JlZm9yZV9yZWNvdmVyX3JlamVjdGVkIjogdHJ1ZSwKICAib3JkaW5hcnlfb2JzZXJ2ZV91bmtub3duIjogdHJ1ZSwKICAib3JpZ2luYWxfaG9zdF9yZWNlaXB0X3ByZXNlcnZlZCI6IHRydWUsCiAgIm9yaWdpbmFsX3dhbF9ieXRlc191bmNoYW5nZWQiOiB0cnVlLAogICJyZWNlaXB0IjogewogICAgImNoYWxsZW5nZSI6IHsKICAgICAgImhvc3Rfc3RhZ2Vfc2hhMjU2IjogIjEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAiLAogICAgICAicHJvdG9jb2xfdmVyc2lvbiI6IDEsCiAgICAgICJzY29wZSI6ICJuZW9uLWluaXRpYWwtcHJlYm9vdC1jaGFsbGVuZ2UtdjEiLAogICAgICAic291cmNlX3NoYTI1NiI6ICIyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwIiwKICAgICAgIm5vbmNlIjogIjMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAiLAogICAgICAiaWRlbnRpdHkiOiB7CiAgICAgICAgInZtX3VpZCI6ICJ0ZW1wbGF0ZS12bSIsCiAgICAgICAgImluY2FybmF0aW9uIjogIjEyMzQ1Njc4OTBhYmNkZWYxMjM0NTY3ODkwYWJjZGVmIiwKICAgICAgICAicnVubmVyX3BvZF91aWQiOiAiaW5pdGlhbC1ydW5uZXIiLAogICAgICAgICJydW5uZXJfYm9vdF9pZCI6ICIxMjM0NTY3ODkwYWJjZGVmMTIzNDU2Nzg5MGFiY2RlZiIsCiAgICAgICAgIm5vZGVfdWlkIjogImluaXRpYWwtbm9kZSIsCiAgICAgICAgIm1pbmltdW1fYnl0ZXMiOiAiMTA3Mzc0MTgyNCIsCiAgICAgICAgIm1heGltdW1fYnl0ZXMiOiAiMjE0NzQ4MzY0OCIsCiAgICAgICAgImJsb2NrX2J5dGVzIjogIjIwOTcxNTIiCiAgICAgIH0sCiAgICAgICJydW50aW1lX2RvY3VtZW50X3NoYTI1NiI6ICIyNzcyMDRkN2QyNzcxYmNjMTIzYmRlMTQ3MjIwMDY4YmI4ODc2YTljNzNmNGIxYmE1MjQ1OTRhNmZlNWI4MWE0IiwKICAgICAgInJlc291cmNlX3NvdXJjZV9zaGEyNTYiOiAiYzRmZjg3NTIzZmQ3MDczMmMyM2ViODA0MGIxZTEwNjg4OGY1OGYzZDQ0ZmUzNzc3Y2IyN2ZjMGQ3MTVlNGZkNSIsCiAgICAgICJjb25maWdfc2VjcmV0X3VpZCI6ICJ0ZW1wbGF0ZS1jb25maWctdWlkIiwKICAgICAgImtlcm5lbF9idWlsZF9zaGEyNTYiOiAiMzY5MzIwMGJiMTA5OTc5ODgxMjk5NTU3NTAzODJlNTg2ZDEzZWVmNzVlMDZmNDZhYTNiOWY1NmM2Zjg4MzNmMCIsCiAgICAgICJvcmlnaW5hbF9iYXNlX2J5dGVzIjogIjI2ODQzNTQ1NiIsCiAgICAgICJidXNpbmVzc19taW5pbXVtX2J5dGVzIjogIjEwNzM3NDE4MjQiLAogICAgICAibWF4aW11bV9ieXRlcyI6ICIyMTQ3NDgzNjQ4IgogICAgfSwKICAgICJndWVzdF9ib290X2lkIjogIjJmZTQ1YjZjLTE4YjYtNDMwYS1hMmJlLTgyM2MwMjYwMmJhNyIsCiAgICAicm9vdF9pbnN0YW5jZV9ub25jZSI6ICIyODQxZTgzYzRjMzg0OGRhZDEwMWM1OTJlY2E0ZjFjM2JiYjc1ZThkYjM0ZjMxYTU1NTNhYWYyYmVlMjEwYjVhIiwKICAgICJrZXJuZWxfcHJlcGFyYXRpb25fc2hhMjU2IjogImE4ZmFlYWZlYTBjNjAzNzBkNWY0ZmE1ZTY0MzZhYjliZDY3NjQ5YzIwOWM0NDhiNDZkYTE3MWM3NzcyNTBjMTMiLAogICAgInBoeXNpY2FsX29yaWdpbl9zaGEyNTYiOiAiMTI4MDg3MGYyODVhYWVjYjJlMjU5NTliNWY0YWMzOGE2MDQwZDBjYjQ4ZTVhMGQ3ZjEwMGNlYzE1MzNlYWFiZCIsCiAgICAicHJlX3N5c3RlbV9zaGEyNTYiOiAiMThjYWJiYTFhMjU3MjdlOTUxNThlNmJhZWRjNzM3NTIzYTdkYzNiZmVhNjgxYjk2ZGE2NTMwMGYwNWQ4MDgwOCIsCiAgICAiY3VycmVudF9waHlzaWNhbF9zaGEyNTYiOiAiM2FiM2QyNTljYmRmZGQ1MGVmZWQ1NjY1OTlkZjQwYjhkNzY2NmRlMzM5MDMxNGEzNTc2Njk5ZTAwNTI1OWQyOCIKICB9Cn0K
+INITIAL_GUEST_FILE=initial-guest-recovery-before-grow.json:9497aeebcdd679e7af98ec7ae33a1281fbc7ddfcbbac78278ca399d529e031be:ewogICJIb3N0U291cmNlSXNGaXh0dXJlIjogdHJ1ZSwKICAiZXhwbGljaXRfcmVjb3ZlcnkiOiB0cnVlLAogICJtb3ZhYmxlIjogbnVsbCwKICAibm9ybWFsQXV0aG9yaXplZCI6IGZhbHNlLAogICJvbGRfcmVjZWlwdF9iZWZvcmVfcmVjb3Zlcl9yZWplY3RlZCI6IHRydWUsCiAgIm9yZGluYXJ5X29ic2VydmVfdW5rbm93biI6IHRydWUsCiAgIm9yaWdpbmFsX2hvc3RfcmVjZWlwdF9wcmVzZXJ2ZWQiOiB0cnVlLAogICJvcmlnaW5hbF93YWxfYnl0ZXNfdW5jaGFuZ2VkIjogdHJ1ZSwKICAicmVjZWlwdCI6IHsKICAgICJjaGFsbGVuZ2UiOiB7CiAgICAgICJob3N0X3N0YWdlX3NoYTI1NiI6ICIxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwIiwKICAgICAgInByb3RvY29sX3ZlcnNpb24iOiAxLAogICAgICAic2NvcGUiOiAibmVvbi1pbml0aWFsLXByZWJvb3QtY2hhbGxlbmdlLXYxIiwKICAgICAgInNvdXJjZV9zaGEyNTYiOiAiMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMCIsCiAgICAgICJub25jZSI6ICIzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwMzAzMDMwIiwKICAgICAgImlkZW50aXR5IjogewogICAgICAgICJ2bV91aWQiOiAidGVtcGxhdGUtdm0iLAogICAgICAgICJpbmNhcm5hdGlvbiI6ICIxMjM0NTY3ODkwYWJjZGVmMTIzNDU2Nzg5MGFiY2RlZiIsCiAgICAgICAgInJ1bm5lcl9wb2RfdWlkIjogImluaXRpYWwtcnVubmVyIiwKICAgICAgICAicnVubmVyX2Jvb3RfaWQiOiAiMTIzNDU2Nzg5MGFiY2RlZjEyMzQ1Njc4OTBhYmNkZWYiLAogICAgICAgICJub2RlX3VpZCI6ICJpbml0aWFsLW5vZGUiLAogICAgICAgICJtaW5pbXVtX2J5dGVzIjogIjEwNzM3NDE4MjQiLAogICAgICAgICJtYXhpbXVtX2J5dGVzIjogIjIxNDc0ODM2NDgiLAogICAgICAgICJibG9ja19ieXRlcyI6ICIyMDk3MTUyIgogICAgICB9LAogICAgICAicnVudGltZV9kb2N1bWVudF9zaGEyNTYiOiAiMjc3MjA0ZDdkMjc3MWJjYzEyM2JkZTE0NzIyMDA2OGJiODg3NmE5YzczZjRiMWJhNTI0NTk0YTZmZTViODFhNCIsCiAgICAgICJyZXNvdXJjZV9zb3VyY2Vfc2hhMjU2IjogImM0ZmY4NzUyM2ZkNzA3MzJjMjNlYjgwNDBiMWUxMDY4ODhmNThmM2Q0NGZlMzc3N2NiMjdmYzBkNzE1ZTRmZDUiLAogICAgICAiY29uZmlnX3NlY3JldF91aWQiOiAidGVtcGxhdGUtY29uZmlnLXVpZCIsCiAgICAgICJrZXJuZWxfYnVpbGRfc2hhMjU2IjogIjM2OTMyMDBiYjEwOTk3OTg4MTI5OTU1NzUwMzgyZTU4NmQxM2VlZjc1ZTA2ZjQ2YWEzYjlmNTZjNmY4ODMzZjAiLAogICAgICAib3JpZ2luYWxfYmFzZV9ieXRlcyI6ICIyNjg0MzU0NTYiLAogICAgICAiYnVzaW5lc3NfbWluaW11bV9ieXRlcyI6ICIxMDczNzQxODI0IiwKICAgICAgIm1heGltdW1fYnl0ZXMiOiAiMjE0NzQ4MzY0OCIKICAgIH0sCiAgICAiZ3Vlc3RfYm9vdF9pZCI6ICIyZmU0NWI2Yy0xOGI2LTQzMGEtYTJiZS04MjNjMDI2MDJiYTciLAogICAgInJvb3RfaW5zdGFuY2Vfbm9uY2UiOiAiMjg0MWU4M2M0YzM4NDhkYWQxMDFjNTkyZWNhNGYxYzNiYmI3NWU4ZGIzNGYzMWE1NTUzYWFmMmJlZTIxMGI1YSIsCiAgICAia2VybmVsX3ByZXBhcmF0aW9uX3NoYTI1NiI6ICJhOGZhZWFmZWEwYzYwMzcwZDVmNGZhNWU2NDM2YWI5YmQ2NzY0OWMyMDljNDQ4YjQ2ZGExNzFjNzc3MjUwYzEzIiwKICAgICJwaHlzaWNhbF9vcmlnaW5fc2hhMjU2IjogIjEyODA4NzBmMjg1YWFlY2IyZTI1OTU5YjVmNGFjMzhhNjA0MGQwY2I0OGU1YTBkN2YxMDBjZWMxNTMzZWFhYmQiLAogICAgInByZV9zeXN0ZW1fc2hhMjU2IjogIjE4Y2FiYmExYTI1NzI3ZTk1MTU4ZTZiYWVkYzczNzUyM2E3ZGMzYmZlYTY4MWI5NmRhNjUzMDBmMDVkODA4MDgiLAogICAgImN1cnJlbnRfcGh5c2ljYWxfc2hhMjU2IjogIjNhYjNkMjU5Y2JkZmRkNTBlZmVkNTY2NTk5ZGY0MGI4ZDc2NjZkZTMzOTAzMTRhMzU3NjY5OWUwMDUyNTlkMjgiCiAgfQp9Cg==
+INITIAL_GUEST_FILE=initial-guest-rejected-source.json:b7ef30f710cfca122fc3f6308a5df04a2d427b69e2c7fbefc4e79634b2f8141f:ewogICJIb3N0U291cmNlSXNGaXh0dXJlIjogdHJ1ZSwKICAibm9ybWFsQXV0aG9yaXplZCI6IGZhbHNlLAogICJ3cm9uZ191aWRfcmVqZWN0ZWRfYmVmb3JlX3dhbF9hbmRfa2VybmVsX3dyaXRlIjogdHJ1ZQp9Cg==
+[    3.433025] clocksource: Long readout interval, skipping watchdog check: cs_nsec: 1202334958 wd_nsec: 1202334505
+[    3.450371] ACPI: PM: Preparing to enter system sleep state S5
+[    3.453389] reboot: Power down

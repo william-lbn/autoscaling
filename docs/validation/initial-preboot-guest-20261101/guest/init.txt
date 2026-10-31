@@ -1,0 +1,37 @@
+#!/bin/busybox sh
+set -eu
+export PATH=/bin
+/bin/busybox --install -s /bin
+mount -o bind / /
+mount -o remount,bind,ro / /
+mount -t devtmpfs devtmpfs /dev
+exec </dev/console >/dev/console 2>&1
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t securityfs none /sys/kernel/security
+mount -t cgroup2 none /sys/fs/cgroup
+mount -t tmpfs -o size=64m,mode=1777 tmpfs /tmp
+mount -t tmpfs -o size=8m,mode=755 tmpfs /evidence
+mount -t ext4 /dev/vda /var/lib/neon-dsga
+mkdir /var/lib/neon-dsga/state
+chmod 700 /var/lib/neon-dsga/state
+mount -t iso9660 -o ro /dev/vdb /neonvm/runtime
+echo '+memory +pids' >/sys/fs/cgroup/cgroup.subtree_control
+mkdir /sys/fs/cgroup/neon-postgres /sys/fs/cgroup/neon-system
+echo INITIAL_GUEST_RELEASE=$(uname -r)
+echo INITIAL_GUEST_NOTES=$(sha256sum /sys/kernel/notes | cut -d' ' -f1)
+export DSGA_INITIAL_GUEST_NATIVE=isolated369-initial-preboot-v1
+set +e
+/initial-guest.test -test.run '^TestNativeInitialPrebootGuestComponent$' -test.count=1 -test.v -test.timeout=75s
+rc=$?
+set -e
+echo INITIAL_GUEST_EXIT=$rc
+for file in /evidence/*.json; do
+ test -f "$file" || continue
+ name=$(basename "$file")
+ hash=$(sha256sum "$file" | cut -d' ' -f1)
+ blob=$(base64 "$file" | tr -d '\n')
+ echo "INITIAL_GUEST_FILE=$name:$hash:$blob"
+done
+sync
+poweroff -f

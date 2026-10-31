@@ -1,0 +1,66 @@
+{
+  "id": "NEON-S-INITIAL-GUEST-001",
+  "status": "PASS_COMPONENT_ONLY",
+  "host_qemu_exit": 0,
+  "Guest_exits": [
+    "0"
+  ],
+  "actual_qmp_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "actual_initial_base": {
+    "base-memory": 268435456,
+    "plugged-memory": 0
+  },
+  "grow_sent": true,
+  "actual_target": {
+    "summary": {
+      "base-memory": 268435456,
+      "plugged-memory": 805306368
+    },
+    "devices": [
+      {
+        "type": "virtio-mem",
+        "data": {
+          "memdev": "/objects/mem0",
+          "memaddr": 4294967296,
+          "block-size": 2097152,
+          "size": 805306368,
+          "node": 0,
+          "max-size": 805306368,
+          "requested-size": 805306368,
+          "id": "vmem0"
+        }
+      }
+    ]
+  },
+  "qmp_errors": [
+    "[Errno 2] No such file or directory"
+  ],
+  "seconds": 4.694031772000017,
+  "roots": [
+    "TestNativeInitialPrebootGuestComponent"
+  ],
+  "subcases": [
+    "TestNativeInitialPrebootGuestComponent/changed-source-before-writes",
+    "TestNativeInitialPrebootGuestComponent/real-prepare-grow-and-recovery"
+  ],
+  "reports": [
+    "initial-guest-movable.json",
+    "initial-guest-prepared.json",
+    "initial-guest-recovery-after-grow.json",
+    "initial-guest-recovery-before-grow.json",
+    "initial-guest-rejected-source.json"
+  ],
+  "errors": [],
+  "go_binary_sha256": "2d232cc1d253ea95ee395ba6e45bf54eef8aa5df76452d245fdd97b662abe03a",
+  "kernel_image_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+  "kernel_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+  "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "console_sha256": "4b0922ea8a41581355f8b0096b9e11077ae64d99868a684577d2f7777ce8fd34",
+  "Host_source_fixture": true,
+  "PG_started": false,
+  "normal_authorized": false,
+  "E": 0
+}

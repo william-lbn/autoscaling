@@ -1,0 +1,6 @@
+{
+  "command": "docker run --rm --pull=never --network none --entrypoint /opt/go/bin/go [fixed tools digest] version",
+  "exit": 0,
+  "stdout": "go version go1.24.3 linux/amd64\n",
+  "stderr": ""
+}

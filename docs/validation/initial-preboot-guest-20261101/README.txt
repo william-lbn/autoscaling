@@ -1,0 +1,13 @@
+PG17 初始Guest真实三阶段生产者与grow后Movable实读（组件）
+
+本批只新增initial_preboot_guest前缀5源（common/linux/unsupported/U/native）。Prepare/Observe/RecoverInitialPreboot使用Root中立bootprotocol，固定读取Doc2+5实际ISO资产，逐字节重渲染比对、原VM/incarnation/UID/Source/kernel引用与必要boot参数/初始namespace绑定；不接请求policy/path。旧cmd/vminit/Host6/共享schema、发行锁及原五拒绝不改。默认旧流没有自动调用本组件。
+
+真实顺序：KernelPrep原intent/complete→新增aggregate intent→原Origin data/confirm→原PreSys intent/complete→同resource flock完整实读六阶段+当前PG递归空/System原cap归组/当前物理→aggregate complete。原KernelPrep首次目录白名单不能容新aggregate，所以新intent只在其成功后创建；不改原严格reader。公开阶段API各自原锁，最终组合锁内只调用原locked readers，绝不重入公开Observe或在锁内跨网络。所有原八文件+目录同步、身份/ctime/摘要及当前事实重核后才建立本Root内存见证。普通Observe与重复Prepare零同步/零写；partial、新Root或缺见证保Unknown，只有显式Recover沿原nonce/原WAL补原阶段、完整同步后恢复，不能换challenge或清旧文件。
+
+aggregate complete记录真正发行者IssuingRoot PID/start/nonce。第一次完成若跨Root恢复，不伪装intent创建者。Prepare/Observe/Recover均精确重建同一原历史receipt；grow后恢复不把当前Movable改写为新首次历史。Inspect严格逐字段比原intent+complete发行的历史receipt，当前Root另须持显式恢复见证；Movable回执另写当前实际Rootnonce，PreparedReceiptSHA绑定Host同一旧receipt。历史Root字段与当前Root不混同。
+
+Grow后只读：Origin.First.Match当前Physical核原boot/kernel/CPU/PID/K固定，原Kernel/Origin/PreSys引用与System归组、PG递归空均重新实读；初始Movable必须0、当前present页必须等原BusinessMinimum-OriginalBase的4096页数。完整Physical保本地报告；ExpectedIncrement是计划引用，CurrentPhysical/Movable才是观察。本函数不是QMP测量，Host仍须独立核原QMP/预留/Owner/RV/Lease/Source与可信Root通道。
+
+最终10U/74子项：新增5U/27，Boot直接旧回归5U/47，race/source/build全部0，815实际COPY逐项匹配，零skip。Darwinarm64只编译通过，不计U/S。真实369 KVM1根2named case/5份报告：错Secret写前拒；真实256MiB base→virtio-mem实增768MiB→1GiB（QMP base/target独立读回）；Guest Movable196608页、K267874304不变；grow前后新Root未Recover拒旧receipt、Recover后仍用Host同一旧frame成功，换issuer/boot/physicalSHA拒，8WAL字节不变；只读debugfs实际提取8WAL与报告SHA全部吻合。Guest/QEMU0。原Host Source/Node仅fixture；PG未启动，state.json未创建，E0，normal/AllSourcesClosed仍false。
+
+未接正式Guest sysinit/Host帧通道/真实Node来源与最终许可。旧正常启动入口保持原路径，不能因组件通过宣称首版安全normal降限完成。首轮b898d3单元通过但缺严格历史发行者新规则，保留原收据为历史；最终3b387e+da3aa1才对应本源码。唯一QMP startup ENOENT是socket尚未创建的轮询，最终真实QMP与退出严格通过，不隐去。

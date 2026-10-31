@@ -1,0 +1,1 @@
+独立Guest早期生产者组件：新增5U/27子项+原Boot5U/47回归；真实369 KVM1根2case，QMP256MiB→1GiB、实际Movable196608页、grow前后新Root显式恢复原Host历史receipt均通过。8WAL原字节不变、未建state.json/PG。E0，Host Source仍fixture，不授normal许可。精确5源与档案见 docs/validation/initial-preboot-guest-20261101；等待Root独立审阅/统一中文提交，不改旧启动入口/Host6/共享协议/发行锁。

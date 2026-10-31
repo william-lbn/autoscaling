@@ -1,0 +1,102 @@
+{
+  "scope": "GUEST_EARLY_PREPARATION_COMPONENT_NOT_HOST_SOURCE_OR_NORMAL",
+  "unit": {
+    "new_roots": 5,
+    "new_named_subcases": 27,
+    "IDs": [
+      {
+        "id": "PG17-U-INITIAL-GUEST-001",
+        "test": "TestInitialPrebootGuestSourceBinding"
+      },
+      {
+        "id": "PG17-U-INITIAL-GUEST-002",
+        "test": "TestInitialPrebootGuestRejectsSourceDrift"
+      },
+      {
+        "id": "PG17-U-INITIAL-GUEST-003",
+        "test": "TestInitialPrebootGuestHistoricalCompletion"
+      },
+      {
+        "id": "PG17-U-INITIAL-GUEST-004",
+        "test": "TestInitialPrebootGuestMovableGeometry"
+      },
+      {
+        "id": "PG17-U-INITIAL-GUEST-005",
+        "test": "TestInitialPrebootGuestPrivateWitnessKey"
+      }
+    ],
+    "direct_Boot_regression_roots": 5,
+    "direct_Boot_regression_subcases": 47,
+    "total_roots": 10,
+    "total_subcases": 74,
+    "race": true,
+    "skip": 0,
+    "cohort": "/data/neon-build/validation/initial-preboot-guest-go-20261031T165549Z-3b387e",
+    "elapsed_seconds": 2.062
+  },
+  "native": {
+    "ID": "NEON-S-INITIAL-GUEST-001",
+    "root": "TestNativeInitialPrebootGuestComponent",
+    "roots": 1,
+    "named_cases": 2,
+    "cohort": "/data/neon-build/validation/initial-preboot-guest-native-20261031T165655Z-da3aa1",
+    "actual_KVM": true,
+    "Guest_exit": 0,
+    "QEMU_exit": 0,
+    "seconds": 4.694031772000017,
+    "Host_Source_and_Node_are_fixture": true,
+    "Guest_Kernel_Origin_PreSys_and_WAL_are_real": true,
+    "reports": 5,
+    "actual_initial_base": {
+      "base-memory": 268435456,
+      "plugged-memory": 0
+    },
+    "actual_target": {
+      "summary": {
+        "base-memory": 268435456,
+        "plugged-memory": 805306368
+      },
+      "devices": [
+        {
+          "type": "virtio-mem",
+          "data": {
+            "memdev": "/objects/mem0",
+            "memaddr": 4294967296,
+            "block-size": 2097152,
+            "size": 805306368,
+            "node": 0,
+            "max-size": 805306368,
+            "requested-size": 805306368,
+            "id": "vmem0"
+          }
+        }
+      ]
+    },
+    "actual_Movable_present_pages": 196608,
+    "actual_nonmovable_bytes": 267874304,
+    "new_Root_before_and_after_grow_preserves_Host_original_receipt": true,
+    "original_8_WAL_bytes_unchanged": true,
+    "formal_resource_state_created": false,
+    "PG_started": false
+  },
+  "ENV": {
+    "darwin_arm64_compile": 0,
+    "fixture_export": 0,
+    "unit_tool": "Go1.24.3",
+    "not_additional_test_roots": true
+  },
+  "E": 0,
+  "all_sources_closed": false,
+  "normal_authorized": false,
+  "Host_channel_integrated": false,
+  "sysinit_integrated": false,
+  "five_guards_modified": false,
+  "history": [
+    {
+      "cohort": "/data/neon-build/validation/initial-preboot-guest-go-20261031T164925Z-b898d3",
+      "status": "PASS_UNIT_SUPERSEDED_BEFORE_EXACT_HISTORICAL_ISSUER_BINDING",
+      "source_mutated_after_this_cohort": true,
+      "not_final_source_evidence": true
+    }
+  ]
+}

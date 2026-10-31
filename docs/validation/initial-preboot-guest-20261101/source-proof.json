@@ -1,0 +1,30 @@
+{
+  "base_git": "e28f5607763dff86efe96427e44243a74f77f89c",
+  "modified_sources": {
+    "pkg/dsga/resourceguard/initial_preboot_guest.go": "29a869047ac5b9cf2f54a02ee970f6b23e4acf5bd91f723f71eca40f3fa9389a",
+    "pkg/dsga/resourceguard/initial_preboot_guest_linux.go": "db278c36a5b330075d8094b3c872a7eaa42443f451655755ab262a7d59561df7",
+    "pkg/dsga/resourceguard/initial_preboot_guest_unsupported.go": "c580478f4ce5c49986b84f15383a9d6601261e203206a0363395d71423e8fee3",
+    "pkg/dsga/resourceguard/initial_preboot_guest_test.go": "2e438976b16943882d541b19b5282d7d9094c717712a9672c23698266097d03a",
+    "pkg/dsga/resourceguard/initial_preboot_guest_native_test.go": "6daacff1b1a3dacf0d7a88d76506640d021955cd5766d5b94cb7899b7dd4ae11"
+  },
+  "actual_COPY": 815,
+  "actual_COPY_all_equal": true,
+  "source_lock_sha256": "1a5bb73d687cb08e516898dd80847a5bcb5f603711007940fca8b17576cec68e",
+  "compiled_manifest_sha256": "6f0ae3c363235cfe5f6058ae47c3c95724bc7911f1146867733f5f6278d7deae",
+  "go_binary_sha256": "2d232cc1d253ea95ee395ba6e45bf54eef8aa5df76452d245fdd97b662abe03a",
+  "darwin_compile_binary_sha256": "aa025f0a8511f83aa0ba15e7c0daf659c058d78c06d9f881edc86a412e5ac382",
+  "Guest_kernel_tuple": {
+    "kernel_image_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+    "kernel_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+  },
+  "Runtime_ISO_sha256": "094f0cd1bdb3de40de5c89d30c625476c125d7629126cbdcfff50c5e5d3a5f3c",
+  "actual_8_WAL_extracted_readonly_and_hash_matched": true,
+  "original_Host_receipt_exactly_preserved_after_Root_restart": true,
+  "historical_issuer_and_current_Root_nonce_distinct": true,
+  "old_existing_files_changed": false,
+  "shared_protocol_changed_by_this_agent": false,
+  "cmd_vminit_Host6_changed": false,
+  "normal_authorized": false,
+  "E": 0
+}

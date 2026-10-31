@@ -1,0 +1,24 @@
+Root独立审查：Guest真实早期准备与Movable恢复（2026-10-31 UTC）
+
+已独立实读五源全部生产流程与直接测试。固定原ISO六资产准确字节、当前准确内核、
+原Config/Source共同核验；Host Source/Node/阶段摘要并非Guest可自行认证。KernelPrep
+首次boundary之后才建aggregate intent；普通Observe/重复Prepare零写，partial仅显式
+Recover。原六阶段文件与新两文件逐fsync+目录同步、完整重读和文件身份/ctime后才登记
+本进程见证；跨Root不借用旧内存。complete私有IssuingRoot记录真实完成发行者。
+
+历史receipt只从原intent/complete完整重建。新Root显式恢复后仍用Host准确原历史对象，
+替issuer/boot/physicalSHA均拒；Movable当前Rootnonce另实读。原Physical.Validate/Match
+固定K/nonMovable/CPU/PID/kernel/boot，只放Movable变化；before0，当前页数准确等于
+(min-base)/4096，不把Guest值当QMP。公开准备流程只限正式Bootstrap之前，不代表
+后续已有PG的完整恢复合同。当前源保护与上下文沿实际私有reader，不接verified输入。
+
+最终815输入逐hash、10根74sub（新5/27+Boot直接旧5/47）race零fail/skip与各退出0；
+准确369实际KVM QMP base256MiB、plugged768MiB至1GiB，Movable196608页、K267874304，
+新Root前后恢复和原八WAL提取/报告hash已核。fixture block2MiB，生产Host8MiB仍须后继
+真实联合验证；Host Source/Node为fixture，未启动PG/建state.json。初始QMP socket尚未
+出现的ENOENT轮询保留原文，不伪装为Guest失败；最终真实Guest/QEMU0。Darwin仅交叉编译。
+
+跨轨发现Host旧ad组件把kernel_build_sha写成reference JSON摘要，Guest正确严格要求
+artifact SHA。已要求Host后继统一artifact并红绿验证，不兼容双格式、不放松Guest。
+本组件无剩余提交阻断；固定通道/sysinit未消费，SourceClosed/normal/完整E未认证，五拒绝
+不改，E通过仍0。全部旧轮与失败保留，不能把本次组件通过当封版或真实Host预算资格。
