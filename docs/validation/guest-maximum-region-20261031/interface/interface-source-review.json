@@ -1,0 +1,91 @@
+{
+  "scope": "readonly-existing-interface-component-only",
+  "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "guest_reported_resource": {
+    "name": "virtio0",
+    "base": 4294967296,
+    "inclusive_end": 5100273663,
+    "maximum_region_bytes": 805306368
+  },
+  "actual_same_instance_qmp": {
+    "base_bytes": 268435456,
+    "machine_maximum_bytes": 1073741824,
+    "device": {
+      "memdev": "/objects/vmem0",
+      "memaddr": 4294967296,
+      "block-size": 8388608,
+      "size": 0,
+      "node": 0,
+      "max-size": 805306368,
+      "requested-size": 0,
+      "id": "vm0"
+    }
+  },
+  "conservative_maximum_expression": "actual_qmp_base_bytes + guest_immutable_maximum_region_bytes",
+  "expression_bytes": 1073741824,
+  "not_independently_observed_in_guest": [
+    "virtio_device_block_size",
+    "virtio_device_nid"
+  ],
+  "not_original_birth_proof": true,
+  "all_sources_closed": false,
+  "normal_permit": false,
+  "kernel_sources": [
+    {
+      "path": "drivers/virtio/virtio_mem.c",
+      "sha256": "1d3b4dc332f1e8b7ce51e97267d5db811f6575131bafbc01fbf88c6b93de1de0",
+      "url": "https://raw.githubusercontent.com/gregkh/linux/v6.12.26/drivers/virtio/virtio_mem.c"
+    },
+    {
+      "path": "drivers/virtio/virtio.c",
+      "sha256": "5c5375393f6d8f688aad29640924ae60798a33851a322a008fdf540a57d70ca7",
+      "url": "https://raw.githubusercontent.com/gregkh/linux/v6.12.26/drivers/virtio/virtio.c"
+    },
+    {
+      "path": "include/uapi/linux/virtio_mem.h",
+      "sha256": "d312449de6868974c89cef3b5daf62b385c7c6a54947dee674d1044dc5d72bc8",
+      "url": "https://raw.githubusercontent.com/gregkh/linux/v6.12.26/include/uapi/linux/virtio_mem.h"
+    },
+    {
+      "path": "kernel/resource.c",
+      "sha256": "9e8a7c2ed77d43d5070e2deeddad4e0887cebbbb5e201f860db05893f5c20221",
+      "url": "https://raw.githubusercontent.com/gregkh/linux/v6.12.26/kernel/resource.c"
+    },
+    {
+      "path": "drivers/base/dd.c",
+      "sha256": "556d2b137937fa26d4780c1210178bc64ec4254c33110e6a7d259d267f86b4f1",
+      "url": "https://raw.githubusercontent.com/gregkh/linux/v6.12.26/drivers/base/dd.c"
+    }
+  ],
+  "qemu_sources": [
+    {
+      "path": "/data/neon-build/research/qemu-8.1.5/hw/virtio/virtio-mem.c",
+      "url": "https://raw.githubusercontent.com/qemu/qemu/v8.1.5/hw/virtio/virtio-mem.c",
+      "sha256": "634f64e6bb33269afd8bb280f887feb3133709aeff2d6c4fb7b52529cf9708a2",
+      "bytes": 54095
+    },
+    {
+      "path": "/data/neon-build/research/qemu-8.1.5/include/hw/virtio/virtio-mem.h",
+      "url": "https://raw.githubusercontent.com/qemu/qemu/v8.1.5/include/hw/virtio/virtio-mem.h",
+      "sha256": "f2a0212c0a4b0de5fc4edcf5928d53823f8d1d6483c522a004df57efe986a288",
+      "bytes": 2912
+    },
+    {
+      "path": "/data/neon-build/research/qemu-8.1.5/hw/virtio/virtio-mem-pci.c",
+      "url": "https://raw.githubusercontent.com/qemu/qemu/v8.1.5/hw/virtio/virtio-mem-pci.c",
+      "sha256": "663cd26dc58f1554afcc7c86e122cdf98884d068f36152f6f04cd6d349ca1851",
+      "bytes": 6870
+    }
+  ],
+  "first_harness_failure": {
+    "path": "/data/neon-build/validation/virtio-geometry-existing-20261031T011517Z",
+    "status": "FAIL_PROBE",
+    "console_sha256": "a93ec3082501883e4fc6d66f0e5a55657f8fd6668e17948c971ec3afad5fca44",
+    "reason": "Guest init used nonexistent aggregate memory/online; explicit failure preserved"
+  },
+  "current_console_sha256": "610f2960c740d0e870416f2a126c7a6c4c61680ed15c97a782262d783ceefd77"
+}

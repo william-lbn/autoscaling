@@ -1,0 +1,36 @@
+{
+  "U": [
+    {
+      "id": "NEON-U-MMAX-001",
+      "root": "TestGuestMaximumIOMemResource"
+    },
+    {
+      "id": "NEON-U-MMAX-002",
+      "root": "TestGuestMaximumObservationValidation"
+    },
+    {
+      "id": "NEON-U-MMAX-003",
+      "root": "TestGuestMaximumObservationMatch"
+    },
+    {
+      "id": "NEON-U-MMAX-004",
+      "root": "TestGuestMaximumGeometryComparison"
+    },
+    {
+      "id": "NEON-U-MMAX-005",
+      "root": "TestGuestMaximumCanonicalDevice"
+    }
+  ],
+  "S": [
+    {
+      "id": "NEON-S-MMAX-001",
+      "root": "TestNativeGuestMemoryMaximumComponent",
+      "scope": "real369 KVM readonly Guest and test-harness same-instance QMP consistency; not PG/E2E"
+    }
+  ],
+  "E": [],
+  "unit_subcases": 47,
+  "failures_preserved": 2,
+  "original_fixture_identity": true,
+  "normal_authorized": false
+}

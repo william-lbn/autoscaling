@@ -1,0 +1,115 @@
+{
+  "status": "FAIL_PROBE",
+  "host_qemu_exit": 0,
+  "elapsed_seconds": 2.622589442995377,
+  "qmp": [
+    {
+      "command": {
+        "execute": "qmp_capabilities"
+      },
+      "response": {
+        "return": {}
+      }
+    },
+    {
+      "command": {
+        "execute": "query-kvm"
+      },
+      "response": {
+        "return": {
+          "enabled": true,
+          "present": true
+        }
+      }
+    },
+    {
+      "command": {
+        "execute": "query-version"
+      },
+      "response": {
+        "return": {
+          "qemu": {
+            "micro": 5,
+            "minor": 1,
+            "major": 8
+          },
+          "package": ""
+        }
+      }
+    },
+    {
+      "command": {
+        "execute": "qom-get",
+        "arguments": {
+          "path": "/machine",
+          "property": "memory"
+        }
+      },
+      "response": {
+        "return": {
+          "size": 268435456,
+          "slots": 1,
+          "max-size": 1073741824
+        }
+      }
+    },
+    {
+      "command": {
+        "execute": "query-memory-devices"
+      },
+      "response": {
+        "return": [
+          {
+            "type": "virtio-mem",
+            "data": {
+              "memdev": "/objects/vmem0",
+              "memaddr": 4294967296,
+              "block-size": 8388608,
+              "size": 0,
+              "node": 0,
+              "max-size": 805306368,
+              "requested-size": 0,
+              "id": "vm0"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "command": {
+        "execute": "query-memdev"
+      },
+      "response": {
+        "return": [
+          {
+            "share": false,
+            "reserve": true,
+            "prealloc": false,
+            "host-nodes": [],
+            "size": 805306368,
+            "merge": true,
+            "dump": true,
+            "policy": "default",
+            "id": "vmem0"
+          },
+          {
+            "share": false,
+            "reserve": true,
+            "prealloc": false,
+            "host-nodes": [],
+            "size": 268435456,
+            "merge": true,
+            "dump": true,
+            "policy": "default",
+            "id": "pc.ram"
+          }
+        ]
+      }
+    }
+  ],
+  "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "console_sha256": "a93ec3082501883e4fc6d66f0e5a55657f8fd6668e17948c971ec3afad5fca44",
+  "normal_permit": false,
+  "all_sources_closed": false,
+  "PG_started": false
+}

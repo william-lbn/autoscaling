@@ -1,0 +1,57 @@
+[
+  {
+    "unit": "guest-maximum-go-20261031t012023z",
+    "command": [
+      "systemctl",
+      "show",
+      "guest-maximum-go-20261031t012023z",
+      "--property=Id,ActiveState,SubState,Result,ExecMainStatus"
+    ],
+    "query_exit": 0,
+    "properties": "Result=success\nExecMainStatus=0\nId=guest-maximum-go-20261031t012023z.service\nActiveState=inactive\nSubState=dead\n"
+  },
+  {
+    "unit": "guest-maximum-native-20261031t012207z",
+    "command": [
+      "systemctl",
+      "show",
+      "guest-maximum-native-20261031t012207z",
+      "--property=Id,ActiveState,SubState,Result,ExecMainStatus"
+    ],
+    "query_exit": 0,
+    "properties": "Result=success\nExecMainStatus=0\nId=guest-maximum-native-20261031t012207z.service\nActiveState=inactive\nSubState=dead\n"
+  },
+  {
+    "unit": "virtio-geometry-existing-20261031t011543z",
+    "command": [
+      "systemctl",
+      "show",
+      "virtio-geometry-existing-20261031t011543z",
+      "--property=Id,ActiveState,SubState,Result,ExecMainStatus"
+    ],
+    "query_exit": 0,
+    "properties": "Result=success\nExecMainStatus=0\nId=virtio-geometry-existing-20261031t011543z.service\nActiveState=inactive\nSubState=dead\n"
+  },
+  {
+    "unit": "virtio-geometry-existing-20261031t011517z",
+    "command": [
+      "systemctl",
+      "show",
+      "virtio-geometry-existing-20261031t011517z",
+      "--property=Id,ActiveState,SubState,Result,ExecMainStatus"
+    ],
+    "query_exit": 0,
+    "properties": "Result=exit-code\nExecMainStatus=1\nId=virtio-geometry-existing-20261031t011517z.service\nActiveState=failed\nSubState=failed\n"
+  },
+  {
+    "unit": "guest-maximum-native-20261031t012101z",
+    "command": [
+      "systemctl",
+      "show",
+      "guest-maximum-native-20261031t012101z",
+      "--property=Id,ActiveState,SubState,Result,ExecMainStatus"
+    ],
+    "query_exit": 0,
+    "properties": "Result=exit-code\nExecMainStatus=1\nId=guest-maximum-native-20261031t012101z.service\nActiveState=failed\nSubState=failed\n"
+  }
+]

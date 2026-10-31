@@ -1,0 +1,84 @@
+{
+  "scope": "Guest immutable maximum-region observation component only",
+  "base_head": "4333391cee1740f0c0dcbf40beb4eb8300c69df2",
+  "owned_source_sha256": {
+    "pkg/dsga/resourceguard/guest_memory_maximum.go": "0b6a69b0577da40c387e1b632a6c57bada032dee268077f112787dc0c3777895",
+    "pkg/dsga/resourceguard/guest_memory_maximum_linux.go": "c1624d5cc60b2fb910829245d9c68cb80e20b81a854f1e85f3ee62c1227294c5",
+    "pkg/dsga/resourceguard/guest_memory_maximum_test.go": "0653a6def01239b81de688bdcc4c432a690593dfd2a49ff1400165287250ffba",
+    "pkg/dsga/resourceguard/guest_memory_maximum_native_test.go": "01ab7d82e2866dd3192226a636c1f63bdedf957e31856b9c1fa5b433613b8f96"
+  },
+  "all_go_source_count": 756,
+  "actual_COPY_all_go_hashes_match": true,
+  "unit": {
+    "root_count": 5,
+    "subcase_count": 47,
+    "roots": [
+      "TestGuestMaximumIOMemResource",
+      "TestGuestMaximumObservationValidation",
+      "TestGuestMaximumObservationMatch",
+      "TestGuestMaximumGeometryComparison",
+      "TestGuestMaximumCanonicalDevice"
+    ],
+    "fail": 0,
+    "skip": 0,
+    "command": "go test -mod=readonly -race -count=1 -json -run '^TestGuestMaximum' ./pkg/dsga/resourceguard"
+  },
+  "native": {
+    "path": "/data/neon-build/validation/guest-maximum-native-20261031T012207Z",
+    "id": "NEON-S-MMAX-001",
+    "root_count": 1,
+    "status": "PASS_COMPONENT_ONLY",
+    "binary_sha256": "bcf50ad2545e8b7afb1f03e7b9fa28a5f2f5a62ede5f14e7704beaa1dd73dae6",
+    "actual_kvm": true,
+    "Guest_exit": 0,
+    "QEMU_exit": 0,
+    "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+    "console_sha256": "b40875d4b2e14742f1c928944f24b299230878ec11df7886471587bc654de870",
+    "qmp_readonly_commands": [
+      {
+        "execute": "qmp_capabilities"
+      },
+      {
+        "execute": "query-kvm"
+      },
+      {
+        "execute": "query-version"
+      },
+      {
+        "execute": "qom-get",
+        "arguments": {
+          "path": "/machine",
+          "property": "memory"
+        }
+      },
+      {
+        "execute": "query-memory-devices"
+      },
+      {
+        "execute": "query-memdev"
+      },
+      {
+        "execute": "query-uuid"
+      },
+      {
+        "execute": "query-memory-size-summary"
+      },
+      {
+        "execute": "qom-get",
+        "arguments": {
+          "path": "/objects/vmem0",
+          "property": "size"
+        }
+      }
+    ]
+  },
+  "not_independently_observed": [
+    "device_block_size",
+    "device_nid"
+  ],
+  "all_sources_closed": false,
+  "normal_authorized": false,
+  "full_I_proven": false,
+  "original_Host_Guest_source_bound": false,
+  "new_kernel_build_needed": false
+}
