@@ -1,0 +1,51 @@
+Runner runtime ISO 四源独立实读审查（Linux，未修改源/Git，未重复测试）
+
+结论：当前固定资产ISO生产/消费组件范围无提交阻断，可与mapper四源组合提交；
+不代表生产Root出生、持续normal降限或K8s端到端完成。
+
+实际AS基线 b1771c9c1f745b623aa6489d7bee8fc8c6517e26，原功能分支。
+准确组合cohort：/data/neon-build/validation/runner-runtime-iso-20261031T145104Z-e1384e
+source-lock.json SHA1f8f0756181bc7ad67ff6e05943a41ff91983162852dcf8bb42ef6c9f4b597df。
+原始receipt/test.json SHA4cee65064a774746e476ccd1135a84c00733900e6e354a62000260260162a114。
+
+Root四源（路径相对/data/neon-build/src/autoscaling）实读current==source-lock==实际snapshot：
+neonvm-runner/cmd/main.go 27433180922e703511fa6fdcb0c56b3156bad2136feda121c96b12110afaa551
+neonvm-runner/cmd/disks.go d8c024f55c9b7e5137ddceace38411da39f07659b66941d840ba51fc57ce530b
+neonvm-runner/cmd/dsga_runtime_assets.go 558c32118425eb347e26016e1fdc7b710da7157abd4455d85e45a4774edf12b9
+neonvm-runner/cmd/dsga_runtime_assets_test.go 791545b84b006147bf1a2e4850d0deb1712e2c7ad617a8b36218dd3992fa4205
+Mapper四源也逐current/snapshot/source-lock匹配；本代理60项freeze的59被hash项实查无漂移。
+
+代码结论：
+1. main.go原位置从DecodeRuntime改为DecodeRuntimeAssets，仍先原Ready/VMUID/CIID/
+   SecretUID/incarnation/解压界限，再将准确资产集合交给原ISO创建入口；没有允许调用者
+   请求任意ISO路径，也没有改变unmanaged/v1默认流程。函数调用点之外main仅参数替换。
+2. dsga_runtime_assets.go:21-38先核集合<=6、必须有1..64KiB原resource，调用原
+   RenderRuntimePolicyAssets对准确原文档重渲染整组expected；不是只比几个静态字段。
+   v1返回非nil空策略map后加入resource，故原raw不会丢弃或转成canonical副本。
+3. :40-71固定逻辑依赖顺序；逐asset核存在/准确bytes.Equal，固定mapper产物理名。
+   每个物理名<=28（加;1满足30），禁止碰撞，最终len检查拒未支持路径/多余键。
+   :68独立复制每份data；caller后续修改输入slice不改变已验证写盘副本。
+4. disks.go:135先完整validatedRuntimeISOAssets，失败立即return；:139才NewWriter，
+   :145只用asset.isoName写固定资产。实际输出os.OpenFile(O_TRUNC|CREATE)在:267，
+   错误集合不能创建/截断目标。其他command/env/mount生成段保持原代码与名称。
+5. test.go:85-120验证完整v2六键顺序、v1原空白字节以及逐slice修改后的独立副本。
+   :123-183检查缺resource/空/超大/非canonical、未知/path、各五阶段逐项缺失和改字节，
+   每个反例分别核输出原先不存在与已有sentinel两种情况，失败不得创建或截断。
+   :178另核v1不能携未绑定策略。
+6. :185-240实际调用原iso9660 writer并用reader提取unmanaged/v1/v2，逐文件bytes相等，
+   精确总数为资产+command.sh+mounts.sh。测试中短名golden直接写出，不复用mapper
+   产生期望，因此能捕获第三方标识截断或错误映射。
+
+证据核验：
+- 789/789 actual-source.sha256与source/cohort.sha256独立逐项相等，且所有snapshot
+  Go/mod文件当前实hash相等；没有把Root/P2其它活动WIP混入图。
+- 原始JSON独立计数3根PASS、24子场景PASS、0fail/0skip，source-check.rc/test.rc/build0。
+  Go1.24.3、-mod=readonly -race -p2 -count1 -timeout120s，BuildKit networknone/既有缓存。
+- 实际提取的v2目录为command.sh、mounts.sh和全部六资产，包括唯一短物理名
+  dsga-pre-system.json；unmanaged仅原2文件，v1仅原2文件+resource，legacy原空白保留。
+- 原长名截断失败仍在/validation/runner-runtime-iso-20261031T143705Z-6ee2fa。
+  本代理另有Gitb177+仅mapper4源787实际COPY的15根77sub race及真实369三模式全过，
+  该genisoimage Guest夹具与Root实际writer roundtrip分开记证据，不混称同一个环境。
+
+剩余边界：模型Source/预算与Fake API不签Host预留或完整发行RO闭包，ISO组件正确
+不等于实际VM/Root/WAL/FS/I已生产接线；normal与E验收保持未完成。

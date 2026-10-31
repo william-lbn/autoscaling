@@ -1,0 +1,14 @@
+{
+  "base": "b1771c9c1f745b623aa6489d7bee8fc8c6517e26",
+  "owned": {
+    "neonvm-runner/cmd/main.go": "27433180922e703511fa6fdcb0c56b3156bad2136feda121c96b12110afaa551",
+    "neonvm-runner/cmd/disks.go": "739e1edd5145bdcb32b987e713574cb57308971625565563eac369c6f5befc23",
+    "neonvm-runner/cmd/dsga_runtime_assets.go": "814b689e11ffb955a3db7b39ac5be9e9366948ae8ab281c481bff0617ff2afda",
+    "neonvm-runner/cmd/dsga_runtime_assets_test.go": "1b7e6467c790838f10505f64b4b1b817280b90363f4c73424da947ba4f201d9d"
+  },
+  "actual_expected_go_inputs": 787,
+  "purpose": "Runner full six-file ISO only; not PG/normal/E2E qualification",
+  "nonce": "20261031T143705Z-6ee2fa",
+  "retest_reason": "diagnose actual full-v2 ISO missing filename; all production sources unchanged",
+  "prior_receipt": "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d"
+}

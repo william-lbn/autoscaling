@@ -17,7 +17,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-const FixedPrebootstrapSystemPolicyPath = "/neonvm/runtime/dsga-prebootstrap-system.json"
+const FixedPrebootstrapSystemPolicyPath = "/neonvm/runtime/" + RuntimeISOPreSystemAssetName
 const PrebootstrapSystemKernelArg = "neonvm.dsga.prebootstrap_system=normal-v1"
 const PrebootstrapSystemNormalSplitKernelArg = "neonvm.dsga.prebootstrap_system=normal-split-v1"
 

@@ -1,0 +1,20 @@
+[
+  "docker",
+  "buildx",
+  "build",
+  "--builder",
+  "neon-data",
+  "--network",
+  "none",
+  "--progress",
+  "plain",
+  "--build-arg",
+  "NONCE=pg17-iso-asset-names-20261031T145102Z-41633e",
+  "--metadata-file",
+  "/data/neon-build/validation/pg17-iso-asset-names-20261031T145102Z-41633e/build-metadata.json",
+  "--output",
+  "type=local,dest=/data/neon-build/validation/pg17-iso-asset-names-20261031T145102Z-41633e/export",
+  "-f",
+  "/data/neon-build/validation/pg17-iso-asset-names-20261031T145102Z-41633e/Dockerfile",
+  "/data/neon-build/validation/pg17-iso-asset-names-20261031T145102Z-41633e"
+]

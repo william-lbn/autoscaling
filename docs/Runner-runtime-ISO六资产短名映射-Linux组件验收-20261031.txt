@@ -1,0 +1,32 @@
+Runner runtime ISO六资产与固定物理短名（组件验收，非封版）
+
+逻辑模板键、RuntimeDocument v1/v2准确JSON/SHA与Ready/Secret UID绑定均不变。
+长逻辑键dsga-prebootstrap-system.json唯一映射ISO固定物理名dsga-pre-system.json；
+其他resource+四策略映射自身。短物理名不可作为逻辑输入，未知/路径/截断别名拒绝。
+原依赖ISO writer固定标识30字节含;1，真实提取曾得到dsga-prebootstrap-syste.json；
+本批不修改第三方依赖，固定映射由writer与原PreSys/Bootstrap reader共同使用。
+
+Runner在原DecodeRuntime位置用DecodeRuntimeAssets，先同原VM/Secret/Ready身份及
+64KiB解压检查；writer在创建输出前重新渲染整组、逐准确字节校验集合，依固定拓扑
+深拷贝并映射名称。失败不创建/截断已有ISO；v1原空白字节保留，unmanaged仍旧流程。
+既有PreSys两个文件各仅改一行（固定policy path、native ISO夹具key），其他语义保留。
+新reader必须配短物理名ISO；没有长名/截断名legacy fallback或模板降级路径。
+
+准确Git b177+8源组合789项Go/mod实际COPY逐hash相等，3根24sub race全部PASS/零skip。
+实际第三方ISO写入和提取覆盖unmanaged、v1原始文档、v2完整6资产+原command/mounts，
+短物理名正确；全五策略逐stage缺失/改字节、未知路径、已有输出sentinel均真实验证。
+另一准确Git b177+仅mapper4源图787项匹配，映射新增2根21sub与直接PreSys/桥13根56sub
+合计该cohort15根77sub race全部PASS，scope与两个原始快照分别保留，不假装同次大矩阵。
+同静态binary在准确369 KVM三个原组件模式全部PASS，挂载ISO先确认短名存在/长名不存在，
+实际原API链核同一policy/WAL来源。四JSON payload与此前fixture逐字节不变；角色为sleep。
+三个S是原稳定组件case重验，coverageDelta0，不能当作三个新PG业务S或E。
+
+首四次历史完整保留：CLI buildx环境125；继承bash-e导致未导出test rc；同源真实v2
+提取失败；打印目录确认真实长名截断。小日志/原结果/源码锁/精确引用与SHA均在档案中，
+没有把外层build0当test通过。最终通过属于修复后准确8源图，不覆盖旧失败。
+
+本批无PG实际工作负载/normal下降、完整Source/Root/WAL/FS/I闭合或K8s E2E，E通过仍0。
+仅更新8源及本档案，不含P2 helper/tracer活动WIP，不改发行锁/gitlink/CLI/public协议。
+联合可提交清单、全部文件SHA（manifest本身不自hash）见
+docs/validation/runner-runtime-iso-20261031/combined-stage-paths.txt 与 combined-manifest.json。
+详细真实来源：/data/neon-build/validation/runner-runtime-iso-20261031T145104Z-e1384e。

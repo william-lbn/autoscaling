@@ -1,0 +1,19 @@
+{
+  "base": "b1771c9c1f745b623aa6489d7bee8fc8c6517e26",
+  "nonce": "20261031T145104Z-e1384e",
+  "owned": {
+    "neonvm-runner/cmd/main.go": "27433180922e703511fa6fdcb0c56b3156bad2136feda121c96b12110afaa551",
+    "neonvm-runner/cmd/disks.go": "d8c024f55c9b7e5137ddceace38411da39f07659b66941d840ba51fc57ce530b",
+    "neonvm-runner/cmd/dsga_runtime_assets.go": "558c32118425eb347e26016e1fdc7b710da7157abd4455d85e45a4774edf12b9",
+    "neonvm-runner/cmd/dsga_runtime_assets_test.go": "791545b84b006147bf1a2e4850d0deb1712e2c7ad617a8b36218dd3992fa4205"
+  },
+  "peer_mapper_sources": {
+    "pkg/dsga/resourceguard/runtime_iso_assets.go": "93a2f65b5142b74584a91f84f65554a3e01b8d11badc77f88331b37194721056",
+    "pkg/dsga/resourceguard/runtime_iso_assets_test.go": "3160420e39b07326d472813154c89006950333bc7377b2a5aa472528efb19096",
+    "pkg/dsga/resourceguard/prebootstrap_system_linux.go": "d984f06bda2dd59a10536fa14cf049e6786a6562bc958ca2e3ac1d2429e43fea",
+    "pkg/dsga/resourceguard/prebootstrap_system_native_test.go": "2689252923c99db02f7b6da3a6ee8842dfff15910f4d73d13879803df2061706"
+  },
+  "expected_go_inputs": 789,
+  "purpose": "actual full 6-file ISO roundtrip plus fail-before-output; logical names remain original, only shared disk mapping changed",
+  "prior_failure_receipt": "/data/neon-build/validation/runner-runtime-iso-20261031T143705Z-6ee2fa"
+}

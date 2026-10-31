@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "docker",
+    "buildx",
+    "build",
+    "--builder",
+    "neon-data",
+    "--network",
+    "host",
+    "--allow",
+    "network.host",
+    "--progress",
+    "plain",
+    "--build-arg",
+    "TEST_NONCE=runner-runtime-iso-20261031T143020Z-58b47d",
+    "--metadata-file",
+    "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/build-metadata.json",
+    "--output",
+    "type=local,dest=/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/receipt",
+    "-f",
+    "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/Dockerfile",
+    "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d"
+  ],
+  "actual_test_network": "none",
+  "gomaxprocs": 2,
+  "gomemlimit": "1GiB per Go process",
+  "client_cgroup": "3CPU/4GiB; BuildKit worker retains its own shared service limits, not covered by client limits"
+}

@@ -230,7 +230,7 @@ func run(logger *zap.Logger) (runErr error) {
 			runErr = errors.Join(runErr, closeErr)
 		}()
 	}
-	resourceJSON, err := bootstrap.DecodeRuntime(vmSpec, cfg.resourceDump)
+	runtimeAssets, err := bootstrap.DecodeRuntimeAssets(vmSpec, cfg.resourceDump)
 	if err != nil {
 		return fmt.Errorf("original Guest resource source unavailable: %w", err)
 	}
@@ -312,7 +312,7 @@ func run(logger *zap.Logger) (runErr error) {
 			enableSSH,
 			swapSize,
 			shmSize,
-			resourceJSON,
+			runtimeAssets,
 		)
 	})
 

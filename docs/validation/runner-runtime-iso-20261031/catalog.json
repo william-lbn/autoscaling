@@ -1,0 +1,313 @@
+{
+  "status": "PASS_ISO_COMPONENT_ONLY_NON_AUTHORIZING",
+  "logical_protocol_unchanged": true,
+  "logical_pre_system_asset": "dsga-prebootstrap-system.json",
+  "physical_pre_system_filename": "dsga-pre-system.json",
+  "source_base": "b1771c9c1f745b623aa6489d7bee8fc8c6517e26",
+  "combined_sources": {
+    "neonvm-runner/cmd/main.go": "27433180922e703511fa6fdcb0c56b3156bad2136feda121c96b12110afaa551",
+    "neonvm-runner/cmd/disks.go": "d8c024f55c9b7e5137ddceace38411da39f07659b66941d840ba51fc57ce530b",
+    "neonvm-runner/cmd/dsga_runtime_assets.go": "558c32118425eb347e26016e1fdc7b710da7157abd4455d85e45a4774edf12b9",
+    "neonvm-runner/cmd/dsga_runtime_assets_test.go": "791545b84b006147bf1a2e4850d0deb1712e2c7ad617a8b36218dd3992fa4205",
+    "pkg/dsga/resourceguard/runtime_iso_assets.go": "93a2f65b5142b74584a91f84f65554a3e01b8d11badc77f88331b37194721056",
+    "pkg/dsga/resourceguard/runtime_iso_assets_test.go": "3160420e39b07326d472813154c89006950333bc7377b2a5aa472528efb19096",
+    "pkg/dsga/resourceguard/prebootstrap_system_linux.go": "d984f06bda2dd59a10536fa14cf049e6786a6562bc958ca2e3ac1d2429e43fea",
+    "pkg/dsga/resourceguard/prebootstrap_system_native_test.go": "2689252923c99db02f7b6da3a6ee8842dfff15910f4d73d13879803df2061706"
+  },
+  "runner_U": {
+    "roots": 3,
+    "named_subcases": 24,
+    "race": true,
+    "fail": 0,
+    "skip": 0,
+    "cases": [
+      {
+        "id": "PG17-U-RUNNER-ISO-001",
+        "root": "TestRunnerRuntimeISOAssetsPreserveOriginalBytes",
+        "result": "PASS"
+      },
+      {
+        "id": "PG17-U-RUNNER-ISO-002",
+        "root": "TestRunnerRuntimeISOAssetsRejectBeforeOutput",
+        "result": "PASS"
+      },
+      {
+        "id": "PG17-U-RUNNER-ISO-003",
+        "root": "TestRunnerRuntimeISOAssetsActualRoundTrip",
+        "result": "PASS"
+      }
+    ],
+    "raw_receipt": "/data/neon-build/validation/runner-runtime-iso-20261031T145104Z-e1384e",
+    "actual_COPY_inputs": 789,
+    "source_and_test_rc": 0,
+    "actual_iso_roundtrip": [
+      "unmanaged",
+      "v1_raw_whitespace",
+      "v2_all_six_fixed_assets"
+    ]
+  },
+  "mapper_and_direct_U": {
+    "new_roots": 2,
+    "new_subcases": 21,
+    "direct_regression_roots": 13,
+    "direct_regression_subcases": 56,
+    "whole_roots": 15,
+    "whole_subcases": 77,
+    "race": true,
+    "fail": 0,
+    "skip": 0,
+    "actual_COPY_inputs": 787,
+    "raw_receipt": "/data/neon-build/validation/pg17-iso-asset-names-20261031T145102Z-41633e",
+    "catalog": "../runtime-iso-asset-names-20261031/catalog.json"
+  },
+  "S_revalidation": {
+    "cases": 3,
+    "coverage_delta": 0,
+    "platform": "accurate369 actual KVM",
+    "roles": "sleep fixtures, no PG",
+    "production_API_chain": "KernelPrepare→Origin→PreSys→Bootstrap→Observe same original WAL references",
+    "raw_receipt": "/data/neon-build/validation/pg17-iso-short-presys-native-20261031T145245Z",
+    "actual_short_ISO_path_read": true,
+    "Guest_and_QEMU_exit": 0
+  },
+  "history": [
+    {
+      "attempt": 1,
+      "directory": "/data/neon-build/validation/runner-runtime-iso-20261031T142707Z-be7e61",
+      "classification": "ENV_CLI_NO_TEST",
+      "reason": "Docker CLI未找到正确buildx环境，unknown flag --builder，build125；没有测试结果",
+      "result": {
+        "build_exit": 125,
+        "seconds": 0.015748984005767852,
+        "pass": false
+      },
+      "files": {
+        "result.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T142707Z-be7e61/result.json",
+          "sha256": "50e77c73df6807c00a7dc21b6dab5caf9ad669a5e4e1e3862dbd9876599b2e9a"
+        },
+        "async-unit.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T142707Z-be7e61/async-unit.json",
+          "sha256": "b3b4a5f89f019e7d6c4a528f5ff2552af69d13fee6040a3f01a1f6e043bfc6b0"
+        },
+        "command.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T142707Z-be7e61/command.json",
+          "sha256": "273c6d997ca0eb944c1e41fcad9feff86f800a3081f2e33808842ae8245d8d9a"
+        },
+        "source-lock.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T142707Z-be7e61/source-lock.json",
+          "sha256": "18370dfede5bf379e95e2c09aa66323e8457f270c0dfaa07f640c7b1be32a411"
+        },
+        "Dockerfile": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T142707Z-be7e61/Dockerfile",
+          "sha256": "4b546eadaebfc91cb3cb60b045992571cec2bdacde4d892650915b7ce423bef7"
+        },
+        "run.log": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T142707Z-be7e61/run.log",
+          "sha256": "7411d53bd243c19c51d5006d918f762bc851e20cc376ccb2edfccb9d4739d737"
+        }
+      },
+      "retained": true
+    },
+    {
+      "attempt": 2,
+      "directory": "/data/neon-build/validation/runner-runtime-iso-20261031T142822Z-5a444a",
+      "classification": "ENV_HARNESS_NO_EXPORTED_TEST_RC",
+      "reason": "继承bash-e使测试非零立即中止，build1未导出test rc；不得只据build1确定测试根因，后同源重跑才导出真实失败",
+      "result": {
+        "build_exit": 1,
+        "seconds": 20.06262304300617,
+        "pass": false
+      },
+      "files": {
+        "result.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T142822Z-5a444a/result.json",
+          "sha256": "603d62abf5d2619ff5e9d47dda858f5ff240d6403fd3d2fd5b6cadf4f510442d"
+        },
+        "async-unit.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T142822Z-5a444a/async-unit.json",
+          "sha256": "94a3e5ff789279cee71680e4476b7c979b347f4a9c8ebcae90f23c526ec667fa"
+        },
+        "command.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T142822Z-5a444a/command.json",
+          "sha256": "4717195722419e24bba2ff27e4878efcc7aa9c16add202e944b975186ab6541a"
+        },
+        "source-lock.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T142822Z-5a444a/source-lock.json",
+          "sha256": "889a91628fcb4eacbc917f3d939cac192a43e438062d40a7faabf4e1fb44a6a4"
+        },
+        "Dockerfile": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T142822Z-5a444a/Dockerfile",
+          "sha256": "4b546eadaebfc91cb3cb60b045992571cec2bdacde4d892650915b7ce423bef7"
+        },
+        "run.log": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T142822Z-5a444a/run.log",
+          "sha256": "b47e09f45350e900bce857d1c64f13ef5122ddf56ea1b29cfc7709c1b2f3e273"
+        }
+      },
+      "retained": true
+    },
+    {
+      "attempt": 3,
+      "directory": "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d",
+      "classification": "REAL_ISO_ROUNDTRIP_FAIL",
+      "reason": "set+e导出真实test.rc1，v2长逻辑资产实际提取找不到，源码保持前一轮同图",
+      "result": {
+        "build_exit": 0,
+        "seconds": 13.707393454998964,
+        "test.rc": 1,
+        "source-check.rc": 0,
+        "pass": false
+      },
+      "files": {
+        "result.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/result.json",
+          "sha256": "94e2c76e1e30e55ba0c617feb29e2650541c20f6c5341d1ce5aee50e89cb58f0"
+        },
+        "async-unit.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/async-unit.json",
+          "sha256": "df3f122d9f24396d8a605c2680fdca224a6a27ca1a314711a0ff127a51cd29c9"
+        },
+        "command.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/command.json",
+          "sha256": "53d8c582257aa8d1ce240c3d6465215ef63a457e1d893d48111be002c850c6d2"
+        },
+        "source-lock.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/source-lock.json",
+          "sha256": "1517a5027502e22327af9558f978dae1255f61c4dc95ed560816cf12a6eae83a"
+        },
+        "Dockerfile": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/Dockerfile",
+          "sha256": "40cfb5c20ca1d2c29b986a711ce5c52c4d9715a4edc468d1d2464e490230993b"
+        },
+        "run.log": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/run.log",
+          "sha256": "7fd60e1a89fd6160758f31c07ab2198add1bdf3221ee45d4831a04c923041cd1"
+        },
+        "receipt/test.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/receipt/test.json",
+          "sha256": "1818a0657a1655db5998f8ee9cc1de985a7c9bf7bb71353765bc5cc77e2ad00a"
+        },
+        "receipt/test.rc": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/receipt/test.rc",
+          "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+        },
+        "receipt/test.stderr": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/receipt/test.stderr",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "receipt/source-check.rc": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/receipt/source-check.rc",
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        },
+        "receipt/go-version.txt": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/receipt/go-version.txt",
+          "sha256": "3fcbda2c06ef581842ae70da25dc029931a022da959585bc88491b0a549306da"
+        },
+        "receipt/actual-source.sha256": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/receipt/actual-source.sha256",
+          "sha256": "6ae850287f68508ab635344ca62fa0ecb1ef8014ccdb9907c469df8a35991f2c",
+          "copy": "reference only; metadata not full source tree"
+        },
+        "receipt/source-check.txt": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143020Z-58b47d/receipt/source-check.txt",
+          "sha256": "5ac6b70ade8e63b3deff2cd8e4f24b0cd50aee2fac3ea629e91913c3fb5c6e52",
+          "copy": "reference only; metadata not full source tree"
+        }
+      },
+      "retained": true
+    },
+    {
+      "attempt": 4,
+      "directory": "/data/neon-build/validation/runner-runtime-iso-20261031T143705Z-6ee2fa",
+      "classification": "REAL_TRUNCATED_IDENTIFIER_CONFIRMED",
+      "reason": "新诊断打印实际目录dsga-prebootstrap-syste.json，确认第三方30字节含;1规则截断；test.rc1",
+      "result": {
+        "build_exit": 0,
+        "seconds": 12.350389387996984,
+        "test.rc": 1,
+        "source-check.rc": 0,
+        "pass": false
+      },
+      "files": {
+        "result.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143705Z-6ee2fa/result.json",
+          "sha256": "0c876b1acf2bc0904758abb6d885c09aebed203d390c42ba7e91f1243388abc5"
+        },
+        "async-unit.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143705Z-6ee2fa/async-unit.json",
+          "sha256": "031b893ef4ca3b270a3b453d4a68a4a3bb148e19745c0595dd413e9ce7a7b373"
+        },
+        "command.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143705Z-6ee2fa/command.json",
+          "sha256": "b4aff7e7370a1630f7de0c347d5fa9534fa34fe4217e2d16c940785f153d7270"
+        },
+        "source-lock.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143705Z-6ee2fa/source-lock.json",
+          "sha256": "cc3e2b60ea5eb27c901cb0eaa86586c73a908fd24b673d7a6ce7bef9740caf5f"
+        },
+        "Dockerfile": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143705Z-6ee2fa/Dockerfile",
+          "sha256": "40cfb5c20ca1d2c29b986a711ce5c52c4d9715a4edc468d1d2464e490230993b"
+        },
+        "run.log": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143705Z-6ee2fa/run.log",
+          "sha256": "ac472de73c412ab47fdc432384a0add0604edf66fe65a9974183f8956ef4f30d"
+        },
+        "receipt/test.json": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143705Z-6ee2fa/receipt/test.json",
+          "sha256": "366af5ed842c3ef7bd0d84fa203d91eb16397506064a74be4293fe902f6118f2"
+        },
+        "receipt/test.rc": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143705Z-6ee2fa/receipt/test.rc",
+          "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+        },
+        "receipt/test.stderr": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143705Z-6ee2fa/receipt/test.stderr",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "receipt/source-check.rc": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143705Z-6ee2fa/receipt/source-check.rc",
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        },
+        "receipt/go-version.txt": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143705Z-6ee2fa/receipt/go-version.txt",
+          "sha256": "3fcbda2c06ef581842ae70da25dc029931a022da959585bc88491b0a549306da"
+        },
+        "receipt/actual-source.sha256": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143705Z-6ee2fa/receipt/actual-source.sha256",
+          "sha256": "781bdac59bff1482025322880175fd596802f350b11122b56662ca6781e2f2bc",
+          "copy": "reference only; metadata not full source tree"
+        },
+        "receipt/source-check.txt": {
+          "original": "/data/neon-build/validation/runner-runtime-iso-20261031T143705Z-6ee2fa/receipt/source-check.txt",
+          "sha256": "5ac6b70ade8e63b3deff2cd8e4f24b0cd50aee2fac3ea629e91913c3fb5c6e52",
+          "copy": "reference only; metadata not full source tree"
+        }
+      },
+      "retained": true
+    }
+  ],
+  "independent_review": {
+    "reviewer": "/root/p1_barrier_review",
+    "sha256": "f779fffccb286ddc3d1da248974c7495d9092627bbca6ea11567a9a9d0b4cc2e",
+    "conclusion": "component no blocker; not whole Source/Root/normal qualification"
+  },
+  "root_review": {
+    "reviewer": "/root",
+    "conclusion": "mapper and two original-file single-line differences accepted; actual789 matched; combined component passed"
+  },
+  "E": {
+    "passed": 0,
+    "normal_decrease_executed": false,
+    "K8s": false
+  },
+  "not_proven": [
+    "production static template provider/API authorization",
+    "formal runtime readonly loader closure",
+    "whole Root Source/Pending/WAL/FS/I production integration",
+    "safe PG workload normal decrease",
+    "117/118/119 Helm Kubernetes E2E"
+  ],
+  "no_P2_WIP_in_staged_code": true
+}

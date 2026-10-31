@@ -130,15 +130,19 @@ func createISO9660runtime(
 	enableSSH bool,
 	swapSize *resource.Quantity,
 	shmsize *resource.Quantity,
-	resourceJSON []byte,
+	runtimeAssets map[string][]byte,
 ) error {
+	assets, err := validatedRuntimeISOAssets(runtimeAssets)
+	if err != nil {
+		return err
+	}
 	writer, err := iso9660.NewWriter()
 	if err != nil {
 		return err
 	}
 	defer writer.Cleanup() //nolint:errcheck // Nothing to do with the error, maybe log it ? TODO
-	if len(resourceJSON) > 0 {
-		if err := writer.AddFile(bytes.NewReader(resourceJSON), "dsga-resource.json"); err != nil {
+	for _, asset := range assets {
+		if err := writer.AddFile(bytes.NewReader(asset.data), asset.isoName); err != nil {
 			return err
 		}
 	}

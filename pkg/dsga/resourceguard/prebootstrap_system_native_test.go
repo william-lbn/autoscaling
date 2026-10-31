@@ -45,7 +45,7 @@ func TestExportPreSystemNativeFixture(t *testing.T) {
 	require.NoError(t, e)
 	dir := os.Getenv("DSGA_PRESYS_EXPORT")
 	require.NoError(t, os.MkdirAll(dir, 0755))
-	for n, b := range map[string][]byte{"dsga-resource.json": runtimeRaw, "dsga-physical-kernel.json": physicalRaw, "dsga-kernel-bootstrap.json": kernelRaw, "dsga-prebootstrap-system.json": policyRaw} {
+	for n, b := range map[string][]byte{"dsga-resource.json": runtimeRaw, "dsga-physical-kernel.json": physicalRaw, "dsga-kernel-bootstrap.json": kernelRaw, RuntimeISOPreSystemAssetName: policyRaw} {
 		require.NoError(t, os.WriteFile(filepath.Join(dir, n), b, 0444))
 	}
 }

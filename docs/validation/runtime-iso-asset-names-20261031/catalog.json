@@ -1,0 +1,72 @@
+{
+  "scope": "PURE_LOGICAL_TO_ISO_FILENAME_MAPPING_AND_PRESYS_PATH_COMPONENT_ONLY",
+  "base": "b1771c9c1f745b623aa6489d7bee8fc8c6517e26",
+  "source_files": {
+    "pkg/dsga/resourceguard/runtime_iso_assets.go": "93a2f65b5142b74584a91f84f65554a3e01b8d11badc77f88331b37194721056",
+    "pkg/dsga/resourceguard/runtime_iso_assets_test.go": "3160420e39b07326d472813154c89006950333bc7377b2a5aa472528efb19096",
+    "pkg/dsga/resourceguard/prebootstrap_system_linux.go": "d984f06bda2dd59a10536fa14cf049e6786a6562bc958ca2e3ac1d2429e43fea",
+    "pkg/dsga/resourceguard/prebootstrap_system_native_test.go": "2689252923c99db02f7b6da3a6ee8842dfff15910f4d73d13879803df2061706"
+  },
+  "U": {
+    "new": [
+      {
+        "id": "PG17-U-ISO-ASSET-001",
+        "root": "TestRuntimeISOAssetNameExactAllowlist",
+        "status": "PASS"
+      },
+      {
+        "id": "PG17-U-ISO-ASSET-002",
+        "root": "TestRuntimeISOAssetNameRejectsAliasesAndPaths",
+        "status": "PASS"
+      }
+    ],
+    "new_roots": 2,
+    "new_subcases": 21,
+    "direct_regression_roots": 13,
+    "direct_regression_subcases": 56,
+    "whole_roots": 15,
+    "whole_subcases": 77,
+    "race": true,
+    "skip": 0,
+    "fail": 0,
+    "actual_COPY_matches": true,
+    "actual_COPY_inputs": 787,
+    "receipt": "/data/neon-build/validation/pg17-iso-asset-names-20261031T145102Z-41633e"
+  },
+  "S": {
+    "coverage_delta": 0,
+    "type": "same original 369 PreSys/Bootstrap component cases revalidated with short ISO path",
+    "cases": 3,
+    "passed": 3,
+    "case_ids": [
+      "PG17-S-PRESYS-V2-COMPLETED-ROLES",
+      "PG17-S-PRESYS-V2-INITIAL-PRIVATE-ROLE",
+      "PG17-S-PRESYS-V2-OVERCOMMIT-CORRECTIVE"
+    ],
+    "actual_kvm": true,
+    "receipt": "/data/neon-build/validation/pg17-iso-short-presys-native-20261031T145245Z",
+    "test_binary_sha256": "507336e1ac36dbff12af802b827521069d622f24fc3a357e7fb48f3add12036d",
+    "PG_started": false
+  },
+  "logical_template_key": "dsga-prebootstrap-system.json",
+  "physical_ISO_name": "dsga-pre-system.json",
+  "short_physical_name_is_not_valid_logical_input": true,
+  "all_4_policy_payloads_equal_prior_exact_bytes": {
+    "dsga-physical-kernel.json": true,
+    "dsga-resource.json": true,
+    "dsga-pre-system.json": true,
+    "dsga-kernel-bootstrap.json": true
+  },
+  "E": {
+    "passed": 0,
+    "normal_decrease": false,
+    "K8s": false
+  },
+  "not_proven": [
+    "Root Runner full six-file ISO roundtrip (separate Root owned cohort)",
+    "complete production Source/Root/FS/I/normal safety",
+    "PG workload normal decrease",
+    "Kubernetes E2E"
+  ],
+  "index_commit_push_performed": false
+}

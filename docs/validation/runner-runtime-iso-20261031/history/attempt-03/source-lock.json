@@ -1,0 +1,14 @@
+{
+  "base": "b1771c9c1f745b623aa6489d7bee8fc8c6517e26",
+  "owned": {
+    "neonvm-runner/cmd/main.go": "27433180922e703511fa6fdcb0c56b3156bad2136feda121c96b12110afaa551",
+    "neonvm-runner/cmd/disks.go": "739e1edd5145bdcb32b987e713574cb57308971625565563eac369c6f5befc23",
+    "neonvm-runner/cmd/dsga_runtime_assets.go": "814b689e11ffb955a3db7b39ac5be9e9366948ae8ab281c481bff0617ff2afda",
+    "neonvm-runner/cmd/dsga_runtime_assets_test.go": "3554dd4fd151164415fb598ca9b987b54daee8e04428613049130252ebb2b711"
+  },
+  "actual_expected_go_inputs": 787,
+  "purpose": "Runner full six-file ISO only; not PG/normal/E2E qualification",
+  "nonce": "20261031T143020Z-58b47d",
+  "retest_reason": "capture exact Go/source exit and logs despite base image bash -e; source unchanged",
+  "prior_receipt": "/data/neon-build/validation/runner-runtime-iso-20261031T142822Z-5a444a"
+}
