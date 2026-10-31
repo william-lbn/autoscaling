@@ -1,0 +1,36 @@
+{
+  "status": "PASS_SHARED_WIRE_SYNTAX_BINDING_U_ONLY",
+  "base": "1a25125cc1d2b689803f250db08c7e2525c88271",
+  "owned": {
+    "pkg/dsga/bootprotocol/preboot.go": "0f0f6204686da1d8bbce60926b669a50848749a80fe105f8cf9df168a331845e",
+    "pkg/dsga/bootprotocol/preboot_test.go": "532a28ed9c24b5869c85801b6c8f2d47b3db58329e5fdd78633541cbafef2464"
+  },
+  "actual_COPY_Go_mod_inputs": 810,
+  "new_U_roots": 3,
+  "new_named_subcases": 36,
+  "race": true,
+  "fail": 0,
+  "skip": 0,
+  "build_seconds": 4.302529485998093,
+  "cases": [
+    {
+      "id": "PG17-U-PREBOOT-WIRE-001",
+      "test": "TestInitialPrebootProtocolBinding",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-PREBOOT-WIRE-002",
+      "test": "TestInitialPrebootProtocolRejectsInvalid",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-PREBOOT-WIRE-003",
+      "test": "TestInitialPrebootProtocolStrictWire",
+      "status": "PASS"
+    }
+  ],
+  "S_new": 0,
+  "E_pass": 0,
+  "Host_or_Guest_source_authenticated": false,
+  "normal_authorized": false
+}

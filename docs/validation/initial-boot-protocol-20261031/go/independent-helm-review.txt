@@ -1,0 +1,16 @@
+共享bootprotocol两源独立只读审查
+审查者：helm_scope_review，非两源作者；日期2026-11-01（Asia/Shanghai）。
+实际Linux完整读取preboot.go/preboot_test.go，逐SHA核等：
+preboot.go 0f0f6204686da1d8bbce60926b669a50848749a80fe105f8cf9df168a331845e
+preboot_test.go 532a28ed9c24b5869c85801b6c8f2d47b3db58329e5fdd78633541cbafef2464。
+并实读pkg/api/dsga/json.go56–108/124–137，核公共严格解码器行为。未改两源/Git或重复运行测试。
+
+结论：当前共享wire/语法绑定组件范围无提交阻断。
+RunnerIdentity字段/tags及Validate与原vmguard.Identity逐项一致，未迁移旧公开Identity/Birth v1或更改旧base语义。
+Challenge/Receipt字段/tags/order保持原私有合同（host_stage_sha256先于protocol），额外(min-base)%block核对安全。Identity先Validate，base<=Min之后才减法/取模，未见除零/下溢路径。
+MatchChallenge先Validate expected与receipt，再比较整个可比较struct；Root/Guest来源、真实阶段或normal资格不由该方法产生。全部hash/nonce仅语法，PG版本未进入上层合同。
+UnmarshalObjectBounded先检查整个raw的8192B/512值、UTF8/深度/重复键/尾随数据，再按明确tags检查全部必需字段及未知/大小写借用/null；嵌套类型也自带严格解码。三个Unmarshal方法均临时plain值成功后才赋receiver，不以任意unknown字段默默兼容。
+Uint64仍沿原受控规范字符串；没有新增HTTP执行入口、verified bool、Source setter、预算、文件系统或QMP调用。
+模型测试包括真实JSON往返、9个合法但异源challenge反例、11个非法challenge、6个缺证据receipt、10个wire反例，未见Skip/把模型冒认真实Source的路径。Root提供的3U/36sub通过收据为另一执行者结果；本次独审不冒称重跑或KVM/E2E。
+
+保留边界：调用者必须使用原Host生产者固定expected，并通过固定真实Root reader核原ISO/WAL/kernel/Origin/PreSys/当前物理事实；不能把Guest自报receipt或Match成功提升为verified。nonce熵与Root身份由实际producer而非hex格式证明；Root instance_nonce不得从旧WAL恢复。实际preboot transport、初始grow、normal与三节点E2E不由本组件认证。
