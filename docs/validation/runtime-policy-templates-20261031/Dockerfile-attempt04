@@ -1,0 +1,14 @@
+FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 AS verify
+COPY source-attempt04/ /workspace/
+WORKDIR /workspace
+ARG TEST_NONCE
+RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared \
+ set +e; mkdir -p /receipt; /opt/go/bin/go version > /receipt/go-version.txt; \
+ sha256sum -c cohort.sha256 > /receipt/source-check.txt 2>&1; source_rc=$?; echo "$source_rc" > /receipt/source-check.rc; \
+ find . -type f \( -name '*.go' -o -name go.mod -o -name go.sum \) -print0 | sort -z | xargs -0 sha256sum > /receipt/actual-source.sha256; \
+ if [ "$source_rc" != 0 ]; then echo 125 > /receipt/test.rc; exit 0; fi; \
+ export PATH=/opt/go/bin:$PATH GOPATH=/go GOMAXPROCS=2 GOPROXY=off GOSUMDB=off; \
+ /opt/go/bin/go test -mod=readonly -race -p=2 -count=1 -timeout=90s -json -run '^(TestRuntimePolicyTemplates|TestRuntimeTemplates|TestRuntimeSourceRequires|TestResourceSourceStrictBytesAndBounds|TestReadyRequiresActualOriginalSecretAndFullPristineJournal)' ./pkg/dsga/resourceguard ./pkg/dsga/bootstrap > /receipt/test.json 2> /receipt/test.stderr; echo "$?" > /receipt/test.rc; \
+ printf '%s\n' "$TEST_NONCE" > /receipt/nonce.txt
+FROM scratch
+COPY --from=verify /receipt/ /

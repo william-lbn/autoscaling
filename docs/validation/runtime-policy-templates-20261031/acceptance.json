@@ -1,0 +1,155 @@
+{
+  "scope": "PURE_RUNTIME_PRODUCER_AND_ASSET_RENDERER_U_ONLY",
+  "status": "PASS_EXACT_U_AND_COMPILE_ONLY",
+  "newTests": [
+    {
+      "id": "PG17-U-RUNTIME-TEMPLATES-001",
+      "root": "TestRuntimePolicyTemplatesRenderFullPrefixWithoutUIDCycle",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-RUNTIME-TEMPLATES-002",
+      "root": "TestRuntimePolicyTemplatesTypedPolicyRejectsUnsupportedOrOverBudget",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-RUNTIME-TEMPLATES-003",
+      "root": "TestRuntimePolicyTemplatesV1ExactBytesAndFieldPresence",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-RUNTIME-TEMPLATES-004",
+      "root": "TestRuntimePolicyTemplatesStrictEnvelopeAndDependencies",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-RUNTIME-TEMPLATES-005",
+      "root": "TestRuntimePolicyTemplatesDocumentRejectsRawDriftAndUnknownFields",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-RUNTIME-TEMPLATES-006",
+      "root": "TestRuntimeTemplatesProducerOriginalUIDNoCycleAndAssets",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-RUNTIME-TEMPLATES-007",
+      "root": "TestRuntimeTemplatesProducerRejectsUntrustedOrPartialInputs",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-RUNTIME-TEMPLATES-008",
+      "root": "TestRuntimeTemplatesDecodeBindsReadyIdentityAndBounds",
+      "status": "PASS"
+    },
+    {
+      "id": "PG17-U-RUNTIME-TEMPLATES-009",
+      "root": "TestRuntimeTemplatesV1ProducerRemainsByteCompatible",
+      "status": "PASS"
+    }
+  ],
+  "newRoots": 9,
+  "newNamedSubcases": 82,
+  "regressionRoots": 3,
+  "regressionNamedSubcases": 21,
+  "totalRoots": 12,
+  "totalNamedSubcases": 103,
+  "skip": 0,
+  "testRC": 0,
+  "packageResults": [
+    {
+      "Time": "2026-10-31T02:08:33.195300364Z",
+      "Action": "pass",
+      "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "Elapsed": 1.419
+    },
+    {
+      "Time": "2026-10-31T02:08:39.435525453Z",
+      "Action": "pass",
+      "Package": "github.com/neondatabase/autoscaling/pkg/dsga/bootstrap",
+      "Elapsed": 1.472
+    }
+  ],
+  "actualCOPY": {
+    "attempt": "04",
+    "allGoModFiles": 769,
+    "exactInputMatchesActualCOPY": true,
+    "currentOwnedMatchesActualCOPY": true,
+    "ownedFileCount": 8,
+    "GoVersion": "go version go1.24.3 linux/amd64",
+    "baseCommit": "adcc2c1f6666a798b2db0bdb2b9b5d70fa8a7421",
+    "owned": {
+      "pkg/dsga/resourceguard/provision.go": "aaba50feda74ba29378f59e1806b44bafba9bc270566e50fc8b585551fa5170e",
+      "pkg/dsga/bootstrap/runtime.go": "8ea0030fa20bd38958a1509817e853456072564886bbab2d89fbd3450afc20bb",
+      "pkg/dsga/resourceguard/runtime_policy_templates.go": "be545a9234d19a566464c87bcbf40832c8936d81f7d95ddcb5e447b0d782790d",
+      "pkg/dsga/resourceguard/runtime_policy_templates_linux.go": "d9818332be7a6114e53e089efeea2b4bef0f4c4d4b80aa5d2ccaa02f2bfb4e70",
+      "pkg/dsga/resourceguard/runtime_policy_templates_unsupported.go": "e4bbce3465d474d5be6dd37e442a3a316bcf7fd401080455f262b2804d543b90",
+      "pkg/dsga/resourceguard/runtime_policy_templates_test.go": "d70a33bbd7c1c673414ba5441e2d004140e421c3daf44ca02c0b0d019a31868f",
+      "pkg/dsga/resourceguard/runtime_policy_templates_linux_test.go": "6e8aa77d469ae5e680a11e980db5e08f21c3df447de2744afc24845b82d5e0a0",
+      "pkg/dsga/bootstrap/runtime_templates_test.go": "faf572a1c533dc604450c593108ecb5c57c67a68795f62dd0635924b16df7c06"
+    },
+    "sourceCheckRC": 0
+  },
+  "platform": {
+    "id": "PG17-ENV-RUNTIME-TEMPLATES-001",
+    "status": "PASS_COMPILE_ONLY",
+    "host": "Linux",
+    "GOOS": "darwin",
+    "GOARCH": "amd64",
+    "CGO_ENABLED": 0,
+    "buildRC": 0,
+    "MacRuntimeExecuted": false,
+    "receipt": "platform-darwin-final",
+    "sourceAttempt": "04"
+  },
+  "history": [
+    {
+      "attempt": "01",
+      "status": "FAIL_BUILD",
+      "description": "new bootstrap fixture string UID passed typed journal API; inherited bash -e stopped export; build log retained"
+    },
+    {
+      "attempt": "02",
+      "status": "FAIL_U_BUILD",
+      "testRC": 1,
+      "description": "same source exact receipt exported; resourceguard PASS, bootstrap fixture typed UID compile failed"
+    },
+    {
+      "attempt": "03",
+      "status": "PASS_U_KNOWN_INCOMPLETE",
+      "testRC": 0,
+      "description": "fix only own fixture typed UID and distinguish two Source unknown-key cases; exact updated source+copy receipts; nested entry encoding/json case aliases not yet covered, later read review found gap"
+    },
+    {
+      "attempt": "before-entry-fix",
+      "status": "EXPECTED_REAL_FAIL",
+      "testRC": 1,
+      "description": "old parser plus new exact entry counterexamples, three real failing alias cases",
+      "failingCases": [
+        "TestRuntimePolicyTemplatesStrictEnvelopeAndDependencies/entry_policy_case",
+        "TestRuntimePolicyTemplatesStrictEnvelopeAndDependencies/entry_alias_collision",
+        "TestRuntimePolicyTemplatesStrictEnvelopeAndDependencies/entry_asset_case"
+      ]
+    },
+    {
+      "attempt": "04",
+      "status": "PASS_FINAL_U",
+      "testRC": 0,
+      "description": "entry custom plain-alias strict decoder; new five counterexamples added; all exact source inputs and original behavior verified"
+    }
+  ],
+  "notExecuted": [
+    "real API Secret creation/authorization",
+    "upstream static template provider",
+    "Runner ISO write and production guest consumer",
+    "real issuance build closure",
+    "Root nonce/source/pending/WAL production consumer",
+    "normal memory.max decrease",
+    "K8s E2E"
+  ],
+  "normalDecreaseExecuted": false,
+  "VMShrinkPermit": false,
+  "sourceAuthorizationGranted": false,
+  "externalReport": "/data/neon-build/validation/runtime-policy-templates-20261031T020138Z",
+  "finalAttempt": "04"
+}

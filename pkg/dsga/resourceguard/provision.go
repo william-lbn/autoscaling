@@ -73,11 +73,13 @@ type SourceConfig struct {
 // 重序列化/只比较几个字段后丢弃来源。该包验证结构与字节绑定，不认证自报Secret
 // UID；实际生产者必须先核对原VM/journal/ownerref/Secret UID和所有启动输入。
 type RuntimeDocument struct {
-	ProtocolVersion uint32 `json:"protocol_version"`
-	Incarnation     string `json:"incarnation"`
-	ConfigSecretUID string `json:"config_secret_uid"`
-	SourceSHA256    string `json:"source_sha256"`
-	SourceJSON      []byte `json:"source_json"`
+	ProtocolVersion       uint32 `json:"protocol_version"`
+	Incarnation           string `json:"incarnation"`
+	ConfigSecretUID       string `json:"config_secret_uid"`
+	SourceSHA256          string `json:"source_sha256"`
+	SourceJSON            []byte `json:"source_json"`
+	PolicyTemplatesJSON   []byte `json:"policy_templates_json,omitempty"`
+	PolicyTemplatesSHA256 string `json:"policy_templates_sha256,omitempty"`
 }
 
 func (s SourceConfig) Validate() error {
@@ -110,8 +112,11 @@ func (s SourceConfig) Validate() error {
 
 func (d RuntimeDocument) Source() (SourceConfig, error) {
 	var s SourceConfig
-	if d.ProtocolVersion != 1 || control.ValidateIncarnation(d.Incarnation) != nil || control.ValidateID(d.ConfigSecretUID, "config Secret UID") != nil || len(d.SourceJSON) == 0 || len(d.SourceJSON) > 16*1024 {
+	if (d.ProtocolVersion != 1 && d.ProtocolVersion != 2) || control.ValidateIncarnation(d.Incarnation) != nil || control.ValidateID(d.ConfigSecretUID, "config Secret UID") != nil || len(d.SourceJSON) == 0 || len(d.SourceJSON) > 16*1024 {
 		return s, fmt.Errorf("invalid resource runtime source binding")
+	}
+	if err := validateRuntimeTemplateDocument(d); err != nil {
+		return s, err
 	}
 	sum := sha256.Sum256(d.SourceJSON)
 	if d.SourceSHA256 != hex.EncodeToString(sum[:]) {
@@ -146,6 +151,18 @@ func (v *RuntimeDocument) UnmarshalJSON(data []byte) error {
 	var next plain
 	if err := control.UnmarshalObject(data, &next); err != nil {
 		return err
+	}
+	// v1按字段出现拒绝，null/空值也不能偷偷扩展原协议。
+	if next.ProtocolVersion == 1 {
+		var fields map[string]json.RawMessage
+		if err := json.Unmarshal(data, &fields); err != nil {
+			return err
+		}
+		for _, key := range []string{"policy_templates_json", "policy_templates_sha256"} {
+			if _, ok := fields[key]; ok {
+				return fmt.Errorf("policy templates field on runtime v1")
+			}
+		}
 	}
 	*v = RuntimeDocument(next)
 	return nil

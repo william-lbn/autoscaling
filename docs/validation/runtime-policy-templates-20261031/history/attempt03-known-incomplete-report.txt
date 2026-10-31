@@ -1,0 +1,17 @@
+Runtime v2原模板来源与ISO资产渲染：Linux精确单元验收（非授权、未部署）
+
+本批只改8个owner文件：resourceguard/provision.go、runtime_policy_templates.go/_linux.go/_unsupported.go及对应两个测试；bootstrap/runtime.go、runtime_templates_test.go。实际新API为resourceguard.RenderRuntimePolicyAssets(runtimeRaw []byte) (map[string][]byte,error)与bootstrap.DecodeRuntimeAssets(spec,encoded) (map[string][]byte,error)。旧DecodeRuntime仍按原64KiB/ReadyVM合同返回原文档，不改变旧入口行为。
+
+原immutable Secret新增固定key dsga-policy-templates.json。完整blob最多16KiB、1至5项，严格envelope {protocol_version:1,scope:"neon-dsga-policy-templates-v1",templates:[{asset,policy原object}]}；拒重复JSON键/asset、未知字段/asset、非object、动态引用（即使嵌套/null/空值）、缺失前置或超限/partial。支持固定完整前缀：dsga-physical-kernel.json → dsga-kernel-bootstrap.json → dsga-prebootstrap-system.json → dsga-normal-split.json → dsga-native-birth.json。原显式预算、ABI、build manifest/FS/build tuple引用不猜默认、不生成Root nonce。
+
+RuntimeDocument v2保留policy_templates_json原blob准确字节（[]byte的标准base64 JSON表示）与policy_templates_sha256。v1 Marshal准确旧字节保持，新字段出现即拒（包括null/空）；SourceConfig仍v1，不能加模板/私钥等新key。Runtime(vm,secret)先CheckReady核原UID/owner/immutable，随后原resource/native预算/JWKS一致性，最后选择v2并渲染严格类型。缺新key仍v1。
+
+v2 SHA覆盖实际canonical RuntimeDocument原字节；文档绑定实际SecretUID和原模板blob，effective policy绝不反填文档/Secret，因此不存在尚未CREATE的UID自引用环。所有策略注入runtime_document_sha256；split/native再注入resource_source_sha256（原resource.json准确字节），kernel-bootstrap注入已渲染physical策略准确字节SHA。最终各策略调用现有严格类型/ABI/build白名单，不复制或放宽其资格规则。非Linux adapter明确unsupported，旧v1仍可返回空策略map。DecodeRuntimeAssets复用原Decoder身份/大小检查，返回dsga-resource.json原字节及固定策略资产；它没有写ISO副作用。
+
+精确执行：固定AS adcc2c1f6666a798b2db0bdb2b9b5d70fa8a7421归档加本批8源；所有769 Go/mod文件实际容器COPY逐hash相等，当前8源与COPY一致。Go1.24.3、race、readonly模块、网络禁用、两个共享缓存，CPU并发2、有界异步unit、独立nonce和日志。新9根77子场景+旧3根21子场景=12根98子场景，零skip，真实test.rc0。resourceguard 1.355s、bootstrap 1.436s。另在Linux做GOOS=darwin/amd64、CGO0的两个生产包compile-only，rc0；没有在Mac执行业务测试。
+
+失败历史完整保留：01新增bootstrap夹具把string UID传给原types.UID API，且镜像默认bash-e使错误未导出；02修harness后同源真实test.rc1准确显示该编译错误；03修新增夹具typed UID并将两个Source额外key反例区分，更新精确快照后通过。没有将wrapper/build导出rc0冒充测试通过。
+
+本批U使用实际Controller/Secret Go结构及Fake journal API，内核/预算/manifest明确是模型输入。未执行真实Secret创建/Kube授权、上游模板提供者、Runner写ISO、Guest消费者、真实发行RO loader闭包、生产Root Source/Pending/WAL接线、normal硬降限或K8s回归。静态policy有效、回调、哈希与本批PASS均不签完整Birth/Root/VM许可；原normal拒绝保持。PGmajor只选已实现ABI，当前native17可验证，18/其他明确unsupported，不按PG版本拆上层API。
+
+外部原始目录：/data/neon-build/validation/runtime-policy-templates-20261031T020138Z

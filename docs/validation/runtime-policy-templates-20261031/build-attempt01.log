@@ -1,0 +1,49 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.39kB done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.1s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [verify 1/4] FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#5 resolve 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 0.0s done
+#5 CACHED
+
+#4 [internal] load build context
+#4 transferring context: 20.07MB 0.2s done
+#4 DONE 0.3s
+
+#6 [verify 2/4] COPY source/ /workspace/
+#6 DONE 0.6s
+
+#7 [verify 3/4] WORKDIR /workspace
+#7 DONE 0.1s
+
+#8 [verify 4/4] RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared  mkdir -p /receipt; /opt/go/bin/go version > /receipt/go-version.txt;  sha256sum -c cohort.sha256 > /receipt/source-check.txt 2>&1; source_rc=$?; echo "$source_rc" > /receipt/source-check.rc;  find . -type f \( -name '*.go' -o -name go.mod -o -name go.sum \) -print0 | sort -z | xargs -0 sha256sum > /receipt/actual-source.sha256;  if [ "$source_rc" != 0 ]; then echo 125 > /receipt/test.rc; exit 0; fi;  export PATH=/opt/go/bin:/opt/go/bin:/home/nonroot/.cargo/bin:/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin GOPATH=/go GOMAXPROCS=2 GOPROXY=off GOSUMDB=off;  /opt/go/bin/go test -mod=readonly -race -p=2 -count=1 -timeout=90s -json -run '^(TestRuntimePolicyTemplates|TestRuntimeTemplates|TestRuntimeSourceRequires|TestResourceSourceStrictBytesAndBounds|TestReadyRequiresActualOriginalSecretAndFullPristineJournal)' ./pkg/dsga/resourceguard ./pkg/dsga/bootstrap > /receipt/test.json 2> /receipt/test.stderr; echo "$?" > /receipt/test.rc;  printf '%s\n' "20261031T020138Z" > /receipt/nonce.txt
+#8 ERROR: process "/bin/bash -euo pipefail -c mkdir -p /receipt; /opt/go/bin/go version > /receipt/go-version.txt;  sha256sum -c cohort.sha256 > /receipt/source-check.txt 2>&1; source_rc=$?; echo \"$source_rc\" > /receipt/source-check.rc;  find . -type f \\( -name '*.go' -o -name go.mod -o -name go.sum \\) -print0 | sort -z | xargs -0 sha256sum > /receipt/actual-source.sha256;  if [ \"$source_rc\" != 0 ]; then echo 125 > /receipt/test.rc; exit 0; fi;  export PATH=/opt/go/bin:$PATH GOPATH=/go GOMAXPROCS=2 GOPROXY=off GOSUMDB=off;  /opt/go/bin/go test -mod=readonly -race -p=2 -count=1 -timeout=90s -json -run '^(TestRuntimePolicyTemplates|TestRuntimeTemplates|TestRuntimeSourceRequires|TestResourceSourceStrictBytesAndBounds|TestReadyRequiresActualOriginalSecretAndFullPristineJournal)' ./pkg/dsga/resourceguard ./pkg/dsga/bootstrap > /receipt/test.json 2> /receipt/test.stderr; echo \"$?\" > /receipt/test.rc;  printf '%s\\n' \"$TEST_NONCE\" > /receipt/nonce.txt" did not complete successfully: exit code: 1
+------
+ > [verify 4/4] RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared  mkdir -p /receipt; /opt/go/bin/go version > /receipt/go-version.txt;  sha256sum -c cohort.sha256 > /receipt/source-check.txt 2>&1; source_rc=$?; echo "$source_rc" > /receipt/source-check.rc;  find . -type f \( -name '*.go' -o -name go.mod -o -name go.sum \) -print0 | sort -z | xargs -0 sha256sum > /receipt/actual-source.sha256;  if [ "$source_rc" != 0 ]; then echo 125 > /receipt/test.rc; exit 0; fi;  export PATH=/opt/go/bin:/opt/go/bin:/home/nonroot/.cargo/bin:/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin GOPATH=/go GOMAXPROCS=2 GOPROXY=off GOSUMDB=off;  /opt/go/bin/go test -mod=readonly -race -p=2 -count=1 -timeout=90s -json -run '^(TestRuntimePolicyTemplates|TestRuntimeTemplates|TestRuntimeSourceRequires|TestResourceSourceStrictBytesAndBounds|TestReadyRequiresActualOriginalSecretAndFullPristineJournal)' ./pkg/dsga/resourceguard ./pkg/dsga/bootstrap > /receipt/test.json 2> /receipt/test.stderr; echo "$?" > /receipt/test.rc;  printf '%s\n' "20261031T020138Z" > /receipt/nonce.txt:
+------
+Dockerfile:5
+--------------------
+   4 |     ARG TEST_NONCE
+   5 | >>> RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared \
+   6 | >>>  mkdir -p /receipt; /opt/go/bin/go version > /receipt/go-version.txt; \
+   7 | >>>  sha256sum -c cohort.sha256 > /receipt/source-check.txt 2>&1; source_rc=$?; echo "$source_rc" > /receipt/source-check.rc; \
+   8 | >>>  find . -type f \( -name '*.go' -o -name go.mod -o -name go.sum \) -print0 | sort -z | xargs -0 sha256sum > /receipt/actual-source.sha256; \
+   9 | >>>  if [ "$source_rc" != 0 ]; then echo 125 > /receipt/test.rc; exit 0; fi; \
+  10 | >>>  export PATH=/opt/go/bin:$PATH GOPATH=/go GOMAXPROCS=2 GOPROXY=off GOSUMDB=off; \
+  11 | >>>  /opt/go/bin/go test -mod=readonly -race -p=2 -count=1 -timeout=90s -json -run '^(TestRuntimePolicyTemplates|TestRuntimeTemplates|TestRuntimeSourceRequires|TestResourceSourceStrictBytesAndBounds|TestReadyRequiresActualOriginalSecretAndFullPristineJournal)' ./pkg/dsga/resourceguard ./pkg/dsga/bootstrap > /receipt/test.json 2> /receipt/test.stderr; echo "$?" > /receipt/test.rc; \
+  12 | >>>  printf '%s\n' "$TEST_NONCE" > /receipt/nonce.txt
+  13 |     FROM scratch
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/bash -euo pipefail -c mkdir -p /receipt; /opt/go/bin/go version > /receipt/go-version.txt;  sha256sum -c cohort.sha256 > /receipt/source-check.txt 2>&1; source_rc=$?; echo \"$source_rc\" > /receipt/source-check.rc;  find . -type f \\( -name '*.go' -o -name go.mod -o -name go.sum \\) -print0 | sort -z | xargs -0 sha256sum > /receipt/actual-source.sha256;  if [ \"$source_rc\" != 0 ]; then echo 125 > /receipt/test.rc; exit 0; fi;  export PATH=/opt/go/bin:$PATH GOPATH=/go GOMAXPROCS=2 GOPROXY=off GOSUMDB=off;  /opt/go/bin/go test -mod=readonly -race -p=2 -count=1 -timeout=90s -json -run '^(TestRuntimePolicyTemplates|TestRuntimeTemplates|TestRuntimeSourceRequires|TestResourceSourceStrictBytesAndBounds|TestReadyRequiresActualOriginalSecretAndFullPristineJournal)' ./pkg/dsga/resourceguard ./pkg/dsga/bootstrap > /receipt/test.json 2> /receipt/test.stderr; echo \"$?\" > /receipt/test.rc;  printf '%s\\n' \"$TEST_NONCE\" > /receipt/nonce.txt" did not complete successfully: exit code: 1

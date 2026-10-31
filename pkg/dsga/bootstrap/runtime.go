@@ -29,6 +29,12 @@ func Runtime(vm *vmv1.VirtualMachine, secret *corev1.Secret) (resourceguard.Runt
 		return d, fmt.Errorf("original resource config missing or oversized")
 	}
 	d = resourceguard.RuntimeDocument{ProtocolVersion: 1, Incarnation: vm.Spec.DSGABootstrap.Incarnation, ConfigSecretUID: string(secret.UID), SourceJSON: append([]byte(nil), raw...)}
+	if templates, present := secret.Data[resourceguard.PolicyTemplatesSecretKey]; present {
+		d.ProtocolVersion = 2
+		d.PolicyTemplatesJSON = append([]byte(nil), templates...)
+		h := sha256.Sum256(templates)
+		d.PolicyTemplatesSHA256 = hex.EncodeToString(h[:])
+	}
 	sum := sha256.Sum256(raw)
 	d.SourceSHA256 = hex.EncodeToString(sum[:])
 	source, err := d.Source()
@@ -72,6 +78,17 @@ func Runtime(vm *vmv1.VirtualMachine, secret *corev1.Secret) (resourceguard.Runt
 	keys := native.Control.JWKS.Keys
 	if len(keys) != 1 || keys[0].Use != "sig" || len(keys[0].Ops) != 1 || keys[0].Ops[0] != "verify" || keys[0].Algorithm != "EdDSA" || keys[0].Type != "OKP" || keys[0].Curve != "Ed25519" || keys[0].X != source.ControlPublicKey {
 		return d, fmt.Errorf("resource source control key differs from original Compute key")
+	}
+	// 原Secret身份与原预算先核完，再以已分配UID的canonical文档渲染。
+	// 有效policy不回填文档/Secret，避免Runtime SHA与Secret UID自引用。
+	if d.ProtocolVersion == 2 {
+		canonical, err := json.Marshal(d)
+		if err != nil {
+			return d, err
+		}
+		if _, err := resourceguard.RenderRuntimePolicyAssets(canonical); err != nil {
+			return d, err
+		}
 	}
 	return d, nil
 }
@@ -121,4 +138,22 @@ func DecodeRuntime(spec *vmv1.VirtualMachineSpec, encoded string) ([]byte, error
 		return nil, fmt.Errorf("runtime resource source differs from ready VM")
 	}
 	return raw, nil
+}
+
+// DecodeRuntimeAssets沿用旧解压上限与ReadyVM绑定，然后增加非授权的ISO策略资产。
+// 旧DecodeRuntime仍返回原文档字节；Runner实际写ISO由后继接线执行。
+func DecodeRuntimeAssets(spec *vmv1.VirtualMachineSpec, encoded string) (map[string][]byte, error) {
+	raw, err := DecodeRuntime(spec, encoded)
+	if err != nil {
+		return nil, err
+	}
+	if raw == nil {
+		return nil, nil
+	}
+	assets, err := resourceguard.RenderRuntimePolicyAssets(raw)
+	if err != nil {
+		return nil, err
+	}
+	assets[resourceguard.RuntimeResourceAssetName] = append([]byte(nil), raw...)
+	return assets, nil
 }
