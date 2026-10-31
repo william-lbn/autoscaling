@@ -9,8 +9,7 @@
     "neonvm-runner/cmd/dsga_initial_boot_test.go": "f1e6aa62cbc49f08c4a271def28a91b83a504f33c705653b32a8e41edf6dd24d",
     "neonvm-daemon/cmd/resource-guard/main.go": "c5ca491145b8138b9f13c83c79d8950f7dbee46d9dc2a6b907e260e16f58f444"
   },
-  "actualCOPY_all_files": 3035,
-  "source_lock_key_note": "all_go_mod_inputs is legacy key name; this cohort covers all files including embeds",
+  "source_lock_key_note": "all_go_mod_inputs is legacy key name; this cohort hashes all snapshot files except .github paths, including non-Go embed assets; this is not a claim that every copied CI file was checked",
   "U_roots": [
     "TestRunnerInitialBaseUsesOriginalRuntimeAndSeparateBusinessMinimum",
     "TestRunnerInitialBaseRejectsLostOrMixedSourceAndGeometry",
@@ -29,5 +28,6 @@
   "static_entry_binary_count": 2,
   "S_pass_new": 0,
   "E_pass": 0,
-  "formal_Source_or_normal_authorized": false
+  "formal_Source_or_normal_authorized": false,
+  "checked_COPY_files_excluding_GitHub_CI": 3035
 }
