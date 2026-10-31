@@ -17,6 +17,7 @@ func deriveRuntimeBootRequirementsPlatform(next RuntimeBootRequirements, _ Runti
 	var physical PhysicalKernelOriginPolicy
 	var kernel NormalV1KernelBootstrapPolicy
 	var pre prebootstrapSystemPolicy
+	var split NormalSplitTopologyPolicy
 	if err := json.Unmarshal(assets["dsga-physical-kernel.json"], &physical); err != nil {
 		return zero, err
 	}
@@ -26,6 +27,13 @@ func deriveRuntimeBootRequirementsPlatform(next RuntimeBootRequirements, _ Runti
 	if err := json.Unmarshal(assets["dsga-prebootstrap-system.json"], &pre); err != nil {
 		return zero, err
 	}
+	if err := json.Unmarshal(assets["dsga-normal-split.json"], &split); err != nil {
+		return zero, err
+	}
+	if split.PhysicalProfileID != physical.ProfileID {
+		return zero, fmt.Errorf("memory origin plan changed original physical profile")
+	}
+	next.memoryOriginProtocol = split.MemoryOriginProtocolVersion
 	ref, err := LookupPhysicalKernelBuild(physical.ProfileID)
 	if err != nil || !ref.StrictPageCounterIRQBoundary() || physical.ProfileID != NormalSplitV1PhysicalKernelProfileID || kernel.ProfileID != physical.ProfileID || pre.PhysicalProfileID != physical.ProfileID || !source.Config.SystemCgroup {
 		return zero, fmt.Errorf("runtime boot needs original canonical normal-split-v1 source")

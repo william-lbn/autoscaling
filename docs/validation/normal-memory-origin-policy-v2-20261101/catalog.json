@@ -1,0 +1,108 @@
+{
+  "scope": "explicit readonly ISO protocol selector only; no production transport hook/normal",
+  "new_U": 2,
+  "new_S": 0,
+  "E": 0,
+  "actual_race_roots": 19,
+  "actual_race_subtests": 146,
+  "direct_prior_roots": 17,
+  "actual_source_checked": 4060,
+  "normal_qualified": false,
+  "cases": [
+    {
+      "root": "TestNormalMemoryOriginPolicyVersionsRequireExplicitOriginalField",
+      "new": true,
+      "result": "PASS"
+    },
+    {
+      "root": "TestNormalMemoryOriginPlanOnlyDerivesFromExactRenderedISOAssets",
+      "new": true,
+      "result": "PASS"
+    },
+    {
+      "root": "TestNormalSplitTopologyOriginalPreparation",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestNormalSplitTopologyPendingReplayAndUnrecordedInode",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestNormalSplitTopologyRejectsSourceAndInitialHistory",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestNormalSplitTopologyCompletedDriftAndVariableArrays",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestNormalSplitTopologySerializesAndHonorsOriginalLock",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestNormalSplitTopologyMalformedJournalNoRepair",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestNormalSplitTopologyStrictPolicyAndFixedEntry",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestRuntimeBootRequirementsNormalSplit",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestRuntimeBootRequirementsV1NoNewMode",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestRuntimeBootRequirementsRejectsSourceAndAssets",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestRuntimeBootRequirementsRejectsKernelOverrides",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestRuntimeBootRequirementsUpperIsNotObservedBase",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestRuntimePolicyTemplatesRenderFullPrefixWithoutUIDCycle",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestRuntimePolicyTemplatesTypedPolicyRejectsUnsupportedOrOverBudget",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestRuntimePolicyTemplatesV1ExactBytesAndFieldPresence",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestRuntimePolicyTemplatesStrictEnvelopeAndDependencies",
+      "new": false,
+      "result": "PASS"
+    },
+    {
+      "root": "TestRuntimePolicyTemplatesDocumentRejectsRawDriftAndUnknownFields",
+      "new": false,
+      "result": "PASS"
+    }
+  ]
+}

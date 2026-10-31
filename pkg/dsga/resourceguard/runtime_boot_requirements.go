@@ -11,15 +11,16 @@ import (
 // 字段私有，调用者不能把BootUpper改成观察值或修改必要参数；每次都从原准确文档
 // 与完整有效资产派生。它不证明QMP base、Guest实际内核/阶段或normal许可已成立。
 type RuntimeBootRequirements struct {
-	version    uint32
-	profile    string
-	runtimeSHA string
-	sourceSHA  string
-	secretUID  string
-	bootUpper  uint64
-	pidLimit   uint32
-	build      PhysicalKernelBuildReference
-	args       []string
+	version              uint32
+	profile              string
+	runtimeSHA           string
+	sourceSHA            string
+	secretUID            string
+	bootUpper            uint64
+	pidLimit             uint32
+	memoryOriginProtocol uint32
+	build                PhysicalKernelBuildReference
+	args                 []string
 }
 
 func (r RuntimeBootRequirements) ProtocolVersion() uint32                            { return r.version }
@@ -31,6 +32,10 @@ func (r RuntimeBootRequirements) ConfigSecretUID() string                       
 func (r RuntimeBootRequirements) BootMemoryUpperBoundBytes() uint64                  { return r.bootUpper }
 func (r RuntimeBootRequirements) PIDMaxLimit() uint32                                { return r.pidLimit }
 func (r RuntimeBootRequirements) KernelBuildReference() PhysicalKernelBuildReference { return r.build }
+
+// 0为原旧协议，1仅表示原ISO明确选择新来源握手，不是Mmax或normal许可。
+func (r RuntimeBootRequirements) MemoryOriginProtocolVersion() uint32 { return r.memoryOriginProtocol }
+
 func (r RuntimeBootRequirements) RequiredKernelArgs() []string {
 	return append([]string(nil), r.args...)
 }

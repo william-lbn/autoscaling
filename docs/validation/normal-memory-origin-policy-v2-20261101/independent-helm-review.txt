@@ -1,0 +1,18 @@
+normal内存来源显式selector4独立只读审查（2026-11-01）
+结论：本4源协议选择组件未见提交阻断，可由Root阶段归档。未改业务源码/Git、未重复测试。
+唯一输入 /data/neon-build/validation/normal-memory-origin-policy-20261031T224339Z-f31f4e/source-lock.json
+SHA 8824f2bc6bc80be18b66b278f26bc1a5fd09f94a7ba23a047e972ff3155c1a29
+base de92ce1b14e73775e47e85e673a1cccc47b3295a，owned4逐hash与readonly source一致。
+
+检查：
+1 NormalSplitTopologyPolicy v1只许MemoryOriginProtocolVersion=0且原JSON不得出现字段；自定义Unmarshal在原control.UnmarshalObject严格字段/重复键/null检查后额外核出现性，含null/0均拒，不仅依赖omitempty。v2必须显式有字段且值1；旧/未知版本、2、string/bool、重复、非精确字段名拒。
+2 仍同normal369物理profile和原预算上限validator，无放宽P/A/任务/溢出规则。原v1新字段为0省略，所有旧JSON字段相对顺序保留；原v1类型Marshal字节语义保持。
+3 RuntimeBootRequirements字段私有，新getter仅返回从原完整资产派生的protocol值。Linux派生实际重新解析严格split policy并核profile等于physical；入口原Derive已重渲染原RuntimeDoc/完整5policy+resource、逐项exact bytes核验。仅替换asset或只改调用参数不能开启，未接HTTP bool/env。
+4 新v2/v1同profile仍共存；新协议改变RuntimeDocSHA，required kernel args保持相同。getter0是旧协议、1是明确新来源握手静态选择，不是Mmax/Host保留/Guest阶段/normal许可。
+5 旧complete及实际6/7调用hook本批未接，不能把selector通过说成新Host/Guest producer已跑；没有新增Kernel/移动PG17/PG18锁。
+
+实际结果独立重算：
+actual-source.sha256 4060项逐项等于锁内snapshot4060，无漂移；source/build/test0；test.rc0；原GoJSON 19根146子场景全PASS，零fail/skip。包含新增Policy/Plan2根及直接兼容回归，不增加S/E。运行2CPU/2GiB、network=none/GOPROXY=off、Go固定c940工具；wrapper22.537203885秒。
+test.json SHA 214d17afdc32485cc23931d5e1836aff3c543738bf0517115140809b7e682c15
+actual-source.sha256 SHA 5f6b2aaa863daf9369c9e2a6453a1f99a5c06561439e0af134bc1bc48964a0bd
+限制：只静态选择协议，生产hook与联合6/7正控后继；非Source闭合、normal降限、VM或K8s E2E资格。未把Linux race称Darwin验证。
