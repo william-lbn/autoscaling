@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "docker",
+    "buildx",
+    "build",
+    "--builder",
+    "neon-data",
+    "--resource",
+    "memory=2g",
+    "--resource",
+    "memory-swap=2g",
+    "--resource",
+    "cpu-quota=200000",
+    "--progress",
+    "plain",
+    "--build-arg",
+    "NONCE=20261031T194311Z-0cabfe",
+    "--metadata-file",
+    "/data/neon-build/validation/fixed-runtime-iso-20261031T194311Z-0cabfe/build-metadata.json",
+    "--output",
+    "type=local,dest=/data/neon-build/validation/fixed-runtime-iso-20261031T194311Z-0cabfe/receipt",
+    "-f",
+    "/data/neon-build/validation/fixed-runtime-iso-20261031T194311Z-0cabfe/Dockerfile",
+    "/data/neon-build/validation/fixed-runtime-iso-20261031T194311Z-0cabfe"
+  ],
+  "test_network": "none",
+  "GOMAXPROCS": 2,
+  "GOMEMLIMIT": "512MiB per Go process",
+  "client_cgroup": "client2CPU/2GiB; actual RUN separately2CPU/2GiB/no extra swap"
+}

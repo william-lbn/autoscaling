@@ -1,0 +1,12 @@
+Root固定runtime ISO5独立只读审查（P2，2026-11-01）
+结论：本批组件范围内无提交阻断。已读冻结5源及必要原boot/asset验证接口，未改任何Runner源码、测试、Git，未重跑测试。
+固定图 /validation/fixed-runtime-iso-20261031T194311Z-0cabfe，Git3b99eb7fe0ebd681d2d73e9f781e03eb5ebc545b+only5，逐源当前/快照/actualCOPY一致；3063个非.github实际输入逐hash记录相符。原始JSON事件11根60sub，fail/skip0；source/test/staticRunner build退出0，RUN显式memory.max=2GiB断言及准确资源命令已查。
+固定选择不是bool或空command：fixedRuntimeISOSelected重新从原整组raw assets以DeriveRuntimeBootRequirements取opaque Enabled。validatedRuntimeISOAssets先限定名称、原Doc/五policy字节和完整asset set，再创建writer。新mode创建ISO前拒command/args/env/sysctl/disks/SSH以及非nil swap/shm，即使0也不静默忽略；该拒绝在OpenFile(O_TRUNC)之前，sentinel测试实际保持原文件。Boot原private config一致性仍要求Enabled与initialBootstrap成对，不按空command猜fixed。
+main在configureRuntimeBootRequirements后、initializeManagedMemory/Birth前调用validateFixedRuntimeVMSpec。InitScript/TLS/disks/命令/环境/SSH/sysctl/swap新mode全部显式拒绝，因此后面runInitScript只能遇空值；旧v1仍沿原路径。main只清旧内置core sysctl，两条用户sysctl仍会被早期检查拒，未静默丢弃。shm在main仅由swap派生，swap已早拒；createISO自身还独立拒非nil shm。
+createISO新fixed分支仅写validated六asset，完全绕开legacy command/env/mounts/sysctl/swap脚本生成；原unmanaged/v1 if !fixed保留command与默认mounts（加原asset），没有给旧image默认升级。v2实际ISO解包测试逐asset比较原字节、精确6文件、prebootstrap逻辑key映射pre-system物理名；明确无六类legacy脚本。unmanaged/v1实际仍+2且command.sh/mounts.sh存在。
+兼容与范围：新static模式目前拒TLS/磁盘等未实现固定数据合同，不能因此称业务全部可用；未来纯数据compute/TLS输入不得绕回任意mounts.sh。原SDK关闭错误/写盘后故障等通用ISO行为不由本批认证为崩溃耐久。本图是硬限Go/实际ISO库roundtrip和静态Runner编译，没有运行生产Runner/Guest、K8sAPI身份或正式initial-boot，也没有证明normal许可。Root原13脚本mount机制另有独立DEV369证据，二者不能合并冒完整Provision/E。AllSourcesClosed/normal/E仍false。
+
+实际ISO解包日志：
+dsga_runtime_assets_test.go:219: actual ISO identifiers: ["command.sh" "mounts.sh"]
+dsga_runtime_assets_test.go:219: actual ISO identifiers: ["command.sh" "dsga-resource.json" "mounts.sh"]
+dsga_runtime_assets_test.go:219: actual ISO identifiers: ["dsga-kernel-bootstrap.json" "dsga-native-birth.json" "dsga-normal-split.json" "dsga-physical-kernel.json" "dsga-pre-system.json" "dsga-resource.json"]

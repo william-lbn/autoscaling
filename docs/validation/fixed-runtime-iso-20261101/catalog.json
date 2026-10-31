@@ -1,0 +1,48 @@
+{
+  "status": "PASS_FIXED_SIX_ASSET_ISO_COMPONENT_ONLY",
+  "base": "3b99eb7fe0ebd681d2d73e9f781e03eb5ebc545b",
+  "owned": {
+    "neonvm-runner/cmd/main.go": "d9adcf59e73f19e66dc854abad722f748dee16bdeeed61482de6d55dd2cc56e0",
+    "neonvm-runner/cmd/disks.go": "7cfbd5df8a325b3ee985976e899e35d490a3ebd8e9505e6e57bcb6493f044a6d",
+    "neonvm-runner/cmd/dsga_runtime_fixed_iso.go": "1da105f3e76ab5e139f2d49a4b296ba092763b8f28beb603a71cc5bd4d634624",
+    "neonvm-runner/cmd/dsga_runtime_fixed_iso_test.go": "f609a2b2ff6daa92da51428f1752628e00100f223f484a8e75486d5b3e3fc284",
+    "neonvm-runner/cmd/dsga_runtime_assets_test.go": "c15dcd3b3a3d95d9695b7ecf0a66c104910590f14021b9b8d2510689342f8e20"
+  },
+  "checked_snapshot_files_excluding_dotgithub": 3063,
+  "source_lock_field_note": "all_go_mod_inputs includes all non-.github snapshot files, including embeds; does not claim every file compiled",
+  "roots": [
+    "TestRunnerInitialBaseUsesOriginalRuntimeAndSeparateBusinessMinimum",
+    "TestRunnerInitialBaseRejectsLostOrMixedSourceAndGeometry",
+    "TestRunnerInitialBaseLegacyAndFailedReconfigure",
+    "TestRunnerRuntimeISOAssetsPreserveOriginalBytes",
+    "TestRunnerRuntimeISOAssetsRejectBeforeOutput",
+    "TestRunnerRuntimeISOAssetsActualRoundTrip",
+    "TestRunnerRuntimeBootFinalCommandLine",
+    "TestRunnerRuntimeBootRejectsFinalOverrides",
+    "TestRunnerRuntimeBootFailureCannotFallBack",
+    "TestRunnerFixedRuntimeISORejectsLegacyInputsBeforeTouchingOutput",
+    "TestRunnerFixedRuntimeSpecRejectsOverridesBeforeBirth"
+  ],
+  "whole_U_roots": 11,
+  "whole_named_subcases": 60,
+  "new_U_roots": 2,
+  "new_named_subcases": 16,
+  "direct_regression_U_roots": 9,
+  "fail": 0,
+  "skip": 0,
+  "S_new": 0,
+  "E_pass": 0,
+  "static_runner_sha256": "e2902c85bc46c3182933239ce27d6fef115a0cdfd253d5afc683f7d8da200f55",
+  "runtime_QEMU_or_Guest_executed": false,
+  "Source_qualification": false,
+  "normal_qualification": false,
+  "unsupported_fixed_mode_inputs": [
+    "TLS dynamic mount",
+    "disks",
+    "command/args/env",
+    "InitScript",
+    "SSH",
+    "user sysctl",
+    "swap/shm overrides"
+  ]
+}

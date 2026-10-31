@@ -136,6 +136,13 @@ func createISO9660runtime(
 	if err != nil {
 		return err
 	}
+	fixed, err := fixedRuntimeISOSelected(runtimeAssets)
+	if err != nil {
+		return err
+	}
+	if fixed && (len(command) != 0 || len(args) != 0 || len(sysctl) != 0 || len(env) != 0 || len(disks) != 0 || enableSSH || swapSize != nil || shmsize != nil) {
+		return fmt.Errorf("fixed runtime ISO rejects legacy executable or mount inputs")
+	}
 	writer, err := iso9660.NewWriter()
 	if err != nil {
 		return err
@@ -147,121 +154,124 @@ func createISO9660runtime(
 		}
 	}
 
-	if len(sysctl) != 0 {
-		err = writer.AddFile(bytes.NewReader([]byte(strings.Join(sysctl, "\n"))), "sysctl.conf")
-		if err != nil {
-			return err
-		}
-	}
-
-	if len(command) != 0 {
-		err = writer.AddFile(bytes.NewReader([]byte(shellescape.QuoteCommand(command))), "command.sh")
-		if err != nil {
-			return err
-		}
-	}
-
-	if len(args) != 0 {
-		err = writer.AddFile(bytes.NewReader([]byte(shellescape.QuoteCommand(args))), "args.sh")
-		if err != nil {
-			return err
-		}
-	}
-
-	if len(env) != 0 {
-		envstring := []string{}
-		for _, e := range env {
-			envstring = append(envstring, fmt.Sprintf(`export %s=%s`, e.Name, shellescape.Quote(e.Value)))
-		}
-		envstring = append(envstring, "")
-		err = writer.AddFile(bytes.NewReader([]byte(strings.Join(envstring, "\n"))), "env.sh")
-		if err != nil {
-			return err
-		}
-	}
-
-	mounts := []string{
-		"set -euo pipefail",
-	}
-	if enableSSH {
-		mounts = append(mounts, "/neonvm/bin/mkdir -p /mnt/ssh")
-		mounts = append(mounts, "/neonvm/bin/mount  -t iso9660 -o ro,mode=0644 $(/neonvm/bin/blkid -L ssh-authorized-keys) /mnt/ssh")
-	}
-
-	if swapSize != nil {
-		mounts = append(mounts, fmt.Sprintf("/neonvm/bin/sh /neonvm/runtime/resize-swap-internal.sh %d", swapSize.Value()))
-	}
-
-	if len(disks) != 0 {
-		for _, disk := range disks {
-			if disk.MountPath != "" {
-				mounts = append(mounts, fmt.Sprintf(`/neonvm/bin/mkdir -p %s`, disk.MountPath))
+	if !fixed {
+		if len(sysctl) != 0 {
+			err = writer.AddFile(bytes.NewReader([]byte(strings.Join(sysctl, "\n"))), "sysctl.conf")
+			if err != nil {
+				return err
 			}
-			if disk.Watch != nil && *disk.Watch {
-				// do nothing as we will mount it into the VM via neonvm-daemon later
-				continue
+		}
+
+		if len(command) != 0 {
+			err = writer.AddFile(bytes.NewReader([]byte(shellescape.QuoteCommand(command))), "command.sh")
+			if err != nil {
+				return err
 			}
-			switch {
-			case disk.EmptyDisk != nil:
-				opts := ""
-				if disk.EmptyDisk.Discard {
-					opts = "-o discard"
+		}
+
+		if len(args) != 0 {
+			err = writer.AddFile(bytes.NewReader([]byte(shellescape.QuoteCommand(args))), "args.sh")
+			if err != nil {
+				return err
+			}
+		}
+
+		if len(env) != 0 {
+			envstring := []string{}
+			for _, e := range env {
+				envstring = append(envstring, fmt.Sprintf(`export %s=%s`, e.Name, shellescape.Quote(e.Value)))
+			}
+			envstring = append(envstring, "")
+			err = writer.AddFile(bytes.NewReader([]byte(strings.Join(envstring, "\n"))), "env.sh")
+			if err != nil {
+				return err
+			}
+		}
+
+		mounts := []string{
+			"set -euo pipefail",
+		}
+		if enableSSH {
+			mounts = append(mounts, "/neonvm/bin/mkdir -p /mnt/ssh")
+			mounts = append(mounts, "/neonvm/bin/mount  -t iso9660 -o ro,mode=0644 $(/neonvm/bin/blkid -L ssh-authorized-keys) /mnt/ssh")
+		}
+
+		if swapSize != nil {
+			mounts = append(mounts, fmt.Sprintf("/neonvm/bin/sh /neonvm/runtime/resize-swap-internal.sh %d", swapSize.Value()))
+		}
+
+		if len(disks) != 0 {
+			for _, disk := range disks {
+				if disk.MountPath != "" {
+					mounts = append(mounts, fmt.Sprintf(`/neonvm/bin/mkdir -p %s`, disk.MountPath))
 				}
-
-				if disk.EmptyDisk.EnableQuotas {
-					mounts = append(mounts, fmt.Sprintf(`tune2fs -Q prjquota $(/neonvm/bin/blkid -L %s)`, disk.Name))
-					mounts = append(mounts, fmt.Sprintf(`tune2fs -E mount_opts=prjquota $(/neonvm/bin/blkid -L %s)`, disk.Name))
+				if disk.Watch != nil && *disk.Watch {
+					// do nothing as we will mount it into the VM via neonvm-daemon later
+					continue
 				}
+				switch {
+				case disk.EmptyDisk != nil:
+					opts := ""
+					if disk.EmptyDisk.Discard {
+						opts = "-o discard"
+					}
 
-				mounts = append(mounts, fmt.Sprintf(`/neonvm/bin/mount %s $(/neonvm/bin/blkid -L %s) %s`, opts, disk.Name, disk.MountPath))
-				// Note: chmod must be after mount, otherwise it gets overwritten by mount.
-				mounts = append(mounts, fmt.Sprintf(`/neonvm/bin/chmod 0777 %s`, disk.MountPath))
-			case disk.ConfigMap != nil || disk.Secret != nil:
-				mounts = append(mounts, fmt.Sprintf(`/neonvm/bin/mount -t iso9660 -o ro,mode=0644 $(/neonvm/bin/blkid -L %s) %s`, disk.Name, disk.MountPath))
-			case disk.Tmpfs != nil:
-				mounts = append(mounts, fmt.Sprintf(`/neonvm/bin/chmod 0777 %s`, disk.MountPath))
-				mounts = append(mounts, fmt.Sprintf(`/neonvm/bin/mount -t tmpfs -o size=%d %s %s`, disk.Tmpfs.Size.Value(), disk.Name, disk.MountPath))
-			default:
-				// do nothing
+					if disk.EmptyDisk.EnableQuotas {
+						mounts = append(mounts, fmt.Sprintf(`tune2fs -Q prjquota $(/neonvm/bin/blkid -L %s)`, disk.Name))
+						mounts = append(mounts, fmt.Sprintf(`tune2fs -E mount_opts=prjquota $(/neonvm/bin/blkid -L %s)`, disk.Name))
+					}
+
+					mounts = append(mounts, fmt.Sprintf(`/neonvm/bin/mount %s $(/neonvm/bin/blkid -L %s) %s`, opts, disk.Name, disk.MountPath))
+					// Note: chmod must be after mount, otherwise it gets overwritten by mount.
+					mounts = append(mounts, fmt.Sprintf(`/neonvm/bin/chmod 0777 %s`, disk.MountPath))
+				case disk.ConfigMap != nil || disk.Secret != nil:
+					mounts = append(mounts, fmt.Sprintf(`/neonvm/bin/mount -t iso9660 -o ro,mode=0644 $(/neonvm/bin/blkid -L %s) %s`, disk.Name, disk.MountPath))
+				case disk.Tmpfs != nil:
+					mounts = append(mounts, fmt.Sprintf(`/neonvm/bin/chmod 0777 %s`, disk.MountPath))
+					mounts = append(mounts, fmt.Sprintf(`/neonvm/bin/mount -t tmpfs -o size=%d %s %s`, disk.Tmpfs.Size.Value(), disk.Name, disk.MountPath))
+				default:
+					// do nothing
+				}
 			}
 		}
-	}
 
-	if shmsize != nil {
-		mounts = append(mounts, fmt.Sprintf(`/neonvm/bin/mount -o remount,size=%d /dev/shm`, shmsize.Value()))
-	}
-
-	mounts = append(mounts, "")
-	err = writer.AddFile(bytes.NewReader([]byte(strings.Join(mounts, "\n"))), "mounts.sh")
-	if err != nil {
-		return err
-	}
-
-	if swapSize != nil {
-		lines := []string{
-			`#!/neonvm/bin/sh`,
-			`set -euo pipefail`,
-			// this script may be run as root, so we should avoid potentially-malicious path
-			// injection
-			`export PATH="/neonvm/bin"`,
-			fmt.Sprintf(`swapdisk="$(/neonvm/bin/blkid -L %s)"`, swapName),
-			// disable swap. Allow it to fail if it's already disabled.
-			`swapoff "$swapdisk" || true`,
-			// if the requested size is zero, then... just exit. There's nothing we need to do.
-			`new_size="$1"`,
-			`if [ "$new_size" = '0' ]; then exit 0; fi`,
-			// re-make the swap.
-			// mkswap expects the size to be given in KiB, so divide the new size by 1K
-			fmt.Sprintf(`mkswap -L %s "$swapdisk" $(( new_size / 1024 ))`, swapName),
-			// ... and then re-enable the swap
-			//
-			// nb: busybox swapon only supports '-d', not its long form '--discard'.
-			`swapon -d "$swapdisk"`,
+		if shmsize != nil {
+			mounts = append(mounts, fmt.Sprintf(`/neonvm/bin/mount -o remount,size=%d /dev/shm`, shmsize.Value()))
 		}
-		err = writer.AddFile(bytes.NewReader([]byte(strings.Join(lines, "\n"))), "resize-swap-internal.sh")
+
+		mounts = append(mounts, "")
+		err = writer.AddFile(bytes.NewReader([]byte(strings.Join(mounts, "\n"))), "mounts.sh")
 		if err != nil {
 			return err
 		}
+
+		if swapSize != nil {
+			lines := []string{
+				`#!/neonvm/bin/sh`,
+				`set -euo pipefail`,
+				// this script may be run as root, so we should avoid potentially-malicious path
+				// injection
+				`export PATH="/neonvm/bin"`,
+				fmt.Sprintf(`swapdisk="$(/neonvm/bin/blkid -L %s)"`, swapName),
+				// disable swap. Allow it to fail if it's already disabled.
+				`swapoff "$swapdisk" || true`,
+				// if the requested size is zero, then... just exit. There's nothing we need to do.
+				`new_size="$1"`,
+				`if [ "$new_size" = '0' ]; then exit 0; fi`,
+				// re-make the swap.
+				// mkswap expects the size to be given in KiB, so divide the new size by 1K
+				fmt.Sprintf(`mkswap -L %s "$swapdisk" $(( new_size / 1024 ))`, swapName),
+				// ... and then re-enable the swap
+				//
+				// nb: busybox swapon only supports '-d', not its long form '--discard'.
+				`swapon -d "$swapdisk"`,
+			}
+			err = writer.AddFile(bytes.NewReader([]byte(strings.Join(lines, "\n"))), "resize-swap-internal.sh")
+			if err != nil {
+				return err
+			}
+		}
+
 	}
 
 	outputFile, err := os.OpenFile(diskPath, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0o644)

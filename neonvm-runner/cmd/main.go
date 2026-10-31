@@ -217,6 +217,9 @@ func run(logger *zap.Logger) (runErr error) {
 	if err := configureRuntimeBootRequirements(cfg, runtimeAssets); err != nil {
 		return fmt.Errorf("original Guest boot requirements unavailable: %w", err)
 	}
+	if err := validateFixedRuntimeVMSpec(cfg, vmSpec); err != nil {
+		return err
+	}
 	cfg.managedMemory, err = initializeManagedMemory(vmSpec, cfg.initialBootstrap)
 	if err != nil {
 		return fmt.Errorf("original Runner memory birth unavailable: %w", err)
@@ -262,6 +265,9 @@ func run(logger *zap.Logger) (runErr error) {
 		"kernel.core_pattern=core",
 		"kernel.core_uses_pid=1",
 	}
+	if cfg.initialBootstrap != nil {
+		sysctl = nil
+	} // 新模式不再生成旧core调优脚本。
 	var shmSize *resource.Quantity
 	var swapSize *resource.Quantity
 	if vmSpec.Guest.Settings != nil {

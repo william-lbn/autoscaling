@@ -192,7 +192,11 @@ func TestRunnerRuntimeISOAssetsActualRoundTrip(t *testing.T) {
 			}
 			dir := t.TempDir()
 			output := filepath.Join(dir, "runtime.iso")
-			if err := createISO9660runtime(output, []string{"/usr/local/bin/postgres"}, nil, nil, nil, nil, false, nil, nil, assets); err != nil {
+			command := []string{"/usr/local/bin/postgres"}
+			if version == 2 {
+				command = nil
+			}
+			if err := createISO9660runtime(output, command, nil, nil, nil, nil, false, nil, nil, assets); err != nil {
 				t.Fatal(err)
 			}
 			f, err := os.Open(output)
@@ -227,8 +231,20 @@ func TestRunnerRuntimeISOAssetsActualRoundTrip(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if len(entries) != len(assets)+2 {
+			wantCount := len(assets) + 2
+			if version == 2 {
+				wantCount = len(assets)
+			}
+			if len(entries) != wantCount {
 				t.Fatalf("actual ISO extra/missing files: %v", entries)
+			}
+			if version == 2 {
+				for _, name := range []string{"command.sh", "args.sh", "env.sh", "mounts.sh", "sysctl.conf", "resize-swap-internal.sh"} {
+					if _, err := os.Lstat(filepath.Join(extracted, name)); !os.IsNotExist(err) {
+						t.Fatalf("fixed ISO contains legacy file %s", name)
+					}
+				}
+				return
 			}
 			if _, err := os.Stat(filepath.Join(extracted, "command.sh")); err != nil {
 				t.Fatal(err)
