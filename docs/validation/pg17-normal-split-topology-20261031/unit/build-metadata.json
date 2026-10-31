@@ -1,0 +1,67 @@
+{
+  "buildx.build.provenance": {
+    "builder": {
+      "id": ""
+    },
+    "buildType": "https://mobyproject.org/buildkit@v1",
+    "materials": [
+      {
+        "uri": "pkg:docker/127.0.0.1:5001/neon/pg17-dev-tools@linux-v1?platform=linux%2Famd64",
+        "digest": {
+          "sha256": "c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1"
+        }
+      }
+    ],
+    "invocation": {
+      "configSource": {
+        "entryPoint": "Go-test.Dockerfile"
+      },
+      "parameters": {
+        "frontend": "dockerfile.v0",
+        "args": {
+          "build-arg:DEV_COMMAND": "go test -race -count=1 -timeout=180s -json ./pkg/dsga/resourceguard -run '^TestNormalSplitTopology'",
+          "build-arg:DEV_RUN_NONCE": "20261031T000844Z-0b057b",
+          "build-arg:HTTPS_PROXY": "http://127.0.0.1:7890",
+          "build-arg:HTTP_PROXY": "http://127.0.0.1:7890",
+          "build-arg:NO_PROXY": "localhost,127.0.0.1,::1",
+          "build-arg:http_proxy": "http://127.0.0.1:7890",
+          "build-arg:https_proxy": "http://127.0.0.1:7890",
+          "build-arg:no_proxy": "localhost,127.0.0.1,::1",
+          "force-network-mode": "host"
+        },
+        "locals": [
+          {
+            "name": "context"
+          },
+          {
+            "name": "dockerfile"
+          }
+        ],
+        "root": {
+          "configSource": {
+            "path": "Go-test.Dockerfile"
+          },
+          "request": {
+            "args": {
+              "build-arg:DEV_COMMAND": "go test -race -count=1 -timeout=180s -json ./pkg/dsga/resourceguard -run '^TestNormalSplitTopology'",
+              "build-arg:DEV_RUN_NONCE": "20261031T000844Z-0b057b",
+              "build-arg:HTTPS_PROXY": "http://127.0.0.1:7890",
+              "build-arg:HTTP_PROXY": "http://127.0.0.1:7890",
+              "build-arg:NO_PROXY": "localhost,127.0.0.1,::1",
+              "build-arg:http_proxy": "http://127.0.0.1:7890",
+              "build-arg:https_proxy": "http://127.0.0.1:7890",
+              "build-arg:no_proxy": "localhost,127.0.0.1,::1",
+              "force-network-mode": "host"
+            }
+          }
+        },
+        "compatibilityVersion": 30
+      },
+      "environment": {
+        "dockerfileVersion": "1.28.0",
+        "platform": "linux/amd64"
+      }
+    }
+  },
+  "buildx.build.ref": "neon-data/neon-data0/wem12164pvb15pb62us7feszg"
+}

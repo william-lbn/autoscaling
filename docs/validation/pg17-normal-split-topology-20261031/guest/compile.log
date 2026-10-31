@@ -1,0 +1,56 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile.native
+#1 transferring dockerfile: 795B done
+#1 DONE 0.3s
+
+#2 [context native] load .dockerignore
+#2 transferring native: 2B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for 127.0.0.1:5001/neon/pg17-dev-tools:linux-v1
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 343B done
+#4 DONE 0.0s
+
+#5 [context native] load from client
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 DONE 0.0s
+
+#7 [build 1/5] FROM 127.0.0.1:5001/neon/pg17-dev-tools:linux-v1@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#7 resolve 127.0.0.1:5001/neon/pg17-dev-tools:linux-v1@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 0.0s done
+#7 DONE 0.0s
+
+#5 [context native] load from client
+#5 transferring native: 5.75kB done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 105.52kB 0.1s done
+#6 DONE 0.1s
+
+#8 [build 2/5] WORKDIR /workspace
+#8 CACHED
+
+#9 [build 3/5] COPY . .
+#9 CACHED
+
+#10 [build 4/5] COPY --from=native normal_split_native_test.go pkg/dsga/resourceguard/normal_split_native_test.go
+#10 DONE 0.1s
+
+#11 [build 5/5] RUN --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared mkdir /out && go version > /out/compiler.txt && sha256sum pkg/dsga/resourceguard/*.go go.mod go.sum > /out/compiled-source-sha256.txt && go test -c -trimpath -o /out/topology.test ./pkg/dsga/resourceguard && sha256sum /out/topology.test > /out/binary.sha256
+#11 DONE 3.2s
+
+#12 [stage-1 1/1] COPY --from=build /out/ /
+#12 DONE 0.1s
+
+#13 exporting to client directory
+#13 copying files 12.77MB 0.1s done
+#13 DONE 0.1s
+
+#14 resolving provenance for metadata file
+#14 DONE 0.0s

@@ -1,0 +1,8 @@
+FROM 127.0.0.1:5001/neon/pg17-dev-tools:linux-v1 AS build
+WORKDIR /workspace
+ENV GOPATH=/go GOMODCACHE=/go/pkg/mod GOCACHE=/root/.cache/go-build CGO_ENABLED=0
+COPY . .
+COPY --from=native normal_split_native_test.go pkg/dsga/resourceguard/normal_split_native_test.go
+RUN --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared mkdir /out && go version > /out/compiler.txt && sha256sum pkg/dsga/resourceguard/*.go go.mod go.sum > /out/compiled-source-sha256.txt && go test -c -trimpath -o /out/topology.test ./pkg/dsga/resourceguard && sha256sum /out/topology.test > /out/binary.sha256
+FROM scratch
+COPY --from=build /out/ /

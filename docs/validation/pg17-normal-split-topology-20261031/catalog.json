@@ -1,0 +1,120 @@
+{
+  "scope": "normal-split-topology-preparation-only",
+  "baseGitSHA": "410bcc63a5de44b26afd04e237854a9c5b1705ce",
+  "ownedSourceSHA256": {
+    "pkg/dsga/resourceguard/normal_split_topology.go": "11770b3ded9f24eb827df9e3e2f46fcfe5ce438b54fbf605a51fbda46ce51ad7",
+    "pkg/dsga/resourceguard/normal_split_topology_linux.go": "c6a9e1ccfb93baab7828a2a368b8f8df7979e3bc85decdf603e8c38f84622ece",
+    "pkg/dsga/resourceguard/normal_split_topology_test.go": "1c98bea7c653c0d54da84fc676bde1309184e42c6d4cd388213348cea8f82d02"
+  },
+  "unit": {
+    "status": "PASS",
+    "rootCount": 7,
+    "subtestCount": 33,
+    "skips": 0,
+    "race": true,
+    "command": "go test -race -count=1 -timeout=180s -json ./pkg/dsga/resourceguard -run '^TestNormalSplitTopology'",
+    "externalReceipt": "/data/neon-build/validation/pg17-normal-split-unit-20261031T000844Z-0b057b",
+    "cases": [
+      {
+        "id": "PG17-U-SPLIT-001",
+        "test": "TestNormalSplitTopologyOriginalPreparation",
+        "status": "PASS",
+        "layer": "unit-kernel-model-real-WAL"
+      },
+      {
+        "id": "PG17-U-SPLIT-002",
+        "test": "TestNormalSplitTopologyPendingReplayAndUnrecordedInode",
+        "status": "PASS",
+        "layer": "unit-kernel-model-real-WAL"
+      },
+      {
+        "id": "PG17-U-SPLIT-003",
+        "test": "TestNormalSplitTopologyRejectsSourceAndInitialHistory",
+        "status": "PASS",
+        "layer": "unit-kernel-model-real-WAL"
+      },
+      {
+        "id": "PG17-U-SPLIT-004",
+        "test": "TestNormalSplitTopologyCompletedDriftAndVariableArrays",
+        "status": "PASS",
+        "layer": "unit-kernel-model-real-WAL"
+      },
+      {
+        "id": "PG17-U-SPLIT-005",
+        "test": "TestNormalSplitTopologySerializesAndHonorsOriginalLock",
+        "status": "PASS",
+        "layer": "unit-kernel-model-real-WAL"
+      },
+      {
+        "id": "PG17-U-SPLIT-006",
+        "test": "TestNormalSplitTopologyMalformedJournalNoRepair",
+        "status": "PASS",
+        "layer": "unit-kernel-model-real-WAL"
+      },
+      {
+        "id": "PG17-U-SPLIT-007",
+        "test": "TestNormalSplitTopologyStrictPolicyAndFixedEntry",
+        "status": "PASS",
+        "layer": "unit-kernel-model-real-WAL"
+      }
+    ]
+  },
+  "guest": {
+    "status": "PASS_COMPONENT_ONLY",
+    "externalReceipt": "/data/neon-build/validation/pg17-normal-split-native-20261031T001018Z-a0e2de",
+    "rootCount": 1,
+    "caseIDs": [
+      "PG17-S-SPLIT-001",
+      "PG17-S-SPLIT-002",
+      "PG17-S-SPLIT-003",
+      "PG17-S-SPLIT-004",
+      "PG17-S-SPLIT-005",
+      "PG17-S-SPLIT-006"
+    ],
+    "layer": "isolated-exact-kernel-service-component",
+    "actualKVM": {
+      "enabled": true,
+      "present": true
+    },
+    "kernelTuple": {
+      "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+      "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+      "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+    },
+    "testBinarySHA256": "6dc489e0813465bb1c73e1287b5d422177a55e9242884939cb6610cc7fd3f44d",
+    "sourceSHA256Matched": true,
+    "normalDecreasePermit": false
+  },
+  "preservedFailures": [
+    {
+      "receipt": "/data/neon-build/validation/go-1793404565554600887",
+      "status": "BUILD_FAIL",
+      "causes": [
+        "our first U fixture misspelled original HardPIDMaxLimit pointer field",
+        "unrelated active kernel-bootstrap intermediate field/method collision; not included in isolated final source"
+      ],
+      "businessKernelEffects": false
+    },
+    {
+      "status": "TOOL_FAIL_127",
+      "cause": "first gofmt path /usr/local/go/bin/gofmt absent; correct /opt/go/bin/gofmt then succeeded"
+    }
+  ],
+  "independentReviewCorrection": {
+    "finding": "existing pending leaf identity canonical read did not establish durability after prior fsync failure",
+    "fix": "sync original identity file and directory before every pending cap write; keep same nonce/inode",
+    "productionSHA256": "11770b3ded9f24eb827df9e3e2f46fcfe5ce438b54fbf605a51fbda46ce51ad7"
+  },
+  "notRunOrProven": [
+    "production fixed ISO loader and original Source issuance",
+    "Root Birth/Enrollment",
+    "continuous force/I/K envelope and no added OOM",
+    "safe normal decrease",
+    "real PG workload",
+    "Kubernetes E2E"
+  ],
+  "originalParentMemoryMaxWritten": false,
+  "resourceStateBirthCreated": false,
+  "fiveNormalRefusalsModified": false,
+  "committedOrPushedByAgent": false
+}

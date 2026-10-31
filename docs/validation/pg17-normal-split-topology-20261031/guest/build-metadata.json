@@ -1,0 +1,60 @@
+{
+  "buildx.build.provenance": {
+    "builder": {
+      "id": ""
+    },
+    "buildType": "https://mobyproject.org/buildkit@v1",
+    "materials": [
+      {
+        "uri": "pkg:docker/127.0.0.1:5001/neon/pg17-dev-tools@linux-v1?platform=linux%2Famd64",
+        "digest": {
+          "sha256": "c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1"
+        }
+      }
+    ],
+    "invocation": {
+      "configSource": {
+        "entryPoint": "Dockerfile.native"
+      },
+      "parameters": {
+        "frontend": "dockerfile.v0",
+        "args": {
+          "context:native": "local:native",
+          "force-network-mode": "host",
+          "frontend.caps": "moby.buildkit.frontend.contexts+forward",
+          "sharedkey:localdir:native": "native-context:59a551837939fa4b"
+        },
+        "locals": [
+          {
+            "name": "context"
+          },
+          {
+            "name": "dockerfile"
+          },
+          {
+            "name": "native"
+          }
+        ],
+        "root": {
+          "configSource": {
+            "path": "Dockerfile.native"
+          },
+          "request": {
+            "args": {
+              "context:native": "local:native",
+              "force-network-mode": "host",
+              "frontend.caps": "moby.buildkit.frontend.contexts+forward",
+              "sharedkey:localdir:native": "native-context:59a551837939fa4b"
+            }
+          }
+        },
+        "compatibilityVersion": 30
+      },
+      "environment": {
+        "dockerfileVersion": "1.28.0",
+        "platform": "linux/amd64"
+      }
+    }
+  },
+  "buildx.build.ref": "neon-data/neon-data0/ulo41trickvhifg3gt2dzzpgr"
+}

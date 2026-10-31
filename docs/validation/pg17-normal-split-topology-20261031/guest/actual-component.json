@@ -1,0 +1,365 @@
+{
+  "WAL": {
+    "normal-split-topology.arrays.identity.json": "{\"protocol_version\":1,\"intent_sha256\":\"04f7f52a4725cd0ef93b0f9a180d227744497c8bd5f99c034853281a83e9cb16\",\"name\":\"arrays\",\"device\":\"23\",\"inode\":\"148\"}",
+    "normal-split-topology.complete.json": "{\"protocol_version\":1,\"scope\":\"normal-split-topology-preparation-only\",\"intent_sha256\":\"04f7f52a4725cd0ef93b0f9a180d227744497c8bd5f99c034853281a83e9cb16\",\"observed\":{\"identity\":{\"vm_uid\":\"vm-one\",\"compute_instance_id\":\"compute-one\",\"guest_boot_id\":\"1d2202f8-0e47-466d-98dc-9a1b865e0f01\",\"cgroup_device\":\"23\",\"cgroup_inode\":\"28\",\"system_cgroup_device\":\"23\",\"system_cgroup_inode\":\"68\"},\"parent\":{\"device\":\"23\",\"inode\":\"28\",\"memory_max_bytes\":\"18446744073709551615\",\"pids_max_tasks\":\"18446744073709551615\",\"memory_current_bytes\":\"0\",\"swap_current_bytes\":\"0\",\"swap_max_bytes\":\"18446744073709551615\",\"memory_high_unlimited\":true,\"empty\":true,\"root_controlled\":true,\"controllers\":\"memory pids\"},\"private\":{\"device\":\"23\",\"inode\":\"108\",\"memory_max_bytes\":\"134217728\",\"pids_max_tasks\":\"8\",\"memory_current_bytes\":\"0\",\"swap_current_bytes\":\"0\",\"swap_max_bytes\":\"0\",\"memory_high_unlimited\":true,\"empty\":true,\"root_controlled\":true,\"controllers\":\"\"},\"arrays\":{\"device\":\"23\",\"inode\":\"148\",\"memory_max_bytes\":\"67108864\",\"pids_max_tasks\":\"1\",\"memory_current_bytes\":\"0\",\"swap_current_bytes\":\"0\",\"swap_max_bytes\":\"0\",\"memory_high_unlimited\":true,\"empty\":true,\"root_controlled\":true,\"controllers\":\"\"},\"state_device\":\"65024\",\"state_inode\":\"2\"}}",
+    "normal-split-topology.intent.json": "{\"protocol_version\":1,\"scope\":\"normal-split-topology-preparation-only\",\"nonce\":\"5a921a76a9fea089eef07201cb00179b\",\"policy\":{\"protocol_version\":1,\"scope\":\"normal-split-topology-preparation-only\",\"physical_profile_id\":\"neon-linux-6.12.26-dsga-normal-split-v1\",\"runtime_document_sha256\":\"7c1d50424a92855384336e92070dc5e7a34b5dd30eccd6903cae0abbfb0a5bd7\",\"resource_source_sha256\":\"ea405e475c1137aea015b0e97d41d692a9d9e9f98f8b8e7b8e61ecbd6493aeee\",\"private_memory_max_bytes\":\"134217728\",\"initial_arrays_memory_max_bytes\":\"67108864\",\"private_pids_max_tasks\":\"8\"},\"policy_sha256\":\"3935cdb668b82909d51e4e2442e93f6ffd6dee3fc1a69d51585073ba453fa821\",\"origin_sha256\":\"a374527762d561e138600daeb852aade731d220de0c15b6023e57a05515b5fe7\",\"original\":{\"identity\":{\"vm_uid\":\"vm-one\",\"compute_instance_id\":\"compute-one\",\"guest_boot_id\":\"1d2202f8-0e47-466d-98dc-9a1b865e0f01\",\"cgroup_device\":\"23\",\"cgroup_inode\":\"28\",\"system_cgroup_device\":\"23\",\"system_cgroup_inode\":\"68\"},\"parent\":{\"device\":\"23\",\"inode\":\"28\",\"memory_max_bytes\":\"18446744073709551615\",\"pids_max_tasks\":\"18446744073709551615\",\"memory_current_bytes\":\"0\",\"swap_current_bytes\":\"0\",\"swap_max_bytes\":\"18446744073709551615\",\"memory_high_unlimited\":true,\"empty\":true,\"root_controlled\":true,\"controllers\":\"\"},\"state_device\":\"65024\",\"state_inode\":\"2\"}}",
+    "normal-split-topology.private.identity.json": "{\"protocol_version\":1,\"intent_sha256\":\"04f7f52a4725cd0ef93b0f9a180d227744497c8bd5f99c034853281a83e9cb16\",\"name\":\"private\",\"device\":\"23\",\"inode\":\"108\"}"
+  },
+  "finiteArraysObserved": {
+    "protocol_version": 1,
+    "scope": "normal-split-topology-preparation-only",
+    "normal_decrease_permit": false,
+    "durability_confirmed": false,
+    "intent_sha256": "04f7f52a4725cd0ef93b0f9a180d227744497c8bd5f99c034853281a83e9cb16",
+    "completion_sha256": "647d7f19c58d8d1763c8c94636a9648b3350466dd373c4fe32b9fce1d25639dc",
+    "original": {
+      "protocol_version": 1,
+      "scope": "normal-split-topology-preparation-only",
+      "nonce": "5a921a76a9fea089eef07201cb00179b",
+      "policy": {
+        "protocol_version": 1,
+        "scope": "normal-split-topology-preparation-only",
+        "physical_profile_id": "neon-linux-6.12.26-dsga-normal-split-v1",
+        "runtime_document_sha256": "7c1d50424a92855384336e92070dc5e7a34b5dd30eccd6903cae0abbfb0a5bd7",
+        "resource_source_sha256": "ea405e475c1137aea015b0e97d41d692a9d9e9f98f8b8e7b8e61ecbd6493aeee",
+        "private_memory_max_bytes": "134217728",
+        "initial_arrays_memory_max_bytes": "67108864",
+        "private_pids_max_tasks": "8"
+      },
+      "policy_sha256": "3935cdb668b82909d51e4e2442e93f6ffd6dee3fc1a69d51585073ba453fa821",
+      "origin_sha256": "a374527762d561e138600daeb852aade731d220de0c15b6023e57a05515b5fe7",
+      "original": {
+        "identity": {
+          "vm_uid": "vm-one",
+          "compute_instance_id": "compute-one",
+          "guest_boot_id": "1d2202f8-0e47-466d-98dc-9a1b865e0f01",
+          "cgroup_device": "23",
+          "cgroup_inode": "28",
+          "system_cgroup_device": "23",
+          "system_cgroup_inode": "68"
+        },
+        "parent": {
+          "device": "23",
+          "inode": "28",
+          "memory_max_bytes": "18446744073709551615",
+          "pids_max_tasks": "18446744073709551615",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "18446744073709551615",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "state_device": "65024",
+        "state_inode": "2"
+      }
+    },
+    "completion": {
+      "protocol_version": 1,
+      "scope": "normal-split-topology-preparation-only",
+      "intent_sha256": "04f7f52a4725cd0ef93b0f9a180d227744497c8bd5f99c034853281a83e9cb16",
+      "observed": {
+        "identity": {
+          "vm_uid": "vm-one",
+          "compute_instance_id": "compute-one",
+          "guest_boot_id": "1d2202f8-0e47-466d-98dc-9a1b865e0f01",
+          "cgroup_device": "23",
+          "cgroup_inode": "28",
+          "system_cgroup_device": "23",
+          "system_cgroup_inode": "68"
+        },
+        "parent": {
+          "device": "23",
+          "inode": "28",
+          "memory_max_bytes": "18446744073709551615",
+          "pids_max_tasks": "18446744073709551615",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "18446744073709551615",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": "memory pids"
+        },
+        "private": {
+          "device": "23",
+          "inode": "108",
+          "memory_max_bytes": "134217728",
+          "pids_max_tasks": "8",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "arrays": {
+          "device": "23",
+          "inode": "148",
+          "memory_max_bytes": "67108864",
+          "pids_max_tasks": "1",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "state_device": "65024",
+        "state_inode": "2"
+      }
+    },
+    "current": {
+      "identity": {
+        "vm_uid": "vm-one",
+        "compute_instance_id": "compute-one",
+        "guest_boot_id": "1d2202f8-0e47-466d-98dc-9a1b865e0f01",
+        "cgroup_device": "23",
+        "cgroup_inode": "28",
+        "system_cgroup_device": "23",
+        "system_cgroup_inode": "68"
+      },
+      "parent": {
+        "device": "23",
+        "inode": "28",
+        "memory_max_bytes": "18446744073709551615",
+        "pids_max_tasks": "18446744073709551615",
+        "memory_current_bytes": "0",
+        "swap_current_bytes": "0",
+        "swap_max_bytes": "18446744073709551615",
+        "memory_high_unlimited": true,
+        "empty": true,
+        "root_controlled": true,
+        "controllers": "memory pids"
+      },
+      "private": {
+        "device": "23",
+        "inode": "108",
+        "memory_max_bytes": "134217728",
+        "pids_max_tasks": "8",
+        "memory_current_bytes": "0",
+        "swap_current_bytes": "0",
+        "swap_max_bytes": "0",
+        "memory_high_unlimited": true,
+        "empty": true,
+        "root_controlled": true,
+        "controllers": ""
+      },
+      "arrays": {
+        "device": "23",
+        "inode": "148",
+        "memory_max_bytes": "33554432",
+        "pids_max_tasks": "1",
+        "memory_current_bytes": "0",
+        "swap_current_bytes": "0",
+        "swap_max_bytes": "0",
+        "memory_high_unlimited": true,
+        "empty": true,
+        "root_controlled": true,
+        "controllers": ""
+      },
+      "state_device": "65024",
+      "state_inode": "2"
+    }
+  },
+  "initial": {
+    "identity": {
+      "vm_uid": "vm-one",
+      "compute_instance_id": "compute-one",
+      "guest_boot_id": "1d2202f8-0e47-466d-98dc-9a1b865e0f01",
+      "cgroup_device": "23",
+      "cgroup_inode": "28",
+      "system_cgroup_device": "23",
+      "system_cgroup_inode": "68"
+    },
+    "parent": {
+      "device": "23",
+      "inode": "28",
+      "memory_max_bytes": "18446744073709551615",
+      "pids_max_tasks": "18446744073709551615",
+      "memory_current_bytes": "0",
+      "swap_current_bytes": "0",
+      "swap_max_bytes": "18446744073709551615",
+      "memory_high_unlimited": true,
+      "empty": true,
+      "root_controlled": true,
+      "controllers": ""
+    },
+    "state_device": "65024",
+    "state_inode": "2"
+  },
+  "kernel": {
+    "profile_id": "neon-linux-6.12.26-dsga-normal-split-v1",
+    "kernel_release": "6.12.26-william-normal-split-v1-e210f5e3ee94",
+    "kernel_artifact_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+    "kernel_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+  },
+  "normalDecreaseExecuted": false,
+  "normalDecreasePermit": false,
+  "prepared": {
+    "protocol_version": 1,
+    "scope": "normal-split-topology-preparation-only",
+    "normal_decrease_permit": false,
+    "durability_confirmed": true,
+    "intent_sha256": "04f7f52a4725cd0ef93b0f9a180d227744497c8bd5f99c034853281a83e9cb16",
+    "completion_sha256": "647d7f19c58d8d1763c8c94636a9648b3350466dd373c4fe32b9fce1d25639dc",
+    "original": {
+      "protocol_version": 1,
+      "scope": "normal-split-topology-preparation-only",
+      "nonce": "5a921a76a9fea089eef07201cb00179b",
+      "policy": {
+        "protocol_version": 1,
+        "scope": "normal-split-topology-preparation-only",
+        "physical_profile_id": "neon-linux-6.12.26-dsga-normal-split-v1",
+        "runtime_document_sha256": "7c1d50424a92855384336e92070dc5e7a34b5dd30eccd6903cae0abbfb0a5bd7",
+        "resource_source_sha256": "ea405e475c1137aea015b0e97d41d692a9d9e9f98f8b8e7b8e61ecbd6493aeee",
+        "private_memory_max_bytes": "134217728",
+        "initial_arrays_memory_max_bytes": "67108864",
+        "private_pids_max_tasks": "8"
+      },
+      "policy_sha256": "3935cdb668b82909d51e4e2442e93f6ffd6dee3fc1a69d51585073ba453fa821",
+      "origin_sha256": "a374527762d561e138600daeb852aade731d220de0c15b6023e57a05515b5fe7",
+      "original": {
+        "identity": {
+          "vm_uid": "vm-one",
+          "compute_instance_id": "compute-one",
+          "guest_boot_id": "1d2202f8-0e47-466d-98dc-9a1b865e0f01",
+          "cgroup_device": "23",
+          "cgroup_inode": "28",
+          "system_cgroup_device": "23",
+          "system_cgroup_inode": "68"
+        },
+        "parent": {
+          "device": "23",
+          "inode": "28",
+          "memory_max_bytes": "18446744073709551615",
+          "pids_max_tasks": "18446744073709551615",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "18446744073709551615",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "state_device": "65024",
+        "state_inode": "2"
+      }
+    },
+    "completion": {
+      "protocol_version": 1,
+      "scope": "normal-split-topology-preparation-only",
+      "intent_sha256": "04f7f52a4725cd0ef93b0f9a180d227744497c8bd5f99c034853281a83e9cb16",
+      "observed": {
+        "identity": {
+          "vm_uid": "vm-one",
+          "compute_instance_id": "compute-one",
+          "guest_boot_id": "1d2202f8-0e47-466d-98dc-9a1b865e0f01",
+          "cgroup_device": "23",
+          "cgroup_inode": "28",
+          "system_cgroup_device": "23",
+          "system_cgroup_inode": "68"
+        },
+        "parent": {
+          "device": "23",
+          "inode": "28",
+          "memory_max_bytes": "18446744073709551615",
+          "pids_max_tasks": "18446744073709551615",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "18446744073709551615",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": "memory pids"
+        },
+        "private": {
+          "device": "23",
+          "inode": "108",
+          "memory_max_bytes": "134217728",
+          "pids_max_tasks": "8",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "arrays": {
+          "device": "23",
+          "inode": "148",
+          "memory_max_bytes": "67108864",
+          "pids_max_tasks": "1",
+          "memory_current_bytes": "0",
+          "swap_current_bytes": "0",
+          "swap_max_bytes": "0",
+          "memory_high_unlimited": true,
+          "empty": true,
+          "root_controlled": true,
+          "controllers": ""
+        },
+        "state_device": "65024",
+        "state_inode": "2"
+      }
+    },
+    "current": {
+      "identity": {
+        "vm_uid": "vm-one",
+        "compute_instance_id": "compute-one",
+        "guest_boot_id": "1d2202f8-0e47-466d-98dc-9a1b865e0f01",
+        "cgroup_device": "23",
+        "cgroup_inode": "28",
+        "system_cgroup_device": "23",
+        "system_cgroup_inode": "68"
+      },
+      "parent": {
+        "device": "23",
+        "inode": "28",
+        "memory_max_bytes": "18446744073709551615",
+        "pids_max_tasks": "18446744073709551615",
+        "memory_current_bytes": "0",
+        "swap_current_bytes": "0",
+        "swap_max_bytes": "18446744073709551615",
+        "memory_high_unlimited": true,
+        "empty": true,
+        "root_controlled": true,
+        "controllers": "memory pids"
+      },
+      "private": {
+        "device": "23",
+        "inode": "108",
+        "memory_max_bytes": "134217728",
+        "pids_max_tasks": "8",
+        "memory_current_bytes": "0",
+        "swap_current_bytes": "0",
+        "swap_max_bytes": "0",
+        "memory_high_unlimited": true,
+        "empty": true,
+        "root_controlled": true,
+        "controllers": ""
+      },
+      "arrays": {
+        "device": "23",
+        "inode": "148",
+        "memory_max_bytes": "67108864",
+        "pids_max_tasks": "1",
+        "memory_current_bytes": "0",
+        "swap_current_bytes": "0",
+        "swap_max_bytes": "0",
+        "memory_high_unlimited": true,
+        "empty": true,
+        "root_controlled": true,
+        "controllers": ""
+      },
+      "state_device": "65024",
+      "state_inode": "2"
+    }
+  },
+  "scope": "actual kernel+topology+ext4 WAL, synthetic immutableSource and policy; fixed ISO loader NOT exercised",
+  "status": "PASS_COMPONENT_ONLY"
+}

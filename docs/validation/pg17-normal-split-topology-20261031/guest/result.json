@@ -1,0 +1,48 @@
+{
+  "status": "PASS_COMPONENT_ONLY",
+  "pass": true,
+  "rc": 0,
+  "timeout": false,
+  "seconds": 4.0373138779978035,
+  "actualKVM": {
+    "enabled": true,
+    "present": true
+  },
+  "GuestMemoryMiB": 1024,
+  "GuestCPUs": 2,
+  "kernelTuple": {
+    "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+    "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+  },
+  "guestNotesSHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "GuestRelease": [
+    "6.12.26-william-normal-split-v1-e210f5e3ee94"
+  ],
+  "GuestExit": [
+    "0"
+  ],
+  "TestExit": [
+    "0"
+  ],
+  "caseIDs": [
+    "PG17-S-SPLIT-001",
+    "PG17-S-SPLIT-002",
+    "PG17-S-SPLIT-003",
+    "PG17-S-SPLIT-004",
+    "PG17-S-SPLIT-005",
+    "PG17-S-SPLIT-006"
+  ],
+  "testBinarySHA256": "6dc489e0813465bb1c73e1287b5d422177a55e9242884939cb6610cc7fd3f44d",
+  "stateDiskSHA256": "6f119fc6e266e4b9759041681201c7af482a796c12c76973a69f4f300ae94042",
+  "fsckExit": 0,
+  "normalDecreasePermit": false,
+  "notProven": [
+    "production fixed ISO loader and original Source issuance",
+    "Root Birth/Enrollment",
+    "continuous force/I/K envelope and no added OOM",
+    "safe normal decrease",
+    "real PG workload",
+    "Kubernetes E2E"
+  ]
+}

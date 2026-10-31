@@ -1,0 +1,363 @@
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+Booting from ROM...
+c[?7l[2J[    0.000000] Linux version 6.12.26-william-normal-split-v1-e210f5e3ee94 (root@buildkitsandbox) (x86_64-linux-gnu-gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, GNU ld (GNU Binutils for Ubuntu) 2.42) #2 SMP PREEMPT_DYNAMIC Fri Oct 30 22:49:17 UTC 2026
+[    0.000000] Command line: console=ttyS0,115200 earlycon=uart8250,io,0x3f8,115200n8 rdinit=/init panic=-1 kernelcore=256M memhp_default_state=online_movable cgroup.memory=nokmem,nosocket,nobpf neonvm.pid_max_limit=512 pg17_split_topology_component=1
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+[    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+[    0.000000] BIOS-e820: [mem 0x0000000000100000-0x000000003ffdbfff] usable
+[    0.000000] BIOS-e820: [mem 0x000000003ffdc000-0x000000003fffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000b0000000-0x00000000bfffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fed1c000-0x00000000fed1ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000feffc000-0x00000000feffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+[    0.000000] earlycon: uart8250 at I/O port 0x3f8 (options '115200n8')
+[    0.000000] printk: legacy bootconsole [uart8250] enabled
+[    0.000000] neonvm: PID hard limit 512 installed before PID allocation
+[    0.000000] NX (Execute Disable) protection: active
+[    0.000000] APIC: Static calls initialized
+[    0.000000] SMBIOS 3.0.0 present.
+[    0.000000] DMI: QEMU Standard PC (Q35 + ICH9, 2009), BIOS rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org 04/01/2014
+[    0.000000] DMI: Memory slots populated: 1/1
+[    0.000000] Hypervisor detected: KVM
+[    0.000000] kvm-clock: Using msrs 4b564d01 and 4b564d00
+[    0.000001] kvm-clock: using sched offset of 444369668 cycles
+[    0.003330] clocksource: kvm-clock: mask: 0xffffffffffffffff max_cycles: 0x1cd42e4dffb, max_idle_ns: 881590591483 ns
+[    0.013822] tsc: Detected 2399.998 MHz processor
+[    0.017718] last_pfn = 0x3ffdc max_arch_pfn = 0x400000000
+[    0.021480] MTRR map: 4 entries (3 fixed + 1 variable; max 19), built from 8 variable MTRRs
+[    0.026844] x86/PAT: Configuration [0-7]: WB  WC  UC- UC  WB  WP  UC- WT  
+[    0.037660] found SMP MP-table at [mem 0x000f5ba0-0x000f5baf]
+[    0.041417] Using GB pages for direct mapping
+[    0.044311] RAMDISK: [mem 0x3f84e000-0x3ffcffff]
+[    0.047310] ACPI: Early table checksum verification disabled
+[    0.050954] ACPI: RSDP 0x00000000000F59C0 000014 (v00 BOCHS )
+[    0.054639] ACPI: RSDT 0x000000003FFE2357 000038 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.060139] ACPI: FACP 0x000000003FFE2147 0000F4 (v03 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.065688] ACPI: DSDT 0x000000003FFE0040 002107 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.071302] ACPI: FACS 0x000000003FFE0000 000040
+[    0.074272] ACPI: APIC 0x000000003FFE223B 000080 (v03 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.079728] ACPI: HPET 0x000000003FFE22BB 000038 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.086731] ACPI: MCFG 0x000000003FFE22F3 00003C (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.093228] ACPI: WAET 0x000000003FFE232F 000028 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.099640] ACPI: Reserving FACP table memory at [mem 0x3ffe2147-0x3ffe223a]
+[    0.104924] ACPI: Reserving DSDT table memory at [mem 0x3ffe0040-0x3ffe2146]
+[    0.110156] ACPI: Reserving FACS table memory at [mem 0x3ffe0000-0x3ffe003f]
+[    0.115468] ACPI: Reserving APIC table memory at [mem 0x3ffe223b-0x3ffe22ba]
+[    0.120735] ACPI: Reserving HPET table memory at [mem 0x3ffe22bb-0x3ffe22f2]
+[    0.125991] ACPI: Reserving MCFG table memory at [mem 0x3ffe22f3-0x3ffe232e]
+[    0.131219] ACPI: Reserving WAET table memory at [mem 0x3ffe232f-0x3ffe2356]
+[    0.138495] No NUMA configuration found
+[    0.141363] Faking a node at [mem 0x0000000000000000-0x000000003ffdbfff]
+[    0.146348] NODE_DATA(0) allocated [mem 0x3ffd92c0-0x3ffdbfff]
+[    0.151139] Zone ranges:
+[    0.154354]   DMA32    [mem 0x0000000000001000-0x000000003ffdbfff]
+[    0.159366]   Normal   empty
+[    0.161494] Movable zone start for each node
+[    0.164662]   Node 0: 0x0000000010400000
+[    0.167566] Early memory node ranges
+[    0.170211]   node   0: [mem 0x0000000000001000-0x000000000009efff]
+[    0.174864]   node   0: [mem 0x0000000000100000-0x000000003ffdbfff]
+[    0.179502] Initmem setup node 0 [mem 0x0000000000001000-0x000000003ffdbfff]
+[    0.185656] On node 0, zone DMA32: 1 pages in unavailable ranges
+[    0.192334] On node 0, zone DMA32: 97 pages in unavailable ranges
+[    0.205609] On node 0, zone Movable: 36 pages in unavailable ranges
+[    0.213448] ACPI: LAPIC_NMI (acpi_id[0xff] dfl dfl lint[0x1])
+[    0.217918] IOAPIC[0]: apic_id 0, version 17, address 0xfec00000, GSI 0-23
+[    0.223521] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.228209] ACPI: INT_SRC_OVR (bus 0 bus_irq 5 global_irq 5 high level)
+[    0.233071] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+[    0.237727] ACPI: INT_SRC_OVR (bus 0 bus_irq 10 global_irq 10 high level)
+[    0.242429] ACPI: INT_SRC_OVR (bus 0 bus_irq 11 global_irq 11 high level)
+[    0.246916] ACPI: Using ACPI (MADT) for SMP configuration information
+[    0.251135] ACPI: HPET id: 0x8086a201 base: 0xfed00000
+[    0.254690] TSC deadline timer available
+[    0.257489] CPU topo: Max. logical packages:   1
+[    0.260755] CPU topo: Max. logical dies:       1
+[    0.264129] CPU topo: Max. dies per package:   1
+[    0.267597] CPU topo: Max. threads per core:   1
+[    0.271057] CPU topo: Num. cores per package:     2
+[    0.274654] CPU topo: Num. threads per package:   2
+[    0.278315] CPU topo: Allowing 2 present CPUs plus 0 hotplug CPUs
+[    0.282895] kvm-guest: APIC: eoi() replaced with kvm_guest_apic_eoi_write()
+[    0.288100] kvm-guest: KVM setup pv remote TLB flush
+[    0.291862] kvm-guest: setup PV sched yield
+[    0.294970] [mem 0x40000000-0xafffffff] available for PCI devices
+[    0.299473] Booting paravirtualized kernel on KVM
+[    0.302967] clocksource: refined-jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645519600211568 ns
+[    0.310724] setup_percpu: NR_CPUS:64 nr_cpumask_bits:2 nr_cpu_ids:2 nr_node_ids:1
+[    0.338021] percpu: Embedded 57 pages/cpu s192600 r8192 d32680 u1048576
+[    0.342872] kvm-guest: PV spinlocks enabled
+[    0.346764] PV qspinlock hash table entries: 256 (order: 0, 4096 bytes, linear)
+[    0.352110] Kernel command line: console=ttyS0,115200 earlycon=uart8250,io,0x3f8,115200n8 rdinit=/init panic=-1 kernelcore=256M memhp_default_state=online_movable cgroup.memory=nokmem,nosocket,nobpf neonvm.pid_max_limit=512 pg17_split_topology_component=1
+[    0.368989] Unknown kernel command line parameters "pg17_split_topology_component=1", will be passed to user space.
+[    0.376778] random: crng init done
+[    0.387249] Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)
+[    0.393222] Inode-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)
+[    0.398975] Fallback order for Node 0: 0 
+[    0.398980] Built 1 zonelists, mobility grouping on.  Total pages: 262010
+[    0.406028] Policy zone: DMA32
+[    0.408077] mem auto-init: stack:off, heap alloc:on, heap free:off
+[    0.415309] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+[    0.421387] Dynamic Preempt: voluntary
+[    0.423802] rcu: Preemptible hierarchical RCU implementation.
+[    0.427387] rcu: 	RCU restricting CPUs from NR_CPUS=64 to nr_cpu_ids=2.
+[    0.431759] 	Trampoline variant of Tasks RCU enabled.
+[    0.434937] 	Tracing variant of Tasks RCU enabled.
+[    0.437951] rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+[    0.442735] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=2
+[    0.446886] RCU Tasks: Setting shift to 1 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=2.
+[    0.452370] RCU Tasks Trace: Setting shift to 1 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=2.
+[    0.459573] NR_IRQS: 4352, nr_irqs: 440, preallocated irqs: 16
+[    0.463704] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.468289] printk: legacy console [ttyS0] enabled
+[    0.468289] printk: legacy console [ttyS0] enabled
+[    0.474417] printk: legacy bootconsole [uart8250] disabled
+[    0.474417] printk: legacy bootconsole [uart8250] disabled
+[    0.481616] ACPI: Core revision 20240827
+[    0.484931] clocksource: hpet: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604467 ns
+[    0.491221] APIC: Switch to symmetric I/O mode setup
+[    0.495968] x2apic enabled
+[    0.499394] APIC: Switched APIC routing to: physical x2apic
+[    0.503124] kvm-guest: APIC: send_IPI_mask() replaced with kvm_send_ipi_mask()
+[    0.507827] kvm-guest: APIC: send_IPI_mask_allbutself() replaced with kvm_send_ipi_mask_allbutself()
+[    0.513864] kvm-guest: setup PV IPIs
+[    0.522069] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+[    0.526211] clocksource: tsc-early: mask: 0xffffffffffffffff max_cycles: 0x229835b7123, max_idle_ns: 440795242976 ns
+[    0.533122] Calibrating delay loop (skipped) preset value.. 4799.99 BogoMIPS (lpj=9599992)
+[    0.541598] x86/cpu: User Mode Instruction Prevention (UMIP) activated
+[    0.545160] Last level iTLB entries: 4KB 0, 2MB 0, 4MB 0
+[    0.548428] Last level dTLB entries: 4KB 0, 2MB 0, 4MB 0, 1GB 0
+[    0.549181] Spectre V1 : Mitigation: usercopy/swapgs barriers and __user pointer sanitization
+[    0.553138] Spectre V2 : Spectre BHI mitigation: SW BHB clearing on syscall and VM exit
+[    0.557124] Spectre V2 : Mitigation: Enhanced / Automatic IBRS
+[    0.561123] Spectre V2 : Spectre v2 / PBRSB-eIBRS: Retire a single CALL on VMEXIT
+[    0.565173] RETBleed: Mitigation: Enhanced IBRS
+[    0.569138] Spectre V2 : mitigation: Enabling conditional Indirect Branch Prediction Barrier
+[    0.573126] Speculative Store Bypass: Mitigation: Speculative Store Bypass disabled via prctl
+[    0.577126] TAA: Mitigation: TSX disabled
+[    0.581124] MMIO Stale Data: Vulnerable: Clear CPU buffers attempted, no microcode
+[    0.585132] GDS: Unknown: Dependent on hypervisor status
+[    0.589289] x86/fpu: Supporting XSAVE feature 0x001: 'x87 floating point registers'
+[    0.593124] x86/fpu: Supporting XSAVE feature 0x002: 'SSE registers'
+[    0.597125] x86/fpu: Supporting XSAVE feature 0x004: 'AVX registers'
+[    0.601126] x86/fpu: Supporting XSAVE feature 0x020: 'AVX-512 opmask'
+[    0.605124] x86/fpu: Supporting XSAVE feature 0x040: 'AVX-512 Hi256'
+[    0.609125] x86/fpu: Supporting XSAVE feature 0x080: 'AVX-512 ZMM_Hi256'
+[    0.613124] x86/fpu: xstate_offset[2]:  576, xstate_sizes[2]:  256
+[    0.617124] x86/fpu: xstate_offset[5]:  832, xstate_sizes[5]:   64
+[    0.621124] x86/fpu: xstate_offset[6]:  896, xstate_sizes[6]:  512
+[    0.625124] x86/fpu: xstate_offset[7]: 1408, xstate_sizes[7]: 1024
+[    0.629124] x86/fpu: Enabled xstate features 0xe7, context size is 2432 bytes, using 'compacted' format.
+[    0.659321] Freeing SMP alternatives memory: 40K
+[    0.661129] pid_max: default: 512 minimum: 301
+[    0.665442] LSM: initializing lsm=lockdown,capability,landlock,yama,apparmor
+[    0.669210] landlock: Up and running.
+[    0.673125] Yama: becoming mindful.
+[    0.676130] AppArmor: AppArmor initialized
+[    0.677260] Mount-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)
+[    0.681130] Mountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)
+[    0.686036] smpboot: CPU0: Intel Xeon Processor (Cascadelake) (family: 0x6, model: 0x55, stepping: 0x5)
+[    0.689540] Performance Events: unsupported p6 CPU model 85 no PMU driver, software events only.
+[    0.693310] signal: max sigframe size: 3632
+[    0.696653] rcu: Hierarchical SRCU implementation.
+[    0.697137] rcu: 	Max phase no-delay instances is 1000.
+[    0.700579] Timer migration: 1 hierarchy levels; 8 children per group; 1 crossnode level
+[    0.701189] dyndbg: Ignore empty _ddebug table in a CONFIG_DYNAMIC_DEBUG_CORE build
+[    0.705202] smp: Bringing up secondary CPUs ...
+[    0.708497] smpboot: x86: Booting SMP configuration:
+[    0.709139] .... node  #0, CPUs:      #1
+[    0.710045] smp: Brought up 1 node, 2 CPUs
+[    0.715815] smpboot: Total of 2 processors activated (9599.99 BogoMIPS)
+[    0.718206] Memory: 992052K/1048040K available (14336K kernel code, 1799K rwdata, 4900K rodata, 2400K init, 1792K bss, 53420K reserved, 0K cma-reserved)
+[    0.721311] devtmpfs: initialized
+[    0.723419] x86/mm: Memory block size: 128MB
+[    0.725467] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    0.729152] futex hash table entries: 512 (order: 3, 32768 bytes, linear)
+[    0.733496] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.737291] audit: initializing netlink subsys (disabled)
+[    0.741192] audit: type=2000 audit(1793405508.036:1): state=initialized audit_enabled=0 res=1
+[    0.741224] thermal_sys: Registered thermal governor 'step_wise'
+[    0.745175] cpuidle: using governor ladder
+[    0.752047] cpuidle: using governor menu
+[    0.753232] acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+[    0.757335] PCI: Using configuration type 1 for base access
+[    0.761390] HugeTLB: registered 1.00 GiB page size, pre-allocated 0 pages
+[    0.765138] HugeTLB: 16380 KiB vmemmap can be freed for a 1.00 GiB page
+[    0.769139] HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
+[    0.773139] HugeTLB: 28 KiB vmemmap can be freed for a 2.00 MiB page
+[    0.779027] ACPI: Added _OSI(Module Device)
+[    0.781142] ACPI: Added _OSI(Processor Device)
+[    0.784031] ACPI: Added _OSI(3.0 _SCP Extensions)
+[    0.785136] ACPI: Added _OSI(Processor Aggregator Device)
+[    0.789229] ACPI: 1 ACPI AML tables successfully acquired and loaded
+[    0.794669] ACPI: Interpreter enabled
+[    0.797144] ACPI: PM: (supports S0 S5)
+[    0.799594] ACPI: Using IOAPIC for interrupt routing
+[    0.801162] PCI: Using host bridge windows from ACPI; if necessary, use "pci=nocrs" and report a bug
+[    0.805135] PCI: Using E820 reservations for host bridge windows
+[    0.809160] ACPI: Enabled 2 GPEs in block 00 to 3F
+[    0.815828] ACPI: PCI Root Bridge [PCI0] (domain 0000 [bus 00-ff])
+[    0.817141] acpi PNP0A08:00: _OSC: OS supports [ASPM ClockPM Segments MSI HPX-Type3]
+[    0.821137] acpi PNP0A08:00: _OSC: not requesting OS control; OS requires [ExtendedConfig ASPM ClockPM MSI]
+[    0.825576] PCI host bridge to bus 0000:00
+[    0.828264] pci_bus 0000:00: root bus resource [io  0x0000-0x0cf7 window]
+[    0.829136] pci_bus 0000:00: root bus resource [io  0x0d00-0xffff window]
+[    0.833137] pci_bus 0000:00: root bus resource [mem 0x000a0000-0x000bffff window]
+[    0.837137] pci_bus 0000:00: root bus resource [mem 0x40000000-0xafffffff window]
+[    0.841137] pci_bus 0000:00: root bus resource [mem 0xc0000000-0xfebfffff window]
+[    0.845138] pci_bus 0000:00: root bus resource [mem 0x100000000-0x8ffffffff window]
+[    0.849137] pci_bus 0000:00: root bus resource [bus 00-ff]
+[    0.852883] pci 0000:00:00.0: [8086:29c0] type 00 class 0x060000 conventional PCI endpoint
+[    0.855593] pci 0000:00:01.0: [1234:1111] type 00 class 0x030000 conventional PCI endpoint
+[    0.861122] pci 0000:00:01.0: BAR 0 [mem 0xfd000000-0xfdffffff pref]
+[    0.870533] pci 0000:00:01.0: BAR 2 [mem 0xfebf0000-0xfebf0fff]
+[    0.882433] pci 0000:00:01.0: ROM [mem 0xfebe0000-0xfebeffff pref]
+[    0.885677] pci 0000:00:01.0: Video device with shadowed ROM at [mem 0x000c0000-0x000dffff]
+[    0.890991] pci 0000:00:02.0: [1af4:1001] type 00 class 0x010000 conventional PCI endpoint
+[    0.895840] pci 0000:00:02.0: BAR 0 [io  0xc000-0xc07f]
+[    0.899439] pci 0000:00:02.0: BAR 1 [mem 0xfebf1000-0xfebf1fff]
+[    0.909136] pci 0000:00:02.0: BAR 4 [mem 0xfe000000-0xfe003fff 64bit pref]
+[    0.920140] pci 0000:00:1f.0: [8086:2918] type 00 class 0x060100 conventional PCI endpoint
+[    0.923992] pci 0000:00:1f.0: quirk: [io  0x0600-0x067f] claimed by ICH6 ACPI/GPIO/TCO
+[    0.926512] pci 0000:00:1f.2: [8086:2922] type 00 class 0x010601 conventional PCI endpoint
+[    0.937140] pci 0000:00:1f.2: BAR 4 [io  0xc0c0-0xc0df]
+[    0.942710] pci 0000:00:1f.2: BAR 5 [mem 0xfebf2000-0xfebf2fff]
+[    0.948495] pci 0000:00:1f.3: [8086:2930] type 00 class 0x0c0500 conventional PCI endpoint
+[    0.953676] pci 0000:00:1f.3: BAR 4 [io  0x0700-0x073f]
+[    0.959972] ACPI: PCI: Interrupt link LNKA configured for IRQ 10
+[    0.961397] ACPI: PCI: Interrupt link LNKB configured for IRQ 10
+[    0.965411] ACPI: PCI: Interrupt link LNKC configured for IRQ 11
+[    0.969382] ACPI: PCI: Interrupt link LNKD configured for IRQ 11
+[    0.973384] ACPI: PCI: Interrupt link LNKE configured for IRQ 10
+[    0.977452] ACPI: PCI: Interrupt link LNKF configured for IRQ 10
+[    0.981380] ACPI: PCI: Interrupt link LNKG configured for IRQ 11
+[    0.985391] ACPI: PCI: Interrupt link LNKH configured for IRQ 11
+[    0.989276] ACPI: PCI: Interrupt link GSIA configured for IRQ 16
+[    0.993145] ACPI: PCI: Interrupt link GSIB configured for IRQ 17
+[    0.997071] ACPI: PCI: Interrupt link GSIC configured for IRQ 18
+[    0.997166] ACPI: PCI: Interrupt link GSID configured for IRQ 19
+[    1.001145] ACPI: PCI: Interrupt link GSIE configured for IRQ 20
+[    1.005038] ACPI: PCI: Interrupt link GSIF configured for IRQ 21
+[    1.005147] ACPI: PCI: Interrupt link GSIG configured for IRQ 22
+[    1.009141] ACPI: PCI: Interrupt link GSIH configured for IRQ 23
+[    1.013867] iommu: Default domain type: Translated
+[    1.017137] iommu: DMA domain TLB invalidation policy: lazy mode
+[    1.022039] SCSI subsystem initialized
+[    1.025303] pps_core: LinuxPPS API ver. 1 registered
+[    1.028433] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    1.029145] PTP clock support registered
+[    1.032283] NetLabel: Initializing
+[    1.033136] NetLabel:  domain hash size = 128
+[    1.036420] NetLabel:  protocols = UNLABELED CIPSOv4 CALIPSO
+[    1.037165] NetLabel:  unlabeled traffic allowed by default
+[    1.040832] PCI: Using ACPI for IRQ routing
+[    1.041866] pci 0000:00:01.0: vgaarb: setting as boot VGA device
+[    1.045122] pci 0000:00:01.0: vgaarb: bridge control possible
+[    1.045122] pci 0000:00:01.0: vgaarb: VGA device added: decodes=io+mem,owns=io+mem,locks=none
+[    1.045162] vgaarb: loaded
+[    1.047514] clocksource: Switched to clocksource kvm-clock
+[    1.051432] VFS: Disk quotas dquot_6.6.0
+[    1.054603] VFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+[    1.061755] AppArmor: AppArmor Filesystem Enabled
+[    1.065405] pnp: PnP ACPI init
+[    1.068001] system 00:05: [mem 0xb0000000-0xbfffffff window] has been reserved
+[    1.074034] pnp: PnP ACPI: found 6 devices
+[    1.080304] NET: Registered PF_INET protocol family
+[    1.084598] IP idents hash table entries: 16384 (order: 5, 131072 bytes, linear)
+[    1.090529] tcp_listen_portaddr_hash hash table entries: 512 (order: 1, 8192 bytes, linear)
+[    1.097458] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    1.103275] TCP established hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    1.110339] TCP bind hash table entries: 8192 (order: 6, 262144 bytes, linear)
+[    1.115555] TCP: Hash tables configured (established 8192 bind 8192)
+[    1.121196] MPTCP token hash table entries: 1024 (order: 2, 24576 bytes, linear)
+[    1.126687] UDP hash table entries: 512 (order: 2, 16384 bytes, linear)
+[    1.131862] UDP-Lite hash table entries: 512 (order: 2, 16384 bytes, linear)
+[    1.137340] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    1.141764] pci_bus 0000:00: resource 4 [io  0x0000-0x0cf7 window]
+[    1.146436] pci_bus 0000:00: resource 5 [io  0x0d00-0xffff window]
+[    1.151069] pci_bus 0000:00: resource 6 [mem 0x000a0000-0x000bffff window]
+[    1.156244] pci_bus 0000:00: resource 7 [mem 0x40000000-0xafffffff window]
+[    1.161339] pci_bus 0000:00: resource 8 [mem 0xc0000000-0xfebfffff window]
+[    1.166473] pci_bus 0000:00: resource 9 [mem 0x100000000-0x8ffffffff window]
+[    1.172135] PCI: CLS 0 bytes, default 64
+[    1.175621] Trying to unpack rootfs image as initramfs...
+[    1.180020] RAPL PMU: API unit is 2^-32 Joules, 0 fixed counters, 10737418240 ms ovfl timer
+[    1.186542] clocksource: tsc: mask: 0xffffffffffffffff max_cycles: 0x229835b7123, max_idle_ns: 440795242976 ns
+[    1.194268] Initialise system trusted keyrings
+[    1.197600] Key type blacklist registered
+[    1.200701] workingset: timestamp_bits=40 max_order=18 bucket_order=0
+[    1.205625] squashfs: version 4.0 (2009/01/31) Phillip Lougher
+[    1.209920] fuse: init (API version 7.41)
+[    1.213716] integrity: Platform Keyring initialized
+[    1.226978] Key type asymmetric registered
+[    1.230327] Asymmetric key parser 'x509' registered
+[    1.234063] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 247)
+[    1.239991] io scheduler mq-deadline registered
+[    1.243417] io scheduler kyber registered
+[    1.247062] shpchp: Standard Hot Plug PCI Controller Driver version: 0.4
+[    1.252310] input: Power Button as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input0
+[    1.258179] ACPI: button: Power Button [PWRF]
+[    1.262786] ACPI: \_SB_.GSIG: Enabled at IRQ 22
+[    1.272737] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    1.298926] Freeing initrd memory: 7688K
+[    1.312969] 00:03: ttyS0 at I/O 0x3f8 (irq = 4, base_baud = 115200) is a 16550A
+[    1.323030] brd: module loaded
+[    1.329798] loop: module loaded
+[    1.332606] virtio_blk virtio0: 2/0/0 default/read/poll queues
+[    1.348698] virtio_blk virtio0: [vda] 131072 512-byte logical blocks (67.1 MB/64.0 MiB)
+[    1.355926] Loading iSCSI transport class v2.0-870.
+[    1.360041] tun: Universal TUN/TAP device driver, 1.6
+[    1.364457] VFIO - User Level meta-driver version: 0.3
+[    1.368548] intel_pstate: CPU model not supported
+[    1.373979] xt_time: kernel timezone is -0000
+[    1.377294] ipip: IPv4 and MPLS over IPv4 tunneling driver
+[    1.381815] NET: Registered PF_INET6 protocol family
+[    1.387918] Segment Routing with IPv6
+[    1.390611] In-situ OAM (IOAM) with IPv6
+[    1.393505] NET: Registered PF_PACKET protocol family
+[    1.397490] 9pnet: Installing 9P2000 support
+[    1.400695] Key type dns_resolver registered
+[    1.405371] NET: Registered PF_VSOCK protocol family
+[    1.409223] IPI shorthand broadcast: enabled
+[    1.415198] registered taskstats version 1
+[    1.418485] Loading compiled-in X.509 certificates
+[    1.429940] Demotion targets for Node 0: null
+[    1.433095] AppArmor: AppArmor sha256 policy hashing enabled
+[    1.437305] Unstable clock detected, switching default tracing clock to "global"
+[    1.437305] If you want to keep using the local clock, then add:
+[    1.437305]   "trace_clock=local"
+[    1.437305] on the kernel command line
+[    1.454278] clk: Disabling unused clocks
+[    1.459843] Freeing unused kernel image (initmem) memory: 2400K
+[    1.462576] Write protecting the kernel read-only data: 20480k
+[    1.465628] Freeing unused kernel image (rodata/data gap) memory: 1244K
+[    1.478467] x86/mm: Checked W+X mappings: passed, no W+X pages found.
+[    1.481248] Run /init as init process
+[    1.509258] EXT4-fs (vda): mounted filesystem 1c0f1cd0-2285-4e13-a642-a2d87dbaa2dd r/w with ordered data mode. Quota mode: none.
+PG17_SPLIT_RELEASE=6.12.26-william-normal-split-v1-e210f5e3ee94
+PG17_SPLIT_NOTES_SHA256=7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828
+PG17_SPLIT_NOTES_BASE64_BEGIN
+BAAAABQAAAADAAAAR05VAIEjahgzsM3g03vCTFaDvctmqAdgBgAAAAQAAAABAQAATGludXgAAAAA
+AAAABgAAAAEAAAAAAQAATGludXgAAAAAAAAABAAAAAwAAAATAAAAWGVuAAAAIAAAAAAB////PwQA
+AAAIAAAAEgAAAFhlbgAAAAABAAAAAA==
+PG17_SPLIT_NOTES_BASE64_END
+PG17_SPLIT_BINARY_SHA256=6dc489e0813465bb1c73e1287b5d422177a55e9242884939cb6610cc7fd3f44d
+PG17_SPLIT_CMDLINE=console=ttyS0,115200 earlycon=uart8250,io,0x3f8,115200n8 rdinit=/init panic=-1 kernelcore=256M memhp_default_state=online_movable cgroup.memory=nokmem,nosocket,nobpf neonvm.pid_max_limit=512 pg17_split_topology_component=1
+PG17_SPLIT_BOOT_ID=1d2202f8-0e47-466d-98dc-9a1b865e0f01
+=== RUN   TestNormalSplitTopologyActualGuestKernel
+PG17-S-SPLIT-001 PASS actual369_cgroup2_ext4_WAL_exact_two_leaves_parent_unchanged
+PG17-S-SPLIT-002 PASS actual_original_identity_WAL_idempotence_non_authorizing
+PG17-S-SPLIT-003 PASS finite_arrays_change_is_fact_only
+PG17-S-SPLIT-004 PASS original_private_P_drift_rejected_no_repair
+PG17-S-SPLIT-005 PASS unknown_descendant_rejected_left_for_Guest_teardown
+PG17_SPLIT_TOPOLOGY_RESULT={"WAL":{"normal-split-topology.arrays.identity.json":"{\"protocol_version\":1,\"intent_sha256\":\"04f7f52a4725cd0ef93b0f9a180d227744497c8bd5f99c034853281a83e9cb16\",\"name\":\"arrays\",\"device\":\"23\",\"inode\":\"148\"}","normal-split-topology.complete.json":"{\"protocol_version\":1,\"scope\":\"normal-split-topology-preparation-only\",\"intent_sha256\":\"04f7f52a4725cd0ef93b0f9a180d227744497c8bd5f99c034853281a83e9cb16\",\"observed\":{\"identity\":{\"vm_uid\":\"vm-one\",\"compute_instance_id\":\"compute-one\",\"guest_boot_id\":\"1d2202f8-0e47-466d-98dc-9a1b865e0f01\",\"cgroup_device\":\"23\",\"cgroup_inode\":\"28\",\"system_cgroup_device\":\"23\",\"system_cgroup_inode\":\"68\"},\"parent\":{\"device\":\"23\",\"inode\":\"28\",\"memory_max_bytes\":\"18446744073709551615\",\"pids_max_tasks\":\"18446744073709551615\",\"memory_current_bytes\":\"0\",\"swap_current_bytes\":\"0\",\"swap_max_bytes\":\"18446744073709551615\",\"memory_high_unlimited\":true,\"empty\":true,\"root_controlled\":true,\"controllers\":\"memory pids\"},\"private\":{\"device\":\"23\",\"inode\":\"108\",\"memory_max_bytes\":\"134217728\",\"pids_max_tasks\":\"8\",\"memory_current_bytes\":\"0\",\"swap_current_bytes\":\"0\",\"swap_max_bytes\":\"0\",\"memory_high_unlimited\":true,\"empty\":true,\"root_controlled\":true,\"controllers\":\"\"},\"arrays\":{\"device\":\"23\",\"inode\":\"148\",\"memory_max_bytes\":\"67108864\",\"pids_max_tasks\":\"1\",\"memory_current_bytes\":\"0\",\"swap_current_bytes\":\"0\",\"swap_max_bytes\":\"0\",\"memory_high_unlimited\":true,\"empty\":true,\"root_controlled\":true,\"controllers\":\"\"},\"state_device\":\"65024\",\"state_inode\":\"2\"}}","normal-split-topology.intent.json":"{\"protocol_version\":1,\"scope\":\"normal-split-topology-preparation-only\",\"nonce\":\"5a921a76a9fea089eef07201cb00179b\",\"policy\":{\"protocol_version\":1,\"scope\":\"normal-split-topology-preparation-only\",\"physical_profile_id\":\"neon-linux-6.12.26-dsga-normal-split-v1\",\"runtime_document_sha256\":\"7c1d50424a92855384336e92070dc5e7a34b5dd30eccd6903cae0abbfb0a5bd7\",\"resource_source_sha256\":\"ea405e475c1137aea015b0e97d41d692a9d9e9f98f8b8e7b8e61ecbd6493aeee\",\"private_memory_max_bytes\":\"134217728\",\"initial_arrays_memory_max_bytes\":\"67108864\",\"private_pids_max_tasks\":\"8\"},\"policy_sha256\":\"3935cdb668b82909d51e4e2442e93f6ffd6dee3fc1a69d51585073ba453fa821\",\"origin_sha256\":\"a374527762d561e138600daeb852aade731d220de0c15b6023e57a05515b5fe7\",\"original\":{\"identity\":{\"vm_uid\":\"vm-one\",\"compute_instance_id\":\"compute-one\",\"guest_boot_id\":\"1d2202f8-0e47-466d-98dc-9a1b865e0f01\",\"cgroup_device\":\"23\",\"cgroup_inode\":\"28\",\"system_cgroup_device\":\"23\",\"system_cgroup_inode\":\"68\"},\"parent\":{\"device\":\"23\",\"inode\":\"28\",\"memory_max_bytes\":\"18446744073709551615\",\"pids_max_tasks\":\"18446744073709551615\",\"memory_current_bytes\":\"0\",\"swap_current_bytes\":\"0\",\"swap_max_bytes\":\"18446744073709551615\",\"memory_high_unlimited\":true,\"empty\":true,\"root_controlled\":true,\"controllers\":\"\"},\"state_device\":\"65024\",\"state_inode\":\"2\"}}","normal-split-topology.private.identity.json":"{\"protocol_version\":1,\"intent_sha256\":\"04f7f52a4725cd0ef93b0f9a180d227744497c8bd5f99c034853281a83e9cb16\",\"name\":\"private\",\"device\":\"23\",\"inode\":\"108\"}"},"finiteArraysObserved":{"protocol_version":1,"scope":"normal-split-topology-preparation-only","normal_decrease_permit":false,"durability_confirmed":false,"intent_sha256":"04f7f52a4725cd0ef93b0f9a180d227744497c8bd5f99c034853281a83e9cb16","completion_sha256":"647d7f19c58d8d1763c8c94636a9648b3350466dd373c4fe32b9fce1d25639dc","original":{"protocol_version":1,"scope":"normal-split-topology-preparation-only","nonce":"5a921a76a9fea089eef07201cb00179b","policy":{"protocol_version":1,"scope":"normal-split-topology-preparation-only","physical_profile_id":"neon-linux-6.12.26-dsga-normal-split-v1","runtime_document_sha256":"7c1d50424a92855384336e92070dc5e7a34b5dd30eccd6903cae0abbfb0a5bd7","resource_source_sha256":"ea405e475c1137aea015b0e97d41d692a9d9e9f98f8b8e7b8e61ecbd6493aeee","private_memory_max_bytes":"134217728","initial_arrays_memory_max_bytes":"67108864","private_pids_max_tasks":"8"},"policy_sha256":"3935cdb668b82909d51e4e2442e93f6ffd6dee3fc1a69d51585073ba453fa821","origin_sha256":"a374527762d561e138600daeb852aade731d220de0c15b6023e57a05515b5fe7","original":{"identity":{"vm_uid":"vm-one","compute_instance_id":"compute-one","guest_boot_id":"1d2202f8-0e47-466d-98dc-9a1b865e0f01","cgroup_device":"23","cgroup_inode":"28","system_cgroup_device":"23","system_cgroup_inode":"68"},"parent":{"device":"23","inode":"28","memory_max_bytes":"18446744073709551615","pids_max_tasks":"18446744073709551615","memory_current_bytes":"0","swap_current_bytes":"0","swap_max_bytes":"18446744073709551615","memory_high_unlimited":true,"empty":true,"root_controlled":true,"controllers":""},"state_device":"65024","state_inode":"2"}},"completion":{"protocol_version":1,"scope":"normal-split-topology-preparation-only","intent_sha256":"04f7f52a4725cd0ef93b0f9a180d227744497c8bd5f99c034853281a83e9cb16","observed":{"identity":{"vm_uid":"vm-one","compute_instance_id":"compute-one","guest_boot_id":"1d2202f8-0e47-466d-98dc-9a1b865e0f01","cgroup_device":"23","cgroup_inode":"28","system_cgroup_device":"23","system_cgroup_inode":"68"},"parent":{"device":"23","inode":"28","memory_max_bytes":"18446744073709551615","pids_max_tasks":"18446744073709551615","memory_current_bytes":"0","swap_current_bytes":"0","swap_max_bytes":"18446744073709551615","memory_high_unlimited":true,"empty":true,"root_controlled":true,"controllers":"memory pids"},"private":{"device":"23","inode":"108","memory_max_bytes":"134217728","pids_max_tasks":"8","memory_current_bytes":"0","swap_current_bytes":"0","swap_max_bytes":"0","memory_high_unlimited":true,"empty":true,"root_controlled":true,"controllers":""},"arrays":{"device":"23","inode":"148","memory_max_bytes":"67108864","pids_max_tasks":"1","memory_current_bytes":"0","swap_current_bytes":"0","swap_max_bytes":"0","memory_high_unlimited":true,"empty":true,"root_controlled":true,"controllers":""},"state_device":"65024","state_inode":"2"}},"current":{"identity":{"vm_uid":"vm-one","compute_instance_id":"compute-one","guest_boot_id":"1d2202f8-0e47-466d-98dc-9a1b865e0f01","cgroup_device":"23","cgroup_inode":"28","system_cgroup_device":"23","system_cgroup_inode":"68"},"parent":{"device":"23","inode":"28","memory_max_bytes":"18446744073709551615","pids_max_tasks":"18446744073709551615","memory_current_bytes":"0","swap_current_bytes":"0","swap_max_bytes":"18446744073709551615","memory_high_unlimited":true,"empty":true,"root_controlled":true,"controllers":"memory pids"},"private":{"device":"23","inode":"108","memory_max_bytes":"134217728","pids_max_tasks":"8","memory_current_bytes":"0","swap_current_bytes":"0","swap_max_bytes":"0","memory_high_unlimited":true,"empty":true,"root_controlled":true,"controllers":""},"arrays":{"device":"23","inode":"148","memory_max_bytes":"33554432","pids_max_tasks":"1","memory_current_bytes":"0","swap_current_bytes":"0","swap_max_bytes":"0","memory_high_unlimited":true,"empty":true,"root_controlled":true,"controllers":""},"state_device":"65024","state_inode":"2"}},"initial":{"identity":{"vm_uid":"vm-one","compute_instance_id":"compute-one","guest_boot_id":"1d2202f8-0e47-466d-98dc-9a1b865e0f01","cgroup_device":"23","cgroup_inode":"28","system_cgroup_device":"23","system_cgroup_inode":"68"},"parent":{"device":"23","inode":"28","memory_max_bytes":"18446744073709551615","pids_max_tasks":"18446744073709551615","memory_current_bytes":"0","swap_current_bytes":"0","swap_max_bytes":"18446744073709551615","memory_high_unlimited":true,"empty":true,"root_controlled":true,"controllers":""},"state_device":"65024","state_inode":"2"},"kernel":{"profile_id":"neon-linux-6.12.26-dsga-normal-split-v1","kernel_release":"6.12.26-william-normal-split-v1-e210f5e3ee94","kernel_artifact_sha256":"3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0","kernel_config_sha256":"11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be","kernel_notes_sha256":"7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"},"normalDecreaseExecuted":false,"normalDecreasePermit":false,"prepared":{"protocol_version":1,"scope":"normal-split-topology-preparation-only","normal_decrease_permit":false,"durability_confirmed":true,"intent_sha256":"04f7f52a4725cd0ef93b0f9a180d227744497c8bd5f99c034853281a83e9cb16","completion_sha256":"647d7f19c58d8d1763c8c94636a9648b3350466dd373c4fe32b9fce1d25639dc","original":{"protocol_version":1,"scope":"normal-split-topology-preparation-only","nonce":"5a921a76a9fea089eef07201cb00179b","policy":{"protocol_version":1,"scope":"normal-split-topology-preparation-only","physical_profile_id":"neon-linux-6.12.26-dsga-normal-split-v1","runtime_document_sha256":"7c1d50424a92855384336e92070dc5e7a34b5dd30eccd6903cae0abbfb0a5bd7","resource_source_sha256":"ea405e475c1137aea015b0e97d41d692a9d9e9f98f8b8e7b8e61ecbd6493aeee","private_memory_max_bytes":"134217728","initial_arrays_memory_max_bytes":"67108864","private_pids_max_tasks":"8"},"policy_sha256":"3935cdb668b82909d51e4e2442e93f6ffd6dee3fc1a69d51585073ba453fa821","origin_sha256":"a374527762d561e138600daeb852aade731d220de0c15b6023e57a05515b5fe7","original":{"identity":{"vm_uid":"vm-one","compute_instance_id":"compute-one","guest_boot_id":"1d2202f8-0e47-466d-98dc-9a1b865e0f01","cgroup_device":"23","cgroup_inode":"28","system_cgroup_device":"23","system_cgroup_inode":"68"},"parent":{"device":"23","inode":"28","memory_max_bytes":"18446744073709551615","pids_max_tasks":"18446744073709551615","memory_current_bytes":"0","swap_current_bytes":"0","swap_max_bytes":"18446744073709551615","memory_high_unlimited":true,"empty":true,"root_controlled":true,"controllers":""},"state_device":"65024","state_inode":"2"}},"completion":{"protocol_version":1,"scope":"normal-split-topology-preparation-only","intent_sha256":"04f7f52a4725cd0ef93b0f9a180d227744497c8bd5f99c034853281a83e9cb16","observed":{"identity":{"vm_uid":"vm-one","compute_instance_id":"compute-one","guest_boot_id":"1d2202f8-0e47-466d-98dc-9a1b865e0f01","cgroup_device":"23","cgroup_inode":"28","system_cgroup_device":"23","system_cgroup_inode":"68"},"parent":{"device":"23","inode":"28","memory_max_bytes":"18446744073709551615","pids_max_tasks":"18446744073709551615","memory_current_bytes":"0","swap_current_bytes":"0","swap_max_bytes":"18446744073709551615","memory_high_unlimited":true,"empty":true,"root_controlled":true,"controllers":"memory pids"},"private":{"device":"23","inode":"108","memory_max_bytes":"134217728","pids_max_tasks":"8","memory_current_bytes":"0","swap_current_bytes":"0","swap_max_bytes":"0","memory_high_unlimited":true,"empty":true,"root_controlled":true,"controllers":""},"arrays":{"device":"23","inode":"148","memory_max_bytes":"67108864","pids_max_tasks":"1","memory_current_bytes":"0","swap_current_bytes":"0","swap_max_bytes":"0","memory_high_unlimited":true,"empty":true,"root_controlled":true,"controllers":""},"state_device":"65024","state_inode":"2"}},"current":{"identity":{"vm_uid":"vm-one","compute_instance_id":"compute-one","guest_boot_id":"1d2202f8-0e47-466d-98dc-9a1b865e0f01","cgroup_device":"23","cgroup_inode":"28","system_cgroup_device":"23","system_cgroup_inode":"68"},"parent":{"device":"23","inode":"28","memory_max_bytes":"18446744073709551615","pids_max_tasks":"18446744073709551615","memory_current_bytes":"0","swap_current_bytes":"0","swap_max_bytes":"18446744073709551615","memory_high_unlimited":true,"empty":true,"root_controlled":true,"controllers":"memory pids"},"private":{"device":"23","inode":"108","memory_max_bytes":"134217728","pids_max_tasks":"8","memory_current_bytes":"0","swap_current_bytes":"0","swap_max_bytes":"0","memory_high_unlimited":true,"empty":true,"root_controlled":true,"controllers":""},"arrays":{"device":"23","inode":"148","memory_max_bytes":"67108864","pids_max_tasks":"1","memory_current_bytes":"0","swap_current_bytes":"0","swap_max_bytes":"0","memory_high_unlimited":true,"empty":true,"root_controlled":true,"controllers":""},"state_device":"65024","state_inode":"2"}},"scope":"actual kernel+topology+ext4 WAL, synthetic immutableSource and policy; fixed ISO loader NOT exercised","status":"PASS_COMPONENT_ONLY"}
+PG17-S-SPLIT-006 PASS original_journal_retained_no_Birth_normal_or_parent_memory_write
+--- PASS: TestNormalSplitTopologyActualGuestKernel (0.60s)
+PASS
+PG17_SPLIT_TEST_EXIT=0
+[    2.264016] EXT4-fs (vda): unmounting filesystem 1c0f1cd0-2285-4e13-a642-a2d87dbaa2dd.
+PG17_SPLIT_GUEST_EXIT=0
+[    2.287517] ACPI: PM: Preparing to enter system sleep state S5
+[    2.290248] reboot: Power down
