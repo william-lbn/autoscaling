@@ -628,8 +628,11 @@ func initialPrebootMovablePages(c bootprotocol.InitialPrebootChallenge, before, 
 		}
 	}
 	expected := uint64(c.BusinessMinimum - c.OriginalBase)
-	if old != 0 || expected%4096 != 0 || pages != expected/4096 {
+	if old != 0 || expected%4096 != 0 || pages > expected/4096 {
 		return 0, fmt.Errorf("actual MOVABLE present pages do not match original Host grow increment")
+	}
+	if pages < expected/4096 {
+		return 0, errInitialPrebootMovablePending
 	}
 	return pages, nil
 }

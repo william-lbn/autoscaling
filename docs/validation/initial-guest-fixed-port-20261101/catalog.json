@@ -1,0 +1,35 @@
+{
+  "scope": "fixed actual Guest initial channel component only",
+  "base": "12ed1ad6aa9e7e4ac3065eeef1e0ec75c2be8c03",
+  "owned": {
+    "pkg/dsga/resourceguard/initial_preboot_channel_linux.go": "17bc792053a8d412487a3c0bd5f8753c387cd3ccd8a291fec0f69b0ebbfe3675",
+    "pkg/dsga/resourceguard/initial_preboot_channel_unsupported.go": "99a8c6f01ee325e582e0a834f24f1847b435d9ae85c0e08580adac02019613f5",
+    "pkg/dsga/resourceguard/initial_preboot_channel_linux_test.go": "160c616370be5b1b243f8b3c2f3495d188e7663766cd1440d3047eeb2a075e8c",
+    "pkg/dsga/resourceguard/initial_preboot_guest_linux.go": "1deb74c7026f61e104f46fd0743d6aae829d6453548cdf74a22e88be748493c7"
+  },
+  "actualCOPY": 836,
+  "U_roots": [
+    "TestInitialGuestChannelRejectsDeviceAliases",
+    "TestInitialGuestChannelStreamPartialAndEOF",
+    "TestInitialGuestChannelUnconnectedAndBlockedCancel",
+    "TestInitialGuestChannelOnlyRetriesMissingMovablePages",
+    "TestInitialPrebootGuestSourceBinding",
+    "TestInitialPrebootGuestRejectsSourceDrift",
+    "TestInitialPrebootGuestHistoricalCompletion",
+    "TestInitialPrebootGuestMovableGeometry",
+    "TestInitialPrebootGuestPrivateWitnessKey",
+    "TestRuntimeBootRequirementsNormalSplit",
+    "TestRuntimeBootRequirementsV1NoNewMode",
+    "TestRuntimeBootRequirementsRejectsSourceAndAssets",
+    "TestRuntimeBootRequirementsRejectsKernelOverrides",
+    "TestRuntimeBootRequirementsUpperIsNotObservedBase"
+  ],
+  "U_root_count": 14,
+  "U_subcases": 79,
+  "race": true,
+  "fail": 0,
+  "skip": 0,
+  "S_reference": "docs/validation/initial-bootstrap-lifecycle-20261101; original 785COPY same four hashes actual369 KVM fixed-port exchange",
+  "formal_Provision_or_PG_or_normal_certified": false,
+  "E_pass": 0
+}

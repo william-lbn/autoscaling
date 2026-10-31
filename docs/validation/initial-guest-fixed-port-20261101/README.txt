@@ -1,0 +1,3 @@
+固定Guest初次启动消费组件
+仅固定sysfs名称对应的唯一root字符设备；读首字节前read0有界等待，开始帧后EOF失败；短写不重发。仅原来源/历史/physical检查已通过且Movable页不足时等待，漂移与超额不可重试。原Host completion后生产函数继续完整ProvisionGuest、PrepareNormalSplitTopology及CheckGuest，不吞错或仅凭ACK放行。
+精确Git12ed+四源实际836COPY，race14根79子例通过；其中新channel4根，Guest与Boot直接回归不重复算新增。独立报告核验同四源进入实际369 Host785闭环，但其DEV fixture只到fixed exchange，没有认证完整生产后置步骤。CLI/Builder生产接线为后继独立批次。normal/E仍未通过。

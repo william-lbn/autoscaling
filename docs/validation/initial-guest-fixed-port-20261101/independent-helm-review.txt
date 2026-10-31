@@ -1,0 +1,30 @@
+Root Guest fixed-channel4 独立只读审查，2026-11-01
+审查者helm_scope_review。结论：当前固定通道/初始准备组件范围无提交阻断，可阶段提交准确4源。真实初始握手已由独立Host生命周期369组件消费，但生产RunInitialBootGuest的完整formal后置尚未在该S执行，不能称CLI/正式Bootstrap/normal/E通过。
+
+来源与实际门槛
+当前Linux4源逐hash==175137Z-0b2c55 source-lock.owned==原receipt actual-source，且==独立Host19最终native785 cohort中的同4。原Go receipt836行actualCOPY均OK，source-check/test rc0；独立重算test JSON14root79sub全PASS，零skip。
+本人真实S PG17-S-INITIAL-LIFECYCLE-001最终attempt02使用同准确4源，静态CGO0 binary和369实物重新锁；KVM true/true、真实QEMU runas UID36/GID34、base256MiB→business1GiB、maximum4GiB/block8MiB，实际Movable196608页，Host/Guest0，原8+8WAL停机debugfs逐hash吻合。该S的Guest DEV-only fixture实际调用fixed inputs/open/provision/exchange，明确停于completion；它没有吞生产后置检查的失败，也不替代完整CLI。
+
+固定端口与I/O
+仅固定/sys/class/virtio-ports路径，核sysfs magic、限65读后拒超过64库存，canonical vport<decimal>p<decimal>名，唯一name tech.neon.dsga.boot.0，固定sysfs name/dev leaf有界且root/regular/non-writable/sysfs。class symlink仅为内核目录允许跟随，字符设备另以/dev/selectedName O_RDWR|O_NONBLOCK|O_NOFOLLOW|CLOEXEC独立OFD打开，核root/私有mode/char/rdev，再读同钉sysfs name/dev交叉互证；不接HTTP路径、FD或verified参数。
+首次任何字节前，virtio read0按Host尚未connect有界等待；s.started一旦读到正字节便永久置位，同会话后来EOF即终止，不恢复为可重放新连接。EAGAIN/EINTR只重试未消费的系统调用；正n立即返回，short write由frame层拒，不在这里补发整帧。poll每次检查ctx、最长100ms及deadline，NVAL/ERR和write HUP关门；取消不遗留异步读写G。3分钟总context同时覆盖端口等待/帧/准备/后置。
+open只对“class未出现或无固定端口”pending重试，重复端口、坏owner/rdev/alias/sysfs源漂移均立即拒。不将其它错误当缺设备重试。
+
+原来源、WAL与唯一可等待条件
+先从实际ISO原Runtime v2、全部有效资产逐byte、严格full5派生requirements、最终cmdline和原namespace读取；challenge先Validate并与原Config/VMUID/Incarnation/RuntimeSHA/ResourceSHA/SecretUID/kernel artifact SHA/boot upper/total预算绑定，之后才创建固定配置/cgroup/WAL。
+exchange实际Prepare或显式Recover原准备者，原receipt送出后下一MovableChallenge必须保留整个历史Preboot；实际InspectInitialPrebootMovable完成前不发回执。
+1deb修改的pending只在原完整facts/WAL/当前Root witness/历史prepared/source/physical Match都通过后、旧Movable0、expected页对齐且current<expected时返回。over-grow、固定nonMovable/identity/Kernel/runtime漂移和ErrUnknown均非pending并立即终止；不会把只UUID或任意bool当恢复。完成帧须MatchReceipt绑定原Movable回执。
+
+ACK不能越过正式门
+生产runInitialBootGuest398..444在exchange成功后仍依次执行ProvisionGuest、PrepareNormalSplitTopology、CheckGuest；每个错误原样返回，唯一成功return是最后CheckGuest。没有写ready/启动PG/关闭五拒绝或fallback legacy的分支。unsupported两public入口明确非Linux拒绝。初始握手仅Host/Guest启动事实，不自动发Root/FS/I/PG/normal许可。
+source Go测试含设备名/major-minor别名拒绝、真实nonblock Pipe partial EOF/未connect和blocked cancel、唯一pending/overgrow/fixed-capacity反例；producer和共享协议旧U在同cohort回归。尚未把KVM里停止于exchange的DEV fixture叫真实formal全链完成。
+
+边界
+Guest无法从JSON认证Host protected NodeLedger/Lease/原QEMU；challenge保原全文由Host实际来源互证，代码注释准确。HostAPI/预算在本人S仍为明确fake，Guest cgroup devino和8WAL是真实，不能冒充Host cgroup/cap资格。动态设备/未来Root写者和最终正式源仍须原系统强制，未由当前port一次观察自动闭合。
+本审没有改业务源/Git/Host/集群，也未重跑作者U。
+
+4源SHA：
+pkg/dsga/resourceguard/initial_preboot_channel_linux.go 17bc792053a8d412487a3c0bd5f8753c387cd3ccd8a291fec0f69b0ebbfe3675
+pkg/dsga/resourceguard/initial_preboot_channel_unsupported.go 99a8c6f01ee325e582e0a834f24f1847b435d9ae85c0e08580adac02019613f5
+pkg/dsga/resourceguard/initial_preboot_channel_linux_test.go 160c616370be5b1b243f8b3c2f3495d188e7663766cd1440d3047eeb2a075e8c
+pkg/dsga/resourceguard/initial_preboot_guest_linux.go 1deb74c7026f61e104f46fd0743d6aae829d6453548cdf74a22e88be748493c7
