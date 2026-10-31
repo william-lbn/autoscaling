@@ -1,0 +1,45 @@
+{
+  "base": "508235d4520ff0db94f525f047a1ebe877c7bf9b",
+  "sharedProtocolCommit": "e28f5607763dff86efe96427e44243a74f77f89c",
+  "sharedDependency": {
+    "pkg/dsga/bootprotocol/preboot.go": "0f0f6204686da1d8bbce60926b669a50848749a80fe105f8cf9df168a331845e",
+    "pkg/dsga/bootprotocol/preboot_test.go": "532a28ed9c24b5869c85801b6c8f2d47b3db58329e5fdd78633541cbafef2464"
+  },
+  "actualCOPYFiles": 753,
+  "allActualCOPYHashesMatch": true,
+  "owned": {
+    "pkg/dsga/vmguard/initial_bootstrap_test.go": "7e0465cf3a529b5915be75511e3d88672476e40528f63f9abe100bd66f705aff",
+    "pkg/dsga/vmguard/initial_bootstrap_qmp_test.go": "c7999b1e2de677e6b096979d83e26ce2dce255502002e07d1022d761d5dd90f8",
+    "pkg/dsga/vmguard/initial_bootstrap_qmp.go": "96b4b1491748d3a049f4e150888f1a30dc296fde3c0ca9a99479bc25a7f03ce6",
+    "pkg/dsga/vmguard/initial_bootstrap_source_test.go": "6b1f306c3d80b4f0cfd7863aa78733fce6c16fe52c96596f3d676a8dba95b86a",
+    "pkg/dsga/vmguard/initial_bootstrap.go": "2b89113724905edfd2551e50de602bbddcf5ddfe0ac134f76d2f2419e37afd7d",
+    "pkg/dsga/vmguard/initial_bootstrap_source.go": "cd98bc2c19b0028ce8aa4fee2a0f859b29d019140ba45f42e7f27c033d197187"
+  },
+  "testCounts": {
+    "github.com/neondatabase/autoscaling/pkg/dsga/vmguard": {
+      "passedRoots": [
+        "TestInitialBootstrapV2FrozenBaseAndBusinessBounds",
+        "TestInitialBootstrapV2OriginalChildPidfdLifecycleAndWrongPeer",
+        "TestInitialBootstrapV2ActualReadersBindOriginalSources",
+        "TestInitialBootstrapV2RejectsSourceReplacementAndMissingClosure",
+        "TestInitialBootstrapV2WALOriginalNonceAndNoAdoption",
+        "TestInitialBootstrapV2WALRejectsCorruptionAndPartialFacts",
+        "TestInitialBootstrapV2WALLockCancellationAndWriteFailure"
+      ],
+      "passedNamedSubcaseCount": 38,
+      "failedOrSkipped": []
+    },
+    "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol": {
+      "passedRoots": [
+        "TestInitialPrebootProtocolBinding",
+        "TestInitialPrebootProtocolRejectsInvalid",
+        "TestInitialPrebootProtocolStrictWire"
+      ],
+      "passedNamedSubcaseCount": 36,
+      "failedOrSkipped": []
+    }
+  },
+  "sourceScope": "exact base + frozen Boot4 + Root shared2 + owned initial6; docs excluded",
+  "normalQualification": false,
+  "VMShrinkPermit": false
+}

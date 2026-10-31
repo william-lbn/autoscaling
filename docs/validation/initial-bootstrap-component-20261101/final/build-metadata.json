@@ -1,0 +1,59 @@
+{
+  "buildx.build.provenance": {
+    "builder": {
+      "id": ""
+    },
+    "buildType": "https://mobyproject.org/buildkit@v1",
+    "materials": [
+      {
+        "uri": "pkg:docker/127.0.0.1:5001/neon/pg17-dev-tools?digest=sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1\u0026platform=linux%2Famd64",
+        "digest": {
+          "sha256": "c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1"
+        }
+      }
+    ],
+    "invocation": {
+      "configSource": {
+        "entryPoint": "Dockerfile"
+      },
+      "parameters": {
+        "frontend": "dockerfile.v0",
+        "args": {
+          "build-arg:TEST_NONCE": "20261031T162134Z-a06-shared-protocol",
+          "cpuquota": "200000",
+          "force-network-mode": "none",
+          "memory": "4294967296",
+          "memswap": "4294967296"
+        },
+        "locals": [
+          {
+            "name": "context"
+          },
+          {
+            "name": "dockerfile"
+          }
+        ],
+        "root": {
+          "configSource": {
+            "path": "Dockerfile"
+          },
+          "request": {
+            "args": {
+              "build-arg:TEST_NONCE": "20261031T162134Z-a06-shared-protocol",
+              "cpuquota": "200000",
+              "force-network-mode": "none",
+              "memory": "4294967296",
+              "memswap": "4294967296"
+            }
+          }
+        },
+        "compatibilityVersion": 30
+      },
+      "environment": {
+        "dockerfileVersion": "1.28.0",
+        "platform": "linux/amd64"
+      }
+    }
+  },
+  "buildx.build.ref": "neon-data/neon-data0/mdwx6jycmb5kq8za4ysj9wjsj"
+}

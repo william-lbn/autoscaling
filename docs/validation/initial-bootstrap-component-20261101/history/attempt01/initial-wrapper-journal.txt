@@ -1,0 +1,8 @@
+Nov 01 00:21:34 worker-118 systemd[1]: Starting neon-initial-bootstrap-20261031t162134z.service - /usr/bin/python3 /data/neon-build/dev/initial-bootstrap-component-20261031T162134Z/run.py...
+Nov 01 00:21:34 worker-118 systemd[1]: Started neon-initial-bootstrap-20261031t162134z.service - /usr/bin/python3 /data/neon-build/dev/initial-bootstrap-component-20261031T162134Z/run.py.
+Nov 01 00:21:35 worker-118 python3[1597593]:   File "/data/neon-build/dev/initial-bootstrap-component-20261031T162134Z/run.py", line 4
+Nov 01 00:21:35 worker-118 python3[1597593]:     cmd=['docker','buildx','build','--builder','neon-data','--platform','linux/amd64','--network','none','--resource','memory=4g','--resource','memory-swap=4g','--resource','cpu-quota=200000','--progress','plain','--build-arg','TEST_'20261031T162134Z'='+'20261031T162134Z','--metadata-file',str(out/'build-metadata.json'),'--output','type=local,dest='+str(out/'export'),'-f',str(dev/'Dockerfile'),str(snap)]
+Nov 01 00:21:35 worker-118 python3[1597593]:                                                                                                                                                                                                                                                  ^
+Nov 01 00:21:35 worker-118 python3[1597593]: SyntaxError: invalid decimal literal
+Nov 01 00:21:35 worker-118 systemd[1]: neon-initial-bootstrap-20261031t162134z.service: Main process exited, code=exited, status=1/FAILURE
+Nov 01 00:21:35 worker-118 systemd[1]: neon-initial-bootstrap-20261031t162134z.service: Failed with result 'exit-code'.

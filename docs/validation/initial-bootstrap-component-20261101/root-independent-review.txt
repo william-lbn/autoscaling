@@ -1,0 +1,21 @@
+Root独立审查：Host初始base-only v2组件（2026-10-31 UTC）
+
+独立实读三生产源及相关负例、固定peer/原pidfd生命周期、来源双读与旧WAL恢复。
+检查发现旧同字节文件分支仅dir.Sync缺file.Sync，作者修复后独立重读固定原fd路径：
+privateRegular、同字节核验、file.Sync再dir.Sync；Freeze恢复及Append逐既有前缀
+同步，失败不返回新ref。确定性EIO模型与真实文件/进程测试边界明确。
+
+来源沿真实r.authorize/readLease，原Lease验证已保护非空指针及期限；只用pre-PG
+原VM/Pod/Node受保护持有，不绕需要PG的budget.Initial。完整原Runtime/Secret
+字节与五策略、process-launch/argv/原QEMU dev+inode+SHA冻结；双读原Owner/Lease
+与Host placement一致。这里只是来源组件，实际生命周期每次写前仍须重新核来源。
+原QEMU捕获必须唯一Start成功后且唯一Wait之前，pin pidfd/proc/start，peer前后
+核存活+原exe，不从HTTP/PID/UUID猜身份。实际QEMU/runas与Guest尚待后继S。
+
+版本2 append-only状态链明确非授权，旧v1公开身份/base语义与全部旧源码不变。
+普通adapter Read/Set及固定Guest reader仍unavailable；模型完整链不能打开正常
+resize/publication，不把8参数/JSON摘要当实际准备。共享wire严格绑定，不迁旧合同。
+
+最终753实际Go/mod COPY逐集合与SHA复核一致；source/test/build0，10根74sub全部
+race通过，7新Host根38sub+3共享直接回归36sub，后者不重复算新增。原失败与独审
+修前轮均保留。本组件无剩余提交阻断，但S0/E0，首次grow/normal/真实端到端未验收。

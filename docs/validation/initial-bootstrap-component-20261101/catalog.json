@@ -1,0 +1,56 @@
+{
+  "scope": "non-authorizing initial Host component U only; no actual initialization/Guest/QEMU grow/normal/E",
+  "cases": [
+    {
+      "id": "PG17-U-INITIAL-H01",
+      "root": "TestInitialBootstrapV2WALOriginalNonceAndNoAdoption",
+      "scope": "real disk WAL/nonce plus explicit model chain and binding-only challenge; complete model remains non-authorizing"
+    },
+    {
+      "id": "PG17-U-INITIAL-H02",
+      "root": "TestInitialBootstrapV2WALRejectsCorruptionAndPartialFacts",
+      "scope": "partial/duplicate/alias/gap/foreign chain/source/version/mode/symlink/bounds refusal; no reset"
+    },
+    {
+      "id": "PG17-U-INITIAL-H03",
+      "root": "TestInitialBootstrapV2WALLockCancellationAndWriteFailure",
+      "scope": "real flock deadline/EBADF; explicit file.Sync EIO models at first/second old prefix file, zero ref and no later sync/stage"
+    },
+    {
+      "id": "PG17-U-INITIAL-H04",
+      "root": "TestInitialBootstrapV2ActualReadersBindOriginalSources",
+      "scope": "real production source code with typed fake API and model protected executable; actual Secret/raw policy/process-launch/WAL path, no Kube/QEMU certification"
+    },
+    {
+      "id": "PG17-U-INITIAL-H05",
+      "root": "TestInitialBootstrapV2RejectsSourceReplacementAndMissingClosure",
+      "scope": "Host Lease/Node row/VM epoch/Secret/raw/launch/argv/base/file protections"
+    },
+    {
+      "id": "PG17-U-INITIAL-H06",
+      "root": "TestInitialBootstrapV2FrozenBaseAndBusinessBounds",
+      "scope": "frozen base offset, original business bounds and strict final argv; original v1 Observation remains strict"
+    },
+    {
+      "id": "PG17-U-INITIAL-H07",
+      "root": "TestInitialBootstrapV2OriginalChildPidfdLifecycleAndWrongPeer",
+      "scope": "real Linux sandbox child pidfd/procdir/start and wrong same-UID socket peer; no QEMU/Guest proof"
+    }
+  ],
+  "newCoverage": {
+    "Uroots": 7,
+    "namedSubcases": 38,
+    "S": 0,
+    "E": 0
+  },
+  "directSharedProtocolRegression": {
+    "Uroots": 3,
+    "namedSubcases": 36,
+    "newCoverage": false
+  },
+  "finalStatus": "PASS_RACE_10_ROOTS_74_NAMED_SUBCASES_ZERO_SKIP",
+  "actualCOPYFiles": 753,
+  "testRC": 0,
+  "originalGuardDenials": "unchanged; ordinary adapter Read/Set and missing fixed Guest reader return unavailable",
+  "history": "attempt01 harness NOT_RUN; attempt02 missing test import compile FAIL; attempt03/04 PASS before independent fsync finding; attempt05 fsync-fixed 7/38 PASS; final06 shared alias+3 protocol regression PASS"
+}

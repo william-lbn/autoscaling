@@ -1,0 +1,335 @@
+{
+  "scope": "only owned initial6 plus actual source/U and preserved history; no production initialization",
+  "owned": {
+    "pkg/dsga/vmguard/initial_bootstrap_test.go": "7e0465cf3a529b5915be75511e3d88672476e40528f63f9abe100bd66f705aff",
+    "pkg/dsga/vmguard/initial_bootstrap_qmp_test.go": "c7999b1e2de677e6b096979d83e26ce2dce255502002e07d1022d761d5dd90f8",
+    "pkg/dsga/vmguard/initial_bootstrap_qmp.go": "96b4b1491748d3a049f4e150888f1a30dc296fde3c0ca9a99479bc25a7f03ce6",
+    "pkg/dsga/vmguard/initial_bootstrap_source_test.go": "6b1f306c3d80b4f0cfd7863aa78733fce6c16fe52c96596f3d676a8dba95b86a",
+    "pkg/dsga/vmguard/initial_bootstrap.go": "2b89113724905edfd2551e50de602bbddcf5ddfe0ac134f76d2f2419e37afd7d",
+    "pkg/dsga/vmguard/initial_bootstrap_source.go": "cd98bc2c19b0028ce8aa4fee2a0f859b29d019140ba45f42e7f27c033d197187"
+  },
+  "dependencies": {
+    "pkg/dsga/bootprotocol/preboot.go": "0f0f6204686da1d8bbce60926b669a50848749a80fe105f8cf9df168a331845e",
+    "pkg/dsga/bootprotocol/preboot_test.go": "532a28ed9c24b5869c85801b6c8f2d47b3db58329e5fdd78633541cbafef2464"
+  },
+  "content": [
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/catalog.json",
+      "sha256": "25a0fc4ac14435f261c38a9fe98bf5a7facdde4370963c023b48c1f3d2e9f0a0",
+      "bytes": 2505
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/final/async-unit.json",
+      "sha256": "78794ad1b6de60fa1664f34e8d7baecf19f71092613dd641869e32a2baa9928c",
+      "bytes": 345
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/final/build-metadata.json",
+      "sha256": "d99f8d15e8f1249f6675a9ed301594ba1ba8f2399bb0df7759d14a8fa67f334f",
+      "bytes": 1630
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/final/build.log",
+      "sha256": "7f4e1ed36947dc2bb05f8d8670af71ede13237fa9720a586a76f61397a60274f",
+      "bytes": 2150
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/final/cohort.json",
+      "sha256": "c555127c79c1b0ee25930838aeccca1a53b5097e070f495f17dffb97e0b3d02f",
+      "bytes": 86534
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/final/command.json",
+      "sha256": "46bfcf900cb6c0db33896a3b9cda879a3d2402a7fb47d976dff8f82a99811bea",
+      "bytes": 973
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/final/receipt/actual-source.check",
+      "sha256": "407b68411751d16b742dd8ca67126a33a42bff60c9f323d7cb9dd143cc6bbbc8",
+      "bytes": 31748
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/final/receipt/actual-source.sha256",
+      "sha256": "0c83e86de133ec1abe600fab6aa093058832c8ad43e6c8632fe097fc1da490f7",
+      "bytes": 78434
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/final/receipt/cpu.max",
+      "sha256": "07eb5019b2babb019fbbfe1cb328ec5b7affac5e07da4b94ebedb5e110dfab69",
+      "bytes": 14
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/final/receipt/go-version.txt",
+      "sha256": "3fcbda2c06ef581842ae70da25dc029931a022da959585bc88491b0a549306da",
+      "bytes": 32
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/final/receipt/nonce.txt",
+      "sha256": "5e8c226d8472f8508239d28df3f3fbca314eb7a960e25be92a37418b37418a1a",
+      "bytes": 37
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/final/receipt/test.jsonl",
+      "sha256": "1b8d1a1fb8dbeed8d23024cfc4ed8cbe7753c81f7328fb3ac3c62867e0d8bac7",
+      "bytes": 81870
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/final/receipt/test.rc",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/final/receipt/test.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/final/result.json",
+      "sha256": "c3f8a493429e75e059c3af6b1d3759e34b9a2bc24e1b8bf1fe191bf95b8f0b07",
+      "bytes": 188
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/harness/Dockerfile",
+      "sha256": "107b5aa5af72336b1d5ef2d0f7a749151c8dc5d348900e12e885175ccf461ad7",
+      "bytes": 1241
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/harness/config.json",
+      "sha256": "b8047fc84d8197ca1ce2cc9bb9e70b27f226c6e1c9d46b459ec2d9522f3eb980",
+      "bytes": 371
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/harness/run.py",
+      "sha256": "36741e90521c417f30e5cd3414e98fb5a1371ffd50b40b08437a76118483b8a5",
+      "bytes": 1632
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt01/async-unit.json",
+      "sha256": "2a65750d9bede66404f02efbcc1cc1ee86d27596de3700200438b4858b153da6",
+      "bytes": 490
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt01/initial-wrapper-journal.txt",
+      "sha256": "fafc58def69db878382cd11d94102f3c300d05622a9fadaea626067af91f24ab",
+      "bytes": 1596
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt01/result.json",
+      "sha256": "57ed6af0208302be83dd45fae88f770c05c189bf560f999344a35fbe13f8134a",
+      "bytes": 195
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt01/run.py",
+      "sha256": "05e7432220543f995f36347f6d076bdbb9018b591fab853d07f08ff561d0fce2",
+      "bytes": 1726
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt02/async-unit.json",
+      "sha256": "ebab9c8eee33d1e39d6a9ed6c316e5dbaa96eb2b7ae7b48c28f6dd093dd635fd",
+      "bytes": 309
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt02/command.json",
+      "sha256": "b0d9fbf6f41994c5c6f16492eb1d411b37df07837febf19a384515223f1679b9",
+      "bytes": 889
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt02/go-version.txt",
+      "sha256": "3fcbda2c06ef581842ae70da25dc029931a022da959585bc88491b0a549306da",
+      "bytes": 32
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt02/result.json",
+      "sha256": "8942ecfa51496eed115fb4a843b0cd99083bf2f1a51f7f7d3fc2d4aa32e4b61c",
+      "bytes": 192
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt02/test.jsonl",
+      "sha256": "43775eb6c62676f271dd1ce9017c4d15f857f25a948a6fae8590245b76f9d728",
+      "bytes": 1274
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt02/test.rc",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt02/test.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt03/async-unit.json",
+      "sha256": "b34f1810acc813eb2b94165cff5750ac85d15d10a77f74ecadffceeea3e95d72",
+      "bytes": 313
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt03/cohort.json",
+      "sha256": "2b9b0f1d54d1a945d34b3287834f2aaf6da5e7469f99e091e3d8c291a3b5c0f0",
+      "bytes": 85270
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt03/command.json",
+      "sha256": "a36651ebd2419cf07c3ea0aed95986f86ed639fc5cfecfaa54646a9c3854108a",
+      "bytes": 893
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt03/go-version.txt",
+      "sha256": "3fcbda2c06ef581842ae70da25dc029931a022da959585bc88491b0a549306da",
+      "bytes": 32
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt03/result.json",
+      "sha256": "cc811d628903f4fb1bf3093e85e36374a80056f0d53a4cc850fedc34ecbe07bb",
+      "bytes": 187
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt03/test.jsonl",
+      "sha256": "e1ebec03c9c3bf4594aa897a2d3937043f657d5806b604b020912bf3abf27c21",
+      "bytes": 43932
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt03/test.rc",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt03/test.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt04/async-unit.json",
+      "sha256": "d3ad85725a53214d948e9f681ee28afd0c29e88749f8c969d9ebaec18e8f1443",
+      "bytes": 313
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt04/cohort.json",
+      "sha256": "18b515de817f15127fa240e9abebd3296bdbd49935e09d1ca1585493860df03f",
+      "bytes": 86085
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt04/command.json",
+      "sha256": "e69898f0cd88d74eaa9a6c329ad7c30015438f0a0e8867c1d9e7e97bed4eb1c9",
+      "bytes": 893
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt04/go-version.txt",
+      "sha256": "3fcbda2c06ef581842ae70da25dc029931a022da959585bc88491b0a549306da",
+      "bytes": 32
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt04/result.json",
+      "sha256": "4a929c6dfde8a0284fbdb7d2cdad9905c70246dcec2adf9361b8e6c68e6af4ef",
+      "bytes": 188
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt04/test.jsonl",
+      "sha256": "37bb8d93c2f39e4bc3b19e1033fcd30fa0e37a540377cad8d6d0345a91e46a5d",
+      "bytes": 43921
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt04/test.rc",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt04/test.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt05/async-unit.json",
+      "sha256": "ef80e6af6a8497056fe24db62bdc2a92b0b9c212417a769ea09aa0d63dc49ea4",
+      "bytes": 313
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt05/cohort.json",
+      "sha256": "d15f1dcaaa502f65bf349ca64fa714d87d6531f566bb6be6d0861d1c497553a4",
+      "bytes": 86147
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt05/command.json",
+      "sha256": "e1efef226e1f307b98d165cdfdc67f783442957434c5db3140743a6c0f33827e",
+      "bytes": 893
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt05/go-version.txt",
+      "sha256": "3fcbda2c06ef581842ae70da25dc029931a022da959585bc88491b0a549306da",
+      "bytes": 32
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt05/result.json",
+      "sha256": "a1a5f00168425d06cdffa4ac6224321c47541305b1330e6d1092d832a05f798b",
+      "bytes": 187
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt05/test.jsonl",
+      "sha256": "3c4586d31280b31f621e21836073146ae7431d6cc658e3c448eb97f19f455b54",
+      "bytes": 46136
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt05/test.rc",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/history/attempt05/test.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/legacy-v1-source-proof.json",
+      "sha256": "b433435254880f4f30a8474c2aafcd99fb674c32f9b764ea839ba431477191d7",
+      "bytes": 1598
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/source/pkg/dsga/vmguard/initial_bootstrap.go",
+      "sha256": "2b89113724905edfd2551e50de602bbddcf5ddfe0ac134f76d2f2419e37afd7d",
+      "bytes": 12628
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/source/pkg/dsga/vmguard/initial_bootstrap_qmp.go",
+      "sha256": "96b4b1491748d3a049f4e150888f1a30dc296fde3c0ca9a99479bc25a7f03ce6",
+      "bytes": 7265
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/source/pkg/dsga/vmguard/initial_bootstrap_qmp_test.go",
+      "sha256": "c7999b1e2de677e6b096979d83e26ce2dce255502002e07d1022d761d5dd90f8",
+      "bytes": 4560
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/source/pkg/dsga/vmguard/initial_bootstrap_source.go",
+      "sha256": "cd98bc2c19b0028ce8aa4fee2a0f859b29d019140ba45f42e7f27c033d197187",
+      "bytes": 17241
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/source/pkg/dsga/vmguard/initial_bootstrap_source_test.go",
+      "sha256": "6b1f306c3d80b4f0cfd7863aa78733fce6c16fe52c96596f3d676a8dba95b86a",
+      "bytes": 12142
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/source/pkg/dsga/vmguard/initial_bootstrap_test.go",
+      "sha256": "7e0465cf3a529b5915be75511e3d88672476e40528f63f9abe100bd66f705aff",
+      "bytes": 7855
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/source-and-test-proof.json",
+      "sha256": "f004f0a4b8cb27e37d043dd67ff1962c348fefa4c32ec280601862b605535207",
+      "bytes": 2299
+    },
+    {
+      "path": "docs/Host初始base-only-v2组件-Linux单元验收-20261101.txt",
+      "sha256": "fbc3c8f8dd6c1274d72acbca76659a2446b9a919af6d4351238c8ddf77c63aa4",
+      "bytes": 5555
+    },
+    {
+      "path": "docs/validation/initial-bootstrap-component-20261101/root-independent-review.txt",
+      "sha256": "897a2541de383a61b713c94c19a1a5c6eded2e5164a68edaa868666a32b1c4ea",
+      "bytes": 1665
+    }
+  ],
+  "stage_count": 71,
+  "stage_paths_sha256": "110633676a2841a809aebfe9bd0c202fc8a07fa1c2d50b135f7ad56a1a659c0d",
+  "root_independent_review": "root-independent-review.txt"
+}

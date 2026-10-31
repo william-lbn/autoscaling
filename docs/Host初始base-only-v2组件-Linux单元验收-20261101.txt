@@ -1,0 +1,39 @@
+Host初始base-only v2组件：Linux实际单元验收
+日期2026-11-01（Asia/Shanghai），external nonce按UTC为20261031T162134Z。
+冻结范围仅pkg/dsga/vmguard/initial_bootstrap{,_source,_qmp}{,_test}.go共6新文件；不改既有Runner/main/Config/model/qmp/guard/普通Observe/Command/Birth/Publication，未Git提交。
+
+结果：PG17-U-INITIAL-H01..H07，7新根/38命名子项race PASS，0fail/0skip。
+final06另直接回归Root共享bootprotocol 3根/36子项，共10根74命名子项84报告节点；共享3根不是本批新增覆盖。build0/test.rc0，15.310s。
+实际Linux/Go1.24.3工具image固定c940750...；BuildKit RUN禁网、nonce避免测试结果缓存，4GiB/2CPU/swap0真实断言，client unit1GiB另记。
+cohort固定508235d4520ff0db94f525f047a1ebe877c7bf9b+BootRequirements4冻结字节+Root bootprotocol2冻结字节+本6，753实际COPY文件逐hash/集合等manifest；docs明确排除。原所有vmguard旧Go源码/测试逐git blob核对508均字节不变。
+共享2依赖随后由Root正式提交e28f5607763dff86efe96427e44243a74f77f89c，原tuple不变；本次仍按明确base+overlay实测，不因HEAD移动冒认换过源。
+
+实现范围
+1. 真实固定API reader沿原ready VM/Birth/State/Pod/Node、原VM Lease双读epoch/holder、受保护Host ledger/持有行及原Host Lease UID/Node owner核预算来源；不使用依赖PG boot的budget.Initial。Node/Pod/VM/Hostprofile资格值在测试中均是明确模型，未读真实Kube。
+2. 固定原Runtime raw+实际同namespace immutable Secret UID/owner通过CheckReady(false)独立核对，原资源/模板原字节相等；复用唯一Renderer与BootRequirements完整5策略。上界仅选择约束，不伪称actual base。QEMU最终argv严格核-m、base/max、单slot1、backend=max-base、空vm0/block/node；绑定原process-launch nonce、argvSHA、container和受保护QEMU文件devino/hash。
+3. 内部显式v2 ref/nonce/SHA链分别保原physical base和businessMin，8个固定阶段文件。真实同flock/openat/NOFOLLOW/私有regular检查、temp file.Sync→linkat不替换→dir.Sync；恢复和追加前原完整前缀逐固定fd核字节+file.Sync再dir.Sync，任一失败不返回ref。与旧record分开，没有伪造Resize history/回执。
+4. 新base QMP只观察物理原几何；原child只能在唯一RunQEMU Start后/唯一Wait之前捕获原pidfd+固定procdir/start。SO_PEERCRED前后原pidfd持续存活，核peer PID/UID与原exe devino/hash，拒相同UID新socket。捕获/close不Wait/kill/释放预算；零值close不关stdin。
+5. 私有challenge/receipt现在只alias到中立bootprotocol；旧公开Identity不迁移，构造显式转换。原nonce/source/Host base阶段SHA完整绑定。共享Validate/Match只线格式与期待值，不认证Root。
+6. 生产未接真实Guest reader、原process Hook、版本ref和普通执行门禁；initial adapter普通Read/Set及固定Guest receipt入口均明确unavailable。完整模型链到complete_non_authorizing也无法打开它们。初始Source仅pre-Start私有hook候选，当前没有共享入口实际调用。
+
+真实/模型边界
+磁盘/flock/fsync/openat、sandbox自己的sleep子进程/pidfd/procdir/同UID错socket是本U实际机制。Host API、预算/平台资格、QEMU可执行文件、Guest/WAL阶段是明确模型，未运行QEMU、未Boot准确Guest、未初始化、未grow VM、未启动PG或降低normal，没有S/E。
+file.Sync EIO是_test中的私有注入模型，实际POSIX入口固定；真实EBADF/目录竞争另测。不能称实际磁盘故障/断电验证；没有把文件可见当耐久。
+HostProfile ID/overhead保留原资格边界，未从常数或requests推物理上界。QEMU文件devino/hash不扩称其完整loader/ELF依赖或Host OOM安全资格。
+Root/Guest固定transport应真实核原ISO/KernelPrep/Origin/PreSys及当前base-only事实，后grow再真核Movable range；Guest自报hash/echo/verified不能生产资格。五个normal拒绝保留。
+
+首次失败/修复记录
+attempt01：辅助placeholder误换TEST_NONCE，Go NOT_RUN，原driver/journal留存。
+attempt02：本批测试fixture遗漏vmv1 import，真实compile失败留存。
+attempt03/04：当时7U通过，但独立Root审查发现同字节旧文件恢复只dir.Sync，不能视作最终合格。
+attempt05：修复实际文件同步+整链前缀重同步；两个EIO模型证明失败零ref、不越过目录同步或后继阶段，7根38sub通过。
+final06：共享类型alias及显式Identity转换，再精确重跑上述7根和共享3根，全部通过；未重标旧PASS为新源认证。
+
+后继共享hook（尚未实现）
+原Birth/Publication显式新版本/ref绑定，v1仍base=Min；Source冻结嵌入process-launch落盘后/Start之前，真实child句柄在Start之后/唯一Wait之前；构造期固定adapter，不热替换native接口。
+普通Tick/Resize/InitialCapacity在原flock独立核完整真实来源和初始完成版本，不可只凭WAL complete或回调成功放行。HostSource重复认证预算和owner，may-have-sent以后不重发/不自动清预算；原child真正Wait关闭事实独立保留。
+Root将接Guest固定transport/CLI/vminit，P1接实际早期Guest producer；本批不抢写这些所有者文件。
+
+归档
+外部原始/data/neon-build/validation/initial-bootstrap-component-20261031T162134Z。
+小型仓库docs/validation/initial-bootstrap-component-20261101，review-source-manifest锁6源与依赖/真COPY/结果。Git统一由Root独审后提交，不宣称全任务完成。
