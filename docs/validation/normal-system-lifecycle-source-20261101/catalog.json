@@ -1,0 +1,40 @@
+{
+  "scope": "conditional original source and task component only",
+  "Go": {
+    "roots": 14,
+    "subcases": 58,
+    "failed": 0,
+    "skipped": 0,
+    "tests": [
+      "TestArrayRuntimeClosureOriginalManifestAndLegacyShape",
+      "TestArrayRuntimeClosureRejectsMalformed",
+      "TestNormalSystemLifecycleMissingOriginalInputNeverQualifies",
+      "TestNormalSystemLifecycleFixedVectorsAndNoEnvironmentDisclosure",
+      "TestNormalSystemLifecycleFixedRoleTableCannotSelectProgram",
+      "TestNormalSystemSourceRuntimeOverrides",
+      "TestNormalSystemSourceCancellation",
+      "TestNormalSystemSourceConfigInventory",
+      "TestNormalSystemSourceManifestStrict",
+      "TestNormalSystemSourceManifestRejectDrift",
+      "TestNormalSystemSourceFixedInittab",
+      "TestNormalSystemSourceCatalogCopy",
+      "TestNormalSystemSourceV2FixedGatesAndV1Compatibility",
+      "TestNormalSystemSourceV2ExactJSON"
+    ],
+    "race": true
+  },
+  "S": {
+    "roots": 1,
+    "cases": [
+      "NEON-S-SYSTEM-LIFECYCLE-001",
+      "NEON-S-SYSTEM-LIFECYCLE-002",
+      "NEON-S-SYSTEM-LIFECYCLE-003"
+    ],
+    "binary_sha256": "844186c0e32ee5f50e1ebfd9697bdd58781b8c251e5918f1c4ff5584dbd522df",
+    "native_attempt": "/data/neon-build/validation/system-lifecycle-native-20261031T220715Z-fa8626",
+    "scope": "DEV static C stand-ins and actual 369 kernel; not actual service/PG/normal"
+  },
+  "E": 0,
+  "normal_permit": false,
+  "role_hook_batch": "NOT_IMPLEMENTED_IN_THIS_COHORT"
+}

@@ -1,0 +1,143 @@
+{
+  "E": 0,
+  "normal_permit": false,
+  "scope": "DEV static C stand-ins, actual reader/kernel/task facts, not actual services or PG",
+  "source": {
+    "scope": "original-system-lifecycle-source-component-v1",
+    "binding": {
+      "root_consumer": {
+        "instance_nonce": "8065bb91bce0b1ae2480c5c6143b583c291d89759d66ca76f24fec84bd82f181",
+        "pid": 73,
+        "start_ticks": "145"
+      },
+      "runtime_document_sha256": "e177340ed38744c251cf64d78c64ba6c3f98bf23c95229912800e176137f2f64",
+      "native_policy_sha256": "78d8110074a022bca4b01b59f51106b230f1796aa4c2ba153bade2ee588d6c7d",
+      "native_build_sha256": "c9a25f4a08c137e1331a4d0651ecedfe46f2b8e86821a948cc4d7926f1e862df",
+      "system_manifest_sha256": "44baec4db5d7492f9d6eea03536e5bfe01db1563e6f3898d497869d1be98440b",
+      "guest_boot_id": "65d383b8-f138-40cb-920e-fb3b32112fc6",
+      "vm_uid": "template-vm",
+      "compute_instance_id": "template-compute",
+      "system_device": 23,
+      "system_inode": 68,
+      "system_memory_max_bytes": 67108864
+    },
+    "original_metadata_bytes_bound": true,
+    "conditional_elf_closure_verified": true,
+    "script_interpreter_closure_verified": true,
+    "config_inventory_verified": true,
+    "elfs": [
+      {
+        "path": "/neonvm/bin/acpid",
+        "sha256": "feb424a81c2e419c08430a36194984b1cbc4f31749e27974b0bfed9e38aa97d8",
+        "device": 2,
+        "inode": 24,
+        "interpreter": "",
+        "needed": null
+      },
+      {
+        "path": "/neonvm/bin/busybox",
+        "sha256": "feb424a81c2e419c08430a36194984b1cbc4f31749e27974b0bfed9e38aa97d8",
+        "device": 2,
+        "inode": 25,
+        "interpreter": "",
+        "needed": null
+      },
+      {
+        "path": "/neonvm/bin/chronyd",
+        "sha256": "feb424a81c2e419c08430a36194984b1cbc4f31749e27974b0bfed9e38aa97d8",
+        "device": 2,
+        "inode": 27,
+        "interpreter": "",
+        "needed": null
+      },
+      {
+        "path": "/neonvm/bin/dsga-resource-guard",
+        "sha256": "feb424a81c2e419c08430a36194984b1cbc4f31749e27974b0bfed9e38aa97d8",
+        "device": 2,
+        "inode": 28,
+        "interpreter": "",
+        "needed": null
+      },
+      {
+        "path": "/neonvm/bin/neonvmd",
+        "sha256": "feb424a81c2e419c08430a36194984b1cbc4f31749e27974b0bfed9e38aa97d8",
+        "device": 2,
+        "inode": 30,
+        "interpreter": "",
+        "needed": null
+      },
+      {
+        "path": "/neonvm/bin/su-exec",
+        "sha256": "feb424a81c2e419c08430a36194984b1cbc4f31749e27974b0bfed9e38aa97d8",
+        "device": 2,
+        "inode": 32,
+        "interpreter": "",
+        "needed": null
+      },
+      {
+        "path": "/neonvm/bin/udevd",
+        "sha256": "feb424a81c2e419c08430a36194984b1cbc4f31749e27974b0bfed9e38aa97d8",
+        "device": 2,
+        "inode": 35,
+        "interpreter": "",
+        "needed": null
+      },
+      {
+        "path": "/neonvm/bin/vector",
+        "sha256": "feb424a81c2e419c08430a36194984b1cbc4f31749e27974b0bfed9e38aa97d8",
+        "device": 2,
+        "inode": 38,
+        "interpreter": "",
+        "needed": null
+      },
+      {
+        "path": "/usr/local/bin/compute_ctl",
+        "sha256": "feb424a81c2e419c08430a36194984b1cbc4f31749e27974b0bfed9e38aa97d8",
+        "device": 2,
+        "inode": 52,
+        "interpreter": "",
+        "needed": null
+      }
+    ],
+    "continuous_writers_closed": false,
+    "normal_decrease_authorized": false,
+    "missing_sources": [
+      "original-per-role-spawn-and-exec-environment-gate",
+      "continuous-all-role-control-writer-enforcement",
+      "original-host-image-ISO-process-lifecycle-qualification"
+    ]
+  },
+  "task": {
+    "role": "resource",
+    "pid": 78,
+    "start_ticks": 146,
+    "uid": 0,
+    "gid": 0,
+    "executable_sha256": "feb424a81c2e419c08430a36194984b1cbc4f31749e27974b0bfed9e38aa97d8",
+    "argv_sha256": "e62869b0463a58cd19032fb6b35e4568145c2d6c59c2a324c39c3e408ba5b104",
+    "environment_sha256": "b6ad53bbed7cce131fbe827d86299e8a81d36f012ac5d25511ac1b860b0e56a9",
+    "pidfd_device": 5,
+    "pidfd_inode": 378,
+    "binding": {
+      "root_consumer": {
+        "instance_nonce": "8065bb91bce0b1ae2480c5c6143b583c291d89759d66ca76f24fec84bd82f181",
+        "pid": 73,
+        "start_ticks": "145"
+      },
+      "runtime_document_sha256": "e177340ed38744c251cf64d78c64ba6c3f98bf23c95229912800e176137f2f64",
+      "native_policy_sha256": "78d8110074a022bca4b01b59f51106b230f1796aa4c2ba153bade2ee588d6c7d",
+      "native_build_sha256": "c9a25f4a08c137e1331a4d0651ecedfe46f2b8e86821a948cc4d7926f1e862df",
+      "system_manifest_sha256": "44baec4db5d7492f9d6eea03536e5bfe01db1563e6f3898d497869d1be98440b",
+      "guest_boot_id": "65d383b8-f138-40cb-920e-fb3b32112fc6",
+      "vm_uid": "template-vm",
+      "compute_instance_id": "template-compute",
+      "system_device": 23,
+      "system_inode": 68,
+      "system_memory_max_bytes": 67108864
+    },
+    "original_task_observed": true,
+    "fixed_argv_environment_observed": true,
+    "continuous_writers_closed": false,
+    "normal_decrease_authorized": false
+  }
+}

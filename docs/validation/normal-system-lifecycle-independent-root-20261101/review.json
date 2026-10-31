@@ -1,0 +1,25 @@
+{
+  "reviewer": "root independent of P2 author",
+  "UTC": "2026-10-31T22:32:25.451879+00:00",
+  "status": "PASS_COMPONENT_STAGE_ONLY",
+  "source6": {
+    "pkg/dsga/resourceguard/normal_system_lifecycle_source.go": "f46d88669131d8019d8b08fa4ad656c606a3cdceecfdd840584ea6542fc567a8",
+    "pkg/dsga/resourceguard/normal_system_lifecycle_source_linux.go": "6d5681c670e2747abb24bc7fc52dab8cbc63784e9062a3c1625b506c0f1c9278",
+    "pkg/dsga/resourceguard/normal_system_lifecycle_source_linux_test.go": "5cbb205baea39a6858da83118ee2666ee2e8cba981429e7bab6c8be10e5325be",
+    "pkg/dsga/resourceguard/normal_system_lifecycle_source_native_test.go": "748855d05605463a770ab9e291f451903ad82d5a8814ad0d8aa17909dfafd1d3",
+    "pkg/dsga/resourceguard/normal_system_lifecycle_source_task_linux.go": "7585a7f1a0fed31a471169525c8c4e02fc7195a4c54c8c2a58a9b9ec02e24fa8",
+    "pkg/dsga/resourceguard/normal_system_lifecycle_source_test.go": "743601af35ae9658de348fb9eaf43cb6874148f6dc1d0ae0e66784eca4c6ad91"
+  },
+  "base": "a614dcdec0d52d31bb9c6041087a5e4166e0bbe8",
+  "joint_roots": 14,
+  "joint_subtests": 58,
+  "new_coverage_in_joint": 0,
+  "E": 0,
+  "actual_System_services_executed": false,
+  "production_normal_qualified": false,
+  "pending": [
+    "actual role spawn exec-stop persistent release",
+    "full image dynamic System loader closure",
+    "FS memory original lifecycle and future writers"
+  ]
+}

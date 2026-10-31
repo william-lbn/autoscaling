@@ -1,0 +1,20 @@
+[
+  "docker",
+  "buildx",
+  "build",
+  "--builder",
+  "neon-data",
+  "--resource",
+  "memory=2g",
+  "--resource",
+  "memory-swap=2g",
+  "--resource",
+  "cpu-quota=200000",
+  "--progress",
+  "plain",
+  "--output",
+  "type=local,dest=/data/neon-build/validation/system-lifecycle-joint-20261031T223026Z-6bef8e/receipt",
+  "-f",
+  "/data/neon-build/validation/system-lifecycle-joint-20261031T223026Z-6bef8e/Dockerfile",
+  "/data/neon-build/validation/system-lifecycle-joint-20261031T223026Z-6bef8e/source"
+]

@@ -1,0 +1,74 @@
+{
+  "initial_unit": "/data/neon-build/validation/normal-system-lifecycle-go-20261031T213706Z-24a1fa",
+  "retained_attempts": [
+    {
+      "path": "/data/neon-build/validation/system-lifecycle-native-20261031T214811Z-b4b744",
+      "receipt_sha256": {
+        "metadata.json": "f464027d20c6101e82575cb4591ac8c3089b0a877aa5e1b61933f1f6b3a78a01",
+        "worker.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "compile-result.json": "a82cfd5049344af79eafd9d72f6a86a2099a4a3c581fda3793b0666967037e72",
+        "source-lock.json": "1e0a5deb25e3c77905ff4ef0e055fb968888e3b03e3859e8e64bf884d3603df1"
+      }
+    },
+    {
+      "path": "/data/neon-build/validation/system-lifecycle-native-20261031T215043Z-0c7906",
+      "receipt_sha256": {
+        "metadata.json": "e9e563383e5b6f33c1bd31037cdc37981cd4521656720745d3ec04bf02e9d334",
+        "worker.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "compile-result.json": "60e1a812e44bc48694db6bdb9a058e1be53a84ebd962ef1dc6b4f7309d71f18a",
+        "source-lock.json": "1e0a5deb25e3c77905ff4ef0e055fb968888e3b03e3859e8e64bf884d3603df1",
+        "export/fixture-export.log": "f902cc22a3faa39b77435c0b00b2acd92fc3b2c3339974f952d2d7174c6345fc",
+        "export/test.json": "5bb26b7ad061b8e3e9af099723e56c97366aac6b19c2ba2585c483bbe248789b"
+      }
+    },
+    {
+      "path": "/data/neon-build/validation/system-lifecycle-native-20261031T215316Z-21a9aa",
+      "receipt_sha256": {
+        "metadata.json": "b6faf8247e82ee8c467e19689727e35144e07e97fb00dddd07287aeb26f48f8c",
+        "worker.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "compile-result.json": "81ba2844bc0c6e0525fc769327f58ce1f44f6330282acd79e80233a369891245",
+        "iso.log": "12e404eb190e5efe5e38d07bfa6f940a40d5754b230513e3cc6ffb7ab7e6b5d7",
+        "source-lock.json": "cf388a259c5bc0abdc65446333d5e32ad59a7a78133e961d86d6da74c726089d",
+        "export/fixture-export.log": "1b4de4924dd5bb51048bd08f7063e749e9fb0163ddc6773560496a382053e02b",
+        "export/test.json": "df05d864f9ce439675693d36ff51c7b42abf91aad14953e5df5413fc282ec423"
+      }
+    },
+    {
+      "path": "/data/neon-build/validation/system-lifecycle-native-20261031T220208Z-8420fb",
+      "receipt_sha256": {
+        "export/fixture-export.log": "1b4de4924dd5bb51048bd08f7063e749e9fb0163ddc6773560496a382053e02b",
+        "export/test.json": "df05d864f9ce439675693d36ff51c7b42abf91aad14953e5df5413fc282ec423"
+      }
+    },
+    {
+      "path": "/data/neon-build/validation/system-lifecycle-native-20261031T220517Z-5d4470",
+      "receipt_sha256": {
+        "metadata.json": "d2c1987137cc14a864452a0d24c900eba6728b73b3ca3e86ae002cd9982885c1",
+        "worker.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native-driver.log": "38a67dbad1b472269a882a71b162355f81ccd997a909a86cbbba63a32cfb64de",
+        "iso.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source-lock.json": "d2d2df64cfe639d7010794801a5d9972c4947290d2258e0d525ffb2acb35fdb5",
+        "export/fixture-export.log": "1b4de4924dd5bb51048bd08f7063e749e9fb0163ddc6773560496a382053e02b",
+        "export/test.json": "df05d864f9ce439675693d36ff51c7b42abf91aad14953e5df5413fc282ec423"
+      }
+    },
+    {
+      "path": "/data/neon-build/validation/system-lifecycle-native-20261031T220619Z-10f712",
+      "receipt_sha256": {
+        "metadata.json": "96680dd7d1aedb5f2ee7c069fb4f7aa6402c8eb8eb3feca293804d4dc2de47a1",
+        "worker.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native-driver.log": "cb89b43c4a317ea61671bcdc65b30a5e64b63e631c32d21a80a7f5b4db3f9b05",
+        "iso.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source-lock.json": "d2d2df64cfe639d7010794801a5d9972c4947290d2258e0d525ffb2acb35fdb5",
+        "export/fixture-export.log": "1b4de4924dd5bb51048bd08f7063e749e9fb0163ddc6773560496a382053e02b",
+        "export/test.json": "df05d864f9ce439675693d36ff51c7b42abf91aad14953e5df5413fc282ec423"
+      }
+    }
+  ],
+  "notes": [
+    "b4b744 fixture source budget rejected before Guest; no production change",
+    "0c7906 original finite fixture Source increased to fit unchanged split template",
+    "21a9aa compiled exact cohort passed; ISO external tool missing127",
+    "8420fb/5d4470/10f712 preserve absolute applet symlinks in external copy/cpio; before Guest, no compiled source change"
+  ]
+}
