@@ -1,0 +1,20 @@
+System canonical-v2 union37 独立复审，2026-11-01
+非作者 helm_scope_review，仅只读代码/收据和写本外部报告。结论：原canonical空glob祖先finding已关闭，当前限定组件范围无剩余提交阻断，可提交union37；仍不认证原image/角色/ELF/正式服务/normal/E。
+
+最小源码差异
+旧/新unit all_source逐项比较，仅normal_system_source_linux.go和normal_system_source_native_test.go两个文件变化，其余所有814输入字节不变。Linux当前SHA5c4e47c82a64e25dfdd6fdba5770630b5d401fd4dc34a32d330381ad41645930；native ae15bcb4154ce0eb15e083c4901c2571bd7bf695752096ac3ffb73c5d24a50fb。
+Linux114..127保原logical完整RO链，再EvalSymlinks固定config目录，独立核canonical base+'.source-inventory-check'完整RO链后才库存和ReadonlyAncestorsObserved=true；未放宽Source7，也未让raw manifest bool代替事实。
+
+准确反例实核
+新native195..255在实际369隔离Guest：
+/rw-parent为RW tmpfs，/rw-parent/bucket/target为其下RO self-bind；/etc/vector置为指向target的软链后root重新RO。整个target为空。
+同一用例先实际调用旧logical ReadonlyPath成功、normalSystemConfigInventory成功，再实际要求canonical ReadonlyPath(target+sentinel)失败，最后真实CheckNormalSystemSource返回read-only错误。它没有把直接RW target、未知额外文件或RW root换成目标反例；恢复/卸载顺序按defer先symlink复原再target后parent，后续旧正控仍通过。
+因此关闭的是原遗漏canonical祖先的事实漏洞，不以“future role仍未闭”绕过本次RO断言。
+
+来源/终态
+stage-paths37项存在唯一，逐hash均等于final-source-and-docs.json；旧22仅修前历史保留，未转签新source。原unit all_source814输入，新actualCOPY814行全部OK；独立JSON重算7root36sub PASS、零skip，build/test0，Darwin仅compile不算执行。
+真实369 native路径/validation/normal-system-source-native-20261031T184151Z-b3f486；binary19655a90c06c8e1def0748c7790930cb802133b082a35076f3594b18c5347534。
+原console1root8sub PASS、零skip，canonical alias case0.55s；SYSTEM_SOURCE_GUEST_EXIT=0与HostQEMU0独立确认，query-kvm true/true、notes7cf45ced...准确。所有旧7sub保持同一新版binary直接回归。
+合成exec仍是同一Go test ELF，不是正式busybox/vector/compute镜像服务运行。OriginalSourceAuthenticated/ELFDependencyClosureVerified/FixedArgvEnvironmentExecuted/AllSourcesClosed/NormalDecreaseAuthorized仍false；manifest声明image不自证trust；动态RW孔未升级静态ELF资格。
+
+本审没有修改业务源码/Git/Node/Host网络或执行重复U/native。

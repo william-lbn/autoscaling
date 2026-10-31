@@ -1,0 +1,244 @@
+{
+  "id": "NEON-S-SYSTEM-SOURCE-001",
+  "observations": [
+    {
+      "config_inventory_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "config_inventory_observed": true,
+      "scope": "fixed-system-startup-source-component-only",
+      "manifest_sha256": "3d7d90e11dc1ed207438af7a0b5581457098c8dfc2b7b4fc80edcd4789f5c1d0",
+      "manifest_canonical_sha256": "3d7d90e11dc1ed207438af7a0b5581457098c8dfc2b7b4fc80edcd4789f5c1d0",
+      "guest_boot_id": "1742934b-8458-49e6-a0a3-524c7b211583",
+      "kernel": {
+        "profile_id": "neon-linux-6.12.26-dsga-normal-split-v1",
+        "kernel_release": "6.12.26-william-normal-split-v1-e210f5e3ee94",
+        "kernel_artifact_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+        "kernel_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+        "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+      },
+      "inittab_sha256": "2bb7d96dc433bb517456ed1e6e0341e575bf44af54afc6155136af8e3a8faad8",
+      "files": [
+        {
+          "path": "/etc/inittab",
+          "canonical_path": "/etc/inittab",
+          "sha256": "2bb7d96dc433bb517456ed1e6e0341e575bf44af54afc6155136af8e3a8faad8",
+          "device": 23,
+          "inode": 38,
+          "bytes": 685
+        },
+        {
+          "path": "/neonvm/bin/acpid",
+          "canonical_path": "/neonvm/bin/busybox",
+          "sha256": "19655a90c06c8e1def0748c7790930cb802133b082a35076f3594b18c5347534",
+          "device": 23,
+          "inode": 28,
+          "bytes": 14248085
+        },
+        {
+          "path": "/neonvm/bin/busybox",
+          "canonical_path": "/neonvm/bin/busybox",
+          "sha256": "19655a90c06c8e1def0748c7790930cb802133b082a35076f3594b18c5347534",
+          "device": 23,
+          "inode": 28,
+          "bytes": 14248085
+        },
+        {
+          "path": "/neonvm/bin/cat",
+          "canonical_path": "/neonvm/bin/busybox",
+          "sha256": "19655a90c06c8e1def0748c7790930cb802133b082a35076f3594b18c5347534",
+          "device": 23,
+          "inode": 28,
+          "bytes": 14248085
+        },
+        {
+          "path": "/neonvm/bin/chronyd",
+          "canonical_path": "/neonvm/bin/chronyd",
+          "sha256": "19655a90c06c8e1def0748c7790930cb802133b082a35076f3594b18c5347534",
+          "device": 23,
+          "inode": 26,
+          "bytes": 14248085
+        },
+        {
+          "path": "/neonvm/bin/dsga-resource-guard",
+          "canonical_path": "/neonvm/bin/dsga-resource-guard",
+          "sha256": "19655a90c06c8e1def0748c7790930cb802133b082a35076f3594b18c5347534",
+          "device": 23,
+          "inode": 25,
+          "bytes": 14248085
+        },
+        {
+          "path": "/neonvm/bin/dsga-resource-service",
+          "canonical_path": "/neonvm/bin/dsga-resource-service",
+          "sha256": "b6f600da7d0c3da3da96e399d8702b729d39b734a7968ce3343d428a56fbcc30",
+          "device": 23,
+          "inode": 24,
+          "bytes": 61
+        },
+        {
+          "path": "/neonvm/bin/neonvmd",
+          "canonical_path": "/neonvm/bin/neonvmd",
+          "sha256": "19655a90c06c8e1def0748c7790930cb802133b082a35076f3594b18c5347534",
+          "device": 23,
+          "inode": 23,
+          "bytes": 14248085
+        },
+        {
+          "path": "/neonvm/bin/sh",
+          "canonical_path": "/neonvm/bin/busybox",
+          "sha256": "19655a90c06c8e1def0748c7790930cb802133b082a35076f3594b18c5347534",
+          "device": 23,
+          "inode": 28,
+          "bytes": 14248085
+        },
+        {
+          "path": "/neonvm/bin/touch",
+          "canonical_path": "/neonvm/bin/busybox",
+          "sha256": "19655a90c06c8e1def0748c7790930cb802133b082a35076f3594b18c5347534",
+          "device": 23,
+          "inode": 28,
+          "bytes": 14248085
+        },
+        {
+          "path": "/neonvm/bin/udev-init.sh",
+          "canonical_path": "/neonvm/bin/udev-init.sh",
+          "sha256": "b6f600da7d0c3da3da96e399d8702b729d39b734a7968ce3343d428a56fbcc30",
+          "device": 23,
+          "inode": 20,
+          "bytes": 61
+        },
+        {
+          "path": "/neonvm/bin/udevd",
+          "canonical_path": "/neonvm/bin/udevd",
+          "sha256": "19655a90c06c8e1def0748c7790930cb802133b082a35076f3594b18c5347534",
+          "device": 23,
+          "inode": 19,
+          "bytes": 14248085
+        },
+        {
+          "path": "/neonvm/bin/udhcpc",
+          "canonical_path": "/neonvm/bin/busybox",
+          "sha256": "19655a90c06c8e1def0748c7790930cb802133b082a35076f3594b18c5347534",
+          "device": 23,
+          "inode": 28,
+          "bytes": 14248085
+        },
+        {
+          "path": "/neonvm/bin/udhcpc.script",
+          "canonical_path": "/neonvm/bin/udhcpc.script",
+          "sha256": "b6f600da7d0c3da3da96e399d8702b729d39b734a7968ce3343d428a56fbcc30",
+          "device": 23,
+          "inode": 17,
+          "bytes": 61
+        },
+        {
+          "path": "/neonvm/bin/vector",
+          "canonical_path": "/neonvm/bin/vector",
+          "sha256": "19655a90c06c8e1def0748c7790930cb802133b082a35076f3594b18c5347534",
+          "device": 23,
+          "inode": 16,
+          "bytes": 14248085
+        },
+        {
+          "path": "/neonvm/bin/vminit",
+          "canonical_path": "/neonvm/bin/vminit",
+          "sha256": "b6f600da7d0c3da3da96e399d8702b729d39b734a7968ce3343d428a56fbcc30",
+          "device": 23,
+          "inode": 15,
+          "bytes": 61
+        },
+        {
+          "path": "/neonvm/bin/vmshutdown",
+          "canonical_path": "/neonvm/bin/vmshutdown",
+          "sha256": "b6f600da7d0c3da3da96e399d8702b729d39b734a7968ce3343d428a56fbcc30",
+          "device": 23,
+          "inode": 14,
+          "bytes": 61
+        },
+        {
+          "path": "/neonvm/bin/vmstart",
+          "canonical_path": "/neonvm/bin/vmstart",
+          "sha256": "b6f600da7d0c3da3da96e399d8702b729d39b734a7968ce3343d428a56fbcc30",
+          "device": 23,
+          "inode": 13,
+          "bytes": 61
+        },
+        {
+          "path": "/neonvm/config/chrony.conf",
+          "canonical_path": "/neonvm/config/chrony.conf",
+          "sha256": "17f58cd832c372ea40a85e408cc3cd017b6dc7b0438795897b9839d2ef5e6a7f",
+          "device": 23,
+          "inode": 11,
+          "bytes": 27
+        },
+        {
+          "path": "/neonvm/config/vector.yaml",
+          "canonical_path": "/neonvm/config/vector.yaml",
+          "sha256": "17f58cd832c372ea40a85e408cc3cd017b6dc7b0438795897b9839d2ef5e6a7f",
+          "device": 23,
+          "inode": 9,
+          "bytes": 27
+        },
+        {
+          "path": "/usr/local/bin/compute_ctl",
+          "canonical_path": "/usr/local/bin/compute_ctl",
+          "sha256": "19655a90c06c8e1def0748c7790930cb802133b082a35076f3594b18c5347534",
+          "device": 23,
+          "inode": 5,
+          "bytes": 14248085
+        }
+      ],
+      "runtime_overrides_absent": true,
+      "fixed_inittab_observed": true,
+      "readonly_ancestors_observed": true,
+      "original_source_authenticated": false,
+      "elf_dependency_closure_verified": false,
+      "fixed_argv_environment_executed": false,
+      "all_sources_closed": false,
+      "normal_decrease_authorized": false,
+      "missing_sources": [
+        "original-image-ISO-process-lifecycle-binding",
+        "complete-static-ELF-loader-and-config-closure",
+        "fixed-argv-environment-actual-exec",
+        "continuous-role-and-kernel-control-writer-enforcement"
+      ]
+    }
+  ],
+  "binary_sha256": "19655a90c06c8e1def0748c7790930cb802133b082a35076f3594b18c5347534",
+  "status": "PASS_FIXTURE_COMPONENT_ONLY",
+  "host_qemu_exit": 0,
+  "elapsed_seconds": 9.563285384996561,
+  "actual_qmp": [
+    {
+      "command": "qmp_capabilities",
+      "response": {
+        "return": {}
+      }
+    },
+    {
+      "command": "query-kvm",
+      "response": {
+        "return": {
+          "enabled": true,
+          "present": true
+        }
+      }
+    },
+    {
+      "command": "query-version",
+      "response": {
+        "return": {
+          "qemu": {
+            "micro": 5,
+            "minor": 1,
+            "major": 8
+          },
+          "package": ""
+        }
+      }
+    }
+  ],
+  "runtime_kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "console_sha256": "3ff19149288a68023c95471ad92a7b74b9234789822d4cd71e7c7c8afbedc077",
+  "normal_permit": false,
+  "all_sources_closed": false,
+  "actual_services_or_PG_started": false
+}

@@ -1,0 +1,55 @@
+{
+  "scope": "strict fixed System startup/file gate only; synthetic service fixture, no normal authority",
+  "base_git": "1a25125cc1d2b689803f250db08c7e2525c88271",
+  "current_git": "12ed1ad6aa9e7e4ac3065eeef1e0ec75c2be8c03",
+  "owned_source": {
+    "pkg/dsga/resourceguard/normal_system_source.go": "b4c182b7c0ce543756b39e170dd7b3f7f75ae9375cf98ec242b6d31d3acb093b",
+    "pkg/dsga/resourceguard/normal_system_source_linux.go": "616d531fe3a8c0c0e513ff6cfc997d8a57d2a312074ac0cf424f73b0dce34ce9",
+    "pkg/dsga/resourceguard/normal_system_source_linux_test.go": "657a0b855c0918ad54df427793cabf28eb6f4dea1a96a1dc0c1623500c568cf5",
+    "pkg/dsga/resourceguard/normal_system_source_native_test.go": "0c34a05ee67c174365305bbb2030c749f9f6fec35d4580a19c0b484bd6df69dc",
+    "pkg/dsga/resourceguard/normal_system_source_test.go": "35289b89fa73278637d1f1b036d469b555d2254ac7cfbb51994b1a080c5bdfea",
+    "pkg/dsga/resourceguard/normal_system_source_unsupported.go": "7a63df77141c67c341b9b29137b4ae86f889b3c44c8d5e15dc39b12464e2d1cc"
+  },
+  "actual_COPY_count": 814,
+  "unit": {
+    "path": "/data/neon-build/validation/normal-system-source-go-20261031T180839Z-9bb378",
+    "roots": [
+      "TestNormalSystemSourceRuntimeOverrides",
+      "TestNormalSystemSourceCancellation",
+      "TestNormalSystemSourceConfigInventory",
+      "TestNormalSystemSourceManifestStrict",
+      "TestNormalSystemSourceManifestRejectDrift",
+      "TestNormalSystemSourceFixedInittab",
+      "TestNormalSystemSourceCatalogCopy"
+    ],
+    "root_count": 7,
+    "subcase_count": 36,
+    "race": true,
+    "fail": 0,
+    "skip": 0,
+    "Darwin_compile_only": true,
+    "Darwin_binary_sha256": "8e0ee6fb7da2409c6ced8627d9c3e40819f61c2fd14034c398a9f62e96a44606"
+  },
+  "native": {
+    "id": "NEON-S-SYSTEM-SOURCE-001",
+    "path": "/data/neon-build/validation/normal-system-source-native-20261031T181043Z-3c8fc2",
+    "root_count": 1,
+    "subcase_count": 7,
+    "binary_sha256": "4d95d3a9360f686908d596f9994ac1f1f91c742f8311452f43b866efc1435a1d",
+    "actual_KVM": true,
+    "synthetic_service_files": true,
+    "actual_services_or_PG_started": false
+  },
+  "original_source_authenticated": false,
+  "full_ELF_closure": false,
+  "all_sources_closed": false,
+  "normal_decrease_authorized": false,
+  "API": [
+    "DecodeNormalSystemSourceManifest",
+    "InspectNormalSystemSource",
+    "CheckNormalSystemSource",
+    "NormalSystemSourceInitEntries",
+    "NormalSystemSourceConfigDirectories"
+  ],
+  "fixed_manifest_path": "/neonvm/config/dsga-normal-system-source.json"
+}
