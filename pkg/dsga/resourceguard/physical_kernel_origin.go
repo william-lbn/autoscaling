@@ -50,7 +50,7 @@ func (p PhysicalKernelOriginPolicy) Validate() error {
 		}
 	} else {
 		ref, err := LookupPhysicalKernelBuild(p.ProfileID)
-		if err != nil || p.ProfileID != NormalV1PhysicalKernelProfileID || p.KernelRelease != ref.KernelRelease || p.KernelArtifactSHA256 != ref.KernelArtifactSHA256 || p.KernelConfigSHA256 != ref.KernelConfigSHA256 || p.KernelNotesSHA256 != ref.KernelNotesSHA256 {
+		if err != nil || (p.ProfileID != NormalV1PhysicalKernelProfileID && !physicalKernelHasPIDHardSource(p.ProfileID)) || p.KernelRelease != ref.KernelRelease || p.KernelArtifactSHA256 != ref.KernelArtifactSHA256 || p.KernelConfigSHA256 != ref.KernelConfigSHA256 || p.KernelNotesSHA256 != ref.KernelNotesSHA256 {
 			return fmt.Errorf("normal-v1 exact physical component build differs")
 		}
 	}

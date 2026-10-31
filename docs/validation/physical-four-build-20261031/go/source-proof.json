@@ -1,0 +1,106 @@
+{
+  "scope": "four reviewed build physical observation/origin components only; no Root/normal authorization",
+  "frozen_source_base": "410bcc63a5de44b26afd04e237854a9c5b1705ce",
+  "owned_source_files": {
+    "pkg/dsga/resourceguard/physical_kernel_build.go": "139ecedb10d8fdbf32822b8078a2a279b9ad9a99d9701af54407b23bafa78153",
+    "pkg/dsga/resourceguard/physical_kernel_capabilities.go": "80cbc0be4fcc3c5a5424905340f871bde7ca5c89aa8e6b009f2edc2791d0eeb2",
+    "pkg/dsga/resourceguard/physical_kernel_capabilities_linux.go": "ce0d41406fefb9a1b0fd2eaaf2a02c5d11d83baa2f90c352770e4e1182a1e79a",
+    "pkg/dsga/resourceguard/physical_kernel_profile.go": "9810a156f7101cce3f66905c10f0dbd87946ef95ec258f9fd765f0be98ff914a",
+    "pkg/dsga/resourceguard/physical_kernel_profile_linux.go": "5d3b7dda6297d232955aa873402f084202920f0b939a329fb31d80fc5f319ada",
+    "pkg/dsga/resourceguard/physical_kernel_origin.go": "d18e1c39e70cb091dcd29a3983c5826fb411b52bfd1a7368aae9309d2c5e1dc7",
+    "pkg/dsga/resourceguard/physical_kernel_reviewed_build_test.go": "98ecebe9aa8305f998a2c0b87ea9afa1d28bacd7fc85fa18508795b3e100d58d",
+    "pkg/dsga/resourceguard/physical_kernel_profile_reviewed_native_test.go": "9ee09154e75a174b03e0ab8870b065387ff5eb3e9b94ce92f588e325560d5802"
+  },
+  "all_go_COPY_file_count": 698,
+  "all_go_COPY_sha256_match_snapshot": true,
+  "unit_command": [
+    "go",
+    "test",
+    "-mod=readonly",
+    "-race",
+    "-count=1",
+    "-json",
+    "-run",
+    "^TestPhysicalKernel",
+    "./pkg/dsga/resourceguard"
+  ],
+  "unit_root_passes": 19,
+  "unit_subcase_passes": 181,
+  "unit_fail": 0,
+  "unit_skip": 0,
+  "new_root_breakdown": {
+    "TestPhysicalKernelReviewedHardPIDBuilds": {
+      "root_pass": 1,
+      "subcase_pass": 9
+    },
+    "TestPhysicalKernelHardPIDObservationBoundaries": {
+      "root_pass": 1,
+      "subcase_pass": 22
+    },
+    "TestPhysicalKernelHardPIDJSONAndHistory": {
+      "root_pass": 1,
+      "subcase_pass": 21
+    },
+    "TestPhysicalKernelHardPIDBootPolicy": {
+      "root_pass": 1,
+      "subcase_pass": 16
+    },
+    "TestPhysicalKernelHardPIDSourceDrift": {
+      "root_pass": 1,
+      "subcase_pass": 12
+    },
+    "TestPhysicalKernelReviewedOriginHardPIDBuilds": {
+      "root_pass": 1,
+      "subcase_pass": 18
+    }
+  },
+  "native_binary_sha256": "1f892b5caaa6c95c291f34bd5d66fb033e44b21bf884703d1b32fd8eeeafc8b7",
+  "go_test_json_sha256": "19f506e678aa2a5ba5e03bae6c12b4adb745dcb07c06bd958a404dd31720b6b3",
+  "native_result_sha256": "38b852358c1b2010128b00dac039efb394ab79ef700145c970fbbb22b7fbfbb1",
+  "native_cases": [
+    {
+      "id": "PG17-S-KERNEL-003",
+      "result_sha256": "4d017a51493ed79bddac76ea2e672c5f9e5786fcb61e119c6ba97d6d21c84290",
+      "actual_boot_id": "47b47fb6-b850-408f-9b15-2ba0e039af5b",
+      "actual_notes_sha256": "cbf448079077b712e5812d4c9c54a9ea3b4e3aacc76892699881c8aad57619dc",
+      "elapsed_seconds": 2.8550851330001024,
+      "actual_qmp_kvm": {
+        "enabled": true,
+        "present": true
+      }
+    },
+    {
+      "id": "PG17-S-KERNEL-004",
+      "result_sha256": "a4dcdc4435c050ebf870bf6435ad3797855a471fb1869660739e63c59d365802",
+      "actual_boot_id": "9be721b1-4d6d-4b66-b2e8-2773d2b4f179",
+      "actual_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+      "elapsed_seconds": 2.4153923990015755,
+      "actual_qmp_kvm": {
+        "enabled": true,
+        "present": true
+      }
+    }
+  ],
+  "history_native_test_hashes_unchanged": true,
+  "source_file_hashes_unchanged_after_tests": true,
+  "normal_permit": false,
+  "all_sources_closed": false,
+  "E2E": false,
+  "initial_pass_before_optional_null_refinement": {
+    "go": "/data/neon-build/validation/physical-four-build-go-20261030T232546Z",
+    "native": "/data/neon-build/validation/physical-reviewed-reader-20261030T232659Z",
+    "status": "retained PASS; superseded exact source by explicit-null strictness refinement"
+  },
+  "preparation_issue": {
+    "tool": "gofmt",
+    "attempt": "/usr/local/go/bin/gofmt not present in fixed tools image",
+    "exit": 127,
+    "source_written_by_failed_attempt": false,
+    "resolution": "actual cached image /opt/go/bin/gofmt; no tool install or host change"
+  },
+  "kernel_source_locks": {
+    "pid_capped": "/data/neon-build/validation/pg17-pid-capped-kernel-20261030T175217Z/kernel-source-lock.json",
+    "split": "/data/neon-build/validation/normal-split-kernel-20261030T224843Z/kernel-source-lock.json"
+  },
+  "current_review_head": "410bcc63a5de44b26afd04e237854a9c5b1705ce"
+}

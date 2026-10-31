@@ -1,0 +1,100 @@
+{
+  "id": "PG17-S-KERNEL-003",
+  "status": "PASS_COMPONENT_ONLY",
+  "host_qemu_exit": 0,
+  "actual_qmp_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "elapsed_seconds": 2.8550851330001024,
+  "kernel": {
+    "name": "pid-capped",
+    "id": "PG17-S-KERNEL-003",
+    "profile": "pg17-linux-6.12.26-normal-v1-pid-capped",
+    "kernel_path": "/data/neon-build/validation/pg17-pid-capped-kernel-20261030T175217Z/export",
+    "kernel_sha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+    "config_sha256": "7733d4e430a2102052dd97c8b3fa64ac2b5904fa6a4f394b5653b9fa5cccbf25",
+    "notes_sha256": "cbf448079077b712e5812d4c9c54a9ea3b4e3aacc76892699881c8aad57619dc"
+  },
+  "binary_sha256": "1f892b5caaa6c95c291f34bd5d66fb033e44b21bf884703d1b32fd8eeeafc8b7",
+  "console_sha256": "668fa4e4003ee2d77926b95f65940fd4038c61075071795db1300a9e52fc9c07",
+  "receipt": [
+    {
+      "case": "PG17-S-KERNEL-003 actual PID-capped reader component",
+      "reviewed_build_reference": {
+        "profile_id": "pg17-linux-6.12.26-normal-v1-pid-capped",
+        "kernel_release": "6.12.26-william-normal-v1-pidcap-946be0d25506",
+        "kernel_artifact_sha256": "3b5853b552a8adbe5de7772410c793928f0d4a86a2410d24aec806fecfea2608",
+        "kernel_config_sha256": "7733d4e430a2102052dd97c8b3fa64ac2b5904fa6a4f394b5653b9fa5cccbf25",
+        "kernel_notes_sha256": "cbf448079077b712e5812d4c9c54a9ea3b4e3aacc76892699881c8aad57619dc"
+      },
+      "observation": {
+        "protocol_version": 1,
+        "vm_shrink_permit": false,
+        "scope": "linux-6.12.26-physical-component-observation-only",
+        "identity": {
+          "vm_uid": "test-harness-pg17-normal-kernel-reader",
+          "compute_instance_id": "test-harness-isolated-component",
+          "guest_boot_id": "47b47fb6-b850-408f-9b15-2ba0e039af5b",
+          "cgroup_device": "23",
+          "cgroup_inode": "28"
+        },
+        "kernel_release": "6.12.26-william-normal-v1-pidcap-946be0d25506",
+        "kernel_notes_sha256": "cbf448079077b712e5812d4c9c54a9ea3b4e3aacc76892699881c8aad57619dc",
+        "command_line_sha256": "d2c16aa0b3c7c885b977924fc78812605779e53fb0d04930014f700e16e86915",
+        "page_size_bytes": "4096",
+        "possible_cpus": 2,
+        "pid_max": 512,
+        "zones": [
+          {
+            "node": 0,
+            "name": "DMA32",
+            "present_pages": "66462"
+          },
+          {
+            "node": 0,
+            "name": "Movable",
+            "present_pages": "195551"
+          },
+          {
+            "node": 0,
+            "name": "Normal",
+            "present_pages": "0"
+          }
+        ],
+        "non_movable_upper_bytes": "272228352",
+        "cpu_charge_stock_upper_bytes": "524288",
+        "runtime_capabilities": {
+          "active_lsms": [
+            "lockdown",
+            "capability",
+            "landlock",
+            "yama",
+            "apparmor"
+          ],
+          "landlock_abi": 6,
+          "initial_pid_namespace_device": "4",
+          "initial_pid_namespace_inode": "4026531836",
+          "memory_high": "max",
+          "min_free_kbytes": "2059",
+          "watermark_scale_factor": 10,
+          "watermark_boost_factor": 15000,
+          "percpu_pagelist_high_fraction": 0,
+          "compaction_proactiveness": 20,
+          "hard_pid_max_limit": 512
+        }
+      },
+      "production_identity": false,
+      "root_enrolled": false,
+      "pg_started": false,
+      "runtime_controls_written": false,
+      "full_allocator_qualification_performed": false,
+      "normal_decrease_authorized": false,
+      "e2e": false
+    }
+  ],
+  "PG_started": false,
+  "Root_origin_created": false,
+  "all_sources_closed": false,
+  "vm_shrink_permit": false
+}

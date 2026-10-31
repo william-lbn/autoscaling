@@ -6,6 +6,7 @@ import (
 	"fmt"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"golang.org/x/sys/unix"
+	"io"
 	"strings"
 )
 
@@ -78,4 +79,41 @@ func readPhysicalKernelRuntimeCapabilities() (PhysicalKernelRuntimeCapabilities,
 		*value.out = uint32(n)
 	}
 	return c, c.Validate()
+}
+
+// 只读同一个真实procfs fd，不按请求路径、不晚写sysctl、不用TID census补签。
+// 准确PID patch的hard源是__ro_after_init且sysctl0444；文件可写/不在procfs即拒。
+// 这里的范围只支持已核early hard=301..4096；legacy noarg=0不能变成硬来源。
+func readPhysicalKernelPIDHardLimit(cmdline string) (uint32, error) {
+	f, err := rootFile("/proc/sys/kernel/neonvm_pid_max_limit", false)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+	var st unix.Stat_t
+	var fs unix.Statfs_t
+	if err := unix.Fstat(int(f.Fd()), &st); err != nil {
+		return 0, err
+	}
+	if err := unix.Fstatfs(int(f.Fd()), &fs); err != nil {
+		return 0, err
+	}
+	if st.Mode&0222 != 0 || fs.Type != unix.PROC_SUPER_MAGIC {
+		return 0, fmt.Errorf("PID hard source is not readonly procfs")
+	}
+	raw, err := io.ReadAll(io.LimitReader(f, 65))
+	if err != nil {
+		return 0, err
+	}
+	if len(raw) > 64 {
+		return 0, fmt.Errorf("PID hard source exceeds integer bound")
+	}
+	n, err := physicalUint(strings.TrimSpace(string(raw)))
+	if err != nil || n < 301 || n > 4096 {
+		return 0, fmt.Errorf("original PID hard limit not enabled or invalid")
+	}
+	if err := physicalPIDCappedBootPolicy(cmdline, uint32(n)); err != nil {
+		return 0, err
+	}
+	return uint32(n), nil
 }

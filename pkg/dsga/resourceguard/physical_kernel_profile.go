@@ -100,9 +100,17 @@ func (o PhysicalKernelObservation) Validate() error {
 	if err != nil {
 		return err
 	}
-	if profile == NormalV1PhysicalKernelProfileID {
+	if profile == NormalV1PhysicalKernelProfileID || physicalKernelHasPIDHardSource(profile) {
 		if o.RuntimeCapabilities == nil || o.RuntimeCapabilities.Validate() != nil {
 			return fmt.Errorf("normal-v1 runtime capabilities missing or invalid")
+		}
+		hard := o.RuntimeCapabilities.HardPIDMaxLimit
+		if physicalKernelHasPIDHardSource(profile) {
+			if hard == nil || o.PIDMax > *hard {
+				return fmt.Errorf("original PID hard source missing or contradicted")
+			}
+		} else if hard != nil {
+			return fmt.Errorf("historical 552 component cannot acquire original PID hard source")
 		}
 	} else if o.RuntimeCapabilities != nil {
 		return fmt.Errorf("historical physical component cannot acquire normal-v1 capabilities")

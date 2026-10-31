@@ -1,0 +1,149 @@
+{
+  "files": {
+    "go/snapshot-source.json": {
+      "sha256": "c38d759aef2dc4e77a8fecda6378d4ed0d4c045c428c935fb751230f9d40b6ab",
+      "bytes": 79643
+    },
+    "go/source-proof.json": {
+      "sha256": "de0390c457a2ed744768f813f91f6dc098fc00778854e081aeec0d3d759401e7",
+      "bytes": 4511
+    },
+    "go/build-result.json": {
+      "sha256": "3f2842b80fcaca2832743acd0988f9741983660650531a76282a796c33fe8cf9",
+      "bytes": 137
+    },
+    "go/reviewed-static-test.Dockerfile": {
+      "sha256": "d70d67dd5a6be29225ee4d9a4ce1ac85cccf4afc9a95b159e1e62e7642f01fbf",
+      "bytes": 1174
+    },
+    "go/build-command.json": {
+      "sha256": "0bf5985794ac9154ae6ece228a95b79f64343520ccf1e6e781faf5e9d864a06e",
+      "bytes": 610
+    },
+    "go/unit.json": {
+      "sha256": "19f506e678aa2a5ba5e03bae6c12b4adb745dcb07c06bd958a404dd31720b6b3",
+      "bytes": 211592
+    },
+    "go/copied-source-SHA256SUMS": {
+      "sha256": "ac60b0be7036997405f4cbe771208f11ed869f7dcdf0d077182278ba8e4f64a3",
+      "bytes": 73390
+    },
+    "go/go-version.txt": {
+      "sha256": "3fcbda2c06ef581842ae70da25dc029931a022da959585bc88491b0a549306da",
+      "bytes": 32
+    },
+    "go/binary-SHA256SUMS": {
+      "sha256": "d47f3cc8c92b73833ddab9d9a5eeaf80dd21d3f773396b4e0c56e39e1f5b12bf",
+      "bytes": 96
+    },
+    "native/source-lock.json": {
+      "sha256": "8e3d224b3ec24c109c746d268bbb7bf9a5c5bfe58163897573fe30ef68041b37",
+      "bytes": 81379
+    },
+    "native/cases.json": {
+      "sha256": "b99351b5bf44d50a73c43522fc02b89988ea73deccf3d9a8c4fc72948b7e1512",
+      "bytes": 974
+    },
+    "native/result.json": {
+      "sha256": "38b852358c1b2010128b00dac039efb394ab79ef700145c970fbbb22b7fbfbb1",
+      "bytes": 8331
+    },
+    "native/run-kvm.py": {
+      "sha256": "595e1c7d47de4432d393f2c9cb5a0a72e626c735133f94c6ff4ec6fe94d0fbc8",
+      "bytes": 4592
+    },
+    "native/pid-capped/result.json": {
+      "sha256": "4d017a51493ed79bddac76ea2e672c5f9e5786fcb61e119c6ba97d6d21c84290",
+      "bytes": 3722
+    },
+    "native/pid-capped/console.log": {
+      "sha256": "668fa4e4003ee2d77926b95f65940fd4038c61075071795db1300a9e52fc9c07",
+      "bytes": 25215
+    },
+    "native/pid-capped/command.json": {
+      "sha256": "7023adc991174e085c419bd29a9bffdab0dd247e3a7256031b3c7b18bbfbfa3c",
+      "bytes": 1488
+    },
+    "native/pid-capped/container-state.json": {
+      "sha256": "3447329eea93822fa2e1407b9a464fe105e1ca70d32c38ce0eadf481ed8ca3d0",
+      "bytes": 494
+    },
+    "native/pid-capped/cleanup.json": {
+      "sha256": "4fed1b9d9fe32bbb1063ed57e5b5890a55faa7deb6acd9e06f9f9de653d6251c",
+      "bytes": 107
+    },
+    "native/pid-capped/guest-init.sh": {
+      "sha256": "a8695883ce8b25f82882f46249e95bce24f48a9d2dea0a0e5788fb763b95f276",
+      "bytes": 995
+    },
+    "native/pid-capped/initramfs-manifest.json": {
+      "sha256": "6127abea9d70509accbf7fb5542e8faccd096ad10f197d680601bfb86ba13b79",
+      "bytes": 2013
+    },
+    "native/normal-split/result.json": {
+      "sha256": "a4dcdc4435c050ebf870bf6435ad3797855a471fb1869660739e63c59d365802",
+      "bytes": 3721
+    },
+    "native/normal-split/console.log": {
+      "sha256": "1aa7fb72763fdad2ef8627e39a5af1f690263138fe657e4db04aad6c9e96ec7e",
+      "bytes": 25214
+    },
+    "native/normal-split/command.json": {
+      "sha256": "bc335b2e263dec8a70dc843bc8a26d47b8bfa10daa4e76e5e1551934fc425e07",
+      "bytes": 1491
+    },
+    "native/normal-split/container-state.json": {
+      "sha256": "78ff8a4791836e0cf11308e586cb02e28a90fdcad31152012c66c80d601f7646",
+      "bytes": 495
+    },
+    "native/normal-split/cleanup.json": {
+      "sha256": "13c3e342c1e19cddb23e8cb628ef16fad74dcf1083a445abef02dbeac032be48",
+      "bytes": 109
+    },
+    "native/normal-split/guest-init.sh": {
+      "sha256": "fe5040581ac75928251c42a536b30dc6bda244aa3c2c9ea28c12271a011c4a40",
+      "bytes": 995
+    },
+    "native/normal-split/initramfs-manifest.json": {
+      "sha256": "771b7067b624d6d2f836e9d7ecaef8110365a09e4dde1c9bba5c8a223f691354",
+      "bytes": 2013
+    },
+    "source/pkg/dsga/resourceguard/physical_kernel_build.go": {
+      "sha256": "139ecedb10d8fdbf32822b8078a2a279b9ad9a99d9701af54407b23bafa78153",
+      "bytes": 5695
+    },
+    "source/pkg/dsga/resourceguard/physical_kernel_capabilities.go": {
+      "sha256": "80cbc0be4fcc3c5a5424905340f871bde7ca5c89aa8e6b009f2edc2791d0eeb2",
+      "bytes": 5664
+    },
+    "source/pkg/dsga/resourceguard/physical_kernel_capabilities_linux.go": {
+      "sha256": "ce0d41406fefb9a1b0fd2eaaf2a02c5d11d83baa2f90c352770e4e1182a1e79a",
+      "bytes": 4155
+    },
+    "source/pkg/dsga/resourceguard/physical_kernel_profile.go": {
+      "sha256": "9810a156f7101cce3f66905c10f0dbd87946ef95ec258f9fd765f0be98ff914a",
+      "bytes": 10598
+    },
+    "source/pkg/dsga/resourceguard/physical_kernel_profile_linux.go": {
+      "sha256": "5d3b7dda6297d232955aa873402f084202920f0b939a329fb31d80fc5f319ada",
+      "bytes": 5045
+    },
+    "source/pkg/dsga/resourceguard/physical_kernel_origin.go": {
+      "sha256": "d18e1c39e70cb091dcd29a3983c5826fb411b52bfd1a7368aae9309d2c5e1dc7",
+      "bytes": 14892
+    },
+    "source/pkg/dsga/resourceguard/physical_kernel_reviewed_build_test.go": {
+      "sha256": "98ecebe9aa8305f998a2c0b87ea9afa1d28bacd7fc85fa18508795b3e100d58d",
+      "bytes": 13706
+    },
+    "source/pkg/dsga/resourceguard/physical_kernel_profile_reviewed_native_test.go": {
+      "sha256": "9ee09154e75a174b03e0ab8870b065387ff5eb3e9b94ce92f588e325560d5802",
+      "bytes": 5552
+    },
+    "README.txt": {
+      "sha256": "68a8915b8218694651907452e4bedfcbb49d31459b846318b6cf2f3c6f348537",
+      "bytes": 243
+    }
+  },
+  "scope": "source/U/S component only"
+}
