@@ -1,0 +1,22 @@
+{
+  "scope": "METADATA_WORDING_ONLY_NO_SOURCE_OR_TEST_CHANGE",
+  "original_source_lock": "/data/neon-build/validation/array-service-native-20261031T221332Z-f8811b/source-lock.json",
+  "original_source_lock_sha256": "0416b489090d30559107b16075eb97a6d27e553a43c181780229b560ba184c6c",
+  "original_committed_copy": "guest-final/source-lock.json",
+  "inherited_field": "Go_PG_helper_source_and_binary_unchanged",
+  "old_value": true,
+  "old_field_is_not_accurate_for_Go_test_ELF": true,
+  "corrected_meaning": {
+    "PG_and_helper_source_and_binary_unchanged": true,
+    "Go_test_probe_source_changed": true,
+    "Go_test_ELF_new_exact_cohort": "/data/neon-build/validation/array-service-go-20261031T221130Z-8b3b02",
+    "Go_test_ELF_sha256": "1a0df3fdf2ac07435199249de53282a1189534e38c9e57228bd13cacc99a364f",
+    "Go_source_lock_sha256": "1fabb3d658cd46f3d179c15c8a80c0d7c7f4cd695e4381f86254c70a6df7ec25",
+    "production_sources_byte_identical_to_9120": true,
+    "only_test_change_between_9120_and_8b3": "pkg/dsga/resourceguard/array_service_native_test.go"
+  },
+  "old_original_files_unchanged": true,
+  "rerun_required": false,
+  "normal_authorized": false,
+  "E": 0
+}

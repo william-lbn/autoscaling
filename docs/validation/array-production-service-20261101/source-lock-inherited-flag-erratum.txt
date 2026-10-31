@@ -1,0 +1,1 @@
+f8811b来源metadata窄勘误：原0416b489 source-lock继承了Go_PG_helper_source_and_binary_unchanged=true环境重试字段。该字段对Go测试二进制不准确，不能用它说Go未变；同一原文另有新8b3准确cohort/1a0df3 ELF字段。正确事实：PG/helper源码与产物未变，Go测试探针确已变更，新GoELF1a0df3只绑定8b3真实COPY与f8811b；生产字节与9120完全一致。原0416来源JSON、已提交README/manifest、原失败/通过收据均保持原字节，仅追加本勘误。无需重跑测试、不新增覆盖或normal/E许可。
