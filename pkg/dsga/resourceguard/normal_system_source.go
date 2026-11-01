@@ -172,6 +172,11 @@ func normalSystemAllowedVersionFile(version uint32, p, kind string) bool {
 }
 func (m NormalSystemSourceManifest) Validate() error {
 	ref, e := LookupPhysicalKernelBuild(NormalSplitV1PhysicalKernelProfileID)
+	if m.ProtocolVersion == 3 && m.Kernel.ProfileID == NormalSplitMetadataV1PhysicalKernelProfileID {
+		// 库存3显式Kernel字段才可选精确18c；不泛化为任意已登记build。
+		// 静态文件通过不等于ordinary2/runtime2/持续normal资格。
+		ref, e = LookupPhysicalKernelBuild(NormalSplitMetadataV1PhysicalKernelProfileID)
+	}
 	if e != nil || !normalSystemSourceVersionProfile(m.ProtocolVersion, m.ProfileID) || m.Kernel != ref || m.ComputePath != "/usr/local/bin/compute_ctl" {
 		return fmt.Errorf("system source requires versioned fixed normal profile")
 	}

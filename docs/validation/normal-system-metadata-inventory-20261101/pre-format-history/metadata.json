@@ -1,0 +1,19 @@
+{
+  "unit": "neon-system-metadata-20261101t064532z-43f1a9",
+  "nonce": "20261101T064532Z-43f1a9",
+  "base": "fc14000c1b3f0c5dd3b33425a5353b9a1c2953bd",
+  "source_count": 1045,
+  "Root_owned2": {
+    "pkg/dsga/resourceguard/normal_system_source.go": "664ea9bcb9b97aaf0b42d5c08996309f0799c3cc9884fd5ed4299161b7ef7787",
+    "pkg/dsga/resourceguard/normal_system_metadata_source_test.go": "794a14e7f908f0a0b752ce08ba100e54d6a471e2f7974b14e02bbb4641e08d56"
+  },
+  "source_lock_sha256": "ac3cff51575892fb26ea6dc0c212b1b63baddd746f88480ac7b53e7f1ad42a9d",
+  "hard_limits": {
+    "memory": "2g",
+    "memory_swap": "2g",
+    "cpu_quota": 200000
+  },
+  "test_regex": "^TestNormalSystem(Metadata|V3)",
+  "normal_authorized": false,
+  "native_executed": false
+}
