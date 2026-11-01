@@ -1,0 +1,21 @@
+{
+  "unit": "neon-metadata-kernel-reference-20261101t025755z-1ac143",
+  "nonce": "20261101T025755Z-1ac143",
+  "base": "97c44b7f4c8e8b7dad52be7d7887c552c5fef6a9",
+  "source_count": 992,
+  "owned_count": 5,
+  "source_lock_sha256": "f8c2e022585372dd2de7a43ea6de1f6294b749dc7af0618d102b1282adc78f5d",
+  "linux_race_regex": "^TestPhysicalKernel",
+  "native_compile_only": true,
+  "independent_U_and_Native_builds_parallel": true,
+  "per_Go_process": {
+    "GOMAXPROCS": 1,
+    "GOMEMLIMIT": "384MiB"
+  },
+  "hard_limits": {
+    "memory": "2g",
+    "memory_swap": "2g",
+    "cpu_quota": 200000
+  },
+  "scope": "EXACT_KERNEL_REFERENCE_U_AND_NATIVE_READER_BUILD_NO_NORMAL"
+}

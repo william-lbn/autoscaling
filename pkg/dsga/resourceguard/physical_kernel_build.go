@@ -16,6 +16,9 @@ const NormalV1PIDCappedPhysicalKernelProfileID = "pg17-linux-6.12.26-normal-v1-p
 // 新0007仅保护两处完整ancestor取消段；并非完整force/I或normal降限授权。
 const NormalSplitV1PhysicalKernelProfileID = "neon-linux-6.12.26-dsga-normal-split-v1"
 
+// 独立Guest metadata候选构建，旧369五元组原样保留；不授予normal资格。
+const NormalSplitMetadataV1PhysicalKernelProfileID = "neon-linux-6.12.26-dsga-normal-split-metadata-v1"
+
 // PhysicalKernelBuildReference 只引用独立审阅的构建收据，不是 Guest 测量证明。
 // 所有返回值均为只读值副本；没有请求可注册的全局 map 或任意 release 前缀入口。
 // KernelNotesSHA256 还须实际从原 Guest 内核读回；FS 规则/UMH 原启动和全部成本另验。
@@ -71,22 +74,43 @@ func LookupPhysicalKernelBuild(profileID string) (PhysicalKernelBuildReference, 
 			KernelConfigSHA256:   "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
 			KernelNotesSHA256:    "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
 		}, nil
+	case NormalSplitMetadataV1PhysicalKernelProfileID:
+		// 原6+7缓存基线及独立8patch；58603b实际编译、304d4f隔离KVM元数据机制。
+		return PhysicalKernelBuildReference{
+			ProfileID:            profileID,
+			KernelRelease:        "6.12.26-william-normal-split-metadata-v1-c67181104ec1",
+			KernelArtifactSHA256: "18c9fd3a38bbe5a087b98998c856898e97ee3f0bc68681b13f0287912849e1ad",
+			KernelConfigSHA256:   "966e615127358d6d0dcf4f6ca884a07702e957ad07a95909cf95feca4aae5441",
+			KernelNotesSHA256:    "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+		}, nil
 	default:
 		return PhysicalKernelBuildReference{}, fmt.Errorf("physical kernel build profile is not recognized")
 	}
 }
 
 // StrictPageCounterIRQBoundary 只回答独立已核构建的编译属性，不接请求bool/scalar。
-// 必须整个五元组逐值等于固定369构建：只复制profileID或混用3b config不会得到能力。
+// 必须整个五元组逐值等于固定369或metadata构建：只复制profileID或混用3b config不会得到能力。
 // compiled CONFIG_NEON_DSGA_STRICT_PAGE_COUNTER=y及实际0007源码绑定上述收据，
 // 但本方法不证明该内核在Guest运行、原出生、force/I/FS闭合或任何降限资格；
 // 后继消费者仍须真实notes、原Origin/Source及持续约束联合核验。
 func (ref PhysicalKernelBuildReference) StrictPageCounterIRQBoundary() bool {
-	expected, err := LookupPhysicalKernelBuild(NormalSplitV1PhysicalKernelProfileID)
-	return err == nil && ref == expected
+	for _, profile := range []string{NormalSplitV1PhysicalKernelProfileID, NormalSplitMetadataV1PhysicalKernelProfileID} {
+		expected, err := LookupPhysicalKernelBuild(profile)
+		if err == nil && ref == expected {
+			return true
+		}
+	}
+	return false
 }
 
-// 两个新准确build具有原early_param硬PID来源；旧552虽可晚写pid_max，不能补签。
+// 已核新构建具有原early_param硬PID来源；旧552虽可晚写pid_max，不能补签。
 func physicalKernelHasPIDHardSource(profile string) bool {
-	return profile == NormalV1PIDCappedPhysicalKernelProfileID || profile == NormalSplitV1PhysicalKernelProfileID
+	return profile == NormalV1PIDCappedPhysicalKernelProfileID || profile == NormalSplitV1PhysicalKernelProfileID || profile == NormalSplitMetadataV1PhysicalKernelProfileID
+}
+
+// ControlMetadataGuard只回答完整冻结构建的编译属性；不接受请求bool/ID单值。
+// 还须Guest真实notes/LSM/初始DAC与全部FD/未来writer/原Root来源，绝不是normal许可。
+func (ref PhysicalKernelBuildReference) ControlMetadataGuard() bool {
+	expected, e := LookupPhysicalKernelBuild(NormalSplitMetadataV1PhysicalKernelProfileID)
+	return e == nil && ref == expected
 }

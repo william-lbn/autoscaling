@@ -1,0 +1,44 @@
+{
+  "scope": "EXACT_18C_KERNEL_REFERENCE_AND_REAL_READONLY_COMPONENT_NOT_NORMAL",
+  "unit": {
+    "roots": 21,
+    "subcases": 186,
+    "new_roots": 2,
+    "new_subcases": 5,
+    "existing_roots": 19,
+    "existing_subcases": 181,
+    "failed": 0,
+    "skipped": 0,
+    "source_inputs": 992,
+    "exact_source_lock_sha256": "f8c2e022585372dd2de7a43ea6de1f6294b749dc7af0618d102b1282adc78f5d",
+    "base": "97c44b7f4c8e8b7dad52be7d7887c552c5fef6a9"
+  },
+  "native": {
+    "id": "PG17-S-KERNEL-005",
+    "new_roots": 1,
+    "internal_checkpoints_not_new_roots": true,
+    "real_KVM": {
+      "enabled": true,
+      "present": true
+    },
+    "host_QEMU_exit": 0,
+    "Guest_exit": 0,
+    "binary_sha256": "6cc86fbd3353c9bcd7a15911fdeeaa1b3d0c3a048b28216c247f788b4d67f287",
+    "kernel": {
+      "name": "normal-split-metadata",
+      "id": "PG17-S-KERNEL-005",
+      "profile": "neon-linux-6.12.26-dsga-normal-split-metadata-v1",
+      "kernel_path": "/data/neon-build/validation/normal-kernel-metadata-build-20261101T023713Z-58603b/build/export",
+      "kernel_sha256": "18c9fd3a38bbe5a087b98998c856898e97ee3f0bc68681b13f0287912849e1ad",
+      "config_sha256": "966e615127358d6d0dcf4f6ca884a07702e957ad07a95909cf95feca4aae5441",
+      "notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e"
+    },
+    "original_cohort": "/data/neon-build/validation/normal-metadata-kernel-reader-20261101T041506Z-b1be2c",
+    "PG_started": false,
+    "Root_origin_created": false
+  },
+  "normal_authorized": false,
+  "all_sources_closed": false,
+  "E": 0,
+  "K8s_E": 0
+}

@@ -82,7 +82,7 @@ func TestNativeReviewedPhysicalKernelComponent(t *testing.T) {
 		observation.RuntimeCapabilities.HardPIDMaxLimit == nil || *observation.RuntimeCapabilities.HardPIDMaxLimit != 512 {
 		t.Fatalf("actual normal-v1 observation differs: %+v", observation)
 	}
-	if ref.StrictPageCounterIRQBoundary() != (profile == NormalSplitV1PhysicalKernelProfileID) {
+	if ref.StrictPageCounterIRQBoundary() != (profile == NormalSplitV1PhysicalKernelProfileID || profile == NormalSplitMetadataV1PhysicalKernelProfileID) {
 		t.Fatal("exact compiled strict IRQ property differs")
 	}
 	hard, err := readPhysicalKernelPIDHardLimit(read("/proc/cmdline"))
@@ -133,6 +133,12 @@ func TestNativeReviewedPhysicalKernelComponent(t *testing.T) {
 	}{Case: "PG17-S-KERNEL-003 actual PID-capped reader component", Build: ref, Observation: observation}
 	if profile == NormalSplitV1PhysicalKernelProfileID {
 		receipt.Case = "PG17-S-KERNEL-004 actual normal-split reader component"
+	}
+	if profile == NormalSplitMetadataV1PhysicalKernelProfileID {
+		receipt.Case = "PG17-S-KERNEL-005 actual metadata kernel readonly reader component"
+		if !ref.ControlMetadataGuard() {
+			t.Fatal("exact compiled metadata guard missing")
+		}
 	}
 	b, err := json.Marshal(receipt)
 	if err != nil {

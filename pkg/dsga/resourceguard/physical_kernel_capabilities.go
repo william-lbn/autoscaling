@@ -82,7 +82,7 @@ func physicalKernelObservationBuild(release, notes string) (string, error) {
 	if release == physicalKernelRelease && physicalDigestValid(notes) {
 		return "pg17-linux-6.12.26-physical-component-v1", nil
 	}
-	for _, profile := range []string{NormalV1PhysicalKernelProfileID, NormalV1PIDCappedPhysicalKernelProfileID, NormalSplitV1PhysicalKernelProfileID} {
+	for _, profile := range []string{NormalV1PhysicalKernelProfileID, NormalV1PIDCappedPhysicalKernelProfileID, NormalSplitV1PhysicalKernelProfileID, NormalSplitMetadataV1PhysicalKernelProfileID} {
 		ref, err := LookupPhysicalKernelBuild(profile)
 		if err == nil && release == ref.KernelRelease && notes == ref.KernelNotesSHA256 {
 			return ref.ProfileID, nil

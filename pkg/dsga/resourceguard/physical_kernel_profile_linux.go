@@ -39,7 +39,8 @@ func readPhysicalKernelComponent(id Identity) (PhysicalKernelObservation, error)
 	normal, err := LookupPhysicalKernelBuild(NormalV1PhysicalKernelProfileID)
 	pidCapped, pidErr := LookupPhysicalKernelBuild(NormalV1PIDCappedPhysicalKernelProfileID)
 	split, splitErr := LookupPhysicalKernelBuild(NormalSplitV1PhysicalKernelProfileID)
-	if err != nil || pidErr != nil || splitErr != nil || (release != physicalKernelRelease && release != normal.KernelRelease && release != pidCapped.KernelRelease && release != split.KernelRelease) {
+	metadata, metadataErr := LookupPhysicalKernelBuild(NormalSplitMetadataV1PhysicalKernelProfileID)
+	if err != nil || pidErr != nil || splitErr != nil || metadataErr != nil || (release != physicalKernelRelease && release != normal.KernelRelease && release != pidCapped.KernelRelease && release != split.KernelRelease && release != metadata.KernelRelease) {
 		return o, fmt.Errorf("physical profile requires an exact reviewed kernel artifact release")
 	}
 	boot, err := kernelText("/proc/sys/kernel/random/boot_id")
@@ -108,7 +109,7 @@ func readPhysicalKernelComponent(id Identity) (PhysicalKernelObservation, error)
 		return o, err
 	}
 	o = PhysicalKernelObservation{ProtocolVersion: 1, Scope: physicalKernelObservationScope, Identity: id, KernelRelease: release, KernelNotesSHA256: physicalDigest(notes), CommandLineSHA256: physicalDigest([]byte(cmdline)), PageSizeBytes: 4096, PossibleCPUs: cpus, PIDMax: uint32(pidMax), Zones: zones, NonMovableUpperBytes: control.Uint64(k), CPUChargeStockUpperBytes: control.Uint64(cpus) * 64 * 4096}
-	if release == normal.KernelRelease || release == pidCapped.KernelRelease || release == split.KernelRelease {
+	if release == normal.KernelRelease || release == pidCapped.KernelRelease || release == split.KernelRelease || release == metadata.KernelRelease {
 		if err := physicalNormalV1BootPolicy(cmdline); err != nil {
 			return PhysicalKernelObservation{}, err
 		}
@@ -116,7 +117,7 @@ func readPhysicalKernelComponent(id Identity) (PhysicalKernelObservation, error)
 		if err != nil {
 			return PhysicalKernelObservation{}, err
 		}
-		if release == pidCapped.KernelRelease || release == split.KernelRelease {
+		if release == pidCapped.KernelRelease || release == split.KernelRelease || release == metadata.KernelRelease {
 			hard, err := readPhysicalKernelPIDHardLimit(cmdline)
 			if err != nil {
 				return PhysicalKernelObservation{}, err
