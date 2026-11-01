@@ -1,0 +1,13 @@
+{
+  "unit": "neon-force-producer-source-20261101t050105z-550d23",
+  "nonce": "20261101T050105Z-550d23",
+  "source_lock_sha256": "fca252b20d0f3a472a64e35190341ba56b9f0701bd6a379c19214bf2dfed4208",
+  "resources": {
+    "RUN_memory": "6g",
+    "RUN_cpu_quota": 400000,
+    "unit_MemoryMax": "512M",
+    "unit_CPUQuota": "100%"
+  },
+  "expected_cache": "all three make stages and first full-tree index RUN cached",
+  "scope": "STATIC_READONLY_ADDITIONAL_PRODUCER_CONTEXT_NOT_U_S"
+}

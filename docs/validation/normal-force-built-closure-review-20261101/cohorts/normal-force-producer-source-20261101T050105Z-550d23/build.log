@@ -1,0 +1,109 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 9.90kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [check-arg 1/3] FROM docker.io/library/ubuntu:24.04@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790
+#4 resolve docker.io/library/ubuntu:24.04@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 3.40kB done
+#5 DONE 0.0s
+
+#6 [control_metadata_build 5/6] COPY profiles/normal-split-metadata-v1/linux-config-amd64-6.12.26 /build/linux-6.12.26/.config
+#6 CACHED
+
+#7 [normal_split_build 5/6] COPY profiles/normal-split-v1/linux-config-amd64-6.12.26 /build/linux-6.12.26/.config
+#7 CACHED
+
+#8 [build-deps 7/8] COPY patches patches
+#8 CACHED
+
+#9 [control_metadata_build 6/6] RUN --network=none cd /build/linux-6.12.26 && make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION="-william-normal-split-metadata-v1-c67181104ec1" -j 4
+#9 CACHED
+
+#10 [normal_split_build 1/6] COPY split-patches/0007-Neon-mm-Bound-hierarchical-page-counter-cancel-IRQ-gap.patch /build/patches/0007-Neon-mm-Bound-hierarchical-page-counter-cancel-IRQ-gap.patch
+#10 CACHED
+
+#11 [control_metadata_build 2/6] RUN --network=none set -eu; cat /sys/fs/cgroup/memory.max; cat /sys/fs/cgroup/cpu.max; test "$(cat /sys/fs/cgroup/memory.max)" = 6442450944; cd /build/linux-6.12.26; patch --dry-run --fuzz=0 -p1 < ../patches/0008-Neon-kernfs-Require-admin-for-control-metadata.patch; patch --fuzz=0 -p1 < ../patches/0008-Neon-kernfs-Require-admin-for-control-metadata.patch
+#11 CACHED
+
+#12 [force_source_review 1/2] COPY force-source-audit.py /force-source-audit.py
+#12 CACHED
+
+#13 [normal_split_build 3/6] COPY linux-config-amd64-6.12.26 /tmp/kernel-default.config
+#13 CACHED
+
+#14 [normal_split_build 4/6] RUN --network=none set -eu; cd /build/linux-6.12.26; make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- KCONFIG_CONFIG=/tmp/kernel-default.config olddefconfig; grep -qx '# CONFIG_NEON_DSGA_STRICT_PAGE_COUNTER is not set' /tmp/kernel-default.config
+#14 CACHED
+
+#15 [control_metadata_build 3/6] COPY metadata-baseline.config /tmp/control-default-off.config
+#15 CACHED
+
+#16 [check-arg 3/3] RUN set -e     && echo "Build linux kernel 6.12.26"     && test -n "6.12.26"     && echo "force this as a requirement for build-deps" > /build/arg-check-succeeded
+#16 CACHED
+
+#17 [build-deps 8/8] RUN set -e     && cd linux-6.12.26     && for f in $(ls -1 ../patches | sort); do echo "Applying $f..."; patch -p1 < ../patches/$f; done
+#17 CACHED
+
+#18 [build-deps 5/8] COPY echo-source-url.sh echo-source-url.sh
+#18 CACHED
+
+#19 [build_amd64 2/2] RUN cd linux-6.12.26 	&& make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION="-william-normal-v1-pidcap-946be0d25506" -j 8
+#19 CACHED
+
+#20 [normal_split_build 2/6] RUN --network=none set -eu; cd /build/linux-6.12.26; patch -p1 < ../patches/0007-Neon-mm-Bound-hierarchical-page-counter-cancel-IRQ-gap.patch
+#20 CACHED
+
+#21 [control_metadata_build 1/6] COPY profiles/normal-split-metadata-v1/0008-Neon-kernfs-Require-admin-for-control-metadata.patch /build/patches/0008-Neon-kernfs-Require-admin-for-control-metadata.patch
+#21 CACHED
+
+#22 [build-deps 3/8] RUN apt-get update && apt-get -y install     curl     ca-certificates     build-essential     gcc-x86-64-linux-gnu     gcc-aarch64-linux-gnu     flex     bison     libelf-dev     bc     libssl-dev     python3     cpio     zstd     libncurses-dev
+#22 CACHED
+
+#23 [normal_split_build 6/6] RUN --network=none cd /build/linux-6.12.26 && make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION="-william-normal-split-v1-e210f5e3ee94" -j 8
+#23 CACHED
+
+#24 [check-arg 2/3] WORKDIR /build
+#24 CACHED
+
+#25 [build_amd64 1/2] ADD profiles/normal-v1/linux-config-amd64-6.12.26 linux-6.12.26/.config
+#25 CACHED
+
+#26 [control_metadata_build 4/6] RUN --network=none set -eu; cd /build/linux-6.12.26; make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- KCONFIG_CONFIG=/tmp/control-default-off.config olddefconfig; grep -qx "# CONFIG_NEON_DSGA_CONTROL_METADATA_GUARD is not set" /tmp/control-default-off.config
+#26 CACHED
+
+#27 [build-deps 6/8] RUN set -e     && rm arg-check-succeeded     && mkdir -p linux-6.12.26     && echo "downloading linux-6.12.26.tar.xz"     && curl -sfL "$(./echo-source-url.sh "6.12.26")" -o "linux-6.12.26.tar.xz"     && echo "unpacking kernel archive"     && tar --strip-components=1 -C linux-6.12.26 -xf linux-6.12.26.tar.xz
+#27 CACHED
+
+#28 [build-deps 4/8] COPY --from=check-arg /build/arg-check-succeeded arg-check-succeeded
+#28 CACHED
+
+#29 [force_source_review 2/2] RUN --network=none python3 /force-source-audit.py
+#29 CACHED
+
+#30 [force_extra_review 1/2] COPY force-extra-audit.py /force-extra-audit.py
+#30 DONE 0.3s
+
+#31 [force_extra_review 2/2] RUN --network=none python3 /force-extra-audit.py
+#31 72.22 {"status": "EXPORTED_FOR_MANUAL_CLASSIFICATION_NOT_PROOF", "indexed_source_count": 61510, "parent_index_sha256": "273af74cfed5f69b98b189a4c12e95128af0a9e5605bda728868c9e2ac4833b1", "symbol_occurrences": {"PF_MEMALLOC": 57, "sk_set_memalloc": 15, "sk_clear_memalloc": 8, "__GFP_NOFAIL": 218, "__GFP_HIGH": 58, "__mem_cgroup_charge": 3}, "selected_files": {"net/core/dev.c": "c3bf09e12430ed58733e4d00947330215b16a132ba2e30437dbcbd73e1ca5810", "net/core/sock.c": "ca478ffbc691004a9b941335ce16a54b40a9de2e92ff3a2bdecf42c0de7523f4", "include/linux/sched/mm.h": "bb34ec7bd531ad709967810a8b57fd95fbadbe320769fe3cfe84656d606d084c", "include/uapi/asm-generic/socket.h": "4bc992a69d9fd537d955b1bf8fb91f2140667afb3fc84930af5205e54835b615", "include/net/sock.h": "ac4caf95288133b4b7738d3ec820f2ad0e1e52c1077aad651ae8745b608c594a", "include/linux/swap.h": "b077df860231041f83a6ca2ef8bde2d1cec492a126d2d10cd6ab4458b35866b8", "include/linux/pagemap.h": "2a90105c4c29ea943cad6b71dcebac14fa9692be6d90b5fa8ec641ac30363e2b", "include/linux/memcontrol.h": "09ca8fbff716d7a36654b6ab440eabf483e125b3eb4afc5b4aa0160a68362751"}, "symbol_occurrences_sha256": "f322c9da6d8a1bf5dff09a5a6e0129140b863e12d4519cdb38fc255778c36020", "scope": "exact cached built18c source; comments/definitions/noncompiled files included; no automatic reachable-callgraph claim", "U": 0, "S": 0, "normal_authorized": false}
+#31 DONE 72.5s
+
+#32 [force_extra_export 1/1] COPY --from=force_extra_review /force-extra/ /
+#32 DONE 0.1s
+
+#33 exporting to client directory
+#33 copying files 857.26kB 0.0s done
+#33 DONE 0.0s
+
+#34 resolving provenance for metadata file
+#34 DONE 0.1s

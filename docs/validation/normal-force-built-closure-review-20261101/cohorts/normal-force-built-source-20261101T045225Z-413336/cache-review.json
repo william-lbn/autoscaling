@@ -1,0 +1,26 @@
+[
+  {
+    "line": "#14 [control_metadata_build 4/6] RUN --network=none set -eu; cd /build/linux-6.12.26; make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- KCONFIG_CONFIG=/tmp/control-default-off.config olddefconfig; grep -qx \"# CONFIG_NEON_DSGA_CONTROL_METADATA_GUARD is not set\" /tmp/control-default-off.config",
+    "cached": true
+  },
+  {
+    "line": "#16 [build_amd64 2/2] RUN cd linux-6.12.26 \t&& make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION=\"-william-normal-v1-pidcap-946be0d25506\" -j 8",
+    "cached": true
+  },
+  {
+    "line": "#22 [normal_split_build 4/6] RUN --network=none set -eu; cd /build/linux-6.12.26; make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- KCONFIG_CONFIG=/tmp/kernel-default.config olddefconfig; grep -qx '# CONFIG_NEON_DSGA_STRICT_PAGE_COUNTER is not set' /tmp/kernel-default.config",
+    "cached": true
+  },
+  {
+    "line": "#26 [normal_split_build 6/6] RUN --network=none cd /build/linux-6.12.26 && make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION=\"-william-normal-split-v1-e210f5e3ee94\" -j 8",
+    "cached": true
+  },
+  {
+    "line": "#27 [control_metadata_build 6/6] RUN --network=none cd /build/linux-6.12.26 && make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION=\"-william-normal-split-metadata-v1-c67181104ec1\" -j 4",
+    "cached": true
+  },
+  {
+    "line": "#29 [force_source_review 2/2] RUN --network=none python3 /force-source-audit.py",
+    "cached": false
+  }
+]

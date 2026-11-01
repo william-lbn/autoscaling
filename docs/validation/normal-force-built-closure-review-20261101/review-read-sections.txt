@@ -1,0 +1,3288 @@
+FILE mm/memcontrol.c SHA256 8f0e3aef837ebc67660372618a8394c17973c5c597811f7b96b6bce2f2b02e5e LINES 2171..2320
+2171: int try_charge_memcg(struct mem_cgroup *memcg, gfp_t gfp_mask,
+2172: 		     unsigned int nr_pages)
+2173: {
+2174: 	unsigned int batch = max(MEMCG_CHARGE_BATCH, nr_pages);
+2175: 	int nr_retries = MAX_RECLAIM_RETRIES;
+2176: 	struct mem_cgroup *mem_over_limit;
+2177: 	struct page_counter *counter;
+2178: 	unsigned long nr_reclaimed;
+2179: 	bool passed_oom = false;
+2180: 	unsigned int reclaim_options = MEMCG_RECLAIM_MAY_SWAP;
+2181: 	bool drained = false;
+2182: 	bool raised_max_event = false;
+2183: 	unsigned long pflags;
+2184: 
+2185: retry:
+2186: 	if (consume_stock(memcg, nr_pages))
+2187: 		return 0;
+2188: 
+2189: 	if (!do_memsw_account() ||
+2190: 	    page_counter_try_charge(&memcg->memsw, batch, &counter)) {
+2191: 		if (page_counter_try_charge(&memcg->memory, batch, &counter))
+2192: 			goto done_restock;
+2193: 		if (do_memsw_account())
+2194: 			page_counter_uncharge(&memcg->memsw, batch);
+2195: 		mem_over_limit = mem_cgroup_from_counter(counter, memory);
+2196: 	} else {
+2197: 		mem_over_limit = mem_cgroup_from_counter(counter, memsw);
+2198: 		reclaim_options &= ~MEMCG_RECLAIM_MAY_SWAP;
+2199: 	}
+2200: 
+2201: 	if (batch > nr_pages) {
+2202: 		batch = nr_pages;
+2203: 		goto retry;
+2204: 	}
+2205: 
+2206: 	/*
+2207: 	 * Prevent unbounded recursion when reclaim operations need to
+2208: 	 * allocate memory. This might exceed the limits temporarily,
+2209: 	 * but we prefer facilitating memory reclaim and getting back
+2210: 	 * under the limit over triggering OOM kills in these cases.
+2211: 	 */
+2212: 	if (unlikely(current->flags & PF_MEMALLOC))
+2213: 		goto force;
+2214: 
+2215: 	if (unlikely(task_in_memcg_oom(current)))
+2216: 		goto nomem;
+2217: 
+2218: 	if (!gfpflags_allow_blocking(gfp_mask))
+2219: 		goto nomem;
+2220: 
+2221: 	memcg_memory_event(mem_over_limit, MEMCG_MAX);
+2222: 	raised_max_event = true;
+2223: 
+2224: 	psi_memstall_enter(&pflags);
+2225: 	nr_reclaimed = try_to_free_mem_cgroup_pages(mem_over_limit, nr_pages,
+2226: 						    gfp_mask, reclaim_options, NULL);
+2227: 	psi_memstall_leave(&pflags);
+2228: 
+2229: 	if (mem_cgroup_margin(mem_over_limit) >= nr_pages)
+2230: 		goto retry;
+2231: 
+2232: 	if (!drained) {
+2233: 		drain_all_stock(mem_over_limit);
+2234: 		drained = true;
+2235: 		goto retry;
+2236: 	}
+2237: 
+2238: 	if (gfp_mask & __GFP_NORETRY)
+2239: 		goto nomem;
+2240: 	/*
+2241: 	 * Even though the limit is exceeded at this point, reclaim
+2242: 	 * may have been able to free some pages.  Retry the charge
+2243: 	 * before killing the task.
+2244: 	 *
+2245: 	 * Only for regular pages, though: huge pages are rather
+2246: 	 * unlikely to succeed so close to the limit, and we fall back
+2247: 	 * to regular pages anyway in case of failure.
+2248: 	 */
+2249: 	if (nr_reclaimed && nr_pages <= (1 << PAGE_ALLOC_COSTLY_ORDER))
+2250: 		goto retry;
+2251: 	/*
+2252: 	 * At task move, charge accounts can be doubly counted. So, it's
+2253: 	 * better to wait until the end of task_move if something is going on.
+2254: 	 */
+2255: 	if (memcg1_wait_acct_move(mem_over_limit))
+2256: 		goto retry;
+2257: 
+2258: 	if (nr_retries--)
+2259: 		goto retry;
+2260: 
+2261: 	if (gfp_mask & __GFP_RETRY_MAYFAIL)
+2262: 		goto nomem;
+2263: 
+2264: 	/* Avoid endless loop for tasks bypassed by the oom killer */
+2265: 	if (passed_oom && task_is_dying())
+2266: 		goto nomem;
+2267: 
+2268: 	/*
+2269: 	 * keep retrying as long as the memcg oom killer is able to make
+2270: 	 * a forward progress or bypass the charge if the oom killer
+2271: 	 * couldn't make any progress.
+2272: 	 */
+2273: 	if (mem_cgroup_oom(mem_over_limit, gfp_mask,
+2274: 			   get_order(nr_pages * PAGE_SIZE))) {
+2275: 		passed_oom = true;
+2276: 		nr_retries = MAX_RECLAIM_RETRIES;
+2277: 		goto retry;
+2278: 	}
+2279: nomem:
+2280: 	/*
+2281: 	 * Memcg doesn't have a dedicated reserve for atomic
+2282: 	 * allocations. But like the global atomic pool, we need to
+2283: 	 * put the burden of reclaim on regular allocation requests
+2284: 	 * and let these go through as privileged allocations.
+2285: 	 */
+2286: 	if (!(gfp_mask & (__GFP_NOFAIL | __GFP_HIGH)))
+2287: 		return -ENOMEM;
+2288: force:
+2289: 	/*
+2290: 	 * If the allocation has to be enforced, don't forget to raise
+2291: 	 * a MEMCG_MAX event.
+2292: 	 */
+2293: 	if (!raised_max_event)
+2294: 		memcg_memory_event(mem_over_limit, MEMCG_MAX);
+2295: 
+2296: 	/*
+2297: 	 * The allocation either can't fail or will lead to more memory
+2298: 	 * being freed very soon.  Allow memory usage go over the limit
+2299: 	 * temporarily by force charging it.
+2300: 	 */
+2301: 	page_counter_charge(&memcg->memory, nr_pages);
+2302: 	if (do_memsw_account())
+2303: 		page_counter_charge(&memcg->memsw, nr_pages);
+2304: 
+2305: 	return 0;
+2306: 
+2307: done_restock:
+2308: 	if (batch > nr_pages)
+2309: 		refill_stock(memcg, batch - nr_pages);
+2310: 
+2311: 	/*
+2312: 	 * If the hierarchy is above the normal consumption range, schedule
+2313: 	 * reclaim on returning to userland.  We can perform reclaim here
+2314: 	 * if __GFP_RECLAIM but let's always punt for simplicity and so that
+2315: 	 * GFP_KERNEL can consistently be used during reclaim.  @memcg is
+2316: 	 * not recorded as it most likely matches current's and won't
+2317: 	 * change in the meantime.  As high limit is checked again before
+2318: 	 * reclaim, the cost of mismatch is negligible.
+2319: 	 */
+2320: 	do {
+
+FILE mm/memcontrol.c SHA256 8f0e3aef837ebc67660372618a8394c17973c5c597811f7b96b6bce2f2b02e5e LINES 4610..4809
+4610: 
+4611: struct uncharge_gather {
+4612: 	struct mem_cgroup *memcg;
+4613: 	unsigned long nr_memory;
+4614: 	unsigned long pgpgout;
+4615: 	unsigned long nr_kmem;
+4616: 	int nid;
+4617: };
+4618: 
+4619: static inline void uncharge_gather_clear(struct uncharge_gather *ug)
+4620: {
+4621: 	memset(ug, 0, sizeof(*ug));
+4622: }
+4623: 
+4624: static void uncharge_batch(const struct uncharge_gather *ug)
+4625: {
+4626: 	if (ug->nr_memory) {
+4627: 		page_counter_uncharge(&ug->memcg->memory, ug->nr_memory);
+4628: 		if (do_memsw_account())
+4629: 			page_counter_uncharge(&ug->memcg->memsw, ug->nr_memory);
+4630: 		if (ug->nr_kmem) {
+4631: 			mod_memcg_state(ug->memcg, MEMCG_KMEM, -ug->nr_kmem);
+4632: 			memcg1_account_kmem(ug->memcg, -ug->nr_kmem);
+4633: 		}
+4634: 		memcg1_oom_recover(ug->memcg);
+4635: 	}
+4636: 
+4637: 	memcg1_uncharge_batch(ug->memcg, ug->pgpgout, ug->nr_memory, ug->nid);
+4638: 
+4639: 	/* drop reference from uncharge_folio */
+4640: 	css_put(&ug->memcg->css);
+4641: }
+4642: 
+4643: static void uncharge_folio(struct folio *folio, struct uncharge_gather *ug)
+4644: {
+4645: 	long nr_pages;
+4646: 	struct mem_cgroup *memcg;
+4647: 	struct obj_cgroup *objcg;
+4648: 
+4649: 	VM_BUG_ON_FOLIO(folio_test_lru(folio), folio);
+4650: 
+4651: 	/*
+4652: 	 * Nobody should be changing or seriously looking at
+4653: 	 * folio memcg or objcg at this point, we have fully
+4654: 	 * exclusive access to the folio.
+4655: 	 */
+4656: 	if (folio_memcg_kmem(folio)) {
+4657: 		objcg = __folio_objcg(folio);
+4658: 		/*
+4659: 		 * This get matches the put at the end of the function and
+4660: 		 * kmem pages do not hold memcg references anymore.
+4661: 		 */
+4662: 		memcg = get_mem_cgroup_from_objcg(objcg);
+4663: 	} else {
+4664: 		memcg = __folio_memcg(folio);
+4665: 	}
+4666: 
+4667: 	if (!memcg)
+4668: 		return;
+4669: 
+4670: 	if (ug->memcg != memcg) {
+4671: 		if (ug->memcg) {
+4672: 			uncharge_batch(ug);
+4673: 			uncharge_gather_clear(ug);
+4674: 		}
+4675: 		ug->memcg = memcg;
+4676: 		ug->nid = folio_nid(folio);
+4677: 
+4678: 		/* pairs with css_put in uncharge_batch */
+4679: 		css_get(&memcg->css);
+4680: 	}
+4681: 
+4682: 	nr_pages = folio_nr_pages(folio);
+4683: 
+4684: 	if (folio_memcg_kmem(folio)) {
+4685: 		ug->nr_memory += nr_pages;
+4686: 		ug->nr_kmem += nr_pages;
+4687: 
+4688: 		folio->memcg_data = 0;
+4689: 		obj_cgroup_put(objcg);
+4690: 	} else {
+4691: 		/* LRU pages aren't accounted at the root level */
+4692: 		if (!mem_cgroup_is_root(memcg))
+4693: 			ug->nr_memory += nr_pages;
+4694: 		ug->pgpgout++;
+4695: 
+4696: 		WARN_ON_ONCE(folio_unqueue_deferred_split(folio));
+4697: 		folio->memcg_data = 0;
+4698: 	}
+4699: 
+4700: 	css_put(&memcg->css);
+4701: }
+4702: 
+4703: void __mem_cgroup_uncharge(struct folio *folio)
+4704: {
+4705: 	struct uncharge_gather ug;
+4706: 
+4707: 	/* Don't touch folio->lru of any random page, pre-check: */
+4708: 	if (!folio_memcg_charged(folio))
+4709: 		return;
+4710: 
+4711: 	uncharge_gather_clear(&ug);
+4712: 	uncharge_folio(folio, &ug);
+4713: 	uncharge_batch(&ug);
+4714: }
+4715: 
+4716: void __mem_cgroup_uncharge_folios(struct folio_batch *folios)
+4717: {
+4718: 	struct uncharge_gather ug;
+4719: 	unsigned int i;
+4720: 
+4721: 	uncharge_gather_clear(&ug);
+4722: 	for (i = 0; i < folios->nr; i++)
+4723: 		uncharge_folio(folios->folios[i], &ug);
+4724: 	if (ug.memcg)
+4725: 		uncharge_batch(&ug);
+4726: }
+4727: 
+4728: /**
+4729:  * mem_cgroup_replace_folio - Charge a folio's replacement.
+4730:  * @old: Currently circulating folio.
+4731:  * @new: Replacement folio.
+4732:  *
+4733:  * Charge @new as a replacement folio for @old. @old will
+4734:  * be uncharged upon free.
+4735:  *
+4736:  * Both folios must be locked, @new->mapping must be set up.
+4737:  */
+4738: void mem_cgroup_replace_folio(struct folio *old, struct folio *new)
+4739: {
+4740: 	struct mem_cgroup *memcg;
+4741: 	long nr_pages = folio_nr_pages(new);
+4742: 
+4743: 	VM_BUG_ON_FOLIO(!folio_test_locked(old), old);
+4744: 	VM_BUG_ON_FOLIO(!folio_test_locked(new), new);
+4745: 	VM_BUG_ON_FOLIO(folio_test_anon(old) != folio_test_anon(new), new);
+4746: 	VM_BUG_ON_FOLIO(folio_nr_pages(old) != nr_pages, new);
+4747: 
+4748: 	if (mem_cgroup_disabled())
+4749: 		return;
+4750: 
+4751: 	/* Page cache replacement: new folio already charged? */
+4752: 	if (folio_memcg_charged(new))
+4753: 		return;
+4754: 
+4755: 	memcg = folio_memcg(old);
+4756: 	VM_WARN_ON_ONCE_FOLIO(!memcg, old);
+4757: 	if (!memcg)
+4758: 		return;
+4759: 
+4760: 	/* Force-charge the new page. The old one will be freed soon */
+4761: 	if (!mem_cgroup_is_root(memcg)) {
+4762: 		page_counter_charge(&memcg->memory, nr_pages);
+4763: 		if (do_memsw_account())
+4764: 			page_counter_charge(&memcg->memsw, nr_pages);
+4765: 	}
+4766: 
+4767: 	css_get(&memcg->css);
+4768: 	commit_charge(new, memcg);
+4769: 	memcg1_commit_charge(new, memcg);
+4770: }
+4771: 
+4772: /**
+4773:  * mem_cgroup_migrate - Transfer the memcg data from the old to the new folio.
+4774:  * @old: Currently circulating folio.
+4775:  * @new: Replacement folio.
+4776:  *
+4777:  * Transfer the memcg data from the old folio to the new folio for migration.
+4778:  * The old folio's data info will be cleared. Note that the memory counters
+4779:  * will remain unchanged throughout the process.
+4780:  *
+4781:  * Both folios must be locked, @new->mapping must be set up.
+4782:  */
+4783: void mem_cgroup_migrate(struct folio *old, struct folio *new)
+4784: {
+4785: 	struct mem_cgroup *memcg;
+4786: 
+4787: 	VM_BUG_ON_FOLIO(!folio_test_locked(old), old);
+4788: 	VM_BUG_ON_FOLIO(!folio_test_locked(new), new);
+4789: 	VM_BUG_ON_FOLIO(folio_test_anon(old) != folio_test_anon(new), new);
+4790: 	VM_BUG_ON_FOLIO(folio_nr_pages(old) != folio_nr_pages(new), new);
+4791: 	VM_BUG_ON_FOLIO(folio_test_lru(old), old);
+4792: 
+4793: 	if (mem_cgroup_disabled())
+4794: 		return;
+4795: 
+4796: 	memcg = folio_memcg(old);
+4797: 	/*
+4798: 	 * Note that it is normal to see !memcg for a hugetlb folio.
+4799: 	 * For e.g, itt could have been allocated when memory_hugetlb_accounting
+4800: 	 * was not selected.
+4801: 	 */
+4802: 	VM_WARN_ON_ONCE_FOLIO(!folio_test_hugetlb(old) && !memcg, old);
+4803: 	if (!memcg)
+4804: 		return;
+4805: 
+4806: 	/* Transfer the charge and the css ref */
+4807: 	commit_charge(new, memcg);
+4808: 
+4809: 	/* Warning should never happen, so don't worry about refcount non-0 */
+
+FILE mm/filemap.c SHA256 9a31917b4306f2bb74921b884a3e5dae5624cc6bd9067d6d39ec2f71cf368022 LINES 802..849
+802:  * replace_page_cache_folio - replace a pagecache folio with a new one
+803:  * @old:	folio to be replaced
+804:  * @new:	folio to replace with
+805:  *
+806:  * This function replaces a folio in the pagecache with a new one.  On
+807:  * success it acquires the pagecache reference for the new folio and
+808:  * drops it for the old folio.  Both the old and new folios must be
+809:  * locked.  This function does not add the new folio to the LRU, the
+810:  * caller must do that.
+811:  *
+812:  * The remove + add is atomic.  This function cannot fail.
+813:  */
+814: void replace_page_cache_folio(struct folio *old, struct folio *new)
+815: {
+816: 	struct address_space *mapping = old->mapping;
+817: 	void (*free_folio)(struct folio *) = mapping->a_ops->free_folio;
+818: 	pgoff_t offset = old->index;
+819: 	XA_STATE(xas, &mapping->i_pages, offset);
+820: 
+821: 	VM_BUG_ON_FOLIO(!folio_test_locked(old), old);
+822: 	VM_BUG_ON_FOLIO(!folio_test_locked(new), new);
+823: 	VM_BUG_ON_FOLIO(new->mapping, new);
+824: 
+825: 	folio_get(new);
+826: 	new->mapping = mapping;
+827: 	new->index = offset;
+828: 
+829: 	mem_cgroup_replace_folio(old, new);
+830: 
+831: 	xas_lock_irq(&xas);
+832: 	xas_store(&xas, new);
+833: 
+834: 	old->mapping = NULL;
+835: 	/* hugetlb pages do not participate in page cache accounting. */
+836: 	if (!folio_test_hugetlb(old))
+837: 		__lruvec_stat_sub_folio(old, NR_FILE_PAGES);
+838: 	if (!folio_test_hugetlb(new))
+839: 		__lruvec_stat_add_folio(new, NR_FILE_PAGES);
+840: 	if (folio_test_swapbacked(old))
+841: 		__lruvec_stat_sub_folio(old, NR_SHMEM);
+842: 	if (folio_test_swapbacked(new))
+843: 		__lruvec_stat_add_folio(new, NR_SHMEM);
+844: 	xas_unlock_irq(&xas);
+845: 	if (free_folio)
+846: 		free_folio(old);
+847: 	folio_put(old);
+848: }
+849: EXPORT_SYMBOL_GPL(replace_page_cache_folio);
+
+FILE mm/filemap.c SHA256 9a31917b4306f2bb74921b884a3e5dae5624cc6bd9067d6d39ec2f71cf368022 LINES 961..990
+961: int filemap_add_folio(struct address_space *mapping, struct folio *folio,
+962: 				pgoff_t index, gfp_t gfp)
+963: {
+964: 	void *shadow = NULL;
+965: 	int ret;
+966: 
+967: 	ret = mem_cgroup_charge(folio, NULL, gfp);
+968: 	if (ret)
+969: 		return ret;
+970: 
+971: 	__folio_set_locked(folio);
+972: 	ret = __filemap_add_folio(mapping, folio, index, gfp, &shadow);
+973: 	if (unlikely(ret)) {
+974: 		mem_cgroup_uncharge(folio);
+975: 		__folio_clear_locked(folio);
+976: 	} else {
+977: 		/*
+978: 		 * The folio might have been evicted from cache only
+979: 		 * recently, in which case it should be activated like
+980: 		 * any other repeatedly accessed folio.
+981: 		 * The exception is folios getting rewritten; evicting other
+982: 		 * data from the working set, only to cache data that will
+983: 		 * get overwritten with something else, is a waste of memory.
+984: 		 */
+985: 		WARN_ON_ONCE(folio_test_active(folio));
+986: 		if (!(gfp & __GFP_WRITE) && shadow)
+987: 			workingset_refault(folio, shadow);
+988: 		folio_add_lru(folio);
+989: 	}
+990: 	return ret;
+
+FILE mm/filemap.c SHA256 9a31917b4306f2bb74921b884a3e5dae5624cc6bd9067d6d39ec2f71cf368022 LINES 1922..1965
+1922: no_page:
+1923: 	if (!folio && (fgp_flags & FGP_CREAT)) {
+1924: 		unsigned int min_order = mapping_min_folio_order(mapping);
+1925: 		unsigned int order = max(min_order, FGF_GET_ORDER(fgp_flags));
+1926: 		int err;
+1927: 		index = mapping_align_index(mapping, index);
+1928: 
+1929: 		if ((fgp_flags & FGP_WRITE) && mapping_can_writeback(mapping))
+1930: 			gfp |= __GFP_WRITE;
+1931: 		if (fgp_flags & FGP_NOFS)
+1932: 			gfp &= ~__GFP_FS;
+1933: 		if (fgp_flags & FGP_NOWAIT) {
+1934: 			gfp &= ~GFP_KERNEL;
+1935: 			gfp |= GFP_NOWAIT | __GFP_NOWARN;
+1936: 		}
+1937: 		if (WARN_ON_ONCE(!(fgp_flags & (FGP_LOCK | FGP_FOR_MMAP))))
+1938: 			fgp_flags |= FGP_LOCK;
+1939: 
+1940: 		if (order > mapping_max_folio_order(mapping))
+1941: 			order = mapping_max_folio_order(mapping);
+1942: 		/* If we're not aligned, allocate a smaller folio */
+1943: 		if (index & ((1UL << order) - 1))
+1944: 			order = __ffs(index);
+1945: 
+1946: 		do {
+1947: 			gfp_t alloc_gfp = gfp;
+1948: 
+1949: 			err = -ENOMEM;
+1950: 			if (order > min_order)
+1951: 				alloc_gfp |= __GFP_NORETRY | __GFP_NOWARN;
+1952: 			folio = filemap_alloc_folio(alloc_gfp, order);
+1953: 			if (!folio)
+1954: 				continue;
+1955: 
+1956: 			/* Init accessed so avoid atomic mark_page_accessed later */
+1957: 			if (fgp_flags & FGP_ACCESSED)
+1958: 				__folio_set_referenced(folio);
+1959: 
+1960: 			err = filemap_add_folio(mapping, folio, index, gfp);
+1961: 			if (!err)
+1962: 				break;
+1963: 			folio_put(folio);
+1964: 			folio = NULL;
+1965: 		} while (order-- > min_order);
+
+FILE mm/shmem.c SHA256 db69c674ea4f5c07f8b8e0a13bb7f53cd16d81ea14ba2ed24a220a39edec7e1c LINES 1453..1492
+1453: static int shmem_writepage(struct page *page, struct writeback_control *wbc)
+1454: {
+1455: 	struct folio *folio = page_folio(page);
+1456: 	struct address_space *mapping = folio->mapping;
+1457: 	struct inode *inode = mapping->host;
+1458: 	struct shmem_inode_info *info = SHMEM_I(inode);
+1459: 	struct shmem_sb_info *sbinfo = SHMEM_SB(inode->i_sb);
+1460: 	swp_entry_t swap;
+1461: 	pgoff_t index;
+1462: 	int nr_pages;
+1463: 	bool split = false;
+1464: 
+1465: 	/*
+1466: 	 * Our capabilities prevent regular writeback or sync from ever calling
+1467: 	 * shmem_writepage; but a stacking filesystem might use ->writepage of
+1468: 	 * its underlying filesystem, in which case tmpfs should write out to
+1469: 	 * swap only in response to memory pressure, and not for the writeback
+1470: 	 * threads or sync.
+1471: 	 */
+1472: 	if (WARN_ON_ONCE(!wbc->for_reclaim))
+1473: 		goto redirty;
+1474: 
+1475: 	if (WARN_ON_ONCE((info->flags & VM_LOCKED) || sbinfo->noswap))
+1476: 		goto redirty;
+1477: 
+1478: 	if (!total_swap_pages)
+1479: 		goto redirty;
+1480: 
+1481: 	/*
+1482: 	 * If CONFIG_THP_SWAP is not enabled, the large folio should be
+1483: 	 * split when swapping.
+1484: 	 *
+1485: 	 * And shrinkage of pages beyond i_size does not split swap, so
+1486: 	 * swapout of a large folio crossing i_size needs to split too
+1487: 	 * (unless fallocate has been used to preallocate beyond EOF).
+1488: 	 */
+1489: 	if (folio_test_large(folio)) {
+1490: 		index = shmem_fallocend(inode,
+1491: 			DIV_ROUND_UP(i_size_read(inode), PAGE_SIZE));
+1492: 		if ((index > folio->index && index < folio_next_index(folio)) ||
+
+FILE mm/shmem.c SHA256 db69c674ea4f5c07f8b8e0a13bb7f53cd16d81ea14ba2ed24a220a39edec7e1c LINES 1775..1838
+1775: 	mpol_cond_put(mpol);
+1776: 
+1777: 	return folio;
+1778: }
+1779: 
+1780: static struct folio *shmem_alloc_and_add_folio(struct vm_fault *vmf,
+1781: 		gfp_t gfp, struct inode *inode, pgoff_t index,
+1782: 		struct mm_struct *fault_mm, unsigned long orders)
+1783: {
+1784: 	struct address_space *mapping = inode->i_mapping;
+1785: 	struct shmem_inode_info *info = SHMEM_I(inode);
+1786: 	unsigned long suitable_orders = 0;
+1787: 	struct folio *folio = NULL;
+1788: 	long pages;
+1789: 	int error, order;
+1790: 
+1791: 	if (!IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE))
+1792: 		orders = 0;
+1793: 
+1794: 	if (orders > 0) {
+1795: 		suitable_orders = shmem_suitable_orders(inode, vmf,
+1796: 							mapping, index, orders);
+1797: 
+1798: 		order = highest_order(suitable_orders);
+1799: 		while (suitable_orders) {
+1800: 			pages = 1UL << order;
+1801: 			index = round_down(index, pages);
+1802: 			folio = shmem_alloc_folio(gfp, order, info, index);
+1803: 			if (folio)
+1804: 				goto allocated;
+1805: 
+1806: 			if (pages == HPAGE_PMD_NR)
+1807: 				count_vm_event(THP_FILE_FALLBACK);
+1808: 			count_mthp_stat(order, MTHP_STAT_SHMEM_FALLBACK);
+1809: 			order = next_order(&suitable_orders, order);
+1810: 		}
+1811: 	} else {
+1812: 		pages = 1;
+1813: 		folio = shmem_alloc_folio(gfp, 0, info, index);
+1814: 	}
+1815: 	if (!folio)
+1816: 		return ERR_PTR(-ENOMEM);
+1817: 
+1818: allocated:
+1819: 	__folio_set_locked(folio);
+1820: 	__folio_set_swapbacked(folio);
+1821: 
+1822: 	gfp &= GFP_RECLAIM_MASK;
+1823: 	error = mem_cgroup_charge(folio, fault_mm, gfp);
+1824: 	if (error) {
+1825: 		if (xa_find(&mapping->i_pages, &index,
+1826: 				index + pages - 1, XA_PRESENT)) {
+1827: 			error = -EEXIST;
+1828: 		} else if (pages > 1) {
+1829: 			if (pages == HPAGE_PMD_NR) {
+1830: 				count_vm_event(THP_FILE_FALLBACK);
+1831: 				count_vm_event(THP_FILE_FALLBACK_CHARGE);
+1832: 			}
+1833: 			count_mthp_stat(folio_order(folio), MTHP_STAT_SHMEM_FALLBACK);
+1834: 			count_mthp_stat(folio_order(folio), MTHP_STAT_SHMEM_FALLBACK_CHARGE);
+1835: 		}
+1836: 		goto unlock;
+1837: 	}
+1838: 
+
+FILE mm/shmem.c SHA256 db69c674ea4f5c07f8b8e0a13bb7f53cd16d81ea14ba2ed24a220a39edec7e1c LINES 1898..1964
+1898: static int shmem_replace_folio(struct folio **foliop, gfp_t gfp,
+1899: 				struct shmem_inode_info *info, pgoff_t index,
+1900: 				struct vm_area_struct *vma)
+1901: {
+1902: 	struct folio *new, *old = *foliop;
+1903: 	swp_entry_t entry = old->swap;
+1904: 	struct address_space *swap_mapping = swap_address_space(entry);
+1905: 	pgoff_t swap_index = swap_cache_index(entry);
+1906: 	XA_STATE(xas, &swap_mapping->i_pages, swap_index);
+1907: 	int nr_pages = folio_nr_pages(old);
+1908: 	int error = 0, i;
+1909: 
+1910: 	/*
+1911: 	 * We have arrived here because our zones are constrained, so don't
+1912: 	 * limit chance of success by further cpuset and node constraints.
+1913: 	 */
+1914: 	gfp &= ~GFP_CONSTRAINT_MASK;
+1915: #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+1916: 	if (nr_pages > 1) {
+1917: 		gfp_t huge_gfp = vma_thp_gfp_mask(vma);
+1918: 
+1919: 		gfp = limit_gfp_mask(huge_gfp, gfp);
+1920: 	}
+1921: #endif
+1922: 
+1923: 	new = shmem_alloc_folio(gfp, folio_order(old), info, index);
+1924: 	if (!new)
+1925: 		return -ENOMEM;
+1926: 
+1927: 	folio_ref_add(new, nr_pages);
+1928: 	folio_copy(new, old);
+1929: 	flush_dcache_folio(new);
+1930: 
+1931: 	__folio_set_locked(new);
+1932: 	__folio_set_swapbacked(new);
+1933: 	folio_mark_uptodate(new);
+1934: 	new->swap = entry;
+1935: 	folio_set_swapcache(new);
+1936: 
+1937: 	/* Swap cache still stores N entries instead of a high-order entry */
+1938: 	xa_lock_irq(&swap_mapping->i_pages);
+1939: 	for (i = 0; i < nr_pages; i++) {
+1940: 		void *item = xas_load(&xas);
+1941: 
+1942: 		if (item != old) {
+1943: 			error = -ENOENT;
+1944: 			break;
+1945: 		}
+1946: 
+1947: 		xas_store(&xas, new);
+1948: 		xas_next(&xas);
+1949: 	}
+1950: 	if (!error) {
+1951: 		mem_cgroup_replace_folio(old, new);
+1952: 		shmem_update_stats(new, nr_pages);
+1953: 		shmem_update_stats(old, -nr_pages);
+1954: 	}
+1955: 	xa_unlock_irq(&swap_mapping->i_pages);
+1956: 
+1957: 	if (unlikely(error)) {
+1958: 		/*
+1959: 		 * Is this possible?  I think not, now that our callers
+1960: 		 * check both the swapcache flag and folio->private
+1961: 		 * after getting the folio lock; but be defensive.
+1962: 		 * Reverse old to newpage for clear and free.
+1963: 		 */
+1964: 		old = new;
+
+FILE include/linux/pagemap.h SHA256 2a90105c4c29ea943cad6b71dcebac14fa9692be6d90b5fa8ec641ac30363e2b LINES 359..500
+359: /*
+360:  * There are some parts of the kernel which assume that PMD entries
+361:  * are exactly HPAGE_PMD_ORDER.  Those should be fixed, but until then,
+362:  * limit the maximum allocation order to PMD size.  I'm not aware of any
+363:  * assumptions about maximum order if THP are disabled, but 8 seems like
+364:  * a good order (that's 1MB if you're using 4kB pages)
+365:  */
+366: #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+367: #define PREFERRED_MAX_PAGECACHE_ORDER	HPAGE_PMD_ORDER
+368: #else
+369: #define PREFERRED_MAX_PAGECACHE_ORDER	8
+370: #endif
+371: 
+372: /*
+373:  * xas_split_alloc() does not support arbitrary orders. This implies no
+374:  * 512MB THP on ARM64 with 64KB base page size.
+375:  */
+376: #define MAX_XAS_ORDER		(XA_CHUNK_SHIFT * 2 - 1)
+377: #define MAX_PAGECACHE_ORDER	min(MAX_XAS_ORDER, PREFERRED_MAX_PAGECACHE_ORDER)
+378: 
+379: /*
+380:  * mapping_max_folio_size_supported() - Check the max folio size supported
+381:  *
+382:  * The filesystem should call this function at mount time if there is a
+383:  * requirement on the folio mapping size in the page cache.
+384:  */
+385: static inline size_t mapping_max_folio_size_supported(void)
+386: {
+387: 	if (IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE))
+388: 		return 1U << (PAGE_SHIFT + MAX_PAGECACHE_ORDER);
+389: 	return PAGE_SIZE;
+390: }
+391: 
+392: /*
+393:  * mapping_set_folio_order_range() - Set the orders supported by a file.
+394:  * @mapping: The address space of the file.
+395:  * @min: Minimum folio order (between 0-MAX_PAGECACHE_ORDER inclusive).
+396:  * @max: Maximum folio order (between @min-MAX_PAGECACHE_ORDER inclusive).
+397:  *
+398:  * The filesystem should call this function in its inode constructor to
+399:  * indicate which base size (min) and maximum size (max) of folio the VFS
+400:  * can use to cache the contents of the file.  This should only be used
+401:  * if the filesystem needs special handling of folio sizes (ie there is
+402:  * something the core cannot know).
+403:  * Do not tune it based on, eg, i_size.
+404:  *
+405:  * Context: This should not be called while the inode is active as it
+406:  * is non-atomic.
+407:  */
+408: static inline void mapping_set_folio_order_range(struct address_space *mapping,
+409: 						 unsigned int min,
+410: 						 unsigned int max)
+411: {
+412: 	if (!IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE))
+413: 		return;
+414: 
+415: 	if (min > MAX_PAGECACHE_ORDER)
+416: 		min = MAX_PAGECACHE_ORDER;
+417: 
+418: 	if (max > MAX_PAGECACHE_ORDER)
+419: 		max = MAX_PAGECACHE_ORDER;
+420: 
+421: 	if (max < min)
+422: 		max = min;
+423: 
+424: 	mapping->flags = (mapping->flags & ~AS_FOLIO_ORDER_MASK) |
+425: 		(min << AS_FOLIO_ORDER_MIN) | (max << AS_FOLIO_ORDER_MAX);
+426: }
+427: 
+428: static inline void mapping_set_folio_min_order(struct address_space *mapping,
+429: 					       unsigned int min)
+430: {
+431: 	mapping_set_folio_order_range(mapping, min, MAX_PAGECACHE_ORDER);
+432: }
+433: 
+434: /**
+435:  * mapping_set_large_folios() - Indicate the file supports large folios.
+436:  * @mapping: The address space of the file.
+437:  *
+438:  * The filesystem should call this function in its inode constructor to
+439:  * indicate that the VFS can use large folios to cache the contents of
+440:  * the file.
+441:  *
+442:  * Context: This should not be called while the inode is active as it
+443:  * is non-atomic.
+444:  */
+445: static inline void mapping_set_large_folios(struct address_space *mapping)
+446: {
+447: 	mapping_set_folio_order_range(mapping, 0, MAX_PAGECACHE_ORDER);
+448: }
+449: 
+450: static inline unsigned int
+451: mapping_max_folio_order(const struct address_space *mapping)
+452: {
+453: 	if (!IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE))
+454: 		return 0;
+455: 	return (mapping->flags & AS_FOLIO_ORDER_MAX_MASK) >> AS_FOLIO_ORDER_MAX;
+456: }
+457: 
+458: static inline unsigned int
+459: mapping_min_folio_order(const struct address_space *mapping)
+460: {
+461: 	if (!IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE))
+462: 		return 0;
+463: 	return (mapping->flags & AS_FOLIO_ORDER_MIN_MASK) >> AS_FOLIO_ORDER_MIN;
+464: }
+465: 
+466: static inline unsigned long
+467: mapping_min_folio_nrpages(struct address_space *mapping)
+468: {
+469: 	return 1UL << mapping_min_folio_order(mapping);
+470: }
+471: 
+472: /**
+473:  * mapping_align_index() - Align index for this mapping.
+474:  * @mapping: The address_space.
+475:  * @index: The page index.
+476:  *
+477:  * The index of a folio must be naturally aligned.  If you are adding a
+478:  * new folio to the page cache and need to know what index to give it,
+479:  * call this function.
+480:  */
+481: static inline pgoff_t mapping_align_index(struct address_space *mapping,
+482: 					  pgoff_t index)
+483: {
+484: 	return round_down(index, mapping_min_folio_nrpages(mapping));
+485: }
+486: 
+487: /*
+488:  * Large folio support currently depends on THP.  These dependencies are
+489:  * being worked on but are not yet fixed.
+490:  */
+491: static inline bool mapping_large_folio_support(struct address_space *mapping)
+492: {
+493: 	/* AS_FOLIO_ORDER is only reasonable for pagecache folios */
+494: 	VM_WARN_ONCE((unsigned long)mapping & PAGE_MAPPING_ANON,
+495: 			"Anonymous mapping always supports large folio");
+496: 
+497: 	return mapping_max_folio_order(mapping) > 0;
+498: }
+499: 
+500: /* Return the maximum folio size for this pagecache mapping, in bytes. */
+
+FILE include/linux/shmem_fs.h SHA256 39210cdd2a8d9bee833e724df2a34433dbfb47876596f9f478fa8b08f3e799d1 LINES 108..124
+108: extern struct page *shmem_read_mapping_page_gfp(struct address_space *mapping,
+109: 					pgoff_t index, gfp_t gfp_mask);
+110: extern void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end);
+111: int shmem_unuse(unsigned int type);
+112: 
+113: #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+114: unsigned long shmem_allowable_huge_orders(struct inode *inode,
+115: 				struct vm_area_struct *vma, pgoff_t index,
+116: 				loff_t write_end, bool shmem_huge_force);
+117: #else
+118: static inline unsigned long shmem_allowable_huge_orders(struct inode *inode,
+119: 				struct vm_area_struct *vma, pgoff_t index,
+120: 				loff_t write_end, bool shmem_huge_force)
+121: {
+122: 	return 0;
+123: }
+124: #endif
+
+FILE mm/shmem.c SHA256 db69c674ea4f5c07f8b8e0a13bb7f53cd16d81ea14ba2ed24a220a39edec7e1c LINES 1659..1720
+1659: #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+1660: unsigned long shmem_allowable_huge_orders(struct inode *inode,
+1661: 				struct vm_area_struct *vma, pgoff_t index,
+1662: 				loff_t write_end, bool shmem_huge_force)
+1663: {
+1664: 	unsigned long mask = READ_ONCE(huge_shmem_orders_always);
+1665: 	unsigned long within_size_orders = READ_ONCE(huge_shmem_orders_within_size);
+1666: 	unsigned long vm_flags = vma ? vma->vm_flags : 0;
+1667: 	pgoff_t aligned_index;
+1668: 	bool global_huge;
+1669: 	loff_t i_size;
+1670: 	int order;
+1671: 
+1672: 	if (thp_disabled_by_hw() || (vma && vma_thp_disabled(vma, vm_flags)))
+1673: 		return 0;
+1674: 
+1675: 	global_huge = shmem_huge_global_enabled(inode, index, write_end,
+1676: 					shmem_huge_force, vma, vm_flags);
+1677: 	if (!vma || !vma_is_anon_shmem(vma)) {
+1678: 		/*
+1679: 		 * For tmpfs, we now only support PMD sized THP if huge page
+1680: 		 * is enabled, otherwise fallback to order 0.
+1681: 		 */
+1682: 		return global_huge ? BIT(HPAGE_PMD_ORDER) : 0;
+1683: 	}
+1684: 
+1685: 	/*
+1686: 	 * Following the 'deny' semantics of the top level, force the huge
+1687: 	 * option off from all mounts.
+1688: 	 */
+1689: 	if (shmem_huge == SHMEM_HUGE_DENY)
+1690: 		return 0;
+1691: 
+1692: 	/*
+1693: 	 * Only allow inherit orders if the top-level value is 'force', which
+1694: 	 * means non-PMD sized THP can not override 'huge' mount option now.
+1695: 	 */
+1696: 	if (shmem_huge == SHMEM_HUGE_FORCE)
+1697: 		return READ_ONCE(huge_shmem_orders_inherit);
+1698: 
+1699: 	/* Allow mTHP that will be fully within i_size. */
+1700: 	order = highest_order(within_size_orders);
+1701: 	while (within_size_orders) {
+1702: 		aligned_index = round_up(index + 1, 1 << order);
+1703: 		i_size = round_up(i_size_read(inode), PAGE_SIZE);
+1704: 		if (i_size >> PAGE_SHIFT >= aligned_index) {
+1705: 			mask |= within_size_orders;
+1706: 			break;
+1707: 		}
+1708: 
+1709: 		order = next_order(&within_size_orders, order);
+1710: 	}
+1711: 
+1712: 	if (vm_flags & VM_HUGEPAGE)
+1713: 		mask |= READ_ONCE(huge_shmem_orders_madvise);
+1714: 
+1715: 	if (global_huge)
+1716: 		mask |= READ_ONCE(huge_shmem_orders_inherit);
+1717: 
+1718: 	return THP_ORDERS_ALL_FILE_DEFAULT & mask;
+1719: }
+1720: 
+
+FILE mm/shmem.c SHA256 db69c674ea4f5c07f8b8e0a13bb7f53cd16d81ea14ba2ed24a220a39edec7e1c LINES 2819..2838
+2819: 	info->fsflags = (dir == NULL) ? 0 :
+2820: 		SHMEM_I(dir)->fsflags & SHMEM_FL_INHERITED;
+2821: 	if (info->fsflags)
+2822: 		shmem_set_inode_flags(inode, info->fsflags);
+2823: 	INIT_LIST_HEAD(&info->shrinklist);
+2824: 	INIT_LIST_HEAD(&info->swaplist);
+2825: 	simple_xattrs_init(&info->xattrs);
+2826: 	cache_no_acl(inode);
+2827: 	if (sbinfo->noswap)
+2828: 		mapping_set_unevictable(inode->i_mapping);
+2829: 	mapping_set_large_folios(inode->i_mapping);
+2830: 
+2831: 	switch (mode & S_IFMT) {
+2832: 	default:
+2833: 		inode->i_op = &shmem_special_inode_operations;
+2834: 		init_special_inode(inode, mode, dev);
+2835: 		break;
+2836: 	case S_IFREG:
+2837: 		inode->i_mapping->a_ops = &shmem_aops;
+2838: 		inode->i_op = &shmem_inode_operations;
+
+FILE mm/memory.c SHA256 f64f682650a71d6996ef88645fe4469827892117c531a840fc0afe2c948860b0 LINES 1056..1076
+1056: static inline struct folio *folio_prealloc(struct mm_struct *src_mm,
+1057: 		struct vm_area_struct *vma, unsigned long addr, bool need_zero)
+1058: {
+1059: 	struct folio *new_folio;
+1060: 
+1061: 	if (need_zero)
+1062: 		new_folio = vma_alloc_zeroed_movable_folio(vma, addr);
+1063: 	else
+1064: 		new_folio = vma_alloc_folio(GFP_HIGHUSER_MOVABLE, 0, vma,
+1065: 					    addr, false);
+1066: 
+1067: 	if (!new_folio)
+1068: 		return NULL;
+1069: 
+1070: 	if (mem_cgroup_charge(new_folio, src_mm, GFP_KERNEL)) {
+1071: 		folio_put(new_folio);
+1072: 		return NULL;
+1073: 	}
+1074: 	folio_throttle_swaprate(new_folio, GFP_KERNEL);
+1075: 
+1076: 	return new_folio;
+
+FILE mm/memory.c SHA256 f64f682650a71d6996ef88645fe4469827892117c531a840fc0afe2c948860b0 LINES 4644..4727
+4644: 	for (i = 0; i < nr_pages; i++) {
+4645: 		if (!pte_none(ptep_get_lockless(pte + i)))
+4646: 			return false;
+4647: 	}
+4648: 
+4649: 	return true;
+4650: }
+4651: 
+4652: static struct folio *alloc_anon_folio(struct vm_fault *vmf)
+4653: {
+4654: 	struct vm_area_struct *vma = vmf->vma;
+4655: #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+4656: 	unsigned long orders;
+4657: 	struct folio *folio;
+4658: 	unsigned long addr;
+4659: 	pte_t *pte;
+4660: 	gfp_t gfp;
+4661: 	int order;
+4662: 
+4663: 	/*
+4664: 	 * If uffd is active for the vma we need per-page fault fidelity to
+4665: 	 * maintain the uffd semantics.
+4666: 	 */
+4667: 	if (unlikely(userfaultfd_armed(vma)))
+4668: 		goto fallback;
+4669: 
+4670: 	/*
+4671: 	 * Get a list of all the (large) orders below PMD_ORDER that are enabled
+4672: 	 * for this vma. Then filter out the orders that can't be allocated over
+4673: 	 * the faulting address and still be fully contained in the vma.
+4674: 	 */
+4675: 	orders = thp_vma_allowable_orders(vma, vma->vm_flags,
+4676: 			TVA_IN_PF | TVA_ENFORCE_SYSFS, BIT(PMD_ORDER) - 1);
+4677: 	orders = thp_vma_suitable_orders(vma, vmf->address, orders);
+4678: 
+4679: 	if (!orders)
+4680: 		goto fallback;
+4681: 
+4682: 	pte = pte_offset_map(vmf->pmd, vmf->address & PMD_MASK);
+4683: 	if (!pte)
+4684: 		return ERR_PTR(-EAGAIN);
+4685: 
+4686: 	/*
+4687: 	 * Find the highest order where the aligned range is completely
+4688: 	 * pte_none(). Note that all remaining orders will be completely
+4689: 	 * pte_none().
+4690: 	 */
+4691: 	order = highest_order(orders);
+4692: 	while (orders) {
+4693: 		addr = ALIGN_DOWN(vmf->address, PAGE_SIZE << order);
+4694: 		if (pte_range_none(pte + pte_index(addr), 1 << order))
+4695: 			break;
+4696: 		order = next_order(&orders, order);
+4697: 	}
+4698: 
+4699: 	pte_unmap(pte);
+4700: 
+4701: 	if (!orders)
+4702: 		goto fallback;
+4703: 
+4704: 	/* Try allocating the highest of the remaining orders. */
+4705: 	gfp = vma_thp_gfp_mask(vma);
+4706: 	while (orders) {
+4707: 		addr = ALIGN_DOWN(vmf->address, PAGE_SIZE << order);
+4708: 		folio = vma_alloc_folio(gfp, order, vma, addr, true);
+4709: 		if (folio) {
+4710: 			if (mem_cgroup_charge(folio, vma->vm_mm, gfp)) {
+4711: 				count_mthp_stat(order, MTHP_STAT_ANON_FAULT_FALLBACK_CHARGE);
+4712: 				folio_put(folio);
+4713: 				goto next;
+4714: 			}
+4715: 			folio_throttle_swaprate(folio, gfp);
+4716: 			folio_zero_user(folio, vmf->address);
+4717: 			return folio;
+4718: 		}
+4719: next:
+4720: 		count_mthp_stat(order, MTHP_STAT_ANON_FAULT_FALLBACK);
+4721: 		order = next_order(&orders, order);
+4722: 	}
+4723: 
+4724: fallback:
+4725: #endif
+4726: 	return folio_prealloc(vma->vm_mm, vma, vmf->address, true);
+4727: }
+
+FILE net/core/sock.c SHA256 ca478ffbc691004a9b941335ce16a54b40a9de2e92ff3a2bdecf42c0de7523f4 LINES 289..344
+289: int sysctl_tstamp_allow_data __read_mostly = 1;
+290: 
+291: DEFINE_STATIC_KEY_FALSE(memalloc_socks_key);
+292: EXPORT_SYMBOL_GPL(memalloc_socks_key);
+293: 
+294: /**
+295:  * sk_set_memalloc - sets %SOCK_MEMALLOC
+296:  * @sk: socket to set it on
+297:  *
+298:  * Set %SOCK_MEMALLOC on a socket for access to emergency reserves.
+299:  * It's the responsibility of the admin to adjust min_free_kbytes
+300:  * to meet the requirements
+301:  */
+302: void sk_set_memalloc(struct sock *sk)
+303: {
+304: 	sock_set_flag(sk, SOCK_MEMALLOC);
+305: 	sk->sk_allocation |= __GFP_MEMALLOC;
+306: 	static_branch_inc(&memalloc_socks_key);
+307: }
+308: EXPORT_SYMBOL_GPL(sk_set_memalloc);
+309: 
+310: void sk_clear_memalloc(struct sock *sk)
+311: {
+312: 	sock_reset_flag(sk, SOCK_MEMALLOC);
+313: 	sk->sk_allocation &= ~__GFP_MEMALLOC;
+314: 	static_branch_dec(&memalloc_socks_key);
+315: 
+316: 	/*
+317: 	 * SOCK_MEMALLOC is allowed to ignore rmem limits to ensure forward
+318: 	 * progress of swapping. SOCK_MEMALLOC may be cleared while
+319: 	 * it has rmem allocations due to the last swapfile being deactivated
+320: 	 * but there is a risk that the socket is unusable due to exceeding
+321: 	 * the rmem limits. Reclaim the reserves and obey rmem limits again.
+322: 	 */
+323: 	sk_mem_reclaim(sk);
+324: }
+325: EXPORT_SYMBOL_GPL(sk_clear_memalloc);
+326: 
+327: int __sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
+328: {
+329: 	int ret;
+330: 	unsigned int noreclaim_flag;
+331: 
+332: 	/* these should have been dropped before queueing */
+333: 	BUG_ON(!sock_flag(sk, SOCK_MEMALLOC));
+334: 
+335: 	noreclaim_flag = memalloc_noreclaim_save();
+336: 	ret = INDIRECT_CALL_INET(sk->sk_backlog_rcv,
+337: 				 tcp_v6_do_rcv,
+338: 				 tcp_v4_do_rcv,
+339: 				 sk, skb);
+340: 	memalloc_noreclaim_restore(noreclaim_flag);
+341: 
+342: 	return ret;
+343: }
+344: EXPORT_SYMBOL(__sk_backlog_rcv);
+
+FILE net/core/dev.c SHA256 c3bf09e12430ed58733e4d00947330215b16a132ba2e30437dbcbd73e1ca5810 LINES 5834..5887
+5834: static int __netif_receive_skb(struct sk_buff *skb)
+5835: {
+5836: 	int ret;
+5837: 
+5838: 	if (sk_memalloc_socks() && skb_pfmemalloc(skb)) {
+5839: 		unsigned int noreclaim_flag;
+5840: 
+5841: 		/*
+5842: 		 * PFMEMALLOC skbs are special, they should
+5843: 		 * - be delivered to SOCK_MEMALLOC sockets only
+5844: 		 * - stay away from userspace
+5845: 		 * - have bounded memory usage
+5846: 		 *
+5847: 		 * Use PF_MEMALLOC as this saves us from propagating the allocation
+5848: 		 * context down to all allocation sites.
+5849: 		 */
+5850: 		noreclaim_flag = memalloc_noreclaim_save();
+5851: 		ret = __netif_receive_skb_one_core(skb, true);
+5852: 		memalloc_noreclaim_restore(noreclaim_flag);
+5853: 	} else
+5854: 		ret = __netif_receive_skb_one_core(skb, false);
+5855: 
+5856: 	return ret;
+5857: }
+5858: 
+5859: static void __netif_receive_skb_list(struct list_head *head)
+5860: {
+5861: 	unsigned long noreclaim_flag = 0;
+5862: 	struct sk_buff *skb, *next;
+5863: 	bool pfmemalloc = false; /* Is current sublist PF_MEMALLOC? */
+5864: 
+5865: 	list_for_each_entry_safe(skb, next, head, list) {
+5866: 		if ((sk_memalloc_socks() && skb_pfmemalloc(skb)) != pfmemalloc) {
+5867: 			struct list_head sublist;
+5868: 
+5869: 			/* Handle the previous sublist */
+5870: 			list_cut_before(&sublist, head, &skb->list);
+5871: 			if (!list_empty(&sublist))
+5872: 				__netif_receive_skb_list_core(&sublist, pfmemalloc);
+5873: 			pfmemalloc = !pfmemalloc;
+5874: 			/* See comments in __netif_receive_skb */
+5875: 			if (pfmemalloc)
+5876: 				noreclaim_flag = memalloc_noreclaim_save();
+5877: 			else
+5878: 				memalloc_noreclaim_restore(noreclaim_flag);
+5879: 		}
+5880: 	}
+5881: 	/* Handle the remaining sublist */
+5882: 	if (!list_empty(head))
+5883: 		__netif_receive_skb_list_core(head, pfmemalloc);
+5884: 	/* Restore pflags */
+5885: 	if (pfmemalloc)
+5886: 		memalloc_noreclaim_restore(noreclaim_flag);
+5887: }
+
+FILE include/net/sock.h SHA256 ac4caf95288133b4b7738d3ec820f2ad0e1e52c1077aad651ae8745b608c594a LINES 988..1012
+988: }
+989: 
+990: static inline bool sock_flag(const struct sock *sk, enum sock_flags flag)
+991: {
+992: 	return test_bit(flag, &sk->sk_flags);
+993: }
+994: 
+995: #ifdef CONFIG_NET
+996: DECLARE_STATIC_KEY_FALSE(memalloc_socks_key);
+997: static inline int sk_memalloc_socks(void)
+998: {
+999: 	return static_branch_unlikely(&memalloc_socks_key);
+1000: }
+1001: 
+1002: void __receive_sock(struct file *file);
+1003: #else
+1004: 
+1005: static inline int sk_memalloc_socks(void)
+1006: {
+1007: 	return 0;
+1008: }
+1009: 
+1010: static inline void __receive_sock(struct file *file)
+1011: { }
+1012: #endif
+
+FILE include/uapi/asm-generic/socket.h SHA256 4bc992a69d9fd537d955b1bf8fb91f2140667afb3fc84930af5205e54835b615 LINES 68..84
+68: #define SO_NOFCS		43
+69: 
+70: #define SO_LOCK_FILTER		44
+71: 
+72: #define SO_SELECT_ERR_QUEUE	45
+73: 
+74: #define SO_BUSY_POLL		46
+75: 
+76: #define SO_MAX_PACING_RATE	47
+77: 
+78: #define SO_BPF_EXTENSIONS	48
+79: 
+80: #define SO_INCOMING_CPU		49
+81: 
+82: #define SO_ATTACH_BPF		50
+83: #define SO_DETACH_BPF		SO_DETACH_FILTER
+84: 
+
+FILE kernel/softirq.c SHA256 373c8c0dcf86fbb713f7de339a841b3009304d6e920b8bec624cdc8802bf9bf6 LINES 518..591
+518: static void handle_softirqs(bool ksirqd)
+519: {
+520: 	unsigned long end = jiffies + MAX_SOFTIRQ_TIME;
+521: 	unsigned long old_flags = current->flags;
+522: 	int max_restart = MAX_SOFTIRQ_RESTART;
+523: 	struct softirq_action *h;
+524: 	bool in_hardirq;
+525: 	__u32 pending;
+526: 	int softirq_bit;
+527: 
+528: 	/*
+529: 	 * Mask out PF_MEMALLOC as the current task context is borrowed for the
+530: 	 * softirq. A softirq handled, such as network RX, might set PF_MEMALLOC
+531: 	 * again if the socket is related to swapping.
+532: 	 */
+533: 	current->flags &= ~PF_MEMALLOC;
+534: 
+535: 	pending = local_softirq_pending();
+536: 
+537: 	softirq_handle_begin();
+538: 	in_hardirq = lockdep_softirq_start();
+539: 	account_softirq_enter(current);
+540: 
+541: restart:
+542: 	/* Reset the pending bitmask before enabling irqs */
+543: 	set_softirq_pending(0);
+544: 
+545: 	local_irq_enable();
+546: 
+547: 	h = softirq_vec;
+548: 
+549: 	while ((softirq_bit = ffs(pending))) {
+550: 		unsigned int vec_nr;
+551: 		int prev_count;
+552: 
+553: 		h += softirq_bit - 1;
+554: 
+555: 		vec_nr = h - softirq_vec;
+556: 		prev_count = preempt_count();
+557: 
+558: 		kstat_incr_softirqs_this_cpu(vec_nr);
+559: 
+560: 		trace_softirq_entry(vec_nr);
+561: 		h->action();
+562: 		trace_softirq_exit(vec_nr);
+563: 		if (unlikely(prev_count != preempt_count())) {
+564: 			pr_err("huh, entered softirq %u %s %p with preempt_count %08x, exited with %08x?\n",
+565: 			       vec_nr, softirq_to_name[vec_nr], h->action,
+566: 			       prev_count, preempt_count());
+567: 			preempt_count_set(prev_count);
+568: 		}
+569: 		h++;
+570: 		pending >>= softirq_bit;
+571: 	}
+572: 
+573: 	if (!IS_ENABLED(CONFIG_PREEMPT_RT) && ksirqd)
+574: 		rcu_softirq_qs();
+575: 
+576: 	local_irq_disable();
+577: 
+578: 	pending = local_softirq_pending();
+579: 	if (pending) {
+580: 		if (time_before(jiffies, end) && !need_resched() &&
+581: 		    --max_restart)
+582: 			goto restart;
+583: 
+584: 		wakeup_softirqd();
+585: 	}
+586: 
+587: 	account_softirq_exit(current);
+588: 	lockdep_softirq_end(in_hardirq);
+589: 	softirq_handle_end();
+590: 	current_restore_flags(old_flags, PF_MEMALLOC);
+591: }
+
+FILE kernel/fork.c SHA256 cc74d2293e9960db61f154c18f38c5e1658a5e98f03131f3085e27872e487f9e LINES 2220..2286
+2220: 	recalc_sigpending();
+2221: 	spin_unlock_irq(&current->sighand->siglock);
+2222: 	retval = -ERESTARTNOINTR;
+2223: 	if (task_sigpending(current))
+2224: 		goto fork_out;
+2225: 
+2226: 	retval = -ENOMEM;
+2227: 	p = dup_task_struct(current, node);
+2228: 	if (!p)
+2229: 		goto fork_out;
+2230: 	p->flags &= ~PF_KTHREAD;
+2231: 	if (args->kthread)
+2232: 		p->flags |= PF_KTHREAD;
+2233: 	if (args->user_worker) {
+2234: 		/*
+2235: 		 * Mark us a user worker, and block any signal that isn't
+2236: 		 * fatal or STOP
+2237: 		 */
+2238: 		p->flags |= PF_USER_WORKER;
+2239: 		siginitsetinv(&p->blocked, sigmask(SIGKILL)|sigmask(SIGSTOP));
+2240: 	}
+2241: 	if (args->io_thread)
+2242: 		p->flags |= PF_IO_WORKER;
+2243: 
+2244: 	if (args->name)
+2245: 		strscpy_pad(p->comm, args->name, sizeof(p->comm));
+2246: 
+2247: 	p->set_child_tid = (clone_flags & CLONE_CHILD_SETTID) ? args->child_tid : NULL;
+2248: 	/*
+2249: 	 * Clear TID on mm_release()?
+2250: 	 */
+2251: 	p->clear_child_tid = (clone_flags & CLONE_CHILD_CLEARTID) ? args->child_tid : NULL;
+2252: 
+2253: 	ftrace_graph_init_task(p);
+2254: 
+2255: 	rt_mutex_init_task(p);
+2256: 
+2257: 	lockdep_assert_irqs_enabled();
+2258: #ifdef CONFIG_PROVE_LOCKING
+2259: 	DEBUG_LOCKS_WARN_ON(!p->softirqs_enabled);
+2260: #endif
+2261: 	retval = copy_creds(p, clone_flags);
+2262: 	if (retval < 0)
+2263: 		goto bad_fork_free;
+2264: 
+2265: 	retval = -EAGAIN;
+2266: 	if (is_rlimit_overlimit(task_ucounts(p), UCOUNT_RLIMIT_NPROC, rlimit(RLIMIT_NPROC))) {
+2267: 		if (p->real_cred->user != INIT_USER &&
+2268: 		    !capable(CAP_SYS_RESOURCE) && !capable(CAP_SYS_ADMIN))
+2269: 			goto bad_fork_cleanup_count;
+2270: 	}
+2271: 	current->flags &= ~PF_NPROC_EXCEEDED;
+2272: 
+2273: 	/*
+2274: 	 * If multiple threads are within copy_process(), then this check
+2275: 	 * triggers too late. This doesn't hurt, the check is only there
+2276: 	 * to stop root fork bombs.
+2277: 	 */
+2278: 	retval = -EAGAIN;
+2279: 	if (data_race(nr_threads >= max_threads))
+2280: 		goto bad_fork_cleanup_count;
+2281: 
+2282: 	delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */
+2283: 	p->flags &= ~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE | PF_NO_SETAFFINITY);
+2284: 	p->flags |= PF_FORKNOEXEC;
+2285: 	INIT_LIST_HEAD(&p->children);
+2286: 	INIT_LIST_HEAD(&p->sibling);
+
+FILE kernel/sched/core.c SHA256 21dd3c7f543ca1996b5fe1e27e063bff93f10654a4f9f8f893481f7228d0a003 LINES 7387..7550
+7387: enum {
+7388: 	preempt_dynamic_undefined = -1,
+7389: 	preempt_dynamic_none,
+7390: 	preempt_dynamic_voluntary,
+7391: 	preempt_dynamic_full,
+7392: };
+7393: 
+7394: int preempt_dynamic_mode = preempt_dynamic_undefined;
+7395: 
+7396: int sched_dynamic_mode(const char *str)
+7397: {
+7398: 	if (!strcmp(str, "none"))
+7399: 		return preempt_dynamic_none;
+7400: 
+7401: 	if (!strcmp(str, "voluntary"))
+7402: 		return preempt_dynamic_voluntary;
+7403: 
+7404: 	if (!strcmp(str, "full"))
+7405: 		return preempt_dynamic_full;
+7406: 
+7407: 	return -EINVAL;
+7408: }
+7409: 
+7410: #if defined(CONFIG_HAVE_PREEMPT_DYNAMIC_CALL)
+7411: #define preempt_dynamic_enable(f)	static_call_update(f, f##_dynamic_enabled)
+7412: #define preempt_dynamic_disable(f)	static_call_update(f, f##_dynamic_disabled)
+7413: #elif defined(CONFIG_HAVE_PREEMPT_DYNAMIC_KEY)
+7414: #define preempt_dynamic_enable(f)	static_key_enable(&sk_dynamic_##f.key)
+7415: #define preempt_dynamic_disable(f)	static_key_disable(&sk_dynamic_##f.key)
+7416: #else
+7417: #error "Unsupported PREEMPT_DYNAMIC mechanism"
+7418: #endif
+7419: 
+7420: static DEFINE_MUTEX(sched_dynamic_mutex);
+7421: static bool klp_override;
+7422: 
+7423: static void __sched_dynamic_update(int mode)
+7424: {
+7425: 	/*
+7426: 	 * Avoid {NONE,VOLUNTARY} -> FULL transitions from ever ending up in
+7427: 	 * the ZERO state, which is invalid.
+7428: 	 */
+7429: 	if (!klp_override)
+7430: 		preempt_dynamic_enable(cond_resched);
+7431: 	preempt_dynamic_enable(might_resched);
+7432: 	preempt_dynamic_enable(preempt_schedule);
+7433: 	preempt_dynamic_enable(preempt_schedule_notrace);
+7434: 	preempt_dynamic_enable(irqentry_exit_cond_resched);
+7435: 
+7436: 	switch (mode) {
+7437: 	case preempt_dynamic_none:
+7438: 		if (!klp_override)
+7439: 			preempt_dynamic_enable(cond_resched);
+7440: 		preempt_dynamic_disable(might_resched);
+7441: 		preempt_dynamic_disable(preempt_schedule);
+7442: 		preempt_dynamic_disable(preempt_schedule_notrace);
+7443: 		preempt_dynamic_disable(irqentry_exit_cond_resched);
+7444: 		if (mode != preempt_dynamic_mode)
+7445: 			pr_info("Dynamic Preempt: none\n");
+7446: 		break;
+7447: 
+7448: 	case preempt_dynamic_voluntary:
+7449: 		if (!klp_override)
+7450: 			preempt_dynamic_enable(cond_resched);
+7451: 		preempt_dynamic_enable(might_resched);
+7452: 		preempt_dynamic_disable(preempt_schedule);
+7453: 		preempt_dynamic_disable(preempt_schedule_notrace);
+7454: 		preempt_dynamic_disable(irqentry_exit_cond_resched);
+7455: 		if (mode != preempt_dynamic_mode)
+7456: 			pr_info("Dynamic Preempt: voluntary\n");
+7457: 		break;
+7458: 
+7459: 	case preempt_dynamic_full:
+7460: 		if (!klp_override)
+7461: 			preempt_dynamic_disable(cond_resched);
+7462: 		preempt_dynamic_disable(might_resched);
+7463: 		preempt_dynamic_enable(preempt_schedule);
+7464: 		preempt_dynamic_enable(preempt_schedule_notrace);
+7465: 		preempt_dynamic_enable(irqentry_exit_cond_resched);
+7466: 		if (mode != preempt_dynamic_mode)
+7467: 			pr_info("Dynamic Preempt: full\n");
+7468: 		break;
+7469: 	}
+7470: 
+7471: 	preempt_dynamic_mode = mode;
+7472: }
+7473: 
+7474: void sched_dynamic_update(int mode)
+7475: {
+7476: 	mutex_lock(&sched_dynamic_mutex);
+7477: 	__sched_dynamic_update(mode);
+7478: 	mutex_unlock(&sched_dynamic_mutex);
+7479: }
+7480: 
+7481: #ifdef CONFIG_HAVE_PREEMPT_DYNAMIC_CALL
+7482: 
+7483: static int klp_cond_resched(void)
+7484: {
+7485: 	__klp_sched_try_switch();
+7486: 	return __cond_resched();
+7487: }
+7488: 
+7489: void sched_dynamic_klp_enable(void)
+7490: {
+7491: 	mutex_lock(&sched_dynamic_mutex);
+7492: 
+7493: 	klp_override = true;
+7494: 	static_call_update(cond_resched, klp_cond_resched);
+7495: 
+7496: 	mutex_unlock(&sched_dynamic_mutex);
+7497: }
+7498: 
+7499: void sched_dynamic_klp_disable(void)
+7500: {
+7501: 	mutex_lock(&sched_dynamic_mutex);
+7502: 
+7503: 	klp_override = false;
+7504: 	__sched_dynamic_update(preempt_dynamic_mode);
+7505: 
+7506: 	mutex_unlock(&sched_dynamic_mutex);
+7507: }
+7508: 
+7509: #endif /* CONFIG_HAVE_PREEMPT_DYNAMIC_CALL */
+7510: 
+7511: static int __init setup_preempt_mode(char *str)
+7512: {
+7513: 	int mode = sched_dynamic_mode(str);
+7514: 	if (mode < 0) {
+7515: 		pr_warn("Dynamic Preempt: unsupported mode: %s\n", str);
+7516: 		return 0;
+7517: 	}
+7518: 
+7519: 	sched_dynamic_update(mode);
+7520: 	return 1;
+7521: }
+7522: __setup("preempt=", setup_preempt_mode);
+7523: 
+7524: static void __init preempt_dynamic_init(void)
+7525: {
+7526: 	if (preempt_dynamic_mode == preempt_dynamic_undefined) {
+7527: 		if (IS_ENABLED(CONFIG_PREEMPT_NONE)) {
+7528: 			sched_dynamic_update(preempt_dynamic_none);
+7529: 		} else if (IS_ENABLED(CONFIG_PREEMPT_VOLUNTARY)) {
+7530: 			sched_dynamic_update(preempt_dynamic_voluntary);
+7531: 		} else {
+7532: 			/* Default static call setting, nothing to do */
+7533: 			WARN_ON_ONCE(!IS_ENABLED(CONFIG_PREEMPT));
+7534: 			preempt_dynamic_mode = preempt_dynamic_full;
+7535: 			pr_info("Dynamic Preempt: full\n");
+7536: 		}
+7537: 	}
+7538: }
+7539: 
+7540: #define PREEMPT_MODEL_ACCESSOR(mode) \
+7541: 	bool preempt_model_##mode(void)						 \
+7542: 	{									 \
+7543: 		WARN_ON_ONCE(preempt_dynamic_mode == preempt_dynamic_undefined); \
+7544: 		return preempt_dynamic_mode == preempt_dynamic_##mode;		 \
+7545: 	}									 \
+7546: 	EXPORT_SYMBOL_GPL(preempt_model_##mode)
+7547: 
+7548: PREEMPT_MODEL_ACCESSOR(none);
+7549: PREEMPT_MODEL_ACCESSOR(voluntary);
+7550: PREEMPT_MODEL_ACCESSOR(full);
+
+FILE fs/ext4/inode.c SHA256 e2798a71007f5693e4f5e88a4c696c1292fafee88721559ec60f046ceccf6607 LINES 127..142
+127: static inline int ext4_begin_ordered_truncate(struct inode *inode,
+128: 					      loff_t new_size)
+129: {
+130: 	trace_ext4_begin_ordered_truncate(inode, new_size);
+131: 	/*
+132: 	 * If jinode is zero, then we never opened the file for
+133: 	 * writing, so there's no need to call
+134: 	 * jbd2_journal_begin_ordered_truncate() since there's no
+135: 	 * outstanding writes we need to flush.
+136: 	 */
+137: 	if (!EXT4_I(inode)->jinode)
+138: 		return 0;
+139: 	return jbd2_journal_begin_ordered_truncate(EXT4_JOURNAL(inode),
+140: 						   EXT4_I(inode)->jinode,
+141: 						   new_size);
+142: }
+
+FILE fs/ext4/inode.c SHA256 e2798a71007f5693e4f5e88a4c696c1292fafee88721559ec60f046ceccf6607 LINES 169..268
+169: void ext4_evict_inode(struct inode *inode)
+170: {
+171: 	handle_t *handle;
+172: 	int err;
+173: 	/*
+174: 	 * Credits for final inode cleanup and freeing:
+175: 	 * sb + inode (ext4_orphan_del()), block bitmap, group descriptor
+176: 	 * (xattr block freeing), bitmap, group descriptor (inode freeing)
+177: 	 */
+178: 	int extra_credits = 6;
+179: 	struct ext4_xattr_inode_array *ea_inode_array = NULL;
+180: 	bool freeze_protected = false;
+181: 
+182: 	trace_ext4_evict_inode(inode);
+183: 
+184: 	if (EXT4_I(inode)->i_flags & EXT4_EA_INODE_FL)
+185: 		ext4_evict_ea_inode(inode);
+186: 	if (inode->i_nlink) {
+187: 		truncate_inode_pages_final(&inode->i_data);
+188: 
+189: 		goto no_delete;
+190: 	}
+191: 
+192: 	if (is_bad_inode(inode))
+193: 		goto no_delete;
+194: 	dquot_initialize(inode);
+195: 
+196: 	if (ext4_should_order_data(inode))
+197: 		ext4_begin_ordered_truncate(inode, 0);
+198: 	truncate_inode_pages_final(&inode->i_data);
+199: 
+200: 	/*
+201: 	 * For inodes with journalled data, transaction commit could have
+202: 	 * dirtied the inode. And for inodes with dioread_nolock, unwritten
+203: 	 * extents converting worker could merge extents and also have dirtied
+204: 	 * the inode. Flush worker is ignoring it because of I_FREEING flag but
+205: 	 * we still need to remove the inode from the writeback lists.
+206: 	 */
+207: 	if (!list_empty_careful(&inode->i_io_list))
+208: 		inode_io_list_del(inode);
+209: 
+210: 	/*
+211: 	 * Protect us against freezing - iput() caller didn't have to have any
+212: 	 * protection against it. When we are in a running transaction though,
+213: 	 * we are already protected against freezing and we cannot grab further
+214: 	 * protection due to lock ordering constraints.
+215: 	 */
+216: 	if (!ext4_journal_current_handle()) {
+217: 		sb_start_intwrite(inode->i_sb);
+218: 		freeze_protected = true;
+219: 	}
+220: 
+221: 	if (!IS_NOQUOTA(inode))
+222: 		extra_credits += EXT4_MAXQUOTAS_DEL_BLOCKS(inode->i_sb);
+223: 
+224: 	/*
+225: 	 * Block bitmap, group descriptor, and inode are accounted in both
+226: 	 * ext4_blocks_for_truncate() and extra_credits. So subtract 3.
+227: 	 */
+228: 	handle = ext4_journal_start(inode, EXT4_HT_TRUNCATE,
+229: 			 ext4_blocks_for_truncate(inode) + extra_credits - 3);
+230: 	if (IS_ERR(handle)) {
+231: 		ext4_std_error(inode->i_sb, PTR_ERR(handle));
+232: 		/*
+233: 		 * If we're going to skip the normal cleanup, we still need to
+234: 		 * make sure that the in-core orphan linked list is properly
+235: 		 * cleaned up.
+236: 		 */
+237: 		ext4_orphan_del(NULL, inode);
+238: 		if (freeze_protected)
+239: 			sb_end_intwrite(inode->i_sb);
+240: 		goto no_delete;
+241: 	}
+242: 
+243: 	if (IS_SYNC(inode))
+244: 		ext4_handle_sync(handle);
+245: 
+246: 	/*
+247: 	 * Set inode->i_size to 0 before calling ext4_truncate(). We need
+248: 	 * special handling of symlinks here because i_size is used to
+249: 	 * determine whether ext4_inode_info->i_data contains symlink data or
+250: 	 * block mappings. Setting i_size to 0 will remove its fast symlink
+251: 	 * status. Erase i_data so that it becomes a valid empty block map.
+252: 	 */
+253: 	if (ext4_inode_is_fast_symlink(inode))
+254: 		memset(EXT4_I(inode)->i_data, 0, sizeof(EXT4_I(inode)->i_data));
+255: 	inode->i_size = 0;
+256: 	err = ext4_mark_inode_dirty(handle, inode);
+257: 	if (err) {
+258: 		ext4_warning(inode->i_sb,
+259: 			     "couldn't mark inode dirty (err %d)", err);
+260: 		goto stop_handle;
+261: 	}
+262: 	if (inode->i_blocks) {
+263: 		err = ext4_truncate(inode);
+264: 		if (err) {
+265: 			ext4_error_err(inode->i_sb, -err,
+266: 				       "couldn't truncate inode %lu (err %d)",
+267: 				       inode->i_ino, err);
+268: 			goto stop_handle;
+
+FILE fs/ext4/inode.c SHA256 e2798a71007f5693e4f5e88a4c696c1292fafee88721559ec60f046ceccf6607 LINES 2412..2470
+2412: static int mpage_prepare_extent_to_map(struct mpage_da_data *mpd)
+2413: {
+2414: 	struct address_space *mapping = mpd->inode->i_mapping;
+2415: 	struct folio_batch fbatch;
+2416: 	unsigned int nr_folios;
+2417: 	pgoff_t index = mpd->first_page;
+2418: 	pgoff_t end = mpd->last_page;
+2419: 	xa_mark_t tag;
+2420: 	int i, err = 0;
+2421: 	int blkbits = mpd->inode->i_blkbits;
+2422: 	ext4_lblk_t lblk;
+2423: 	struct buffer_head *head;
+2424: 	handle_t *handle = NULL;
+2425: 	int bpp = ext4_journal_blocks_per_page(mpd->inode);
+2426: 
+2427: 	if (mpd->wbc->sync_mode == WB_SYNC_ALL || mpd->wbc->tagged_writepages)
+2428: 		tag = PAGECACHE_TAG_TOWRITE;
+2429: 	else
+2430: 		tag = PAGECACHE_TAG_DIRTY;
+2431: 
+2432: 	mpd->map.m_len = 0;
+2433: 	mpd->next_page = index;
+2434: 	if (ext4_should_journal_data(mpd->inode)) {
+2435: 		handle = ext4_journal_start(mpd->inode, EXT4_HT_WRITE_PAGE,
+2436: 					    bpp);
+2437: 		if (IS_ERR(handle))
+2438: 			return PTR_ERR(handle);
+2439: 	}
+2440: 	folio_batch_init(&fbatch);
+2441: 	while (index <= end) {
+2442: 		nr_folios = filemap_get_folios_tag(mapping, &index, end,
+2443: 				tag, &fbatch);
+2444: 		if (nr_folios == 0)
+2445: 			break;
+2446: 
+2447: 		for (i = 0; i < nr_folios; i++) {
+2448: 			struct folio *folio = fbatch.folios[i];
+2449: 
+2450: 			/*
+2451: 			 * Accumulated enough dirty pages? This doesn't apply
+2452: 			 * to WB_SYNC_ALL mode. For integrity sync we have to
+2453: 			 * keep going because someone may be concurrently
+2454: 			 * dirtying pages, and we might have synced a lot of
+2455: 			 * newly appeared dirty pages, but have not synced all
+2456: 			 * of the old dirty pages.
+2457: 			 */
+2458: 			if (mpd->wbc->sync_mode == WB_SYNC_NONE &&
+2459: 			    mpd->wbc->nr_to_write <=
+2460: 			    mpd->map.m_len >> (PAGE_SHIFT - blkbits))
+2461: 				goto out;
+2462: 
+2463: 			/* If we can't merge this page, we are done. */
+2464: 			if (mpd->map.m_len > 0 && mpd->next_page != folio->index)
+2465: 				goto out;
+2466: 
+2467: 			if (handle) {
+2468: 				err = ext4_journal_ensure_credits(handle, bpp,
+2469: 								  0);
+2470: 				if (err < 0)
+
+FILE fs/ext4/inode.c SHA256 e2798a71007f5693e4f5e88a4c696c1292fafee88721559ec60f046ceccf6607 LINES 3233..3247
+3233: static bool ext4_release_folio(struct folio *folio, gfp_t wait)
+3234: {
+3235: 	struct inode *inode = folio->mapping->host;
+3236: 	journal_t *journal = EXT4_JOURNAL(inode);
+3237: 
+3238: 	trace_ext4_release_folio(inode, folio);
+3239: 
+3240: 	/* Page has dirty journalled data -> cannot release */
+3241: 	if (folio_test_checked(folio))
+3242: 		return false;
+3243: 	if (journal)
+3244: 		return jbd2_journal_try_to_free_buffers(journal, folio);
+3245: 	else
+3246: 		return try_to_free_buffers(folio);
+3247: }
+
+FILE fs/ext4/inode.c SHA256 e2798a71007f5693e4f5e88a4c696c1292fafee88721559ec60f046ceccf6607 LINES 3575..3625
+3575: static const struct address_space_operations ext4_aops = {
+3576: 	.read_folio		= ext4_read_folio,
+3577: 	.readahead		= ext4_readahead,
+3578: 	.writepages		= ext4_writepages,
+3579: 	.write_begin		= ext4_write_begin,
+3580: 	.write_end		= ext4_write_end,
+3581: 	.dirty_folio		= ext4_dirty_folio,
+3582: 	.bmap			= ext4_bmap,
+3583: 	.invalidate_folio	= ext4_invalidate_folio,
+3584: 	.release_folio		= ext4_release_folio,
+3585: 	.migrate_folio		= buffer_migrate_folio,
+3586: 	.is_partially_uptodate  = block_is_partially_uptodate,
+3587: 	.error_remove_folio	= generic_error_remove_folio,
+3588: 	.swap_activate		= ext4_iomap_swap_activate,
+3589: };
+3590: 
+3591: static const struct address_space_operations ext4_journalled_aops = {
+3592: 	.read_folio		= ext4_read_folio,
+3593: 	.readahead		= ext4_readahead,
+3594: 	.writepages		= ext4_writepages,
+3595: 	.write_begin		= ext4_write_begin,
+3596: 	.write_end		= ext4_journalled_write_end,
+3597: 	.dirty_folio		= ext4_journalled_dirty_folio,
+3598: 	.bmap			= ext4_bmap,
+3599: 	.invalidate_folio	= ext4_journalled_invalidate_folio,
+3600: 	.release_folio		= ext4_release_folio,
+3601: 	.migrate_folio		= buffer_migrate_folio_norefs,
+3602: 	.is_partially_uptodate  = block_is_partially_uptodate,
+3603: 	.error_remove_folio	= generic_error_remove_folio,
+3604: 	.swap_activate		= ext4_iomap_swap_activate,
+3605: };
+3606: 
+3607: static const struct address_space_operations ext4_da_aops = {
+3608: 	.read_folio		= ext4_read_folio,
+3609: 	.readahead		= ext4_readahead,
+3610: 	.writepages		= ext4_writepages,
+3611: 	.write_begin		= ext4_da_write_begin,
+3612: 	.write_end		= ext4_da_write_end,
+3613: 	.dirty_folio		= ext4_dirty_folio,
+3614: 	.bmap			= ext4_bmap,
+3615: 	.invalidate_folio	= ext4_invalidate_folio,
+3616: 	.release_folio		= ext4_release_folio,
+3617: 	.migrate_folio		= buffer_migrate_folio,
+3618: 	.is_partially_uptodate  = block_is_partially_uptodate,
+3619: 	.error_remove_folio	= generic_error_remove_folio,
+3620: 	.swap_activate		= ext4_iomap_swap_activate,
+3621: };
+3622: 
+3623: static const struct address_space_operations ext4_dax_aops = {
+3624: 	.writepages		= ext4_dax_writepages,
+3625: 	.dirty_folio		= noop_dirty_folio,
+
+FILE fs/ext4/inode.c SHA256 e2798a71007f5693e4f5e88a4c696c1292fafee88721559ec60f046ceccf6607 LINES 4124..4198
+4124: int ext4_truncate(struct inode *inode)
+4125: {
+4126: 	struct ext4_inode_info *ei = EXT4_I(inode);
+4127: 	unsigned int credits;
+4128: 	int err = 0, err2;
+4129: 	handle_t *handle;
+4130: 	struct address_space *mapping = inode->i_mapping;
+4131: 
+4132: 	/*
+4133: 	 * There is a possibility that we're either freeing the inode
+4134: 	 * or it's a completely new inode. In those cases we might not
+4135: 	 * have i_rwsem locked because it's not necessary.
+4136: 	 */
+4137: 	if (!(inode->i_state & (I_NEW|I_FREEING)))
+4138: 		WARN_ON(!inode_is_locked(inode));
+4139: 	trace_ext4_truncate_enter(inode);
+4140: 
+4141: 	if (!ext4_can_truncate(inode))
+4142: 		goto out_trace;
+4143: 
+4144: 	if (inode->i_size == 0 && !test_opt(inode->i_sb, NO_AUTO_DA_ALLOC))
+4145: 		ext4_set_inode_state(inode, EXT4_STATE_DA_ALLOC_CLOSE);
+4146: 
+4147: 	if (ext4_has_inline_data(inode)) {
+4148: 		int has_inline = 1;
+4149: 
+4150: 		err = ext4_inline_data_truncate(inode, &has_inline);
+4151: 		if (err || has_inline)
+4152: 			goto out_trace;
+4153: 	}
+4154: 
+4155: 	/* If we zero-out tail of the page, we have to create jinode for jbd2 */
+4156: 	if (inode->i_size & (inode->i_sb->s_blocksize - 1)) {
+4157: 		err = ext4_inode_attach_jinode(inode);
+4158: 		if (err)
+4159: 			goto out_trace;
+4160: 	}
+4161: 
+4162: 	if (ext4_test_inode_flag(inode, EXT4_INODE_EXTENTS))
+4163: 		credits = ext4_writepage_trans_blocks(inode);
+4164: 	else
+4165: 		credits = ext4_blocks_for_truncate(inode);
+4166: 
+4167: 	handle = ext4_journal_start(inode, EXT4_HT_TRUNCATE, credits);
+4168: 	if (IS_ERR(handle)) {
+4169: 		err = PTR_ERR(handle);
+4170: 		goto out_trace;
+4171: 	}
+4172: 
+4173: 	if (inode->i_size & (inode->i_sb->s_blocksize - 1))
+4174: 		ext4_block_truncate_page(handle, mapping, inode->i_size);
+4175: 
+4176: 	/*
+4177: 	 * We add the inode to the orphan list, so that if this
+4178: 	 * truncate spans multiple transactions, and we crash, we will
+4179: 	 * resume the truncate when the filesystem recovers.  It also
+4180: 	 * marks the inode dirty, to catch the new size.
+4181: 	 *
+4182: 	 * Implication: the file must always be in a sane, consistent
+4183: 	 * truncatable state while each transaction commits.
+4184: 	 */
+4185: 	err = ext4_orphan_add(handle, inode);
+4186: 	if (err)
+4187: 		goto out_stop;
+4188: 
+4189: 	down_write(&EXT4_I(inode)->i_data_sem);
+4190: 
+4191: 	ext4_discard_preallocations(inode);
+4192: 
+4193: 	if (ext4_test_inode_flag(inode, EXT4_INODE_EXTENTS))
+4194: 		err = ext4_ext_truncate(handle, inode);
+4195: 	else
+4196: 		ext4_ind_truncate(handle, inode);
+4197: 
+4198: 	up_write(&ei->i_data_sem);
+
+FILE fs/ext4/mballoc.c SHA256 2e97bb3a43d121327235ff21687fdae19966a9416b5292748996b36c43fc3c54 LINES 1450..1489
+1450: 		ext4_group_t group, struct ext4_buddy *e4b, gfp_t gfp)
+1451: {
+1452: 	struct inode *inode = EXT4_SB(sb)->s_buddy_cache;
+1453: 	int block, pnum, poff;
+1454: 	int blocks_per_page;
+1455: 	struct folio *folio;
+1456: 
+1457: 	e4b->bd_buddy_folio = NULL;
+1458: 	e4b->bd_bitmap_folio = NULL;
+1459: 
+1460: 	blocks_per_page = PAGE_SIZE / sb->s_blocksize;
+1461: 	/*
+1462: 	 * the buddy cache inode stores the block bitmap
+1463: 	 * and buddy information in consecutive blocks.
+1464: 	 * So for each group we need two blocks.
+1465: 	 */
+1466: 	block = group * 2;
+1467: 	pnum = block / blocks_per_page;
+1468: 	poff = block % blocks_per_page;
+1469: 	folio = __filemap_get_folio(inode->i_mapping, pnum,
+1470: 			FGP_LOCK | FGP_ACCESSED | FGP_CREAT, gfp);
+1471: 	if (IS_ERR(folio))
+1472: 		return PTR_ERR(folio);
+1473: 	BUG_ON(folio->mapping != inode->i_mapping);
+1474: 	e4b->bd_bitmap_folio = folio;
+1475: 	e4b->bd_bitmap = folio_address(folio) + (poff * sb->s_blocksize);
+1476: 
+1477: 	if (blocks_per_page >= 2) {
+1478: 		/* buddy and bitmap are on the same page */
+1479: 		return 0;
+1480: 	}
+1481: 
+1482: 	/* blocks_per_page == 1, hence we need another page for the buddy */
+1483: 	folio = __filemap_get_folio(inode->i_mapping, block + 1,
+1484: 			FGP_LOCK | FGP_ACCESSED | FGP_CREAT, gfp);
+1485: 	if (IS_ERR(folio))
+1486: 		return PTR_ERR(folio);
+1487: 	BUG_ON(folio->mapping != inode->i_mapping);
+1488: 	e4b->bd_buddy_folio = folio;
+1489: 	return 0;
+
+FILE fs/ext4/mballoc.c SHA256 2e97bb3a43d121327235ff21687fdae19966a9416b5292748996b36c43fc3c54 LINES 1623..1653
+1623: 	block = group * 2;
+1624: 	pnum = block / blocks_per_page;
+1625: 	poff = block % blocks_per_page;
+1626: 
+1627: 	/* Avoid locking the folio in the fast path ... */
+1628: 	folio = __filemap_get_folio(inode->i_mapping, pnum, FGP_ACCESSED, 0);
+1629: 	if (IS_ERR(folio) || !folio_test_uptodate(folio)) {
+1630: 		if (!IS_ERR(folio))
+1631: 			/*
+1632: 			 * drop the folio reference and try
+1633: 			 * to get the folio with lock. If we
+1634: 			 * are not uptodate that implies
+1635: 			 * somebody just created the folio but
+1636: 			 * is yet to initialize it. So
+1637: 			 * wait for it to initialize.
+1638: 			 */
+1639: 			folio_put(folio);
+1640: 		folio = __filemap_get_folio(inode->i_mapping, pnum,
+1641: 				FGP_LOCK | FGP_ACCESSED | FGP_CREAT, gfp);
+1642: 		if (!IS_ERR(folio)) {
+1643: 			if (WARN_RATELIMIT(folio->mapping != inode->i_mapping,
+1644: 	"ext4: bitmap's mapping != inode->i_mapping\n")) {
+1645: 				/* should never happen */
+1646: 				folio_unlock(folio);
+1647: 				ret = -EINVAL;
+1648: 				goto err;
+1649: 			}
+1650: 			if (!folio_test_uptodate(folio)) {
+1651: 				ret = ext4_mb_init_cache(folio, NULL, gfp);
+1652: 				if (ret) {
+1653: 					folio_unlock(folio);
+
+FILE fs/ext4/mballoc.c SHA256 2e97bb3a43d121327235ff21687fdae19966a9416b5292748996b36c43fc3c54 LINES 5585..5600
+5585: 	}
+5586: 	write_unlock(&ei->i_prealloc_lock);
+5587: 
+5588: 	list_for_each_entry_safe(pa, tmp, &list, u.pa_tmp_list) {
+5589: 		BUG_ON(pa->pa_type != MB_INODE_PA);
+5590: 		group = ext4_get_group_number(sb, pa->pa_pstart);
+5591: 
+5592: 		err = ext4_mb_load_buddy_gfp(sb, group, &e4b,
+5593: 					     GFP_NOFS|__GFP_NOFAIL);
+5594: 		if (err) {
+5595: 			ext4_error_err(sb, -err, "Error %d loading buddy information for %u",
+5596: 				       err, group);
+5597: 			continue;
+5598: 		}
+5599: 
+5600: 		bitmap_bh = ext4_read_block_bitmap(sb, group);
+
+FILE fs/ext4/mballoc.c SHA256 2e97bb3a43d121327235ff21687fdae19966a9416b5292748996b36c43fc3c54 LINES 5890..5905
+5890: 		}
+5891: 	}
+5892: 	spin_unlock(&lg->lg_prealloc_lock);
+5893: 
+5894: 	list_for_each_entry_safe(pa, tmp, &discard_list, u.pa_tmp_list) {
+5895: 		int err;
+5896: 
+5897: 		group = ext4_get_group_number(sb, pa->pa_pstart);
+5898: 		err = ext4_mb_load_buddy_gfp(sb, group, &e4b,
+5899: 					     GFP_NOFS|__GFP_NOFAIL);
+5900: 		if (err) {
+5901: 			ext4_error_err(sb, -err, "Error %d loading buddy information for %u",
+5902: 				       err, group);
+5903: 			continue;
+5904: 		}
+5905: 		ext4_lock_group(sb, group);
+
+FILE fs/ext4/mballoc.c SHA256 2e97bb3a43d121327235ff21687fdae19966a9416b5292748996b36c43fc3c54 LINES 6440..6498
+6440: 	if (EXT4_C2B(sbi, bit) + count > EXT4_BLOCKS_PER_GROUP(sb)) {
+6441: 		overflow = EXT4_C2B(sbi, bit) + count -
+6442: 			EXT4_BLOCKS_PER_GROUP(sb);
+6443: 		count -= overflow;
+6444: 		/* The range changed so it's no longer validated */
+6445: 		flags &= ~EXT4_FREE_BLOCKS_VALIDATED;
+6446: 	}
+6447: 	count_clusters = EXT4_NUM_B2C(sbi, count);
+6448: 	trace_ext4_mballoc_free(sb, inode, block_group, bit, count_clusters);
+6449: 
+6450: 	/* __GFP_NOFAIL: retry infinitely, ignore TIF_MEMDIE and memcg limit. */
+6451: 	err = ext4_mb_load_buddy_gfp(sb, block_group, &e4b,
+6452: 				     GFP_NOFS|__GFP_NOFAIL);
+6453: 	if (err)
+6454: 		goto error_out;
+6455: 
+6456: 	if (!(flags & EXT4_FREE_BLOCKS_VALIDATED) &&
+6457: 	    !ext4_inode_block_valid(inode, block, count)) {
+6458: 		ext4_error(sb, "Freeing blocks in system zone - "
+6459: 			   "Block = %llu, count = %lu", block, count);
+6460: 		/* err = 0. ext4_std_error should be a no op */
+6461: 		goto error_clean;
+6462: 	}
+6463: 
+6464: #ifdef AGGRESSIVE_CHECK
+6465: 	mark_flags |= EXT4_MB_BITMAP_MARKED_CHECK;
+6466: #endif
+6467: 	err = ext4_mb_mark_context(handle, sb, false, block_group, bit,
+6468: 				   count_clusters, mark_flags, &changed);
+6469: 
+6470: 
+6471: 	if (err && changed == 0)
+6472: 		goto error_clean;
+6473: 
+6474: #ifdef AGGRESSIVE_CHECK
+6475: 	BUG_ON(changed != count_clusters);
+6476: #endif
+6477: 
+6478: 	/*
+6479: 	 * We need to make sure we don't reuse the freed block until after the
+6480: 	 * transaction is committed. We make an exception if the inode is to be
+6481: 	 * written in writeback mode since writeback mode has weak data
+6482: 	 * consistency guarantees.
+6483: 	 */
+6484: 	if (ext4_handle_valid(handle) &&
+6485: 	    ((flags & EXT4_FREE_BLOCKS_METADATA) ||
+6486: 	     !ext4_should_writeback_data(inode))) {
+6487: 		struct ext4_free_data *new_entry;
+6488: 		/*
+6489: 		 * We use __GFP_NOFAIL because ext4_free_blocks() is not allowed
+6490: 		 * to fail.
+6491: 		 */
+6492: 		new_entry = kmem_cache_alloc(ext4_free_data_cachep,
+6493: 				GFP_NOFS|__GFP_NOFAIL);
+6494: 		new_entry->efd_start_cluster = bit;
+6495: 		new_entry->efd_group = block_group;
+6496: 		new_entry->efd_count = count_clusters;
+6497: 		new_entry->efd_tid = handle->h_transaction->t_tid;
+6498: 
+
+FILE fs/buffer.c SHA256 adaaa2c33de16df09ca53d05380151f5c89cb182d3c33aa8f5141ab8d26424fd LINES 1035..1083
+1035: static bool grow_dev_folio(struct block_device *bdev, sector_t block,
+1036: 		pgoff_t index, unsigned size, gfp_t gfp)
+1037: {
+1038: 	struct address_space *mapping = bdev->bd_mapping;
+1039: 	struct folio *folio;
+1040: 	struct buffer_head *bh;
+1041: 	sector_t end_block = 0;
+1042: 
+1043: 	folio = __filemap_get_folio(mapping, index,
+1044: 			FGP_LOCK | FGP_ACCESSED | FGP_CREAT, gfp);
+1045: 	if (IS_ERR(folio))
+1046: 		return false;
+1047: 
+1048: 	bh = folio_buffers(folio);
+1049: 	if (bh) {
+1050: 		if (bh->b_size == size) {
+1051: 			end_block = folio_init_buffers(folio, bdev, size);
+1052: 			goto unlock;
+1053: 		}
+1054: 
+1055: 		/*
+1056: 		 * Retrying may succeed; for example the folio may finish
+1057: 		 * writeback, or buffers may be cleaned.  This should not
+1058: 		 * happen very often; maybe we have old buffers attached to
+1059: 		 * this blockdev's page cache and we're trying to change
+1060: 		 * the block size?
+1061: 		 */
+1062: 		if (!try_to_free_buffers(folio)) {
+1063: 			end_block = ~0ULL;
+1064: 			goto unlock;
+1065: 		}
+1066: 	}
+1067: 
+1068: 	bh = folio_alloc_buffers(folio, size, gfp | __GFP_ACCOUNT);
+1069: 	if (!bh)
+1070: 		goto unlock;
+1071: 
+1072: 	/*
+1073: 	 * Link the folio to the buffers and initialise them.  Take the
+1074: 	 * lock to be atomic wrt __find_get_block(), which does not
+1075: 	 * run under the folio lock.
+1076: 	 */
+1077: 	spin_lock(&mapping->i_private_lock);
+1078: 	link_dev_buffers(folio, bh);
+1079: 	end_block = folio_init_buffers(folio, bdev, size);
+1080: 	spin_unlock(&mapping->i_private_lock);
+1081: unlock:
+1082: 	folio_unlock(folio);
+1083: 	folio_put(folio);
+
+FILE block/bdev.c SHA256 e54a127360188cf3f8e99385e1bc53deec746b4d179a580aeb594b99c8d0c879 LINES 414..429
+414: 
+415: struct block_device *bdev_alloc(struct gendisk *disk, u8 partno)
+416: {
+417: 	struct block_device *bdev;
+418: 	struct inode *inode;
+419: 
+420: 	inode = new_inode(blockdev_superblock);
+421: 	if (!inode)
+422: 		return NULL;
+423: 	inode->i_mode = S_IFBLK;
+424: 	inode->i_rdev = 0;
+425: 	inode->i_data.a_ops = &def_blk_aops;
+426: 	mapping_set_gfp_mask(&inode->i_data, GFP_USER);
+427: 
+428: 	bdev = I_BDEV(inode);
+429: 	mutex_init(&bdev->bd_fsfreeze_mutex);
+
+FILE include/linux/buffer_head.h SHA256 360fdfe25eeb4688c6929b861f900199562273b3c3906318789e7af5c733bd72 LINES 340..400
+340: 		__bforget(bh);
+341: }
+342: 
+343: static inline struct buffer_head *
+344: sb_bread(struct super_block *sb, sector_t block)
+345: {
+346: 	return __bread_gfp(sb->s_bdev, block, sb->s_blocksize, __GFP_MOVABLE);
+347: }
+348: 
+349: static inline struct buffer_head *
+350: sb_bread_unmovable(struct super_block *sb, sector_t block)
+351: {
+352: 	return __bread_gfp(sb->s_bdev, block, sb->s_blocksize, 0);
+353: }
+354: 
+355: static inline void
+356: sb_breadahead(struct super_block *sb, sector_t block)
+357: {
+358: 	__breadahead(sb->s_bdev, block, sb->s_blocksize);
+359: }
+360: 
+361: static inline struct buffer_head *getblk_unmovable(struct block_device *bdev,
+362: 		sector_t block, unsigned size)
+363: {
+364: 	gfp_t gfp;
+365: 
+366: 	gfp = mapping_gfp_constraint(bdev->bd_mapping, ~__GFP_FS);
+367: 	gfp |= __GFP_NOFAIL;
+368: 
+369: 	return bdev_getblk(bdev, block, size, gfp);
+370: }
+371: 
+372: static inline struct buffer_head *__getblk(struct block_device *bdev,
+373: 		sector_t block, unsigned size)
+374: {
+375: 	gfp_t gfp;
+376: 
+377: 	gfp = mapping_gfp_constraint(bdev->bd_mapping, ~__GFP_FS);
+378: 	gfp |= __GFP_MOVABLE | __GFP_NOFAIL;
+379: 
+380: 	return bdev_getblk(bdev, block, size, gfp);
+381: }
+382: 
+383: static inline struct buffer_head *sb_getblk(struct super_block *sb,
+384: 		sector_t block)
+385: {
+386: 	return __getblk(sb->s_bdev, block, sb->s_blocksize);
+387: }
+388: 
+389: static inline struct buffer_head *sb_getblk_gfp(struct super_block *sb,
+390: 		sector_t block, gfp_t gfp)
+391: {
+392: 	return bdev_getblk(sb->s_bdev, block, sb->s_blocksize, gfp);
+393: }
+394: 
+395: static inline struct buffer_head *
+396: sb_find_get_block(struct super_block *sb, sector_t block)
+397: {
+398: 	return __find_get_block(sb->s_bdev, block, sb->s_blocksize);
+399: }
+400: 
+
+FILE fs/ext4/extents.c SHA256 7661df78a3b82332232e21c0c9747c5c5e9a5cb892c2259e9f83313b1a448e60 LINES 551..572
+551: static struct buffer_head *
+552: __read_extent_tree_block(const char *function, unsigned int line,
+553: 			 struct inode *inode, struct ext4_extent_idx *idx,
+554: 			 int depth, int flags)
+555: {
+556: 	struct buffer_head		*bh;
+557: 	int				err;
+558: 	gfp_t				gfp_flags = __GFP_MOVABLE | GFP_NOFS;
+559: 	ext4_fsblk_t			pblk;
+560: 
+561: 	if (flags & EXT4_EX_NOFAIL)
+562: 		gfp_flags |= __GFP_NOFAIL;
+563: 
+564: 	pblk = ext4_idx_pblock(idx);
+565: 	bh = sb_getblk_gfp(inode->i_sb, pblk, gfp_flags);
+566: 	if (unlikely(!bh))
+567: 		return ERR_PTR(-ENOMEM);
+568: 
+569: 	if (!bh_uptodate_or_lock(bh)) {
+570: 		trace_ext4_ext_load_extent(inode, pblk, _RET_IP_);
+571: 		err = ext4_read_bh(bh, 0, NULL, false);
+572: 		if (err < 0)
+
+FILE fs/ext4/extents.c SHA256 7661df78a3b82332232e21c0c9747c5c5e9a5cb892c2259e9f83313b1a448e60 LINES 885..938
+885: struct ext4_ext_path *
+886: ext4_find_extent(struct inode *inode, ext4_lblk_t block,
+887: 		 struct ext4_ext_path *path, int flags)
+888: {
+889: 	struct ext4_extent_header *eh;
+890: 	struct buffer_head *bh;
+891: 	short int depth, i, ppos = 0;
+892: 	int ret;
+893: 	gfp_t gfp_flags = GFP_NOFS;
+894: 
+895: 	if (flags & EXT4_EX_NOFAIL)
+896: 		gfp_flags |= __GFP_NOFAIL;
+897: 
+898: 	eh = ext_inode_hdr(inode);
+899: 	depth = ext_depth(inode);
+900: 	if (depth < 0 || depth > EXT4_MAX_EXTENT_DEPTH) {
+901: 		EXT4_ERROR_INODE(inode, "inode has invalid extent depth: %d",
+902: 				 depth);
+903: 		ret = -EFSCORRUPTED;
+904: 		goto err;
+905: 	}
+906: 
+907: 	if (path) {
+908: 		ext4_ext_drop_refs(path);
+909: 		if (depth > path[0].p_maxdepth) {
+910: 			kfree(path);
+911: 			path = NULL;
+912: 		}
+913: 	}
+914: 	if (!path) {
+915: 		/* account possible depth increase */
+916: 		path = kcalloc(depth + 2, sizeof(struct ext4_ext_path),
+917: 				gfp_flags);
+918: 		if (unlikely(!path))
+919: 			return ERR_PTR(-ENOMEM);
+920: 		path[0].p_maxdepth = depth + 1;
+921: 	}
+922: 	path[0].p_hdr = eh;
+923: 	path[0].p_bh = NULL;
+924: 
+925: 	i = depth;
+926: 	if (!(flags & EXT4_EX_NOCACHE) && depth == 0)
+927: 		ext4_cache_extents(inode, eh);
+928: 	/* walk through the tree */
+929: 	while (i) {
+930: 		ext_debug(inode, "depth %d: num %d, max %d\n",
+931: 			  ppos, le16_to_cpu(eh->eh_entries), le16_to_cpu(eh->eh_max));
+932: 
+933: 		ext4_ext_binsearch_idx(inode, path + ppos, block);
+934: 		path[ppos].p_block = ext4_idx_pblock(path[ppos].p_idx);
+935: 		path[ppos].p_depth = i;
+936: 		path[ppos].p_ext = NULL;
+937: 
+938: 		bh = read_extent_tree_block(inode, path[ppos].p_idx, --i, flags);
+
+FILE fs/ext4/extents.c SHA256 7661df78a3b82332232e21c0c9747c5c5e9a5cb892c2259e9f83313b1a448e60 LINES 1052..1107
+1052: static int ext4_ext_split(handle_t *handle, struct inode *inode,
+1053: 			  unsigned int flags,
+1054: 			  struct ext4_ext_path *path,
+1055: 			  struct ext4_extent *newext, int at)
+1056: {
+1057: 	struct buffer_head *bh = NULL;
+1058: 	int depth = ext_depth(inode);
+1059: 	struct ext4_extent_header *neh;
+1060: 	struct ext4_extent_idx *fidx;
+1061: 	int i = at, k, m, a;
+1062: 	ext4_fsblk_t newblock, oldblock;
+1063: 	__le32 border;
+1064: 	ext4_fsblk_t *ablocks = NULL; /* array of allocated blocks */
+1065: 	gfp_t gfp_flags = GFP_NOFS;
+1066: 	int err = 0;
+1067: 	size_t ext_size = 0;
+1068: 
+1069: 	if (flags & EXT4_EX_NOFAIL)
+1070: 		gfp_flags |= __GFP_NOFAIL;
+1071: 
+1072: 	/* make decision: where to split? */
+1073: 	/* FIXME: now decision is simplest: at current extent */
+1074: 
+1075: 	/* if current leaf will be split, then we should use
+1076: 	 * border from split point */
+1077: 	if (unlikely(path[depth].p_ext > EXT_MAX_EXTENT(path[depth].p_hdr))) {
+1078: 		EXT4_ERROR_INODE(inode, "p_ext > EXT_MAX_EXTENT!");
+1079: 		return -EFSCORRUPTED;
+1080: 	}
+1081: 	if (path[depth].p_ext != EXT_MAX_EXTENT(path[depth].p_hdr)) {
+1082: 		border = path[depth].p_ext[1].ee_block;
+1083: 		ext_debug(inode, "leaf will be split."
+1084: 				" next leaf starts at %d\n",
+1085: 				  le32_to_cpu(border));
+1086: 	} else {
+1087: 		border = newext->ee_block;
+1088: 		ext_debug(inode, "leaf will be added."
+1089: 				" next leaf starts at %d\n",
+1090: 				le32_to_cpu(border));
+1091: 	}
+1092: 
+1093: 	/*
+1094: 	 * If error occurs, then we break processing
+1095: 	 * and mark filesystem read-only. index won't
+1096: 	 * be inserted and tree will be in consistent
+1097: 	 * state. Next mount will repair buffers too.
+1098: 	 */
+1099: 
+1100: 	/*
+1101: 	 * Get array to track all allocated blocks.
+1102: 	 * We need this to handle errors and free blocks
+1103: 	 * upon them.
+1104: 	 */
+1105: 	ablocks = kcalloc(depth, sizeof(ext4_fsblk_t), gfp_flags);
+1106: 	if (!ablocks)
+1107: 		return -ENOMEM;
+
+FILE fs/ext4/page-io.c SHA256 ad866982ee0d88c8017fb06b9e7779eb60fda35bb7ea848cc38bffb1e0c667bf LINES 500..540
+500: 
+501: 	bh = head = folio_buffers(folio);
+502: 
+503: 	/*
+504: 	 * If any blocks are being written to an encrypted file, encrypt them
+505: 	 * into a bounce page.  For simplicity, just encrypt until the last
+506: 	 * block which might be needed.  This may cause some unneeded blocks
+507: 	 * (e.g. holes) to be unnecessarily encrypted, but this is rare and
+508: 	 * can't happen in the common case of blocksize == PAGE_SIZE.
+509: 	 */
+510: 	if (fscrypt_inode_uses_fs_layer_crypto(inode)) {
+511: 		gfp_t gfp_flags = GFP_NOFS;
+512: 		unsigned int enc_bytes = round_up(len, i_blocksize(inode));
+513: 		struct page *bounce_page;
+514: 
+515: 		/*
+516: 		 * Since bounce page allocation uses a mempool, we can only use
+517: 		 * a waiting mask (i.e. request guaranteed allocation) on the
+518: 		 * first page of the bio.  Otherwise it can deadlock.
+519: 		 */
+520: 		if (io->io_bio)
+521: 			gfp_flags = GFP_NOWAIT | __GFP_NOWARN;
+522: 	retry_encrypt:
+523: 		bounce_page = fscrypt_encrypt_pagecache_blocks(&folio->page,
+524: 					enc_bytes, 0, gfp_flags);
+525: 		if (IS_ERR(bounce_page)) {
+526: 			ret = PTR_ERR(bounce_page);
+527: 			if (ret == -ENOMEM &&
+528: 			    (io->io_bio || wbc->sync_mode == WB_SYNC_ALL)) {
+529: 				gfp_t new_gfp_flags = GFP_NOFS;
+530: 				if (io->io_bio)
+531: 					ext4_io_submit(io);
+532: 				else
+533: 					new_gfp_flags |= __GFP_NOFAIL;
+534: 				memalloc_retry_wait(gfp_flags);
+535: 				gfp_flags = new_gfp_flags;
+536: 				goto retry_encrypt;
+537: 			}
+538: 
+539: 			printk_ratelimited(KERN_ERR "%s: ret = %d\n", __func__, ret);
+540: 			folio_redirty_for_writepage(wbc, folio);
+
+FILE fs/jbd2/transaction.c SHA256 3b34619085fb4d6d5b350fd1fcd0cd3364cafb7873d321d039ff7ca45cde04ff LINES 2737..2764
+2737: int jbd2_journal_begin_ordered_truncate(journal_t *journal,
+2738: 					struct jbd2_inode *jinode,
+2739: 					loff_t new_size)
+2740: {
+2741: 	transaction_t *inode_trans, *commit_trans;
+2742: 	int ret = 0;
+2743: 
+2744: 	/* This is a quick check to avoid locking if not necessary */
+2745: 	if (!jinode->i_transaction)
+2746: 		goto out;
+2747: 	/* Locks are here just to force reading of recent values, it is
+2748: 	 * enough that the transaction was not committing before we started
+2749: 	 * a transaction adding the inode to orphan list */
+2750: 	read_lock(&journal->j_state_lock);
+2751: 	commit_trans = journal->j_committing_transaction;
+2752: 	read_unlock(&journal->j_state_lock);
+2753: 	spin_lock(&journal->j_list_lock);
+2754: 	inode_trans = jinode->i_transaction;
+2755: 	spin_unlock(&journal->j_list_lock);
+2756: 	if (inode_trans == commit_trans) {
+2757: 		ret = filemap_fdatawrite_range(jinode->i_vfs_inode->i_mapping,
+2758: 			new_size, LLONG_MAX);
+2759: 		if (ret)
+2760: 			jbd2_journal_abort(journal, ret);
+2761: 	}
+2762: out:
+2763: 	return ret;
+2764: }
+
+FILE fs/ext4/super.c SHA256 c0041c5a2662277cfdfc3ab1595eb32e08cd8f78ba9fa4bf54ee660df253865a LINES 7198..7265
+7198: static ssize_t ext4_quota_read(struct super_block *sb, int type, char *data,
+7199: 			       size_t len, loff_t off)
+7200: {
+7201: 	struct inode *inode = sb_dqopt(sb)->files[type];
+7202: 	ext4_lblk_t blk = off >> EXT4_BLOCK_SIZE_BITS(sb);
+7203: 	int offset = off & (sb->s_blocksize - 1);
+7204: 	int tocopy;
+7205: 	size_t toread;
+7206: 	struct buffer_head *bh;
+7207: 	loff_t i_size = i_size_read(inode);
+7208: 
+7209: 	if (off > i_size)
+7210: 		return 0;
+7211: 	if (off+len > i_size)
+7212: 		len = i_size-off;
+7213: 	toread = len;
+7214: 	while (toread > 0) {
+7215: 		tocopy = min_t(unsigned long, sb->s_blocksize - offset, toread);
+7216: 		bh = ext4_bread(NULL, inode, blk, 0);
+7217: 		if (IS_ERR(bh))
+7218: 			return PTR_ERR(bh);
+7219: 		if (!bh)	/* A hole? */
+7220: 			memset(data, 0, tocopy);
+7221: 		else
+7222: 			memcpy(data, bh->b_data+offset, tocopy);
+7223: 		brelse(bh);
+7224: 		offset = 0;
+7225: 		toread -= tocopy;
+7226: 		data += tocopy;
+7227: 		blk++;
+7228: 	}
+7229: 	return len;
+7230: }
+7231: 
+7232: /* Write to quotafile (we know the transaction is already started and has
+7233:  * enough credits) */
+7234: static ssize_t ext4_quota_write(struct super_block *sb, int type,
+7235: 				const char *data, size_t len, loff_t off)
+7236: {
+7237: 	struct inode *inode = sb_dqopt(sb)->files[type];
+7238: 	ext4_lblk_t blk = off >> EXT4_BLOCK_SIZE_BITS(sb);
+7239: 	int err = 0, err2 = 0, offset = off & (sb->s_blocksize - 1);
+7240: 	int retries = 0;
+7241: 	struct buffer_head *bh;
+7242: 	handle_t *handle = journal_current_handle();
+7243: 
+7244: 	if (!handle) {
+7245: 		ext4_msg(sb, KERN_WARNING, "Quota write (off=%llu, len=%llu)"
+7246: 			" cancelled because transaction is not started",
+7247: 			(unsigned long long)off, (unsigned long long)len);
+7248: 		return -EIO;
+7249: 	}
+7250: 	/*
+7251: 	 * Since we account only one data block in transaction credits,
+7252: 	 * then it is impossible to cross a block boundary.
+7253: 	 */
+7254: 	if (sb->s_blocksize - offset < len) {
+7255: 		ext4_msg(sb, KERN_WARNING, "Quota write (off=%llu, len=%llu)"
+7256: 			" cancelled because not block aligned",
+7257: 			(unsigned long long)off, (unsigned long long)len);
+7258: 		return -EIO;
+7259: 	}
+7260: 
+7261: 	do {
+7262: 		bh = ext4_bread(handle, inode, blk,
+7263: 				EXT4_GET_BLOCKS_CREATE |
+7264: 				EXT4_GET_BLOCKS_METADATA_NOFAIL);
+7265: 	} while (PTR_ERR(bh) == -ENOSPC &&
+
+FILE fs/ext4/xattr.c SHA256 8a953a676b04c026a734ce5769e8ed06f7cd3be514af05636233d0c41ca41746 LINES 382..419
+382: static int ext4_xattr_inode_read(struct inode *ea_inode, void *buf, size_t size)
+383: {
+384: 	int blocksize = 1 << ea_inode->i_blkbits;
+385: 	int bh_count = (size + blocksize - 1) >> ea_inode->i_blkbits;
+386: 	int tail_size = (size % blocksize) ?: blocksize;
+387: 	struct buffer_head *bhs_inline[8];
+388: 	struct buffer_head **bhs = bhs_inline;
+389: 	int i, ret;
+390: 
+391: 	if (bh_count > ARRAY_SIZE(bhs_inline)) {
+392: 		bhs = kmalloc_array(bh_count, sizeof(*bhs), GFP_NOFS);
+393: 		if (!bhs)
+394: 			return -ENOMEM;
+395: 	}
+396: 
+397: 	ret = ext4_bread_batch(ea_inode, 0 /* block */, bh_count,
+398: 			       true /* wait */, bhs);
+399: 	if (ret)
+400: 		goto free_bhs;
+401: 
+402: 	for (i = 0; i < bh_count; i++) {
+403: 		/* There shouldn't be any holes in ea_inode. */
+404: 		if (!bhs[i]) {
+405: 			ret = -EFSCORRUPTED;
+406: 			goto put_bhs;
+407: 		}
+408: 		memcpy((char *)buf + blocksize * i, bhs[i]->b_data,
+409: 		       i < bh_count - 1 ? blocksize : tail_size);
+410: 	}
+411: 	ret = 0;
+412: put_bhs:
+413: 	for (i = 0; i < bh_count; i++)
+414: 		brelse(bhs[i]);
+415: free_bhs:
+416: 	if (bhs != bhs_inline)
+417: 		kfree(bhs);
+418: 	return ret;
+419: }
+
+FILE mm/swap.c SHA256 40e99753a221b25c3ed03626898b44016ce4b6cd33060eb95a8a1e3ec08cea0b LINES 97..145
+97: void __folio_put(struct folio *folio)
+98: {
+99: 	if (unlikely(folio_is_zone_device(folio))) {
+100: 		free_zone_device_folio(folio);
+101: 		return;
+102: 	}
+103: 
+104: 	if (folio_test_hugetlb(folio)) {
+105: 		free_huge_folio(folio);
+106: 		return;
+107: 	}
+108: 
+109: 	page_cache_release(folio);
+110: 	folio_unqueue_deferred_split(folio);
+111: 	mem_cgroup_uncharge(folio);
+112: 	free_unref_page(&folio->page, folio_order(folio));
+113: }
+114: EXPORT_SYMBOL(__folio_put);
+115: 
+116: /**
+117:  * put_pages_list() - release a list of pages
+118:  * @pages: list of pages threaded on page->lru
+119:  *
+120:  * Release a list of pages which are strung together on page.lru.
+121:  */
+122: void put_pages_list(struct list_head *pages)
+123: {
+124: 	struct folio_batch fbatch;
+125: 	struct folio *folio, *next;
+126: 
+127: 	folio_batch_init(&fbatch);
+128: 	list_for_each_entry_safe(folio, next, pages, lru) {
+129: 		if (!folio_put_testzero(folio))
+130: 			continue;
+131: 		if (folio_test_hugetlb(folio)) {
+132: 			free_huge_folio(folio);
+133: 			continue;
+134: 		}
+135: 		/* LRU flag must be clear because it's passed using the lru */
+136: 		if (folio_batch_add(&fbatch, folio) > 0)
+137: 			continue;
+138: 		free_unref_folios(&fbatch);
+139: 	}
+140: 
+141: 	if (fbatch.nr)
+142: 		free_unref_folios(&fbatch);
+143: 	INIT_LIST_HEAD(pages);
+144: }
+145: EXPORT_SYMBOL(put_pages_list);
+
+FILE mm/swap.c SHA256 40e99753a221b25c3ed03626898b44016ce4b6cd33060eb95a8a1e3ec08cea0b LINES 974..994
+974: 			free_huge_folio(folio);
+975: 			continue;
+976: 		}
+977: 		folio_unqueue_deferred_split(folio);
+978: 		__page_cache_release(folio, &lruvec, &flags);
+979: 
+980: 		if (j != i)
+981: 			folios->folios[j] = folio;
+982: 		j++;
+983: 	}
+984: 	if (lruvec)
+985: 		unlock_page_lruvec_irqrestore(lruvec, flags);
+986: 	if (!j) {
+987: 		folio_batch_reinit(folios);
+988: 		return;
+989: 	}
+990: 
+991: 	folios->nr = j;
+992: 	mem_cgroup_uncharge_folios(folios);
+993: 	free_unref_folios(folios);
+994: }
+
+FILE mm/vmscan.c SHA256 9f36b31c5cbd6c430d8714e88e2465da7613862612c412e49bd1f33baac46275 LINES 658..697
+658: 		return PAGE_KEEP;
+659: 	if (!mapping) {
+660: 		/*
+661: 		 * Some data journaling orphaned folios can have
+662: 		 * folio->mapping == NULL while being dirty with clean buffers.
+663: 		 */
+664: 		if (folio_test_private(folio)) {
+665: 			if (try_to_free_buffers(folio)) {
+666: 				folio_clear_dirty(folio);
+667: 				pr_info("%s: orphaned folio\n", __func__);
+668: 				return PAGE_CLEAN;
+669: 			}
+670: 		}
+671: 		return PAGE_KEEP;
+672: 	}
+673: 	if (mapping->a_ops->writepage == NULL)
+674: 		return PAGE_ACTIVATE;
+675: 
+676: 	if (folio_clear_dirty_for_io(folio)) {
+677: 		int res;
+678: 		struct writeback_control wbc = {
+679: 			.sync_mode = WB_SYNC_NONE,
+680: 			.nr_to_write = SWAP_CLUSTER_MAX,
+681: 			.range_start = 0,
+682: 			.range_end = LLONG_MAX,
+683: 			.for_reclaim = 1,
+684: 			.swap_plug = plug,
+685: 		};
+686: 
+687: 		/*
+688: 		 * The large shmem folio can be split if CONFIG_THP_SWAP is
+689: 		 * not enabled or contiguous swap entries are failed to
+690: 		 * allocate.
+691: 		 */
+692: 		if (shmem_mapping(mapping) && folio_test_large(folio))
+693: 			wbc.list = folio_list;
+694: 
+695: 		folio_set_reclaim(folio);
+696: 		res = mapping->a_ops->writepage(&folio->page, &wbc);
+697: 		if (res < 0)
+
+FILE mm/vmscan.c SHA256 9f36b31c5cbd6c430d8714e88e2465da7613862612c412e49bd1f33baac46275 LINES 1487..1500
+1487: 		/*
+1488: 		 * Folio may get swapped out as a whole, need to account
+1489: 		 * all pages in it.
+1490: 		 */
+1491: 		nr_reclaimed += nr_pages;
+1492: 
+1493: 		folio_unqueue_deferred_split(folio);
+1494: 		if (folio_batch_add(&free_folios, folio) == 0) {
+1495: 			mem_cgroup_uncharge_folios(&free_folios);
+1496: 			try_to_unmap_flush();
+1497: 			free_unref_folios(&free_folios);
+1498: 		}
+1499: 		continue;
+1500: 
+
+FILE mm/vmscan.c SHA256 9f36b31c5cbd6c430d8714e88e2465da7613862612c412e49bd1f33baac46275 LINES 1561..1568
+1561: 
+1562: 	pgactivate = stat->nr_activate[0] + stat->nr_activate[1];
+1563: 
+1564: 	mem_cgroup_uncharge_folios(&free_folios);
+1565: 	try_to_unmap_flush();
+1566: 	free_unref_folios(&free_folios);
+1567: 
+1568: 	list_splice(&ret_folios, folio_list);
+
+FILE mm/vmscan.c SHA256 9f36b31c5cbd6c430d8714e88e2465da7613862612c412e49bd1f33baac46275 LINES 1879..1909
+1879: 		if (unlikely(folio_put_testzero(folio))) {
+1880: 			__folio_clear_lru_flags(folio);
+1881: 
+1882: 			folio_unqueue_deferred_split(folio);
+1883: 			if (folio_batch_add(&free_folios, folio) == 0) {
+1884: 				spin_unlock_irq(&lruvec->lru_lock);
+1885: 				mem_cgroup_uncharge_folios(&free_folios);
+1886: 				free_unref_folios(&free_folios);
+1887: 				spin_lock_irq(&lruvec->lru_lock);
+1888: 			}
+1889: 
+1890: 			continue;
+1891: 		}
+1892: 
+1893: 		/*
+1894: 		 * All pages were isolated from the same lruvec (and isolation
+1895: 		 * inhibits memcg migration).
+1896: 		 */
+1897: 		VM_BUG_ON_FOLIO(!folio_matches_lruvec(folio, lruvec), folio);
+1898: 		lruvec_add_folio(lruvec, folio);
+1899: 		nr_pages = folio_nr_pages(folio);
+1900: 		nr_moved += nr_pages;
+1901: 		if (folio_test_active(folio))
+1902: 			workingset_age_nonresident(lruvec, nr_pages);
+1903: 	}
+1904: 
+1905: 	if (free_folios.nr) {
+1906: 		spin_unlock_irq(&lruvec->lru_lock);
+1907: 		mem_cgroup_uncharge_folios(&free_folios);
+1908: 		free_unref_folios(&free_folios);
+1909: 		spin_lock_irq(&lruvec->lru_lock);
+
+FILE mm/vmscan.c SHA256 9f36b31c5cbd6c430d8714e88e2465da7613862612c412e49bd1f33baac46275 LINES 994..1025
+994: static unsigned int demote_folio_list(struct list_head *demote_folios,
+995: 				     struct pglist_data *pgdat)
+996: {
+997: 	int target_nid = next_demotion_node(pgdat->node_id);
+998: 	unsigned int nr_succeeded;
+999: 	nodemask_t allowed_mask;
+1000: 
+1001: 	struct migration_target_control mtc = {
+1002: 		/*
+1003: 		 * Allocate from 'node', or fail quickly and quietly.
+1004: 		 * When this happens, 'page' will likely just be discarded
+1005: 		 * instead of migrated.
+1006: 		 */
+1007: 		.gfp_mask = (GFP_HIGHUSER_MOVABLE & ~__GFP_RECLAIM) | __GFP_NOWARN |
+1008: 			__GFP_NOMEMALLOC | GFP_NOWAIT,
+1009: 		.nid = target_nid,
+1010: 		.nmask = &allowed_mask,
+1011: 		.reason = MR_DEMOTION,
+1012: 	};
+1013: 
+1014: 	if (list_empty(demote_folios))
+1015: 		return 0;
+1016: 
+1017: 	if (target_nid == NUMA_NO_NODE)
+1018: 		return 0;
+1019: 
+1020: 	node_get_allowed_targets(pgdat, &allowed_mask);
+1021: 
+1022: 	/* Demotion ignores all cpuset and mempolicy settings */
+1023: 	migrate_pages(demote_folios, alloc_migrate_folio, NULL,
+1024: 		      (unsigned long)&mtc, MIGRATE_ASYNC, MR_DEMOTION,
+1025: 		      &nr_succeeded);
+
+FILE mm/migrate.c SHA256 a70c56fecd9c862a0c5b679d59090a2a5f78b17a73dc1ed2643113798f26cd30 LINES 2124..2186
+2124: struct folio *alloc_migration_target(struct folio *src, unsigned long private)
+2125: {
+2126: 	struct migration_target_control *mtc;
+2127: 	gfp_t gfp_mask;
+2128: 	unsigned int order = 0;
+2129: 	int nid;
+2130: 	int zidx;
+2131: 
+2132: 	mtc = (struct migration_target_control *)private;
+2133: 	gfp_mask = mtc->gfp_mask;
+2134: 	nid = mtc->nid;
+2135: 	if (nid == NUMA_NO_NODE)
+2136: 		nid = folio_nid(src);
+2137: 
+2138: 	if (folio_test_hugetlb(src)) {
+2139: 		struct hstate *h = folio_hstate(src);
+2140: 
+2141: 		gfp_mask = htlb_modify_alloc_mask(h, gfp_mask);
+2142: 		return alloc_hugetlb_folio_nodemask(h, nid,
+2143: 						mtc->nmask, gfp_mask,
+2144: 						htlb_allow_alloc_fallback(mtc->reason));
+2145: 	}
+2146: 
+2147: 	if (folio_test_large(src)) {
+2148: 		/*
+2149: 		 * clear __GFP_RECLAIM to make the migration callback
+2150: 		 * consistent with regular THP allocations.
+2151: 		 */
+2152: 		gfp_mask &= ~__GFP_RECLAIM;
+2153: 		gfp_mask |= GFP_TRANSHUGE;
+2154: 		order = folio_order(src);
+2155: 	}
+2156: 	zidx = zone_idx(folio_zone(src));
+2157: 	if (is_highmem_idx(zidx) || zidx == ZONE_MOVABLE)
+2158: 		gfp_mask |= __GFP_HIGHMEM;
+2159: 
+2160: 	return __folio_alloc(gfp_mask, order, nid, mtc->nmask);
+2161: }
+2162: 
+2163: #ifdef CONFIG_NUMA
+2164: 
+2165: static int store_status(int __user *status, int start, int value, int nr)
+2166: {
+2167: 	while (nr-- > 0) {
+2168: 		if (put_user(value, status + start))
+2169: 			return -EFAULT;
+2170: 		start++;
+2171: 	}
+2172: 
+2173: 	return 0;
+2174: }
+2175: 
+2176: static int do_move_pages_to_node(struct list_head *pagelist, int node)
+2177: {
+2178: 	int err;
+2179: 	struct migration_target_control mtc = {
+2180: 		.nid = node,
+2181: 		.gfp_mask = GFP_HIGHUSER_MOVABLE | __GFP_THISNODE,
+2182: 		.reason = MR_SYSCALL,
+2183: 	};
+2184: 
+2185: 	err = migrate_pages(pagelist, alloc_migration_target, NULL,
+2186: 		(unsigned long)&mtc, MIGRATE_SYNC, MR_SYSCALL, NULL);
+
+FILE mm/migrate.c SHA256 a70c56fecd9c862a0c5b679d59090a2a5f78b17a73dc1ed2643113798f26cd30 LINES 2596..2611
+2596: static struct folio *alloc_misplaced_dst_folio(struct folio *src,
+2597: 					   unsigned long data)
+2598: {
+2599: 	int nid = (int) data;
+2600: 	int order = folio_order(src);
+2601: 	gfp_t gfp = __GFP_THISNODE;
+2602: 
+2603: 	if (order > 0)
+2604: 		gfp |= GFP_TRANSHUGE_LIGHT;
+2605: 	else {
+2606: 		gfp |= GFP_HIGHUSER_MOVABLE | __GFP_NOMEMALLOC | __GFP_NORETRY |
+2607: 			__GFP_NOWARN;
+2608: 		gfp &= ~__GFP_RECLAIM;
+2609: 	}
+2610: 	return __folio_alloc_node(gfp, order, nid);
+2611: }
+
+FILE mm/mempolicy.c SHA256 1ceb840fd09f2ca7105af55c0b3164e5c249b440c2d64a91a191fe1d625b66d7 LINES 1060..1105
+1060:  * Returns error or the number of pages not migrated.
+1061:  */
+1062: static long migrate_to_node(struct mm_struct *mm, int source, int dest,
+1063: 			    int flags)
+1064: {
+1065: 	nodemask_t nmask;
+1066: 	struct vm_area_struct *vma;
+1067: 	LIST_HEAD(pagelist);
+1068: 	long nr_failed;
+1069: 	long err = 0;
+1070: 	struct migration_target_control mtc = {
+1071: 		.nid = dest,
+1072: 		.gfp_mask = GFP_HIGHUSER_MOVABLE | __GFP_THISNODE,
+1073: 		.reason = MR_SYSCALL,
+1074: 	};
+1075: 
+1076: 	nodes_clear(nmask);
+1077: 	node_set(source, nmask);
+1078: 
+1079: 	VM_BUG_ON(!(flags & (MPOL_MF_MOVE | MPOL_MF_MOVE_ALL)));
+1080: 
+1081: 	mmap_read_lock(mm);
+1082: 	vma = find_vma(mm, 0);
+1083: 	if (unlikely(!vma)) {
+1084: 		mmap_read_unlock(mm);
+1085: 		return 0;
+1086: 	}
+1087: 
+1088: 	/*
+1089: 	 * This does not migrate the range, but isolates all pages that
+1090: 	 * need migration.  Between passing in the full user address
+1091: 	 * space range and MPOL_MF_DISCONTIG_OK, this call cannot fail,
+1092: 	 * but passes back the count of pages which could not be isolated.
+1093: 	 */
+1094: 	nr_failed = queue_pages_range(mm, vma->vm_start, mm->task_size, &nmask,
+1095: 				      flags | MPOL_MF_DISCONTIG_OK, &pagelist);
+1096: 	mmap_read_unlock(mm);
+1097: 
+1098: 	if (!list_empty(&pagelist)) {
+1099: 		err = migrate_pages(&pagelist, alloc_migration_target, NULL,
+1100: 			(unsigned long)&mtc, MIGRATE_SYNC, MR_SYSCALL, NULL);
+1101: 		if (err)
+1102: 			putback_movable_pages(&pagelist);
+1103: 	}
+1104: 
+1105: 	if (err >= 0)
+
+FILE mm/memory-tiers.c SHA256 459557510e6cea49dbb2b0ea34eb27de2a3c3964eaa8337fac7b0a76e9a5af2d LINES 937..961
+937: bool numa_demotion_enabled = false;
+938: 
+939: #ifdef CONFIG_MIGRATION
+940: #ifdef CONFIG_SYSFS
+941: static ssize_t demotion_enabled_show(struct kobject *kobj,
+942: 				     struct kobj_attribute *attr, char *buf)
+943: {
+944: 	return sysfs_emit(buf, "%s\n", str_true_false(numa_demotion_enabled));
+945: }
+946: 
+947: static ssize_t demotion_enabled_store(struct kobject *kobj,
+948: 				      struct kobj_attribute *attr,
+949: 				      const char *buf, size_t count)
+950: {
+951: 	ssize_t ret;
+952: 
+953: 	ret = kstrtobool(buf, &numa_demotion_enabled);
+954: 	if (ret)
+955: 		return ret;
+956: 
+957: 	return count;
+958: }
+959: 
+960: static struct kobj_attribute numa_demotion_enabled_attr =
+961: 	__ATTR_RW(demotion_enabled);
+
+FILE mm/compaction.c SHA256 d74285c97b56675486c62a9f9b0970de7dc8a649b661740e491ccb4e80f3de1c LINES 1813..1887
+1813: 			stride = 1;
+1814: 			continue;
+1815: 		}
+1816: 		stride = min_t(unsigned int, COMPACT_CLUSTER_MAX, stride << 1);
+1817: 	}
+1818: 
+1819: 	/*
+1820: 	 * Record where the free scanner will restart next time. Either we
+1821: 	 * broke from the loop and set isolate_start_pfn based on the last
+1822: 	 * call to isolate_freepages_block(), or we met the migration scanner
+1823: 	 * and the loop terminated due to isolate_start_pfn < low_pfn
+1824: 	 */
+1825: 	cc->free_pfn = isolate_start_pfn;
+1826: }
+1827: 
+1828: /*
+1829:  * This is a migrate-callback that "allocates" freepages by taking pages
+1830:  * from the isolated freelists in the block we are migrating to.
+1831:  */
+1832: static struct folio *compaction_alloc_noprof(struct folio *src, unsigned long data)
+1833: {
+1834: 	struct compact_control *cc = (struct compact_control *)data;
+1835: 	struct folio *dst;
+1836: 	int order = folio_order(src);
+1837: 	bool has_isolated_pages = false;
+1838: 	int start_order;
+1839: 	struct page *freepage;
+1840: 	unsigned long size;
+1841: 
+1842: again:
+1843: 	for (start_order = order; start_order < NR_PAGE_ORDERS; start_order++)
+1844: 		if (!list_empty(&cc->freepages[start_order]))
+1845: 			break;
+1846: 
+1847: 	/* no free pages in the list */
+1848: 	if (start_order == NR_PAGE_ORDERS) {
+1849: 		if (has_isolated_pages)
+1850: 			return NULL;
+1851: 		isolate_freepages(cc);
+1852: 		has_isolated_pages = true;
+1853: 		goto again;
+1854: 	}
+1855: 
+1856: 	freepage = list_first_entry(&cc->freepages[start_order], struct page,
+1857: 				lru);
+1858: 	size = 1 << start_order;
+1859: 
+1860: 	list_del(&freepage->lru);
+1861: 
+1862: 	while (start_order > order) {
+1863: 		start_order--;
+1864: 		size >>= 1;
+1865: 
+1866: 		list_add(&freepage[size].lru, &cc->freepages[start_order]);
+1867: 		set_page_private(&freepage[size], start_order);
+1868: 	}
+1869: 	dst = (struct folio *)freepage;
+1870: 
+1871: 	post_alloc_hook(&dst->page, order, __GFP_MOVABLE);
+1872: 	if (order)
+1873: 		prep_compound_page(&dst->page, order);
+1874: 	cc->nr_freepages -= 1 << order;
+1875: 	cc->nr_migratepages -= 1 << order;
+1876: 	return page_rmappable_folio(&dst->page);
+1877: }
+1878: 
+1879: static struct folio *compaction_alloc(struct folio *src, unsigned long data)
+1880: {
+1881: 	return alloc_hooks(compaction_alloc_noprof(src, data));
+1882: }
+1883: 
+1884: /*
+1885:  * This is a migrate-callback that "frees" freepages back to the isolated
+1886:  * freelist.  All pages on the freelist are from the same zone, so there is no
+1887:  * special handling needed for NUMA.
+
+FILE mm/gup.c SHA256 7ad05b1a0584416a46698dfc126486861872a9e3a7216711b3e645d35b06f162 LINES 2414..2423
+2414: 	if (!list_empty(movable_folio_list)) {
+2415: 		struct migration_target_control mtc = {
+2416: 			.nid = NUMA_NO_NODE,
+2417: 			.gfp_mask = GFP_USER | __GFP_NOWARN,
+2418: 			.reason = MR_LONGTERM_PIN,
+2419: 		};
+2420: 
+2421: 		if (migrate_pages(movable_folio_list, alloc_migration_target,
+2422: 				  NULL, (unsigned long)&mtc, MIGRATE_SYNC,
+2423: 				  MR_LONGTERM_PIN, NULL)) {
+
+FILE mm/memory_hotplug.c SHA256 8dc600f6c7d0e123cb07d32e8b804541f73b534a6e35210f824aed8465b31cc5 LINES 1826..1850
+1826: 	if (!list_empty(&source)) {
+1827: 		nodemask_t nmask = node_states[N_MEMORY];
+1828: 		struct migration_target_control mtc = {
+1829: 			.nmask = &nmask,
+1830: 			.gfp_mask = GFP_USER | __GFP_MOVABLE | __GFP_RETRY_MAYFAIL,
+1831: 			.reason = MR_MEMORY_HOTPLUG,
+1832: 		};
+1833: 		int ret;
+1834: 
+1835: 		/*
+1836: 		 * We have checked that migration range is on a single zone so
+1837: 		 * we can use the nid of the first page to all the others.
+1838: 		 */
+1839: 		mtc.nid = folio_nid(list_first_entry(&source, struct folio, lru));
+1840: 
+1841: 		/*
+1842: 		 * try to allocate from a different node but reuse this node
+1843: 		 * if there are no other online nodes to be used (e.g. we are
+1844: 		 * offlining a part of the only existing node)
+1845: 		 */
+1846: 		node_clear(mtc.nid, nmask);
+1847: 		if (nodes_empty(nmask))
+1848: 			node_set(mtc.nid, nmask);
+1849: 		ret = migrate_pages(&source, alloc_migration_target, NULL,
+1850: 			(unsigned long)&mtc, MIGRATE_SYNC, MR_MEMORY_HOTPLUG, NULL);
+
+FILE mm/page_alloc.c SHA256 1910e8ae784507957fe92351be7f0a075ab15498bc5f740384c57fc14ca45802 LINES 6411..6419
+6411: 	unsigned int nr_reclaimed;
+6412: 	unsigned long pfn = start;
+6413: 	unsigned int tries = 0;
+6414: 	int ret = 0;
+6415: 	struct migration_target_control mtc = {
+6416: 		.nid = zone_to_nid(cc->zone),
+6417: 		.gfp_mask = GFP_USER | __GFP_MOVABLE | __GFP_RETRY_MAYFAIL,
+6418: 		.reason = MR_CONTIG_RANGE,
+6419: 	};
+
+FILE include/linux/gfp.h SHA256 e8788c1ffb02b53b513a3b9e2f19c7a519b7f6533228b6d5130de3bf1c0b2bf8 LINES 100..141
+100: #if 16 * GFP_ZONES_SHIFT > BITS_PER_LONG
+101: #error GFP_ZONES_SHIFT too large to create GFP_ZONE_TABLE integer
+102: #endif
+103: 
+104: #define GFP_ZONE_TABLE ( \
+105: 	(ZONE_NORMAL << 0 * GFP_ZONES_SHIFT)				       \
+106: 	| (OPT_ZONE_DMA << ___GFP_DMA * GFP_ZONES_SHIFT)		       \
+107: 	| (OPT_ZONE_HIGHMEM << ___GFP_HIGHMEM * GFP_ZONES_SHIFT)	       \
+108: 	| (OPT_ZONE_DMA32 << ___GFP_DMA32 * GFP_ZONES_SHIFT)		       \
+109: 	| (ZONE_NORMAL << ___GFP_MOVABLE * GFP_ZONES_SHIFT)		       \
+110: 	| (OPT_ZONE_DMA << (___GFP_MOVABLE | ___GFP_DMA) * GFP_ZONES_SHIFT)    \
+111: 	| (ZONE_MOVABLE << (___GFP_MOVABLE | ___GFP_HIGHMEM) * GFP_ZONES_SHIFT)\
+112: 	| (OPT_ZONE_DMA32 << (___GFP_MOVABLE | ___GFP_DMA32) * GFP_ZONES_SHIFT)\
+113: )
+114: 
+115: /*
+116:  * GFP_ZONE_BAD is a bitmap for all combinations of __GFP_DMA, __GFP_DMA32
+117:  * __GFP_HIGHMEM and __GFP_MOVABLE that are not permitted. One flag per
+118:  * entry starting with bit 0. Bit is set if the combination is not
+119:  * allowed.
+120:  */
+121: #define GFP_ZONE_BAD ( \
+122: 	1 << (___GFP_DMA | ___GFP_HIGHMEM)				      \
+123: 	| 1 << (___GFP_DMA | ___GFP_DMA32)				      \
+124: 	| 1 << (___GFP_DMA32 | ___GFP_HIGHMEM)				      \
+125: 	| 1 << (___GFP_DMA | ___GFP_DMA32 | ___GFP_HIGHMEM)		      \
+126: 	| 1 << (___GFP_MOVABLE | ___GFP_HIGHMEM | ___GFP_DMA)		      \
+127: 	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA)		      \
+128: 	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_HIGHMEM)		      \
+129: 	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA | ___GFP_HIGHMEM)  \
+130: )
+131: 
+132: static inline enum zone_type gfp_zone(gfp_t flags)
+133: {
+134: 	enum zone_type z;
+135: 	int bit = (__force int) (flags & GFP_ZONEMASK);
+136: 
+137: 	z = (GFP_ZONE_TABLE >> (bit * GFP_ZONES_SHIFT)) &
+138: 					 ((1 << GFP_ZONES_SHIFT) - 1);
+139: 	VM_BUG_ON((GFP_ZONE_BAD >> bit) & 1);
+140: 	return z;
+141: }
+
+FILE include/linux/gfp_types.h SHA256 433bfc7b72e82fca5e1f2cfdd7557a0fdd7d1f845bfa0ba2e8dbcdb369d2c2f3 LINES 377..390
+377: #define GFP_ATOMIC	(__GFP_HIGH|__GFP_KSWAPD_RECLAIM)
+378: #define GFP_KERNEL	(__GFP_RECLAIM | __GFP_IO | __GFP_FS)
+379: #define GFP_KERNEL_ACCOUNT (GFP_KERNEL | __GFP_ACCOUNT)
+380: #define GFP_NOWAIT	(__GFP_KSWAPD_RECLAIM | __GFP_NOWARN)
+381: #define GFP_NOIO	(__GFP_RECLAIM)
+382: #define GFP_NOFS	(__GFP_RECLAIM | __GFP_IO)
+383: #define GFP_USER	(__GFP_RECLAIM | __GFP_IO | __GFP_FS | __GFP_HARDWALL)
+384: #define GFP_DMA		__GFP_DMA
+385: #define GFP_DMA32	__GFP_DMA32
+386: #define GFP_HIGHUSER	(GFP_USER | __GFP_HIGHMEM)
+387: #define GFP_HIGHUSER_MOVABLE	(GFP_HIGHUSER | __GFP_MOVABLE | __GFP_SKIP_KASAN)
+388: #define GFP_TRANSHUGE_LIGHT	((GFP_HIGHUSER_MOVABLE | __GFP_COMP | \
+389: 			 __GFP_NOMEMALLOC | __GFP_NOWARN) & ~__GFP_RECLAIM)
+390: #define GFP_TRANSHUGE	(GFP_TRANSHUGE_LIGHT | __GFP_DIRECT_RECLAIM)
+
+FILE mm/internal.h SHA256 721eac1ae009576ba505c158fcae97d688c57b9fd5f02db513a7e46822bea981 LINES 25..39
+25: 
+26: /*
+27:  * The set of flags that only affect watermark checking and reclaim
+28:  * behaviour. This is used by the MM to obey the caller constraints
+29:  * about IO, FS and watermark checking while ignoring placement
+30:  * hints such as HIGHMEM usage.
+31:  */
+32: #define GFP_RECLAIM_MASK (__GFP_RECLAIM|__GFP_HIGH|__GFP_IO|__GFP_FS|\
+33: 			__GFP_NOWARN|__GFP_RETRY_MAYFAIL|__GFP_NOFAIL|\
+34: 			__GFP_NORETRY|__GFP_MEMALLOC|__GFP_NOMEMALLOC|\
+35: 			__GFP_NOLOCKDEP)
+36: 
+37: /* The GFP flags allowed during early boot */
+38: #define GFP_BOOT_MASK (__GFP_BITS_MASK & ~(__GFP_RECLAIM|__GFP_IO|__GFP_FS))
+39: 
+
+FILE kernel/events/uprobes.c SHA256 2026b1850eee36d3cc50039ddabbd3bde502ecfe43999e0584cf8372dc3f7bea LINES 161..180
+161: static int __replace_page(struct vm_area_struct *vma, unsigned long addr,
+162: 				struct page *old_page, struct page *new_page)
+163: {
+164: 	struct folio *old_folio = page_folio(old_page);
+165: 	struct folio *new_folio;
+166: 	struct mm_struct *mm = vma->vm_mm;
+167: 	DEFINE_FOLIO_VMA_WALK(pvmw, old_folio, vma, addr, 0);
+168: 	int err;
+169: 	struct mmu_notifier_range range;
+170: 	pte_t pte;
+171: 
+172: 	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, mm, addr,
+173: 				addr + PAGE_SIZE);
+174: 
+175: 	if (new_page) {
+176: 		new_folio = page_folio(new_page);
+177: 		err = mem_cgroup_charge(new_folio, vma->vm_mm, GFP_KERNEL);
+178: 		if (err)
+179: 			return err;
+180: 	}
+
+FILE mm/userfaultfd.c SHA256 1c87920721a1ec143e7d6b6a9947b25c835c43b15d0c168be86e23243ff32e6a LINES 251..261
+251: 
+252: 	if (!*foliop) {
+253: 		ret = -ENOMEM;
+254: 		folio = vma_alloc_folio(GFP_HIGHUSER_MOVABLE, 0, dst_vma,
+255: 					dst_addr, false);
+256: 		if (!folio)
+257: 			goto out;
+258: 
+259: 		kaddr = kmap_local_folio(folio, 0);
+260: 		/*
+261: 		 * The read mmap_lock is held here.  Despite the
+
+FILE mm/userfaultfd.c SHA256 1c87920721a1ec143e7d6b6a9947b25c835c43b15d0c168be86e23243ff32e6a LINES 300..336
+300: 	__folio_mark_uptodate(folio);
+301: 
+302: 	ret = -ENOMEM;
+303: 	if (mem_cgroup_charge(folio, dst_vma->vm_mm, GFP_KERNEL))
+304: 		goto out_release;
+305: 
+306: 	ret = mfill_atomic_install_pte(dst_pmd, dst_vma, dst_addr,
+307: 				       &folio->page, true, flags);
+308: 	if (ret)
+309: 		goto out_release;
+310: out:
+311: 	return ret;
+312: out_release:
+313: 	folio_put(folio);
+314: 	goto out;
+315: }
+316: 
+317: static int mfill_atomic_pte_zeroed_folio(pmd_t *dst_pmd,
+318: 					 struct vm_area_struct *dst_vma,
+319: 					 unsigned long dst_addr)
+320: {
+321: 	struct folio *folio;
+322: 	int ret = -ENOMEM;
+323: 
+324: 	folio = vma_alloc_zeroed_movable_folio(dst_vma, dst_addr);
+325: 	if (!folio)
+326: 		return ret;
+327: 
+328: 	if (mem_cgroup_charge(folio, dst_vma->vm_mm, GFP_KERNEL))
+329: 		goto out_put;
+330: 
+331: 	/*
+332: 	 * The memory barrier inside __folio_mark_uptodate makes sure that
+333: 	 * zeroing out the folio become visible before mapping the page
+334: 	 * using set_pte_at(). See do_anonymous_page().
+335: 	 */
+336: 	__folio_mark_uptodate(folio);
+
+FILE mm/khugepaged.c SHA256 9db9c501d5f56c6f2f14094fce4252594e13a964c56cc3e5570fe14e9b6e6b16 LINES 1064..1089
+1064: static int alloc_charge_folio(struct folio **foliop, struct mm_struct *mm,
+1065: 			      struct collapse_control *cc)
+1066: {
+1067: 	gfp_t gfp = (cc->is_khugepaged ? alloc_hugepage_khugepaged_gfpmask() :
+1068: 		     GFP_TRANSHUGE);
+1069: 	int node = hpage_collapse_find_target_node(cc);
+1070: 	struct folio *folio;
+1071: 
+1072: 	folio = __folio_alloc(gfp, HPAGE_PMD_ORDER, node, &cc->alloc_nmask);
+1073: 	if (!folio) {
+1074: 		*foliop = NULL;
+1075: 		count_vm_event(THP_COLLAPSE_ALLOC_FAILED);
+1076: 		return SCAN_ALLOC_HUGE_PAGE_FAIL;
+1077: 	}
+1078: 
+1079: 	count_vm_event(THP_COLLAPSE_ALLOC);
+1080: 	if (unlikely(mem_cgroup_charge(folio, mm, gfp))) {
+1081: 		folio_put(folio);
+1082: 		*foliop = NULL;
+1083: 		return SCAN_CGROUP_CHARGE_FAIL;
+1084: 	}
+1085: 
+1086: 	count_memcg_folio_events(folio, THP_COLLAPSE_ALLOC, 1);
+1087: 
+1088: 	*foliop = folio;
+1089: 	return SCAN_SUCCEED;
+
+FILE include/linux/fscrypt.h SHA256 5746a3c85cc8c1d3dd3e9257ce7bc5add53f876eecd5f8dda7ca1c0bcb49663f LINES 450..489
+450: #else  /* !CONFIG_FS_ENCRYPTION */
+451: 
+452: static inline struct fscrypt_inode_info *
+453: fscrypt_get_inode_info(const struct inode *inode)
+454: {
+455: 	return NULL;
+456: }
+457: 
+458: static inline bool fscrypt_needs_contents_encryption(const struct inode *inode)
+459: {
+460: 	return false;
+461: }
+462: 
+463: static inline void fscrypt_handle_d_move(struct dentry *dentry)
+464: {
+465: }
+466: 
+467: static inline bool fscrypt_is_nokey_name(const struct dentry *dentry)
+468: {
+469: 	return false;
+470: }
+471: 
+472: static inline void fscrypt_prepare_dentry(struct dentry *dentry,
+473: 					  bool is_nokey_name)
+474: {
+475: }
+476: 
+477: /* crypto.c */
+478: static inline void fscrypt_enqueue_decrypt_work(struct work_struct *work)
+479: {
+480: }
+481: 
+482: static inline struct page *fscrypt_encrypt_pagecache_blocks(struct page *page,
+483: 							    unsigned int len,
+484: 							    unsigned int offs,
+485: 							    gfp_t gfp_flags)
+486: {
+487: 	return ERR_PTR(-EOPNOTSUPP);
+488: }
+489: 
+
+FILE include/linux/fscrypt.h SHA256 5746a3c85cc8c1d3dd3e9257ce7bc5add53f876eecd5f8dda7ca1c0bcb49663f LINES 910..923
+910: /**
+911:  * fscrypt_inode_uses_fs_layer_crypto() - test whether an inode uses fs-layer
+912:  *					  encryption
+913:  * @inode: an inode. If encrypted, its key must be set up.
+914:  *
+915:  * Return: true if the inode requires file contents encryption and if the
+916:  *	   encryption should be done in the filesystem layer rather than in the
+917:  *	   block layer via blk-crypto.
+918:  */
+919: static inline bool fscrypt_inode_uses_fs_layer_crypto(const struct inode *inode)
+920: {
+921: 	return fscrypt_needs_contents_encryption(inode) &&
+922: 	       !__fscrypt_inode_uses_inline_crypto(inode);
+923: }
+
+FILE arch/x86/include/asm/page_types.h SHA256 aef0a5469ca6ea9e030c3bfd805316d3e24b633147d6e11ad30e6782599f3bc3 LINES 1..15
+1: /* SPDX-License-Identifier: GPL-2.0 */
+2: #ifndef _ASM_X86_PAGE_DEFS_H
+3: #define _ASM_X86_PAGE_DEFS_H
+4: 
+5: #include <linux/const.h>
+6: #include <linux/types.h>
+7: #include <linux/mem_encrypt.h>
+8: 
+9: /* PAGE_SHIFT determines the page size */
+10: #define PAGE_SHIFT		CONFIG_PAGE_SHIFT
+11: #define PAGE_SIZE		(_AC(1,UL) << PAGE_SHIFT)
+12: #define PAGE_MASK		(~(PAGE_SIZE-1))
+13: 
+14: #define __VIRTUAL_MASK		((1UL << __VIRTUAL_MASK_SHIFT) - 1)
+15: 
+
+FILE include/linux/pagevec.h SHA256 e067b03f80c917944d79f41b7ba3577f7503a551754fcb0eeda63b9b44bea3ad LINES 10..33
+10: #define _LINUX_PAGEVEC_H
+11: 
+12: #include <linux/types.h>
+13: 
+14: /* 31 pointers + header align the folio_batch structure to a power of two */
+15: #define PAGEVEC_SIZE	31
+16: 
+17: struct folio;
+18: 
+19: /**
+20:  * struct folio_batch - A collection of folios.
+21:  *
+22:  * The folio_batch is used to amortise the cost of retrieving and
+23:  * operating on a set of folios.  The order of folios in the batch may be
+24:  * significant (eg delete_from_page_cache_batch()).  Some users of the
+25:  * folio_batch store "exceptional" entries in it which can be removed
+26:  * by calling folio_batch_remove_exceptionals().
+27:  */
+28: struct folio_batch {
+29: 	unsigned char nr;
+30: 	unsigned char i;
+31: 	bool percpu_pvec_drained;
+32: 	struct folio *folios[PAGEVEC_SIZE];
+33: };
+
+FILE kernel/sched/debug.c SHA256 9d22c9431fec86839c0100ed8bbc38e3d702f8b7f5474a2edf3dc4fc0ecb8818 LINES 219..278
+219: #ifdef CONFIG_PREEMPT_DYNAMIC
+220: 
+221: static ssize_t sched_dynamic_write(struct file *filp, const char __user *ubuf,
+222: 				   size_t cnt, loff_t *ppos)
+223: {
+224: 	char buf[16];
+225: 	int mode;
+226: 
+227: 	if (cnt > 15)
+228: 		cnt = 15;
+229: 
+230: 	if (copy_from_user(&buf, ubuf, cnt))
+231: 		return -EFAULT;
+232: 
+233: 	buf[cnt] = 0;
+234: 	mode = sched_dynamic_mode(strstrip(buf));
+235: 	if (mode < 0)
+236: 		return mode;
+237: 
+238: 	sched_dynamic_update(mode);
+239: 
+240: 	*ppos += cnt;
+241: 
+242: 	return cnt;
+243: }
+244: 
+245: static int sched_dynamic_show(struct seq_file *m, void *v)
+246: {
+247: 	static const char * preempt_modes[] = {
+248: 		"none", "voluntary", "full"
+249: 	};
+250: 	int i;
+251: 
+252: 	for (i = 0; i < ARRAY_SIZE(preempt_modes); i++) {
+253: 		if (preempt_dynamic_mode == i)
+254: 			seq_puts(m, "(");
+255: 		seq_puts(m, preempt_modes[i]);
+256: 		if (preempt_dynamic_mode == i)
+257: 			seq_puts(m, ")");
+258: 
+259: 		seq_puts(m, " ");
+260: 	}
+261: 
+262: 	seq_puts(m, "\n");
+263: 	return 0;
+264: }
+265: 
+266: static int sched_dynamic_open(struct inode *inode, struct file *filp)
+267: {
+268: 	return single_open(filp, sched_dynamic_show, NULL);
+269: }
+270: 
+271: static const struct file_operations sched_dynamic_fops = {
+272: 	.open		= sched_dynamic_open,
+273: 	.write		= sched_dynamic_write,
+274: 	.read		= seq_read,
+275: 	.llseek		= seq_lseek,
+276: 	.release	= single_release,
+277: };
+278: 
+
+FILE kernel/sched/debug.c SHA256 9d22c9431fec86839c0100ed8bbc38e3d702f8b7f5474a2edf3dc4fc0ecb8818 LINES 497..506
+497: 	struct dentry __maybe_unused *numa;
+498: 
+499: 	debugfs_sched = debugfs_create_dir("sched", NULL);
+500: 
+501: 	debugfs_create_file("features", 0644, debugfs_sched, NULL, &sched_feat_fops);
+502: 	debugfs_create_file_unsafe("verbose", 0644, debugfs_sched, &sched_debug_verbose, &sched_verbose_fops);
+503: #ifdef CONFIG_PREEMPT_DYNAMIC
+504: 	debugfs_create_file("preempt", 0644, debugfs_sched, NULL, &sched_dynamic_fops);
+505: #endif
+506: 

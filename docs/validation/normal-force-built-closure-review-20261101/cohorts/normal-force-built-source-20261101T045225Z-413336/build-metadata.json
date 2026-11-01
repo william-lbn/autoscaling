@@ -1,0 +1,91 @@
+{
+  "buildx.build.provenance": {
+    "builder": {
+      "id": ""
+    },
+    "buildType": "https://mobyproject.org/buildkit@v1",
+    "materials": [
+      {
+        "uri": "pkg:docker/ubuntu@24.04?digest=sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790\u0026platform=linux%2Famd64",
+        "digest": {
+          "sha256": "3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790"
+        }
+      }
+    ],
+    "invocation": {
+      "configSource": {
+        "entryPoint": "Dockerfile"
+      },
+      "parameters": {
+        "frontend": "dockerfile.v0",
+        "args": {
+          "build-arg:ALPINE_IMG_SHA_AMD64": "@sha256:06793e3dc83d9a0733c70010283ed1735ff75fc0d40e3eac330aaef41a2f5049",
+          "build-arg:ALPINE_IMG_SHA_ARM64": "@sha256:b77521a60a51daad2b199da6efdd78956f79739d36379c2d13165f18ae1c4bee",
+          "build-arg:ALPINE_IMG_TAG": "3.19.7",
+          "build-arg:AMD64_KERNEL_CONFIG": "profiles/normal-v1/linux-config-amd64-6.12.26",
+          "build-arg:CONTROL_METADATA_VERSION_SUFFIX": "-william-normal-split-metadata-v1-c67181104ec1",
+          "build-arg:HTTPS_PROXY": "http://127.0.0.1:7890",
+          "build-arg:HTTP_PROXY": "http://127.0.0.1:7890",
+          "build-arg:KERNEL_VERSION": "6.12.26",
+          "build-arg:NORMAL_SPLIT_VERSION_SUFFIX": "-william-normal-split-v1-e210f5e3ee94",
+          "build-arg:NO_PROXY": "localhost,127.0.0.1,::1",
+          "build-arg:UBUNTU_IMG_SHA": "@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790",
+          "build-arg:UBUNTU_IMG_TAG": "24.04",
+          "build-arg:VERSION_SUFFIX": "-william-normal-v1-pidcap-946be0d25506",
+          "build-arg:http_proxy": "http://127.0.0.1:7890",
+          "build-arg:https_proxy": "http://127.0.0.1:7890",
+          "build-arg:no_proxy": "localhost,127.0.0.1,::1",
+          "cpuquota": "400000",
+          "force-network-mode": "host",
+          "memory": "6442450944",
+          "memswap": "6442450944",
+          "target": "force_source_export"
+        },
+        "locals": [
+          {
+            "name": "context"
+          },
+          {
+            "name": "dockerfile"
+          }
+        ],
+        "root": {
+          "configSource": {
+            "path": "Dockerfile"
+          },
+          "request": {
+            "args": {
+              "build-arg:ALPINE_IMG_SHA_AMD64": "@sha256:06793e3dc83d9a0733c70010283ed1735ff75fc0d40e3eac330aaef41a2f5049",
+              "build-arg:ALPINE_IMG_SHA_ARM64": "@sha256:b77521a60a51daad2b199da6efdd78956f79739d36379c2d13165f18ae1c4bee",
+              "build-arg:ALPINE_IMG_TAG": "3.19.7",
+              "build-arg:AMD64_KERNEL_CONFIG": "profiles/normal-v1/linux-config-amd64-6.12.26",
+              "build-arg:CONTROL_METADATA_VERSION_SUFFIX": "-william-normal-split-metadata-v1-c67181104ec1",
+              "build-arg:HTTPS_PROXY": "http://127.0.0.1:7890",
+              "build-arg:HTTP_PROXY": "http://127.0.0.1:7890",
+              "build-arg:KERNEL_VERSION": "6.12.26",
+              "build-arg:NORMAL_SPLIT_VERSION_SUFFIX": "-william-normal-split-v1-e210f5e3ee94",
+              "build-arg:NO_PROXY": "localhost,127.0.0.1,::1",
+              "build-arg:UBUNTU_IMG_SHA": "@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790",
+              "build-arg:UBUNTU_IMG_TAG": "24.04",
+              "build-arg:VERSION_SUFFIX": "-william-normal-v1-pidcap-946be0d25506",
+              "build-arg:http_proxy": "http://127.0.0.1:7890",
+              "build-arg:https_proxy": "http://127.0.0.1:7890",
+              "build-arg:no_proxy": "localhost,127.0.0.1,::1",
+              "cpuquota": "400000",
+              "force-network-mode": "host",
+              "memory": "6442450944",
+              "memswap": "6442450944",
+              "target": "force_source_export"
+            }
+          }
+        },
+        "compatibilityVersion": 30
+      },
+      "environment": {
+        "dockerfileVersion": "1.28.0",
+        "platform": "linux/amd64"
+      }
+    }
+  },
+  "buildx.build.ref": "neon-data/neon-data0/cdnifoxq8dzbbkazrgz3uyv8s"
+}

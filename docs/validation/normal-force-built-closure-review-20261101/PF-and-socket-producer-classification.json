@@ -1,0 +1,1738 @@
+{
+  "PF_MEMALLOC_57": [
+    {
+      "path": "drivers/gpu/drm/amd/amdkfd/kfd_svm.h",
+      "line": 88,
+      "text": " * @saved_flags:save/restore current PF_MEMALLOC flags",
+      "context": [
+        " * @offset:     range start offset within mm_nodes",
+        " * @svm_bo:     struct to manage splited amdgpu_bo",
+        " * @svm_bo_list:link list node, to scan all ranges which share same svm_bo",
+        " * @lock:       protect prange start, last, child_list, svm_bo_list",
+        " * @saved_flags:save/restore current PF_MEMALLOC flags",
+        " * @flags:      flags defined as KFD_IOCTL_SVM_FLAG_*",
+        " * @perferred_loc: perferred location, 0 for CPU, or GPU id",
+        " * @perfetch_loc: last prefetch location, 0 for CPU, or GPU id",
+        " * @actual_loc: this svm_range location. 0: all pages are from sys ram;"
+      ],
+      "classification": "documentation of existing PF pages/context, not literal task setter",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "drivers/net/ethernet/fungible/funeth/funeth_rx.c",
+      "line": 292,
+      "text": " * one of the pages is PF_MEMALLOC.",
+      "context": [
+        " * In this case the caller may only copy the packet.",
+        " *",
+        " * A non-zero return value gives the caller permission to use references to the",
+        " * pages, e.g., attach them to skbs. Additionally, if the value is <0 at least",
+        " * one of the pages is PF_MEMALLOC.",
+        " *",
+        " * Regardless of outcome the caller is granted a reference to each of the pages.",
+        " */",
+        "static int fun_gather_pkt(struct funeth_rxq *q, unsigned int tot_len,"
+      ],
+      "classification": "documentation of existing PF pages/context, not literal task setter",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "drivers/net/ethernet/fungible/funeth/funeth_txrx.h",
+      "line": 152,
+      "text": "\tint node;              /* page node, or -1 if it is PF_MEMALLOC */",
+      "context": [
+        "struct funeth_rxbuf {          /* per Rx buffer state */",
+        "\tstruct page *page;     /* associated page */",
+        "\tdma_addr_t dma_addr;   /* DMA address of page start */",
+        "\tint pg_refs;           /* page refs held by driver */",
+        "\tint node;              /* page node, or -1 if it is PF_MEMALLOC */",
+        "};",
+        "",
+        "struct funeth_rx_cache {       /* cache of DMA-mapped previously used buffers */",
+        "\tstruct funeth_rxbuf *bufs; /* base of Rx buffer state ring */"
+      ],
+      "classification": "documentation of existing PF pages/context, not literal task setter",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "fs/btrfs/disk-io.c",
+      "line": 4442,
+      "text": "\tif (current->flags & PF_MEMALLOC)",
+      "context": [
+        "\t * this code, they end up stuck in balance_dirty_pages forever",
+        "\t */",
+        "\tint ret;",
+        "",
+        "\tif (current->flags & PF_MEMALLOC)",
+        "\t\treturn;",
+        "",
+        "\tif (flush_delayed)",
+        "\t\tbtrfs_balance_delayed_items(fs_info);"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "fs/ceph/addr.c",
+      "line": 700,
+      "text": "\t\tWARN_ON(!(current->flags & PF_MEMALLOC));",
+      "context": [
+        "\tif (snapc->seq > oldest->seq) {",
+        "\t\tdoutc(cl, \"%llx.%llx page %p snapc %p not writeable - noop\\n\",",
+        "\t\t      ceph_vinop(inode), page, snapc);",
+        "\t\t/* we should only noop if called by kswapd */",
+        "\t\tWARN_ON(!(current->flags & PF_MEMALLOC));",
+        "\t\tceph_put_snap_context(oldest);",
+        "\t\tredirty_page_for_writepage(wbc, page);",
+        "\t\treturn 0;",
+        "\t}"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "fs/ext4/inode.c",
+      "line": 5232,
+      "text": "\tif (WARN_ON_ONCE(current->flags & PF_MEMALLOC))",
+      "context": [
+        "int ext4_write_inode(struct inode *inode, struct writeback_control *wbc)",
+        "{",
+        "\tint err;",
+        "",
+        "\tif (WARN_ON_ONCE(current->flags & PF_MEMALLOC))",
+        "\t\treturn 0;",
+        "",
+        "\tif (unlikely(ext4_forced_shutdown(inode->i_sb)))",
+        "\t\treturn -EIO;"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "fs/ext4/inode.c",
+      "line": 5240,
+      "text": "\t\t\text4_debug(\"called recursively, non-PF_MEMALLOC!\\n\");",
+      "context": [
+        "\t\treturn -EIO;",
+        "",
+        "\tif (EXT4_SB(inode->i_sb)->s_journal) {",
+        "\t\tif (ext4_journal_current_handle()) {",
+        "\t\t\text4_debug(\"called recursively, non-PF_MEMALLOC!\\n\");",
+        "\t\t\tdump_stack();",
+        "\t\t\treturn -EIO;",
+        "\t\t}",
+        ""
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "fs/gfs2/super.c",
+      "line": 1043,
+      "text": "\t    unlikely(current->flags & PF_MEMALLOC) &&",
+      "context": [
+        "\t * zero, defer deleting the inode to the delete workqueue.  This avoids",
+        "\t * calling into DLM under memory pressure, which can deadlock.",
+        "\t */",
+        "\tif (!inode->i_nlink &&",
+        "\t    unlikely(current->flags & PF_MEMALLOC) &&",
+        "\t    gfs2_holder_initialized(&ip->i_iopen_gh)) {",
+        "\t\tstruct gfs2_glock *gl = ip->i_iopen_gh.gh_gl;",
+        "",
+        "\t\tgfs2_glock_hold(gl);"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "fs/gfs2/super.c",
+      "line": 1254,
+      "text": "\tif (current->flags & PF_MEMALLOC)",
+      "context": [
+        " */",
+        "",
+        "static void gfs2_glock_put_eventually(struct gfs2_glock *gl)",
+        "{",
+        "\tif (current->flags & PF_MEMALLOC)",
+        "\t\tgfs2_glock_put_async(gl);",
+        "\telse",
+        "\t\tgfs2_glock_put(gl);",
+        "}"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "fs/gfs2/super.c",
+      "line": 1331,
+      "text": "\tif (WARN_ON_ONCE(current->flags & PF_MEMALLOC))",
+      "context": [
+        "\tif (test_bit(GIF_DEFERRED_DELETE, &ip->i_flags))",
+        "\t\treturn SHOULD_DEFER_EVICTION;",
+        "",
+        "\t/* Deletes should never happen under memory pressure anymore.  */",
+        "\tif (WARN_ON_ONCE(current->flags & PF_MEMALLOC))",
+        "\t\treturn SHOULD_DEFER_EVICTION;",
+        "",
+        "\t/* Must not read inode block until block type has been verified */",
+        "\tret = gfs2_glock_nq_init(ip->i_gl, LM_ST_EXCLUSIVE, GL_SKIP, gh);"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "fs/iomap/buffered-io.c",
+      "line": 2045,
+      "text": "\tif (WARN_ON_ONCE((current->flags & (PF_MEMALLOC | PF_KSWAPD)) ==",
+      "context": [
+        "\t/*",
+        "\t * Writeback from reclaim context should never happen except in the case",
+        "\t * of a VM regression so warn about it and refuse to write the data.",
+        "\t */",
+        "\tif (WARN_ON_ONCE((current->flags & (PF_MEMALLOC | PF_KSWAPD)) ==",
+        "\t\t\tPF_MEMALLOC))",
+        "\t\treturn -EIO;",
+        "",
+        "\twpc->ops = ops;"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "fs/iomap/buffered-io.c",
+      "line": 2046,
+      "text": "\t\t\tPF_MEMALLOC))",
+      "context": [
+        "\t * Writeback from reclaim context should never happen except in the case",
+        "\t * of a VM regression so warn about it and refuse to write the data.",
+        "\t */",
+        "\tif (WARN_ON_ONCE((current->flags & (PF_MEMALLOC | PF_KSWAPD)) ==",
+        "\t\t\tPF_MEMALLOC))",
+        "\t\treturn -EIO;",
+        "",
+        "\twpc->ops = ops;",
+        "\twhile ((folio = writeback_iter(mapping, wbc, folio, &error)))"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "fs/jbd2/transaction.c",
+      "line": 1940,
+      "text": "\t\tif (handle->h_sync && !(current->flags & PF_MEMALLOC))",
+      "context": [
+        "\t\t/*",
+        "\t\t * Special case: JBD2_SYNC synchronous updates require us",
+        "\t\t * to wait for the commit to complete.",
+        "\t\t */",
+        "\t\tif (handle->h_sync && !(current->flags & PF_MEMALLOC))",
+        "\t\t\twait_for_commit = 1;",
+        "\t}",
+        "",
+        "\t/*"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "fs/reiserfs/inode.c",
+      "line": 1769,
+      "text": "\tif (wbc->sync_mode == WB_SYNC_ALL && !(current->flags & PF_MEMALLOC)) {",
+      "context": [
+        "\t * these cases are just when the system needs ram, not when the",
+        "\t * inode needs to reach disk for safety, and they can safely be",
+        "\t * ignored because the altered inode has already been logged.",
+        "\t */",
+        "\tif (wbc->sync_mode == WB_SYNC_ALL && !(current->flags & PF_MEMALLOC)) {",
+        "\t\treiserfs_write_lock(inode->i_sb);",
+        "\t\tif (!journal_begin(&th, inode->i_sb, jbegin_count)) {",
+        "\t\t\treiserfs_update_sd(&th, inode);",
+        "\t\t\tjournal_end_sync(&th);"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "fs/reiserfs/inode.c",
+      "line": 2522,
+      "text": "\t/* no logging allowed when nonblocking or from PF_MEMALLOC */",
+      "context": [
+        "\tstruct super_block *s = inode->i_sb;",
+        "\tint bh_per_page = PAGE_SIZE / s->s_blocksize;",
+        "\tth.t_trans_id = 0;",
+        "",
+        "\t/* no logging allowed when nonblocking or from PF_MEMALLOC */",
+        "\tif (checked && (current->flags & PF_MEMALLOC)) {",
+        "\t\tfolio_redirty_for_writepage(wbc, folio);",
+        "\t\tfolio_unlock(folio);",
+        "\t\treturn 0;"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "fs/reiserfs/inode.c",
+      "line": 2523,
+      "text": "\tif (checked && (current->flags & PF_MEMALLOC)) {",
+      "context": [
+        "\tint bh_per_page = PAGE_SIZE / s->s_blocksize;",
+        "\tth.t_trans_id = 0;",
+        "",
+        "\t/* no logging allowed when nonblocking or from PF_MEMALLOC */",
+        "\tif (checked && (current->flags & PF_MEMALLOC)) {",
+        "\t\tfolio_redirty_for_writepage(wbc, folio);",
+        "\t\tfolio_unlock(folio);",
+        "\t\treturn 0;",
+        "\t}"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "fs/xfs/libxfs/xfs_btree.c",
+      "line": 3022,
+      "text": "\t\tnew_pflags |= PF_MEMALLOC | PF_KSWAPD;",
+      "context": [
+        "\t * temporarily to ensure that we don't block waiting for memory reclaim",
+        "\t * in any way.",
+        "\t */",
+        "\tif (args->kswapd)",
+        "\t\tnew_pflags |= PF_MEMALLOC | PF_KSWAPD;",
+        "",
+        "\tcurrent_set_flags_nested(&pflags, new_pflags);",
+        "\txfs_trans_set_context(args->cur->bc_tp);",
+        ""
+      ],
+      "classification": "PF literal in XFS saved flags; XFS_FS=n",
+      "compiled_enabled_when_classified": false
+    },
+    {
+      "path": "include/linux/sched.h",
+      "line": 1680,
+      "text": "#define PF_MEMALLOC\t\t0x00000800\t/* Allocating memory to free memory. See memalloc_noreclaim_save() */",
+      "context": [
+        "#define PF_MCE_PROCESS\t\t0x00000080      /* Process policy on mce errors */",
+        "#define PF_SUPERPRIV\t\t0x00000100\t/* Used super-user privileges */",
+        "#define PF_DUMPCORE\t\t0x00000200\t/* Dumped core */",
+        "#define PF_SIGNALED\t\t0x00000400\t/* Killed by a signal */",
+        "#define PF_MEMALLOC\t\t0x00000800\t/* Allocating memory to free memory. See memalloc_noreclaim_save() */",
+        "#define PF_NPROC_EXCEEDED\t0x00001000\t/* set_user() noticed that RLIMIT_NPROC was exceeded */",
+        "#define PF_USED_MATH\t\t0x00002000\t/* If unset the fpu must be initialized before use */",
+        "#define PF_USER_WORKER\t\t0x00004000\t/* Kernel thread cloned from userspace thread */",
+        "#define PF_NOFREEZE\t\t0x00008000\t/* This thread should not be frozen */"
+      ],
+      "classification": "macro declaration, not a call or producer",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "include/linux/sched/mm.h",
+      "line": 421,
+      "text": " *          does not give PF_MEMALLOC access to reserves.",
+      "context": [
+        " *",
+        " * Individual allocations under the scope can opt out using __GFP_NOMEMALLOC",
+        " *",
+        " * Context: This function should not be used in an interrupt context as that one",
+        " *          does not give PF_MEMALLOC access to reserves.",
+        " *          See __gfp_pfmemalloc_flags().",
+        " * Return: The saved flags to be passed to memalloc_noreclaim_restore.",
+        " */",
+        "static inline unsigned int memalloc_noreclaim_save(void)"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "include/linux/sched/mm.h",
+      "line": 427,
+      "text": "\treturn memalloc_flags_save(PF_MEMALLOC);",
+      "context": [
+        " * Return: The saved flags to be passed to memalloc_noreclaim_restore.",
+        " */",
+        "static inline unsigned int memalloc_noreclaim_save(void)",
+        "{",
+        "\treturn memalloc_flags_save(PF_MEMALLOC);",
+        "}",
+        "",
+        "/**",
+        " * memalloc_noreclaim_restore - Ends the implicit __GFP_MEMALLOC scope."
+      ],
+      "classification": "enabled common private helper sets PF by memalloc_flags_save; concrete callers separately classified",
+      "compiled_enabled_when_classified": true
+    },
+    {
+      "path": "kernel/softirq.c",
+      "line": 529,
+      "text": "\t * Mask out PF_MEMALLOC as the current task context is borrowed for the",
+      "context": [
+        "\t__u32 pending;",
+        "\tint softirq_bit;",
+        "",
+        "\t/*",
+        "\t * Mask out PF_MEMALLOC as the current task context is borrowed for the",
+        "\t * softirq. A softirq handled, such as network RX, might set PF_MEMALLOC",
+        "\t * again if the socket is related to swapping.",
+        "\t */",
+        "\tcurrent->flags &= ~PF_MEMALLOC;"
+      ],
+      "classification": "clear/restore borrowed current PF; preserves original provenance, network may set it in nested scope",
+      "compiled_enabled_when_classified": true
+    },
+    {
+      "path": "kernel/softirq.c",
+      "line": 530,
+      "text": "\t * softirq. A softirq handled, such as network RX, might set PF_MEMALLOC",
+      "context": [
+        "\tint softirq_bit;",
+        "",
+        "\t/*",
+        "\t * Mask out PF_MEMALLOC as the current task context is borrowed for the",
+        "\t * softirq. A softirq handled, such as network RX, might set PF_MEMALLOC",
+        "\t * again if the socket is related to swapping.",
+        "\t */",
+        "\tcurrent->flags &= ~PF_MEMALLOC;",
+        ""
+      ],
+      "classification": "clear/restore borrowed current PF; preserves original provenance, network may set it in nested scope",
+      "compiled_enabled_when_classified": true
+    },
+    {
+      "path": "kernel/softirq.c",
+      "line": 533,
+      "text": "\tcurrent->flags &= ~PF_MEMALLOC;",
+      "context": [
+        "\t * Mask out PF_MEMALLOC as the current task context is borrowed for the",
+        "\t * softirq. A softirq handled, such as network RX, might set PF_MEMALLOC",
+        "\t * again if the socket is related to swapping.",
+        "\t */",
+        "\tcurrent->flags &= ~PF_MEMALLOC;",
+        "",
+        "\tpending = local_softirq_pending();",
+        "",
+        "\tsoftirq_handle_begin();"
+      ],
+      "classification": "clear/restore borrowed current PF; preserves original provenance, network may set it in nested scope",
+      "compiled_enabled_when_classified": true
+    },
+    {
+      "path": "kernel/softirq.c",
+      "line": 590,
+      "text": "\tcurrent_restore_flags(old_flags, PF_MEMALLOC);",
+      "context": [
+        "",
+        "\taccount_softirq_exit(current);",
+        "\tlockdep_softirq_end(in_hardirq);",
+        "\tsoftirq_handle_end();",
+        "\tcurrent_restore_flags(old_flags, PF_MEMALLOC);",
+        "}",
+        "",
+        "asmlinkage __visible void __softirq_entry __do_softirq(void)",
+        "{"
+      ],
+      "classification": "clear/restore borrowed current PF; preserves original provenance, network may set it in nested scope",
+      "compiled_enabled_when_classified": true
+    },
+    {
+      "path": "kernel/workqueue.c",
+      "line": 3705,
+      "text": "\tWARN_ONCE(current->flags & PF_MEMALLOC,",
+      "context": [
+        "",
+        "\tworker = current_wq_worker();",
+        "\ttarget_func = target_work ? target_work->func : NULL;",
+        "",
+        "\tWARN_ONCE(current->flags & PF_MEMALLOC,",
+        "\t\t  \"workqueue: PF_MEMALLOC task %d(%s) is flushing !WQ_MEM_RECLAIM %s:%ps\",",
+        "\t\t  current->pid, current->comm, target_wq->name, target_func);",
+        "\tWARN_ONCE(worker && ((worker->current_pwq->wq->flags &",
+        "\t\t\t      (WQ_MEM_RECLAIM | __WQ_LEGACY)) == WQ_MEM_RECLAIM),"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "kernel/workqueue.c",
+      "line": 3706,
+      "text": "\t\t  \"workqueue: PF_MEMALLOC task %d(%s) is flushing !WQ_MEM_RECLAIM %s:%ps\",",
+      "context": [
+        "\tworker = current_wq_worker();",
+        "\ttarget_func = target_work ? target_work->func : NULL;",
+        "",
+        "\tWARN_ONCE(current->flags & PF_MEMALLOC,",
+        "\t\t  \"workqueue: PF_MEMALLOC task %d(%s) is flushing !WQ_MEM_RECLAIM %s:%ps\",",
+        "\t\t  current->pid, current->comm, target_wq->name, target_func);",
+        "\tWARN_ONCE(worker && ((worker->current_pwq->wq->flags &",
+        "\t\t\t      (WQ_MEM_RECLAIM | __WQ_LEGACY)) == WQ_MEM_RECLAIM),",
+        "\t\t  \"workqueue: WQ_MEM_RECLAIM %s:%ps is flushing !WQ_MEM_RECLAIM %s:%ps\","
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/memcontrol.c",
+      "line": 2212,
+      "text": "\tif (unlikely(current->flags & PF_MEMALLOC))",
+      "context": [
+        "\t * allocate memory. This might exceed the limits temporarily,",
+        "\t * but we prefer facilitating memory reclaim and getting back",
+        "\t * under the limit over triggering OOM kills in these cases.",
+        "\t */",
+        "\tif (unlikely(current->flags & PF_MEMALLOC))",
+        "\t\tgoto force;",
+        "",
+        "\tif (unlikely(task_in_memcg_oom(current)))",
+        "\t\tgoto nomem;"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/memcontrol.c",
+      "line": 2361,
+      "text": "\t    !(current->flags & PF_MEMALLOC) &&",
+      "context": [
+        "\t * kernel. If this is successful, the return path will see it",
+        "\t * when it rechecks the overage and simply bail out.",
+        "\t */",
+        "\tif (current->memcg_nr_pages_over_high > MEMCG_CHARGE_BATCH &&",
+        "\t    !(current->flags & PF_MEMALLOC) &&",
+        "\t    gfpflags_allow_blocking(gfp_mask))",
+        "\t\tmem_cgroup_handle_over_high(gfp_mask);",
+        "\treturn 0;",
+        "}"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/memcontrol.c",
+      "line": 5324,
+      "text": "\tVM_WARN_ON_ONCE(!(current->flags & PF_MEMALLOC));",
+      "context": [
+        "",
+        "\tif (!cgroup_subsys_on_dfl(memory_cgrp_subsys))",
+        "\t\treturn;",
+        "",
+        "\tVM_WARN_ON_ONCE(!(current->flags & PF_MEMALLOC));",
+        "",
+        "\t/* PF_MEMALLOC context, charging must succeed */",
+        "\tif (obj_cgroup_charge(objcg, GFP_KERNEL, size))",
+        "\t\tVM_WARN_ON_ONCE(1);"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/memcontrol.c",
+      "line": 5326,
+      "text": "\t/* PF_MEMALLOC context, charging must succeed */",
+      "context": [
+        "\t\treturn;",
+        "",
+        "\tVM_WARN_ON_ONCE(!(current->flags & PF_MEMALLOC));",
+        "",
+        "\t/* PF_MEMALLOC context, charging must succeed */",
+        "\tif (obj_cgroup_charge(objcg, GFP_KERNEL, size))",
+        "\t\tVM_WARN_ON_ONCE(1);",
+        "",
+        "\trcu_read_lock();"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/migrate.c",
+      "line": 1236,
+      "text": "\t\tif (current->flags & PF_MEMALLOC)",
+      "context": [
+        "\t\t * trying to be clever about what pages can be locked,",
+        "\t\t * avoid the use of lock_page for direct compaction",
+        "\t\t * altogether.",
+        "\t\t */",
+        "\t\tif (current->flags & PF_MEMALLOC)",
+        "\t\t\tgoto out;",
+        "",
+        "\t\t/*",
+        "\t\t * In \"light\" mode, we can wait for transient locks (eg"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/page_alloc.c",
+      "line": 3521,
+      "text": "\t\t    (current->flags & (PF_MEMALLOC | PF_EXITING)))",
+      "context": [
+        "\t * of allowed nodes.",
+        "\t */",
+        "\tif (!(gfp_mask & __GFP_NOMEMALLOC))",
+        "\t\tif (tsk_is_oom_victim(current) ||",
+        "\t\t    (current->flags & (PF_MEMALLOC | PF_EXITING)))",
+        "\t\t\tfilter &= ~SHOW_MEM_FILTER_NODES;",
+        "\tif (!in_task() || !(gfp_mask & __GFP_DIRECT_RECLAIM))",
+        "\t\tfilter &= ~SHOW_MEM_FILTER_NODES;",
+        ""
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/page_alloc.c",
+      "line": 3842,
+      "text": "\tif (current->flags & PF_MEMALLOC)",
+      "context": [
+        "\tif (!(gfp_mask & __GFP_DIRECT_RECLAIM))",
+        "\t\treturn false;",
+        "",
+        "\t/* this guy won't enter reclaim */",
+        "\tif (current->flags & PF_MEMALLOC)",
+        "\t\treturn false;",
+        "",
+        "\tif (gfp_mask & __GFP_NOLOCKDEP)",
+        "\t\treturn false;"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/page_alloc.c",
+      "line": 4068,
+      "text": "\tif (in_serving_softirq() && (current->flags & PF_MEMALLOC))",
+      "context": [
+        "\tif (unlikely(gfp_mask & __GFP_NOMEMALLOC))",
+        "\t\treturn 0;",
+        "\tif (gfp_mask & __GFP_MEMALLOC)",
+        "\t\treturn ALLOC_NO_WATERMARKS;",
+        "\tif (in_serving_softirq() && (current->flags & PF_MEMALLOC))",
+        "\t\treturn ALLOC_NO_WATERMARKS;",
+        "\tif (!in_interrupt()) {",
+        "\t\tif (current->flags & PF_MEMALLOC)",
+        "\t\t\treturn ALLOC_NO_WATERMARKS;"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/page_alloc.c",
+      "line": 4071,
+      "text": "\t\tif (current->flags & PF_MEMALLOC)",
+      "context": [
+        "\t\treturn ALLOC_NO_WATERMARKS;",
+        "\tif (in_serving_softirq() && (current->flags & PF_MEMALLOC))",
+        "\t\treturn ALLOC_NO_WATERMARKS;",
+        "\tif (!in_interrupt()) {",
+        "\t\tif (current->flags & PF_MEMALLOC)",
+        "\t\t\treturn ALLOC_NO_WATERMARKS;",
+        "\t\telse if (oom_reserves_allowed(current))",
+        "\t\t\treturn ALLOC_OOM;",
+        "\t}"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/page_alloc.c",
+      "line": 4236,
+      "text": "\t\t * PF_MEMALLOC request from this context is rather bizarre",
+      "context": [
+        "\t\t * otherwise, we may result in lockup.",
+        "\t\t */",
+        "\t\tWARN_ON_ONCE(!can_direct_reclaim);",
+        "\t\t/*",
+        "\t\t * PF_MEMALLOC request from this context is rather bizarre",
+        "\t\t * because we cannot reclaim anything and only can loop waiting",
+        "\t\t * for somebody to do a work for us.",
+        "\t\t */",
+        "\t\tWARN_ON_ONCE(current->flags & PF_MEMALLOC);"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/page_alloc.c",
+      "line": 4240,
+      "text": "\t\tWARN_ON_ONCE(current->flags & PF_MEMALLOC);",
+      "context": [
+        "\t\t * PF_MEMALLOC request from this context is rather bizarre",
+        "\t\t * because we cannot reclaim anything and only can loop waiting",
+        "\t\t * for somebody to do a work for us.",
+        "\t\t */",
+        "\t\tWARN_ON_ONCE(current->flags & PF_MEMALLOC);",
+        "\t}",
+        "",
+        "restart:",
+        "\tcompaction_retries = 0;"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/page_alloc.c",
+      "line": 4379,
+      "text": "\tif (current->flags & PF_MEMALLOC)",
+      "context": [
+        "\tif (!can_direct_reclaim)",
+        "\t\tgoto nopage;",
+        "",
+        "\t/* Avoid recursion of direct reclaim */",
+        "\tif (current->flags & PF_MEMALLOC)",
+        "\t\tgoto nopage;",
+        "",
+        "\t/* Try direct reclaim and then allocating */",
+        "\tpage = __alloc_pages_direct_reclaim(gfp_mask, order, alloc_flags, ac,"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/page_alloc.c",
+      "line": 6031,
+      "text": "\t\t\t * __GFP_HIGH and PF_MEMALLOC allocations usually don't",
+      "context": [
+        "\t\ttmp = (u64)pages_min * zone_managed_pages(zone);",
+        "\t\ttmp = div64_ul(tmp, lowmem_pages);",
+        "\t\tif (is_highmem(zone) || zone_idx(zone) == ZONE_MOVABLE) {",
+        "\t\t\t/*",
+        "\t\t\t * __GFP_HIGH and PF_MEMALLOC allocations usually don't",
+        "\t\t\t * need highmem and movable zones pages, so cap pages_min",
+        "\t\t\t * to a small  value here.",
+        "\t\t\t *",
+        "\t\t\t * The WMARK_HIGH-WMARK_LOW and (WMARK_LOW-WMARK_MIN)"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/swap.c",
+      "line": 510,
+      "text": "\t    lru_gen_in_fault() && !(current->flags & PF_MEMALLOC))",
+      "context": [
+        "\tVM_BUG_ON_FOLIO(folio_test_lru(folio), folio);",
+        "",
+        "\t/* see the comment in lru_gen_add_folio() */",
+        "\tif (lru_gen_enabled() && !folio_test_unevictable(folio) &&",
+        "\t    lru_gen_in_fault() && !(current->flags & PF_MEMALLOC))",
+        "\t\tfolio_set_active(folio);",
+        "",
+        "\tfolio_batch_add_and_move(folio, lru_add, false);",
+        "}"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/swap_state.c",
+      "line": 193,
+      "text": "\t * XArray node allocations from PF_MEMALLOC contexts could",
+      "context": [
+        "\tif (!entry.val)",
+        "\t\treturn false;",
+        "",
+        "\t/*",
+        "\t * XArray node allocations from PF_MEMALLOC contexts could",
+        "\t * completely exhaust the page allocator. __GFP_NOMEMALLOC",
+        "\t * stops emergency reserves from being allocated.",
+        "\t *",
+        "\t * TODO: this could cause a theoretical memory reclaim"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "mm/vmscan.c",
+      "line": 7206,
+      "text": "\ttsk->flags |= PF_MEMALLOC | PF_KSWAPD;",
+      "context": [
+        "\t * page out something else, and this flag essentially protects",
+        "\t * us from recursively trying to free more memory as we're",
+        "\t * trying to free the first piece of memory in the first place).",
+        "\t */",
+        "\ttsk->flags |= PF_MEMALLOC | PF_KSWAPD;",
+        "\tset_freezable();",
+        "",
+        "\tWRITE_ONCE(pgdat->kswapd_order, 0);",
+        "\tWRITE_ONCE(pgdat->kswapd_highest_zoneidx, MAX_NR_ZONES);"
+      ],
+      "classification": "enabled kswapd persistent scope set or clear; ext4/tmpfs reclaim callbacks require conditional runtime domain",
+      "compiled_enabled_when_classified": true
+    },
+    {
+      "path": "mm/vmscan.c",
+      "line": 7256,
+      "text": "\ttsk->flags &= ~(PF_MEMALLOC | PF_KSWAPD);",
+      "context": [
+        "\t\tif (reclaim_order < alloc_order)",
+        "\t\t\tgoto kswapd_try_sleep;",
+        "\t}",
+        "",
+        "\ttsk->flags &= ~(PF_MEMALLOC | PF_KSWAPD);",
+        "",
+        "\treturn 0;",
+        "}",
+        ""
+      ],
+      "classification": "enabled kswapd persistent scope set or clear; ext4/tmpfs reclaim callbacks require conditional runtime domain",
+      "compiled_enabled_when_classified": true
+    },
+    {
+      "path": "mm/vmscan.c",
+      "line": 7551,
+      "text": "\tif (!gfpflags_allow_blocking(gfp_mask) || (current->flags & PF_MEMALLOC))",
+      "context": [
+        "",
+        "\t/*",
+        "\t * Do not scan if the allocation should not be delayed.",
+        "\t */",
+        "\tif (!gfpflags_allow_blocking(gfp_mask) || (current->flags & PF_MEMALLOC))",
+        "\t\treturn NODE_RECLAIM_NOSCAN;",
+        "",
+        "\t/*",
+        "\t * Only run node reclaim on the local node or on nodes that do not"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "net/core/dev.c",
+      "line": 5847,
+      "text": "\t\t * Use PF_MEMALLOC as this saves us from propagating the allocation",
+      "context": [
+        "\t\t * - be delivered to SOCK_MEMALLOC sockets only",
+        "\t\t * - stay away from userspace",
+        "\t\t * - have bounded memory usage",
+        "\t\t *",
+        "\t\t * Use PF_MEMALLOC as this saves us from propagating the allocation",
+        "\t\t * context down to all allocation sites.",
+        "\t\t */",
+        "\t\tnoreclaim_flag = memalloc_noreclaim_save();",
+        "\t\tret = __netif_receive_skb_one_core(skb, true);"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "net/core/dev.c",
+      "line": 5863,
+      "text": "\tbool pfmemalloc = false; /* Is current sublist PF_MEMALLOC? */",
+      "context": [
+        "static void __netif_receive_skb_list(struct list_head *head)",
+        "{",
+        "\tunsigned long noreclaim_flag = 0;",
+        "\tstruct sk_buff *skb, *next;",
+        "\tbool pfmemalloc = false; /* Is current sublist PF_MEMALLOC? */",
+        "",
+        "\tlist_for_each_entry_safe(skb, next, head, list) {",
+        "\t\tif ((sk_memalloc_socks() && skb_pfmemalloc(skb)) != pfmemalloc) {",
+        "\t\t\tstruct list_head sublist;"
+      ],
+      "classification": "read/check/comment: no new PF setter at this occurrence",
+      "compiled_enabled_when_classified": null
+    },
+    {
+      "path": "net/sunrpc/sched.c",
+      "line": 944,
+      "text": "\t\t\tcurrent->flags |= PF_MEMALLOC;",
+      "context": [
+        "\t\tif (!do_action)",
+        "\t\t\tbreak;",
+        "\t\tif (RPC_IS_SWAPPER(task) ||",
+        "\t\t    xprt_needs_memalloc(task->tk_xprt, task))",
+        "\t\t\tcurrent->flags |= PF_MEMALLOC;",
+        "",
+        "\t\ttrace_rpc_task_run_action(task, do_action);",
+        "\t\tdo_action(task);",
+        ""
+      ],
+      "classification": "disabled SUNRPC/RDMA context set/restore or comment",
+      "compiled_enabled_when_classified": false
+    },
+    {
+      "path": "net/sunrpc/sched.c",
+      "line": 1003,
+      "text": "\tcurrent_restore_flags(pflags, PF_MEMALLOC);",
+      "context": [
+        "",
+        "\t/* Release all resources associated with the task */",
+        "\trpc_release_task(task);",
+        "out:",
+        "\tcurrent_restore_flags(pflags, PF_MEMALLOC);",
+        "}",
+        "",
+        "/*",
+        " * User-visible entry point to the scheduler."
+      ],
+      "classification": "disabled SUNRPC/RDMA context set/restore or comment",
+      "compiled_enabled_when_classified": false
+    },
+    {
+      "path": "net/sunrpc/xprt.c",
+      "line": 1519,
+      "text": "\t\tcurrent->flags |= PF_MEMALLOC;",
+      "context": [
+        "",
+        "\t}",
+        "\tif (atomic_read(&xprt->swapper))",
+        "\t\t/* This will be clear in __rpc_execute */",
+        "\t\tcurrent->flags |= PF_MEMALLOC;",
+        "\treturn true;",
+        "}",
+        "",
+        "void xprt_end_transmit(struct rpc_task *task)"
+      ],
+      "classification": "disabled SUNRPC/RDMA context set/restore or comment",
+      "compiled_enabled_when_classified": false
+    },
+    {
+      "path": "net/sunrpc/xprtrdma/transport.c",
+      "line": 232,
+      "text": "\t\tcurrent->flags |= PF_MEMALLOC;",
+      "context": [
+        "\tunsigned int pflags = current->flags;",
+        "\tint rc;",
+        "",
+        "\tif (atomic_read(&xprt->swapper))",
+        "\t\tcurrent->flags |= PF_MEMALLOC;",
+        "\trc = rpcrdma_xprt_connect(r_xprt);",
+        "\txprt_clear_connecting(xprt);",
+        "\tif (!rc) {",
+        "\t\txprt->connect_cookie++;"
+      ],
+      "classification": "disabled SUNRPC/RDMA context set/restore or comment",
+      "compiled_enabled_when_classified": false
+    },
+    {
+      "path": "net/sunrpc/xprtrdma/transport.c",
+      "line": 246,
+      "text": "\tcurrent_restore_flags(pflags, PF_MEMALLOC);",
+      "context": [
+        "\t} else",
+        "\t\trpcrdma_xprt_disconnect(r_xprt);",
+        "\txprt_unlock_connect(xprt, r_xprt);",
+        "\txprt_wake_pending_tasks(xprt, rc);",
+        "\tcurrent_restore_flags(pflags, PF_MEMALLOC);",
+        "}",
+        "",
+        "/**",
+        " * xprt_rdma_inject_disconnect - inject a connection fault"
+      ],
+      "classification": "disabled SUNRPC/RDMA context set/restore or comment",
+      "compiled_enabled_when_classified": false
+    },
+    {
+      "path": "net/sunrpc/xprtsock.c",
+      "line": 2206,
+      "text": "\t\tcurrent->flags |= PF_MEMALLOC;",
+      "context": [
+        "\tint status = -EIO;",
+        "\tunsigned int pflags = current->flags;",
+        "",
+        "\tif (atomic_read(&xprt->swapper))",
+        "\t\tcurrent->flags |= PF_MEMALLOC;",
+        "\tsock = xs_create_sock(xprt, transport,",
+        "\t\t\txs_addr(xprt)->sa_family, SOCK_DGRAM,",
+        "\t\t\tIPPROTO_UDP, false);",
+        "\tif (IS_ERR(sock))"
+      ],
+      "classification": "disabled SUNRPC/RDMA context set/restore or comment",
+      "compiled_enabled_when_classified": false
+    },
+    {
+      "path": "net/sunrpc/xprtsock.c",
+      "line": 2226,
+      "text": "\tcurrent_restore_flags(pflags, PF_MEMALLOC);",
+      "context": [
+        "out:",
+        "\txprt_clear_connecting(xprt);",
+        "\txprt_unlock_connect(xprt, transport);",
+        "\txprt_wake_pending_tasks(xprt, status);",
+        "\tcurrent_restore_flags(pflags, PF_MEMALLOC);",
+        "}",
+        "",
+        "/**",
+        " * xs_tcp_shutdown - gracefully shut down a TCP socket"
+      ],
+      "classification": "disabled SUNRPC/RDMA context set/restore or comment",
+      "compiled_enabled_when_classified": false
+    },
+    {
+      "path": "net/sunrpc/xprtsock.c",
+      "line": 2410,
+      "text": "\t\tcurrent->flags |= PF_MEMALLOC;",
+      "context": [
+        "\tint status;",
+        "\tunsigned int pflags = current->flags;",
+        "",
+        "\tif (atomic_read(&xprt->swapper))",
+        "\t\tcurrent->flags |= PF_MEMALLOC;",
+        "",
+        "\tif (xprt_connected(xprt))",
+        "\t\tgoto out;",
+        "\tif (test_and_clear_bit(XPRT_SOCK_CONNECT_SENT,"
+      ],
+      "classification": "disabled SUNRPC/RDMA context set/restore or comment",
+      "compiled_enabled_when_classified": false
+    },
+    {
+      "path": "net/sunrpc/xprtsock.c",
+      "line": 2487,
+      "text": "\tcurrent_restore_flags(pflags, PF_MEMALLOC);",
+      "context": [
+        "out:",
+        "\txprt_clear_connecting(xprt);",
+        "out_unlock:",
+        "\txprt_unlock_connect(xprt, transport);",
+        "\tcurrent_restore_flags(pflags, PF_MEMALLOC);",
+        "}",
+        "",
+        "/*",
+        " * Transfer the connected socket to @upper_transport, then mark that"
+      ],
+      "classification": "disabled SUNRPC/RDMA context set/restore or comment",
+      "compiled_enabled_when_classified": false
+    },
+    {
+      "path": "net/sunrpc/xprtsock.c",
+      "line": 2697,
+      "text": "\t\tcurrent->flags |= PF_MEMALLOC;",
+      "context": [
+        "\tstruct rpc_xprt *lower_xprt;",
+        "\tint status;",
+        "",
+        "\tif (atomic_read(&upper_xprt->swapper))",
+        "\t\tcurrent->flags |= PF_MEMALLOC;",
+        "",
+        "\txs_stream_start_connect(upper_transport);",
+        "",
+        "\t/* This implicitly sends an RPC_AUTH_TLS probe */"
+      ],
+      "classification": "disabled SUNRPC/RDMA context set/restore or comment",
+      "compiled_enabled_when_classified": false
+    },
+    {
+      "path": "net/sunrpc/xprtsock.c",
+      "line": 2747,
+      "text": "\tcurrent_restore_flags(pflags, PF_MEMALLOC);",
+      "context": [
+        "\t}",
+        "\trpc_shutdown_client(lower_clnt);",
+        "",
+        "out_unlock:",
+        "\tcurrent_restore_flags(pflags, PF_MEMALLOC);",
+        "\tupper_transport->clnt = NULL;",
+        "\txprt_unlock_connect(upper_xprt, upper_transport);",
+        "\treturn;",
+        ""
+      ],
+      "classification": "disabled SUNRPC/RDMA context set/restore or comment",
+      "compiled_enabled_when_classified": false
+    }
+  ],
+  "memalloc_noreclaim_save_33": [
+    {
+      "line": 570,
+      "path": "drivers/block/nbd.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "producer scope disabled by Kbuild selection",
+      "compiled_enabled_when_classified": false,
+      "selector": "CONFIG_BLK_DEV_NBD",
+      "resolved_value": "n"
+    },
+    {
+      "line": 511,
+      "path": "drivers/gpu/drm/amd/amdgpu/amdgpu_mes.h",
+      "text": "\tmes->saved_flags = memalloc_noreclaim_save();",
+      "classification": "disabled AMDGPU/AMDKFD producer scope",
+      "compiled_enabled_when_classified": false,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 627,
+      "path": "drivers/gpu/drm/amd/amdgpu/amdgpu_vm.h",
+      "text": "\tvm->saved_flags = memalloc_noreclaim_save();",
+      "classification": "disabled AMDGPU/AMDKFD producer scope",
+      "compiled_enabled_when_classified": false,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 633,
+      "path": "drivers/gpu/drm/amd/amdgpu/amdgpu_vm.h",
+      "text": "\t\tvm->saved_flags = memalloc_noreclaim_save();",
+      "classification": "disabled AMDGPU/AMDKFD producer scope",
+      "compiled_enabled_when_classified": false,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 349,
+      "path": "drivers/gpu/drm/amd/amdkfd/kfd_device_queue_manager.h",
+      "text": "\tdqm->saved_flags = memalloc_noreclaim_save();",
+      "classification": "disabled AMDGPU/AMDKFD producer scope",
+      "compiled_enabled_when_classified": false,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 146,
+      "path": "drivers/gpu/drm/amd/amdkfd/kfd_svm.h",
+      "text": "\tprange->saved_flags = memalloc_noreclaim_save();",
+      "classification": "disabled AMDGPU/AMDKFD producer scope",
+      "compiled_enabled_when_classified": false,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 650,
+      "path": "drivers/gpu/drm/i915/i915_debugfs.c",
+      "text": "\tflags = memalloc_noreclaim_save();",
+      "classification": "disabled I915 debugfs producer scope",
+      "compiled_enabled_when_classified": false,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 1351,
+      "path": "drivers/mtd/nand/raw/nandsim.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "disabled NANDSIM producer scope",
+      "compiled_enabled_when_classified": false,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 1368,
+      "path": "drivers/mtd/nand/raw/nandsim.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "disabled NANDSIM producer scope",
+      "compiled_enabled_when_classified": false,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 1302,
+      "path": "drivers/nvme/host/tcp.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "producer scope disabled by Kbuild selection",
+      "compiled_enabled_when_classified": false,
+      "selector": "CONFIG_NVME_TCP",
+      "resolved_value": "n"
+    },
+    {
+      "line": 1460,
+      "path": "drivers/nvme/host/tcp.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "producer scope disabled by Kbuild selection",
+      "compiled_enabled_when_classified": false,
+      "selector": "CONFIG_NVME_TCP",
+      "resolved_value": "n"
+    },
+    {
+      "line": 417,
+      "path": "drivers/scsi/iscsi_tcp.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "producer scope disabled by Kbuild selection",
+      "compiled_enabled_when_classified": false,
+      "selector": "CONFIG_ISCSI_TCP",
+      "resolved_value": "ABSENT"
+    },
+    {
+      "line": 658,
+      "path": "fs/bcachefs/journal_reclaim.c",
+      "text": "\tflags = memalloc_noreclaim_save();",
+      "classification": "producer scope disabled by Kbuild selection",
+      "compiled_enabled_when_classified": false,
+      "selector": "CONFIG_BCACHEFS_FS",
+      "resolved_value": "n"
+    },
+    {
+      "line": 1165,
+      "path": "fs/smb/client/connect.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "producer scope disabled by Kbuild selection",
+      "compiled_enabled_when_classified": false,
+      "selector": "CONFIG_CIFS",
+      "resolved_value": "ABSENT"
+    },
+    {
+      "line": 643,
+      "path": "fs/xfs/xfs_trans_ail.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "producer scope disabled by Kbuild selection",
+      "compiled_enabled_when_classified": false,
+      "selector": "CONFIG_XFS_FS",
+      "resolved_value": "n"
+    },
+    {
+      "line": 403,
+      "path": "include/linux/sched/mm.h",
+      "text": " * memalloc_noreclaim_save - Marks implicit __GFP_MEMALLOC scope.",
+      "classification": "declaration/comment/reference",
+      "compiled_enabled_when_classified": null,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 425,
+      "path": "include/linux/sched/mm.h",
+      "text": "static inline unsigned int memalloc_noreclaim_save(void)",
+      "classification": "declaration/comment/reference",
+      "compiled_enabled_when_classified": null,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 434,
+      "path": "include/linux/sched/mm.h",
+      "text": " * Ends the implicit __GFP_MEMALLOC scope started by memalloc_noreclaim_save",
+      "classification": "declaration/comment/reference",
+      "compiled_enabled_when_classified": null,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 436,
+      "path": "include/linux/sched/mm.h",
+      "text": " * pairing memalloc_noreclaim_save call.",
+      "classification": "declaration/comment/reference",
+      "compiled_enabled_when_classified": null,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 1680,
+      "path": "include/linux/sched.h",
+      "text": "#define PF_MEMALLOC\t\t0x00000800\t/* Allocating memory to free memory. See memalloc_noreclaim_save() */",
+      "classification": "declaration/comment/reference",
+      "compiled_enabled_when_classified": null,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 434,
+      "path": "mm/damon/paddr.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "producer scope disabled by Kbuild selection",
+      "compiled_enabled_when_classified": false,
+      "selector": "CONFIG_DAMON",
+      "resolved_value": "n"
+    },
+    {
+      "line": 3683,
+      "path": "mm/page_alloc.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "enabled direct compaction or reclaim; outer caller restores scope before regular user allocation continues",
+      "compiled_enabled_when_classified": true,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 3927,
+      "path": "mm/page_alloc.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "enabled direct compaction or reclaim; outer caller restores scope before regular user allocation continues",
+      "compiled_enabled_when_classified": true,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 1601,
+      "path": "mm/vmscan.c",
+      "text": "\t * call memalloc_noreclaim_save() anyway, just in case these conditions",
+      "classification": "comment immediately preceding clean-page scope",
+      "compiled_enabled_when_classified": null,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 1604,
+      "path": "mm/vmscan.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "enabled reclaim scopes (clean-page list, reclaim_pages, memcg reclaim, node reclaim)",
+      "compiled_enabled_when_classified": true,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 2178,
+      "path": "mm/vmscan.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "enabled reclaim scopes (clean-page list, reclaim_pages, memcg reclaim, node reclaim)",
+      "compiled_enabled_when_classified": true,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 5509,
+      "path": "mm/vmscan.c",
+      "text": "\tflags = memalloc_noreclaim_save();",
+      "classification": "MGLRU debugfs producer scope; CONFIG_LRU_GEN=n",
+      "compiled_enabled_when_classified": false,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 6611,
+      "path": "mm/vmscan.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "enabled reclaim scopes (clean-page list, reclaim_pages, memcg reclaim, node reclaim)",
+      "compiled_enabled_when_classified": true,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 7339,
+      "path": "mm/vmscan.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "hibernate shrink scope; CONFIG_HIBERNATION=n",
+      "compiled_enabled_when_classified": false,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 7504,
+      "path": "mm/vmscan.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "enabled reclaim scopes (clean-page list, reclaim_pages, memcg reclaim, node reclaim)",
+      "compiled_enabled_when_classified": true,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 5850,
+      "path": "net/core/dev.c",
+      "text": "\t\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "RX PF scope conditional on sk_memalloc_socks() and pfmemalloc skb; static key/setter closure separately audited",
+      "compiled_enabled_when_classified": true,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 5876,
+      "path": "net/core/dev.c",
+      "text": "\t\t\t\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "RX PF scope conditional on sk_memalloc_socks() and pfmemalloc skb; static key/setter closure separately audited",
+      "compiled_enabled_when_classified": true,
+      "selector": null,
+      "resolved_value": null
+    },
+    {
+      "line": 335,
+      "path": "net/core/sock.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();",
+      "classification": "__sk_backlog_rcv scope, requires internal SOCK_MEMALLOC flag",
+      "compiled_enabled_when_classified": true,
+      "selector": null,
+      "resolved_value": null
+    }
+  ],
+  "sk_set_memalloc_15": [
+    {
+      "path": ".vmlinux.export.c",
+      "line": 7151,
+      "text": "KSYMTAB_FUNC(sk_set_memalloc, \"_gpl\", \"\");",
+      "context": [
+        "KSYMTAB_FUNC(sk_net_capable, \"\", \"\");",
+        "KSYMTAB_DATA(sysctl_wmem_max, \"\", \"\");",
+        "KSYMTAB_DATA(sysctl_rmem_max, \"\", \"\");",
+        "KSYMTAB_DATA(memalloc_socks_key, \"_gpl\", \"\");",
+        "KSYMTAB_FUNC(sk_set_memalloc, \"_gpl\", \"\");",
+        "KSYMTAB_FUNC(sk_clear_memalloc, \"_gpl\", \"\");",
+        "KSYMTAB_FUNC(__sk_backlog_rcv, \"\", \"\");",
+        "KSYMTAB_FUNC(sk_error_report, \"\", \"\");",
+        "KSYMTAB_FUNC(sock_get_timeout, \"\", \"\");"
+      ],
+      "classification": "declaration/definition/doc/export/comment, not concrete call",
+      "Kbuild_selector": null,
+      "resolved_value": null
+    },
+    {
+      "path": ".vmlinux.export.c",
+      "line": 16892,
+      "text": "SYMBOL_CRC(sk_set_memalloc, 0x82505749, \"_gpl\");",
+      "context": [
+        "SYMBOL_CRC(sk_net_capable, 0x2760e419, \"\");",
+        "SYMBOL_CRC(sysctl_wmem_max, 0xfac8865f, \"\");",
+        "SYMBOL_CRC(sysctl_rmem_max, 0xb05fc310, \"\");",
+        "SYMBOL_CRC(memalloc_socks_key, 0x06b53bd2, \"_gpl\");",
+        "SYMBOL_CRC(sk_set_memalloc, 0x82505749, \"_gpl\");",
+        "SYMBOL_CRC(sk_clear_memalloc, 0x7a1754e3, \"_gpl\");",
+        "SYMBOL_CRC(__sk_backlog_rcv, 0x720df741, \"\");",
+        "SYMBOL_CRC(sk_error_report, 0x9ba993bd, \"\");",
+        "SYMBOL_CRC(sock_get_timeout, 0xedd17b31, \"\");"
+      ],
+      "classification": "declaration/definition/doc/export/comment, not concrete call",
+      "Kbuild_selector": null,
+      "resolved_value": null
+    },
+    {
+      "path": "drivers/block/nbd.c",
+      "line": 1268,
+      "text": "\t\tsk_set_memalloc(sock->sk);",
+      "context": [
+        "\t\tif (!nsock->dead) {",
+        "\t\t\tmutex_unlock(&nsock->tx_lock);",
+        "\t\t\tcontinue;",
+        "\t\t}",
+        "\t\tsk_set_memalloc(sock->sk);",
+        "\t\tif (nbd->tag_set.timeout)",
+        "\t\t\tsock->sk->sk_sndtimeo = nbd->tag_set.timeout;",
+        "\t\tatomic_inc(&config->recv_threads);",
+        "\t\trefcount_inc(&nbd->config_refs);"
+      ],
+      "classification": "concrete call; Kbuild selector not y/m",
+      "Kbuild_selector": "CONFIG_BLK_DEV_NBD",
+      "resolved_value": "n"
+    },
+    {
+      "path": "drivers/block/nbd.c",
+      "line": 1444,
+      "text": "\t\tsk_set_memalloc(config->socks[i]->sock->sk);",
+      "context": [
+        "\t\t\tif (i)",
+        "\t\t\t\tflush_workqueue(nbd->recv_workq);",
+        "\t\t\treturn -ENOMEM;",
+        "\t\t}",
+        "\t\tsk_set_memalloc(config->socks[i]->sock->sk);",
+        "\t\tif (nbd->tag_set.timeout)",
+        "\t\t\tconfig->socks[i]->sock->sk->sk_sndtimeo =",
+        "\t\t\t\tnbd->tag_set.timeout;",
+        "\t\tatomic_inc(&config->recv_threads);"
+      ],
+      "classification": "concrete call; Kbuild selector not y/m",
+      "Kbuild_selector": "CONFIG_BLK_DEV_NBD",
+      "resolved_value": "n"
+    },
+    {
+      "path": "drivers/net/wireguard/socket.c",
+      "line": 346,
+      "text": "\tsk_set_memalloc(sock->sk);",
+      "context": [
+        "static void set_sock_opts(struct socket *sock)",
+        "{",
+        "\tsock->sk->sk_allocation = GFP_ATOMIC;",
+        "\tsock->sk->sk_sndbuf = INT_MAX;",
+        "\tsk_set_memalloc(sock->sk);",
+        "}",
+        "",
+        "int wg_socket_init(struct wg_device *wg, u16 port)",
+        "{"
+      ],
+      "classification": "concrete call; Kbuild selector not y/m",
+      "Kbuild_selector": "CONFIG_WIREGUARD",
+      "resolved_value": "n"
+    },
+    {
+      "path": "drivers/nvme/host/tcp.c",
+      "line": 1839,
+      "text": "\tsk_set_memalloc(queue->sock->sk);",
+      "context": [
+        "\tqueue->data_remaining = 0;",
+        "\tqueue->ddgst_remaining = 0;",
+        "\tqueue->pdu_remaining = 0;",
+        "\tqueue->pdu_offset = 0;",
+        "\tsk_set_memalloc(queue->sock->sk);",
+        "",
+        "\tif (nctrl->opts->mask & NVMF_OPT_HOST_TRADDR) {",
+        "\t\tret = kernel_bind(queue->sock, (struct sockaddr *)&ctrl->src_addr,",
+        "\t\t\tsizeof(ctrl->src_addr));"
+      ],
+      "classification": "concrete call; Kbuild selector not y/m",
+      "Kbuild_selector": "CONFIG_NVME_TCP",
+      "resolved_value": "n"
+    },
+    {
+      "path": "drivers/scsi/iscsi_tcp.c",
+      "line": 746,
+      "text": "\tsk_set_memalloc(sk);",
+      "context": [
+        "\tsk->sk_reuse = SK_CAN_REUSE;",
+        "\tsk->sk_sndtimeo = 15 * HZ; /* FIXME: make it configurable */",
+        "\tsk->sk_allocation = GFP_ATOMIC;",
+        "\tsk->sk_use_task_frag = false;",
+        "\tsk_set_memalloc(sk);",
+        "\tsock_no_linger(sk);",
+        "",
+        "\tiscsi_sw_tcp_conn_set_callbacks(conn);",
+        "\t/*"
+      ],
+      "classification": "concrete call; Kbuild selector not y/m",
+      "Kbuild_selector": "CONFIG_ISCSI_TCP",
+      "resolved_value": "ABSENT"
+    },
+    {
+      "path": "fs/smb/client/file.c",
+      "line": 3195,
+      "text": "\t/* TODO: add sk_set_memalloc(inet) or similar */",
+      "context": [
+        "\t * users (on this or other systems) from reading it",
+        "\t */",
+        "",
+        "",
+        "\t/* TODO: add sk_set_memalloc(inet) or similar */",
+        "",
+        "\tif (cfile)",
+        "\t\tcfile->swapfile = true;",
+        "\t/*"
+      ],
+      "classification": "declaration/definition/doc/export/comment, not concrete call",
+      "Kbuild_selector": null,
+      "resolved_value": null
+    },
+    {
+      "path": "fs/smb/client/file.c",
+      "line": 3215,
+      "text": "\t/* TODO: undo sk_set_memalloc(inet) will eventually be needed */",
+      "context": [
+        "\tstruct cifsFileInfo *cfile = file->private_data;",
+        "",
+        "\tcifs_dbg(FYI, \"swap deactivate\\n\");",
+        "",
+        "\t/* TODO: undo sk_set_memalloc(inet) will eventually be needed */",
+        "",
+        "\tif (cfile)",
+        "\t\tcfile->swapfile = false;",
+        ""
+      ],
+      "classification": "declaration/definition/doc/export/comment, not concrete call",
+      "Kbuild_selector": null,
+      "resolved_value": null
+    },
+    {
+      "path": "include/net/sock.h",
+      "line": 1176,
+      "text": "void sk_set_memalloc(struct sock *sk);",
+      "context": [
+        "int sk_stream_wait_memory(struct sock *sk, long *timeo_p);",
+        "void sk_stream_wait_close(struct sock *sk, long timeo_p);",
+        "int sk_stream_error(struct sock *sk, int flags, int err);",
+        "void sk_stream_kill_queues(struct sock *sk);",
+        "void sk_set_memalloc(struct sock *sk);",
+        "void sk_clear_memalloc(struct sock *sk);",
+        "",
+        "void __sk_flush_backlog(struct sock *sk);",
+        ""
+      ],
+      "classification": "declaration/definition/doc/export/comment, not concrete call",
+      "Kbuild_selector": null,
+      "resolved_value": null
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 295,
+      "text": " * sk_set_memalloc - sets %SOCK_MEMALLOC",
+      "context": [
+        "DEFINE_STATIC_KEY_FALSE(memalloc_socks_key);",
+        "EXPORT_SYMBOL_GPL(memalloc_socks_key);",
+        "",
+        "/**",
+        " * sk_set_memalloc - sets %SOCK_MEMALLOC",
+        " * @sk: socket to set it on",
+        " *",
+        " * Set %SOCK_MEMALLOC on a socket for access to emergency reserves.",
+        " * It's the responsibility of the admin to adjust min_free_kbytes"
+      ],
+      "classification": "declaration/definition/doc/export/comment, not concrete call",
+      "Kbuild_selector": null,
+      "resolved_value": null
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 302,
+      "text": "void sk_set_memalloc(struct sock *sk)",
+      "context": [
+        " * Set %SOCK_MEMALLOC on a socket for access to emergency reserves.",
+        " * It's the responsibility of the admin to adjust min_free_kbytes",
+        " * to meet the requirements",
+        " */",
+        "void sk_set_memalloc(struct sock *sk)",
+        "{",
+        "\tsock_set_flag(sk, SOCK_MEMALLOC);",
+        "\tsk->sk_allocation |= __GFP_MEMALLOC;",
+        "\tstatic_branch_inc(&memalloc_socks_key);"
+      ],
+      "classification": "declaration/definition/doc/export/comment, not concrete call",
+      "Kbuild_selector": null,
+      "resolved_value": null
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 308,
+      "text": "EXPORT_SYMBOL_GPL(sk_set_memalloc);",
+      "context": [
+        "\tsock_set_flag(sk, SOCK_MEMALLOC);",
+        "\tsk->sk_allocation |= __GFP_MEMALLOC;",
+        "\tstatic_branch_inc(&memalloc_socks_key);",
+        "}",
+        "EXPORT_SYMBOL_GPL(sk_set_memalloc);",
+        "",
+        "void sk_clear_memalloc(struct sock *sk)",
+        "{",
+        "\tsock_reset_flag(sk, SOCK_MEMALLOC);"
+      ],
+      "classification": "declaration/definition/doc/export/comment, not concrete call",
+      "Kbuild_selector": null,
+      "resolved_value": null
+    },
+    {
+      "path": "net/sunrpc/xprtsock.c",
+      "line": 2107,
+      "text": "\t\tsk_set_memalloc(transport->inet);",
+      "context": [
+        "\t */",
+        "\tif (!transport->inet)",
+        "\t\treturn;",
+        "\tif (atomic_read(&xprt->swapper))",
+        "\t\tsk_set_memalloc(transport->inet);",
+        "}",
+        "",
+        "/**",
+        " * xs_enable_swap - Tag this transport as being used for swap."
+      ],
+      "classification": "concrete call; Kbuild selector not y/m",
+      "Kbuild_selector": "CONFIG_SUNRPC",
+      "resolved_value": "ABSENT"
+    },
+    {
+      "path": "net/sunrpc/xprtsock.c",
+      "line": 2125,
+      "text": "\t\tsk_set_memalloc(xs->inet);",
+      "context": [
+        "",
+        "\tmutex_lock(&xs->recv_mutex);",
+        "\tif (atomic_inc_return(&xprt->swapper) == 1 &&",
+        "\t    xs->inet)",
+        "\t\tsk_set_memalloc(xs->inet);",
+        "\tmutex_unlock(&xs->recv_mutex);",
+        "\treturn 0;",
+        "}",
+        ""
+      ],
+      "classification": "concrete call; Kbuild selector not y/m",
+      "Kbuild_selector": "CONFIG_SUNRPC",
+      "resolved_value": "ABSENT"
+    }
+  ],
+  "SOCK_MEMALLOC_15": [
+    {
+      "path": "include/net/sock.h",
+      "line": 945,
+      "text": "\tSOCK_MEMALLOC, /* VM depends on this socket for swapping */"
+    },
+    {
+      "path": "include/net/sock.h",
+      "line": 1100,
+      "text": "\t * allow SOCK_MEMALLOC sockets to use it as this socket is"
+    },
+    {
+      "path": "include/net/sock.h",
+      "line": 1103,
+      "text": "\tif (skb_pfmemalloc(skb) && !sock_flag(sk, SOCK_MEMALLOC))"
+    },
+    {
+      "path": "net/core/dev.c",
+      "line": 5843,
+      "text": "\t\t * - be delivered to SOCK_MEMALLOC sockets only"
+    },
+    {
+      "path": "net/core/filter.c",
+      "line": 140,
+      "text": "\t * allow SOCK_MEMALLOC sockets to use it as this socket is"
+    },
+    {
+      "path": "net/core/filter.c",
+      "line": 143,
+      "text": "\tif (skb_pfmemalloc(skb) && !sock_flag(sk, SOCK_MEMALLOC)) {"
+    },
+    {
+      "path": "net/core/skbuff.c",
+      "line": 576,
+      "text": " * the socket is later found to be SOCK_MEMALLOC then PFMEMALLOC reserves"
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 295,
+      "text": " * sk_set_memalloc - sets %SOCK_MEMALLOC"
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 298,
+      "text": " * Set %SOCK_MEMALLOC on a socket for access to emergency reserves."
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 304,
+      "text": "\tsock_set_flag(sk, SOCK_MEMALLOC);"
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 312,
+      "text": "\tsock_reset_flag(sk, SOCK_MEMALLOC);"
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 317,
+      "text": "\t * SOCK_MEMALLOC is allowed to ignore rmem limits to ensure forward"
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 318,
+      "text": "\t * progress of swapping. SOCK_MEMALLOC may be cleared while"
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 333,
+      "text": "\tBUG_ON(!sock_flag(sk, SOCK_MEMALLOC));"
+    },
+    {
+      "path": "net/ipv4/tcp_output.c",
+      "line": 1368,
+      "text": "\t * Other socket might not have SOCK_MEMALLOC."
+    }
+  ],
+  "sk_memalloc_socks_8": [
+    {
+      "path": "include/net/sock.h",
+      "line": 997,
+      "text": "static inline int sk_memalloc_socks(void)"
+    },
+    {
+      "path": "include/net/sock.h",
+      "line": 1005,
+      "text": "static inline int sk_memalloc_socks(void)"
+    },
+    {
+      "path": "include/net/sock.h",
+      "line": 1118,
+      "text": "\tif (sk_memalloc_socks() && skb_pfmemalloc(skb))"
+    },
+    {
+      "path": "net/core/dev.c",
+      "line": 5838,
+      "text": "\tif (sk_memalloc_socks() && skb_pfmemalloc(skb)) {"
+    },
+    {
+      "path": "net/core/dev.c",
+      "line": 5866,
+      "text": "\t\tif ((sk_memalloc_socks() && skb_pfmemalloc(skb)) != pfmemalloc) {"
+    },
+    {
+      "path": "net/core/skbuff.c",
+      "line": 663,
+      "text": "\tif (sk_memalloc_socks() && (flags & SKB_ALLOC_RX))"
+    },
+    {
+      "path": "net/core/skbuff.c",
+      "line": 753,
+      "text": "\tif (sk_memalloc_socks())"
+    },
+    {
+      "path": "net/core/skbuff.c",
+      "line": 833,
+      "text": "\tif (sk_memalloc_socks())"
+    }
+  ],
+  "memalloc_socks_key_8_raw": ".vmlinux.export.c:7150:KSYMTAB_DATA(memalloc_socks_key, \"_gpl\", \"\");\n.vmlinux.export.c:16891:SYMBOL_CRC(memalloc_socks_key, 0x06b53bd2, \"_gpl\");\ninclude/net/sock.h:996:DECLARE_STATIC_KEY_FALSE(memalloc_socks_key);\ninclude/net/sock.h:999:\treturn static_branch_unlikely(&memalloc_socks_key);\nnet/core/sock.c:291:DEFINE_STATIC_KEY_FALSE(memalloc_socks_key);\nnet/core/sock.c:292:EXPORT_SYMBOL_GPL(memalloc_socks_key);\nnet/core/sock.c:306:\tstatic_branch_inc(&memalloc_socks_key);\nnet/core/sock.c:314:\tstatic_branch_dec(&memalloc_socks_key);\n",
+  "SO_MEMALLOC_identifier_matches": 0,
+  "caveat": "full tree includes noncompiled code/comments/generated exports; not a compiler callgraph or runtime ownership proof"
+}

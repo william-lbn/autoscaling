@@ -1,0 +1,788 @@
+{
+  "alloc_migrate_folio": [
+    {
+      "line": 364,
+      "path": "mm/damon/paddr.c",
+      "text": "\tmigrate_pages(migrate_folios, alloc_migrate_folio, NULL,"
+    },
+    {
+      "line": 1137,
+      "path": "mm/internal.h",
+      "text": "struct folio *alloc_migrate_folio(struct folio *src, unsigned long private);"
+    },
+    {
+      "line": 960,
+      "path": "mm/vmscan.c",
+      "text": "struct folio *alloc_migrate_folio(struct folio *src, unsigned long private)"
+    },
+    {
+      "line": 1023,
+      "path": "mm/vmscan.c",
+      "text": "\tmigrate_pages(demote_folios, alloc_migrate_folio, NULL,"
+    }
+  ],
+  "alloc_migration_target": [
+    {
+      "line": 71,
+      "path": "include/linux/migrate.h",
+      "text": "struct folio *alloc_migration_target(struct folio *src, unsigned long private);"
+    },
+    {
+      "line": 90,
+      "path": "include/linux/migrate.h",
+      "text": "static inline struct folio *alloc_migration_target(struct folio *src,"
+    },
+    {
+      "line": 2421,
+      "path": "mm/gup.c",
+      "text": "\t\tif (migrate_pages(movable_folio_list, alloc_migration_target,"
+    },
+    {
+      "line": 2724,
+      "path": "mm/memory-failure.c",
+      "text": "\t\tret = migrate_pages(&pagelist, alloc_migration_target, NULL,"
+    },
+    {
+      "line": 1849,
+      "path": "mm/memory_hotplug.c",
+      "text": "\t\tret = migrate_pages(&source, alloc_migration_target, NULL,"
+    },
+    {
+      "line": 1099,
+      "path": "mm/mempolicy.c",
+      "text": "\t\terr = migrate_pages(&pagelist, alloc_migration_target, NULL,"
+    },
+    {
+      "line": 2124,
+      "path": "mm/migrate.c",
+      "text": "struct folio *alloc_migration_target(struct folio *src, unsigned long private)"
+    },
+    {
+      "line": 2185,
+      "path": "mm/migrate.c",
+      "text": "\terr = migrate_pages(pagelist, alloc_migration_target, NULL,"
+    },
+    {
+      "line": 6459,
+      "path": "mm/page_alloc.c",
+      "text": "\t\tret = migrate_pages(&cc->migratepages, alloc_migration_target,"
+    },
+    {
+      "line": 980,
+      "path": "mm/vmscan.c",
+      "text": "\tdst = alloc_migration_target(src, (unsigned long)mtc);"
+    },
+    {
+      "line": 987,
+      "path": "mm/vmscan.c",
+      "text": "\treturn alloc_migration_target(src, (unsigned long)mtc);"
+    }
+  ],
+  "alloc_misplaced_dst_folio": [
+    {
+      "line": 2596,
+      "path": "mm/migrate.c",
+      "text": "static struct folio *alloc_misplaced_dst_folio(struct folio *src,"
+    },
+    {
+      "line": 2694,
+      "path": "mm/migrate.c",
+      "text": "\tnr_remaining = migrate_pages(&migratepages, alloc_misplaced_dst_folio,"
+    }
+  ],
+  "free_unref_folios": [
+    {
+      "line": 744,
+      "path": "mm/internal.h",
+      "text": "void free_unref_folios(struct folio_batch *fbatch);"
+    },
+    {
+      "line": 2693,
+      "path": "mm/page_alloc.c",
+      "text": "void free_unref_folios(struct folio_batch *folios)"
+    },
+    {
+      "line": 138,
+      "path": "mm/swap.c",
+      "text": "\t\tfree_unref_folios(&fbatch);"
+    },
+    {
+      "line": 142,
+      "path": "mm/swap.c",
+      "text": "\t\tfree_unref_folios(&fbatch);"
+    },
+    {
+      "line": 993,
+      "path": "mm/swap.c",
+      "text": "\tfree_unref_folios(folios);"
+    },
+    {
+      "line": 1497,
+      "path": "mm/vmscan.c",
+      "text": "\t\t\tfree_unref_folios(&free_folios);"
+    },
+    {
+      "line": 1566,
+      "path": "mm/vmscan.c",
+      "text": "\tfree_unref_folios(&free_folios);"
+    },
+    {
+      "line": 1886,
+      "path": "mm/vmscan.c",
+      "text": "\t\t\t\tfree_unref_folios(&free_folios);"
+    },
+    {
+      "line": 1908,
+      "path": "mm/vmscan.c",
+      "text": "\t\tfree_unref_folios(&free_folios);"
+    }
+  ],
+  "mem_cgroup_charge": [
+    {
+      "line": 676,
+      "path": "include/linux/memcontrol.h",
+      "text": " * mem_cgroup_charge - Charge a newly allocated folio to a cgroup."
+    },
+    {
+      "line": 689,
+      "path": "include/linux/memcontrol.h",
+      "text": "static inline int mem_cgroup_charge(struct folio *folio, struct mm_struct *mm,"
+    },
+    {
+      "line": 711,
+      "path": "include/linux/memcontrol.h",
+      "text": " * Uncharge a folio previously charged with mem_cgroup_charge()."
+    },
+    {
+      "line": 1192,
+      "path": "include/linux/memcontrol.h",
+      "text": "static inline int mem_cgroup_charge(struct folio *folio,"
+    },
+    {
+      "line": 177,
+      "path": "kernel/events/uprobes.c",
+      "text": "\t\terr = mem_cgroup_charge(new_folio, vma->vm_mm, GFP_KERNEL);"
+    },
+    {
+      "line": 967,
+      "path": "mm/filemap.c",
+      "text": "\tret = mem_cgroup_charge(folio, NULL, gfp);"
+    },
+    {
+      "line": 1151,
+      "path": "mm/huge_memory.c",
+      "text": "\tif (mem_cgroup_charge(folio, vma->vm_mm, gfp)) {"
+    },
+    {
+      "line": 1080,
+      "path": "mm/khugepaged.c",
+      "text": "\tif (unlikely(mem_cgroup_charge(folio, mm, gfp))) {"
+    },
+    {
+      "line": 2975,
+      "path": "mm/ksm.c",
+      "text": "\t    mem_cgroup_charge(new_folio, vma->vm_mm, GFP_KERNEL)) {"
+    },
+    {
+      "line": 1070,
+      "path": "mm/memory.c",
+      "text": "\tif (mem_cgroup_charge(new_folio, src_mm, GFP_KERNEL)) {"
+    },
+    {
+      "line": 4710,
+      "path": "mm/memory.c",
+      "text": "\t\t\tif (mem_cgroup_charge(folio, vma->vm_mm, gfp)) {"
+    },
+    {
+      "line": 605,
+      "path": "mm/migrate_device.c",
+      "text": "\tif (mem_cgroup_charge(folio, vma->vm_mm, GFP_KERNEL))"
+    },
+    {
+      "line": 1823,
+      "path": "mm/shmem.c",
+      "text": "\terror = mem_cgroup_charge(folio, fault_mm, gfp);"
+    },
+    {
+      "line": 2991,
+      "path": "mm/shmem.c",
+      "text": "\tret = mem_cgroup_charge(folio, dst_vma->vm_mm, gfp);"
+    },
+    {
+      "line": 303,
+      "path": "mm/userfaultfd.c",
+      "text": "\tif (mem_cgroup_charge(folio, dst_vma->vm_mm, GFP_KERNEL))"
+    },
+    {
+      "line": 328,
+      "path": "mm/userfaultfd.c",
+      "text": "\tif (mem_cgroup_charge(folio, dst_vma->vm_mm, GFP_KERNEL))"
+    }
+  ],
+  "mem_cgroup_replace_folio": [
+    {
+      "line": 729,
+      "path": "include/linux/memcontrol.h",
+      "text": "void mem_cgroup_replace_folio(struct folio *old, struct folio *new);"
+    },
+    {
+      "line": 1227,
+      "path": "include/linux/memcontrol.h",
+      "text": "static inline void mem_cgroup_replace_folio(struct folio *old,"
+    },
+    {
+      "line": 829,
+      "path": "mm/filemap.c",
+      "text": "\tmem_cgroup_replace_folio(old, new);"
+    },
+    {
+      "line": 4729,
+      "path": "mm/memcontrol.c",
+      "text": " * mem_cgroup_replace_folio - Charge a folio's replacement."
+    },
+    {
+      "line": 4738,
+      "path": "mm/memcontrol.c",
+      "text": "void mem_cgroup_replace_folio(struct folio *old, struct folio *new)"
+    },
+    {
+      "line": 1951,
+      "path": "mm/shmem.c",
+      "text": "\t\tmem_cgroup_replace_folio(old, new);"
+    }
+  ],
+  "mem_cgroup_uncharge": [
+    {
+      "line": 708,
+      "path": "include/linux/memcontrol.h",
+      "text": " * mem_cgroup_uncharge - Uncharge a folio."
+    },
+    {
+      "line": 713,
+      "path": "include/linux/memcontrol.h",
+      "text": "static inline void mem_cgroup_uncharge(struct folio *folio)"
+    },
+    {
+      "line": 1214,
+      "path": "include/linux/memcontrol.h",
+      "text": "static inline void mem_cgroup_uncharge(struct folio *folio)"
+    },
+    {
+      "line": 974,
+      "path": "mm/filemap.c",
+      "text": "\t\tmem_cgroup_uncharge(folio);"
+    },
+    {
+      "line": 1923,
+      "path": "mm/hugetlb.c",
+      "text": "\tmem_cgroup_uncharge(folio);"
+    },
+    {
+      "line": 967,
+      "path": "mm/memory-failure.c",
+      "text": "\t\tmem_cgroup_uncharge(folio);"
+    },
+    {
+      "line": 465,
+      "path": "mm/memremap.c",
+      "text": "\tmem_cgroup_uncharge(folio);"
+    },
+    {
+      "line": 111,
+      "path": "mm/swap.c",
+      "text": "\tmem_cgroup_uncharge(folio);"
+    }
+  ],
+  "memalloc_noreclaim_restore": [
+    {
+      "line": 590,
+      "path": "drivers/block/nbd.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 516,
+      "path": "drivers/gpu/drm/amd/amdgpu/amdgpu_mes.h",
+      "text": "\tmemalloc_noreclaim_restore(mes->saved_flags);"
+    },
+    {
+      "line": 641,
+      "path": "drivers/gpu/drm/amd/amdgpu/amdgpu_vm.h",
+      "text": "\tmemalloc_noreclaim_restore(vm->saved_flags);"
+    },
+    {
+      "line": 353,
+      "path": "drivers/gpu/drm/amd/amdkfd/kfd_device_queue_manager.h",
+      "text": "\tmemalloc_noreclaim_restore(dqm->saved_flags);"
+    },
+    {
+      "line": 151,
+      "path": "drivers/gpu/drm/amd/amdkfd/kfd_svm.h",
+      "text": "\tmemalloc_noreclaim_restore(prange->saved_flags);"
+    },
+    {
+      "line": 659,
+      "path": "drivers/gpu/drm/i915/i915_debugfs.c",
+      "text": "\tmemalloc_noreclaim_restore(flags);"
+    },
+    {
+      "line": 1353,
+      "path": "drivers/mtd/nand/raw/nandsim.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 1370,
+      "path": "drivers/mtd/nand/raw/nandsim.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 1335,
+      "path": "drivers/nvme/host/tcp.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 1464,
+      "path": "drivers/nvme/host/tcp.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 430,
+      "path": "drivers/scsi/iscsi_tcp.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 390,
+      "path": "fs/bcachefs/fs.c",
+      "text": "\tmemalloc_noreclaim_restore(_saved_flags);\t\t\t\t\\"
+    },
+    {
+      "line": 712,
+      "path": "fs/bcachefs/journal_reclaim.c",
+      "text": "\tmemalloc_noreclaim_restore(flags);"
+    },
+    {
+      "line": 1350,
+      "path": "fs/smb/client/connect.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 708,
+      "path": "fs/xfs/xfs_trans_ail.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 423,
+      "path": "include/linux/sched/mm.h",
+      "text": " * Return: The saved flags to be passed to memalloc_noreclaim_restore."
+    },
+    {
+      "line": 431,
+      "path": "include/linux/sched/mm.h",
+      "text": " * memalloc_noreclaim_restore - Ends the implicit __GFP_MEMALLOC scope."
+    },
+    {
+      "line": 438,
+      "path": "include/linux/sched/mm.h",
+      "text": "static inline void memalloc_noreclaim_restore(unsigned int flags)"
+    },
+    {
+      "line": 455,
+      "path": "mm/damon/paddr.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 3688,
+      "path": "mm/page_alloc.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 3932,
+      "path": "mm/page_alloc.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 1607,
+      "path": "mm/vmscan.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 2196,
+      "path": "mm/vmscan.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 5547,
+      "path": "mm/vmscan.c",
+      "text": "\tmemalloc_noreclaim_restore(flags);"
+    },
+    {
+      "line": 6615,
+      "path": "mm/vmscan.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 7345,
+      "path": "mm/vmscan.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 7519,
+      "path": "mm/vmscan.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 5852,
+      "path": "net/core/dev.c",
+      "text": "\t\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 5878,
+      "path": "net/core/dev.c",
+      "text": "\t\t\t\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 5886,
+      "path": "net/core/dev.c",
+      "text": "\t\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    },
+    {
+      "line": 340,
+      "path": "net/core/sock.c",
+      "text": "\tmemalloc_noreclaim_restore(noreclaim_flag);"
+    }
+  ],
+  "memalloc_noreclaim_save": [
+    {
+      "line": 570,
+      "path": "drivers/block/nbd.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 511,
+      "path": "drivers/gpu/drm/amd/amdgpu/amdgpu_mes.h",
+      "text": "\tmes->saved_flags = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 627,
+      "path": "drivers/gpu/drm/amd/amdgpu/amdgpu_vm.h",
+      "text": "\tvm->saved_flags = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 633,
+      "path": "drivers/gpu/drm/amd/amdgpu/amdgpu_vm.h",
+      "text": "\t\tvm->saved_flags = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 349,
+      "path": "drivers/gpu/drm/amd/amdkfd/kfd_device_queue_manager.h",
+      "text": "\tdqm->saved_flags = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 146,
+      "path": "drivers/gpu/drm/amd/amdkfd/kfd_svm.h",
+      "text": "\tprange->saved_flags = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 650,
+      "path": "drivers/gpu/drm/i915/i915_debugfs.c",
+      "text": "\tflags = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 1351,
+      "path": "drivers/mtd/nand/raw/nandsim.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 1368,
+      "path": "drivers/mtd/nand/raw/nandsim.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 1302,
+      "path": "drivers/nvme/host/tcp.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 1460,
+      "path": "drivers/nvme/host/tcp.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 417,
+      "path": "drivers/scsi/iscsi_tcp.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 658,
+      "path": "fs/bcachefs/journal_reclaim.c",
+      "text": "\tflags = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 1165,
+      "path": "fs/smb/client/connect.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 643,
+      "path": "fs/xfs/xfs_trans_ail.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 403,
+      "path": "include/linux/sched/mm.h",
+      "text": " * memalloc_noreclaim_save - Marks implicit __GFP_MEMALLOC scope."
+    },
+    {
+      "line": 425,
+      "path": "include/linux/sched/mm.h",
+      "text": "static inline unsigned int memalloc_noreclaim_save(void)"
+    },
+    {
+      "line": 434,
+      "path": "include/linux/sched/mm.h",
+      "text": " * Ends the implicit __GFP_MEMALLOC scope started by memalloc_noreclaim_save"
+    },
+    {
+      "line": 436,
+      "path": "include/linux/sched/mm.h",
+      "text": " * pairing memalloc_noreclaim_save call."
+    },
+    {
+      "line": 1680,
+      "path": "include/linux/sched.h",
+      "text": "#define PF_MEMALLOC\t\t0x00000800\t/* Allocating memory to free memory. See memalloc_noreclaim_save() */"
+    },
+    {
+      "line": 434,
+      "path": "mm/damon/paddr.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 3683,
+      "path": "mm/page_alloc.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 3927,
+      "path": "mm/page_alloc.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 1601,
+      "path": "mm/vmscan.c",
+      "text": "\t * call memalloc_noreclaim_save() anyway, just in case these conditions"
+    },
+    {
+      "line": 1604,
+      "path": "mm/vmscan.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 2178,
+      "path": "mm/vmscan.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 5509,
+      "path": "mm/vmscan.c",
+      "text": "\tflags = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 6611,
+      "path": "mm/vmscan.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 7339,
+      "path": "mm/vmscan.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 7504,
+      "path": "mm/vmscan.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 5850,
+      "path": "net/core/dev.c",
+      "text": "\t\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 5876,
+      "path": "net/core/dev.c",
+      "text": "\t\t\t\tnoreclaim_flag = memalloc_noreclaim_save();"
+    },
+    {
+      "line": 335,
+      "path": "net/core/sock.c",
+      "text": "\tnoreclaim_flag = memalloc_noreclaim_save();"
+    }
+  ],
+  "numa_demotion_enabled": [
+    {
+      "line": 39,
+      "path": "include/linux/memory-tiers.h",
+      "text": "extern bool numa_demotion_enabled;"
+    },
+    {
+      "line": 78,
+      "path": "include/linux/memory-tiers.h",
+      "text": "#define numa_demotion_enabled\tfalse"
+    },
+    {
+      "line": 937,
+      "path": "mm/memory-tiers.c",
+      "text": "bool numa_demotion_enabled = false;"
+    },
+    {
+      "line": 944,
+      "path": "mm/memory-tiers.c",
+      "text": "\treturn sysfs_emit(buf, \"%s\\n\", str_true_false(numa_demotion_enabled));"
+    },
+    {
+      "line": 953,
+      "path": "mm/memory-tiers.c",
+      "text": "\tret = kstrtobool(buf, &numa_demotion_enabled);"
+    },
+    {
+      "line": 328,
+      "path": "mm/vmscan.c",
+      "text": "\tif (!numa_demotion_enabled)"
+    }
+  ],
+  "page_counter_charge": [
+    {
+      "line": 69,
+      "path": "include/linux/page_counter.h",
+      "text": "void page_counter_charge(struct page_counter *counter, unsigned long nr_pages);"
+    },
+    {
+      "line": 219,
+      "path": "mm/hugetlb_cgroup.c",
+      "text": "\t\tpage_counter_charge(&parent->hugepage[idx], nr_pages);"
+    },
+    {
+      "line": 567,
+      "path": "mm/memcontrol-v1.c",
+      "text": " * The caller must have charged to @to, IOW, called page_counter_charge() about"
+    },
+    {
+      "line": 3060,
+      "path": "mm/memcontrol-v1.c",
+      "text": "\t\t\tpage_counter_charge(&memcg->kmem, nr_pages);"
+    },
+    {
+      "line": 3077,
+      "path": "mm/memcontrol-v1.c",
+      "text": "\t\tpage_counter_charge(&memcg->tcpmem, nr_pages);"
+    },
+    {
+      "line": 2301,
+      "path": "mm/memcontrol.c",
+      "text": "\tpage_counter_charge(&memcg->memory, nr_pages);"
+    },
+    {
+      "line": 2303,
+      "path": "mm/memcontrol.c",
+      "text": "\t\tpage_counter_charge(&memcg->memsw, nr_pages);"
+    },
+    {
+      "line": 4762,
+      "path": "mm/memcontrol.c",
+      "text": "\t\tpage_counter_charge(&memcg->memory, nr_pages);"
+    },
+    {
+      "line": 4764,
+      "path": "mm/memcontrol.c",
+      "text": "\t\t\tpage_counter_charge(&memcg->memsw, nr_pages);"
+    },
+    {
+      "line": 5005,
+      "path": "mm/memcontrol.c",
+      "text": "\t\t\tpage_counter_charge(&swap_memcg->memsw, nr_entries);"
+    },
+    {
+      "line": 74,
+      "path": "mm/page_counter.c",
+      "text": " * page_counter_charge - hierarchically charge pages"
+    },
+    {
+      "line": 80,
+      "path": "mm/page_counter.c",
+      "text": "void page_counter_charge(struct page_counter *counter, unsigned long nr_pages)"
+    },
+    {
+      "line": 163,
+      "path": "mm/page_counter.c",
+      "text": "\t\t/* see comment on page_counter_charge */"
+    }
+  ],
+  "put_pages_list": [
+    {
+      "line": 1805,
+      "path": ".vmlinux.export.c",
+      "text": "KSYMTAB_FUNC(put_pages_list, \"\", \"\");"
+    },
+    {
+      "line": 11546,
+      "path": ".vmlinux.export.c",
+      "text": "SYMBOL_CRC(put_pages_list, 0xf0009fee, \"\");"
+    },
+    {
+      "line": 1289,
+      "path": "include/linux/mm.h",
+      "text": "void put_pages_list(struct list_head *pages);"
+    },
+    {
+      "line": 117,
+      "path": "mm/swap.c",
+      "text": " * put_pages_list() - release a list of pages"
+    },
+    {
+      "line": 122,
+      "path": "mm/swap.c",
+      "text": "void put_pages_list(struct list_head *pages)"
+    },
+    {
+      "line": 145,
+      "path": "mm/swap.c",
+      "text": "EXPORT_SYMBOL(put_pages_list);"
+    }
+  ],
+  "replace_page_cache_folio": [
+    {
+      "line": 1700,
+      "path": ".vmlinux.export.c",
+      "text": "KSYMTAB_FUNC(replace_page_cache_folio, \"_gpl\", \"\");"
+    },
+    {
+      "line": 11441,
+      "path": ".vmlinux.export.c",
+      "text": "SYMBOL_CRC(replace_page_cache_folio, 0x36d8c279, \"_gpl\");"
+    },
+    {
+      "line": 891,
+      "path": "fs/fuse/dev.c",
+      "text": "\treplace_page_cache_folio(oldfolio, newfolio);"
+    },
+    {
+      "line": 1289,
+      "path": "include/linux/pagemap.h",
+      "text": "void replace_page_cache_folio(struct folio *old, struct folio *new);"
+    },
+    {
+      "line": 802,
+      "path": "mm/filemap.c",
+      "text": " * replace_page_cache_folio - replace a pagecache folio with a new one"
+    },
+    {
+      "line": 814,
+      "path": "mm/filemap.c",
+      "text": "void replace_page_cache_folio(struct folio *old, struct folio *new)"
+    },
+    {
+      "line": 849,
+      "path": "mm/filemap.c",
+      "text": "EXPORT_SYMBOL_GPL(replace_page_cache_folio);"
+    }
+  ]
+}

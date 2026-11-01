@@ -1,0 +1,28 @@
+{
+  "reviewer": "Root",
+  "utc": "2026-11-01T06:37:08.774417+00:00",
+  "status": "PASS_READONLY_CONDITIONAL_COMPILED_SOURCE_ANALYSIS",
+  "reviewed_report_sha256": "c1125a6eefce3038e1dc70d56cc3f049746fb81448b3a5c32d13f4b4dfcbf620",
+  "reviewed": [
+    "exact18c artifact/config/notes and 61510-path built source index; cached extraction does not claim a new kernel build",
+    "try_charge three force flags and independent replacement entry both included",
+    "ext4/bdev NOFAIL placement uses actual GFP flags, HIGH is distinct from HIGHMEM",
+    "Q1 only for audited ordinary anon/ext4/tmpfs under THP=n; hugetlb/device/foreignFD excluded from theorem",
+    "all seven actual sk_set_memalloc callers selected off in exact Kbuild; exports and text matches are not callers",
+    "no user SO_MEMALLOC; numeric46 is SO_BUSY_POLL, historical incorrect claim explicitly withdrawn",
+    "counter uncharge precedes physical free; that window remains in independent I",
+    "dynamic preemption and NR_CPUS64 are compiled properties, not permanent scheduling or original Host hard CPU source",
+    "runtime noSwap/noFUSE/FD/mount/Root/migration/modules/BPF/writer proofs still required"
+  ],
+  "source_union": 109,
+  "U": 0,
+  "S": 0,
+  "E": 0,
+  "K8s_E": 0,
+  "normal_authorized": false,
+  "all_sources_closed": false,
+  "F_force": null,
+  "I": null,
+  "missing_sources_cleared": false,
+  "production_source_modified": false
+}

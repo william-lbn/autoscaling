@@ -1,0 +1,198 @@
+{
+  "status": "CONDITIONAL_COMPILED_ATTRIBUTES_ONLY_RUNTIME_SOURCES_MISSING",
+  "exact_tuple": {
+    "arch/x86/boot/bzImage": "18c9fd3a38bbe5a087b98998c856898e97ee3f0bc68681b13f0287912849e1ad",
+    ".config": "966e615127358d6d0dcf4f6ca884a07702e957ad07a95909cf95feca4aae5441"
+  },
+  "kernel_release": "6.12.26-william-normal-split-metadata-v1-c67181104ec1",
+  "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+  "source_index_sha256": "273af74cfed5f69b98b189a4c12e95128af0a9e5605bda728868c9e2ac4833b1",
+  "whole_tree_files": 61510,
+  "selected_source_union": 109,
+  "selected_source_total_bytes": 8353540,
+  "source_manifest_sha256": "fd9ebf838c5110acef5a40ef6406bfff3309df9eb20874feda83d86949b80cad",
+  "config": {
+    "CONFIG_TRANSPARENT_HUGEPAGE": "n",
+    "CONFIG_KSM": "n",
+    "CONFIG_FS_ENCRYPTION": "n",
+    "CONFIG_FS_VERITY": "n",
+    "CONFIG_ZONE_DEVICE": "n",
+    "CONFIG_BLK_DEV_NBD": "n",
+    "CONFIG_WIREGUARD": "n",
+    "CONFIG_NVME_TCP": "n",
+    "CONFIG_ISCSI_TCP": "ABSENT",
+    "CONFIG_SUNRPC": "ABSENT",
+    "CONFIG_CIFS": "ABSENT",
+    "CONFIG_NFS_FS": "ABSENT",
+    "CONFIG_NFSD": "ABSENT",
+    "CONFIG_DRM_AMDGPU": "ABSENT",
+    "CONFIG_DRM_I915": "ABSENT",
+    "CONFIG_MTD_NAND_NANDSIM": "ABSENT",
+    "CONFIG_BTRFS_FS": "n",
+    "CONFIG_XFS_FS": "n",
+    "CONFIG_BCACHEFS_FS": "n",
+    "CONFIG_DAMON": "n",
+    "CONFIG_LRU_GEN": "n",
+    "CONFIG_HIBERNATION": "n",
+    "CONFIG_FUSE_FS": "y",
+    "CONFIG_FUSE_PASSTHROUGH": "y",
+    "CONFIG_NUMA": "y",
+    "CONFIG_NUMA_BALANCING": "y",
+    "CONFIG_CPUSETS": "y",
+    "CONFIG_USERFAULTFD": "y",
+    "CONFIG_UPROBES": "y",
+    "CONFIG_UPROBE_EVENTS": "y",
+    "CONFIG_PERF_EVENTS": "y",
+    "CONFIG_BPF": "y",
+    "CONFIG_BPF_SYSCALL": "y",
+    "CONFIG_BPF_JIT": "n",
+    "CONFIG_MODULES": "y",
+    "CONFIG_SWAP": "y",
+    "CONFIG_HUGETLB_PAGE": "y",
+    "CONFIG_HUGETLBFS": "y",
+    "CONFIG_PREEMPT_VOLUNTARY": "y",
+    "CONFIG_PREEMPT_DYNAMIC": "y",
+    "CONFIG_PREEMPT_RT": "n",
+    "CONFIG_PREEMPT_RCU": "y",
+    "CONFIG_NR_CPUS": "64",
+    "CONFIG_PAGE_SHIFT": "12",
+    "CONFIG_DEBUG_FS": "n",
+    "CONFIG_SCHED_DEBUG": "ABSENT"
+  },
+  "finite_attributes": [
+    {
+      "name": "OrdinaryTryChargeForceConditions",
+      "value": [
+        "PF_MEMALLOC",
+        "__GFP_NOFAIL",
+        "__GFP_HIGH"
+      ],
+      "evidence": "mm/memcontrol.c:2212,2286,2301"
+    },
+    {
+      "name": "IndependentOrdinaryReplaceForceEntry",
+      "value": true,
+      "evidence": "mm/memcontrol.c:4738,4762; full-tree caller list"
+    },
+    {
+      "name": "SupportedOrdinaryAnonExt4TmpfsFolioMaxOrder",
+      "value": 0,
+      "requires": [
+        "THP=n exact tuple",
+        "only audited ordinary paths",
+        "no explicit hugetlb/device/custom callback/foreign FD"
+      ],
+      "not_global_order_bound": true
+    },
+    {
+      "name": "EnabledBuiltInConcreteSkSetMemallocCallsFromEnumeratedWholeTree",
+      "value": 0,
+      "total_concrete_calls": 7,
+      "requires": "exact Kbuild selectors; does not exclude module/BPF/unsafe dynamic writer"
+    },
+    {
+      "name": "KernelCompiledNRCPUS",
+      "value": 64,
+      "not_VM_hard_max": true
+    },
+    {
+      "name": "DynamicPreemptCompiled",
+      "value": true,
+      "not_permanent_nonpreempt_proof": true
+    },
+    {
+      "name": "BasePageBytes",
+      "value": 4096,
+      "evidence": "arch/x86/include/asm/page_types.h:10 and CONFIG_PAGE_SHIFT=12"
+    },
+    {
+      "name": "FolioBatchPointers",
+      "value": 31,
+      "evidence": "include/linux/pagevec.h:15,32",
+      "not_concurrency_or_I_proof": true
+    },
+    {
+      "name": "DEBUG_FS_compiled",
+      "value": false,
+      "evidence": "CONFIG_DEBUG_FS=n; SCHED_DEBUG absent; not an enabled dynamic preempt debugfs writer proof"
+    }
+  ],
+  "candidate_force_bound": "Only after independent opaque runtime proofs close noSwap/noFUSE/mount/device/FD/actor/code/migration/lifecycle writers: F_force <= K = basePageBytes * sum(nonMOVABLE zone present pages). No current scalar issued.",
+  "runtime_missing": [
+    "original VM/boot/state/cgroup/producer/typed source + exact accepted build",
+    "original RW ext4/tmpfs/mount/device/ioctl/FD allowlist and no FUSE passthrough/foreign descriptor",
+    "noSwap from original birth and all future swapon writers blocked",
+    "noNormal-to-Movable migration: NUMA balancing/demotion/user migration/cpuset/device writers closed",
+    "no explicit hugetlb allocations/foreign huge FDs and future Root hstate writers",
+    "original loaded-modules-empty/modules_disabled irreversible and approved BPF/perf/uprobes/userfaultfd operations",
+    "original host/QMP topology and maximum CPUs; current2 sampling insufficient",
+    "I concurrency/batch/free/migration/IRQ/NMI bounds independently proved; dynamic preempt mode provenance",
+    "all initial Root/ordinary/PG/Compute/helper and future writers closed; cannot adopt a reopened value as Source"
+  ],
+  "cohorts": [
+    {
+      "path": "/data/neon-build/validation/normal-force-built-source-20261101T045225Z-413336",
+      "source_lock_sha256": "176ed2bbfa871f55248aeb1b633bea3895f64acda33606b9e8cd2138323f642e",
+      "result_sha256": "e00c8998439573c075c49306c866325b12459925ba4b0a9f0dd7c6d090056db1",
+      "export_result_sha256": "dbbbcc025c506a3bdb3d4754163dd6509612e35ba1bc4e7678e07144777c8521",
+      "seconds": 102.73569212702569,
+      "selected_files": 34
+    },
+    {
+      "path": "/data/neon-build/validation/normal-force-producer-source-20261101T050105Z-550d23",
+      "source_lock_sha256": "fca252b20d0f3a472a64e35190341ba56b9f0701bd6a379c19214bf2dfed4208",
+      "result_sha256": "43b7f4b5c6d42eb52f291189d22ccc1b822e6499e5e2ebc36c4bf64cacf792b9",
+      "export_result_sha256": "6786b209de508f8bfd9e1a7459c414d54a080f1c5422f382760d63262ddc6c29",
+      "seconds": 75.30037349797203,
+      "selected_files": 8
+    },
+    {
+      "path": "/data/neon-build/validation/normal-force-q1-source-20261101T050738Z-a83d68",
+      "source_lock_sha256": "a4d4f5d0367785a75e84a7dd716ac68122b0f3dcf9ee00dfc8f89025c8a539dd",
+      "result_sha256": "938c674a57840f2b4e0e4cc565c2c50518bb32bb56cefb88e40a4188b3417aa6",
+      "export_result_sha256": "100d16a40e3e1dfd8d6b3d6ffc648b66808155f0d022284c090ab2c353cdb777",
+      "seconds": 47.850421951996395,
+      "selected_files": 61
+    },
+    {
+      "path": "/data/neon-build/validation/normal-force-leaf-source-20261101T051004Z-2d79c6",
+      "source_lock_sha256": "30370a1a25efe3a8a0079f60257403444a0d98bcb0cb4cae287480cc90ae5002",
+      "result_sha256": "ebae12d0829c3a9be9b9fa55151fe2fc43124ac401d40a6683500b94ea286543",
+      "export_result_sha256": "180a73802204e02a7d0153607eeed986482cd1acf8de36ba1b1d2227596e053e",
+      "seconds": 3.369734484993387,
+      "selected_files": 5
+    },
+    {
+      "path": "/data/neon-build/validation/normal-force-fs-leaf-source-20261101T051254Z-de3367",
+      "source_lock_sha256": "64034e3e6887861b9c15aeff0d92f2bad21ecbff66cc1b92f337c9189e57b6ef",
+      "result_sha256": "f4cb31c11d31a7c6d650d2da078c6e75cae872ea3d5c18549283d49de8556efa",
+      "export_result_sha256": "4adf9472ee4f620d4240bd1cca30d0cbca3db7598688bd067c7ecd1f5fe512e7",
+      "seconds": 3.177415687008761,
+      "selected_files": 14
+    },
+    {
+      "path": "/data/neon-build/validation/normal-force-key-source-20261101T051439Z-88a4ec",
+      "source_lock_sha256": "8528569961496a8a79a67ef82ec0eb294cfecb9d8ddfeba4f701e715cb437f02",
+      "result_sha256": "d726b0bd6761f998b459a38a41b96589d322e01be9151e7167d3678c24b1b239",
+      "export_result_sha256": "5276d4fb3f44b7d5c72387d44c5a4bd9e42e2969b4bdf97ee5d781156af3d5b6",
+      "seconds": 57.11480481599574,
+      "selected_files": 3
+    },
+    {
+      "path": "/data/neon-build/validation/normal-force-header-source-20261101T052234Z-3ef0c1",
+      "source_lock_sha256": "0db2d59980845697d6621b355c9507ecd15757acc5f1af87b2669141ac3f97a3",
+      "result_sha256": "0b08468dfb98bfc9e4513054b56f35bbee33d973cab4c426a0fd24b4fe69c895",
+      "export_result_sha256": "5721c26c27f116a9181b78b8098c468f7bf5af192e1670dd3ac59b13e2dee206",
+      "seconds": 2.6165184220008086,
+      "selected_files": 4
+    }
+  ],
+  "U": 0,
+  "S": 0,
+  "normal_authorized": false,
+  "all_sources_closed": false,
+  "F_force": null,
+  "I": null,
+  "E": 0,
+  "created_utc": "2026-11-01T05:23:47.201699+00:00"
+}

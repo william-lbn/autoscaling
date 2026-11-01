@@ -1,0 +1,161 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 11.00kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790
+#2 DONE 2.5s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [check-arg 1/3] FROM docker.io/library/ubuntu:24.04@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790
+#4 resolve docker.io/library/ubuntu:24.04@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 2.36kB done
+#5 DONE 0.0s
+
+#6 [build-deps 5/8] COPY echo-source-url.sh echo-source-url.sh
+#6 CACHED
+
+#7 [force_source_review 2/2] RUN --network=none python3 /force-source-audit.py
+#7 CACHED
+
+#8 [build-deps 8/8] RUN set -e     && cd linux-6.12.26     && for f in $(ls -1 ../patches | sort); do echo "Applying $f..."; patch -p1 < ../patches/$f; done
+#8 CACHED
+
+#9 [check-arg 3/3] RUN set -e     && echo "Build linux kernel 6.12.26"     && test -n "6.12.26"     && echo "force this as a requirement for build-deps" > /build/arg-check-succeeded
+#9 CACHED
+
+#10 [check-arg 2/3] WORKDIR /build
+#10 CACHED
+
+#11 [build-deps 4/8] COPY --from=check-arg /build/arg-check-succeeded arg-check-succeeded
+#11 CACHED
+
+#12 [build-deps 7/8] COPY patches patches
+#12 CACHED
+
+#13 [force_fs_leaf_review 2/2] RUN --network=none python3 /force-fs-leaf-audit.py
+#13 CACHED
+
+#14 [build-deps 6/8] RUN set -e     && rm arg-check-succeeded     && mkdir -p linux-6.12.26     && echo "downloading linux-6.12.26.tar.xz"     && curl -sfL "$(./echo-source-url.sh "6.12.26")" -o "linux-6.12.26.tar.xz"     && echo "unpacking kernel archive"     && tar --strip-components=1 -C linux-6.12.26 -xf linux-6.12.26.tar.xz
+#14 CACHED
+
+#15 [control_metadata_build 5/6] COPY profiles/normal-split-metadata-v1/linux-config-amd64-6.12.26 /build/linux-6.12.26/.config
+#15 CACHED
+
+#16 [force_extra_review 1/2] COPY force-extra-audit.py /force-extra-audit.py
+#16 CACHED
+
+#17 [normal_split_build 4/6] RUN --network=none set -eu; cd /build/linux-6.12.26; make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- KCONFIG_CONFIG=/tmp/kernel-default.config olddefconfig; grep -qx '# CONFIG_NEON_DSGA_STRICT_PAGE_COUNTER is not set' /tmp/kernel-default.config
+#17 CACHED
+
+#18 [control_metadata_build 1/6] COPY profiles/normal-split-metadata-v1/0008-Neon-kernfs-Require-admin-for-control-metadata.patch /build/patches/0008-Neon-kernfs-Require-admin-for-control-metadata.patch
+#18 CACHED
+
+#19 [force_extra_review 2/2] RUN --network=none python3 /force-extra-audit.py
+#19 CACHED
+
+#20 [force_leaf_review 2/2] RUN --network=none python3 /force-leaf-audit.py
+#20 CACHED
+
+#21 [build-deps 3/8] RUN apt-get update && apt-get -y install     curl     ca-certificates     build-essential     gcc-x86-64-linux-gnu     gcc-aarch64-linux-gnu     flex     bison     libelf-dev     bc     libssl-dev     python3     cpio     zstd     libncurses-dev
+#21 CACHED
+
+#22 [normal_split_build 6/6] RUN --network=none cd /build/linux-6.12.26 && make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION="-william-normal-split-v1-e210f5e3ee94" -j 8
+#22 CACHED
+
+#23 [control_metadata_build 4/6] RUN --network=none set -eu; cd /build/linux-6.12.26; make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- KCONFIG_CONFIG=/tmp/control-default-off.config olddefconfig; grep -qx "# CONFIG_NEON_DSGA_CONTROL_METADATA_GUARD is not set" /tmp/control-default-off.config
+#23 CACHED
+
+#24 [control_metadata_build 6/6] RUN --network=none cd /build/linux-6.12.26 && make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION="-william-normal-split-metadata-v1-c67181104ec1" -j 4
+#24 CACHED
+
+#25 [build_amd64 1/2] ADD profiles/normal-v1/linux-config-amd64-6.12.26 linux-6.12.26/.config
+#25 CACHED
+
+#26 [force_q1_review 2/2] RUN --network=none python3 /force-q1-audit.py
+#26 CACHED
+
+#27 [force_key_review 1/2] COPY force-key-audit.py /force-key-audit.py
+#27 CACHED
+
+#28 [normal_split_build 2/6] RUN --network=none set -eu; cd /build/linux-6.12.26; patch -p1 < ../patches/0007-Neon-mm-Bound-hierarchical-page-counter-cancel-IRQ-gap.patch
+#28 CACHED
+
+#29 [normal_split_build 3/6] COPY linux-config-amd64-6.12.26 /tmp/kernel-default.config
+#29 CACHED
+
+#30 [build_amd64 2/2] RUN cd linux-6.12.26 	&& make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION="-william-normal-v1-pidcap-946be0d25506" -j 8
+#30 CACHED
+
+#31 [control_metadata_build 3/6] COPY metadata-baseline.config /tmp/control-default-off.config
+#31 CACHED
+
+#32 [normal_split_build 1/6] COPY split-patches/0007-Neon-mm-Bound-hierarchical-page-counter-cancel-IRQ-gap.patch /build/patches/0007-Neon-mm-Bound-hierarchical-page-counter-cancel-IRQ-gap.patch
+#32 CACHED
+
+#33 [force_fs_leaf_review 1/2] COPY force-fs-leaf-audit.py /force-fs-leaf-audit.py
+#33 CACHED
+
+#34 [force_leaf_review 1/2] COPY force-leaf-audit.py /force-leaf-audit.py
+#34 CACHED
+
+#35 [normal_split_build 5/6] COPY profiles/normal-split-v1/linux-config-amd64-6.12.26 /build/linux-6.12.26/.config
+#35 CACHED
+
+#36 [control_metadata_build 2/6] RUN --network=none set -eu; cat /sys/fs/cgroup/memory.max; cat /sys/fs/cgroup/cpu.max; test "$(cat /sys/fs/cgroup/memory.max)" = 6442450944; cd /build/linux-6.12.26; patch --dry-run --fuzz=0 -p1 < ../patches/0008-Neon-kernfs-Require-admin-for-control-metadata.patch; patch --fuzz=0 -p1 < ../patches/0008-Neon-kernfs-Require-admin-for-control-metadata.patch
+#36 CACHED
+
+#37 [force_q1_review 1/2] COPY force-q1-audit.py /force-q1-audit.py
+#37 CACHED
+
+#38 [force_source_review 1/2] COPY force-source-audit.py /force-source-audit.py
+#38 CACHED
+
+#39 [force_key_review 2/2] RUN --network=none python3 /force-key-audit.py
+#39 CACHED
+
+#40 [force_header_review 1/2] COPY force-header-audit.py /force-header-audit.py
+#40 DONE 0.1s
+
+#41 [force_header_review 2/2] RUN --network=none python3 /force-header-audit.py
+#41 0.389 Traceback (most recent call last):
+#41 0.389   File "/force-header-audit.py", line 5, in <module>
+#41 0.389     p=o/'source'/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes((r/n).read_bytes());assert sha(p)==index[n]
+#41 0.389                                                                             ^^^^^^^^^^^^^^^^^^
+#41 0.389   File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+#41 0.402     with self.open(mode='rb') as f:
+#41 0.402          ^^^^^^^^^^^^^^^^^^^^
+#41 0.402   File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+#41 0.402     return io.open(self, mode, buffering, encoding, errors, newline)
+#41 0.402            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#41 0.402 FileNotFoundError: [Errno 2] No such file or directory: '/build/linux-6.12.26/include/linux/folio_batch.h'
+#41 ERROR: process "/bin/sh -c python3 /force-header-audit.py" did not complete successfully: exit code: 1
+------
+ > [force_header_review 2/2] RUN --network=none python3 /force-header-audit.py:
+0.389   File "/force-header-audit.py", line 5, in <module>
+0.389     p=o/'source'/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes((r/n).read_bytes());assert sha(p)==index[n]
+0.389                                                                             ^^^^^^^^^^^^^^^^^^
+0.389   File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+0.402     with self.open(mode='rb') as f:
+0.402          ^^^^^^^^^^^^^^^^^^^^
+0.402   File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+0.402     return io.open(self, mode, buffering, encoding, errors, newline)
+0.402            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+0.402 FileNotFoundError: [Errno 2] No such file or directory: '/build/linux-6.12.26/include/linux/folio_batch.h'
+------
+Dockerfile:191
+--------------------
+ 189 |     FROM force_key_review AS force_header_review
+ 190 |     COPY force-header-audit.py /force-header-audit.py
+ 191 | >>> RUN --network=none python3 /force-header-audit.py
+ 192 |     FROM scratch AS force_header_export
+ 193 |     COPY --from=force_header_review /force-header/ /
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c python3 /force-header-audit.py" did not complete successfully: exit code: 1

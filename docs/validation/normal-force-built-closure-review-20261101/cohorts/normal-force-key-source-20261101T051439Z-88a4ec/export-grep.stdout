@@ -1,0 +1,8 @@
+.vmlinux.export.c:7150:KSYMTAB_DATA(memalloc_socks_key, "_gpl", "");
+.vmlinux.export.c:16891:SYMBOL_CRC(memalloc_socks_key, 0x06b53bd2, "_gpl");
+include/net/sock.h:996:DECLARE_STATIC_KEY_FALSE(memalloc_socks_key);
+include/net/sock.h:999:	return static_branch_unlikely(&memalloc_socks_key);
+net/core/sock.c:291:DEFINE_STATIC_KEY_FALSE(memalloc_socks_key);
+net/core/sock.c:292:EXPORT_SYMBOL_GPL(memalloc_socks_key);
+net/core/sock.c:306:	static_branch_inc(&memalloc_socks_key);
+net/core/sock.c:314:	static_branch_dec(&memalloc_socks_key);

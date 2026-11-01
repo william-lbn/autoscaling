@@ -1,0 +1,55 @@
+fs/afs/inode.c:106:		mapping_set_large_folios(inode->i_mapping);
+fs/afs/inode.c:113:		mapping_set_large_folios(inode->i_mapping);
+fs/bcachefs/fs.c:1772:	mapping_set_large_folios(inode->v.i_mapping);
+fs/erofs/inode.c:243:	mapping_set_large_folios(inode->i_mapping);
+fs/nfs/inode.c:498:			mapping_set_large_folios(inode->i_mapping);
+fs/smb/client/inode.c:72:		mapping_set_large_folios(inode->i_mapping);
+fs/zonefs/super.c:665:	mapping_set_large_folios(inode->i_mapping);
+include/linux/pagemap.h:393: * mapping_set_folio_order_range() - Set the orders supported by a file.
+include/linux/pagemap.h:408:static inline void mapping_set_folio_order_range(struct address_space *mapping,
+include/linux/pagemap.h:431:	mapping_set_folio_order_range(mapping, min, MAX_PAGECACHE_ORDER);
+include/linux/pagemap.h:435: * mapping_set_large_folios() - Indicate the file supports large folios.
+include/linux/pagemap.h:445:static inline void mapping_set_large_folios(struct address_space *mapping)
+include/linux/pagemap.h:447:	mapping_set_folio_order_range(mapping, 0, MAX_PAGECACHE_ORDER);
+include/linux/pagemap.h:459:mapping_min_folio_order(const struct address_space *mapping)
+include/linux/pagemap.h:469:	return 1UL << mapping_min_folio_order(mapping);
+include/linux/shmem_fs.h:114:unsigned long shmem_allowable_huge_orders(struct inode *inode,
+include/linux/shmem_fs.h:118:static inline unsigned long shmem_allowable_huge_orders(struct inode *inode,
+include/net/sock.h:945:	SOCK_MEMALLOC, /* VM depends on this socket for swapping */
+include/net/sock.h:997:static inline int sk_memalloc_socks(void)
+include/net/sock.h:1005:static inline int sk_memalloc_socks(void)
+include/net/sock.h:1100:	 * allow SOCK_MEMALLOC sockets to use it as this socket is
+include/net/sock.h:1103:	if (skb_pfmemalloc(skb) && !sock_flag(sk, SOCK_MEMALLOC))
+include/net/sock.h:1118:	if (sk_memalloc_socks() && skb_pfmemalloc(skb))
+mm/filemap.c:862:	VM_BUG_ON_FOLIO(folio_order(folio) < mapping_min_folio_order(mapping),
+mm/filemap.c:1924:		unsigned int min_order = mapping_min_folio_order(mapping);
+mm/filemap.c:2481:	unsigned int min_order = mapping_min_folio_order(mapping);
+mm/filemap.c:3800:					    mapping_min_folio_order(mapping));
+mm/huge_memory.c:155:		return shmem_allowable_huge_orders(file_inode(vma->vm_file),
+mm/huge_memory.c:3450:		min_order = mapping_min_folio_order(folio->mapping);
+mm/huge_memory.c:3590:	return mapping_min_folio_order(folio->mapping);
+mm/huge_memory.c:3958:					   mapping_min_folio_order(mapping));
+mm/huge_memory.c:4030:	min_order = mapping_min_folio_order(mapping);
+mm/readahead.c:264:					    mapping_min_folio_order(mapping));
+mm/readahead.c:457:	unsigned int min_order = mapping_min_folio_order(mapping);
+mm/readahead.c:742:	unsigned int min_order = mapping_min_folio_order(mapping);
+mm/shmem.c:1660:unsigned long shmem_allowable_huge_orders(struct inode *inode,
+mm/shmem.c:2315:	orders = shmem_allowable_huge_orders(inode, vma, index, write_end, false);
+mm/shmem.c:2829:	mapping_set_large_folios(inode->i_mapping);
+net/core/dev.c:5838:	if (sk_memalloc_socks() && skb_pfmemalloc(skb)) {
+net/core/dev.c:5843:		 * - be delivered to SOCK_MEMALLOC sockets only
+net/core/dev.c:5866:		if ((sk_memalloc_socks() && skb_pfmemalloc(skb)) != pfmemalloc) {
+net/core/filter.c:140:	 * allow SOCK_MEMALLOC sockets to use it as this socket is
+net/core/filter.c:143:	if (skb_pfmemalloc(skb) && !sock_flag(sk, SOCK_MEMALLOC)) {
+net/core/skbuff.c:576: * the socket is later found to be SOCK_MEMALLOC then PFMEMALLOC reserves
+net/core/skbuff.c:663:	if (sk_memalloc_socks() && (flags & SKB_ALLOC_RX))
+net/core/skbuff.c:753:	if (sk_memalloc_socks())
+net/core/skbuff.c:833:	if (sk_memalloc_socks())
+net/core/sock.c:295: * sk_set_memalloc - sets %SOCK_MEMALLOC
+net/core/sock.c:298: * Set %SOCK_MEMALLOC on a socket for access to emergency reserves.
+net/core/sock.c:304:	sock_set_flag(sk, SOCK_MEMALLOC);
+net/core/sock.c:312:	sock_reset_flag(sk, SOCK_MEMALLOC);
+net/core/sock.c:317:	 * SOCK_MEMALLOC is allowed to ignore rmem limits to ensure forward
+net/core/sock.c:318:	 * progress of swapping. SOCK_MEMALLOC may be cleared while
+net/core/sock.c:333:	BUG_ON(!sock_flag(sk, SOCK_MEMALLOC));
+net/ipv4/tcp_output.c:1368:	 * Other socket might not have SOCK_MEMALLOC.

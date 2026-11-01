@@ -1,0 +1,291 @@
+{
+  "SOCK_MEMALLOC": [
+    {
+      "path": "include/net/sock.h",
+      "line": 945,
+      "text": "\tSOCK_MEMALLOC, /* VM depends on this socket for swapping */"
+    },
+    {
+      "path": "include/net/sock.h",
+      "line": 1100,
+      "text": "\t * allow SOCK_MEMALLOC sockets to use it as this socket is"
+    },
+    {
+      "path": "include/net/sock.h",
+      "line": 1103,
+      "text": "\tif (skb_pfmemalloc(skb) && !sock_flag(sk, SOCK_MEMALLOC))"
+    },
+    {
+      "path": "net/core/dev.c",
+      "line": 5843,
+      "text": "\t\t * - be delivered to SOCK_MEMALLOC sockets only"
+    },
+    {
+      "path": "net/core/filter.c",
+      "line": 140,
+      "text": "\t * allow SOCK_MEMALLOC sockets to use it as this socket is"
+    },
+    {
+      "path": "net/core/filter.c",
+      "line": 143,
+      "text": "\tif (skb_pfmemalloc(skb) && !sock_flag(sk, SOCK_MEMALLOC)) {"
+    },
+    {
+      "path": "net/core/skbuff.c",
+      "line": 576,
+      "text": " * the socket is later found to be SOCK_MEMALLOC then PFMEMALLOC reserves"
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 295,
+      "text": " * sk_set_memalloc - sets %SOCK_MEMALLOC"
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 298,
+      "text": " * Set %SOCK_MEMALLOC on a socket for access to emergency reserves."
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 304,
+      "text": "\tsock_set_flag(sk, SOCK_MEMALLOC);"
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 312,
+      "text": "\tsock_reset_flag(sk, SOCK_MEMALLOC);"
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 317,
+      "text": "\t * SOCK_MEMALLOC is allowed to ignore rmem limits to ensure forward"
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 318,
+      "text": "\t * progress of swapping. SOCK_MEMALLOC may be cleared while"
+    },
+    {
+      "path": "net/core/sock.c",
+      "line": 333,
+      "text": "\tBUG_ON(!sock_flag(sk, SOCK_MEMALLOC));"
+    },
+    {
+      "path": "net/ipv4/tcp_output.c",
+      "line": 1368,
+      "text": "\t * Other socket might not have SOCK_MEMALLOC."
+    }
+  ],
+  "sk_memalloc_socks": [
+    {
+      "path": "include/net/sock.h",
+      "line": 997,
+      "text": "static inline int sk_memalloc_socks(void)"
+    },
+    {
+      "path": "include/net/sock.h",
+      "line": 1005,
+      "text": "static inline int sk_memalloc_socks(void)"
+    },
+    {
+      "path": "include/net/sock.h",
+      "line": 1118,
+      "text": "\tif (sk_memalloc_socks() && skb_pfmemalloc(skb))"
+    },
+    {
+      "path": "net/core/dev.c",
+      "line": 5838,
+      "text": "\tif (sk_memalloc_socks() && skb_pfmemalloc(skb)) {"
+    },
+    {
+      "path": "net/core/dev.c",
+      "line": 5866,
+      "text": "\t\tif ((sk_memalloc_socks() && skb_pfmemalloc(skb)) != pfmemalloc) {"
+    },
+    {
+      "path": "net/core/skbuff.c",
+      "line": 663,
+      "text": "\tif (sk_memalloc_socks() && (flags & SKB_ALLOC_RX))"
+    },
+    {
+      "path": "net/core/skbuff.c",
+      "line": 753,
+      "text": "\tif (sk_memalloc_socks())"
+    },
+    {
+      "path": "net/core/skbuff.c",
+      "line": 833,
+      "text": "\tif (sk_memalloc_socks())"
+    }
+  ],
+  "mapping_set_large_folios": [
+    {
+      "path": "fs/afs/inode.c",
+      "line": 106,
+      "text": "\t\tmapping_set_large_folios(inode->i_mapping);"
+    },
+    {
+      "path": "fs/afs/inode.c",
+      "line": 113,
+      "text": "\t\tmapping_set_large_folios(inode->i_mapping);"
+    },
+    {
+      "path": "fs/bcachefs/fs.c",
+      "line": 1772,
+      "text": "\tmapping_set_large_folios(inode->v.i_mapping);"
+    },
+    {
+      "path": "fs/erofs/inode.c",
+      "line": 243,
+      "text": "\tmapping_set_large_folios(inode->i_mapping);"
+    },
+    {
+      "path": "fs/nfs/inode.c",
+      "line": 498,
+      "text": "\t\t\tmapping_set_large_folios(inode->i_mapping);"
+    },
+    {
+      "path": "fs/smb/client/inode.c",
+      "line": 72,
+      "text": "\t\tmapping_set_large_folios(inode->i_mapping);"
+    },
+    {
+      "path": "fs/zonefs/super.c",
+      "line": 665,
+      "text": "\tmapping_set_large_folios(inode->i_mapping);"
+    },
+    {
+      "path": "include/linux/pagemap.h",
+      "line": 435,
+      "text": " * mapping_set_large_folios() - Indicate the file supports large folios."
+    },
+    {
+      "path": "include/linux/pagemap.h",
+      "line": 445,
+      "text": "static inline void mapping_set_large_folios(struct address_space *mapping)"
+    },
+    {
+      "path": "mm/shmem.c",
+      "line": 2829,
+      "text": "\tmapping_set_large_folios(inode->i_mapping);"
+    }
+  ],
+  "mapping_set_folio_order_range": [
+    {
+      "path": "include/linux/pagemap.h",
+      "line": 393,
+      "text": " * mapping_set_folio_order_range() - Set the orders supported by a file."
+    },
+    {
+      "path": "include/linux/pagemap.h",
+      "line": 408,
+      "text": "static inline void mapping_set_folio_order_range(struct address_space *mapping,"
+    },
+    {
+      "path": "include/linux/pagemap.h",
+      "line": 431,
+      "text": "\tmapping_set_folio_order_range(mapping, min, MAX_PAGECACHE_ORDER);"
+    },
+    {
+      "path": "include/linux/pagemap.h",
+      "line": 447,
+      "text": "\tmapping_set_folio_order_range(mapping, 0, MAX_PAGECACHE_ORDER);"
+    }
+  ],
+  "mapping_min_folio_order": [
+    {
+      "path": "include/linux/pagemap.h",
+      "line": 459,
+      "text": "mapping_min_folio_order(const struct address_space *mapping)"
+    },
+    {
+      "path": "include/linux/pagemap.h",
+      "line": 469,
+      "text": "\treturn 1UL << mapping_min_folio_order(mapping);"
+    },
+    {
+      "path": "mm/filemap.c",
+      "line": 862,
+      "text": "\tVM_BUG_ON_FOLIO(folio_order(folio) < mapping_min_folio_order(mapping),"
+    },
+    {
+      "path": "mm/filemap.c",
+      "line": 1924,
+      "text": "\t\tunsigned int min_order = mapping_min_folio_order(mapping);"
+    },
+    {
+      "path": "mm/filemap.c",
+      "line": 2481,
+      "text": "\tunsigned int min_order = mapping_min_folio_order(mapping);"
+    },
+    {
+      "path": "mm/filemap.c",
+      "line": 3800,
+      "text": "\t\t\t\t\t    mapping_min_folio_order(mapping));"
+    },
+    {
+      "path": "mm/huge_memory.c",
+      "line": 3450,
+      "text": "\t\tmin_order = mapping_min_folio_order(folio->mapping);"
+    },
+    {
+      "path": "mm/huge_memory.c",
+      "line": 3590,
+      "text": "\treturn mapping_min_folio_order(folio->mapping);"
+    },
+    {
+      "path": "mm/huge_memory.c",
+      "line": 3958,
+      "text": "\t\t\t\t\t   mapping_min_folio_order(mapping));"
+    },
+    {
+      "path": "mm/huge_memory.c",
+      "line": 4030,
+      "text": "\tmin_order = mapping_min_folio_order(mapping);"
+    },
+    {
+      "path": "mm/readahead.c",
+      "line": 264,
+      "text": "\t\t\t\t\t    mapping_min_folio_order(mapping));"
+    },
+    {
+      "path": "mm/readahead.c",
+      "line": 457,
+      "text": "\tunsigned int min_order = mapping_min_folio_order(mapping);"
+    },
+    {
+      "path": "mm/readahead.c",
+      "line": 742,
+      "text": "\tunsigned int min_order = mapping_min_folio_order(mapping);"
+    }
+  ],
+  "shmem_huge_enabled": [],
+  "shmem_allowable_huge_orders": [
+    {
+      "path": "include/linux/shmem_fs.h",
+      "line": 114,
+      "text": "unsigned long shmem_allowable_huge_orders(struct inode *inode,"
+    },
+    {
+      "path": "include/linux/shmem_fs.h",
+      "line": 118,
+      "text": "static inline unsigned long shmem_allowable_huge_orders(struct inode *inode,"
+    },
+    {
+      "path": "mm/huge_memory.c",
+      "line": 155,
+      "text": "\t\treturn shmem_allowable_huge_orders(file_inode(vma->vm_file),"
+    },
+    {
+      "path": "mm/shmem.c",
+      "line": 1660,
+      "text": "unsigned long shmem_allowable_huge_orders(struct inode *inode,"
+    },
+    {
+      "path": "mm/shmem.c",
+      "line": 2315,
+      "text": "\torders = shmem_allowable_huge_orders(inode, vma, index, write_end, false);"
+    }
+  ],
+  "shmem_get_orders_within_size": []
+}

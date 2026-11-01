@@ -1,0 +1,28 @@
+{
+  "status": "EXPORTED_FOR_MANUAL_CLASSIFICATION_NOT_PROOF",
+  "indexed_source_count": 61510,
+  "parent_index_sha256": "273af74cfed5f69b98b189a4c12e95128af0a9e5605bda728868c9e2ac4833b1",
+  "symbol_occurrences": {
+    "PF_MEMALLOC": 57,
+    "sk_set_memalloc": 15,
+    "sk_clear_memalloc": 8,
+    "__GFP_NOFAIL": 218,
+    "__GFP_HIGH": 58,
+    "__mem_cgroup_charge": 3
+  },
+  "selected_files": {
+    "net/core/dev.c": "c3bf09e12430ed58733e4d00947330215b16a132ba2e30437dbcbd73e1ca5810",
+    "net/core/sock.c": "ca478ffbc691004a9b941335ce16a54b40a9de2e92ff3a2bdecf42c0de7523f4",
+    "include/linux/sched/mm.h": "bb34ec7bd531ad709967810a8b57fd95fbadbe320769fe3cfe84656d606d084c",
+    "include/uapi/asm-generic/socket.h": "4bc992a69d9fd537d955b1bf8fb91f2140667afb3fc84930af5205e54835b615",
+    "include/net/sock.h": "ac4caf95288133b4b7738d3ec820f2ad0e1e52c1077aad651ae8745b608c594a",
+    "include/linux/swap.h": "b077df860231041f83a6ca2ef8bde2d1cec492a126d2d10cd6ab4458b35866b8",
+    "include/linux/pagemap.h": "2a90105c4c29ea943cad6b71dcebac14fa9692be6d90b5fa8ec641ac30363e2b",
+    "include/linux/memcontrol.h": "09ca8fbff716d7a36654b6ab440eabf483e125b3eb4afc5b4aa0160a68362751"
+  },
+  "symbol_occurrences_sha256": "f322c9da6d8a1bf5dff09a5a6e0129140b863e12d4519cdb38fc255778c36020",
+  "scope": "exact cached built18c source; comments/definitions/noncompiled files included; no automatic reachable-callgraph claim",
+  "U": 0,
+  "S": 0,
+  "normal_authorized": false
+}
