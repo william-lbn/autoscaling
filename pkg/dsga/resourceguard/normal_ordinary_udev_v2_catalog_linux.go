@@ -74,9 +74,18 @@ type normalOrdinaryUdevV2RuleSource struct {
 	raw       []byte
 	original  *os.File
 }
+
+// Linux设备模型中的无bus/class容器没有uevent子系统，不能伪装成stock目标。
+// 同时保留原目录和uevent FD，持续核验其仍不发事件；子目录仍完整遍历。
+type normalOrdinaryUdevV2NonEventContainer struct {
+	directory, uevent             *os.File
+	directoryObject, ueventObject normalFilesystemObject
+}
+
 type normalOrdinaryUdevV2Catalog struct {
 	entries     map[string]*normalOrdinaryUdevV2CatalogEntry
 	ordered     []*normalOrdinaryUdevV2CatalogEntry
+	nonEvents   []*normalOrdinaryUdevV2NonEventContainer
 	rules       []normalOrdinaryUdevV2RuleSource
 	memoryBlock uint64
 	initialRAM  []normalOrdinaryUdevV2Range
@@ -98,6 +107,68 @@ func normalOrdinaryUdevV2ReadFD(f *os.File, max int) ([]byte, error) {
 	}
 	return b[:n], nil
 }
+
+// Linux 6.12.26 drivers/base/core.c的dev_uevent_filter仅允许bus/class。
+// ENOENT本身不足：原uevent必须严格零字节；其他错误和任何内容都拒绝。
+func normalOrdinaryUdevV2NonEventEvidence(raw []byte, subsystemError error) error {
+	if !errors.Is(subsystemError, unix.ENOENT) || len(raw) != 0 {
+		return errors.Join(ErrUnknown, subsystemError, fmt.Errorf("original sysfs container is not kernel-filtered"))
+	}
+	return nil
+}
+func (c *normalOrdinaryUdevV2NonEventContainer) verify() error {
+	if c == nil || c.directory == nil || c.uevent == nil {
+		return ErrUnknown
+	}
+	for _, pair := range []struct {
+		f      *os.File
+		object normalFilesystemObject
+	}{{c.directory, c.directoryObject}, {c.uevent, c.ueventObject}} {
+		o, e := normalFilesystemFDObject(int(pair.f.Fd()))
+		if e != nil || o != pair.object || o.Filesystem != unix.SYSFS_MAGIC {
+			return errors.Join(ErrUnknown, e)
+		}
+	}
+	// 既核原FD也核原目录当前绑定，不依赖已删除kernfs节点应返回ENODEV这一间接性质。
+	var st unix.Stat_t
+	if e := unix.Fstatat(int(c.directory.Fd()), "uevent", &st, unix.AT_SYMLINK_NOFOLLOW); e != nil || st.Dev != c.ueventObject.Device || st.Ino != c.ueventObject.Inode || st.Mode&unix.S_IFMT != unix.S_IFREG {
+		return errors.Join(ErrUnknown, e)
+	}
+	raw, e := normalOrdinaryUdevV2ReadFD(c.uevent, 8192)
+	if e != nil {
+		return errors.Join(ErrUnknown, e)
+	}
+	var link [4096]byte
+	_, e = unix.Readlinkat(int(c.directory.Fd()), "subsystem", link[:])
+	return normalOrdinaryUdevV2NonEventEvidence(raw, e)
+}
+func (c *normalOrdinaryUdevV2NonEventContainer) close() {
+	if c == nil {
+		return
+	}
+	if c.directory != nil {
+		c.directory.Close()
+	}
+	if c.uevent != nil {
+		c.uevent.Close()
+	}
+}
+
+// Linux 6.12.26 cpu_uevent把带LF的print_cpu_modalias值交给uevent_show，
+// 后者再写一LF。仅此原CPU sysfs文本形态消去额外行尾；SCM/DB/wire仍严格不变。
+func normalOrdinaryUdevV2KernelStaticProperties(path, subsystem string, raw []byte) (map[string]string, error) {
+	if bytes.HasSuffix(raw, []byte("\n\n")) {
+		index := strings.TrimPrefix(path, "/sys/devices/system/cpu/cpu")
+		n, e := strconv.ParseUint(index, 10, 32)
+		lines := bytes.Split(raw[:len(raw)-2], []byte("\n"))
+		if subsystem != "cpu" || index == path || e != nil || strconv.FormatUint(n, 10) != index || len(lines) == 0 || !bytes.HasPrefix(lines[len(lines)-1], []byte("MODALIAS=cpu:type:")) {
+			return nil, errors.Join(ErrUnknown, fmt.Errorf("original sysfs extra line is not CPU modalias"))
+		}
+		raw = raw[:len(raw)-1]
+	}
+	return normalOrdinaryUdevV2StaticProperties(raw)
+}
+
 func normalOrdinaryUdevV2StaticProperties(raw []byte) (map[string]string, error) {
 	raw = bytes.TrimSuffix(raw, []byte("\n"))
 	if len(raw) == 0 {
@@ -234,23 +305,52 @@ func captureNormalOrdinaryUdevV2Catalog(ctx context.Context, system *normalSyste
 			held.Close()
 			return errors.Join(ErrUnknown, e)
 		}
-		subsystem, e := os.Readlink(filepath.Join(path, "subsystem"))
-		if e != nil {
-			held.Close()
-			return e
-		}
 		raw, e := normalOrdinaryUdevV2ReadFD(held, 8192)
 		if e != nil {
 			held.Close()
 			return e
 		}
-		props, e := normalOrdinaryUdevV2StaticProperties(raw)
+		subsystem, e := os.Readlink(filepath.Join(path, "subsystem"))
+		if e != nil {
+			if x := normalOrdinaryUdevV2NonEventEvidence(raw, e); x != nil {
+				held.Close()
+				return x
+			}
+			directoryFD, x := unix.Open(path, unix.O_PATH|unix.O_DIRECTORY|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0)
+			if x != nil {
+				held.Close()
+				return errors.Join(ErrUnknown, x)
+			}
+			directory := os.NewFile(uintptr(directoryFD), "original kernel non-event container")
+			directoryObject, x := normalFilesystemFDObject(directoryFD)
+			nonEvent := &normalOrdinaryUdevV2NonEventContainer{directory: directory, uevent: held, directoryObject: directoryObject, ueventObject: o}
+			// 原目录下uevent必须仍是同一对象，不能把两次路径观察拼接为证明。
+			var st unix.Stat_t
+			if x == nil {
+				x = unix.Fstatat(directoryFD, "uevent", &st, unix.AT_SYMLINK_NOFOLLOW)
+			}
+			if x != nil || st.Dev != o.Device || st.Ino != o.Inode || st.Mode&unix.S_IFMT != unix.S_IFREG {
+				nonEvent.close()
+				return errors.Join(ErrUnknown, x)
+			}
+			if x = nonEvent.verify(); x != nil {
+				nonEvent.close()
+				return x
+			}
+			if len(c.entries)+len(c.nonEvents) >= normalOrdinaryUdevV2CatalogMaximum {
+				nonEvent.close()
+				return fmt.Errorf("udev complete static catalog exceeds bound")
+			}
+			c.nonEvents = append(c.nonEvents, nonEvent)
+			return nil // WalkDir继续遍历全部子设备，不返回SkipDir。
+		}
+		props, e := normalOrdinaryUdevV2KernelStaticProperties(path, filepath.Base(subsystem), raw)
 		if e != nil {
 			held.Close()
-			return e
+			return errors.Join(ErrUnknown, fmt.Errorf("original sysfs properties path=%s subsystem=%s: %w", path, filepath.Base(subsystem), e))
 		}
 		devpath := strings.TrimPrefix(path, "/sys")
-		if len(c.entries) >= normalOrdinaryUdevV2CatalogMaximum {
+		if len(c.entries)+len(c.nonEvents) >= normalOrdinaryUdevV2CatalogMaximum {
 			held.Close()
 			return fmt.Errorf("udev complete static catalog exceeds bound")
 		}
@@ -441,6 +541,11 @@ func (c *normalOrdinaryUdevV2Catalog) verify() error {
 	if c == nil {
 		return ErrUnknown
 	}
+	for _, container := range c.nonEvents {
+		if e := container.verify(); e != nil {
+			return e
+		}
+	}
 	for _, e := range c.ordered {
 		o, x := normalFilesystemFDObject(int(e.uevent.Fd()))
 		if x != nil || o != e.object {
@@ -575,6 +680,9 @@ func (c *normalOrdinaryUdevV2Catalog) processed(ticket *normalOrdinaryUdevV2Tick
 func (c *normalOrdinaryUdevV2Catalog) close() {
 	if c == nil {
 		return
+	}
+	for _, container := range c.nonEvents {
+		container.close()
 	}
 	for _, e := range c.ordered {
 		if e.uevent != nil {

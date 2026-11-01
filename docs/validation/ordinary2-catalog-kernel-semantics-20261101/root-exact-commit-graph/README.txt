@@ -1,0 +1,3 @@
+Root准确提交闭包复核
+85fa59从实际Git62cc197归档，仅叠加这两catalog源，1579项Go/汇编/C头等实际编译输入；没有P2准备器/runtime/Wait及P1新stderr WIP。五个直接catalog race根、20子项，Linux CLI和Darwin编译全部通过，零skip；与前58/301组合分别解释，不累计历史或重跑为新功能根。
+Root独立审阅nonEvent原目录/uevent FD与持续绑定、4096合并上限、不SkipDir；CPU extra LF只canonical cpuN/subsystemcpu/末MODALIAS的确切内核形态。公共wire/DB/SCM parser不变。原ae39真实Guest过catalog到Programs EFAULT仍FAIL，未签Source/normal/E。后继ae3f57真实命令Wait成功后processed消息控制字符拒绝属于新下一问题，不能回签本提交已闭合netlink。
