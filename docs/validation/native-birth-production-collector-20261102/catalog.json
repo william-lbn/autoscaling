@@ -1,0 +1,110 @@
+{
+  "scope": "NativeBirth production build stage1 collector/Builder only; not complete production runtime/ISO release chain",
+  "owned8": {
+    "pkg/dsga/resourceguard/native_birth_build_linux.go": "69ff9c78c229c5102c4eae3b77d483ba83ea55b27a25355cab1cf57e8753abd7",
+    "pkg/dsga/resourceguard/native_birth_build_other.go": "e26cc7653290c3eda9b34d4ebe3b707120be7965cd1db511d5c2597574c8b206",
+    "vm-builder/normal_native_birth.go": "be3ba5c214116fa6839b59f1be203ce912ca0b2755471f1a623bab7613b3b687",
+    "vm-builder/main.go": "2a3267a2fcbb01aaa9e14651407d3ddb19c8e38a75c870f0f71671971621feea",
+    "vm-builder/files/img.Dockerfile": "1c03203cadddb2bbc6d87f951997e9a6601486384af3200b6e81ae5fb37d7a8d",
+    "pkg/dsga/resourceguard/native_birth_build_linux_test.go": "7611d66bbe2ec477a32e5c63afc1cbf1c80b317be9046d32fb4c148681f8a511",
+    "vm-builder/normal_native_birth_test.go": "29dfc3fee66f1661c1f17fb39782628d0c439c52dc6777df62d2549ed8873358",
+    "vm-builder/README.native-birth-build.zh.txt": "b82f823a95e07902f83956f557c5970cb114d39cfcd11ce04453533f0ec305cf"
+  },
+  "compiled_exact7_source": true,
+  "README_not_compile_input": true,
+  "actual_source_lock_SHA256": "c333314acaf4581271bb6e76262231e8b8019ffaeac6a8c6c77c940562015ba5",
+  "actual_COPY": 1646,
+  "actual_build_path": "/data/neon-build/validation/native-birth-production-collector-go-20261101T222012Z-b7f56b",
+  "actual_result": {
+    "Source": false,
+    "normal": false,
+    "E": 0,
+    "build_exit": 0,
+    "u0_exit": 0,
+    "u1_exit": 0,
+    "cli_exit": 0,
+    "darwin_exit": 0,
+    "component-compile_exit": 0,
+    "unit_passed_roots": [
+      "TestNativeBirthBuildCollectorExactBytes",
+      "TestNativeBirthBuildCollectorReaderErrorsNeverDisappear",
+      "TestNativeBirthBuildCollectorRecursive64ObjectBoundary",
+      "TestNativeBirthBuildCollectorRejectsOriginalInputChanges",
+      "TestNormalNativeBirthBuildActualGNUClosureAndExactSystemBytes",
+      "TestNormalNativeBirthBuildRejectsUnapprovedRootInputs",
+      "TestNormalNativeBirthBuildSelectorAndTemplate"
+    ],
+    "unit_subtests": 34,
+    "missing_units": [],
+    "skipped_units": [],
+    "component_exit": 0,
+    "component_passed": [
+      "TestNormalNativeBirthBuildOriginalPG17Rootfs16"
+    ],
+    "component_skipped": [],
+    "provider_after_sha256": {
+      "usr/share/neon-dsga/native-build.json": "a21c82576f0c1bfa39cf6810da206e7beb76cb81f5ccbc328c5e8efac6fa3a4a",
+      "neonvm/config/dsga-normal-system-source.json": "1cd85546f802476c6dc1ff2e3d68879f7d6cb28695929b54bb576b87aa2b0ceb",
+      "neonvm/config/dsga-kernel-control-source.json": "9a07219e75a909b439d54272aa258803d4aa3f88f9689653430ae436fe2a30cd",
+      "usr/local/bin/postgres": "649f4535d07e682fe5015fd8df8be23f626e73bd772da21b16e1c032721c53c6"
+    },
+    "seconds": 76.14075031300308
+  },
+  "unit_targets": 7,
+  "unit_subtests": 34,
+  "rootfs_component_targets": 1,
+  "new_VM_targets": 0,
+  "whole_System_role_closure_qualified": false,
+  "provider_original_System3_entries": 105,
+  "provider_original_System3_missing_role_loaders": 14,
+  "provider_manifest_observed_identical_SHA256": "a21c82576f0c1bfa39cf6810da206e7beb76cb81f5ccbc328c5e8efac6fa3a4a",
+  "production_runtime_ISO_binding_done": false,
+  "remaining_required_stage2": [
+    "all System roles static/glibc/musl complete actual loader closure build preflight",
+    "real production Runtime template/native policy/build SHA/all ISO asset final binding and release connection; DEV Finalize not a replacement"
+  ],
+  "pure_build_declaration_not_Source": true,
+  "Source": false,
+  "normal": false,
+  "Linux_E": 0,
+  "K8s_E": 0,
+  "PG18_supported": false,
+  "PG17_gitlink_release_locks_modified": false,
+  "excluded_artifacts": {
+    "/data/neon-build/validation/native-birth-production-collector-go-20261101T222012Z-b7f56b/export/vm-builder": {
+      "sha256": "3561410f568dea8b49c8fe8faed71a81330b9f23222a1b767abd54124b4ffb1c",
+      "bytes": 54058692,
+      "reason": "compiled ELF kept in original /data nonce, not submitted"
+    },
+    "/data/neon-build/validation/native-birth-production-collector-go-20261101T222012Z-b7f56b/export/vm-builder-darwin": {
+      "sha256": "95d40d83aecc405a96c3913a77f3a78935f8552b18cd624eca33862fd18065f0",
+      "bytes": 14257986,
+      "reason": "compiled ELF kept in original /data nonce, not submitted"
+    },
+    "/data/neon-build/validation/native-birth-production-collector-go-20261101T222012Z-b7f56b/export/native-builder.test": {
+      "sha256": "6dae1c5e451bb63dcebe59436787ff9b334346f675d26caed5711a8c69e835c5",
+      "bytes": 54274541,
+      "reason": "compiled ELF kept in original /data nonce, not submitted"
+    }
+  },
+  "resource_budget_terminal": {
+    "cpu": 4,
+    "kind": "go4",
+    "last_observation": "original-unit-terminal",
+    "memory": 4294967296,
+    "nonce": "20261101T222012Z-b7f56b",
+    "process_exit_code": 0,
+    "queue_reason": "",
+    "spec_sha256": "48fa775456cf6b87e4f961d40de2258c76e3aa4664c40e7ae204a0fa849a32fd",
+    "state": "terminal",
+    "test_verdict": "NOT_INTERPRETED",
+    "unit": "neon-native-birth-collector-20261101t222012z-b7f56b.service",
+    "unit_result": "success",
+    "worker_sha256": "9d6437bd394ac833f38749acc85dc033ddae3298a4d5d4434ebd30995a23c58e"
+  },
+  "git_diff_check": {
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+}

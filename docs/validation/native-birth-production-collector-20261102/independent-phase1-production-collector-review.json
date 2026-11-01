@@ -1,0 +1,59 @@
+{
+  "reviewer": "pg_stderr_chain",
+  "utc": "2026-11-01T22:27:35.405201+00:00",
+  "source_lock_sha256": "c333314acaf4581271bb6e76262231e8b8019ffaeac6a8c6c77c940562015ba5",
+  "base": "4bc20694cb7cfc38314759d895b4be15c069c5a7",
+  "owned7": {
+    "pkg/dsga/resourceguard/native_birth_build_linux.go": "69ff9c78c229c5102c4eae3b77d483ba83ea55b27a25355cab1cf57e8753abd7",
+    "pkg/dsga/resourceguard/native_birth_build_other.go": "e26cc7653290c3eda9b34d4ebe3b707120be7965cd1db511d5c2597574c8b206",
+    "vm-builder/normal_native_birth.go": "be3ba5c214116fa6839b59f1be203ce912ca0b2755471f1a623bab7613b3b687",
+    "vm-builder/main.go": "2a3267a2fcbb01aaa9e14651407d3ddb19c8e38a75c870f0f71671971621feea",
+    "vm-builder/files/img.Dockerfile": "1c03203cadddb2bbc6d87f951997e9a6601486384af3200b6e81ae5fb37d7a8d",
+    "pkg/dsga/resourceguard/native_birth_build_linux_test.go": "7611d66bbe2ec477a32e5c63afc1cbf1c80b317be9046d32fb4c148681f8a511",
+    "vm-builder/normal_native_birth_test.go": "29dfc3fee66f1661c1f17fb39782628d0c439c52dc6777df62d2549ed8873358"
+  },
+  "scope": "phase1 production image NativeBirth manifest collector only; independent readonly source/callsite/actual receipts review",
+  "no_new_explicit_blocker_found": true,
+  "reviewed_contracts": [
+    "raw nativeBirthParseELF reused (rejects unsafe dynamic tags and slash/$/whitespace or duplicate NEEDED); no debug/elf/string decompression path",
+    "controls2 requires original final System3 config entry, exact canonical/bytes/SHA, root-owned bounded file, same FD metadata before/after, full DecodeNormalSystemOrdinaryV2Manifest",
+    "fixed original four default dirs, lstat first hit including dangling shadow -> canonical/read failure rejects, never fall through to later duplicate",
+    "per-file identity compares dev/ino/size/mode/UID/GID/nlink/mtime/ctime; reopens actual path and repeats all identities before output",
+    "64 actual canonical PG closure files bound; explicit original static helper separately verified and forbidden as PG dependency",
+    "final m.validate enforces PGmajor17 and sorted canonical unique paths/digests; collector executes no input ELF",
+    "version0 selection returns to original main/template branch byte-for-byte; version1 only explicit Linux amd64 System3 controls2",
+    "publisher derives from isolated canonical root, checks root-controlled logical/canonical parents, verifies unchanged original seed twice, stages native output before O_EXCL System publish, removes only own same-inode System output on error",
+    "complete build declarations are not Root/PG/normal Source or runtime persistent WAL qualification"
+  ],
+  "actual_receipts": {
+    "build_exit": 0,
+    "race_unit_roots": 7,
+    "unit_subtests": 34,
+    "skips": 0,
+    "builder_CLI_exit": 0,
+    "Darwin_exit": 0,
+    "component_compile_exit": 0,
+    "component_target": [
+      "TestNormalNativeBirthBuildOriginalPG17Rootfs16"
+    ],
+    "component_exit": 0,
+    "component_seconds": 3.38,
+    "input_PG_ELF": "649f4535d07e682fe5015fd8df8be23f626e73bd772da21b16e1c032721c53c6",
+    "old_82f_System105_missing14_not_qualified": true
+  },
+  "stage1_remaining": [
+    "collector does not claim complete System ELF loader inventory; separate full System closure required",
+    "runtime native policy/ISO bindings and actual boot still must consume new manifest hash through original renderer/finalizer pipeline; no stage1 runtime success inferred",
+    "PG ELF read for real16-file component is not a Postgres server test"
+  ],
+  "postgres_versions_actually_tested": [],
+  "target_backend_versions": [
+    17
+  ],
+  "Source": false,
+  "normal": false,
+  "PG_server_started": false,
+  "E": 0,
+  "K8s": 0,
+  "reviewer_changed_code_or_reran_builds_tests": false
+}

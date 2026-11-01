@@ -1,0 +1,13 @@
+NativeBirth 生产构建阶段一：真实PG默认loader闭包采集
+
+显式--normal-native-birth-version=1，仅支持Linux amd64、normal-split-v3和ordinary controls2。默认0保持原构建流程及模板字节；此选择不授予Guest来源、PG18支持或normal资格。
+
+完整rootdisk合并及既有stock/V3资产后，Builder先生成System3的实际最终字节，保留写出的newline，再从原/usr/share/neon-dsga/native-build.json合法v1/PG17种子生成真实PG清单。旧Files可被实际对象重生成；未知/重复字段、PG18和不支持ABI仍先由原validator拒绝。collector还从该System3固定config条目核实际controls2 canonical/长度/SHA并调用原完整ordinary2解码器，不只信命令行。
+
+采集器复用resourceguard原严格raw ELF parser、manifest validator及原四个GNU默认目录；不执行输入ELF，不使用ldd/ldconfig，不复制Python安全解析。实际PG解释器与递归DT_NEEDED按第一命中canonical对象收集；坏首命中不能跳到后面的同名库。最多64个闭包文件、每个有界256MiB；普通/root控制/权限、逻辑和canonical祖先、同FD解析/摘要前后身份、重开路径身份及发布前整闭包身份都检查。cache/preload/hwcaps、RPATH/RUNPATH/audit/filter等沿原规则拒绝。独立静态array helper不混进PG依赖集合，并须匹配原固定路径/实际SHA。采集器不修复或搬移rootfs中的loader；不支持的原布局构建失败。
+
+全部检查完成才暂存和发布System3/native-build。RuntimeClosure绑定同一System3原始字节SHA，无自哈希环；失败使本次构建失败，移除本次System输出，不能把半成品当合格镜像。运行期所有原ISO、RO父目录、实际ELF闭包、权限及原lease门保持不变。
+
+实际验证b7f56b：7个新race单元目标、34子例全通过，包括实际GNU元数据递归、第一坏库/缺库、FIFO、RPATH、hwcaps、目录逃逸/环、旧controls1、真实递归64/65对象边界；Linux/Darwin Builder及组件测试ELF编译均通过。随后只读挂原82f冻结rootdisk，真实PG649f4535...采集得到16个canonical文件路径/SHA，与原独立数据记录逐项相等。该原System3仅105条且其VM已因缺14个角色loader拒绝，不能因此称完整System闭包或Source通过。原provider四个关键文件SHA前后不变，没有新增VM。
+
+此为生产生成阶段一，不是完整生成发行完成。后继仍必须实现：System3全角色按static/GNU/musl原三profile的完整构建期闭包预检；真正生产Runtime模板/native-policy/build SHA/全部ISO资产的统一最终绑定与发行接线。现TestFinalizeNormalStockUdevPreparationFixture只是DEV测试夹具，不能替代生产绑定。PG17gitlink、发行锁、公共运行协议、Source/normal及Linux/K8s端到端资格均未变。

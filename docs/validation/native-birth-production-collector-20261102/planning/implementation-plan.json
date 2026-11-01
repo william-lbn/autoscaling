@@ -1,0 +1,86 @@
+{
+  "status": "READ_ONLY_PROPOSAL_NOT_IMPLEMENTED_WAIT_ROOT_SCOPE_APPROVAL",
+  "base_HEAD": "4bc20694cb7cfc38314759d895b4be15c069c5a7",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "proposed_owned_production5": [
+    "pkg/dsga/resourceguard/native_birth_build_linux.go",
+    "pkg/dsga/resourceguard/native_birth_build_other.go",
+    "vm-builder/normal_native_birth.go",
+    "vm-builder/main.go",
+    "vm-builder/files/img.Dockerfile"
+  ],
+  "proposed_owned_tests2": [
+    "pkg/dsga/resourceguard/native_birth_build_linux_test.go",
+    "vm-builder/normal_native_birth_test.go"
+  ],
+  "Chinese_document": "vm-builder/README.native-birth-build.zh.txt",
+  "existing_inputs": {
+    "pkg/dsga/resourceguard/native_birth_source.go": "47fb16498172370f04a575299ac732d5882f4f19284191c10ba853d0d6983c70",
+    "pkg/dsga/resourceguard/native_birth_source_linux.go": "11ab64d2baa19920535cbae77c2c5eefb072d1ca8702a96c827752c8679eab22",
+    "pkg/dsga/resourceguard/array_service_helper_policy.go": "408ff6e10b4a2c22d266fd390297f0dbb12f5c932d29fd11b7f6c740102dc427",
+    "pkg/dsga/resourceguard/array_service_runtime_closure.go": "94a4bc9c74901343121608d341d0205cb90ab0ec9167868ed3332fb97cf4cfda",
+    "pkg/dsga/resourceguard/normal_system_source.go": "061675dfec3d198659d2ae75b66173d4748be6ae588ffdae8951d0d96fbb5427",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_native_test.go": "32eeb0b79c4d449e09673cbc478c3e80c4c0636a5ad78bea973ae07ac11c241a",
+    "vm-builder/normal_split.go": "d62be13be8b0e0c3ff047b894123f36bdf9570de84ec8e48bf81f6d6ff572c04",
+    "vm-builder/normal_stock_udev_assets.go": "cd81d699604155947a9bc138a808fc67cb1d4f59f54cd153029d6997339b9436",
+    "vm-builder/main.go": "c77f0aa8b5c6e330c12f82cedf5b9c6aac5906eae8a2d2883407ee30d6d8664b",
+    "vm-builder/files/img.Dockerfile": "55f153a577d0e8eb1f4a01b273ca95852feacf45bc774c3c0c122e1810522791"
+  },
+  "before_owned": {
+    "pkg/dsga/resourceguard/native_birth_build_linux.go": null,
+    "pkg/dsga/resourceguard/native_birth_build_other.go": null,
+    "vm-builder/normal_native_birth.go": null,
+    "vm-builder/main.go": "c77f0aa8b5c6e330c12f82cedf5b9c6aac5906eae8a2d2883407ee30d6d8664b",
+    "vm-builder/files/img.Dockerfile": "55f153a577d0e8eb1f4a01b273ca95852feacf45bc774c3c0c122e1810522791",
+    "pkg/dsga/resourceguard/native_birth_build_linux_test.go": null,
+    "vm-builder/normal_native_birth_test.go": null
+  },
+  "P2_plan": {
+    "path": "/data/neon-build/validation/normal-fixed-startup-native-closure-data-fix-20261102/data-fix-plan.json",
+    "sha256": "729d79c1e211c970c598944b76161ddf1f9345b2453805e8d156145d43851532",
+    "DEV_real_rootfs": "/data/neon-build/validation/normal-fixed-startup-empty-native-20261101T215304Z-82f79e",
+    "PG_SHA": "649f4535d07e682fe5015fd8df8be23f626e73bd772da21b16e1c032721c53c6",
+    "exact_files_expected": 16
+  },
+  "actual_existing_finalizer": "Only TestFinalizeNormalStockUdevPreparationFixture:354 is a test fixture; production vm-builder only final System inventory command main.go:183-224. This proposal does not claim production runtime/ISO binding already exists.",
+  "selector": "Explicit build-only --normal-native-birth-version=1; default0 preserves old. Only Linux amd64 normal-split-v3 ordinaryControls2; never a runtime authorization.",
+  "helper": "BuildNativeBirthManifestJSON(seedManifestRaw, exactFinalSystemManifestRaw, canonical/open/lstat image accessors) returns bytes only. Reuse same package nativeBirthParseELF/nativeBirthFileHash/private manifest.validate/nativeBirthLoaderDirs. Builder image adapter reuses normalImageCanonical, no Host absolute symlink escape. No copied Python/security parser.",
+  "sequence": [
+    "Final rootdisk merge and valid GNU loader layout",
+    "prepare original stock/V3 assets",
+    "generate exact final System3 bytes including output newline; System3 does not include native-build.json, no hash cycle",
+    "collect fixed PG actual PT_INTERP and recursive DT_NEEDED using original fixed four loader dirs and first actual hit, canonical deduplicate <=64, bounded regular files <=256MiB same FD hash/parser/stat recheck",
+    "Validate original v1/PG17 seed shape; replace stale file list/interpreter with actual bytes; original fixed helper actual identity/hash must match; RuntimeClosure uses SHA of exact final System3 bytes",
+    "Validate all outputs before writing System3/native-build; build error yields no image",
+    "Subsequent runtime policy BuildManifestSHA/template/runtime/ISO rebinding remains its original workflow. Existing DEV Finalize test cannot be labelled production binding."
+  ],
+  "preserved_constraints": [
+    "No cache/preload/hwcaps/RPATH/RUNPATH/audit/filter/auxiliary; absence errors reject",
+    "No ELF execution/ldd/ldconfig or debug/elf replacement for raw PG parser",
+    "No loader relocation/repair by collector; unsupported initial rootfs layout rejects",
+    "No PG18 support or Source/normal qualification from JSON",
+    "No P1 production10/DEV1/P2 fixture mutation",
+    "No PG17/gitlink/release lock/Git/index/config changes"
+  ],
+  "minimum_direct_targets": [
+    "actual GNU ELF default-loader closure recursive/deterministic sorted SHA/first-hit shadow behavior",
+    "missing needed, wrong interp, root escape or symlink loop, nonregular/FIFO, changed file, >64, forbidden controls and RPATH direct negatives",
+    "selector0 old behavior vs selector1 exact restriction; exact System3 newline digest and helper mismatch; failure has no usable output",
+    "readonly collect actual immutable PG649 P2 rootfs and compare independent exact16 Paths+SHA; builder component evidence, no newVM or S"
+  ],
+  "resources": {
+    "profile": "go4",
+    "CPU": 4,
+    "memoryGiB": 4,
+    "GOMAXPROCS": 4,
+    "GOMEMLIMIT": "1536MiB",
+    "Go_p": 2,
+    "network": "none/offline original cache",
+    "heavy_Cargo": "not_used",
+    "native_KVM": "not_required",
+    "global_budget": "12CPU16GiB unchanged"
+  },
+  "source_modified": false,
+  "Git_index_modified": false,
+  "normal": false
+}
