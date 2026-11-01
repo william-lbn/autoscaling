@@ -1,0 +1,42 @@
+{
+  "stable_id": "NEON-S-SYSTEM-ORDINARY2-GATE-001",
+  "status": "PASS_COMPONENT_ONLY",
+  "Host_container_exit": 0,
+  "Guest_exits": [
+    "0"
+  ],
+  "initial_exits": [
+    "0"
+  ],
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "seconds": 169.03267956300988,
+  "errors": [],
+  "actual_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+  "Host_ELF_sha256": "c266e6b291014ecba664305db9226231328447a32cc0c5a84eed2f399ed6b156",
+  "Guest_ELF_sha256": "eecfb380b1ad1970f360a83053622e3fa40367302b889bdb905e27f0d90801bd",
+  "production_CLI_sha256": "6f902fc1438196b84f8f7c9f8d1de501bd6885a5cbabb5680d5be8dcf58fee3a",
+  "production_CLI_only_compiled": true,
+  "actual_original_role_stop_and_Wait_records": 15,
+  "actual_two_pipe_EOF_records": 5,
+  "actual_roles": [
+    "allow-start:real BusyBox touch twice",
+    "kernel-version:real BusyBox uname",
+    "network:explicit DEV long target/worker",
+    "compute:explicit DEV NNP0 standin"
+  ],
+  "untested_roles": [
+    "udev",
+    "udev-init",
+    "acpi",
+    "logs",
+    "clock",
+    "daemon"
+  ],
+  "Host_API_is_model": true,
+  "PG_executed": false,
+  "normal_authorized": false,
+  "E": 0
+}

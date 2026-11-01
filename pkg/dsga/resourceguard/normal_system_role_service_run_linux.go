@@ -105,6 +105,11 @@ func RunNormalSystemRoleBroker(ctx context.Context) error {
 	}
 	service.authority = authority
 	defer service.close()
+	closeRoleV2, e := installNormalSystemRoleV2BrokerRuntime(ctx, g, source, filesystem, proof, service.broker)
+	if e != nil {
+		return e
+	}
+	defer closeRoleV2()
 	serviceErrors := make(chan error, 1)
 	go func() { serviceErrors <- service.serve() }()
 	if e = normalSystemRoleServiceWriteObject(connection, "NSYSBR01", service.metadata); e != nil {

@@ -18,6 +18,11 @@ const normalSystemRoleBrokerKind = "initial-role-broker"
 // 只此角色在可信Gate中清Pdeathsig。其它角色仍由原creator M租约覆盖到真Wait。
 func normalSystemRoleGateLaunchPlan(ctx context.Context, s *normalSystemLifecycleSource, role string) (normalSystemRoleLaunchSpec, error) {
 	if role != normalSystemRoleBrokerKind {
+		if selected, ok, e := normalSystemRoleV2LaunchSpecIfSelected(ctx, s, role); e != nil {
+			return normalSystemRoleLaunchSpec{}, e
+		} else if ok {
+			return selected, nil
+		}
 		return newNormalSystemRoleLaunchSpec(ctx, s, role)
 	}
 	d, e := readNormalSystemRoleDeclarationOriginal(ctx, s)
@@ -32,6 +37,9 @@ func normalSystemRoleGateLaunchPlan(ctx context.Context, s *normalSystemLifecycl
 	return normalSystemRoleLaunchSpec{role: role, argv: normalSystemRoleBrokerArgv(), env: normalSystemRoleBrokerEnvironment(), binding: s.binding, sourceSHA: sha}, nil
 }
 func normalSystemRoleGateInspectTarget(ctx context.Context, s *normalSystemLifecycleSource, task *normalSystemOriginalTask, plan normalSystemRoleLaunchSpec) (normalSystemRoleObservation, error) {
+	if plan.roleSourceProtocol == 2 {
+		return normalSystemRoleV2InspectTarget(ctx, s, task, plan)
+	}
 	if plan.role != normalSystemRoleBrokerKind {
 		return s.inspectOriginalTask(ctx, task, plan.role, plan.argv, plan.env)
 	}

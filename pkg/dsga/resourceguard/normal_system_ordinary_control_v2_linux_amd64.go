@@ -1,0 +1,526 @@
+//go:build linux && amd64
+
+package resourceguard
+
+import (
+	"context"
+	"encoding/binary"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"reflect"
+	"runtime"
+	"strconv"
+	"strings"
+	"syscall"
+	"unsafe"
+
+	"golang.org/x/sys/unix"
+)
+
+// 只接受原RO库存中的显式ordinary2资产。角色UID/cap/argv没有request覆盖入口。
+// 本对象仅是Gate安装计划；全角色生命周期/typed stdio/Root动作尚须其它原producer。
+type normalSystemOrdinaryV2ControlPlan struct {
+	source                                      *normalSystemLifecycleSource
+	binding                                     normalSystemLifecycleBinding
+	sourceSHA, manifestSHA, passwdSHA, groupSHA string
+	rule                                        NormalSystemOrdinaryV2Role
+}
+
+func newNormalSystemOrdinaryV2ControlPlan(ctx context.Context, s *normalSystemLifecycleSource, role string) (*normalSystemOrdinaryV2ControlPlan, error) {
+	if ctx == nil || ctx.Err() != nil || s == nil {
+		return nil, ErrUnknown
+	}
+	snapshot, e := s.snapshot()
+	if e != nil {
+		return nil, e
+	}
+	if s.manifest.ProtocolVersion != 3 {
+		return nil, ErrUnknown
+	}
+	sha, e := s.referenceSHA256()
+	if e != nil {
+		return nil, e
+	}
+	var wanted NormalSystemSourceFile
+	found := false
+	for _, entry := range s.manifest.Files {
+		if entry.Path == NormalSystemOrdinaryV2ManifestPath {
+			wanted = entry
+			found = true
+			break
+		}
+	}
+	if !found || wanted.Kind != "config" || wanted.CanonicalPath != NormalSystemOrdinaryV2ManifestPath {
+		return nil, errors.Join(ErrUnknown, fmt.Errorf("original System has no explicit ordinary2 config"))
+	}
+	f, e := nativeBirthOpenRO(wanted.CanonicalPath)
+	if e != nil {
+		return nil, e
+	}
+	raw, e := nativeBirthReadBounded(f, 32<<10)
+	ce := f.Close()
+	if e != nil || ce != nil {
+		return nil, errors.Join(ErrUnknown, e, ce)
+	}
+	if physicalDigest(raw) != wanted.SHA256 || uint64(len(raw)) != wanted.Bytes {
+		return nil, ErrUnknown
+	}
+	m, e := DecodeNormalSystemOrdinaryV2Manifest(raw)
+	if e != nil {
+		return nil, e
+	}
+	var rule *NormalSystemOrdinaryV2Role
+	for _, v := range m.Roles {
+		if v.Role == role {
+			q := v
+			rule = &q
+			break
+		}
+	}
+	if rule == nil {
+		return nil, ErrUnknown
+	}
+	read := func(name string) ([]byte, error) {
+		f, e := nativeBirthOpenRO(name)
+		if e != nil {
+			return nil, e
+		}
+		b, e := nativeBirthReadBounded(f, 64<<10)
+		ce := f.Close()
+		return b, errors.Join(e, ce)
+	}
+	passwd, e := read("/etc/passwd")
+	if e != nil {
+		return nil, e
+	}
+	groups, e := read("/etc/group")
+	if e != nil {
+		return nil, e
+	}
+	// 原PG身份来自同RO声明的compute计划，不能按caller给的UID/GID排除冲突。
+	d, e := readNormalSystemRoleDeclarationOriginal(ctx, s)
+	if e != nil {
+		return nil, e
+	}
+	defer d.close()
+	if e = ValidateNormalSystemOrdinaryV2InstalledAccounts(passwd, groups, d.compute.ComputeUID, d.compute.ComputeGID); e != nil {
+		return nil, e
+	}
+	return &normalSystemOrdinaryV2ControlPlan{source: s, binding: snapshot.Binding, sourceSHA: sha, manifestSHA: wanted.SHA256, passwdSHA: physicalDigest(passwd), groupSHA: physicalDigest(groups), rule: *rule}, nil
+}
+func (p *normalSystemOrdinaryV2ControlPlan) recheck(ctx context.Context) error {
+	if p == nil || p.source == nil {
+		return ErrUnknown
+	}
+	now, e := newNormalSystemOrdinaryV2ControlPlan(ctx, p.source, p.rule.Role)
+	if e != nil {
+		return e
+	}
+	if p.binding != now.binding || p.sourceSHA != now.sourceSHA || p.manifestSHA != now.manifestSHA || p.passwdSHA != now.passwdSHA || p.groupSHA != now.groupSHA || !reflect.DeepEqual(p.rule, now.rule) {
+		return ErrUnknown
+	}
+	return nil
+}
+func normalSystemOrdinaryV2ExactBuild(s *normalSystemLifecycleSource) error {
+	if s == nil {
+		return ErrUnknown
+	}
+	want, e := LookupPhysicalKernelBuild(NormalSplitMetadataV1PhysicalKernelProfileID)
+	if e != nil || s.manifest.Kernel != want || !want.ControlMetadataGuard() || !want.StrictPageCounterIRQBoundary() {
+		return ErrUnknown
+	}
+	release, e := kernelText("/proc/sys/kernel/osrelease")
+	if e != nil {
+		return e
+	}
+	notes, e := physicalKernelNotes()
+	if e != nil || release != want.KernelRelease || physicalDigest(notes) != want.KernelNotesSHA256 {
+		return ErrUnknown
+	}
+	abi, _, errno := unix.Syscall(unix.SYS_LANDLOCK_CREATE_RULESET, 0, 0, unix.LANDLOCK_CREATE_RULESET_VERSION)
+	if errno != 0 || abi != 6 {
+		return errors.Join(ErrUnknown, errno)
+	}
+	return nil
+}
+func normalSystemOrdinaryV2OpenPaths(p *normalSystemOrdinaryV2ControlPlan) (out []normalKernelControlOpenRule, err error) {
+	defer func() {
+		if err != nil {
+			for _, v := range out {
+				v.file.Close()
+			}
+			out = nil
+		}
+	}()
+	seen := map[string]bool{}
+	add := func(path string, rights uint64, private bool) error {
+		if seen[path] {
+			return nil
+		}
+		canonical, e := filepath.EvalSymlinks(path)
+		if e != nil || canonical != path {
+			return errors.Join(ErrUnknown, e)
+		}
+		fd, e := unix.Open(path, unix.O_PATH|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0)
+		if e != nil {
+			return e
+		}
+		f := os.NewFile(uintptr(fd), "original-ordinary2-landlock-path")
+		var st unix.Stat_t
+		if e = unix.Fstat(fd, &st); e != nil {
+			f.Close()
+			return e
+		}
+		if private {
+			if st.Uid != p.rule.UID || st.Gid != p.rule.GID || st.Mode&0007 != 0 || st.Mode&(unix.S_ISUID|unix.S_ISGID) != 0 {
+				f.Close()
+				return fmt.Errorf("ordinary2 private path owner/mode differs")
+			}
+			if st.Mode&unix.S_IFMT == unix.S_IFREG {
+				rights = nkRead | nkWrite | nkTruncate
+			} else if st.Mode&unix.S_IFMT != unix.S_IFDIR {
+				f.Close()
+				return ErrUnknown
+			}
+		}
+		out = append(out, normalKernelControlOpenRule{file: f, logical: path, rights: rights, identity: [3]uint64{st.Dev, st.Ino, uint64(st.Rdev)}})
+		seen[path] = true
+		return nil
+	}
+	// 静态只读文件逐个列入，不给整个/neonvm、/usr或/run写树权限。
+	for _, v := range p.source.manifest.Files {
+		if seen[v.CanonicalPath] {
+			continue
+		}
+		if e := nativeBirthReadonlyPath(v.CanonicalPath); e != nil {
+			return out, e
+		}
+		rights := uint64(nkRead)
+		if v.Kind == "exec" || v.Kind == "loader" || v.Kind == "script" {
+			rights |= nkExecute
+		}
+		if e := add(v.CanonicalPath, rights, false); e != nil {
+			return out, e
+		}
+	}
+	for _, path := range []string{"/", "/dev", "/run", "/tmp", "/var", "/var/log"} {
+		if e := add(path, nkReadDir, false); e != nil {
+			return out, e
+		}
+	}
+	for _, path := range []string{"/proc", "/sys"} {
+		if e := add(path, nkRead|nkReadDir, false); e != nil {
+			return out, e
+		}
+	}
+	for _, path := range p.rule.PrivatePaths {
+		if e := add(path, nkWriteTree, true); e != nil {
+			return out, e
+		}
+	}
+	// 设备仅复用已审的逐设备身份/rdev检查；绝不授予/dev整树文件读写或新MKNOD。
+	deviceRule := normalKernelControlRoleRule{Paths: []normalKernelControlPathRule{}}
+	old, e := normalKernelControlExpectedManifest().role(p.rule.Role)
+	if e != nil {
+		return out, e
+	}
+	for _, v := range old.Paths {
+		if v.Kind == "char" && v.Path != "/dev/console" || v.Kind == "ptp" || v.Kind == "virtio-log" {
+			deviceRule.Paths = append(deviceRule.Paths, v)
+		}
+	}
+	devices, e := normalKernelControlOpenPaths(deviceRule)
+	if e != nil {
+		return out, e
+	}
+	out = append(out, devices...)
+	return out, nil
+}
+
+type normalSystemOrdinaryV2InstallFailure struct {
+	phase string
+	cause error
+}
+
+func (e *normalSystemOrdinaryV2InstallFailure) Error() string {
+	return "ordinary2 fixed install phase " + e.phase
+}
+func (e *normalSystemOrdinaryV2InstallFailure) Unwrap() error { return e.cause }
+func normalSystemOrdinaryV2Apply(ctx context.Context, p *normalSystemOrdinaryV2ControlPlan) (err error) {
+	stage := "fixed-leader-sdk"
+	defer func() {
+		if err != nil {
+			err = &normalSystemOrdinaryV2InstallFailure{phase: stage, cause: err}
+		}
+	}()
+	if p == nil || ctx == nil || ctx.Err() != nil || !normalSystemRoleGateMainPinned || unix.Gettid() != os.Getpid() || runtime.Version() != "go1.24.3" {
+		return ErrUnknown
+	}
+	stage = "original-ro-plan"
+	if e := p.recheck(ctx); e != nil {
+		return e
+	}
+	stage = "exact-kernel-abi"
+	if e := normalSystemOrdinaryV2ExactBuild(p.source); e != nil {
+		return e
+	}
+	stage = "inherited-fds"
+	if e := normalSystemOrdinaryV2CheckInheritedDescriptors(); e != nil {
+		return e
+	}
+	if e := normalSystemRoleGateThreadAlive(4); e != nil {
+		return e
+	}
+	if _, e := unix.FcntlInt(4, unix.F_SETFD, unix.FD_CLOEXEC); e != nil {
+		return e
+	}
+	stage = "capability-prerequisites"
+	keep := uint64(p.rule.KeepCapabilities)
+	if e := normalKernelControlCapPreflight(keep); e != nil {
+		return e
+	}
+	var h = unix.CapUserHeader{Version: unix.LINUX_CAPABILITY_VERSION_3}
+	var before [2]unix.CapUserData
+	if e := unix.Capget(&h, &before[0]); e != nil {
+		return e
+	}
+	required := uint32(1<<unix.CAP_SETUID | 1<<unix.CAP_SETGID | 1<<unix.CAP_SETPCAP)
+	if before[0].Effective&required != required {
+		return ErrUnknown
+	}
+	stage = "fixed-landlock-paths"
+	paths, e := normalSystemOrdinaryV2OpenPaths(p)
+	if e != nil {
+		return e
+	}
+	defer func() {
+		for _, v := range paths {
+			v.file.Close()
+		}
+	}()
+	stage = "landlock-rules"
+	var attr uint64 = nkHandled
+	fd, _, errno := unix.Syscall(unix.SYS_LANDLOCK_CREATE_RULESET, uintptr(unsafe.Pointer(&attr)), 8, 0)
+	runtime.KeepAlive(&attr)
+	if errno != 0 {
+		return errors.Join(ErrUnknown, errno)
+	}
+	defer unix.Close(int(fd))
+	for _, v := range paths {
+		var wire [12]byte
+		binary.LittleEndian.PutUint64(wire[:8], v.rights)
+		binary.LittleEndian.PutUint32(wire[8:], uint32(v.file.Fd()))
+		_, _, errno = unix.Syscall6(unix.SYS_LANDLOCK_ADD_RULE, fd, unix.LANDLOCK_RULE_PATH_BENEATH, uintptr(unsafe.Pointer(&wire[0])), 0, 0, 0)
+		runtime.KeepAlive(&wire)
+		if errno != 0 {
+			return errors.Join(ErrUnknown, errno)
+		}
+	}
+	// 必须全Go Ms完成不可逆降权；新M只能继承已修改线程。精确GoSDK+CGO0由AllThreads前检确认。
+	stage = "all-threads-nnp"
+	if e = normalKernelControlAllPrctl(unix.PR_SET_NO_NEW_PRIVS, 1, 0); e != nil {
+		return e
+	}
+	stage = "all-threads-landlock"
+	if e = normalKernelControlAll(unix.SYS_LANDLOCK_RESTRICT_SELF, fd, 0, 0); e != nil {
+		return e
+	}
+	stage = "all-threads-capability-reduction"
+	if e = normalKernelControlAllPrctl(unix.PR_CAP_AMBIENT, unix.PR_CAP_AMBIENT_CLEAR_ALL, 0); e != nil {
+		return e
+	}
+	if e = normalKernelControlAllPrctl(unix.PR_SET_SECUREBITS, 1|2|4|8, 0); e != nil {
+		return e
+	}
+	for cap := 0; cap <= 40; cap++ {
+		if keep&(uint64(1)<<cap) == 0 {
+			if e = normalKernelControlAllPrctl(unix.PR_CAPBSET_DROP, uintptr(cap), 0); e != nil {
+				return e
+			}
+		}
+	}
+	stage = "all-threads-groups"
+	if e = normalKernelControlAll(unix.SYS_SETGROUPS, 0, 0, 0); e != nil {
+		return e
+	}
+	stage = "all-threads-gid"
+	if e = normalKernelControlAll(unix.SYS_SETRESGID, uintptr(p.rule.GID), uintptr(p.rule.GID), uintptr(p.rule.GID)); e != nil {
+		return e
+	}
+	stage = "all-threads-uid"
+	if e = normalKernelControlAll(unix.SYS_SETRESUID, uintptr(p.rule.UID), uintptr(p.rule.UID), uintptr(p.rule.UID)); e != nil {
+		return e
+	}
+	stage = "all-threads-final-caps"
+	var data [2]unix.CapUserData
+	for n := 0; n < 2; n++ {
+		v := uint32(keep >> uint(n*32))
+		data[n] = unix.CapUserData{Effective: v, Permitted: v, Inheritable: v}
+	}
+	_, _, errno = syscall.AllThreadsSyscall(unix.SYS_CAPSET, uintptr(unsafe.Pointer(&h)), uintptr(unsafe.Pointer(&data[0])), 0)
+	runtime.KeepAlive(&h)
+	runtime.KeepAlive(&data)
+	if errno != 0 {
+		return errors.Join(ErrUnknown, errno)
+	}
+	stage = "final-ambient"
+	for cap := 0; cap <= 40; cap++ {
+		if keep&(uint64(1)<<cap) != 0 {
+			if e = normalKernelControlAllPrctl(unix.PR_CAP_AMBIENT, unix.PR_CAP_AMBIENT_RAISE, uintptr(cap)); e != nil {
+				return e
+			}
+		}
+	}
+	// setresuid会清PDEATHSIG；原TRACEEXEC|EXITKILL仍持有，重设后只poll原creator FD。
+	stage = "creator-death-rearm"
+	if e = unix.Prctl(unix.PR_SET_PDEATHSIG, uintptr(unix.SIGKILL), 0, 0, 0); e != nil {
+		return e
+	}
+	if e = normalSystemRoleGateThreadAlive(4); e != nil {
+		return e
+	}
+	stage = "full-bpf-tsync"
+	program := normalKernelControlFilter()
+	descriptor := unix.SockFprog{Len: uint16(len(program)), Filter: &program[0]}
+	result, _, errno := unix.Syscall(unix.SYS_SECCOMP, unix.SECCOMP_SET_MODE_FILTER, unix.SECCOMP_FILTER_FLAG_TSYNC, uintptr(unsafe.Pointer(&descriptor)))
+	runtime.KeepAlive(program)
+	runtime.KeepAlive(&descriptor)
+	if errno != 0 || result != 0 {
+		return errors.Join(ErrUnknown, fmt.Errorf("ordinary2 TSYNC result=%d errno=%v", result, errno))
+	}
+	return nil
+}
+
+// 成功或不可逆开始后的错误都不返回；Root/resource/compute/broker没有此计划。
+// 先在调用点完成原三WAL/creator/namespace绑定，最后单leader SIGNAL仍保worker同域语义。
+func execNormalSystemOrdinaryRoleWithKernelControlsV2(ctx context.Context, s *normalSystemLifecycleSource, role string) error {
+	p, e := newNormalSystemOrdinaryV2ControlPlan(ctx, s, role)
+	if e != nil {
+		return e
+	}
+	image, e := newNormalKernelSignalExecImage(p.rule.Argv, p.rule.Environment)
+	if e != nil {
+		return e
+	}
+	if e = normalSystemOrdinaryV2ExactBuild(s); e != nil {
+		return e
+	}
+	attr := normalKernelSignalRulesetAttr{Scoped: normalKernelSignalScope}
+	scope, _, errno := unix.Syscall(unix.SYS_LANDLOCK_CREATE_RULESET, uintptr(unsafe.Pointer(&attr)), unsafe.Sizeof(attr), 0)
+	runtime.KeepAlive(&attr)
+	if errno != 0 {
+		return errors.Join(ErrUnknown, errno)
+	}
+	defer unix.Close(int(scope))
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	if e = normalSystemOrdinaryV2Apply(ctx, p); e != nil {
+		// 可能已经跨过全线程降权/限制点，绝不回旧exec分支或继续Go服务。
+		// 只输出本地固定阶段名；绝不打印cause/argv/env/manifest正文或凭据。
+		var failure *normalSystemOrdinaryV2InstallFailure
+		if errors.As(e, &failure) {
+			fmt.Fprintln(os.Stderr, "ORDINARY2_INSTALL_PHASE_REFUSED", failure.phase)
+		}
+		_, _, _ = unix.RawSyscall(unix.SYS_EXIT_GROUP, 126, 0, 0)
+		for {
+		}
+	}
+	normalKernelSignalScopeExecRaw(scope, image)
+	panic("unreachable ordinary2 signal exec")
+}
+
+// 供原第二exec-stop审计使用；输入只能由原pin的proc状态读者提供。状态解析
+// 不能独自产生Source，完整filter链/ELF/stdio/原creator仍须同停点独立核。
+func normalSystemOrdinaryV2ExecStatus(text string, rule NormalSystemOrdinaryV2Role) error {
+	expected, e := NormalSystemOrdinaryV2RolePlan(rule.Role)
+	if e != nil || !reflect.DeepEqual(expected, rule) {
+		return ErrUnknown
+	}
+	if len(text) == 0 || len(text) > 64<<10 {
+		return ErrUnknown
+	}
+	for _, key := range []string{"Uid", "Gid"} {
+		v, e := nativeTraceStatusValues(text, key, 4)
+		if e != nil {
+			return e
+		}
+		want := uint64(rule.UID)
+		if key == "Gid" {
+			want = uint64(rule.GID)
+		}
+		for _, n := range v {
+			if n != want {
+				return fmt.Errorf("ordinary2 actual credential differs")
+			}
+		}
+	}
+	for key, want := range map[string]uint64{"NoNewPrivs": 1, "Seccomp": 2, "Threads": 1} {
+		v, e := nativeTraceStatusValues(text, key, 1)
+		if e != nil || v[0] != want {
+			return ErrUnknown
+		}
+	}
+	groups, e := nativeTraceStatusValues(text, "Groups", 0)
+	if e != nil || len(groups) != 0 {
+		return ErrUnknown
+	}
+	for _, key := range []string{"CapInh", "CapPrm", "CapEff", "CapBnd", "CapAmb"} {
+		count := 0
+		var n uint64
+		for _, line := range strings.Split(text, "\n") {
+			if !strings.HasPrefix(line, key+":") {
+				continue
+			}
+			count++
+			value := strings.TrimSpace(strings.TrimPrefix(line, key+":"))
+			if len(value) != 16 {
+				return ErrUnknown
+			}
+			n, e = strconv.ParseUint(value, 16, 64)
+			if e != nil {
+				return ErrUnknown
+			}
+		}
+		if count != 1 || n != uint64(rule.KeepCapabilities) {
+			return fmt.Errorf("ordinary2 actual capability set differs")
+		}
+	}
+	return nil
+}
+
+// 原Gate仅允许stdio和原creator4跨exec；其余Go内部FD必须已原子CLOEXEC。
+// 不关闭/收养未知FD求绿；真实stdio OFD来源仍由parent第二stop typed factory核。
+func normalSystemOrdinaryV2CheckInheritedDescriptors() error {
+	f, e := os.Open("/proc/self/fd")
+	if e != nil {
+		return e
+	}
+	defer f.Close()
+	names, e := f.Readdirnames(513)
+	if e != nil && !errors.Is(e, io.EOF) {
+		return e
+	}
+	if len(names) > 512 {
+		return ErrUnknown
+	}
+	for _, name := range names {
+		n, e := strconv.ParseUint(name, 10, 31)
+		if e != nil || strconv.FormatUint(n, 10) != name {
+			return ErrUnknown
+		}
+		if n <= 2 || n == 4 {
+			continue
+		}
+		flags, e := unix.FcntlInt(uintptr(n), unix.F_GETFD, 0)
+		if e != nil {
+			return errors.Join(ErrUnknown, e)
+		}
+		if flags&unix.FD_CLOEXEC == 0 {
+			return fmt.Errorf("ordinary2 unknown inherited descriptor")
+		}
+	}
+	return nil
+}

@@ -314,7 +314,12 @@ func (v *normalSystemRoleService) spawnRole(ctx context.Context, role string, pe
 		run, e := v.broker.spawn(stage, role)
 		if e == nil {
 			if role == "compute" && v.authority != nil {
-				if e = v.authority.bindOriginalCompute(stage, run); e != nil {
+				if run.child.installedMain != nil {
+					e = v.authority.verifyOriginalComputeV2Published(stage, run)
+				} else {
+					e = v.authority.bindOriginalCompute(stage, run)
+				}
+				if e != nil {
 					_ = run.child.cancelAndWait()
 					_ = v.finishExitedRoleLocked(run)
 					return nil, errors.Join(ErrUnknown, e)

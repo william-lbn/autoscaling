@@ -1,0 +1,15 @@
+P2 ordinary2 Gate/stdio + P1 pending2 独立只读复核（2026-11-01）
+
+结论：本次准确27源组件阶段未发现确定阻断；可将P2 owned25与P1 pending backend2按同一原子图归档提交。不得只提交25源而漏掉candidate/pending状态机。此结论仅适用于冻结源码与2f5db5实际运行；不是PG工作域safe normal或九服务生产认证。
+
+源码闭合：逐一比对冻结owned25、P1两源、d8d217/source与当前工作树27个SHA，全部相等。准确清单见同名facts JSON。原stage/freeze/flat manifest及raw receipt均未改；没有新测试、没有Git/index操作。
+
+主要审查：显式原RO mode2选择、GO1/GO2严格跨版本拒绝、原plan/source digest与legacy omitted字段；原leader terminal signal-scope→exec门；all-thread NNP/UID/GID/五capsets/完整BPF安装与第二exec-stop原clone/ELF/argv/env/status/OFD复核；3WAL持久后candidate发布，Detach前不授权，真实Detach后在同resource锁内激活；Compute独立reservation与原clone lease；原Task+独立creator线程pidfd、唯一Cmd.Wait、真实WaitStatus及pending-exit→KnownExited边界；历史floor允许合法前进；stdio固定devnull+两个有界pipe/drain、同OFD、不可继承未知FD、真实EOF与后代存活边界。源中未见以JSON/current采样、candidate或单一退出通知替代原生产能力的路径。
+
+关键真实断言：native ordinary2DEVRecord在stopped阶段实际调用原Compute getter并要求失败；active阶段同原resource锁调用getter，对返回lease.task.pidfd与本次原clone i.task.pidfd做arrayMatchPIDFD，成功后才记录true。2f5db5原raw中两断言为true。不是给结果表补写的声明。实际15个stopped/active-or-pending/wait-confirmed记录与5个双pipe EOF相符；原唯一Wait和creator线程退出均有原记录。
+
+测试证据：21个race根、91子项，112条PASS、0FAIL/0SKIP；Linux CLI/Darwin与Host/Guest/export各阶段0。原18c notes a496a3c4…，真实KVM present/enabled。1S根5run（allow-start两代、kernel-version、DEV network长目标及worker、DEV Compute NNP0 standin），169.032679563秒；Host容器/Guest/R1/QEMU原终态0、OOM false、原2CPU3GiB/no-network/RO-root限制有记录。复核过程只读取既有结果，没有重跑。
+
+明确边界：其他六角色udev/udev-init/acpi/logs/clock/daemon均未实际运行；network/Compute仍DEV standin，Host API为模型，production CLI只编译。没有真实PG/安全normal降限/完整Source/E/Helm/K8s端到端。Landlock不能readback：其论据是固定RO Gate源+准确ELF+顺序安装及实际第二stop审计，不能由GET_FILTER推断Landlock。ACPI新配方是固定RootAction graceful power请求，不将其误当仍需域外直接signal的旧配方。Root自身后续约束/全部业务目录、设备、TLS、DNS与真实服务兼容性需后继实际回归。
+
+未发现确定阻断不表示完整生命周期或全部业务功能已证明；旧失败attempt及原raw保持历史。Root是唯一Git writer，最终原子stage/recheck由Root负责。

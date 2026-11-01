@@ -63,8 +63,12 @@ func normalSystemRoleGateArgv() []string {
 }
 func normalSystemRoleGateEnvironment() []string { return []string{"PATH=/neonvm/bin"} }
 func normalSystemRoleGateEncode(c normalSystemRoleGateCommand) ([]byte, error) {
-	if c.ProtocolVersion != 1 || !normalSystemRoleGateDigest(c.GateNonce) || !normalSystemRoleGateDigest(c.OriginalNonce) || !normalSystemRoleGateDigest(c.PendingSHA256) {
+	if c.ProtocolVersion != 1 && c.ProtocolVersion != 2 || !normalSystemRoleGateDigest(c.GateNonce) || !normalSystemRoleGateDigest(c.OriginalNonce) || !normalSystemRoleGateDigest(c.PendingSHA256) {
 		return nil, fmt.Errorf("original Gate command differs")
+	}
+	// GO2只可由原RO普通2计划选择；broker始终保原GO1生命周期。
+	if c.ProtocolVersion == 2 && c.Role == normalSystemRoleBrokerKind {
+		return nil, ErrUnknown
 	}
 	if c.Role != "compute" && c.Role != normalSystemRoleBrokerKind {
 		if _, e := normalSystemFixedRoleArgv(c.Role); e != nil {
@@ -80,13 +84,16 @@ func normalSystemRoleGateEncode(c normalSystemRoleGateCommand) ([]byte, error) {
 	}
 	raw := make([]byte, normalSystemRoleGateWireBytes)
 	copy(raw, "NSYSGO01")
+	if c.ProtocolVersion == 2 {
+		copy(raw, "NSYSGO02")
+	}
 	binary.BigEndian.PutUint32(raw[8:12], uint32(len(b)))
 	copy(raw[12:], b)
 	return raw, nil
 }
 func normalSystemRoleGateDecode(raw []byte) (normalSystemRoleGateCommand, error) {
 	var c normalSystemRoleGateCommand
-	if len(raw) != normalSystemRoleGateWireBytes || string(raw[:8]) != "NSYSGO01" {
+	if len(raw) != normalSystemRoleGateWireBytes || string(raw[:8]) != "NSYSGO01" && string(raw[:8]) != "NSYSGO02" {
 		return c, fmt.Errorf("fixed Gate frame differs")
 	}
 	n := int(binary.BigEndian.Uint32(raw[8:12]))
@@ -101,8 +108,14 @@ func normalSystemRoleGateDecode(raw []byte) (normalSystemRoleGateCommand, error)
 	if e := control.UnmarshalObject(raw[12:12+n], &c); e != nil {
 		return c, fmt.Errorf("fixed Gate frame malformed")
 	}
-	_, e := normalSystemRoleGateEncode(c)
-	return c, e
+	encoded, e := normalSystemRoleGateEncode(c)
+	if e != nil {
+		return c, e
+	}
+	if string(encoded[:8]) != string(raw[:8]) {
+		return c, fmt.Errorf("fixed Gate wire version differs")
+	}
+	return c, nil
 }
 
 func normalSystemRoleGateThreadAlive(fd int) error {
@@ -314,6 +327,14 @@ func RunNormalSystemRoleExecGate(ctx context.Context) error {
 	if e != nil {
 		return e
 	}
+	// 版本必须由原RO能力资产与原pending计划共同决定，不能用GO1绕过普通2。
+	expectedProtocol := uint32(1)
+	if plan.roleSourceProtocol == 2 {
+		expectedProtocol = 2
+	}
+	if command.ProtocolVersion != expectedProtocol {
+		return fmt.Errorf("original Gate capability/wire differs")
+	}
 	// 子进程的consumer nonce与原Root不同；仅在核完整不可变来源一致后，
 	// 重建原Root那一份计划摘要，不能靠同role/同nonce忽略原pending向量绑定。
 	originalPlan := plan
@@ -373,8 +394,14 @@ func RunNormalSystemRoleExecGate(ctx context.Context) error {
 	}
 	// 此后Parent已装TRACEEXEC|EXITKILL，credential变化即使清Pdeathsig也由原
 	// tracer覆盖直到第二exec-stop/持久放行。只降非root；Compute保NNP0供既有SUID。
-	_ = unix.Close(4)
 	_ = conn.Close()
+	if plan.roleSourceProtocol == 2 && plan.role != "compute" {
+		// 源/nonce/namespace/creator已由前段checked；新末门失败不回旧exec。
+		return execNormalSystemOrdinaryRoleWithKernelControlsV2(call, s, plan.role)
+	}
+	if plan.roleSourceProtocol != 2 {
+		_ = unix.Close(4)
+	}
 	if plan.uid != 0 {
 		if e = unix.Prctl(unix.PR_SET_KEEPCAPS, 0, 0, 0, 0); e != nil {
 			return e
@@ -393,6 +420,18 @@ func RunNormalSystemRoleExecGate(ctx context.Context) error {
 		}
 		if os.Getuid() != int(plan.uid) || os.Geteuid() != int(plan.uid) || os.Getgid() != int(plan.gid) || os.Getegid() != int(plan.gid) {
 			return fmt.Errorf("fixed Compute role drop incomplete")
+		}
+	}
+	if plan.roleSourceProtocol == 2 {
+		// Compute只降原PG账户，NNP仍0；降UID清Pdeathsig的窗口仍由原EXITKILL覆盖。
+		if e = unix.Prctl(unix.PR_SET_PDEATHSIG, uintptr(unix.SIGKILL), 0, 0, 0); e != nil {
+			return e
+		}
+		if e = normalSystemRoleGateThreadAlive(4); e != nil {
+			return e
+		}
+		if _, e = unix.FcntlInt(4, unix.F_SETFD, unix.FD_CLOEXEC); e != nil {
+			return e
 		}
 	}
 	if len(plan.argv) == 0 || strings.ContainsAny(plan.argv[0], "\x00\r\n") {

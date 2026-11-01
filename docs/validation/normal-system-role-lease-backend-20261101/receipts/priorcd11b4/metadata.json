@@ -1,0 +1,20 @@
+{
+  "unit": "neon-role-lease-backend-20261101t082228z-cd11b4",
+  "nonce": "20261101T082228Z-cd11b4",
+  "base": "eaf224314d41aa8ddfee01d093d3411996ecc40a",
+  "overlay4": [
+    "pkg/dsga/resourceguard/normal_system_role_lease_backend_linux.go",
+    "pkg/dsga/resourceguard/normal_system_role_lease_backend_linux_test.go",
+    "pkg/dsga/resourceguard/normal_system_role_installed_task_linux.go",
+    "pkg/dsga/resourceguard/normal_system_role_lease_api_linux.go"
+  ],
+  "actual_go_inputs": 1058,
+  "source_lock_sha256": "abf7750d09d0af82364213668f979499da734cf0c6d1ce73a8f3a749b10ad180",
+  "scope": "PRIVATE_BACKEND_U_NO_ORIGINAL_STOP_PRODUCER_NO_SOURCE_NORMAL_E",
+  "limits": {
+    "CPUQuota": "200%",
+    "MemoryMax": "2G",
+    "BuildKit_memory": 2147483648,
+    "BuildKit_cpuquota": 200000
+  }
+}

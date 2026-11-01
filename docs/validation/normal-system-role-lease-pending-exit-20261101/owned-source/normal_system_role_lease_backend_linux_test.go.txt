@@ -1,0 +1,313 @@
+//go:build linux
+
+package resourceguard
+
+import (
+	"context"
+	"errors"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
+	"testing"
+
+	"golang.org/x/sys/unix"
+)
+
+// PG17-U-ROLE-LEASE-001：仅原引用算术/身份模型，不构造InstalledMain或Source。
+func TestNormalSystemRoleLeaseReferenceModel(t *testing.T) {
+	in := normalSystemRoleInstalledLeaseInput{ResourceIdentity: Identity{VMUID: "original-vm"}, ResourceFloor: 7, StateDevice: 1, StateInode: 2, LockDevice: 3, LockInode: 4}
+	cases := []struct {
+		name   string
+		change func(*normalSystemRoleInstalledLeaseInput, *record, *[4]uint64)
+		ok     bool
+	}{
+		{"original", func(*normalSystemRoleInstalledLeaseInput, *record, *[4]uint64) {}, true},
+		{"monotonic-floor", func(_ *normalSystemRoleInstalledLeaseInput, r *record, _ *[4]uint64) { r.Floor = 8 }, true},
+		{"old-floor", func(_ *normalSystemRoleInstalledLeaseInput, r *record, _ *[4]uint64) { r.Floor = 6 }, false},
+		{"other-vm", func(_ *normalSystemRoleInstalledLeaseInput, r *record, _ *[4]uint64) { r.Identity.VMUID = "other" }, false},
+		{"other-boot", func(_ *normalSystemRoleInstalledLeaseInput, r *record, _ *[4]uint64) {
+			r.Identity.GuestBootID = "other"
+		}, false},
+		{"state-device", func(_ *normalSystemRoleInstalledLeaseInput, _ *record, s *[4]uint64) { s[0]++ }, false},
+		{"state-inode", func(_ *normalSystemRoleInstalledLeaseInput, _ *record, s *[4]uint64) { s[1]++ }, false},
+		{"lock-device", func(_ *normalSystemRoleInstalledLeaseInput, _ *record, s *[4]uint64) { s[2]++ }, false},
+		{"lock-inode", func(_ *normalSystemRoleInstalledLeaseInput, _ *record, s *[4]uint64) { s[3]++ }, false},
+		{"zero-state", func(in *normalSystemRoleInstalledLeaseInput, _ *record, s *[4]uint64) { in.StateInode = 0; s[1] = 0 }, false},
+		{"zero-lock", func(in *normalSystemRoleInstalledLeaseInput, _ *record, s *[4]uint64) { in.LockInode = 0; s[3] = 0 }, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			next := in
+			r := &record{Identity: in.ResourceIdentity, Floor: 7}
+			s := [4]uint64{1, 2, 3, 4}
+			c.change(&next, r, &s)
+			e := normalSystemRoleLeaseRecordMatches(next, r, s[0], s[1], s[2], s[3])
+			if (e == nil) != c.ok {
+				t.Fatalf("reference result=%v", e)
+			}
+		})
+	}
+}
+
+// PG17-U-ROLE-LEASE-002：状态转换表本身不授权；Unknown/退出绝不重回active。
+func TestNormalSystemRoleLeasePhaseModel(t *testing.T) {
+	for from := normalSystemRoleLeasePhase(0); from <= normalSystemRoleLeaseUnknownPhase; from++ {
+		for to := normalSystemRoleLeasePhase(0); to <= normalSystemRoleLeaseUnknownPhase; to++ {
+			allowed := from == normalSystemRoleLeaseCandidatePhase && (to == normalSystemRoleLeaseActivePhase || to == normalSystemRoleLeasePendingExitPhase || to == normalSystemRoleLeaseUnknownPhase) || from == normalSystemRoleLeaseActivePhase && (to == normalSystemRoleLeaseExitedPhase || to == normalSystemRoleLeaseUnknownPhase) || from == normalSystemRoleLeasePendingExitPhase && (to == normalSystemRoleLeaseExitedPhase || to == normalSystemRoleLeaseUnknownPhase)
+			if (normalSystemRoleLeaseNextPhase(from, to) == nil) != allowed {
+				t.Fatalf("phase %d→%d", from, to)
+			}
+		}
+	}
+}
+
+// PG17-U-ROLE-LEASE-003：调用真实file+dir fsync和原witness reader，核同字节
+// 换inode/ctime、丢前缀、改字节均拒；这不是实际介质故障注入或Source资格。
+func TestNormalSystemRoleLeaseDurablePrefixWitness(t *testing.T) {
+	fresh := func(t *testing.T) (*lockedState, string, [3]normalSystemRoleFileWitness) {
+		t.Helper()
+		dir, e := os.Open(t.TempDir())
+		if e != nil {
+			t.Fatal(e)
+		}
+		t.Cleanup(func() { dir.Close() })
+		s := &lockedState{dir: dir}
+		nonce := strings.Repeat("a", 64)
+		var w [3]normalSystemRoleFileWitness
+		for n, stage := range []string{"pending", "exec-stopped", "released"} {
+			name := normalSystemRoleStageName(nonce, stage)
+			if e = s.createPhysicalFile(name, []byte(`{"stage":"`+stage+`"}`)); e != nil {
+				t.Fatal(e)
+			}
+			w[n], e = readNormalSystemRoleFileWitness(s, name)
+			if e != nil {
+				t.Fatal(e)
+			}
+		}
+		return s, nonce, w
+	}
+	t.Run("original-zero-write-read", func(t *testing.T) {
+		s, n, w := fresh(t)
+		before, _ := os.ReadDir(s.dir.Name())
+		if e := normalSystemRoleLeasePrefixesMatch(s, n, w); e != nil {
+			t.Fatal(e)
+		}
+		after, _ := os.ReadDir(s.dir.Name())
+		if len(before) != len(after) {
+			t.Fatal("reader wrote file")
+		}
+	})
+	for _, stage := range []string{"pending", "exec-stopped", "released"} {
+		t.Run("same-bytes-new-inode-"+stage, func(t *testing.T) {
+			s, n, w := fresh(t)
+			name := filepath.Join(s.dir.Name(), normalSystemRoleStageName(n, stage))
+			raw, e := os.ReadFile(name)
+			if e != nil {
+				t.Fatal(e)
+			}
+			if e = os.WriteFile(name+".new", raw, 0600); e != nil {
+				t.Fatal(e)
+			}
+			if e = os.Rename(name+".new", name); e != nil {
+				t.Fatal(e)
+			}
+			if e = normalSystemRoleLeasePrefixesMatch(s, n, w); !errors.Is(e, ErrUnknown) {
+				t.Fatalf("replacement accepted: %v", e)
+			}
+		})
+	}
+	t.Run("missing-original", func(t *testing.T) {
+		s, n, w := fresh(t)
+		os.Remove(filepath.Join(s.dir.Name(), normalSystemRoleStageName(n, "released")))
+		if e := normalSystemRoleLeasePrefixesMatch(s, n, w); !errors.Is(e, ErrUnknown) {
+			t.Fatalf("missing accepted: %v", e)
+		}
+	})
+	t.Run("same-inode-content-drift", func(t *testing.T) {
+		s, n, w := fresh(t)
+		os.WriteFile(filepath.Join(s.dir.Name(), normalSystemRoleStageName(n, "released")), []byte(`{"changed":true}`), 0600)
+		if e := normalSystemRoleLeasePrefixesMatch(s, n, w); !errors.Is(e, ErrUnknown) {
+			t.Fatalf("drift accepted: %v", e)
+		}
+	})
+	t.Run("different-nonce", func(t *testing.T) {
+		s, _, w := fresh(t)
+		if e := normalSystemRoleLeasePrefixesMatch(s, strings.Repeat("b", 64), w); !errors.Is(e, ErrUnknown) {
+			t.Fatalf("nonce accepted: %v", e)
+		}
+	})
+}
+
+// PG17-U-ROLE-LEASE-004：没有真正原stop对象不能准备/激活/读取，空DTO、
+// 实现了reader接口、同UID或伪造phase都不能使任何服务资格可见。
+func TestNormalSystemRoleLeaseMissingOriginalRejects(t *testing.T) {
+	ctx := context.Background()
+	g := &Guard{}
+	a := &normalSystemResourceAuthority{guard: g}
+	t.Run("nil-installed", func(t *testing.T) {
+		if _, e := a.prepareOriginalRoleMainLeaseLocked(ctx, nil, nil, nil); !errors.Is(e, ErrUnknown) {
+			t.Fatal(e)
+		}
+	})
+	t.Run("empty-installed", func(t *testing.T) {
+		i := &normalSystemRoleInstalledMain{}
+		if e := i.requireOriginalStoppedCandidate(); !errors.Is(e, ErrUnknown) {
+			t.Fatal(e)
+		}
+		if _, e := a.prepareOriginalRoleMainLeaseLocked(ctx, &lockedState{}, &record{}, i); !errors.Is(e, ErrUnknown) {
+			t.Fatal(e)
+		}
+	})
+	t.Run("no-guard-authority", func(t *testing.T) {
+		if _, e := g.normalSystemOriginalRoleMainLeaseLocked(ctx, &lockedState{}, &record{}, "acpi"); !errors.Is(e, ErrUnknown) {
+			t.Fatal(e)
+		}
+	})
+	t.Run("no-candidate-publisher", func(t *testing.T) {
+		c := &normalSystemRoleLeaseCandidate{}
+		if e := c.activateOriginalRoleMainLocked(ctx, nil, nil); !errors.Is(e, ErrUnknown) {
+			t.Fatal(e)
+		}
+		c.markUnknownLocked(errors.New("failure"))
+	})
+	t.Run("phase-without-original-clone", func(t *testing.T) {
+		if e := normalSystemRoleLeaseOriginalCloneMatches(&normalSystemOriginalTask{}, &normalSystemRoleOriginalChild{}); !errors.Is(e, ErrUnknown) {
+			t.Fatal(e)
+		}
+	})
+	t.Run("no-exit-wait", func(t *testing.T) {
+		c := &normalSystemRoleLeaseCandidate{phase: normalSystemRoleLeaseActivePhase}
+		if e := c.retireOriginalRoleMainLocked(ctx, nil, nil); !errors.Is(e, ErrUnknown) {
+			t.Fatal(e)
+		}
+	})
+	t.Run("closed-handle", func(t *testing.T) {
+		l := &normalSystemRoleMainLeaseHandle{}
+		l.close()
+		l.close()
+		if e := l.matchOriginalMainPacket(ctx, &unix.Ucred{}, nil); !errors.Is(e, ErrUnknown) {
+			t.Fatal(e)
+		}
+	})
+}
+
+// PG17-U-ROLE-LEASE-005：实际Host只检查不支持明确拒绝/错对象负例，不把
+// 6.8 anoninode同inode当same-task正控；真PIDFS主角色正控必须P2原停点Guest。
+func TestNormalSystemRoleLeasePeerRejectsUnsupportedOrForeign(t *testing.T) {
+	t.Run("regular-file", func(t *testing.T) {
+		f, e := os.CreateTemp(t.TempDir(), "fd")
+		if e != nil {
+			t.Fatal(e)
+		}
+		defer f.Close()
+		if e = normalSystemRoleLeasePIDFS(int(f.Fd())); !errors.Is(e, ErrUnknown) {
+			t.Fatal(e)
+		}
+	})
+	t.Run("closed-fd", func(t *testing.T) {
+		if e := normalSystemRoleLeasePIDFS(-1); !errors.Is(e, ErrUnknown) {
+			t.Fatal(e)
+		}
+	})
+	t.Run("actual-kernel-pidfd-kind", func(t *testing.T) {
+		fd, e := unix.PidfdOpen(os.Getpid(), 0)
+		if e != nil {
+			t.Fatal(e)
+		}
+		defer unix.Close(fd)
+		var fs unix.Statfs_t
+		if e = unix.Fstatfs(fd, &fs); e != nil {
+			t.Fatal(e)
+		}
+		got := normalSystemRoleLeasePIDFS(fd)
+		if (got == nil) != (uint64(fs.Type) == 0x50494446) {
+			t.Fatalf("kernelkind=%x result=%v", fs.Type, got)
+		}
+	})
+	t.Run("fork-packet-not-main", func(t *testing.T) {
+		task := &normalSystemOriginalTask{source: normalSystemOriginalTaskSource{PID: 100, UID: 60006, GID: 60006}, pidfd: -1, procfd: -1}
+		if e := normalSystemRoleLeaseMatchPeer(task, &unix.Ucred{Pid: 101, Uid: 60006, Gid: 60006}, os.Stdin); !errors.Is(e, ErrUnknown) {
+			t.Fatal(e)
+		}
+	})
+	t.Run("uid-alias", func(t *testing.T) {
+		task := &normalSystemOriginalTask{source: normalSystemOriginalTaskSource{PID: 100, UID: 60006, GID: 60006}, pidfd: -1, procfd: -1}
+		if e := normalSystemRoleLeaseMatchPeer(task, &unix.Ucred{Pid: 100, Uid: 0, Gid: 60006}, os.Stdin); !errors.Is(e, ErrUnknown) {
+			t.Fatal(e)
+		}
+	})
+}
+
+// PG17-U-ROLE-LEASE-006：并行新Guard/缺源读取不得自行登记/抢占原Authority。
+func TestNormalSystemRoleLeaseConcurrentMissingIsReadOnly(t *testing.T) {
+	normalSystemRoleLeasePublishers.Lock()
+	before := len(normalSystemRoleLeasePublishers.byAuthority)
+	normalSystemRoleLeasePublishers.Unlock()
+	var wg sync.WaitGroup
+	errs := make(chan error, 32)
+	for n := 0; n < 32; n++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			g := &Guard{}
+			_, e := g.normalSystemOriginalRoleMainLeaseLocked(context.Background(), nil, nil, "daemon")
+			if !errors.Is(e, ErrUnknown) {
+				errs <- e
+			}
+		}()
+	}
+	wg.Wait()
+	close(errs)
+	for e := range errs {
+		t.Errorf("missing source accepted: %v", e)
+	}
+	normalSystemRoleLeasePublishers.Lock()
+	defer normalSystemRoleLeasePublishers.Unlock()
+	if len(normalSystemRoleLeasePublishers.byAuthority) != before {
+		t.Fatal("read registered publisher")
+	}
+}
+
+// PG17-U-ROLE-LEASE-007 poll通知只可成为pending，不是真Wait/Source正例。
+func TestNormalSystemRoleLeasePendingExitPollModel(t *testing.T) {
+	for _, c := range []struct {
+		name        string
+		n           int
+		flags       int16
+		e           error
+		pending, ok bool
+	}{
+		{"alive", 0, 0, nil, false, true}, {"original-exit-not-wait", 1, unix.POLLIN, nil, true, true}, {"original-reaped-still-not-wait", 1, unix.POLLIN | unix.POLLHUP, nil, true, true}, {"only-hup-unknown", 1, unix.POLLHUP, nil, false, false}, {"closed-fd", 1, unix.POLLNVAL, nil, false, false}, {"error-flag", 1, unix.POLLERR, nil, false, false}, {"interrupt", 0, 0, unix.EINTR, false, false}, {"unrecognized-flags", 1, unix.POLLIN | unix.POLLOUT, nil, false, false},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			v, e := normalSystemRoleLeaseExitPollResult(c.n, c.flags, c.e)
+			if (e == nil) != c.ok || v != c.pending {
+				t.Fatalf("pending=%v err=%v", v, e)
+			}
+		})
+	}
+}
+
+// PG17-U-ROLE-LEASE-008 没有原history opaque，pending不能授权/退役或再active。
+func TestNormalSystemRoleLeasePendingExitCannotAuthorizeOrRetire(t *testing.T) {
+	c := &normalSystemRoleLeaseCandidate{phase: normalSystemRoleLeasePendingExitPhase}
+	if e := normalSystemRoleLeaseNextPhase(c.phase, normalSystemRoleLeaseActivePhase); !errors.Is(e, ErrUnknown) {
+		t.Fatal(e)
+	}
+	if e := c.retireOriginalRoleMainLocked(context.Background(), nil, nil); !errors.Is(e, ErrUnknown) {
+		t.Fatal(e)
+	}
+	if c.phase != normalSystemRoleLeasePendingExitPhase {
+		t.Fatal("retired without unique Wait")
+	}
+	if _, e := c.originalMainExitPendingLocked(context.Background()); !errors.Is(e, ErrUnknown) {
+		t.Fatal(e)
+	}
+	if e := c.verifyOriginalHistoryBindingLocked(context.Background(), nil, nil); !errors.Is(e, ErrUnknown) {
+		t.Fatal(e)
+	}
+	if e := normalSystemRoleLeaseNextPhase(normalSystemRoleLeaseUnknownPhase, normalSystemRoleLeasePendingExitPhase); !errors.Is(e, ErrUnknown) {
+		t.Fatal(e)
+	}
+}

@@ -21,11 +21,12 @@ const normalSystemRoleBuildPlanPath = "/neonvm/config/dsga-normal-build-plan.jso
 // 私有计划只能由原只读System来源构造；socket请求只允许角色枚举，不传路径、
 // 参数、环境或namespace。向量只保留在内存，持久/输出一律使用摘要。
 type normalSystemRoleLaunchSpec struct {
-	role      string
-	argv, env []string
-	uid, gid  uint32
-	binding   normalSystemLifecycleBinding
-	sourceSHA string
+	roleSourceProtocol uint32
+	role               string
+	argv, env          []string
+	uid, gid           uint32
+	binding            normalSystemLifecycleBinding
+	sourceSHA          string
 }
 type normalSystemRoleNamespaceIdentity struct {
 	Name   string `json:"name"`
@@ -230,7 +231,8 @@ func (p normalSystemRoleLaunchSpec) referenceSHA256() (string, error) {
 		UID, GID                   uint32
 		ArgvSHA, EnvSHA, SourceSHA string
 		Binding                    normalSystemLifecycleBinding
-	}{p.role, p.uid, p.gid, ah, eh, p.sourceSHA, p.binding})
+		RoleSourceProtocol         uint32 `json:"role_source_protocol,omitempty"`
+	}{p.role, p.uid, p.gid, ah, eh, p.sourceSHA, p.binding, p.roleSourceProtocol})
 	if e != nil {
 		return "", e
 	}

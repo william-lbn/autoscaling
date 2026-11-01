@@ -36,6 +36,7 @@ type normalSystemRoleJournalEntry struct {
 	OriginalTaskExitObserved bool                                `json:"original_task_exit_observed,omitempty"`
 }
 type normalSystemRoleJournal struct {
+	v2       *normalSystemRoleV2Publication
 	state    *lockedState
 	pending  normalSystemRoleJournalEntry
 	previous string
@@ -231,7 +232,7 @@ func (b *normalSystemRoleBrokerComponent) spawn(ctx context.Context, role string
 	if old := b.byRole[role]; old != nil && !old.terminal {
 		return nil, errors.Join(ErrUnknown, fmt.Errorf("original role already active or unknown"))
 	}
-	plan, e := newNormalSystemRoleLaunchSpec(ctx, b.source, role)
+	plan, e := normalSystemRoleGateLaunchPlan(ctx, b.source, role)
 	if e != nil {
 		return nil, e
 	}
@@ -268,6 +269,16 @@ func (b *normalSystemRoleBrokerComponent) spawn(ctx context.Context, role string
 		}
 		pending := normalSystemRoleJournalEntry{ProtocolVersion: 1, Scope: normalSystemRoleJournalScope, Nonce: nonce, Stage: "pending", Role: role, PlanSHA256: planSHA, Binding: plan.binding, Namespace: ns, ResourceIdentity: r.Identity, ResourceFloor: r.Floor, StateDevice: st.Dev, StateInode: st.Ino}
 		j := &normalSystemRoleJournal{state: state, pending: pending, seen: map[string]normalSystemRoleFileWitness{}}
+		if plan.roleSourceProtocol == 2 {
+			runtime, e := originalNormalSystemRoleV2Runtime(b)
+			if e != nil {
+				return e
+			}
+			j.v2, e = runtime.prepareOriginalRoleLocked(ctx, state, r, plan, j)
+			if e != nil {
+				return e
+			}
+		}
 		run = &normalSystemRoleOriginalRun{broker: b, pending: pending, unknown: true, seen: j.seen}
 		b.runs[nonce] = run
 		b.byRole[role] = run
@@ -325,6 +336,14 @@ func (r *normalSystemRoleOriginalRun) finish(ctx context.Context, cancel bool) e
 		j := normalSystemRoleJournal{state: state, pending: r.pending, previous: r.previous, seen: r.seen}
 		if e := j.append(ctx, "exited", &r.child.observed.Task, true); e != nil {
 			return e
+		}
+		if r.child.installedMain != nil {
+			if e := r.child.installedMain.publication.completeOriginalWaitLocked(ctx, state, rec); e != nil {
+				return e
+			}
+			if e := r.child.installedMain.stdio.completeOriginalWaitLocked(ctx, state); e != nil {
+				return e
+			}
 		}
 		r.previous = j.previous
 		r.terminal = true

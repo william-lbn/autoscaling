@@ -1,0 +1,61 @@
+{
+  "scope": "PRIVATE_ORIGINAL_ROLE_LEASE_BACKEND_COMPONENT_ONLY",
+  "U_roots": 6,
+  "U_named_subtests": 30,
+  "U_elapsed_seconds": 1.142,
+  "U_cases": [
+    {
+      "id": "PG17-U-ROLE-LEASE-001",
+      "root": "TestNormalSystemRoleLeaseReferenceModel",
+      "layer": "unit-model-and-original-WAL-reader-negative",
+      "receipt": "receipts/final07d5f1/export/test.json"
+    },
+    {
+      "id": "PG17-U-ROLE-LEASE-002",
+      "root": "TestNormalSystemRoleLeasePhaseModel",
+      "layer": "unit-model-and-original-WAL-reader-negative",
+      "receipt": "receipts/final07d5f1/export/test.json"
+    },
+    {
+      "id": "PG17-U-ROLE-LEASE-003",
+      "root": "TestNormalSystemRoleLeaseDurablePrefixWitness",
+      "layer": "unit-model-and-original-WAL-reader-negative",
+      "receipt": "receipts/final07d5f1/export/test.json"
+    },
+    {
+      "id": "PG17-U-ROLE-LEASE-004",
+      "root": "TestNormalSystemRoleLeaseMissingOriginalRejects",
+      "layer": "unit-model-and-original-WAL-reader-negative",
+      "receipt": "receipts/final07d5f1/export/test.json"
+    },
+    {
+      "id": "PG17-U-ROLE-LEASE-005",
+      "root": "TestNormalSystemRoleLeasePeerRejectsUnsupportedOrForeign",
+      "layer": "unit-model-and-original-WAL-reader-negative",
+      "receipt": "receipts/final07d5f1/export/test.json"
+    },
+    {
+      "id": "PG17-U-ROLE-LEASE-006",
+      "root": "TestNormalSystemRoleLeaseConcurrentMissingIsReadOnly",
+      "layer": "unit-model-and-original-WAL-reader-negative",
+      "receipt": "receipts/final07d5f1/export/test.json"
+    }
+  ],
+  "S": 0,
+  "E": 0,
+  "ENV": [
+    "Linux resource-guard static build",
+    "Darwinarm64 package compile",
+    "RUN actual memory2147483648/cpu200000/100000"
+  ],
+  "Host_PIDFS_testing": "actual kernel-kind check; old anoninode rejected; no same-task Source positive claimed",
+  "positive_InstalledMain_Stop_Detach_active_not_run": true,
+  "normal_authorized": false,
+  "missing_sources": [
+    "P2 actual InstalledMain fullcontrol+typedstdio producer/second-stop constructor",
+    "P2 original same-flock prepare→Detach→activate production hook",
+    "actual creator lane must retire=true after original ChildWait then true thread exit before creatorLeaseDone; old v1 unchanged",
+    "real Guest RootAction each-packet main/fork negative integrated with actual role lease",
+    "complete normal continuous sources and end-to-end verification"
+  ]
+}

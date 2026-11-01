@@ -309,7 +309,12 @@ func normalRoleServiceDEVLongStandin(path string) bool {
 
 var normalRoleServiceNativeBrokerContext = func(ctx context.Context) context.Context { return ctx }
 
+var normalRoleServiceAdditionalDEVDispatch func(*testing.M) bool
+
 func TestMain(m *testing.M) {
+	if normalRoleServiceAdditionalDEVDispatch != nil && normalRoleServiceAdditionalDEVDispatch(m) {
+		return
+	}
 	if len(os.Args) >= 2 && os.Args[0] == normalSystemRoleBrokerExecutable {
 		switch os.Args[1] {
 		case normalSystemRoleGateAction:

@@ -111,6 +111,9 @@ func (g *Guard) normalSystemOriginalComputeLeaseLocked(ctx context.Context, stat
 	}
 	a.producerMu.Lock()
 	defer a.producerMu.Unlock()
+	if e := normalSystemRoleV2ComputeAdmissionLocked(ctx, a, state, r); e != nil {
+		return nil, e
+	}
 	l := a.compute
 	if !a.admission.businessAllowed() || l == nil || l.authority != a || r.Identity != a.origin.ResourceIdentity || r.Floor < a.origin.ResourceFloor {
 		return nil, ErrUnknown

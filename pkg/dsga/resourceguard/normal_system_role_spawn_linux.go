@@ -56,6 +56,7 @@ type normalSystemRoleOriginalChild struct {
 	creatorPIDFD     *os.File
 	creatorLeaseDone chan struct{}
 	creatorLeaseErr  error
+	installedMain    *normalSystemRoleInstalledMain
 }
 
 func (c *normalSystemRoleOriginalChild) startWait() {
@@ -149,7 +150,11 @@ func spawnNormalSystemRoleOriginal(ctx context.Context, s *normalSystemLifecycle
 	if e != nil {
 		return nil, e
 	}
-	command := normalSystemRoleGateCommand{ProtocolVersion: 1, Role: role, GateNonce: nonce, OriginalNonce: ref.Nonce, PendingSHA256: ref.PendingSHA256}
+	gateProtocol := uint32(1)
+	if plan.roleSourceProtocol == 2 {
+		gateProtocol = 2
+	}
+	command := normalSystemRoleGateCommand{ProtocolVersion: gateProtocol, Role: role, GateNonce: nonce, OriginalNonce: ref.Nonce, PendingSHA256: ref.PendingSHA256}
 	wire, e := normalSystemRoleGateEncode(command)
 	if e != nil {
 		return nil, e
@@ -194,7 +199,8 @@ func spawnNormalSystemRoleOriginal(ctx context.Context, s *normalSystemLifecycle
 				confirmed := child.waited
 				child.mu.Unlock()
 				if confirmed {
-					return struct{}{}, nil, false
+					// 普通2必须真的退役原creator M，独立PIDFD_THREAD随后才能见POLLIN。
+					return struct{}{}, nil, plan.roleSourceProtocol == 2
 				}
 				exited, err := normalSystemRoleGateExitObserved(int(child.pidfd.Fd()))
 				if err == nil && exited {
@@ -221,6 +227,14 @@ func spawnNormalSystemRoleOriginal(ctx context.Context, s *normalSystemLifecycle
 	return result.child, result.err
 }
 func spawnNormalSystemRoleOnOriginalThread(ctx context.Context, s *normalSystemLifecycleSource, ns *normalSystemRoleNamespaceSource, plan normalSystemRoleLaunchSpec, identities []normalSystemRoleNamespaceIdentity, planSHA string, tid int, writer normalSystemRoleStoppedWriter, wire []byte) (child *normalSystemRoleOriginalChild, err error, retire bool) {
+	var publication *normalSystemRoleV2Publication
+	if plan.roleSourceProtocol == 2 {
+		j, ok := writer.(*normalSystemRoleJournal)
+		if !ok || j == nil || j.v2 == nil {
+			return nil, ErrUnknown, false
+		}
+		publication = j.v2
+	}
 	if e := ns.verify(-1); e != nil {
 		return nil, e, false
 	}
@@ -280,6 +294,14 @@ func spawnNormalSystemRoleOnOriginalThread(ctx context.Context, s *normalSystemL
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	if publication != nil {
+		stdio, e := publication.spawnFiles()
+		if e != nil {
+			return nil, e, false
+		}
+		defer closeNormalRoleStdioFiles(stdio)
+		cmd.Stdin, cmd.Stdout, cmd.Stderr = stdio[0], stdio[1], stdio[2]
+	}
 	cmd.ExtraFiles = []*os.File{gateFile, creator}
 	if plan.role == normalSystemRoleBrokerKind {
 		startup, e := normalSystemRoleBrokerGateFile(writer)
@@ -298,10 +320,27 @@ func spawnNormalSystemRoleOnOriginalThread(ctx context.Context, s *normalSystemL
 	pf := os.NewFile(uintptr(pfd), "original-System-clone-pidfd")
 	control := &nativeTraceOriginalControl{pid: cmd.Process.Pid, uid: 0, pidfd: pfd, attached: true}
 	var task *normalSystemOriginalTask
+	var preparedChild *normalSystemRoleOriginalChild
 	success := false
 	defer func() {
 		if success {
 			return
+		}
+		if publication != nil {
+			publication.markUnknown(err)
+			// Detach之后的失败不能借attached=false漏掉活目标。只向原clone发信号，
+			// 本creator内仅join唯一cmd.Wait；不能调用会等creator自身退出的child.wait。
+			if !control.attached && preparedChild != nil {
+				killErr := unix.PidfdSendSignal(pfd, unix.SIGKILL, nil, 0)
+				if killErr != nil && !errors.Is(killErr, unix.ESRCH) {
+					err = errors.Join(err, ErrUnknown, killErr)
+					retire = true
+					return
+				}
+				preparedChild.startWait()
+				<-preparedChild.done
+				retire = true
+			}
 		}
 		clean, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -407,9 +446,23 @@ func spawnNormalSystemRoleOnOriginalThread(ctx context.Context, s *normalSystemL
 	if e = ctx.Err(); e != nil {
 		return nil, e, false
 	}
+	if publication != nil {
+		preparedChild = &normalSystemRoleOriginalChild{cmd: cmd, pidfd: pf, task: task, done: make(chan struct{}), creatorPIDFD: creator, creatorLeaseDone: make(chan struct{}), observed: normalSystemRoleExecStoppedObservation{Task: observed, Namespace: identities, PlanSHA256: planSHA, TracerTID: tid, ExecStopObserved: true, Released: true}}
+		if e = publication.prepareOriginalStopped(ctx, control, task, preparedChild, plan, tid); e != nil {
+			return nil, e, false
+		}
+	}
 	normalSystemRoleGateCheck(ctx, "before-target-detach", pfd, tid)
 	if e = control.detach(); e != nil {
 		return nil, e, false
+	}
+	if publication != nil {
+		if e = publication.originalDetachSucceeded(ctx); e != nil {
+			return nil, e, false
+		}
+		success = true
+		transferred = true
+		return preparedChild, nil, false
 	}
 	success = true
 	transferred = true

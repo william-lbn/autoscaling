@@ -1,0 +1,56 @@
+{
+  "scope": "PRIVATE_LEASE_PENDING_EXIT_COMPONENT_ONLY",
+  "U_total_roots": 8,
+  "U_named_subtests": 38,
+  "new_U_roots": 2,
+  "direct_affected_old_U_roots": 6,
+  "U": [
+    {
+      "id": "PG17-U-ROLE-LEASE-001",
+      "root": "TestNormalSystemRoleLeaseReferenceModel",
+      "new": false
+    },
+    {
+      "id": "PG17-U-ROLE-LEASE-002",
+      "root": "TestNormalSystemRoleLeasePhaseModel",
+      "new": false
+    },
+    {
+      "id": "PG17-U-ROLE-LEASE-003",
+      "root": "TestNormalSystemRoleLeaseDurablePrefixWitness",
+      "new": false
+    },
+    {
+      "id": "PG17-U-ROLE-LEASE-004",
+      "root": "TestNormalSystemRoleLeaseMissingOriginalRejects",
+      "new": false
+    },
+    {
+      "id": "PG17-U-ROLE-LEASE-005",
+      "root": "TestNormalSystemRoleLeasePeerRejectsUnsupportedOrForeign",
+      "new": false
+    },
+    {
+      "id": "PG17-U-ROLE-LEASE-006",
+      "root": "TestNormalSystemRoleLeaseConcurrentMissingIsReadOnly",
+      "new": false
+    },
+    {
+      "id": "PG17-U-ROLE-LEASE-007",
+      "root": "TestNormalSystemRoleLeasePendingExitPollModel",
+      "new": true
+    },
+    {
+      "id": "PG17-U-ROLE-LEASE-008",
+      "root": "TestNormalSystemRoleLeasePendingExitCannotAuthorizeOrRetire",
+      "new": true
+    }
+  ],
+  "S": 0,
+  "E": 0,
+  "Source": false,
+  "normal": false,
+  "actual_installed_main_Detach_fast_exit_Wait_positive": "P2 actual stop/source/stdio/Gate lane pending; not certified by this U",
+  "requires_atomic_dependency_commit": true,
+  "P2_history_API_sha256": "87920d93375e718d21a57989998d280197ec5c74b826d81cf855e0da458e5ce2"
+}
