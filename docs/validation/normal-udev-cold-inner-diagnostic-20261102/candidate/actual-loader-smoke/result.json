@@ -1,0 +1,39 @@
+{
+  "scope": "operator candidate loader/version only; no production Gate/role/start/Source/normal qualification",
+  "root_mount_readonly": true,
+  "user": "65534:65534",
+  "capabilities": 0,
+  "network": "none",
+  "commands": {
+    "acpid": {
+      "exit": 0,
+      "expected": 0,
+      "seconds": 0.6659091330075171
+    },
+    "chronyd": {
+      "exit": 0,
+      "expected": 0,
+      "seconds": 0.4148614759906195
+    },
+    "vector": {
+      "exit": 0,
+      "expected": 0,
+      "seconds": 0.9164821339945775
+    },
+    "neonvmd": {
+      "exit": 0,
+      "expected": 0,
+      "seconds": 1.1170099749870133
+    },
+    "compute_ctl": {
+      "exit": 0,
+      "expected": 0,
+      "seconds": 1.1170290109876078
+    },
+    "su-exec": {
+      "exit": 0,
+      "expected": 0,
+      "seconds": 0.6155529630195815
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "candidate_manifest_sha256": "b56f11c1ecf6925c54df7a78e0f3839a36244401dbe42b6d75f4337a18002324",
+  "actual_smoke_nonce": "normal-real-services-loader-smoke-20261101T194309Z-c367cb",
+  "actual_result_sha256": "1f254d5d1fb0c210155c5ca0f520fc692bc3d8316b10efa33613fcd5e0412fd9",
+  "all_six_original_process_version_or_help_exit0": true,
+  "scope": "只验证真实候选loader/version/help；不等于生产canonical exec/Gate/角色真实启动/Source/PG/normal",
+  "configured_container_flags": {
+    "UID": 65534,
+    "GID": 65534,
+    "NNP": true,
+    "capabilities": 0,
+    "network": "none",
+    "candidate_mount": "read-only",
+    "CPU": 1,
+    "memory_bytes": 805306368
+  },
+  "container_cgroup_actual_sampling": "not sampled in subsecond --rm commands; no actual runtime-budget qualification claim",
+  "original_budget_unit_final": "Result=success\nExecMainCode=0\nExecMainStatus=0\nMemoryPeak=[not set]\nCPUUsageNSec=[not set]\nId=normal-real-services-loader-smoke-20261101t194309z-c367cb.service\nActiveState=inactive\nSubState=dead\n",
+  "original_failed_smoke_retained": "/data/neon-build/validation/normal-real-services-loader-smoke-20261101T194202Z-2d0283",
+  "correction": "Vector候选恢复原官方归档0755，源ELF SHA不变/源cache不改；su-exec usage原0，首次driver误预期1保留",
+  "future_integration": "必须Root同原C producer/hash/consumer与canonical System3 inventory/final package lock核对后真实PID1/9role/PG回归"
+}

@@ -365,55 +365,110 @@ func (q *normalOrdinaryUdevV2) receive(p normalOrdinaryUdevV2KernelPacket) error
 }
 
 // 必须已持resource flock；只读稳定引用，不要求原R1仍活或PGEmpty/旧floor。
+// 冷启动原失败门的固定诊断枚举。复用stage8，不携凭据/属性/业务正文，亦不参与任何判定。
+const (
+	normalUdevDiagCheckInput uint64 = 1001 + iota
+	normalUdevDiagCheckLifecycle
+	normalUdevDiagCheckSlot
+	normalUdevDiagCheckAdmission
+	normalUdevDiagCheckCaller
+	normalUdevDiagCheckIdentity
+	normalUdevDiagCheckFilesystem
+	normalUdevDiagCheckKernel
+	normalUdevDiagCheckMemory
+	normalUdevDiagCheckMemoryReference
+	normalUdevDiagCheckMonitor
+	normalUdevDiagCheckNamespaces
+	normalUdevDiagCheckCatalog
+	normalUdevDiagCheckPreparation
+)
+const (
+	normalUdevDiagLeaseReader uint64 = 1101 + iota
+	normalUdevDiagLeaseRead
+	normalUdevDiagLeaseMatch
+)
+const (
+	normalUdevDiagBeginCheck uint64 = 1201 + iota
+	normalUdevDiagBeginLease
+	normalUdevDiagBeginPeer
+	normalUdevDiagBeginUUID
+	normalUdevDiagBeginDuplicate
+	normalUdevDiagBeginColdState
+	normalUdevDiagBeginAdvance
+)
+const (
+	normalUdevDiagAdvanceTarget uint64 = 1301 + iota
+	normalUdevDiagAdvanceCheck
+	normalUdevDiagAdvanceLease
+	normalUdevDiagAdvanceLifecycle
+	normalUdevDiagAdvancePending
+	normalUdevDiagAdvanceObject
+	normalUdevDiagAdvanceWrite
+)
+
 func (q *normalOrdinaryUdevV2) checkLocked(ctx context.Context, state *lockedState, r *record) error {
 	if q == nil || ctx == nil || ctx.Err() != nil || state == nil || r == nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "", 0, normalUdevDiagCheckInput)
 		return ErrUnknown
 	}
 	q.mu.Lock()
 	closed, failed := q.closed, q.ledger.failed
 	q.mu.Unlock()
 	if closed || failed != nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "", 0, normalUdevDiagCheckLifecycle)
 		return errors.Join(ErrUnknown, failed)
 	}
 	v, ok := normalOrdinaryUdevV2Slots.Load(q.g)
 	if !ok || v.(*normalOrdinaryUdevV2Slot).source != q {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "", 0, normalUdevDiagCheckSlot)
 		return ErrUnknown
 	}
 	if !q.authority.admission.businessAllowed() {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "", 0, normalUdevDiagCheckAdmission)
 		return ErrUnknown
 	}
 	if e := normalKernelPrepV2R2Caller(); e != nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "", 0, normalUdevDiagCheckCaller)
 		return e
 	}
 	current, e := nativeBirthCurrentConsumerIdentity()
 	if e != nil || current != q.current {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "", 0, normalUdevDiagCheckIdentity)
 		return errors.Join(ErrUnknown, e)
 	}
 	ref, e := q.filesystem.referenceLocked(ctx, state)
 	if e != nil || ref != q.originalFS {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "", 0, normalUdevDiagCheckFilesystem)
 		return errors.Join(ErrUnknown, e)
 	}
 	kernel, e := q.filesystem.kernelConsumer.referenceLocked(ctx, state)
 	if e != nil || kernel != q.kernel {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "", 0, normalUdevDiagCheckKernel)
 		return errors.Join(ErrUnknown, e)
 	}
 	if e = q.filesystem.memoryConsumer.recheckLocked(ctx, state, q.g); e != nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "", 0, normalUdevDiagCheckMemory)
 		return e
 	}
 	if q.filesystem.memoryConsumer.reference != q.memory {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "", 0, normalUdevDiagCheckMemoryReference)
 		return ErrUnknown
 	}
 	if e = q.monitor.verify(); e != nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "", 0, normalUdevDiagCheckMonitor)
 		return e
 	}
 	if e = q.namespaces.verify(-1); e != nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "", 0, normalUdevDiagCheckNamespaces)
 		return e
 	}
 	if e = q.catalog.verify(); e != nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "", 0, normalUdevDiagCheckCatalog)
 		return e
 	}
 	prep, e := q.preparation.referenceLocked(ctx, state)
 	if e != nil || prep != q.preparationReference {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "", 0, normalUdevDiagCheckPreparation)
 		return errors.Join(ErrUnknown, e)
 	}
 	return nil
@@ -421,14 +476,20 @@ func (q *normalOrdinaryUdevV2) checkLocked(ctx context.Context, state *lockedSta
 func (q *normalOrdinaryUdevV2) originalMainLocked(ctx context.Context, state *lockedState, r *record, role string, credential *unix.Ucred, peer *os.File) error {
 	reader, ok := any(q.g).(normalSystemOriginalRoleMainLeaseReader)
 	if !ok {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, role, 0, normalUdevDiagLeaseReader)
 		return ErrUnknown
 	}
 	lease, e := reader.normalSystemOriginalRoleMainLeaseLocked(ctx, state, r, role)
 	if e != nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, role, 0, normalUdevDiagLeaseRead)
 		return e
 	}
 	defer lease.close()
-	return lease.matchOriginalMainPacket(ctx, credential, peer)
+	e = lease.matchOriginalMainPacket(ctx, credential, peer)
+	if e != nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, role, 0, normalUdevDiagLeaseMatch)
+	}
+	return e
 }
 func (q *normalOrdinaryUdevV2) emitOriginalMainLocked(ctx context.Context, state *lockedState, r *record, credential *unix.Ucred, peer *os.File, body []byte) error {
 	if e := q.checkLocked(ctx, state, r); e != nil {
@@ -473,20 +534,25 @@ func (q *normalOrdinaryUdevV2) emitOriginalMainLocked(ctx context.Context, state
 }
 func (q *normalOrdinaryUdevV2) beginColdTriggerLocked(ctx context.Context, state *lockedState, r *record, credential *unix.Ucred, peer *os.File) (*normalOrdinaryUdevV2ColdTrigger, error) {
 	if e := q.checkLocked(ctx, state, r); e != nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagBeginCheck)
 		return nil, e
 	}
 	if e := q.originalMainLocked(ctx, state, r, "udev-init", credential, peer); e != nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagBeginLease)
 		return nil, e
 	}
 	if credential == nil || peer == nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagBeginPeer)
 		return nil, ErrUnknown
 	}
 	uuid, e := normalOrdinaryUdevV2NewTriggerUUID()
 	if e != nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagBeginUUID)
 		return nil, e
 	}
 	fd, e := unix.FcntlInt(peer.Fd(), unix.F_DUPFD_CLOEXEC, 0)
 	if e != nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagBeginDuplicate)
 		return nil, e
 	}
 	t := &normalOrdinaryUdevV2ColdTrigger{source: q, uuid: uuid, peer: os.NewFile(uintptr(fd), "original cold-trigger init main peer"), credential: *credential}
@@ -494,33 +560,40 @@ func (q *normalOrdinaryUdevV2) beginColdTriggerLocked(ctx context.Context, state
 	if q.closed || q.cold != nil {
 		q.mu.Unlock()
 		t.peer.Close()
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagBeginColdState)
 		return nil, ErrUnknown
 	}
 	q.cold = t
 	q.mu.Unlock()
 	if e = q.advanceColdLocked(ctx, state, r, t); e != nil {
 		q.fail(e)
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagBeginAdvance)
 		return nil, e
 	}
 	return t, nil
 }
 func (q *normalOrdinaryUdevV2) advanceColdLocked(ctx context.Context, state *lockedState, r *record, t *normalOrdinaryUdevV2ColdTrigger) error {
 	if t == nil || t.source != q {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagAdvanceTarget)
 		return ErrUnknown
 	}
 	if e := q.checkLocked(ctx, state, r); e != nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagAdvanceCheck)
 		return e
 	}
 	if e := q.originalMainLocked(ctx, state, r, "udev-init", &t.credential, t.peer); e != nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagAdvanceLease)
 		return e
 	}
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	if q.closed || q.cold != t || q.ledger.failed != nil {
+		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagAdvanceLifecycle)
 		return ErrUnknown
 	}
 	for _, processed := range t.pending {
 		if !processed {
+			normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagAdvancePending)
 			return ErrUnknown
 		}
 	}
@@ -533,12 +606,14 @@ func (q *normalOrdinaryUdevV2) advanceColdLocked(ctx context.Context, state *loc
 		entry := q.catalog.ordered[t.next]
 		object, e := normalFilesystemFDObject(int(entry.uevent.Fd()))
 		if e != nil || object != entry.object {
+			normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagAdvanceObject)
 			return errors.Join(ErrUnknown, e)
 		}
 		t.pending[entry.path] = false
 		literal := []byte("add " + t.uuid + "\n")
 		n, e := unix.Pwrite(int(entry.uevent.Fd()), literal, 0)
 		if e != nil || n != len(literal) {
+			normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagAdvanceWrite)
 			return errors.Join(ErrUnknown, e, fmt.Errorf("original catalog fixed synthetic trigger not confirmed"))
 		}
 	}

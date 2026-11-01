@@ -1,0 +1,47 @@
+{
+  "status": "EXACT_D915_ARTIFACT_GATE_WRITTEN_NATIVE_NOT_YET_INTERPRETED",
+  "source_lock_sha256": "cad17a4ef30a895fba5e9b2fae753cb10b76211592f47b8a63906a180bcfe57c",
+  "source_freeze_sha256": "e417b10683c65f802218f9e2e34144aa13a5fb44eb35649c4f8828388ee9c62b",
+  "gate_path": "/data/neon-build/validation/normal-udev-cold-inner-diagnostic-20261102/runtime-review-20261101T194637Z-d9154f.json",
+  "gate_sha256": "ac0177524953337d36baa8422720dd045ecc712adf515b86495a620fdf8e5d2e",
+  "files7": {
+    "pkg/dsga/resourceguard/normal_ordinary_udev_v2_source_linux.go": "598a0226f7b61c29a3d6c953cd95beb9420717fb93565a8071a6c236ca6c282b",
+    "pkg/dsga/resourceguard/normal_system_role_service_listener_linux.go": "4c26b0727ffe50c292f08bf8f339f5a2c799c1322bf95d2f5a8e778e6bd0c5b8",
+    "pkg/dsga/resourceguard/normal_system_role_spawn_linux.go": "c7bc104760f6bcb9f95749a58f6c1d7377d484b69d7fff72362523e27be7c2a0",
+    "pkg/dsga/resourceguard/normal_ordinary_actions_v2_server_linux.go": "881aceae528e8380ea6249d4bd71b138bbf6be595ee88809486942809e5469ed",
+    "pkg/dsga/resourceguard/normal_system_role_diagnostic_linux.go": "22f38aa9cc58aa9f6a25175b54f931e45003e48d9e4dc915d04930ca698c57c2",
+    "pkg/dsga/resourceguard/normal_system_role_diagnostic_linux_test.go": "93c239b520ee684c993bdf2a70e745936b322f1fe5cddefd20d908a1c9a66588",
+    "pkg/dsga/resourceguard/normal_zz_stock_real_roles_native_test.go": "d1a36d8120ba6b292fd96e32ea2b9ee0c310fd6e006d4add7e75740bf16e4078"
+  },
+  "support1": {
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_native_test.go": "32eeb0b79c4d449e09673cbc478c3e80c4c0636a5ad78bea973ae07ac11c241a"
+  },
+  "actual_artifacts": {
+    "service.test": "4e7dfcea16f3cce7167ad079623789d157207aff975b2145b0f986beaf0c3efb",
+    "host-memory.test": "d7c6c68a969d2d31ebe0118df73b16cd69725799d396cc708c7d7138781f8864",
+    "resource-guard.real": "7ee3f9e926bab5d6ac239dac82f5a68604df8ef7ddebc192639091442d3560f6",
+    "vm-builder.real": "952e1da1a5257c8ae02194b13ccb8b8bb7669492697df10e11be0b12a6ce2caf"
+  },
+  "actual_focused_roots": [
+    "TestNormalOrdinaryActionsV2CannotPrepareWithoutOriginalSources",
+    "TestOrdinaryUdevV2RawJSONAndNewGuardNeverProduceSource",
+    "TestNormalRoleDiagnosticAbsentAndSnapshotIsolation",
+    "TestNormalRoleDiagnosticConcurrentFixedCapacity"
+  ],
+  "actual_subcases": 0,
+  "skips": 0,
+  "phase_exits": {
+    "u.exitcode": 0,
+    "cli.exitcode": 0,
+    "builder.exitcode": 0,
+    "native-compile.exitcode": 0,
+    "native-target-list.exitcode": 0,
+    "host-compile.exitcode": 0,
+    "host-export.exitcode": 0,
+    "fixture-seed.exitcode": 0
+  },
+  "native_nonce": "20261101T194637Z-d9154f-native",
+  "Source": false,
+  "normal": false,
+  "E": 0
+}

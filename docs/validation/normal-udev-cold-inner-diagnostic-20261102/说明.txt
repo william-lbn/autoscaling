@@ -1,0 +1,6 @@
+只增加原source四方法既有失败return前固定整数诊断，检查/次序/错误/状态/锁/等待不改。原diag7依赖保持逐SHA不动。
+本轮4race目标/0skip、8必要产物阶段均0；S真实102.4266s仍FAIL，初始stock198及R1活/退出同freshref均过。
+原udev-init真正进入beginCold并成功，实际进入cold.wait，随后记录stage16（listener原client PIDFD alive检查非nil）再原Wait SIGKILL9/client137。
+stage16仅证明原getter拒绝，尚未区别EINTR/失效FD/POLLNVAL/POLLIN，不能叫client确实死亡；本轮不将之前cd8的begin失败重标为修复，也不自动归因a45/4b旧137。
+候选真实六payload loader/version最终全部0，原官方Vector0755修复仅候选副本、原字节SHA不变。此为loader候选而非Gate/角色/Source资格。
+真实9服务/PG/安全normal降限/normal/E/K8s仍未通过。下一只诊断同一次PIDFD Poll原n/revents/errno事实，不通过加时/忽略错误求绿。

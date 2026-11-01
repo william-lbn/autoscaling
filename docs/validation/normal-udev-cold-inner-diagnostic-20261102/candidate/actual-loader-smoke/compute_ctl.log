@@ -1,0 +1,45 @@
+Usage: compute_ctl [OPTIONS] --pgdata <DATADIR> --connstr <DATABASE_URL> --compute-id <COMPUTE_ID>
+
+Options:
+  -b, --pgbin <PGBIN>
+          [env: POSTGRES_PATH=] [default: postgres]
+  -r, --remote-ext-base-url <REMOTE_EXT_BASE_URL>
+          The base URL for the remote extension storage proxy gateway
+      --external-http-port <EXTERNAL_HTTP_PORT>
+          The port to bind the external listening HTTP server to. Clients running outside the compute will talk to the compute through this port. Keep the previous name for this argument around for a smoother release with the control plane [default: 3080]
+      --internal-http-port <INTERNAL_HTTP_PORT>
+          The port to bind the internal listening HTTP server to. Clients include the neon extension (for installing remote extensions) and local_proxy [default: 3081]
+      --http-port <HTTP_PORT>
+          Backwards-compatible --http-port for Hadron deployments. Functionally the same as --external-http-port
+  -D, --pgdata <DATADIR>
+          
+  -C, --connstr <DATABASE_URL>
+          
+      --privileged-role-name <PRIVILEGED_ROLE_NAME>
+          [default: neon_superuser]
+      --cgroup <CGROUP>
+          [default: neon-postgres]
+      --filecache-connstr <FILECACHE_CONNSTR>
+          [default: "host=localhost port=5432 dbname=postgres user=cloud_admin sslmode=disable application_name=vm-monitor"]
+      --vm-monitor-addr <VM_MONITOR_ADDR>
+          [default: 0.0.0.0:10301]
+      --resize-swap-on-bind
+          
+      --set-disk-quota-for-fs <SET_DISK_QUOTA_FOR_FS>
+          
+  -c, --config <CONFIG>
+          
+  -i, --compute-id <COMPUTE_ID>
+          
+  -p, --control-plane-uri <CONTROL_PLANE_API_BASE_URL>
+          
+      --installed-extensions-collection-interval <INSTALLED_EXTENSIONS_COLLECTION_INTERVAL>
+          Interval in seconds for collecting installed extensions statistics [default: 3600]
+      --dev
+          Run in development mode, skipping VM-specific operations like process termination
+      --pg-init-timeout <PG_INIT_TIMEOUT>
+          
+      --lakebase-mode <LAKEBASE_MODE>
+          [default: false] [possible values: true, false]
+  -h, --help
+          Print help

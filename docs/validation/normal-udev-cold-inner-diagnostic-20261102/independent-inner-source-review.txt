@@ -1,0 +1,21 @@
+冷启动内部三层窄诊断：最终source-only独立审查
+
+准确freeze e417b10683c65f802218f9e2e34144aa13a5fb44eb35649c4f8828388ee9c62b；唯一新prod
+normal_ordinary_udev_v2_source_linux.go 598a0226f7b61c29a3d6c953cd95beb9420717fb93565a8071a6c236ca6c282b。
+全部原diag6和support32e逐SHA仍同。所审新差异无明确阻断，可继续必要Go4；本结论尚不代替
+新4ELF/精确源码图/实际native终态，真实S门只给后继准确nonce。
+
+新增31个私有固定整数reason：check1001–1014、main1101–1103、begin1201–1207、advance1301–1307，
+复用stage8；不是31个测试或新公共协议。只在既有失败return前记原已决定事实，不读payload/
+credentials、不更改Source/选择/额度/超时/重试。q.check未知role写0只诊断，不授任何角色资格。
+
+原check顺序与全部e/ErrUnknown/errors.Join返回保留；originalMain把唯一一次match的返回先赋e，
+失败记录后return同e，原defer lease.close仍覆盖全部路径，没有二次match或新pin所有权。
+begin原UUID/dup/peer.close/q.cold赋值和advance失败q.fail顺序全保。advance原q.mu/deferunlock、
+pending检查/对象核/Pwrite错误与正常循环没有放宽；失败分支虽新增q.mu→diag.mu，但aux
+helper只固定array短锁，snapshot从不取q或其它业务锁，锁外才通知/输出，无反向锁边。
+
+observer及helper字节没有变化，kill/Wait决议顺序也未动。本次仅审生产差异，不新增模型/AST
+测试、不重跑旧绿。必要4U复用受影响的原source/actions拒伪与diag2，不能拿它们冒真实来源。
+d9154f图新产物完成后须核新source1|原diag6七项及support，原子门只绑定其准确Guest和native。
+原cd8 actual47、a45/4b actual9历史仍保留，当前仍未完成normal/E。

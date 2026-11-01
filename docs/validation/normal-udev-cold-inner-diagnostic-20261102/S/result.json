@@ -1,0 +1,52 @@
+{
+  "stable_id": "NEON-S-STOCK-COLD-INNER-DIAGNOSTIC-001",
+  "status": "FAIL_COMPONENT_OR_FIXTURE",
+  "Host_container_exit": 1,
+  "Guest_exits": [
+    "1"
+  ],
+  "initial_exits": [
+    "0"
+  ],
+  "R1_alive_refs": [
+    "df221d6c48180c905d7e9a6aa19b8451eba2d64e02b7a1c2bc932dc065811cda"
+  ],
+  "R1_exited_refs": [
+    "df221d6c48180c905d7e9a6aa19b8451eba2d64e02b7a1c2bc932dc065811cda"
+  ],
+  "actual_stock_receipts": [
+    {
+      "projection_sha256": "f662e3897f680c22310fce4019d11c51692d310c4cb2a4f595ac988435d98e7e",
+      "wait_sha256": "415632a9a38518c5bc7b9160090ca89384b076f4ca9888e3e2fe27e1b16c8a28",
+      "manifest_sha256": "885ab22a3873a51f2c8feac800ec635337cec8d6491cd81f8e3862fdd5bccece",
+      "package_lock_sha256": "cca0c098d0138d7159f1a09a90ec71618e798ac87272825d3e12778cbc6e5332",
+      "targets": 198,
+      "runtime_phase": 3,
+      "typed_source": true,
+      "normal": false
+    }
+  ],
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "seconds": 102.42662949499208,
+  "actual_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+  "Guest_ELF_sha256": "4e7dfcea16f3cce7167ad079623789d157207aff975b2145b0f986beaf0c3efb",
+  "Host_ELF_sha256": "d7c6c68a969d2d31ebe0118df73b16cd69725799d396cc708c7d7138781f8864",
+  "Host_API_is_model": true,
+  "production_CLI_only_compiled": true,
+  "ordinary_services_executed": false,
+  "PG_executed": false,
+  "normal_authorized": false,
+  "E": 0,
+  "diagnostic_only": true,
+  "actual_role_entries": [
+    "udev-init"
+  ],
+  "role_kill_diagnostic_json": [
+    "{\"count\":12,\"dropped\":0,\"events\":[{\"stage\":1,\"role\":5,\"decision_unix_nano\":1793562629547668947,\"recorded_unix_nano\":1793562629547668947,\"value\":5},{\"stage\":2,\"role\":5,\"decision_unix_nano\":1793562629547751303,\"recorded_unix_nano\":1793562629547751303,\"value\":0},{\"stage\":12,\"role\":5,\"decision_unix_nano\":1793562631610953539,\"recorded_unix_nano\":1793562631610953539,\"value\":0},{\"stage\":3,\"role\":5,\"decision_unix_nano\":1793562631613502685,\"recorded_unix_nano\":1793562631613502685,\"value\":0},{\"stage\":4,\"role\":5,\"decision_unix_nano\":1793562631872608089,\"recorded_unix_nano\":1793562631872608089,\"value\":0},{\"stage\":5,\"role\":5,\"decision_unix_nano\":1793562632227993249,\"recorded_unix_nano\":1793562632227993249,\"value\":0},{\"stage\":6,\"role\":5,\"decision_unix_nano\":1793562634677387145,\"recorded_unix_nano\":1793562634677387145,\"value\":0},{\"stage\":7,\"role\":5,\"decision_unix_nano\":1793562634677393346,\"recorded_unix_nano\":1793562634677393346,\"value\":0},{\"stage\":8,\"role\":5,\"decision_unix_nano\":1793562645983610108,\"recorded_unix_nano\":1793562645983610108,\"value\":0},{\"stage\":9,\"role\":5,\"decision_unix_nano\":1793562645983638709,\"recorded_unix_nano\":1793562645983638709,\"value\":0},{\"stage\":10,\"role\":5,\"decision_unix_nano\":1793562645983639935,\"recorded_unix_nano\":1793562645983639935,\"value\":0},{\"stage\":16,\"role\":5,\"decision_unix_nano\":1793562657712547815,\"recorded_unix_nano\":1793562657725041158,\"value\":0}]}",
+    "{\"count\":12,\"dropped\":0,\"events\":[{\"stage\":1,\"role\":5,\"decision_unix_nano\":1793562629547668947,\"recorded_unix_nano\":1793562629547668947,\"value\":5},{\"stage\":2,\"role\":5,\"decision_unix_nano\":1793562629547751303,\"recorded_unix_nano\":1793562629547751303,\"value\":0},{\"stage\":12,\"role\":5,\"decision_unix_nano\":1793562631610953539,\"recorded_unix_nano\":1793562631610953539,\"value\":0},{\"stage\":3,\"role\":5,\"decision_unix_nano\":1793562631613502685,\"recorded_unix_nano\":1793562631613502685,\"value\":0},{\"stage\":4,\"role\":5,\"decision_unix_nano\":1793562631872608089,\"recorded_unix_nano\":1793562631872608089,\"value\":0},{\"stage\":5,\"role\":5,\"decision_unix_nano\":1793562632227993249,\"recorded_unix_nano\":1793562632227993249,\"value\":0},{\"stage\":6,\"role\":5,\"decision_unix_nano\":1793562634677387145,\"recorded_unix_nano\":1793562634677387145,\"value\":0},{\"stage\":7,\"role\":5,\"decision_unix_nano\":1793562634677393346,\"recorded_unix_nano\":1793562634677393346,\"value\":0},{\"stage\":8,\"role\":5,\"decision_unix_nano\":1793562645983610108,\"recorded_unix_nano\":1793562645983610108,\"value\":0},{\"stage\":9,\"role\":5,\"decision_unix_nano\":1793562645983638709,\"recorded_unix_nano\":1793562645983638709,\"value\":0},{\"stage\":10,\"role\":5,\"decision_unix_nano\":1793562645983639935,\"recorded_unix_nano\":1793562645983639935,\"value\":0},{\"stage\":16,\"role\":5,\"decision_unix_nano\":1793562657712547815,\"recorded_unix_nano\":1793562657725041158,\"value\":0}]}"
+  ],
+  "ordinary9_qualified": false
+}

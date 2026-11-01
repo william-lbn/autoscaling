@@ -1,0 +1,22 @@
+{
+  "base": "c6e5af38650cac0a43a6bce2a8b6ab03688cb670",
+  "files": {
+    "pkg/dsga/resourceguard/normal_ordinary_udev_v2_source_linux.go": "598a0226f7b61c29a3d6c953cd95beb9420717fb93565a8071a6c236ca6c282b"
+  },
+  "frozen_diagnostic_dependency": {
+    "base": "c6e5af38650cac0a43a6bce2a8b6ab03688cb670",
+    "files": {
+      "pkg/dsga/resourceguard/normal_system_role_service_listener_linux.go": "4c26b0727ffe50c292f08bf8f339f5a2c799c1322bf95d2f5a8e778e6bd0c5b8",
+      "pkg/dsga/resourceguard/normal_system_role_spawn_linux.go": "c7bc104760f6bcb9f95749a58f6c1d7377d484b69d7fff72362523e27be7c2a0",
+      "pkg/dsga/resourceguard/normal_ordinary_actions_v2_server_linux.go": "881aceae528e8380ea6249d4bd71b138bbf6be595ee88809486942809e5469ed",
+      "pkg/dsga/resourceguard/normal_system_role_diagnostic_linux.go": "22f38aa9cc58aa9f6a25175b54f931e45003e48d9e4dc915d04930ca698c57c2",
+      "pkg/dsga/resourceguard/normal_system_role_diagnostic_linux_test.go": "93c239b520ee684c993bdf2a70e745936b322f1fe5cddefd20d908a1c9a66588",
+      "pkg/dsga/resourceguard/normal_zz_stock_real_roles_native_test.go": "d1a36d8120ba6b292fd96e32ea2b9ee0c310fd6e006d4add7e75740bf16e4078"
+    },
+    "source_support_dependency": {
+      "pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_native_test.go": "32eeb0b79c4d449e09673cbc478c3e80c4c0636a5ad78bea973ae07ac11c241a"
+    },
+    "scope": "fixed64 private diag only; wall clock explicitly not monotonic, event insertion order preserved; source policies/kill/Wait/budgets/25/30 unchanged"
+  },
+  "scope": "source-only fixed failure gate enum; same checks/order/errors/state/locks/wait; private fixed64 no payload/callback/auth change"
+}
