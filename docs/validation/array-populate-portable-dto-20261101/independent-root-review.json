@@ -1,0 +1,23 @@
+{
+  "reviewer": "Root",
+  "utc": "2026-11-01T05:45:17.867504+00:00",
+  "result": "PASS_PORTABLE_DTO_EXTRACTION_ONLY",
+  "source3": {
+    "pkg/dsga/resourceguard/native_array_populate.go": "6c1081ed4837f877bbfd7e1e23fa5d200f321e4f926df6438ceb1f42032cd0e0",
+    "pkg/dsga/resourceguard/native_array_populate_file.go": "46d7c369ea9c946a43b6bedaa14f2a78d375410a97b3b21b498a6e4de980e408",
+    "pkg/dsga/resourceguard/native_array_populate_file_test.go": "b56dfdad0ba6cb5b69abfec891203cf7abdb8c14df50d07f398fb43f7416b992"
+  },
+  "original_linux_file_diff": "only original comment/type removed; rest byte-identical",
+  "field_type_order_tags": "all five control.Uint64 and original tags exact",
+  "actual_U_roots": 5,
+  "actual_U_subcases": 46,
+  "new_U_roots": 1,
+  "new_U_subcases": 6,
+  "actual_Darwin_arm64_CGO0_compile_exit": 0,
+  "Linux_FD_IO_parser_authorization_unchanged": true,
+  "normalPGMemoryControl_common_file_unchanged": true,
+  "no_nonLinux_FD_or_capability_stub_added": true,
+  "native_execution_new": false,
+  "normal_authorized": false,
+  "E": 0
+}

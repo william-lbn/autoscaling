@@ -19,15 +19,6 @@ const arrayPopulateStatusBytes = 256
 const arrayPopulateControlFD = 9
 const arrayPopulateParentFD = 10
 
-// 四FD必须由原Root真实map_files/原PG boot验证者提供。本私有组件不接受HTTP、
-// 租户路径或“verified”bool；仍须后继原Source/完整生命周期消费者接线。
-type arrayPopulateFile struct {
-	Device    control.Uint64 `json:"device"`
-	Inode     control.Uint64 `json:"inode"`
-	FileBytes control.Uint64 `json:"file_bytes"`
-	Offset    control.Uint64 `json:"offset"`
-	Length    control.Uint64 `json:"length"`
-}
 type arrayPopulateContext struct {
 	Original              ProcessIdentity      `json:"original"`
 	PGBootID              control.Uint64       `json:"pg_boot_id"`

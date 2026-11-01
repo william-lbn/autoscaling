@@ -1,0 +1,5 @@
+仅恢复已提交公共PG引用的跨平台编译：原带Linux tag的native_array_populate.go中五字段arrayPopulateFile与职责注释原样移到无tag的native_array_populate_file.go。没有把整个Linux helper变成通用代码，没有unsupported假实现，未改normal_pg_memory_control_source.go、FD使用者、C、解析器或授权逻辑。type逐字相同，原Linux文件仅删除该定义和注释。
+
+准确Git7a3e8fa+only3源码独立nonce4a8ee9，6530实际COPY全OK。Linux5个直接race根零fail/skip；新codec1根6子例使用原PG reference.files字段验证>2^53和MaxUint64的规范字符串与准确还原、拒非canonical数字/指数/overflow/leadingzero/negative。其它四根为原helper wire/response/cap边界与PG BPF直接回归。Darwin/arm64 CGO0 test-c实际退出0、仅编译不执行。两任务同一2CPU/2GiB硬限制RUN内并行，worker18.29秒；分阶段U、Darwin和component均0。
+
+不把此兼容修复转签R2旧23/159收据。该旧图Darwin真实失败仍保留，后继联合图可叠本3源。无S/E新增、无完整Source或normal授权；所有Git由Root统一。

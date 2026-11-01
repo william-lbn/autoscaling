@@ -1,0 +1,37 @@
+{
+  "base": "7a3e8fa66b916444b7c750e40fec1abb367463e1",
+  "component": "pure five-field cross-platform DTO extraction",
+  "owned3": {
+    "pkg/dsga/resourceguard/native_array_populate.go": "6c1081ed4837f877bbfd7e1e23fa5d200f321e4f926df6438ceb1f42032cd0e0",
+    "pkg/dsga/resourceguard/native_array_populate_file.go": "46d7c369ea9c946a43b6bedaa14f2a78d375410a97b3b21b498a6e4de980e408",
+    "pkg/dsga/resourceguard/native_array_populate_file_test.go": "b56dfdad0ba6cb5b69abfec891203cf7abdb8c14df50d07f398fb43f7416b992"
+  },
+  "old_type_SHA256": "5df9cd1bf46b908e68302c7b30a8565a6cc31d1a8f50a06bf198760628291d8b",
+  "new_type_SHA256": "5df9cd1bf46b908e68302c7b30a8565a6cc31d1a8f50a06bf198760628291d8b",
+  "type_byte_equality": true,
+  "old_Linux_file_only_definition_and_its_comment_removed": true,
+  "normal_pg_memory_control_source.go_unchanged": true,
+  "Linux_roots": [
+    "TestArrayPopulateFilePortableReferenceCodec",
+    "TestNativeArrayPopulateOriginalPlanWire",
+    "TestNativeArrayPopulatePreparedResponse",
+    "TestNativeArrayPopulateExplicitReserveAndCaps",
+    "TestNormalPGMemoryControlStrictBPFInstructions"
+  ],
+  "Linux_root_count": 5,
+  "Linux_subcases": 46,
+  "new_codec_root": 1,
+  "new_codec_subcases": 6,
+  "fail": 0,
+  "skip": 0,
+  "Darwin_compile_exit": 0,
+  "Darwin_executed": false,
+  "actual_COPY": 6530,
+  "actual_COPY_all_OK": true,
+  "source_lock_SHA256": "2830debd3ed024df0d70eb21fdf92bcae7c321a18fd6b4050bcdd374dbec9e95",
+  "darwin_binary_SHA256": "7181533fb6b3facb3d20711f91a013827019ff7938c0b16421a1bc181d46d426",
+  "runtime_semantics_changed": false,
+  "S": "NOT_RUN pure DTO extraction",
+  "normal_authorized": false,
+  "E": 0
+}
