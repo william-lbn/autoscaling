@@ -11,7 +11,10 @@ import (
 	"net"
 	"os"
 	"reflect"
+	"strconv"
+	"strings"
 	"sync"
+	"time"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"golang.org/x/sys/unix"
@@ -226,59 +229,75 @@ func (p *normalSystemRoleBrokerExecProof) close() {
 	}
 }
 func (p *normalSystemRoleBrokerExecProof) verifyLocked(ctx context.Context, state *lockedState, system *normalSystemLifecycleSource) error {
-	if p == nil || p.closed || system != p.system || system.binding != p.binding || ctx == nil || ctx.Err() != nil {
-		return ErrUnknown
+	_, err := p.verifyOriginalObservationLocked(ctx, state, system)
+	return err
+}
+
+// 此core每次重新完成原私有事实校验，只返回本调用栈的新Observation，不保存缓存。
+// 唯一完整task/ELF检查放在所有声明、权限、WAL和ns/root检查之后。
+func (p *normalSystemRoleBrokerExecProof) verifyOriginalObservationLocked(ctx context.Context, state *lockedState, system *normalSystemLifecycleSource) (normalSystemRoleObservation, error) {
+	var zero normalSystemRoleObservation
+	if p == nil || system == nil || state == nil || p.task == nil || p.declaration == nil || ctx == nil || ctx.Err() != nil {
+		return zero, ErrUnknown
+	}
+	if p.closed {
+		return zero, errors.Join(ErrUnknown, fmt.Errorf("original broker proof closed"))
+	}
+	if system != p.system || system.binding != p.binding {
+		return zero, errors.Join(ErrUnknown, fmt.Errorf("original broker proof System differs"))
 	}
 	current, e := nativeBirthCurrentConsumerIdentity()
 	if e != nil || current != p.binding.RootConsumer {
-		return fmt.Errorf("original broker consumer changed")
+		return zero, fmt.Errorf("original broker consumer changed")
 	}
 	if e = p.task.verify(); e != nil {
-		return e
+		return zero, e
 	}
 	if len(p.witnesses) != 4 {
-		return fmt.Errorf("original broker durable witnesses incomplete")
-	}
-	observed, e := system.inspectOriginalBrokerTask(ctx, p.task, normalSystemRoleBrokerKind, normalSystemRoleBrokerArgv(), normalSystemRoleBrokerEnvironment())
-	if e != nil {
-		return e
-	}
-	expected := p.transfer.Task
-	expected.Binding = system.binding
-	if observed != expected {
-		return fmt.Errorf("original broker task differs from original exec-stop observation")
+		return zero, fmt.Errorf("original broker durable witnesses incomplete")
 	}
 	if p.task.source.PID != current.PID || p.task.source.StartTicks != uint64(current.StartTicks) {
-		return fmt.Errorf("original broker task is not this process")
+		return zero, fmt.Errorf("original broker task is not this process")
 	}
 	if e = p.declaration.verify(ctx); e != nil {
-		return e
+		return zero, e
 	}
 	if e = normalSystemRoleServicePrivileges(p.task.procfd); e != nil {
-		return e
+		return zero, e
 	}
 	var dir, lock unix.Stat_t
 	if unix.Fstat(int(state.dir.Fd()), &dir) != nil || unix.Fstat(int(state.lock.Fd()), &lock) != nil || dir.Dev != p.stateDevice || dir.Ino != p.stateInode || lock.Dev != p.lockDevice || lock.Ino != p.lockInode {
-		return fmt.Errorf("original broker resource lock object changed")
+		return zero, fmt.Errorf("original broker resource lock object changed")
 	}
 	if e = normalSystemRoleServiceValidateTransferLocked(ctx, state, p.transfer); e != nil {
-		return e
+		return zero, e
 	}
 	for name, wanted := range p.witnesses {
 		actual, e := readNormalSystemRoleFileWitness(state, name)
 		if e != nil || actual != wanted {
-			return errors.Join(ErrUnknown, e, fmt.Errorf("original broker durable source prefix changed"))
+			return zero, errors.Join(ErrUnknown, e, fmt.Errorf("original broker durable source prefix changed"))
 		}
 	}
 	ns, e := normalFilesystemFDObject(int(p.namespace.Fd()))
 	if e != nil || ns != p.transfer.Origin.Filesystem.Namespace {
-		return fmt.Errorf("original broker namespace FD changed")
+		return zero, fmt.Errorf("original broker namespace FD changed")
 	}
 	root, e := normalFilesystemFDObject(int(p.root.Fd()))
 	if e != nil || root != p.transfer.Origin.Filesystem.Root {
-		return fmt.Errorf("original broker root FD changed")
+		return zero, fmt.Errorf("original broker root FD changed")
 	}
-	return nil
+	meter := beginNormalBrokerInspectionDEV(ctx)
+	observed, e := system.inspectOriginalBrokerTask(ctx, p.task, normalSystemRoleBrokerKind, normalSystemRoleBrokerArgv(), normalSystemRoleBrokerEnvironment())
+	meter.finish()
+	if e != nil {
+		return zero, e
+	}
+	expected := p.transfer.Task
+	expected.Binding = system.binding
+	if observed != expected {
+		return zero, fmt.Errorf("original broker task differs from original exec-stop observation")
+	}
+	return observed, nil
 }
 func (p *normalSystemRoleBrokerExecProof) originalTaskForFilesystem(ctx context.Context, system *normalSystemLifecycleSource) (*normalSystemOriginalTask, error) {
 	if p == nil {
@@ -300,14 +319,19 @@ func (p *normalSystemRoleBrokerExecProof) originalTaskForFilesystem(ctx context.
 func (p *normalSystemRoleBrokerExecProof) originalTaskForFilesystemLocked(ctx context.Context, state *lockedState, system *normalSystemLifecycleSource) (*normalSystemOriginalTask, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	if e := p.verifyLocked(ctx, state, system); e != nil {
+	observed, e := p.verifyOriginalObservationLocked(ctx, state, system)
+	if e != nil {
 		return nil, errors.Join(ErrUnknown, e)
-	}
-	if _, e := system.inspectOriginalBrokerTask(ctx, p.task, normalSystemRoleBrokerKind, normalSystemRoleBrokerArgv(), normalSystemRoleBrokerEnvironment()); e != nil {
-		return nil, e
 	}
 	p.task.mu.Lock()
 	defer p.task.mu.Unlock()
+	// 只消费刚完成的完整Observation，仍以原Task/pidfd核身份再dup；不是按PID重开。
+	if observed.PID != p.task.source.PID || observed.StartTicks != p.task.source.StartTicks || observed.Binding != system.binding {
+		return nil, ErrUnknown
+	}
+	if e = p.task.verify(); e != nil {
+		return nil, e
+	}
 	source := p.task.source
 	pidfd, e := unix.FcntlInt(uintptr(p.task.pidfd), unix.F_DUPFD_CLOEXEC, 0)
 	if e != nil {
@@ -431,4 +455,83 @@ func receiveNormalSystemRoleBrokerExecProof(ctx context.Context, g *Guard, syste
 	accepted = true
 	success = true
 	return proof, nil
+}
+
+// 仅DEV ctx可安装的固定字段聚合，没有可替换函数或业务选择器。生产Background无此值。
+// rchar是整个R2进程逻辑读取，包含采样自身开销与其它goroutine，绝非exact ELF io.Copy n。
+type normalBrokerInspectionDEVTraceKey struct{}
+type normalBrokerInspectionDEVSummary struct {
+	Calls                  uint64 `json:"calls"`
+	DurationNS             uint64 `json:"duration_ns"`
+	WholeProcessRcharDelta uint64 `json:"whole_R2_rchar_delta"`
+	MissingIOSamples       uint64 `json:"missing_or_nonmonotonic_io_samples"`
+}
+type normalBrokerInspectionDEVTrace struct {
+	mu      sync.Mutex
+	summary normalBrokerInspectionDEVSummary
+}
+
+func (t *normalBrokerInspectionDEVTrace) snapshot() normalBrokerInspectionDEVSummary {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return t.summary
+}
+
+type normalBrokerInspectionDEVMeter struct {
+	trace   *normalBrokerInspectionDEVTrace
+	started time.Time
+	before  uint64
+	sampled bool
+}
+
+func normalBrokerInspectionDEVReadChars() (uint64, bool) {
+	f, e := os.Open("/proc/self/io")
+	if e != nil {
+		return 0, false
+	}
+	defer f.Close()
+	raw, e := nativeBirthReadBounded(f, 4096)
+	if e != nil {
+		return 0, false
+	}
+	for _, line := range strings.Split(string(raw), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 2 && fields[0] == "rchar:" {
+			n, e := strconv.ParseUint(fields[1], 10, 64)
+			return n, e == nil
+		}
+	}
+	return 0, false
+}
+func beginNormalBrokerInspectionDEV(ctx context.Context) normalBrokerInspectionDEVMeter {
+	trace, _ := ctx.Value(normalBrokerInspectionDEVTraceKey{}).(*normalBrokerInspectionDEVTrace)
+	if trace == nil {
+		return normalBrokerInspectionDEVMeter{}
+	}
+	before, ok := normalBrokerInspectionDEVReadChars()
+	return normalBrokerInspectionDEVMeter{trace: trace, started: time.Now(), before: before, sampled: ok}
+}
+func (m normalBrokerInspectionDEVMeter) finish() {
+	if m.trace == nil {
+		return
+	}
+	elapsed := uint64(time.Since(m.started).Nanoseconds())
+	after, ok := normalBrokerInspectionDEVReadChars()
+	t := m.trace
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	add := func(value *uint64, n uint64) {
+		if ^uint64(0)-*value < n {
+			*value = ^uint64(0)
+		} else {
+			*value += n
+		}
+	}
+	add(&t.summary.Calls, 1)
+	add(&t.summary.DurationNS, elapsed)
+	if !ok || !m.sampled || after < m.before {
+		add(&t.summary.MissingIOSamples, 1)
+	} else {
+		add(&t.summary.WholeProcessRcharDelta, after-m.before)
+	}
 }

@@ -1,0 +1,108 @@
+{
+  "current_AS_head": "dd23075dbef5aada37744d5d6c0423de54e1ff59",
+  "source_comparison": {
+    "normal_filesystem_origin_source_linux.go": {
+      "current_sha256": "e272fe67bc4fe3cf06cbbbd63ac7d718f40ca1571a6a11b2196767ef227dc312",
+      "compiled6d_sha256": "e272fe67bc4fe3cf06cbbbd63ac7d718f40ca1571a6a11b2196767ef227dc312",
+      "same_as_compiled6d": true
+    },
+    "normal_filesystem_origin_source_task_linux.go": {
+      "current_sha256": "1f39f7f8fccc91896be0b49fca399aac58da28cbbeb218439ec2e8f1f5d87e5c",
+      "compiled6d_sha256": "1f39f7f8fccc91896be0b49fca399aac58da28cbbeb218439ec2e8f1f5d87e5c",
+      "same_as_compiled6d": true
+    },
+    "normal_system_lifecycle_source_linux.go": {
+      "current_sha256": "09e34587e4d37811a8c5dfe5a3e2c3477c582b7fdd208cf57eb86c801596f608",
+      "compiled6d_sha256": "09e34587e4d37811a8c5dfe5a3e2c3477c582b7fdd208cf57eb86c801596f608",
+      "same_as_compiled6d": true
+    },
+    "normal_system_lifecycle_source_task_linux.go": {
+      "current_sha256": "bc43bd4bf126b7cd68bb4e00b607d64dff9107e684ebf23cab38fb7bfe178ec6",
+      "compiled6d_sha256": "bc43bd4bf126b7cd68bb4e00b607d64dff9107e684ebf23cab38fb7bfe178ec6",
+      "same_as_compiled6d": true
+    },
+    "normal_system_role_gate_broker_linux.go": {
+      "current_sha256": "d53868ecd99e152d7149dc7a0fba699167f08758dcb73c593527123aa1dabd92",
+      "compiled6d_sha256": "d53868ecd99e152d7149dc7a0fba699167f08758dcb73c593527123aa1dabd92",
+      "same_as_compiled6d": true
+    },
+    "normal_system_role_service_transfer_linux.go": {
+      "current_sha256": "766c4bb13924e1e7ba71250dfdf46152e1b13251939db5057ff69c003f0639a5",
+      "compiled6d_sha256": "766c4bb13924e1e7ba71250dfdf46152e1b13251939db5057ff69c003f0639a5",
+      "same_as_compiled6d": true
+    },
+    "normal_system_role_declaration_linux.go": {
+      "current_sha256": "86349788170c6a184ce382498752ea25f3c1063a240358f2d721b996a6047b32",
+      "compiled6d_sha256": "86349788170c6a184ce382498752ea25f3c1063a240358f2d721b996a6047b32",
+      "same_as_compiled6d": true
+    },
+    "normal_system_role_stdio_linux.go": {
+      "current_sha256": "7c10ef37e9983c02d600917ebdd43163592752427384e43845ec81de9e64b923",
+      "compiled6d_sha256": "7c10ef37e9983c02d600917ebdd43163592752427384e43845ec81de9e64b923",
+      "same_as_compiled6d": true
+    },
+    "normal_system_ordinary_v2_layout_linux.go": {
+      "current_sha256": "0ad7a544764307f5d6e7951fed3cbc71adcadf72eb8b34b7190b85183a44fb14",
+      "compiled6d_sha256": "0ad7a544764307f5d6e7951fed3cbc71adcadf72eb8b34b7190b85183a44fb14",
+      "same_as_compiled6d": true
+    },
+    "normal_system_ordinary_v2_layout_runtime_linux.go": {
+      "current_sha256": "8359aa7f22cf2117b275a65bc6f328ba00dcd3a4a5a05f7967731dd2653226df",
+      "compiled6d_sha256": "8359aa7f22cf2117b275a65bc6f328ba00dcd3a4a5a05f7967731dd2653226df",
+      "same_as_compiled6d": true
+    },
+    "normal_system_role_v2_runtime_linux.go": {
+      "current_sha256": "aced6f687f0c8006272f41882a7c090c39a0d4cb7df2321cbb6234e536fa4f07",
+      "compiled6d_sha256": "aced6f687f0c8006272f41882a7c090c39a0d4cb7df2321cbb6234e536fa4f07",
+      "same_as_compiled6d": true
+    },
+    "native_birth_source_linux.go": {
+      "current_sha256": "11ab64d2baa19920535cbae77c2c5eefb072d1ca8702a96c827752c8679eab22",
+      "compiled6d_sha256": "11ab64d2baa19920535cbae77c2c5eefb072d1ca8702a96c827752c8679eab22",
+      "same_as_compiled6d": true
+    }
+  },
+  "actual_run": "/data/neon-build/validation/normal-stock-preparation-native-20261101T152123Z-6d0689-native",
+  "actual_console_sha256": "6bcf35fc27032a72e03d159a58790711b6ebc212c6c9eea14908ec148743845f",
+  "actual_result": {
+    "stable_id": "NEON-S-STOCK-UDEV-PREPARATION-001",
+    "status": "FAIL_COMPONENT_OR_FIXTURE",
+    "Host_container_exit": 1,
+    "Guest_exits": [
+      "1"
+    ],
+    "initial_exits": [
+      "1"
+    ],
+    "R1_alive_refs": [],
+    "R1_exited_refs": [],
+    "actual_stock_receipts": [],
+    "actual_kvm": {
+      "enabled": true,
+      "present": true
+    },
+    "seconds": 54.23530043900246,
+    "actual_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+    "Guest_ELF_sha256": "f34ed72266e2e355b69fbc84de7ac4690fe9f56ced0309eb69514c21b393bfec",
+    "Host_ELF_sha256": "e845ffea5552dce50e2b6a2219ae04d124a68d3a5f073f6b662db710cb2387b4",
+    "Host_API_is_model": true,
+    "production_CLI_only_compiled": true,
+    "ordinary_services_executed": false,
+    "PG_executed": false,
+    "normal_authorized": false,
+    "E": 0
+  },
+  "statements": "static call graph byte lower bounds, no runtime hash timers collected; no production modifications",
+  "static_byte_lower_bounds_excluding_small_scripts_and_config": {
+    "FS_reference": 90853248,
+    "proof_originalTaskForFilesystem_including_declaration": 223089560,
+    "stdio_factory_two_reference_and_two_proof_calls": 627885616,
+    "layout_one_reference_and_one_proof_call": 313942808,
+    "combined_before_stock": 941828424,
+    "proposed_single_inspection_saved_per_proof_call": 89235824,
+    "three_proof_calls_save": 267707472
+  },
+  "actual_Guest_processors": 2,
+  "actual_processor_evidence": "console.log: [0.863810] smpboot: Total of 2 processors activated",
+  "implementation": "READ_ONLY_REVIEW_NO_PRODUCTION_EDIT_NO_NEW_TEST"
+}

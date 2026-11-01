@@ -1,0 +1,31 @@
+{
+  "scope": "SAME_CALL_FRESH_BROKER_OBSERVATION_ONLY_NOT_CONTENT_CACHE_OR_SOURCE",
+  "base": "dd23075dbef5aada37744d5d6c0423de54e1ff59",
+  "source_lock_sha256": "f28fe931f3b7bef7b35ff4bb5b98e1c53b58858b7454fa4829289bebfee7711f",
+  "owned2": {
+    "pkg/dsga/resourceguard/normal_system_role_service_transfer_linux.go": "05cf76ffee14300c91fb5399cfec0fd3d6c144ab611d0ef5390333aa915f68aa",
+    "pkg/dsga/resourceguard/normal_system_role_service_transfer_observation_linux_test.go": "b8f43b26f5340eaa56b7b45ee3d99dd4edb8b4c991df61d5f07c584438c66e91"
+  },
+  "result": {
+    "build_exit": 0,
+    "end_utc": "2026-11-01T15:56:48.425122+00:00",
+    "normal_authorized": false,
+    "native_executed": false,
+    "E": 0,
+    "u_exit": 0,
+    "cli_exit": 0,
+    "darwin_exit": 0,
+    "passed_roots": [
+      "TestNormalBrokerFreshObservationDEVTraceIsDiagnosticOnly",
+      "TestNormalBrokerFreshObservationRejectsOriginalProofAndTaskDrift",
+      "TestNormalBrokerFreshObservationRetainsOriginalTransferWALRejection"
+    ],
+    "passed_subtests": 12,
+    "missing_expected": []
+  },
+  "real_original_18c_S_next": "P2 original25/30s windows and actual2vCPU; pending",
+  "whole_R2_rchar_is_not_exact_ELF_io_Copy_n": true,
+  "Source": false,
+  "normal": false,
+  "E": 0
+}

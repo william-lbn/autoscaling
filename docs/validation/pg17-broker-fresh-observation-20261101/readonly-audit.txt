@@ -1,0 +1,51 @@
+PG17 FS/proof 重复哈希只读性能审查（2026-11-01）
+
+结论：先做同一次proof校验中重复OriginalObservation的合并，不做生命周期内容缓存，也不扩大Ready窗口。当前source真实S尚未通过；本报告不授Source或normal资格。
+
+原始证据
+- 6d0689-native：/data/neon-build/validation/normal-stock-preparation-native-20261101T152123Z-6d0689-native。实际18c/KVM、54.235s失败，原console stack停在normalFilesystemTaskExecutable第249行第二次nativeBirthFileHash(expected)，经FS.observe/reference进入Layout.prepare。R1等待metadata；未到真实stock/PG/normal完成。
+- Guest确为2个vCPU：console [0.863810] smpboot: Total of 2 processors activated；normal-memory-host-reference maximum_vcpus=2。不是此前推测的1个vCPU，不能借性能工作任意改Guest几何。
+- 12个本报告相关当前Linux文件与6d准确编译snapshot逐SHA相同，详同名JSON；当前HEAD只供定位，旧run锁不被改写。
+- 实际Guard ELF44,617,912B；BusyBox808,712B，来自原seed-system-source.json。以下均为确定调用图的静态最低读取字节，不是假装已经计时的CPU/磁盘流量。页缓存命中仍需重复sha；是否Guest磁盘/pagefault/CPU SHA占主导目前没有分段timer，不能凭单个stack断言比例。
+
+调用及锁
+1. installNormalSystemRoleV2BrokerRuntime先newNormalSystemRoleStdioFactory，再install...DirectoryLayout，后二者分别自取g.withRecord。不能把它们当同一跨函数资源事务。
+2. stdio工厂内部同一次resource flock：FS.reference（stdio_linux.go:237）→proof.originalTaskForFilesystem（241附近）→f.checkExternalLocked，内部再次FS.reference（275）及proof（279附近）。其后开固定console，不启动角色。
+3. Layout install另一次resource flock：prepare...LayoutLocked第368行FS.reference→372行proof.originalTaskForFilesystem→固定目录创建/WAL。不能把前一个事务FS结论跨到这里复用。
+4. FS.reference持FS.mu，observe依次检查System snapshot/固定实际四配置字节/封存source、原初始前缀及durability witness、原PID1/self pidfd和ns/root、两个实际exe、最后完整mount graph。原锁序resource flock→FS.mu→System.mu→Task.mu；FS任务类自身无mu，生命周期由FS.mu保护。observe运行期不会重拍原始FD census；这并不是未来所有写者闭合证明。
+5. normalFilesystemTaskExecutable第227行打开原procfd/exe；System.mu下与同System.files[logical canonical]原FD比较dev/inode，actual全hash一次、expected全hash一次，再同时比较System.observed.ELFs原SHA。hash用SectionReader从0读到最多256MiB+1，不依赖文件offset。
+6. proof.originalTaskForFilesystemLocked持proof.mu；verifyLocked内部已做完整inspectOriginalBrokerTask（transfer_linux.go:242），返回后第306行立即又做同一inspect。每次broker inspect均持System.mu→Task.mu，检查原Root/boot/UID/GID/原task/实际System控制、同inode/RO实际exe、两个全hash、实际argv/env、末task.verify。verifyLocked此外还做declaration.verify（其内部另hash原Guard一次）、privileges、原state/lock identity、原transfer四前缀、namespace/root FD复核。随后只是dup原pidfd/procfd并构造同原Task。
+7. System3.files仅在readClosure原RO canonical open时形成，逐manifest全hash并解析ELF/依赖；观察ELF列表构造时再读hash。snapshot只是JSON深拷贝的已捕获metadata，不证明当前内容；source.close受System.mu保护并关闭FD。这些长期pin/RO标记不能被当成未来不再需要读内容的授权。
+
+静态重复工作（不含小脚本、配置和其它上游准备）
+- 每FS.reference：2*(Guard+BusyBox)=90,853,248B，约86.64MiB。
+- 每proof.originalTaskForFilesystem：两次broker inspect的4*Guard + declaration.verify的1*Guard =223,089,560B，约212.75MiB。
+- stdio工厂两reference+两proof：627,885,616B。
+- 随后Layout一reference+一proof：313,942,808B。
+- 上述合计941,828,424B，约898.2MiB；此前短消息770.5MiB是未计declaration.verify三次Guard的下限，不是另一个实测值。
+- 仅消除每proof调用中重复的第二个broker inspection，可少2*Guard=89,235,824B；这三个调用合计少267,707,472B（约255.3MiB）。不能据此直接许诺省几秒或Ready必通过。
+
+最窄可实施方案A（推荐，尚未修改）
+只动normal_system_role_service_transfer_linux.go内verify/originalTaskForFilesystem两个私有方法：把所有原declaration/privilege/WAL/namespace/root检查保留，完整inspectOriginalBrokerTask移到验证函数的最后并与原transfer.Task精确比较，只做一次；私有core返回该次OriginalObservation，原verifyLocked薄wrapper仍只返回error，originalTaskForFilesystem消费同一次校验而不再重做inspection。继续持同proof.mu及原resource flock，末尾dup仍绑定原pidfd/procfd，newNormalSystemOriginalTask继续实际verify。
+
+安全条件：
+- 不是从缓存/客户端接收Observation；它仅在本次完整验证调用栈内形成，不保存到对象/map/ctx给未来调用复用。
+- 每次调用仍执行完整当前exe内容hash（actual和expected各一次）、实际argv/env/身份/controls，并保全部四WAL/state/lock/ns/root/declaration校验；不改readonly/canonical/alias规则。
+- 将唯一完整inspection放在声明/状态检查之后，可保最后一道System.closed与实际task/source复核，避免简单删除末次检查后只剩较早的证明。
+- p.task被检查为当前Root自身原pidfd/start/boot；同一Root代码继续执行到dup不可能同时变成另一exec映像还保留当前调用栈。原task末verify、创建Task再次verify仍保留；closed/foreign System/witness drift均继续拒。
+- 所有System/Task锁仍由原inspection获取，不在持System.mu时反调FS或取resource锁。性能计数不会参与业务结果。
+- 如core不能保持上述最后检查顺序，先不合并；尤其不能在检查后插入exec/await/外部回调，再把旧Observation拿来授权。
+
+后续候选B/C：暂不实施
+B：TaskExecutable单次完整hash实际exe→与原observed及sealed manifest digest比较，原pin只做当次same-object/RO/mount/size和前后身份验证，可减少同一inode双读。它仍不是inode缓存；但必须先证明原pin同mount/对象、源摘要一致及并发RW alias/写入边界。仅RO路径或dev/inode不证明没有另一RW mount/旧写FD；当前future writer资格仍缺，所以不能据此授持续normal。未经精确证明和直接反例，不建议现在顺手删第二hash。
+C：stdio构造内两次FS.reference可考虑让同一次完整Observation派生多个纯投影，但resource flock只串行Guard业务/WAL，不冻结kernel exec/mount/RW alias。不能缓存整个FS observation跨前后可变操作、锁释放、callback、角色执行、R1退出或其它生命周期；不同事务的stdio→Layout尤其不可共用。不要引入按inode/mtime/RO路径复用的全局/实例摘要表。
+
+最小DEV观测（以后由Root另定精确owner）
+- 沿原DEV ctx在R2 installRuntime/newStdio/Layout三个固定阶段记录单调start/end，保原timeout25/30不改；输出一次有界汇总，不逐条日志刷console。
+- FS.reference/observe累计calls、持FS锁wall time；TaskExecutable按固定guard/busybox两类分别记录actual_hash和expected_hash调用数、实际io.Copy返回n、累计duration。
+- proof.originalTaskForFilesystem、verify core、broker inspect、declaration.verify各累计calls及duration；这样能区分同一个Guard被谁重复读。若公共hash不便接ctx，可内部hash-core返回digest+n+耗时，原生产API仍只取digest；诊断值不作为Source字段或Ready/预算选择器。
+- 同次记录Guest cpu/time、io.pressure/major-fault可帮助区分SHA与paging；不能把Fstat size当实际读n，更不能以host低CPU推测Guest只有1核。
+- 严格只DEV continue/error观察点，production Background无observer，无HTTP/协议字段；固定小枚举聚合，溢出诊断报错，不记录正文/凭据、不保无限每调用数组。
+- 后续新nonce同18c/同2vCPU/同ELF source-lock，执行原真实Source S；核same gates、原最早失败点和终态，比较计数/bytes/wall。已有run无计数时不追补假的时间；先前失败原raw保留。不新增MODEL responder或旧无关测试矩阵。
+
+本轮动作仅只读源码/原run并写operations两份报告，没有修改生产FS/proof代码、缓存/预算/Guest几何、锁或测试结果。
