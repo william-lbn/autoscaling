@@ -243,7 +243,9 @@ func newNormalSystemRoleStdioFactory(ctx context.Context, g *Guard, filesystem *
 			return e
 		}
 		f := &normalSystemRoleStdioFactory{authority: a, actor: actor, filesystem: filesystem, proof: proof, originalFS: originalFS, roles: map[string]*normalSystemRoleStdio{}}
-		if e = f.checkExternalLocked(ctx, s, r, false); e != nil {
+		// 前一行之前已用原FS/proof实际取得同栈actor；中间仅私有结构/map分配。
+		// 不跨回调/写入/exec复用，不重做紧邻的同一次完整FS/proof核验。
+		if e = f.checkExternalRemainingLocked(ctx, s, r, false); e != nil {
 			actor.close()
 			return e
 		}
@@ -253,6 +255,12 @@ func newNormalSystemRoleStdioFactory(ctx context.Context, g *Guard, filesystem *
 			return e
 		}
 		f.console = console
+		// console打开后、对象发布前再核关闭/取消/失败与原actor存活。
+		if e = f.checkExternalSourcesLive(ctx, false); e != nil {
+			closeErr := console.Close()
+			actor.close()
+			return errors.Join(e, closeErr)
+		}
 		out = f
 		return nil
 	})
@@ -284,6 +292,19 @@ func (f *normalSystemRoleStdioFactory) checkExternalLocked(ctx context.Context, 
 	if e = arrayMatchPIDFD(actor.pidfd, f.actor.pidfd); e != nil {
 		return e
 	}
+	return f.checkExternalRemainingLocked(ctx, s, r, requireCommit)
+}
+
+// 仅供constructor已完成本次原FS/proof校验后和完整wrapper同栈调用。
+// 此函数本身不是完整来源检查，不能授Source或替代prepare/runtime的完整wrapper。
+func (f *normalSystemRoleStdioFactory) checkExternalRemainingLocked(ctx context.Context, s *lockedState, r *record, requireCommit bool) error {
+	if f == nil || f.closed.Load() || f.authority == nil || f.authority.admission == nil || f.actor == nil || f.filesystem == nil || f.proof == nil || ctx == nil || ctx.Err() != nil || s == nil || r == nil {
+		return ErrUnknown
+	}
+	a := f.authority
+	if a.admission.failed.Load() || requireCommit && !a.admission.businessAllowed() || r.Identity != a.origin.ResourceIdentity || r.Floor < a.origin.ResourceFloor || r.Bootstrap == nil || !r.Bootstrap.Applied || !r.Bootstrap.SystemPlacementObserved {
+		return ErrUnknown
+	}
 	nsfd, e := unix.Open("/proc/thread-self/ns/mnt", unix.O_RDONLY|unix.O_CLOEXEC, 0)
 	if e != nil {
 		return e
@@ -311,8 +332,40 @@ func (f *normalSystemRoleStdioFactory) checkExternalLocked(ctx context.Context, 
 		return ErrUnknown
 	}
 	f.actor.mu.Lock()
-	defer f.actor.mu.Unlock()
-	return f.actor.verify()
+	e = f.actor.verify()
+	f.actor.mu.Unlock()
+	if e != nil {
+		return e
+	}
+	return f.checkExternalSourcesLive(ctx, requireCommit)
+}
+
+// cheap状态门，不读取或缓存FS/proof完整来源；各原对象锁分别短持，绝不并持。
+func (f *normalSystemRoleStdioFactory) checkExternalSourcesLive(ctx context.Context, requireCommit bool) error {
+	if f == nil || f.closed.Load() || f.authority == nil || f.authority.admission == nil || f.filesystem == nil || f.proof == nil || f.actor == nil || ctx == nil || ctx.Err() != nil {
+		return ErrUnknown
+	}
+	f.filesystem.mu.Lock()
+	filesystemClosed := f.filesystem.closed
+	f.filesystem.mu.Unlock()
+	f.proof.mu.Lock()
+	proofClosed := f.proof.closed
+	f.proof.mu.Unlock()
+	if filesystemClosed || proofClosed {
+		return ErrUnknown
+	}
+	f.actor.mu.Lock()
+	var e error
+	if f.actor.closed || f.actor.pidfd < 0 {
+		e = ErrUnknown
+	} else {
+		e = arrayRegistryPIDFDAlive(f.actor.pidfd)
+	}
+	f.actor.mu.Unlock()
+	if e != nil || f.closed.Load() || f.authority.admission.failed.Load() || requireCommit && !f.authority.admission.businessAllowed() || ctx.Err() != nil {
+		return errors.Join(ErrUnknown, e, ctx.Err())
+	}
+	return nil
 }
 func normalRoleStdioFixedRole(role string) bool {
 	switch role {

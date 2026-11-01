@@ -1,0 +1,171 @@
+{
+  "scope": "existing original evidence only; no old rerun/new benchmark/no spec or Guest CPU change",
+  "rows": [
+    {
+      "label": "C2",
+      "nonce": "normal-stock-preparation-go-20261101T172833Z-0f8abd",
+      "buildx_wall_seconds": 66.00772278700606,
+      "RUN_cpu_seconds": 78.177635,
+      "RUN_cpu_average_cores_against_buildx_wall": 1.1843710356781108,
+      "RUN_cpu_quota_cores": 3,
+      "RUN_CPU_share_of_declared_against_buildx_wall": 0.3947903452260369,
+      "RUN_cpu_throttled_seconds": 0.69466,
+      "RUN_nr_throttled": 15,
+      "RUN_memory_peak_bytes": 1083416576,
+      "RUN_io_stat": "253:16 rbytes=45465600 wbytes=126193664 rios=7364 wios=330 dbytes=0 dios=0\n",
+      "GOMAXPROCS": "2",
+      "GOMEMLIMIT": "768MiB",
+      "go_explicit_p": [],
+      "phase_sequential_mtime_deltas": [
+        {
+          "phase": "u",
+          "seconds_from_previous_end_file_mtime": 25.248085686,
+          "end_mtime_ns": 1793554142077988135
+        },
+        {
+          "phase": "cli",
+          "seconds_from_previous_end_file_mtime": 10.085034251,
+          "end_mtime_ns": 1793554152163022386
+        },
+        {
+          "phase": "builder",
+          "seconds_from_previous_end_file_mtime": 3.311011247,
+          "end_mtime_ns": 1793554155474033633
+        },
+        {
+          "phase": "darwin",
+          "seconds_from_previous_end_file_mtime": 1.671005677,
+          "end_mtime_ns": 1793554157145039310
+        },
+        {
+          "phase": "native-compile",
+          "seconds_from_previous_end_file_mtime": 12.545042632,
+          "end_mtime_ns": 1793554169690081942
+        },
+        {
+          "phase": "host-compile",
+          "seconds_from_previous_end_file_mtime": 7.07702406,
+          "end_mtime_ns": 1793554176767106002
+        },
+        {
+          "phase": "host-export",
+          "seconds_from_previous_end_file_mtime": 0.079000269,
+          "end_mtime_ns": 1793554176846106271
+        },
+        {
+          "phase": "fixture-seed",
+          "seconds_from_previous_end_file_mtime": 0.584001985,
+          "end_mtime_ns": 1793554177430108256
+        }
+      ],
+      "all_phase_exitcodes": {
+        "u.exitcode": 0,
+        "cli.exitcode": 0,
+        "builder.exitcode": 0,
+        "darwin.exitcode": 0,
+        "native-compile.exitcode": 0,
+        "host-compile.exitcode": 0,
+        "host-export.exitcode": 0,
+        "fixture-seed.exitcode": 0
+      },
+      "source_lock_sha256": "c6d0296b15022a382ba2963b996f2439c7ebd2e15bc4a47b51087135a9d88fdc",
+      "comparison_limits": [
+        "CPU stats cover inner RUN; wall covers whole buildx incl source/cache/export; ratio is scoped estimate, not per-phase CPU",
+        "phase deltas infer from sequential shell exitcode mtimes and preceding compiled-source manifest mtime; no independent per-phase CPU samples",
+        "throttled_usec is cgroup accumulated throttled duration, not directly percentage of wall or lost parallel work"
+      ]
+    },
+    {
+      "label": "D",
+      "nonce": "normal-stock-preparation-go-20261101T174900Z-aa9174",
+      "buildx_wall_seconds": 94.66587625799002,
+      "RUN_cpu_seconds": 80.747258,
+      "RUN_cpu_average_cores_against_buildx_wall": 0.8529711147440495,
+      "RUN_cpu_quota_cores": 3,
+      "RUN_CPU_share_of_declared_against_buildx_wall": 0.2843237049146832,
+      "RUN_cpu_throttled_seconds": 0.430715,
+      "RUN_nr_throttled": 8,
+      "RUN_memory_peak_bytes": 1309835264,
+      "RUN_io_stat": "253:16 rbytes=276692992 wbytes=297304064 rios=18076 wios=663 dbytes=0 dios=0\n",
+      "GOMAXPROCS": "2",
+      "GOMEMLIMIT": "768MiB",
+      "go_explicit_p": [],
+      "phase_sequential_mtime_deltas": [
+        {
+          "phase": "u",
+          "seconds_from_previous_end_file_mtime": 33.907121219,
+          "end_mtime_ns": 1793555378140396219
+        },
+        {
+          "phase": "cli",
+          "seconds_from_previous_end_file_mtime": 21.292076041,
+          "end_mtime_ns": 1793555399432472260
+        },
+        {
+          "phase": "builder",
+          "seconds_from_previous_end_file_mtime": 3.423012219,
+          "end_mtime_ns": 1793555402855484479
+        },
+        {
+          "phase": "darwin",
+          "seconds_from_previous_end_file_mtime": 6.717023974,
+          "end_mtime_ns": 1793555409572508453
+        },
+        {
+          "phase": "native-compile",
+          "seconds_from_previous_end_file_mtime": 14.705052463,
+          "end_mtime_ns": 1793555424277560916
+        },
+        {
+          "phase": "host-compile",
+          "seconds_from_previous_end_file_mtime": 8.615030723,
+          "end_mtime_ns": 1793555432892591639
+        },
+        {
+          "phase": "host-export",
+          "seconds_from_previous_end_file_mtime": 0.095000339,
+          "end_mtime_ns": 1793555432987591978
+        },
+        {
+          "phase": "fixture-seed",
+          "seconds_from_previous_end_file_mtime": 0.689002457,
+          "end_mtime_ns": 1793555433676594435
+        }
+      ],
+      "all_phase_exitcodes": {
+        "u.exitcode": 0,
+        "cli.exitcode": 0,
+        "builder.exitcode": 0,
+        "darwin.exitcode": 0,
+        "native-compile.exitcode": 0,
+        "host-compile.exitcode": 0,
+        "host-export.exitcode": 0,
+        "fixture-seed.exitcode": 0
+      },
+      "source_lock_sha256": "60ae4aa18385a00f4b0efc69a6acabeafbfe0ed9aa27890427bbfcdec443b1eb",
+      "comparison_limits": [
+        "CPU stats cover inner RUN; wall covers whole buildx incl source/cache/export; ratio is scoped estimate, not per-phase CPU",
+        "phase deltas infer from sequential shell exitcode mtimes and preceding compiled-source manifest mtime; no independent per-phase CPU samples",
+        "throttled_usec is cgroup accumulated throttled duration, not directly percentage of wall or lost parallel work"
+      ]
+    }
+  ],
+  "host_snapshot": {
+    "logical_CPUs": 16,
+    "memory": {
+      "MemTotal": 25212862464,
+      "MemAvailable": 22335426560
+    },
+    "current_active_budget": [
+      {
+        "nonce": "20261101T175223Z-3e9b59",
+        "cpu": 2,
+        "memory": 3221225472,
+        "state": "running",
+        "kind": "native"
+      }
+    ],
+    "global_reserved_cpu": 2,
+    "global_reserved_memory": 3221225472
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "base": "6de0b4923c1cbf13642f9aa3520074122e706f05",
+  "owned2": {
+    "pkg/dsga/resourceguard/normal_system_role_stdio_linux.go": "7d053bc543b326e1d2c28b254f0fccb55d9aa0607de0d35c4894d83e439ea785",
+    "pkg/dsga/resourceguard/normal_system_role_stdio_factory_live_linux_test.go": "ed2260591b49dde15908a90f0f91c8dbb88f7908163a0cda9fd41f882bcde53b"
+  },
+  "race_roots": 7,
+  "subtests": 13,
+  "skips": 0,
+  "phases8_all_zero": true,
+  "actualS": false,
+  "Source": false,
+  "normal": false,
+  "E": 0,
+  "evidence": [
+    {
+      "archive": "D-U/metadata.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T174900Z-aa9174/metadata.json",
+      "sha256": "0bd870633c73e1dc567a7cfb8cd4446783a3c48f836a45e43425bc70e1493c98"
+    },
+    {
+      "archive": "D-U/compile-result.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T174900Z-aa9174/compile-result.json",
+      "sha256": "ff9dc07157e16b57c4b88f60fb66e98f97dffdb130df1e830844f707ada1cadf"
+    },
+    {
+      "archive": "D-U/phase-results.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T174900Z-aa9174/phase-results.json",
+      "sha256": "8547135385ae6f45f70be25edcbea4df6ab601edf64875297681bef724746003"
+    },
+    {
+      "archive": "D-U/budget-spec.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T174900Z-aa9174/budget-spec.json",
+      "sha256": "bc60920b46f5532af718879ed7ada8a56defb12542d9d1902d0b03f14812340a"
+    },
+    {
+      "archive": "D-U/export/test.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T174900Z-aa9174/export/test.json",
+      "sha256": "12d6c279dad4e60d320768464580db500ea83e589388f0539b32ce3f9efc39dc"
+    },
+    {
+      "archive": "D-U/export/test.stderr",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T174900Z-aa9174/export/test.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "archive": "D-U/export/cpu.stat",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T174900Z-aa9174/export/cpu.stat",
+      "sha256": "59c3f386d4ac0cec338472b21f51be149a491739eeb026b09a4184bb822ba3c1"
+    },
+    {
+      "archive": "D-U/export/memory.peak",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T174900Z-aa9174/export/memory.peak",
+      "sha256": "a029a857450eb817e513e05d899363c1e74375e6d947ebb4b22dd0cf63ee6f0f"
+    },
+    {
+      "archive": "D-U/export/io.stat",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T174900Z-aa9174/export/io.stat",
+      "sha256": "549424ffa9ba13e4267107e067d5631d122ebb2183ecdfecd68946d489642912"
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T174900Z-aa9174/source-lock.json",
+      "sha256": "60ae4aa18385a00f4b0efc69a6acabeafbfe0ed9aa27890427bbfcdec443b1eb",
+      "bytes": 167195
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T174900Z-aa9174/context-input-proof.json",
+      "sha256": "08fedf448c9c67ee55b828f460da54fd5cdd94938c2a31c11b54955c12122d4a",
+      "bytes": 1917668
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T174900Z-aa9174/Dockerfile",
+      "sha256": "030f0923b40d9cdf1fad887094510686c4f519723b81885cfeffc05459f6eb16",
+      "bytes": 2894
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T174900Z-aa9174/worker.py",
+      "sha256": "c681b900ef40c9f305e08134981e2fc422ee6e52d4debfe4ce1f29988436042f",
+      "bytes": 2941
+    },
+    {
+      "archive": "D-S/result.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-native-20261101T174900Z-aa9174-native/result.json",
+      "sha256": "5cbf1e277587b77f694533e504559126556ae207afa9371526e8054d5418e766"
+    },
+    {
+      "archive": "D-S/source-lock.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-native-20261101T174900Z-aa9174-native/source-lock.json",
+      "sha256": "81d45d6093a13a5ea67908935ce23b09f9e0c4cb6b1b67bd79effc16155b4515"
+    },
+    {
+      "archive": "D-S/actual-usage-last.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-native-20261101T174900Z-aa9174-native/actual-usage-last.json",
+      "sha256": "d45d4eff801c8226491c8f579dfc56eae0a50294cba3f3c8cc7923973918d6d0"
+    },
+    {
+      "archive": "D-S/console.log",
+      "original": "/data/neon-build/validation/normal-stock-preparation-native-20261101T174900Z-aa9174-native/console.log",
+      "sha256": "4622561e5fda430f8b0913af9afc07697def8b62bb0038d5d5246cf9abae55d9"
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-native-20261101T174900Z-aa9174-native/source-lock.json",
+      "sha256": "81d45d6093a13a5ea67908935ce23b09f9e0c4cb6b1b67bd79effc16155b4515",
+      "bytes": 1163
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-native-20261101T174900Z-aa9174-native/worker.py",
+      "sha256": "664c034edf489aa2a2ee4b66466599a7b79acfa44fc480b64c804459ed80da05",
+      "bytes": 14477
+    }
+  ]
+}

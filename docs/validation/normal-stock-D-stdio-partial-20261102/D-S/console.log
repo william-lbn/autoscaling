@@ -1,0 +1,621 @@
+[    0.000000] Linux version 6.12.26-william-normal-split-metadata-v1-c67181104ec1 (root@buildkitsandbox) (x86_64-linux-gnu-gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, GNU ld (GNU Binutils for Ubuntu) 2.42) #3 SMP PREEMPT_DYNAMIC Sun Nov  1 02:40:09 UTC 2026
+[    0.000000] Command line: console=ttyS0,115200 rdinit=/init panic=-1 kernelcore=512M neonvm.dsga=1 neonvm.dsga.kernel_bootstrap=normal-split-metadata-v2 neonvm.dsga.physical_profile=kernel-v1 neonvm.dsga.prebootstrap_system=normal-split-metadata-v1 neonvm.dsga.normal_split=split-metadata-v1 neonvm.pid_max_limit=512 memhp_default_state=online_movable cgroup.memory=nokmem,nosocket,nobpf
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+[    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+[    0.000000] BIOS-e820: [mem 0x0000000000100000-0x000000001ffd8fff] usable
+[    0.000000] BIOS-e820: [mem 0x000000001ffd9000-0x000000001fffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000b0000000-0x00000000bfffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fed1c000-0x00000000fed1ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000feffc000-0x00000000feffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+[    0.000000] neonvm: PID hard limit 512 installed before PID allocation
+[    0.000000] NX (Execute Disable) protection: active
+[    0.000000] APIC: Static calls initialized
+[    0.000000] SMBIOS 3.0.0 present.
+[    0.000000] DMI: QEMU Standard PC (Q35 + ICH9, 2009), BIOS rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org 04/01/2014
+[    0.000000] DMI: Memory slots populated: 1/1
+[    0.000000] Hypervisor detected: KVM
+[    0.000000] kvm-clock: Using msrs 4b564d01 and 4b564d00
+[    0.000001] kvm-clock: using sched offset of 709028162 cycles
+[    0.000002] clocksource: kvm-clock: mask: 0xffffffffffffffff max_cycles: 0x1cd42e4dffb, max_idle_ns: 881590591483 ns
+[    0.000005] tsc: Detected 2399.998 MHz processor
+[    0.000983] last_pfn = 0x1ffd9 max_arch_pfn = 0x400000000
+[    0.001288] MTRR map: 4 entries (3 fixed + 1 variable; max 19), built from 8 variable MTRRs
+[    0.001300] x86/PAT: Configuration [0-7]: WB  WC  UC- UC  WB  WP  UC- WT  
+[    0.008047] found SMP MP-table at [mem 0x000f5b80-0x000f5b8f]
+[    0.008062] Using GB pages for direct mapping
+[    0.008215] RAMDISK: [mem 0x1fef4000-0x1ffcffff]
+[    0.008218] ACPI: Early table checksum verification disabled
+[    0.008222] ACPI: RSDP 0x00000000000F59A0 000014 (v00 BOCHS )
+[    0.008226] ACPI: RSDT 0x000000001FFE28D9 00003C (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008231] ACPI: FACP 0x000000001FFE25D9 0000F4 (v03 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008236] ACPI: DSDT 0x000000001FFE0040 002599 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008240] ACPI: FACS 0x000000001FFE0000 000040
+[    0.008242] ACPI: APIC 0x000000001FFE26CD 000080 (v03 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008246] ACPI: HPET 0x000000001FFE274D 000038 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008248] ACPI: SRAT 0x000000001FFE2785 0000F0 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008251] ACPI: MCFG 0x000000001FFE2875 00003C (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008254] ACPI: WAET 0x000000001FFE28B1 000028 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.008256] ACPI: Reserving FACP table memory at [mem 0x1ffe25d9-0x1ffe26cc]
+[    0.008257] ACPI: Reserving DSDT table memory at [mem 0x1ffe0040-0x1ffe25d8]
+[    0.008258] ACPI: Reserving FACS table memory at [mem 0x1ffe0000-0x1ffe003f]
+[    0.008258] ACPI: Reserving APIC table memory at [mem 0x1ffe26cd-0x1ffe274c]
+[    0.008259] ACPI: Reserving HPET table memory at [mem 0x1ffe274d-0x1ffe2784]
+[    0.008260] ACPI: Reserving SRAT table memory at [mem 0x1ffe2785-0x1ffe2874]
+[    0.008261] ACPI: Reserving MCFG table memory at [mem 0x1ffe2875-0x1ffe28b0]
+[    0.008261] ACPI: Reserving WAET table memory at [mem 0x1ffe28b1-0x1ffe28d8]
+[    0.008416] ACPI: SRAT: Node 0 PXM 0 [mem 0x00000000-0x0009ffff]
+[    0.008419] ACPI: SRAT: Node 0 PXM 0 [mem 0x00100000-0x1fffffff]
+[    0.008420] ACPI: SRAT: Node 0 PXM 0 [mem 0x100000000-0x21fffffff] hotplug
+[    0.008422] NUMA: Node 0 [mem 0x00001000-0x0009ffff] + [mem 0x00100000-0x1ffd8fff] -> [mem 0x00001000-0x1ffd8fff]
+[    0.008426] NODE_DATA(0) allocated [mem 0x1ffd62c0-0x1ffd8fff]
+[    0.008438] Zone ranges:
+[    0.008438]   DMA32    [mem 0x0000000000001000-0x000000001ffd8fff]
+[    0.008440]   Normal   empty
+[    0.008441] Movable zone start for each node
+[    0.008441] Early memory node ranges
+[    0.008442]   node   0: [mem 0x0000000000001000-0x000000000009efff]
+[    0.008443]   node   0: [mem 0x0000000000100000-0x000000001ffd8fff]
+[    0.008444] Initmem setup node 0 [mem 0x0000000000001000-0x000000001ffd8fff]
+[    0.009014] On node 0, zone DMA32: 1 pages in unavailable ranges
+[    0.037087] On node 0, zone DMA32: 97 pages in unavailable ranges
+[    0.037091] On node 0, zone DMA32: 39 pages in unavailable ranges
+[    0.039849] ACPI: LAPIC_NMI (acpi_id[0xff] dfl dfl lint[0x1])
+[    0.039986] IOAPIC[0]: apic_id 0, version 17, address 0xfec00000, GSI 0-23
+[    0.039990] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.039992] ACPI: INT_SRC_OVR (bus 0 bus_irq 5 global_irq 5 high level)
+[    0.039993] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+[    0.039995] ACPI: INT_SRC_OVR (bus 0 bus_irq 10 global_irq 10 high level)
+[    0.039995] ACPI: INT_SRC_OVR (bus 0 bus_irq 11 global_irq 11 high level)
+[    0.039999] ACPI: Using ACPI (MADT) for SMP configuration information
+[    0.040000] ACPI: HPET id: 0x8086a201 base: 0xfed00000
+[    0.040004] TSC deadline timer available
+[    0.040010] CPU topo: Max. logical packages:   1
+[    0.040011] CPU topo: Max. logical dies:       1
+[    0.040012] CPU topo: Max. dies per package:   1
+[    0.040016] CPU topo: Max. threads per core:   1
+[    0.040018] CPU topo: Num. cores per package:     2
+[    0.040018] CPU topo: Num. threads per package:   2
+[    0.040019] CPU topo: Allowing 2 present CPUs plus 0 hotplug CPUs
+[    0.040058] kvm-guest: APIC: eoi() replaced with kvm_guest_apic_eoi_write()
+[    0.040119] kvm-guest: KVM setup pv remote TLB flush
+[    0.040146] kvm-guest: setup PV sched yield
+[    0.040152] [mem 0x20000000-0xafffffff] available for PCI devices
+[    0.040153] Booting paravirtualized kernel on KVM
+[    0.040155] clocksource: refined-jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645519600211568 ns
+[    0.040164] setup_percpu: NR_CPUS:64 nr_cpumask_bits:2 nr_cpu_ids:2 nr_node_ids:1
+[    0.049207] percpu: Embedded 57 pages/cpu s192600 r8192 d32680 u1048576
+[    0.049316] kvm-guest: PV spinlocks enabled
+[    0.049319] PV qspinlock hash table entries: 256 (order: 0, 4096 bytes, linear)
+[    0.049321] Kernel command line: console=ttyS0,115200 rdinit=/init panic=-1 kernelcore=512M neonvm.dsga=1 neonvm.dsga.kernel_bootstrap=normal-split-metadata-v2 neonvm.dsga.physical_profile=kernel-v1 neonvm.dsga.prebootstrap_system=normal-split-metadata-v1 neonvm.dsga.normal_split=split-metadata-v1 neonvm.pid_max_limit=512 memhp_default_state=online_movable cgroup.memory=nokmem,nosocket,nobpf
+[    0.049434] random: crng init done
+[    0.049512] Dentry cache hash table entries: 65536 (order: 7, 524288 bytes, linear)
+[    0.049552] Inode-cache hash table entries: 32768 (order: 6, 262144 bytes, linear)
+[    0.049674] Fallback order for Node 0: 0 
+[    0.049676] Built 1 zonelists, mobility grouping on.  Total pages: 130935
+[    0.049677] Policy zone: DMA32
+[    0.049678] mem auto-init: stack:off, heap alloc:on, heap free:off
+[    0.049680] software IO TLB: area num 2.
+[    0.291150] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+[    0.291966] Dynamic Preempt: voluntary
+[    0.291997] rcu: Preemptible hierarchical RCU implementation.
+[    0.291999] rcu: 	RCU restricting CPUs from NR_CPUS=64 to nr_cpu_ids=2.
+[    0.292000] 	Trampoline variant of Tasks RCU enabled.
+[    0.292000] 	Tracing variant of Tasks RCU enabled.
+[    0.292001] rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+[    0.292002] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=2
+[    0.292008] RCU Tasks: Setting shift to 1 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=2.
+[    0.292010] RCU Tasks Trace: Setting shift to 1 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=2.
+[    0.293247] NR_IRQS: 4352, nr_irqs: 440, preallocated irqs: 16
+[    0.293551] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.293865] printk: legacy console [ttyS0] enabled
+[    0.778623] ACPI: Core revision 20240827
+[    0.781808] clocksource: hpet: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604467 ns
+[    0.787511] APIC: Switch to symmetric I/O mode setup
+[    0.791816] x2apic enabled
+[    0.794843] APIC: Switched APIC routing to: physical x2apic
+[    0.798531] kvm-guest: APIC: send_IPI_mask() replaced with kvm_send_ipi_mask()
+[    0.803126] kvm-guest: APIC: send_IPI_mask_allbutself() replaced with kvm_send_ipi_mask_allbutself()
+[    0.808923] kvm-guest: setup PV IPIs
+[    0.816942] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+[    0.820740] clocksource: tsc-early: mask: 0xffffffffffffffff max_cycles: 0x229835b7123, max_idle_ns: 440795242976 ns
+[    0.826889] Calibrating delay loop (skipped) preset value.. 4799.99 BogoMIPS (lpj=9599992)
+[    0.831858] x86/cpu: User Mode Instruction Prevention (UMIP) activated
+[    0.834926] Last level iTLB entries: 4KB 0, 2MB 0, 4MB 0
+[    0.837932] Last level dTLB entries: 4KB 0, 2MB 0, 4MB 0, 1GB 0
+[    0.838950] Spectre V1 : Mitigation: usercopy/swapgs barriers and __user pointer sanitization
+[    0.842903] Spectre V2 : Spectre BHI mitigation: SW BHB clearing on syscall and VM exit
+[    0.846890] Spectre V2 : Mitigation: Enhanced / Automatic IBRS
+[    0.850097] Spectre V2 : Spectre v2 / PBRSB-eIBRS: Retire a single CALL on VMEXIT
+[    0.850891] RETBleed: Mitigation: Enhanced IBRS
+[    0.854891] Spectre V2 : mitigation: Enabling conditional Indirect Branch Prediction Barrier
+[    0.858892] Speculative Store Bypass: Mitigation: Speculative Store Bypass disabled via prctl
+[    0.862891] TAA: Mitigation: TSX disabled
+[    0.866890] MMIO Stale Data: Vulnerable: Clear CPU buffers attempted, no microcode
+[    0.870891] GDS: Unknown: Dependent on hypervisor status
+[    0.875045] x86/fpu: Supporting XSAVE feature 0x001: 'x87 floating point registers'
+[    0.878890] x86/fpu: Supporting XSAVE feature 0x002: 'SSE registers'
+[    0.882890] x86/fpu: Supporting XSAVE feature 0x004: 'AVX registers'
+[    0.886890] x86/fpu: Supporting XSAVE feature 0x020: 'AVX-512 opmask'
+[    0.890890] x86/fpu: Supporting XSAVE feature 0x040: 'AVX-512 Hi256'
+[    0.894890] x86/fpu: Supporting XSAVE feature 0x080: 'AVX-512 ZMM_Hi256'
+[    0.898892] x86/fpu: xstate_offset[2]:  576, xstate_sizes[2]:  256
+[    0.902891] x86/fpu: xstate_offset[5]:  832, xstate_sizes[5]:   64
+[    0.906891] x86/fpu: xstate_offset[6]:  896, xstate_sizes[6]:  512
+[    0.910891] x86/fpu: xstate_offset[7]: 1408, xstate_sizes[7]: 1024
+[    0.914891] x86/fpu: Enabled xstate features 0xe7, context size is 2432 bytes, using 'compacted' format.
+[    0.934794] Freeing SMP alternatives memory: 40K
+[    0.934895] pid_max: default: 512 minimum: 301
+[    0.938977] LSM: initializing lsm=lockdown,capability,landlock,yama,apparmor
+[    0.942940] landlock: Up and running.
+[    0.946890] Yama: becoming mindful.
+[    0.949544] AppArmor: AppArmor initialized
+[    0.951063] Mount-cache hash table entries: 1024 (order: 1, 8192 bytes, linear)
+[    0.954976] Mountpoint-cache hash table entries: 1024 (order: 1, 8192 bytes, linear)
+[    0.965493] smpboot: CPU0: Intel Xeon Processor (Cascadelake) (family: 0x6, model: 0x55, stepping: 0x5)
+[    0.975437] Performance Events: unsupported p6 CPU model 85 no PMU driver, software events only.
+[    0.979047] signal: max sigframe size: 3632
+[    0.982911] rcu: Hierarchical SRCU implementation.
+[    0.985951] rcu: 	Max phase no-delay instances is 1000.
+[    0.987374] Timer migration: 1 hierarchy levels; 8 children per group; 1 crossnode level
+[    0.991098] dyndbg: Ignore empty _ddebug table in a CONFIG_DYNAMIC_DEBUG_CORE build
+[    0.995585] smp: Bringing up secondary CPUs ...
+[    1.000263] smpboot: x86: Booting SMP configuration:
+[    1.002905] .... node  #0, CPUs:      #1
+[    1.003809] smp: Brought up 1 node, 2 CPUs
+[    1.009515] smpboot: Total of 2 processors activated (9599.99 BogoMIPS)
+[    1.011990] Memory: 416904K/523740K available (14336K kernel code, 1799K rwdata, 4900K rodata, 2400K init, 1792K bss, 103956K reserved, 0K cma-reserved)
+[    1.015615] devtmpfs: initialized
+[    1.017295] x86/mm: Memory block size: 128MB
+[    1.019580] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    1.023105] futex hash table entries: 512 (order: 3, 32768 bytes, linear)
+[    1.032176] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    1.035172] audit: initializing netlink subsys (disabled)
+[    1.039039] audit: type=2000 audit(1793555448.175:1): state=initialized audit_enabled=0 res=1
+[    1.039123] thermal_sys: Registered thermal governor 'step_wise'
+[    1.042925] cpuidle: using governor ladder
+[    1.046929] cpuidle: using governor menu
+[    1.049630] acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+[    1.051152] PCI: Using configuration type 1 for base access
+[    1.059181] HugeTLB: registered 1.00 GiB page size, pre-allocated 0 pages
+[    1.062905] HugeTLB: 16380 KiB vmemmap can be freed for a 1.00 GiB page
+[    1.066903] HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
+[    1.070906] HugeTLB: 28 KiB vmemmap can be freed for a 2.00 MiB page
+[    1.075335] ACPI: Added _OSI(Module Device)
+[    1.077997] ACPI: Added _OSI(Processor Device)
+[    1.078904] ACPI: Added _OSI(3.0 _SCP Extensions)
+[    1.081950] ACPI: Added _OSI(Processor Aggregator Device)
+[    1.084307] ACPI: 1 ACPI AML tables successfully acquired and loaded
+[    1.088573] ACPI: Interpreter enabled
+[    1.090908] ACPI: PM: (supports S0 S5)
+[    1.093319] ACPI: Using IOAPIC for interrupt routing
+[    1.094926] PCI: Using host bridge windows from ACPI; if necessary, use "pci=nocrs" and report a bug
+[    1.098901] PCI: Using E820 reservations for host bridge windows
+[    1.102845] ACPI: Enabled 3 GPEs in block 00 to 3F
+[    1.106309] ACPI: PCI Root Bridge [PCI0] (domain 0000 [bus 00-ff])
+[    1.106908] acpi PNP0A08:00: _OSC: OS supports [ASPM ClockPM Segments MSI HPX-Type3]
+[    1.110902] acpi PNP0A08:00: _OSC: not requesting OS control; OS requires [ExtendedConfig ASPM ClockPM MSI]
+[    1.115623] PCI host bridge to bus 0000:00
+[    1.118209] pci_bus 0000:00: root bus resource [io  0x0000-0x0cf7 window]
+[    1.118903] pci_bus 0000:00: root bus resource [io  0x0d00-0xffff window]
+[    1.122904] pci_bus 0000:00: root bus resource [mem 0x000a0000-0x000bffff window]
+[    1.126902] pci_bus 0000:00: root bus resource [mem 0x20000000-0xafffffff window]
+[    1.130903] pci_bus 0000:00: root bus resource [mem 0xc0000000-0xfebfffff window]
+[    1.134902] pci_bus 0000:00: root bus resource [mem 0x240000000-0xa3fffffff window]
+[    1.138902] pci_bus 0000:00: root bus resource [bus 00-ff]
+[    1.142756] pci 0000:00:00.0: [8086:29c0] type 00 class 0x060000 conventional PCI endpoint
+[    1.145290] pci 0000:00:01.0: [1234:1111] type 00 class 0x030000 conventional PCI endpoint
+[    1.153209] pci 0000:00:01.0: BAR 0 [mem 0xfd000000-0xfdffffff pref]
+[    1.161652] pci 0000:00:01.0: BAR 2 [mem 0xfebf0000-0xfebf0fff]
+[    1.174843] pci 0000:00:01.0: ROM [mem 0xfebe0000-0xfebeffff pref]
+[    1.180278] pci 0000:00:01.0: Video device with shadowed ROM at [mem 0x000c0000-0x000dffff]
+[    1.186502] pci 0000:00:02.0: [1af4:1058] type 00 class 0x00ff00 conventional PCI endpoint
+[    1.192304] pci 0000:00:02.0: BAR 4 [mem 0xfe000000-0xfe003fff 64bit pref]
+[    1.200429] pci 0000:00:03.0: [1af4:1003] type 00 class 0x078000 conventional PCI endpoint
+[    1.205512] pci 0000:00:03.0: BAR 0 [io  0xc100-0xc13f]
+[    1.209174] pci 0000:00:03.0: BAR 1 [mem 0xfebf1000-0xfebf1fff]
+[    1.218257] pci 0000:00:03.0: BAR 4 [mem 0xfe004000-0xfe007fff 64bit pref]
+[    1.225589] pci 0000:00:04.0: [1af4:1001] type 00 class 0x010000 conventional PCI endpoint
+[    1.229786] pci 0000:00:04.0: BAR 0 [io  0xc000-0xc07f]
+[    1.233380] pci 0000:00:04.0: BAR 1 [mem 0xfebf2000-0xfebf2fff]
+[    1.242905] pci 0000:00:04.0: BAR 4 [mem 0xfe008000-0xfe00bfff 64bit pref]
+[    1.254180] pci 0000:00:05.0: [1af4:1001] type 00 class 0x010000 conventional PCI endpoint
+[    1.257787] pci 0000:00:05.0: BAR 0 [io  0xc080-0xc0ff]
+[    1.262119] pci 0000:00:05.0: BAR 1 [mem 0xfebf3000-0xfebf3fff]
+[    1.270325] pci 0000:00:05.0: BAR 4 [mem 0xfe00c000-0xfe00ffff 64bit pref]
+[    1.278329] pci 0000:00:1f.0: [8086:2918] type 00 class 0x060100 conventional PCI endpoint
+[    1.281878] pci 0000:00:1f.0: quirk: [io  0x0600-0x067f] claimed by ICH6 ACPI/GPIO/TCO
+[    1.284207] pci 0000:00:1f.2: [8086:2922] type 00 class 0x010601 conventional PCI endpoint
+[    1.296257] pci 0000:00:1f.2: BAR 4 [io  0xc180-0xc19f]
+[    1.300505] pci 0000:00:1f.2: BAR 5 [mem 0xfebf4000-0xfebf4fff]
+[    1.306952] pci 0000:00:1f.3: [8086:2930] type 00 class 0x0c0500 conventional PCI endpoint
+[    1.316403] pci 0000:00:1f.3: BAR 4 [io  0x0700-0x073f]
+[    1.323583] ACPI: PCI: Interrupt link LNKA configured for IRQ 10
+[    1.327149] ACPI: PCI: Interrupt link LNKB configured for IRQ 10
+[    1.331186] ACPI: PCI: Interrupt link LNKC configured for IRQ 11
+[    1.335162] ACPI: PCI: Interrupt link LNKD configured for IRQ 11
+[    1.339165] ACPI: PCI: Interrupt link LNKE configured for IRQ 10
+[    1.345064] ACPI: PCI: Interrupt link LNKF configured for IRQ 10
+[    1.347308] ACPI: PCI: Interrupt link LNKG configured for IRQ 11
+[    1.351156] ACPI: PCI: Interrupt link LNKH configured for IRQ 11
+[    1.355041] ACPI: PCI: Interrupt link GSIA configured for IRQ 16
+[    1.358829] ACPI: PCI: Interrupt link GSIB configured for IRQ 17
+[    1.358911] ACPI: PCI: Interrupt link GSIC configured for IRQ 18
+[    1.362662] ACPI: PCI: Interrupt link GSID configured for IRQ 19
+[    1.362911] ACPI: PCI: Interrupt link GSIE configured for IRQ 20
+[    1.366654] ACPI: PCI: Interrupt link GSIF configured for IRQ 21
+[    1.366910] ACPI: PCI: Interrupt link GSIG configured for IRQ 22
+[    1.370711] ACPI: PCI: Interrupt link GSIH configured for IRQ 23
+[    1.376669] iommu: Default domain type: Translated
+[    1.378903] iommu: DMA domain TLB invalidation policy: lazy mode
+[    1.385455] SCSI subsystem initialized
+[    1.387168] pps_core: LinuxPPS API ver. 1 registered
+[    1.390904] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    1.394931] PTP clock support registered
+[    1.399667] NetLabel: Initializing
+[    1.401871] NetLabel:  domain hash size = 128
+[    1.402902] NetLabel:  protocols = UNLABELED CIPSOv4 CALIPSO
+[    1.406649] NetLabel:  unlabeled traffic allowed by default
+[    1.406939] PCI: Using ACPI for IRQ routing
+[    1.411751] pci 0000:00:01.0: vgaarb: setting as boot VGA device
+[    1.414889] pci 0000:00:01.0: vgaarb: bridge control possible
+[    1.414889] pci 0000:00:01.0: vgaarb: VGA device added: decodes=io+mem,owns=io+mem,locks=none
+[    1.414908] vgaarb: loaded
+[    1.417775] clocksource: Switched to clocksource kvm-clock
+[    1.427798] VFS: Disk quotas dquot_6.6.0
+[    1.430408] VFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+[    1.436194] AppArmor: AppArmor Filesystem Enabled
+[    1.439297] pnp: PnP ACPI init
+[    1.441699] system 00:05: [mem 0xb0000000-0xbfffffff window] has been reserved
+[    1.446976] pnp: PnP ACPI: found 6 devices
+[    1.450504] NET: Registered PF_INET protocol family
+[    1.453940] IP idents hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    1.459690] tcp_listen_portaddr_hash hash table entries: 256 (order: 0, 4096 bytes, linear)
+[    1.465053] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    1.469910] TCP established hash table entries: 4096 (order: 3, 32768 bytes, linear)
+[    1.474787] TCP bind hash table entries: 4096 (order: 5, 131072 bytes, linear)
+[    1.479429] TCP: Hash tables configured (established 4096 bind 4096)
+[    1.483864] MPTCP token hash table entries: 512 (order: 1, 12288 bytes, linear)
+[    1.488515] UDP hash table entries: 256 (order: 1, 8192 bytes, linear)
+[    1.492637] UDP-Lite hash table entries: 256 (order: 1, 8192 bytes, linear)
+[    1.497217] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    1.500927] pci_bus 0000:00: resource 4 [io  0x0000-0x0cf7 window]
+[    1.504808] pci_bus 0000:00: resource 5 [io  0x0d00-0xffff window]
+[    1.508705] pci_bus 0000:00: resource 6 [mem 0x000a0000-0x000bffff window]
+[    1.513262] pci_bus 0000:00: resource 7 [mem 0x20000000-0xafffffff window]
+[    1.517557] pci_bus 0000:00: resource 8 [mem 0xc0000000-0xfebfffff window]
+[    1.521829] pci_bus 0000:00: resource 9 [mem 0x240000000-0xa3fffffff window]
+[    1.526779] PCI: CLS 0 bytes, default 64
+[    1.529441] PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
+[    1.529974] Trying to unpack rootfs image as initramfs...
+[    1.533490] software IO TLB: mapped [mem 0x000000001b400000-0x000000001f400000] (64MB)
+[    1.545475] RAPL PMU: API unit is 2^-32 Joules, 0 fixed counters, 10737418240 ms ovfl timer
+[    1.551006] clocksource: tsc: mask: 0xffffffffffffffff max_cycles: 0x229835b7123, max_idle_ns: 440795242976 ns
+[    1.558134] Initialise system trusted keyrings
+[    1.558566] Freeing initrd memory: 880K
+[    1.561166] Key type blacklist registered
+[    1.566694] workingset: timestamp_bits=40 max_order=17 bucket_order=0
+[    1.571431] squashfs: version 4.0 (2009/01/31) Phillip Lougher
+[    1.575858] fuse: init (API version 7.41)
+[    1.579173] integrity: Platform Keyring initialized
+[    1.592257] Key type asymmetric registered
+[    1.595016] Asymmetric key parser 'x509' registered
+[    1.598246] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 247)
+[    1.603612] io scheduler mq-deadline registered
+[    1.606793] io scheduler kyber registered
+[    1.609951] shpchp: Standard Hot Plug PCI Controller Driver version: 0.4
+[    1.614448] input: Power Button as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input0
+[    1.619254] ACPI: button: Power Button [PWRF]
+[    1.623476] ACPI: \_SB_.GSIG: Enabled at IRQ 22
+[    1.631792] ACPI: \_SB_.GSIH: Enabled at IRQ 23
+[    1.640074] ACPI: \_SB_.GSIE: Enabled at IRQ 20
+[    1.647940] ACPI: \_SB_.GSIF: Enabled at IRQ 21
+[    1.657273] virtio_mem virtio0: start address: 0x100000000
+[    1.660919] virtio_mem virtio0: region size: 0xe0000000
+[    1.664258] virtio_mem virtio0: device block size: 0x800000
+[    1.667876] virtio_mem virtio0: nid: 0
+[    1.670425] virtio_mem virtio0: memory block size: 0x8000000
+[    1.673990] virtio_mem virtio0: subblock size: 0x800000
+[    1.677809] virtio_mem virtio0: plugged size: 0x0
+[    1.680780] virtio_mem virtio0: requested size: 0x0
+[    1.684224] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    1.719527] 00:03: ttyS0 at I/O 0x3f8 (irq = 4, base_baud = 115200) is a 16550A
+[    1.778205] brd: module loaded
+[    1.789682] loop: module loaded
+[    1.792357] virtio_blk virtio2: 2/0/0 default/read/poll queues
+[    1.800174] virtio_blk virtio2: [vda] 1048576 512-byte logical blocks (537 MB/512 MiB)
+[    1.807415] virtio_blk virtio3: 2/0/0 default/read/poll queues
+[    1.815010] virtio_blk virtio3: [vdb] 752 512-byte logical blocks (385 kB/376 KiB)
+[    1.822654] Loading iSCSI transport class v2.0-870.
+[    1.826516] tun: Universal TUN/TAP device driver, 1.6
+[    1.830290] VFIO - User Level meta-driver version: 0.3
+[    1.833982] intel_pstate: CPU model not supported
+[    1.838526] xt_time: kernel timezone is -0000
+[    1.841443] ipip: IPv4 and MPLS over IPv4 tunneling driver
+[    1.845435] NET: Registered PF_INET6 protocol family
+[    1.850170] Segment Routing with IPv6
+[    1.852568] In-situ OAM (IOAM) with IPv6
+[    1.855396] NET: Registered PF_PACKET protocol family
+[    1.858857] 9pnet: Installing 9P2000 support
+[    1.861692] Key type dns_resolver registered
+[    1.864661] NET: Registered PF_VSOCK protocol family
+[    1.868070] IPI shorthand broadcast: enabled
+[    1.880608] registered taskstats version 1
+[    1.883503] Loading compiled-in X.509 certificates
+[    1.889392] Demotion targets for Node 0: null
+[    1.892294] AppArmor: AppArmor sha256 policy hashing enabled
+[    1.896361] Unstable clock detected, switching default tracing clock to "global"
+[    1.896361] If you want to keep using the local clock, then add:
+[    1.896361]   "trace_clock=local"
+[    1.896361] on the kernel command line
+[    1.909542] clk: Disabling unused clocks
+[    1.922312] Freeing unused kernel image (initmem) memory: 2400K
+[    1.924558] Write protecting the kernel read-only data: 20480k
+[    1.932728] Freeing unused kernel image (rodata/data gap) memory: 1244K
+[    1.945037] x86/mm: Checked W+X mappings: passed, no W+X pages found.
+[    1.947509] Run /init as init process
+KERNEL_RELEASE=6.12.26-william-normal-split-metadata-v1-c67181104ec1
+KERNEL_NOTES_BEGIN
+BAAAABQAAAADAAAAR05VAFQc2DZtSwcgiuzivnDng2OND95/BgAAAAQAAAABAQAATGludXgAAAAA
+AAAABgAAAAEAAAAAAQAATGludXgAAAAAAAAABAAAAAwAAAATAAAAWGVuAAAAIAAAAAAB////PwQA
+AAAIAAAAEgAAAFhlbgAAAAABAAAAAA==
+KERNEL_NOTES_END
+[    2.058831] EXT4-fs (vda): mounted filesystem 97233731-3c34-4a9c-8c08-455b70e8bbc9 r/w with ordered data mode. Quota mode: none.
+=== RUN   TestNativeNormalStockUdevPreparationInitial
+[   10.904097] virtio_mem virtio0: plugged size: 0x0
+[   10.909370] virtio_mem virtio0: requested size: 0x20000000
+[   10.947485] Fallback order for Node 0: 0 
+[   10.947586] Built 1 zonelists, mobility grouping on.  Total pages: 137277
+[   10.951829] Policy zone: DMA32
+[   10.953395] min_free_kbytes is not updated to 2586 because user defined value 4096 is preferred
+[   10.968106] min_free_kbytes is not updated to 2586 because user defined value 4096 is preferred
+[   11.003007] min_free_kbytes is not updated to 2586 because user defined value 4096 is preferred
+[   11.017789] min_free_kbytes is not updated to 2586 because user defined value 4096 is preferred
+STOCK_PREPARATION_R1_START_BROKER
+STOCK_PREPARATION_GATE_ENTRY
+STOCK_PREPARATION_BROKER_ENTRY
+STOCK_PREPARATION_DEV_STACK stage=initial goroutine 49 [running]:
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.stockPreparationDEVDelayedStack.func1()
+	/workspace/pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_native_test.go:121 +0x5e
+created by github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.stockPreparationDEVDelayedStack in goroutine 48
+	/workspace/pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_native_test.go:118 +0x5f
+
+goroutine 1 [chan receive]:
+testing.(*T).Run(0xc0003608c0, {0x1d53483?, 0xc000157448?}, 0x1e26d78)
+	/opt/go/src/testing/testing.go:1859 +0x431
+testing.runTests.func1(0xc0003608c0)
+	/opt/go/src/testing/testing.go:2279 +0x37
+testing.tRunner(0xc0003608c0, 0xc000157588)
+	/opt/go/src/testing/testing.go:1792 +0xf4
+testing.runTests(0xc00000f248, {0x2eaef00, 0x1e8, 0x1e8}, {0x7fb4c6dd95c0?, 0x10?, 0x2ec21e0?})
+	/opt/go/src/testing/testing.go:2277 +0x4b4
+testing.(*M).Run(0xc00049a500)
+	/opt/go/src/testing/testing.go:2142 +0x64a
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.stockPreparationDEVDispatch(0xc00049a500)
+	/workspace/pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_native_test.go:31 +0x1ec
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.TestMain(0xc00049a500)
+	/workspace/pkg/dsga/resourceguard/normal_system_role_service_native_test.go:318 +0x4e
+main.main()
+	_testmain.go:1021 +0xa8
+
+goroutine 48 [IO wait]:
+internal/poll.runtime_pollWait(0x7fb48034a690, 0x72)
+	/opt/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0x46?, 0x7fb480100b98?, 0x0)
+	/opt/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/opt/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).RawRead(0xc00029c880, 0xc0003ccd20)
+	/opt/go/src/internal/poll/fd_unix.go:717 +0x125
+net.(*rawConn).Read(0xc0004048d8, 0xc0004bb5f0?)
+	/opt/go/src/net/rawconn.go:44 +0x36
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.arrayServicePacket(0xc0000aa300, {0xc0005d2520?, 0x1c1b660?, 0x2ec21e0?}, 0x8000, 0x0)
+	/workspace/pkg/dsga/resourceguard/array_service_socket_linux.go:181 +0x27a
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.normalSystemRoleServiceReadObject(0xc0000aa300, {0x2073298?, 0xc000492460?}, {0x1d00724, 0x8}, {0x1acb320, 0xc000452a88})
+	/workspace/pkg/dsga/resourceguard/normal_system_role_service_origin_linux.go:147 +0x6b
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.startNormalSystemRoleBroker({0x2073298, 0xc0001e2ee0}, 0xc0001a6640, 0xc0000ea848, 0xc0000f4008)
+	/workspace/pkg/dsga/resourceguard/normal_system_role_service_start_linux.go:146 +0x279
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.startInitialNormalSystemV3Broker({0x2073298, 0xc0001e2ee0}, 0xc0001a6640)
+	/workspace/pkg/dsga/resourceguard/normal_system_role_initial_linux.go:50 +0x3b5
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.TestNativeNormalStockUdevPreparationInitial(0xc000360a80)
+	/workspace/pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_native_test.go:302 +0xb18
+testing.tRunner(0xc000360a80, 0x1e26d78)
+	/opt/go/src/testing/testing.go:1792 +0xf4
+created by testing.(*T).Run in goroutine 1
+	/opt/go/src/testing/testing.go:1851 +0x413
+
+goroutine 5 [syscall]:
+syscall.Syscall6(0xf7, 0x3, 0x49, 0xc00005f590, 0x4, 0xc000202630, 0x0)
+	/opt/go/src/syscall/syscall_linux.go:95 +0x39
+internal/syscall/unix.Waitid(0x18?, 0x0?, 0x0?, 0xc00005f5c0?, 0x0?)
+	/opt/go/src/internal/syscall/unix/waitid_linux.go:18 +0x39
+os.(*Process).pidfdWait.func1(...)
+	/opt/go/src/os/pidfd_linux.go:106
+os.ignoringEINTR(...)
+	/opt/go/src/os/file_posix.go:251
+os.(*Process).pidfdWait(0x0?)
+	/opt/go/src/os/pidfd_linux.go:105 +0x209
+os.(*Process).wait(0x0?)
+	/opt/go/src/os/exec_unix.go:27 +0x25
+os.(*Process).Wait(...)
+	/opt/go/src/os/exec.go:358
+os/exec.(*Cmd).Wait(0xc000276180)
+	/opt/go/src/os/exec/exec.go:922 +0x45
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.(*normalSystemRoleOriginalChild).startWait.func1.1()
+	/workspace/pkg/dsga/resourceguard/normal_system_role_spawn_linux.go:65 +0x3e
+created by github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.(*normalSystemRoleOriginalChild).startWait.func1 in goroutine 51
+	/workspace/pkg/dsga/resourceguard/normal_system_role_spawn_linux.go:64 +0x56
+
+ROLE_TRANSFER2_R1_ALIVE_KERNEL_MEMORY_READ=PASS
+STOCK_PREPARATION_DEV_STACK stage=broker goroutine 50 [running]:
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.stockPreparationDEVDelayedStack.func1()
+	/workspace/pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_native_test.go:121 +0x5e
+created by github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.stockPreparationDEVDelayedStack in goroutine 1
+	/workspace/pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_native_test.go:118 +0x5f
+
+goroutine 1 [runnable]:
+io.(*SectionReader).Read(0xc00049c030?, {0xc0006d2000?, 0x8000?, 0x8000?})
+	/opt/go/src/io/io.go:509 +0x96
+io.copyBuffer({0x7f1c8ac1c300, 0xc00007ca80}, {0x2058960, 0xc00049c030}, {0x0, 0x0, 0x0})
+	/opt/go/src/io/io.go:429 +0x190
+io.Copy(...)
+	/opt/go/src/io/io.go:388
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.nativeBirthFileHash(0xc00042a410)
+	/workspace/pkg/dsga/resourceguard/native_birth_source_linux.go:99 +0xf3
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.(*normalSystemLifecycleSource).inspectOriginalBrokerTask(_, {_, _}, _, {_, _}, {_, _, _}, {0xc000312770, ...})
+	/workspace/pkg/dsga/resourceguard/normal_system_role_gate_broker_linux.go:151 +0xe45
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.(*normalSystemRoleBrokerExecProof).verifyOriginalObservationLocked(_, {_, _}, _, _)
+	/workspace/pkg/dsga/resourceguard/normal_system_role_service_transfer_linux.go:290 +0x11d3
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.(*normalSystemRoleBrokerExecProof).verifyLocked(...)
+	/workspace/pkg/dsga/resourceguard/normal_system_role_service_transfer_linux.go:232
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.(*Guard).prepareNormalOrdinaryUdevV2Locked(0xc0002d8140, {0x20731f0, 0xc0001a7260}, 0xc0001252a0, 0xc00027a960, 0xc000172008, 0xc00047aa08, 0xc0001e9c08)
+	/workspace/pkg/dsga/resourceguard/normal_ordinary_udev_v2_source_linux.go:121 +0x103b
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.installNormalSystemRoleV2BrokerRuntime.func2(0xc00027a960, 0xc0001252a0)
+	/workspace/pkg/dsga/resourceguard/normal_system_role_v2_runtime_linux.go:62 +0x89
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.(*Guard).withRecord(0xc0002d8140, {0x20731f0?, 0xc0001a7260?}, 0xc0004fa4d8)
+	/workspace/pkg/dsga/resourceguard/guard.go:245 +0x2ac
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.installNormalSystemRoleV2BrokerRuntime({0x20731f0, 0xc0001a7260}, 0xc0002d8140, 0xc000214008, 0xc000172008, 0xc00047aa08, 0xc000259100)
+	/workspace/pkg/dsga/resourceguard/normal_system_role_v2_runtime_linux.go:60 +0x33a
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.RunNormalSystemRoleBroker({0x20731f0, 0xc0001a7260})
+	/workspace/pkg/dsga/resourceguard/normal_system_role_service_run_linux.go:108 +0xf37
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.stockPreparationDEVDispatch(0xc0002c72c0)
+	/workspace/pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_native_test.go:77 +0x593
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.TestMain(0xc0002c72c0)
+	/workspace/pkg/dsga/resourceguard/normal_system_role_service_native_test.go:318 +0x4e
+main.main()
+	_testmain.go:1021 +0xa8
+
+goroutine 51 [syscall]:
+syscall.Syscall6(0x10f, 0xc00005f728, 0x1, 0xc00005f6d8, 0x0, 0x0, 0x0)
+	/opt/go/src/syscall/syscall_linux.go:95 +0x39
+golang.org/x/sys/unix.ppoll(0x0?, 0x0?, 0x0?, 0x0?)
+	/go/pkg/mod/golang.org/x/sys@v0.31.0/unix/zsyscall_linux.go:138 +0x52
+golang.org/x/sys/unix.Ppoll({0xc00005f728?, 0x0?, 0x0?}, 0xc00005f6d8?, 0x47e3ac?)
+	/go/pkg/mod/golang.org/x/sys@v0.31.0/unix/syscall_linux.go:157 +0x38
+golang.org/x/sys/unix.Poll({0xc00005f728?, 0x25343992f?, 0x2ec21e0?}, 0xc2b1fcf31191e549?)
+	/go/pkg/mod/golang.org/x/sys@v0.31.0/unix/syscall_linux.go:166 +0x87
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.init.2.func1.1.2()
+	/workspace/pkg/dsga/resourceguard/normal_system_role_service_transfer_v2_native_test.go:67 +0x96
+created by github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.init.2.func1.1 in goroutine 1
+	/workspace/pkg/dsga/resourceguard/normal_system_role_service_transfer_v2_native_test.go:63 +0x389
+
+goroutine 35 [IO wait]:
+internal/poll.runtime_pollWait(0x7f1c8aeff348, 0x72)
+	/opt/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc000150200?, 0xc000063008?, 0x0)
+	/opt/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/opt/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Accept(0xc000150200)
+	/opt/go/src/internal/poll/fd_unix.go:620 +0x295
+net.(*netFD).accept(0xc000150200)
+	/opt/go/src/net/fd_unix.go:172 +0x29
+net.(*UnixListener).accept(0xc0006c3f30?)
+	/opt/go/src/net/unixsock_posix.go:172 +0x16
+net.(*UnixListener).AcceptUnix(0xc000617350)
+	/opt/go/src/net/unixsock.go:247 +0x30
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.(*normalPgStderrRegistry).serve(0xc000259080, {0x2073228, 0xc0004682d0})
+	/workspace/pkg/dsga/resourceguard/normal_pg_stderr_source_linux.go:162 +0xad
+created by github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.startNormalPgStderrSource in goroutine 1
+	/workspace/pkg/dsga/resourceguard/normal_pg_stderr_source_linux.go:114 +0x56c
+
+goroutine 36 [IO wait]:
+internal/poll.runtime_pollWait(0x7f1c8aeff578, 0x72)
+	/opt/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc000150f80?, 0xc000063008?, 0x0)
+	/opt/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/opt/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Accept(0xc000150f80)
+	/opt/go/src/internal/poll/fd_unix.go:620 +0x295
+net.(*netFD).accept(0xc000150f80)
+	/opt/go/src/net/fd_unix.go:172 +0x29
+net.(*UnixListener).accept(0xc000024f00?)
+	/opt/go/src/net/unixsock_posix.go:172 +0x16
+net.(*UnixListener).AcceptUnix(0xc000558420)
+	/opt/go/src/net/unixsock.go:247 +0x30
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.(*arrayNativeServices).serve(0xc00024e008, {0x2073228, 0xc000468ff0}, 0xc000558420, 0x1)
+	/workspace/pkg/dsga/resourceguard/array_service_socket_linux.go:133 +0xc8
+created by github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.startArrayNativeServicesWithAdmission in goroutine 1
+	/workspace/pkg/dsga/resourceguard/array_service_socket_linux.go:112 +0x647
+
+goroutine 37 [IO wait]:
+internal/poll.runtime_pollWait(0x7f1c8aeff460, 0x72)
+	/opt/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc000151100?, 0xc000063008?, 0x0)
+	/opt/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/opt/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Accept(0xc000151100)
+	/opt/go/src/internal/poll/fd_unix.go:620 +0x295
+net.(*netFD).accept(0xc000151100)
+	/opt/go/src/net/fd_unix.go:172 +0x29
+net.(*UnixListener).accept(0xc000025f00?)
+	/opt/go/src/net/unixsock_posix.go:172 +0x16
+net.(*UnixListener).AcceptUnix(0xc000558450)
+	/opt/go/src/net/unixsock.go:247 +0x30
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.(*arrayNativeServices).serve(0xc00024e008, {0x2073228, 0xc000468ff0}, 0xc000558450, 0x0)
+	/workspace/pkg/dsga/resourceguard/array_service_socket_linux.go:133 +0xc8
+created by github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.startArrayNativeServicesWithAdmission in goroutine 1
+	/workspace/pkg/dsga/resourceguard/array_service_socket_linux.go:113 +0x6c7
+
+goroutine 38 [IO wait]:
+internal/poll.runtime_pollWait(0x7f1c8aeff230, 0x72)
+	/opt/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc000150480?, 0xc000026c10?, 0x0)
+	/opt/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/opt/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Accept(0xc000150480)
+	/opt/go/src/internal/poll/fd_unix.go:620 +0x295
+net.(*netFD).accept(0xc000150480)
+	/opt/go/src/net/fd_unix.go:172 +0x29
+net.(*UnixListener).accept(0x40c0e6?)
+	/opt/go/src/net/unixsock_posix.go:172 +0x16
+net.(*UnixListener).AcceptUnix(0xc000617440)
+	/opt/go/src/net/unixsock.go:247 +0x30
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.(*normalAuthorityHTTPListener).Accept(0xc000617470)
+	/workspace/pkg/dsga/resourceguard/normal_system_role_service_admission_linux.go:177 +0xad
+net/http.(*Server).Serve(0xc00015c400, {0x2064b38, 0xc000617470})
+	/opt/go/src/net/http/server.go:3424 +0x30c
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.prepareNormalGuestResourceInstance.func3()
+	/workspace/pkg/dsga/resourceguard/normal_system_role_service_resource_linux.go:124 +0x47
+created by github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.prepareNormalGuestResourceInstance in goroutine 1
+	/workspace/pkg/dsga/resourceguard/normal_system_role_service_resource_linux.go:123 +0xd7a
+
+goroutine 39 [select]:
+github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.prepareNormalGuestResourceInstance.func4()
+	/workspace/pkg/dsga/resourceguard/normal_system_role_service_resource_linux.go:137 +0x65
+created by github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.prepareNormalGuestResourceInstance in goroutine 1
+	/workspace/pkg/dsga/resourceguard/normal_system_role_service_resource_linux.go:136 +0xde5
+
+STOCK_PREPARATION_STAGE elapsed_ms=12232 stage=inputs
+STOCK_PREPARATION_STAGE elapsed_ms=12539 stage=intent
+STOCK_PREPARATION_STAGE elapsed_ms=12557 stage=runtime
+STOCK_PREPARATION_STAGE elapsed_ms=12561 stage=kmod
+STOCK_PREPARATION_STAGE elapsed_ms=12813 stage=pre-stock-recheck
+STOCK_PREPARATION_STAGE elapsed_ms=14668 stage=monitor
+STOCK_PREPARATION_STAGE elapsed_ms=14671 stage=catalog
+STOCK_PREPARATION_STAGE elapsed_ms=15001 stage=programs
+STOCK_PREPARATION_STAGE elapsed_ms=15006 stage=run-wait
+[   48.414553] udevd[123]: starting version 3.2.14
+[   48.418613] udevd[123]: starting eudev-3.2.14
+STOCK_PREPARATION_STAGE elapsed_ms=15219 stage=Wait-complete
+STOCK_PREPARATION_STAGE elapsed_ms=17118 stage=drain
+STOCK_PREPARATION_STAGE elapsed_ms=17158 stage=database
+STOCK_PREPARATION_STAGE elapsed_ms=17186 stage=seal
+STOCK_PREPARATION_STAGE elapsed_ms=17246 stage=handoff
+STOCK_PREPARATION_STAGE elapsed_ms=19703 stage=complete
+BROKER_INSPECTION_DEV_PARTIAL_BEFORE_COMPLETION_WAL {"calls":18,"duration_ns":4273753571,"whole_R2_rchar_delta":1611767191,"missing_or_nonmonotonic_io_samples":0}
+    normal_ordinary_stock_udev_preparation_native_test.go:302: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_native_test.go:302
+        	Error:      	Received unexpected error:
+        	            	resource command requires original readback or explicit replay
+        	            	raw-read unixpacket @->@: i/o timeout
+        	Test:       	TestNativeNormalStockUdevPreparationInitial
+STOCK_PREPARATION_INITIAL_EXIT=1
+STOCK_PREPARATION_GUEST_EXIT=1
+[   58.428808] ACPI: PM: Preparing to enter system sleep state S5
+[   58.431877] reboot: Power down

@@ -1,0 +1,7 @@
+只读ELF与DEV注册开销：C2实际Guest为44,757,176B，生产CLI编译产物为58,577,753B。后者含17,924,656B debug/symbol；减去这些段的40,653,097B仅是结构计算，不是一次实际stripped CLI编译。Guest比该结构值多4,104,079B，不可把两者直接大小差解释为44MB额外测试开销。Guest .text比CLI多2,275,872B，.rodata多754,944B，.gopclntab多1,055,416B；条件tag、测试main、依赖、函数metadata均有差异，不能全部归因于无关测试。
+
+现有Guest只执行-test.list=.实际成功0：注册487测试根，未运行任何测试断言，绝非U/S/Source正控。精确Go1.24.3 SDK模板将全部.Tests放入testing.InternalTest表、交MainStart；strip Guest的pclntab仍有488个Test命名顶层函数（含TestMain）与1748个含其闭包函数，text跨度1,274,368B（只代码/对齐，不含依赖图/rodata）。这证明存在注册保留开销，不证明可以删任何应测断言或预测Ready25。原生产文件与C2冻结5源均未改。
+
+下一次必要真实S选D（Root已授权且P1实际独审无明确阻断）：Git6de0b492+stdio2新源，aa9174原nonce执行聚焦stdio/V2 race目标与CLI/Builder/Darwin/Guest/Host/Hostexport/seed，7个目标根预期但按实际JSON统计。8phase全0并通过精确hash独审调度门后，自动新disposable provider/Builder夹具并执行真实18c KVM/2vCPU/原Ready25与handshake30。Go3CPU3GiB，native2CPU3GiB，原资源总预算不变，逐nonce记录unit/锁/日志/cpu.stat/memory.peak/io.stat与原Wait终态。测试调度复核文件从不参与业务Source/COMMIT/normal授权。
+
+D每factory只去掉同调用栈紧邻重复的一次完整FS及一次proof，保原首次实际actor、所有remaining ns/root/current/state/actor校验、FS/proof关闭门与console后发布前cheap门。普通prepare/runtime完整wrapper不省，双hash不删。不能许诺过Ready25；若仍超时，保失败与准确末尾阶段，交Root裁定E生产同栈观察方案；不重跑同图、不扩窗口、不用删测凑时限。真实Source、ordinary9服务、PG与normal、K8s仍分别验收，组件成功不能冒整体E。

@@ -1,0 +1,12 @@
+D实际实现独立只读审查（2026-11-02）
+精确base6de0b492+2源，当前逐SHA匹配source-freeze.json；prod7d053bc543b326e1d2c28b254f0fccb55d9aa0607de0d35c4894d83e439ea785，test ed2260591b49dde15908a90f0f91c8dbb88f7908163a0cda9fd41f882bcde53b。审查者未写业务源、未新增构建或测。
+结论：未见明确实现阻断，可接精确锁图的原真实S；不是性能/Source/normal通过。
+
+- constructor保首次完整FS.reference对原a.origin及fullproof.originalTask；仅private f/map分配后改调remaining。没有回调、exec、WAL或source发布插入此处。旧checkExternal完整FS/proof/arrayMatch均保；原prepare/runtime调用者不变。
+- remaining完整保原cheap f/ctx/record/admission/floor/bootstrap、当前namespace/root/consumer/stateDir、actor.mu下真实verify；新增cheap gate仅查原生命周期状态，不签来源。
+- sourcesLive依次短持并释放FS.mu/proof.mu/actor.mu，未反向并持；核closed、原pidfd活、末ctx/factoryclosed/admissionfailed，requireCommit条件保原candidate构造语义。console原对象/flags验证保，console后发布前同cheap gate，失败原actor和console均关闭；未见FD所有权丢失。
+- 原authority index只允许同g注册一次且close后留tombstone，不存在生产替换原实例的写路径；authority.close首先admission.fail。因此此门不再lookup仍保原实例，未为该项要求扩大修改。
+- 新直接测试只验证cheap门，真实child pidfd/dup及其真实退出提供内核证据；nil/cancel/FS/proof/factory/actor closed、admissionfailed/commitabsent/nilFS/nilproof均只作为cheap判据，注释明确raw正控不造FS/proof/Source。未将11sub或子进程当业务Source正控。
+- FS双hash、transfer/A、原25/30/2vCPU、catalog后/运行期freshref均未改。静态只省一个factory中的1FS+1fullproof，不承诺足够过Ready25。
+
+旧C2/047/2e失败原件保持不变。接下来以新nonce必要编译/targeted U终态及一次真实S判断；需真正COMMIT/R1alive/原pidfd退出后独立freshref同值/admission，未完成Source/normal/E/K8s仍false/0。

@@ -1,0 +1,18 @@
+[
+  {
+    "line": 849,
+    "text": "{{end}}\n)\n\nvar tests = []testing.InternalTest{\n{{range .Tests}}\n\t{\"{{.Name}}\", {{.Package}}.{{.Name}}},\n{{end}}\n}\n\nvar benchmarks = []testing.InternalBenchmark{\n{{range .Benchmarks}}\n\t{\"{{.Name}}\", {{.Package}}.{{.Name}}},\n{{end}}"
+  },
+  {
+    "line": 925,
+    "text": "\t\tCoveredPackages: {{printf \"%q\" .Covered}},\n\t})\n{{end}}\n\tm := testing.MainStart(testdeps.TestDeps{}, tests, benchmarks, fuzzTargets, examples)\n{{with .TestMain}}\n\t{{.Package}}.{{.Name}}(m)\n\tos.Exit(int(reflect.ValueOf(m).Elem().FieldByName(\"exitCode\").Int()))\n{{else}}\n\tos.Exit(m.Run())\n{{end}}\n}\n\n`)"
+  },
+  {
+    "line": 960,
+    "text": "{{end}}\n)\n\nvar tests = []testing.InternalTest{\n{{range .Tests}}\n\t{\"{{.Name}}\", {{.Package}}.{{.Name}}},\n{{end}}\n}\n\nvar benchmarks = []testing.InternalBenchmark{\n{{range .Benchmarks}}\n\t{\"{{.Name}}\", {{.Package}}.{{.Name}}},\n{{end}}"
+  },
+  {
+    "line": 998,
+    "text": "}\n\nfunc main() {\n\tm := testing.MainStart(testdeps.TestDeps{}, tests, benchmarks, fuzzTargets, examples)\n{{with .TestMain}}\n\t{{.Package}}.{{.Name}}(m)\n\tos.Exit(int(reflect.ValueOf(m).Elem().FieldByName(\"exitCode\").Int()))\n{{else}}\n\tos.Exit(m.Run())\n{{end}}\n}\n\n`)"
+  }
+]
