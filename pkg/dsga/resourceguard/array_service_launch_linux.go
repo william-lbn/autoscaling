@@ -117,6 +117,12 @@ func (g *Guard) launchArrayRoot(ctx context.Context, source SourceConfig, server
 func arrayRootDropAndExec(args, environment []string, uid, gid int) error {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
+	// 当前M独立fd表只标记>=3为CLOEXEC，成功exec原子丢弃caller遗留对象；
+	// 不关闭Go其它线程fd，198由exec后C握手新建，不能在这里例外保留。
+	// stdio只完成危险对象拒绝，固定日志/pipe的原typed来源尚须System链。
+	if _, err := normalPGMemoryControlPrepareExecDescriptors(); err != nil {
+		return err
+	}
 	if err := unix.Prctl(unix.PR_SET_KEEPCAPS, 0, 0, 0, 0); err != nil {
 		return err
 	}

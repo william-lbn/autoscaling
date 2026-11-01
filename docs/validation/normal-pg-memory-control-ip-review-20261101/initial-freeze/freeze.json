@@ -1,0 +1,30 @@
+{
+  "stage_count": 121,
+  "stage_paths": "/data/neon-build/validation/normal-pg-memory-control-source-freeze-20261101/stage-paths.txt",
+  "stage_sha256": "dba2b9baa416214e29fd77acfdcfe4a73368dea7fb23b7d8f70513167c7d14ef",
+  "manifest_sha256": "e7c51a6053fd125e5af590bbc2cb47d1823c0eb049778064e492e6d86c14507b",
+  "owned6": {
+    "pkg/dsga/resourceguard/testdata/normal_pg_memory_control_probe.c": "b748079cf81f78f2d16454472d38d147397d8e35fa885a998aa862edf69b24bb",
+    "pkg/dsga/resourceguard/array_service_launch_linux.go": "9a9c3766d737d9dac525db3af295692e12c04e03f1100d18806490b233f64caa",
+    "pkg/dsga/resourceguard/normal_pg_memory_control_source.go": "d1cf9159920f8adc16a723c668e7dab438a122b0644a828723a96a3dbc91e931",
+    "pkg/dsga/resourceguard/normal_pg_memory_control_source_linux.go": "d9bdfa604d96adba60be3b20c92ffd09afddbd92bad4d5c2b4f3912acd57f071",
+    "pkg/dsga/resourceguard/normal_pg_memory_control_source_linux_test.go": "e4461af5faa8e37634ed2025cddfdbec83268e5625628bcb1720dcb2084d4b9e",
+    "pkg/dsga/resourceguard/normal_pg_memory_control_source_native_test.go": "abf468699353ab1d00675ac17b79c64d5d646074c892bd0463327e73d0e85b12"
+  },
+  "U_actual": "/data/neon-build/validation/normal-pg-memory-control-go-20261101T005848Z-58322b",
+  "U_roots": 5,
+  "U_subcases": 11,
+  "S_actual": "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce",
+  "S_roots": 1,
+  "S_ID": "PG17-S-PG-MEMORY-CONTROL-001",
+  "Guest_exit": 0,
+  "QEMU_exit": 0,
+  "Go_ELF_sha256": "251c63a14338952a2cdc9bdda2f6ed4fc5876c97392f9e85dc6988bd6d54bd6b",
+  "C_probe_ELF_sha256": "1a0241b4d428f5c2c18be215cc70e39f5646d4e985c3a4813fe030977024630e",
+  "actual_copy_count": 950,
+  "typed_stdio_original_source": false,
+  "all_sources_closed": false,
+  "normal_authorized": false,
+  "E": 0,
+  "independent_review_required": true
+}

@@ -1,0 +1,15 @@
+PG17未来内存syscall控制/继承FD组件（2026-11-01）
+
+本批不是Source闭合许可。新增private normalPGMemoryControlSource，只能从本Guard真实arrayGuardBindings取原NativeFinal/birth/released与SO_PEERPIDFD原对象，核同Root nonce/Guest/原budget、4真实shmem inode与注册代次，固定只读原PG ELF纯编译完整cBPF，与原released里由真实Kernel读回核过的AuditSHA一致。完整798/791/531指令深拷贝持有；未知opcode/跳转/return拒绝。31关键NR在三个程序中的EPERM执行路径必须不读取任何args，证明参数无关，不把args=0采样当全参数结论；COLLAPSE/HUGEPAGE/COLD/PAGEOUT只读arg2即拒。原Kernel实际读的是base+final，child是同Build的完整预期程序；不冒称已经逐一ptrace所有未来子进程。核心拒绝已在PMbase/final中，Linux不可放宽的继承覆盖后续任务；Child另加fork等限制。
+
+opaque不接受rawSource hash/verified bool/路径/PID参数，不从新Root JSON补原pin。持有原4FD并固定四NativeWAL文件identity；普通referenceLocked零写，budget/注册代次/原对象漂移即Unknown。没有HTTP/normal consumer，没有隐式Sync/重签。原临时Root只读Source/PrivateGate没有被放宽。
+
+唯一既有生产hunk：arrayRootDropAndExec已经LockOSThread，在最终exec前调用新审计/封口。close_range(3,UINT_MAX,CLOSE_RANGE_UNSHARE|CLOEXEC)复制当前M私有fd表并只标CLOEXEC，不关闭Go其它线程的共享表。>=3无任何白名单：198此时未创建，C main在exec后才建立原固定Root握手。realUID/eUID/GID下降流程、旧preexec-v1和其它分支不变。0/1/2实际fstat/statfs/F_GETFL；拒block/socket/directory/proc/sysfs/cgroup/securityfs及除devnull1:3/console5:1以外char。普通regular/pipe暂保旧行为，明确标unbound，绝不凭类型或Root拥有签原日志来源。P2后继要原PID1或broker创建日志pipe的typed出生证据。
+
+实际5race根11子例PASS，U源58322b与最终07c548全部950输入逐字相同；差别仅C编译头来源：正式runtime47ef已裁server headers，首C编译缺postgres.h的ENV失败保留；改用准确b95 pg-build镜像4578312原服务端头逐文件SHA。07c548普通-run^$只有ENV，不转签其为又一次U。GNU编译TEST_ONLY最小C SQL探针成功；不改PG/Neon生产源、未替换Provider/过滤器，原b95 PG9f3、同镜像Neon1e946的正式1.17入口不变。
+
+真实369 ce0dce、原256MiB→1536MiB/8MiB block，2CPU/2GiB/noNIC，Guest0/唯一QEMU Wait0。真正SUID入口前ExtraFiles在3/4/5清CLOEXEC传入Guest可写cgroup memory.max、raw vdc只读对象、ordinary原inode；最终PM从原procfd逐实际对象核全部消失，不误用会被复用的fd数字。原C198全握手/NativeFinal/四数组helper/正式4笔Grow→Shrink→Regrow→Shrink及正常原PM Wait0均保留。源码不改旧冻结PGresize测试。该新S按PG17-S-PG-MEMORY-CONTROL-001一根计，4旧动作只是直接回归。
+
+在真正UID/EUID1000、NNP1、Seccomp2的SQL backend加载只含syscall的TEST_ONLY C探针，33机制真实结果见表：NUMA迁移/策略/home_node、uring/userfaultfd/process_madvise、mlock/COLLAPSE/HUGEPAGE/COLD/PAGEOUT/MERGEABLE、Dumpable1、splice族、exec/fork/ns/ptrace等由filter EPERM；cgroup/rawdev写open为实际EACCES，mount/swapon EPERM。重要：PR_SET_THP_DISABLE清零和MAP_HUGETLB|MAP_NORESERVE预约实际成功，后者没触huge页并立即unmap。不能称cap0全禁huge；必须Root原KernelControls验证THPnever/全部HugePools0且封未来writer，并与FS控制来源组合，或另行PG窄deny。这里只验证边界，不修改这些控制值。
+
+未闭/未授权：typed原stdio、System role原spawn、FS/Kernel opaque组合、PM插件出生/配置来源。32DSO对不可放宽的已安装filter字节本身非必要；对完整启动/可信PM fork与reinit来源必要，不能把当前maps当未来约束。本对象requireContinuousQualification始终Unknown，不能删MissingSources；无完整normal持续安全/硬降限/Host真实预留/StartCAS/K8s/E，E0。Host/issuer是明确fixture。Guest source-lock继承旧driver的base=f553与new_test_only_source名称有误，原记录保持，append-only erratum准确改为实际Go source-lock2b803+6own（含生产窄hunk），编译实际950和ELF不变。

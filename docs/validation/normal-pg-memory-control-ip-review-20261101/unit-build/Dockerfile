@@ -1,0 +1,10 @@
+FROM 127.0.0.1:5001/neon/compute-v17-stage@sha256:4578312b21ccf702470ce42c41b46698d4eb5c02197cd83d324283b64ef0542e AS pgheaders
+FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 AS test
+WORKDIR /workspace
+COPY --from=pgheaders /usr/local/pgsql/include /tmp/pg-headers
+ENV GOPATH=/go GOMODCACHE=/go/pkg/mod GOCACHE=/root/.cache/go-build GOMAXPROCS=2 GOMEMLIMIT=512MiB
+COPY . .
+ARG NONCE
+RUN --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared set -eu; test "$(cat /sys/fs/cgroup/memory.max)" = 2147483648; mkdir -p /out; cat /sys/fs/cgroup/memory.max >/out/memory.max; cat /sys/fs/cgroup/cpu.max >/out/cpu.max; sha256sum -c actual-source-sha256.txt >/out/actual-copy-verification.txt; echo 0 >/out/source.exitcode; cp actual-source-sha256.txt /out/compiled-source-sha256.txt; set +e; gcc --version >/out/probe-compiler.txt; find /tmp/pg-headers -type f -print0 | sort -z | xargs -0 sha256sum >/out/probe-headers-sha256.txt; gcc -shared -fPIC -O2 -Wall -Wextra -Werror -Wno-unused-parameter -I/tmp/pg-headers/server -I/tmp/pg-headers -o /out/normal_pg_memory_control_probe.so pkg/dsga/resourceguard/testdata/normal_pg_memory_control_probe.c >/out/probe-compile.stdout 2>/out/probe-compile.stderr; echo $? >/out/probe-compile.exitcode; go test -race -count=1 -timeout=120s -json -run '^TestNormalPGMemoryControl' ./pkg/dsga/resourceguard >/out/test.json 2>/out/test.stderr; echo $? >/out/test.exitcode; CGO_ENABLED=0 go test -c -tags=dsga_native_array_service,dsga_native_pg17_array_resize,dsga_native_pg_memory_control -o /out/pg-control.test ./pkg/dsga/resourceguard >/out/native-compile.stdout 2>/out/native-compile.stderr; rc=$?; echo $rc >/out/native-compile.exitcode; if [ "$rc" = 0 ]; then DSGA_ARRAY_SERVICE_EXPORT=/out/fixture /out/pg-control.test -test.run=^TestExportArrayServiceFixture$ -test.v -test.timeout=30s >/out/fixture-export.log 2>&1; echo $? >/out/fixture-export.exitcode; fi
+FROM scratch
+COPY --from=test /out/ /

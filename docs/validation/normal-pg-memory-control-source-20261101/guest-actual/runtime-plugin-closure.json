@@ -1,0 +1,566 @@
+{
+  "scope": "TEST_COMPONENT_RUNTIME_FILES_NOT_PREMAIN_SOURCE_MANIFEST",
+  "image": "127.0.0.1:5001/neon/compute-v17@sha256:47ef74c7bee6018c1e8578486d1196bd0c9b6d84040f6ccdba97823dcd019e55",
+  "files": {
+    "/usr/local/lib/neon.so": {
+      "guest_path": "/usr/local/lib/neon.so",
+      "sha256": "1e9468b50f065cf76eb82eb5cd35bc83e148d4a5cd50211ea5931069ffdc03e3",
+      "bytes": 33260392
+    },
+    "/lib/x86_64-linux-gnu/libbrotlicommon.so.1": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1",
+      "sha256": "7a22eb878ad6033f1ee0908faeb5d665aa0809a1da2eb6f49bf37081cfff888a",
+      "bytes": 137376
+    },
+    "/lib/x86_64-linux-gnu/libbrotlidec.so.1": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1",
+      "sha256": "0ed56000cc214627a4f00af7b7a20c86ffdc9de4d81d56ce12cba637ab9b3ff0",
+      "bytes": 47264
+    },
+    "/lib/x86_64-linux-gnu/libc.so.6": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "sha256": "6b4a45352fd0c540a9c7c718f35ce8c8e46a4e482f9d3885a910c32d1a0e1421",
+      "bytes": 1926232
+    },
+    "/lib/x86_64-linux-gnu/libcom_err.so.2": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libcom_err.so.2",
+      "sha256": "2af7b6aeb8685c319a4783fc3732c7166f1c71f56bdea79a619e1fe0cdb17074",
+      "bytes": 18344
+    },
+    "/lib/x86_64-linux-gnu/libcrypto.so.3": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libcrypto.so.3",
+      "sha256": "aa01e614af634bc7c8b678c9250b5c4f613c61989bacf0a5d6aed6570e7dcabd",
+      "bytes": 4742424
+    },
+    "/lib/x86_64-linux-gnu/libcurl.so.4": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libcurl.so.4",
+      "sha256": "02fbea31e63cd827ee61644851f1d336de6850a7df0f7af30ba74da97c4b99ab",
+      "bytes": 712120
+    },
+    "/lib/x86_64-linux-gnu/libffi.so.8": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libffi.so.8",
+      "sha256": "983e72b7e964f3db43fe8a3dc8b338e731fade6ca38df6867aebb58186aaeb68",
+      "bytes": 43480
+    },
+    "/lib/x86_64-linux-gnu/libgcc_s.so.1": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "sha256": "2bd1552c47799ef67e701e81d4383061fd76059868e446e63560f0dd0d5ec14e",
+      "bytes": 125312
+    },
+    "/lib/x86_64-linux-gnu/libgmp.so.10": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libgmp.so.10",
+      "sha256": "7376c9af0afd6e7698a64ee19de3c8a0199418664974384c70435a51c7ff7f3f",
+      "bytes": 529216
+    },
+    "/lib/x86_64-linux-gnu/libgnutls.so.30": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libgnutls.so.30",
+      "sha256": "4986dd7d7c0d9048453c724769d3ba5305a2cc4f57e9adb22b12b800c501f37b",
+      "bytes": 2197240
+    },
+    "/lib/x86_64-linux-gnu/libgssapi_krb5.so.2": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libgssapi_krb5.so.2",
+      "sha256": "850b2e9351a5aaffb92292c5b3e3d85ca21735d486714843d8b2870e9631e8bc",
+      "bytes": 338680
+    },
+    "/lib/x86_64-linux-gnu/libhogweed.so.6": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libhogweed.so.6",
+      "sha256": "480675ed8d58f9266ced954eb746c74a6c4ae3479bf5dccbcbc56ff0c814b9e4",
+      "bytes": 292856
+    },
+    "/lib/x86_64-linux-gnu/libidn2.so.0": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libidn2.so.0",
+      "sha256": "864f32ec2dc74d90c51d389a02b30003465b84e2090bf940039c0cd4b41b8f63",
+      "bytes": 198776
+    },
+    "/lib/x86_64-linux-gnu/libk5crypto.so.3": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libk5crypto.so.3",
+      "sha256": "6c7fa0480ed36f756eb63f83baef482bb2a01a5157f32d92be84832a63b926e6",
+      "bytes": 183048
+    },
+    "/lib/x86_64-linux-gnu/libkeyutils.so.1": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libkeyutils.so.1",
+      "sha256": "3b2f8f3f07a1f8083f1084c6d61f242071fb6e6938a318dbf968b345507c7b71",
+      "bytes": 22448
+    },
+    "/lib/x86_64-linux-gnu/libkrb5.so.3": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libkrb5.so.3",
+      "sha256": "47b51d738881cbab3825dfcf8eb69fc64922a60d67609bb55b3f46e69276d572",
+      "bytes": 888080
+    },
+    "/lib/x86_64-linux-gnu/libkrb5support.so.0": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libkrb5support.so.0",
+      "sha256": "2feeee09768665c44514696ef3b919426fc6f4726f8868e3d9a8885b7137215d",
+      "bytes": 52224
+    },
+    "/lib/x86_64-linux-gnu/liblber-2.5.so.0": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/liblber-2.5.so.0",
+      "sha256": "64f183c14330855843841747ff1975ed87e767de2e2f1b1cc4d7abd2302cb7a9",
+      "bytes": 63832
+    },
+    "/lib/x86_64-linux-gnu/libldap-2.5.so.0": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libldap-2.5.so.0",
+      "sha256": "062bb940f27b45cdcac5d3d66a727f441755b17f59842641ceaebaf990e1634d",
+      "bytes": 380432
+    },
+    "/lib/x86_64-linux-gnu/libm.so.6": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "sha256": "7f2ca87f652f56b094462474b076749e90e689d0ecb9cb63c7679820b271b4e7",
+      "bytes": 911904
+    },
+    "/lib/x86_64-linux-gnu/libnettle.so.8": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libnettle.so.8",
+      "sha256": "63f8ec7a41906ad65a800d27294cdbb34bf6c709252a575ed513a3c048d71019",
+      "bytes": 317544
+    },
+    "/lib/x86_64-linux-gnu/libnghttp2.so.14": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libnghttp2.so.14",
+      "sha256": "13a70f96a181a2b8d793f2561cb7857137f194130104ff39a1ff6b90eef280d3",
+      "bytes": 190928
+    },
+    "/lib/x86_64-linux-gnu/libp11-kit.so.0": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libp11-kit.so.0",
+      "sha256": "a0a560ae54a793a11ab78d6ce12b902537932b2d7aab2352250391a035977ef1",
+      "bytes": 1261376
+    },
+    "/lib/x86_64-linux-gnu/libpq.so.5": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libpq.so.5",
+      "sha256": "e3785b73f10293a4046eff4f132db8738092d26bca657d35b973d3502b2876a2",
+      "bytes": 2003728
+    },
+    "/lib/x86_64-linux-gnu/libpsl.so.5": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libpsl.so.5",
+      "sha256": "20f0bf67e12445271935d9c05d9a9d8fd567046132c6873388eb1c0a8681c28e",
+      "bytes": 75616
+    },
+    "/lib/x86_64-linux-gnu/libresolv.so.2": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libresolv.so.2",
+      "sha256": "ac3924c6cdb26cdfff10fec2ab2748705c83931b39c7f6e638a2b31ae34d420b",
+      "bytes": 60328
+    },
+    "/lib/x86_64-linux-gnu/librtmp.so.1": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/librtmp.so.1",
+      "sha256": "60631c5df675831d9e9338e5cf859f3df713f8b04571aaff1ca65c9287832cb8",
+      "bytes": 122280
+    },
+    "/lib/x86_64-linux-gnu/libsasl2.so.2": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libsasl2.so.2",
+      "sha256": "9fac7590786af72cfa96d85dc42aa389baa4f2dbc0a3ef01588bdf6d57c8bb85",
+      "bytes": 113392
+    },
+    "/lib/x86_64-linux-gnu/libssh2.so.1": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libssh2.so.1",
+      "sha256": "e481655791a9b75f4d5957e40101d7d0b5d9c13a18d1ca233731d03365ad0aec",
+      "bytes": 260552
+    },
+    "/lib/x86_64-linux-gnu/libssl.so.3": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libssl.so.3",
+      "sha256": "cab3f5b0a1febd4a80db5319f3bca4a9378c797dc6e5dc8bce36a575eaa77e78",
+      "bytes": 688160
+    },
+    "/lib/x86_64-linux-gnu/libtasn1.so.6": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libtasn1.so.6",
+      "sha256": "ac2f39cfc5a5ae22d74854e473449608bd3b7ded362acd11e4af3acd4a723bae",
+      "bytes": 83968
+    },
+    "/lib/x86_64-linux-gnu/libunistring.so.2": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libunistring.so.2",
+      "sha256": "bc5951aa3d6eaba20ff9688efa3420dc95785aae3709ec48ff6df46d6f409ee5",
+      "bytes": 1792040
+    },
+    "/lib/x86_64-linux-gnu/libz.so.1": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libz.so.1",
+      "sha256": "7e2a72b4c4b38c61e6962de6e3f4a5e9ae692e732c68deead10a7ce2135a7f68",
+      "bytes": 121280
+    },
+    "/lib/x86_64-linux-gnu/libzstd.so.1": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libzstd.so.1",
+      "sha256": "37412b7ac11063c25a375bdff6f4fdb340362f926cd9c3a55962e8a9c9bc702e",
+      "bytes": 763816
+    },
+    "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "sha256": "02bcda52c1a5dfc236f94d9e5255b4a0e26347d8a372a5223b650e31f291ce3c",
+      "bytes": 215000
+    },
+    "/usr/local/bin/psql": {
+      "guest_path": "/usr/local/bin/psql",
+      "sha256": "6af374ba7dbf96cc29dcc1f4a45fb023f778c62dd7c035c24a12e7e923c99beb",
+      "bytes": 2209552
+    },
+    "/lib/x86_64-linux-gnu/libreadline.so.8": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libreadline.so.8",
+      "sha256": "3d586d1dd5a48cffe4562cecb02ccede7893324a8168c18362977f74d64bf3aa",
+      "bytes": 354536
+    },
+    "/lib/x86_64-linux-gnu/libtinfo.so.6": {
+      "guest_path": "/usr/lib/x86_64-linux-gnu/libtinfo.so.6",
+      "sha256": "5c19747909b3815b996ac20b94bccb1faf1c6ff1ad240b05792ee4feab733a88",
+      "bytes": 204088
+    },
+    "TEST_ONLY_C_PROBE": {
+      "guest_path": "/usr/local/lib/normal_pg_memory_control_probe.so",
+      "sha256": "1a0241b4d428f5c2c18be215cc70e39f5646d4e985c3a4813fe030977024630e",
+      "not_production_plugin_source": true
+    }
+  },
+  "commands": [
+    [
+      "docker",
+      "run",
+      "--rm",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=256m",
+      "--memory-swap=256m",
+      "--entrypoint",
+      "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "127.0.0.1:5001/neon/compute-v17@sha256:47ef74c7bee6018c1e8578486d1196bd0c9b6d84040f6ccdba97823dcd019e55",
+      "--list",
+      "/usr/local/lib/neon.so"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/usr/local/lib/neon.so",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/local/lib/neon.so"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libbrotlicommon.so.1",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libbrotlicommon.so.1"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libbrotlidec.so.1",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libbrotlidec.so.1"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libc.so.6",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libcom_err.so.2",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libcom_err.so.2"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libcrypto.so.3",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libcrypto.so.3"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libcurl.so.4",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libcurl.so.4"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libffi.so.8",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libffi.so.8"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libgcc_s.so.1"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libgmp.so.10",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libgmp.so.10"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libgnutls.so.30",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libgnutls.so.30"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libgssapi_krb5.so.2",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libgssapi_krb5.so.2"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libhogweed.so.6",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libhogweed.so.6"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libidn2.so.0",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libidn2.so.0"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libk5crypto.so.3",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libk5crypto.so.3"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libkeyutils.so.1",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libkeyutils.so.1"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libkrb5.so.3",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libkrb5.so.3"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libkrb5support.so.0",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libkrb5support.so.0"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/liblber-2.5.so.0",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/liblber-2.5.so.0"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libldap-2.5.so.0",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libldap-2.5.so.0"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libm.so.6",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libm.so.6"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libnettle.so.8",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libnettle.so.8"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libnghttp2.so.14",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libnghttp2.so.14"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libp11-kit.so.0",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libp11-kit.so.0"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libpq.so.5",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libpq.so.5"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libpsl.so.5",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libpsl.so.5"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libresolv.so.2",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libresolv.so.2"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/librtmp.so.1",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/librtmp.so.1"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libsasl2.so.2",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libsasl2.so.2"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libssh2.so.1",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libssh2.so.1"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libssl.so.3",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libssl.so.3"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libtasn1.so.6",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libtasn1.so.6"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libunistring.so.2",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libunistring.so.2"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libz.so.1",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libz.so.1"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libzstd.so.1",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libzstd.so.1"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"
+    ],
+    [
+      "docker",
+      "run",
+      "--rm",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=256m",
+      "--memory-swap=256m",
+      "--entrypoint",
+      "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "127.0.0.1:5001/neon/compute-v17@sha256:47ef74c7bee6018c1e8578486d1196bd0c9b6d84040f6ccdba97823dcd019e55",
+      "--list",
+      "/usr/local/bin/psql"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/usr/local/bin/psql",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/local/bin/psql"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libc.so.6",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libcrypto.so.3",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libcrypto.so.3"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libm.so.6",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libm.so.6"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libpq.so.5",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libpq.so.5"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libreadline.so.8",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libreadline.so.8"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libssl.so.3",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libssl.so.3"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/lib/x86_64-linux-gnu/libtinfo.so.6",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/libtinfo.so.6"
+    ],
+    [
+      "docker",
+      "cp",
+      "-L",
+      "4f41811b025a0b695493f745c8af337dfc7815fb4f957709d270181b0527b0dc:/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce/usr-tree/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"
+    ]
+  ],
+  "actual_default_loader_list": {
+    "/usr/local/lib/neon.so": "\tlinux-vdso.so.1 (0x00007ffce054c000)\n\tlibpq.so.5 => /lib/x86_64-linux-gnu/libpq.so.5 (0x00007dea734d9000)\n\tlibcurl.so.4 => /lib/x86_64-linux-gnu/libcurl.so.4 (0x00007dea7342a000)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007dea7340a000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007dea73228000)\n\t/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 (0x00007dea7480f000)\n\tlibssl.so.3 => /lib/x86_64-linux-gnu/libssl.so.3 (0x00007dea7317f000)\n\tlibcrypto.so.3 => /lib/x86_64-linux-gnu/libcrypto.so.3 (0x00007dea72cf3000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007dea72c13000)\n\tlibnghttp2.so.14 => /lib/x86_64-linux-gnu/libnghttp2.so.14 (0x00007dea72be4000)\n\tlibidn2.so.0 => /lib/x86_64-linux-gnu/libidn2.so.0 (0x00007dea72bb3000)\n\tlibrtmp.so.1 => /lib/x86_64-linux-gnu/librtmp.so.1 (0x00007dea72b94000)\n\tlibssh2.so.1 => /lib/x86_64-linux-gnu/libssh2.so.1 (0x00007dea72b53000)\n\tlibpsl.so.5 => /lib/x86_64-linux-gnu/libpsl.so.5 (0x00007dea72b3d000)\n\tlibgssapi_krb5.so.2 => /lib/x86_64-linux-gnu/libgssapi_krb5.so.2 (0x00007dea72aea000)\n\tlibldap-2.5.so.0 => /lib/x86_64-linux-gnu/libldap-2.5.so.0 (0x00007dea72a8b000)\n\tliblber-2.5.so.0 => /lib/x86_64-linux-gnu/liblber-2.5.so.0 (0x00007dea72a7b000)\n\tlibzstd.so.1 => /lib/x86_64-linux-gnu/libzstd.so.1 (0x00007dea729bf000)\n\tlibbrotlidec.so.1 => /lib/x86_64-linux-gnu/libbrotlidec.so.1 (0x00007dea729b2000)\n\tlibz.so.1 => /lib/x86_64-linux-gnu/libz.so.1 (0x00007dea72991000)\n\tlibunistring.so.2 => /lib/x86_64-linux-gnu/libunistring.so.2 (0x00007dea727db000)\n\tlibgnutls.so.30 => /lib/x86_64-linux-gnu/libgnutls.so.30 (0x00007dea725bf000)\n\tlibhogweed.so.6 => /lib/x86_64-linux-gnu/libhogweed.so.6 (0x00007dea72576000)\n\tlibnettle.so.8 => /lib/x86_64-linux-gnu/libnettle.so.8 (0x00007dea72528000)\n\tlibgmp.so.10 => /lib/x86_64-linux-gnu/libgmp.so.10 (0x00007dea724a5000)\n\tlibkrb5.so.3 => /lib/x86_64-linux-gnu/libkrb5.so.3 (0x00007dea723cb000)\n\tlibk5crypto.so.3 => /lib/x86_64-linux-gnu/libk5crypto.so.3 (0x00007dea7239e000)\n\tlibcom_err.so.2 => /lib/x86_64-linux-gnu/libcom_err.so.2 (0x00007dea72398000)\n\tlibkrb5support.so.0 => /lib/x86_64-linux-gnu/libkrb5support.so.0 (0x00007dea7238a000)\n\tlibsasl2.so.2 => /lib/x86_64-linux-gnu/libsasl2.so.2 (0x00007dea7236b000)\n\tlibbrotlicommon.so.1 => /lib/x86_64-linux-gnu/libbrotlicommon.so.1 (0x00007dea72348000)\n\tlibp11-kit.so.0 => /lib/x86_64-linux-gnu/libp11-kit.so.0 (0x00007dea72214000)\n\tlibtasn1.so.6 => /lib/x86_64-linux-gnu/libtasn1.so.6 (0x00007dea721ff000)\n\tlibkeyutils.so.1 => /lib/x86_64-linux-gnu/libkeyutils.so.1 (0x00007dea721f8000)\n\tlibresolv.so.2 => /lib/x86_64-linux-gnu/libresolv.so.2 (0x00007dea721e5000)\n\tlibffi.so.8 => /lib/x86_64-linux-gnu/libffi.so.8 (0x00007dea721d9000)\n",
+    "/usr/local/bin/psql": "\tlinux-vdso.so.1 (0x00007ffee8151000)\n\tlibpq.so.5 => /lib/x86_64-linux-gnu/libpq.so.5 (0x000077243cbaf000)\n\tlibreadline.so.8 => /lib/x86_64-linux-gnu/libreadline.so.8 (0x000077243cb57000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x000077243ca77000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x000077243c895000)\n\tlibssl.so.3 => /lib/x86_64-linux-gnu/libssl.so.3 (0x000077243c7ec000)\n\tlibcrypto.so.3 => /lib/x86_64-linux-gnu/libcrypto.so.3 (0x000077243c360000)\n\tlibtinfo.so.6 => /lib/x86_64-linux-gnu/libtinfo.so.6 (0x000077243c32d000)\n\t/lib64/ld-linux-x86-64.so.2 => /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 (0x000077243ccc1000)\n"
+  },
+  "test_dsg_region_used": false,
+  "other_extension_plugins_enabled": false,
+  "normal_source_plugin_manifest_still_unclosed": true
+}

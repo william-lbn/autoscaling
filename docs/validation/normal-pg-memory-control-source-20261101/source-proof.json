@@ -1,0 +1,28 @@
+{
+  "base": "2b803ad7d25e5762073334e6a41720c508da9f74",
+  "owned6": {
+    "pkg/dsga/resourceguard/testdata/normal_pg_memory_control_probe.c": "b748079cf81f78f2d16454472d38d147397d8e35fa885a998aa862edf69b24bb",
+    "pkg/dsga/resourceguard/array_service_launch_linux.go": "9a9c3766d737d9dac525db3af295692e12c04e03f1100d18806490b233f64caa",
+    "pkg/dsga/resourceguard/normal_pg_memory_control_source.go": "d1cf9159920f8adc16a723c668e7dab438a122b0644a828723a96a3dbc91e931",
+    "pkg/dsga/resourceguard/normal_pg_memory_control_source_linux.go": "d9bdfa604d96adba60be3b20c92ffd09afddbd92bad4d5c2b4f3912acd57f071",
+    "pkg/dsga/resourceguard/normal_pg_memory_control_source_linux_test.go": "e4461af5faa8e37634ed2025cddfdbec83268e5625628bcb1720dcb2084d4b9e",
+    "pkg/dsga/resourceguard/normal_pg_memory_control_source_native_test.go": "abf468699353ab1d00675ac17b79c64d5d646074c892bd0463327e73d0e85b12"
+  },
+  "actual_COPY_count": 950,
+  "all_actual_COPY_match": true,
+  "source_lock_sha256": "fa643e47036695a5bf221e1c74886e4fca867017b4df28ce0beaea8435b71546",
+  "U_actual_source_lock_sha256": "fa643e47036695a5bf221e1c74886e4fca867017b4df28ce0beaea8435b71546",
+  "Go_ELF_sha256": "251c63a14338952a2cdc9bdda2f6ed4fc5876c97392f9e85dc6988bd6d54bd6b",
+  "TEST_ONLY_C_ELF_sha256": "1a0241b4d428f5c2c18be215cc70e39f5646d4e985c3a4813fe030977024630e",
+  "C_original_header_image": "127.0.0.1:5001/neon/compute-v17-stage@sha256:4578312b21ccf702470ce42c41b46698d4eb5c02197cd83d324283b64ef0542e",
+  "C_actual_header_manifest_sha256": "de8406e4333359e16e810d4d17d9019034dc0ef1782ce3f822da80e47c2524f3",
+  "Guest_original_source_lock_sha256": "e5606e57eebf28d46c5a4317e85644a3b520980318023b365f282ccad8f40866",
+  "Guest_metadata_erratum_sha256": "87161ec7cdbd9bb9d5e23a130386b776739c8cca5e47ead6376bbd723112e1f4",
+  "original_source_lock_retained": true,
+  "single_production_function_changed": "array_service_launch_linux.go::arrayRootDropAndExec",
+  "old_preexec_v1_realUID_flow_not_changed": true,
+  "no_Go_fd198_exception": "C creates198 only afterexec",
+  "no_Git_operations": true,
+  "normal_authorized": false,
+  "E": 0
+}

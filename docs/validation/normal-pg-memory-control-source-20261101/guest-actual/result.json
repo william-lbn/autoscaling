@@ -1,0 +1,67 @@
+{
+  "id": "PG17-S-PG-MEMORY-CONTROL-001",
+  "status": "PASS_COMPONENT_ONLY",
+  "host_qemu_exit": 0,
+  "Guest_exits": [
+    "0"
+  ],
+  "actual_qmp_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "actual_initial_base": {
+    "base-memory": 268435456,
+    "plugged-memory": 0
+  },
+  "grow_sent": true,
+  "actual_target": {
+    "summary": {
+      "base-memory": 268435456,
+      "plugged-memory": 1342177280
+    },
+    "devices": [
+      {
+        "type": "virtio-mem",
+        "data": {
+          "memdev": "/objects/mem0",
+          "memaddr": 4294967296,
+          "block-size": 8388608,
+          "size": 1342177280,
+          "node": 0,
+          "max-size": 1342177280,
+          "requested-size": 1342177280,
+          "id": "vmem0"
+        }
+      }
+    ]
+  },
+  "qmp_errors": [
+    "[Errno 2] No such file or directory"
+  ],
+  "seconds": 50.34290010901168,
+  "roots": [
+    "TestNativeNormalPGMemoryControlSource"
+  ],
+  "subcases": [],
+  "reports": [
+    "array-service-diagnostics.json",
+    "normal-pg-memory-control-source.json",
+    "normal-pg17-array-resize.json",
+    "pg17-capabilities.json",
+    "pg17-step-1-response.json",
+    "pg17-step-2-response.json",
+    "pg17-step-3-response.json",
+    "pg17-step-4-response.json",
+    "postgres.log"
+  ],
+  "errors": [],
+  "go_binary_sha256": "251c63a14338952a2cdc9bdda2f6ed4fc5876c97392f9e85dc6988bd6d54bd6b",
+  "kernel_image_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+  "kernel_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+  "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "console_sha256": "3ec9fc865324cc3e89bede93228863c1f8ff3d70b931996d840d6bba5ca21752",
+  "Host_source_fixture": true,
+  "PG_started": true,
+  "normal_authorized": false,
+  "E": 0
+}

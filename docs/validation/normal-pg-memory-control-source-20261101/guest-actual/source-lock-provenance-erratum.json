@@ -1,0 +1,19 @@
+{
+  "scope": "APPEND_ONLY_METADATA_CORRECTION_NO_SOURCE_OR_RECEIPT_REWRITE",
+  "original_source_lock_sha256": "e5606e57eebf28d46c5a4317e85644a3b520980318023b365f282ccad8f40866",
+  "original_base_field": "f553f074f3f745689eb3145bf8cef8037b6e22ea",
+  "correct_Go_source_base": "2b803ad7d25e5762073334e6a41720c508da9f74",
+  "actual_Go_source_lock_sha256": "fa643e47036695a5bf221e1c74886e4fca867017b4df28ce0beaea8435b71546",
+  "original_new_test_only_source_key_is_misnamed": true,
+  "owned_paths_are_production_single_function_plus_new_prefix_and_tests": {
+    "pkg/dsga/resourceguard/testdata/normal_pg_memory_control_probe.c": "b748079cf81f78f2d16454472d38d147397d8e35fa885a998aa862edf69b24bb",
+    "pkg/dsga/resourceguard/array_service_launch_linux.go": "9a9c3766d737d9dac525db3af295692e12c04e03f1100d18806490b233f64caa",
+    "pkg/dsga/resourceguard/normal_pg_memory_control_source.go": "d1cf9159920f8adc16a723c668e7dab438a122b0644a828723a96a3dbc91e931",
+    "pkg/dsga/resourceguard/normal_pg_memory_control_source_linux.go": "d9bdfa604d96adba60be3b20c92ffd09afddbd92bad4d5c2b4f3912acd57f071",
+    "pkg/dsga/resourceguard/normal_pg_memory_control_source_linux_test.go": "e4461af5faa8e37634ed2025cddfdbec83268e5625628bcb1720dcb2084d4b9e",
+    "pkg/dsga/resourceguard/normal_pg_memory_control_source_native_test.go": "abf468699353ab1d00675ac17b79c64d5d646074c892bd0463327e73d0e85b12"
+  },
+  "business_sources_compiled_are_exact_original_Go_source_lock_not_old_inherited_base_label": true,
+  "normal_authorized": false,
+  "E": 0
+}

@@ -1,0 +1,61 @@
+{
+  "scope": "PG_FUTURE_MEMORY_SYSCALL_CONTROLS_AND_DESCRIPTOR_CLOEXEC_COMPONENT_NOT_NORMAL",
+  "unit": {
+    "cohort": "/data/neon-build/validation/normal-pg-memory-control-go-20261101T005848Z-58322b",
+    "new_roots": 5,
+    "subcases": 11,
+    "fail": 0,
+    "skip": 0,
+    "race": true,
+    "cases": [
+      {
+        "id": "PG17-U-PG-CONTROL-001",
+        "root": "TestNormalPGMemoryControlDenialIsNotSampledArgument"
+      },
+      {
+        "id": "PG17-U-PG-CONTROL-002",
+        "root": "TestNormalPGMemoryControlDescriptorCLOEXECPrivateTable"
+      },
+      {
+        "id": "PG17-U-PG-CONTROL-003",
+        "root": "TestNormalPGMemoryControlNoJSONOrReconstructedGuardSource"
+      },
+      {
+        "id": "PG17-U-PG-CONTROL-004",
+        "root": "TestNormalPGMemoryControlStdioRejectsAuthorityObjects"
+      },
+      {
+        "id": "PG17-U-PG-CONTROL-005",
+        "root": "TestNormalPGMemoryControlStrictBPFInstructions"
+      }
+    ],
+    "C_probe_header_compile_failure_is_ENV_not_U_failure": true
+  },
+  "native": {
+    "id": "PG17-S-PG-MEMORY-CONTROL-001",
+    "root": "TestNativeNormalPGMemoryControlSource",
+    "new_roots": 1,
+    "named_subcases": 0,
+    "internal_mechanisms": 33,
+    "same_old_4_resize_transactions_are_direct_regression_not_four_new_S": true,
+    "cohort": "/data/neon-build/validation/normal-pg-memory-control-native-20261101T010254Z-ce0dce",
+    "real_KVM": true,
+    "Guest_exit": 0,
+    "QEMU_exit": 0,
+    "actual_Native198_after_Go_exec": true,
+    "atomic_private_fd_table_CLOEXEC": true,
+    "preopened_cgroup_rawdevice_ordinary_original_objects_absent_in_final_PM": true,
+    "full_original_bundle_held": true,
+    "program_instruction_counts": [
+      798,
+      791,
+      531
+    ],
+    "Kernel_original_audit_programs": "base+final at original NativeFinal stops; expected child compiled from same Build, not claiming all future children individually ptraced",
+    "untrusted_backend_C_actual": true,
+    "typed_original_stdio_provenance": false,
+    "external_FS_Kernel_controls_composed": false,
+    "normal_authorized": false,
+    "E": 0
+  }
+}

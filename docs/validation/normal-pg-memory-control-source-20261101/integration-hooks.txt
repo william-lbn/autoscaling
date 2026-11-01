@@ -1,0 +1,6 @@
+仅内部API：
+g.captureNormalPGMemoryControlSource(ctx)持原resource锁；g.captureNormalPGMemoryControlSourceLocked(ctx,s,record)供Root同锁调用。不收caller pin/sourcehash/可信bool。
+o.referenceLocked(ctx,s,record)只读重核原私有binding/Guard、原Root、预算reference、MappingGeneration/4FD和四WAL identity；保持Source句柄，关闭即Unknown。
+o.requireContinuousQualification()当前始终Unknown，直到Root后继真正组合原typed stdio/System/FS/Kernel/插件出生来源，不能临时加bool。
+唯一公共行为改变为new normal数组模式最终exec >=3 CLOEXEC私有表封口。P2 Compute原stdin/devnull+broker创建stdout/stderr管道的原停点kcmp/FD opaque合同尚未交，当前保未闭状态。stdio类型结构检查不自产角色权。
+原child继承BPF在任何业务Main前安装：PG17 launch_backend.c271+ChildReady273；fork_process.c49/ForkBegin、71fork、73Finish/ready同步与PM PID注册共同门禁。核心migration/force相关拒绝在PMbase+final已经生效，不能以当前子类通常不调用替代内核事实。

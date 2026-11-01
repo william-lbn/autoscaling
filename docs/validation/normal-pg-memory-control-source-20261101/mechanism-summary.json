@@ -1,0 +1,321 @@
+{
+  "actual_backend": {
+    "uid": 1000,
+    "euid": 1000,
+    "NNP": 1,
+    "Seccomp": 2
+  },
+  "cases": [
+    {
+      "probe": "move_pages",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "migrate_pages",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "mbind",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "set_mempolicy",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "home_node",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "io_uring",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "userfaultfd",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "process_madvise",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "process_mrelease",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "mlock",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "madv_collapse",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "madv_hugepage",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "madv_cold",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "madv_pageout",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "madv_mergeable",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "dumpable_enable",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "vmsplice",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "splice",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "tee",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "sendfile",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "unshare",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "setns",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "ptrace",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "pidfd_getfd",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "memfd_create",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "execve",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "fork",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "cgroup_write_open",
+      "result": -1,
+      "errno": 13,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "raw_device_open",
+      "result": -1,
+      "errno": 13,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "mount",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "swapon",
+      "result": -1,
+      "errno": 1,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "thp_disable_clear",
+      "result": 0,
+      "errno": 0,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    },
+    {
+      "probe": "huge_reservation",
+      "result": 0,
+      "errno": 0,
+      "uid": 1000,
+      "euid": 1000,
+      "nnp": 1,
+      "seccomp": 2
+    }
+  ],
+  "dependent_allowed_controls": [
+    "thp_disable_clear",
+    "huge_reservation"
+  ],
+  "not_physical_huge_fault_test": true,
+  "huge_mapping_immediately_unmapped_without_touch": true,
+  "CAP_DAC_based_refusals": [
+    "cgroup_write_open",
+    "raw_device_open",
+    "mount",
+    "swapon"
+  ],
+  "kernel_control_source_still_required": true,
+  "no_control_write_or_Host_mutation": true
+}

@@ -1,0 +1,35 @@
+{
+  "scope": "PG_MEMORY_CONTROL_STRICT_IP_REVIEW_AND_FULL_COMPONENT_RERUN_NOT_NORMAL",
+  "unit": {
+    "cohort": "/data/neon-build/validation/normal-pg-memory-control-ip-go-20261101T011731Z-19b4e5",
+    "race": true,
+    "actual_roots": 6,
+    "actual_subcases": 11,
+    "new_distinct_roots": 1,
+    "previous_5_are_direct_regression": true,
+    "roots": [
+      "TestNormalPGMemoryControlStrictBPFInstructions",
+      "TestNormalPGMemoryControlDenialIsNotSampledArgument",
+      "TestNormalPGMemoryControlStdioRejectsAuthorityObjects",
+      "TestNormalPGMemoryControlDescriptorCLOEXECPrivateTable",
+      "TestNormalPGMemoryControlNoJSONOrReconstructedGuardSource",
+      "TestNormalPGMemoryControlDenialCannotDependOnInstructionPointer"
+    ],
+    "fail": 0,
+    "skip": 0
+  },
+  "native": {
+    "cohort": "/data/neon-build/validation/normal-pg-memory-control-ip-native-20261101T012825Z-009dec",
+    "root": "TestNativeNormalPGMemoryControlSource",
+    "actual_roots": 1,
+    "new_distinct_roots": 0,
+    "same_S_ID_rerun_with_new_Go_ELF": true,
+    "internal_mechanisms": 33,
+    "actual_KVM": true,
+    "Guest_exit": 0,
+    "QEMU_exit": 0
+  },
+  "do_not_add_reruns_to_unique_coverage": true,
+  "normal_authorized": false,
+  "E": 0
+}

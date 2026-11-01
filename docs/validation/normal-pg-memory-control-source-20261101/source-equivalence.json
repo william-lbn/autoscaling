@@ -1,0 +1,13 @@
+{
+  "ordinary_U_actual": "/data/neon-build/validation/normal-pg-memory-control-go-20261101T005848Z-58322b",
+  "native_build_actual": "/data/neon-build/validation/normal-pg-memory-control-go-20261101T010120Z-07c548",
+  "source_lock_sha256_both": "fa643e47036695a5bf221e1c74886e4fca867017b4df28ce0beaea8435b71546",
+  "all_950_source_inputs_identical": true,
+  "Go_sources_exactly_identical": true,
+  "native_Go_ELFs_equal": true,
+  "only_environment_change": "C probe header COPY from actual b95 pg-build digest4578312 instead of runtime47ef whose headers were removed",
+  "final_build_regular_test_regex": "^$ ENV only",
+  "old_U_not_relabelled_as_final_build_actual_execution": true,
+  "U5_11_actual_source_receipt": "unit-actual/export/test.json",
+  "C_first_header_failure_preserved": true
+}
