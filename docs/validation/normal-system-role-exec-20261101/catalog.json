@@ -1,0 +1,35 @@
+{
+  "scope": "original fixed System role exec mechanism, non-authorizing",
+  "Go": {
+    "roots": 9,
+    "subcases": 34,
+    "race": true,
+    "zero_skip": true,
+    "new_roots": [
+      "TestNormalSystemRoleJournalOriginalDurabilityWitness",
+      "TestNormalSystemRoleStoppedWriterCannotChangeBinding",
+      "TestNormalSystemRolePlanExactAndNoEnvironmentDisclosure",
+      "TestNormalSystemRoleCannotSpawnWithoutOriginalSource"
+    ],
+    "dependency_roots": [
+      "TestArrayRuntimeClosureOriginalManifestAndLegacyShape",
+      "TestArrayRuntimeClosureRejectsMalformed",
+      "TestNormalSystemLifecycleMissingOriginalInputNeverQualifies",
+      "TestNormalSystemLifecycleFixedVectorsAndNoEnvironmentDisclosure",
+      "TestNormalSystemLifecycleFixedRoleTableCannotSelectProgram"
+    ]
+  },
+  "S": {
+    "root": "TestNativeNormalSystemRoleOriginalExecStopped",
+    "cases": [
+      "NEON-S-SYSTEM-ROLE-001",
+      "NEON-S-SYSTEM-ROLE-002",
+      "NEON-S-SYSTEM-ROLE-003"
+    ],
+    "binary_sha256": "37669201650fe0c142786781669009ccc845fd5e13a26601390ed490e3424d90",
+    "scope": "DEV Source/static C standins and DEV durable stopped writer; actual369/kernel/clone/ptrace/ns facts"
+  },
+  "E": 0,
+  "production_listener": false,
+  "normal_permit": false
+}

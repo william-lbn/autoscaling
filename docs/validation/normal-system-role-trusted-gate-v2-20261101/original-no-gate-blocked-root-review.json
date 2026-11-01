@@ -1,0 +1,29 @@
+{
+  "status": "SOURCE_SUBMISSION_BLOCKED_PENDING_PARENT_DEATH_FIX",
+  "UTC": "2026-10-31T23:51:19.295016+00:00",
+  "reviewer": "root independent of P2 author",
+  "frozen_source6": {
+    "pkg/dsga/resourceguard/normal_system_role_journal_linux.go": "996643e9ce5cd652022e886ca041b4af18eaf8f50aff597abb25750eb027cea4",
+    "pkg/dsga/resourceguard/normal_system_role_journal_linux_test.go": "2ac459e6fd7662aaebaf5b2d4f62e50b50e602e9c56b6a6f901dbe9a115d8774",
+    "pkg/dsga/resourceguard/normal_system_role_native_test.go": "fec0c5049b4a0cadac85e1ae47abed36dd97be6b834054e3bf1a61e61eda66dd",
+    "pkg/dsga/resourceguard/normal_system_role_plan_linux.go": "e3645afdb920d184ecf500fba81ecbb02c0776b67d3e6bf0608351e3e54f0301",
+    "pkg/dsga/resourceguard/normal_system_role_plan_linux_test.go": "b17aa51fd4efa94d82fd02d70e65ec1d33356b24fe083fb52e84bd0023abfafc",
+    "pkg/dsga/resourceguard/normal_system_role_spawn_linux.go": "944f2c30cd8826d912375692591f2047b4a411db1e8022671dfd789234d3d36c"
+  },
+  "old39_freeze_sha256": "df2285822e8442909b907b668604d097dda76ca0db8a4c289929bdf6bc6fa22",
+  "finding": "TRACEME starts target before Parent sets EXITKILL; no Pdeathsig in old source; creator death before options can release an unpersisted target",
+  "actual_old_window_reproduced": "/data/neon-build/validation/role-parent-death-probe-20261031T232009Z-df758b",
+  "mechanism_fixed_direction_probe": "/data/neon-build/validation/role-parent-death-probe-20261031T232611Z-8839b1",
+  "Go_toolchain_actual": "go1.24.3 linux/amd64",
+  "production_Go_fix_verified": false,
+  "CLI_listener_connected": false,
+  "normal_qualified": false,
+  "E": 0,
+  "required": [
+    "trusted static gate with original creator thread pidfd and no GO before TRACEEXEC|EXITKILL",
+    "actual target/loader second exec-stop before durable release",
+    "creator M lease and readonly declared lifetime mode",
+    "initialRoot normal exit does not kill committed broker or block sysinit",
+    "new Go exact source and real KVM positive/death tests; no transfer from C mechanism"
+  ]
+}

@@ -1,0 +1,5 @@
+Root独审：可信角色Gate与父线程生命周期组件通过，不是完整生产Source。
+已独立读Gate/spawn/trace/entry/declaration/broker/plan/journal全部生产实现。原clone PIDFD+PIDFD_THREAD绑定精确6.12线程语义，目标前仅可信静态Guard；原M确认首stop后装EXITKILL|TRACEEXEC再发唯一GO，原完整pending计划SHA/同端点父Root/4UIDGID/ns/cgroup/ELF/向量重核。动态第二stop按PT_INTERP实际映射/ASLR入口核RIP，未放行loader首指令前可拒错loader。普通creator nonleaderM持到真Wait，固定broker额外RO声明才在EXITKILL持有期间清Pdeath并可移交PID1。
+原无Gate实现的父M早死窗口已实证并阻断；旧33文档与Root阻断报告归档为历史，不把旧6代码提交成生产版本。原138与7096 ELF实际S留原义；独审发现Readdirnames partial+非EOF错误被忽略，窄修任意非EOF即拒，其余14源逐字不变。全新3c2+15源/4789COPY、11race/53sub及4个准确369 KVM Guest均通过，全部新ELF57d781ef。Root逐277平面manifest校验SHA并从四份原Go事件重计11/53、不累计四倍，原Guest/Test/QEMU均0。
+真实Go原M raw SYS_EXIT（非exit_group/无defer）而TGID其它M仍活，四断点均目标零执行；whole creator四断点、合法长角色Mlease/真Wait、持久失败零目标、真实47ef compute_ctl+glibc动态入口、broker清Pdeath后第二stop父M死亡及initialRoot正常退出后broker PPID1全部有原证据。10是稳定检查点，不凭该数伪造10个独立S根。
+目前broker是DEV ready/COMMIT prelude，真实生产listener/StartBroker、原FS四FD转移/stdio来源、普通9控制均后继；不能用此结果补Source/normal。未知线程终态仍保pending/预算Unknown，不宣称自动恢复或Wait即全部物理free。Root main/旧13入口及normal拒绝保持，Linux/K8s E0/发行锁不变。

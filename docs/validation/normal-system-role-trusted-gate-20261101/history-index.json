@@ -1,0 +1,281 @@
+[
+  {
+    "path": "/data/neon-build/validation/normal-role-gate-native-20261101T001841Z-aa39fa",
+    "result": {
+      "status": "PASS_COMPONENT_ONLY",
+      "pass": true,
+      "rc": 0,
+      "timeout": false,
+      "seconds": 27.00611315801507,
+      "actualKVM": {
+        "enabled": true,
+        "present": true
+      },
+      "GuestMemoryMiB": 1024,
+      "GuestCPUs": 2,
+      "kernelTuple": {
+        "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+        "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+        "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+      },
+      "guestNotesSHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+      "GuestRelease": [
+        "6.12.26-william-normal-split-v1-e210f5e3ee94"
+      ],
+      "GuestExit": [
+        "0"
+      ],
+      "TestExit": [
+        "0"
+      ],
+      "caseIDs": [
+        "NEON-S-ROLE-GATE-001",
+        "NEON-S-ROLE-GATE-002",
+        "NEON-S-ROLE-GATE-003",
+        "NEON-S-ROLE-GATE-004",
+        "NEON-S-ROLE-GATE-005"
+      ],
+      "testBinarySHA256": "3ff6a6ee15efcb116ef76742eedf0342c02acc9b3ed9e01b2cc9d386b9bc65ab",
+      "stateDiskSHA256": "560c7e62128f891223070f632ab75ed3dce8a6f3ebd5aee2d94ba71c8f3b34df",
+      "fsckExit": 0,
+      "normalDecreasePermit": false,
+      "notProven": [
+        "production fixed ISO loader and original Source issuance",
+        "Root Birth/Enrollment",
+        "continuous force/I/K envelope and no added OOM",
+        "safe normal decrease",
+        "real PG workload",
+        "Kubernetes E2E"
+      ]
+    }
+  },
+  {
+    "path": "/data/neon-build/validation/normal-role-gate-dynamic-20261101T002743Z-ad4688",
+    "result": {
+      "status": "PASS_COMPONENT_ONLY",
+      "pass": true,
+      "rc": 0,
+      "timeout": false,
+      "seconds": 12.233352064999053,
+      "actualKVM": {
+        "enabled": true,
+        "present": true
+      },
+      "GuestMemoryMiB": 1024,
+      "GuestCPUs": 2,
+      "kernelTuple": {
+        "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+        "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+        "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+      },
+      "guestNotesSHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+      "GuestRelease": [
+        "6.12.26-william-normal-split-v1-e210f5e3ee94"
+      ],
+      "GuestExit": [
+        "0"
+      ],
+      "TestExit": [
+        "0"
+      ],
+      "caseIDs": [
+        "NEON-S-ROLE-GATE-006",
+        "NEON-S-ROLE-GATE-007"
+      ],
+      "testBinarySHA256": "d8e0d70f3504d179529a7daaad04e27cdf213fcba3a772c19b4e2530c425b3f7",
+      "stateDiskSHA256": "d3daa57893b6fcbfe458f13b7f21bd00f0eeb882f414a7f3694282781beaf25e",
+      "fsckExit": 0,
+      "normalDecreasePermit": false,
+      "notProven": [
+        "production fixed ISO loader and original Source issuance",
+        "Root Birth/Enrollment",
+        "continuous force/I/K envelope and no added OOM",
+        "safe normal decrease",
+        "real PG workload",
+        "Kubernetes E2E"
+      ]
+    }
+  },
+  {
+    "path": "/data/neon-build/validation/normal-role-gate-broker-20261101T003615Z-9632ff",
+    "result": {
+      "status": "FAIL_COMPONENT_OR_INFRA",
+      "pass": false,
+      "rc": 0,
+      "timeout": false,
+      "seconds": 8.212123815988889,
+      "actualKVM": {
+        "enabled": true,
+        "present": true
+      },
+      "GuestMemoryMiB": 1024,
+      "GuestCPUs": 2,
+      "kernelTuple": {
+        "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+        "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+        "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+      },
+      "guestNotesSHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+      "GuestRelease": [
+        "6.12.26-william-normal-split-v1-e210f5e3ee94"
+      ],
+      "GuestExit": [
+        "1"
+      ],
+      "TestExit": [
+        "1"
+      ],
+      "caseIDs": [],
+      "testBinarySHA256": "d8896ccace861596400e65284d3b82bca1b3cb56440aef53b093dd95e2ea523e",
+      "stateDiskSHA256": "3e39bced0122b18a9f563724073d9ab40a6ca6f9d0765d3b11b2a7ff435d28a9",
+      "fsckExit": 0,
+      "normalDecreasePermit": false,
+      "notProven": [
+        "production fixed ISO loader and original Source issuance",
+        "Root Birth/Enrollment",
+        "continuous force/I/K envelope and no added OOM",
+        "safe normal decrease",
+        "real PG workload",
+        "Kubernetes E2E"
+      ]
+    }
+  },
+  {
+    "path": "/data/neon-build/validation/normal-role-gate-broker-20261101T003809Z-d93fef",
+    "result": {
+      "status": "PASS_COMPONENT_ONLY",
+      "pass": true,
+      "rc": 0,
+      "timeout": false,
+      "seconds": 13.671357180981431,
+      "actualKVM": {
+        "enabled": true,
+        "present": true
+      },
+      "GuestMemoryMiB": 1024,
+      "GuestCPUs": 2,
+      "kernelTuple": {
+        "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+        "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+        "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+      },
+      "guestNotesSHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+      "GuestRelease": [
+        "6.12.26-william-normal-split-v1-e210f5e3ee94"
+      ],
+      "GuestExit": [
+        "0"
+      ],
+      "TestExit": [
+        "0"
+      ],
+      "caseIDs": [
+        "NEON-S-ROLE-GATE-008",
+        "NEON-S-ROLE-GATE-009"
+      ],
+      "testBinarySHA256": "c709909c2381c3192e8ee06c9f36edb43c0748ccca971b5290acffdd21c4562e",
+      "stateDiskSHA256": "14b1640bb692c855e23794faba38c76520d8ed5cb6537b11bbcff67a2550a270",
+      "fsckExit": 0,
+      "normalDecreasePermit": false,
+      "notProven": [
+        "production fixed ISO loader and original Source issuance",
+        "Root Birth/Enrollment",
+        "continuous force/I/K envelope and no added OOM",
+        "safe normal decrease",
+        "real PG workload",
+        "Kubernetes E2E"
+      ]
+    }
+  },
+  {
+    "path": "/data/neon-build/validation/role-parent-death-probe-20261031T232611Z-8839b1",
+    "result": {
+      "status": "PASS_MECHANISM_ONLY",
+      "pass": true,
+      "cases": [
+        {
+          "case": 0,
+          "name": "old-before-options-unpersisted-role-runs",
+          "creator_tid": 74,
+          "creator_exited": true,
+          "child_exited": true,
+          "target_marker": true,
+          "error": 0,
+          "pass": true
+        },
+        {
+          "case": 1,
+          "name": "old-after-options-exitkill",
+          "creator_tid": 76,
+          "creator_exited": true,
+          "child_exited": true,
+          "target_marker": false,
+          "error": 0,
+          "pass": true
+        },
+        {
+          "case": 2,
+          "name": "new-gate-thread-death-before-prctl",
+          "creator_tid": 78,
+          "creator_exited": true,
+          "child_exited": true,
+          "target_marker": false,
+          "error": 0,
+          "pass": true
+        },
+        {
+          "case": 3,
+          "name": "new-gate-after-options-before-go",
+          "creator_tid": 80,
+          "creator_exited": true,
+          "child_exited": true,
+          "target_marker": false,
+          "error": 0,
+          "pass": true
+        },
+        {
+          "case": 4,
+          "name": "new-gate-after-go-target-execstop",
+          "creator_tid": 82,
+          "creator_exited": true,
+          "child_exited": true,
+          "target_marker": false,
+          "error": 0,
+          "pass": true
+        },
+        {
+          "case": 5,
+          "name": "new-gate-legal-creator-lease-until-wait",
+          "creator_tid": 84,
+          "creator_exited": true,
+          "child_exited": true,
+          "target_marker": true,
+          "error": 0,
+          "pass": true
+        }
+      ],
+      "GuestExit": [
+        "0"
+      ],
+      "TestExit": [
+        "0"
+      ],
+      "QEMUExit": 0,
+      "KVM": {
+        "enabled": true,
+        "present": true
+      },
+      "GuestNotesSHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+      "kernel": {
+        "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+        "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+        "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+      },
+      "test_binary_sha256": "60f75c7135782a3f1319bbe7421c373112a33b4098cdca46a2f07f029a70a7dc",
+      "seconds": 4.5146956449898425,
+      "scope": "C syscall mechanism proves old unsafe thread-death and fixed thread-pidfd gate/lease direction; not yet new Go role fix/normal",
+      "normal_permit": false,
+      "E": 0
+    }
+  }
+]

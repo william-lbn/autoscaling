@@ -1,0 +1,124 @@
+{
+  "result": "PASS_TRUSTED_GATE_COMPONENT_ONLY",
+  "reviewed_utc": "2026-11-01T01:05:21.769925+00:00",
+  "source15": {
+    "pkg/dsga/resourceguard/normal_system_role_declaration_linux.go": "a4bc893e37775ec462bea8ce74fd350c2357b55af590b6e789216dea7e5f825d",
+    "pkg/dsga/resourceguard/normal_system_role_gate_broker_linux.go": "7eb05b4888150d1b1ea417bbceafba09409e1c58a168ae8327147503abd2d20e",
+    "pkg/dsga/resourceguard/normal_system_role_gate_broker_native_test.go": "0a03f1129e179dbb7aed31462edc1d5690b3c2323ec0e769edbda39da6ebd98f",
+    "pkg/dsga/resourceguard/normal_system_role_gate_dynamic_native_test.go": "0a5a81c88508974ba67cd24e13816924173c9d79ca4618f0a05a962a6eb274a0",
+    "pkg/dsga/resourceguard/normal_system_role_gate_entry_linux.go": "09c7ca2964af36349ce2f61ba89889410cb163d36905bfb3407538fdc73d19d2",
+    "pkg/dsga/resourceguard/normal_system_role_gate_linux.go": "bc1128a6e6ae07cb042f70f0d78052f69fcb2d27f03b5d36087c6a86c5419482",
+    "pkg/dsga/resourceguard/normal_system_role_gate_linux_test.go": "d970336fa1f8f2731ccd9d854d5aed5259bac993a17f78fdc3589ae29ea36e32",
+    "pkg/dsga/resourceguard/normal_system_role_gate_native_test.go": "b8878c042d3ee00ce39cd456eae6870f4ccb134acb159fb8edd30df960362163",
+    "pkg/dsga/resourceguard/normal_system_role_gate_trace_linux.go": "691f73ee2d0b62daaa3380dbca33468be17c249e8ed4a7af273a5fedb29617c1",
+    "pkg/dsga/resourceguard/normal_system_role_journal_linux.go": "9023bdca565d43b3011a55d27cbb7696e538293f274d2c4e8d0daf21d7bd587f",
+    "pkg/dsga/resourceguard/normal_system_role_journal_linux_test.go": "2ac459e6fd7662aaebaf5b2d4f62e50b50e602e9c56b6a6f901dbe9a115d8774",
+    "pkg/dsga/resourceguard/normal_system_role_native_test.go": "fec0c5049b4a0cadac85e1ae47abed36dd97be6b834054e3bf1a61e61eda66dd",
+    "pkg/dsga/resourceguard/normal_system_role_plan_linux.go": "e3645afdb920d184ecf500fba81ecbb02c0776b67d3e6bf0608351e3e54f0301",
+    "pkg/dsga/resourceguard/normal_system_role_plan_linux_test.go": "b17aa51fd4efa94d82fd02d70e65ec1d33356b24fe083fb52e84bd0023abfafc",
+    "pkg/dsga/resourceguard/normal_system_role_spawn_linux.go": "8dc3a592ad9f29775a6b7ca4d0cce0e7e3c677feccc003f64dd70d5db3596d0a"
+  },
+  "all277_flat_manifest_hashes_verified": true,
+  "stage277_sha256": "c87e3ec86d5138825a79b2082b880dce5f426cb0729ece093894881aa1bf483b",
+  "sole_delta_to_v1": [
+    "pkg/dsga/resourceguard/normal_system_role_journal_linux.go"
+  ],
+  "actual_base": "3c2a5f348a4d68868cdd4d7507885cf207057dfa",
+  "four_same_ELF_runs": {
+    "ordinary": {
+      "actual_U_roots": 11,
+      "actual_U_subcases": 53,
+      "actual_COPY": 4789,
+      "source_lock_sha256": "b007e9b1aec20c0142feea3884fdffd4e0dcd280b48e75b8a72b5062bad2eb29",
+      "real_Guest_Test_QEMU_exit0": true,
+      "native_PASS_names_from_console": [
+        "TestNativeNormalSystemRoleGateLifecycle",
+        "TestNativeNormalSystemRoleGateFaultDeaths",
+        "TestNativeNormalSystemRoleGateThreadHelper",
+        "TestNativeNormalSystemRoleGateThreadHelper",
+        "TestNativeNormalSystemRoleGateThreadHelper",
+        "TestNativeNormalSystemRoleGateThreadHelper",
+        "TestNativeNormalSystemRoleGateThreadDeaths"
+      ],
+      "checkpoint_ids": [
+        "NEON-S-ROLE-GATE-001",
+        "NEON-S-ROLE-GATE-002",
+        "NEON-S-ROLE-GATE-003",
+        "NEON-S-ROLE-GATE-004",
+        "NEON-S-ROLE-GATE-005"
+      ],
+      "actual_seconds": 29.259681808995083
+    },
+    "dynamic": {
+      "actual_U_roots": 11,
+      "actual_U_subcases": 53,
+      "actual_COPY": 4789,
+      "source_lock_sha256": "b007e9b1aec20c0142feea3884fdffd4e0dcd280b48e75b8a72b5062bad2eb29",
+      "real_Guest_Test_QEMU_exit0": true,
+      "native_PASS_names_from_console": [
+        "TestNativeNormalSystemRoleGateDynamic"
+      ],
+      "checkpoint_ids": [
+        "NEON-S-ROLE-GATE-006",
+        "NEON-S-ROLE-GATE-007"
+      ],
+      "actual_seconds": 13.313029544020537
+    },
+    "broker-handoff": {
+      "actual_U_roots": 11,
+      "actual_U_subcases": 53,
+      "actual_COPY": 4789,
+      "source_lock_sha256": "b007e9b1aec20c0142feea3884fdffd4e0dcd280b48e75b8a72b5062bad2eb29",
+      "real_Guest_Test_QEMU_exit0": true,
+      "native_PASS_names_from_console": [
+        "TestNativeNormalSystemRoleGateBrokerLifetime"
+      ],
+      "checkpoint_ids": [
+        "NEON-S-ROLE-GATE-008",
+        "NEON-S-ROLE-GATE-009"
+      ],
+      "actual_seconds": 13.290367225999944
+    },
+    "broker-thread-death": {
+      "actual_U_roots": 11,
+      "actual_U_subcases": 53,
+      "actual_COPY": 4789,
+      "source_lock_sha256": "b007e9b1aec20c0142feea3884fdffd4e0dcd280b48e75b8a72b5062bad2eb29",
+      "real_Guest_Test_QEMU_exit0": true,
+      "native_PASS_names_from_console": [
+        "TestNativeNormalSystemRoleGateBrokerDeathBeforeRelease"
+      ],
+      "checkpoint_ids": [
+        "NEON-S-ROLE-GATE-010"
+      ],
+      "actual_seconds": 9.767211030994076
+    }
+  },
+  "actual_unique_checkpoint_ids": [
+    "NEON-S-ROLE-GATE-001",
+    "NEON-S-ROLE-GATE-002",
+    "NEON-S-ROLE-GATE-003",
+    "NEON-S-ROLE-GATE-004",
+    "NEON-S-ROLE-GATE-005",
+    "NEON-S-ROLE-GATE-006",
+    "NEON-S-ROLE-GATE-007",
+    "NEON-S-ROLE-GATE-008",
+    "NEON-S-ROLE-GATE-009",
+    "NEON-S-ROLE-GATE-010"
+  ],
+  "ordinary_race_roots_unique": 11,
+  "ordinary_race_subcases_unique": 53,
+  "repeated_U_runs_not_summed": true,
+  "old_no_gate_6_code_not_staged": true,
+  "old_33_docs_history_only": true,
+  "known_limits": [
+    "production main/listener/StartBroker/FS opaque4FD transfer absent",
+    "all inherited FD/stdio original provenance not closed",
+    "ordinary9 kernel controls not integrated",
+    "broker ready uses DEV prelude, no real full services",
+    "raw M failure may retain Unknown/pending, no auto-recovery claim",
+    "no normal decrease or E2E permit"
+  ],
+  "normal_qualified": false,
+  "E": 0
+}

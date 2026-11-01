@@ -1,0 +1,260 @@
+{
+  "protocol_version": 1,
+  "scope": "fixed trusted Go Gate and original System role lifecycle component only",
+  "base": "3c2a5f348a4d68868cdd4d7507885cf207057dfa",
+  "owned": {
+    "pkg/dsga/resourceguard/normal_system_role_declaration_linux.go": "a4bc893e37775ec462bea8ce74fd350c2357b55af590b6e789216dea7e5f825d",
+    "pkg/dsga/resourceguard/normal_system_role_gate_broker_linux.go": "7eb05b4888150d1b1ea417bbceafba09409e1c58a168ae8327147503abd2d20e",
+    "pkg/dsga/resourceguard/normal_system_role_gate_broker_native_test.go": "0a03f1129e179dbb7aed31462edc1d5690b3c2323ec0e769edbda39da6ebd98f",
+    "pkg/dsga/resourceguard/normal_system_role_gate_dynamic_native_test.go": "0a5a81c88508974ba67cd24e13816924173c9d79ca4618f0a05a962a6eb274a0",
+    "pkg/dsga/resourceguard/normal_system_role_gate_entry_linux.go": "09c7ca2964af36349ce2f61ba89889410cb163d36905bfb3407538fdc73d19d2",
+    "pkg/dsga/resourceguard/normal_system_role_gate_linux.go": "bc1128a6e6ae07cb042f70f0d78052f69fcb2d27f03b5d36087c6a86c5419482",
+    "pkg/dsga/resourceguard/normal_system_role_gate_linux_test.go": "d970336fa1f8f2731ccd9d854d5aed5259bac993a17f78fdc3589ae29ea36e32",
+    "pkg/dsga/resourceguard/normal_system_role_gate_native_test.go": "b8878c042d3ee00ce39cd456eae6870f4ccb134acb159fb8edd30df960362163",
+    "pkg/dsga/resourceguard/normal_system_role_gate_trace_linux.go": "691f73ee2d0b62daaa3380dbca33468be17c249e8ed4a7af273a5fedb29617c1",
+    "pkg/dsga/resourceguard/normal_system_role_journal_linux.go": "9023bdca565d43b3011a55d27cbb7696e538293f274d2c4e8d0daf21d7bd587f",
+    "pkg/dsga/resourceguard/normal_system_role_journal_linux_test.go": "2ac459e6fd7662aaebaf5b2d4f62e50b50e602e9c56b6a6f901dbe9a115d8774",
+    "pkg/dsga/resourceguard/normal_system_role_native_test.go": "fec0c5049b4a0cadac85e1ae47abed36dd97be6b834054e3bf1a61e61eda66dd",
+    "pkg/dsga/resourceguard/normal_system_role_plan_linux.go": "e3645afdb920d184ecf500fba81ecbb02c0776b67d3e6bf0608351e3e54f0301",
+    "pkg/dsga/resourceguard/normal_system_role_plan_linux_test.go": "b17aa51fd4efa94d82fd02d70e65ec1d33356b24fe083fb52e84bd0023abfafc",
+    "pkg/dsga/resourceguard/normal_system_role_spawn_linux.go": "8dc3a592ad9f29775a6b7ca4d0cce0e7e3c677feccc003f64dd70d5db3596d0a"
+  },
+  "runs": {
+    "ordinary": {
+      "original": "/data/neon-build/validation/normal-role-gate-v2-native-20261101T005239Z-67b241",
+      "result": {
+        "status": "PASS_COMPONENT_ONLY",
+        "pass": true,
+        "rc": 0,
+        "timeout": false,
+        "seconds": 29.259681808995083,
+        "actualKVM": {
+          "enabled": true,
+          "present": true
+        },
+        "GuestMemoryMiB": 1024,
+        "GuestCPUs": 2,
+        "kernelTuple": {
+          "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+          "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+          "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+        },
+        "guestNotesSHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+        "GuestRelease": [
+          "6.12.26-william-normal-split-v1-e210f5e3ee94"
+        ],
+        "GuestExit": [
+          "0"
+        ],
+        "TestExit": [
+          "0"
+        ],
+        "caseIDs": [
+          "NEON-S-ROLE-GATE-001",
+          "NEON-S-ROLE-GATE-002",
+          "NEON-S-ROLE-GATE-003",
+          "NEON-S-ROLE-GATE-004",
+          "NEON-S-ROLE-GATE-005"
+        ],
+        "testBinarySHA256": "57d781eff2befb181294bd91a2562815f677e136d97fc288fc217cacce39ecd5",
+        "stateDiskSHA256": "0d4b422c50c216d94b67d7f47fe9452e163691e3b4a45a2a484ac100cb6a032a",
+        "fsckExit": 0,
+        "normalDecreasePermit": false,
+        "notProven": [
+          "production fixed ISO loader and original Source issuance",
+          "Root Birth/Enrollment",
+          "continuous force/I/K envelope and no added OOM",
+          "safe normal decrease",
+          "real PG workload",
+          "Kubernetes E2E"
+        ]
+      },
+      "U_roots": 11,
+      "U_subcases": 53,
+      "U_fail": 0,
+      "U_skip": 0,
+      "actual_COPY": 4789,
+      "source_lock_sha256": "b007e9b1aec20c0142feea3884fdffd4e0dcd280b48e75b8a72b5062bad2eb29"
+    },
+    "dynamic": {
+      "original": "/data/neon-build/validation/normal-role-gate-v2-dynamic-20261101T005239Z-2ba570",
+      "result": {
+        "status": "PASS_COMPONENT_ONLY",
+        "pass": true,
+        "rc": 0,
+        "timeout": false,
+        "seconds": 13.313029544020537,
+        "actualKVM": {
+          "enabled": true,
+          "present": true
+        },
+        "GuestMemoryMiB": 1024,
+        "GuestCPUs": 2,
+        "kernelTuple": {
+          "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+          "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+          "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+        },
+        "guestNotesSHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+        "GuestRelease": [
+          "6.12.26-william-normal-split-v1-e210f5e3ee94"
+        ],
+        "GuestExit": [
+          "0"
+        ],
+        "TestExit": [
+          "0"
+        ],
+        "caseIDs": [
+          "NEON-S-ROLE-GATE-006",
+          "NEON-S-ROLE-GATE-007"
+        ],
+        "testBinarySHA256": "57d781eff2befb181294bd91a2562815f677e136d97fc288fc217cacce39ecd5",
+        "stateDiskSHA256": "98e4ea454035f3d9244b651673e5c040fbbfa7cbfd044e9112e00ee882154ff5",
+        "fsckExit": 0,
+        "normalDecreasePermit": false,
+        "notProven": [
+          "production fixed ISO loader and original Source issuance",
+          "Root Birth/Enrollment",
+          "continuous force/I/K envelope and no added OOM",
+          "safe normal decrease",
+          "real PG workload",
+          "Kubernetes E2E"
+        ]
+      },
+      "U_roots": 11,
+      "U_subcases": 53,
+      "U_fail": 0,
+      "U_skip": 0,
+      "actual_COPY": 4789,
+      "source_lock_sha256": "b007e9b1aec20c0142feea3884fdffd4e0dcd280b48e75b8a72b5062bad2eb29"
+    },
+    "broker-handoff": {
+      "original": "/data/neon-build/validation/normal-role-gate-v2-broker-20261101T005240Z-7ce259",
+      "result": {
+        "status": "PASS_COMPONENT_ONLY",
+        "pass": true,
+        "rc": 0,
+        "timeout": false,
+        "seconds": 13.290367225999944,
+        "actualKVM": {
+          "enabled": true,
+          "present": true
+        },
+        "GuestMemoryMiB": 1024,
+        "GuestCPUs": 2,
+        "kernelTuple": {
+          "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+          "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+          "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+        },
+        "guestNotesSHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+        "GuestRelease": [
+          "6.12.26-william-normal-split-v1-e210f5e3ee94"
+        ],
+        "GuestExit": [
+          "0"
+        ],
+        "TestExit": [
+          "0"
+        ],
+        "caseIDs": [
+          "NEON-S-ROLE-GATE-008",
+          "NEON-S-ROLE-GATE-009"
+        ],
+        "testBinarySHA256": "57d781eff2befb181294bd91a2562815f677e136d97fc288fc217cacce39ecd5",
+        "stateDiskSHA256": "c929b5fc91df89eb530b58623e0002558c451e936cd89c3c8d56106b246db808",
+        "fsckExit": 0,
+        "normalDecreasePermit": false,
+        "notProven": [
+          "production fixed ISO loader and original Source issuance",
+          "Root Birth/Enrollment",
+          "continuous force/I/K envelope and no added OOM",
+          "safe normal decrease",
+          "real PG workload",
+          "Kubernetes E2E"
+        ]
+      },
+      "U_roots": 11,
+      "U_subcases": 53,
+      "U_fail": 0,
+      "U_skip": 0,
+      "actual_COPY": 4789,
+      "source_lock_sha256": "b007e9b1aec20c0142feea3884fdffd4e0dcd280b48e75b8a72b5062bad2eb29"
+    },
+    "broker-thread-death": {
+      "original": "/data/neon-build/validation/normal-role-gate-v2-broker-death-20261101T005241Z-77682e",
+      "result": {
+        "status": "PASS_COMPONENT_ONLY",
+        "pass": true,
+        "rc": 0,
+        "timeout": false,
+        "seconds": 9.767211030994076,
+        "actualKVM": {
+          "enabled": true,
+          "present": true
+        },
+        "GuestMemoryMiB": 1024,
+        "GuestCPUs": 2,
+        "kernelTuple": {
+          "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+          "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+          "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+        },
+        "guestNotesSHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+        "GuestRelease": [
+          "6.12.26-william-normal-split-v1-e210f5e3ee94"
+        ],
+        "GuestExit": [
+          "0"
+        ],
+        "TestExit": [
+          "0"
+        ],
+        "caseIDs": [
+          "NEON-S-ROLE-GATE-010"
+        ],
+        "testBinarySHA256": "57d781eff2befb181294bd91a2562815f677e136d97fc288fc217cacce39ecd5",
+        "stateDiskSHA256": "8616e0c179e9b0b44e675f5eb934629894a7c80f9c8b9d78991282dab02fbec2",
+        "fsckExit": 0,
+        "normalDecreasePermit": false,
+        "notProven": [
+          "production fixed ISO loader and original Source issuance",
+          "Root Birth/Enrollment",
+          "continuous force/I/K envelope and no added OOM",
+          "safe normal decrease",
+          "real PG workload",
+          "Kubernetes E2E"
+        ]
+      },
+      "U_roots": 11,
+      "U_subcases": 53,
+      "U_fail": 0,
+      "U_skip": 0,
+      "actual_COPY": 4789,
+      "source_lock_sha256": "b007e9b1aec20c0142feea3884fdffd4e0dcd280b48e75b8a72b5062bad2eb29"
+    }
+  },
+  "E": 0,
+  "normal_decrease_permit": false,
+  "remaining": [
+    "production broker listener/ready/COMMIT and original FS FD transfer not integrated",
+    "fixed public CLI/main/vminit and original Source issuance not integrated",
+    "ordinary9 controls not yet consumed; actual Alpine chronyd/vector final image not validated",
+    "continuous System writer/normal force-I and complete normal authorization remain missing",
+    "raw creator M death is safety fail-closed; pending retained, no automatic goroutine recovery claim",
+    "Kubernetes real117/118/119 E2E not run"
+  ],
+  "supersedes": {
+    "previous": "/data/neon-build/validation/normal-system-role-trusted-gate-freeze-20261101",
+    "previous_repo_docs": "docs/validation/normal-system-role-trusted-gate-20261101",
+    "changed_only_owned": [
+      "pkg/dsga/resourceguard/normal_system_role_journal_linux.go"
+    ],
+    "before": "996643e9ce5cd652022e886ca041b4af18eaf8f50aff597abb25750eb027cea4",
+    "after": "9023bdca565d43b3011a55d27cbb7696e538293f274d2c4e8d0daf21d7bd587f",
+    "reason": "Readdirnames partial names with non-EOF error must reject; EOF remains allowed; no old Guest result transferred",
+    "new_ELF": "57d781eff2befb181294bd91a2562815f677e136d97fc288fc217cacce39ecd5",
+    "primary_U": "/data/neon-build/validation/normal-role-gate-v2-go-20261101T005209Z-93caa6"
+  }
+}

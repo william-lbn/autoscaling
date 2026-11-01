@@ -1,0 +1,7 @@
+System角色原出生/首指令前核验组件（第二批）
+范围：6个新normal_system_role_*文件。依赖冻结SystemLifecycle6/P1RuntimeClosure；没有改现13行v2、vminit、Root CLI/ServeGuest、共享record或normal五拒绝。
+真正实现：固定角色从原manifest/原固定build plan选择；请求不接受路径/argv/env；实际exec env为空或固定计划显式向量。捕获并持有原mnt/pid/user/cgroup/ipc/uts/net/time namespace FD；System cgroup由原inode钉住，CLONE_INTO_CGROUP+CLONE_PIDFD同次出生，TRACEME在首条用户指令前stop。复用已审专用非leader M与原pidfd wait/退出清理，核四UID/GID、线程数、原ELF/argv/env/cgroup/namespace后才EXITKILL、持久回调与detach。不调用Setresuid(0,0,0)，无numeric迁组/kill回退。
+生产私有journal实现原resource flock内pending→exec-stopped→released；只有真实原task Wait成功才exited。全部createPhysicalFile成功(file+dir fsync)后追加原inode/ctime/SHA私有见证；新broker、可见但无见证、同字节换inode、缺stage/未知stage全部Unknown。exited仅证明原task退出，不宣称全部后代、异步kernel或物理free。普通读取不补写/不隐式恢复；重启不能扫描PID收养。
+准确执行：3501 actualCOPY逐项OK；9race根34子例0fail/skip/1.410s（4个新role根+Lifecycle3+RuntimeClosure2）。Linux2CPU2GiB/noextraswap；CGO0静态native二进制另编。
+真实369 KVM：Guest1G2CPU/Docker2G/noNIC/KVM enabled，Guest/Test/QEMU0，3.561s。三ID分别是exec-stop真实regs.RIP==原静态ELF e_entry后才能持久/释放；可见但回调故意未确认则原pidfd kill+实际wait；错原namespace在spawn前拒。DEV源使用静态C替代全部服务，native持久sink为明确DEV writer（实际ext4 file+dir fsync后主动返回错误）；没有声称内核真实fsync错误注入或生产broker journal整根S。
+后继必须实际接线：固定broker角色声明纳System Files/原RuntimeClosure SHA、真实固定socket和原peer身份、原initial-boot Check→FS capture→StartBroker/ready、固定dispatcher消费、真实全部role exec/子进程和kernel writer调用图、显式恢复。当前没有生产listener/StartBroker，完整连续Source与normal许可false；不是PG工作负载/normal降限/K8s E。

@@ -1,0 +1,43 @@
+{
+  "status": "PASS_COMPONENT_ONLY",
+  "pass": true,
+  "rc": 0,
+  "timeout": false,
+  "seconds": 11.849489828018704,
+  "actualKVM": {
+    "enabled": true,
+    "present": true
+  },
+  "GuestMemoryMiB": 1024,
+  "GuestCPUs": 2,
+  "kernelTuple": {
+    "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+    "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+  },
+  "guestNotesSHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "GuestRelease": [
+    "6.12.26-william-normal-split-v1-e210f5e3ee94"
+  ],
+  "GuestExit": [
+    "0"
+  ],
+  "TestExit": [
+    "0"
+  ],
+  "caseIDs": [
+    "NEON-S-ROLE-GATE-010"
+  ],
+  "testBinarySHA256": "7096563472b526a0f4abcbc13c7ae58c968a96ab449be4581038e3842124368f",
+  "stateDiskSHA256": "1f8a7e5db1e6df433118519e146ade7caaeccdcc4d5618ff8a8f1674a9a0880a",
+  "fsckExit": 0,
+  "normalDecreasePermit": false,
+  "notProven": [
+    "production fixed ISO loader and original Source issuance",
+    "Root Birth/Enrollment",
+    "continuous force/I/K envelope and no added OOM",
+    "safe normal decrease",
+    "real PG workload",
+    "Kubernetes E2E"
+  ]
+}

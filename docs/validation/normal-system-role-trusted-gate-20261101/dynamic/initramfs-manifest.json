@@ -1,0 +1,461 @@
+{
+  "files": [
+    {
+      "path": ".",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "bin",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "bin/busybox",
+      "mode": "0o100755",
+      "bytes": 808712,
+      "sha256": "672ec674aa77a9699a4313cbf75c6be1d7f2e81c939460954eadab9d36196c6c"
+    },
+    {
+      "path": "dev",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "etc",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "etc/group",
+      "mode": "0o100444",
+      "bytes": 27,
+      "sha256": "dab4678da477f3ddeeb6cbf8581424cbeed80360907d39e457c5eedb42b94bdc"
+    },
+    {
+      "path": "etc/inittab",
+      "mode": "0o100644",
+      "bytes": 793,
+      "sha256": "a55b16f8de5bae8b541754215469bf0243cf407b53ca3e95b8031d987102c765"
+    },
+    {
+      "path": "etc/neon-dsga",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "etc/neon-dsga/resource.json",
+      "mode": "0o100444",
+      "bytes": 125,
+      "sha256": "35090dd1368111ff7e0ce210d8399fc4e85cd9deab02bf871fcd48d6f8e0e8c1"
+    },
+    {
+      "path": "etc/neon-dsga/runtime.json",
+      "mode": "0o100444",
+      "bytes": 3477,
+      "sha256": "b18256eb7d03d2196183e467015baca64f79bf8def3160b3a8b4434b78677889"
+    },
+    {
+      "path": "etc/passwd",
+      "mode": "0o100444",
+      "bytes": 99,
+      "sha256": "7eb05ab4fdc803a7de269e4719b44d7a0f0ae1db235f23f307ac2a1146e2c2de"
+    },
+    {
+      "path": "etc/udev",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "etc/udev/rules.d",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "etc/vector",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "init",
+      "mode": "0o100755",
+      "bytes": 1681,
+      "sha256": "f3bd26e86c762c12b28c5a19d1f4c8dfb43c622e3aafa91c272bb958a03a280e"
+    },
+    {
+      "path": "lib",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "lib/ld-musl-x86_64.so.1",
+      "mode": "0o100755",
+      "bytes": 649832,
+      "sha256": "4e5f9d95fbf01b1375090a257faf28d5f00436e20a4f054d1ee80ff5750f166c"
+    },
+    {
+      "path": "lib/udev",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "lib/udev/rules.d",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "lib/x86_64-linux-gnu",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "mode": "0o120777",
+      "bytes": 46,
+      "sha256": null
+    },
+    {
+      "path": "lib/x86_64-linux-gnu/libc.so.6",
+      "mode": "0o120777",
+      "bytes": 35,
+      "sha256": null
+    },
+    {
+      "path": "lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "mode": "0o120777",
+      "bytes": 39,
+      "sha256": null
+    },
+    {
+      "path": "lib/x86_64-linux-gnu/libm.so.6",
+      "mode": "0o120777",
+      "bytes": 35,
+      "sha256": null
+    },
+    {
+      "path": "lib64",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "lib64/ld-linux-x86-64.so.2",
+      "mode": "0o120777",
+      "bytes": 46,
+      "sha256": null
+    },
+    {
+      "path": "lifecycle.test",
+      "mode": "0o100755",
+      "bytes": 16085203,
+      "sha256": "7096563472b526a0f4abcbc13c7ae58c968a96ab449be4581038e3842124368f"
+    },
+    {
+      "path": "neonvm",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "neonvm/acpi",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "neonvm/bin",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "neonvm/bin/acpid",
+      "mode": "0o100755",
+      "bytes": 16085203,
+      "sha256": "7096563472b526a0f4abcbc13c7ae58c968a96ab449be4581038e3842124368f"
+    },
+    {
+      "path": "neonvm/bin/busybox",
+      "mode": "0o100755",
+      "bytes": 16085203,
+      "sha256": "7096563472b526a0f4abcbc13c7ae58c968a96ab449be4581038e3842124368f"
+    },
+    {
+      "path": "neonvm/bin/cat",
+      "mode": "0o120777",
+      "bytes": 19,
+      "sha256": null
+    },
+    {
+      "path": "neonvm/bin/chronyd",
+      "mode": "0o100755",
+      "bytes": 16085203,
+      "sha256": "7096563472b526a0f4abcbc13c7ae58c968a96ab449be4581038e3842124368f"
+    },
+    {
+      "path": "neonvm/bin/dsga-resource-guard",
+      "mode": "0o100755",
+      "bytes": 16085203,
+      "sha256": "7096563472b526a0f4abcbc13c7ae58c968a96ab449be4581038e3842124368f"
+    },
+    {
+      "path": "neonvm/bin/dsga-resource-service",
+      "mode": "0o100755",
+      "bytes": 24,
+      "sha256": "384b3da996db2381a99c0008f58db728c2a88d97b0a3e7f70ca5cf97d7e34bae"
+    },
+    {
+      "path": "neonvm/bin/neonvmd",
+      "mode": "0o100755",
+      "bytes": 16085203,
+      "sha256": "7096563472b526a0f4abcbc13c7ae58c968a96ab449be4581038e3842124368f"
+    },
+    {
+      "path": "neonvm/bin/sh",
+      "mode": "0o120777",
+      "bytes": 19,
+      "sha256": null
+    },
+    {
+      "path": "neonvm/bin/su-exec",
+      "mode": "0o100755",
+      "bytes": 16085203,
+      "sha256": "7096563472b526a0f4abcbc13c7ae58c968a96ab449be4581038e3842124368f"
+    },
+    {
+      "path": "neonvm/bin/touch",
+      "mode": "0o120777",
+      "bytes": 19,
+      "sha256": null
+    },
+    {
+      "path": "neonvm/bin/udev-init.sh",
+      "mode": "0o100755",
+      "bytes": 24,
+      "sha256": "384b3da996db2381a99c0008f58db728c2a88d97b0a3e7f70ca5cf97d7e34bae"
+    },
+    {
+      "path": "neonvm/bin/udevd",
+      "mode": "0o100755",
+      "bytes": 16085203,
+      "sha256": "7096563472b526a0f4abcbc13c7ae58c968a96ab449be4581038e3842124368f"
+    },
+    {
+      "path": "neonvm/bin/udhcpc",
+      "mode": "0o120777",
+      "bytes": 19,
+      "sha256": null
+    },
+    {
+      "path": "neonvm/bin/udhcpc.script",
+      "mode": "0o100755",
+      "bytes": 24,
+      "sha256": "384b3da996db2381a99c0008f58db728c2a88d97b0a3e7f70ca5cf97d7e34bae"
+    },
+    {
+      "path": "neonvm/bin/vector",
+      "mode": "0o100755",
+      "bytes": 16085203,
+      "sha256": "7096563472b526a0f4abcbc13c7ae58c968a96ab449be4581038e3842124368f"
+    },
+    {
+      "path": "neonvm/bin/vminit",
+      "mode": "0o100755",
+      "bytes": 24,
+      "sha256": "384b3da996db2381a99c0008f58db728c2a88d97b0a3e7f70ca5cf97d7e34bae"
+    },
+    {
+      "path": "neonvm/bin/vmshutdown",
+      "mode": "0o100755",
+      "bytes": 24,
+      "sha256": "384b3da996db2381a99c0008f58db728c2a88d97b0a3e7f70ca5cf97d7e34bae"
+    },
+    {
+      "path": "neonvm/bin/vmstart",
+      "mode": "0o100755",
+      "bytes": 24,
+      "sha256": "384b3da996db2381a99c0008f58db728c2a88d97b0a3e7f70ca5cf97d7e34bae"
+    },
+    {
+      "path": "neonvm/config",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "neonvm/config/chrony.conf",
+      "mode": "0o100644",
+      "bytes": 25,
+      "sha256": "9287acd9d591912811c64a447a06774d0a8a10530b4fb44a84256856ef408de2"
+    },
+    {
+      "path": "neonvm/config/dsga-normal-build-plan.json",
+      "mode": "0o100444",
+      "bytes": 168,
+      "sha256": "d5d18afd0dd570a4846af7cb47d9eb3c2640210f9608d072a18aabde945a9cb4"
+    },
+    {
+      "path": "neonvm/config/dsga-normal-system-source.json",
+      "mode": "0o100444",
+      "bytes": 5832,
+      "sha256": "ab424c4435ff03ee5f91e116b9c45255c1082091093b03deb268093f93186395"
+    },
+    {
+      "path": "neonvm/config/vector.yaml",
+      "mode": "0o100644",
+      "bytes": 25,
+      "sha256": "9287acd9d591912811c64a447a06774d0a8a10530b4fb44a84256856ef408de2"
+    },
+    {
+      "path": "proc",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "sys",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "tmp",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "usr",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "usr/lib",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "usr/lib/x86_64-linux-gnu",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "mode": "0o100755",
+      "bytes": 215000,
+      "sha256": "02bcda52c1a5dfc236f94d9e5255b4a0e26347d8a372a5223b650e31f291ce3c"
+    },
+    {
+      "path": "usr/lib/x86_64-linux-gnu/libc.so.6",
+      "mode": "0o100755",
+      "bytes": 1926232,
+      "sha256": "6b4a45352fd0c540a9c7c718f35ce8c8e46a4e482f9d3885a910c32d1a0e1421"
+    },
+    {
+      "path": "usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "mode": "0o100755",
+      "bytes": 125312,
+      "sha256": "2bd1552c47799ef67e701e81d4383061fd76059868e446e63560f0dd0d5ec14e"
+    },
+    {
+      "path": "usr/lib/x86_64-linux-gnu/libm.so.6",
+      "mode": "0o100755",
+      "bytes": 911904,
+      "sha256": "7f2ca87f652f56b094462474b076749e90e689d0ecb9cb63c7679820b271b4e7"
+    },
+    {
+      "path": "usr/local",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "usr/local/bin",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "usr/local/bin/compute_ctl",
+      "mode": "0o100755",
+      "bytes": 41370672,
+      "sha256": "110ed206b8243167dd6355581457eb22e0b340dbbc6a3a88a2cc36355243fdfe"
+    },
+    {
+      "path": "usr/local/bin/postgres",
+      "mode": "0o100755",
+      "bytes": 16085203,
+      "sha256": "7096563472b526a0f4abcbc13c7ae58c968a96ab449be4581038e3842124368f"
+    },
+    {
+      "path": "usr/share",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "usr/share/neon-dsga",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "usr/share/neon-dsga/native-build.json",
+      "mode": "0o100444",
+      "bytes": 443,
+      "sha256": "d3737098b1f5ebc4a65d69fa54cb1e2cc9f2a7ceebd77e899228bc707ec50717"
+    },
+    {
+      "path": "var",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "var/lib",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "var/lib/neon-dsga",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "var/lib/neon-dsga/state",
+      "mode": "0o40755",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "dev/console",
+      "mode": "0o20600",
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "path": "dev/null",
+      "mode": "0o20666",
+      "bytes": 0,
+      "sha256": null
+    }
+  ],
+  "gzipSHA256": "b55b86e14f2d6e2ed585f44a06124dfedf70e278f0365bcafa0845bb5b26b4e5"
+}

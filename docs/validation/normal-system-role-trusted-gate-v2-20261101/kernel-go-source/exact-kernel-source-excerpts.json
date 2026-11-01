@@ -1,0 +1,513 @@
+{
+  "source_archive": "/data/neon-build/validation/role-parent-death-kernel-source-20261101T001937Z-d9dbc5/export/source.tar.gz",
+  "archive_sha256": "ec911e79dc1577207a2d7bc58b759de51fe04eb9a93bfb24fea063d73a81e88b",
+  "kernel_vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+  "files": {
+    "include/uapi/linux/pidfd.h": {
+      "sha256": "2d462f1418063f3393f3ec57f9d6bcdd959cc321ae778159d5aa8aea05d0522f",
+      "line_count": 32,
+      "excerpts": [
+        {
+          "line": 8,
+          "text": "#include <linux/ioctl.h>"
+        },
+        {
+          "line": 9,
+          "text": ""
+        },
+        {
+          "line": 10,
+          "text": "/* Flags for pidfd_open().  */"
+        },
+        {
+          "line": 11,
+          "text": "#define PIDFD_NONBLOCK\tO_NONBLOCK"
+        },
+        {
+          "line": 12,
+          "text": "#define PIDFD_THREAD\tO_EXCL"
+        },
+        {
+          "line": 13,
+          "text": ""
+        },
+        {
+          "line": 14,
+          "text": "/* Flags for pidfd_send_signal(). */"
+        },
+        {
+          "line": 15,
+          "text": "#define PIDFD_SIGNAL_THREAD\t\t(1UL << 0)"
+        },
+        {
+          "line": 16,
+          "text": "#define PIDFD_SIGNAL_THREAD_GROUP\t(1UL << 1)"
+        },
+        {
+          "line": 17,
+          "text": "#define PIDFD_SIGNAL_PROCESS_GROUP\t(1UL << 2)"
+        }
+      ]
+    },
+    "fs/pidfs.c": {
+      "sha256": "fae3fa65abd35998c65d111b73f4acd7aa3b2ecf6bea2a18f573dd93860e3334",
+      "line_count": 417,
+      "excerpts": [
+        {
+          "line": 94,
+          "text": " */"
+        },
+        {
+          "line": 95,
+          "text": "static __poll_t pidfd_poll(struct file *file, struct poll_table_struct *pts)"
+        },
+        {
+          "line": 96,
+          "text": "{"
+        },
+        {
+          "line": 97,
+          "text": "\tstruct pid *pid = pidfd_pid(file);"
+        },
+        {
+          "line": 98,
+          "text": "\tbool thread = file->f_flags & PIDFD_THREAD;"
+        },
+        {
+          "line": 99,
+          "text": "\tstruct task_struct *task;"
+        },
+        {
+          "line": 100,
+          "text": "\t__poll_t poll_flags = 0;"
+        },
+        {
+          "line": 101,
+          "text": ""
+        },
+        {
+          "line": 102,
+          "text": "\tpoll_wait(file, &pid->wait_pidfd, pts);"
+        },
+        {
+          "line": 103,
+          "text": "\t/*"
+        },
+        {
+          "line": 104,
+          "text": "\t * Depending on PIDFD_THREAD, inform pollers when the thread"
+        },
+        {
+          "line": 105,
+          "text": "\t * or the whole thread-group exits."
+        },
+        {
+          "line": 106,
+          "text": "\t */"
+        },
+        {
+          "line": 107,
+          "text": "\tguard(rcu)();"
+        },
+        {
+          "line": 108,
+          "text": "\ttask = pid_task(pid, PIDTYPE_PID);"
+        },
+        {
+          "line": 109,
+          "text": "\tif (!task)"
+        }
+      ]
+    },
+    "kernel/exit.c": {
+      "sha256": "7c28bfc644117470b9cbe6d46c84580de98225755bbb227e61d638ea7104025d",
+      "line_count": 1974,
+      "excerpts": [
+        {
+          "line": 708,
+          "text": "\t\t\tRCU_INIT_POINTER(t->real_parent, reaper);"
+        },
+        {
+          "line": 709,
+          "text": "\t\t\tBUG_ON((!t->ptrace) != (rcu_access_pointer(t->parent) == father));"
+        },
+        {
+          "line": 710,
+          "text": "\t\t\tif (likely(!t->ptrace))"
+        },
+        {
+          "line": 711,
+          "text": "\t\t\t\tt->parent = t->real_parent;"
+        },
+        {
+          "line": 712,
+          "text": "\t\t\tif (t->pdeath_signal)"
+        },
+        {
+          "line": 713,
+          "text": "\t\t\t\tgroup_send_sig_info(t->pdeath_signal,"
+        },
+        {
+          "line": 714,
+          "text": "\t\t\t\t\t\t    SEND_SIG_NOINFO, t,"
+        },
+        {
+          "line": 715,
+          "text": "\t\t\t\t\t\t    PIDTYPE_TGID);"
+        },
+        {
+          "line": 716,
+          "text": "\t\t}"
+        },
+        {
+          "line": 717,
+          "text": "\t\t/*"
+        },
+        {
+          "line": 718,
+          "text": "\t\t * If this is a threaded reparent there is no need to"
+        },
+        {
+          "line": 742,
+          "text": ""
+        },
+        {
+          "line": 743,
+          "text": "\ttsk->exit_state = EXIT_ZOMBIE;"
+        },
+        {
+          "line": 744,
+          "text": "\t/*"
+        },
+        {
+          "line": 745,
+          "text": "\t * sub-thread or delay_group_leader(), wake up the"
+        },
+        {
+          "line": 746,
+          "text": "\t * PIDFD_THREAD waiters."
+        },
+        {
+          "line": 747,
+          "text": "\t */"
+        },
+        {
+          "line": 748,
+          "text": "\tif (!thread_group_empty(tsk))"
+        },
+        {
+          "line": 749,
+          "text": "\t\tdo_notify_pidfd(tsk);"
+        },
+        {
+          "line": 750,
+          "text": ""
+        },
+        {
+          "line": 751,
+          "text": "\tif (unlikely(tsk->ptrace)) {"
+        }
+      ]
+    },
+    "kernel/sys.c": {
+      "sha256": "e43eb875410d607ccf91ca00d88433052b58fdae4e4ccdd12c53c458f1ce1d69",
+      "line_count": 2951,
+      "excerpts": [
+        {
+          "line": 2453,
+          "text": "\t\treturn -EFAULT;"
+        },
+        {
+          "line": 2454,
+          "text": "\treturn sizeof(mm->saved_auxv);"
+        },
+        {
+          "line": 2455,
+          "text": "}"
+        },
+        {
+          "line": 2456,
+          "text": ""
+        },
+        {
+          "line": 2457,
+          "text": "SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,"
+        },
+        {
+          "line": 2458,
+          "text": "\t\tunsigned long, arg4, unsigned long, arg5)"
+        },
+        {
+          "line": 2459,
+          "text": "{"
+        },
+        {
+          "line": 2460,
+          "text": "\tstruct task_struct *me = current;"
+        },
+        {
+          "line": 2461,
+          "text": "\tunsigned char comm[sizeof(me->comm)];"
+        },
+        {
+          "line": 2462,
+          "text": "\tlong error;"
+        },
+        {
+          "line": 2471,
+          "text": "\t\tif (!valid_signal(arg2)) {"
+        },
+        {
+          "line": 2472,
+          "text": "\t\t\terror = -EINVAL;"
+        },
+        {
+          "line": 2473,
+          "text": "\t\t\tbreak;"
+        },
+        {
+          "line": 2474,
+          "text": "\t\t}"
+        },
+        {
+          "line": 2475,
+          "text": "\t\tme->pdeath_signal = arg2;"
+        },
+        {
+          "line": 2476,
+          "text": "\t\tbreak;"
+        },
+        {
+          "line": 2477,
+          "text": "\tcase PR_GET_PDEATHSIG:"
+        },
+        {
+          "line": 2478,
+          "text": "\t\terror = put_user(me->pdeath_signal, (int __user *)arg2);"
+        },
+        {
+          "line": 2479,
+          "text": "\t\tbreak;"
+        },
+        {
+          "line": 2480,
+          "text": "\tcase PR_GET_DUMPABLE:"
+        },
+        {
+          "line": 2481,
+          "text": "\t\terror = get_dumpable(me->mm);"
+        },
+        {
+          "line": 2482,
+          "text": "\t\tbreak;"
+        },
+        {
+          "line": 2483,
+          "text": "\tcase PR_SET_DUMPABLE:"
+        }
+      ]
+    },
+    "kernel/ptrace.c": {
+      "sha256": "ddb8bf50294bac786b3f0ed62f94e0753ec6bd3add6800f65f82e4bd31e730bd",
+      "line_count": 1432,
+      "excerpts": [
+        {
+          "line": 66,
+          "text": "}"
+        },
+        {
+          "line": 67,
+          "text": ""
+        },
+        {
+          "line": 68,
+          "text": ""
+        },
+        {
+          "line": 69,
+          "text": "void __ptrace_link(struct task_struct *child, struct task_struct *new_parent,"
+        },
+        {
+          "line": 70,
+          "text": "\t\t   const struct cred *ptracer_cred)"
+        },
+        {
+          "line": 71,
+          "text": "{"
+        },
+        {
+          "line": 72,
+          "text": "\tBUG_ON(!list_empty(&child->ptrace_entry));"
+        },
+        {
+          "line": 73,
+          "text": "\tlist_add(&child->ptrace_entry, &new_parent->ptraced);"
+        },
+        {
+          "line": 74,
+          "text": "\tchild->parent = new_parent;"
+        },
+        {
+          "line": 75,
+          "text": "\tchild->ptracer_cred = get_cred(ptracer_cred);"
+        },
+        {
+          "line": 76,
+          "text": "}"
+        },
+        {
+          "line": 77,
+          "text": ""
+        },
+        {
+          "line": 78,
+          "text": "/*"
+        },
+        {
+          "line": 79,
+          "text": " * ptrace a task: make the debugger its new parent and"
+        },
+        {
+          "line": 80,
+          "text": " * move it to the ptrace list."
+        },
+        {
+          "line": 125,
+          "text": "#endif"
+        },
+        {
+          "line": 126,
+          "text": ""
+        },
+        {
+          "line": 127,
+          "text": "\tchild->parent = child->real_parent;"
+        },
+        {
+          "line": 128,
+          "text": "\tlist_del_init(&child->ptrace_entry);"
+        },
+        {
+          "line": 129,
+          "text": "\told_cred = child->ptracer_cred;"
+        },
+        {
+          "line": 130,
+          "text": "\tchild->ptracer_cred = NULL;"
+        },
+        {
+          "line": 131,
+          "text": "\tput_cred(old_cred);"
+        },
+        {
+          "line": 132,
+          "text": ""
+        },
+        {
+          "line": 133,
+          "text": "\tspin_lock(&child->sighand->siglock);"
+        },
+        {
+          "line": 134,
+          "text": "\tchild->ptrace = 0;"
+        },
+        {
+          "line": 135,
+          "text": "\t/*"
+        }
+      ]
+    },
+    "fs/exec.c": {
+      "sha256": "c932480d16aee225544594e641d6d9b5c94d0e0d4ce65e00f1484605be3b56f0",
+      "line_count": 2204,
+      "excerpts": [
+        {
+          "line": 1321,
+          "text": "\tdo_close_on_exec(me->files);"
+        },
+        {
+          "line": 1322,
+          "text": ""
+        },
+        {
+          "line": 1323,
+          "text": "\tif (bprm->secureexec) {"
+        },
+        {
+          "line": 1324,
+          "text": "\t\t/* Make sure parent cannot signal privileged process. */"
+        },
+        {
+          "line": 1325,
+          "text": "\t\tme->pdeath_signal = 0;"
+        },
+        {
+          "line": 1326,
+          "text": ""
+        },
+        {
+          "line": 1327,
+          "text": "\t\t/*"
+        },
+        {
+          "line": 1328,
+          "text": "\t\t * For secureexec, reset the stack limit to sane default to"
+        },
+        {
+          "line": 1329,
+          "text": "\t\t * avoid bad behavior from the prior rlimits. This has to"
+        },
+        {
+          "line": 1330,
+          "text": "\t\t * happen before arch_pick_mmap_layout(), which examines"
+        }
+      ]
+    },
+    "kernel/cred.c": {
+      "sha256": "db468c351a69d5250f7d66a71439eefac376fef619d8c9bc06af79fc65306500",
+      "line_count": 734,
+      "excerpts": [
+        {
+          "line": 409,
+          "text": "\t    !gid_eq(old->fsgid, new->fsgid) ||"
+        },
+        {
+          "line": 410,
+          "text": "\t    !cred_cap_issubset(old, new)) {"
+        },
+        {
+          "line": 411,
+          "text": "\t\tif (task->mm)"
+        },
+        {
+          "line": 412,
+          "text": "\t\t\tset_dumpable(task->mm, suid_dumpable);"
+        },
+        {
+          "line": 413,
+          "text": "\t\ttask->pdeath_signal = 0;"
+        },
+        {
+          "line": 414,
+          "text": "\t\t/*"
+        },
+        {
+          "line": 415,
+          "text": "\t\t * If a task drops privileges and becomes nondumpable,"
+        },
+        {
+          "line": 416,
+          "text": "\t\t * the dumpability change must become visible before"
+        },
+        {
+          "line": 417,
+          "text": "\t\t * the credential change; otherwise, a __ptrace_may_access()"
+        },
+        {
+          "line": 418,
+          "text": "\t\t * racing with this change may be able to attach to a task it"
+        }
+      ]
+    }
+  }
+}

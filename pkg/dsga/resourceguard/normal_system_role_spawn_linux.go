@@ -1,0 +1,418 @@
+//go:build linux
+
+package resourceguard
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net"
+	"os"
+	"os/exec"
+	"strconv"
+	"sync"
+	"syscall"
+	"time"
+
+	"golang.org/x/sys/unix"
+)
+
+// 只给Root固定调用点，禁止从JSON/HTTP取得回调。真正broker必须由原resource
+// flock内的journal实现持久exec-stop前缀；成功回调本身不等于持续writer资格。
+func normalSystemRoleCaller() error {
+	if os.Getuid() != 0 || os.Geteuid() != 0 || os.Getgid() != 0 || os.Getegid() != 0 {
+		return fmt.Errorf("fixed System role requires original real root identity")
+	}
+	var data [2]unix.CapUserData
+	header := unix.CapUserHeader{Version: unix.LINUX_CAPABILITY_VERSION_3}
+	if unix.Capget(&header, &data[0]) != nil || data[0].Effective&(1<<unix.CAP_KILL) == 0 {
+		return fmt.Errorf("original System caller lacks cancellation capability")
+	}
+	return nil
+}
+
+type normalSystemRoleStoppedWriter interface {
+	persistOriginalSystemRoleStopped(context.Context, normalSystemRoleObservation, []normalSystemRoleNamespaceIdentity, string) error
+}
+type normalSystemRoleExecStoppedObservation struct {
+	Task                normalSystemRoleObservation         `json:"task"`
+	Namespace           []normalSystemRoleNamespaceIdentity `json:"namespace"`
+	PlanSHA256          string                              `json:"plan_sha256"`
+	TracerTID           int                                 `json:"tracer_tid"`
+	ExecStopObserved    bool                                `json:"exec_stop_observed"`
+	Released            bool                                `json:"released"`
+	TracerThreadRetired bool                                `json:"tracer_thread_retired"`
+}
+type normalSystemRoleOriginalChild struct {
+	mu               sync.Mutex
+	cmd              *exec.Cmd
+	pidfd            *os.File
+	task             *normalSystemOriginalTask
+	observed         normalSystemRoleExecStoppedObservation
+	waitOnce         sync.Once
+	done             chan struct{}
+	waited           bool
+	waitErr          error
+	creatorPIDFD     *os.File
+	creatorLeaseDone chan struct{}
+	creatorLeaseErr  error
+}
+
+func (c *normalSystemRoleOriginalChild) startWait() {
+	c.waitOnce.Do(func() {
+		go func() {
+			e := c.cmd.Wait()
+			c.mu.Lock()
+			defer c.mu.Unlock()
+			if c.cmd.ProcessState == nil {
+				c.waitErr = errors.Join(ErrUnknown, e, fmt.Errorf("original System exit wait unconfirmed"))
+				close(c.done)
+				return
+			}
+			c.waited = true
+			c.waitErr = e
+			c.task.close()
+			c.pidfd.Close()
+			close(c.done)
+		}()
+	})
+}
+func (c *normalSystemRoleOriginalChild) cancelAndWait() error {
+	if c == nil {
+		return nil
+	}
+	c.mu.Lock()
+	// 只向原clone PIDFD发信号，不允许numeric kill/重新open替代。Wait是单一所有者，
+	// 调用者不能超时假称退出；已发SIGKILL但Wait未知时必须保原pending/预算。
+	if !c.waited {
+		e := unix.PidfdSendSignal(int(c.pidfd.Fd()), unix.SIGKILL, nil, 0)
+		if e != nil && !errors.Is(e, unix.ESRCH) {
+			c.mu.Unlock()
+			return errors.Join(ErrUnknown, e)
+		}
+	}
+	c.mu.Unlock()
+	e := c.wait()
+	if e != nil {
+		var exit *exec.ExitError
+		if !errors.As(e, &exit) || !exit.ProcessState.Sys().(syscall.WaitStatus).Signaled() {
+			return e
+		}
+	}
+	return nil
+}
+func (c *normalSystemRoleOriginalChild) wait() error {
+	if c == nil {
+		return fmt.Errorf("original System child missing")
+	}
+	c.startWait()
+	<-c.done
+	if c.creatorLeaseDone != nil {
+		<-c.creatorLeaseDone
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return errors.Join(c.waitErr, c.creatorLeaseErr)
+}
+
+// 先原子出生可信static guard Gate，原M安装TRACEEXEC|EXITKILL后才发原枚举/
+// nonce GO；目标第二exec-stop核验/持久后才detach。Pdeathsig不独立作证明。
+// creator专用M一直留到原task真Wait，不能在函数返回时解锁并晚杀长服务。
+func spawnNormalSystemRoleOriginal(ctx context.Context, s *normalSystemLifecycleSource, ns *normalSystemRoleNamespaceSource, role string, writer normalSystemRoleStoppedWriter) (*normalSystemRoleOriginalChild, error) {
+	if ctx == nil || s == nil || ns == nil || writer == nil || os.Getuid() != 0 || os.Geteuid() != 0 {
+		return nil, errors.Join(ErrUnknown, fmt.Errorf("fixed System role original source/writer required"))
+	}
+	if e := normalSystemRoleCaller(); e != nil {
+		return nil, e
+	}
+	deadline, bounded := ctx.Deadline()
+	if !bounded || !deadline.After(time.Now()) || deadline.After(time.Now().Add(30*time.Second)) {
+		return nil, fmt.Errorf("bounded System role exec deadline required")
+	}
+	plan, e := normalSystemRoleGateLaunchPlan(ctx, s, role)
+	if e != nil {
+		return nil, e
+	}
+	ph, e := plan.referenceSHA256()
+	if e != nil {
+		return nil, e
+	}
+	identities, e := ns.snapshot()
+	if e != nil {
+		return nil, e
+	}
+	ref, e := normalSystemRoleGateReferenceOf(writer)
+	if e != nil {
+		return nil, e
+	}
+	nonce, e := newNativeBirthNonce()
+	if e != nil {
+		return nil, e
+	}
+	command := normalSystemRoleGateCommand{ProtocolVersion: 1, Role: role, GateNonce: nonce, OriginalNonce: ref.Nonce, PendingSHA256: ref.PendingSHA256}
+	wire, e := normalSystemRoleGateEncode(command)
+	if e != nil {
+		return nil, e
+	}
+	type delivery struct {
+		child *normalSystemRoleOriginalChild
+		err   error
+	}
+	ready := make(chan delivery, 1)
+	go func() {
+		published := false
+		var leased *normalSystemRoleOriginalChild
+		_, failure, meta := nativeTraceRunTypedLockedWorker(func(tid int) (struct{}, error, bool) {
+			child, e, retire := spawnNormalSystemRoleOnOriginalThread(ctx, s, ns, plan, identities, ph, tid, writer, wire)
+			if e != nil {
+				published = true
+				ready <- delivery{err: e}
+				return struct{}{}, e, retire
+			}
+			leased = child
+			child.startWait()
+			if plan.role == normalSystemRoleBrokerKind {
+				published = true
+				ready <- delivery{child: child}
+				return struct{}{}, nil, false
+			}
+			// Goexit/panic也必须先取消并join原child；不把仍存活目标的creator M还池。
+			defer func() {
+				child.mu.Lock()
+				exited := child.waited
+				child.mu.Unlock()
+				if !exited {
+					_ = unix.PidfdSendSignal(int(child.pidfd.Fd()), unix.SIGKILL, nil, 0)
+					<-child.done
+				}
+			}()
+			published = true
+			ready <- delivery{child: child}
+			<-child.done
+			for {
+				child.mu.Lock()
+				confirmed := child.waited
+				child.mu.Unlock()
+				if confirmed {
+					return struct{}{}, nil, false
+				}
+				exited, err := normalSystemRoleGateExitObserved(int(child.pidfd.Fd()))
+				if err == nil && exited {
+					return struct{}{}, ErrUnknown, false
+				}
+				time.Sleep(time.Millisecond)
+			}
+		})
+		if leased != nil {
+			leased.mu.Lock()
+			leased.creatorLeaseErr = failure
+			if meta.Unexpected {
+				leased.creatorLeaseErr = errors.Join(leased.creatorLeaseErr, ErrUnknown, fmt.Errorf("original creator lease terminated unexpectedly"))
+			}
+			leased.creatorPIDFD.Close()
+			close(leased.creatorLeaseDone)
+			leased.mu.Unlock()
+		}
+		if !published {
+			ready <- delivery{err: errors.Join(ErrUnknown, failure, fmt.Errorf("original creator did not publish a target"))}
+		}
+	}()
+	result := <-ready
+	return result.child, result.err
+}
+func spawnNormalSystemRoleOnOriginalThread(ctx context.Context, s *normalSystemLifecycleSource, ns *normalSystemRoleNamespaceSource, plan normalSystemRoleLaunchSpec, identities []normalSystemRoleNamespaceIdentity, planSHA string, tid int, writer normalSystemRoleStoppedWriter, wire []byte) (child *normalSystemRoleOriginalChild, err error, retire bool) {
+	if e := ns.verify(-1); e != nil {
+		return nil, e, false
+	}
+	sourceObs, e := s.snapshot()
+	if e != nil || sourceObs.Binding != plan.binding {
+		return nil, errors.Join(ErrUnknown, e, fmt.Errorf("original System role binding differs")), false
+	}
+	fd, e := unix.Open(systemCgroup, unix.O_RDONLY|unix.O_DIRECTORY|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0)
+	if e != nil {
+		return nil, e, false
+	}
+	group := os.NewFile(uintptr(fd), "original-System-cgroup")
+	defer group.Close()
+	var st unix.Stat_t
+	if unix.Fstat(fd, &st) != nil || st.Dev != plan.binding.SystemDevice || st.Ino != plan.binding.SystemInode {
+		return nil, fmt.Errorf("original System cgroup replaced"), false
+	}
+	creatorFD, e := unix.PidfdOpen(tid, normalSystemRoleCreatorThreadFDFlag)
+	if e != nil {
+		return nil, e, false
+	}
+	creator := os.NewFile(uintptr(creatorFD), "original-role-creator-PIDFD_THREAD")
+	transferred := false
+	defer func() {
+		if !transferred {
+			creator.Close()
+		}
+	}()
+	if e = normalSystemRoleGateThreadAlive(creatorFD); e != nil {
+		return nil, e, false
+	}
+	pair, e := unix.Socketpair(unix.AF_UNIX, unix.SOCK_SEQPACKET|unix.SOCK_CLOEXEC, 0)
+	if e != nil {
+		return nil, e, false
+	}
+	parentFile := os.NewFile(uintptr(pair[0]), "original-role-Gate-parent")
+	gateFile := os.NewFile(uintptr(pair[1]), "original-role-Gate-child")
+	defer gateFile.Close()
+	transport, e := net.FileConn(parentFile)
+	parentFile.Close()
+	if e != nil {
+		return nil, e, false
+	}
+	conn, ok := transport.(*net.UnixConn)
+	if !ok {
+		transport.Close()
+		return nil, fmt.Errorf("original Gate transport differs"), false
+	}
+	defer conn.Close()
+	if plan.role == normalSystemRoleBrokerKind && os.Getppid() != 1 {
+		return nil, fmt.Errorf("initial broker requires original PID1 parent"), false
+	}
+	pfd := -1
+	argv := normalSystemRoleGateArgv()
+	cmd := exec.Command(argv[0], argv[1:]...)
+	cmd.Env = normalSystemRoleGateEnvironment()
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.ExtraFiles = []*os.File{gateFile, creator}
+	if plan.role == normalSystemRoleBrokerKind {
+		startup, e := normalSystemRoleBrokerGateFile(writer)
+		if e != nil {
+			return nil, e, false
+		}
+		cmd.ExtraFiles = append(cmd.ExtraFiles, startup)
+	}
+	cmd.SysProcAttr = &syscall.SysProcAttr{UseCgroupFD: true, CgroupFD: fd, PidFD: &pfd, Ptrace: true, Pdeathsig: syscall.SIGKILL}
+	if e = cmd.Start(); e != nil {
+		return nil, e, false
+	}
+	if pfd < 0 {
+		return nil, errors.Join(ErrUnknown, fmt.Errorf("atomic original Gate pidfd missing; no GO sent")), true
+	}
+	pf := os.NewFile(uintptr(pfd), "original-System-clone-pidfd")
+	control := &nativeTraceOriginalControl{pid: cmd.Process.Pid, uid: 0, pidfd: pfd, attached: true}
+	var task *normalSystemOriginalTask
+	success := false
+	defer func() {
+		if success {
+			return
+		}
+		clean, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		r, ce := normalSystemRoleGateCleanup(clean, control, plan.uid)
+		retire = retire || r
+		err = errors.Join(ErrUnknown, err, ce)
+		if task != nil {
+			task.close()
+		}
+		pf.Close()
+		_ = cmd.Process.Release()
+	}()
+	if e = control.waitAnyStop(ctx); e != nil {
+		return nil, e, false
+	}
+	if control.observedExit || !control.stopped || control.lastStop.StopSignal() != unix.SIGTRAP || uint32(control.lastStop)>>16 != 0 {
+		return nil, fmt.Errorf("original static Gate exec stop missing"), false
+	}
+	if e = arrayRegistryPIDFDAlive(pfd); e != nil {
+		return nil, e, false
+	}
+	procfd, e := unix.Open("/proc/"+strconv.Itoa(cmd.Process.Pid), unix.O_RDONLY|unix.O_DIRECTORY|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0)
+	if e != nil {
+		return nil, e, false
+	}
+	proc := os.NewFile(uintptr(procfd), "original-System-exec-proc")
+	defer proc.Close()
+	raw, e := nativeTraceProcText(procfd, "stat")
+	if e != nil {
+		return nil, e, false
+	}
+	ticks, e := postmasterTicks(raw, cmd.Process.Pid)
+	if e != nil {
+		return nil, e, false
+	}
+	task, e = newNormalSystemOriginalTask(normalSystemOriginalTaskSource{PID: cmd.Process.Pid, StartTicks: ticks, UID: 0, GID: 0, GuestBootID: plan.binding.GuestBootID, PIDFD: pf, ProcDirectory: proc})
+	if e != nil {
+		return nil, e, false
+	}
+	if e = normalSystemRoleGateVerifyStop(ctx, s, ns, task, tid); e != nil {
+		return nil, e, false
+	}
+	normalSystemRoleGateCheck(ctx, "before-options", pfd, tid)
+	if e = nativeTracePtrace(unix.PTRACE_SETOPTIONS, control.pid, unix.PTRACE_O_EXITKILL|unix.PTRACE_O_TRACEEXEC); e != nil {
+		return nil, e, false
+	}
+	normalSystemRoleGateCheck(ctx, "after-options-before-go", pfd, tid)
+	if unix.Gettid() != tid {
+		return nil, fmt.Errorf("original Gate GO sender TID differs"), false
+	}
+	deadline, _ := ctx.Deadline()
+	if e = conn.SetWriteDeadline(deadline); e != nil {
+		return nil, e, false
+	}
+	n, e := conn.Write(wire)
+	if e != nil || n != len(wire) {
+		return nil, errors.Join(ErrUnknown, e, fmt.Errorf("original Gate GO unconfirmed")), false
+	}
+	normalSystemRoleGateCheck(ctx, "after-go-before-cont", pfd, tid)
+	if e = control.cont(); e != nil {
+		return nil, e, false
+	}
+	if e = normalSystemRoleGateWaitExec(ctx, control, plan.uid); e != nil {
+		return nil, e, false
+	}
+	normalSystemRoleGateCheck(ctx, "target-exec-stop", pfd, tid)
+	task.close()
+	task, e = newNormalSystemOriginalTask(normalSystemOriginalTaskSource{PID: cmd.Process.Pid, StartTicks: ticks, UID: plan.uid, GID: plan.gid, GuestBootID: plan.binding.GuestBootID, PIDFD: pf, ProcDirectory: proc})
+	if e != nil {
+		return nil, e, false
+	}
+	status, e := nativeTraceProcText(procfd, "status")
+	if e != nil {
+		return nil, e, false
+	}
+	tracer, e := nativeTraceStatusValues(status, "TracerPid", 1)
+	if e != nil || tracer[0] != uint64(tid) {
+		return nil, fmt.Errorf("original target tracer differs"), false
+	}
+	threads, e := nativeTraceStatusValues(status, "Threads", 1)
+	if e != nil || threads[0] != 1 {
+		return nil, fmt.Errorf("original target exec is not single-threaded"), false
+	}
+	if e = ns.verify(procfd); e != nil {
+		return nil, e, false
+	}
+	observed, e := normalSystemRoleGateInspectTarget(ctx, s, task, plan)
+	if e != nil {
+		return nil, e, false
+	}
+	if _, e = verifyNormalSystemRoleExecEntry(s, task, plan); e != nil {
+		return nil, e, false
+	}
+	if e = writer.persistOriginalSystemRoleStopped(ctx, observed, identities, planSHA); e != nil {
+		return nil, e, false
+	}
+	if e = task.verify(); e != nil {
+		return nil, e, false
+	}
+	if e = ns.verify(procfd); e != nil {
+		return nil, e, false
+	}
+	if e = ctx.Err(); e != nil {
+		return nil, e, false
+	}
+	normalSystemRoleGateCheck(ctx, "before-target-detach", pfd, tid)
+	if e = control.detach(); e != nil {
+		return nil, e, false
+	}
+	success = true
+	transferred = true
+	child = &normalSystemRoleOriginalChild{cmd: cmd, pidfd: pf, task: task, done: make(chan struct{}), creatorPIDFD: creator, creatorLeaseDone: make(chan struct{}), observed: normalSystemRoleExecStoppedObservation{Task: observed, Namespace: identities, PlanSHA256: planSHA, TracerTID: tid, ExecStopObserved: true, Released: true}}
+	return child, nil, false
+}
