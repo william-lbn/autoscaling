@@ -1,0 +1,358 @@
+//go:build linux && amd64 && dsga_native_kernel_controls
+
+package resourceguard
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"os"
+	"os/exec"
+	"runtime"
+	"strconv"
+	"strings"
+	"syscall"
+	"testing"
+	"time"
+
+	"golang.org/x/sys/unix"
+)
+
+const nkNativeMode = "isolated369-ordinary-controls-component"
+
+var nkNativeProtected = []string{"/proc/sys/vm/watermark_scale_factor", "/sys/devices/system/memory/auto_online_blocks", "/sys/fs/cgroup/cgroup.procs", "/dev/vda"}
+
+// 仅显式DEV fixture子进程绕过缺失的生产System manifest producer。
+// 它调用同一实际installer，但不返回任何生产opaque来源，不冒称九服务已启动。
+func init() {
+	if os.Getenv("DSGA_KERNEL_CONTROL_CHILD") != nkNativeMode {
+		return
+	}
+	if len(os.Args) != 3 {
+		fmt.Fprintln(os.Stderr, "explicit child mode/role required")
+		os.Exit(91)
+	}
+	role := os.Args[2]
+	rule, e := normalKernelControlExpectedManifest().role(role)
+	if e != nil {
+		fmt.Fprintln(os.Stderr, e)
+		os.Exit(92)
+	}
+	if os.Args[1] == "child-install" {
+		if e = applyNormalKernelControlConstraints(rule); e != nil {
+			fmt.Fprintln(os.Stderr, "install:", e)
+			os.Exit(93)
+		}
+		if e = nkNativeNewThreadDenials(); e != nil {
+			fmt.Fprintln(os.Stderr, e)
+			os.Exit(99)
+		}
+		if e = unix.Kill(os.Getpid(), unix.SIGSTOP); e != nil {
+			os.Exit(94)
+		}
+		if e = syscall.Exec("/neonvm/bin/kernel-controls.test", []string{"/neonvm/bin/kernel-controls.test", "child-exec", role}, []string{"PATH=/neonvm/bin", "DSGA_KERNEL_CONTROL_CHILD=" + nkNativeMode}); e != nil {
+			fmt.Fprintln(os.Stderr, "exec:", e)
+			os.Exit(95)
+		}
+		os.Exit(96)
+	}
+	if os.Args[1] != "child-exec" {
+		os.Exit(97)
+	}
+	if e = nkNativeAfterExec(rule); e != nil {
+		fmt.Fprintln(os.Stderr, e)
+		os.Exit(98)
+	}
+	out, _ := json.Marshal(map[string]any{"role": role, "after_real_exec": true, "fs_write_denied": len(nkNativeProtected), "getpid_and_read_allowed": true, "ordinary_control_only": true, "normal_authorized": false})
+	fmt.Printf("KERNEL_CONTROL_CHILD=%s\n", out)
+	os.Exit(0)
+}
+
+// 安装后强制创建并同时持有新M，实际每个新线程都须继承Landlock；不靠TSYNC字样推断。
+func nkNativeNewThreadDenials() error {
+	runtime.GOMAXPROCS(4)
+	ready := make(chan int, 4)
+	release := make(chan struct{})
+	done := make(chan error, 4)
+	for i := 0; i < 4; i++ {
+		go func() {
+			runtime.LockOSThread()
+			defer runtime.UnlockOSThread()
+			tid := unix.Gettid()
+			fd, e := unix.Open("/proc/sys/vm/watermark_scale_factor", unix.O_WRONLY|unix.O_CLOEXEC, 0)
+			if e == nil {
+				unix.Close(fd)
+				e = fmt.Errorf("new ordinary M escaped Landlock")
+			}
+			if e == unix.EACCES {
+				e = nil
+			}
+			ready <- tid
+			<-release
+			done <- e
+		}()
+	}
+	seen := map[int]bool{}
+	for i := 0; i < 4; i++ {
+		seen[<-ready] = true
+	}
+	close(release)
+	for i := 0; i < 4; i++ {
+		if e := <-done; e != nil {
+			return e
+		}
+	}
+	if len(seen) != 4 {
+		return fmt.Errorf("new-M probe did not use four simultaneous OS threads")
+	}
+	return nil
+}
+func nkNativeAfterExec(rule normalKernelControlRoleRule) error {
+	for _, path := range nkNativeProtected {
+		fd, e := unix.Open(path, unix.O_WRONLY|unix.O_CLOEXEC, 0)
+		if e == nil {
+			unix.Close(fd)
+			return fmt.Errorf("protected control open unexpectedly allowed: %s", path)
+		}
+		if e != unix.EACCES {
+			return fmt.Errorf("protected open not Landlock EACCES: %s: %v", path, e)
+		}
+	}
+	// 不实际写sysctl/sysfs/cgroup/rawdev；只在Guest临时目录做正控实际写。
+	tmp := "/tmp/kernel-control-" + rule.Role
+	if e := os.WriteFile(tmp, []byte("ok"), 0600); e != nil {
+		return fmt.Errorf("necessary tmp write: %w", e)
+	}
+	if b, e := os.ReadFile(tmp); e != nil || string(b) != "ok" {
+		return fmt.Errorf("necessary tmp read failed")
+	}
+	if e := os.Remove(tmp); e != nil {
+		return e
+	}
+	fd, e := unix.Open("/dev/null", unix.O_WRONLY|unix.O_CLOEXEC, 0)
+	if e != nil {
+		return e
+	}
+	_, e = unix.Write(fd, []byte("ok"))
+	unix.Close(fd)
+	if e != nil {
+		return e
+	}
+	if _, e = os.ReadFile("/proc/self/status"); e != nil {
+		return e
+	}
+	for _, nr := range []uintptr{unix.SYS_UNSHARE, unix.SYS_BPF, unix.SYS_MOUNT, unix.SYS_MOVE_PAGES, unix.SYS_SET_MEMPOLICY, unix.SYS_USERFAULTFD, unix.SYS_PERF_EVENT_OPEN, unix.SYS_SWAPON, unix.SYS_PROCESS_MADVISE} {
+		_, _, errno := unix.Syscall6(nr, 0, 0, 0, 0, 0, 0)
+		if errno != unix.EPERM {
+			return fmt.Errorf("kernel syscall %d not denied EPERM: %v", nr, errno)
+		}
+	}
+	_, _, errno := unix.Syscall6(unix.SYS_CLONE3, 0, 0, 0, 0, 0, 0)
+	if errno != unix.ENOSYS {
+		return fmt.Errorf("clone3 compatibility denial differs")
+	}
+	_, _, errno = unix.Syscall6(unix.SYS_CLONE, unix.CLONE_NEWUSER, 0, 0, 0, 0, 0)
+	if errno != unix.EPERM {
+		return fmt.Errorf("clone namespace not denied")
+	}
+	if rule.Role == "udev" || rule.Role == "udev-init" {
+		path := "/dev/kernel-control-created-null"
+		if e := unix.Mknod(path, unix.S_IFCHR|0600, int(unix.Mkdev(1, 3))); e != nil {
+			return fmt.Errorf("necessary char creation denied: %v", e)
+		}
+		fd, e := unix.Open(path, unix.O_WRONLY|unix.O_CLOEXEC, 0)
+		if e == nil {
+			unix.Close(fd)
+			return fmt.Errorf("new char alias gained unlisted device write")
+		}
+		if e != unix.EACCES {
+			return fmt.Errorf("new char device deny not Landlock: %v", e)
+		}
+		if e = unix.Unlink(path); e != nil {
+			return e
+		}
+	}
+	if os.Getpid() <= 1 {
+		return fmt.Errorf("ordinary getpid not usable")
+	}
+	return nil
+}
+
+// Go异步preemption的真实SIGURG必须原样交付，不可当成安装/exec停点吞掉。
+func nkNativeWaitStop(ctx context.Context, c *nativeTraceOriginalControl) error {
+	for {
+		if e := c.waitAnyStop(ctx); e != nil {
+			return e
+		}
+		if c.observedExit {
+			return fmt.Errorf("original native child exited before expected stop")
+		}
+		if c.stopped && uint32(c.lastStop)>>16 == 0 && c.lastStop.StopSignal() == unix.SIGURG {
+			if e := nativeTracePtrace(unix.PTRACE_CONT, c.pid, uintptr(unix.SIGURG)); e != nil {
+				return e
+			}
+			c.stopped = false
+			continue
+		}
+		return nil
+	}
+}
+func nkNativeReadAllThreads(t *testing.T, pid int, keep uint64) {
+	t.Helper()
+	entries, e := os.ReadDir("/proc/" + strconv.Itoa(pid) + "/task")
+	if e != nil {
+		t.Fatal(e)
+	}
+	if len(entries) < 1 {
+		t.Fatal("no actual target threads")
+	}
+	for _, entry := range entries {
+		raw, e := os.ReadFile("/proc/" + strconv.Itoa(pid) + "/task/" + entry.Name() + "/status")
+		if e != nil {
+			t.Fatal(e)
+		}
+		for _, key := range []string{"CapEff", "CapPrm", "CapInh", "CapBnd", "CapAmb"} {
+			actual, e := normalKernelControlStatusHex(string(raw), key)
+			if e != nil || actual != keep {
+				t.Fatalf("all-thread cap %s actual=%x expected=%x error=%v", key, actual, keep, e)
+			}
+		}
+		for key, want := range map[string]uint64{"NoNewPrivs": 1, "Seccomp": 2, "Seccomp_filters": 1} {
+			actual, e := nativeTraceStatusValues(string(raw), key, 1)
+			if e != nil || actual[0] != want {
+				t.Fatalf("all-thread %s differs: %v", key, e)
+			}
+		}
+	}
+}
+
+// PG17-S-KERNEL-CONTROL-ORDINARY-001。真实准确369 kernel；Source/API角色表是显式
+// harness，只有实际constraint/ptrace读回，不签production Gate/System/normal。
+func TestNativeNormalKernelOrdinaryControls(t *testing.T) {
+	if os.Getenv("DSGA_KERNEL_CONTROL_NATIVE") != nkNativeMode {
+		t.Fatal("explicit isolated369 native component required")
+	}
+	if e := normalKernelControlExactBuild(); e != nil {
+		t.Fatal(e)
+	}
+	if e := nativeFilterAuditCaller(); e != nil {
+		t.Fatal(e)
+	}
+	for _, p := range nkNativeProtected {
+		fd, e := unix.Open(p, unix.O_WRONLY|unix.O_CLOEXEC, 0)
+		if e != nil {
+			t.Fatalf("unfiltered same-UID positive open %s: %v", p, e)
+		}
+		unix.Close(fd)
+	}
+	_, _, errno := unix.Syscall(unix.SYS_UNSHARE, 0, 0, 0)
+	if errno != 0 {
+		t.Fatalf("unfiltered unshare(0) positive control failed: %v", errno)
+	}
+	for _, rule := range normalKernelControlExpectedManifest().Roles {
+		t.Run(rule.Role, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 12*time.Second)
+			defer cancel()
+			runtime.LockOSThread()
+			defer runtime.UnlockOSThread()
+			tid := unix.Gettid()
+			cmd := exec.Command("/neonvm/bin/kernel-controls.test", "child-install", rule.Role)
+			cmd.Env = []string{"PATH=/neonvm/bin", "DSGA_KERNEL_CONTROL_CHILD=" + nkNativeMode}
+			var out bytes.Buffer
+			cmd.Stdout = &out
+			cmd.Stderr = &out
+			pfd := -1
+			cmd.SysProcAttr = &syscall.SysProcAttr{Ptrace: true, PidFD: &pfd}
+			if e := cmd.Start(); e != nil {
+				t.Fatal(e)
+			}
+			if pfd < 0 {
+				t.Fatal("atomic original pidfd absent")
+			}
+			defer unix.Close(pfd)
+			c := &nativeTraceOriginalControl{pid: cmd.Process.Pid, uid: 0, pidfd: pfd, attached: true}
+			detached := false
+			waited := false
+			defer func() {
+				if !waited {
+					_ = unix.PidfdSendSignal(pfd, unix.SIGKILL, nil, 0)
+					if !detached {
+						_ = nativeTracePtrace(unix.PTRACE_DETACH, c.pid, 0)
+					}
+					_ = cmd.Wait()
+				}
+			}()
+			if e := nkNativeWaitStop(ctx, c); e != nil {
+				t.Fatalf("first exec stop: %v output=%s", e, out.String())
+			}
+			if c.observedExit || !c.stopped || c.lastStop.StopSignal() != unix.SIGTRAP {
+				t.Fatal("original exec stop absent")
+			}
+			if e := nativeTracePtrace(unix.PTRACE_SETOPTIONS, c.pid, unix.PTRACE_O_TRACEEXEC|unix.PTRACE_O_EXITKILL); e != nil {
+				t.Fatal(e)
+			}
+			if e := c.cont(); e != nil {
+				t.Fatal(e)
+			}
+			if e := nkNativeWaitStop(ctx, c); e != nil {
+				t.Fatalf("installed stop: %v output=%s", e, out.String())
+			}
+			if c.observedExit || !c.stopped || c.lastStop.StopSignal() != unix.SIGSTOP {
+				t.Fatalf("installed SIGSTOP absent output=%s", out.String())
+			}
+			if _, e := normalKernelControlReadFullFilter(c.pid, tid); e != nil {
+				t.Fatal(e)
+			}
+			nkNativeReadAllThreads(t, c.pid, rule.KeepCapabilities)
+			if e := c.cont(); e != nil {
+				t.Fatal(e)
+			}
+			if e := nkNativeWaitStop(ctx, c); e != nil {
+				t.Fatalf("second exec stop: %v output=%s", e, out.String())
+			}
+			if c.observedExit || !c.stopped || c.lastStop.StopSignal() != unix.SIGTRAP || c.lastStop.TrapCause() != unix.PTRACE_EVENT_EXEC {
+				t.Fatalf("second original exec event absent: %x", uint32(c.lastStop))
+			}
+			procfd, e := unix.Open("/proc/"+strconv.Itoa(c.pid), unix.O_RDONLY|unix.O_DIRECTORY|unix.O_CLOEXEC, 0)
+			if e != nil {
+				t.Fatal(e)
+			}
+			status, e := nativeTraceProcText(procfd, "status")
+			if e != nil {
+				unix.Close(procfd)
+				t.Fatal(e)
+			}
+			if e = normalKernelControlCheckStatus(status, rule.KeepCapabilities, tid); e != nil {
+				unix.Close(procfd)
+				t.Fatal(e)
+			}
+			if e = normalKernelControlCheckExecFDs(procfd); e != nil {
+				unix.Close(procfd)
+				t.Fatal(e)
+			}
+			unix.Close(procfd)
+			program, e := normalKernelControlReadFullFilter(c.pid, tid)
+			if e != nil {
+				t.Fatal(e)
+			}
+			if e = c.detach(); e != nil {
+				t.Fatal(e)
+			}
+			detached = true
+			e = cmd.Wait()
+			waited = true
+			if e != nil {
+				t.Fatalf("original controlled child exit: %v output=%s", e, out.String())
+			}
+			if strings.Count(out.String(), "KERNEL_CONTROL_CHILD=") != 1 {
+				t.Fatalf("after-exec probes not confirmed: %s", out.String())
+			}
+			t.Logf("actual role=%s cap=%x complete_BPF_instructions=%d child_exit=0 %s", rule.Role, rule.KeepCapabilities, len(program), strings.TrimSpace(out.String()))
+		})
+	}
+	if e := nativeFilterAuditCaller(); e != nil {
+		t.Fatal("Root auditor was filtered", e)
+	}
+	fmt.Println("KERNEL_CONTROL_COMPONENT_ACTUAL9_ROOT_UNFILTERED=1")
+}

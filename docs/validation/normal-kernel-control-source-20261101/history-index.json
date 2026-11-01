@@ -1,0 +1,99 @@
+[
+  {
+    "cohort": "/data/neon-build/validation/normal-kernel-control-native-attempt01-20261101T003606Z-9a02e2",
+    "history_only": true,
+    "counts_not_added_to_final_5_U_and_1_S": true,
+    "original_result": {
+      "pass": false,
+      "docker_qemu_exit": 0,
+      "driver_error": null,
+      "seconds": 4.299179402994923,
+      "Guest_exit0_count": 0,
+      "actual9_root_unfiltered_marker_count": 1,
+      "normal_authorized": false,
+      "E": 0
+    },
+    "classification": "NATIVE_OVERALL_FAIL_network_fixture_missing_resolv_8_roles_pass_no_promotion"
+  },
+  {
+    "cohort": "/data/neon-build/validation/normal-kernel-control-source-attempt01-20261101T002557Z-2f4355",
+    "history_only": true,
+    "counts_not_added_to_final_5_U_and_1_S": true,
+    "source_lock_sha256": "9a7318f38ae34edc2b51d904d389d4ecb093fe3b4fd32ae8dc42573ca03e31b5",
+    "owned_count": 8,
+    "original_result": {
+      "build_exit": 0,
+      "test_exit": 1,
+      "pass": false,
+      "seconds": 6.0853426020185,
+      "normal_authorized": false,
+      "E": 0
+    },
+    "classification": "TEST_BUILD_FAIL_syscall_Errno_uint32_types_not_runnable_U"
+  },
+  {
+    "cohort": "/data/neon-build/validation/normal-kernel-control-source-attempt02-20261101T002656Z-cb3118",
+    "history_only": true,
+    "counts_not_added_to_final_5_U_and_1_S": true,
+    "source_lock_sha256": "8f44b721bff595971d00c2641dd920730159766cc27d6693666a5ffa2ff20f42",
+    "owned_count": 8,
+    "original_result": {
+      "build_exit": 0,
+      "test_exit": 1,
+      "pass": false,
+      "seconds": 3.525668077985756,
+      "normal_authorized": false,
+      "E": 0
+    },
+    "classification": "TEST_BUILD_FAIL_syscall_Errno_uint32_types_not_runnable_U"
+  },
+  {
+    "cohort": "/data/neon-build/validation/normal-kernel-control-source-attempt03-20261101T003317Z-1bf7b6",
+    "history_only": true,
+    "counts_not_added_to_final_5_U_and_1_S": true,
+    "source_lock_sha256": "e0fe3ce476fd32d48e13b26cb703f9a1d3e8cd3f1f51026f45356bcfb09322c2",
+    "owned_count": 9,
+    "original_result": {
+      "native_build_exit": 0,
+      "build_exit": 0,
+      "test_exit": 0,
+      "pass": true,
+      "seconds": 18.92289111399441,
+      "normal_authorized": false,
+      "E": 0
+    },
+    "classification": "EARLIER_U_AND_NATIVE_BUILD_PASS_DIFFERENT_OWNED_BYTES_HISTORY_ONLY"
+  },
+  {
+    "cohort": "/data/neon-build/validation/normal-kernel-control-source-attempt04-20261101T004137Z-6630b3",
+    "history_only": true,
+    "counts_not_added_to_final_5_U_and_1_S": true,
+    "source_lock_sha256": "a48f4490942f63855a1bac7ac19a0de8012f86a56c06abb5d299a32fd6909e7e",
+    "owned_count": 9,
+    "original_result": {
+      "build_exit": 0,
+      "native_build_exit": 0,
+      "pass": true,
+      "seconds": 9.705773437977768,
+      "normal_authorized": false,
+      "E": 0
+    },
+    "classification": "NATIVE_BUILD_ONLY_NO_NEW_U"
+  },
+  {
+    "cohort": "/data/neon-build/validation/normal-kernel-control-source-attempt05-20261101T004518Z-9b3e90",
+    "history_only": true,
+    "counts_not_added_to_final_5_U_and_1_S": true,
+    "source_lock_sha256": "2baf510f033916acf02f5108929ced78ae4e41e876bb78d372882732ee11b774",
+    "owned_count": 9,
+    "original_result": {
+      "build_exit": 0,
+      "native_build_exit": 0,
+      "pass": true,
+      "seconds": 9.039913963992149,
+      "normal_authorized": false,
+      "E": 0
+    },
+    "classification": "NATIVE_BUILD_ONLY_NO_NEW_U"
+  }
+]

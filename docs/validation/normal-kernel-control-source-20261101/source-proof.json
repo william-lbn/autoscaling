@@ -1,0 +1,42 @@
+{
+  "base": "3c2a5f348a4d68868cdd4d7507885cf207057dfa",
+  "owned9": {
+    "pkg/dsga/resourceguard/normal_kernel_control_source.go": "95a5883b0beafc6a44755f67846a0ae2b6eb0b729c99bfd4d26f1b9c9ad6395e",
+    "pkg/dsga/resourceguard/normal_kernel_control_source_audit_linux.go": "3fc81cd4d1421451c4f2d2203d9a08d7810860c9cc6349de73acb330ca4e3790",
+    "pkg/dsga/resourceguard/normal_kernel_control_source_filter_linux.go": "c11a8fd5a3e151bcac7fac762dac68d8012716bbfe4fc8eb2127263620a852f2",
+    "pkg/dsga/resourceguard/normal_kernel_control_source_json.go": "81422747a84b4d5f9698cbe9cd469d0c1c84e6209d59968a7822a228db9038a0",
+    "pkg/dsga/resourceguard/normal_kernel_control_source_linux.go": "905bdbe9379a9feaa58fae780060127b968f3c2be60d7468ad247177b327077a",
+    "pkg/dsga/resourceguard/normal_kernel_control_source_native_test.go": "aad2e0ac37a4dddcc1d9208ffa72499d7149aee42f26d5f1b38f6470da189006",
+    "pkg/dsga/resourceguard/normal_kernel_control_source_origin_linux.go": "5ab4566ae40d302a151fa5db6a9c6b06af8398d736a4a696d1a826bbb04cccd1",
+    "pkg/dsga/resourceguard/normal_kernel_control_source_test.go": "7ad5b91279dbfcbe68e3b74aa37e0991a49f98b29263f182313a954bf8dc1c63",
+    "pkg/dsga/resourceguard/normal_kernel_control_source_unsupported.go": "0beaac8febdfc096df36e6fc7102de21a2a5fafe9f650aee8589415a2c143e70"
+  },
+  "source_lock_sha256": "31ec9b6af871f5dd9692681cf7952d6c698748ca1ab54261c5600e10bb60f46e",
+  "actual_COPY_count": 4806,
+  "all_actual_COPY_match": true,
+  "actual_source_sha256_file_sha256": "1611bb32ef56c4c840fa7e115e2ab00ed859d575ae5ec07e115be6e277d2ba8c",
+  "Go_ELF_sha256": "9188ef38fa025c743eb1b25dd726e9166e8924bae4dfe65e58272ccfa8be7876",
+  "native_inputs_sha256": "fb6e339ffaca2de63f1a44b304f3500a326cceb2c1a1557f6cee8e2b50b6438d",
+  "kernel": {
+    "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+    "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+  },
+  "build_resource_flags": {
+    "memory": "2g",
+    "memory_swap": "2g",
+    "cpu_quota": 200000
+  },
+  "build_cgroup_memory_cpu_sampling": "not recorded in this cohort; command resource flags retained",
+  "guest_limits": {
+    "memory": "1536MiB",
+    "cpu": 2,
+    "outer_memory": "4GiB",
+    "outer_cpu": 2,
+    "NIC": "none"
+  },
+  "no_Git_operations_by_archive_agent": true,
+  "new_test_execution_by_archive_agent": false,
+  "normal_authorized": false,
+  "E": 0
+}

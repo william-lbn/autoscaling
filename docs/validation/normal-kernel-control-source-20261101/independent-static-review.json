@@ -1,0 +1,39 @@
+{
+  "reviewed_utc": "2026-11-01T01:35:53.215263+00:00",
+  "reviewer": "kernel_component_archive",
+  "review_kind": "all 9 current files static review plus original receipts only",
+  "source9_equal_final_actual_build": true,
+  "unit_5_roots_6_subcases_actual": true,
+  "native_1_root_9_roles_actual": true,
+  "full_filter_exact_90_and_caps5_actual": true,
+  "findings": [
+    {
+      "id": "KC-INTEGRATION-OPEN",
+      "classification": "completion requirement",
+      "source": "normal_kernel_control_source_audit_linux.go:224",
+      "detail": "LandlockFromFixedGateSequence is a private fixed-sequence assertion, not a kernel ruleset readback. This cohort calls the same installer from a DEV harness; production Gate must invoke the checked installer before the unique original target exec and preserve original tracer/task proof. No production qualification can be inferred yet."
+    },
+    {
+      "id": "KC-STDIO-OPEN",
+      "classification": "completion requirement",
+      "source": "normal_kernel_control_source_audit_linux.go:112",
+      "detail": "FD0..2 structural null/console/pipe checks do not prove original pipe creation or peer identity. The separate typed original stdio producer remains required."
+    },
+    {
+      "id": "KC-METADATA-SIGNAL-OPEN",
+      "classification": "static candidate only; no counterexample run",
+      "source": "normal_kernel_control_source_filter_linux.go:13",
+      "detail": "The fixed filter omits file metadata and same-UID signal families. Ordinary services remain UID0 with selected capabilities. Future writer/control-source closure needs explicit defensive handling and legitimate-service compatibility validation. No metadata permission or signal experiment was executed or claimed by this archive."
+    },
+    {
+      "id": "KC-CONTINUOUS-OPEN",
+      "classification": "completion requirement",
+      "source": "normal_kernel_control_source_origin_linux.go:132",
+      "detail": "The composite source deliberately returns Unknown. Fixed plan rechecks do not establish all future respawns or Root/PID1/Compute provenance. Keep normal authorization closed until those real producers are composed."
+    }
+  ],
+  "approval_for_component_archive": true,
+  "approval_for_normal_decrease": false,
+  "new_tests_or_protected_control_changes": false,
+  "E": 0
+}

@@ -1,0 +1,67 @@
+{
+  "scope": "ORDINARY9_KERNEL_CONTROL_MECHANISM_COMPONENT_NOT_PRODUCTION_ROLE_SOURCE",
+  "base": "3c2a5f348a4d68868cdd4d7507885cf207057dfa",
+  "unit": {
+    "cohort": "/data/neon-build/validation/normal-kernel-control-source-attempt06-20261101T004742Z-104172",
+    "race": true,
+    "roots": 5,
+    "new_roots": 5,
+    "subcases": 6,
+    "fail": 0,
+    "skip": 0,
+    "cases": [
+      {
+        "id": "PG17-U-KERNEL-CONTROL-001",
+        "root": "TestNormalKernelControlFilterAllDenyAndCloneInheritance"
+      },
+      {
+        "id": "PG17-U-KERNEL-CONTROL-002",
+        "root": "TestNormalKernelControlManifestFixedNineAndExceptions"
+      },
+      {
+        "id": "PG17-U-KERNEL-CONTROL-003",
+        "root": "TestNormalKernelControlManifestStrictAndNotSelfReferential"
+      },
+      {
+        "id": "PG17-U-KERNEL-CONTROL-004",
+        "root": "TestNormalKernelControlOpaqueInputsCannotComeFromRequest"
+      },
+      {
+        "id": "PG17-U-KERNEL-CONTROL-005",
+        "root": "TestNormalKernelControlStatusRequiresAllCapabilitiesAndSingleExecStop"
+      }
+    ]
+  },
+  "native": {
+    "id": "PG17-S-KERNEL-CONTROL-ORDINARY-001",
+    "root": "TestNativeNormalKernelOrdinaryControls",
+    "cohort": "/data/neon-build/validation/normal-kernel-control-native-attempt02-20261101T004914Z-f234e0",
+    "new_roots": 1,
+    "named_subcases": 9,
+    "roles": [
+      "acpi",
+      "allow-start",
+      "clock",
+      "daemon",
+      "kernel-version",
+      "logs",
+      "network",
+      "udev",
+      "udev-init"
+    ],
+    "real_KVM": true,
+    "Guest_exit": 0,
+    "docker_QEMU_exit": 0,
+    "Root_auditor_unfiltered": true,
+    "fixed_BPF_instructions": 90,
+    "Go_ELF_sha256": "9188ef38fa025c743eb1b25dd726e9166e8924bae4dfe65e58272ccfa8be7876",
+    "production_Gate_invoked": false,
+    "real_nine_service_binaries_executed": false,
+    "opaque_original_control_source_capture_executed": false,
+    "metadata_or_same_UID_signal_counterexample_executed": false
+  },
+  "normal_authorized": false,
+  "all_sources_closed": false,
+  "E": 0,
+  "K8s_E": 0
+}

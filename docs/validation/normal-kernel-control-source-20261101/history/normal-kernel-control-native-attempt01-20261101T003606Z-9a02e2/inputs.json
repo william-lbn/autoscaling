@@ -1,0 +1,19 @@
+{
+  "build_directory": "/data/neon-build/validation/normal-kernel-control-source-attempt03-20261101T003317Z-1bf7b6",
+  "source_lock_sha256": "e0fe3ce476fd32d48e13b26cb703f9a1d3e8cd3f1f51026f45356bcfb09322c2",
+  "Guest_ELF_SHA256": "602c5804765b836353d6e1f88727c56fbe17c25aa0fd9ee2a274ef56d1e7ef65",
+  "guest_files": {
+    "bin/busybox": "672ec674aa77a9699a4313cbf75c6be1d7f2e81c939460954eadab9d36196c6c",
+    "init": "8138436cb7066eabb9e3d24ce8e2ed9c386fa1460f8ca410b3be2cb9da4b7135",
+    "lib/ld-musl-x86_64.so.1": "4e5f9d95fbf01b1375090a257faf28d5f00436e20a4f054d1ee80ff5750f166c",
+    "neonvm/bin/kernel-controls.test": "602c5804765b836353d6e1f88727c56fbe17c25aa0fd9ee2a274ef56d1e7ef65"
+  },
+  "kernel": {
+    "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+    "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+  },
+  "image": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+  "rootdisk_initial_sha256": "cc69e495bcb29ea609e98f010df0944a64cb436f20c85ec30133eb3fcb4ef80f",
+  "scope": "ordinary9 mechanisms only; explicit test plan; no real services/production Source/normal/E2E"
+}

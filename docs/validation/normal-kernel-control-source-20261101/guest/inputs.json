@@ -1,0 +1,21 @@
+{
+  "build_directory": "/data/neon-build/validation/normal-kernel-control-source-attempt06-20261101T004742Z-104172",
+  "source_lock_sha256": "31ec9b6af871f5dd9692681cf7952d6c698748ca1ab54261c5600e10bb60f46e",
+  "Guest_ELF_SHA256": "9188ef38fa025c743eb1b25dd726e9166e8924bae4dfe65e58272ccfa8be7876",
+  "guest_files": {
+    "bin/busybox": "672ec674aa77a9699a4313cbf75c6be1d7f2e81c939460954eadab9d36196c6c",
+    "etc/resolv.conf": "f7d6bc67ccc2a74b165028c983169f7fb81f2f31e7738e42d2a973a60f5f1cce",
+    "init": "33bbc246b08cb30e1aa333def84a9374dcfe4fa13c13257d70e6013ed3ab58de",
+    "lib/ld-musl-x86_64.so.1": "4e5f9d95fbf01b1375090a257faf28d5f00436e20a4f054d1ee80ff5750f166c",
+    "neonvm/bin/kernel-controls.test": "9188ef38fa025c743eb1b25dd726e9166e8924bae4dfe65e58272ccfa8be7876"
+  },
+  "kernel": {
+    "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+    "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+  },
+  "image": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+  "rootdisk_initial_sha256": "ea719d61b16fc5ced12318fe043d2ae86ffee0a193c0f9da6f9d37775cec8657",
+  "scope": "ordinary9 actual kernel mechanisms; original control source/Gate/service invocation not claimed; explicit same-ext4 fixture RW holes",
+  "prior_failure": "/data/neon-build/validation/normal-kernel-control-native-attempt01-20261101T003606Z-9a02e2"
+}

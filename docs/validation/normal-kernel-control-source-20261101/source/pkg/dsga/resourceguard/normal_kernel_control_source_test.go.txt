@@ -1,0 +1,193 @@
+//go:build linux && amd64
+
+package resourceguard
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"strings"
+	"testing"
+
+	"golang.org/x/sys/unix"
+)
+
+func TestNormalKernelControlManifestFixedNineAndExceptions(t *testing.T) {
+	raw, e := NormalKernelControlSourceManifestJSON()
+	if e != nil {
+		t.Fatal(e)
+	}
+	decoded, e := decodeNormalKernelControlManifest(raw)
+	if e != nil || len(decoded.Roles) != 9 {
+		t.Fatalf("fixed table: %v", e)
+	}
+	for _, role := range []string{"resource", "compute", "sysinit", "shutdown", "unknown", ""} {
+		if _, e := decoded.role(role); e == nil {
+			t.Fatal("unfiltered/unknown role was included")
+		}
+	}
+	for _, r := range decoded.Roles {
+		if r.KeepCapabilities&((1<<unix.CAP_SYS_ADMIN)|(1<<unix.CAP_SYS_NICE)|(1<<unix.CAP_SYS_RESOURCE)|(1<<unix.CAP_SYS_PTRACE)|(1<<unix.CAP_SYS_RAWIO)|(1<<unix.CAP_BPF)) != 0 {
+			t.Fatal("dangerous cap retained")
+		}
+		for _, p := range r.Paths {
+			if (p.Path == "/dev" || p.Path == "/" || p.Path == "/proc" || p.Path == "/sys") && p.Rights&(nkWrite|nkTruncate|nkMakeBlock) != 0 {
+				t.Fatal("control/raw-device subtree has write rule")
+			}
+		}
+	}
+}
+func TestNormalKernelControlManifestStrictAndNotSelfReferential(t *testing.T) {
+	raw, _ := json.Marshal(normalKernelControlExpectedManifest())
+	for name, bad := range map[string][]byte{
+		"unknown":   append(append([]byte{}, raw[:len(raw)-1]...), []byte(`,"trusted":true}`)...),
+		"duplicate": []byte(strings.Replace(string(raw), `"protocol_version":1`, `"protocol_version":1,"protocol_version":1`, 1)),
+		"uppercase": []byte(strings.Replace(string(raw), `"profile_id"`, `"Profile_ID"`, 1)),
+		"root-role": []byte(strings.Replace(string(raw), `"role":"daemon"`, `"role":"resource"`, 1)),
+		"rights":    []byte(strings.Replace(string(raw), `"path":"/proc","rights":13`, `"path":"/proc","rights":15`, 1)),
+		"oversize":  []byte(strings.Repeat(" ", 65537)),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if string(bad) == string(raw) {
+				t.Fatal("negative did not change input")
+			}
+			if _, e := decodeNormalKernelControlManifest(bad); e == nil {
+				t.Fatal("changed manifest accepted")
+			}
+		})
+	}
+	if strings.Contains(string(raw), "runtime_document") || strings.Contains(string(raw), "system_manifest") {
+		t.Fatal("static manifest has reverse SHA reference")
+	}
+}
+func normalKernelControlEmulate(p []unix.SockFilter, arch, nr, lo, hi uint32) (uint32, error) {
+	var a uint32
+	for pc, steps := 0, 0; pc < len(p) && steps < 4096; steps++ {
+		v := p[pc]
+		pc++
+		switch v.Code {
+		case unix.BPF_LD | unix.BPF_W | unix.BPF_ABS:
+			switch v.K {
+			case 0:
+				a = nr
+			case 4:
+				a = arch
+			case 16:
+				a = lo
+			case 20:
+				a = hi
+			default:
+				return 0, fmt.Errorf("bad offset")
+			}
+		case unix.BPF_JMP | unix.BPF_JEQ | unix.BPF_K:
+			if a == v.K {
+				pc += int(v.Jt)
+			} else {
+				pc += int(v.Jf)
+			}
+		case unix.BPF_JMP | unix.BPF_JGE | unix.BPF_K:
+			if a >= v.K {
+				pc += int(v.Jt)
+			} else {
+				pc += int(v.Jf)
+			}
+		case unix.BPF_JMP | unix.BPF_JSET | unix.BPF_K:
+			if a&v.K != 0 {
+				pc += int(v.Jt)
+			} else {
+				pc += int(v.Jf)
+			}
+		case unix.BPF_RET | unix.BPF_K:
+			return v.K, nil
+		default:
+			return 0, fmt.Errorf("unsupported instruction")
+		}
+	}
+	return 0, fmt.Errorf("filter did not terminate")
+}
+func TestNormalKernelControlFilterAllDenyAndCloneInheritance(t *testing.T) {
+	p := normalKernelControlFilter()
+	eval := func(nr, lo, hi uint32) uint32 {
+		v, e := normalKernelControlEmulate(p, unix.AUDIT_ARCH_X86_64, nr, lo, hi)
+		if e != nil {
+			t.Fatal(e)
+		}
+		return v
+	}
+	for _, nr := range normalKernelControlDeniedSyscalls() {
+		want := uint32(uint32(unix.SECCOMP_RET_ERRNO) | uint32(unix.EPERM))
+		if nr == unix.SYS_CLONE3 {
+			want = uint32(unix.SECCOMP_RET_ERRNO) | uint32(unix.ENOSYS)
+		}
+		if got := eval(nr, 0, 0); got != want {
+			t.Fatalf("syscall %d got %#x", nr, got)
+		}
+	}
+	for _, flag := range []uint32{unix.CLONE_NEWNS, unix.CLONE_NEWCGROUP, unix.CLONE_NEWUTS, unix.CLONE_NEWIPC, unix.CLONE_NEWUSER, unix.CLONE_NEWPID, unix.CLONE_NEWNET} {
+		if eval(unix.SYS_CLONE, flag, 0) != uint32(unix.SECCOMP_RET_ERRNO)|uint32(unix.EPERM) {
+			t.Fatal("namespace clone escaped")
+		}
+	}
+	for _, flags := range []uint32{17, 0x3d0f00} {
+		if eval(unix.SYS_CLONE, flags, 0) != unix.SECCOMP_RET_ALLOW {
+			t.Fatal("old fork/Go thread blocked")
+		}
+	}
+	if eval(unix.SYS_CLONE, 0, 1) != uint32(unix.SECCOMP_RET_ERRNO)|uint32(unix.EPERM) {
+		t.Fatal("high clone bits escaped")
+	}
+	for _, nr := range []uint32{unix.SYS_READ, unix.SYS_WRITE, unix.SYS_EXECVE, unix.SYS_GETPID, unix.SYS_FUTEX, unix.SYS_MMAP, unix.SYS_MPROTECT, unix.SYS_MUNMAP} {
+		if eval(nr, 0, 0) != unix.SECCOMP_RET_ALLOW {
+			t.Fatalf("ordinary syscall %d blocked", nr)
+		}
+	}
+	for _, input := range [][2]uint32{{unix.AUDIT_ARCH_I386, 1}, {unix.AUDIT_ARCH_X86_64, 0x40000000}} {
+		got, e := normalKernelControlEmulate(p, input[0], input[1], 0, 0)
+		if e != nil || got != unix.SECCOMP_RET_KILL_PROCESS {
+			t.Fatal("arch escaped")
+		}
+	}
+	if e := normalKernelControlCheckFilter(p); e != nil {
+		t.Fatal(e)
+	}
+	p[len(p)-1].K = uint32(unix.SECCOMP_RET_ERRNO) | uint32(unix.EPERM)
+	if e := normalKernelControlCheckFilter(p); e == nil {
+		t.Fatal("changed complete program accepted")
+	}
+}
+func TestNormalKernelControlStatusRequiresAllCapabilitiesAndSingleExecStop(t *testing.T) {
+	raw := "CapEff:\t0000000000000000\nCapPrm:\t0000000000000000\nCapInh:\t0000000000000000\nCapBnd:\t0000000000000000\nCapAmb:\t0000000000000000\nNoNewPrivs:\t1\nSeccomp:\t2\nSeccomp_filters:\t1\nThreads:\t1\nTracerPid:\t42\n"
+	if e := normalKernelControlCheckStatus(raw, 0, 42); e != nil {
+		t.Fatal(e)
+	}
+	for _, change := range [][2]string{{"CapBnd:\t0000000000000000", "CapBnd:\t0000000000200000"}, {"NoNewPrivs:\t1", "NoNewPrivs:\t0"}, {"Seccomp_filters:\t1", "Seccomp_filters:\t2"}, {"Threads:\t1", "Threads:\t2"}, {"TracerPid:\t42", "TracerPid:\t43"}} {
+		bad := strings.Replace(raw, change[0], change[1], 1)
+		if bad == raw {
+			t.Fatal("negative unchanged")
+		}
+		if e := normalKernelControlCheckStatus(bad, 0, 42); e == nil {
+			t.Fatal("changed kernel status accepted")
+		}
+	}
+	if e := normalKernelControlCheckStatus(raw+"CapEff:\t0000000000000000\n", 0, 42); e == nil {
+		t.Fatal("duplicate accepted")
+	}
+}
+func TestNormalKernelControlOpaqueInputsCannotComeFromRequest(t *testing.T) {
+	ctx := context.Background()
+	if _, e := newNormalKernelOrdinaryControlPlan(ctx, nil, "daemon"); e == nil {
+		t.Fatal("nil original System source accepted")
+	}
+	if e := installNormalKernelOrdinaryRoleControls(ctx, nil); e == nil {
+		t.Fatal("nil plan accepted")
+	}
+	if _, e := inspectNormalKernelOriginalRole(ctx, nil, nil, nil, 1); e == nil {
+		t.Fatal("nil original target accepted")
+	}
+	if e := applyNormalKernelControlConstraints(normalKernelControlRoleRule{Role: "resource"}); e == nil {
+		t.Fatal("Root resource was filtered")
+	}
+	if _, e := normalKernelControlReadFullFilter(1, 0); e == nil {
+		t.Fatal("missing original target accepted")
+	}
+}
