@@ -1,0 +1,22 @@
+{
+  "E": 0,
+  "Go_singleP_async_preemption_actual": true,
+  "Go_threads": 4,
+  "Root_auditor_filtered": false,
+  "new_exec_domain_inherited": true,
+  "normal_authorized": false,
+  "outside_dedicated_worker_denied": [
+    "kill",
+    "tgkill",
+    "tkill",
+    "pidfd_send_signal",
+    "rt_sigqueueinfo",
+    "rt_tgsigqueueinfo"
+  ],
+  "outside_worker_signal_count": 0,
+  "real_services_executed": false,
+  "scope": "ISOLATED_SIGNAL_MECHANISM_NOT_PRODUCTION_GATE",
+  "scoped_descendant_signals_roundtrip": true,
+  "terminal_exec_failure_exit": 126,
+  "terminal_scope_failure_exit": 125
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "cohort": "/data/neon-build/validation/normal-kernel-control-signal-go-20261101T015317Z-e51dc2",
+    "history_only": true,
+    "logical_counts_not_added": true,
+    "original_result": {
+      "build_exit": 125,
+      "test_exit": null,
+      "native_build_exit": null,
+      "seconds": 0.014553493005223572,
+      "completed_utc": "2026-11-01T01:53:18.777407+00:00",
+      "normal_authorized": false,
+      "E": 0
+    },
+    "source_lock_sha256": "b9ebcba6318ece9d80111aaaf4f14a97949bf38a4c2bb9b9d74d088d4d981fad",
+    "classification": "ENV_NO_BUILDX_PLUGIN_CONFIG_BUILD125_NO_U_NO_NATIVE"
+  },
+  {
+    "cohort": "/data/neon-build/validation/normal-kernel-control-signal-go-20261101T015446Z-6712c8",
+    "history_only": true,
+    "logical_counts_not_added": true,
+    "original_result": {
+      "build_exit": 1,
+      "test_exit": null,
+      "native_build_exit": null,
+      "seconds": 7.016636592015857,
+      "completed_utc": "2026-11-01T01:54:54.996977+00:00",
+      "normal_authorized": false,
+      "E": 0
+    },
+    "source_lock_sha256": "b9ebcba6318ece9d80111aaaf4f14a97949bf38a4c2bb9b9d74d088d4d981fad",
+    "classification": "ENV_COPY_PROOF_REJECTED_DOCKERIGNORE_23_GITHUB_EXCLUSIONS_NO_U_NO_NATIVE"
+  },
+  {
+    "cohort": "/data/neon-build/validation/normal-kernel-control-signal-go-20261101T015645Z-98e85a",
+    "history_only": true,
+    "logical_counts_not_added": true,
+    "original_result": {
+      "build_exit": 0,
+      "test_exit": 0,
+      "native_build_exit": 1,
+      "seconds": 16.54280310298782,
+      "completed_utc": "2026-11-01T01:57:03.587334+00:00",
+      "normal_authorized": false,
+      "E": 0
+    },
+    "source_lock_sha256": "9000227afa9c87afbf860aec4b3b5a8dec2ac6a5952132dc093f6129d9dd7716",
+    "classification": "U7_PASS_NATIVE_TEST_BUILD_FAIL_xsys_Tkill_wrapper_absent_TEST_ONLY_RAW_NR_FIX"
+  }
+]

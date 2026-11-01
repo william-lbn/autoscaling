@@ -1,0 +1,5 @@
+本轮只做静态比较，无metadata源码改动/反例执行。
+严格syscall deny必须覆盖chmod/fchmod/fchmodat/fchmodat2(452)、chown/fchown/lchown/fchownat、setxattr/lsetxattr/fsetxattr/removexattr/lremovexattr/fremovexattr；读xattr无需禁。时间元数据系列需单独核touch marker兼容，不可无脑加。
+现normal-split/udev-init.sh:17运行chmod0666，udevd一般会改节点mode/owner；daemon main.go受管TLS用k8s1.31.7 AtomicWriter显式Chmod；chrony实际二进制/默认降权与日志属性尚待固定原源码/正控。因此blanket deny未实现，不能称9服务功能OK。可选Root固定log-device准备/create-time mode、受管TLS专用原子writer/有限payload服务，但绝不能新任意path/mode RPC。
+替代“所有不可信writer都Landlock”潜在保留合法metadata，但Compute若提前LL会阻断原SUID arrayPreexecBegin读取未受限Root /proc/exe(112..137)认证；LL不能按文件规则豁免ptrace/proc关系，不因euid0恢复绕过。仅PG最后exec装LL不闭合Compute。PG正常array路径不直接写cgroup；legacy launch_linux.go:109却直接写cgroup.procs，不能全局套。PG C198 FinalAuditGate还读/proc/self/status和原tracer/status，实际Landlock正控仍待独立做。必须覆盖PM/所有aux/fork、Compute/SUID后代、Root直接生array helper、ordinary9/respawn；原PID1/Root/broker受信写者需固定Source与有限接口。这些全部仍是后继设计/验证要求。
+安全验证设计仅普通临时目录里的专用Root-owned/其它UID-owned文件、独立用例worker及其后代；真实服务正控只作用各自临时TLS、DNS、日志、udev/devtmpfs fixture。禁止重试此前被拦截的受保护控制路径元数据反例或向受保护进程发信号。所有结论保持候选/未完成，不以静态推断替代实际证据。

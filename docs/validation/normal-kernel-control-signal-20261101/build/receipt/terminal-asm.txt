@@ -1,0 +1,20 @@
+TEXT github.com/neondatabase/autoscaling/pkg/dsga/resourceguard.normalKernelSignalScopeExecRaw.abi0(SB) /w/pkg/dsga/resourceguard/normal_kernel_control_signal_linux_amd64.s
+  normal_kernel_control_signal_linux_amd64.s:11	0x92e920		488b7c2408		MOVQ 0x8(SP), DI	
+  normal_kernel_control_signal_linux_amd64.s:12	0x92e925		4831f6			XORQ SI, SI		
+  normal_kernel_control_signal_linux_amd64.s:13	0x92e928		48c7c0be010000		MOVQ $0x1be, AX		
+  normal_kernel_control_signal_linux_amd64.s:14	0x92e92f		0f05			SYSCALL			
+  normal_kernel_control_signal_linux_amd64.s:15	0x92e931		4885c0			TESTQ AX, AX		
+  normal_kernel_control_signal_linux_amd64.s:16	0x92e934		7522			JNE 0x92e958		
+  normal_kernel_control_signal_linux_amd64.s:17	0x92e936		4c8b442410		MOVQ 0x10(SP), R8	
+  normal_kernel_control_signal_linux_amd64.s:18	0x92e93b		498b38			MOVQ 0(R8), DI		
+  normal_kernel_control_signal_linux_amd64.s:19	0x92e93e		498b7008		MOVQ 0x8(R8), SI	
+  normal_kernel_control_signal_linux_amd64.s:20	0x92e942		498b5010		MOVQ 0x10(R8), DX	
+  normal_kernel_control_signal_linux_amd64.s:21	0x92e946		48c7c03b000000		MOVQ $0x3b, AX		
+  normal_kernel_control_signal_linux_amd64.s:22	0x92e94d		0f05			SYSCALL			
+  normal_kernel_control_signal_linux_amd64.s:23	0x92e94f		48c7c77e000000		MOVQ $0x7e, DI		
+  normal_kernel_control_signal_linux_amd64.s:24	0x92e956		eb07			JMP 0x92e95f		
+  normal_kernel_control_signal_linux_amd64.s:26	0x92e958		48c7c77d000000		MOVQ $0x7d, DI		
+  normal_kernel_control_signal_linux_amd64.s:28	0x92e95f		48c7c0e7000000		MOVQ $0xe7, AX		
+  normal_kernel_control_signal_linux_amd64.s:29	0x92e966		0f05			SYSCALL			
+  normal_kernel_control_signal_linux_amd64.s:30	0x92e968		0f0b			UD2			
+  normal_kernel_control_signal_linux_amd64.s:31	0x92e96a		ebf3			JMP 0x92e95f		

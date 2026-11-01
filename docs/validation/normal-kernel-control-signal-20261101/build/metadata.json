@@ -1,0 +1,16 @@
+{
+  "unit": "neon-kernel-control-signal-go-20261101t015800z-fd25ad",
+  "nonce": "20261101T015800Z-fd25ad",
+  "base": "b73d77ef5960b32da91d3e60b38daeffcd712482",
+  "owned_count": 5,
+  "source_count": 5644,
+  "source_lock_sha256": "af55236582b3cdc6fba7c98a18b83fc4572669306df2992fd192715cef3b96bc",
+  "hard_limits": {
+    "CPUQuota": "200%",
+    "MemoryMax": "2G",
+    "RuntimeMaxSec": 300,
+    "BuildKit_memory": "2g",
+    "BuildKit_cpu_quota": 200000
+  },
+  "scope": "EXACT_COMMITTED_BASE_PLUS_SIGNAL5_ONLY_NOT_PRODUCTION_GATE_OR_NORMAL"
+}

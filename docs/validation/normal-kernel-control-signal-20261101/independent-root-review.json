@@ -1,0 +1,36 @@
+{
+  "reviewer": "Root",
+  "utc": "2026-11-01T02:12:56.666593+00:00",
+  "result": "PASS_FIXED_SIGNAL_EXEC_MECHANISM_ONLY",
+  "exact_source5": {
+    "pkg/dsga/resourceguard/normal_kernel_control_signal_linux_amd64.go": "17aaece966d1124d3ba62df7b0ba05501c28b6b118c4d55bf6901cb740f18cb9",
+    "pkg/dsga/resourceguard/normal_kernel_control_signal_linux_amd64.s": "c85f68b6c76a8e75c707c83c50a56a7ef76cc27ef43113d8b8755a27d900a931",
+    "pkg/dsga/resourceguard/normal_kernel_control_signal_linux_amd64_test.go": "165dae1c9d3ce4137e9e46c134896f2b0d9b2e804da1f48f64b9b72e7926272a",
+    "pkg/dsga/resourceguard/normal_kernel_control_signal_native_test.go": "304d9973c4ff5ec09bf6c273f4a041eb025930a67022b93c32e7b4531757e80b",
+    "pkg/dsga/resourceguard/normal_kernel_control_signal_unsupported_linux.go": "a574f69350dab2933b7f69ba70f6087b74557cb9fdc4dde31c4c2ce561f37e05"
+  },
+  "freeze108_manifest_sha256": "d374bb82d4be3335ab6928f639adc3a173ea63c35df5956a408c1ab40bcedc94",
+  "review": [
+    "typed fixed role/source/ABI guards and complete pre-scope preparation",
+    "same original leader only; old FS/cap/NNP/TSYNC stillAllThreads before scope",
+    "assembly noCALL/noRET and UnsafePointUnsafe; Go pointers preserve allC vectors",
+    "scope446 thenexec59 thenrawexit231/UD2 failure; noGo return/Unlock after scope",
+    "actual4Go M, singleP busyloop asynchronous preemption, same-domain descendants positive",
+    "6signal entrypoints deny independent outofscope worker with count0; no protected service signal experiment",
+    "actualKVM and Guest/QEMU0 fromrawQMP",
+    "old9 role S directlyrerun withnewELF; not nine actual daemons"
+  ],
+  "actual_U_roots": 7,
+  "new_U_roots": 2,
+  "new_S_roots": 1,
+  "old_S_direct_regression_roots": 1,
+  "not_covered": [
+    "production Gate invokes wrapper",
+    "actualacpi poweroff/init signal compatibility",
+    "typedstdio/metadata/Root/PID1/Compute/allrespawn sources",
+    "complete normal authority"
+  ],
+  "original_kernel_lsm_source_readback": "subsequent d22b49 separate evidence; thisfreeze retains original provenance boundary",
+  "normal_authorized": false,
+  "E": 0
+}

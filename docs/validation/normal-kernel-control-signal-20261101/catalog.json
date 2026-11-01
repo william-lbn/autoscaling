@@ -1,0 +1,67 @@
+{
+  "scope": "TERMINAL_SINGLE_LEADER_SIGNAL_SCOPE_COMPONENT_NOT_PRODUCTION_GATE",
+  "unit": {
+    "cohort": "/data/neon-build/validation/normal-kernel-control-signal-go-20261101T015800Z-fd25ad",
+    "race": true,
+    "roots": 7,
+    "subcases": 19,
+    "direct_old_KernelControl_roots": 5,
+    "direct_old_subcases": 6,
+    "new_roots": 2,
+    "new_subcases": 13,
+    "new_cases": [
+      {
+        "id": "PG17-U-KERNEL-SIGNAL-001",
+        "root": "TestNormalKernelSignalExecCVectorLifetimeAndBounds"
+      },
+      {
+        "id": "PG17-U-KERNEL-SIGNAL-002",
+        "root": "TestNormalKernelSignalScopeWireAndPrivateMissingSource"
+      }
+    ],
+    "fail": 0,
+    "skip": 0
+  },
+  "native": {
+    "cohort": "/data/neon-build/validation/normal-kernel-control-signal-native-20261101T015858Z-d00d6c",
+    "new_roots": 1,
+    "named_subcases": 2,
+    "id": "PG17-S-KERNEL-CONTROL-SIGNAL-001",
+    "root": "TestNativeNormalKernelSignalScopeTerminalExec",
+    "direct_old_roots": 1,
+    "direct_old_role_subcases": 9,
+    "real_KVM": true,
+    "Guest_exit": 0,
+    "QEMU_exit": 0,
+    "outerMemory": "2GiB",
+    "Go_ELF_SHA256": "8e08060e7ae49b2a1ebabe44f85dc5d57974ab9a3bd33ab7d55080dc6b204349",
+    "production_Gate_invoked": false,
+    "real_nine_service_binaries_executed": false,
+    "no_existing_protected_process_signalled": true,
+    "report": {
+      "E": 0,
+      "Go_singleP_async_preemption_actual": true,
+      "Go_threads": 4,
+      "Root_auditor_filtered": false,
+      "new_exec_domain_inherited": true,
+      "normal_authorized": false,
+      "outside_dedicated_worker_denied": [
+        "kill",
+        "tgkill",
+        "tkill",
+        "pidfd_send_signal",
+        "rt_sigqueueinfo",
+        "rt_tgsigqueueinfo"
+      ],
+      "outside_worker_signal_count": 0,
+      "real_services_executed": false,
+      "scope": "ISOLATED_SIGNAL_MECHANISM_NOT_PRODUCTION_GATE",
+      "scoped_descendant_signals_roundtrip": true,
+      "terminal_exec_failure_exit": 126,
+      "terminal_scope_failure_exit": 125
+    }
+  },
+  "normal_authorized": false,
+  "E": 0,
+  "K8s_E": 0
+}

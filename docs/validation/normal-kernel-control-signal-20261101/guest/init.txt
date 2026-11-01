@@ -1,0 +1,34 @@
+#!/bin/busybox sh
+set -eu
+export PATH=/bin
+mountpoint -q /dev || mount -t devtmpfs devtmpfs /dev
+exec </dev/console >/dev/console 2>&1
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t securityfs none /sys/kernel/security
+mount -t cgroup2 none /sys/fs/cgroup
+mount -t tmpfs -o size=64m,mode=1777 tmp /tmp
+mount -t tmpfs -o size=16m,mode=0755 run /run
+# 仅本隔离Guest：从同一原ext4保留固定RW孔后将静态root置per-mount RO。
+mount --make-rprivate /
+view=/run/kernel-control-root
+mkdir "$view"
+mount --bind / "$view"
+for path in /etc/resolv.conf /var/log /var/lib/chrony; do
+ mount --bind "$view$path" "$path"
+done
+mount -o remount,bind,ro /
+umount "$view"
+rmdir "$view"
+echo KERNEL_CONTROL_RELEASE=$(uname -r)
+echo KERNEL_CONTROL_NOTES=$(sha256sum /sys/kernel/notes | cut -d' ' -f1)
+export DSGA_KERNEL_CONTROL_NATIVE=isolated369-ordinary-controls-component
+export DSGA_KERNEL_SIGNAL_NATIVE=isolated369-signal-scope-component
+set +e
+/neonvm/bin/kernel-controls.test -test.run '^TestNativeNormalKernel(OrdinaryControls|SignalScopeTerminalExec)$' -test.count=1 -test.v -test.timeout=150s
+rc=$?
+set -e
+echo KERNEL_CONTROL_GUEST_EXIT=$rc
+sync
+sleep 1
+poweroff -f

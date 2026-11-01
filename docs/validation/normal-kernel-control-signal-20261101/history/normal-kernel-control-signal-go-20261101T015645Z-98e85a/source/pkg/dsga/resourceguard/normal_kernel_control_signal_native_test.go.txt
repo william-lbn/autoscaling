@@ -1,0 +1,365 @@
+//go:build linux && amd64 && dsga_native_kernel_control_signal
+
+package resourceguard
+
+import (
+	"bufio"
+	"bytes"
+	"context"
+	"encoding/binary"
+	"encoding/json"
+	"fmt"
+	"os"
+	"os/exec"
+	"os/signal"
+	"runtime"
+	"strconv"
+	"strings"
+	"sync/atomic"
+	"syscall"
+	"testing"
+	"time"
+	"unsafe"
+
+	"golang.org/x/sys/unix"
+)
+
+const normalKernelSignalNativeMode = "isolated369-signal-scope-component"
+const normalKernelSignalNativeBinary = "/neonvm/bin/kernel-controls.test"
+
+// 所有signal目标都是本用例新建并持续持PIDFD的专用worker；不接触Root/PID1/PG
+// 或任何既有服务。本DEV入口不构造生产opaque、没有生产Gate资格。
+func init() {
+	mode := os.Getenv("DSGA_KC_SIGNAL_CHILD")
+	if mode == "" {
+		return
+	}
+	fail := func(e error) { fmt.Fprintln(os.Stderr, "signal component:", e); os.Exit(97) }
+	switch mode {
+	case "victim":
+		runtime.LockOSThread()
+		seen := make(chan os.Signal, 16)
+		signal.Notify(seen, syscall.SIGUSR1)
+		fmt.Printf("SIGNAL_TEST_VICTIM_READY=%d:%d\n", os.Getpid(), unix.Gettid())
+		_, e := bufio.NewReader(os.Stdin).ReadByte()
+		if e != nil {
+			fail(e)
+		}
+		count := 0
+		for {
+			select {
+			case <-seen:
+				count++
+			default:
+				fmt.Printf("SIGNAL_TEST_VICTIM_COUNT=%d\n", count)
+				os.Exit(0)
+			}
+		}
+	case "enter":
+		if len(os.Args) != 4 {
+			fail(fmt.Errorf("explicit victim pid/tid required"))
+		}
+		pid, e := strconv.Atoi(os.Args[2])
+		if e != nil || pid <= 1 {
+			fail(fmt.Errorf("bad dedicated worker pid"))
+		}
+		tid, e := strconv.Atoi(os.Args[3])
+		if e != nil || tid <= 1 {
+			fail(fmt.Errorf("bad dedicated worker tid"))
+		}
+		for _, e = range []error{unix.Kill(pid, 0), unix.Tgkill(pid, tid, 0), unix.PidfdSendSignal(3, 0, nil, 0)} {
+			if e != nil {
+				fail(fmt.Errorf("original test victim positive before scope: %w", e))
+			}
+		}
+		fmt.Println("SIGNAL_TEST_UNSCOPED_POSITIVE=1")
+		image, e := newNormalKernelSignalExecImage([]string{normalKernelSignalNativeBinary, "signal-after", os.Args[2], os.Args[3]}, []string{"PATH=/neonvm/bin", "DSGA_KC_SIGNAL_CHILD=after"})
+		if e != nil {
+			fail(e)
+		}
+		scope, e := newNormalKernelSignalScopeRuleset()
+		if e != nil {
+			fail(e)
+		}
+		runtime.LockOSThread()
+		role, e := normalKernelControlExpectedManifest().role("daemon")
+		if e != nil {
+			fail(e)
+		}
+		if e = applyNormalKernelControlConstraints(role); e != nil {
+			fail(e)
+		}
+		normalKernelSignalScopeExecRaw(scope.Fd(), image)
+		fail(fmt.Errorf("raw scope returned"))
+	case "after":
+		if len(os.Args) != 4 {
+			fail(fmt.Errorf("fixed after args differ"))
+		}
+		pid, e := strconv.Atoi(os.Args[2])
+		if e != nil || pid <= 1 {
+			fail(fmt.Errorf("bad dedicated worker pid"))
+		}
+		tid, e := strconv.Atoi(os.Args[3])
+		if e != nil || tid <= 1 {
+			fail(fmt.Errorf("bad dedicated worker tid"))
+		}
+		if e = normalKernelSignalNativeAfter(pid, tid); e != nil {
+			fail(e)
+		}
+		fmt.Println("SIGNAL_TEST_SCOPED_GO_THREADS_CHILDREN_AND_OUTSIDE_DENIAL=1")
+		os.Exit(0)
+	case "descendant":
+		parent := os.Getppid()
+		if parent <= 1 {
+			fail(fmt.Errorf("dedicated scoped parent absent"))
+		}
+		seen := make(chan os.Signal, 1)
+		signal.Notify(seen, syscall.SIGUSR2)
+		fmt.Printf("SIGNAL_TEST_DESCENDANT_READY=%d\n", os.Getpid())
+		select {
+		case <-seen:
+		case <-time.After(4 * time.Second):
+			fail(fmt.Errorf("scoped descendant signal timeout"))
+		}
+		if e := unix.Kill(parent, unix.SIGUSR1); e != nil {
+			fail(fmt.Errorf("same-scope descendant-to-parent: %w", e))
+		}
+		fmt.Println("SIGNAL_TEST_DESCENDANT_ROUNDTRIP=1")
+		os.Exit(0)
+	case "scope-failure", "exec-failure":
+		runtime.LockOSThread()
+		if e := unix.Prctl(unix.PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0); e != nil {
+			fail(e)
+		}
+		image, e := newNormalKernelSignalExecImage([]string{"/neonvm/bin/definitely-absent-signal-component"}, []string{"PATH=/neonvm/bin"})
+		if e != nil {
+			fail(e)
+		}
+		if mode == "scope-failure" {
+			normalKernelSignalScopeExecRaw(^uintptr(0), image)
+		} else {
+			scope, e := newNormalKernelSignalScopeRuleset()
+			if e != nil {
+				fail(e)
+			}
+			normalKernelSignalScopeExecRaw(scope.Fd(), image)
+		}
+		fail(fmt.Errorf("raw terminal failure returned into Go"))
+	default:
+		fail(fmt.Errorf("unsupported explicit test worker mode"))
+	}
+}
+
+func normalKernelSignalNativeAfter(victimPID, victimTID int) error {
+	denied := func(name string, e error) error {
+		if e != unix.EPERM {
+			return fmt.Errorf("dedicated outside worker %s: expected EPERM, got %v", name, e)
+		}
+		return nil
+	}
+	for name, e := range map[string]error{
+		"kill": unix.Kill(victimPID, unix.SIGUSR1), "tgkill": unix.Tgkill(victimPID, victimTID, unix.SIGUSR1),
+		"tkill": unix.Tkill(victimTID, unix.SIGUSR1), "pidfd_send_signal": unix.PidfdSendSignal(3, unix.SIGUSR1, nil, 0),
+	} {
+		if e = denied(name, e); e != nil {
+			return e
+		}
+	}
+	var info [128]byte
+	binary.LittleEndian.PutUint32(info[0:4], uint32(unix.SIGUSR1))
+	binary.LittleEndian.PutUint32(info[8:12], ^uint32(0)) // SI_QUEUE=-1，合法用户siginfo。
+	binary.LittleEndian.PutUint32(info[16:20], uint32(os.Getpid()))
+	binary.LittleEndian.PutUint32(info[20:24], uint32(os.Getuid()))
+	_, _, errno := unix.RawSyscall(unix.SYS_RT_SIGQUEUEINFO, uintptr(victimPID), uintptr(unix.SIGUSR1), uintptr(unsafe.Pointer(&info)))
+	runtime.KeepAlive(&info)
+	if e := denied("rt_sigqueueinfo", errno); e != nil {
+		return e
+	}
+	_, _, errno = unix.RawSyscall6(unix.SYS_RT_TGSIGQUEUEINFO, uintptr(victimPID), uintptr(victimTID), uintptr(unix.SIGUSR1), uintptr(unsafe.Pointer(&info)), 0, 0)
+	runtime.KeepAlive(&info)
+	if e := denied("rt_tgsigqueueinfo", errno); e != nil {
+		return e
+	}
+	unix.Close(3)
+	// 同一次exec后创建的所有M从唯一leader域继承，不是各旧M自行restrict的兄弟域。
+	runtime.GOMAXPROCS(4)
+	ready := make(chan int, 4)
+	release := make(chan struct{})
+	done := make(chan struct{}, 4)
+	for i := 0; i < 4; i++ {
+		go func() {
+			runtime.LockOSThread()
+			defer runtime.UnlockOSThread()
+			ready <- unix.Gettid()
+			<-release
+			done <- struct{}{}
+		}()
+	}
+	seen := map[int]bool{}
+	for i := 0; i < 4; i++ {
+		tid := <-ready
+		seen[tid] = true
+		if e := unix.Tgkill(os.Getpid(), tid, unix.SIGURG); e != nil {
+			return fmt.Errorf("same scoped Go M SIGURG: %w", e)
+		}
+	}
+	close(release)
+	for i := 0; i < 4; i++ {
+		<-done
+	}
+	if len(seen) != 4 {
+		return fmt.Errorf("four simultaneous original new M not established")
+	}
+	// 单P紧循环须能被真实runtime抢占，timer/main G才有机会结束该循环。
+	runtime.GOMAXPROCS(1)
+	var stop atomic.Bool
+	completed := make(chan struct{})
+	go func() {
+		for !stop.Load() {
+		}
+		close(completed)
+	}()
+	time.Sleep(40 * time.Millisecond)
+	stop.Store(true)
+	select {
+	case <-completed:
+	case <-time.After(3 * time.Second):
+		return fmt.Errorf("Go asynchronous preemption did not make progress")
+	}
+	runtime.GOMAXPROCS(4)
+	incoming := make(chan os.Signal, 1)
+	signal.Notify(incoming, syscall.SIGUSR1)
+	defer signal.Stop(incoming)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	child := exec.CommandContext(ctx, normalKernelSignalNativeBinary, "signal-descendant")
+	child.Env = []string{"PATH=/neonvm/bin", "DSGA_KC_SIGNAL_CHILD=descendant"}
+	output, e := child.StdoutPipe()
+	if e != nil {
+		return e
+	}
+	var stderr bytes.Buffer
+	child.Stderr = &stderr
+	if e = child.Start(); e != nil {
+		return e
+	}
+	scanner := bufio.NewScanner(output)
+	if !scanner.Scan() || scanner.Text() != fmt.Sprintf("SIGNAL_TEST_DESCENDANT_READY=%d", child.Process.Pid) {
+		child.Process.Kill()
+		child.Wait()
+		return fmt.Errorf("dedicated scoped descendant ready differs: %s", stderr.String())
+	}
+	if e = unix.Kill(child.Process.Pid, unix.SIGUSR2); e != nil {
+		child.Process.Kill()
+		child.Wait()
+		return fmt.Errorf("same scope parent-to-descendant: %w", e)
+	}
+	if !scanner.Scan() || scanner.Text() != "SIGNAL_TEST_DESCENDANT_ROUNDTRIP=1" {
+		child.Process.Kill()
+		child.Wait()
+		return fmt.Errorf("same scope descendant roundtrip missing: %s", stderr.String())
+	}
+	if e = child.Wait(); e != nil {
+		return fmt.Errorf("scoped descendant Wait: %w %s", e, stderr.String())
+	}
+	select {
+	case <-incoming:
+	case <-time.After(2 * time.Second):
+		return fmt.Errorf("same scoped descendant-to-parent signal missing")
+	}
+	return nil
+}
+
+// PG17-S-KERNEL-CONTROL-SIGNAL-001；仅隔离DEV机制，不能替代实际production Gate来源。
+func TestNativeNormalKernelSignalScopeTerminalExec(t *testing.T) {
+	if os.Getenv("DSGA_KERNEL_SIGNAL_NATIVE") != normalKernelSignalNativeMode {
+		t.Fatal("explicit isolated369 signal component required")
+	}
+	if e := normalKernelControlExactBuild(); e != nil {
+		t.Fatal(e)
+	}
+	if e := nativeFilterAuditCaller(); e != nil {
+		t.Fatal(e)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
+	defer cancel()
+	victim := exec.CommandContext(ctx, normalKernelSignalNativeBinary, "signal-victim")
+	victim.Env = []string{"PATH=/neonvm/bin", "DSGA_KC_SIGNAL_CHILD=victim"}
+	stdout, e := victim.StdoutPipe()
+	if e != nil {
+		t.Fatal(e)
+	}
+	stdin, e := victim.StdinPipe()
+	if e != nil {
+		t.Fatal(e)
+	}
+	var stderr bytes.Buffer
+	victim.Stderr = &stderr
+	pfd := -1
+	victim.SysProcAttr = &syscall.SysProcAttr{PidFD: &pfd}
+	if e = victim.Start(); e != nil {
+		t.Fatal(e)
+	}
+	waited := false
+	defer func() {
+		if !waited {
+			victim.Process.Kill()
+			victim.Wait()
+		}
+		if pfd >= 0 {
+			unix.Close(pfd)
+		}
+	}()
+	scanner := bufio.NewScanner(stdout)
+	if !scanner.Scan() {
+		t.Fatalf("test victim readiness: %s", stderr.String())
+	}
+	var pid, tid int
+	if _, e = fmt.Sscanf(scanner.Text(), "SIGNAL_TEST_VICTIM_READY=%d:%d", &pid, &tid); e != nil || pid != victim.Process.Pid || tid <= 1 || pfd < 0 {
+		t.Fatal("original test victim pid/tid/PIDFD differs")
+	}
+	duplicate, e := unix.FcntlInt(uintptr(pfd), unix.F_DUPFD_CLOEXEC, 0)
+	if e != nil {
+		t.Fatal(e)
+	}
+	original := os.NewFile(uintptr(duplicate), "dedicated-original-test-victim-pidfd")
+	defer original.Close()
+	subject := exec.CommandContext(ctx, normalKernelSignalNativeBinary, "signal-enter", strconv.Itoa(pid), strconv.Itoa(tid))
+	subject.Env = []string{"PATH=/neonvm/bin", "DSGA_KC_SIGNAL_CHILD=enter"}
+	subject.ExtraFiles = []*os.File{original}
+	result, e := subject.CombinedOutput()
+	if e != nil {
+		t.Fatalf("terminal scope target: %v output=%s", e, result)
+	}
+	if strings.Count(string(result), "SIGNAL_TEST_UNSCOPED_POSITIVE=1") != 1 || strings.Count(string(result), "SIGNAL_TEST_SCOPED_GO_THREADS_CHILDREN_AND_OUTSIDE_DENIAL=1") != 1 {
+		t.Fatalf("scope evidence incomplete: %s", result)
+	}
+	if _, e = stdin.Write([]byte{1}); e != nil {
+		t.Fatal(e)
+	}
+	stdin.Close()
+	if !scanner.Scan() || scanner.Text() != "SIGNAL_TEST_VICTIM_COUNT=0" {
+		t.Fatalf("dedicated outside worker saw signal or no final receipt: %s", stderr.String())
+	}
+	if e = victim.Wait(); e != nil {
+		t.Fatal(e)
+	}
+	waited = true
+	for mode, want := range map[string]int{"scope-failure": 125, "exec-failure": 126} {
+		t.Run(mode, func(t *testing.T) {
+			cmd := exec.CommandContext(ctx, normalKernelSignalNativeBinary, "signal-terminal-failure")
+			cmd.Env = []string{"PATH=/neonvm/bin", "DSGA_KC_SIGNAL_CHILD=" + mode}
+			out, e := cmd.CombinedOutput()
+			exit, ok := e.(*exec.ExitError)
+			if !ok || exit.ExitCode() != want || len(out) != 0 {
+				t.Fatalf("terminal failure returned or wrong raw exit: %v output=%s", e, out)
+			}
+		})
+	}
+	if e = nativeFilterAuditCaller(); e != nil {
+		t.Fatal("test parent auditor filtered", e)
+	}
+	report := map[string]any{"scope": "ISOLATED_SIGNAL_MECHANISM_NOT_PRODUCTION_GATE", "Go_threads": 4, "new_exec_domain_inherited": true, "Go_singleP_async_preemption_actual": true, "scoped_descendant_signals_roundtrip": true, "outside_dedicated_worker_denied": []string{"kill", "tgkill", "tkill", "pidfd_send_signal", "rt_sigqueueinfo", "rt_tgsigqueueinfo"}, "outside_worker_signal_count": 0, "terminal_scope_failure_exit": 125, "terminal_exec_failure_exit": 126, "Root_auditor_filtered": false, "real_services_executed": false, "normal_authorized": false, "E": 0}
+	raw, _ := json.Marshal(report)
+	fmt.Printf("KERNEL_CONTROL_SIGNAL_COMPONENT=%s\n", raw)
+}
