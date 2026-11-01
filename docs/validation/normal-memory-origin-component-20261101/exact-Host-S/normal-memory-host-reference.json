@@ -1,0 +1,148 @@
+{
+  "protocol_version": 1,
+  "scope": "normal-memory-origin-host-reference-v1",
+  "profile_id": "neon-linux-6.12.26-dsga-normal-split-v1",
+  "prepared": {
+    "challenge": {
+      "host_stage_sha256": "f722bd6c6dc8c332da15269879c2ab2ee43207922f606760039f7dfee14fda7a",
+      "protocol_version": 1,
+      "scope": "neon-initial-preboot-challenge-v1",
+      "source_sha256": "cb61dcd491b2c3b630a77f9ffde6b8b9fd53bbc6268f4da8ad4dbdf80ff6cca0",
+      "nonce": "c6f00024cb885e56a934520f4b5401bc59f412209876e733f18be70323c1a752",
+      "identity": {
+        "vm_uid": "vm-uid",
+        "incarnation": "0123456789abcdef0123456789abcdef",
+        "runner_pod_uid": "pod-uid",
+        "runner_boot_id": "3e9b3836ef6e48bd7f0efc707857c828",
+        "node_uid": "node-uid",
+        "minimum_bytes": "1073741824",
+        "maximum_bytes": "4294967296",
+        "block_bytes": "8388608"
+      },
+      "runtime_document_sha256": "f621889da462070435b759521bf9a5f9a8bd54f7a4883ca1f702056a8f5445a7",
+      "resource_source_sha256": "3aba79182317d28397cad82822842bec5345c35294d079e73b141f57b08a7a33",
+      "config_secret_uid": "original-config-uid",
+      "kernel_build_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+      "original_base_bytes": "268435456",
+      "business_minimum_bytes": "1073741824",
+      "maximum_bytes": "4294967296"
+    },
+    "guest_boot_id": "b90439ff-4f3c-440d-a0f5-55ec42d33f4b",
+    "root_instance_nonce": "40db32f9921e2ad10c8659a6ffcf68cde362501bd95bf1cecdcd4f7af8cf7134",
+    "kernel_preparation_sha256": "da142a8480117b3643aa7d13b9132cdff9c864f7fe80cf8d1f229e4bc447b658",
+    "physical_origin_sha256": "8fa703de2d058385f7945f00907c4062ae79f7f6f7c002d09cfa28f8be6075d8",
+    "pre_system_sha256": "435e2f5dd8382c8da232210f6ed4134af0f8a617c0a0fb6ef18e69a3a67c6937",
+    "current_physical_sha256": "ac7bb5e5bd4434821907d1ee251d3650afe77986224d901f2d40b8d1c75b0996"
+  },
+  "movable": {
+    "challenge": {
+      "protocol_version": 1,
+      "scope": "neon-initial-movable-challenge-v1",
+      "preboot": {
+        "challenge": {
+          "host_stage_sha256": "f722bd6c6dc8c332da15269879c2ab2ee43207922f606760039f7dfee14fda7a",
+          "protocol_version": 1,
+          "scope": "neon-initial-preboot-challenge-v1",
+          "source_sha256": "cb61dcd491b2c3b630a77f9ffde6b8b9fd53bbc6268f4da8ad4dbdf80ff6cca0",
+          "nonce": "c6f00024cb885e56a934520f4b5401bc59f412209876e733f18be70323c1a752",
+          "identity": {
+            "vm_uid": "vm-uid",
+            "incarnation": "0123456789abcdef0123456789abcdef",
+            "runner_pod_uid": "pod-uid",
+            "runner_boot_id": "3e9b3836ef6e48bd7f0efc707857c828",
+            "node_uid": "node-uid",
+            "minimum_bytes": "1073741824",
+            "maximum_bytes": "4294967296",
+            "block_bytes": "8388608"
+          },
+          "runtime_document_sha256": "f621889da462070435b759521bf9a5f9a8bd54f7a4883ca1f702056a8f5445a7",
+          "resource_source_sha256": "3aba79182317d28397cad82822842bec5345c35294d079e73b141f57b08a7a33",
+          "config_secret_uid": "original-config-uid",
+          "kernel_build_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+          "original_base_bytes": "268435456",
+          "business_minimum_bytes": "1073741824",
+          "maximum_bytes": "4294967296"
+        },
+        "guest_boot_id": "b90439ff-4f3c-440d-a0f5-55ec42d33f4b",
+        "root_instance_nonce": "40db32f9921e2ad10c8659a6ffcf68cde362501bd95bf1cecdcd4f7af8cf7134",
+        "kernel_preparation_sha256": "da142a8480117b3643aa7d13b9132cdff9c864f7fe80cf8d1f229e4bc447b658",
+        "physical_origin_sha256": "8fa703de2d058385f7945f00907c4062ae79f7f6f7c002d09cfa28f8be6075d8",
+        "pre_system_sha256": "435e2f5dd8382c8da232210f6ed4134af0f8a617c0a0fb6ef18e69a3a67c6937",
+        "current_physical_sha256": "ac7bb5e5bd4434821907d1ee251d3650afe77986224d901f2d40b8d1c75b0996"
+      },
+      "host_stage_sha256": "5bb4d96c04806ee9c0f493aa5cecd4909b1ca81e5878351afc014d4530798f16",
+      "target_bytes": "1073741824"
+    },
+    "guest_boot_id": "b90439ff-4f3c-440d-a0f5-55ec42d33f4b",
+    "root_instance_nonce": "40db32f9921e2ad10c8659a6ffcf68cde362501bd95bf1cecdcd4f7af8cf7134",
+    "prepared_receipt_sha256": "eb7b1cd1aa69e1cdf72bfe1788749abcadb60ef3fe0be994935ad8696582a13b",
+    "physical_origin_sha256": "8fa703de2d058385f7945f00907c4062ae79f7f6f7c002d09cfa28f8be6075d8",
+    "pre_system_sha256": "435e2f5dd8382c8da232210f6ed4134af0f8a617c0a0fb6ef18e69a3a67c6937",
+    "current_physical_sha256": "0587ddaab259a8ab308bc0a186c81e7df3fa6164ac2626f88258f3c74261cfa4",
+    "expected_increment_bytes": "805306368",
+    "movable_present_pages": "196608"
+  },
+  "completion": {
+    "protocol_version": 1,
+    "scope": "neon-initial-completion-v1",
+    "challenge": {
+      "protocol_version": 1,
+      "scope": "neon-initial-movable-challenge-v1",
+      "preboot": {
+        "challenge": {
+          "host_stage_sha256": "f722bd6c6dc8c332da15269879c2ab2ee43207922f606760039f7dfee14fda7a",
+          "protocol_version": 1,
+          "scope": "neon-initial-preboot-challenge-v1",
+          "source_sha256": "cb61dcd491b2c3b630a77f9ffde6b8b9fd53bbc6268f4da8ad4dbdf80ff6cca0",
+          "nonce": "c6f00024cb885e56a934520f4b5401bc59f412209876e733f18be70323c1a752",
+          "identity": {
+            "vm_uid": "vm-uid",
+            "incarnation": "0123456789abcdef0123456789abcdef",
+            "runner_pod_uid": "pod-uid",
+            "runner_boot_id": "3e9b3836ef6e48bd7f0efc707857c828",
+            "node_uid": "node-uid",
+            "minimum_bytes": "1073741824",
+            "maximum_bytes": "4294967296",
+            "block_bytes": "8388608"
+          },
+          "runtime_document_sha256": "f621889da462070435b759521bf9a5f9a8bd54f7a4883ca1f702056a8f5445a7",
+          "resource_source_sha256": "3aba79182317d28397cad82822842bec5345c35294d079e73b141f57b08a7a33",
+          "config_secret_uid": "original-config-uid",
+          "kernel_build_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+          "original_base_bytes": "268435456",
+          "business_minimum_bytes": "1073741824",
+          "maximum_bytes": "4294967296"
+        },
+        "guest_boot_id": "b90439ff-4f3c-440d-a0f5-55ec42d33f4b",
+        "root_instance_nonce": "40db32f9921e2ad10c8659a6ffcf68cde362501bd95bf1cecdcd4f7af8cf7134",
+        "kernel_preparation_sha256": "da142a8480117b3643aa7d13b9132cdff9c864f7fe80cf8d1f229e4bc447b658",
+        "physical_origin_sha256": "8fa703de2d058385f7945f00907c4062ae79f7f6f7c002d09cfa28f8be6075d8",
+        "pre_system_sha256": "435e2f5dd8382c8da232210f6ed4134af0f8a617c0a0fb6ef18e69a3a67c6937",
+        "current_physical_sha256": "ac7bb5e5bd4434821907d1ee251d3650afe77986224d901f2d40b8d1c75b0996"
+      },
+      "host_stage_sha256": "5bb4d96c04806ee9c0f493aa5cecd4909b1ca81e5878351afc014d4530798f16",
+      "target_bytes": "1073741824"
+    },
+    "movable_receipt_sha256": "1e545fe2fac71a014317831ee6c3621399978320128c17c8a4928fbf9a91525e",
+    "host_stage_sha256": "9fa195f1737914c25b17b7a15ee09cb2efb54db5f28d511b5d802a31f5099b73"
+  },
+  "process": {
+    "pid": 12,
+    "start_ticks": 14003911,
+    "executable_device": 143,
+    "executable_inode": 5918512,
+    "executable_sha256": "8d8d8ee83471749d0b882ce34344638e0ac0fa2390cd822b98d9b6314e2f9cb5",
+    "command_sha256": "a4ec185c2ea96c6fa86d0cb8d6d7dd2e913d42e02ffd78f227adbca724520e83",
+    "launch_nonce": "657c587e01e0f246ba2a091bbaa5a3eb"
+  },
+  "maximum_vcpus": 2,
+  "hardware_sha256": "53f07461a07a3ebf7b4730e96a826aceaa2ba85cccd114703c6a848bb61ca946",
+  "qmp": {
+    "version": "eyJxZW11IjogeyJtaWNybyI6IDUsICJtaW5vciI6IDEsICJtYWpvciI6IDh9LCAicGFja2FnZSI6ICIifQ==",
+    "machine": "eyJzaXplIjogMjY4NDM1NDU2LCAic2xvdHMiOiAxLCAibWF4LXNpemUiOiA0Mjk0OTY3Mjk2fQ==",
+    "devices": "W3sidHlwZSI6ICJ2aXJ0aW8tbWVtIiwgImRhdGEiOiB7Im1lbWRldiI6ICIvb2JqZWN0cy92bWVtMCIsICJtZW1hZGRyIjogNDI5NDk2NzI5NiwgImJsb2NrLXNpemUiOiA4Mzg4NjA4LCAic2l6ZSI6IDgwNTMwNjM2OCwgIm5vZGUiOiAwLCAibWF4LXNpemUiOiA0MDI2NTMxODQwLCAicmVxdWVzdGVkLXNpemUiOiA4MDUzMDYzNjgsICJpZCI6ICJ2bTAifX1d",
+    "summary": "eyJiYXNlLW1lbW9yeSI6IDI2ODQzNTQ1NiwgInBsdWdnZWQtbWVtb3J5IjogODA1MzA2MzY4fQ==",
+    "backends": "W3sic2hhcmUiOiBmYWxzZSwgInJlc2VydmUiOiB0cnVlLCAicHJlYWxsb2MiOiBmYWxzZSwgImhvc3Qtbm9kZXMiOiBbXSwgInNpemUiOiA0MDI2NTMxODQwLCAibWVyZ2UiOiB0cnVlLCAiZHVtcCI6IHRydWUsICJwb2xpY3kiOiAiZGVmYXVsdCIsICJpZCI6ICJ2bWVtMCJ9LCB7InNoYXJlIjogZmFsc2UsICJyZXNlcnZlIjogdHJ1ZSwgInByZWFsbG9jIjogZmFsc2UsICJob3N0LW5vZGVzIjogW10sICJzaXplIjogMjY4NDM1NDU2LCAibWVyZ2UiOiB0cnVlLCAiZHVtcCI6IHRydWUsICJwb2xpY3kiOiAiZGVmYXVsdCIsICJpZCI6ICJwYy5yYW0ifV0=",
+    "backend_size": "NDAyNjUzMTg0MA=="
+  }
+}

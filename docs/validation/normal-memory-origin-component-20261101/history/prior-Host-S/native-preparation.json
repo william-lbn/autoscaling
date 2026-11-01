@@ -1,0 +1,26 @@
+{
+  "scope": "Host new source actual KVM component; cached audited Guest tool initial8WAL only; new Guest6/7 NOT_RUN",
+  "old_Guest_source": "/data/neon-build/validation/initial-lifecycle-native-20261031T181834Z/cohort.json",
+  "old_Guest_source_sha256": "96971ca8750945b5282f167ac57df4fe019f72ac6d80f65959efdd489f3f8289",
+  "old_Guest_source_count": 785,
+  "old_Guest_base": "12ed1ad6aa9e7e4ac3065eeef1e0ec75c2be8c03",
+  "old_Guest_ELF_sha256": "cee4c45f0aec51b2080cc0e93ee9dff273841ff2820a0819b1f81fc0f62739ba",
+  "old_compile_rc": "0",
+  "new_Host_ELF": "pending actual compile receipt",
+  "QEMU_image": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+  "QEMU_tools": "36\n34\n8d8d8ee83471749d0b882ce34344638e0ac0fa2390cd822b98d9b6314e2f9cb5  /usr/bin/qemu-system-x86_64\nQEMU emulator version 8.1.5\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers\n",
+  "kernel_path": "/data/neon-build/validation/normal-split-kernel-20261030T224843Z/export",
+  "kernel_actual_sha256": {
+    "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+    "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+  },
+  "init_old_sha256": "1b3ab0cf4c81418dfe8bec2ec9d359421de988299355b8403a129ac434daaca4",
+  "init_new_sha256": "d0934e80d0813c5c8d5742d8c01f8c0bacf7bc0849fbd3f22e83e01a6879d74f",
+  "new_initramfs_sha256": "bab7dc4f28776332c92904c2125ac430c89daf112c962b38d23ea54ba1271778",
+  "old_Guest_tool_unchanged": true,
+  "new_state_before_sha256": "cb46ebb24e3de86e11af8cbc1e05a15d6076584e72989e983ff349bf5ef3abb0",
+  "Host_network_or_cgroup_changes": false,
+  "normal_qualified": false,
+  "E": 0
+}

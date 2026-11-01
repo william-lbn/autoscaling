@@ -1,0 +1,24 @@
+{
+  "compile_source_lock": "/data/neon-build/validation/normal-memory-origin-wire-attempt03-20261031T234538Z-b9855e/source-lock.json",
+  "compile_source_lock_sha256": "36af6d6bd95c1210683aca6d686ab5d05b971c1df2dc942d6124157ec265e3f5",
+  "Host_ELF_SHA256": "8cd9598fc2a588036da07facc23b19344f5702168f7dd98aa23577d48ff932f4",
+  "Guest_ELF_SHA256": "baaf0fd0e2dca068a339ad9fbd39e25e7d53fc9927b84f28c51c41b43b228aac",
+  "init_sha256": "0f4a3821eff2d053a1e6f2e31e0558fa57a6bfb169108edec7d4524a1f0b37d5",
+  "initramfs_sha256": "ad2bdc9af96a5bb8b48c8ae05bbd19597b6b8d60cb48cea70640e04ec151604a",
+  "runtime_iso_sha256": "1509c6bd08a412bb69ced766d5fca85001ebf4599642c9ccbb3967113ca6687d",
+  "ISO_inputs": {
+    "dsga-kernel-bootstrap.json": "a95efe622078d4e41c89b8b301d58304c1aa9ccfd2a4fe9ffec1b8a1a91bb079",
+    "dsga-native-birth.json": "ddd8821c7e123288145fe7c509dc5f3a47e2138d6f467c8f9589622de0ceb4cf",
+    "dsga-normal-split.json": "525450fbc4fbe6df49bd9cf149917fde90292a40d273b7d695e4ad3d0993b763",
+    "dsga-physical-kernel.json": "580b0e63d048d14cd2355f6151d6ad1c60847a5f778282bc69e667c4a91090c4",
+    "dsga-pre-system.json": "0f1afcb5775b1dcd23db502d9b968b280635daa0eb35dc7fb1b355e07efdfedd",
+    "dsga-resource.json": "483862ce341a3a6036c79e82b72d7a1df2006bc670eaf83c7cb6205b8e64e825"
+  },
+  "kernel": {
+    "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+    "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+  },
+  "image": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+  "scope": "fresh Host+Guest real6/7 component; no PG/normal/E2E"
+}

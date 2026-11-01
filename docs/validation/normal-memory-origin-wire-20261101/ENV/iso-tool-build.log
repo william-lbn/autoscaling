@@ -1,0 +1,37 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from ISO-tool.Dockerfile
+#1 transferring dockerfile:
+#1 transferring dockerfile: 634B done
+#1 DONE 0.4s
+
+#2 [internal] load metadata for 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.1s
+
+#4 [common 1/3] FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#4 resolve 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 0.0s done
+#4 DONE 0.0s
+
+#5 [common 2/3] WORKDIR /w
+#5 CACHED
+
+#6 [internal] load build context
+#6 transferring context: 70.28kB done
+#6 DONE 0.1s
+
+#7 [build 3/4] COPY . .
+#7 DONE 0.3s
+
+#8 [build 4/4] RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared mkdir /out && sha256sum -c cohort.sha256 >/out/source-check.txt && go build -o /out/mkiso main.go
+#8 DONE 0.7s
+
+#9 [stage-1 1/1] COPY --from=build /out/ /
+#9 DONE 0.0s
+
+#10 exporting to client directory
+#10 copying files 2.68MB 0.0s done
+#10 DONE 0.0s

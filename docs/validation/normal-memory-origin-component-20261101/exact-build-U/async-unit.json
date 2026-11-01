@@ -1,0 +1,18 @@
+{
+  "unit": "neon-normal-memory-origin-v2-20261031t225813z-ec5ace",
+  "argv": [
+    "systemd-run",
+    "--unit",
+    "neon-normal-memory-origin-v2-20261031t225813z-ec5ace",
+    "--collect",
+    "--property=RuntimeMaxSec=660",
+    "--property=MemoryMax=3G",
+    "--property=CPUQuota=200%",
+    "/bin/bash",
+    "/data/neon-build/validation/normal-memory-origin-v2-20261031T225813Z-ec5ace/start.sh"
+  ],
+  "start_rc": 0,
+  "stdout": "",
+  "stderr": "Running as unit: neon-normal-memory-origin-v2-20261031t225813z-ec5ace.service; invocation ID: 2bda9aba3b7f47e0b5b62146c8f10b3b\n",
+  "resources": "RUN2CPU2GiB/no extra swap; network none; exact source; raceU + CGO0 native compile"
+}

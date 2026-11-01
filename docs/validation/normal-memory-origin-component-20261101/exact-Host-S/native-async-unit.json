@@ -1,0 +1,18 @@
+{
+  "unit": "neon-normal-memory-origin-kvm-ec5ace",
+  "argv": [
+    "systemd-run",
+    "--unit",
+    "neon-normal-memory-origin-kvm-ec5ace",
+    "--collect",
+    "--property=RuntimeMaxSec=240",
+    "--property=MemoryMax=5G",
+    "--property=CPUQuota=200%",
+    "/bin/bash",
+    "/data/neon-build/validation/normal-memory-origin-v2-20261031T225813Z-ec5ace/native-start.sh"
+  ],
+  "start_rc": 0,
+  "stdout": "",
+  "stderr": "Running as unit: neon-normal-memory-origin-kvm-ec5ace.service; invocation ID: 18295a2d2e0b47bb8c3f1d8c86075fb8\n",
+  "resources": "actual Docker2CPU4GiB/no extra swap/noNIC; test150s + outer180s; KVM noTCG"
+}

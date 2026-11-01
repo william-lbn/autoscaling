@@ -1,0 +1,17 @@
+{
+  "unit": "neon-normal-memory-origin-20261031t222458z-54f4be",
+  "argv": [
+    "systemd-run",
+    "--unit",
+    "neon-normal-memory-origin-20261031t222458z-54f4be",
+    "--collect",
+    "--property=RuntimeMaxSec=480",
+    "--property=MemoryMax=3G",
+    "--property=CPUQuota=200%",
+    "/usr/bin/python3",
+    "/data/neon-build/validation/normal-memory-origin-attempt01-20261031T222458Z-54f4be/worker.py"
+  ],
+  "start_rc": 0,
+  "stdout": "",
+  "stderr": "Running as unit: neon-normal-memory-origin-20261031t222458z-54f4be.service; invocation ID: e8eab1c1e9f24a6da4a7dbe8e8ad1de6\n"
+}

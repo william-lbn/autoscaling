@@ -1,0 +1,13 @@
+{
+  "command": [
+    "debugfs",
+    "-R",
+    "rdump / /data/neon-build/validation/normal-memory-origin-v2-20261031T225813Z-ec5ace/Guest-WAL",
+    "/data/neon-build/validation/normal-memory-origin-v2-20261031T225813Z-ec5ace/state.ext4"
+  ],
+  "rc": 0,
+  "stdout": "",
+  "stderr": "debugfs 1.47.0 (5-Feb-2023)\n",
+  "after_actual_container_exit": 0,
+  "host_mount": false
+}

@@ -1,0 +1,63 @@
+{
+  "source_lock_sha256": "494e941adef7e374dc7b444d44549df5fe0e6d446dfaf8f364eba99f361d0a1a",
+  "Host_ELF_sha256": "7881f5f3de924565e7d9680cb1f0fceee8aab44322d4ea59301f5f9da214b92d",
+  "actual_native_result": {
+    "native_exit": 0,
+    "pass": true,
+    "seconds": 18.573333078995347,
+    "normal_qualified": false,
+    "E": 0,
+    "scope": "Host new opaque memory origin actual KVM/QMP component; Guest new6/7 NOT_RUN"
+  },
+  "container_exit": 0,
+  "container_memory": 4294967296,
+  "container_swap": 4294967296,
+  "container_CPUs": 2000000000,
+  "network": "none",
+  "actual_geometry": {
+    "Identity": {
+      "vm_uid": "vm-uid",
+      "incarnation": "0123456789abcdef0123456789abcdef",
+      "runner_pod_uid": "pod-uid",
+      "runner_boot_id": "3e9b3836ef6e48bd7f0efc707857c828",
+      "node_uid": "node-uid",
+      "minimum_bytes": "1073741824",
+      "maximum_bytes": "4294967296",
+      "block_bytes": "8388608"
+    },
+    "BaseBytes": "268435456",
+    "BackendBytes": "4026531840",
+    "MaximumBytes": "4294967296",
+    "RequestedBytes": "1073741824",
+    "ActualBytes": "1073741824",
+    "DeviceAddress": "4294967296",
+    "QEMUVersion": [
+      8,
+      1,
+      5
+    ]
+  },
+  "actual_raw_QMP_return_sha256": {
+    "version": "7bc76b968b91054804f6d5ff939e438ca1a6eb702ab5f12b59662db144a670f1",
+    "machine": "47fce74e2973909369470fcefef96658c5b4872c338345e8171d9220ecc19355",
+    "devices": "b7c31fae6c13d9b63e9e0fbe24b4d5765a68e33b5d9bd45c97c79bea0a997e32",
+    "summary": "a6cd94a0305bf862d2324649fefb164193a4f4bcb6d2102114dfdc0264ebb0d5",
+    "backends": "b292da5bd80e858f25f6aca69166b27e728d1792d632c2673572083f11d29e62",
+    "backend_size": "557a568ced553c5cc2ca6a88db33bbe9cc324209ea35d6b463629d6822e56803"
+  },
+  "actual_query_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "Guest_new6_7_executed": false,
+  "scope": {
+    "E": 0,
+    "Guest_new_memory_producer_executed": false,
+    "Host_API_is_model": true,
+    "actual_QMP": true,
+    "normal_authorized": false,
+    "stable_id": "PG17-S-MEMORY-ORIGIN-HOST-001"
+  },
+  "normal_qualified": false,
+  "E": 0
+}

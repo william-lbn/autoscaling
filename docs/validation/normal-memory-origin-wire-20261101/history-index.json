@@ -1,0 +1,116 @@
+[
+  {
+    "directory": "/data/neon-build/validation/normal-memory-origin-wire-attempt01-20261031T233326Z-a2bb9d",
+    "scope": "U_fail_deadline_before_newkind6; weak prior negative cases not accepted coverage",
+    "retained_raws": [
+      {
+        "path": "result.json",
+        "sha256": "925f004fc93aee5fc55a94e10e7525f19ab9a67e3d4f00103c35635df0ee8c51"
+      },
+      {
+        "path": "build.log",
+        "sha256": "2d7ae35a8236137c2082592f8e4f0bfdbd31191160819c295e513a01c0d54a76"
+      }
+    ]
+  },
+  {
+    "directory": "/data/neon-build/validation/normal-memory-origin-wire-attempt02-20261031T234435Z-6ebbf2",
+    "scope": "ENV_before_tests_23_dockerignore_excluded_github",
+    "retained_raws": [
+      {
+        "path": "test-result.json",
+        "sha256": "5d5942c96ce71bf8d0b9881fdc831bd4ee06918b553d5687e60908b01a2e993e"
+      },
+      {
+        "path": "native-result.json",
+        "sha256": "b3f50c1ff641c93557feb717c205494a5ef8f4f544de90d057816031d4b835df"
+      },
+      {
+        "path": "test-build.log",
+        "sha256": "900191dd2bcd8a11ebbe4d1242e797442225dd28c9253b8570998d2f205766c2"
+      },
+      {
+        "path": "native-build.log",
+        "sha256": "c1be84ecdb8a6d0978eef20f5d9eef9e3157177f66aab08208a65dcba9106f23"
+      }
+    ]
+  },
+  {
+    "directory": "/data/neon-build/validation/normal-memory-origin-wire-attempt03-20261031T234538Z-b9855e",
+    "scope": "U_fail_test_Bootstrap_wrong_budget_model; actual bad_partial_missing6/7 PASS",
+    "retained_raws": [
+      {
+        "path": "test-result.json",
+        "sha256": "23093ffe69cec869d462ca738c2c2cdf4325512b0f21838bcbb3e66f029c8097"
+      },
+      {
+        "path": "native-result.json",
+        "sha256": "ac0ca0853bb7acaa276527e9c30442cecb096cf399152a6f3f28bb2874cd0b58"
+      }
+    ]
+  },
+  {
+    "directory": "/data/neon-build/validation/normal-memory-origin-wire-native-20261031T234720Z-2ddcfc",
+    "scope": "GuestPASS_HostFAIL_nested_single_monitor; original extract ENV target absent preserved",
+    "retained_raws": [
+      {
+        "path": "native-result.json",
+        "sha256": "4b56f58d010095f4a1dd0be6e3ddac021b0ae49ae46a1f58b9fd3ed5357743ce"
+      },
+      {
+        "path": "native-host.log",
+        "sha256": "d15b66cb61b0e1885827307f53dbf7f90a9796bded9b641c633a2e20396922a2"
+      },
+      {
+        "path": "console.log",
+        "sha256": "9dce5f1262595803b020e65e2f37c4e9d26458965b888eec30d359f305ffa4bb"
+      },
+      {
+        "path": "inputs.json",
+        "sha256": "1356f432c1e0bece856b828dffcf08eb0879db5bcbb3b8daca4aa464d11df8ba"
+      },
+      {
+        "path": "first-failure-analysis.json",
+        "sha256": "d4e8b9cb3caf5ce0078386821ef49c7fd652b3b26c8420390928e00f52bcfd23"
+      },
+      {
+        "path": "guest-wal-extract.log",
+        "sha256": "fea9a6cc686176315ca0fc2745ddf85afbcc4ad96e8d18384e7da99fedb89e4c"
+      },
+      {
+        "path": "guest-wal-extract-proof.json",
+        "sha256": "87e8d654ee42f17a1a8df39907f267e9c5a702e9522052e72c9598a56722a58d"
+      }
+    ]
+  },
+  {
+    "directory": "/data/neon-build/validation/normal-memory-origin-wire-native-attempt02-20261031T235228Z-06cd99",
+    "scope": "Host_GuestPASS; native helper did not export raw Host2 journals; not relabelled final",
+    "retained_raws": [
+      {
+        "path": "native-result.json",
+        "sha256": "41dbde91e6c477ccd721055e51b0378bc4f3725bedc93bb05d61fbd5b1d75f3d"
+      },
+      {
+        "path": "native-host.log",
+        "sha256": "1f7eb38baa897be103fcd5145d60c3cbc251eee28c853d2bd12387ae4df79ea7"
+      },
+      {
+        "path": "console.log",
+        "sha256": "40fa6c7685eeb4da8bdc2405cf0c59e85a40bb17217b58be1db1a66f0499477a"
+      },
+      {
+        "path": "inputs.json",
+        "sha256": "d767a53fa7fd58349ece2930e5b8b7096903a80408dc77af94cb8b197bc79452"
+      },
+      {
+        "path": "guest-wal-extract.log",
+        "sha256": "c32c555079d18846c620f7330cec4e3f48b1723b95a0922ab6b8e0513348df59"
+      },
+      {
+        "path": "guest-wal-extract-proof.json",
+        "sha256": "f22fc1b753823d5adc34efc816b3b1732d6838a281e7ed3bb2d597f8e7fdd456"
+      }
+    ]
+  }
+]

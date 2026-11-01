@@ -1,0 +1,17 @@
+{
+  "scope": "cached TEST_ONLY ISO exact asset reuse; not new production ISO",
+  "all_six_actual_exported_assets_equal": true,
+  "assets_sha256": {
+    "dsga-normal-split.json": "f40b22189be55d8bd857d415e1aba3bbdfa7e35379f2678831e60eee8b954ccb",
+    "dsga-physical-kernel.json": "004e15f66356d10a928a1c1e1f97d97ddc8099e15a9da48e0afec4756d6f3f82",
+    "dsga-resource.json": "f621889da462070435b759521bf9a5f9a8bd54f7a4883ca1f702056a8f5445a7",
+    "dsga-pre-system.json": "13de192705b1a5847b9091f601eea40cc62f803539f4abbee7e96ea7c981978e",
+    "dsga-native-birth.json": "020767b64a0335916a0812bc100a4a9368bf9076b3793f6d09980bdf1b365352",
+    "dsga-kernel-bootstrap.json": "91870f67fbeea7b34db879560549aed9a3ddc5cbfb52039877608aa4c658659c"
+  },
+  "cached_iso_source": "/data/neon-build/validation/initial-lifecycle-native-20261031T181834Z/runtime.iso",
+  "cached_iso_sha256": "bc95fa81c80ebd654add979266871660e1993bc80b8be1afb13eb40de780074c",
+  "actual_copy_sha256": "bc95fa81c80ebd654add979266871660e1993bc80b8be1afb13eb40de780074c",
+  "ENV_failure_preserved": "new Host export0; genisoimage unavailable, no native payload at that failure; both cached images ISO tools absent; no install/download",
+  "actual_Guest_will_independently_bind_ISO_to_original_Host_runtime": true
+}

@@ -1,0 +1,83 @@
+{
+  "status": "PASS_COMPONENT_ONLY",
+  "base": "26f1d48ab17330959e87be64ad95f968ff1006f7",
+  "source14": {
+    "pkg/dsga/bootprotocol/normal_memory_origin.go": "983097923d1de2a5960ce236ba758282218f0d3145afa046cbf105604f4f4500",
+    "pkg/dsga/bootprotocol/normal_memory_geometry.go": "c716ce3513f840036ec8ef402f694c8c8c08cf1c80e4f181dedc2891684e1d30",
+    "pkg/dsga/bootprotocol/normal_memory_origin_test.go": "05c8208cd9d872486828d5711a9fb872d111c638da3d5af5e7f03858b8b63538",
+    "pkg/dsga/vmguard/normal_memory_origin_source_linux.go": "d47aef95b2a1e578bf060067b3b0b7fbd92a78bbcf922c28f62d4ef8d7296bbe",
+    "pkg/dsga/vmguard/normal_memory_origin_source_linux_test.go": "59cd78754c319a9d15f8d5a6a0b693d4a69f510e5d8a2d33d4a4376c4fa50021",
+    "pkg/dsga/resourceguard/normal_memory_origin_source_linux.go": "f9d39f3460a9297b8bcdde056e7d5e8ca765c6c909f4379c60752751e3b1603b",
+    "pkg/dsga/resourceguard/normal_memory_origin_source_linux_test.go": "c2980c7619cd37b3dbb836848a427ff4f2bb144a8af8e71f6f68696e32da3952",
+    "pkg/dsga/vmguard/normal_memory_origin_source_native_test.go": "dfcb5001e885e85b72c01727aae43e83350f04184ffbd44c05120597f6103bd3",
+    "pkg/dsga/vmguard/initial_bootstrap_lifecycle_linux.go": "b5fa846604462618d47019173389f929e1f7ac0c62daca3c5d293a30668692d8",
+    "pkg/dsga/resourceguard/initial_preboot_channel_linux.go": "5baaf08d1dc2e7eb1396d547863dfc2bb31070455f528218c3372aa107e46523",
+    "pkg/dsga/vmguard/normal_memory_origin_integration_test.go": "0008b5c303ec09e5ebfba7db676898b32f353617cf40fef8e6b06051baa7e372",
+    "pkg/dsga/resourceguard/normal_memory_origin_exchange_test.go": "63ceca2a0a16eb982ffda3676cec8ff38dca074ead27eab5929107505d3765b7",
+    "pkg/dsga/vmguard/normal_memory_origin_wire_native_test.go": "4268e1cee5151506396458efd0304381a95a20a5fda3aee63b7cde5bd986307d",
+    "pkg/dsga/resourceguard/normal_memory_origin_wire_native_test.go": "e69dd21cdcf6031d34cdad0ab728cf8d0a855ab1f68ad4c8897a8da522840d5d"
+  },
+  "source_lock_sha256": "005cef575461e2d01c1d84a4b4698363fd76f9f12e3c23aed3e5007d9df0e777",
+  "U_actual_directory": "/data/neon-build/validation/normal-memory-origin-wire-attempt04-20261031T235111Z-a545d3",
+  "ordinary_U_roots": 57,
+  "ordinary_U_subcases": 248,
+  "ordinary_U_race": true,
+  "ordinary_U_source_qualification": "actual attempt04; final05 only differently tagged native Host file; ordinary-U-source-equivalence.json",
+  "native_actual_directory": "/data/neon-build/validation/normal-memory-origin-wire-native-final-20261031T235713Z-9efb06",
+  "native_build_directory": "/data/neon-build/validation/normal-memory-origin-wire-attempt05-final-20261031T235618Z-65b27a",
+  "source_copy_check_counts": {
+    "U": 4119,
+    "native": 4119
+  },
+  "native_Host_ELF": "1fbe73b8c419ec79cd3b37f1b3b6d39a6f38b4572f0a4845fd5cc3068bcacc02",
+  "native_Guest_ELF": "3ed35461f78bff9a6c529638813f00e6e3551636db17883f04ac152fef1c42f9",
+  "native_guest_result": {
+    "E": 0,
+    "Guest_boot": "ec4a9f24-b5b8-40f2-a52e-e46d7c2c1c5a",
+    "Guest_source_sha256": "1ed921d50485394124af72ab16484e371907e94b51b900d5f775845c70dc4e65",
+    "actual_new6_7": true,
+    "explicit_recovery_passed": true,
+    "host_reference_sha256": "7e914b49527e5f31245aa2b880d21a497eaf32ad4290a87d8df2a10695ccfc33",
+    "maximum_bytes": 4294967296,
+    "normal_authorized": false,
+    "region": {
+      "protocol_version": 1,
+      "scope": "guest-immutable-virtio-region-observation-only",
+      "reviewed_build_reference": {
+        "profile_id": "neon-linux-6.12.26-dsga-normal-split-v1",
+        "kernel_release": "6.12.26-william-normal-split-v1-e210f5e3ee94",
+        "kernel_artifact_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+        "kernel_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+        "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+      },
+      "guest_boot_id": "ec4a9f24-b5b8-40f2-a52e-e46d7c2c1c5a",
+      "device_name": "virtio0",
+      "canonical_path": "/sys/devices/pci0000:00/0000:00:02.0/virtio0",
+      "sysfs_device": "22",
+      "sysfs_inode": "1780",
+      "device_id": 24,
+      "vendor_id": 6900,
+      "driver_path": "/sys/bus/virtio/drivers/virtio_mem",
+      "address": "4294967296",
+      "maximum_region_bytes": "4026531840",
+      "not_independently_observed": [
+        "device_block_size",
+        "device_nid"
+      ],
+      "all_sources_closed": false,
+      "normal_decrease_authorized": false
+    },
+    "same_bytes_inode_rejected": true,
+    "stable_id": "PG17-S-MEMORY-ORIGIN-WIRE-GUEST-001"
+  },
+  "native_docker_exit": 0,
+  "native_OOMKilled": false,
+  "unique_QEMU_Wait_exit": 0,
+  "Host_API_Source_is_model": true,
+  "actual_KVM": true,
+  "PG_started": false,
+  "formal_Bootstrap_started": false,
+  "all_future_writers_closed": false,
+  "normal_decrease_authorized": false,
+  "E": 0
+}

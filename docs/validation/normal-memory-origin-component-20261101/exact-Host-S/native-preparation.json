@@ -1,0 +1,41 @@
+{
+  "scope": "new exact Host private source actual KVM only; new Guest producer not run; no Source/normal/E",
+  "old_Guest_source": "/data/neon-build/validation/initial-lifecycle-native-20261031T181834Z/cohort.json",
+  "old_Guest_source_sha256": "96971ca8750945b5282f167ac57df4fe019f72ac6d80f65959efdd489f3f8289",
+  "old_Guest_source_count": 785,
+  "old_Guest_base": "12ed1ad6aa9e7e4ac3065eeef1e0ec75c2be8c03",
+  "old_Guest_ELF_sha256": "cee4c45f0aec51b2080cc0e93ee9dff273841ff2820a0819b1f81fc0f62739ba",
+  "old_compile_rc": "0",
+  "new_Host_ELF": "pending actual compile receipt",
+  "QEMU_image": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+  "QEMU_tools": "36\n34\n8d8d8ee83471749d0b882ce34344638e0ac0fa2390cd822b98d9b6314e2f9cb5  /usr/bin/qemu-system-x86_64\nQEMU emulator version 8.1.5\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers\n",
+  "kernel_path": "/data/neon-build/validation/normal-split-kernel-20261030T224843Z/export",
+  "kernel_actual_sha256": {
+    "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+    "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+  },
+  "init_old_sha256": "1b3ab0cf4c81418dfe8bec2ec9d359421de988299355b8403a129ac434daaca4",
+  "init_new_sha256": "d0934e80d0813c5c8d5742d8c01f8c0bacf7bc0849fbd3f22e83e01a6879d74f",
+  "new_initramfs_sha256": "bab7dc4f28776332c92904c2125ac430c89daf112c962b38d23ea54ba1271778",
+  "old_Guest_tool_unchanged": true,
+  "new_state_before_sha256": "72da281b261f3adbd519f315fead583be47ef3a6f61c1e641ededa94e6294571",
+  "Host_network_or_cgroup_changes": false,
+  "normal_qualified": false,
+  "E": 0,
+  "this_precise_Host_source": "/data/neon-build/validation/normal-memory-origin-v2-20261031T225813Z-ec5ace/source-lock.json",
+  "Host_ELF_sha256": "7881f5f3de924565e7d9680cb1f0fceee8aab44322d4ea59301f5f9da214b92d",
+  "cached_Guest_tool_source": "/data/neon-build/validation/normal-memory-origin-native-host-20261031T223809Z-8e7024/native-preparation.json",
+  "actual_Guest_ELF_sha256": "cee4c45f0aec51b2080cc0e93ee9dff273841ff2820a0819b1f81fc0f62739ba",
+  "all_six_exported_ISO_assets_exact_equal": true,
+  "assets_sha256": {
+    "dsga-normal-split.json": "f40b22189be55d8bd857d415e1aba3bbdfa7e35379f2678831e60eee8b954ccb",
+    "dsga-physical-kernel.json": "004e15f66356d10a928a1c1e1f97d97ddc8099e15a9da48e0afec4756d6f3f82",
+    "dsga-resource.json": "f621889da462070435b759521bf9a5f9a8bd54f7a4883ca1f702056a8f5445a7",
+    "dsga-pre-system.json": "13de192705b1a5847b9091f601eea40cc62f803539f4abbee7e96ea7c981978e",
+    "dsga-native-birth.json": "020767b64a0335916a0812bc100a4a9368bf9076b3793f6d09980bdf1b365352",
+    "dsga-kernel-bootstrap.json": "91870f67fbeea7b34db879560549aed9a3ddc5cbfb52039877608aa4c658659c"
+  },
+  "runtime_ISO_sha256": "bc95fa81c80ebd654add979266871660e1993bc80b8be1afb13eb40de780074c",
+  "Guest_new6_7_executed": false
+}

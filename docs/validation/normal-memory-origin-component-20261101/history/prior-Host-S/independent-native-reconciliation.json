@@ -1,0 +1,97 @@
+{
+  "native_result": {
+    "native_exit": 0,
+    "pass": true,
+    "seconds": 20.07539769099094,
+    "normal_qualified": false,
+    "E": 0,
+    "scope": "Host new opaque memory origin actual KVM/QMP component; Guest new6/7 NOT_RUN"
+  },
+  "geometry": {
+    "Identity": {
+      "vm_uid": "vm-uid",
+      "incarnation": "0123456789abcdef0123456789abcdef",
+      "runner_pod_uid": "pod-uid",
+      "runner_boot_id": "a1a8031f4cae19ef86239f46eb44e58c",
+      "node_uid": "node-uid",
+      "minimum_bytes": "1073741824",
+      "maximum_bytes": "4294967296",
+      "block_bytes": "8388608"
+    },
+    "BaseBytes": "268435456",
+    "BackendBytes": "4026531840",
+    "MaximumBytes": "4294967296",
+    "RequestedBytes": "1073741824",
+    "ActualBytes": "1073741824",
+    "DeviceAddress": "4294967296",
+    "QEMUVersion": [
+      8,
+      1,
+      5
+    ]
+  },
+  "actual_QEMU_reference": {
+    "pid": 12,
+    "start_ticks": 13906704,
+    "executable_device": 143,
+    "executable_inode": 5918512,
+    "executable_sha256": "8d8d8ee83471749d0b882ce34344638e0ac0fa2390cd822b98d9b6314e2f9cb5",
+    "command_sha256": "e04f1ac5b85e5c7888ad82c46b5e1a011fa239f256ad4949ffdf8c1e5b599789",
+    "launch_nonce": "bd0dd027b7576dbe6a2b8e9f87749e95"
+  },
+  "max_vcpus": 2,
+  "raw_return_lengths": {
+    "version": 61,
+    "machine": 55,
+    "devices": 204,
+    "summary": 55,
+    "backends": 314,
+    "backend_size": 10
+  },
+  "raw_return_sha256": {
+    "version": "7bc76b968b91054804f6d5ff939e438ca1a6eb702ab5f12b59662db144a670f1",
+    "machine": "47fce74e2973909369470fcefef96658c5b4872c338345e8171d9220ecc19355",
+    "devices": "b7c31fae6c13d9b63e9e0fbe24b4d5765a68e33b5d9bd45c97c79bea0a997e32",
+    "summary": "a6cd94a0305bf862d2324649fefb164193a4f4bcb6d2102114dfdc0264ebb0d5",
+    "backends": "b292da5bd80e858f25f6aca69166b27e728d1792d632c2673572083f11d29e62",
+    "backend_size": "557a568ced553c5cc2ca6a88db33bbe9cc324209ea35d6b463629d6822e56803"
+  },
+  "actual_backends": [
+    {
+      "share": false,
+      "reserve": true,
+      "prealloc": false,
+      "host-nodes": [],
+      "size": 4026531840,
+      "merge": true,
+      "dump": true,
+      "policy": "default",
+      "id": "vmem0"
+    },
+    {
+      "share": false,
+      "reserve": true,
+      "prealloc": false,
+      "host-nodes": [],
+      "size": 268435456,
+      "merge": true,
+      "dump": true,
+      "policy": "default",
+      "id": "pc.ram"
+    }
+  ],
+  "actual_query_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "Host_actual_source_count": 3457,
+  "Host_source_drift": [],
+  "container_exit": 0,
+  "container_memory": 4294967296,
+  "container_memory_swap": 4294967296,
+  "container_CPUquota": 0,
+  "container_NanoCpus": 2000000000,
+  "container_network": "none",
+  "kernel_console_hash": "3dcbca82c409dd3b880e84caa6ce0e94838fae9f0cd93dc4e3d73606e8a19016",
+  "native_test_json": "plain original native.log single root pass; no test duplicate counted"
+}

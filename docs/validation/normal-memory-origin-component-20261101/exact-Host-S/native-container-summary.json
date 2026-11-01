@@ -1,0 +1,74 @@
+{
+  "Id": "1167821fdc4e14b8a3c249389b85e9f43444eadb5cf2e0a138c68270484ec954",
+  "Image": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+  "Path": "/native-host.test",
+  "Args": [
+    "-test.run=^TestNativeNormalMemoryOriginHostComponent$",
+    "-test.v",
+    "-test.count=1",
+    "-test.timeout=150s"
+  ],
+  "State": {
+    "Status": "exited",
+    "Running": false,
+    "Paused": false,
+    "Restarting": false,
+    "OOMKilled": false,
+    "Dead": false,
+    "Pid": 0,
+    "ExitCode": 0,
+    "Error": "",
+    "StartedAt": "2026-10-31T23:01:45.035086902Z",
+    "FinishedAt": "2026-10-31T23:02:03.338882198Z"
+  },
+  "HostConfig": {
+    "Memory": 4294967296,
+    "MemorySwap": 4294967296,
+    "NanoCpus": 2000000000,
+    "PidsLimit": 128,
+    "NetworkMode": "none",
+    "ReadonlyRootfs": true,
+    "CapDrop": [
+      "ALL"
+    ],
+    "CapAdd": [
+      "CAP_DAC_OVERRIDE",
+      "CAP_KILL",
+      "CAP_SETGID",
+      "CAP_SETUID",
+      "CAP_SYS_PTRACE"
+    ],
+    "SecurityOpt": [
+      "no-new-privileges"
+    ],
+    "Devices": [
+      {
+        "PathOnHost": "/dev/kvm",
+        "PathInContainer": "/dev/kvm",
+        "CgroupPermissions": "rwm"
+      }
+    ]
+  },
+  "safe_test_environment": [
+    "GOMAXPROCS=2",
+    "DSGA_INITIAL_HOST_NATIVE=qemu369-v1",
+    "DSGA_INITIAL_HOST_OUTPUT=/proof"
+  ],
+  "Mounts": [
+    {
+      "Source": "/data/neon-build/validation/normal-memory-origin-v2-20261031T225813Z-ec5ace",
+      "Destination": "/proof",
+      "RW": true
+    },
+    {
+      "Source": "/data/neon-build/validation/normal-memory-origin-v2-20261031T225813Z-ec5ace/receipt/host.test",
+      "Destination": "/native-host.test",
+      "RW": false
+    },
+    {
+      "Source": "/data/neon-build/validation/normal-split-kernel-20261030T224843Z/export",
+      "Destination": "/kernel",
+      "RW": false
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "new_U": [
+    {
+      "stable_id": "PG17-U-MEMORY-ORIGIN-001",
+      "root": "TestNormalMemoryOriginWirePreservesActualFramesAndBindings",
+      "result": "PASS",
+      "scope": "kernel/process/HostAPI model where stated; real Source syntax/started peer/WAL fsync"
+    },
+    {
+      "stable_id": "PG17-U-MEMORY-ORIGIN-002",
+      "root": "TestNormalMemoryOriginGeometryRejectsScalarAndBackendSubstitutes",
+      "result": "PASS",
+      "scope": "kernel/process/HostAPI model where stated; real Source syntax/started peer/WAL fsync"
+    },
+    {
+      "stable_id": "PG17-U-MEMORY-ORIGIN-003",
+      "root": "TestNormalMemoryOriginStrictScopeAndJSON",
+      "result": "PASS",
+      "scope": "kernel/process/HostAPI model where stated; real Source syntax/started peer/WAL fsync"
+    },
+    {
+      "stable_id": "PG17-U-MEMORY-ORIGIN-004",
+      "root": "TestNormalMemoryOriginFramesFailBeforePayloadAndNeverRetry",
+      "result": "PASS",
+      "scope": "kernel/process/HostAPI model where stated; real Source syntax/started peer/WAL fsync"
+    },
+    {
+      "stable_id": "PG17-U-MEMORY-ORIGIN-005",
+      "root": "TestNormalMemoryOriginRejectsAlternateByteArrayEncoding",
+      "result": "PASS",
+      "scope": "kernel/process/HostAPI model where stated; real Source syntax/started peer/WAL fsync"
+    },
+    {
+      "stable_id": "PG17-U-MEMORY-ORIGIN-006",
+      "root": "TestNormalMemoryOriginGuestRejectsUnboundInputsBeforeEffects",
+      "result": "PASS",
+      "scope": "kernel/process/HostAPI model where stated; real Source syntax/started peer/WAL fsync"
+    },
+    {
+      "stable_id": "PG17-U-MEMORY-ORIGIN-007",
+      "root": "TestNormalMemoryOriginGuestJournalDoesNotBorrowReplacedInode",
+      "result": "PASS",
+      "scope": "kernel/process/HostAPI model where stated; real Source syntax/started peer/WAL fsync"
+    },
+    {
+      "stable_id": "PG17-U-MEMORY-ORIGIN-008",
+      "root": "TestNormalMemoryOriginGuestRequiresExplicitImmutableSelector",
+      "result": "PASS",
+      "scope": "kernel/process/HostAPI model where stated; real Source syntax/started peer/WAL fsync"
+    },
+    {
+      "stable_id": "PG17-U-MEMORY-ORIGIN-009",
+      "root": "TestNormalMemoryOriginHostCrossDecoderAndOriginalGeometry",
+      "result": "PASS",
+      "scope": "kernel/process/HostAPI model where stated; real Source syntax/started peer/WAL fsync"
+    },
+    {
+      "stable_id": "PG17-U-MEMORY-ORIGIN-010",
+      "root": "TestNormalMemoryOriginHostWriteOnceAndIdentity",
+      "result": "PASS",
+      "scope": "kernel/process/HostAPI model where stated; real Source syntax/started peer/WAL fsync"
+    },
+    {
+      "stable_id": "PG17-U-MEMORY-ORIGIN-011",
+      "root": "TestNormalMemoryOriginHostOpaqueUsesRealStartedPeerAndWAL",
+      "result": "PASS",
+      "scope": "kernel/process/HostAPI model where stated; real Source syntax/started peer/WAL fsync"
+    }
+  ],
+  "direct_U": [
+    "TestNormalMemoryOriginPolicyVersionsRequireExplicitOriginalField",
+    "TestNormalMemoryOriginPlanOnlyDerivesFromExactRenderedISOAssets"
+  ],
+  "new_S": [
+    {
+      "stable_id": "PG17-S-MEMORY-ORIGIN-HOST-001",
+      "root": "TestNativeNormalMemoryOriginHostComponent",
+      "result": "PASS",
+      "scope": "actual369 KVM/QMP/runas/Host8WAL; API budget model; Guest new6/7 NOT_RUN",
+      "environments_or_attempts_do_not_add_coverage": true
+    }
+  ],
+  "E": 0,
+  "Guest_new_producer_positive": "NOT_RUN",
+  "production_hooks": "NOT_CONNECTED",
+  "normal_qualified": false
+}

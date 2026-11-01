@@ -1,0 +1,27 @@
+{
+  "compile_source_lock": "/data/neon-build/validation/normal-memory-origin-wire-attempt04-20261031T235111Z-a545d3/source-lock.json",
+  "compile_source_lock_sha256": "6a5d2023a9c4d06f6f6348094cca85634caa3840d8ea6fdd1af6048f5d8c5341",
+  "Host_ELF_SHA256": "2601d63a67bf4e461034f327d31252c200ff84150b4f52876f424ba653790bd9",
+  "Guest_ELF_SHA256": "3ed35461f78bff9a6c529638813f00e6e3551636db17883f04ac152fef1c42f9",
+  "init_sha256": "0f4a3821eff2d053a1e6f2e31e0558fa57a6bfb169108edec7d4524a1f0b37d5",
+  "initramfs_sha256": "dcb30a947b93c584c8d1169f912bf4e10fe614791bbab618bc640002833a0ca0",
+  "runtime_iso_sha256": "b13fd1b41548e62db1db16196c0d294507c275ac7e23fac4fe9903aaf7b89383",
+  "ISO_inputs": {
+    "dsga-kernel-bootstrap.json": "a95efe622078d4e41c89b8b301d58304c1aa9ccfd2a4fe9ffec1b8a1a91bb079",
+    "dsga-native-birth.json": "ddd8821c7e123288145fe7c509dc5f3a47e2138d6f467c8f9589622de0ceb4cf",
+    "dsga-normal-split.json": "525450fbc4fbe6df49bd9cf149917fde90292a40d273b7d695e4ad3d0993b763",
+    "dsga-physical-kernel.json": "580b0e63d048d14cd2355f6151d6ad1c60847a5f778282bc69e667c4a91090c4",
+    "dsga-pre-system.json": "0f1afcb5775b1dcd23db502d9b968b280635daa0eb35dc7fb1b355e07efdfedd",
+    "dsga-resource.json": "483862ce341a3a6036c79e82b72d7a1df2006bc670eaf83c7cb6205b8e64e825"
+  },
+  "kernel": {
+    "vmlinuz": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+    "kernel.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "kernel-notes.bin": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+  },
+  "iso_tool_source": "/data/neon-build/validation/normal-memory-origin-wire-attempt03-20261031T234538Z-b9855e/iso-tool-source-lock.json",
+  "iso_tool_ELF_SHA256": "23b8fb94bfa766b1170735ca910a336e3099642d0d76b91c4fdfcbe723a30c95",
+  "image": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+  "scope": "fresh Host+Guest real6/7 component after QMP fix; no PG/normal/E2E",
+  "prior_failure": "/data/neon-build/validation/normal-memory-origin-wire-native-20261031T234720Z-2ddcfc"
+}

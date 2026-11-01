@@ -348,7 +348,25 @@ func initialGuestProvisionInputs(s SourceConfig, raw []byte) (*Guard, error) {
 	}
 	return Open(s.Config)
 }
+
+// 旧内部夹具保留原1–5签名；真实入口总从原完整raw/资产派生opaque plan。
 func initialGuestExchange(ctx context.Context, port io.ReadWriter, g *Guard, c bootprotocol.InitialPrebootChallenge, recoverOriginal bool) error {
+	return initialGuestExchangeWithRequirements(ctx, port, g, c, recoverOriginal, RuntimeBootRequirements{})
+}
+func initialGuestExchangeWithRequirements(ctx context.Context, port io.ReadWriter, g *Guard, c bootprotocol.InitialPrebootChallenge, recoverOriginal bool, plan RuntimeBootRequirements) error {
+	if ctx == nil || ctx.Err() != nil || port == nil || g == nil || c.Validate() != nil {
+		return fmt.Errorf("live fixed original Guest exchange inputs required")
+	}
+	if plan.MemoryOriginProtocolVersion() > 1 {
+		return fmt.Errorf("unsupported original memory origin plan")
+	}
+	if plan.Enabled() && (plan.RuntimeDocumentSHA256() != c.RuntimeSHA256 || plan.ResourceSourceSHA256() != c.ResourceSHA256 || plan.ConfigSecretUID() != c.ConfigSecretUID || plan.KernelBuildReference().KernelArtifactSHA256 != c.KernelBuildSHA256 || plan.ProfileID() != NormalSplitV1PhysicalKernelProfileID) {
+		return fmt.Errorf("initial Guest plan differs from original full runtime")
+	}
+	if plan.MemoryOriginProtocolVersion() == 1 && !plan.Enabled() {
+		return fmt.Errorf("memory origin protocol lacks full original runtime plan")
+	}
+
 	var prepared bootprotocol.InitialPrebootReceipt
 	var e error
 	if recoverOriginal {
@@ -393,7 +411,14 @@ func initialGuestExchange(ctx context.Context, port io.ReadWriter, g *Guard, c b
 	if e != nil {
 		return e
 	}
-	return done.MatchReceipt(receipt)
+	if e = done.MatchReceipt(receipt); e != nil {
+		return e
+	}
+	if plan.MemoryOriginProtocolVersion() == 1 {
+		// 实际capture的ISO纵深门仍重复核selector，完整落盘/发7之后才可Provision。
+		return normalMemoryGuestExchange(ctx, port, g, prepared, receipt, done)
+	}
+	return nil
 }
 func runInitialBootGuest(ctx context.Context, recoverOriginal bool) error {
 	if ctx == nil || os.Getuid() != 0 || os.Geteuid() != 0 {
@@ -402,6 +427,10 @@ func runInitialBootGuest(ctx context.Context, recoverOriginal bool) error {
 	call, cancel := context.WithTimeout(ctx, initialGuestChannelLifetime)
 	defer cancel()
 	source, raw, assets, e := initialGuestChannelInputs()
+	if e != nil {
+		return e
+	}
+	plan, e := DeriveRuntimeBootRequirements(raw, assets)
 	if e != nil {
 		return e
 	}
@@ -431,13 +460,14 @@ func runInitialBootGuest(ctx context.Context, recoverOriginal bool) error {
 	if e != nil {
 		return e
 	}
-	if e = initialGuestExchange(call, port, g, challenge, recoverOriginal); e != nil {
+	if e = initialGuestExchangeWithRequirements(call, port, g, challenge, recoverOriginal, plan); e != nil {
+		return e
+	}
+	// 首次split必须先于Bootstrap journal；后者一旦存在，拓扑首次收养门须拒绝。
+	if _, e = g.PrepareNormalSplitTopology(call); e != nil {
 		return e
 	}
 	if _, e = ProvisionGuest(call); e != nil {
-		return e
-	}
-	if _, e = g.PrepareNormalSplitTopology(call); e != nil {
 		return e
 	}
 	// 初次内存握手不是服务/PG就绪；仍须原全量生产检查，不能以ACK替代。

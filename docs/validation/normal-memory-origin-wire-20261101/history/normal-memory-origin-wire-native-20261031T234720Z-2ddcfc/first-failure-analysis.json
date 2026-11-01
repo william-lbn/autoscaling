@@ -1,0 +1,50 @@
+{
+  "Host_result": "FAIL_preserved_nested_QMP_second_monitor_greeting",
+  "Guest_component_result": "PASS_actual_new6_7",
+  "Guest_marker_count": 1,
+  "Guest_result": {
+    "E": 0,
+    "Guest_boot": "437cbc60-7d42-4d14-8605-cfb07193d27f",
+    "Guest_source_sha256": "21f85c9a494d3be98e4963694ac62231ebf687caf2879f920fe2c5bf844e902e",
+    "actual_new6_7": true,
+    "explicit_recovery_passed": true,
+    "host_reference_sha256": "65ac98a3c12bcef38342b6e373d0ab36c207519df2aa9d39b1c4daace6b798a1",
+    "maximum_bytes": 4294967296,
+    "normal_authorized": false,
+    "region": {
+      "protocol_version": 1,
+      "scope": "guest-immutable-virtio-region-observation-only",
+      "reviewed_build_reference": {
+        "profile_id": "neon-linux-6.12.26-dsga-normal-split-v1",
+        "kernel_release": "6.12.26-william-normal-split-v1-e210f5e3ee94",
+        "kernel_artifact_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+        "kernel_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+        "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828"
+      },
+      "guest_boot_id": "437cbc60-7d42-4d14-8605-cfb07193d27f",
+      "device_name": "virtio0",
+      "canonical_path": "/sys/devices/pci0000:00/0000:00:02.0/virtio0",
+      "sysfs_device": "22",
+      "sysfs_inode": "1780",
+      "device_id": 24,
+      "vendor_id": 6900,
+      "driver_path": "/sys/bus/virtio/drivers/virtio_mem",
+      "address": "4294967296",
+      "maximum_region_bytes": "4026531840",
+      "not_independently_observed": [
+        "device_block_size",
+        "device_nid"
+      ],
+      "all_sources_closed": false,
+      "normal_decrease_authorized": false
+    },
+    "same_bytes_inode_rejected": true,
+    "stable_id": "PG17-S-MEMORY-ORIGIN-WIRE-GUEST-001"
+  },
+  "Guest_exit0_count": 1,
+  "source_lock_sha256": "36af6d6bd95c1210683aca6d686ab5d05b971c1df2dc942d6124157ec265e3f5",
+  "Host_wait_success": false,
+  "complete_run_pass": false,
+  "normal_authorized": false,
+  "E": 0
+}

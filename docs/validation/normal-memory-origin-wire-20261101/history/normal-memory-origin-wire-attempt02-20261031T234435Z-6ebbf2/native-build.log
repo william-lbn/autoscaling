@@ -1,0 +1,82 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.81kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 343B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [common 1/3] FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#5 resolve 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#5 resolve 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 0.0s done
+#5 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 55.27MB 0.7s done
+#4 DONE 0.8s
+
+#6 [common 2/3] WORKDIR /w
+#6 CACHED
+
+#7 [common 3/3] COPY . .
+#7 DONE 2.5s
+
+#8 [common 3/3] COPY . .
+#8 CACHED
+
+#9 [native 1/1] RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared set -eu; mkdir /out; sha256sum -c cohort.sha256 >/out/source-check.txt; cp cohort.sha256 /out/actual-source.sha256; set +e; go test -c -tags=dsga_native_initial_lifecycle,dsga_native_memory_origin_wire -o /out/host.test ./pkg/dsga/vmguard >/out/host-build.log 2>&1; echo $? >/out/host-build.rc; go test -c -tags=dsga_native_memory_origin_wire -o /out/guest.test ./pkg/dsga/resourceguard >/out/guest-build.log 2>&1; echo $? >/out/guest-build.rc;
+#9 0.170 sha256sum: .github/ISSUE_TEMPLATE/bug-template.md: No such file or directory
+#9 0.170 sha256sum: .github/ISSUE_TEMPLATE/epic-template.md: No such file or directory
+#9 0.170 sha256sum: .github/ISSUE_TEMPLATE/feature-request-template.md: No such file or directory
+#9 0.170 sha256sum: .github/ISSUE_TEMPLATE/improvement-template.md: No such file or directory
+#9 0.170 sha256sum: .github/actionlint.yml: No such file or directory
+#9 0.170 sha256sum: .github/actions/deps-versions/action.yml: No such file or directory
+#9 0.170 sha256sum: .github/actions/dockerhub-setup/action.yml: No such file or directory
+#9 0.170 sha256sum: .github/scripts/generate_image_maps.py: No such file or directory
+#9 0.170 sha256sum: .github/scripts/push_with_image_map.py: No such file or directory
+#9 0.170 sha256sum: .github/upstream-workflows/_push-to-container-registry.yml: No such file or directory
+#9 0.170 sha256sum: .github/upstream-workflows/approved-for-ci-run.yml: No such file or directory
+#9 0.170 sha256sum: .github/upstream-workflows/build-images.yaml: No such file or directory
+#9 0.170 sha256sum: .github/upstream-workflows/build-test-vm.yaml: No such file or directory
+#9 0.170 sha256sum: .github/upstream-workflows/e2e-test.yaml: No such file or directory
+#9 0.170 sha256sum: .github/upstream-workflows/lint.yml: No such file or directory
+#9 0.171 sha256sum: .github/upstream-workflows/pr-format-verification.yml: No such file or directory
+#9 0.171 sha256sum: .github/upstream-workflows/release.yaml: No such file or directory
+#9 0.171 sha256sum: .github/upstream-workflows/report-workflow-stats-batch.yml: No such file or directory
+#9 0.171 sha256sum: .github/upstream-workflows/test.yaml: No such file or directory
+#9 0.171 sha256sum: .github/upstream-workflows/vm-example.yaml: No such file or directory
+#9 0.171 sha256sum: .github/upstream-workflows/vm-kernel.yaml: No such file or directory
+#9 0.171 sha256sum: .github/workflows/dockerhub.yml: No such file or directory
+#9 0.171 sha256sum: .github/workflows/pull-request.yml: No such file or directory
+#9 0.467 sha256sum: WARNING: 23 listed files could not be read
+#9 ERROR: process "/bin/bash -euo pipefail -c set -eu; mkdir /out; sha256sum -c cohort.sha256 >/out/source-check.txt; cp cohort.sha256 /out/actual-source.sha256; set +e; go test -c -tags=dsga_native_initial_lifecycle,dsga_native_memory_origin_wire -o /out/host.test ./pkg/dsga/vmguard >/out/host-build.log 2>&1; echo $? >/out/host-build.rc; go test -c -tags=dsga_native_memory_origin_wire -o /out/guest.test ./pkg/dsga/resourceguard >/out/guest-build.log 2>&1; echo $? >/out/guest-build.rc;" did not complete successfully: exit code: 1
+------
+ > [native 1/1] RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared set -eu; mkdir /out; sha256sum -c cohort.sha256 >/out/source-check.txt; cp cohort.sha256 /out/actual-source.sha256; set +e; go test -c -tags=dsga_native_initial_lifecycle,dsga_native_memory_origin_wire -o /out/host.test ./pkg/dsga/vmguard >/out/host-build.log 2>&1; echo $? >/out/host-build.rc; go test -c -tags=dsga_native_memory_origin_wire -o /out/guest.test ./pkg/dsga/resourceguard >/out/guest-build.log 2>&1; echo $? >/out/guest-build.rc;:
+0.170 sha256sum: .github/upstream-workflows/lint.yml: No such file or directory
+0.171 sha256sum: .github/upstream-workflows/pr-format-verification.yml: No such file or directory
+0.171 sha256sum: .github/upstream-workflows/release.yaml: No such file or directory
+0.171 sha256sum: .github/upstream-workflows/report-workflow-stats-batch.yml: No such file or directory
+0.171 sha256sum: .github/upstream-workflows/test.yaml: No such file or directory
+0.171 sha256sum: .github/upstream-workflows/vm-example.yaml: No such file or directory
+0.171 sha256sum: .github/upstream-workflows/vm-kernel.yaml: No such file or directory
+0.171 sha256sum: .github/workflows/dockerhub.yml: No such file or directory
+0.171 sha256sum: .github/workflows/pull-request.yml: No such file or directory
+0.467 sha256sum: WARNING: 23 listed files could not be read
+------
+Dockerfile:12
+--------------------
+  10 |     FROM common AS native
+  11 |     ENV CGO_ENABLED=0
+  12 | >>> RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared set -eu; mkdir /out; sha256sum -c cohort.sha256 >/out/source-check.txt; cp cohort.sha256 /out/actual-source.sha256; set +e; go test -c -tags=dsga_native_initial_lifecycle,dsga_native_memory_origin_wire -o /out/host.test ./pkg/dsga/vmguard >/out/host-build.log 2>&1; echo $? >/out/host-build.rc; go test -c -tags=dsga_native_memory_origin_wire -o /out/guest.test ./pkg/dsga/resourceguard >/out/guest-build.log 2>&1; echo $? >/out/guest-build.rc;
+  13 |     FROM scratch AS nativereceipt
+  14 |     COPY --from=native /out/ /
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/bash -euo pipefail -c set -eu; mkdir /out; sha256sum -c cohort.sha256 >/out/source-check.txt; cp cohort.sha256 /out/actual-source.sha256; set +e; go test -c -tags=dsga_native_initial_lifecycle,dsga_native_memory_origin_wire -o /out/host.test ./pkg/dsga/vmguard >/out/host-build.log 2>&1; echo $? >/out/host-build.rc; go test -c -tags=dsga_native_memory_origin_wire -o /out/guest.test ./pkg/dsga/resourceguard >/out/guest-build.log 2>&1; echo $? >/out/guest-build.rc;" did not complete successfully: exit code: 1

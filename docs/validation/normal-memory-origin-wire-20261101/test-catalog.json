@@ -1,0 +1,383 @@
+{
+  "new_tests": [
+    {
+      "id": "PG17-U-MEMORY-WIRE-001",
+      "kind": "U_MODEL",
+      "test": "TestNormalMemoryIntegrationHoldsOpaqueOnlyAfterDurableAck",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "result": "PASS",
+      "elapsed": 23.37,
+      "subcases": []
+    },
+    {
+      "id": "PG17-U-MEMORY-WIRE-002",
+      "kind": "U_MODEL",
+      "test": "TestNormalMemoryIntegrationRejectsForeignPartialOrMissingAck",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "result": "PASS",
+      "elapsed": 55.56,
+      "subcases": [
+        "TestNormalMemoryIntegrationRejectsForeignPartialOrMissingAck/bad-ack-source",
+        "TestNormalMemoryIntegrationRejectsForeignPartialOrMissingAck/partial-ack",
+        "TestNormalMemoryIntegrationRejectsForeignPartialOrMissingAck/missing-ack"
+      ]
+    },
+    {
+      "id": "PG17-U-MEMORY-WIRE-003",
+      "kind": "U_MODEL",
+      "test": "TestNormalMemorySingleMonitorRequiresFirstConnectionClosed",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "result": "PASS",
+      "elapsed": 0.16,
+      "subcases": []
+    },
+    {
+      "id": "PG17-U-MEMORY-WIRE-004",
+      "kind": "U_MODEL",
+      "test": "TestNormalMemoryExchangePlanMustMatchOriginalBeforeEffects",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "result": "PASS",
+      "elapsed": 0.04,
+      "subcases": [
+        "TestNormalMemoryExchangePlanMustMatchOriginalBeforeEffects/runtime",
+        "TestNormalMemoryExchangePlanMustMatchOriginalBeforeEffects/resource",
+        "TestNormalMemoryExchangePlanMustMatchOriginalBeforeEffects/secret",
+        "TestNormalMemoryExchangePlanMustMatchOriginalBeforeEffects/build",
+        "TestNormalMemoryExchangePlanMustMatchOriginalBeforeEffects/unsupported"
+      ]
+    },
+    {
+      "id": "PG17-U-MEMORY-WIRE-005",
+      "kind": "U_MODEL",
+      "test": "TestNormalMemoryExchangeRejectsMissingOriginalEndpoint",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "result": "PASS",
+      "elapsed": 0.02,
+      "subcases": []
+    },
+    {
+      "id": "PG17-U-MEMORY-WIRE-006",
+      "kind": "U_MODEL",
+      "test": "TestNormalMemoryInitialSplitMustPrecedePersistentBootstrap",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "result": "PASS",
+      "elapsed": 0.18,
+      "subcases": [
+        "TestNormalMemoryInitialSplitMustPrecedePersistentBootstrap/bootstrap-first-must-reject-new-split",
+        "TestNormalMemoryInitialSplitMustPrecedePersistentBootstrap/split-first-preserves-both-originals"
+      ]
+    },
+    {
+      "id": "PG17-S-MEMORY-ORIGIN-WIRE-HOST-001",
+      "kind": "S_COMPONENT",
+      "test": "TestNativeNormalMemoryOriginWireComponent",
+      "result": "PASS",
+      "accurate_kernel": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+      "scope": "memory source only; no PG/formal Bootstrap/normal/E2E"
+    },
+    {
+      "id": "PG17-S-MEMORY-ORIGIN-WIRE-GUEST-001",
+      "kind": "S_COMPONENT",
+      "test": "TestNativeNormalMemoryOriginGuestWireComponent",
+      "result": "PASS",
+      "accurate_kernel": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+      "scope": "memory source only; no PG/formal Bootstrap/normal/E2E"
+    }
+  ],
+  "direct_ordinary_regression_roots": 51,
+  "actual_ordinary_roots": 57,
+  "actual_ordinary_subcases": 248,
+  "new_U_roots": 6,
+  "new_U_subcases": 10,
+  "new_S_component_roots": 2,
+  "E": 0,
+  "fail": 0,
+  "skip": 0,
+  "all_ordinary_roots": [
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "test": "TestInitialPrebootFramesRoundTrip",
+      "elapsed": 0
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "test": "TestInitialPrebootFramesRejectHeaderBeforePayload",
+      "elapsed": 0
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "test": "TestInitialPrebootFramesPartialNeverRetry",
+      "elapsed": 0
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "test": "TestInitialPrebootFramesStrictBodyAndKinds",
+      "elapsed": 0
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "test": "TestInitialMovableWireHistoricalAndCurrentRoot",
+      "elapsed": 0.01
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "test": "TestInitialMovableWireRejectsDrift",
+      "elapsed": 0.01
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "test": "TestInitialMovableWireRejectsAmbiguityAndStage",
+      "elapsed": 0.01
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "test": "TestNormalMemoryOriginWirePreservesActualFramesAndBindings",
+      "elapsed": 0.02
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "test": "TestNormalMemoryOriginGeometryRejectsScalarAndBackendSubstitutes",
+      "elapsed": 0.03
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "test": "TestNormalMemoryOriginStrictScopeAndJSON",
+      "elapsed": 0.04
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "test": "TestNormalMemoryOriginFramesFailBeforePayloadAndNeverRetry",
+      "elapsed": 0
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "test": "TestNormalMemoryOriginRejectsAlternateByteArrayEncoding",
+      "elapsed": 0.01
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "test": "TestInitialPrebootProtocolBinding",
+      "elapsed": 0
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "test": "TestInitialPrebootProtocolRejectsInvalid",
+      "elapsed": 0
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "test": "TestInitialPrebootProtocolStrictWire",
+      "elapsed": 0.01
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestInitialGuestChannelRejectsDeviceAliases",
+      "elapsed": 0
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestInitialGuestChannelStreamPartialAndEOF",
+      "elapsed": 0
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestInitialGuestChannelUnconnectedAndBlockedCancel",
+      "elapsed": 0.04
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestInitialGuestChannelOnlyRetriesMissingMovablePages",
+      "elapsed": 0.17
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestInitialPrebootGuestSourceBinding",
+      "elapsed": 0.04
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestInitialPrebootGuestRejectsSourceDrift",
+      "elapsed": 0.46
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestInitialPrebootGuestHistoricalCompletion",
+      "elapsed": 0.14
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestInitialPrebootGuestMovableGeometry",
+      "elapsed": 0.13
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestInitialPrebootGuestPrivateWitnessKey",
+      "elapsed": 0.48
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestNormalMemoryExchangePlanMustMatchOriginalBeforeEffects",
+      "elapsed": 0.04
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestNormalMemoryExchangeRejectsMissingOriginalEndpoint",
+      "elapsed": 0.02
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestNormalMemoryInitialSplitMustPrecedePersistentBootstrap",
+      "elapsed": 0.18
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestNormalMemoryOriginPolicyVersionsRequireExplicitOriginalField",
+      "elapsed": 0.01
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestNormalMemoryOriginPlanOnlyDerivesFromExactRenderedISOAssets",
+      "elapsed": 0.11
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestNormalMemoryOriginGuestRejectsUnboundInputsBeforeEffects",
+      "elapsed": 0
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestNormalMemoryOriginGuestJournalDoesNotBorrowReplacedInode",
+      "elapsed": 0
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "test": "TestNormalMemoryOriginGuestRequiresExplicitImmutableSelector",
+      "elapsed": 0.08
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialLifecycleHostConsumerWholeModelChain",
+      "elapsed": 18.25
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialLifecycleUncertainGrowNeverRepeats",
+      "elapsed": 9.33
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialLifecycleForeignReceiptAndCancellationCloseOriginal",
+      "elapsed": 14.54
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialLifecycleWireVersionsAndLegacyBytes",
+      "elapsed": 0.14
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialLifecycleRejectsBalloonAndExternalCommandSurfaces",
+      "elapsed": 0.96
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialLifecycleRejectsActualBalloonAndCPUInventory",
+      "elapsed": 8.74
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialBootstrapV2FrozenBaseAndBusinessBounds",
+      "elapsed": 0.32
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialBootstrapV2OriginalChildPidfdLifecycleAndWrongPeer",
+      "elapsed": 0.19
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialBootstrapV2ActualReadersBindOriginalSources",
+      "elapsed": 0.33
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialBootstrapV2RejectsSourceReplacementAndMissingClosure",
+      "elapsed": 2.59
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialBootstrapV2WALOriginalNonceAndNoAdoption",
+      "elapsed": 0.36
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialBootstrapV2WALRejectsCorruptionAndPartialFacts",
+      "elapsed": 4.2
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialBootstrapV2WALLockCancellationAndWriteFailure",
+      "elapsed": 0.49
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialBootTransportOriginalPeerFlow",
+      "elapsed": 16.6
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialBootTransportRejectsWrongPeerAndCancellation",
+      "elapsed": 1.1
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestInitialBootTransportRejectsSourceAndPhase",
+      "elapsed": 2.21
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestOriginalMemoryGeometryDecodesActualQEMUSchema",
+      "elapsed": 0
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestOriginalMemoryGeometryRejectsIncompleteOrChangedSources",
+      "elapsed": 0.03
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestOriginalMemoryGeometryUnixReadsOnlyAndBoundsFrames",
+      "elapsed": 0
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestNormalMemoryIntegrationHoldsOpaqueOnlyAfterDurableAck",
+      "elapsed": 23.37
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestNormalMemoryIntegrationRejectsForeignPartialOrMissingAck",
+      "elapsed": 55.56
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestNormalMemorySingleMonitorRequiresFirstConnectionClosed",
+      "elapsed": 0.16
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestNormalMemoryOriginHostCrossDecoderAndOriginalGeometry",
+      "elapsed": 0
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestNormalMemoryOriginHostWriteOnceAndIdentity",
+      "elapsed": 0.02
+    },
+    {
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "test": "TestNormalMemoryOriginHostOpaqueUsesRealStartedPeerAndWAL",
+      "elapsed": 19.48
+    }
+  ]
+}

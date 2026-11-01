@@ -1,0 +1,19 @@
+{
+  "image": "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+  "command": [
+    "docker",
+    "run",
+    "--rm",
+    "--pull=never",
+    "--network",
+    "none",
+    "--entrypoint",
+    "/bin/sh",
+    "127.0.0.1:5001/neon/neonvm-runner@sha256:f170364ea02fc54d08523226e8616b1ef1c4097a6a2cc5b3a66db7756ef5df9e",
+    "-c",
+    "id -u qemu; id -g qemu; sha256sum /usr/bin/qemu-system-x86_64; /usr/bin/qemu-system-x86_64 --version"
+  ],
+  "rc": 0,
+  "stdout": "36\n34\n8d8d8ee83471749d0b882ce34344638e0ac0fa2390cd822b98d9b6314e2f9cb5  /usr/bin/qemu-system-x86_64\nQEMU emulator version 8.1.5\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers\n",
+  "stderr": ""
+}

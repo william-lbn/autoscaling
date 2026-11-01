@@ -1,0 +1,22 @@
+{
+  "extractor_rc": 0,
+  "files": {
+    "state/initial-preboot-guest.complete.json": "c6665109d37b7c80f9b576c625600913118d32b8ef25c4a7ff20444c12f76436",
+    "state/initial-preboot-guest.intent.json": "e37c4b22e58a9522ef940d2501a6d9c8046bd14e3217c42417c0ab3bf91d4f11",
+    "state/kernel-bootstrap-complete.json": "aa7534d67881f2fd1ec6e0e76301d84679294989b59d1445366dd524b34c7d88",
+    "state/kernel-bootstrap-intent.json": "07a856cf9f48c7df7752b4d58c27664f949ba28a2bae03a5993554cd4542f4b4",
+    "state/lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "state/normal-memory-origin.complete.json": "d66573b101670f536de7e3bde2d7f32a6077f8fa3efca15000814b048ba05bcd",
+    "state/normal-memory-origin.intent.json": "b43516c43a4bc570cb63f7d9802e79a3a92d770549a917bed74d178b3a6ad22e",
+    "state/physical-kernel-origin.confirmed.json": "4aab9cc05abcc0a86952a7c0947c2030a1af4f9fd1e6af47ded019131996be35",
+    "state/physical-kernel-origin.json": "0d98bb9f31e9d432bef78578437e075ddfbef5c78061801e57392f482f095b2f",
+    "state/pre-bootstrap-system.complete.json": "aa7757fb45bde6479d28ddddf819ca6043f955470867fb2bd89e92c6daba982f",
+    "state/pre-bootstrap-system.intent.json": "fc97511088087bc3e3a05875bdf0e32f82432e709ef00c6919f35da06bae013e"
+  },
+  "memory_source_files": [
+    "state/normal-memory-origin.complete.json",
+    "state/normal-memory-origin.intent.json"
+  ],
+  "prior_extract": "ENV-only export target directory absent; original log preserved",
+  "all_vm_processes_exited_before_readonly_extract": true
+}

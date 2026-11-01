@@ -1,0 +1,5 @@
+Root后续唯一shared hooks：
+Host initial_bootstrap_lifecycle_linux.go原channel.complete位置：从固定原runtime opaque plan派生getter==1才在同原engine flock+processGuardRLock captureNormalMemoryHostOriginLocked(ctx,s,l,proof)，然后channel.completeWithNormalMemoryOrigin(ctx,s,origin)；成功持久Guest ACK才ready/允许Tick。getter0沿原complete，不隐式capture或发6/7。
+Guest initial_preboot_channel_linux.go原done.MatchReceipt后、正式Provision前：同固定ISO getter1调normalMemoryGuestExchange(ctx,port,g,prepared,receipt,done)，其完整持久才返回；getter0沿旧结束。
+Host opaque对象应由原lifecycle持有，后续同锁调用recheckLocked；Guest后续消费者可显式recoverNormalMemoryOriginLocked取得本Root对象，不能把Observe/可见日志自动当恢复。完整authority尚须System/FS/角色opaque写者来源和Host原生命周期，一律不接受trusted bool。
+上述共享文件不由本子代理修改，本归档不是hooks已执行。

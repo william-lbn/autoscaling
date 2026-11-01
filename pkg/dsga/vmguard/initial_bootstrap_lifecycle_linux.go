@@ -34,6 +34,7 @@ type linuxInitialLifecycle struct {
 	source       *initialBootSource
 	process      *initialBootProcess
 	ready        *InitialBootstrapPublication
+	memoryOrigin *normalMemoryHostOriginSource
 	stopped      bool
 }
 
@@ -325,10 +326,26 @@ func (l *linuxInitialLifecycle) drive(ctx context.Context) error {
 		if e = validateInitialLifecyclePublication(l.r.birth, l.r.engine.binding, *proof); e != nil {
 			return e
 		}
-		if e = channel.complete(ctx, complete); e != nil {
+		// 原ISO明确选择新来源协议才发kind6/7；旧profile仍走原kind5并关闭。
+		selection, e := normalMemoryHostSelection(l.config.RuntimeJSON, source)
+		if e != nil {
 			return e
 		}
+		var memoryOrigin *normalMemoryHostOriginSource
+		if selection == 1 {
+			memoryOrigin, e = captureNormalMemoryHostOriginLocked(ctx, s, l, proof)
+			if e != nil {
+				return e
+			}
+			if _, e = channel.completeWithNormalMemoryOrigin(ctx, s, memoryOrigin); e != nil {
+				return e
+			}
+		} else if e = channel.complete(ctx, complete); e != nil {
+			return e
+		}
+		// 原ACK与Host journal已成功持久后才持有opaque来源/开放既有ready。
 		l.mu.Lock()
+		l.memoryOrigin = memoryOrigin
 		l.ready = proof
 		l.mu.Unlock()
 		return nil

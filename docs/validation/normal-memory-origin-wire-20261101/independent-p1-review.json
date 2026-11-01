@@ -1,0 +1,164 @@
+{
+  "result": "PASS_COMPONENT_SCOPE_ONLY",
+  "reviewer": "p1_barrier_review",
+  "reviewed_at_utc": "2026-11-01T00:11:27.386992+00:00",
+  "source14": [
+    {
+      "path": "pkg/dsga/bootprotocol/normal_memory_origin.go",
+      "sha256": "983097923d1de2a5960ce236ba758282218f0d3145afa046cbf105604f4f4500",
+      "current_matches_actual_native_snapshot": true
+    },
+    {
+      "path": "pkg/dsga/bootprotocol/normal_memory_geometry.go",
+      "sha256": "c716ce3513f840036ec8ef402f694c8c8c08cf1c80e4f181dedc2891684e1d30",
+      "current_matches_actual_native_snapshot": true
+    },
+    {
+      "path": "pkg/dsga/bootprotocol/normal_memory_origin_test.go",
+      "sha256": "05c8208cd9d872486828d5711a9fb872d111c638da3d5af5e7f03858b8b63538",
+      "current_matches_actual_native_snapshot": true
+    },
+    {
+      "path": "pkg/dsga/vmguard/normal_memory_origin_source_linux.go",
+      "sha256": "d47aef95b2a1e578bf060067b3b0b7fbd92a78bbcf922c28f62d4ef8d7296bbe",
+      "current_matches_actual_native_snapshot": true
+    },
+    {
+      "path": "pkg/dsga/vmguard/normal_memory_origin_source_linux_test.go",
+      "sha256": "59cd78754c319a9d15f8d5a6a0b693d4a69f510e5d8a2d33d4a4376c4fa50021",
+      "current_matches_actual_native_snapshot": true
+    },
+    {
+      "path": "pkg/dsga/resourceguard/normal_memory_origin_source_linux.go",
+      "sha256": "f9d39f3460a9297b8bcdde056e7d5e8ca765c6c909f4379c60752751e3b1603b",
+      "current_matches_actual_native_snapshot": true
+    },
+    {
+      "path": "pkg/dsga/resourceguard/normal_memory_origin_source_linux_test.go",
+      "sha256": "c2980c7619cd37b3dbb836848a427ff4f2bb144a8af8e71f6f68696e32da3952",
+      "current_matches_actual_native_snapshot": true
+    },
+    {
+      "path": "pkg/dsga/vmguard/normal_memory_origin_source_native_test.go",
+      "sha256": "dfcb5001e885e85b72c01727aae43e83350f04184ffbd44c05120597f6103bd3",
+      "current_matches_actual_native_snapshot": true
+    },
+    {
+      "path": "pkg/dsga/vmguard/initial_bootstrap_lifecycle_linux.go",
+      "sha256": "b5fa846604462618d47019173389f929e1f7ac0c62daca3c5d293a30668692d8",
+      "current_matches_actual_native_snapshot": true
+    },
+    {
+      "path": "pkg/dsga/resourceguard/initial_preboot_channel_linux.go",
+      "sha256": "5baaf08d1dc2e7eb1396d547863dfc2bb31070455f528218c3372aa107e46523",
+      "current_matches_actual_native_snapshot": true
+    },
+    {
+      "path": "pkg/dsga/vmguard/normal_memory_origin_integration_test.go",
+      "sha256": "0008b5c303ec09e5ebfba7db676898b32f353617cf40fef8e6b06051baa7e372",
+      "current_matches_actual_native_snapshot": true
+    },
+    {
+      "path": "pkg/dsga/resourceguard/normal_memory_origin_exchange_test.go",
+      "sha256": "63ceca2a0a16eb982ffda3676cec8ff38dca074ead27eab5929107505d3765b7",
+      "current_matches_actual_native_snapshot": true
+    },
+    {
+      "path": "pkg/dsga/vmguard/normal_memory_origin_wire_native_test.go",
+      "sha256": "4268e1cee5151506396458efd0304381a95a20a5fda3aee63b7cde5bd986307d",
+      "current_matches_actual_native_snapshot": true
+    },
+    {
+      "path": "pkg/dsga/resourceguard/normal_memory_origin_wire_native_test.go",
+      "sha256": "e69dd21cdcf6031d34cdad0ab728cf8d0a855ab1f68ad4c8897a8da522840d5d",
+      "current_matches_actual_native_snapshot": true
+    }
+  ],
+  "blocking_findings": [],
+  "checks": [
+    {
+      "area": "typed wire / geometry",
+      "finding": "严格固定帧与字段、六份原QMP输入双decoder；base/maximum/backend/address与固定ISO选择相互核对。纯协议对象不授资格。",
+      "paths": [
+        "pkg/dsga/bootprotocol/normal_memory_origin.go",
+        "pkg/dsga/bootprotocol/normal_memory_geometry.go"
+      ]
+    },
+    {
+      "area": "Host original provenance / persistence",
+      "finding": "原spawn process/pidfd与QMP peer，原8WAL文件身份/完整字节，固定runtime raw及opaque selection；Host引用持久后发6，ACK7准确匹配并持久后才发布opaque/ready。partial/missing/foreign ACK不重发QMP。",
+      "lines": [
+        "vmguard/normal_memory_origin_source_linux.go:83",
+        "vmguard/normal_memory_origin_source_linux.go:194",
+        "vmguard/normal_memory_origin_source_linux.go:254",
+        "vmguard/initial_bootstrap_lifecycle_linux.go:329"
+      ]
+    },
+    {
+      "area": "QMP single monitor",
+      "finding": "recheckLocked先显式关闭当前QMP连接再readInitialBootHardware另开，避免single monitor互等；直接模型负例及实际最终S均覆盖。",
+      "lines": [
+        "vmguard/normal_memory_origin_source_linux.go:386",
+        "vmguard/normal_memory_origin_integration_test.go:366"
+      ]
+    },
+    {
+      "area": "Guest original provenance / recovery",
+      "finding": "固定ISO、KernelPrep/8WAL inode与SHA、当前Physical与准确369 virtio region交叉；完整intent/complete和原8WAL同步后才ACK。普通recheck零补签；显式Recover保历史引用而重新读当前事实并同步；同字节新inode不能借旧见证。",
+      "lines": [
+        "resourceguard/normal_memory_origin_source_linux.go:54",
+        "resourceguard/normal_memory_origin_source_linux.go:142",
+        "resourceguard/normal_memory_origin_source_linux.go:233",
+        "resourceguard/normal_memory_origin_source_linux.go:299"
+      ]
+    },
+    {
+      "area": "production ordering / compatibility",
+      "finding": "初始生产入口exchange→PrepareNormalSplitTopology→ProvisionGuest→CheckGuest，保逆序有Bootstrap时拒新split的原历史门禁；旧明确未选择协议仍1–5，不以缺backend/任意bool启用新Source。",
+      "lines": [
+        "resourceguard/initial_preboot_channel_linux.go:423",
+        "resourceguard/initial_preboot_channel_linux.go:467",
+        "resourceguard/normal_memory_origin_exchange_test.go:66"
+      ]
+    }
+  ],
+  "evidence": {
+    "U_actual": "/data/neon-build/validation/normal-memory-origin-wire-attempt04-20261031T235111Z-a545d3/test-receipt/test.json",
+    "U_sha256": "1ea24cd868f7d22f92d4da38a44b415932cce8bf69717cf8d39c650e584ee615",
+    "U_roots": 57,
+    "U_subcases": 248,
+    "U_fail": 0,
+    "U_skip": 0,
+    "ordinary_U_equivalence": "/data/neon-build/validation/normal-memory-origin-wire-attempt05-final-20261031T235618Z-65b27a/ordinary-U-source-equivalence.json",
+    "equivalence_scope": "final05仅一项native-tag Host test改变；其余4118源字节相同，不重标旧U为final05实际执行",
+    "native_directory": "/data/neon-build/validation/normal-memory-origin-wire-native-final-20261031T235713Z-9efb06",
+    "native_host_elf": "1fbe73b8c419ec79cd3b37f1b3b6d39a6f38b4572f0a4845fd5cc3068bcacc02",
+    "native_guest_elf": "3ed35461f78bff9a6c529638813f00e6e3551636db17883f04ac152fef1c42f9",
+    "actual_KVM": true,
+    "Guest_exit": 0,
+    "unique_QEMU_Wait_exit": 0,
+    "actual_new_6_7": true,
+    "same_bytes_inode_rejected": true,
+    "explicit_recovery_passed": true,
+    "Host_API_Source_is_model": true,
+    "formal_Bootstrap_started": false,
+    "PG_started": false,
+    "normal_authorized": false,
+    "E": 0
+  },
+  "scope_limits": [
+    "这是完整当前14源的独立只读组件审查；没有重跑已通过测试。",
+    "实际S证明原QMP/新6–7 Guest producer与持久恢复机制；Host API来源仍模型，未执行formal Bootstrap或PG。",
+    "后继FS、角色/控制写者、持续费用包络及完整normal授权尚须组合；本结论不能替代它们或K8s/E验收。",
+    "既有首次失败、旧收据和旧SHA全部保留，不转签新源。",
+    "本批仅私有完整memory来源Recover通过；公开recover-initial-boot的已有memory前缀握手恢复未接线，失败保Unknown，不视为恢复验收。"
+  ],
+  "recovery_scope_limitation": {
+    "status": "EXPLICIT_LIMITATION_NOT_A_HANDSHAKE_RECOVERY_PASS",
+    "cli": "neonvm-daemon/cmd/resource-guard/main.go:30 recover-initial-boot",
+    "Guest_path": "RecoverInitialBootGuest→runInitialBootGuest(true)→initialGuestExchangeWithRequirements→normalMemoryGuestExchange:341仍只调用capture；已有memory intent/complete时拒绝，不会补发7。",
+    "Host_path": "initial_bootstrap_lifecycle_linux.go:170要求原Host链仅source_frozen，明确拒已进展链重放；本批未实现Host progressed 6/7重连/恢复。",
+    "actual_recovery_test": "实际S调用私有recoverNormalMemoryOriginLocked，只证明已完整10WAL显式同步/读回重建opaque；没有证明初次握手丢7、partial memory intent或Host Root重启的协议恢复。",
+    "consequence": "已有memory前缀/丢ACK继续Unknown；不可宣称recover-initial-boot能够完成已有Memory6/7握手，后继需显式同原Host/session/已发布历史恢复协议和精确测试，不能自动重造或重发QMP。"
+  }
+}
