@@ -1,0 +1,21 @@
+{
+  "unit": "neon-filesystem-memory2-20261101t042823z-79fce3",
+  "nonce": "20261101T042823Z-79fce3",
+  "base": "1518377e9f099bc4ac122c7eb5565af3d81c5677",
+  "source_count": 1016,
+  "owned_count": 5,
+  "P1_dependencies": 16,
+  "source_lock_sha256": "e084c9809466903bb4203e59006cf69c39662c941328bfaaa064e1582c3c5214",
+  "scope": "FS2_RACE_AND_NATIVE_COMPILE_ONLY",
+  "hard_limits": {
+    "memory": "2g",
+    "memory_swap": "2g",
+    "cpu_quota": 200000
+  },
+  "test_regex": "^TestNormalFilesystem",
+  "native_build_tags": [
+    "dsga_native_filesystem_origin",
+    "dsga_native_system_lifecycle"
+  ],
+  "native_not_executed": true
+}

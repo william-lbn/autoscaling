@@ -36,7 +36,7 @@ func TestNormalMemoryExchangePlanMustMatchOriginalBeforeEffects(t *testing.T) {
 			case "build":
 				challenge.KernelBuildSHA256 = physicalDigest([]byte("another"))
 			case "unsupported":
-				p.memoryOriginProtocol = 2
+				p.memoryOriginProtocol = 3
 			}
 			trap := &normalMemoryExchangeTrap{}
 			e := initialGuestExchangeWithRequirements(context.Background(), trap, &Guard{}, challenge, false, p)

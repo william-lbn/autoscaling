@@ -1,0 +1,9 @@
+{
+  "raw_metadata_preserved": true,
+  "prior_automatic_systemd_escape_erratum_preserved": "metadata-erratum.json",
+  "actual_validation_nonce": "20261101T021643Z-64830f",
+  "actual_started_unit_from_systemd_run_stdout": "neon-memory-commit2-production-pkg-dsga-vmguard-normal_memory_origin_source_linux.go.service",
+  "actual_BuildKit_NONCE": "normal-memory-commit2-production-go-20261101T021643Z-64830f",
+  "unit_state": "ExecMainStatus=1\nActiveState=failed\nSubState=failed\nInvocationID=4e1202753f794295820e6b8b8738ae3e\n",
+  "note": "systemd-run mangle kept existing valid hyphens; systemd-escape withoutmangle produced a different unit; this record uses actual launch stdout"
+}

@@ -1,0 +1,161 @@
+{
+  "protocol": "internal memory-origin2 commit8, upper PG-neutral ABI1 unchanged",
+  "new_U_roots": 12,
+  "new_U_subcases": 13,
+  "all_final_U_roots": 31,
+  "all_final_U_subcases": 40,
+  "old_regression_roots_not_new": 19,
+  "new_S_logical_roots": 1,
+  "E": 0,
+  "cases": [
+    {
+      "id": "PG17-U-MEMORY-COMMIT2-001",
+      "layer": "unit",
+      "root": "TestNormalMemoryCommit2KeepsOriginalDataABIAndExactRoundtrip",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "file": "pkg/dsga/bootprotocol/normal_memory_commit_test.go",
+      "subcases": 0,
+      "receipt": "U/final/test.json",
+      "status": "PASS",
+      "scope": "wire/static exact source or real private fsync model; not hardware fault injection"
+    },
+    {
+      "id": "PG17-U-MEMORY-COMMIT2-002",
+      "layer": "unit",
+      "root": "TestNormalMemoryCommit2PartialFrameNeverRetries",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "file": "pkg/dsga/bootprotocol/normal_memory_commit_test.go",
+      "subcases": 0,
+      "receipt": "U/final/test.json",
+      "status": "PASS",
+      "scope": "wire/static exact source or real private fsync model; not hardware fault injection"
+    },
+    {
+      "id": "PG17-U-MEMORY-COMMIT2-003",
+      "layer": "unit",
+      "root": "TestNormalMemoryCommit2RejectsDifferentOriginalHistory",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "file": "pkg/dsga/bootprotocol/normal_memory_commit_test.go",
+      "subcases": 8,
+      "receipt": "U/final/test.json",
+      "status": "PASS",
+      "scope": "wire/static exact source or real private fsync model; not hardware fault injection"
+    },
+    {
+      "id": "PG17-U-MEMORY-COMMIT2-004",
+      "layer": "unit",
+      "root": "TestNormalMemoryCommit2StrictJSONAndNoPayloadBeforeHeader",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol",
+      "file": "pkg/dsga/bootprotocol/normal_memory_commit_test.go",
+      "subcases": 5,
+      "receipt": "U/final/test.json",
+      "status": "PASS",
+      "scope": "wire/static exact source or real private fsync model; not hardware fault injection"
+    },
+    {
+      "id": "PG17-U-MEMORY-COMMIT2-005",
+      "layer": "unit",
+      "root": "TestNormalMemoryCommit2GuestCannotReplaceOriginalRoot",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "file": "pkg/dsga/resourceguard/normal_memory_origin_commit_linux_test.go",
+      "subcases": 0,
+      "receipt": "U/final/test.json",
+      "status": "PASS",
+      "scope": "wire/static exact source or real private fsync model; not hardware fault injection"
+    },
+    {
+      "id": "PG17-U-MEMORY-COMMIT2-006",
+      "layer": "unit",
+      "root": "TestNormalMemoryCommit2GuestNoDurabilityFromWireOrMissingSource",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "file": "pkg/dsga/resourceguard/normal_memory_origin_commit_linux_test.go",
+      "subcases": 0,
+      "receipt": "U/final/test.json",
+      "status": "PASS",
+      "scope": "wire/static exact source or real private fsync model; not hardware fault injection"
+    },
+    {
+      "id": "PG17-U-MEMORY-COMMIT2-007",
+      "layer": "unit",
+      "root": "TestNormalMemoryCommit2ConfirmedGetterFailsClosedAndCleanupIsLocal",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "file": "pkg/dsga/resourceguard/normal_memory_origin_confirmed_linux_test.go",
+      "subcases": 0,
+      "receipt": "U/final/test.json",
+      "status": "PASS",
+      "scope": "wire/static exact source or real private fsync model; not hardware fault injection"
+    },
+    {
+      "id": "PG17-U-MEMORY-COMMIT2-008",
+      "layer": "unit",
+      "root": "TestNormalMemoryCommit2GuardCannotReconstructConfirmedPointer",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "file": "pkg/dsga/resourceguard/normal_memory_origin_confirmed_linux_test.go",
+      "subcases": 0,
+      "receipt": "U/final/test.json",
+      "status": "PASS",
+      "scope": "wire/static exact source or real private fsync model; not hardware fault injection"
+    },
+    {
+      "id": "PG17-U-MEMORY-COMMIT2-009",
+      "layer": "unit",
+      "root": "TestNormalMemoryCommit2SelectorComesFromExactOriginalAssets",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "file": "pkg/dsga/resourceguard/normal_memory_origin_confirmed_linux_test.go",
+      "subcases": 0,
+      "receipt": "U/final/test.json",
+      "status": "PASS",
+      "scope": "wire/static exact source or real private fsync model; not hardware fault injection"
+    },
+    {
+      "id": "PG17-U-MEMORY-COMMIT2-010",
+      "layer": "unit",
+      "root": "TestNormalMemoryCommit2HostCommitInodeCannotBeBorrowed",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "file": "pkg/dsga/vmguard/normal_memory_origin_commit_linux_test.go",
+      "subcases": 0,
+      "receipt": "U/final/test.json",
+      "status": "PASS",
+      "scope": "wire/static exact source or real private fsync model; not hardware fault injection"
+    },
+    {
+      "id": "PG17-U-MEMORY-COMMIT2-011",
+      "layer": "unit",
+      "root": "TestNormalMemoryCommit2HostRequiresRealOriginalSourceBeforeWAL",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "file": "pkg/dsga/vmguard/normal_memory_origin_commit_linux_test.go",
+      "subcases": 0,
+      "receipt": "U/final/test.json",
+      "status": "PASS",
+      "scope": "wire/static exact source or real private fsync model; not hardware fault injection"
+    },
+    {
+      "id": "PG17-U-MEMORY-COMMIT2-012",
+      "layer": "unit",
+      "root": "TestNormalMemoryCommit2HostSyncNeverRepairsMissingOrChangedHistory",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/vmguard",
+      "file": "pkg/dsga/vmguard/normal_memory_origin_commit_linux_test.go",
+      "subcases": 0,
+      "receipt": "U/final/test.json",
+      "status": "PASS",
+      "scope": "wire/static exact source or real private fsync model; not hardware fault injection"
+    },
+    {
+      "id": "PG17-S-MEMORY-COMMIT2-001",
+      "layer": "single-service-protocol-component",
+      "roots": [
+        "TestNativeNormalMemoryCommit2Host",
+        "TestNativeNormalMemoryCommit2Guest"
+      ],
+      "logical_roots_count": 1,
+      "actual_environment": "369 KVM single ext4 switch_root,2vCPU,256MiB→1GiB,actualMmax4GiB/block8MiB",
+      "receipt": "S/final/result.json",
+      "status": "PASS_COMPONENT_ONLY",
+      "Host_Source_API": "fixture",
+      "System_programs": "standins except actual Busybox/vminit/Guard/musl",
+      "PG_executed": false,
+      "normal_authorized": false,
+      "E": 0
+    }
+  ]
+}

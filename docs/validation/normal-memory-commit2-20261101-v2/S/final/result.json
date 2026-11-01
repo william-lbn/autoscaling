@@ -1,0 +1,27 @@
+{
+  "stable_id": "PG17-S-MEMORY-COMMIT2-001",
+  "status": "PASS_COMPONENT_ONLY",
+  "Host_container_exit": 0,
+  "Guest_exits": [
+    "0"
+  ],
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "seconds": 18.733825153991347,
+  "reports": {
+    "filesystem-origin.json": "3d87a08da739c877cec38ab0d4e4914eb04be6b7f160f6b39facebbd956947d1",
+    "filesystem-diagnostics.json": "f91ed60fb652f0e4f8bb04efb9b940fda1116d8e07c2127cf5cdb840696fa0d9"
+  },
+  "report_errors": [],
+  "actual_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "Host_ELF_sha256": "99560c31978302a815b80302f51b9d7b76d03606bca7ee619cca047835fcc44f",
+  "Guest_ELF_sha256": "11ef00a34d6e2fecb52c8f5dfcec116867214ab51eb2efcc2ea732abbecf7d72",
+  "actual_single_commit8_then_FS2": true,
+  "Host_API_is_model": true,
+  "System_services_are_standins": true,
+  "PG_executed": false,
+  "normal_authorized": false,
+  "E": 0
+}

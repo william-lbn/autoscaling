@@ -47,6 +47,7 @@ type normalMemoryOriginSource struct {
 	intentSHA   string
 	completeSHA string
 	journal     [2][3]uint64
+	commit2     *normalMemoryGuestCommitEvidence
 }
 
 // 前后真实读取原8WAL与固定ISO。运行期不调用initialPrebootFactsLocked的PGEmpty门，
@@ -225,7 +226,7 @@ func captureNormalMemoryOriginLocked(ctx context.Context, s *lockedState, g *Gua
 	if e != nil {
 		return nil, e
 	}
-	return &normalMemoryOriginSource{v, complete, root, physicalDigest(raw), physicalDigest(cr), journal}, nil
+	return &normalMemoryOriginSource{intent: v, complete: complete, currentRoot: root, intentSHA: physicalDigest(raw), completeSHA: physicalDigest(cr), journal: journal}, nil
 }
 
 // 首次完成后来源nonce/Host引用不变。恢复只同步原8WAL及原source，不造新Origin；
@@ -258,7 +259,11 @@ func (g *Guard) recoverNormalMemoryOriginLocked(ctx context.Context, s *lockedSt
 	if e != nil {
 		return nil, e
 	}
-	return &normalMemoryOriginSource{v, c, root, physicalDigest(raw), physicalDigest(cr), journal}, nil
+	out := &normalMemoryOriginSource{intent: v, complete: c, currentRoot: root, intentSHA: physicalDigest(raw), completeSHA: physicalDigest(cr), journal: journal}
+	if e = normalMemoryRecoverGuestCommit2Locked(ctx, s, g, out); e != nil {
+		return nil, e
+	}
+	return out, nil
 }
 func (g *Guard) normalMemorySyncSourceLocked(ctx context.Context, s *lockedState, v normalMemoryOriginIntent, c normalMemoryOriginCompletion) error {
 	if _, e := g.normalMemoryOriginCurrentLocked(ctx, s, v); e != nil {
@@ -297,6 +302,19 @@ func (g *Guard) normalMemorySyncSourceLocked(ctx context.Context, s *lockedState
 	return nil
 }
 func (o *normalMemoryOriginSource) recheckLocked(ctx context.Context, s *lockedState, g *Guard) error {
+	if e := o.recheckOriginalLocked(ctx, s, g); e != nil {
+		return e
+	}
+	in, e := g.initialPrebootInputs(o.intent.Host.Prepared.Challenge)
+	if e != nil {
+		return e
+	}
+	if in.requirements.MemoryOriginProtocolVersion() == 2 {
+		return o.recheckCommit2Locked(s)
+	}
+	return nil
+}
+func (o *normalMemoryOriginSource) recheckOriginalLocked(ctx context.Context, s *lockedState, g *Guard) error {
 	if o == nil || g == nil {
 		return errors.Join(ErrUnknown, fmt.Errorf("opaque memory source absent"))
 	}
@@ -325,6 +343,13 @@ func (o *normalMemoryOriginSource) recheckLocked(ctx context.Context, s *lockedS
 func normalMemoryGuestExchange(ctx context.Context, port io.ReadWriter, g *Guard, prepared bootprotocol.InitialPrebootReceipt, moved bootprotocol.InitialMovableReceipt, done bootprotocol.InitialCompletion) error {
 	if ctx == nil || g == nil || port == nil || done.MatchReceipt(moved) != nil {
 		return fmt.Errorf("fixed original memory Guest channel required")
+	}
+	in, e := g.initialPrebootInputs(prepared.Challenge)
+	if e != nil {
+		return e
+	}
+	if in.requirements.MemoryOriginProtocolVersion() != 1 {
+		return errors.Join(ErrUnknown, fmt.Errorf("legacy memory exchange requires original selector1"))
 	}
 	host, e := bootprotocol.ReadNormalMemoryOriginHostReference(port)
 	if e != nil {
@@ -368,7 +393,7 @@ func normalMemoryGuestJournalIdentity(s *lockedState) ([2][3]uint64, error) {
 }
 
 func normalMemoryGuestSelection(in initialPrebootGuestInputs) error {
-	if !in.requirements.Enabled() || in.requirements.ProfileID() != NormalSplitV1PhysicalKernelProfileID || in.requirements.MemoryOriginProtocolVersion() != 1 || in.requirements.RuntimeDocumentSHA256() != physicalDigest(in.runtime) {
+	if !in.requirements.Enabled() || in.requirements.ProfileID() != NormalSplitV1PhysicalKernelProfileID || (in.requirements.MemoryOriginProtocolVersion() != 1 && in.requirements.MemoryOriginProtocolVersion() != 2) || in.requirements.RuntimeDocumentSHA256() != physicalDigest(in.runtime) {
 		return errors.Join(ErrUnknown, fmt.Errorf("original ISO did not explicitly select normal memory origin wire v1"))
 	}
 	return nil

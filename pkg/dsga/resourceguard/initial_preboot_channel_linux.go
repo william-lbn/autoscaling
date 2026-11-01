@@ -357,13 +357,13 @@ func initialGuestExchangeWithRequirements(ctx context.Context, port io.ReadWrite
 	if ctx == nil || ctx.Err() != nil || port == nil || g == nil || c.Validate() != nil {
 		return fmt.Errorf("live fixed original Guest exchange inputs required")
 	}
-	if plan.MemoryOriginProtocolVersion() > 1 {
+	if plan.MemoryOriginProtocolVersion() > 2 {
 		return fmt.Errorf("unsupported original memory origin plan")
 	}
 	if plan.Enabled() && (plan.RuntimeDocumentSHA256() != c.RuntimeSHA256 || plan.ResourceSourceSHA256() != c.ResourceSHA256 || plan.ConfigSecretUID() != c.ConfigSecretUID || plan.KernelBuildReference().KernelArtifactSHA256 != c.KernelBuildSHA256 || plan.ProfileID() != NormalSplitV1PhysicalKernelProfileID) {
 		return fmt.Errorf("initial Guest plan differs from original full runtime")
 	}
-	if plan.MemoryOriginProtocolVersion() == 1 && !plan.Enabled() {
+	if plan.MemoryOriginProtocolVersion() != 0 && !plan.Enabled() {
 		return fmt.Errorf("memory origin protocol lacks full original runtime plan")
 	}
 
@@ -415,8 +415,13 @@ func initialGuestExchangeWithRequirements(ctx context.Context, port io.ReadWrite
 		return e
 	}
 	if plan.MemoryOriginProtocolVersion() == 1 {
-		// 实际capture的ISO纵深门仍重复核selector，完整落盘/发7之后才可Provision。
+		// 原selector1准确6/7数据与原返回边界不变。
 		return normalMemoryGuestExchange(ctx, port, g, prepared, receipt, done)
+	}
+	if plan.MemoryOriginProtocolVersion() == 2 {
+		// 仅真实8接受且原11文件持久后，函数才安装本Guard的原R1指针并返回。
+		_, e := normalMemoryGuestExchangeV2(ctx, port, g, prepared, receipt, done)
+		return e
 	}
 	return nil
 }
@@ -460,10 +465,13 @@ func runInitialBootGuest(ctx context.Context, recoverOriginal bool) error {
 	if e != nil {
 		return e
 	}
+	// 同一Guard原指针仅活到本次初始流程结束；失败不留可接纳槽，不删除原WAL。
+	defer g.normalMemoryDiscardOriginalConfirmedSource()
 	if e = initialGuestExchangeWithRequirements(call, port, g, challenge, recoverOriginal, plan); e != nil {
 		return e
 	}
-	// 完整5/6/7已完成，后续不再读该通道；在FS原始FD清退前关闭唯一可写virtio端点。
+	// selector0/1原5/6/7，或selector2真实8确认持久后，才关闭唯一可写virtio端点。
+	// 后续FS/broker不得重新打开该旧通道；丢帧恢复仍是独立未实现合同。
 	// close幂等，失败路径的原defer仍保留；不得把通道泄给长期broker/角色。
 	port.close()
 	// 首次split必须先于Bootstrap journal；后者一旦存在，拓扑首次收养门须拒绝。

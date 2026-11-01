@@ -17,7 +17,7 @@ func TestNormalMemoryOriginPolicyVersionsRequireExplicitOriginalField(t *testing
 	var original NormalSplitTopologyPolicy
 	require.NoError(t, json.Unmarshal(raw, &original))
 	require.Equal(t, p, original)
-	for _, version := range []uint32{1, 2, 3} {
+	for _, version := range []uint32{1, 2, 3, 4} {
 		for _, value := range []any{nil, float64(0), float64(1), float64(2), "1", true} {
 			b := map[string]any{}
 			require.NoError(t, json.Unmarshal(raw, &b))
@@ -27,9 +27,9 @@ func TestNormalMemoryOriginPolicyVersionsRequireExplicitOriginalField(t *testing
 			require.NoError(t, e)
 			var got NormalSplitTopologyPolicy
 			e = json.Unmarshal(encoded, &got)
-			if version == 2 && value == float64(1) {
+			if version == 2 && value == float64(1) || version == 3 && value == float64(2) {
 				require.NoError(t, e)
-				require.Equal(t, uint32(1), got.MemoryOriginProtocolVersion)
+				require.Equal(t, uint32(value.(float64)), got.MemoryOriginProtocolVersion)
 			} else {
 				require.Error(t, e)
 			}

@@ -1,0 +1,90 @@
+{
+  "result": "PASS_COMPONENT_SCOPE_ONLY",
+  "date_utc": "2026-11-01T04:42:21.269839+00:00",
+  "reviewer": "p1_barrier_review independent of Root authors",
+  "source_checks": {
+    "FS5": {
+      "pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go": {
+        "sha256": "18d844237ec66b7d2bbf81ffbdfb145f394c71699e2629e7fd0ff344a9435cbc",
+        "current_matches": true,
+        "snapshot_matches": true
+      },
+      "pkg/dsga/resourceguard/normal_filesystem_broker_source_linux.go": {
+        "sha256": "8fbb68276f70dcfd5b0ae21dacbe452cacbe39f172eb1d2b45348ee0bf6b39d4",
+        "current_matches": true,
+        "snapshot_matches": true
+      },
+      "pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go": {
+        "sha256": "f2d794c3bd017e0a4092fc7cbdc55015a61ea270ccca2b73f985f3a59bb6d308",
+        "current_matches": true,
+        "snapshot_matches": true
+      },
+      "pkg/dsga/resourceguard/normal_filesystem_origin_source_linux_test.go": {
+        "sha256": "ce771a47e8778d84a277ff8783c8ca0dacc313e207c778e7ac2c82ed85ba846c",
+        "current_matches": true,
+        "snapshot_matches": true
+      },
+      "pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux_test.go": {
+        "sha256": "d65fc30d998ca1897955b773e06b68d4da6f2111b00b28d5b2d67cefce32b5eb",
+        "current_matches": true,
+        "snapshot_matches": true
+      }
+    },
+    "KernelAdapter2": {
+      "pkg/dsga/resourceguard/normal_kernel_control_source_origin_linux.go": {
+        "sha256": "a3cd42d2c51686c7a8117b1273304a7a9e2cb52fa3081c46118b178dab5fe51c",
+        "current_matches": true,
+        "snapshot_matches": true
+      },
+      "pkg/dsga/resourceguard/normal_kernel_control_memory_consumer_linux_test.go": {
+        "sha256": "4d81aa25c76189e1cb2bc7afe50be12bdd06f5fdac17e0b5ddc5c01e17d72a42",
+        "current_matches": true,
+        "snapshot_matches": true
+      }
+    }
+  },
+  "source_lock_sha256": {
+    "FS5": "e084c9809466903bb4203e59006cf69c39662c941328bfaaa064e1582c3c5214",
+    "KernelAdapter2": "2194b0599817e162491127c0b82a1d36ab12bf5758c89d00796efb540198650c"
+  },
+  "actual_test_counts": {
+    "FS5": {
+      "roots": 14,
+      "subcases": 63,
+      "fail": 0,
+      "skip": 0,
+      "result": {
+        "build_exit": 0,
+        "end_utc": "2026-11-01T04:28:57.658541+00:00",
+        "test_exit": 0,
+        "source_exit": 0
+      },
+      "native_compile": "0"
+    },
+    "KernelAdapter2": {
+      "roots": 21,
+      "subcases": 69,
+      "fail": 0,
+      "skip": 0,
+      "result": {
+        "build_exit": 0,
+        "end_utc": "2026-11-01T04:36:56.553048+00:00",
+        "test_exit": 0,
+        "source_exit": 0
+      },
+      "native_compile": "0"
+    }
+  },
+  "R1_positive_native_S": "/data/neon-build/validation/normal-memory-commit2-native-20261101T043629Z-25d93a",
+  "R1_positive_native_result_sha256": "0551ac331b0b3d89fe7a7533f0cd6b636438732a17689812fce54ab2d3d27712",
+  "R2_positive_native_not_run": true,
+  "normal_authorized": false,
+  "E": 0,
+  "findings": [],
+  "limitations": [
+    "new R2 consumer positive path awaits actual original broker proof/transfer and parent exit S",
+    "full normal authority/PG/Ready not qualified",
+    "sync failure injection is U model only"
+  ],
+  "read_only": true
+}

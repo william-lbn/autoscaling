@@ -28,25 +28,26 @@ type normalFilesystemMountFact struct {
 	Object normalFilesystemObject `json:"object"`
 }
 type normalFilesystemOriginIntent struct {
-	StateDevice          uint64                           `json:"state_device"`
-	StateInode           uint64                           `json:"state_inode"`
-	LockDevice           uint64                           `json:"lock_device"`
-	LockInode            uint64                           `json:"lock_inode"`
-	LayoutVersion        uint32                           `json:"layout_version"`
-	ProtocolVersion      uint32                           `json:"protocol_version"`
-	Scope                string                           `json:"scope"`
-	Nonce                string                           `json:"nonce"`
-	System               normalSystemLifecycleBinding     `json:"original_system_source"`
-	SystemSourceSHA256   string                           `json:"system_source_sha256"`
-	VminitSHA256         string                           `json:"vminit_sha256"`
-	InitialReceiptSHA256 string                           `json:"initial_receipt_sha256"`
-	InitialPrefixSHA256  [8]string                        `json:"initial_prefix_sha256"`
-	ResourceStageSHA256  string                           `json:"resource_stage_sha256"`
-	PID1StartTicks       uint64                           `json:"pid1_start_ticks"`
-	Namespace            normalFilesystemObject           `json:"namespace"`
-	Root                 normalFilesystemObject           `json:"root"`
-	Mounts               []normalFilesystemMountFact      `json:"mounts"`
-	Tasks                [2]normalFilesystemTaskInventory `json:"initial_task_inventory"`
+	StateDevice          uint64                                `json:"state_device"`
+	StateInode           uint64                                `json:"state_inode"`
+	LockDevice           uint64                                `json:"lock_device"`
+	LockInode            uint64                                `json:"lock_inode"`
+	LayoutVersion        uint32                                `json:"layout_version"`
+	ProtocolVersion      uint32                                `json:"protocol_version"`
+	Scope                string                                `json:"scope"`
+	Nonce                string                                `json:"nonce"`
+	System               normalSystemLifecycleBinding          `json:"original_system_source"`
+	SystemSourceSHA256   string                                `json:"system_source_sha256"`
+	VminitSHA256         string                                `json:"vminit_sha256"`
+	InitialReceiptSHA256 string                                `json:"initial_receipt_sha256"`
+	InitialPrefixSHA256  [8]string                             `json:"initial_prefix_sha256"`
+	ResourceStageSHA256  string                                `json:"resource_stage_sha256"`
+	PID1StartTicks       uint64                                `json:"pid1_start_ticks"`
+	Namespace            normalFilesystemObject                `json:"namespace"`
+	Root                 normalFilesystemObject                `json:"root"`
+	Mounts               []normalFilesystemMountFact           `json:"mounts"`
+	Tasks                [2]normalFilesystemTaskInventory      `json:"initial_task_inventory"`
+	Memory               *normalMemoryOriginConfirmedReference `json:"original_confirmed_memory,omitempty"`
 }
 type normalFilesystemOriginComplete struct {
 	ProtocolVersion uint32 `json:"protocol_version"`
@@ -74,6 +75,7 @@ type normalFilesystemOriginWitnessKey struct {
 	Prefix   initialPrebootGuestWitnessKey
 	Files    [2]arrayPopulateHistoryIdentity
 	SHA256   [2]string
+	Memory   normalMemoryOriginConfirmedReference
 }
 
 // 每Guard+真实state/lock+当前Root+全部10原文件inode/ctime/摘要的进程私有见证。
@@ -81,14 +83,15 @@ type normalFilesystemOriginWitnessKey struct {
 var normalFilesystemOriginWitnesses sync.Map
 
 type normalFilesystemOriginSource struct {
-	mu         sync.Mutex
-	closed     bool
-	g          *Guard
-	system     *normalSystemLifecycleSource
-	pid1, self *normalFilesystemTask
-	intent     normalFilesystemOriginIntent
-	witness    normalFilesystemOriginWitnessKey
-	current    nativeBirthConsumer
+	mu             sync.Mutex
+	closed         bool
+	g              *Guard
+	system         *normalSystemLifecycleSource
+	pid1, self     *normalFilesystemTask
+	intent         normalFilesystemOriginIntent
+	witness        normalFilesystemOriginWitnessKey
+	current        nativeBirthConsumer
+	memoryConsumer *normalMemoryBrokerConsumerSource
 }
 
 func (o *normalFilesystemOriginSource) close() {
@@ -98,6 +101,9 @@ func (o *normalFilesystemOriginSource) close() {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 	if !o.closed {
+		if o.memoryConsumer != nil {
+			normalMemoryBrokerConsumerWitnesses.Delete(o.memoryConsumer)
+		}
 		o.self.close()
 		o.pid1.close()
 		o.closed = true
@@ -384,6 +390,23 @@ func normalFilesystemWitnessLocked(g *Guard, s *lockedState, c nativeBirthConsum
 		}
 		k.Files[i], k.SHA256[i] = stamp, physicalDigest(raw)
 	}
+	var intent normalFilesystemOriginIntent
+	raw, exists, e := s.readPhysicalFile(normalFilesystemOriginIntentName)
+	if e != nil || !exists {
+		return k, errors.Join(ErrUnknown, e)
+	}
+	if e = normalFilesystemDecodeRecord(raw, &intent); e != nil {
+		return k, e
+	}
+	if e = normalFilesystemValidateMemoryReference(intent); e != nil {
+		return k, e
+	}
+	if intent.Memory != nil {
+		if e = normalMemoryObserveConfirmedReferenceLocked(s, *intent.Memory); e != nil {
+			return k, e
+		}
+		k.Memory = *intent.Memory
+	}
 	return k, nil
 }
 
@@ -395,6 +418,12 @@ func normalFilesystemConfirmPrefix(ctx context.Context, syncOne func(string) err
 		return before, e
 	}
 	names := append(append([]string(nil), initialPrebootGuestFiles[:]...), normalFilesystemOriginIntentName, normalFilesystemOriginCompleteName)
+	// v1仍同步原10文件；v2额外同步FS明确绑定的memory3，不把可见8当耐久。
+	if before.Memory.ProtocolVersion == 2 {
+		for _, name := range normalMemoryConfirmedFiles() {
+			names = append(names, name)
+		}
+	}
 	for _, name := range names {
 		if e = ctx.Err(); e != nil {
 			return before, e
@@ -442,6 +471,10 @@ func (g *Guard) captureNormalFilesystemOriginLocked(ctx context.Context, s *lock
 		return fail(e)
 	}
 	in, done, prefix, e := normalFilesystemInitialPrefix(s, binding, true)
+	if e != nil {
+		return fail(e)
+	}
+	memory, e := g.captureNormalFilesystemMemoryLocked(ctx, s, in, binding, prefix)
 	if e != nil {
 		return fail(e)
 	}
@@ -514,6 +547,11 @@ func (g *Guard) captureNormalFilesystemOriginLocked(ctx context.Context, s *lock
 	rawReceipt, _ := json.Marshal(receipt)
 	rawStage, _ := json.Marshal(r)
 	o.intent = normalFilesystemOriginIntent{StateDevice: prefix.Device, StateInode: prefix.Inode, LockDevice: prefix.LockDevice, LockInode: prefix.LockInode, LayoutVersion: normalFilesystemLayoutVersion, ProtocolVersion: 1, Scope: normalFilesystemOriginScope, Nonce: nonce, System: binding, SystemSourceSHA256: reference, VminitSHA256: vminit, InitialReceiptSHA256: physicalDigest(rawReceipt), InitialPrefixSHA256: prefix.SHA256, ResourceStageSHA256: physicalDigest(rawStage), PID1StartTicks: o.pid1.start, Namespace: o.pid1.ns, Root: o.pid1.rootObject, Mounts: mounts, Tasks: inventories}
+	if memory != nil {
+		o.intent.ProtocolVersion = 2
+		o.intent.Scope = normalFilesystemOriginScopeV2
+		o.intent.Memory = memory
+	}
 	if e = normalFilesystemValidateIntent(o.intent); e != nil {
 		return fail(e)
 	}
@@ -528,7 +566,7 @@ func (g *Guard) captureNormalFilesystemOriginLocked(ctx context.Context, s *lock
 	if e != nil || !reflect.DeepEqual(current, mounts) {
 		return fail(fmt.Errorf("filesystem graph changed before completion"))
 	}
-	complete, _ := json.Marshal(normalFilesystemOriginComplete{1, normalFilesystemOriginScope, physicalDigest(raw)})
+	complete, _ := json.Marshal(normalFilesystemOriginComplete{o.intent.ProtocolVersion, o.intent.Scope, physicalDigest(raw)})
 	if e = s.createPhysicalFile(normalFilesystemOriginCompleteName, complete); e != nil {
 		return fail(e)
 	}
@@ -613,11 +651,14 @@ func (o *normalFilesystemOriginSource) observeLocked(ctx context.Context, s *loc
 	}
 	// 运行期只复核原引用和实际namespace/root/graph。不重新要求PGEmpty或两task，
 	// 更不会把当前FD清单回填成原出生历史。未来writer/角色来源仍明确缺失。
-	return normalFilesystemOriginObservation{Scope: normalFilesystemOriginScope, IntentSHA256: key.SHA256[0], CompletionSHA256: key.SHA256[1], OriginalRoot: o.intent.System.RootConsumer, CurrentRoot: o.current, GuestBootID: bind.GuestBootID, VminitSHA256: vminit, Mounts: mounts, OriginalFDInventoryCaptured: true, DurabilityConfirmed: true, MissingSources: []string{"continuous-original-namespace-mount-control-writers", "future-role-spawn-FD-and-SCM_RIGHTS-source-closure"}}, nil
+	return normalFilesystemOriginObservation{Scope: o.intent.Scope, IntentSHA256: key.SHA256[0], CompletionSHA256: key.SHA256[1], OriginalRoot: o.intent.System.RootConsumer, CurrentRoot: o.current, GuestBootID: bind.GuestBootID, VminitSHA256: vminit, Mounts: mounts, OriginalFDInventoryCaptured: true, DurabilityConfirmed: true, MissingSources: []string{"continuous-original-namespace-mount-control-writers", "future-role-spawn-FD-and-SCM_RIGHTS-source-closure"}}, nil
 }
 
 func normalFilesystemValidateIntent(in normalFilesystemOriginIntent) error {
-	if in.StateDevice == 0 || in.StateInode == 0 || in.LockDevice != in.StateDevice || in.LockInode == 0 || in.ProtocolVersion != 1 || in.LayoutVersion != normalFilesystemLayoutVersion || in.Scope != normalFilesystemOriginScope || !physicalDigestValid(in.Nonce) || !validGuestBoot(in.System.GuestBootID) || in.System.RootConsumer.PID <= 1 || in.System.RootConsumer.StartTicks == 0 || !physicalDigestValid(in.System.RootConsumer.InstanceNonce) || in.PID1StartTicks == 0 || in.Namespace.Device == 0 || in.Namespace.Inode == 0 || in.Root.Device == 0 || in.Root.Inode == 0 || in.Root.MountID == 0 || in.Root.Filesystem != unix.EXT4_SUPER_MAGIC || !in.Root.Readonly {
+	if e := normalFilesystemValidateMemoryReference(in); e != nil {
+		return e
+	}
+	if in.StateDevice == 0 || in.StateInode == 0 || in.LockDevice != in.StateDevice || in.LockInode == 0 || !normalFilesystemProtocolMatches(in.ProtocolVersion, in.Scope) || in.LayoutVersion != normalFilesystemLayoutVersion || !physicalDigestValid(in.Nonce) || !validGuestBoot(in.System.GuestBootID) || in.System.RootConsumer.PID <= 1 || in.System.RootConsumer.StartTicks == 0 || !physicalDigestValid(in.System.RootConsumer.InstanceNonce) || in.PID1StartTicks == 0 || in.Namespace.Device == 0 || in.Namespace.Inode == 0 || in.Root.Device == 0 || in.Root.Inode == 0 || in.Root.MountID == 0 || in.Root.Filesystem != unix.EXT4_SUPER_MAGIC || !in.Root.Readonly {
 		return fmt.Errorf("filesystem original intent identity/geometry invalid")
 	}
 	for _, h := range append(append([]string{in.SystemSourceSHA256, in.VminitSHA256, in.InitialReceiptSHA256, in.ResourceStageSHA256}, in.InitialPrefixSHA256[:]...), in.System.RuntimeDocumentSHA256, in.System.NativePolicySHA256, in.System.NativeBuildSHA256, in.System.SystemManifestSHA256) {
@@ -674,7 +715,7 @@ func normalFilesystemReadComplete(s *lockedState) (normalFilesystemOriginIntent,
 	if e := normalFilesystemValidateIntent(in); e != nil {
 		return in, complete, e
 	}
-	if complete.ProtocolVersion != 1 || complete.Scope != normalFilesystemOriginScope || complete.IntentSHA256 != physicalDigest(rawIntent) {
+	if complete.ProtocolVersion != in.ProtocolVersion || complete.Scope != in.Scope || complete.IntentSHA256 != physicalDigest(rawIntent) {
 		return in, complete, fmt.Errorf("filesystem original completion prefix differs")
 	}
 	return in, complete, nil
@@ -795,6 +836,7 @@ type normalFilesystemOriginReference struct {
 	VminitSHA256          string                 `json:"vminit_sha256"`
 	Namespace             normalFilesystemObject `json:"namespace"`
 	Root                  normalFilesystemObject `json:"root"`
+	MemorySourceSHA256    string                 `json:"memory_source_sha256,omitempty"`
 }
 
 func (o *normalFilesystemOriginSource) referenceLocked(ctx context.Context, s *lockedState) (normalFilesystemOriginReference, error) {
@@ -817,7 +859,8 @@ func (o *normalFilesystemOriginSource) referenceLocked(ctx context.Context, s *l
 // 原始引用、FD移交和显式重绑定必须共用同一版本化投影。这里的intent已由调用者
 // 核验为当前17mount布局；漏填LayoutVersion会把FD路径降成0，与只读引用不一致。
 func normalFilesystemReferenceFromIntent(in normalFilesystemOriginIntent, intentSHA, completeSHA string) normalFilesystemOriginReference {
-	return normalFilesystemOriginReference{LayoutVersion: normalFilesystemLayoutVersion, ProtocolVersion: 1, IntentSHA256: intentSHA, CompletionSHA256: completeSHA, OriginalRoot: in.System.RootConsumer, GuestBootID: in.System.GuestBootID, RuntimeDocumentSHA256: in.System.RuntimeDocumentSHA256, NativeBuildSHA256: in.System.NativeBuildSHA256, SystemManifestSHA256: in.System.SystemManifestSHA256, VminitSHA256: in.VminitSHA256, Namespace: in.Namespace, Root: in.Root}
+	memorySHA, _ := normalFilesystemMemoryReferenceSHA(in) // 仅已校验intent的投影；无重建Source能力。
+	return normalFilesystemOriginReference{LayoutVersion: normalFilesystemLayoutVersion, ProtocolVersion: in.ProtocolVersion, MemorySourceSHA256: memorySHA, IntentSHA256: intentSHA, CompletionSHA256: completeSHA, OriginalRoot: in.System.RootConsumer, GuestBootID: in.System.GuestBootID, RuntimeDocumentSHA256: in.System.RuntimeDocumentSHA256, NativeBuildSHA256: in.System.NativeBuildSHA256, SystemManifestSHA256: in.System.SystemManifestSHA256, VminitSHA256: in.VminitSHA256, Namespace: in.Namespace, Root: in.Root}
 }
 
 // 调用者持原resource flock，且未持System.mu/Task.mu。两个返回FD由调用者负责关闭，

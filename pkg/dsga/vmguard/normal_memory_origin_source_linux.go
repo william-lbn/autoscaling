@@ -34,6 +34,7 @@ type normalMemoryHostOriginSource struct {
 	owner     *linuxInitialLifecycle
 	runtime   []byte
 	selection uint32
+	commit2   *normalMemoryHostCommitEvidence
 }
 
 func normalMemoryHostWAL(s *lockedState, proof *InitialBootstrapPublication) ([8]string, [4]uint64, error) {
@@ -193,7 +194,7 @@ func captureNormalMemoryHostOriginLocked(ctx context.Context, s *lockedState, l 
 
 // 原文件同字节也必须实际file+directory Sync；不以可见性或摘要代替耐久。
 func normalMemoryHostWriteOnce(s *lockedState, name string, raw []byte) error {
-	if s == nil || s.dir == nil || (name != normalMemoryHostReferenceFile && name != normalMemoryHostAckFile) || len(raw) == 0 || len(raw) > bootprotocol.MaxFrameBytes {
+	if s == nil || s.dir == nil || (name != normalMemoryHostReferenceFile && name != normalMemoryHostAckFile && name != normalMemoryHostCommitFile) || len(raw) == 0 || len(raw) > bootprotocol.MaxFrameBytes {
 		return fmt.Errorf("fixed bounded memory Host WAL required")
 	}
 	old, e := initialBootReadFile(s, name)
@@ -320,14 +321,23 @@ func (c *initialBootChannel) completeWithNormalMemoryOrigin(ctx context.Context,
 
 // 仅供下游同原flock内重核；不重新采集/更换原几何，不签持续写者或normal资格。
 func (o *normalMemoryHostOriginSource) recheckLocked(ctx context.Context, s *lockedState, l *linuxInitialLifecycle, proof *InitialBootstrapPublication) error {
+	if e := o.recheckOriginalLocked(ctx, s, l, proof); e != nil {
+		return e
+	}
+	if o.selection == 2 {
+		return o.recheckCommit2Locked(s)
+	}
+	return nil
+}
+func (o *normalMemoryHostOriginSource) recheckOriginalLocked(ctx context.Context, s *lockedState, l *linuxInitialLifecycle, proof *InitialBootstrapPublication) error {
 	if ctx == nil || ctx.Err() != nil || o == nil || o.process == nil || o.ack == nil || l == nil || l.r == nil || o.reference.Validate() != nil {
 		return fmt.Errorf("opaque original memory Host source absent")
 	}
-	if o.owner != l || o.selection != 1 || !bytes.Equal(o.runtime, l.config.RuntimeJSON) {
+	if o.owner != l || (o.selection != 1 && o.selection != 2) || !bytes.Equal(o.runtime, l.config.RuntimeJSON) {
 		return fmt.Errorf("original memory source protocol selection drifted")
 	}
 	selected, e := normalMemoryHostSelection(l.config.RuntimeJSON, o.source)
-	if e != nil || selected != 1 {
+	if e != nil || selected != o.selection {
 		return fmt.Errorf("original memory source protocol unavailable: %v", e)
 	}
 	if _, e := l.r.authorize(ctx); e != nil {
@@ -398,7 +408,7 @@ func (o *normalMemoryHostOriginSource) recheckLocked(ctx context.Context, s *loc
 // 固定已成功sync的原文件FD/bytes/inode；同字节替换不得继承opaque耐久事实。
 func normalMemoryHostFileIdentity(s *lockedState, name string, want []byte) ([3]uint64, error) {
 	var out [3]uint64
-	allowed := name == normalMemoryHostReferenceFile || name == normalMemoryHostAckFile
+	allowed := name == normalMemoryHostReferenceFile || name == normalMemoryHostAckFile || name == normalMemoryHostCommitFile
 	for i := range initialBootStages {
 		allowed = allowed || name == initialBootFile(i)
 	}
@@ -464,7 +474,7 @@ func normalMemoryHostSelection(raw []byte, source initialBootSource) (uint32, er
 		return 0, fmt.Errorf("memory protocol differs from original full source")
 	}
 	v := plan.MemoryOriginProtocolVersion()
-	if v > 1 {
+	if v > 2 {
 		return 0, fmt.Errorf("memory origin protocol unsupported")
 	}
 	return v, nil

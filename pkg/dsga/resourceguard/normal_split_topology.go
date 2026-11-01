@@ -24,7 +24,7 @@ const (
 // 不是从RSS推算的兼容预算；A只指定首次数组额度，不给后继收费/降限授权。
 type NormalSplitTopologyPolicy struct {
 	ProtocolVersion uint32 `json:"protocol_version"`
-	// 仅原ISO显式v2选择新的Host/Guest来源交接，旧v1绝不隐式开启。
+	// 原ISO显式policy2→握手1、policy3→握手2；旧policy1/selector0不隐式升级。
 	MemoryOriginProtocolVersion uint32         `json:"memory_origin_protocol_version,omitempty"`
 	Scope                       string         `json:"scope"`
 	PhysicalProfileID           string         `json:"physical_profile_id"`
@@ -36,7 +36,7 @@ type NormalSplitTopologyPolicy struct {
 }
 
 func (p NormalSplitTopologyPolicy) validate() error {
-	if !(p.ProtocolVersion == 1 && p.MemoryOriginProtocolVersion == 0 || p.ProtocolVersion == 2 && p.MemoryOriginProtocolVersion == 1) || p.Scope != normalSplitScope || p.PhysicalProfileID != NormalSplitV1PhysicalKernelProfileID ||
+	if !(p.ProtocolVersion == 1 && p.MemoryOriginProtocolVersion == 0 || p.ProtocolVersion == 2 && p.MemoryOriginProtocolVersion == 1 || p.ProtocolVersion == 3 && p.MemoryOriginProtocolVersion == 2) || p.Scope != normalSplitScope || p.PhysicalProfileID != NormalSplitV1PhysicalKernelProfileID ||
 		!physicalDigestValid(p.RuntimeDocumentSHA256) || !physicalDigestValid(p.ResourceSourceSHA256) ||
 		p.PrivateMemoryMaxBytes == 0 || p.InitialArraysMemoryMaxBytes == 0 || uint64(p.PrivateMemoryMaxBytes)%(64<<10) != 0 || uint64(p.InitialArraysMemoryMaxBytes)%(64<<10) != 0 ||
 		uint64(p.PrivateMemoryMaxBytes) >= math.MaxInt64 || uint64(p.InitialArraysMemoryMaxBytes) >= math.MaxInt64 || p.PrivatePidsMaxTasks == 0 || p.PrivatePidsMaxTasks >= control.Uint64(math.MaxInt64) || uint64(p.PrivateMemoryMaxBytes) > math.MaxInt64-uint64(p.InitialArraysMemoryMaxBytes) {
@@ -56,8 +56,8 @@ func (p *NormalSplitTopologyPolicy) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	_, hasOrigin := fields["memory_origin_protocol_version"]
-	if n.ProtocolVersion == 1 && hasOrigin || n.ProtocolVersion == 2 && !hasOrigin {
-		return fmt.Errorf("memory origin protocol requires explicit original v2 policy")
+	if n.ProtocolVersion == 1 && hasOrigin || (n.ProtocolVersion == 2 || n.ProtocolVersion == 3) && !hasOrigin {
+		return fmt.Errorf("memory origin protocol requires explicit original versioned policy")
 	}
 	if err := n.validate(); err != nil {
 		return err

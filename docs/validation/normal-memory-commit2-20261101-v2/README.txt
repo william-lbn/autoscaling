@@ -1,0 +1,11 @@
+本批只闭合显式selector2的单次Commit8正链，不代表全部内存恢复或normal降限完成。
+
+原split policy1/selector0、policy2/selector1与6/7 ABI1保持原路径。新policy3必须显式memory_origin_protocol_version=2；未知/冲突拒绝。Host准确Ack7后同步原8WAL+6/7全部文件/目录并固化第3份Host commit，再只发送一次kind8。Guest核原nonce/原producer/完整前缀并durable第3份确认后，才安装同一Guard原R1指针；新Guard/可见JSON不接纳，重复安装拒绝，失败清本地槽不清旧账。原入口在8后关闭port，再Split→Provision→CheckGuest→既有v3 broker hook，旧端口不得进入FS/长期角色。
+
+真实S是同一逻辑根的Host/Guest两侧，不拆2根。准确369/notes/config、实际-run as qemu原pidfd/peer、256MiB→1GiB/4GiB上限、8MiB block、单ext4 switch_root/17mount、真实6/7/8、同Guard指针、端口EBADF、正式pre-Birth Bootstrap与CheckGuest、FS protocol2 capture均实际走过；双报告完整SHA、唯一Wait0/Guest0。Host API/预算来源仍fixture，非执行服务为System stand-in；未启动PG/未证明完整continuous writers/normal/无新增OOM/E。send8不是Guest ready，后续Ready仍独立。
+
+本批31race根40子项全过，其中12新U，19旧回归不重复加覆盖；两个native ELF编译0只是ENV。RootFS5自己的14/63收据属于独立依赖，不在本批新增统计。12U含真实私有文件/fsync和显式模型，不冒硬件磁盘故障实测。新增native2不改变已过U的16份生产/用例输入；所有23实际输入、1024项COPY已锁；不是转签旧PG或旧nativeELF。
+
+未完成：丢7/丢8/半帧后的有界续传、任意新Root/已PG/Runner重启的原pin托管与恢复端点、R2真实broker完整消费、完整normal来源组合及真正normal下降、PG/K8s E2E。当前只单次8，未采用双份冗余或无限ACK；默认失败kill/预算语义未扩大。
+
+历史保留：64830f BUILD_FAIL（未用import，driver unit旧metadata另erratum）；2b6c50 COMPONENT_FAIL暴露旧initialBootInstall白名单，已改专用固定Host writer而未扩大旧初始scanner；b4b523为dispatch前checkpoint；151f51新native夹具编译错误；ee0f6f二次Initialize被原Birth门安全拒绝，修为首次初始化前绑定最终Runtime；一次driver ENV断言未启动Guest。最终S25d93a全部原始失败保留，不覆盖旧source/hash，不拿compile0代替S。

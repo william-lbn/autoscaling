@@ -1,0 +1,30 @@
+{
+  "scope": "FS2_ORIGINAL_CONFIRMED_MEMORY_BINDING_AND_TYPED_R2_FACTORY_COMPONENT_ONLY",
+  "unit": {
+    "roots": 14,
+    "subcases": 63,
+    "new_roots": 4,
+    "new_subcases": 24,
+    "existing_roots": 10,
+    "existing_subcases": 39,
+    "failed": 0,
+    "skipped": 0,
+    "actual_go_inputs": 1016,
+    "source_lock_sha256": "e084c9809466903bb4203e59006cf69c39662c941328bfaaa064e1582c3c5214",
+    "first_failure": "TEST_ONLY intent={} missing required field after explicit parsing; no production relaxation"
+  },
+  "native": {
+    "stable_root_id": "PG17-S-MEMORY-COMMIT2-001",
+    "shared_with": "normal-memory-commit2-20261101-v2",
+    "new_roots_here": 0,
+    "same_logical_root_do_not_sum": true,
+    "actual_single8_FS2_capture": true,
+    "actual_R2_memory_consumer": false,
+    "positive_R2_requires_followup": true,
+    "normal_authorized": false
+  },
+  "normal_authorized": false,
+  "all_sources_closed": false,
+  "E": 0,
+  "K8s_E": 0
+}

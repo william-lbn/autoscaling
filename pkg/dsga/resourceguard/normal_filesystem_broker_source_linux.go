@@ -18,7 +18,7 @@ func (g *Guard) rebindNormalFilesystemOriginForBrokerLocked(ctx context.Context,
 	if g == nil || ctx == nil || ctx.Err() != nil || state == nil || state.dir == nil || state.lock == nil || system == nil || proof == nil || namespace == nil || root == nil || os.Getuid() != 0 || os.Geteuid() != 0 {
 		return fail(fmt.Errorf("original broker filesystem typed context missing"))
 	}
-	if reference.LayoutVersion != normalFilesystemLayoutVersion || reference.ProtocolVersion != 1 {
+	if normalFilesystemValidateReferenceVersion(reference) != nil {
 		return fail(fmt.Errorf("original broker filesystem reference version differs"))
 	}
 	// 先校准确原引用；producer关闭或别的transfer不能借同namespace补当前资格。
@@ -145,6 +145,12 @@ func (g *Guard) rebindNormalFilesystemOriginForBrokerLocked(ctx context.Context,
 	out.pid1.root.Close()
 	out.pid1.namespace = ns
 	out.pid1.root = rt
+	if in.ProtocolVersion == 2 {
+		out.memoryConsumer, e = g.bindNormalMemoryBrokerConsumerLocked(ctx, state, out, proof)
+		if e != nil {
+			return fail(e)
+		}
+	}
 	owned = true
 	good = true
 	return out, nil

@@ -1,0 +1,10 @@
+{
+  "utc": "2026-11-01T04:28:19.140901+00:00",
+  "original_result": "U_FAIL_NATIVE_COMPILE_PASS",
+  "failed_root": "TestNormalFilesystemRealStateRejectsSameBytesNewInode",
+  "cause": "old TEST_ONLY intent={} had no required fields; new production witness parses explicit protocol before checking bound memory files",
+  "resolution": "test-only intent becomes canonical explicit protocol1 object; complete still same {} bytes, same bytes/new inode assertion retained; production parser not relaxed",
+  "changed_file": "/data/neon-build/src/autoscaling/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux_test.go",
+  "new_sha256": "ce771a47e8778d84a277ff8783c8ca0dacc313e207c778e7ac2c82ed85ba846c",
+  "new_attempt_required": true
+}

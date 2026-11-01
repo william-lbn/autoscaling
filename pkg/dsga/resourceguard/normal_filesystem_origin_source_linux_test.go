@@ -4,6 +4,7 @@ package resourceguard
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -79,7 +80,13 @@ func TestNormalFilesystemRealStateRejectsSameBytesNewInode(t *testing.T) {
 	require.NoError(t, e)
 	defer s.close()
 	for _, name := range []string{normalFilesystemOriginIntentName, normalFilesystemOriginCompleteName} {
-		require.NoError(t, s.createPhysicalFile(name, []byte("{}")))
+		raw := []byte("{}")
+		if name == normalFilesystemOriginIntentName {
+			// 仍只测试inode替换；新witness须解析显式旧协议，不能用空对象冒充intent。
+			raw, e = json.Marshal(normalFilesystemOriginIntent{ProtocolVersion: 1, Scope: normalFilesystemOriginScope})
+			require.NoError(t, e)
+		}
+		require.NoError(t, s.createPhysicalFile(name, raw))
 	}
 	g := &Guard{}
 	key, e := normalFilesystemWitnessLocked(g, s, nativeBirthConsumer{}, initialPrebootGuestWitnessKey{})
@@ -131,7 +138,7 @@ func TestNormalFilesystemTransferredFDRemainsOriginalAfterClose(t *testing.T) {
 // PG17-U-FS-010：固定17mount原始来源的三条引用路径不得丢失布局版本。
 // 这里只检验纯投影；实际namespace/root FD及拒绝发生在任何Recover之前由Guest用例验证。
 func TestNormalFilesystemReferenceCarriesOriginalLayout(t *testing.T) {
-	in := normalFilesystemOriginIntent{LayoutVersion: normalFilesystemLayoutVersion, VminitSHA256: "vminit", Namespace: normalFilesystemObject{Device: 1, Inode: 2}, Root: normalFilesystemObject{Device: 3, Inode: 4, MountID: 5}}
+	in := normalFilesystemOriginIntent{ProtocolVersion: 1, Scope: normalFilesystemOriginScope, LayoutVersion: normalFilesystemLayoutVersion, VminitSHA256: "vminit", Namespace: normalFilesystemObject{Device: 1, Inode: 2}, Root: normalFilesystemObject{Device: 3, Inode: 4, MountID: 5}}
 	in.System.RootConsumer = nativeBirthConsumer{PID: 123, StartTicks: 456, InstanceNonce: "original-root"}
 	in.System.GuestBootID = "original-boot"
 	in.System.RuntimeDocumentSHA256 = "runtime"

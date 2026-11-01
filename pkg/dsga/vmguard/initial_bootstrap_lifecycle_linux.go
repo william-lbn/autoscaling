@@ -332,12 +332,18 @@ func (l *linuxInitialLifecycle) drive(ctx context.Context) error {
 			return e
 		}
 		var memoryOrigin *normalMemoryHostOriginSource
-		if selection == 1 {
+		if selection == 1 || selection == 2 {
 			memoryOrigin, e = captureNormalMemoryHostOriginLocked(ctx, s, l, proof)
 			if e != nil {
 				return e
 			}
-			if _, e = channel.completeWithNormalMemoryOrigin(ctx, s, memoryOrigin); e != nil {
+			if selection == 1 {
+				_, e = channel.completeWithNormalMemoryOrigin(ctx, s, memoryOrigin)
+			} else {
+				// 新selector2只单次8；发送8不是Guest FS/PG ready，后继须独立来源。
+				_, e = channel.completeWithNormalMemoryOriginV2(ctx, s, memoryOrigin)
+			}
+			if e != nil {
 				return e
 			}
 		} else if e = channel.complete(ctx, complete); e != nil {

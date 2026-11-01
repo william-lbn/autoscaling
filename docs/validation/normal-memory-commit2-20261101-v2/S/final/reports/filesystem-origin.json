@@ -1,0 +1,627 @@
+{
+  "E": 0,
+  "Host_API_is_model": true,
+  "PG_executed": false,
+  "System_services_are_standins": true,
+  "actual_selector": 2,
+  "actual_split_then_Bootstrap_then_CheckGuest": true,
+  "commit8": {
+    "protocol_version": 2,
+    "scope": "normal-memory-origin-host-commit-v2",
+    "original_nonce": "f18ffc52d16c6361ddc37ce1c937a03e4269638fb5188baaf188669101f36380",
+    "host_stage_sha256": "1180b9cf3923d98a2c8e5e1f7de2a2c9aa4d7f15955a081f7cd373f33cff41be",
+    "host_reference_sha256": "412474ea288554211acb67561cd06790b1528b2bdf965a8d46560f04e7755691",
+    "guest_ack_sha256": "841a8e79482a39f03e7733cb71baa6ec7a33658047c4cbea071d575873bfe636",
+    "guest_boot_id": "f69d3a16-4442-4ede-ae9e-da618fe634de",
+    "root_instance_nonce": "72a6eadd3e4a8c0b85ba5831110f5deefad87a462a327a992d5fe4d07d0fb5d7"
+  },
+  "duplicate_admission_rejected": true,
+  "filesystem2": {
+    "scope": "original-normal-filesystem-origin-v2",
+    "intent_sha256": "b6c17efd543a655b41cade4a4ff190bc371875c5329afc6d8485130e255e6c1b",
+    "completion_sha256": "0b976f2e8d9f9ec1b2bdc24fb19d821f2aa03c5984371ada896eb143691899c9",
+    "original_root": {
+      "instance_nonce": "72a6eadd3e4a8c0b85ba5831110f5deefad87a462a327a992d5fe4d07d0fb5d7",
+      "pid": 62,
+      "start_ticks": "176"
+    },
+    "current_root": {
+      "instance_nonce": "72a6eadd3e4a8c0b85ba5831110f5deefad87a462a327a992d5fe4d07d0fb5d7",
+      "pid": 62,
+      "start_ticks": "176"
+    },
+    "guest_boot_id": "f69d3a16-4442-4ede-ae9e-da618fe634de",
+    "vminit_sha256": "4dc5c255f068072ce9734946f1c5703a4e56625af6374a5a22ded31e6f979e52",
+    "mounts": [
+      {
+        "mount": {
+          "ID": 26,
+          "Parent": 1,
+          "Device": "254:0",
+          "Root": "/",
+          "Point": "/",
+          "Options": {
+            "relatime": true,
+            "ro": true
+          },
+          "FSType": "ext4",
+          "Source": "/dev/vda",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 65024,
+          "inode": 2,
+          "mount_id": 26,
+          "filesystem": 61267,
+          "readonly": true
+        }
+      },
+      {
+        "mount": {
+          "ID": 23,
+          "Parent": 26,
+          "Device": "0:6",
+          "Root": "/",
+          "Point": "/dev",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "devtmpfs",
+          "Source": "devtmpfs",
+          "SuperOptions": {
+            "inode64": true,
+            "mode=755": true,
+            "nr_inodes=20264": true,
+            "rw": true,
+            "size=81056k": true
+          }
+        },
+        "object": {
+          "device": 6,
+          "inode": 1,
+          "mount_id": 23,
+          "filesystem": 16914836,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 29,
+          "Parent": 23,
+          "Device": "0:24",
+          "Root": "/",
+          "Point": "/dev/pts",
+          "Options": {
+            "noexec": true,
+            "nosuid": true,
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "devpts",
+          "Source": "devpts",
+          "SuperOptions": {
+            "mode=600": true,
+            "ptmxmode=000": true,
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 24,
+          "inode": 1,
+          "mount_id": 29,
+          "filesystem": 7377,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 32,
+          "Parent": 23,
+          "Device": "0:27",
+          "Root": "/",
+          "Point": "/dev/shm",
+          "Options": {
+            "nodev": true,
+            "noexec": true,
+            "nosuid": true,
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "tmpfs",
+          "Source": "shm",
+          "SuperOptions": {
+            "inode64": true,
+            "nr_inodes=20830": true,
+            "rw": true,
+            "size=83320k": true
+          }
+        },
+        "object": {
+          "device": 27,
+          "inode": 1,
+          "mount_id": 32,
+          "filesystem": 16914836,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 35,
+          "Parent": 26,
+          "Device": "254:0",
+          "Root": "/etc/neon-dsga",
+          "Point": "/etc/neon-dsga",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "ext4",
+          "Source": "/dev/vda",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 65024,
+          "inode": 18,
+          "mount_id": 35,
+          "filesystem": 61267,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 40,
+          "Parent": 26,
+          "Device": "254:0",
+          "Root": "/etc/resolv.conf",
+          "Point": "/etc/resolv.conf",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "ext4",
+          "Source": "/dev/vda",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 65024,
+          "inode": 22,
+          "mount_id": 40,
+          "filesystem": 61267,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 33,
+          "Parent": 26,
+          "Device": "254:16",
+          "Root": "/",
+          "Point": "/neonvm/runtime",
+          "Options": {
+            "relatime": true,
+            "ro": true
+          },
+          "FSType": "iso9660",
+          "Source": "/dev/vdb",
+          "SuperOptions": {
+            "blocksize=2048": true,
+            "check=s": true,
+            "fmode=644": true,
+            "map=n": true,
+            "nojoliet": true,
+            "ro": true
+          }
+        },
+        "object": {
+          "device": 65040,
+          "inode": 1792,
+          "mount_id": 33,
+          "filesystem": 38496,
+          "readonly": true
+        }
+      },
+      {
+        "mount": {
+          "ID": 24,
+          "Parent": 26,
+          "Device": "0:21",
+          "Root": "/",
+          "Point": "/proc",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "proc",
+          "Source": "proc",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 21,
+          "inode": 1,
+          "mount_id": 24,
+          "filesystem": 40864,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 30,
+          "Parent": 26,
+          "Device": "0:25",
+          "Root": "/",
+          "Point": "/run",
+          "Options": {
+            "nodev": true,
+            "noexec": true,
+            "nosuid": true,
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "tmpfs",
+          "Source": "run",
+          "SuperOptions": {
+            "inode64": true,
+            "mode=755": true,
+            "nr_inodes=20830": true,
+            "rw": true,
+            "size=83320k": true
+          }
+        },
+        "object": {
+          "device": 25,
+          "inode": 1,
+          "mount_id": 30,
+          "filesystem": 16914836,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 25,
+          "Parent": 26,
+          "Device": "0:22",
+          "Root": "/",
+          "Point": "/sys",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "sysfs",
+          "Source": "sysfs",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 22,
+          "inode": 1,
+          "mount_id": 25,
+          "filesystem": 1650812274,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 28,
+          "Parent": 25,
+          "Device": "0:23",
+          "Root": "/",
+          "Point": "/sys/fs/cgroup",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "cgroup2",
+          "Source": "cgroup2",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 23,
+          "inode": 1,
+          "mount_id": 28,
+          "filesystem": 1667723888,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 27,
+          "Parent": 25,
+          "Device": "0:7",
+          "Root": "/",
+          "Point": "/sys/kernel/security",
+          "Options": {
+            "nodev": true,
+            "noexec": true,
+            "nosuid": true,
+            "relatime": true,
+            "ro": true
+          },
+          "FSType": "securityfs",
+          "Source": "securityfs",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 7,
+          "inode": 1,
+          "mount_id": 27,
+          "filesystem": 1935894131,
+          "readonly": true
+        }
+      },
+      {
+        "mount": {
+          "ID": 31,
+          "Parent": 26,
+          "Device": "0:26",
+          "Root": "/",
+          "Point": "/tmp",
+          "Options": {
+            "nodev": true,
+            "noexec": true,
+            "nosuid": true,
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "tmpfs",
+          "Source": "tmp",
+          "SuperOptions": {
+            "inode64": true,
+            "nr_inodes=20830": true,
+            "rw": true,
+            "size=83320k": true
+          }
+        },
+        "object": {
+          "device": 26,
+          "inode": 1,
+          "mount_id": 31,
+          "filesystem": 16914836,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 37,
+          "Parent": 26,
+          "Device": "254:0",
+          "Root": "/var/db/postgres",
+          "Point": "/var/db/postgres",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "ext4",
+          "Source": "/dev/vda",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 65024,
+          "inode": 74,
+          "mount_id": 37,
+          "filesystem": 61267,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 39,
+          "Parent": 26,
+          "Device": "254:0",
+          "Root": "/var/lib/chrony",
+          "Point": "/var/lib/chrony",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "ext4",
+          "Source": "/dev/vda",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 65024,
+          "inode": 76,
+          "mount_id": 39,
+          "filesystem": 61267,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 36,
+          "Parent": 26,
+          "Device": "254:0",
+          "Root": "/var/lib/neon-dsga",
+          "Point": "/var/lib/neon-dsga",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "ext4",
+          "Source": "/dev/vda",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 65024,
+          "inode": 77,
+          "mount_id": 36,
+          "filesystem": 61267,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 38,
+          "Parent": 26,
+          "Device": "254:0",
+          "Root": "/var/log",
+          "Point": "/var/log",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "ext4",
+          "Source": "/dev/vda",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 65024,
+          "inode": 79,
+          "mount_id": 38,
+          "filesystem": 61267,
+          "readonly": false
+        }
+      }
+    ],
+    "original_fd_inventory_captured": true,
+    "durability_confirmed": true,
+    "continuous_writers_closed": false,
+    "normal_decrease_authorized": false,
+    "missing_sources": [
+      "continuous-original-namespace-mount-control-writers",
+      "future-role-spawn-FD-and-SCM_RIGHTS-source-closure"
+    ]
+  },
+  "memory_prefix_unchanged": true,
+  "new_Guard_JSON_adoption_rejected": true,
+  "normal_authorized": false,
+  "original_confirmed_reference": {
+    "protocol_version": 2,
+    "original_root": {
+      "instance_nonce": "72a6eadd3e4a8c0b85ba5831110f5deefad87a462a327a992d5fe4d07d0fb5d7",
+      "pid": 62,
+      "start_ticks": "176"
+    },
+    "guest_boot_id": "f69d3a16-4442-4ede-ae9e-da618fe634de",
+    "runtime_document_sha256": "c1874964368f9850c5a196d17b78d0250a4839c477ce06bb33a57e84ae1e2a01",
+    "resource_source_sha256": "0c3bf5a5a5ff9fdb0aba02dc4c09a64e9b1d764457e8052081faaba826ae0425",
+    "original_initial_wal": {
+      "Device": 65024,
+      "Inode": 78,
+      "LockDevice": 65024,
+      "LockInode": 81,
+      "ChallengeSHA256": "f69abc43f84cd9416ddc09ba0c298d9a218e7c0ba672edd45676e638e93f1978",
+      "Files": [
+        {
+          "Device": 65024,
+          "Inode": 82,
+          "Bytes": 8283,
+          "ChangeSeconds": 1793507801,
+          "ChangeNanoseconds": 298403625
+        },
+        {
+          "Device": 65024,
+          "Inode": 83,
+          "Bytes": 2028,
+          "ChangeSeconds": 1793507801,
+          "ChangeNanoseconds": 398403625
+        },
+        {
+          "Device": 65024,
+          "Inode": 85,
+          "Bytes": 3002,
+          "ChangeSeconds": 1793507801,
+          "ChangeNanoseconds": 426403625
+        },
+        {
+          "Device": 65024,
+          "Inode": 86,
+          "Bytes": 105,
+          "ChangeSeconds": 1793507801,
+          "ChangeNanoseconds": 438403625
+        },
+        {
+          "Device": 65024,
+          "Inode": 87,
+          "Bytes": 2978,
+          "ChangeSeconds": 1793507801,
+          "ChangeNanoseconds": 534403625
+        },
+        {
+          "Device": 65024,
+          "Inode": 88,
+          "Bytes": 1888,
+          "ChangeSeconds": 1793507801,
+          "ChangeNanoseconds": 650403625
+        },
+        {
+          "Device": 65024,
+          "Inode": 84,
+          "Bytes": 1398,
+          "ChangeSeconds": 1793507801,
+          "ChangeNanoseconds": 410403625
+        },
+        {
+          "Device": 65024,
+          "Inode": 89,
+          "Bytes": 1819,
+          "ChangeSeconds": 1793507801,
+          "ChangeNanoseconds": 834403625
+        }
+      ],
+      "SHA256": [
+        "21c169ab2e2ebf84f3360faaf2d81c42003a07c7460d8de7dc89abc70bcbd23e",
+        "1e6d4eb4d8f585d20ec3012725b658b46bd07fd377a3e6c5060e44823f76c4bb",
+        "fe266699d093891d54ed61c9376b0fa3634cd042da9bd8c8f8a69a1600cc40ca",
+        "83e7b442d39496943b0348c06c11a48f479601da8835093c4893e564612cb391",
+        "d273042904e7c2934d42c2010f07a9648d35fc95b90979d8c4c9d6b04544cd8a",
+        "cf2e43e2700953d0a1bd091362a78efe30f55afa7559b70e94ca159f5d3b09e1",
+        "e08387b8fb4cb4c23f652c6fc555108d353847a7473e9f3764499953570d73a7",
+        "59b1edf04548504482947e86d420aed88489f2190c6186e4e6be48d5d251bdd4"
+      ]
+    },
+    "files": [
+      {
+        "Device": 65024,
+        "Inode": 90,
+        "Bytes": 11358,
+        "ChangeSeconds": 1793507803,
+        "ChangeNanoseconds": 762403625
+      },
+      {
+        "Device": 65024,
+        "Inode": 91,
+        "Bytes": 555,
+        "ChangeSeconds": 1793507803,
+        "ChangeNanoseconds": 778403625
+      },
+      {
+        "Device": 65024,
+        "Inode": 92,
+        "Bytes": 945,
+        "ChangeSeconds": 1793507805,
+        "ChangeNanoseconds": 746403625
+      }
+    ],
+    "sha256": [
+      "19b152bc4a98dd29f39462de7f8cbbd143140be7f76eab20219091757ebac2f3",
+      "0600ba0bc87042d495bb1cfdc467e48cf9c67f60f1e0ec6efa66fe630e5cddb9",
+      "e179bc7bb899174e4d5bdc93d3572b47fa6812b46894c1def40f64f05eeea3b1"
+    ]
+  },
+  "port_closed_before_split_and_FS": true,
+  "same_Guard_pointer_retained": true,
+  "single_commit8": true,
+  "stable_id": "PG17-S-MEMORY-COMMIT2-001"
+}

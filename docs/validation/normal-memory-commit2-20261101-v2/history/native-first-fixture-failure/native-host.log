@@ -1,0 +1,8 @@
+=== RUN   TestNativeNormalMemoryCommit2Host
+    normal_memory_commit_native_test.go:46: 
+        	Error Trace:	/workspace/pkg/dsga/vmguard/normal_memory_commit_native_test.go:46
+        	Error:      	Received unexpected error:
+        	            	interrupted Runner birth lacks its complete original selection; controlled recovery required
+        	Test:       	TestNativeNormalMemoryCommit2Host
+--- FAIL: TestNativeNormalMemoryCommit2Host (0.08s)
+FAIL

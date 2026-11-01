@@ -1,0 +1,48 @@
+{
+  "entries": [
+    {
+      "label": "A9-first-build-failure",
+      "original_path": "/data/neon-build/validation/normal-memory-commit2-production-go-20261101T021643Z-64830f",
+      "original_source_lock_sha256": "e11528dd614adae901569401fc545c226a72b915f66577ff81b1d974c2c749a7"
+    },
+    {
+      "label": "A9-real-component-failure",
+      "original_path": "/data/neon-build/validation/normal-memory-commit2-production-go-20261101T021849Z-2b6c50",
+      "original_source_lock_sha256": "dc118ca17d8a65f403341015fc6d4ea7e54ef5b6c7a7093b295fe9710e5c7d17"
+    },
+    {
+      "label": "A9-before-dispatch-checkpoint",
+      "original_path": "/data/neon-build/validation/normal-memory-commit2-production-go-20261101T022804Z-b4b523",
+      "original_source_lock_sha256": "e7a51b064de85da6b1bd41f42b8eee6c49339f04a00eedf4d0efa4a46c911516"
+    },
+    {
+      "label": "native-first-compile-failure",
+      "original_path": "/data/neon-build/validation/normal-memory-commit2-native-build-20261101T043129Z-151f51",
+      "original_source_lock_sha256": "3eef6bf608db56c801dfa9be28cbfd8eb1444ed29bfe6359a20862fe545b6e8f"
+    },
+    {
+      "label": "native-old-factory-build",
+      "original_path": "/data/neon-build/validation/normal-memory-commit2-native-build-20261101T043237Z-5300d5",
+      "original_source_lock_sha256": "b3b348f461792781b639eda21a0078a8b7771f583c63da206c2cba4c6b531817"
+    },
+    {
+      "label": "native-first-fixture-failure",
+      "original_path": "/data/neon-build/validation/normal-memory-commit2-native-20261101T043443Z-ee0f6f",
+      "original_source_lock_sha256": "7e9a4f6ab52fe1d669b53d109c27609c7c8c8ae386e9f7fb1468ecaffd08e0bf"
+    }
+  ],
+  "native_driver_environment_failure_before_launch": {
+    "paths": [
+      "/data/neon-build/validation/normal-memory-commit2-native-20261101T043425Z-7fab7a"
+    ],
+    "actual_tool_trace": "File <stdin>, line 14, AssertionError",
+    "classification": "ENV_DRIVER: historical worker selection asserted before systemd/KVM; no business source execution",
+    "resolution": "fixed original dedicated single-ext4 driver prefix, new nonce ee0f6f then later25d93a"
+  },
+  "Root_FS_first_fixture_failure": {
+    "path": "/data/neon-build/validation/normal-filesystem-memory2-go-20261101T042642Z-3f70b0",
+    "owner": "Root",
+    "unchanged_production_dependency": "final79fce3",
+    "scope": "old canonical intent test fixture corrected; separate owner archive"
+  }
+}
