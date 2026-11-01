@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "scope": "同调用栈新鲜broker观察去重：直接单元与Linux内核/原私有WAL拒绝事实，不授完整Source",
+  "code_stage_commit": "aeb1de442c281ef5d0ca850e9f048d25d11a206a",
+  "original_compile_base": "dd23075dbef5aada37744d5d6c0423de54e1ff59",
+  "postgres_versions_actually_tested": [],
+  "target_backend_versions": [
+    17
+  ],
+  "owned2": {
+    "pkg/dsga/resourceguard/normal_system_role_service_transfer_linux.go": "05cf76ffee14300c91fb5399cfec0fd3d6c144ab611d0ef5390333aa915f68aa",
+    "pkg/dsga/resourceguard/normal_system_role_service_transfer_observation_linux_test.go": "b8f43b26f5340eaa56b7b45ee3d99dd4edb8b4c991df61d5f07c584438c66e91"
+  },
+  "U": [
+    {
+      "id": "PG17-U-BROKER-FRESH-OBS-001",
+      "root": "TestNormalBrokerFreshObservationDEVTraceIsDiagnosticOnly",
+      "result": "PASS",
+      "run_nonce": "20261101T155548Z-246536"
+    },
+    {
+      "id": "PG17-U-BROKER-FRESH-OBS-002",
+      "root": "TestNormalBrokerFreshObservationRejectsOriginalProofAndTaskDrift",
+      "result": "PASS",
+      "run_nonce": "20261101T155548Z-246536"
+    },
+    {
+      "id": "PG17-U-BROKER-FRESH-OBS-003",
+      "root": "TestNormalBrokerFreshObservationRetainsOriginalTransferWALRejection",
+      "result": "PASS",
+      "run_nonce": "20261101T155548Z-246536"
+    }
+  ],
+  "unit_subtests": 12,
+  "S": [],
+  "E": 0,
+  "Linux_E": 0,
+  "K8s_E": 0,
+  "Source": false,
+  "normal": false,
+  "safeNormal": false,
+  "actual_speedup_proven": false,
+  "counting": "三根/12子项为本阶段；后继组合与重复图不累计为新增功能根，原基表不修改",
+  "limits": [
+    "反例实际到closed/foreign/Task拒绝且完整inspection计数0；WAL helper有原文件baseline后再删/改拒绝",
+    "不以WAL helper替代完整core末namespaceFD正控；完整positive须原Guest",
+    "255.3MiB为确定调用图静态预期少读取量，不是实际时间/字节证明",
+    "不引入跨调用或生命周期缓存，原全部hash/WAL/权限/ns/root与末Task核验保留"
+  ],
+  "original_receipts": {
+    "source-lock.json": {
+      "path": "/data/neon-build/validation/normal-broker-fresh-observation-go-20261101T155548Z-246536/source-lock.json",
+      "sha256": "f28fe931f3b7bef7b35ff4bb5b98e1c53b58858b7454fa4829289bebfee7711f"
+    },
+    "result.json": {
+      "path": "/data/neon-build/validation/normal-broker-fresh-observation-go-20261101T155548Z-246536/result.json",
+      "sha256": "da932de855e75d44b4cafb4ca6d58df6b1613feae4fedfed2d31a68d701001e1"
+    },
+    "Dockerfile": {
+      "path": "/data/neon-build/validation/normal-broker-fresh-observation-go-20261101T155548Z-246536/Dockerfile",
+      "sha256": "b050596a5387377af80c27ab1cb195eebf90363ba733b0660a3f4c35076b0138"
+    },
+    "budget-spec.json": {
+      "path": "/data/neon-build/validation/normal-broker-fresh-observation-go-20261101T155548Z-246536/budget-spec.json",
+      "sha256": "a8251812c63a9ed43b65c2798422f11bf531123a7e8e19a5729d6c7286d106a6"
+    },
+    "worker.py": {
+      "path": "/data/neon-build/validation/normal-broker-fresh-observation-go-20261101T155548Z-246536/worker.py",
+      "sha256": "3d752af5b8ab37e6dbd36fcacf83f4be1878d33453035288021da7b14e0387e8"
+    },
+    "export/test.json": {
+      "path": "/data/neon-build/validation/normal-broker-fresh-observation-go-20261101T155548Z-246536/export/test.json",
+      "sha256": "97120c3169db8f5d753f14d4aa5c9c4fb618b5e6f35dccf12bc41c74aa01aa79"
+    },
+    "export/test.stderr": {
+      "path": "/data/neon-build/validation/normal-broker-fresh-observation-go-20261101T155548Z-246536/export/test.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "export/compiled-source.sha256": {
+      "path": "/data/neon-build/validation/normal-broker-fresh-observation-go-20261101T155548Z-246536/export/compiled-source.sha256",
+      "sha256": "38fc20c4fa653d1917729b45f3a39e5a1197730cbc7c7a3f898da9157943a0c0"
+    }
+  }
+}
