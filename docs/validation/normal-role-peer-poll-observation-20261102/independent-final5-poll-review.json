@@ -1,0 +1,26 @@
+{
+  "status": "FINAL5_SOURCE_REVIEW_NO_NEW_BLOCKER",
+  "source_freeze_sha256": "b8a0e64446d7a7a45d3112a66c760520f4cee8f7cac3198df315e8535b29891e",
+  "files": {
+    "pkg/dsga/resourceguard/array_registry_linux.go": "2c87296d1b40c5dd9a0e336bc73eef3f47287500554576a65a16a837744738d9",
+    "pkg/dsga/resourceguard/normal_system_role_service_listener_linux.go": "b7b3e757ca92026532d5e635128ff73f558ff89bffaa8a5a4d75a849cd7f28c5",
+    "pkg/dsga/resourceguard/normal_system_role_diagnostic_linux.go": "b92934e3f8699dd3fba679e1e578a7a9912575fa47e720a6ff278b05fd1a1b62",
+    "pkg/dsga/resourceguard/normal_zz_stock_real_roles_native_test.go": "eccd5c68c5a9b05aa5b5277163ec958c03053770ab4151959e8e5e386b24a86e",
+    "pkg/dsga/resourceguard/array_registry_pidfd_observation_linux_test.go": "550a58808d881b1c35ef5ffd28654e91869868cc45c47b53dd5a27da8818b4ae"
+  },
+  "dependency": {
+    "pkg/dsga/resourceguard/normal_ordinary_udev_v2_source_linux.go": "598a0226f7b61c29a3d6c953cd95beb9420717fb93565a8071a6c236ca6c282b"
+  },
+  "single_Poll_and_original_predicate_error_preserved": true,
+  "no_retry_or_new_permission": true,
+  "baseline": "same held raw peer.pidfd after original peer/task/descriptor verification, diag-only; never closed source.PIDFD",
+  "after": "same integer fd Fstat/Fstatfs only after original kill+Wait; no Poll/dup/proc reopen",
+  "not_atomic_Poll_identity_proof": true,
+  "private_data_pointer_ownership": "only nil or address of local by-value copy passed to private append; snapshot deep copies detail",
+  "new_tests": "four real getter subcases plus one private snapshot test; not Source proof",
+  "actual_compilation_or_native_by_reviewer": 0,
+  "next_gate": "6aa254 final five file actual compile graph and support598a, necessary U/8 phases, 4 actual ELF SHA, unique nonce",
+  "Source": false,
+  "normal": false,
+  "E": 0
+}

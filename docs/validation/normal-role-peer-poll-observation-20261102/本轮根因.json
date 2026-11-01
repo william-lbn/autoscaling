@@ -1,0 +1,56 @@
+{
+  "original_native": "/data/neon-build/validation/normal-role-peer-poll-observation-native-20261101T200257Z-6aa254-native",
+  "result_sha256": "c11a9b4f502b6049ed1e6a9d2f90b19614a136f3ec606a2f9d368995343bb749",
+  "snapshot_count": 12,
+  "drops": 0,
+  "same_snapshot_printed_twice_is_one_kill": true,
+  "actual_same_Poll": {
+    "fd_present": true,
+    "poll_called": true,
+    "n": -1,
+    "revents": 0,
+    "errno": 4,
+    "errno_known": true
+  },
+  "original_peer_pid": 133,
+  "DEV_actual_client_entry_and_return_pids": [
+    [
+      "entry",
+      "133"
+    ],
+    [
+      "return",
+      "133"
+    ]
+  ],
+  "actual_original_pin_before_monitor": {
+    "stat_ok": true,
+    "stat_errno": 0,
+    "stat_errno_known": false,
+    "device": 5,
+    "inode": 433,
+    "mode": 448,
+    "statfs_ok": true,
+    "statfs_errno": 0,
+    "statfs_errno_known": false,
+    "fs_type": 1346978886
+  },
+  "actual_original_pin_after_kill_wait": {
+    "stat_ok": true,
+    "stat_errno": 0,
+    "stat_errno_known": false,
+    "device": 5,
+    "inode": 433,
+    "mode": 448,
+    "statfs_ok": true,
+    "statfs_errno": 0,
+    "statfs_errno_known": false,
+    "fs_type": 1346978886
+  },
+  "identity_sampling_not_atomic_with_Poll": true,
+  "cause_for_this_nonce": "监听器将同次Poll实际EINTR视为client失效并执行原SIGKILL；该客户端同PID实际仍接收到137",
+  "old_a45_4b_d915_not_automatically_relabelled": true,
+  "first_cd8_different_failure_retained": true,
+  "normal_authorized": false,
+  "E": 0
+}

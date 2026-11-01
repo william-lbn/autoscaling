@@ -1,0 +1,52 @@
+{
+  "stable_id": "NEON-S-ROLE-PEER-POLL-OBSERVATION-001",
+  "status": "FAIL_COMPONENT_OR_FIXTURE",
+  "Host_container_exit": 1,
+  "Guest_exits": [
+    "1"
+  ],
+  "initial_exits": [
+    "0"
+  ],
+  "R1_alive_refs": [
+    "c72d03b1219b753cd824fe45c67178d7d31750f07af91ecc811bfda3857a7750"
+  ],
+  "R1_exited_refs": [
+    "c72d03b1219b753cd824fe45c67178d7d31750f07af91ecc811bfda3857a7750"
+  ],
+  "actual_stock_receipts": [
+    {
+      "projection_sha256": "67472f07bdf4243fa48127910cb8462f1015e3e985352e234fe66120f1920a20",
+      "wait_sha256": "54580d4cc5948161efe3050949923356821bbc9bafed441c356aaee5d129da4d",
+      "manifest_sha256": "885ab22a3873a51f2c8feac800ec635337cec8d6491cd81f8e3862fdd5bccece",
+      "package_lock_sha256": "cca0c098d0138d7159f1a09a90ec71618e798ac87272825d3e12778cbc6e5332",
+      "targets": 198,
+      "runtime_phase": 3,
+      "typed_source": true,
+      "normal": false
+    }
+  ],
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "seconds": 92.44471583401901,
+  "actual_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+  "Guest_ELF_sha256": "e9447f07bc6de68f29d00bb64f8b7ca4fef98dac6bc67e1ce56b9fe6abd4b5e0",
+  "Host_ELF_sha256": "756cdf7545b6a2e49aeb95a75d3e3caa3945f786afa574d840333d6fca892929",
+  "Host_API_is_model": true,
+  "production_CLI_only_compiled": true,
+  "ordinary_services_executed": false,
+  "PG_executed": false,
+  "normal_authorized": false,
+  "E": 0,
+  "diagnostic_only": true,
+  "actual_role_entries": [
+    "udev-init"
+  ],
+  "role_kill_diagnostic_json": [
+    "{\"count\":12,\"dropped\":0,\"events\":[{\"stage\":1,\"role\":5,\"decision_unix_nano\":1793563669630927170,\"recorded_unix_nano\":1793563669630927170,\"value\":5},{\"stage\":2,\"role\":5,\"decision_unix_nano\":1793563669630928934,\"recorded_unix_nano\":1793563669630928934,\"value\":0},{\"stage\":12,\"role\":5,\"decision_unix_nano\":1793563671668943467,\"recorded_unix_nano\":1793563671668943467,\"value\":0},{\"stage\":3,\"role\":5,\"decision_unix_nano\":1793563671671122430,\"recorded_unix_nano\":1793563671671122430,\"value\":0},{\"stage\":4,\"role\":5,\"decision_unix_nano\":1793563671938038566,\"recorded_unix_nano\":1793563671938038566,\"value\":0},{\"stage\":5,\"role\":5,\"decision_unix_nano\":1793563672295242376,\"recorded_unix_nano\":1793563672295242376,\"value\":0},{\"stage\":6,\"role\":5,\"decision_unix_nano\":1793563674751656233,\"recorded_unix_nano\":1793563674751656233,\"value\":0},{\"stage\":7,\"role\":5,\"decision_unix_nano\":1793563674751661238,\"recorded_unix_nano\":1793563674751661238,\"value\":0},{\"stage\":8,\"role\":5,\"decision_unix_nano\":1793563686121510528,\"recorded_unix_nano\":1793563686121510528,\"value\":0},{\"stage\":9,\"role\":5,\"decision_unix_nano\":1793563686121529386,\"recorded_unix_nano\":1793563686121529386,\"value\":0},{\"stage\":10,\"role\":5,\"decision_unix_nano\":1793563686121530231,\"recorded_unix_nano\":1793563686121530231,\"value\":0},{\"stage\":16,\"role\":5,\"decision_unix_nano\":1793563687569392600,\"recorded_unix_nano\":1793563687577355209,\"value\":0,\"peer_pidfd\":{\"baseline_captured\":true,\"original_peer_pid\":133,\"original_fd\":881,\"before_monitor\":{\"stat_ok\":true,\"stat_errno\":0,\"stat_errno_known\":false,\"device\":5,\"inode\":433,\"mode\":448,\"statfs_ok\":true,\"statfs_errno\":0,\"statfs_errno_known\":false,\"fs_type\":1346978886},\"original_poll\":{\"fd_present\":true,\"poll_called\":true,\"n\":-1,\"revents\":0,\"errno\":4,\"errno_known\":true},\"after_kill_wait\":{\"stat_ok\":true,\"stat_errno\":0,\"stat_errno_known\":false,\"device\":5,\"inode\":433,\"mode\":448,\"statfs_ok\":true,\"statfs_errno\":0,\"statfs_errno_known\":false,\"fs_type\":1346978886}}}]}",
+    "{\"count\":12,\"dropped\":0,\"events\":[{\"stage\":1,\"role\":5,\"decision_unix_nano\":1793563669630927170,\"recorded_unix_nano\":1793563669630927170,\"value\":5},{\"stage\":2,\"role\":5,\"decision_unix_nano\":1793563669630928934,\"recorded_unix_nano\":1793563669630928934,\"value\":0},{\"stage\":12,\"role\":5,\"decision_unix_nano\":1793563671668943467,\"recorded_unix_nano\":1793563671668943467,\"value\":0},{\"stage\":3,\"role\":5,\"decision_unix_nano\":1793563671671122430,\"recorded_unix_nano\":1793563671671122430,\"value\":0},{\"stage\":4,\"role\":5,\"decision_unix_nano\":1793563671938038566,\"recorded_unix_nano\":1793563671938038566,\"value\":0},{\"stage\":5,\"role\":5,\"decision_unix_nano\":1793563672295242376,\"recorded_unix_nano\":1793563672295242376,\"value\":0},{\"stage\":6,\"role\":5,\"decision_unix_nano\":1793563674751656233,\"recorded_unix_nano\":1793563674751656233,\"value\":0},{\"stage\":7,\"role\":5,\"decision_unix_nano\":1793563674751661238,\"recorded_unix_nano\":1793563674751661238,\"value\":0},{\"stage\":8,\"role\":5,\"decision_unix_nano\":1793563686121510528,\"recorded_unix_nano\":1793563686121510528,\"value\":0},{\"stage\":9,\"role\":5,\"decision_unix_nano\":1793563686121529386,\"recorded_unix_nano\":1793563686121529386,\"value\":0},{\"stage\":10,\"role\":5,\"decision_unix_nano\":1793563686121530231,\"recorded_unix_nano\":1793563686121530231,\"value\":0},{\"stage\":16,\"role\":5,\"decision_unix_nano\":1793563687569392600,\"recorded_unix_nano\":1793563687577355209,\"value\":0,\"peer_pidfd\":{\"baseline_captured\":true,\"original_peer_pid\":133,\"original_fd\":881,\"before_monitor\":{\"stat_ok\":true,\"stat_errno\":0,\"stat_errno_known\":false,\"device\":5,\"inode\":433,\"mode\":448,\"statfs_ok\":true,\"statfs_errno\":0,\"statfs_errno_known\":false,\"fs_type\":1346978886},\"original_poll\":{\"fd_present\":true,\"poll_called\":true,\"n\":-1,\"revents\":0,\"errno\":4,\"errno_known\":true},\"after_kill_wait\":{\"stat_ok\":true,\"stat_errno\":0,\"stat_errno_known\":false,\"device\":5,\"inode\":433,\"mode\":448,\"statfs_ok\":true,\"statfs_errno\":0,\"statfs_errno_known\":false,\"fs_type\":1346978886}}}]}"
+  ],
+  "ordinary9_qualified": false
+}

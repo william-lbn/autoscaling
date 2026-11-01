@@ -70,19 +70,40 @@ func (o *arrayRegistryOriginal) close() {
 		o.procfd = -1
 	}
 }
+
+// 同一次原Poll的私有事实。不是alive权限；完整保留int n/int16 revents/原errno，不截断编码。
+type arrayRegistryPIDFDObservation struct {
+	FDPresent  bool   `json:"fd_present"`
+	PollCalled bool   `json:"poll_called"`
+	N          int    `json:"n"`
+	Revents    int16  `json:"revents"`
+	Errno      uint64 `json:"errno"`
+	ErrnoKnown bool   `json:"errno_known"`
+}
+
 func arrayRegistryPIDFDAlive(fd int) error {
+	_, e := arrayRegistryPIDFDAliveObservation(fd)
+	return e
+}
+func arrayRegistryPIDFDAliveObservation(fd int) (arrayRegistryPIDFDObservation, error) {
+	out := arrayRegistryPIDFDObservation{FDPresent: fd >= 0}
 	if fd < 0 {
-		return fmt.Errorf("original pidfd missing")
+		return out, fmt.Errorf("original pidfd missing")
 	}
 	p := []unix.PollFd{{Fd: int32(fd), Events: unix.POLLIN}}
+	out.PollCalled = true
 	n, err := unix.Poll(p, 0)
+	out.N, out.Revents = n, p[0].Revents
 	if err != nil {
-		return err
+		if errno, ok := err.(unix.Errno); ok {
+			out.Errno, out.ErrnoKnown = uint64(errno), true
+		}
+		return out, err
 	}
 	if n != 0 || p[0].Revents != 0 {
-		return fmt.Errorf("original pidfd exited or unknown")
+		return out, fmt.Errorf("original pidfd exited or unknown")
 	}
-	return nil
+	return out, nil
 }
 func arrayRegistryDup(fd int) (int, error) {
 	if fd < 0 {

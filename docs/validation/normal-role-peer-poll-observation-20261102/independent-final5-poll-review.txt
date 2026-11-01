@@ -1,0 +1,29 @@
+同次PIDFD Poll与peer前后元数据：最终五源独立审查
+
+freeze b8a0e64446d7a7a45d3112a66c760520f4cee8f7cac3198df315e8535b29891e，base f171c93a。
+五源逐SHA及冻结598a依赖均核同。所审差异无新明确阻断；必要Go4新图/实际产物另核后才放
+唯一新native，不将本源码审查当真实角色成功或peer已死亡。
+
+getter保原arrayRegistryPIDFDAlive签名，仅调用同次core并返回同error。core在fd<0保持同
+missing错误且不Poll，其余恰好一次Poll(fd,0)，errno原对象直返；原n/revents任非0统一Unknown，
+正常零/零返回nil。没有retry、重开或放宽。观测N为int、Revents为int16、errno u64+known，
+不截断；ErrnoKnown只描述实际syscall错误类型，不能当alive或Source位。
+
+listener原ServicePeer/Task/argv/descriptor验证之后，仅有diag对象时，对仍持有的peer.pidfd
+做一次Fstat/Fstatfs基线。没有访问已关闭source.PIDFD、没有按PID重开/dup/Poll。monitor仍用
+原pidfd活性条件决定原kill+Wait；仅在其后读同原rawfd元数据并记录。peer.pidfd在本对象
+构造后不赋新值，handler正常defer close在monitorExited之后，因此两次采样同一rawfd整数。
+但元数据前后相同也不是原Poll瞬间的原子同对象证明，不能据此授予存活或清除Unknown。
+
+固定诊断data新detail是内部值拷贝的baseline局部对象，不从请求/环境接指针；两个Append
+调用点分别nil或&局部by-value baseline，记录后无外部别名继续写。snapshot先有界复制64
+slots，再逐detail深复制，锁外才JSON/通知；aux只diag.mu，无业务/resource/Task反向锁。
+BeforeMonitor和AfterKillWait标签明确时点。无diag时不额外Fstat，正常判定没有变。
+
+DEV只多两条Client os.Getpid entry/return行，便于与listener已存source.PID对照，不增加凭据/
+环境/body输出或决定。原失败分支、reboot、Wait和kill顺序保。实际测试使用原self pidfd、
+missing -1、closed高fd、原child真Wait后pidfd，以及快照深复制；它们只是私有观察测试，不能
+把手工PeerPoll记录叫真实kill/Source正控。审者没有重跑或修改源码/Git。
+
+6aa254实际图仍需核本五源、support598a、必要U/8phase及四新ELF后原子nonce门。d915的
+stage16既有证据、旧a45/4b SIGKILL与cd8 exit47历史不重标。

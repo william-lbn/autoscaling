@@ -116,11 +116,13 @@ func stockRealRolesDEVDispatch(m *testing.M) bool {
 			}
 			role := os.Args[2]
 			fmt.Println("REAL_ROLES_DEV_PRODUCTION_CLIENT_ENTRY", role)
+			fmt.Printf("REAL_ROLES_DEV_PRODUCTION_CLIENT_PID phase=entry role=%s pid=%d\n", role, os.Getpid())
 			code, e := RunNormalSystemRoleClient(context.Background(), role)
 			if e != nil {
 				stockRealRolesDEVFail("production-client-"+role, e)
 			}
 			fmt.Printf("REAL_ROLES_DEV_PRODUCTION_CLIENT_RETURN role=%s code=%d\n", role, code)
+			fmt.Printf("REAL_ROLES_DEV_PRODUCTION_CLIENT_PID phase=return role=%s pid=%d\n", role, os.Getpid())
 			if code != 0 {
 				stockRealRolesDEVFail("production-client-nonzero-"+role, fmt.Errorf("actual fixed role exit code %d", code))
 			}

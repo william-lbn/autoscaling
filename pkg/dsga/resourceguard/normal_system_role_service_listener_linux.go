@@ -205,6 +205,7 @@ func (v *normalSystemRoleService) handle(conn *net.UnixConn) error {
 	if e = normalSystemRoleServiceClientDescriptors(peer.procfd, role); e != nil {
 		return e
 	}
+	peerDiagnostic := normalSystemRoleDiagnosticPeerBaseline(v.ctx, peer)
 	if role == "compute" {
 		pin, e := normalSystemRoleServiceCaptureComputeLockPeer(peer)
 		if e != nil {
@@ -272,10 +273,10 @@ func (v *normalSystemRoleService) handle(conn *net.UnixConn) error {
 				return
 			case <-ticker.C:
 				// 保原OR短路顺序；先确定原杀分支，原kill/Wait完毕后才记诊断。
-				if arrayRegistryPIDFDAlive(peer.pidfd) != nil {
+				if observation, aliveErr := arrayRegistryPIDFDAliveObservation(peer.pidfd); aliveErr != nil {
 					decision := normalSystemRoleDiagnosticDecision(v.ctx)
 					_ = run.child.cancelAndWait()
-					normalSystemRoleDiagnosticRecord(v.ctx, normalRoleDiagKillClientPIDFD, role, decision, 0)
+					normalSystemRoleDiagnosticRecordPeerPoll(v.ctx, role, decision, peerDiagnostic, observation)
 					return
 				}
 				if normalSystemRoleServiceConnectionGone(conn) {
