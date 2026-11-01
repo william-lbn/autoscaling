@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "files": {
+    "pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go": "5f53b80ab30674d2e4787741c96f71a39e7170a839c120ce67aa7d3bbb126111",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_linux.go": "379eca71543b2328ca0e03351d07cced1800f301bca678d4d7db427c07b50eff",
+    "pkg/dsga/resourceguard/normal_filesystem_memory_stock_observation_linux_test.go": "161b672d557d90121f0025039df53bf9a862a3349de4e03a02c5bf81281598b2",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_observation_linux_test.go": "0985d0ecba581aebc368ded128eebdee5a75f1f40e822dbfe193c0de29ec5e6b"
+  },
+  "native_nonce": "20261101T180719Z-fb3c65-native",
+  "Guest_ELF_sha256": "b3a121fdc94f9ee6cabe50388c9c57cc43e66a4e93c1cbd804b36c46f629dcb1",
+  "source_freeze_sha256": "1d5b02eddeb582bcf0f4ca59567db4c669a6562fd29f5a44bf328792c406893a",
+  "final_source_lock_sha256": "6ba4b043fafd9611014ce0579480a20e2d96a435df7d3c116e3bcaba6926365f",
+  "final_build_nonce": "20261101T180719Z-fb3c65",
+  "final_build_exit": 0,
+  "final_phase_results": {
+    "u.exitcode": 0,
+    "native-compile.exitcode": 0,
+    "fixture-seed.exitcode": 0
+  },
+  "final_direct_U_counts": {
+    "roots": 4,
+    "subtests": 40,
+    "skip": 0,
+    "fail": 0
+  },
+  "reused_artifacts": {
+    "host-memory.test": {
+      "bytes": 41414840,
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99",
+      "path": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180234Z-9aea99/export/host-memory.test",
+      "sha256": "a3ba45015d40e9d7e08438331005fb9102f8a6c5689e986eabdb6e136cf07d7a"
+    },
+    "resource-guard.real": {
+      "bytes": 58581869,
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99",
+      "path": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180234Z-9aea99/export/resource-guard.real",
+      "sha256": "e862520c3996d65e931f95a968cd7433c8df0465ddadd900c15ffa6c4925115b"
+    },
+    "vm-builder.real": {
+      "bytes": 53953470,
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99",
+      "path": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180234Z-9aea99/export/vm-builder.real",
+      "sha256": "e87d8f8cf431c1659dab9dbd4962f1c72ce92d1c8f9f47be722b58725febae5b"
+    }
+  },
+  "parent_phase_results": {
+    "u.exitcode": 0,
+    "cli.exitcode": 0,
+    "builder.exitcode": 0,
+    "darwin.exitcode": 0,
+    "native-compile.exitcode": 0,
+    "host-compile.exitcode": 0,
+    "host-export.exitcode": 0,
+    "fixture-seed.exitcode": 0
+  },
+  "additional_seed_runtime_input": {
+    "path": ".stock-seed-host-runtime.json",
+    "sha256": "48abcc0af73ff4e13ded59d32c746125a56be19fb1cd8d14df1448df8eb01dce",
+    "usage": "Dockerfile fixture-seed env input; not Go compilation or any go:embed input"
+  },
+  "production_and_native_entry_source_unchanged_vs_parent": true,
+  "scope": "ALLOW_ONLY_THIS_FINAL_COMPONENT_S_RUN_NOT_PASS_OR_SOURCE_NORMAL",
+  "disallowed_old_runtime_graph": "9aea99",
+  "Source": false,
+  "normal": false,
+  "E": 0,
+  "K8s": 0,
+  "reviewer": "/root/pg_stderr_chain",
+  "reviewed_at_utc": "2026-11-01T18:12:57.448395+00:00"
+}

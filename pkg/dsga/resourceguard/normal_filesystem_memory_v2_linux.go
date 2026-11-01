@@ -190,46 +190,149 @@ func (g *Guard) bindNormalMemoryBrokerConsumerLocked(ctx context.Context, s *loc
 	return out, nil
 }
 
+// 旧调用者仍保持A→完整proof→B的原顺序与错误边界。
 func (o *normalMemoryBrokerConsumerSource) recheckLocked(ctx context.Context, s *lockedState, g *Guard) error {
-	if o == nil || g == nil || o.g != g || o.filesystem == nil || o.proof == nil {
-		return ErrUnknown
-	}
-	witness, ok := normalMemoryBrokerConsumerWitnesses.Load(o)
-	if !ok || witness != o.witness {
-		return ErrUnknown
-	}
-	current, e := nativeBirthCurrentConsumerIdentity()
-	if e != nil || current != o.witness.Consumer {
-		return errors.Join(ErrUnknown, e)
-	}
-	// 同resource锁→FS/proof/task锁，绝不回调broker.mu或execMu。
-	ref, e := o.filesystem.referenceLocked(ctx, s)
-	if e != nil || ref != o.witness.Filesystem {
-		return errors.Join(ErrUnknown, e, fmt.Errorf("original broker memory filesystem changed"))
+	if _, e := o.recheckPreludeLocked(ctx, s, g); e != nil {
+		return e
 	}
 	task, e := o.proof.originalTaskForFilesystemLocked(ctx, s, o.filesystem.system)
 	if e != nil {
 		return errors.Join(ErrUnknown, e)
 	}
 	defer task.close()
-	if e = normalMemoryObserveConfirmedReferenceLocked(s, o.reference); e != nil {
-		return e
+	_, e = o.recheckMemoryCurrentLocked(ctx, s, g)
+	return e
+}
+
+func (o *normalMemoryBrokerConsumerSource) recheckPreludeLocked(ctx context.Context, s *lockedState, g *Guard) (normalFilesystemOriginReference, error) {
+	if o == nil || g == nil || o.g != g || o.filesystem == nil || o.proof == nil {
+		return normalFilesystemOriginReference{}, ErrUnknown
+	}
+	witness, ok := normalMemoryBrokerConsumerWitnesses.Load(o)
+	if !ok || witness != o.witness {
+		return normalFilesystemOriginReference{}, ErrUnknown
+	}
+	current, e := nativeBirthCurrentConsumerIdentity()
+	if e != nil || current != o.witness.Consumer {
+		return normalFilesystemOriginReference{}, errors.Join(ErrUnknown, e)
+	}
+	// 同resource锁→FS/proof/task锁，绝不回调broker.mu或execMu。
+	ref, e := o.filesystem.referenceLocked(ctx, s)
+	if e != nil || ref != o.witness.Filesystem {
+		return normalFilesystemOriginReference{}, errors.Join(ErrUnknown, e, fmt.Errorf("original broker memory filesystem changed"))
+	}
+	return ref, nil
+}
+
+func (o *normalMemoryBrokerConsumerSource) recheckMemoryCurrentLocked(ctx context.Context, s *lockedState, g *Guard) (normalKernelPrepV2HandoffReference, error) {
+	var originalKernel normalKernelPrepV2HandoffReference
+	if e := normalMemoryObserveConfirmedReferenceLocked(s, o.reference); e != nil {
+		return originalKernel, e
 	}
 	if o.reference.InitialWALFamily == normalInitialWALFamilyKernelPrepV2 {
 		if o.kernel == nil {
-			return ErrUnknown
+			return originalKernel, ErrUnknown
 		}
 		ref, e := o.kernel.referenceLocked(ctx, s)
 		if e != nil {
-			return e
+			return originalKernel, e
 		}
+		originalKernel = ref
 		h, e := ref.referenceSHA256()
 		if e != nil || h != o.witness.KernelSHA {
-			return errors.Join(ErrUnknown, e)
+			return originalKernel, errors.Join(ErrUnknown, e)
 		}
 	}
-	_, e = normalMemoryBrokerCurrentLocked(ctx, g, s, o.intent, o.kernel)
-	return e
+	_, e := normalMemoryBrokerCurrentLocked(ctx, g, s, o.intent, o.kernel)
+	return originalKernel, e
+}
+
+// 仅一次stock证明栈的本地移交。不得存入source字段/registry/JSON/WAL或下一次调用。
+// task是本次最后完整proof实际产生的自有pin，唯一消费方负责close。
+type normalMemoryBrokerStockObservation struct {
+	source              *normalMemoryBrokerConsumerSource
+	guard               *Guard
+	filesystem          *normalFilesystemOriginSource
+	proof               *normalSystemRoleBrokerExecProof
+	kernel              *normalKernelPrepV2BrokerConsumerSource
+	filesystemReference normalFilesystemOriginReference
+	kernelReference     normalKernelPrepV2HandoffReference
+	memoryReference     normalMemoryOriginConfirmedReference
+	task                *normalSystemOriginalTask
+}
+
+// stock-only A→B→最后完整proof；B内第二kernel、Initial8与物理/region前后双读不省。
+func (o *normalMemoryBrokerConsumerSource) stockObservationLocked(ctx context.Context, s *lockedState, g *Guard) (normalMemoryBrokerStockObservation, error) {
+	var zero normalMemoryBrokerStockObservation
+	if o == nil || ctx == nil || ctx.Err() != nil || s == nil || o.reference.InitialWALFamily != normalInitialWALFamilyKernelPrepV2 || o.kernel == nil {
+		return zero, ErrUnknown
+	}
+	filesystem, e := o.recheckPreludeLocked(ctx, s, g)
+	if e != nil {
+		return zero, e
+	}
+	kernel, e := o.recheckMemoryCurrentLocked(ctx, s, g)
+	if e != nil {
+		return zero, e
+	}
+	task, e := o.proof.originalTaskForFilesystemLocked(ctx, s, o.filesystem.system)
+	if e != nil {
+		if task != nil {
+			task.close()
+		}
+		return zero, errors.Join(ErrUnknown, e)
+	}
+	good := false
+	defer func() {
+		if !good && task != nil {
+			task.close()
+		}
+	}()
+	if task == nil {
+		return zero, ErrUnknown
+	}
+	if e = o.stockSourcesLive(ctx); e != nil {
+		return zero, e
+	}
+	task.mu.Lock()
+	if task.closed || task.pidfd < 0 {
+		e = ErrUnknown
+	} else {
+		e = arrayRegistryPIDFDAlive(task.pidfd)
+	}
+	task.mu.Unlock()
+	if e != nil {
+		return zero, e
+	}
+	out := normalMemoryBrokerStockObservation{o, g, o.filesystem, o.proof, o.kernel, filesystem, kernel, o.reference, task}
+	good = true
+	return out, nil
+}
+
+// 仅cheap生命周期门；不把历史引用当当前来源，不签Source。锁各自短持，绝不并持。
+func (o *normalMemoryBrokerConsumerSource) stockSourcesLive(ctx context.Context) error {
+	if o == nil || ctx == nil || ctx.Err() != nil || o.g == nil || o.filesystem == nil || o.proof == nil || o.kernel == nil {
+		return ErrUnknown
+	}
+	witness, ok := normalMemoryBrokerConsumerWitnesses.Load(o)
+	if !ok || witness != o.witness || o.witness.Guard != o.g || o.witness.Memory != o.reference {
+		return ErrUnknown
+	}
+	o.filesystem.mu.Lock()
+	filesystemClosed := o.filesystem.closed || o.filesystem.g != o.g || o.filesystem.memoryConsumer != o || o.filesystem.kernelConsumer != o.kernel
+	system := o.filesystem.system
+	o.filesystem.mu.Unlock()
+	o.proof.mu.Lock()
+	proofClosed := o.proof.closed || o.proof.system != system
+	o.proof.mu.Unlock()
+	o.kernel.mu.Lock()
+	kernelClosed := o.kernel.closed || o.kernel.g != o.g
+	o.kernel.mu.Unlock()
+	witness, ok = normalMemoryBrokerConsumerWitnesses.Load(o)
+	if filesystemClosed || proofClosed || kernelClosed || !ok || witness != o.witness || ctx.Err() != nil {
+		return ErrUnknown
+	}
+	return nil
 }
 
 func (o *normalMemoryBrokerConsumerSource) requireContinuousQualification() error {

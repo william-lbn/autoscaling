@@ -1,0 +1,170 @@
+{
+  "base": "938123276cfda0837b3b458478338ba7831a244f",
+  "owned4": {
+    "pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go": "5f53b80ab30674d2e4787741c96f71a39e7170a839c120ce67aa7d3bbb126111",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_linux.go": "379eca71543b2328ca0e03351d07cced1800f301bca678d4d7db427c07b50eff",
+    "pkg/dsga/resourceguard/normal_filesystem_memory_stock_observation_linux_test.go": "161b672d557d90121f0025039df53bf9a862a3349de4e03a02c5bf81281598b2",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_observation_linux_test.go": "0985d0ecba581aebc368ded128eebdee5a75f1f40e822dbfe193c0de29ec5e6b"
+  },
+  "latest_unit_roots": 30,
+  "latest_subtests": 148,
+  "skips": 0,
+  "final_incremental_roots": 4,
+  "final_incremental_subtests": 40,
+  "first_phases8_all_zero": true,
+  "final_phases3_all_zero": true,
+  "actual_initial_stock_component_S_passed": true,
+  "actual_S_nonce": "normal-stock-preparation-native-20261101T180719Z-fb3c65-native",
+  "continuous_Source_qualification_complete": false,
+  "ordinary9_executed": false,
+  "PG_executed": false,
+  "normal": false,
+  "E": 0,
+  "K8s": 0,
+  "evidence": [
+    {
+      "archive": "first-Go4/metadata.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180234Z-9aea99/metadata.json",
+      "sha256": "916e5647eee3f9d83148acc96739a45feac5459086ed081682eba08ff4cf78f9",
+      "bytes": 1185
+    },
+    {
+      "archive": "first-Go4/compile-result.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180234Z-9aea99/compile-result.json",
+      "sha256": "e0195ba5124ed06f2ff73eae429da609e07ee04fcb93c0985dbf7b06317cd419",
+      "bytes": 48
+    },
+    {
+      "archive": "first-Go4/phase-results.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180234Z-9aea99/phase-results.json",
+      "sha256": "8547135385ae6f45f70be25edcbea4df6ab601edf64875297681bef724746003",
+      "bytes": 213
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180234Z-9aea99/source-lock.json",
+      "sha256": "3b274eb3115204a2c8199467e64749104801db6dc3f1d426133bdf86dec32e34",
+      "bytes": 167796
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180234Z-9aea99/context-input-proof.json",
+      "sha256": "f07d180b78d01718b0613e8fa9648460eba1aabd1ed90645da00d9de38a24293",
+      "bytes": 1923077
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180234Z-9aea99/Dockerfile",
+      "sha256": "0b4bf54086bcc49673357bd9afddaeb5a647302a1842b43db7c0df58e0b973f3",
+      "bytes": 3892
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180234Z-9aea99/worker.py",
+      "sha256": "32279f01b9d2842ab2271fad81d62ee30247745e683e1c3c46b77f45eb7c1612",
+      "bytes": 3354
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180234Z-9aea99/budget-spec.json",
+      "sha256": "5398f8bf4f9d0b74b8f71cc7631c43dcf5ffcde495763a9a95e4dbe7982d3573",
+      "bytes": 394
+    },
+    {
+      "archive": "final-Go4/metadata.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180719Z-fb3c65/metadata.json",
+      "sha256": "bd24fc925ee2a8995fc433f306f65e7c356126a6d1972673387883b4b6fda4f1",
+      "bytes": 2313
+    },
+    {
+      "archive": "final-Go4/compile-result.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180719Z-fb3c65/compile-result.json",
+      "sha256": "31269267c1169bee58add1e704e7ba710ff844297fc316aa2ff2067fb6ccdd2b",
+      "bytes": 48
+    },
+    {
+      "archive": "final-Go4/phase-results.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180719Z-fb3c65/phase-results.json",
+      "sha256": "b65dffb47529a5cc4a4602d7c0e81c3c333e21c4b4c727cf300005ae7b62e1f5",
+      "bytes": 84
+    },
+    {
+      "archive": "final-Go4/launcher-preflight.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180719Z-fb3c65/launcher-preflight.json",
+      "sha256": "96f24495ed367a6ccd1915a84670b4edda58394d3721dad918a003ee8834c700",
+      "bytes": 1231
+    },
+    {
+      "archive": "final-Go4/native-launch.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180719Z-fb3c65/native-launch.json",
+      "sha256": "31196ae1d432bef0383ca6fb2dcf004a3d57779c7c8aed225c5cf3b1a97460b3",
+      "bytes": 590
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180719Z-fb3c65/source-lock.json",
+      "sha256": "6ba4b043fafd9611014ce0579480a20e2d96a435df7d3c116e3bcaba6926365f",
+      "bytes": 169067
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180719Z-fb3c65/Dockerfile",
+      "sha256": "62e83d5faa9d5da68b61abe346be44611e3ae5d701009c7dfbf4bc7082522ff8",
+      "bytes": 2475
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180719Z-fb3c65/worker.py",
+      "sha256": "65513ffce4c59dc3ff1deef252bfb5c9610fad813314aad4a2bc27f7bf1b03e6",
+      "bytes": 3104
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180719Z-fb3c65/budget-spec.json",
+      "sha256": "0b2ee99fdb7994281e4646941357f3cef54618f5239ac7646c0e62626a467bb0",
+      "bytes": 394
+    },
+    {
+      "archive": "actual-S/result.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-native-20261101T180719Z-fb3c65-native/result.json",
+      "sha256": "35977a3a59e69c60d51ca8fc93197a1d113b6e6a171fe54fd95a07ead0f0a1b3",
+      "bytes": 1435
+    },
+    {
+      "archive": "actual-S/actual-usage-last.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-native-20261101T180719Z-fb3c65-native/actual-usage-last.json",
+      "sha256": "f0a6a7de8a213ad40a6beae6a40d04d873e0a0f83293dd4981b3a3f1371a769d",
+      "bytes": 392
+    },
+    {
+      "archive": "actual-S/source-lock.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-native-20261101T180719Z-fb3c65-native/source-lock.json",
+      "sha256": "4eef524559ded31e29722d11b636505d808337484cd436600aab9b79d693374a",
+      "bytes": 1163
+    },
+    {
+      "archive": "actual-S/console.log",
+      "original": "/data/neon-build/validation/normal-stock-preparation-native-20261101T180719Z-fb3c65-native/console.log",
+      "sha256": "cc38bd4fdb2b8cd1cbd8682edfc65821def612c5bf4511a1b2f98e71d798f713",
+      "bytes": 43137
+    },
+    {
+      "archive": "actual-S/compiled-artifact-link.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-native-20261101T180719Z-fb3c65-native/compiled-artifact-link.json",
+      "sha256": "889d954309f294de2a13688a343353d722504f206cab5a5d071ac28fd48b9dfd",
+      "bytes": 484
+    },
+    {
+      "archive": "actual-S/native-command.json",
+      "original": "/data/neon-build/validation/normal-stock-preparation-native-20261101T180719Z-fb3c65-native/native-command.json",
+      "sha256": "d3dc5aabdd82d5ac7efea7a2d83f95f0791d3dd618407441dffb34ca3d28d83f",
+      "bytes": 1434
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-native-20261101T180719Z-fb3c65-native/source-lock.json",
+      "sha256": "4eef524559ded31e29722d11b636505d808337484cd436600aab9b79d693374a",
+      "bytes": 1163
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-native-20261101T180719Z-fb3c65-native/worker.py",
+      "sha256": "ba67d1de3c30ffbe533e610a68fc68f728e633b762aacc7954e288b120a80fd0",
+      "bytes": 14605
+    },
+    {
+      "external_original": "/data/neon-build/validation/normal-stock-preparation-native-20261101T180719Z-fb3c65-native/budget-spec.json",
+      "sha256": "743353006438f3d6338256ccf5caf9c6f1dd38bfbf8291dd3d6d8565ec916b87",
+      "bytes": 437
+    }
+  ]
+}

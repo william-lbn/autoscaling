@@ -1,0 +1,153 @@
+[
+  {
+    "label": "E-first-Go4-full",
+    "nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99",
+    "compile_result": {
+      "exit": 0,
+      "seconds": 86.25011058198288
+    },
+    "memory_max": "4294967296",
+    "cpu_max": "400000 100000",
+    "Go_environment": [
+      "4",
+      "1536MiB",
+      "-p=2"
+    ],
+    "Go_env_metadata": [
+      "-p=2",
+      "linux",
+      "amd64",
+      "auto"
+    ],
+    "RUN_cpu": {
+      "usage_usec": 82161664,
+      "user_usec": 73426781,
+      "system_usec": 8734883,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 611,
+      "nr_throttled": 10,
+      "throttled_usec": 532057,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "memory_peak_bytes": 1202454528,
+    "io_stat": "253:16 rbytes=92049408 wbytes=270491648 rios=7644 wios=733 dbytes=0 dios=0\n",
+    "exact_per_phase_samples": [
+      {
+        "phase": "u",
+        "wall_seconds": 23.662869598,
+        "cgroup_cpu_seconds": 25.229092,
+        "average_cores": 1.0661890306885002,
+        "throttled_seconds": 0.0
+      },
+      {
+        "phase": "cli",
+        "wall_seconds": 22.322608882,
+        "cgroup_cpu_seconds": 14.517129,
+        "average_cores": 0.6503329909482934,
+        "throttled_seconds": 0.003719
+      },
+      {
+        "phase": "builder",
+        "wall_seconds": 3.117662263,
+        "cgroup_cpu_seconds": 4.138217,
+        "average_cores": 1.3273461494247814,
+        "throttled_seconds": 0.0
+      },
+      {
+        "phase": "darwin",
+        "wall_seconds": 5.262033782,
+        "cgroup_cpu_seconds": 1.840902,
+        "average_cores": 0.3498461006269534,
+        "throttled_seconds": 0.0
+      },
+      {
+        "phase": "native-compile",
+        "wall_seconds": 13.274750465,
+        "cgroup_cpu_seconds": 22.171033,
+        "average_cores": 1.6701657073295502,
+        "throttled_seconds": 0.003299
+      },
+      {
+        "phase": "host-compile",
+        "wall_seconds": 7.78787811,
+        "cgroup_cpu_seconds": 13.456959,
+        "average_cores": 1.727936520054241,
+        "throttled_seconds": 0.525039
+      },
+      {
+        "phase": "host-export",
+        "wall_seconds": 0.09215093,
+        "cgroup_cpu_seconds": 0.064779,
+        "average_cores": 0.7029663184082895,
+        "throttled_seconds": 0.0
+      },
+      {
+        "phase": "fixture-seed",
+        "wall_seconds": 0.918369742,
+        "cgroup_cpu_seconds": 0.588196,
+        "average_cores": 0.640478418549639,
+        "throttled_seconds": 0.0
+      }
+    ],
+    "scope": "observations only, production/test snapshots differ; not controlled 3CPU-vs4CPU speed A/B"
+  },
+  {
+    "label": "E-final-test-Go4-incremental",
+    "nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65",
+    "compile_result": {
+      "exit": 0,
+      "seconds": 60.66182008301257
+    },
+    "memory_max": "4294967296",
+    "cpu_max": "400000 100000",
+    "Go_environment": [
+      "4",
+      "1536MiB",
+      "-p=2"
+    ],
+    "Go_env_metadata": [
+      "-p=2",
+      "linux",
+      "amd64",
+      "auto"
+    ],
+    "RUN_cpu": {
+      "usage_usec": 47922346,
+      "user_usec": 43192143,
+      "system_usec": 4730203,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 431,
+      "nr_throttled": 5,
+      "throttled_usec": 4223,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "memory_peak_bytes": 985714688,
+    "io_stat": "253:16 rbytes=34390016 wbytes=130924544 rios=3666 wios=1402 dbytes=0 dios=0\n",
+    "exact_per_phase_samples": [
+      {
+        "phase": "u",
+        "wall_seconds": 29.930492075,
+        "cgroup_cpu_seconds": 24.196462,
+        "average_cores": 0.80842179070656,
+        "throttled_seconds": 0.002387
+      },
+      {
+        "phase": "native-compile",
+        "wall_seconds": 25.109998698,
+        "cgroup_cpu_seconds": 23.024948,
+        "average_cores": 0.9169633291073778,
+        "throttled_seconds": 0.001836
+      },
+      {
+        "phase": "fixture-seed",
+        "wall_seconds": 0.706321722,
+        "cgroup_cpu_seconds": 0.558107,
+        "average_cores": 0.7901597566894595,
+        "throttled_seconds": 0.0
+      }
+    ],
+    "scope": "observations only, production/test snapshots differ; not controlled 3CPU-vs4CPU speed A/B"
+  }
+]

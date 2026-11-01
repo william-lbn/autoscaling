@@ -1,0 +1,913 @@
+{
+  "final_source_freeze_sha256": "1d5b02eddeb582bcf0f4ca59567db4c669a6562fd29f5a44bf328792c406893a",
+  "parent_test_json": {
+    "path": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180234Z-9aea99/export/test.json",
+    "sha256": "d579c65bf9d1868d1d68845deb9804326bae223b26664b281048bb78fbca7be2"
+  },
+  "final_test_json": {
+    "path": "/data/neon-build/validation/normal-stock-preparation-go-20261101T180719Z-fb3c65/export/test.json",
+    "sha256": "f93e2aeac0fb47b73048dbc5fc141d2b493fa17a1e81e47efcdac865e2bcdc56"
+  },
+  "union_deduplicated_roots": 30,
+  "union_deduplicated_subtests": 148,
+  "skips": 0,
+  "replaced_roots": [
+    "TestNormalMemoryBrokerStockObservationRawCannotProduceTuple",
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle",
+    "TestNormalOrdinaryStockPreparationObservationBinding",
+    "TestNormalOrdinaryStockPreparationObservationFailureClosesPin"
+  ],
+  "merged_cases": {
+    "TestMetadataWiringInitialEightFixedFamilyIgnoresLaterWAL/#00": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringInitialEightFixedFamilyIgnoresLaterWAL/initial8-kernel-prep-userns-v2": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringInitialEightFixedFamilyIgnoresLaterWAL": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringFilesystemSyncListIsExactFamily": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle/raw-live-only-not-Source": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle/nil-context": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle/cancelled": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle/retired-witness": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle/witness-changed": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle/memory-changed": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle/filesystem-closed": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle/proof-closed": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle/kernel-closed": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle/filesystem-other-source": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle/filesystem-other-kernel": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle/filesystem-other-guard": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle/proof-other-system": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle/kernel-other-guard": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationSourceLifecycle": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationRawCannotProduceTuple/nil-source": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationRawCannotProduceTuple/nil-context": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationRawCannotProduceTuple/cancelled": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationRawCannotProduceTuple/missing-state": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationRawCannotProduceTuple/raw-no-witness": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalMemoryBrokerStockObservationRawCannotProduceTuple": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalFilesystemMemory2VersionedProjection": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2RejectsCrossSource/runtime": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2RejectsCrossSource/memory-wal": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2RejectsCrossSource/no-memory": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2RejectsCrossSource/legacy-with-memory": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2RejectsCrossSource/future": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2RejectsCrossSource/boot": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2RejectsCrossSource/state": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2RejectsCrossSource/lock": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2RejectsCrossSource/initial-wal": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2RejectsCrossSource/old-scope": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2RejectsCrossSource/new-root": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2RejectsCrossSource": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2AllThirteenSyncsRequired/sync-0": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2AllThirteenSyncsRequired/sync-1": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2AllThirteenSyncsRequired/sync-2": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2AllThirteenSyncsRequired/sync-3": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2AllThirteenSyncsRequired/sync-4": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2AllThirteenSyncsRequired/sync-5": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2AllThirteenSyncsRequired/sync-6": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2AllThirteenSyncsRequired/sync-7": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2AllThirteenSyncsRequired/sync-8": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2AllThirteenSyncsRequired/sync-9": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2AllThirteenSyncsRequired/sync-10": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2AllThirteenSyncsRequired/sync-11": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2AllThirteenSyncsRequired/sync-12": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2AllThirteenSyncsRequired": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalFilesystemMemory2CannotCreateBrokerOpaqueFromJSON": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffReadAtSharesOFDWithoutOffsetRace": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffPreadRejectsNoncanonicalAndUnsupportedFD/#00": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffPreadRejectsNoncanonicalAndUnsupportedFD/0": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffPreadRejectsNoncanonicalAndUnsupportedFD/00_": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffPreadRejectsNoncanonicalAndUnsupportedFD/1_": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffPreadRejectsNoncanonicalAndUnsupportedFD/0_x": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffPreadRejectsNoncanonicalAndUnsupportedFD": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2CannotAdoptJSONOrMissingProof": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1/87": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1/1": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1/Uid0": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1/Uid1": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1/Uid2": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1/Uid3": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1/Gid0": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1/Gid1": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1/Gid2": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1/Gid3": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1/NoNewPrivs": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1/Seccomp": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1/missing-cap5": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1/missing-cap21": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1/missing-cap19": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffR2PrivilegesDoNotRequireParentPID1": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffComparableReferenceAndCrossTuple/family": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffComparableReferenceAndCrossTuple/version": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffComparableReferenceAndCrossTuple/profile": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffComparableReferenceAndCrossTuple/artifact": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffComparableReferenceAndCrossTuple/config": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffComparableReferenceAndCrossTuple/notes": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffComparableReferenceAndCrossTuple/release": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffComparableReferenceAndCrossTuple/Root": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffComparableReferenceAndCrossTuple/state": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffComparableReferenceAndCrossTuple/writable-control": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffComparableReferenceAndCrossTuple/no-userns": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffComparableReferenceAndCrossTuple/duplicate-ns": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffComparableReferenceAndCrossTuple/WAL": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffComparableReferenceAndCrossTuple": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestKernelPrepV2HandoffJSONAndNewGuardCannotProducePin": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringConfirmedReferenceLegacyBytesAndFamilyComparison": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringRegionRequiresNewExactVersionAndNoRawR2Source": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/same-fields-only-not-Source": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/nil-source": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/nil-task": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/wrong-source": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/wrong-guard": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/wrong-filesystem": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/wrong-proof": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/wrong-kernel": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/source-other-guard": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/source-other-filesystem": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/source-other-proof": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/source-other-kernel": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/authority-other-system": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/expected-filesystem": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/expected-kernel": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/expected-memory": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding/legacy-family": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationBinding": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationFailureClosesPin/wrong-guard": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationFailureClosesPin/wrong-reference": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationFailureClosesPin/cancelled": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationFailureClosesPin/raw-matching-not-Source": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationObservationFailureClosesPin": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180719Z-fb3c65"
+    },
+    "TestNormalOrdinaryStockPreparationWaitReceipt/missing-settle": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationWaitReceipt/extra-orphan": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationWaitReceipt/duplicate-stage": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationWaitReceipt/missing-pidfs": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationWaitReceipt/same-object": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationWaitReceipt/unknown-stage": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationWaitReceipt/nonzero-exit": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationWaitReceipt/wait-error": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationWaitReceipt/log-overflow": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationWaitReceipt": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationSingleUseTombstone": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationHistoryNeverImplicitlyReplayed/intent-only": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationHistoryNeverImplicitlyReplayed/complete-only": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationHistoryNeverImplicitlyReplayed/symlink": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationHistoryNeverImplicitlyReplayed": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationOriginalPrefixIdentity/intent-replace": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationOriginalPrefixIdentity/complete-replace": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationOriginalPrefixIdentity/intent-bytes": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationOriginalPrefixIdentity/complete-bytes": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationOriginalPrefixIdentity": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationCannotAdoptRawInputs": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationFactoryFailureTuple/nil-context": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationFactoryFailureTuple/cancelled": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationFactoryFailureTuple/nil-state": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationFactoryFailureTuple/nil-record": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationFactoryFailureTuple/raw-inputs": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationFactoryFailureTuple": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationHandoffState/raw-live-only": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationHandoffState/nil-context": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationHandoffState/cancelled": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationHandoffState/producer-closed": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationHandoffState/producer-incomplete": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationHandoffState/source-closed": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationHandoffState/source-failed": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationHandoffState/admission-failed": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationHandoffState/admission-enabled": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestNormalOrdinaryStockPreparationHandoffState": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringExactFiveAssetsAndPrivatePlan": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringRejectsCrossVersionPolicyFamilies/kernel1": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringRejectsCrossVersionPolicyFamilies/missingzero": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringRejectsCrossVersionPolicyFamilies/nonzero": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringRejectsCrossVersionPolicyFamilies/pre2": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringRejectsCrossVersionPolicyFamilies/topology3": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringRejectsCrossVersionPolicyFamilies/selector1": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringRejectsCrossVersionPolicyFamilies/known-other-profile": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringRejectsCrossVersionPolicyFamilies/physical-config": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringRejectsCrossVersionPolicyFamilies": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringImmutableTargetsAndLegacySelectors/pids": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringImmutableTargetsAndLegacySelectors/System": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringImmutableTargetsAndLegacySelectors/AS": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringImmutableTargetsAndLegacySelectors/Huge": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringImmutableTargetsAndLegacySelectors/fake-plan": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringImmutableTargetsAndLegacySelectors": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringPreSystemRawReaderAndCensusExplicitProfiles/pg17-linux-6.12.26-normal-v1": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringPreSystemRawReaderAndCensusExplicitProfiles/neon-linux-6.12.26-dsga-normal-split-v1": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringPreSystemRawReaderAndCensusExplicitProfiles/neon-linux-6.12.26-dsga-normal-split-metadata-v1": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringPreSystemRawReaderAndCensusExplicitProfiles/reject-": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringPreSystemRawReaderAndCensusExplicitProfiles/reject-pg17-linux-6.12.26-normal-v1-pid-capped": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringPreSystemRawReaderAndCensusExplicitProfiles/reject-arbitrary-recognized-looking-profile": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringPreSystemRawReaderAndCensusExplicitProfiles": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    },
+    "TestMetadataWiringStableMinFreeUsesOriginalHardUpper": {
+      "action": "pass",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "original_nonce": "normal-stock-preparation-go-20261101T180234Z-9aea99"
+    }
+  },
+  "scope": "latest exact tests by Test ID, never summing parent+incremental counts; test-only legacy family correction, no production-source change"
+}

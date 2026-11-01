@@ -1,0 +1,24 @@
+E后继最终只读方案（不实施；2026-11-02）
+当前选定实施D，本文仅保留后继E的精确边界。E不会与D同批，也不替代C2或删FS双hash/原25/30/2vCPU。
+
+目标只改normal_filesystem_memory_v2_linux.go与normal_ordinary_stock_udev_preparation_linux.go::checkOriginalLocked，加直接对应测试。该checker每个独立调用仍完整执行，不跨stock阶段、factory/caller、WAL写/stock命令/Wait或Ready前后复用。
+
+真正需要复用的事实：prep outer FS/kernel/proof，与同栈memory.recheck内的实际FS/kernel/proof。不能只把早期proof210返回的旧值当外层415最后proof：要把唯一完整proof安置到原memory历史与current观察全部完成之后，使原末时点完整proof保留。
+
+最窄私有core拆法，保持现有wrapper其它调用者次序：
+A. 提取原recheck194–209为共同只读prelude，核原Guard/typed opaque witness/currentRoot，完整FS.reference并对原memory witness绑定。返回本次FSref。
+B. 提取原215–232为共同只读memory/kernel/current中段：原Memory11 inode+bytes及Initial8历史；原full kernel.reference与KernelSHA比较；原normalMemoryBrokerCurrent全部保留并返回该实际kernel ref。metadata current内部还会第二次full kernel.reference、physical实际读、region两次读、Initial8前后见证，全部保持，不为凑数省略。
+C. 原recheckLocked包装保持A→完整proof.originalTask(原deferclose)→B的旧次序/签名/错误行为。其真正其它callsite为source constructor、source runtime、kernelControlMemoryBinding、transfer-v2 native和raw拒绝U；R1 normalMemoryOriginSource同名方法是不同类型，完全不改。
+D. 新stock-only方法只可A→B→完整proof最后，返回私有local observation（原source/Guard/FS/proof/kernel实例指针、本次FS/kernel/memory引用、最后fullproof产生的自有Task pin）。不得用ctx bool、可替换函数或泛接口切换授权；不把该观察写入任何source字段/registry/JSON/WAL，不与下一次调用共用。
+
+消费约束：新方法先核ctx/s和原KernelPrepV2族；p outer原authority/slot/currentRoot/record/prepared见证检查保持。必须精确o.g==q.g、o.filesystem==q.filesystem、o.proof==q.proof、o.kernel==q.filesystem.kernelConsumer、原system==authority.source。消费时显式比FSref==q.originalFS且Protocol2、kernelref==q.kernel、memoryref==q.memory且KernelPrepV2族，不能只依witness内转义相等。保末owned Task.verify（持其Task.mu）后立即close，不按PID重开。原q.namespaces与initial时的record/三个actor检查、NoNSCD位置保持。
+
+return/consume前cheap门须核ctx、原memory witness仍在同source槽、FS/proof/kernel未closed、原q/producer/admission状态；各锁分别短持释放，不反取resource或q→p并持。FS.close会删memory witness并关闭kernel；此真实退役不能由手里的历史引用继续冒充当前观察。观察自身拥有的dup Task pin由唯一消费方释放，每个失败都zero/关闭，取消也无泄漏。
+
+安全依据与限度：原memory方法与metadata current只读原文件/内核事实，linuxKernel具体仅config，无可替换授权callback；没有source发布、exec、mount、budget写或sync。原WAL同resource锁串行，FS/proof/Task各自锁只保自身生命周期。该论证只允许同一证明栈组合，绝不认为文件/内核状态永久不可变；全部不同阶段检查以及内部用于前后稳定性的物理/历史双读保留。连续writer/PG预算能力仍missing，E观察不授normal。
+
+直接负例：wrong Guard/FS/proof/kernel指针（即使字段一致）拒；q expectedFS/kernel/memory任一错拒；Memory11/Initial8 inode或bytes漂移；closed FS/proof/kernel/owned Task、witness被真正退役删除、currentRoot/boot/ns变化、取消均无可消费观察；失败pin必关。测试必须达到对应判据，raw构造struct不可叫真实观察正控。保旧wrapper tests及真实transfer调用语义；正向只由新的真实S完成。
+
+静态次数：每次目标p.checkOriginal可消1个outer完整FS、1个outer kernel、1个outer完整proof；内层原第二kernel不减。完整Ready路径4个stock阶段checker+factory末ref+catalog后末ref至少6个独立checker调用，仍各执行A/B/最后proof。故相比D单一factory，E潜在节约重复次数更多，但静态次数不等于秒数。partial complete前原19个broker inspection中目标4个checker各少1，可预期静态19→15；需与D/新合图其它变动分开，实测新nonce计数才可确认，不能重标旧绿。
+
+一次真实S界限：原18c、同C2及单选D基础、同2vCPU/25/30，nonce/source/ELF/资源/日志/终态完整归档。验证真正COMMIT、R1活时freshref、原pidfd确认退出后独立freshref同值/admission；未完成则Source/normal/E/K8s保持false/0。任何优化不保证Ready过窗。

@@ -397,26 +397,13 @@ func (p *normalOrdinaryStockUdevPreparation) checkOriginalLocked(ctx context.Con
 	if e != nil || witness != q.prepared || witness != a.prepared {
 		return errors.Join(ErrUnknown, e)
 	}
-	fsref, e := q.filesystem.referenceLocked(ctx, s)
-	if e != nil || fsref != q.originalFS || fsref.ProtocolVersion != 2 {
-		return errors.Join(ErrUnknown, e)
-	}
-	kernel, e := q.filesystem.kernelConsumer.referenceLocked(ctx, s)
-	if e != nil || kernel != q.kernel {
-		return errors.Join(ErrUnknown, e)
-	}
-	// KernelR2.referenceLocked实际核modules_disabled=1、空modules、原userns RO FD；不自造scalar。
-	if e = q.filesystem.memoryConsumer.recheckLocked(ctx, s, q.g); e != nil {
-		return e
-	}
-	if q.filesystem.memoryConsumer.reference != q.memory || q.memory.InitialWALFamily != normalInitialWALFamilyKernelPrepV2 {
-		return ErrUnknown
-	}
-	task, e := q.proof.originalTaskForFilesystemLocked(ctx, s, a.source)
+	observation, e := q.filesystem.memoryConsumer.stockObservationLocked(ctx, s, q.g)
 	if e != nil {
 		return e
 	}
-	task.close()
+	if e = p.consumeStockObservation(ctx, &observation); e != nil {
+		return e
+	}
 	if e = q.namespaces.verify(-1); e != nil {
 		return e
 	}
@@ -432,7 +419,87 @@ func (p *normalOrdinaryStockUdevPreparation) checkOriginalLocked(ctx context.Con
 			return e
 		}
 	}
-	return normalOrdinaryStockUdevNoNSCD()
+	if e = normalOrdinaryStockUdevNoNSCD(); e != nil {
+		return e
+	}
+	if e = q.filesystem.memoryConsumer.stockSourcesLive(ctx); e != nil {
+		return e
+	}
+	return p.stockObservationState(ctx)
+}
+
+// 先接管并清空本地观察的Task所有权；每个失败与成功都在本次调用结束释放pin。
+func (p *normalOrdinaryStockUdevPreparation) consumeStockObservation(ctx context.Context, observation *normalMemoryBrokerStockObservation) error {
+	if observation == nil {
+		return ErrUnknown
+	}
+	local := *observation
+	*observation = normalMemoryBrokerStockObservation{}
+	if local.task != nil {
+		defer local.task.close()
+	}
+	if e := local.matchStockTarget(p); e != nil {
+		return e
+	}
+	if e := p.stockObservationState(ctx); e != nil {
+		return e
+	}
+	if e := local.source.stockSourcesLive(ctx); e != nil {
+		return e
+	}
+	local.task.mu.Lock()
+	e := local.task.verify()
+	local.task.mu.Unlock()
+	if e != nil {
+		return e
+	}
+	if e = local.source.stockSourcesLive(ctx); e != nil {
+		return e
+	}
+	return p.stockObservationState(ctx)
+}
+
+// 只比对原实例和期望引用，不是独立Source正控；消费方仍须完整proof与live门。
+func (o normalMemoryBrokerStockObservation) matchStockTarget(p *normalOrdinaryStockUdevPreparation) error {
+	if p == nil || p.q == nil || p.q.g == nil || p.q.authority == nil || p.q.authority.source == nil || p.q.filesystem == nil || p.q.proof == nil || o.source == nil || o.guard == nil || o.filesystem == nil || o.proof == nil || o.kernel == nil || o.task == nil {
+		return ErrUnknown
+	}
+	q := p.q
+	if o.source.g != o.guard || o.source.filesystem != o.filesystem || o.source.proof != o.proof || o.source.kernel != o.kernel {
+		return ErrUnknown
+	}
+	if o.source != q.filesystem.memoryConsumer || o.guard != q.g || o.filesystem != q.filesystem || o.proof != q.proof || o.kernel != q.filesystem.kernelConsumer || o.filesystem == nil || o.proof == nil || o.proof.system != q.authority.source || o.filesystem.system != q.authority.source {
+		return ErrUnknown
+	}
+	if o.filesystemReference != q.originalFS || o.filesystemReference.ProtocolVersion != 2 || o.kernelReference != q.kernel || o.memoryReference != q.memory || o.memoryReference.InitialWALFamily != normalInitialWALFamilyKernelPrepV2 {
+		return ErrUnknown
+	}
+	return nil
+}
+
+func (p *normalOrdinaryStockUdevPreparation) stockObservationState(ctx context.Context) error {
+	if p == nil || p.q == nil || ctx == nil || ctx.Err() != nil || p.q.authority == nil || p.q.authority.admission == nil || p.q.authority.admission.failed.Load() || lookupNormalSystemAuthority(p.q.g) != p.q.authority {
+		return ErrUnknown
+	}
+	v, ok := normalOrdinaryStockUdevPreparations.Load(p.q.g)
+	if !ok || v != p {
+		return ErrUnknown
+	}
+	v, ok = normalOrdinaryUdevV2Slots.Load(p.q.g)
+	slot, typed := v.(*normalOrdinaryUdevV2Slot)
+	if !ok || !typed || slot == nil || slot.source != p.q {
+		return ErrUnknown
+	}
+	p.mu.Lock()
+	closed := p.closed
+	p.mu.Unlock()
+	p.q.mu.Lock()
+	closed, failed := closed || p.q.closed, p.q.ledger.failed
+	p.q.mu.Unlock()
+	if closed || failed != nil || p.q.authority.admission.failed.Load() || ctx.Err() != nil {
+		return errors.Join(ErrUnknown, failed, ctx.Err())
+	}
+	return nil
 }
 func normalOrdinaryStockUdevNoNSCD() error {
 	for _, name := range []string{"/run/nscd/socket", "/var/run/nscd/socket"} {

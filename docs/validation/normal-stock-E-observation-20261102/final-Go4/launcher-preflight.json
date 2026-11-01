@@ -1,0 +1,25 @@
+{
+  "checked_worker_sha256": "65513ffce4c59dc3ff1deef252bfb5c9610fad813314aad4a2bc27f7bf1b03e6",
+  "checked_native_worker_sha256": "ba67d1de3c30ffbe533e610a68fc68f728e633b762aacc7954e288b120a80fd0",
+  "source4_exact": {
+    "pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go": "5f53b80ab30674d2e4787741c96f71a39e7170a839c120ce67aa7d3bbb126111",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_linux.go": "379eca71543b2328ca0e03351d07cced1800f301bca678d4d7db427c07b50eff",
+    "pkg/dsga/resourceguard/normal_filesystem_memory_stock_observation_linux_test.go": "161b672d557d90121f0025039df53bf9a862a3349de4e03a02c5bf81281598b2",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_observation_linux_test.go": "0985d0ecba581aebc368ded128eebdee5a75f1f40e822dbfe193c0de29ec5e6b"
+  },
+  "phase_keys": [
+    "u.exitcode",
+    "native-compile.exitcode",
+    "fixture-seed.exitcode"
+  ],
+  "review_fields_exactly_required": [
+    "Guest_ELF_sha256",
+    "files",
+    "native_nonce"
+  ],
+  "review_state": "pending",
+  "old_D_shape_or_path_residuals": 0,
+  "artifacts_reuse_all_exact": true,
+  "actual_COPY_all_exact": true,
+  "scope": "read-only external launcher shape preflight; no runtime/source permission"
+}

@@ -1,0 +1,9 @@
+E同栈观察：旧memory recheck wrapper仍A(FS/witness/current)→完整proof→B(memory/kernel/current)原顺序、签名与错误边界。仅stock新路径A→B→最后唯一完整proof，返回本次实际源/Guard/FS/proof/kernel实例、FS/kernel/memory引用及自持Task。outer精确匹配同q实例及全部expected，不以raw引用或bool授来源；先清空本地观察再唯一deferclose，末Task.verify/状态门、所有失败清理保。FS/proof/kernel/witness退役及ctx/q/producer/admission各锁分别短持。原NoNSCD/ns/initial record/三个actor与跨阶段fullrefs保留；内层两kernel、Initial8、物理/region前后双读与双ELFhash未删，无跨生命周期缓存/公共协议/wire变化。
+
+最终源码4冻结1d5b02ed，P1正式源码审及精确artifact调度复核无明确阻断。首Go4图9aea99实际30race根148sub/0skip、8phase0；独审发现legacy-family负例必须同时使expected相同，最终test0985修正后fb3c65直接4根40sub重新执行且U/新Guest/seed0。unit-union-proof按ID替换（非相加）仍30/148/0skip。首worker继承D旧键KeyError在编译后停止，未S，原日志与原worker留存。最终worker重建单一E source-map/nonce/Guest-hash调度段，经逐项shape preflight无D残留。仅P1最终门存在并匹配后才自动S，9aea99明确不得借门起S。
+
+真正fb3c65-native原终态PASS_COMPONENT_ONLY，57.3826s，Host/Guest/initial全部0；真实kernel18c/KVM/2vCPU、原Ready25/handshake30未增。198原stock targets/Runtime phase3，生产Ready/COMMIT/ACK成功返回；R1在生产Start返回后才DEV hold。原Task.mu下dup的pidfd实际确认其存活，独立完整freshref后再核alive才通知R1，真POLLIN退出后再独立完整freshref/admission同值。R1活与退出后引用均SHA4b0bdf6f4b2b479d2e900f966fe7c5e89e00f5c0046cfc261e8ec626ce9b49ef。不是靠文件/marker/JSON取得Source。complete stage16.757s仅写入入口，在WAL前；实际正向证明锚定随后完整readback/生产Source/COMMIT及两次独立ref，而非该marker。
+
+partial beforeWAL trace14次，final该broker ctx trace snapshot17次/duration4.073810983s/wholeR2rchar1523338643。calls仅安装trace的ctx域；独立DEV Background freshref没有同trace，不能叫全R2所有inspection总次数。rchar是整个R2及采样开销的范围量，不是准确ELF读取或磁盘I/O。首次Go4与增量原cpu/memory/Go env/per-phase clock+CPU记录保留，不能按配额推断加速或拿不同源码run当因果A/B。
+
+本阶段仅初始stock准备opaque/Ready/COMMIT/R1生命周期组件通过；Host API仍model、production CLI仅编译，其它9ordinary服务和PG未运行；连续dynamic Source/Root writers/PG safe normal降限、Linux/K8s最终端到端仍未闭合，normal=false/E=0/K8s=0。后继任务按统一版本合同继续，不能冒封版。全部原失败记录保留，无二进制/镜像/磁盘/缓存入Git；Root唯一Git/index/发行锁写者。

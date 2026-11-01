@@ -1,0 +1,22 @@
+E最终四源实现独立只读审查（2026-11-02）
+准确freeze：1d5b02eddeb582bcf0f4ca59567db4c669a6562fd29f5a44bf328792c406893a，base938123276cfda0837b3b458478338ba7831a244f；memory5f53b80a、prep379eca71、tests161b672d/0985d0ec，完整hash见source-freeze.json。当前逐SHA匹配。审查者未改业务源、未新增构建或重测。
+结论：最终四源无明确代码阻断。只签本源码图审查；运行门待最终新nonce/Guest ELF/终态及artifact map精确核对，绝不允许旧9aea99/旧301a测试图起S。
+
+旧语义：
+- 原memory recheck拆A prelude→完整proof/deferclose→B中段，原次序/错误包装与释放边界保持。A仍原typed source/Guard/witness/currentR2/完整FS并原witness匹配；B仍Memory11/Initial8原inode+bytes、full kernel ref/hash及normalMemoryBrokerCurrent全部内容。
+- 原metadata current内第二kernel fullref、physical真实读、region两读匹配、Initial8前后见证均没有删。R1不同类型recheck、其它legacy wrapper调用者与FS双hash未改。
+
+新stock同栈观察：
+- 仅原KernelPrepV2路径A→B→最后完整proof.originalTask，保原外层末时点强验证；不是返回早期proof旧值。返回实际FS/kernel/memory引用与最后fullproof产生的自有Task pin，不增加WAL/协议/registry缓存字段。
+- strict match核source自身g/FS/proof/kernel等于所携实例，再逐指针对q.g/q.filesystem/q.proof/q.kernelConsumer/authority.source；所有必需值非nil。FS Protocol2/实际FS==q.originalFS、kernel==q.kernel、memory==q.memory且原family独立比较，不能以相同字段替代opaque实例。
+- consume先接管并清零本地observation，所有成功/失败均deferclose原Task。之后state/source live门、Task.mu下实际verify、末state/live门；无callback/写/exec跨过本次最后proof与消费。stockObservationState不要求尚未完成的p.complete、也不误拒运行期enabled，原initial专有三actor/record/NoNSCD仍保持。
+- memory witness真实退役删除、FS/proof/kernel closed、source rebound/current q/producer槽/authority退役、ctx取消均走cheap拒绝。FS/proof/kernel及p/q锁各自短持释放；不存在q→p并持或持proof回FS/resource。FS.close的FS→kernel原序不受反向嵌套。Source对象本身只读不可替换指针，所有不同阶段checker仍重新全观察。
+
+直接新测试仅局部谓词/所有权，不冒实际Source：lifecycle14sub、bindings17sub、raw tuple failure5sub、真实child pidfd失败释放4sub，共四个直接U目标/40sub的预定集合（此处不是运行通过声明）。raw-no-witness由完整cheap夹具真正Delete map后达到A退役判据；legacy-family最终同时令q.memory等于该legacy ref，确保引用相同仍到独立family拒绝。错误消费清零和实际dup FD EBADF提供真实内核释放证据。raw-live/same-fields正控均明示不建立完整FS/proof/Source。
+
+运行验收门：
+1. 首Go4图9aea99在最后测试修订前启动，只能保它自己的原终态，不能发原Guest或重标成最终U通过。
+2. 最终新nonce必须锁上述四源（0985最终test），必要最终直接4U/Guest/seed实际通过。CLI/Builder/Host若复用首图，必须逐artifact记录原ELF/hash及完全相同生产编译输入，明确_test修订不在这些产物编译闭包；不能静默拿旧Guest复用。
+3. 最终S仅由这个最终test/Guest图新nonce启动；需原18c/2vCPU/25/30、真实COMMIT、R1活时freshref、原pidfd确退后独立freshref同值/admission。最终runtime nonce和Guest ELF尚未知，故本报告不单独签实际调度门；artifact map到达后补精确记录。
+
+本批静态每目标checker少outer一FS/一kernel/一fullproof，不缓存跨阶段观察；不承诺秒数或Ready必过。所有Source/normal/E/K8s目前仍false/0；D/C2旧失败/新图原件全部保持。

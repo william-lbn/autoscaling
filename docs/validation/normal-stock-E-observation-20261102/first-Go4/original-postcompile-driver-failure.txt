@@ -1,0 +1,10 @@
+Starting normal-stock-preparation-go-20261101t180234z-9aea99.service - /usr/bin/python3 /data/neon-build/continuous/resource-budget/budget.py _worker --nonce 20261101T180234Z-9aea99 --sha 5398f8bf4f9d0b74b8f71cc7631c43dcf5ffcde495763a9a95e4dbe7982d3573...
+Started normal-stock-preparation-go-20261101t180234z-9aea99.service - /usr/bin/python3 /data/neon-build/continuous/resource-budget/budget.py _worker --nonce 20261101T180234Z-9aea99 --sha 5398f8bf4f9d0b74b8f71cc7631c43dcf5ffcde495763a9a95e4dbe7982d3573.
+Traceback (most recent call last):
+  File "/data/neon-build/validation/normal-stock-preparation-go-20261101T180234Z-9aea99/worker.py", line 23, in <module>
+    assert json.loads(review.read_text())['files']==json.loads((p/'source-lock.json').read_text())['approved_D_owned2']
+                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'approved_D_owned2'
+normal-stock-preparation-go-20261101t180234z-9aea99.service: Main process exited, code=exited, status=1/FAILURE
+normal-stock-preparation-go-20261101t180234z-9aea99.service: Failed with result 'exit-code'.
+normal-stock-preparation-go-20261101t180234z-9aea99.service: Consumed 2.743s CPU time, 2.5M memory peak, 0B memory swap peak.
