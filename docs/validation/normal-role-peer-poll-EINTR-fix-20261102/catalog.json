@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "scope": "仅listener有界EINTR恢复修复与直接受影响测试；真实整个服务目标仍失败",
+  "source_commit": "05c72308f01e9abf914eef01061f02e3acf52646",
+  "U": {
+    "status": "PASS",
+    "roots": 23,
+    "subtests": 137,
+    "root_names": [
+      "TestArrayPIDFDObservationOriginalObjects",
+      "TestNormalRoleDiagnosticPeerPollSnapshotAndAbsent",
+      "TestArrayPIDFDListenerRestartOriginalStates",
+      "TestArrayPIDFDListenerRestartRealSignal",
+      "TestNormalOrdinaryActionsV2CannotPrepareWithoutOriginalSources",
+      "TestOrdinaryUdevV2RawJSONAndNewGuardNeverProduceSource",
+      "TestNormalRoleDiagnosticAbsentAndSnapshotIsolation",
+      "TestNormalRoleDiagnosticConcurrentFixedCapacity",
+      "TestNormalSystemRoleServiceStrictFrame",
+      "TestNormalSystemRoleServiceOriginalTransferBinding",
+      "TestNormalSystemRoleServiceRequiresOriginalRootCapabilities",
+      "TestNormalSystemRoleServiceFixedFourDescriptorTransfer",
+      "TestNormalSystemRoleServiceMissingOriginalSourcesHaveNoEffect",
+      "TestNormalSystemRoleServiceGateJournalAndOriginalChain",
+      "TestNormalSystemRoleServiceComputeLockFDInfo",
+      "TestNormalSystemRoleServiceEmptyClientEnvironment",
+      "TestNormalSystemRoleServiceLockDoesNotOccupyRoleNonceHistory",
+      "TestNormalSystemRoleServiceRetiresOnlyConfirmedOriginalExitedRuns",
+      "TestNormalSystemRoleServiceExactOriginalExitCode",
+      "TestNormalSystemRoleTransferV2OriginalKernelBinding",
+      "TestNormalSystemRoleTransferV2StrictNestedJSON",
+      "TestNormalSystemRoleServiceFixedFiveDescriptorTransfer",
+      "TestNormalSystemRoleKernelTransferRequiresOriginalProof"
+    ],
+    "skip": 0,
+    "note": "含旧直接回归，按稳定目标替换，不全部当新增"
+  },
+  "build_phases": {
+    "u.exitcode": 0,
+    "cli.exitcode": 0,
+    "builder.exitcode": 0,
+    "native-compile.exitcode": 0,
+    "native-target-list.exitcode": 0,
+    "host-compile.exitcode": 0,
+    "host-export.exitcode": 0,
+    "fixture-seed.exitcode": 0
+  },
+  "actual_Host_signal_mechanism": {
+    "actual_calls": 4229,
+    "actual_signal": "SIGURG",
+    "actual_success_after_EINTR": true,
+    "four_attempt_exhaustions": 0,
+    "observed_EINTR_attempts": 1,
+    "same_original_PIDFD": true,
+    "synthetic_Poll_sequence": false
+  },
+  "actual_Guest_recovered_same_PIDFD": {
+    "stage": 21,
+    "role": 5,
+    "decision_unix_nano": 1793564615752807877,
+    "recorded_unix_nano": 1793564615752807877,
+    "value": 0,
+    "peer_pidfd": {
+      "baseline_captured": true,
+      "original_peer_pid": 131,
+      "original_fd": 881,
+      "before_monitor": {
+        "stat_ok": true,
+        "stat_errno": 0,
+        "stat_errno_known": false,
+        "device": 5,
+        "inode": 431,
+        "mode": 448,
+        "statfs_ok": true,
+        "statfs_errno": 0,
+        "statfs_errno_known": false,
+        "fs_type": 1346978886
+      },
+      "original_poll": {
+        "fd_present": true,
+        "poll_called": true,
+        "n": 0,
+        "revents": 0,
+        "errno": 0,
+        "errno_known": false,
+        "attempts": 2,
+        "interruptions": 1
+      },
+      "after_kill_wait": {
+        "stat_ok": false,
+        "stat_errno": 0,
+        "stat_errno_known": false,
+        "device": 0,
+        "inode": 0,
+        "mode": 0,
+        "statfs_ok": false,
+        "statfs_errno": 0,
+        "statfs_errno_known": false,
+        "fs_type": 0
+      },
+      "after_kill_wait_captured": false
+    }
+  },
+  "whole_service_S": {
+    "stable_id": "NEON-S-ROLE-PEER-POLL-EINTR-FIX-001",
+    "status": "FAIL_COMPONENT_OR_FIXTURE",
+    "ordinary_services_executed": false,
+    "PG_executed": false,
+    "seconds": 134.7045256049896,
+    "note": "沿原真实角色probe目标查看历史，不累计本轮重跑为新通过S"
+  },
+  "normal_decrease_accepted": false,
+  "continuous_Source_qualified": false,
+  "E": 0,
+  "K8s_E": 0,
+  "evidence_directory": "/data/neon-build/validation/normal-role-peer-poll-EINTR-fix-20261102",
+  "raw_receipts": {
+    "Go/test.json": "1c0f8021326327d2c0c47f4a3bc1fe01a766c5c10ad045f98868961997b21fdb",
+    "Go/phase-results.json": "e73e75dbcb93bdf5ac55dcebdc7c03e28412e5bba9b19a1473b935ab1228208c",
+    "S/result.json": "c9f8282da0b04ee6251e4024d18407b92bdf2451919633eacb5bbf7f4884f232",
+    "组件结果与剩余.json": "98db896628a8a780f06d420f4afe12b360b9db79c0984bc49d2d7ba993aea1d2"
+  }
+}
