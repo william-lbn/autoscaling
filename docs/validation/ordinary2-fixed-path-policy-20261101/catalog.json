@@ -1,0 +1,20 @@
+{
+  "base": "8aac4b3810214fdf685001403adb180f5ef885f5",
+  "owned3": {
+    "pkg/dsga/resourceguard/normal_system_ordinary_control_v2_linux_amd64.go": "6045ed1672475cf3a8b20ef9c9360cc98eb6908858a5370f17276e2a8501ed43",
+    "pkg/dsga/resourceguard/normal_system_ordinary_v2_path_policy_linux_amd64.go": "3b7ff7e98d14fb1fba8ca152a34149fc153ac71e9da0d3130a4cb54c05095da8",
+    "pkg/dsga/resourceguard/normal_system_ordinary_v2_path_policy_linux_amd64_test.go": "5b10125ba6a362b973ad7db5dd5c491b200a29bb3096864ee63813b2c19cafd2"
+  },
+  "scope": "ORDINARY2_FIXED_INSTALLED_PATH_POLICY_AND_CWD_COMPONENT",
+  "race_roots": 3,
+  "race_subtests": 40,
+  "actual_CWD_subprocess": true,
+  "full_Gate_S": false,
+  "nine_real_services": false,
+  "Source": false,
+  "normal": false,
+  "E": 0,
+  "old_failed_graph": "/data/neon-build/validation/root-ordinary2-path-policy-go-20261101T144510Z-c475fc",
+  "first_failure": "Original Git assembler inputs omitted by test graph; zero real tests. Graph corrected without production relaxation.",
+  "reviewer": "/root/catalog_kernel_runtime"
+}

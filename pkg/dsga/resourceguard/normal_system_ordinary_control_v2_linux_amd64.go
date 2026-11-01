@@ -175,15 +175,10 @@ func normalSystemOrdinaryV2OpenPaths(p *normalSystemOrdinaryV2ControlPlan) (out 
 			return e
 		}
 		if private {
-			if st.Uid != p.rule.UID || st.Gid != p.rule.GID || st.Mode&0007 != 0 || st.Mode&(unix.S_ISUID|unix.S_ISGID) != 0 {
+			rights, e = normalSystemOrdinaryV2PrivatePathRights(p.rule, path, st)
+			if e != nil {
 				f.Close()
-				return fmt.Errorf("ordinary2 private path owner/mode differs")
-			}
-			if st.Mode&unix.S_IFMT == unix.S_IFREG {
-				rights = nkRead | nkWrite | nkTruncate
-			} else if st.Mode&unix.S_IFMT != unix.S_IFDIR {
-				f.Close()
-				return ErrUnknown
+				return e
 			}
 		}
 		out = append(out, normalKernelControlOpenRule{file: f, logical: path, rights: rights, identity: [3]uint64{st.Dev, st.Ino, uint64(st.Rdev)}})
@@ -290,6 +285,12 @@ func normalSystemOrdinaryV2Apply(ctx context.Context, p *normalSystemOrdinaryV2C
 	required := uint32(1<<unix.CAP_SETUID | 1<<unix.CAP_SETGID | 1<<unix.CAP_SETPCAP)
 	if before[0].Effective&required != required {
 		return ErrUnknown
+	}
+	// 只改变显式ordinary2；原Root/Compute/旧普通角色不走此分支。
+	// 固定cwd避免继承Root私有工作目录导致非root服务在首次相对访问时失败。
+	stage = "fixed-working-directory"
+	if e := normalSystemOrdinaryV2FixedWorkingDirectory(); e != nil {
+		return e
 	}
 	stage = "fixed-landlock-paths"
 	paths, e := normalSystemOrdinaryV2OpenPaths(p)

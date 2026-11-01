@@ -1,0 +1,4 @@
+Reviewer: /root/catalog_kernel_runtime; read-only review delivered to Root.
+Reviewed exact owned3 and diff from 8aac against 410ad6 source-lock ff39d059c5b9557b16bed75d27cfd7e9dc4529c9ca0b49075d2fbecda7859dc1.
+No component-level blocker: fixed full-role equality and exact PrivatePaths membership; only actual udev /run/udev accepts Root0:GID60004 DIR01771; actual network DNS is UID/GID60003, regular0644, one hard link, with read/write/truncate only. Other directories follow exact installed layout uid/gid/mode/type and reject special-bit drift.
+Apply fixed cwd only for explicit ordinary2, before original Landlock and privilege reduction. Actual subprocess checks cwd override; old branches unchanged. This review does not certify nine real services, stock producer, Source or normal lowering.
