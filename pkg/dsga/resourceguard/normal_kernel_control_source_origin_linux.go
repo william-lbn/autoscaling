@@ -14,6 +14,7 @@ import (
 type normalKernelControlSource struct {
 	guard                                *Guard
 	memory                               *normalMemoryOriginSource
+	brokerMemory                         *normalMemoryBrokerConsumerSource
 	system                               *normalSystemLifecycleSource
 	consumer                             nativeBirthConsumer
 	runtimeSHA, systemSHA, kernelPrepSHA string
@@ -21,10 +22,31 @@ type normalKernelControlSource struct {
 }
 
 func captureNormalKernelControlSourceLocked(ctx context.Context, state *lockedState, g *Guard, memory *normalMemoryOriginSource, system *normalSystemLifecycleSource, roles []*normalKernelRoleControlSource) (*normalKernelControlSource, error) {
-	if ctx == nil || ctx.Err() != nil || state == nil || g == nil || memory == nil || system == nil {
+	return captureNormalKernelControlSourceWithMemoryLocked(ctx, state, g, memory, nil, system, roles)
+}
+
+// 后继R2仅从同Guard原typedFS取其独立consumer；不把JSON、当前Root或R1
+// source.currentRoot覆写成R2身份。旧R1工厂与新R2工厂共用所有剩余核验。
+func captureNormalKernelControlSourceForBrokerLocked(ctx context.Context, state *lockedState, g *Guard, filesystem *normalFilesystemOriginSource, system *normalSystemLifecycleSource, roles []*normalKernelRoleControlSource) (*normalKernelControlSource, error) {
+	if filesystem == nil || g == nil || system == nil {
+		return nil, ErrUnknown
+	}
+	filesystem.mu.Lock()
+	memory := filesystem.memoryConsumer
+	same := !filesystem.closed && filesystem.g == g && filesystem.system == system && memory != nil && memory.filesystem == filesystem
+	filesystem.mu.Unlock()
+	if !same {
+		return nil, errors.Join(ErrUnknown, fmt.Errorf("original broker kernel controls require same-Guard typed memory/FS source"))
+	}
+	return captureNormalKernelControlSourceWithMemoryLocked(ctx, state, g, nil, memory, system, roles)
+}
+
+func captureNormalKernelControlSourceWithMemoryLocked(ctx context.Context, state *lockedState, g *Guard, memory *normalMemoryOriginSource, brokerMemory *normalMemoryBrokerConsumerSource, system *normalSystemLifecycleSource, roles []*normalKernelRoleControlSource) (*normalKernelControlSource, error) {
+	if ctx == nil || ctx.Err() != nil || state == nil || g == nil || system == nil {
 		return nil, errors.Join(ErrUnknown, fmt.Errorf("original kernel control opaque inputs absent"))
 	}
-	if e := memory.recheckLocked(ctx, state, g); e != nil {
+	memoryIntent, memoryConsumer, e := normalKernelControlMemoryBindingLocked(ctx, state, g, memory, brokerMemory)
+	if e != nil {
 		return nil, e
 	}
 	observed, e := system.snapshot()
@@ -35,7 +57,7 @@ func captureNormalKernelControlSourceLocked(ctx context.Context, state *lockedSt
 	if e != nil {
 		return nil, e
 	}
-	if consumer != observed.Binding.RootConsumer || consumer != memory.currentRoot || observed.Binding.GuestBootID != memory.intent.Physical.Identity.GuestBootID || observed.Binding.VMUID != g.config.VMUID || observed.Binding.ComputeInstanceID != g.config.ComputeInstanceID || observed.Binding.RuntimeDocumentSHA256 != memory.intent.Host.Prepared.Challenge.RuntimeSHA256 {
+	if consumer != observed.Binding.RootConsumer || consumer != memoryConsumer || observed.Binding.GuestBootID != memoryIntent.Physical.Identity.GuestBootID || observed.Binding.VMUID != g.config.VMUID || observed.Binding.ComputeInstanceID != g.config.ComputeInstanceID || observed.Binding.RuntimeDocumentSHA256 != memoryIntent.Host.Prepared.Challenge.RuntimeSHA256 {
 		return nil, errors.Join(ErrUnknown, fmt.Errorf("original Root/runtime/Guest control sources differ"))
 	}
 	if e = nativeFilterAuditCaller(); e != nil {
@@ -45,7 +67,7 @@ func captureNormalKernelControlSourceLocked(ctx context.Context, state *lockedSt
 	if e != nil {
 		return nil, e
 	}
-	src := &normalKernelControlSource{guard: g, memory: memory, system: system, consumer: consumer, runtimeSHA: observed.Binding.RuntimeDocumentSHA256, systemSHA: systemSHA, roles: map[string]*normalKernelRoleControlSource{}}
+	src := &normalKernelControlSource{guard: g, memory: memory, brokerMemory: brokerMemory, system: system, consumer: consumer, runtimeSHA: observed.Binding.RuntimeDocumentSHA256, systemSHA: systemSHA, roles: map[string]*normalKernelRoleControlSource{}}
 	expected := normalKernelControlExpectedManifest()
 	if len(roles) != len(expected.Roles) {
 		return nil, fmt.Errorf("all nine original ordinary control sources required")
@@ -87,16 +109,16 @@ func captureNormalKernelControlSourceLocked(ctx context.Context, state *lockedSt
 	if e != nil {
 		return nil, e
 	}
-	if src.kernelPrepSHA != memory.intent.Host.Prepared.KernelPreparationSHA256 {
+	if src.kernelPrepSHA != memoryIntent.Host.Prepared.KernelPreparationSHA256 {
 		return nil, fmt.Errorf("original kernel preparation reference differs")
 	}
-	if e = memory.recheckLocked(ctx, state, g); e != nil {
+	if _, _, e = normalKernelControlMemoryBindingLocked(ctx, state, g, memory, brokerMemory); e != nil {
 		return nil, e
 	}
 	return src, nil
 }
 func (s *normalKernelControlSource) recheckLocked(ctx context.Context, state *lockedState, g *Guard) error {
-	if s == nil || s.guard != g || s.memory == nil || s.system == nil {
+	if s == nil || s.guard != g || s.system == nil {
 		return errors.Join(ErrUnknown, fmt.Errorf("original kernel control source absent"))
 	}
 	consumer, e := nativeBirthCurrentConsumerIdentity()
@@ -107,7 +129,7 @@ func (s *normalKernelControlSource) recheckLocked(ctx context.Context, state *lo
 	if e != nil || sha != s.systemSHA {
 		return errors.Join(ErrUnknown, fmt.Errorf("original kernel control System source changed"))
 	}
-	if e = s.memory.recheckLocked(ctx, state, g); e != nil {
+	if _, _, e = normalKernelControlMemoryBindingLocked(ctx, state, g, s.memory, s.brokerMemory); e != nil {
 		return e
 	}
 	for _, role := range s.roles {
@@ -133,4 +155,24 @@ func (s *normalKernelControlSource) requireContinuousQualification() error {
 	// 普通9的真实不可逆约束不等于尚未接通的Root/PID1/Compute/全部respawn来源。
 	// 后继需原opaque生产者补齐；没有修改Inflight MissingSources或normal拒绝。
 	return errors.Join(ErrUnknown, fmt.Errorf("kernel control source lacks original Root/PID1/Compute/all-respawn producer qualification"))
+}
+
+// 精确封闭的两种私有来源，不接受可自行实现的泛化接口/自报当前Root。
+// 两者都缺或同时提供都拒；R2必须真实消费原确认历史并维持原exec/FS见证。
+func normalKernelControlMemoryBindingLocked(ctx context.Context, state *lockedState, g *Guard, original *normalMemoryOriginSource, broker *normalMemoryBrokerConsumerSource) (normalMemoryOriginIntent, nativeBirthConsumer, error) {
+	var empty normalMemoryOriginIntent
+	var root nativeBirthConsumer
+	if ctx == nil || ctx.Err() != nil || state == nil || g == nil || (original == nil) == (broker == nil) {
+		return empty, root, errors.Join(ErrUnknown, fmt.Errorf("exactly one original typed memory authority required"))
+	}
+	if original != nil {
+		if e := original.recheckLocked(ctx, state, g); e != nil {
+			return empty, root, e
+		}
+		return original.intent, original.currentRoot, nil
+	}
+	if e := broker.recheckLocked(ctx, state, g); e != nil {
+		return empty, root, e
+	}
+	return broker.intent, broker.witness.Consumer, nil
 }

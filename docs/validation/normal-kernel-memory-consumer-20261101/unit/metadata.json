@@ -1,0 +1,21 @@
+{
+  "unit": "neon-kernel-memory-consumer-20261101t043631z-41e596",
+  "nonce": "20261101T043631Z-41e596",
+  "base": "1518377e9f099bc4ac122c7eb5565af3d81c5677",
+  "source_count": 1017,
+  "owned_count": 2,
+  "immutable_dependencies": "P1_16+Root_FS2_5",
+  "source_lock_sha256": "2194b0599817e162491127c0b82a1d36ab12bf5758c89d00796efb540198650c",
+  "scope": "TYPED_MEMORY_INPUT_U_AND_NATIVE_COMPILE_ONLY",
+  "hard_limits": {
+    "memory": "2g",
+    "memory_swap": "2g",
+    "cpu_quota": 200000
+  },
+  "test_regex": "^TestNormal(Filesystem|KernelControl)",
+  "native_build_tags": [
+    "dsga_native_filesystem_origin",
+    "dsga_native_system_lifecycle"
+  ],
+  "native_not_executed": true
+}
