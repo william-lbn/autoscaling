@@ -1,0 +1,8 @@
+FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 AS check
+WORKDIR /workspace
+ENV GOPATH=/go GOMODCACHE=/go/pkg/mod GOCACHE=/root/.cache/go-build GOMAXPROCS=2 GOMEMLIMIT=768MiB GOPROXY=off
+COPY . .
+ARG NONCE
+RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared set -eu; mkdir -p /out; ln -s /out /proof; test "$(cat /sys/fs/cgroup/memory.max)" = 3221225472; test "$(cat /sys/fs/cgroup/cpu.max)" = "300000 100000"; sha256sum -c .stock-prep.sha256 >/out/actual-copy-verification.txt; cp .stock-prep.sha256 /out/compiled-source-sha256.txt; set +e; CGO_ENABLED=0 go test -c -ldflags="-s -w" -tags=dsga_native_stock_preparation,dsga_native_ordinary2,dsga_native_role_transfer2,dsga_native_role_service,dsga_native_system_lifecycle -o /out/service.test ./pkg/dsga/resourceguard >/out/native-compile.log 2>&1; echo $? >/out/native-compile.exitcode; if test -x /out/service.test; then DSGA_TRANSFER2_HOST_RUNTIME=/workspace/.stock-seed-host-runtime.json DSGA_SYSTEM_ROLE_ELF=/out/service.test DSGA_SYSTEM_LIFECYCLE_EXPORT=/out/fixture DSGA_SERVICE_GUARD_ELF=/out/service.test /out/service.test -test.run=^TestExportNormalStockUdevPreparationSeed$ -test.v -test.timeout=30s >/out/fixture-seed.log 2>&1; echo $? >/out/fixture-seed.exitcode; fi; cat /sys/fs/cgroup/cpu.stat >/out/cpu.stat; cat /sys/fs/cgroup/memory.peak >/out/memory.peak; cat /sys/fs/cgroup/io.stat >/out/io.stat
+FROM scratch
+COPY --from=check /out/ /

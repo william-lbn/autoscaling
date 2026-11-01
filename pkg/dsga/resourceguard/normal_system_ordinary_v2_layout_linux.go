@@ -394,10 +394,8 @@ func prepareNormalSystemOrdinaryV2LayoutLocked(ctx context.Context, g *Guard, s 
 	}
 	a.producerMu.Lock()
 	defer a.producerMu.Unlock()
-	for _, stage := range normalOrdinaryV2LayoutStages {
-		if _, _, e = s.readPhysicalFile(normalOrdinaryV2LayoutStageName(stage)); !errors.Is(e, os.ErrNotExist) {
-			return nil, errors.Join(ErrUnknown, fmt.Errorf("ordinary2 directory history exists or is unreadable"), e)
-		}
+	if e = normalOrdinaryV2LayoutRejectHistoryLocked(s); e != nil {
+		return nil, e
 	}
 	out = &normalSystemOrdinaryV2LayoutSource{authority: a, filesystem: filesystem, proof: proof, originalFS: fsref}
 	origin := struct {
@@ -481,4 +479,18 @@ func (o *normalSystemOrdinaryV2LayoutSource) referenceLocked(ctx context.Context
 		return [3]string{}, errors.Join(ErrUnknown, e)
 	}
 	return out, nil
+}
+
+// readPhysicalFile的不存在合同是exists=false/err=nil；不能把nil误当读失败。
+// 可见partial/complete或任何读/类型/权限错误仍一律Unknown，不重放/不删除。
+func normalOrdinaryV2LayoutRejectHistoryLocked(s *lockedState) error {
+	if s == nil || s.dir == nil || s.lock == nil {
+		return ErrUnknown
+	}
+	for _, stage := range normalOrdinaryV2LayoutStages {
+		if _, exists, e := s.readPhysicalFile(normalOrdinaryV2LayoutStageName(stage)); e != nil || exists {
+			return errors.Join(ErrUnknown, fmt.Errorf("ordinary2 directory history exists or is unreadable"), e)
+		}
+	}
+	return nil
 }

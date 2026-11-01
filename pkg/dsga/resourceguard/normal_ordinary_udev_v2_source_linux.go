@@ -241,6 +241,12 @@ func (g *Guard) prepareNormalOrdinaryUdevV2Locked(ctx context.Context, state *lo
 	if len(q.catalog.unresolved) > 0 {
 		return fail(fmt.Errorf("udev original catalog captured but complete readonly rule semantics unresolved: %s", q.catalog.unresolved[0]))
 	}
+	// 原初始catalog逐目标只读sealed资料；全部安装后再完整重核一次，
+	// 避免O(目标数*全部ELF)重hash，同时不省略准备末尾的原来源/持久见证。
+	finalPreparation, e := q.preparation.referenceLocked(ctx, state)
+	if e != nil || finalPreparation != q.preparationReference {
+		return fail(errors.Join(ErrUnknown, e))
+	}
 	good = true
 	return q, nil
 }

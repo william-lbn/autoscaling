@@ -167,3 +167,38 @@ func TestOrdinaryV2DirectorySourceCannotBeForgedFromPlan(t *testing.T) {
 		}
 	}
 }
+
+func TestOrdinaryV2DirectoryHistoryCannotReopen(t *testing.T) {
+	for _, stage := range []string{"empty", "intent", "identity", "complete", "bad-type"} {
+		t.Run(stage, func(t *testing.T) {
+			dir := t.TempDir()
+			if e := os.Chmod(dir, 0700); e != nil {
+				t.Fatal(e)
+			}
+			state, e := lockState(context.Background(), dir)
+			if e != nil {
+				t.Fatal(e)
+			}
+			defer state.close()
+			if stage != "empty" {
+				name := normalOrdinaryV2LayoutStageName(stage)
+				if stage == "bad-type" {
+					name = normalOrdinaryV2LayoutStageName("intent")
+					if e = os.Symlink("missing", filepath.Join(dir, name)); e != nil {
+						t.Fatal(e)
+					}
+				} else if e = state.createPhysicalFile(name, []byte("{}")); e != nil {
+					t.Fatal(e)
+				}
+			}
+			e = normalOrdinaryV2LayoutRejectHistoryLocked(state)
+			if stage == "empty" {
+				if e != nil {
+					t.Fatal("fresh history falsely Unknown", e)
+				}
+			} else if !errors.Is(e, ErrUnknown) {
+				t.Fatal("existing history accepted", e)
+			}
+		})
+	}
+}

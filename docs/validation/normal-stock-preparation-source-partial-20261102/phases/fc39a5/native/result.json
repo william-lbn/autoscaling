@@ -1,0 +1,41 @@
+{
+  "stable_id": "NEON-S-STOCK-UDEV-PREPARATION-001",
+  "status": "FAIL_COMPONENT_OR_FIXTURE",
+  "Host_container_exit": 1,
+  "Guest_exits": [
+    "1"
+  ],
+  "initial_exits": [
+    "1"
+  ],
+  "R1_alive_refs": [
+    "e30d39f0d8085e787bcc3c5a6c99129b96a4b923275824d0f309fabf384d35aa"
+  ],
+  "R1_exited_refs": [],
+  "actual_stock_receipts": [
+    {
+      "projection_sha256": "51b48a9a7d27c297023431e1f58d4d52212cc322e2178b9b263f84b6ef42892f",
+      "wait_sha256": "56712f65dc78ca53865a95be43f390e1be15ba20e0bc2106fc63cf709b2ead6a",
+      "manifest_sha256": "885ab22a3873a51f2c8feac800ec635337cec8d6491cd81f8e3862fdd5bccece",
+      "package_lock_sha256": "cca0c098d0138d7159f1a09a90ec71618e798ac87272825d3e12778cbc6e5332",
+      "targets": 198,
+      "runtime_phase": 3,
+      "typed_source": true,
+      "normal": false
+    }
+  ],
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "seconds": 58.58354590498493,
+  "actual_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+  "Guest_ELF_sha256": "d2f8cfe8a6dbc76e91b323f1a3efdaad8f13b523287950cf29cd8ee5c205e09f",
+  "Host_ELF_sha256": "b86e5c9843ffb907eff97423ba1c76a8cce5ef083167532b5305baa342535a5e",
+  "Host_API_is_model": true,
+  "production_CLI_only_compiled": true,
+  "ordinary_services_executed": false,
+  "PG_executed": false,
+  "normal_authorized": false,
+  "E": 0
+}

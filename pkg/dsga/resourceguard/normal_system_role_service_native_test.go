@@ -311,7 +311,13 @@ var normalRoleServiceNativeBrokerContext = func(ctx context.Context) context.Con
 
 var normalRoleServiceAdditionalDEVDispatch func(*testing.M) bool
 
+// 独立stock native tag才设置，默认nil不改变原2f/369及生产函数分派。
+var normalRoleServiceStockPreparationDEVDispatch func(*testing.M) bool
+
 func TestMain(m *testing.M) {
+	if normalRoleServiceStockPreparationDEVDispatch != nil && normalRoleServiceStockPreparationDEVDispatch(m) {
+		return
+	}
 	if normalRoleServiceAdditionalDEVDispatch != nil && normalRoleServiceAdditionalDEVDispatch(m) {
 		return
 	}

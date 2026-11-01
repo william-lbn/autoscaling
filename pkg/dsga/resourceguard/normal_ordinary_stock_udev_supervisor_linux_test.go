@@ -200,3 +200,30 @@ func TestNormalStockUdevSupervisorFixedEnvironment(t *testing.T) {
 		t.Fatal("caller changed later child environment")
 	}
 }
+
+func TestNormalStockUdevSupervisorSubreaperGetterActualKernel(t *testing.T) {
+	normalOrdinaryStockUdevSupervisorMu.Lock()
+	defer normalOrdinaryStockUdevSupervisorMu.Unlock()
+	previous, e := normalOrdinaryStockUdevSubreaper()
+	if e != nil || previous != 0 && previous != 1 {
+		t.Fatalf("actual original getter: %d %v", previous, e)
+	}
+	defer func() {
+		if e := unix.Prctl(unix.PR_SET_CHILD_SUBREAPER, uintptr(previous), 0, 0, 0); e != nil {
+			t.Errorf("restore actual original subreaper: %v", e)
+		}
+	}()
+	// 实际失败API的负控，证明旧空指针用法在当前内核确为EFAULT。
+	if _, e := unix.PrctlRetInt(unix.PR_GET_CHILD_SUBREAPER, 0, 0, 0, 0); !errors.Is(e, unix.EFAULT) {
+		t.Fatalf("null output pointer did not reproduce EFAULT: %v", e)
+	}
+	for _, want := range []int{0, 1, 0, previous} {
+		if e := unix.Prctl(unix.PR_SET_CHILD_SUBREAPER, uintptr(want), 0, 0, 0); e != nil {
+			t.Fatalf("actual SET %d: %v", want, e)
+		}
+		got, e := normalOrdinaryStockUdevSubreaper()
+		if e != nil || got != want {
+			t.Fatalf("actual GET after SET %d: %d %v", want, got, e)
+		}
+	}
+}

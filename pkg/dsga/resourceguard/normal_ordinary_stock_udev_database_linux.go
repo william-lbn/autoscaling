@@ -84,7 +84,7 @@ func captureNormalOrdinaryStockUdevDatabase(ctx context.Context, dirs *normalOrd
 		if e != nil {
 			return fail(e)
 		}
-		current, e := normalOrdinaryUdevV2StaticProperties(raw)
+		current, e := normalOrdinaryUdevV2KernelStaticProperties("/sys"+entry.path, entry.subsystem, raw)
 		if e != nil {
 			return fail(e)
 		}

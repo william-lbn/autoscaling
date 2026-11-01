@@ -272,3 +272,76 @@ func TestNormalStockUdevMonitorCPUSingleLFRequiresSameOriginalProjection(t *test
 		}
 	}
 }
+
+func TestNormalStockUdevMonitorEmptyModaliasRequiresOriginalPresence(t *testing.T) {
+	// 目标不取现场PNP路径；语义来自准确libudev，不是设备路径白名单。
+	const path = "/devices/test/acpi-memory0"
+	kernelRaw := []byte("add@" + path + "\x00ACTION=add\x00DEVPATH=" + path + "\x00SUBSYSTEM=acpi\x00SEQNUM=22\x00MODALIAS=\x00")
+	_, ke, e := decodeNormalOrdinaryStockUdevMonitorEvent(kernelRaw, unix.UnixCredentials(&unix.Ucred{}), 0, &unix.SockaddrNetlink{Family: unix.AF_NETLINK, Groups: 1})
+	if e != nil {
+		t.Fatal(e)
+	}
+	original, e := normalOrdinaryUdevV2KernelStaticProperties("/sys"+path, "acpi", []byte("MODALIAS=\n"))
+	if e != nil {
+		t.Fatal(e)
+	}
+	pp := map[string]string{"ACTION": "add", "DEVPATH": path, "SUBSYSTEM": "acpi", "SEQNUM": "22"}
+	processedRaw, e := normalOrdinaryUdevV2PublicPacket(pp)
+	if e != nil {
+		t.Fatal(e)
+	}
+	_, pe, e := decodeNormalOrdinaryStockUdevMonitorEvent(processedRaw, unix.UnixCredentials(&unix.Ucred{Pid: 88}), 0, &unix.SockaddrNetlink{Family: unix.AF_NETLINK, Pid: 9001, Groups: 2})
+	if e != nil {
+		t.Fatal(e)
+	}
+	ks := map[uint64]normalOrdinaryStockUdevMonitorEvent{22: ke}
+	ps := map[uint64]normalOrdinaryStockUdevMonitorEvent{22: pe}
+	targets := []normalOrdinaryStockUdevMonitorTarget{{Devpath: path, Subsystem: "acpi", KernelProperties: original}}
+	got, e := normalOrdinaryStockUdevMonitorMatch(ks, ps, targets)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if v, yes := got.KernelEvents[0].Properties["MODALIAS"]; !yes || v != "" {
+		t.Fatal("lost original empty kernel property")
+	}
+	if _, yes := got.ProcessedBySequence[22].Properties["MODALIAS"]; yes {
+		t.Fatal("invented processed empty property")
+	}
+	if !bytes.Equal(ke.Raw, kernelRaw) || !bytes.Equal(pe.Raw, processedRaw) {
+		t.Fatal("original packets changed")
+	}
+	for _, which := range []string{"target-absent", "target-nonempty", "kernel-absent", "nonempty-kernel-absent-processed", "processed-nonempty", "processed-empty", "other-empty-key-missing", "sequence-missing"} {
+		t.Run(which, func(t *testing.T) {
+			ck, cp := normalOrdinaryStockUdevMonitorCopy(ke), normalOrdinaryStockUdevMonitorCopy(pe)
+			ct := map[string]string{}
+			for k, v := range original {
+				ct[k] = v
+			}
+			kmap := map[uint64]normalOrdinaryStockUdevMonitorEvent{22: ck}
+			pmap := map[uint64]normalOrdinaryStockUdevMonitorEvent{22: cp}
+			switch which {
+			case "target-absent":
+				delete(ct, "MODALIAS")
+			case "target-nonempty":
+				ct["MODALIAS"] = "acpi:changed:"
+			case "kernel-absent":
+				delete(ck.Properties, "MODALIAS")
+			case "nonempty-kernel-absent-processed":
+				ct["MODALIAS"] = "acpi:known:"
+				ck.Properties["MODALIAS"] = "acpi:known:"
+			case "processed-nonempty":
+				cp.Properties["MODALIAS"] = "acpi:changed:"
+			case "processed-empty":
+				cp.Properties["MODALIAS"] = ""
+			case "other-empty-key-missing":
+				ct["DRIVER"] = ""
+				ck.Properties["DRIVER"] = ""
+			case "sequence-missing":
+				delete(pmap, 22)
+			}
+			if _, e := normalOrdinaryStockUdevMonitorMatch(kmap, pmap, []normalOrdinaryStockUdevMonitorTarget{{Devpath: path, Subsystem: "acpi", KernelProperties: ct}}); !errors.Is(e, ErrUnknown) {
+				t.Fatalf("accepted %s: %v", which, e)
+			}
+		})
+	}
+}

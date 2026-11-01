@@ -15,6 +15,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"unsafe"
 
 	"golang.org/x/sys/unix"
 )
@@ -343,6 +344,21 @@ func reapNormalOrdinaryStockUdevOrphans(ctx context.Context) ([]normalOrdinarySt
 	}
 }
 
+// PR_GET_CHILD_SUBREAPER把结果写到arg2指向的int，而非prctl返回值。
+// 直接Syscall6保留指针活性；不以retint/空指针调用后忽略EFAULT。
+func normalOrdinaryStockUdevSubreaper() (int, error) {
+	var value int32
+	_, _, e := syscall.Syscall6(unix.SYS_PRCTL, unix.PR_GET_CHILD_SUBREAPER, uintptr(unsafe.Pointer(&value)), 0, 0, 0, 0)
+	runtime.KeepAlive(&value)
+	if e != 0 {
+		return 0, e
+	}
+	if value != 0 && value != 1 {
+		return 0, ErrUnknown
+	}
+	return int(value), nil
+}
+
 // 返回原Wait证据而非ready布尔；调用者还必须核三actor、原g/FS/WAL、规则及封存投影。
 // 此函数本身不产生normalOrdinaryUdevV2Preparation或任何Source资格。
 func (p *normalOrdinaryStockUdevPrograms) run(ctx context.Context) (waits []normalOrdinaryStockUdevWait, logRaw []byte, err error) {
@@ -369,7 +385,7 @@ func (p *normalOrdinaryStockUdevPrograms) run(ctx context.Context) (waits []norm
 	if e != nil || len(children) != 0 {
 		return nil, nil, errors.Join(ErrUnknown, e, fmt.Errorf("preparation cannot acquire an existing child"))
 	}
-	previous, e := unix.PrctlRetInt(unix.PR_GET_CHILD_SUBREAPER, 0, 0, 0, 0)
+	previous, e := normalOrdinaryStockUdevSubreaper()
 	if e != nil {
 		return nil, nil, e
 	}

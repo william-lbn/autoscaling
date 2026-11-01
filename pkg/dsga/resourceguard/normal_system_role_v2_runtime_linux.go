@@ -14,10 +14,13 @@ import (
 // 这里只保存本R2原Guard/typedFS/真实四或五FD ExecProof，不提供从JSON/路径恢复入口。
 // 创建工厂可早于COMMIT；prepare角色和租约发布必须同原resource锁且已COMMIT。
 type normalSystemRoleV2Runtime struct {
-	authority *normalSystemResourceAuthority
-	broker    *normalSystemRoleBrokerComponent
-	stdio     *normalSystemRoleStdioFactory
-	closed    bool
+	authority   *normalSystemResourceAuthority
+	broker      *normalSystemRoleBrokerComponent
+	stdio       *normalSystemRoleStdioFactory
+	stock       *normalOrdinaryUdevV2
+	actions     *normalOrdinaryActionsV2
+	closeLayout func()
+	closed      bool
 }
 
 var normalSystemRoleV2Runtimes = struct {
@@ -44,20 +47,91 @@ func installNormalSystemRoleV2BrokerRuntime(ctx context.Context, g *Guard, syste
 	if e != nil {
 		return nil, e
 	}
-	v := &normalSystemRoleV2Runtime{authority: a, broker: b, stdio: f}
+	var stock *normalOrdinaryUdevV2
+	var actions *normalOrdinaryActionsV2
+	var closeLayout func()
+	// 只原RO System3明确选stock的controls2进入；旧ordinary1及无stock组件2原样。
+	if normalSystemStockUdevSelected(system.manifest) {
+		closeLayout, e = installNormalSystemOrdinaryV2DirectoryLayout(ctx, g, system, filesystem, proof)
+		if e != nil {
+			f.close()
+			return nil, e
+		}
+		e = g.withRecord(ctx, func(rec *record, state *lockedState) error {
+			var err error
+			stock, err = g.prepareNormalOrdinaryUdevV2Locked(ctx, state, rec, filesystem, proof, a)
+			if err != nil {
+				return err
+			}
+			actions, err = g.prepareNormalOrdinaryActionsV2Locked(ctx, state, rec, filesystem, proof, a)
+			if err != nil {
+				stock.close()
+			}
+			return err
+		})
+		if e != nil {
+			closeLayout()
+			f.close()
+			return nil, errors.Join(ErrUnknown, e)
+		}
+	}
+	v := &normalSystemRoleV2Runtime{authority: a, broker: b, stdio: f, stock: stock, actions: actions, closeLayout: closeLayout}
 	normalSystemRoleV2Runtimes.Lock()
 	if normalSystemRoleV2Runtimes.byBroker[b] != nil || len(normalSystemRoleV2Runtimes.byBroker) >= 64 {
 		normalSystemRoleV2Runtimes.Unlock()
+		if actions != nil {
+			actions.close()
+		}
+		if stock != nil {
+			stock.close()
+		}
+		if closeLayout != nil {
+			closeLayout()
+		}
 		f.close()
 		return nil, ErrUnknown
 	}
 	normalSystemRoleV2Runtimes.byBroker[b] = v
 	normalSystemRoleV2Runtimes.Unlock()
+	watchCtx, stopWatch := context.WithCancel(ctx)
+	watchDone := make(chan struct{})
+	go func() {
+		defer close(watchDone)
+		var stockDone, actionDone <-chan error
+		if stock != nil {
+			stockDone = stock.done
+		}
+		if actions != nil {
+			actionDone = actions.done
+		}
+		select {
+		case <-watchCtx.Done():
+			return
+		case <-stockDone:
+			a.admission.fail()
+		case <-actionDone:
+			a.admission.fail()
+		}
+	}()
+	var closeOnce sync.Once
 	return func() {
-		normalSystemRoleV2Runtimes.Lock()
-		v.closed = true
-		normalSystemRoleV2Runtimes.Unlock()
-		f.close()
+		closeOnce.Do(func() {
+			stopWatch()
+			<-watchDone
+			normalSystemRoleV2Runtimes.Lock()
+			v.closed = true
+			normalSystemRoleV2Runtimes.Unlock()
+			if actions != nil {
+				actions.close()
+			}
+			if stock != nil {
+				stock.close()
+			}
+			if closeLayout != nil {
+				closeLayout()
+			}
+			f.close()
+		})
 	}, nil
 }
 func originalNormalSystemRoleV2Runtime(b *normalSystemRoleBrokerComponent) (*normalSystemRoleV2Runtime, error) {
@@ -84,6 +158,17 @@ type normalSystemRoleV2Publication struct {
 func (v *normalSystemRoleV2Runtime) prepareOriginalRoleLocked(ctx context.Context, state *lockedState, rec *record, plan normalSystemRoleLaunchSpec, j *normalSystemRoleJournal) (*normalSystemRoleV2Publication, error) {
 	if v == nil || j == nil || j.state != state || j.pending.PlanSHA256 == "" || plan.roleSourceProtocol != 2 || v.authority == nil || v.authority.source != v.broker.source {
 		return nil, ErrUnknown
+	}
+	if normalSystemStockUdevSelected(v.authority.source.manifest) {
+		if v.stock == nil {
+			return nil, ErrUnknown
+		}
+		if e := requireNormalSystemOrdinaryV2DirectoryLayoutLocked(ctx, v.authority, state, rec); e != nil {
+			return nil, e
+		}
+		if e := v.stock.checkLocked(ctx, state, rec); e != nil {
+			return nil, e
+		}
 	}
 	endpoints, e := v.stdio.prepareOriginalLocked(ctx, state, rec, plan.role)
 	if e != nil {
@@ -114,6 +199,17 @@ func (p *normalSystemRoleV2Publication) prepareOriginalStopped(ctx context.Conte
 	}
 	j := p.journal
 	a := p.runtime.authority
+	if normalSystemStockUdevSelected(a.source.manifest) {
+		if p.runtime.stock == nil {
+			return ErrUnknown
+		}
+		if e := requireNormalSystemOrdinaryV2DirectoryLayoutLocked(ctx, a, j.state, p.record); e != nil {
+			return e
+		}
+		if e := p.runtime.stock.checkLocked(ctx, j.state, p.record); e != nil {
+			return e
+		}
+	}
 	controls, e := inspectNormalSystemRoleV2ControlsAtStop(ctx, a.source, task, plan, control, tid)
 	if e != nil {
 		return e

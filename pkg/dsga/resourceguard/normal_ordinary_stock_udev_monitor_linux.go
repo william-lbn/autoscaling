@@ -63,7 +63,7 @@ func normalOrdinaryStockUdevMonitorCopy(v normalOrdinaryStockUdevMonitorEvent) n
 func normalOrdinaryStockUdevMonitorProperties(raw []byte) (map[string]string, error) {
 	normalized, e := normalOrdinaryUdevV2CPUPropertyBytes(raw, 4096)
 	if e != nil {
-		return nil, e
+		return nil, errors.Join(ErrUnknown, fmt.Errorf("stock processed CPU property byte semantics: %w", e))
 	}
 	raw = normalized
 	if len(raw) == 0 || len(raw) > 4096 || raw[len(raw)-1] != 0 {
@@ -72,16 +72,19 @@ func normalOrdinaryStockUdevMonitorProperties(raw []byte) (map[string]string, er
 	out := map[string]string{}
 	for _, b := range bytes.Split(raw[:len(raw)-1], []byte{0}) {
 		k, v, ok := strings.Cut(string(b), "=")
-		if !ok || len(k) == 0 || len(k) > 64 || len(v) > 4095 || !normalOrdinaryStockUdevScalar(v) || len(out) >= 126 {
-			return nil, ErrUnknown
+		if !ok || len(k) == 0 || len(k) > 64 || len(v) > 4095 || len(out) >= 126 {
+			return nil, errors.Join(ErrUnknown, fmt.Errorf("stock processed property shape index=%d key_bytes=%d value_bytes=%d", len(out), len(k), len(v)))
 		}
 		for _, c := range k {
 			if !(c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_') {
 				return nil, ErrUnknown
 			}
 		}
+		if !normalOrdinaryStockUdevScalar(v) {
+			return nil, errors.Join(ErrUnknown, fmt.Errorf("stock processed property controls key=%q", k))
+		}
 		if _, yes := out[k]; yes {
-			return nil, ErrUnknown
+			return nil, errors.Join(ErrUnknown, fmt.Errorf("stock processed duplicate property key=%q", k))
 		}
 		out[k] = v
 	}
@@ -92,21 +95,21 @@ func decodeNormalOrdinaryStockUdevMonitorEvent(raw, oob []byte, flags int, from 
 	var zero normalOrdinaryStockUdevMonitorEvent
 	a, ok := from.(*unix.SockaddrNetlink)
 	if !ok || a.Family != unix.AF_NETLINK || flags&(unix.MSG_TRUNC|unix.MSG_CTRUNC) != 0 {
-		return 0, zero, ErrUnknown
+		return 0, zero, errors.Join(ErrUnknown, fmt.Errorf("stock netlink socket framing/family/truncation differs"))
 	}
 	if a.Groups == 1 {
 		v, e := normalOrdinaryUdevV2DecodeKernelPacket(raw, oob, flags, from)
 		if e != nil {
-			return 0, zero, e
+			return 0, zero, errors.Join(ErrUnknown, fmt.Errorf("stock original kernel packet decode: %w", e))
 		}
 		return 1, normalOrdinaryStockUdevMonitorEvent{Sequence: v.sequence, Properties: v.properties, Raw: v.raw}, nil
 	}
 	if a.Groups != 2 || a.Pid == 0 || len(raw) < 40 || len(raw) > 40+4096 {
-		return 0, zero, ErrUnknown
+		return 0, zero, errors.Join(ErrUnknown, fmt.Errorf("stock processed sender/group/packet bound differs"))
 	}
 	msgs, e := unix.ParseSocketControlMessage(oob)
 	if e != nil {
-		return 0, zero, errors.Join(ErrUnknown, e)
+		return 0, zero, errors.Join(ErrUnknown, fmt.Errorf("stock processed ancillary decode: %w", e))
 	}
 	var cred *unix.Ucred
 	bad := false
@@ -137,18 +140,18 @@ func decodeNormalOrdinaryStockUdevMonitorEvent(raw, oob []byte, flags int, from 
 		}
 	}
 	if bad || cred == nil {
-		return 0, zero, ErrUnknown
+		return 0, zero, errors.Join(ErrUnknown, fmt.Errorf("stock processed unique Root credentials/loss metadata differs"))
 	}
 	if !bytes.Equal(raw[:8], []byte{'l', 'i', 'b', 'u', 'd', 'e', 'v', 0}) || binary.BigEndian.Uint32(raw[8:12]) != 0xfeedcafe || binary.NativeEndian.Uint32(raw[12:16]) != 40 || binary.NativeEndian.Uint32(raw[16:20]) != 40 || uint64(binary.NativeEndian.Uint32(raw[20:24])) != uint64(len(raw)-40) {
-		return 0, zero, ErrUnknown
+		return 0, zero, errors.Join(ErrUnknown, fmt.Errorf("stock processed fixed libudev header differs"))
 	}
 	p, e := normalOrdinaryStockUdevMonitorProperties(raw[40:])
 	if e != nil {
-		return 0, zero, e
+		return 0, zero, errors.Join(ErrUnknown, fmt.Errorf("stock processed property decode: %w", e))
 	}
 	seq, e := strconv.ParseUint(p["SEQNUM"], 10, 64)
 	if e != nil || seq == 0 || strconv.FormatUint(seq, 10) != p["SEQNUM"] || !normalOrdinaryStockUdevAbsolute(p["DEVPATH"], "") || !normalOrdinaryStockUdevWord(p["SUBSYSTEM"]) {
-		return 0, zero, ErrUnknown
+		return 0, zero, errors.Join(ErrUnknown, fmt.Errorf("stock processed sequence/path/subsystem shape differs"))
 	}
 	known := false
 	for op := uint16(1); op <= 8; op++ {
@@ -157,17 +160,17 @@ func decodeNormalOrdinaryStockUdevMonitorEvent(raw, oob []byte, flags int, from 
 		}
 	}
 	if !known || binary.BigEndian.Uint32(raw[24:28]) != normalOrdinaryUdevV2Hash(p["SUBSYSTEM"]) || binary.BigEndian.Uint32(raw[28:32]) != normalOrdinaryUdevV2Hash(p["DEVTYPE"]) {
-		return 0, zero, ErrUnknown
+		return 0, zero, errors.Join(ErrUnknown, fmt.Errorf("stock processed action or subsystem/devtype hash differs"))
 	}
 	var bloom uint64
 	if tags := p["TAGS"]; tags != "" {
 		if len(tags) < 3 || !strings.HasPrefix(tags, ":") || !strings.HasSuffix(tags, ":") {
-			return 0, zero, ErrUnknown
+			return 0, zero, errors.Join(ErrUnknown, fmt.Errorf("stock processed tag framing differs"))
 		}
 		seen := map[string]bool{}
 		for _, tag := range strings.Split(tags[1:len(tags)-1], ":") {
 			if !normalOrdinaryStockUdevWord(tag) || seen[tag] {
-				return 0, zero, ErrUnknown
+				return 0, zero, errors.Join(ErrUnknown, fmt.Errorf("stock processed tag identity differs"))
 			}
 			seen[tag] = true
 			h := normalOrdinaryUdevV2Hash(tag)
@@ -177,7 +180,7 @@ func decodeNormalOrdinaryStockUdevMonitorEvent(raw, oob []byte, flags int, from 
 		}
 	}
 	if binary.BigEndian.Uint32(raw[32:36]) != uint32(bloom>>32) || binary.BigEndian.Uint32(raw[36:40]) != uint32(bloom) {
-		return 0, zero, ErrUnknown
+		return 0, zero, errors.Join(ErrUnknown, fmt.Errorf("stock processed tag bloom differs"))
 	}
 	return 2, normalOrdinaryStockUdevMonitorEvent{seq, p, bytes.Clone(raw), cred.Pid, a.Pid}, nil
 }
@@ -185,7 +188,11 @@ func decodeNormalOrdinaryStockUdevMonitorEvent(raw, oob []byte, flags int, from 
 func (m *normalOrdinaryStockUdevMonitor) consume(raw, oob []byte, flags int, from unix.Sockaddr) error {
 	group, v, e := decodeNormalOrdinaryStockUdevMonitorEvent(raw, oob, flags, from)
 	if e != nil {
-		return e
+		var sourceGroup uint32
+		if source, ok := from.(*unix.SockaddrNetlink); ok {
+			sourceGroup = source.Groups
+		}
+		return errors.Join(ErrUnknown, fmt.Errorf("stock original event decode group=%d packet_bytes=%d ancillary_bytes=%d flags=%d: %w", sourceGroup, len(raw), len(oob), flags, e))
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -308,21 +315,21 @@ func (m *normalOrdinaryStockUdevMonitor) readOriginalOFD() {
 func normalOrdinaryStockUdevMonitorMatch(kernel, processed map[uint64]normalOrdinaryStockUdevMonitorEvent, targets []normalOrdinaryStockUdevMonitorTarget) (normalOrdinaryStockUdevMonitorReceipt, error) {
 	var out normalOrdinaryStockUdevMonitorReceipt
 	if len(targets) == 0 || len(targets) > 4096 || len(kernel) == 0 || len(kernel) > 4096 || len(kernel) != len(processed) {
-		return out, ErrUnknown
+		return out, errors.Join(ErrUnknown, fmt.Errorf("stock original cardinality targets=%d kernel=%d processed=%d", len(targets), len(kernel), len(processed)))
 	}
 	by := map[string]normalOrdinaryStockUdevMonitorTarget{}
 	for _, v := range targets {
 		if !normalOrdinaryStockUdevAbsolute(v.Devpath, "") || !normalOrdinaryStockUdevWord(v.Subsystem) {
-			return out, ErrUnknown
+			return out, errors.Join(ErrUnknown, fmt.Errorf("stock original target path/subsystem shape differs"))
 		}
 		if _, yes := by[v.Devpath]; yes {
-			return out, ErrUnknown
+			return out, errors.Join(ErrUnknown, fmt.Errorf("stock original target duplicated path=%q", v.Devpath))
 		}
 		by[v.Devpath] = v
 		for k := range v.KernelProperties {
 			switch k {
 			case "ACTION", "DEVPATH", "SUBSYSTEM", "SEQNUM", "SYNTH_UUID":
-				return out, ErrUnknown
+				return out, errors.Join(ErrUnknown, fmt.Errorf("stock original target has reserved key=%q path=%q", k, v.Devpath))
 			}
 		}
 	}
@@ -337,15 +344,15 @@ func normalOrdinaryStockUdevMonitorMatch(kernel, processed map[uint64]normalOrdi
 		k := kernel[seq]
 		p, ok := processed[seq]
 		if !ok || k.Sequence != seq || p.Sequence != seq {
-			return normalOrdinaryStockUdevMonitorReceipt{}, ErrUnknown
+			return normalOrdinaryStockUdevMonitorReceipt{}, errors.Join(ErrUnknown, fmt.Errorf("stock original processed sequence missing/differs seq=%d", seq))
 		}
 		t, ok := by[k.Properties["DEVPATH"]]
 		if !ok || t.Subsystem != k.Properties["SUBSYSTEM"] {
-			return normalOrdinaryStockUdevMonitorReceipt{}, ErrUnknown
+			return normalOrdinaryStockUdevMonitorReceipt{}, errors.Join(ErrUnknown, fmt.Errorf("stock original event target/subsystem differs seq=%d path=%q", seq, k.Properties["DEVPATH"]))
 		}
 		for name, value := range t.KernelProperties {
 			if got, yes := k.Properties[name]; !yes || got != value {
-				return normalOrdinaryStockUdevMonitorReceipt{}, ErrUnknown
+				return normalOrdinaryStockUdevMonitorReceipt{}, errors.Join(ErrUnknown, fmt.Errorf("stock original target-to-kernel property differs seq=%d path=%q key=%q", seq, t.Devpath, name))
 			}
 		}
 		for name, value := range k.Properties {
@@ -353,14 +360,23 @@ func normalOrdinaryStockUdevMonitorMatch(kernel, processed map[uint64]normalOrdi
 			case "ACTION", "DEVPATH", "SUBSYSTEM", "SEQNUM", "SYNTH_UUID":
 			default:
 				if got, yes := t.KernelProperties[name]; !yes || got != value {
-					return normalOrdinaryStockUdevMonitorReceipt{}, ErrUnknown
+					return normalOrdinaryStockUdevMonitorReceipt{}, errors.Join(ErrUnknown, fmt.Errorf("stock original kernel-to-target property differs seq=%d path=%q key=%q", seq, t.Devpath, name))
 				}
 			}
 			if name == "DEVNAME" && !strings.HasPrefix(value, "/") {
 				value = "/dev/" + value
 			}
-			if got, yes := p.Properties[name]; !yes || got != value {
-				return normalOrdinaryStockUdevMonitorReceipt{}, ErrUnknown
+			got, present := p.Properties[name]
+			matches := present && got == value
+			if name == "MODALIAS" && value == "" {
+				// 锁定libudev3.2.14的generic parser把空值转NULL并删除属性。
+				// 原catalog及原kernel必须均显式含此空key，不能以map缺键默认值补签。
+				original, originalPresent := t.KernelProperties[name]
+				kernel, kernelPresent := k.Properties[name]
+				matches = originalPresent && kernelPresent && original == "" && kernel == "" && !present
+			}
+			if !matches {
+				return normalOrdinaryStockUdevMonitorReceipt{}, errors.Join(ErrUnknown, fmt.Errorf("stock original kernel-to-processed property differs seq=%d path=%q key=%q", seq, t.Devpath, name))
 			}
 		}
 		out.KernelEvents = append(out.KernelEvents, normalOrdinaryStockUdevMonitorCopy(k))
@@ -368,7 +384,7 @@ func normalOrdinaryStockUdevMonitorMatch(kernel, processed map[uint64]normalOrdi
 		covered[t.Devpath] = true
 	}
 	if len(covered) != len(by) {
-		return normalOrdinaryStockUdevMonitorReceipt{}, errors.Join(ErrUnknown, fmt.Errorf("original stock target lacks a matched event"))
+		return normalOrdinaryStockUdevMonitorReceipt{}, errors.Join(ErrUnknown, fmt.Errorf("original stock target lacks a matched event covered=%d targets=%d", len(covered), len(by)))
 	}
 	return out, nil
 }
@@ -395,10 +411,10 @@ func (m *normalOrdinaryStockUdevMonitor) finishAfterOriginalWritersWait(ctx cont
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if m.closed || m.err != nil {
-		return zero, errors.Join(ErrUnknown, m.err)
+		return zero, errors.Join(ErrUnknown, m.err, fmt.Errorf("stock original monitor drain closed=%t targets=%d kernel=%d processed=%d", m.closed, len(targets), len(m.kernel), len(m.processed)))
 	}
 	if e := m.verify(); e != nil {
-		return zero, e
+		return zero, errors.Join(ErrUnknown, fmt.Errorf("stock original socket identity recheck: %w", e))
 	}
 	out, e := normalOrdinaryStockUdevMonitorMatch(m.kernel, m.processed, targets)
 	if e != nil {
