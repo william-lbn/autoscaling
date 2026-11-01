@@ -187,8 +187,10 @@ func spawnNormalSystemRoleOriginal(ctx context.Context, s *normalSystemLifecycle
 				exited := child.waited
 				child.mu.Unlock()
 				if !exited {
+					decision := normalSystemRoleDiagnosticDecision(ctx)
 					_ = unix.PidfdSendSignal(int(child.pidfd.Fd()), unix.SIGKILL, nil, 0)
 					<-child.done
+					normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagKillCreatorDefer, plan.role, decision, 0)
 				}
 			}()
 			published = true
@@ -218,6 +220,9 @@ func spawnNormalSystemRoleOriginal(ctx context.Context, s *normalSystemLifecycle
 			leased.creatorPIDFD.Close()
 			close(leased.creatorLeaseDone)
 			leased.mu.Unlock()
+		}
+		if meta.Unexpected {
+			normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagCreatorUnexpected, plan.role, 0, 0)
 		}
 		if !published {
 			ready <- delivery{err: errors.Join(ErrUnknown, failure, fmt.Errorf("original creator did not publish a target"))}
@@ -331,6 +336,7 @@ func spawnNormalSystemRoleOnOriginalThread(ctx context.Context, s *normalSystemL
 			// Detach之后的失败不能借attached=false漏掉活目标。只向原clone发信号，
 			// 本creator内仅join唯一cmd.Wait；不能调用会等creator自身退出的child.wait。
 			if !control.attached && preparedChild != nil {
+				decision := normalSystemRoleDiagnosticDecision(ctx)
 				killErr := unix.PidfdSendSignal(pfd, unix.SIGKILL, nil, 0)
 				if killErr != nil && !errors.Is(killErr, unix.ESRCH) {
 					err = errors.Join(err, ErrUnknown, killErr)
@@ -339,6 +345,7 @@ func spawnNormalSystemRoleOnOriginalThread(ctx context.Context, s *normalSystemL
 				}
 				preparedChild.startWait()
 				<-preparedChild.done
+				normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagKillCreatorCleanup, plan.role, decision, 0)
 				retire = true
 			}
 		}

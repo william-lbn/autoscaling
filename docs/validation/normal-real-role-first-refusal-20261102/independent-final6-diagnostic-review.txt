@@ -1,0 +1,32 @@
+真实role kill诊断六源：正式独立源码审查
+
+准确freeze f56ef38967c11307fab527f1d64c2f742b206598cff3a6545924dace875c780e，base c6e5af38。
+最终6源和原support32eeb逐SHA匹配。所审差异无新明确阻断，源码层允许继续必要Go4构建；
+编译/真实S需另核不可变新产物、nonce和终态，不能把本审结论当运行通过。
+
+四生产输入为listener4c26b072、spawnc7bc1047、action881aceae、helper22f38aa9；两直接测试
+93c239b5与DEV入口d1a36d81。原helper absence/context.Value无数据即no-op，Decision也不读clock。
+私有data仅固定64 events、计数和通知channel，Record不读Source/不调用授权/不执行IO或callback；
+取d.mu只写固定array，释放后非阻塞通知；snapshot仅在同锁内有界复制，不取任何业务锁。
+
+listener原OR按先peer PIDFD再ConnectionGone保持短路、每项只判断一次；原取消与唯一Wait
+仍在原分支执行，之后才Record。Accepted写失败和清deadline失败也是原kill/finish后才记录。
+creator异常defer/未成功detach后cleanup同样先原SIGKILL/Wait再记录，不早退、不另开kill所有者。
+未给ctx取消增加新分支，未改原30/90s准备、65/60RPC、25sReady或任何资源/权限策略。
+
+Root action仍先原peer/credential/frame验证，再记frame-decoded；withRecord前和callback首行
+区分等待窗口。完整FS、proof、main lease及coldbegin检查仍保，所有错误沿原e/err返回。
+cold.wait仍在原事务外；只是把原if赋值拆成同一个调用与相同错误判断，中间固定记录结果。
+新data不参与cold batch选择、超时、Source或admission。record-entered在Guard自身Identity/
+load/validate之后，不能把它误称取得flock的精确瞬间。
+
+DEV入口只通过编译tag私有ctx创建一次collector。changed从不close；goroutine只收非阻塞
+通知、短锁snapshot、锁外JSON/printf，首次原kill/Wait记录后输出一次退出。原nonzero Wait
+checkpoint另输出部分snapshot，不用日志完成作成功条件。原非零Client失败/独立DeviceCheck
+错误处理、资源计数采集以及reboot/os.Exit顺序保持，未给失败加等待来凑诊断。
+DecisionUnixNano和RecordedUnixNano明示wall clock，不以其差值冒称monotonic耗时；事件array
+按插入顺序。若实际kill来自外部且没有本模块分支，缺kill事件本身不能排除它。
+
+直接测试只查无collector、快照副本隔离及128并发写入固定64/丢弃64；不构造Root来源/真实
+kill。审者没有重复编译/执行。后继精确Go图必要U与全新Guest等产物通过后，才能准许新S；
+原a45/4b失败、Source/normal/E状态均不重标。

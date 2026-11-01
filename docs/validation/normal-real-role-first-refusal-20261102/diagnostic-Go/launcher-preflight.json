@@ -1,0 +1,30 @@
+{
+  "source_shape_exact": true,
+  "phase_keys": [
+    "u.exitcode",
+    "cli.exitcode",
+    "builder.exitcode",
+    "native-compile.exitcode",
+    "native-target-list.exitcode",
+    "host-compile.exitcode",
+    "host-export.exitcode",
+    "fixture-seed.exitcode"
+  ],
+  "review_shape": [
+    "files",
+    "native_nonce",
+    "Guest_ELF_sha256",
+    "artifacts",
+    "runtime_launch_approved"
+  ],
+  "old_review_fields_residuals": 0,
+  "all_new_artifacts": true,
+  "compile_input_fixture6_preserved": {
+    "fixture/system-role": "feb424a81c2e419c08430a36194984b1cbc4f31749e27974b0bfed9e38aa97d8",
+    "fixture/vminit-service": "62cfd6f1bc0b3f5c90f70299e36ef448995c20fc42534d2ca14594e300fd91f5",
+    "fixture/vmstart-v3": "7d391d59ed501df10b3f2225e2c1faf6682e95ef79ad6aeeecc477673473d3fd",
+    "fixture/neon-dsga-array-populate": "a186e9e072f052d33fb6598d6a8fc81235eef093ce9ef7697684dc3a5b5af157",
+    "fixture/bin/busybox": "672ec674aa77a9699a4313cbf75c6be1d7f2e81c939460954eadab9d36196c6c",
+    "fixture/lib/ld-musl-x86_64.so.1": "4e5f9d95fbf01b1375090a257faf28d5f00436e20a4f054d1ee80ff5750f166c"
+  }
+}

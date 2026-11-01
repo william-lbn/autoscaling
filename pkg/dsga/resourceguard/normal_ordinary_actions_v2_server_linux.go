@@ -205,10 +205,13 @@ func (q *normalOrdinaryActionsV2) handle(conn *net.UnixConn, endpoint normalOrdi
 	if e != nil {
 		return e
 	}
+	normalSystemRoleDiagnosticRecord(call, normalRoleDiagFrameDecoded, endpoint.role, 0, uint64(action))
 	var response []byte
 	var cold *normalOrdinaryUdevV2ColdTrigger
 	var originalUdev *normalOrdinaryUdevV2
+	normalSystemRoleDiagnosticRecord(call, normalRoleDiagBeforeRecord, endpoint.role, 0, 0)
 	e = q.g.withRecord(call, func(r *record, state *lockedState) error {
+		normalSystemRoleDiagnosticRecord(call, normalRoleDiagRecordEntered, endpoint.role, 0, 0)
 		if !q.authority.admission.businessAllowed() {
 			return ErrUnknown
 		}
@@ -216,11 +219,13 @@ func (q *normalOrdinaryActionsV2) handle(conn *net.UnixConn, endpoint normalOrdi
 		if e != nil || ref != q.originalFS {
 			return errors.Join(ErrUnknown, e)
 		}
+		normalSystemRoleDiagnosticRecord(call, normalRoleDiagFSComplete, endpoint.role, 0, 0)
 		original, e := q.proof.originalTaskForFilesystemLocked(call, state, q.filesystem.system)
 		if e != nil {
 			return e
 		}
 		original.close()
+		normalSystemRoleDiagnosticRecord(call, normalRoleDiagProofComplete, endpoint.role, 0, 0)
 		lease, e := q.reader.normalSystemOriginalRoleMainLeaseLocked(call, state, r, endpoint.role)
 		if e != nil {
 			return e
@@ -229,6 +234,7 @@ func (q *normalOrdinaryActionsV2) handle(conn *net.UnixConn, endpoint normalOrdi
 		if e = lease.matchOriginalMainPacket(call, cred, peer); e != nil {
 			return e
 		}
+		normalSystemRoleDiagnosticRecord(call, normalRoleDiagLeaseComplete, endpoint.role, 0, 0)
 		switch action {
 		case normalOrdinaryUdevEmitAction:
 			udev, err := q.originalUdevSourceLocked()
@@ -242,7 +248,13 @@ func (q *normalOrdinaryActionsV2) handle(conn *net.UnixConn, endpoint normalOrdi
 				return err
 			}
 			originalUdev = udev
+			normalSystemRoleDiagnosticRecord(call, normalRoleDiagBeforeColdBegin, endpoint.role, 0, 0)
 			cold, err = udev.beginColdTriggerLocked(call, state, r, cred, peer)
+			result := uint64(0)
+			if err != nil {
+				result = 1
+			}
+			normalSystemRoleDiagnosticRecord(call, normalRoleDiagAfterColdBegin, endpoint.role, 0, result)
 			return err
 		case normalOrdinaryPowerAction:
 			return q.poweroffLocked(call, state, r)
@@ -272,6 +284,11 @@ func (q *normalOrdinaryActionsV2) handle(conn *net.UnixConn, endpoint normalOrdi
 			return ErrUnknown // 无Root udev原事件票据绝不执行伪emitter。
 		}
 	})
+	result := uint64(0)
+	if e != nil {
+		result = 1
+	}
+	normalSystemRoleDiagnosticRecord(call, normalRoleDiagRecordReturned, endpoint.role, 0, result)
 	if e != nil {
 		return e
 	}
@@ -280,7 +297,14 @@ func (q *normalOrdinaryActionsV2) handle(conn *net.UnixConn, endpoint normalOrdi
 		if originalUdev == nil || cold == nil {
 			return ErrUnknown
 		}
-		if e = cold.wait(call); e != nil {
+		normalSystemRoleDiagnosticRecord(call, normalRoleDiagBeforeColdWait, endpoint.role, 0, 0)
+		e = cold.wait(call)
+		result := uint64(0)
+		if e != nil {
+			result = 1
+		}
+		normalSystemRoleDiagnosticRecord(call, normalRoleDiagAfterColdWait, endpoint.role, 0, result)
+		if e != nil {
 			originalUdev.fail(e)
 			return errors.Join(ErrUnknown, e)
 		}

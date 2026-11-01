@@ -1,0 +1,493 @@
+{
+  "ELF_reader": "ELF64 LSB x86_64 PT_INTERP/PT_DYNAMIC DT_STRTAB via file-backed PT_LOAD; no execution",
+  "canonical_alias_scope": "\u5019\u9009\u6587\u4ef6\u6539\u4e3a\u751f\u4ea7\u5408\u540c\u56fa\u5b9a\u8def\u5f84\uff0c\u539f\u4e0a\u6e38ELF\u9010\u5b57\u8282\u4e0d\u6539\uff1b\u5c1a\u672a\u5b89\u88c5\u5230\u6700\u7ec8Guest/\u53d1\u884c\u9501",
+  "canonical_role_aliases": {
+    "sbin/acpid": "neonvm/bin/acpid",
+    "sbin/su-exec": "neonvm/bin/su-exec",
+    "usr/bin/vector": "neonvm/bin/vector",
+    "usr/sbin/chronyd": "neonvm/bin/chronyd"
+  },
+  "existing_actual_fixture_conflicts": [
+    {
+      "new": "0ad2aef352c25467ccc2958c254d6c68e5925bc8265700fc109430f54db0b8e6",
+      "old": "0ad2aef352c25467ccc2958c254d6c68e5925bc8265700fc109430f54db0b8e6",
+      "path": "lib/ld-musl-x86_64.so.1",
+      "same": true
+    },
+    {
+      "new": "53088989be55431b71a00a42fc6bf4a8f0dae80b3add8b331e7b8f61fd6c5567",
+      "old": "feb424a81c2e419c08430a36194984b1cbc4f31749e27974b0bfed9e38aa97d8",
+      "path": "neonvm/bin/neonvmd",
+      "same": false
+    },
+    {
+      "new": "7569a12e36a19cb2f184d123e19ea8f52bd7294c914a1d918e4b5c8020af2af5",
+      "old": "feb424a81c2e419c08430a36194984b1cbc4f31749e27974b0bfed9e38aa97d8",
+      "path": "usr/local/bin/compute_ctl",
+      "same": false
+    }
+  ],
+  "existing_stock_conflicts": [],
+  "files": {
+    "lib/ld-musl-x86_64.so.1": {
+      "bytes": 645736,
+      "elf": {
+        "interpreter": null,
+        "needed": [],
+        "soname": "libc.musl-x86_64.so.1"
+      },
+      "sha256": "0ad2aef352c25467ccc2958c254d6c68e5925bc8265700fc109430f54db0b8e6"
+    },
+    "lib/libc.so.6": {
+      "bytes": 1926232,
+      "elf": {
+        "interpreter": "/lib64/ld-linux-x86-64.so.2",
+        "needed": [
+          "ld-linux-x86-64.so.2"
+        ],
+        "soname": "libc.so.6"
+      },
+      "sha256": "6b4a45352fd0c540a9c7c718f35ce8c8e46a4e482f9d3885a910c32d1a0e1421"
+    },
+    "lib/libgcc_s.so.1": {
+      "bytes": 125312,
+      "elf": {
+        "interpreter": null,
+        "needed": [
+          "libc.so.6"
+        ],
+        "soname": "libgcc_s.so.1"
+      },
+      "sha256": "2bd1552c47799ef67e701e81d4383061fd76059868e446e63560f0dd0d5ec14e"
+    },
+    "lib/libm.so.6": {
+      "bytes": 911904,
+      "elf": {
+        "interpreter": null,
+        "needed": [
+          "libc.so.6",
+          "ld-linux-x86-64.so.2"
+        ],
+        "soname": "libm.so.6"
+      },
+      "sha256": "7f2ca87f652f56b094462474b076749e90e689d0ecb9cb63c7679820b271b4e7"
+    },
+    "lib64/ld-linux-x86-64.so.2": {
+      "bytes": 215000,
+      "elf": {
+        "interpreter": null,
+        "needed": [],
+        "soname": "ld-linux-x86-64.so.2"
+      },
+      "sha256": "02bcda52c1a5dfc236f94d9e5255b4a0e26347d8a372a5223b650e31f291ce3c"
+    },
+    "neonvm/bin/acpid": {
+      "bytes": 73632,
+      "elf": {
+        "interpreter": "/lib/ld-musl-x86_64.so.1",
+        "needed": [
+          "libc.musl-x86_64.so.1"
+        ],
+        "soname": null
+      },
+      "sha256": "08d5c755aff5c506c69c7bd194c9e1fa8146b93f62d394a85ea2ab3dc42c51d6"
+    },
+    "neonvm/bin/chronyd": {
+      "bytes": 244504,
+      "elf": {
+        "interpreter": "/lib/ld-musl-x86_64.so.1",
+        "needed": [
+          "libnettle.so.8",
+          "libgnutls.so.30",
+          "libcap.so.2",
+          "libseccomp.so.2",
+          "libc.musl-x86_64.so.1"
+        ],
+        "soname": null
+      },
+      "sha256": "f05a0566fc052dab6007a200d619fcc3df0e70843e53efc90ce780a6b98b4fd5"
+    },
+    "neonvm/bin/neonvmd": {
+      "bytes": 36475064,
+      "elf": {
+        "interpreter": null,
+        "needed": [],
+        "soname": null
+      },
+      "sha256": "53088989be55431b71a00a42fc6bf4a8f0dae80b3add8b331e7b8f61fd6c5567"
+    },
+    "neonvm/bin/su-exec": {
+      "bytes": 14216,
+      "elf": {
+        "interpreter": "/lib/ld-musl-x86_64.so.1",
+        "needed": [
+          "libc.musl-x86_64.so.1"
+        ],
+        "soname": null
+      },
+      "sha256": "ea6bb60141ce494094f8e52fb0919a30d179c33a7c739db01b4aca0d993aa686"
+    },
+    "neonvm/bin/vector": {
+      "bytes": 114794720,
+      "elf": {
+        "interpreter": null,
+        "needed": [],
+        "soname": null
+      },
+      "sha256": "f35405a7a28578b25328ce153a8e14490dece3a5e9d37912467c33a1a0f2538d"
+    },
+    "usr/lib/libcap.so.2.69": {
+      "bytes": 34632,
+      "elf": {
+        "interpreter": "/lib/ld-musl-x86_64.so.1",
+        "needed": [
+          "libc.musl-x86_64.so.1"
+        ],
+        "soname": "libcap.so.2"
+      },
+      "sha256": "31314616f2699c835e29579afad8ff6ed7b3e14e0f20182f78a698c748d993a5"
+    },
+    "usr/lib/libffi.so.8.1.2": {
+      "bytes": 38960,
+      "elf": {
+        "interpreter": null,
+        "needed": [
+          "libc.musl-x86_64.so.1"
+        ],
+        "soname": "libffi.so.8"
+      },
+      "sha256": "335c6960b2a613df46fbaeaa7c9c845730feba254cd58e46dd6a9e4a6cc28cb7"
+    },
+    "usr/lib/libgmp.so.10.5.0": {
+      "bytes": 428000,
+      "elf": {
+        "interpreter": null,
+        "needed": [
+          "libc.musl-x86_64.so.1"
+        ],
+        "soname": "libgmp.so.10"
+      },
+      "sha256": "b24f746328c347f083059af30cdee202bd12470f2ca84f7dec63e3a30113f149"
+    },
+    "usr/lib/libgnutls.so.30.38.0": {
+      "bytes": 1906384,
+      "elf": {
+        "interpreter": null,
+        "needed": [
+          "libp11-kit.so.0",
+          "libidn2.so.0",
+          "libunistring.so.5",
+          "libtasn1.so.6",
+          "libnettle.so.8",
+          "libhogweed.so.6",
+          "libgmp.so.10",
+          "libc.musl-x86_64.so.1"
+        ],
+        "soname": "libgnutls.so.30"
+      },
+      "sha256": "fc33bd45ffaf5f37e75711e02cbd84f5790f636c3991f5157c55dbbdb85ac75d"
+    },
+    "usr/lib/libhogweed.so.6.8": {
+      "bytes": 280512,
+      "elf": {
+        "interpreter": null,
+        "needed": [
+          "libnettle.so.8",
+          "libgmp.so.10",
+          "libc.musl-x86_64.so.1"
+        ],
+        "soname": "libhogweed.so.6"
+      },
+      "sha256": "53c54579d2bfe725762002b333d2b8c45c42500bb1c6a1c1a542be19d7cdcfcc"
+    },
+    "usr/lib/libidn2.so.0.3.8": {
+      "bytes": 198656,
+      "elf": {
+        "interpreter": null,
+        "needed": [
+          "libunistring.so.5",
+          "libc.musl-x86_64.so.1"
+        ],
+        "soname": "libidn2.so.0"
+      },
+      "sha256": "162e0481e39ee41101e1cdb3d635d922bffcd195001275fbcb6c44f59848e342"
+    },
+    "usr/lib/libnettle.so.8.8": {
+      "bytes": 309216,
+      "elf": {
+        "interpreter": null,
+        "needed": [
+          "libc.musl-x86_64.so.1"
+        ],
+        "soname": "libnettle.so.8"
+      },
+      "sha256": "d163787b118def95ce93fc9217002534c09df143bf1100a27916f404c23cc05d"
+    },
+    "usr/lib/libp11-kit.so.0.3.1": {
+      "bytes": 1234176,
+      "elf": {
+        "interpreter": null,
+        "needed": [
+          "libffi.so.8",
+          "libc.musl-x86_64.so.1"
+        ],
+        "soname": "libp11-kit.so.0"
+      },
+      "sha256": "507d5062ac4e0b01114a53c8305e04e9ea95edefc9da824c7d40cdda3345fa71"
+    },
+    "usr/lib/libpsx.so.2.69": {
+      "bytes": 18128,
+      "elf": {
+        "interpreter": "/lib/ld-musl-x86_64.so.1",
+        "needed": [
+          "libc.musl-x86_64.so.1"
+        ],
+        "soname": "libpsx.so.2"
+      },
+      "sha256": "10410a0973eefc6670b61352ae508a40a91f6845ab703fb7b630a98fa719441b"
+    },
+    "usr/lib/libseccomp.so.2.5.5": {
+      "bytes": 108328,
+      "elf": {
+        "interpreter": null,
+        "needed": [
+          "libc.musl-x86_64.so.1"
+        ],
+        "soname": "libseccomp.so.2"
+      },
+      "sha256": "da2bf2eb103915fcb743e8f45001436b4a799d5612f9a2bbf5d7ff3a7cfd00a5"
+    },
+    "usr/lib/libtasn1.so.6.6.4": {
+      "bytes": 67448,
+      "elf": {
+        "interpreter": null,
+        "needed": [
+          "libc.musl-x86_64.so.1"
+        ],
+        "soname": "libtasn1.so.6"
+      },
+      "sha256": "4418f2ce346c108730bd7ac5e8e84a7812c84b1e9693fb313551ddb3b00dd9fb"
+    },
+    "usr/lib/libunistring.so.5.0.0": {
+      "bytes": 1689432,
+      "elf": {
+        "interpreter": null,
+        "needed": [
+          "libc.musl-x86_64.so.1"
+        ],
+        "soname": "libunistring.so.5"
+      },
+      "sha256": "dc702a270d6c2391ee1a85b48461cbb6c0e28e22de5d20f2370835d70085b5af"
+    },
+    "usr/local/bin/compute_ctl": {
+      "bytes": 71147152,
+      "elf": {
+        "interpreter": "/lib64/ld-linux-x86-64.so.2",
+        "needed": [
+          "libgcc_s.so.1",
+          "libm.so.6",
+          "libc.so.6",
+          "ld-linux-x86-64.so.2"
+        ],
+        "soname": null
+      },
+      "sha256": "7569a12e36a19cb2f184d123e19ea8f52bd7294c914a1d918e4b5c8020af2af5"
+    }
+  },
+  "missing_dependencies": [],
+  "packages": {
+    "gmp-6.3.0-r0.apk": {
+      "PKGINFO": "# Generated by abuild 3.12.0-r0\n# using fakeroot version 1.32.1\n# Mon Sep 11 10:12:47 UTC 2023\npkgname = gmp\npkgver = 6.3.0-r0\npkgdesc = free library for arbitrary precision arithmetic\nurl = https://gmplib.org/\nbuilddate = 1694427167\npackager = Buildozer <alpine-devel@lists.alpinelinux.org>\nsize = 442368\narch = x86_64\norigin = gmp\ncommit = 4f7f352700bb993b08cff24285a406014c4acaa5\nmaintainer = Natanael Copa <ncopa@alpinelinux.org>\nlicense = LGPL-3.0-or-later OR GPL-2.0-or-later\nreplaces = gmp5\n# automatically detected:\nprovides = so:libgmp.so.10=10.5.0\ndepend = so:libc.musl-x86_64.so.1\ndatahash = 991b55c8edacb45a06e7959c09384b9e7fbc3c73773fb1e84f76323df3d14504\n",
+      "sha256": "b16ca5dc3a793d1c7cd19a8e650854b370c5db86dfb189f203e2ed3ff31f911d",
+      "signature_verification": "/data/neon-build/validation/normal-real-services-runtime-fetch-20261101T190901Z-87c732/apk-verify.log"
+    },
+    "gnutls-3.8.4-r0.apk": {
+      "PKGINFO": "# Generated by abuild 3.12.0-r0\n# using fakeroot version 1.32.1\n# Sun Mar 24 13:16:59 UTC 2024\npkgname = gnutls\npkgver = 3.8.4-r0\npkgdesc = TLS protocol implementation\nurl = https://www.gnutls.org/\nbuilddate = 1711286219\npackager = Buildozer <alpine-devel@lists.alpinelinux.org>\nsize = 1921024\narch = x86_64\norigin = gnutls\ncommit = 15c1b9cc7ba18b4979d1a04c76b92d7b7f6c283d\nmaintainer = Natanael Copa <ncopa@alpinelinux.org>\nlicense = LGPL-2.1-or-later\n# automatically detected:\nprovides = so:libgnutls.so.30=30.38.0\ndepend = so:libc.musl-x86_64.so.1\ndepend = so:libgmp.so.10\ndepend = so:libhogweed.so.6\ndepend = so:libidn2.so.0\ndepend = so:libnettle.so.8\ndepend = so:libp11-kit.so.0\ndepend = so:libtasn1.so.6\ndepend = so:libunistring.so.5\ndatahash = 2d34447619408aec217fd3e4fce9cbd2c2376324cc2981e63d3e05768f010a06\n",
+      "sha256": "2a2ac505b9296a502969b3e4ae4568cae21dc9c9f35bd839f13a4c5c6ca11424",
+      "signature_verification": "/data/neon-build/validation/normal-real-services-runtime-fetch-20261101T190901Z-87c732/apk-verify.log"
+    },
+    "libcap2-2.69-r1.apk": {
+      "PKGINFO": "# Generated by abuild 3.12.0-r0\n# using fakeroot version 1.32.1\n# Sat Jun  3 10:38:49 UTC 2023\npkgname = libcap2\npkgver = 2.69-r1\npkgdesc = POSIX 1003.1e capabilities (libraries)\nurl = https://sites.google.com/site/fullycapable/\nbuilddate = 1685788729\npackager = Buildozer <alpine-devel@lists.alpinelinux.org>\nsize = 69632\narch = x86_64\norigin = libcap\ncommit = 8961e22bd056e80e1370a288cec15125aedf8a3a\nmaintainer = Natanael Copa <ncopa@alpinelinux.org>\nlicense = BSD-3-Clause OR GPL-2.0-only\nreplaces = libcap<2.64-r1\n# automatically detected:\nprovides = so:libcap.so.2=2.69\nprovides = so:libpsx.so.2=2.69\ndepend = so:libc.musl-x86_64.so.1\ndatahash = ae9bce52051a2ad8718bbe6ed9c1d131dae7d341ba501025d617cce19a4f057a\n",
+      "sha256": "e5733777fee2b85644e4ca6362da3eb8206559311bbf267a4a0633e6169af535",
+      "signature_verification": "/data/neon-build/validation/normal-real-services-runtime-fetch-20261101T190901Z-87c732/apk-verify.log"
+    },
+    "libffi-3.4.4-r3.apk": {
+      "PKGINFO": "# Generated by abuild 3.12.0-r0\n# using fakeroot version 1.32.1\n# Mon May 15 03:12:37 UTC 2023\npkgname = libffi\npkgver = 3.4.4-r3\npkgdesc = portable, high level programming interface to various calling conventions.\nurl = https://sourceware.org/libffi/\nbuilddate = 1684120357\npackager = Buildozer <alpine-devel@lists.alpinelinux.org>\nsize = 53248\narch = x86_64\norigin = libffi\ncommit = 33283848034c9885d984c8e8697c645c57324938\nmaintainer = Natanael Copa <ncopa@alpinelinux.org>\nlicense = MIT\n# automatically detected:\nprovides = so:libffi.so.8=8.1.2\ndepend = so:libc.musl-x86_64.so.1\ndatahash = 1664d675a58f7922df011968d9092addb0af396e494c9b6313bb1085d4561423\n",
+      "sha256": "f83274059386d644adb54ecc686dcdde20242c1840d6c4e683882e7b4d64f945",
+      "signature_verification": "/data/neon-build/validation/normal-real-services-runtime-fetch-20261101T190901Z-87c732/apk-verify.log"
+    },
+    "libidn2-2.3.4-r4.apk": {
+      "PKGINFO": "# Generated by abuild 3.12.0-r0\n# using fakeroot version 1.32.1\n# Fri Sep  8 20:52:29 UTC 2023\npkgname = libidn2\npkgver = 2.3.4-r4\npkgdesc = Encode/Decode library for internationalized domain names\nurl = https://www.gnu.org/software/libidn#libidn2\nbuilddate = 1694206349\npackager = Buildozer <alpine-devel@lists.alpinelinux.org>\nsize = 212992\narch = x86_64\norigin = libidn2\ncommit = 3d07ca5b68892e5531f0cd7908d34e4ff0f18a99\nmaintainer = Natanael Copa <ncopa@alpinelinux.org>\nlicense = GPL-2.0-or-later OR LGPL-3.0-or-later\n# automatically detected:\nprovides = so:libidn2.so.0=0.3.8\ndepend = so:libc.musl-x86_64.so.1\ndepend = so:libunistring.so.5\ndatahash = dd59c3ee21b3072847bce56003c588843c846fa4ec72c9c0e227446603779a8b\n",
+      "sha256": "7492e60d96776abb07a8503be8419edd58f190ab7d847564b7413abb8d14b477",
+      "signature_verification": "/data/neon-build/validation/normal-real-services-runtime-fetch-20261101T190901Z-87c732/apk-verify.log"
+    },
+    "libseccomp-2.5.5-r0.apk": {
+      "PKGINFO": "# Generated by abuild 3.12.0-r0\n# using fakeroot version 1.32.1\n# Mon Dec  4 12:04:06 UTC 2023\npkgname = libseccomp\npkgver = 2.5.5-r0\npkgdesc = interface to the Linux Kernel's syscall filtering mechanism\nurl = https://github.com/seccomp/libseccomp\nbuilddate = 1701691446\npackager = Buildozer <alpine-devel@lists.alpinelinux.org>\nsize = 143360\narch = x86_64\norigin = libseccomp\ncommit = 1bfc5ce7b0d65b3fbc23a278a0b7942ee2ff7471\nmaintainer = Natanael Copa <ncopa@alpinelinux.org>\nlicense = LGPL-2.1-or-later\n# automatically detected:\nprovides = so:libseccomp.so.2=2.5.5\nprovides = cmd:scmp_sys_resolver=2.5.5-r0\ndepend = so:libc.musl-x86_64.so.1\ndatahash = 144e8a58afeb44d7831633254c03f1b7dd1a01bf97bb3b8b2ffdd2b5eee5bef6\n",
+      "sha256": "3605bd2b54483aac1b5cf943e60c538400004c4fb88f4e6e4237ba9b9c5daeed",
+      "signature_verification": "/data/neon-build/validation/normal-real-services-runtime-fetch-20261101T190901Z-87c732/apk-verify.log"
+    },
+    "libtasn1-4.20.0-r0.apk": {
+      "PKGINFO": "# Generated by abuild 3.12.0-r0\n# using fakeroot version 1.32.1\n# Fri Feb  7 17:46:06 UTC 2025\npkgname = libtasn1\npkgver = 4.20.0-r0\npkgdesc = The ASN.1 library used in GNUTLS\nurl = https://www.gnu.org/software/gnutls/\nbuilddate = 1738950366\npackager = Buildozer <alpine-devel@lists.alpinelinux.org>\nsize = 81920\narch = x86_64\norigin = libtasn1\ncommit = bd7065c2bc9648ca43a513012868e17f515d68c3\nmaintainer = Natanael Copa <ncopa@alpinelinux.org>\nlicense = LGPL-2.1-or-later\n# automatically detected:\nprovides = so:libtasn1.so.6=6.6.4\ndepend = so:libc.musl-x86_64.so.1\ndatahash = 544a8a203dd53b0379abd97f767b109b5d2cfad4589f08c92615556f69044035\n",
+      "sha256": "6ffcbebc6fad6cc6e1aa08233e10cf007b62f66df9126c3bcc1dc494679ddee7",
+      "signature_verification": "/data/neon-build/validation/normal-real-services-runtime-fetch-20261101T190901Z-87c732/apk-verify.log"
+    },
+    "libunistring-1.1-r2.apk": {
+      "PKGINFO": "# Generated by abuild 3.12.0-r0\n# using fakeroot version 1.32.1\n# Mon May 15 03:12:37 UTC 2023\npkgname = libunistring\npkgver = 1.1-r2\npkgdesc = Library for manipulating Unicode strings and C strings\nurl = https://www.gnu.org/software/libunistring/\nbuilddate = 1684120357\npackager = Buildozer <alpine-devel@lists.alpinelinux.org>\nsize = 1703936\narch = x86_64\norigin = libunistring\ncommit = 33283848034c9885d984c8e8697c645c57324938\nmaintainer = Natanael Copa <ncopa@alpinelinux.org>\nlicense = GPL-2.0-or-later OR LGPL-3.0-or-later\n# automatically detected:\nprovides = so:libunistring.so.5=5.0.0\ndepend = so:libc.musl-x86_64.so.1\ndatahash = 2052b60a9a92beb378649dc481dee46857fb4188a21e0a65088e3134f7e3f756\n",
+      "sha256": "08836f00d2e03596ba3a62c80db406340eb68535afaaad0fd50292adf888f30b",
+      "signature_verification": "/data/neon-build/validation/normal-real-services-runtime-fetch-20261101T190901Z-87c732/apk-verify.log"
+    },
+    "musl-1.2.4_git20230717-r6.apk": {
+      "PKGINFO": "# Generated by abuild 3.12.0-r0\n# using fakeroot version 1.32.1\n# Fri Apr 10 15:39:33 UTC 2026\npkgname = musl\npkgver = 1.2.4_git20230717-r6\npkgdesc = the musl c library (libc) implementation\nurl = https://musl.libc.org/\nbuilddate = 1775835573\npackager = Buildozer <alpine-devel@lists.alpinelinux.org>\nsize = 663552\narch = x86_64\norigin = musl\ncommit = e45b2348e7613bb06dc30a0ae0182f7e2c924768\nmaintainer = Timo Ter\u00e4s <timo.teras@iki.fi>\nlicense = MIT\n# automatically detected:\nprovides = so:libc.musl-x86_64.so.1=1\ndatahash = 8e2ca5c375312833061d553d98c9704b80bab77614a155932903fcd4b2a2275f\n",
+      "sha256": "24b7b3efa92247796f4cfecaf8d08f6a0bdead13aae9c2cf2f04a042bebb9647",
+      "signature_verification": "/data/neon-build/validation/normal-real-services-runtime-fetch-20261101T190901Z-87c732/apk-verify.log"
+    },
+    "nettle-3.9.1-r0.apk": {
+      "PKGINFO": "# Generated by abuild 3.12.0-r0\n# using fakeroot version 1.32.1\n# Thu Jun  1 20:02:16 UTC 2023\npkgname = nettle\npkgver = 3.9.1-r0\npkgdesc = Low-level cryptographic library\nurl = https://www.lysator.liu.se/~nisse/nettle/\nbuilddate = 1685649736\npackager = Buildozer <alpine-devel@lists.alpinelinux.org>\nsize = 606208\narch = x86_64\norigin = nettle\ncommit = 96de71714407e313996f5a8a5c7df1fa4833f4e4\nmaintainer = Fabian Affolter <fabian@affolter-engineering.ch>\nlicense = GPL-2.0-or-later OR LGPL-3.0-or-later\n# automatically detected:\nprovides = so:libhogweed.so.6=6.8\nprovides = so:libnettle.so.8=8.8\ndepend = so:libc.musl-x86_64.so.1\ndepend = so:libgmp.so.10\ndatahash = b541b41e3e2d7507451f942e76af8987a5a02c763044d318d5de713c6d0135a3\n",
+      "sha256": "6164e16fe130875f0dd853e68810f195b5f91b33c5fb7151f20e8325af6ee9d2",
+      "signature_verification": "/data/neon-build/validation/normal-real-services-runtime-fetch-20261101T190901Z-87c732/apk-verify.log"
+    },
+    "p11-kit-0.25.3-r0.apk": {
+      "PKGINFO": "# Generated by abuild 3.12.0-r0\n# using fakeroot version 1.32.1\n# Sun Nov 19 20:08:11 UTC 2023\npkgname = p11-kit\npkgver = 0.25.3-r0\npkgdesc = Library for loading and sharing PKCS#11 modules\nurl = https://p11-glue.freedesktop.org/\nbuilddate = 1700424491\npackager = Buildozer <alpine-devel@lists.alpinelinux.org>\nsize = 1433600\narch = x86_64\norigin = p11-kit\ncommit = 4a58c4a93164eae919faf8a349d51f9d62f525a1\nmaintainer = Fabian Affolter <fabian@affolter-engineering.ch>\nlicense = BSD-3-Clause\n# automatically detected:\nprovides = so:libp11-kit.so.0=0.3.1\nprovides = cmd:p11-kit=0.25.3-r0\ndepend = so:libc.musl-x86_64.so.1\ndepend = so:libffi.so.8\ndepend = so:libtasn1.so.6\ndatahash = 4f8e8d9a545b5d7e4158329d73f9bdd5ef3da7356532448d3c69c40ba545ba32\n",
+      "sha256": "84252536160ec1a3b1b64f580207d4742ff86d3bb612a51ac0101ae1dd869cf1",
+      "signature_verification": "/data/neon-build/validation/normal-real-services-runtime-fetch-20261101T190901Z-87c732/apk-verify.log"
+    },
+    "su-exec-0.2-r3.apk": {
+      "PKGINFO": "# Generated by abuild 3.12.0-r0\n# using fakeroot version 1.32.1\n# Tue Apr 11 16:01:21 UTC 2023\npkgname = su-exec\npkgver = 0.2-r3\npkgdesc = switch user and group id, setgroups and exec\nurl = https://github.com/ncopa/su-exec\nbuilddate = 1681228881\npackager = Buildozer <alpine-devel@lists.alpinelinux.org>\nsize = 24576\narch = x86_64\norigin = su-exec\ncommit = 84a227baf001b6e0208e3352b294e4d7a40e93de\nmaintainer = Natanael Copa <ncopa@alpinelinux.org>\nlicense = MIT\n# automatically detected:\nprovides = cmd:su-exec=0.2-r3\ndepend = so:libc.musl-x86_64.so.1\ndatahash = c4078516d8150c261d5be9fedf5a70c71ccf09c7fde4ef1f551b7bc2e31bf25c\n",
+      "sha256": "8229b492e4c77c6c39c23428902d80b9a2faadaf14d77abb55f4f9895ef6f04d",
+      "signature_verification": "/data/neon-build/validation/normal-real-services-runtime-fetch-20261101T190901Z-87c732/apk-verify.log"
+    }
+  },
+  "payload_source": {
+    "neonvm/bin/acpid": {
+      "origin": "/data/neon-build/validation/ordinary-v2-packages-build-20261101T060652Z-8d5217",
+      "recipe3_current_exact": true
+    },
+    "neonvm/bin/chronyd": {
+      "origin": "official Alpine chrony-4.5-r0 cached APK; ELF unchanged"
+    },
+    "neonvm/bin/neonvmd": {
+      "actual_build_exit": 0,
+      "origin": "/data/neon-build/validation/normal-real-services-payload-go-20261101T185442Z-39fa9c",
+      "overall_worker_exit": 2,
+      "source_base": "c6e5af38650cac0a43a6bce2a8b6ab03688cb670",
+      "worker_exit_reason": "later APK pinned-version fetch failed; actual Go build remained0"
+    },
+    "neonvm/bin/su-exec": {
+      "apk_signature_exit": 0,
+      "origin": "/data/neon-build/validation/normal-real-services-runtime-fetch-20261101T190901Z-87c732/apks/su-exec-0.2-r3.apk"
+    },
+    "neonvm/bin/vector": {
+      "origin": "official GitHub vector0.26.0 static musl archive cached; ELF unchanged"
+    },
+    "usr/local/bin/compute_ctl": {
+      "actual_rust_build_and_focused5U_exit": 0,
+      "origin": "/data/neon-build/validation/pg-stderr-compute-bin-build-20261101T151519Z-8c9f1c",
+      "scope": "real candidate only; not installed System3 inventory/true Compute role"
+    }
+  },
+  "resolved_dependencies": {
+    "lib/ld-musl-x86_64.so.1": {},
+    "lib/libc.so.6": {
+      "/lib64/ld-linux-x86-64.so.2": "lib64/ld-linux-x86-64.so.2",
+      "ld-linux-x86-64.so.2": "lib64/ld-linux-x86-64.so.2"
+    },
+    "lib/libgcc_s.so.1": {
+      "libc.so.6": "lib/libc.so.6"
+    },
+    "lib/libm.so.6": {
+      "ld-linux-x86-64.so.2": "lib64/ld-linux-x86-64.so.2",
+      "libc.so.6": "lib/libc.so.6"
+    },
+    "lib64/ld-linux-x86-64.so.2": {},
+    "neonvm/bin/acpid": {
+      "/lib/ld-musl-x86_64.so.1": "lib/ld-musl-x86_64.so.1",
+      "libc.musl-x86_64.so.1": "lib/libc.musl-x86_64.so.1"
+    },
+    "neonvm/bin/chronyd": {
+      "/lib/ld-musl-x86_64.so.1": "lib/ld-musl-x86_64.so.1",
+      "libc.musl-x86_64.so.1": "lib/libc.musl-x86_64.so.1",
+      "libcap.so.2": "usr/lib/libcap.so.2",
+      "libgnutls.so.30": "usr/lib/libgnutls.so.30",
+      "libnettle.so.8": "usr/lib/libnettle.so.8",
+      "libseccomp.so.2": "usr/lib/libseccomp.so.2"
+    },
+    "neonvm/bin/neonvmd": {},
+    "neonvm/bin/su-exec": {
+      "/lib/ld-musl-x86_64.so.1": "lib/ld-musl-x86_64.so.1",
+      "libc.musl-x86_64.so.1": "lib/libc.musl-x86_64.so.1"
+    },
+    "neonvm/bin/vector": {},
+    "usr/lib/libcap.so.2.69": {
+      "/lib/ld-musl-x86_64.so.1": "lib/ld-musl-x86_64.so.1",
+      "libc.musl-x86_64.so.1": "lib/libc.musl-x86_64.so.1"
+    },
+    "usr/lib/libffi.so.8.1.2": {
+      "libc.musl-x86_64.so.1": "lib/libc.musl-x86_64.so.1"
+    },
+    "usr/lib/libgmp.so.10.5.0": {
+      "libc.musl-x86_64.so.1": "lib/libc.musl-x86_64.so.1"
+    },
+    "usr/lib/libgnutls.so.30.38.0": {
+      "libc.musl-x86_64.so.1": "lib/libc.musl-x86_64.so.1",
+      "libgmp.so.10": "usr/lib/libgmp.so.10",
+      "libhogweed.so.6": "usr/lib/libhogweed.so.6",
+      "libidn2.so.0": "usr/lib/libidn2.so.0",
+      "libnettle.so.8": "usr/lib/libnettle.so.8",
+      "libp11-kit.so.0": "usr/lib/libp11-kit.so.0",
+      "libtasn1.so.6": "usr/lib/libtasn1.so.6",
+      "libunistring.so.5": "usr/lib/libunistring.so.5"
+    },
+    "usr/lib/libhogweed.so.6.8": {
+      "libc.musl-x86_64.so.1": "lib/libc.musl-x86_64.so.1",
+      "libgmp.so.10": "usr/lib/libgmp.so.10",
+      "libnettle.so.8": "usr/lib/libnettle.so.8"
+    },
+    "usr/lib/libidn2.so.0.3.8": {
+      "libc.musl-x86_64.so.1": "lib/libc.musl-x86_64.so.1",
+      "libunistring.so.5": "usr/lib/libunistring.so.5"
+    },
+    "usr/lib/libnettle.so.8.8": {
+      "libc.musl-x86_64.so.1": "lib/libc.musl-x86_64.so.1"
+    },
+    "usr/lib/libp11-kit.so.0.3.1": {
+      "libc.musl-x86_64.so.1": "lib/libc.musl-x86_64.so.1",
+      "libffi.so.8": "usr/lib/libffi.so.8"
+    },
+    "usr/lib/libpsx.so.2.69": {
+      "/lib/ld-musl-x86_64.so.1": "lib/ld-musl-x86_64.so.1",
+      "libc.musl-x86_64.so.1": "lib/libc.musl-x86_64.so.1"
+    },
+    "usr/lib/libseccomp.so.2.5.5": {
+      "libc.musl-x86_64.so.1": "lib/libc.musl-x86_64.so.1"
+    },
+    "usr/lib/libtasn1.so.6.6.4": {
+      "libc.musl-x86_64.so.1": "lib/libc.musl-x86_64.so.1"
+    },
+    "usr/lib/libunistring.so.5.0.0": {
+      "libc.musl-x86_64.so.1": "lib/libc.musl-x86_64.so.1"
+    },
+    "usr/local/bin/compute_ctl": {
+      "/lib64/ld-linux-x86-64.so.2": "lib64/ld-linux-x86-64.so.2",
+      "ld-linux-x86-64.so.2": "lib64/ld-linux-x86-64.so.2",
+      "libc.so.6": "lib/libc.so.6",
+      "libgcc_s.so.1": "lib/libgcc_s.so.1",
+      "libm.so.6": "lib/libm.so.6"
+    }
+  },
+  "scope": "candidate inventory/static ELF closure only, payloads not executed, original stock libudev consumer and final package/release lock unchanged; no role/PG/Source/normal pass",
+  "symlinks": {
+    "lib/libc.musl-x86_64.so.1": "ld-musl-x86_64.so.1",
+    "usr/lib/libcap.so.2": "libcap.so.2.69",
+    "usr/lib/libffi.so.8": "libffi.so.8.1.2",
+    "usr/lib/libgmp.so.10": "libgmp.so.10.5.0",
+    "usr/lib/libgnutls.so.30": "libgnutls.so.30.38.0",
+    "usr/lib/libhogweed.so.6": "libhogweed.so.6.8",
+    "usr/lib/libidn2.so.0": "libidn2.so.0.3.8",
+    "usr/lib/libnettle.so.8": "libnettle.so.8.8",
+    "usr/lib/libp11-kit.so.0": "libp11-kit.so.0.3.1",
+    "usr/lib/libpsx.so.2": "libpsx.so.2.69",
+    "usr/lib/libseccomp.so.2": "libseccomp.so.2.5.5",
+    "usr/lib/libtasn1.so.6": "libtasn1.so.6.6.4",
+    "usr/lib/libunistring.so.5": "libunistring.so.5.0.0"
+  }
+}

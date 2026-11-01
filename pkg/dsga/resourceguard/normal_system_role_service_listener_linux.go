@@ -226,18 +226,27 @@ func (v *normalSystemRoleService) handle(conn *net.UnixConn) error {
 	queue, queueCancel := context.WithTimeout(v.ctx, 90*time.Second)
 	defer queueCancel()
 	run, e := v.spawnRole(queue, role, peer)
+	result := uint64(0)
+	if e != nil {
+		result = 1
+	}
+	normalSystemRoleDiagnosticRecord(v.ctx, normalRoleDiagSpawnReturned, role, 0, result)
 	if e != nil {
 		fmt.Fprintln(os.Stderr, "fixed System role", role, "spawn denied:", e)
 		return normalSystemRoleServiceWriteReply(conn, request, normalSystemRoleServiceUnknown, 0, deadline)
 	}
 	if e = normalSystemRoleServiceWriteReply(conn, request, normalSystemRoleServiceAccepted, 0, time.Now().Add(10*time.Second)); e != nil {
+		decision := normalSystemRoleDiagnosticDecision(v.ctx)
 		_ = run.child.cancelAndWait()
 		_ = v.finishExitedRole(run)
+		normalSystemRoleDiagnosticRecord(v.ctx, normalRoleDiagKillAcceptedWrite, role, decision, 0)
 		return e
 	}
 	if e = conn.SetDeadline(time.Time{}); e != nil {
+		decision := normalSystemRoleDiagnosticDecision(v.ctx)
 		_ = run.child.cancelAndWait()
 		_ = v.finishExitedRole(run)
+		normalSystemRoleDiagnosticRecord(v.ctx, normalRoleDiagKillClearDeadline, role, decision, 0)
 		return e
 	}
 	// Accepted之后握手和排队期限不再控制target运行；原client Background长等。
@@ -257,11 +266,22 @@ func (v *normalSystemRoleService) handle(conn *net.UnixConn) error {
 			case <-run.child.done:
 				return
 			case <-v.ctx.Done():
+				decision := normalSystemRoleDiagnosticDecision(v.ctx)
 				_ = run.child.cancelAndWait()
+				normalSystemRoleDiagnosticRecord(v.ctx, normalRoleDiagKillServiceContext, role, decision, 0)
 				return
 			case <-ticker.C:
-				if arrayRegistryPIDFDAlive(peer.pidfd) != nil || normalSystemRoleServiceConnectionGone(conn) {
+				// 保原OR短路顺序；先确定原杀分支，原kill/Wait完毕后才记诊断。
+				if arrayRegistryPIDFDAlive(peer.pidfd) != nil {
+					decision := normalSystemRoleDiagnosticDecision(v.ctx)
 					_ = run.child.cancelAndWait()
+					normalSystemRoleDiagnosticRecord(v.ctx, normalRoleDiagKillClientPIDFD, role, decision, 0)
+					return
+				}
+				if normalSystemRoleServiceConnectionGone(conn) {
+					decision := normalSystemRoleDiagnosticDecision(v.ctx)
+					_ = run.child.cancelAndWait()
+					normalSystemRoleDiagnosticRecord(v.ctx, normalRoleDiagKillConnectionGone, role, decision, 0)
 					return
 				}
 			}

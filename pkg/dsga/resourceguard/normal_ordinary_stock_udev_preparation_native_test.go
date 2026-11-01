@@ -100,6 +100,8 @@ func stockPreparationDEVDispatch(m *testing.M) bool {
 	return false // 原真实Gate动作仍走旧已审RunNormalSystemRoleExecGate。
 }
 
+type stockPreparationDEVAfterR1Key struct{}
+
 var stockPreparationDEVInspectionOnce sync.Once
 
 func stockPreparationDEVInspectionReport(ctx context.Context) {
@@ -235,6 +237,11 @@ func stockPreparationDEVObserve(ctx context.Context, _ *lockedState, p *normalOr
 		raw, _ := json.Marshal(ref)
 		stockPreparationDEVInspectionReport(ctx)
 		fmt.Println("STOCK_PREPARATION_R1_EXITED_REFERENCE_SHA256", physicalDigest(raw))
+		// 显式后继DEV只延后观察结束，不改上述独立完整校验或任何生产授权。
+		if observe, ok := ctx.Value(stockPreparationDEVAfterR1Key{}).(func()); ok {
+			observe()
+			return
+		}
 		fmt.Println("STOCK_PREPARATION_GUEST_EXIT=0")
 		unix.Sync()
 		_ = unix.Reboot(unix.LINUX_REBOOT_CMD_POWER_OFF)

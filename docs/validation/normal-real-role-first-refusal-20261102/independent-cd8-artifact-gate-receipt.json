@@ -1,0 +1,30 @@
+{
+  "status": "EXACT_CD8_ARTIFACT_GATE_WRITTEN_NATIVE_NOT_YET_INTERPRETED",
+  "source_lock_sha256": "065710b090b30ac5b5155a7dd06533dfa065506c60929706787f82b03752e61a",
+  "source_freeze_sha256": "f56ef38967c11307fab527f1d64c2f742b206598cff3a6545924dace875c780e",
+  "gate_path": "/data/neon-build/validation/normal-real-role-kill-diagnostic-20261102/runtime-review-20261101T193214Z-cd8aa7.json",
+  "gate_sha256": "31e867554d982bf07bae48b1c6ab2ed25f757603e8ad0c080cb8255a99674599",
+  "actual_artifacts": {
+    "service.test": "fc4c4e5e0ecfe0b5db301fe2ebb2697220aef9c082eae46f4d067b4446f6c233",
+    "host-memory.test": "c8bccde3464068d7d3e753212895fbae024c9c5ff4a58f79c326ac6b3c2db9df",
+    "resource-guard.real": "52077f4f7fdbd06ec10e65559a81f29bfab6abb6d6975d8dedf4728d21c4c9b7",
+    "vm-builder.real": "e389a41c2677cd2755e9dbbeb017019e9a54680798321e4bc7665eca4be87a33"
+  },
+  "actual_focused_roots": 18,
+  "actual_subcases": 129,
+  "skips": 0,
+  "phase_exits": {
+    "u.exitcode": 0,
+    "cli.exitcode": 0,
+    "builder.exitcode": 0,
+    "native-compile.exitcode": 0,
+    "native-target-list.exitcode": 0,
+    "host-compile.exitcode": 0,
+    "host-export.exitcode": 0,
+    "fixture-seed.exitcode": 0
+  },
+  "native_nonce": "20261101T193214Z-cd8aa7-native",
+  "Source": false,
+  "normal": false,
+  "E": 0
+}

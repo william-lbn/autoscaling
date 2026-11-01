@@ -1,0 +1,46 @@
+{
+  "status": "SOURCE_REVIEW_NO_NEW_BLOCKER_FINAL6_ONLY",
+  "source_freeze_sha256": "f56ef38967c11307fab527f1d64c2f742b206598cff3a6545924dace875c780e",
+  "base": "c6e5af38650cac0a43a6bce2a8b6ab03688cb670",
+  "reviewed_files": {
+    "pkg/dsga/resourceguard/normal_system_role_service_listener_linux.go": "4c26b0727ffe50c292f08bf8f339f5a2c799c1322bf95d2f5a8e778e6bd0c5b8",
+    "pkg/dsga/resourceguard/normal_system_role_spawn_linux.go": "c7bc104760f6bcb9f95749a58f6c1d7377d484b69d7fff72362523e27be7c2a0",
+    "pkg/dsga/resourceguard/normal_ordinary_actions_v2_server_linux.go": "881aceae528e8380ea6249d4bd71b138bbf6be595ee88809486942809e5469ed",
+    "pkg/dsga/resourceguard/normal_system_role_diagnostic_linux.go": "22f38aa9cc58aa9f6a25175b54f931e45003e48d9e4dc915d04930ca698c57c2",
+    "pkg/dsga/resourceguard/normal_system_role_diagnostic_linux_test.go": "93c239b520ee684c993bdf2a70e745936b322f1fe5cddefd20d908a1c9a66588",
+    "pkg/dsga/resourceguard/normal_zz_stock_real_roles_native_test.go": "d1a36d8120ba6b292fd96e32ea2b9ee0c310fd6e006d4add7e75740bf16e4078"
+  },
+  "support_dependency_checked": {
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_native_test.go": "32eeb0b79c4d449e09673cbc478c3e80c4c0636a5ad78bea973ae07ac11c241a"
+  },
+  "review_mode": "read-only, no Go build/test rerun, no code/Git mutation",
+  "kill_Wait_order_preserved": true,
+  "monitor_OR_short_circuit_preserved": true,
+  "no_business_lock_acquired_by_aux_record_or_snapshot": true,
+  "new_authorization_callbacks": 0,
+  "new_log_IO_on_production_decision_path": 0,
+  "fixed_capacity": 64,
+  "timestamps": "explicit UnixNano wall time, not monotonic duration; array insertion order retained",
+  "private_DEV_observer": "never closes changed; only observes after recorded original kill/Wait or nonzero original Wait, never waits for logging before original failure",
+  "focused_unit_sources": [
+    "TestNormalRoleDiagnosticAbsentAndSnapshotIsolation",
+    "TestNormalRoleDiagnosticConcurrentFixedCapacity"
+  ],
+  "actual_tests_rerun_by_reviewer": 0,
+  "compilation_and_S_at_source_review": "pending exact fresh Go4 artifact receipt; source clearance does not claim new artifacts passed",
+  "S_clearance_conditions": [
+    "exact frozen6 and support dependency in actual compile graph",
+    "necessary focused U and fresh Guest/CLI/Builder/Host phases successful with precise immutable ELF hashes",
+    "actual native driver nonce bound to correct new Guest and intended provider; preserve all failed historical runs",
+    "no original policy/budget/25/30/2CPU or kill/Wait semantic changes"
+  ],
+  "known_observation_limits": [
+    "kill record appears after actual cancelAndWait, decision wall timestamp separately retained; missing record does not prove no external SIGKILL",
+    "Root frame-decoded records after successful peer/credential/frame checks, not every socket accept or bad packet",
+    "record-entered is callback after Guard flock plus Identity/load/validate, not a raw flock syscall hook",
+    "new phases identify work reached/completed but do not grant provenance or budget"
+  ],
+  "Source": false,
+  "normal": false,
+  "E": 0
+}

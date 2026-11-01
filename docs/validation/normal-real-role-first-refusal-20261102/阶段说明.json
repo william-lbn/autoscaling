@@ -1,0 +1,74 @@
+{
+  "scope": "诊断组件阶段，不是ordinary9/PG/normal/E/K8s通过",
+  "focused_race": {
+    "roots": 18,
+    "subtests": 129,
+    "skip": 0,
+    "pass": true
+  },
+  "necessary_compile_phases": {
+    "u.exitcode": 0,
+    "cli.exitcode": 0,
+    "builder.exitcode": 0,
+    "native-compile.exitcode": 0,
+    "native-target-list.exitcode": 0,
+    "host-compile.exitcode": 0,
+    "host-export.exitcode": 0,
+    "fixture-seed.exitcode": 0
+  },
+  "actual_S": {
+    "stable_id": "NEON-S-STOCK-REAL-ROLE-KILL-DIAGNOSTIC-001",
+    "status": "FAIL_COMPONENT_OR_FIXTURE",
+    "Host_container_exit": 1,
+    "Guest_exits": [
+      "1",
+      "1"
+    ],
+    "initial_exits": [
+      "0"
+    ],
+    "R1_alive_refs": [
+      "2b8a759eb3d8c8b9c31bc9efe0639cafa99fee5bf3e2fd1cdfd37103feca6ef7"
+    ],
+    "R1_exited_refs": [
+      "2b8a759eb3d8c8b9c31bc9efe0639cafa99fee5bf3e2fd1cdfd37103feca6ef7"
+    ],
+    "actual_stock_receipts": [
+      {
+        "projection_sha256": "9bbc58b9258b4339d2d78c26035c4f27594d7aed4449f1c573a326298bd6f06c",
+        "wait_sha256": "98d4899b6ade521b8346b8c912fce3204492f740017ad6e0fd6345756201a441",
+        "manifest_sha256": "885ab22a3873a51f2c8feac800ec635337cec8d6491cd81f8e3862fdd5bccece",
+        "package_lock_sha256": "cca0c098d0138d7159f1a09a90ec71618e798ac87272825d3e12778cbc6e5332",
+        "targets": 198,
+        "runtime_phase": 3,
+        "typed_source": true,
+        "normal": false
+      }
+    ],
+    "actual_kvm": {
+      "enabled": true,
+      "present": true
+    },
+    "seconds": 81.42693285597488,
+    "actual_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+    "Guest_ELF_sha256": "fc4c4e5e0ecfe0b5db301fe2ebb2697220aef9c082eae46f4d067b4446f6c233",
+    "Host_ELF_sha256": "c8bccde3464068d7d3e753212895fbae024c9c5ff4a58f79c326ac6b3c2db9df",
+    "Host_API_is_model": true,
+    "production_CLI_only_compiled": true,
+    "ordinary_services_executed": false,
+    "PG_executed": false,
+    "normal_authorized": false,
+    "E": 0,
+    "diagnostic_only": true,
+    "actual_role_entries": [
+      "udev-init"
+    ],
+    "role_kill_diagnostic_json": [
+      "{\"count\":10,\"dropped\":0,\"events\":[{\"stage\":1,\"role\":5,\"decision_unix_nano\":1793561775422161744,\"recorded_unix_nano\":1793561775422161744,\"value\":5},{\"stage\":2,\"role\":5,\"decision_unix_nano\":1793561775422163471,\"recorded_unix_nano\":1793561775422163471,\"value\":0},{\"stage\":12,\"role\":5,\"decision_unix_nano\":1793561777398520273,\"recorded_unix_nano\":1793561777398520273,\"value\":0},{\"stage\":3,\"role\":5,\"decision_unix_nano\":1793561777413344854,\"recorded_unix_nano\":1793561777413344854,\"value\":0},{\"stage\":4,\"role\":5,\"decision_unix_nano\":1793561777670778476,\"recorded_unix_nano\":1793561777670778476,\"value\":0},{\"stage\":5,\"role\":5,\"decision_unix_nano\":1793561778033075968,\"recorded_unix_nano\":1793561778033075968,\"value\":0},{\"stage\":6,\"role\":5,\"decision_unix_nano\":1793561780465031381,\"recorded_unix_nano\":1793561780465031381,\"value\":0},{\"stage\":7,\"role\":5,\"decision_unix_nano\":1793561780465070092,\"recorded_unix_nano\":1793561780465070092,\"value\":0},{\"stage\":8,\"role\":5,\"decision_unix_nano\":1793561783026365524,\"recorded_unix_nano\":1793561783026365524,\"value\":1},{\"stage\":9,\"role\":5,\"decision_unix_nano\":1793561783026457403,\"recorded_unix_nano\":1793561783026457403,\"value\":1}]}"
+    ],
+    "ordinary9_qualified": false
+  },
+  "old_SIGKILL137_cause_still_unclosed": true,
+  "current_first_refusal": "beginColdTriggerLocked error before cold.wait; original target exited47, not signaled9",
+  "payload_candidate": "23真实文件/232887344B/静态动态库缺项0/原musl逐SHA相同；未执行、未写最终inventory/package lock"
+}
