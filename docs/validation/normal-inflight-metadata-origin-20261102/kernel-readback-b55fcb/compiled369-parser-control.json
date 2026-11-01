@@ -1,0 +1,68 @@
+{
+  "command": [
+    "docker",
+    "run",
+    "--rm",
+    "--pull=never",
+    "--network=none",
+    "--read-only",
+    "--cpus=1",
+    "--memory=512m",
+    "--memory-swap=512m",
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges",
+    "-v",
+    "/data/neon-build/validation/normal-inflight-compiled-abi-20261031T172033Z-d84115/export/kernel-debug.elf:/kernel-debug.elf:ro",
+    "--entrypoint=readelf",
+    "127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1",
+    "--debug-dump=info",
+    "--dwarf-depth=2",
+    "/kernel-debug.elf"
+  ],
+  "exit": 0,
+  "stderr": "",
+  "types": {
+    "entry_stack_page": [
+      {
+        "byte_size": 4096,
+        "raw_DIE_with_member_offsets": " <1><21a374>: Abbrev Number: 147 (DW_TAG_structure_type)\n    <21a376>   DW_AT_name        : (indirect string, offset: 0x2d517): entry_stack_page\n    <21a37a>   DW_AT_byte_size   : 4096\n    <21a37c>   DW_AT_alignment   : 4096\n    <21a37c>   DW_AT_decl_file   : 62\n    <21a37c>   DW_AT_decl_line   : 351\n    <21a37e>   DW_AT_decl_column : 8\n    <21a37e>   DW_AT_sibling     : <0x21a391>\n <2><21a382>: ...\n"
+      },
+      {
+        "byte_size": 4096,
+        "raw_DIE_with_member_offsets": " <1><4559c3>: Abbrev Number: 120 (DW_TAG_structure_type)\n    <4559c4>   DW_AT_name        : (indirect string, offset: 0x2d517): entry_stack_page\n    <4559c8>   DW_AT_byte_size   : 4096\n    <4559ca>   DW_AT_alignment   : 4096\n    <4559ca>   DW_AT_decl_file   : 51\n    <4559ca>   DW_AT_decl_line   : 351\n    <4559cc>   DW_AT_decl_column : 8\n    <4559cc>   DW_AT_sibling     : <0x4559df>\n <2><4559d0>: ...\n"
+      }
+    ],
+    "exception_stacks": [
+      {
+        "byte_size": 32768,
+        "raw_DIE_with_member_offsets": " <1><ba1c0a>: Abbrev Number: 57 (DW_TAG_structure_type)\n    <ba1c0b>   DW_AT_name        : (indirect string, offset: 0x2d607): exception_stacks\n    <ba1c0f>   DW_AT_byte_size   : 32768\n    <ba1c11>   DW_AT_decl_file   : 41\n    <ba1c12>   DW_AT_decl_line   : 36\n    <ba1c13>   DW_AT_decl_column : 8\n    <ba1c13>   DW_AT_sibling     : <0xba1ccc>\n <2><ba1c17>: ...\n"
+      }
+    ],
+    "pt_regs": [
+      {
+        "byte_size": 168,
+        "raw_DIE_with_member_offsets": " <1><92a>: Abbrev Number: 11 (DW_TAG_structure_type)\n    <92b>   DW_AT_name        : (indirect string, offset: 0xebb52): pt_regs\n    <92f>   DW_AT_byte_size   : 168\n    <930>   DW_AT_decl_file   : 53\n    <931>   DW_AT_decl_line   : 103\n    <932>   DW_AT_decl_column : 8\n    <933>   DW_AT_sibling     : <0xa30>\n <2><937>: ...\n"
+      },
+      {
+        "byte_size": 168,
+        "raw_DIE_with_member_offsets": " <1><2945e>: Abbrev Number: 7 (DW_TAG_structure_type)\n    <2945f>   DW_AT_name        : (indirect string, offset: 0xebb52): pt_regs\n    <29463>   DW_AT_byte_size   : 168\n    <29464>   DW_AT_decl_file   : 14\n    <29465>   DW_AT_decl_line   : 103\n    <29466>   DW_AT_decl_column : 8\n    <29467>   DW_AT_sibling     : <0x29564>\n <2><2946b>: ...\n"
+      }
+    ]
+  },
+  "complete_definition_counts": {
+    "entry_stack_page": 5,
+    "exception_stacks": 1,
+    "pt_regs": 1800
+  },
+  "all_complete_definition_sizes": {
+    "entry_stack_page": [
+      4096
+    ],
+    "exception_stacks": [
+      32768
+    ],
+    "pt_regs": [
+      168
+    ]
+  }
+}

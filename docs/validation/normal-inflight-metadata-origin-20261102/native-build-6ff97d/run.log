@@ -1,0 +1,40 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 3.69kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [check 1/4] FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#4 resolve 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 10.58MB 0.1s done
+#5 DONE 0.2s
+
+#6 [check 2/4] WORKDIR /workspace
+#6 CACHED
+
+#7 [check 3/4] COPY . .
+#7 DONE 0.5s
+
+#8 [check 4/4] RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared set -eu; mkdir -p /out; ln -s /out /proof; test "$(cat /sys/fs/cgroup/memory.max)" = 4294967296; test "$(cat /sys/fs/cgroup/cpu.max)" = "400000 100000"; cat /sys/fs/cgroup/memory.max >/out/memory.max; cat /sys/fs/cgroup/cpu.max >/out/cpu.max; sha256sum -c .stock-prep.sha256 >/out/actual-copy-verification.txt; cp .stock-prep.sha256 /out/compiled-source-sha256.txt; phase_start() { date +%s%N > /out/$1.start-ns; cat /sys/fs/cgroup/cpu.stat > /out/$1.start-cpu.stat; }; phase_end() { date +%s%N > /out/$1.end-ns; cat /sys/fs/cgroup/cpu.stat > /out/$1.end-cpu.stat; }; printenv GOMAXPROCS GOMEMLIMIT GOFLAGS >/out/go-execution-env.txt; go env GOFLAGS GOOS GOARCH GOTOOLCHAIN >/out/go-env.txt; set +e;  phase_start cli; CGO_ENABLED=0 GOMAXPROCS=4 GOMEMLIMIT=1536MiB go build -p=2 -o /out/resource-guard.real ./neonvm-daemon/cmd/resource-guard >/out/cli.log 2>&1; echo $? >/out/cli.exitcode; phase_end cli; phase_start builder; CGO_ENABLED=0 GOMAXPROCS=4 GOMEMLIMIT=1536MiB go build -p=2 -o /out/vm-builder.real ./vm-builder >/out/builder.log 2>&1; echo $? >/out/builder.exitcode; phase_end builder; phase_start native-compile; CGO_ENABLED=0 GOMAXPROCS=4 GOMEMLIMIT=1536MiB go test -p=2 -c -ldflags="-s -w" -tags=dsga_native_inflight_metadata_origin,dsga_native_stock_preparation,dsga_native_ordinary2,dsga_native_role_transfer2,dsga_native_role_service,dsga_native_system_lifecycle -o /out/service.test ./pkg/dsga/resourceguard >/out/native-compile.log 2>&1; echo $? >/out/native-compile.exitcode; phase_end native-compile; if test -x /out/service.test; then /out/service.test -test.list=^TestNativeNormalStockUdevPreparationInitial$ >/out/native-target-list.txt 2>/out/native-target-list.stderr; echo $? >/out/native-target-list.exitcode; fi; phase_start host-compile; CGO_ENABLED=0 GOMAXPROCS=4 GOMEMLIMIT=1536MiB go test -p=2 -c -ldflags="-s -w" -tags=dsga_native_inflight_metadata_origin,dsga_native_role_service,dsga_native_system_lifecycle,dsga_native_stock_preparation,dsga_native_ordinary2,dsga_native_role_transfer2,dsga_native_memory_commit2,dsga_native_initial_lifecycle,dsga_native_memory_origin_wire -o /out/host-memory.test ./pkg/dsga/vmguard >/out/host-compile.log 2>&1; echo $? >/out/host-compile.exitcode; phase_end host-compile; if test -x /out/service.test && test -x /out/host-memory.test; then phase_start host-export; DSGA_INITIAL_HOST_NATIVE=export-transfer2 DSGA_INITIAL_HOST_OUTPUT=/proof /out/host-memory.test -test.run=^TestNativeNormalStockUdevPreparationHost$ -test.v -test.timeout=30s >/out/host-export.log 2>&1; echo $? >/out/host-export.exitcode; phase_end host-export; phase_start fixture-seed; DSGA_TRANSFER2_HOST_RUNTIME=/out/host-seed-runtime.json DSGA_SYSTEM_ROLE_ELF=/out/service.test DSGA_SYSTEM_LIFECYCLE_EXPORT=/out/fixture DSGA_SERVICE_GUARD_ELF=/out/service.test /out/service.test -test.run=^TestExportNormalStockUdevPreparationSeed$ -test.v -test.timeout=30s >/out/fixture-seed.log 2>&1; echo $? >/out/fixture-seed.exitcode; phase_end fixture-seed; fi; cat /sys/fs/cgroup/cpu.stat >/out/cpu.stat; cat /sys/fs/cgroup/memory.peak >/out/memory.peak; cat /sys/fs/cgroup/io.stat >/out/io.stat
+#8 DONE 28.4s
+
+#9 [stage-1 1/1] COPY --from=check /out/ /
+#9 DONE 0.2s
+
+#10 exporting to client directory
+#10 copying files 15.38MB 0.1s
+#10 copying files 245.71MB 1.3s done
+#10 DONE 1.3s
+
+#11 resolving provenance for metadata file
+#11 DONE 0.0s

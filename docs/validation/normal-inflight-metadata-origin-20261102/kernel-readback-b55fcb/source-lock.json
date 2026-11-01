@@ -1,0 +1,45 @@
+{
+  "scope": "B1_READ_ONLY_EXACT_18C_COMPILED_RECEIPT_NOT_NEW_KERNEL",
+  "authorization": "Root approved plan93fd4466; no public protocol/D/PG17/release lock changes",
+  "owned6_before": {
+    "pkg/dsga/resourceguard/normal_inflight_source.go": "c57dcf0da51ae474f992ddfdf8ec73ca24cb03086c400f786eace6266deaadc7",
+    "pkg/dsga/resourceguard/normal_inflight_source_linux.go": "4af11cf771b816a55cd8439b165e3d60ae521cc2637620492e9031242cd6f016",
+    "pkg/dsga/resourceguard/normal_inflight_origin_metadata_linux.go": null,
+    "pkg/dsga/resourceguard/normal_inflight_origin_metadata_linux_test.go": null,
+    "pkg/dsga/resourceguard/normal_zzz_inflight_origin_metadata_native_test.go": null,
+    "pkg/dsga/vmguard/normal_inflight_origin_metadata_native_test.go": null
+  },
+  "head": "ec7400a1fe6fe324000dde0fea3da3f48381142a",
+  "baseline_source_lock_sha256": "23f2bf318f07d9e91daa8502eadca88b0800e39bf4a2344b898d2e932055aada",
+  "baseline_context_input_hashes": {
+    ".gitignore": "e969dbed17cd8618dbb371ca2fd65b04312abf6528b7fe8b556af2614362160d",
+    "Dockerfile": "6b79859088ee618d8619d9f73424ee30a3b937008a716faae3f5af1692036c4a",
+    "README.md": "4d962ed8ff4c3e5eda81645949b95f057b8e080ab67f89fe34c287fb52abd46a",
+    "echo-source-url.sh": "42b5afcfb6817ae0dec70b111417fb388f2cb61be93d13ca30c268eafe97b2e6",
+    "echo-version.sh": "047b4a3033370ce2b6cd28e3042e0a4ad36806207ac8e583417b1e1ed2a09fe0",
+    "linux-config-aarch64-6.12.26": "08917eaf0aa2ead81717787e1bddfb135b9aa69a2d346689f4338a6f0e1c2905",
+    "linux-config-amd64-6.12.26": "639ea751eb4ae7743e2695368286d1aeb0417f6680d6ac24ae3b051948a94b96",
+    "metadata-baseline.config": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+    "patches/0001-x86-mm-Update-mapped-addresses-in-phys_-pmd-pud-_ini.patch": "01bd47eaea82fb99eea4cb25be1063e6f2f14e3e03289be644a9bac03edfba5e",
+    "patches/0002-x86-mm-Allow-error-returns-from-phys_-_init.patch": "b4cf630bf5cd5e64b6702cbc5aa952bc718c45d22bca5ec2fb082fede7d6d0d5",
+    "patches/0003-x86-mm-Handle-alloc-failure-in-phys_-_init.patch": "9ee75c0a474f68303ef8c32141445b687056c228cfe31f822e983206139112d0",
+    "patches/0004-x86-mm-Use-GFP_KERNEL-for-alloc_low_pages-after-boot.patch": "5ac67ef964af106fc5f36bdd3c711b9241bfdfac19b5c9faa6c162b765004ae8",
+    "patches/0005-Neon-mm-Add-debug-logs-for-kcompactd-offlining-race.patch": "959e9d4701586312a3dd9e03386c849efd3f7b78038fd13dd56c5e58d6d037e4",
+    "patches/0006-Neon-pid-Add-opt-in-early-global-PID-hard-limit.patch": "946be0d25506edae50217b976bdf3b02283e3236acefdc119648ba5172c5ab5a",
+    "profiles/normal-split-metadata-v1/0008-Neon-kernfs-Require-admin-for-control-metadata.patch": "c67181104ec112e893c61943e0821153d7fba051dbee62ac69bf6336c120679b",
+    "profiles/normal-split-metadata-v1/linux-config-amd64-6.12.26": "e3bf02e5c1fac42a297fb84efbfec443eaee17cc23fcc0a423e2190059b179c9",
+    "profiles/normal-split-v1/linux-config-amd64-6.12.26": "de98f51a2ac4c7d3d3b8472993fd716b62584a3a0607257301a7ecd612316855",
+    "profiles/normal-v1/config-source.json": "b4cd2048d1382ef18d9dc52f563d8521d51b1660cf32bc558766ce1de837402e",
+    "profiles/normal-v1/linux-config-amd64-6.12.26": "b20ac4f85d74b6dfca4f207cbee3cd72f6b34307fc1a4fee13519eba244ed1f5",
+    "split-patches/0007-Neon-mm-Bound-hierarchical-page-counter-cancel-IRQ-gap.patch": "e210f5e3ee9436089be24b318aa6e10019f4014303f26e5964a994a0f717cb88"
+  },
+  "exact_export_sha256": {
+    "vmlinuz": "18c9fd3a38bbe5a087b98998c856898e97ee3f0bc68681b13f0287912849e1ad",
+    "kernel.config": "966e615127358d6d0dcf4f6ca884a07702e957ad07a95909cf95feca4aae5441",
+    "kernel-notes.bin": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+    "actual-source-SHA256SUMS": "88612bf9a94b8d05f8bb71e5a4d5711a2ed35afc7cd025efea346fc6032f058c"
+  },
+  "plan": "/data/neon-build/validation/normal-inflight-metadata-origin-plan-20261101T201304Z-b839a6",
+  "make_must_be_cached": true,
+  "normal_qualified": false
+}

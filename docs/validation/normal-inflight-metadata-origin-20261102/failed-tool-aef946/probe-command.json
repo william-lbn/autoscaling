@@ -1,0 +1,22 @@
+[
+  "docker",
+  "run",
+  "--rm",
+  "--pull=never",
+  "--network=none",
+  "--read-only",
+  "--cpus=1",
+  "--memory=512m",
+  "--memory-swap=512m",
+  "--cap-drop=ALL",
+  "--security-opt=no-new-privileges",
+  "-v",
+  "/data/neon-build/validation/normal-inflight-18c-readback-20261101T202044Z-aef946:/probe:rw",
+  "-v",
+  "/data/neon-build/validation/normal-inflight-compiled-abi-20261031T172033Z-d84115/export/kernel-debug.elf:/kernel-debug.elf:ro",
+  "--entrypoint=python3",
+  "sha256:ebaeba1cc3372b303db000f2379d75e466dd0bcc86705caa716c7c9d42962d7b",
+  "/probe/dwarf_read.py",
+  "/kernel-debug.elf",
+  "/probe/compiled369-parser-control.json"
+]

@@ -1,0 +1,23 @@
+[
+  "docker",
+  "run",
+  "--rm",
+  "--pull=never",
+  "--network=none",
+  "--cpus=2",
+  "--memory=3g",
+  "--memory-swap=3g",
+  "-v",
+  "/data/neon-build/validation/normal-inflight-metadata-origin-native-20261101T203708Z-6ff97d-native/prepared/export:/out:rw",
+  "-v",
+  "/data/neon-build/validation/normal-inflight-metadata-origin-native-build-20261101T203708Z-6ff97d/export/vm-builder.real:/builder:ro",
+  "-v",
+  "/data/neon-build/validation/normal-inflight-metadata-origin-native-20261101T203708Z-6ff97d-native/merge-proof:/merge-proof:ro",
+  "-v",
+  "/data/neon-build/validation/normal-inflight-metadata-origin-native-20261101T203708Z-6ff97d-native:/proof:rw",
+  "--entrypoint",
+  "/bin/bash",
+  "127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1",
+  "-c",
+  "set +e; /builder --system-mode=normal-split-v3 --normal-manifest-root=/out/fixture/root --normal-build-plan=/proof/fixed-build-plan.json --normal-base-image-sha=abababababababababababababababababababababababababababababababab --normal-ordinary-controls-version=2 --normal-ordinary-package-lock=/merge-proof/package-lock-derived.json >/out/builder-final.log 2>&1; rc=$?; echo $rc >/out/builder-final.exitcode; if test $rc = 0; then DSGA_SYSTEM_LIFECYCLE_EXPORT=/out/fixture /out/service.test -test.run=^TestFinalizeNormalStockUdevPreparationFixture$ -test.v -test.timeout=30s >/out/fixture-final.log 2>&1; rc=$?; echo $rc >/out/fixture-final.exitcode; fi; cat /sys/fs/cgroup/cpu.stat >/out/fixture.cpu.stat; cat /sys/fs/cgroup/memory.peak >/out/fixture.memory.peak; cat /sys/fs/cgroup/io.stat >/out/fixture.io.stat; exit $rc"
+]

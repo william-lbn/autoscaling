@@ -15,11 +15,16 @@ import (
 // 观察层只读，绝不修改sysctl/挂载/cgroup。它不是持续强制或原启动历史；
 // 后继资格必须绑定KernelPrep、原Host和全部写者。raw读取有固定上限，错误关门。
 func readNormalInflightSource(id Identity) (normalInflightSourceFacts, error) {
-	var f normalInflightSourceFacts
 	ref, err := LookupPhysicalKernelBuild(NormalSplitV1PhysicalKernelProfileID)
 	if err != nil {
-		return f, err
+		return normalInflightSourceFacts{}, err
 	}
+	return readNormalInflightSourceFixed(id, ref)
+}
+
+// 固定实际reader供原369及显式metadata来源复用；无可配置路径/写者或调用者资格位。
+func readNormalInflightSourceFixed(id Identity, ref PhysicalKernelBuildReference) (normalInflightSourceFacts, error) {
+	var f normalInflightSourceFacts
 	o, err := readPhysicalKernelComponent(id)
 	if err != nil {
 		return f, err
@@ -133,7 +138,7 @@ func readNormalInflightSource(id Identity) (normalInflightSourceFacts, error) {
 	}
 	f.MountInfoSHA256 = physicalDigest([]byte(raw))
 	f.MountFilesystems = fs
-	if err := f.validate(); err != nil {
+	if err := f.validateFixed(ref); err != nil {
 		return normalInflightSourceFacts{}, err
 	}
 	return f, nil

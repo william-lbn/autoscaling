@@ -1,0 +1,20 @@
+{
+  "scope": "read-only-kernel-evidence-limits-and-available-original-service-counters",
+  "original_systemd_properties_path": "actual-systemd-properties.txt",
+  "budget_profile": {
+    "CPU": 2,
+    "MemoryMax": 3221225472
+  },
+  "actual_export_knobs": {
+    "cpu.max": "200000 100000",
+    "memory.max": "1073741824"
+  },
+  "tool_child_explicit": {
+    "probe_CPU": 1,
+    "probe_Memory": 536870912,
+    "BuildKit_CPU": 2,
+    "BuildKit_Memory": 1073741824
+  },
+  "original_child_cpu_stat_memory_peak_io_stat": "NOT_CAPTURED_IN_THIS_READBACK_RUN; NOT_RECONSTRUCTED",
+  "no_green_repetition_for_metrics_only": true
+}

@@ -87,7 +87,22 @@ func normalInflightSum(parts ...uint64) (uint64, error) {
 
 func (f normalInflightSourceFacts) validate() error {
 	expected, err := LookupPhysicalKernelBuild(NormalSplitV1PhysicalKernelProfileID)
-	if err != nil || f.Build != expected || !f.Build.StrictPageCounterIRQBoundary() {
+	if err != nil {
+		return err
+	}
+	return f.validateFixed(expected)
+}
+
+// 旧入口仍只选择369；新metadata只能显式消费准确编译五元组，绝不改写facts骗过旧门。
+func (f normalInflightSourceFacts) validateFixed(expected PhysicalKernelBuildReference) error {
+	known := false
+	for _, profile := range []string{NormalSplitV1PhysicalKernelProfileID, NormalSplitMetadataV1PhysicalKernelProfileID} {
+		ref, e := LookupPhysicalKernelBuild(profile)
+		if e == nil && ref == expected {
+			known = true
+		}
+	}
+	if !known || f.Build != expected || !f.Build.StrictPageCounterIRQBoundary() {
 		return fmt.Errorf("inflight requires exact reviewed369 build")
 	}
 	if err := f.Physical.Validate(); err != nil {
@@ -134,7 +149,15 @@ func (f normalInflightSourceFacts) validate() error {
 // 退出后PID已不可用，不能仍以J约束晚put：尚在执行的VMAP任务栈至少16KiB，
 // 且栈物理分配在nonMOVABLE域，所以以原K/16KiB额外保守计数；不扣已在K的栈。
 func normalInflightCalculate(f normalInflightSourceFacts) (normalInflightSourceTerms, error) {
-	if err := f.validate(); err != nil {
+	ref, err := LookupPhysicalKernelBuild(NormalSplitV1PhysicalKernelProfileID)
+	if err != nil {
+		return normalInflightSourceTerms{}, err
+	}
+	return normalInflightCalculateFixed(f, ref)
+}
+
+func normalInflightCalculateFixed(f normalInflightSourceFacts, ref PhysicalKernelBuildReference) (normalInflightSourceTerms, error) {
+	if err := f.validateFixed(ref); err != nil {
 		return normalInflightSourceTerms{}, err
 	}
 	p := normalInflightBasePage
@@ -224,8 +247,16 @@ func normalInflightCeilDiv(a, b uint64) (uint64, error) {
 }
 
 func normalInflightPlan(f normalInflightSourceFacts, in normalInflightPlanningInput) (normalInflightPlanningResult, error) {
+	ref, err := LookupPhysicalKernelBuild(NormalSplitV1PhysicalKernelProfileID)
+	if err != nil {
+		return normalInflightPlanningResult{}, err
+	}
+	return normalInflightPlanFixed(f, in, ref)
+}
+
+func normalInflightPlanFixed(f normalInflightSourceFacts, in normalInflightPlanningInput, ref PhysicalKernelBuildReference) (normalInflightPlanningResult, error) {
 	var r normalInflightPlanningResult
-	t, e := normalInflightCalculate(f)
+	t, e := normalInflightCalculateFixed(f, ref)
 	if e != nil {
 		return r, e
 	}
