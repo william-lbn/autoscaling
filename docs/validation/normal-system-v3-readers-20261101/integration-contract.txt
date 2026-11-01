@@ -1,0 +1,7 @@
+Root/P2最小接点：
+1 NormalSystemSourceV3ProfileID、NormalSystemSourceInitEntriesForVersion(3)、NormalSystemSourceRequiredFilesForVersion(3)为静态表/深副本；v3 BuildPlan/Broker/KernelControl都是config canonical==logicalPath，Builder需实际生成且只读封存后再纳原manifest。
+2 normalSystemFixedRoleArgvForVersion(2或3,role)显式选表；旧normalSystemFixedRoleArgv保持默认2。普通9+resource原payload同v2；compute仍不属于ordinary枚举，专用broker ComputeCtl来源沿原角色分支。
+3 Lifecycle要求显式2/Profile2或3/Profile3；Manifest.Validate同时核原准确kernel/compute/argv/env/inventory，版本号不跳过原Root/Source pin。
+4 FS preflight/capture的两处metadata仅接受显式2或3，尚不等于FS namespace/FD proof或未来writer闭合。
+5 !linux DTO仅为common binding编译，不存在Birth/Root消费者producer；不把Darwin编译当功能认证。
+6 后继真实Guest须另外验证固定PID1 inittab、Rootclient、原broker/gate/FS交接、资源cap gate与PG，当前batch无S/E。

@@ -1,0 +1,13 @@
+--- 5acb/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go
++++ system-v3/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go
+@@ -165,8 +165,8 @@
+ 	}
+ 	system.mu.Lock()
+ 	defer system.mu.Unlock()
+-	if system.closed || system.manifest.ProtocolVersion != 2 {
+-		return zero, "", "", fmt.Errorf("filesystem requires original System v2 source")
++	if system.closed || system.manifest.ProtocolVersion != 2 && system.manifest.ProtocolVersion != 3 {
++		return zero, "", "", fmt.Errorf("filesystem requires original System v2/v3 source")
+ 	}
+ 	vminit := ""
+ 	for _, f := range system.manifest.Files {

@@ -1,0 +1,21 @@
+{
+  "unit": "neon-system-v3-readers-20261101t012933z-6ba2ec",
+  "nonce": "20261101T012933Z-6ba2ec",
+  "base": "5acb0fc33f970fae9abd3c32c80c75c17b6e8bd7",
+  "source_count": 968,
+  "owned_count": 12,
+  "source_lock_sha256": "60f4417af858c27fdb5de1477c6022badd02884808d30be51577b1849f809a96",
+  "linux_race_regex": "^Test(NormalSystemV3|NormalSystemSource|NormalSystemV2|NormalSystemLifecycle|NormalSystemRolePlan|NormalSystemRoleCannotSpawnWithoutOriginalSource|NormalFilesystemSameSuperblockPreflightRejectsNonFixedState)",
+  "darwin_compile_only": true,
+  "independent_Linux_and_Darwin_jobs_parallel": true,
+  "per_Go_process": {
+    "GOMAXPROCS": 1,
+    "GOMEMLIMIT": "384MiB"
+  },
+  "hard_limits": {
+    "memory": "2g",
+    "memory_swap": "2g",
+    "cpu_quota": 200000
+  },
+  "scope": "STATIC_V3_MANIFEST_AND_READERS_U_NOT_ROLES_S_NORMAL"
+}

@@ -1,0 +1,13 @@
+--- 5acb/pkg/dsga/resourceguard/normal_system_lifecycle_source_linux.go
++++ system-v3/pkg/dsga/resourceguard/normal_system_lifecycle_source_linux.go
+@@ -98,8 +98,8 @@
+ 		return fail(e)
+ 	}
+ 	m, e := DecodeNormalSystemSourceManifest(manifestRaw)
+-	if e != nil || m.ProtocolVersion != 2 || m.ProfileID != NormalSystemSourceV2ProfileID {
+-		return fail(fmt.Errorf("original System lifecycle requires exact v2 manifest"))
++	if e != nil || !normalSystemLifecycleManifestVersion(m) {
++		return fail(fmt.Errorf("original System lifecycle requires exact versioned v2/v3 manifest"))
+ 	}
+ 	var st unix.Stat_t
+ 	if e = unix.Stat(systemCgroup, &st); e != nil {

@@ -207,7 +207,7 @@ func (s *normalSystemLifecycleSource) inspectOriginalTask(ctx context.Context, t
 		wantUID, wantGID = uint32(uid), uint32(gid)
 		path = s.logical[s.manifest.ComputePath]
 	} else {
-		fixed, e := normalSystemFixedRoleArgv(role)
+		fixed, e := normalSystemFixedRoleArgvForVersion(s.manifest.ProtocolVersion, role)
 		if e != nil {
 			return fail(e)
 		}

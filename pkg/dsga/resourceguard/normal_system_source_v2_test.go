@@ -29,7 +29,7 @@ func TestNormalSystemSourceV2FixedGatesAndV1Compatibility(t *testing.T) {
 	if normalSystemCheckInittab([]byte(strings.Join(v2, "\n"))) == nil || normalSystemCheckVersionInittab(2, []byte(strings.Join(old, "\n"))) == nil {
 		t.Fatal("version fallback")
 	}
-	if _, e := NormalSystemSourceInitEntriesForVersion(3); e == nil {
+	if _, e := NormalSystemSourceInitEntriesForVersion(4); e == nil {
 		t.Fatal("future version accepted")
 	}
 	m := normalSystemModelManifest(t)

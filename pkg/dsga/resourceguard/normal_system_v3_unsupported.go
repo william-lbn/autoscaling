@@ -1,0 +1,14 @@
+//go:build !linux
+
+package resourceguard
+
+import control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+
+// 非Linux只为共享只读System binding保留同形DTO；没有任何Birth/Root消费者
+// producer或资格入口。Linux原类型/安装/ptrace路径完全不动。精确5acb Darwin
+// baseline曾因common lifecycle引用Linux-only类型而失败，原失败另留收据。
+type nativeBirthConsumer struct {
+	InstanceNonce string         `json:"instance_nonce"`
+	PID           int            `json:"pid"`
+	StartTicks    control.Uint64 `json:"start_ticks"`
+}

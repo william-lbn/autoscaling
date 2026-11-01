@@ -165,8 +165,8 @@ func normalFilesystemSourceMetadata(system *normalSystemLifecycleSource) (normal
 	}
 	system.mu.Lock()
 	defer system.mu.Unlock()
-	if system.closed || system.manifest.ProtocolVersion != 2 {
-		return zero, "", "", fmt.Errorf("filesystem requires original System v2 source")
+	if system.closed || system.manifest.ProtocolVersion != 2 && system.manifest.ProtocolVersion != 3 {
+		return zero, "", "", fmt.Errorf("filesystem requires original System v2/v3 source")
 	}
 	vminit := ""
 	for _, f := range system.manifest.Files {

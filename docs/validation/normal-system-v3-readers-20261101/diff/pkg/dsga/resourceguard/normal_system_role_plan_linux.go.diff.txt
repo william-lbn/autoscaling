@@ -1,0 +1,11 @@
+--- 5acb/pkg/dsga/resourceguard/normal_system_role_plan_linux.go
++++ system-v3/pkg/dsga/resourceguard/normal_system_role_plan_linux.go
+@@ -161,7 +161,7 @@
+ 	}
+ 	out = normalSystemRoleLaunchSpec{role: role, binding: s.binding, sourceSHA: digest, env: []string{"PATH=/neonvm/bin"}}
+ 	if role != "compute" {
+-		out.argv, e = normalSystemFixedRoleArgv(role)
++		out.argv, e = normalSystemFixedRoleArgvForVersion(s.manifest.ProtocolVersion, role)
+ 		if e != nil {
+ 			return normalSystemRoleLaunchSpec{}, e
+ 		}

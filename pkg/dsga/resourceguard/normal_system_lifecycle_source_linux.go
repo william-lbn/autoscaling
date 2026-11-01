@@ -98,8 +98,8 @@ func inspectNormalSystemLifecycleOriginal(ctx context.Context) (*normalSystemLif
 		return fail(e)
 	}
 	m, e := DecodeNormalSystemSourceManifest(manifestRaw)
-	if e != nil || m.ProtocolVersion != 2 || m.ProfileID != NormalSystemSourceV2ProfileID {
-		return fail(fmt.Errorf("original System lifecycle requires exact v2 manifest"))
+	if e != nil || !normalSystemLifecycleManifestVersion(m) {
+		return fail(fmt.Errorf("original System lifecycle requires exact versioned v2/v3 manifest"))
 	}
 	var st unix.Stat_t
 	if e = unix.Stat(systemCgroup, &st); e != nil {

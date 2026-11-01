@@ -1,0 +1,103 @@
+{
+  "scope": "STATIC_SYSTEM_MANIFEST_V3_AND_VERSIONED_READERS_ONLY",
+  "base": "5acb0fc33f970fae9abd3c32c80c75c17b6e8bd7",
+  "actual_cohort": "/data/neon-build/validation/normal-system-v3-readers-go-20261101T012933Z-6ba2ec",
+  "unit": {
+    "race": true,
+    "total_roots": 21,
+    "total_subtests": 95,
+    "new_roots": 6,
+    "new_subtests": 38,
+    "direct_regression_roots": 15,
+    "direct_regression_subtests": 57,
+    "fail": 0,
+    "skip": 0,
+    "new_cases": [
+      {
+        "id": "PG17-U-SYSTEM-V3-001",
+        "root": "TestNormalSystemV3FixedInitPreservesComputeWrapper",
+        "named_subtests": 3,
+        "layer": "unit-model"
+      },
+      {
+        "id": "PG17-U-SYSTEM-V3-002",
+        "root": "TestNormalSystemV3JSONRemainsExact",
+        "named_subtests": 8,
+        "layer": "unit-model"
+      },
+      {
+        "id": "PG17-U-SYSTEM-V3-003",
+        "root": "TestNormalSystemV3KeepsVersionAndKernelBoundaries",
+        "named_subtests": 5,
+        "layer": "unit-model"
+      },
+      {
+        "id": "PG17-U-SYSTEM-V3-004",
+        "root": "TestNormalSystemV3RequiresOriginalMetadataAssets",
+        "named_subtests": 12,
+        "layer": "unit-model"
+      },
+      {
+        "id": "PG17-U-SYSTEM-V3-005",
+        "root": "TestNormalSystemV3RolePayloadsKeepExactV2Vectors",
+        "named_subtests": 10,
+        "layer": "unit-model"
+      },
+      {
+        "id": "PG17-U-SYSTEM-V3-006",
+        "root": "TestNormalSystemV3RolePlanUsesManifestVersion",
+        "named_subtests": 0,
+        "layer": "unit-model"
+      }
+    ],
+    "direct_regression_roots_not_new_coverage": [
+      "TestNormalFilesystemSameSuperblockPreflightRejectsNonFixedState",
+      "TestNormalSystemLifecycleFixedRoleTableCannotSelectProgram",
+      "TestNormalSystemLifecycleFixedVectorsAndNoEnvironmentDisclosure",
+      "TestNormalSystemLifecycleMissingOriginalInputNeverQualifies",
+      "TestNormalSystemRoleCannotSpawnWithoutOriginalSource",
+      "TestNormalSystemRolePlanExactAndNoEnvironmentDisclosure",
+      "TestNormalSystemSourceCancellation",
+      "TestNormalSystemSourceCatalogCopy",
+      "TestNormalSystemSourceConfigInventory",
+      "TestNormalSystemSourceFixedInittab",
+      "TestNormalSystemSourceManifestRejectDrift",
+      "TestNormalSystemSourceManifestStrict",
+      "TestNormalSystemSourceRuntimeOverrides",
+      "TestNormalSystemSourceV2ExactJSON",
+      "TestNormalSystemSourceV2FixedGatesAndV1Compatibility"
+    ]
+  },
+  "environment": {
+    "darwin_arm64_compile_exit": 0,
+    "darwin_not_native_execution": true,
+    "build_exit": 0,
+    "source_exit": 0,
+    "actual_COPY_count": 968,
+    "memory_max_bytes": 2147483648,
+    "cpu_max": "200000 100000"
+  },
+  "S_new": 0,
+  "E": 0,
+  "real_Guest_startup": false,
+  "normal_authorized": false,
+  "history": [
+    {
+      "cohort": "/data/neon-build/validation/normal-system-v3-readers-go-20261101T012247Z-bec2ba",
+      "Linux_root_failure": "TestNormalSystemSourceV2FixedGatesAndV1Compatibility still rejected future-version3",
+      "Linux_pass_roots": 20,
+      "Linux_fail_roots": 1,
+      "Darwin_compile_exit": 1,
+      "receipt_unchanged": true
+    },
+    {
+      "cohort": "/data/neon-build/validation/normal-system-v3-baseline-darwin-20261101T012826Z-cbd42a",
+      "zero_overlay": true,
+      "base": "5acb0fc33f970fae9abd3c32c80c75c17b6e8bd7",
+      "COPY_count": 964,
+      "Darwin_compile_exit": 1,
+      "cause": "common lifecycle used Linux-only nativeBirthConsumer",
+      "receipt_unchanged": true
+    }
+  ]
+}

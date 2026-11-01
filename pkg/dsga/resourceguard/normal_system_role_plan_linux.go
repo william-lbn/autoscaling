@@ -161,7 +161,7 @@ func newNormalSystemRoleLaunchSpec(ctx context.Context, s *normalSystemLifecycle
 	}
 	out = normalSystemRoleLaunchSpec{role: role, binding: s.binding, sourceSHA: digest, env: []string{"PATH=/neonvm/bin"}}
 	if role != "compute" {
-		out.argv, e = normalSystemFixedRoleArgv(role)
+		out.argv, e = normalSystemFixedRoleArgvForVersion(s.manifest.ProtocolVersion, role)
 		if e != nil {
 			return normalSystemRoleLaunchSpec{}, e
 		}

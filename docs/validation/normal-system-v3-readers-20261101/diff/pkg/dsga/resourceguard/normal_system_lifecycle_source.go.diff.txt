@@ -1,0 +1,17 @@
+--- 5acb/pkg/dsga/resourceguard/normal_system_lifecycle_source.go
++++ system-v3/pkg/dsga/resourceguard/normal_system_lifecycle_source.go
+@@ -102,6 +102,14 @@
+ // 提供任意程序。其余角色只接受新launcher将实际采用的最小env-i；旧继承环境
+ // 不会被采样后反过来认成expected。短命角色的实际exec仍需后续出生hook。
+ func normalSystemFixedRoleArgv(role string) ([]string, error) {
++	return normalSystemFixedRoleArgvForVersion(2, role)
++}
++
++// payload保持旧v2逐字节相同；显式版本只选择已有表，拒未知版本/任意程序。
++func normalSystemFixedRoleArgvForVersion(version uint32, role string) ([]string, error) {
++	if version != 2 && version != 3 {
++		return nil, fmt.Errorf("unsupported fixed System role version")
++	}
+ 	roles := map[string][]string{
+ 		"allow-start":    {"/neonvm/bin/busybox", "touch", "/run/neon-dsga/vmstart.allowed"},
+ 		"kernel-version": {"/neonvm/bin/busybox", "cat", "/proc/version"},

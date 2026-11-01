@@ -1,0 +1,76 @@
+--- 5acb/pkg/dsga/resourceguard/normal_system_source.go
++++ system-v3/pkg/dsga/resourceguard/normal_system_source.go
+@@ -88,6 +88,9 @@
+ 
+ // 版本选择只选固定表，不来自请求里的命令或可执行路径；旧v1表原样保留。
+ func NormalSystemSourceInitEntriesForVersion(version uint32) ([]string, error) {
++	if version == 3 {
++		return normalSystemV3InitEntries(), nil
++	}
+ 	if version == 1 {
+ 		return NormalSystemSourceInitEntries(), nil
+ 	}
+@@ -113,12 +116,17 @@
+ 
+ // Builder只取路径/类别副本；返回表本身不认证最终镜像或其依赖闭包。
+ func NormalSystemSourceRequiredFilesForVersion(version uint32) (map[string]string, error) {
+-	if version != 1 && version != 2 {
++	if version != 1 && version != 2 && version != 3 {
+ 		return nil, fmt.Errorf("unsupported System source version")
+ 	}
+ 	m := normalSystemRequiredPaths()
+-	if version == 2 {
++	if version == 2 || version == 3 {
+ 		m["/neonvm/bin/su-exec"] = "exec"
++	}
++	if version == 3 {
++		for _, path := range normalSystemV3MetadataPaths() {
++			m[path] = "config"
++		}
+ 	}
+ 	return m, nil
+ }
+@@ -164,7 +172,7 @@
+ }
+ func (m NormalSystemSourceManifest) Validate() error {
+ 	ref, e := LookupPhysicalKernelBuild(NormalSplitV1PhysicalKernelProfileID)
+-	if e != nil || !((m.ProtocolVersion == 1 && m.ProfileID == NormalSystemSourceProfileID) || (m.ProtocolVersion == 2 && m.ProfileID == NormalSystemSourceV2ProfileID)) || m.Kernel != ref || m.ComputePath != "/usr/local/bin/compute_ctl" {
++	if e != nil || !normalSystemSourceVersionProfile(m.ProtocolVersion, m.ProfileID) || m.Kernel != ref || m.ComputePath != "/usr/local/bin/compute_ctl" {
+ 		return fmt.Errorf("system source requires versioned fixed normal profile")
+ 	}
+ 	for _, d := range []string{m.DeclaredImageSHA256, m.ComputeArgvSHA256, m.ComputeEnvironmentSHA256} {
+@@ -182,6 +190,14 @@
+ 	for _, f := range m.Files {
+ 		if !normalSystemAllowedVersionFile(m.ProtocolVersion, f.Path, f.Kind) || !normalSystemCleanPath(f.CanonicalPath) || !physicalDigestValid(f.SHA256) || f.Bytes == 0 || f.Bytes > 256<<20 || f.Path <= prev || seen[f.Path] {
+ 			return fmt.Errorf("system source file is invalid/duplicate/unordered")
++		}
++		// v3三项固定原元数据不可借logical alias指向另一份文件；旧v1/v2规则不改。
++		if m.ProtocolVersion == 3 {
++			for _, path := range normalSystemV3MetadataPaths() {
++				if f.Path == path && (f.Kind != "config" || f.CanonicalPath != path) {
++					return fmt.Errorf("v3 fixed metadata requires exact canonical config object")
++				}
++			}
+ 		}
+ 		if f.Kind == "exec" {
+ 			if f.CanonicalPath != f.Path && (f.CanonicalPath != "/neonvm/bin/busybox" || !normalSystemBusyboxApplet(f.Path)) {
+@@ -272,8 +288,8 @@
+ 	if e := d.Decode(&m); e != nil {
+ 		return m, e
+ 	}
+-	// 新v2逐层精确键，不把Go大小写别名/空slice语义偷偷带入新合同；旧v1仍原规则。
+-	if m.ProtocolVersion == 2 {
++	// 新v2/v3逐层精确键，不把Go大小写别名/空slice语义偷偷带入新合同；旧v1仍原规则。
++	if m.ProtocolVersion == 2 || m.ProtocolVersion == 3 {
+ 		type plain NormalSystemSourceManifest
+ 		var next plain
+ 		if e := control.UnmarshalObjectBounded(raw, &next, 1<<20, 65536); e != nil {
+@@ -292,7 +308,7 @@
+ 			return m, e
+ 		}
+ 		if files == nil {
+-			return m, fmt.Errorf("v2 file inventory requires array")
++			return m, fmt.Errorf("v2/v3 file inventory requires array")
+ 		}
+ 		for _, rawFile := range files {
+ 			var f NormalSystemSourceFile

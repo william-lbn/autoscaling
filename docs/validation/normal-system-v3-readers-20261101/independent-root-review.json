@@ -1,0 +1,45 @@
+{
+  "reviewer": "Root",
+  "utc": "2026-11-01T01:38:56.977305+00:00",
+  "result": "PASS_STATIC_V3_READER_COMPONENT_ONLY",
+  "read_all_12_source_and_diff": true,
+  "source12": {
+    "pkg/dsga/resourceguard/normal_system_source.go": "45c623f44422636059cb3bf3a7c462d3819355efbe37d28690d9861ef097a9bb",
+    "pkg/dsga/resourceguard/normal_system_lifecycle_source.go": "25e3bc3662c7f4c79ab6f56048cf0f6c451d122786c1e7f85c4901cfd2595a6c",
+    "pkg/dsga/resourceguard/normal_system_lifecycle_source_linux.go": "09e34587e4d37811a8c5dfe5a3e2c3477c582b7fdd208cf57eb86c801596f608",
+    "pkg/dsga/resourceguard/normal_system_lifecycle_source_task_linux.go": "bc43bd4bf126b7cd68bb4e00b607d64dff9107e684ebf23cab38fb7bfe178ec6",
+    "pkg/dsga/resourceguard/normal_system_role_plan_linux.go": "154db69bc65695f8c3e1a53535fd8befc4226e940b74952ceaf0f3c4fe77fab1",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_preflight_linux.go": "4005aca8e7ff3a0eb98488981e2ba7ee1d28fcf2d01d2a83a4b626bb5b8351c1",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go": "4094ee22f99c1d757de6e2b019206cf80c9ec6d2f362bbbd3d6c6f4c7d2587f2",
+    "pkg/dsga/resourceguard/normal_system_v3.go": "c2c756299f79a9305533486d34dafe6111e2b04227a8977177984803dd47eb2e",
+    "pkg/dsga/resourceguard/normal_system_v3_test.go": "e991939229b2fd36307ab9cbaca700f7b861e658ccbe21d5256be88c96652573",
+    "pkg/dsga/resourceguard/normal_system_v3_linux_test.go": "27b3aee43b670cde2fb3985d1737a6e38f8a2169fd8c767a807fc9a8954ca99a",
+    "pkg/dsga/resourceguard/normal_system_v3_unsupported.go": "4d107111bd090c9ce424ae243546d77f03587efd183b08df21a2f1c55ff94d49",
+    "pkg/dsga/resourceguard/normal_system_source_v2_test.go": "0cb698ebbead73fab1028ab8d31154f3dc9211187bb9628b450d275b5f63804f"
+  },
+  "manifest99_sha256": "b9a9d58b3e5176484c7bec23fef2a5e6c2bf0c1725b2981f087c03eeec3a009a",
+  "actual_inputs": 968,
+  "actual_Linux_roots": 21,
+  "actual_subcases": 95,
+  "new_distinct_U": 6,
+  "direct_regression_U": 15,
+  "Darwin_arm64_compile_exit": 0,
+  "review": [
+    "v1/v2 tables and default role payloads unchanged",
+    "explicit exact v3 metadata canonical paths required",
+    "new13row inittab preserves compute vmstart and original once/respawn/wait actions",
+    "strict nested JSON keys and unknown/future versions rejected",
+    "FS stillrequires original actual Source and Layout2, allows explicit System3 only",
+    "all static version/plan methods remain non-authorizing",
+    "nonLinux DTO onlyrepairs proven5acb baseline undefined type; no producer"
+  ],
+  "not_covered": [
+    "production Builder/CLI integration",
+    "actual StartBroker and crossRoot FS transfer",
+    "original stdio/controls/respawns",
+    "complete normal authority"
+  ],
+  "S_new": 0,
+  "normal_authorized": false,
+  "E": 0
+}

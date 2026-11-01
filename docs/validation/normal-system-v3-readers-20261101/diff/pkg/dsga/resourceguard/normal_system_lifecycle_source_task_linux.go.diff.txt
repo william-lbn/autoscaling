@@ -1,0 +1,11 @@
+--- 5acb/pkg/dsga/resourceguard/normal_system_lifecycle_source_task_linux.go
++++ system-v3/pkg/dsga/resourceguard/normal_system_lifecycle_source_task_linux.go
+@@ -207,7 +207,7 @@
+ 		wantUID, wantGID = uint32(uid), uint32(gid)
+ 		path = s.logical[s.manifest.ComputePath]
+ 	} else {
+-		fixed, e := normalSystemFixedRoleArgv(role)
++		fixed, e := normalSystemFixedRoleArgvForVersion(s.manifest.ProtocolVersion, role)
+ 		if e != nil {
+ 			return fail(e)
+ 		}
