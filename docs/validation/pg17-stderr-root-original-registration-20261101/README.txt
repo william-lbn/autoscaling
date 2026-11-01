@@ -1,0 +1,9 @@
+PG17 Root原stderr登记/Birth/Final组件归档；真实Source/normal/E尚未验收。
+
+只在准确helper1和原同g broker-owned authority构造固定pg-stderr.sock（Root:PG主组0660）。旧0不启动，新1无原admission明确拒绝。原service cancel/旧native worker join后关闭新accept并join，再释放registry pins，不遗留后台任务。新请求固定16字节版本1+两个SCM原端点+kernel packet credential，拒绝截断/多rights/方向或PIPEFS/64KiB容量不符；Root从自己的原Compute三持久前缀租约及SO_PEERPIDFD独立检查，不接受请求PID/路径/nonce/预算。
+
+Root生成私有nonce，原resource flock内持久pending；Begin按同原SUID task FD2 pidfd_getfd+KCMP原OFD绑定并写bound见证。main真正NativeFinal停点重核原Compute/两个WAL见证和原FD2，原released落盘之后才关闭Root自持write，使Rust可能读到真实EOF。aux的实际Begin action2没有Final，只在原FD2绑定之后释放Rootwrite，只属于System，不授PG normal资格。只有真实pidfd退出、原pipe HUP且队列为空才可退役，Root不read或偷取Rust日志。丢ACK/partial/失pin不重建、不补成功。当前未接出完整normal安全降限许可，不能把此组件当前容量当持续安全证明。
+
+e6553a旧5U虽绿但独审发现新1/admissionnil静默退出及Final/close未锁字段竞逐；新358f73明确拒且以q锁下独立dup task、锁外System核验、再q锁核同一对象，增加nil/noauthority/1000次并发race。f6e1eb补pending/bound两份完整文件见证，删除/改字节/同bytes换inode均拒。c3c1b8是格式工具导出失败导致的同旧图重复，不当新成果。69eaec是Linux准确tools镜像gofmt后新字节；90dde5最后补Recvmsg返回长度边界及实际peer-close失败反例，仍同8根，实际25sub/四个Linux&Darwin编译退出均0、无skip。
+
+这些U实测了Host kernel的pipe/SCM/退出/HUP及原始WAL文件机制，未构造真实同g Compute lease，也未在Guest中完成原RPC→Begin→NativeFinal链。禁止自签Guest Source、normal降限或E。真实Rust5源及实际PG组件另见Neon同日归档；PG17/18统一接口不因版本增加路径或自报字段。下一步只接真实Compute/Root/PG链及最终内存降限门槛。

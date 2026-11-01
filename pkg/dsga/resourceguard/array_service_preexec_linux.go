@@ -23,6 +23,7 @@ const arrayPreexecMagic = "NDSGLA01"
 const arrayPreexecACK = "NDSGLA1A"
 
 type arrayLaunchPin struct {
+	stderr        *normalPgStderrPin
 	pidfd, procfd int
 	pending       nativeBirthPending
 }

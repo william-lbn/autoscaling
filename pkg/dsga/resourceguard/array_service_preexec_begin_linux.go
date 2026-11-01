@@ -343,7 +343,7 @@ func (s *arrayNativeServices) handlePreexecBegin(ctx context.Context, conn *net.
 			return fmt.Errorf("original launcher changed before durable Begin")
 		}
 		if action == 2 {
-			return nil
+			return normalPgStderrBindBeginLocked(ctx, s, state, r, pin, action)
 		} // 辅助调用零WAL，不注入root-v1或保存PG Birth。
 		birthNonce, e := newNativeBirthNonce()
 		if e != nil {
@@ -367,6 +367,9 @@ func (s *arrayNativeServices) handlePreexecBegin(ctx context.Context, conn *net.
 			return errors.Join(ErrUnknown, e)
 		}
 		pin.pending = pending
+		if e = normalPgStderrBindBeginLocked(ctx, s, state, r, pin, action); e != nil {
+			return e
+		}
 		s.pinMu.Lock()
 		defer s.pinMu.Unlock()
 		if _, yes := s.launchPins[birthNonce]; yes {

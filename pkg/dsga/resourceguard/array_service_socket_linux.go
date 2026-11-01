@@ -102,6 +102,12 @@ func startArrayNativeServicesWithAdmission(parent context.Context, g *Guard, sea
 	}
 	ctx, cancel := context.WithCancel(parent)
 	s := &arrayNativeServices{admission: admission, guard: g, source: source, split: split, birth: birth, arrays: arrays, cancel: cancel, launchPins: map[string]*arrayLaunchPin{}}
+	if err = startNormalPgStderrSource(ctx, s, sealed); err != nil {
+		cancel()
+		birth.Close()
+		arrays.Close()
+		return nil, err
+	}
 	s.workers.Add(2)
 	go s.serve(ctx, birth, true)
 	go s.serve(ctx, arrays, false)
@@ -112,6 +118,7 @@ func (s *arrayNativeServices) close() {
 	s.birth.Close()
 	s.arrays.Close()
 	s.workers.Wait()
+	closeNormalPgStderrSource(s)
 	s.pinMu.Lock()
 	for _, pin := range s.launchPins {
 		pin.close()

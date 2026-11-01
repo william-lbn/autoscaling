@@ -1,0 +1,1 @@
+最终增量只读独审90dde5，对照已审358f73并先去gofmt噪声，无组件阻断。recv新增n/k边界、peer冷关闭反例；bound写后读回钉原witness，Final同时重核pending/bound，删除/改字节/同字节换inode各阶段均拒。其余接线只有格式变化，旧0/新1原admission与同原lease/FD2/Final释放合同不变。未重跑/重计8U；不提升为Source、持续normal或E。

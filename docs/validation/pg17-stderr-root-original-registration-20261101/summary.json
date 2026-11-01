@@ -1,0 +1,183 @@
+{
+  "scope": "ROOT_ORIGINAL_PG_STDERR_REGISTRATION_BIRTH_FINAL_COMPONENT_U_ONLY",
+  "final_source_lock_sha256": "7e200bec6199ae5af2178b497b2d9c5ea80c5a21befa46122d7c9d801ad25e93",
+  "final_result": {
+    "build_exit": 0,
+    "end_utc": "2026-11-01T15:18:30.727319+00:00",
+    "normal_authorized": false,
+    "native_executed": false,
+    "E": 0,
+    "u_exit": 0,
+    "cli_exit": 0,
+    "builder_exit": 0,
+    "darwin_exit": 0,
+    "builder-darwin_exit": 0,
+    "passed_roots": [
+      "TestNormalPgStderrEndpointsOriginalPipeOnly",
+      "TestNormalPgStderrExactFrame",
+      "TestNormalPgStderrFinalCloseRaceFailClosed",
+      "TestNormalPgStderrNewProtocolCannotLoseAuthority",
+      "TestNormalPgStderrNoSyntheticFinalSource",
+      "TestNormalPgStderrReceiveExactAncillary",
+      "TestNormalPgStderrRetireNeedsRealExitAndEmptyEOF",
+      "TestNormalPgStderrStageWitnessRejectsMutationOrReplacement"
+    ],
+    "passed_subtests": 25,
+    "missing_expected": []
+  },
+  "history": {
+    "first-five-U-has-review-gaps": {
+      "build_exit": 0,
+      "end_utc": "2026-11-01T14:56:01.381184+00:00",
+      "normal_authorized": false,
+      "native_executed": false,
+      "E": 0,
+      "u_exit": 0,
+      "cli_exit": 0,
+      "builder_exit": 0,
+      "darwin_exit": 0,
+      "builder-darwin_exit": 0,
+      "passed_roots": [
+        "TestNormalPgStderrEndpointsOriginalPipeOnly",
+        "TestNormalPgStderrExactFrame",
+        "TestNormalPgStderrNoSyntheticFinalSource",
+        "TestNormalPgStderrReceiveExactAncillary",
+        "TestNormalPgStderrRetireNeedsRealExitAndEmptyEOF"
+      ],
+      "passed_subtests": 18,
+      "missing_expected": []
+    },
+    "authority-and-close-race-fix": {
+      "build_exit": 0,
+      "end_utc": "2026-11-01T15:00:39.161684+00:00",
+      "normal_authorized": false,
+      "native_executed": false,
+      "E": 0,
+      "u_exit": 0,
+      "cli_exit": 0,
+      "builder_exit": 0,
+      "darwin_exit": 0,
+      "builder-darwin_exit": 0,
+      "passed_roots": [
+        "TestNormalPgStderrEndpointsOriginalPipeOnly",
+        "TestNormalPgStderrExactFrame",
+        "TestNormalPgStderrFinalCloseRaceFailClosed",
+        "TestNormalPgStderrNewProtocolCannotLoseAuthority",
+        "TestNormalPgStderrNoSyntheticFinalSource",
+        "TestNormalPgStderrReceiveExactAncillary",
+        "TestNormalPgStderrRetireNeedsRealExitAndEmptyEOF"
+      ],
+      "passed_subtests": 18,
+      "missing_expected": []
+    },
+    "bound-WAL-witness": {
+      "build_exit": 0,
+      "end_utc": "2026-11-01T15:08:07.374179+00:00",
+      "normal_authorized": false,
+      "native_executed": false,
+      "E": 0,
+      "u_exit": 0,
+      "cli_exit": 0,
+      "builder_exit": 0,
+      "darwin_exit": 0,
+      "builder-darwin_exit": 0,
+      "passed_roots": [
+        "TestNormalPgStderrEndpointsOriginalPipeOnly",
+        "TestNormalPgStderrExactFrame",
+        "TestNormalPgStderrFinalCloseRaceFailClosed",
+        "TestNormalPgStderrNewProtocolCannotLoseAuthority",
+        "TestNormalPgStderrNoSyntheticFinalSource",
+        "TestNormalPgStderrReceiveExactAncillary",
+        "TestNormalPgStderrRetireNeedsRealExitAndEmptyEOF",
+        "TestNormalPgStderrStageWitnessRejectsMutationOrReplacement"
+      ],
+      "passed_subtests": 24,
+      "missing_expected": []
+    },
+    "repeated-old-graph-no-new-claim": {
+      "build_exit": 0,
+      "end_utc": "2026-11-01T15:13:44.537047+00:00",
+      "normal_authorized": false,
+      "native_executed": false,
+      "E": 0,
+      "u_exit": 0,
+      "cli_exit": 0,
+      "builder_exit": 0,
+      "darwin_exit": 0,
+      "builder-darwin_exit": 0,
+      "passed_roots": [
+        "TestNormalPgStderrEndpointsOriginalPipeOnly",
+        "TestNormalPgStderrExactFrame",
+        "TestNormalPgStderrFinalCloseRaceFailClosed",
+        "TestNormalPgStderrNewProtocolCannotLoseAuthority",
+        "TestNormalPgStderrNoSyntheticFinalSource",
+        "TestNormalPgStderrReceiveExactAncillary",
+        "TestNormalPgStderrRetireNeedsRealExitAndEmptyEOF",
+        "TestNormalPgStderrStageWitnessRejectsMutationOrReplacement"
+      ],
+      "passed_subtests": 24,
+      "missing_expected": []
+    },
+    "linux-gofmt": {
+      "build_exit": 0,
+      "end_utc": "2026-11-01T15:15:17.553275+00:00",
+      "normal_authorized": false,
+      "native_executed": false,
+      "E": 0,
+      "u_exit": 0,
+      "cli_exit": 0,
+      "builder_exit": 0,
+      "darwin_exit": 0,
+      "builder-darwin_exit": 0,
+      "passed_roots": [
+        "TestNormalPgStderrEndpointsOriginalPipeOnly",
+        "TestNormalPgStderrExactFrame",
+        "TestNormalPgStderrFinalCloseRaceFailClosed",
+        "TestNormalPgStderrNewProtocolCannotLoseAuthority",
+        "TestNormalPgStderrNoSyntheticFinalSource",
+        "TestNormalPgStderrReceiveExactAncillary",
+        "TestNormalPgStderrRetireNeedsRealExitAndEmptyEOF",
+        "TestNormalPgStderrStageWitnessRejectsMutationOrReplacement"
+      ],
+      "passed_subtests": 24,
+      "missing_expected": []
+    },
+    "final-receive-error-boundary": {
+      "build_exit": 0,
+      "end_utc": "2026-11-01T15:18:30.727319+00:00",
+      "normal_authorized": false,
+      "native_executed": false,
+      "E": 0,
+      "u_exit": 0,
+      "cli_exit": 0,
+      "builder_exit": 0,
+      "darwin_exit": 0,
+      "builder-darwin_exit": 0,
+      "passed_roots": [
+        "TestNormalPgStderrEndpointsOriginalPipeOnly",
+        "TestNormalPgStderrExactFrame",
+        "TestNormalPgStderrFinalCloseRaceFailClosed",
+        "TestNormalPgStderrNewProtocolCannotLoseAuthority",
+        "TestNormalPgStderrNoSyntheticFinalSource",
+        "TestNormalPgStderrReceiveExactAncillary",
+        "TestNormalPgStderrRetireNeedsRealExitAndEmptyEOF",
+        "TestNormalPgStderrStageWitnessRejectsMutationOrReplacement"
+      ],
+      "passed_subtests": 25,
+      "missing_expected": []
+    }
+  },
+  "exact_owned6": {
+    "pkg/dsga/resourceguard/normal_pg_stderr_source_linux.go": "79f01a35970358bd1068d9ff3d2373cdf328e4ee09e07f08772fc5d01a05f850",
+    "pkg/dsga/resourceguard/normal_pg_stderr_source_linux_test.go": "634bb51952d05d92e891d0e7e83b6e4b47d9a0b6cae680bd300c068104c56d96",
+    "pkg/dsga/resourceguard/array_registry_linux.go": "6d03ac32196630c8eea7c425821b7c99900a2265267e605d72956cfd1023e3b0",
+    "pkg/dsga/resourceguard/array_service_preexec_linux.go": "e4eeee9cb5f093abe85344e6d77d4e32d088554912ed19aeedf37ff6d3c025e9",
+    "pkg/dsga/resourceguard/array_service_preexec_begin_linux.go": "a197f20de271f8df14ba97b2b5a64d5cd1582f4458c23380c8a7232e13b26c94",
+    "pkg/dsga/resourceguard/array_service_socket_linux.go": "9a828e25ff140efd0b0610bf210992c03afd3341817becb33771455f499174ce"
+  },
+  "actual_Guest_Source": false,
+  "actual_same_g_Compute_lease_RPC": false,
+  "actual_PG_NativeFinal_bound_pipe": false,
+  "normal_safe_lowering": false,
+  "E": 0
+}

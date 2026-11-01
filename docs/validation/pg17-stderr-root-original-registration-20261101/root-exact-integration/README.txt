@@ -1,0 +1,4 @@
+Root准确最终组合核验
+原Git c0ed935已含固定目录和CPU属性修复；仅叠加准确Root stderr六源，1583项Go/原汇编/C头输入。bd4ed9实际16race根84子项、CLI及Darwin编译全0，零skip。目标仅Root新8与直接相关CPU8，重复图不累计新增根。未夹P2准备器/runtime/DB/Wait或最新monitor诊断WIP。
+Root先前独审e655图发现新1缺admission隐式回退和Final早于q锁读lease，两处均已修；90dde5再补pending/bound完整witness、bytes和inode漂移反例及冷peer关闭slice边界。原旧绿/失败不回签。最新Kernel独审仅比较后继语义增量，短报告原SHA和文本保留于此。
+真实Root peer/原Compute lease/SCM pipe与Begin/Final闭环仍需实际原链验证。初始/Final pipe capacity只必要检查，不作为持续normal来源证明。aux action2没有NativeFinal，仅System；action1真实Final后释放Root自持write。退役只原pidfd退出与pipe HUP且空，不从WAL恢复FD，不消费Rust日志。完整Source/normal/Linux或K8s E仍未验收。

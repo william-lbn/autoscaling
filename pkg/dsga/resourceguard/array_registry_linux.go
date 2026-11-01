@@ -133,6 +133,11 @@ func runArrayRegistryBirthTraceSession(ctx context.Context, conn *net.UnixConn, 
 					return err
 				}
 			}
+			if phase == nativeFilterPMFinal {
+				if err := launchPin.stderr.verifyNativeFinal(call, guard, stage.state, driver.pidfd); err != nil {
+					return err
+				}
+			}
 			return stage.persist(call, phase, tr)
 		}
 		transcript, e, retire := nativeBirthTraceFlow(ctx, cfg, driver, tid)
@@ -154,6 +159,10 @@ func runArrayRegistryBirthTraceSession(ctx context.Context, conn *net.UnixConn, 
 		candidate := &arrayRegistryOriginal{pidfd: pidfd, procfd: procfd, pending: stage.snapshot.Pending, birthRef: stage.snapshot.Ref, reservation: transcript.Request}
 		// PM可能已connect等待数组服务，但释放本原flock/发布对象前不得让它预触。
 		if e = stage.released(ctx, transcript); e != nil {
+			candidate.close()
+			return transcript, e, retire
+		}
+		if e = launchPin.stderr.releasedOriginalFinal(); e != nil {
 			candidate.close()
 			return transcript, e, retire
 		}
