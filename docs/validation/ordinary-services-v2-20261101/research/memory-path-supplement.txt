@@ -1,0 +1,17 @@
+ordinary v2 直接内存/认证路径补充（只读，修正职责混用；不新增Root动作）
+
+已完整核neonvm-daemon/cmd主程序7811B以及另一个独立resource-guard/main，不能因同镜像含两ELF把它们当同服务。
+1. ordinary daemon实际/neonvm/bin/neonvmd --addr=0.0.0.0:25183只注册/cpu和/files/{path...}。没有任何/memory online/offline、virtio-mem、resource.sock proxy或认证resize/recovery代码。只降该ordinary daemon身份，不能降同镜像的独立dsga-resource-guard、broker、initial producer或Root A/R helper。
+2. 原/cpu GET为CPUScaler.ActiveCPUsCount→cpuSysfsState.OnlineCPUs，只读/sys/devices/system/cpu/online，NewCPUScaler无特权构造副作用；适用v2只读路径和cap0。managed PUT已先404，非Root不需新增RootCPU动作。旧unmanaged/ordinary1保持原Root和ReconcileOnlineCPU行为；本次不扩CPU策略矩阵。
+3. 真实PG中立资源HTTP：AS resourceguard.Client→compute_ctl HTTPS /dsg/v1/resource/*；Neon compute_tools/src/http/routes/dsg_resource.rs保原bytes/Bearer并限16KiB，经固定/run/neon-dsga/resource.sock转Root handler。Root http.go独立重验Ed25519/aud/scope/VM/compute/epoch，专用array scope还核method/path/bodySHA；Observe/Replay/repair/cancel保原nonce/Key/floor，不依赖PG活性、没有向25183降级。这个通道从来不经neonvmd，因此不应为daemon新增memory代理。
+4. /dsg/v1/memory和resize/status/cancel在dsg.rs走dsg_management_client/真实PG管理SQL。VM物理requested-size由Host vmguard/qmp.go Set与initial lifecycle实际QMP写/读持原进程来源；Guest hotplug由原kernel online_movable及KernelPrep原控制字段，回读由Root Kernel/physical reader。普通neonvmd不做online/offline/helpers，不应给其sysfs内存写权或抽象成任意Root内存动作。Root额度writer/array services必须继续同一原Guard，与ordinary v2身份变化隔离。
+5. 权限准确勘误：当前已提交旧ServeGuest及新sameg prepareNormalGuestResourceInstance的HTTP resource.sock都是root0755父目录+socket0666，业务权靠签名/持久fence；新admission的SO_PEERPIDFD peer核用于原Root准备probe，并在businessAllowed后仍交原JWT handler，不能误报为普通业务凭UID鉴权。0660实际是arrayFixedListener的native Birth/Populate：root:可信postgres主GID，原SO_PEERPIDFD+四UID/GID/Pending/原ELF再核。我们没有改任何mode、更没有重试过去拒绝的0666 birth方案。普通9 v2不得加入PG组或获得native连接权，不改ComputeUID/GID或SUID入口。
+6. Root业务依赖只一项确定被daemon降UID破坏：managed TLS的CheckManagementTLSDirectory要求real/euid0。原Runner monitorFiles按原受信watch/TLS mountPath，从..data读全部字节→固定25183 PUT/files，启动重试1s，之后每30s checksum核..data并重发。neonvmd固定/run/neon/management、原三名/64KiB、K8s AtomicWriter发布与..data checksum是现有供给/轮转合同。应将该同进程handler改成原daemon role clone pidfd/private lease鉴别的Rootbroker固定TLS代办，而不是改Root reader或给daemon Rootcap。固定动作既不接文件路径、uid/mode也不接memory命令。Secret仅有界内存处理，不进RootWAL/日志/模型收据；Root固定目录发布结果与checksum需要保原返回语义。实现前必须据最终真实TLS spec核定三名配置，不能假定任意extra file可上传。
+7. 3个RO FD替代方案尚不能直接代原目录：当前Runner轮询的是..data flat-dir checksum，compute.rs2535的已存在TLS watch按证书路径捕获更新后驱动ConfigurationPending/reload。那是当前可见通用证书重读证据，尚不能把它自动等同所有DSG管理server消费者；若采用FD必须明确全部实际cert/key/CA消费者如何重新接收原代次/重建server并保原轮转，不能持一次FD永远读旧证书。最小兼容先保原固定路径AtomicWriter模式，Root代办只移动写者。TLS代办使用专用短TLS锁，不能持resource flock/execMu/broker.mu去做网络/等待日志或回调PG；不增加resize热路径跳数。
+8. ordinary v2新最终身份/cap来源必须原Gate版本化：每角色原clone pidfd/private lease→真实exec-stop UID/GID/五cap集合/NNP/LL/BPF→released；任何可连接UDS/客户端传UID、currentPID、sourceSHA都不是权限。acpid action若fork shell client，那个peer是新子task，不等于原acpid；因此最窄严格适配需同一acpid daemon在固定power事件分支直接请求broker，或明确另审原OFD lineage能力，不能凭PPID认领。neonvmd TLS handler本来同进程，可直接维持原role peer，不需额外SUID。
+
+新增Root相关后继文件只应是固定TLS及固定原PID1 graceful动作，不加不存在的memory proxy/online/offline Root动作，也不增CPU动作。Root/Sameg/Array capwriters/Native申请者保持原源。当前捕获的sameg service文件是P2在途被审实物，已存逐hash，仅用于因果设计，不借本报告认证该WIP运行结果。
+
+原SO_MEMALLOC=46错判及Root撤回已写原主报告；不按此误判拒SO_BUSY_POLL或扩CPU范围。完整PF/driver/FUSE来源仍由Root准确61510 built-source审查，不将本非Root计划冒force来源已闭合。
+
+本轮源零写、目标服务零执行、新U/S/E均0；官方APK签名、准确source校验和readelf为环境/研究证据。当前方案可交Root裁定最小owner后再做实现/真实兼容验证，尚不可部署。

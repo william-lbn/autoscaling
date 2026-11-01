@@ -1,0 +1,26 @@
+{
+  "stable_id": "PG17-S-ORDINARY-V2-UDEV-MONITOR-001",
+  "status": "FAIL_COMPONENT_OR_FIXTURE",
+  "QEMU_container_exit": 0,
+  "Guest_exit": [
+    "1"
+  ],
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "actual_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "seconds": 4.24638640799094,
+  "powerbutton_commands": 0,
+  "actual_markers": {
+    "ORDINARY_EUDEV_PROCESSED_MULTICAST_PASS": 0
+  },
+  "new_nonRoot_programs": [
+    "eudev3.2.14"
+  ],
+  "Root_action_server_is_test_fixture": false,
+  "final_Gate_or_SIGNAL_scope_not_installed": true,
+  "PG_executed": false,
+  "normal_authorized": false,
+  "E": 0
+}

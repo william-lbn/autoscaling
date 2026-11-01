@@ -1,0 +1,14 @@
+{
+  "unit": "neon-ordinary-v2-packages-20261101t052616z-4c749d",
+  "nonce": "20261101T052616Z-4c749d",
+  "source_lock_sha256": "7b593086ae6bb9b28bddce3ffa18b098d35685a80f590cb3cc295dac16e71b91",
+  "base_image": "127.0.0.1:5001/neon/ordinary-v2-tools-base@sha256:bd15f43fe3c7fc4e3c09b8cab3595ec33b25ed8a7a4d9b47ee0d23556b0a9886",
+  "source_count": 18,
+  "limits": {
+    "CPUQuota": "200%",
+    "MemoryMax": "2G",
+    "BuildKit_memory": 2147483648,
+    "cpu_quota": 200000
+  },
+  "scope": "BOUND_PACKAGE_REBUILD_NO_SERVICES"
+}

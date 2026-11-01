@@ -1,0 +1,29 @@
+{
+  "base_image": "127.0.0.1:5001/neon/ordinary-v2-tools-base@sha256:bd15f43fe3c7fc4e3c09b8cab3595ec33b25ed8a7a4d9b47ee0d23556b0a9886",
+  "old_tools_image": "neon-test-only/pg17-rootdisk-tools:alpine3.19.7-20261030",
+  "old_tools_image_ID": "sha256:5d507d9bddffe506110264d45fbe7e62d6cc0e0d0e885c2226bd78866cfa42c9",
+  "source_inputs": {
+    "aports/acpid/APKBUILD": "840e421f48355be735859827ece9eeeda1a1d594c57a45da5ba02f1ed5a94bc2",
+    "aports/acpid/lfs64.patch": "933f4873f19a78805a3d12bcc3d864e4e21c497bdcf735a90bfb3156793cf7c4",
+    "aports/eudev/78-sound-card.rules_Import_ID_PATH_early.patch": "2c7a13821c51502cc0aec3d0bead08e70bb1f7816d87a94ac86a5f9061fcd96b",
+    "aports/eudev/APKBUILD": "ad8e8da0a8e3725579b0e947f2fa1314fa2e79b699200ab1943bf3b9f7169e1e",
+    "aports/eudev/default-rules.patch": "8d6dcd3acbc9c32e0c1ed071e9584a8c78f758198e0e6441c6a202fa60f2fbc9",
+    "aports/eudev/load-fbcon.patch": "52a1825ad7ce411a3abefc1ffde567dda16ab8f0963c9409ce0ccbb135cddd7e",
+    "aports/eudev/no-sgx.patch": "1ee3b6bfb1855ee7f7e26a8ce8101165986d06f8bee7bf7744999a945c109a09",
+    "recipe/Dockerfile.rebuild": "be11071fd9b977a3f2181864cf30af914559ffd260f5c55b48d8729b08fb1c60",
+    "recipe/README.txt": "9135cd18210b1f7b18de5108b16e64c4a781d0e822ee4ad1cc939ce49716875f",
+    "recipe/acpid-fixed-power-client.c": "e5aa6ad44a2abb2cdaa7622c314a1dbe4656a7a22dd56605356d96d586ca99ff",
+    "recipe/acpid-fixed-power-v1.patch": "17c1e5c29e61aee412ed413bed115523042945be71a44cc82812388f9220d3b4",
+    "recipe/build-acpid.sh": "0d0a22d52adf35e5d550a36d4e44d2baabcfb6867d60044f3c36e18af8dbca88",
+    "recipe/build-eudev.sh": "f20d412048bdc82deda00db9e3c47072afd9b7f1a7d861711890b46aea3485ea",
+    "recipe/build-tool-packages.lock.json": "1e9a0a1d0a9fe4ae75b13f0c58d55239ecbe416ae7d37c6946ea35705377e4d3",
+    "recipe/eudev-fixed-device-v1.patch": "071baca1109b7fbc1ce2e8e703080082e95b5b600b57f6e20c36bf485714c81e",
+    "recipe/inputs.lock.json": "f84baf4c1dad9ae3b86f134eda24ccfdb2921a2a939d5cb0011d89b2b8793ef7",
+    "recipe/test_compat.c": "0282dc2f85281cd379f2ec716932b641a5b96ed78564762a098bdc0ca1c07ef9",
+    "sources/acpid-2.0.34.tar.xz": "2d095c8cfcbc847caec746d62cdc8d0bff1ec1bc72ef7c674c721e04da6ab333",
+    "sources/eudev-3.2.14.tar.gz": "8da4319102f24abbf7fff5ce9c416af848df163b29590e666d334cc1927f006f"
+  },
+  "repo_HEAD": "c78f1e4dbd39ac106b6926e37462887fc49f33c0",
+  "scope": "CONTROLLED_PACKAGE_REBUILD_NOT_ROOT_AUTHORITY",
+  "no_service_executed": true
+}

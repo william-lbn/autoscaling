@@ -1,0 +1,44 @@
+/* TEST_ONLY: ordinary libudev listener must receive the actual processed event. */
+#define main ordinary_compat_other_cases
+#include "test_compat.c"
+#undef main
+#include <linux/netlink.h>
+int main(void) {
+    setbuf(stdout, 0);
+    int monitor = socket(AF_NETLINK, SOCK_RAW | SOCK_CLOEXEC, NETLINK_KOBJECT_UEVENT);
+    if (monitor < 0) fail("original Root libudev listener socket");
+    struct sockaddr_nl address = {.nl_family = AF_NETLINK, .nl_groups = 2};
+    if (bind(monitor, (struct sockaddr *)&address, sizeof address))
+        fail("original Root libudev listener group2");
+    char *a[] = {"/sbin/udevd", "--neon-fixed-devices-v1", 0};
+    int baseline = getenv("ORDINARY_MONITOR_ROOT_BASELINE") != NULL;
+    struct child c;
+    if (baseline) {
+        pid_t child = fork();
+        if (child < 0) fail("Root legacy control fork");
+        if (!child) { char *old[] = {"/sbin/udevd", 0}; execv(old[0], old); _exit(92); }
+        int original = syscall(SYS_pidfd_open, child, 0);
+        if (original < 0) fail("Root legacy original pidfd");
+        c = (struct child){child, original};
+    } else c = spawn(60004, a);
+    for (int i = 0; i < 100; i++) {
+        struct stat st;
+        if (!lstat("/run/udev/control", &st) && S_ISSOCK(st.st_mode)) break;
+        if (!live(c)) fail("actual nonRoot udevd startup");
+        usleep(25000);
+    }
+    char *trigger[] = {"/bin/udevadm", "trigger", "--action=add", "--subsystem-match=virtio-ports", 0};
+    root_command(trigger);
+    char *settle[] = {"/bin/udevadm", "settle", "--timeout=5", 0};
+    root_command(settle);
+    struct pollfd ready = {monitor, POLLIN, 0};
+    int rc = poll(&ready, 1, 1500);
+    char data[32768];
+    ssize_t n = rc == 1 ? recv(monitor, data, sizeof data, 0) : -1;
+    int seen = n > 0 && memmem(data, n, "NEON_FIXED_TEST=executed", 24);
+    close(monitor);
+    stop(c);
+    if (!seen) fail("actual processed udev multicast event missing despite completed event DB");
+    puts(baseline ? "ORDINARY_EUDEV_ROOT_LEGACY_MULTICAST_PASS" : "ORDINARY_EUDEV_PROCESSED_MULTICAST_PASS");
+    return 0;
+}

@@ -1,0 +1,120 @@
+{
+  "scope": "EXPLICIT_STATIC_ROLE2_AND_CONTROLLED_PACKAGES_COMPONENT_NOT_PRODUCTION",
+  "U_roots": 8,
+  "U_named_subcases": 21,
+  "S_passed_logical_roots": 1,
+  "S_FAILED_eudev_multicast_roots": 1,
+  "E": 0,
+  "Darwin_compile_exit": 0,
+  "production_installer_Root_actions_complete": false,
+  "ordinary_v2_production": "Unsupported",
+  "normal_authorized": false,
+  "unit_cases": [
+    {
+      "stable_id": "PG17-U-ORDINARY-V2-001",
+      "package": "github.com/neondatabase/autoscaling/neonvm-daemon/cmd",
+      "root": "TestOrdinaryTLSReplacementIsBoundedFixedAndUnavailable",
+      "layer": "unit",
+      "status": "PASS",
+      "source_lock_sha256": "34192c0ac691aca0ae83e0e8d0483df6f87a223184a8bc130cdc09eb710a901f",
+      "receipt": "U/final-b31679/export/test.json"
+    },
+    {
+      "stable_id": "PG17-U-ORDINARY-V2-002",
+      "package": "github.com/neondatabase/autoscaling/neonvm-daemon/cmd",
+      "root": "TestOrdinaryTLSReplacementRejectsPathsDuplicatesAndOversize",
+      "layer": "unit",
+      "status": "PASS",
+      "source_lock_sha256": "34192c0ac691aca0ae83e0e8d0483df6f87a223184a8bc130cdc09eb710a901f",
+      "receipt": "U/final-b31679/export/test.json"
+    },
+    {
+      "stable_id": "PG17-U-ORDINARY-V2-003",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "root": "TestNormalSystemOrdinaryV2AccountCollisionAndInstalledSet",
+      "layer": "unit",
+      "status": "PASS",
+      "source_lock_sha256": "34192c0ac691aca0ae83e0e8d0483df6f87a223184a8bc130cdc09eb710a901f",
+      "receipt": "U/final-b31679/export/test.json"
+    },
+    {
+      "stable_id": "PG17-U-ORDINARY-V2-004",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "root": "TestNormalSystemOrdinaryV2ExactStaticContract",
+      "layer": "unit",
+      "status": "PASS",
+      "source_lock_sha256": "34192c0ac691aca0ae83e0e8d0483df6f87a223184a8bc130cdc09eb710a901f",
+      "receipt": "U/final-b31679/export/test.json"
+    },
+    {
+      "stable_id": "PG17-U-ORDINARY-V2-005",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "root": "TestNormalSystemOrdinaryV2LegacyManifestBytesUntouched",
+      "layer": "unit",
+      "status": "PASS",
+      "source_lock_sha256": "34192c0ac691aca0ae83e0e8d0483df6f87a223184a8bc130cdc09eb710a901f",
+      "receipt": "U/final-b31679/export/test.json"
+    },
+    {
+      "stable_id": "PG17-U-ORDINARY-V2-006",
+      "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+      "root": "TestNormalSystemOrdinaryV2StrictNestedDecode",
+      "layer": "unit",
+      "status": "PASS",
+      "source_lock_sha256": "34192c0ac691aca0ae83e0e8d0483df6f87a223184a8bc130cdc09eb710a901f",
+      "receipt": "U/final-b31679/export/test.json"
+    },
+    {
+      "stable_id": "PG17-U-ORDINARY-V2-007",
+      "package": "github.com/neondatabase/autoscaling/vm-builder",
+      "root": "TestOrdinaryV2BuilderAccountPlanKeepsOriginalAndRejectsCollision",
+      "layer": "unit",
+      "status": "PASS",
+      "source_lock_sha256": "34192c0ac691aca0ae83e0e8d0483df6f87a223184a8bc130cdc09eb710a901f",
+      "receipt": "U/final-b31679/export/test.json"
+    },
+    {
+      "stable_id": "PG17-U-ORDINARY-V2-008",
+      "package": "github.com/neondatabase/autoscaling/vm-builder",
+      "root": "TestOrdinaryV2BuilderRejectsAccountAlias",
+      "layer": "unit",
+      "status": "PASS",
+      "source_lock_sha256": "34192c0ac691aca0ae83e0e8d0483df6f87a223184a8bc130cdc09eb710a901f",
+      "receipt": "U/final-b31679/export/test.json"
+    }
+  ],
+  "service_cases": [
+    {
+      "stable_id": "PG17-S-ORDINARY-V2-ACPI-001",
+      "layer": "native-component",
+      "status": "PASS_COMPONENT_ONLY",
+      "receipt": "S/final-acpi-5344a5/result.json",
+      "cases": [
+        "wrong UID new-mode refusal",
+        "actual nonRoot acpid fixed Root peer/packet original PIDFD credentials",
+        "single QMP event; exact one request/ACK; continued original daemon event loop"
+      ],
+      "Root_action_server": "TEST_ONLY original child/peer fixture; no actual PID1 graceful action",
+      "final_Gate_SIGNAL_scope": "not installed",
+      "legacy_alias": "PG17-S-ORDINARY-V2-PACKAGES-001 old0e46 partial DB+ACPI, not additional root"
+    },
+    {
+      "stable_id": "PG17-S-ORDINARY-V2-UDEV-MONITOR-001",
+      "layer": "native-component",
+      "status": "FAIL_KNOWN_NONROOT_COMPATIBILITY",
+      "receipt": "S/udev-explicit-EPERM-2a6948/result.json",
+      "observed": "processed event broadcast sendmsg EPERM with UID60004 cap0; original Root positive uses same kernel/ELF/listener",
+      "not_counted_as_passed": true
+    }
+  ],
+  "historical_DB_worker_and_ACPI_root": "0e46bb proves DB+ACPI only; does not prove full eudev compatibility",
+  "Root_legacy_positive": "ENV only, not new S root",
+  "clock_vector_neonvmd_services": "not executed this package; source research only; TLS request codec only",
+  "known_gaps": [
+    "eudev processed multicast requires actual supported sender/consumer provenance; cap0 fails; original libudev rejects every nonRoot UID, including internal unicast; NET_ADMIN alone insufficient",
+    "original Gate2 installer and actual five capability sets/stdio/SIGNAL contract not composed",
+    "Root fixed TLS AtomicWriter and PID1 graceful actions not connected",
+    "clock actual -U + capability/PHC/ports functional validation pending",
+    "TLS raw secrets never archived; no actual production credentials used"
+  ]
+}

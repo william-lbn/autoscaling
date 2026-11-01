@@ -1,0 +1,24 @@
+{
+  "archive_sha256": "8da4319102f24abbf7fff5ce9c416af848df163b29590e666d334cc1927f006f",
+  "file": "src/libudev/libudev-monitor.c",
+  "file_sha256": "e5cbc5e1e50a1e1635eea8e91c4cc3690034e9a5ed1673597caa8a3f5da1a461",
+  "lines644_647": [
+    {
+      "line": 644,
+      "text": "        cred = (struct ucred *)CMSG_DATA(cmsg);"
+    },
+    {
+      "line": 645,
+      "text": "        if (cred->uid != 0) {"
+    },
+    {
+      "line": 646,
+      "text": "                log_debug(\"sender uid=\"UID_FMT\", message ignored\", cred->uid);"
+    },
+    {
+      "line": 647,
+      "text": "                return NULL;"
+    }
+  ],
+  "plain_NET_ADMIN_not_a_full_compatibility_proof": true
+}

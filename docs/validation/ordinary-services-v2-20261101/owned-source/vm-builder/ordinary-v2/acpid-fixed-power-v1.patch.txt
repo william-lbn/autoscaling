@@ -1,0 +1,67 @@
+--- a/acpid.h
++++ b/acpid.h
+@@ -51,3 +51,7 @@
+ extern void clean_exit_with_status(int status);
+ 
+ #endif /* ACPID_H__ */
++
++/* Neon显式能力2；只由原daemon同进程发固定Root动作。 */
++extern int neon_fixed_power_mode;
++int neon_fixed_power_preflight(void);
+--- a/acpid.c
++++ b/acpid.c
+@@ -74,6 +74,10 @@
+ 
+ 	/* handle the commandline  */
+ 	handle_cmdline(&argc, &argv);
++	if (neon_fixed_power_mode && neon_fixed_power_preflight()) {
++		fprintf(stderr, "fixed-power nonRoot precondition failed\n");
++		return EXIT_FAILURE;
++	}
+ 
+ 	/* close any extra file descriptors */
+ 	close_fds();
+@@ -204,6 +208,7 @@
+ 		{"logevents", 0, 0, 'l'},
+ 		{"socketgroup", 1, 0, 'g'},
+ 		{"socketmode", 1, 0, 'm'},
++		{"neon-fixed-power-v1", 0, 0, 0x100},
+ 		{"socketfile", 1, 0, 's'},
+ 		{"nosocket", 0, 0, 'S'},
+ 		{"pidfile", 1, 0, 'p'},
+@@ -270,6 +275,9 @@
+ 		case 'm':
+ 			socketmode = strtol(optarg, NULL, 8);
+ 			break;
++		case 0x100:
++			neon_fixed_power_mode = 1;
++			break;
+ 		case 's':
+ 			socketfile = optarg;
+ 			break;
+--- a/event.c
++++ b/event.c
+@@ -36,6 +36,7 @@
+ #include <signal.h>
+ 
+ #include "acpid.h"
++#include "neon-fixed-power-client.c"
+ #include "log.h"
+ #include "sock.h"
+ #include "ud_socket.h"
+@@ -662,6 +663,15 @@
+ 	if (!strcmp(rule->action.cmd, dropaction))
+ 		return DROP_EVENT;
+ 
++	if (neon_fixed_power_mode) {
++                /* 固定规则仍由原RO inventory绑定；非power/任意命令不派发。 */
++                if (strcmp(rule->action.cmd, "/neonvm/bin/poweroff") ||
++                    strncmp(event, "button/power ", 13) || neon_fixed_power_request()) {
++                        acpid_log(LOG_ERR, "fixed Root graceful action remains unconfirmed");
++                        exit(EXIT_FAILURE);
++                }
++                return 0;
++        }
+ 	pid = fork();
+ 	switch (pid) {
+ 	case -1:

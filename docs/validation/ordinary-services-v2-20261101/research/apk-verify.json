@@ -1,0 +1,23 @@
+{
+  "command": [
+    "docker",
+    "run",
+    "--rm",
+    "--network",
+    "none",
+    "--read-only",
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges",
+    "-v",
+    "/data/neon-build/validation/ordinary-services-v2-research-20261101T044713Z-c6ff82:/research:ro",
+    "--entrypoint",
+    "/bin/sh",
+    "neon-test-only/pg17-rootdisk-tools:alpine3.19.7-20261030",
+    "-c",
+    "apk verify /research/apks/*.apk"
+  ],
+  "rc": 0,
+  "stdout": "/research/apks/acpid-2.0.34-r4.apk: 0 - OK\n/research/apks/busybox-1.36.1-r21.apk: 0 - OK\n/research/apks/chrony-4.5-r0.apk: 0 - OK\n/research/apks/eudev-3.2.14-r1.apk: 0 - OK\n/research/apks/eudev-libs-3.2.14-r1.apk: 0 - OK\n/research/apks/kmod-libs-31-r2.apk: 0 - OK\n/research/apks/libblkid-2.39.3-r0.apk: 0 - OK\n/research/apks/libcap-2.69-r1.apk: 0 - OK\n/research/apks/musl-1.2.4_git20230717-r6.apk: 0 - OK\n/research/apks/udev-init-scripts-35-r1.apk: 0 - OK\n",
+  "stderr": "WARNING: opening from cache https://dl-cdn.alpinelinux.org/alpine/v3.19/main: No such file or directory\nWARNING: opening from cache https://dl-cdn.alpinelinux.org/alpine/v3.19/community: No such file or directory\n",
+  "not_installed": true
+}

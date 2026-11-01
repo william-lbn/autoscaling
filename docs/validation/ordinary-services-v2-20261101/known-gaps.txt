@@ -1,0 +1,22 @@
+当前阶段结论：只可作为显式Unsupported默认组件审查，不是ordinary v2完整兼容或normal许可。
+
+1. 真实eudev cap0能更新事件DB，但processed multicast返回EPERM。新fixed模式不再静默吞错。
+   同图同ELF的旧Root模式真实正控通过。更重要的是原libudev-monitor.c644–647对所有
+   cred->uid!=0的包丢弃，包括内部unicast；单给NET_ADMIN不能证明可复用worker/消费者兼容。
+   本批未自行修改成UID白名单、未删广播、未扩大Root RPC。
+2. 最终ACPI真实S只证明受控实际daemon的fixed wire/原pidfd/逐包credentials与完整ACK后
+   单进程confirmed缓存。Root responder是DEV夹具，不执行真正PID1动作；新production Root
+   必须原clone lease+每packet credential+VMboot/lease at-most-once持久链，不能UID认领。
+3. 实际最终Gate/LL/五cap/stdio/SIGNAL尚未组合。保持最后SIGNAL scope；早期selfpid-only
+   假设已撤回(未据此改任何filter)。SO_MEMALLOC=46建议也已撤回，46是SO_BUSY_POLL；未实现
+   该错误限制。Kernel FUSE是y，仍需原FS/FD/mount/userns来源，不能写成compiled n。
+4. Docker source/build/test0不代表Darwin全轮均0：旧b56/c75实际Darwin1已与zero-overlay
+   27590 baseline6b8相同undefined arrayPopulateFile复现；最新c78f图b316 Darwin0独立归档。
+5. 982609的guest-deps首脚本因缓存目录已存在FileExists失败；cache-reuse独立脚本/结果保留。
+   首两个verify/native调用在其完成前的Assertion/MissingFile是ENV前置失败，未启动新Guest。
+6. 0e46历史PACKAGES根仅DB+ACPI机制，不计为fulludev或新增第二个S。最终S只计ACPI一根；
+   multicast根FAIL，Root旧模式baseline是ENV。E0，PG0，normal0。
+7. final package COPY时尚未加入test_acpi_compat.c，该文件是GNU12独立TEST_ONLY构建输入，
+   不属于eudev/acpid生产compile；旧20个COPY输入与当前字节逐项核对，provider ELF不转签。
+8. 原compat C测试用单线程fork后原pidfd_open，只有本父按原子对象wait；它不是生产
+   CLONE_PIDFD/原role出生producer。不要以本正控代替P2真实Gate。

@@ -1,0 +1,240 @@
+{
+  "scope": "TEST_ONLY_GUEST_RUNTIME_LINK_DEPS_NOT_FINAL_IMAGE",
+  "programs": {
+    "udevd": {
+      "source": "/data/neon-build/validation/ordinary-v2-packages-build-20261101T055458Z-91c0a4/export/eudev-root/sbin/udevd",
+      "sha256": "8321956e9bf05bce27e5a2c7267bdf95cda8bbb82e6e22d5105ea27699b02122",
+      "needed": [
+        "libblkid.so.1",
+        "libkmod.so.2",
+        "libc.musl-x86_64.so.1"
+      ]
+    },
+    "udevadm": {
+      "source": "/data/neon-build/validation/ordinary-v2-packages-build-20261101T055458Z-91c0a4/export/eudev-root/bin/udevadm",
+      "sha256": "482c30496f772f5e6e7756fdb358c03e9074dff5ceb6be6430c511cdad78d88f",
+      "needed": [
+        "libblkid.so.1",
+        "libkmod.so.2",
+        "libc.musl-x86_64.so.1"
+      ]
+    },
+    "acpid": {
+      "source": "/data/neon-build/validation/ordinary-v2-packages-build-20261101T055458Z-91c0a4/export/acpid-root/sbin/acpid",
+      "sha256": "ae7e3263070308efc5a8d06e0a87ee4b8ad115e6b5aa7e27583af64d520eaea0",
+      "needed": [
+        "libc.musl-x86_64.so.1"
+      ]
+    }
+  },
+  "libraries": {
+    "libblkid.so.1": {
+      "source": "libblkid-2.39.3-r0.apk:lib/libblkid.so.1.1.0",
+      "sha256": "9a6331d22fcb1f0d6760f2904fc572fe92e197da5f5329c3041492e16cf3484c",
+      "needed": [
+        "libc.musl-x86_64.so.1"
+      ]
+    },
+    "libc.musl-x86_64.so.1": {
+      "source": "musl-1.2.4_git20230717-r6.apk:lib/ld-musl-x86_64.so.1",
+      "sha256": "0ad2aef352c25467ccc2958c254d6c68e5925bc8265700fc109430f54db0b8e6",
+      "needed": []
+    },
+    "libcrypto.so.3": {
+      "source": "libcrypto3-3.1.8-r1.apk:lib/libcrypto.so.3",
+      "sha256": "17f1133f04c753e0c7f8727250122b4a47a488f768935022be625526351b6184",
+      "needed": [
+        "libc.musl-x86_64.so.1"
+      ]
+    },
+    "libkmod.so.2": {
+      "source": "kmod-libs-31-r2.apk:lib/libkmod.so.2.4.1",
+      "sha256": "edda6a481187efc5004d842582c2ecdc6083a6185187cd455cd2e83c27497198",
+      "needed": [
+        "libzstd.so.1",
+        "liblzma.so.5",
+        "libz.so.1",
+        "libcrypto.so.3",
+        "libc.musl-x86_64.so.1"
+      ]
+    },
+    "liblzma.so.5": {
+      "source": "xz-libs-5.4.5-r1.apk:usr/lib/liblzma.so.5.4.5",
+      "sha256": "7613b1c8d00c7b9dbc0cba8fda4ea0371cd742320033194a2067a3f6b55ed1e6",
+      "needed": [
+        "libc.musl-x86_64.so.1"
+      ]
+    },
+    "libz.so.1": {
+      "source": "zlib-1.3.1-r0.apk:lib/libz.so.1.3.1",
+      "sha256": "9993bddaff33bda56d4f130b7dce37598b8f701cbd0b2ede22908d5324bdbf77",
+      "needed": [
+        "libc.musl-x86_64.so.1"
+      ]
+    },
+    "libzstd.so.1": {
+      "source": "zstd-libs-1.5.5-r8.apk:usr/lib/libzstd.so.1.5.5",
+      "sha256": "272d943705a0fa3077e94f2fe809d5d86607b0d22267717c501d38d76925e4cf",
+      "needed": [
+        "libc.musl-x86_64.so.1"
+      ]
+    }
+  },
+  "apks": {
+    "libblkid-2.39.3-r0.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/libblkid-2.39.3-r0.apk",
+      "sha256": "262cf881ab0fdaf19eef1224c88e71192d574ce74cf7948f6084d15afc73051a",
+      "index_record": {
+        "repo": "main",
+        "C": "Q1LyDLh8BzUQXl4WIbi2WJ83CrZaU=",
+        "P": "libblkid",
+        "V": "2.39.3-r0",
+        "A": "x86_64",
+        "S": "92591",
+        "I": "200704",
+        "T": "Block device identification library from util-linux",
+        "U": "https://git.kernel.org/cgit/utils/util-linux/util-linux.git",
+        "L": "LGPL-2.1-or-later",
+        "o": "util-linux",
+        "m": "Natanael Copa <ncopa@alpinelinux.org>",
+        "t": "1701767420",
+        "c": "d13158c6049a06b8c5db406af36a7846f2d5e738",
+        "D": "so:libc.musl-x86_64.so.1",
+        "p": "so:libblkid.so.1=1.1.0"
+      }
+    },
+    "kmod-libs-31-r2.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/kmod-libs-31-r2.apk",
+      "sha256": "7ab73216b9b39adc2da6e4cf5ac718d51bde69c71716705f5def48a88d1d6fe3",
+      "index_record": {
+        "repo": "main",
+        "C": "Q1cfKVTS7vk6A85b3TV7+BkKJkvwE=",
+        "P": "kmod-libs",
+        "V": "31-r2",
+        "A": "x86_64",
+        "S": "39353",
+        "I": "94208",
+        "T": "Linux kernel module management utilities (libraries)",
+        "U": "http://git.kernel.org/?p=utils/kernel/kmod/kmod.git;a=summary",
+        "L": "LGPL-2.1-or-later",
+        "o": "kmod",
+        "m": "Natanael Copa <ncopa@alpinelinux.org>",
+        "t": "1701757885",
+        "c": "8f46aa2037828eb4d0347f66d4f8b5d163d3e05f",
+        "D": "so:libc.musl-x86_64.so.1 so:libcrypto.so.3 so:liblzma.so.5 so:libz.so.1 so:libzstd.so.1",
+        "p": "so:libkmod.so.2=2.4.1"
+      }
+    },
+    "musl-1.2.4_git20230717-r6.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/musl-1.2.4_git20230717-r6.apk",
+      "sha256": "24b7b3efa92247796f4cfecaf8d08f6a0bdead13aae9c2cf2f04a042bebb9647",
+      "index_record": {
+        "repo": "main",
+        "C": "Q12tPTXa984uyEi/MDFM6Hx4fhBNg=",
+        "P": "musl",
+        "V": "1.2.4_git20230717-r6",
+        "A": "x86_64",
+        "S": "408020",
+        "I": "663552",
+        "T": "the musl c library (libc) implementation",
+        "U": "https://musl.libc.org/",
+        "L": "MIT",
+        "o": "musl",
+        "m": "Timo Ter\u00e4s <timo.teras@iki.fi>",
+        "t": "1775835573",
+        "c": "e45b2348e7613bb06dc30a0ae0182f7e2c924768",
+        "p": "so:libc.musl-x86_64.so.1=1"
+      }
+    },
+    "zstd-libs-1.5.5-r8.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/zstd-libs-1.5.5-r8.apk",
+      "sha256": "0d3e2084d4e851e25b78d912234e0c06f3afeed1200b5ff08b63b4bb111080e6",
+      "index_record": {
+        "repo": "main",
+        "C": "Q1rsV7tnWXY3Q+Swjs4dglMIOiL7Q=",
+        "P": "zstd-libs",
+        "V": "1.5.5-r8",
+        "A": "x86_64",
+        "S": "372828",
+        "I": "729088",
+        "T": "Zstandard - Fast real-time compression algorithm (libraries)",
+        "U": "https://www.zstd.net/",
+        "L": "BSD-3-Clause OR GPL-2.0-or-later",
+        "o": "zstd",
+        "m": "Natanael Copa <ncopa@alpinelinux.org>",
+        "t": "1699808308",
+        "c": "d75565383012488c488240adb11f33cb9dfc9d59",
+        "D": "so:libc.musl-x86_64.so.1",
+        "p": "so:libzstd.so.1=1.5.5"
+      }
+    },
+    "xz-libs-5.4.5-r1.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/xz-libs-5.4.5-r1.apk",
+      "sha256": "a199e1170664ed97d8dd80231d187c3d8a42a6cd44b9fad9e49187d5fc61c8a2",
+      "index_record": {
+        "repo": "main",
+        "C": "Q1hAqKShiCYtWXsIStvXrrDFEKLk0=",
+        "P": "xz-libs",
+        "V": "5.4.5-r1",
+        "A": "x86_64",
+        "S": "114573",
+        "I": "237568",
+        "T": "Library and CLI tools for XZ and LZMA compressed files (libraries)",
+        "U": "https://tukaani.org/xz",
+        "L": "GPL-2.0-or-later AND Public-Domain AND LGPL-2.1-or-later",
+        "o": "xz",
+        "m": "Natanael Copa <ncopa@alpinelinux.org>",
+        "t": "1744036205",
+        "c": "175d681f4bc9a7968b726457128908264ff01ca3",
+        "D": "so:libc.musl-x86_64.so.1",
+        "p": "so:liblzma.so.5=5.4.5"
+      }
+    },
+    "zlib-1.3.1-r0.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/zlib-1.3.1-r0.apk",
+      "sha256": "dc3160a78662a70a84ed99dbe89cd0e40b8f29b78fe431f16c5f29c97f050466",
+      "index_record": {
+        "repo": "main",
+        "C": "Q11mV5+Yq5WHkhWIJP27rBrg7izKg=",
+        "P": "zlib",
+        "V": "1.3.1-r0",
+        "A": "x86_64",
+        "S": "53932",
+        "I": "110592",
+        "T": "A compression/decompression Library",
+        "U": "https://zlib.net/",
+        "L": "Zlib",
+        "o": "zlib",
+        "m": "Natanael Copa <ncopa@alpinelinux.org>",
+        "t": "1706012658",
+        "c": "9406f6fc5fca057d990eb0d260d75839eeb34d83",
+        "D": "so:libc.musl-x86_64.so.1",
+        "p": "so:libz.so.1=1.3.1"
+      }
+    },
+    "libcrypto3-3.1.8-r1.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/libcrypto3-3.1.8-r1.apk",
+      "sha256": "a00a1e717a0a262908d30833d0f4d60c29fd8763e5f6b380a3ee611b7e31c4f3",
+      "index_record": {
+        "repo": "main",
+        "C": "Q1J1c6biQo7kiO3CUNhrtfymqeGvc=",
+        "P": "libcrypto3",
+        "V": "3.1.8-r1",
+        "A": "x86_64",
+        "S": "1750402",
+        "I": "4624384",
+        "T": "Crypto library from openssl",
+        "U": "https://www.openssl.org/",
+        "L": "Apache-2.0",
+        "o": "openssl",
+        "m": "Ariadne Conill <ariadne@dereferenced.org>",
+        "t": "1759520490",
+        "c": "59dc6ad54cd12356f84ae96ea096962101534141",
+        "D": "so:libc.musl-x86_64.so.1",
+        "p": "so:libcrypto.so.3=3"
+      }
+    }
+  },
+  "musl_interpreter_sha256": "0ad2aef352c25467ccc2958c254d6c68e5925bc8265700fc109430f54db0b8e6",
+  "ELFs_not_executed": true
+}

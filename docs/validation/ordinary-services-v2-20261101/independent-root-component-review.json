@@ -1,0 +1,56 @@
+{
+  "reviewer": "Root",
+  "utc": "2026-11-01T07:09:18.609237+00:00",
+  "status": "PASS_FOUNDATION_AND_ACPI_COMPONENT_WITH_KNOWN_UDEV_FAILURE_NOT_PRODUCTION",
+  "owned18": {
+    "pkg/dsga/resourceguard/normal_system_ordinary_v2.go": "b9cfe9235481606b1604eda9c1897c581b31ab51827b0098a1b5e8024cbeca73",
+    "pkg/dsga/resourceguard/normal_system_ordinary_v2_test.go": "2ade95185f465087172a32106318081d5ca0a522d823c830b6980310a6583c32",
+    "vm-builder/ordinary_v2.go": "586fe6772c002ff79193496aded6799e84e01337fbd123a4b5784af4e26e2134",
+    "vm-builder/ordinary_v2_test.go": "8945353ef21702d7caac81128df1a415c7adb064882fbb2b5ee8d099f71ca731",
+    "neonvm-daemon/cmd/ordinary_tls_client.go": "ef10b54a93029f8aaa2176703d845d713c1d5dd89ad66b41a8d57989d3e6b2d9",
+    "neonvm-daemon/cmd/ordinary_tls_client_test.go": "e8cb55880fa503b3241b751c4cfe45f5d4d4deafae36411409c39f274ee8b8a9",
+    "vm-builder/ordinary-v2/Dockerfile.rebuild": "be11071fd9b977a3f2181864cf30af914559ffd260f5c55b48d8729b08fb1c60",
+    "vm-builder/ordinary-v2/README.txt": "462aea2c0a4c25c00109c55f9f3c38b0f92b65c498a38a17c7be8fa0da9405a8",
+    "vm-builder/ordinary-v2/acpid-fixed-power-client.c": "acfeabc4010aaf5a0f3d792654e5600e55d34f86311894e89f263abe232ec277",
+    "vm-builder/ordinary-v2/acpid-fixed-power-v1.patch": "17c1e5c29e61aee412ed413bed115523042945be71a44cc82812388f9220d3b4",
+    "vm-builder/ordinary-v2/build-acpid.sh": "0d0a22d52adf35e5d550a36d4e44d2baabcfb6867d60044f3c36e18af8dbca88",
+    "vm-builder/ordinary-v2/build-eudev.sh": "f20d412048bdc82deda00db9e3c47072afd9b7f1a7d861711890b46aea3485ea",
+    "vm-builder/ordinary-v2/build-tool-packages.lock.json": "1e9a0a1d0a9fe4ae75b13f0c58d55239ecbe416ae7d37c6946ea35705377e4d3",
+    "vm-builder/ordinary-v2/eudev-fixed-device-v1.patch": "349bb486a28d04d3f1207861c3b23cb77f319df673b1983bb0643966e545880e",
+    "vm-builder/ordinary-v2/inputs.lock.json": "1c6a5c6124f215391294d49532688e265663cde6b5b06032505553a3cb70159e",
+    "vm-builder/ordinary-v2/test_acpi_compat.c": "c2f51b23105c1aacef42b0468ecd502e8d09d300e96034bb4d50a581fb6273e8",
+    "vm-builder/ordinary-v2/test_compat.c": "fd9d66b7b9829efcdf36f320b3740fd0a27be0393d434a9b290cdb689bd2edcc",
+    "vm-builder/ordinary-v2/test_udev_monitor.c": "e6af58c3082b5abb2940817d55825188018a6ea8f85ca5f36f946a9a35083eb1"
+  },
+  "reviewed": [
+    "fixed nine numeric identities with name/UID/GID/primaryGID/supplementary collision rejection",
+    "Builder helper emits plan only and does not mutate existing rootdisk or select old production mode",
+    "strict bounded TLS pure DTO has no dial/secret log/Root authority",
+    "explicit C flags retain legacy default paths; new wrongUID/cap/NNP conditions reject",
+    "fixed ACPI same main sends exact16B with total deadline, full ACK then confirmed cache; no generic exec/kill",
+    "source locks use exact official archives/Alpine patch/toolchain; preserved original libc/libudev and exact guest tuple",
+    "actual ACPI Root responder is a model; no PID1 shutdown or full Gate/SIGNAL source proved",
+    "eudev cap0 processed broadcast is a real failure, internal original netlink also blocked; NETADMIN alone cannot fix original libudev Root-only receiver",
+    "newudev privsep revision and live Gate/Root TLS work explicitly excluded"
+  ],
+  "U": {
+    "roots": 8,
+    "subcases": 21,
+    "Darwin_compile_exit": 0
+  },
+  "S": {
+    "passed_logical_roots": 1,
+    "known_failed_eudev_roots": 1,
+    "not_checkpoint_sum": true
+  },
+  "limits": [
+    "RequireNormalSystemOrdinaryV2Production remains explicit Unsupported",
+    "no full static device/memory lifecycle/clock service acceptance",
+    "future actor/stdio/capability/Root/kernel-event producers still missing",
+    "not complete normal/Linux/K8s acceptance"
+  ],
+  "normal_authorized": false,
+  "all_sources_closed": false,
+  "E": 0,
+  "K8s_E": 0
+}

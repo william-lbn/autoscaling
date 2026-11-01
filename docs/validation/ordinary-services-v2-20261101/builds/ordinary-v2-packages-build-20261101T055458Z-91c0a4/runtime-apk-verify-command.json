@@ -1,0 +1,18 @@
+[
+  "docker",
+  "run",
+  "--rm",
+  "--pull=never",
+  "--network=none",
+  "--read-only",
+  "--cpus=1",
+  "--memory=256m",
+  "--memory-swap=256m",
+  "-v",
+  "/data/neon-build/validation/ordinary-v2-packages-build-20261101T055458Z-91c0a4/runtime-apks:/apks:ro",
+  "--entrypoint",
+  "/bin/sh",
+  "neon-test-only/pg17-rootdisk-tools:alpine3.19.7-20261030",
+  "-c",
+  "for p in /apks/*.apk; do apk verify \"$p\" || exit; done"
+]

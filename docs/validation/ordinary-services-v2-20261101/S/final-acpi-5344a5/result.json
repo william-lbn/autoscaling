@@ -1,0 +1,28 @@
+{
+  "stable_id": "PG17-S-ORDINARY-V2-ACPI-001",
+  "status": "PASS_COMPONENT_ONLY",
+  "QEMU_container_exit": 0,
+  "Guest_exit": [
+    "0"
+  ],
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "actual_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "seconds": 4.0799682130164,
+  "powerbutton_commands": 1,
+  "actual_markers": {
+    "ORDINARY_NEGATIVE_WRONG_UID_PASS": 1,
+    "ORDINARY_ACPI_SAME_DAEMON_PIDFD_PACKET_PASS": 1,
+    "ORDINARY_ACPI_COMPAT_PASS_NOT_GATE_OR_NORMAL": 1
+  },
+  "new_nonRoot_programs": [
+    "acpid2.0.34"
+  ],
+  "Root_action_server_is_test_fixture": true,
+  "final_Gate_or_SIGNAL_scope_not_installed": true,
+  "PG_executed": false,
+  "normal_authorized": false,
+  "E": 0
+}

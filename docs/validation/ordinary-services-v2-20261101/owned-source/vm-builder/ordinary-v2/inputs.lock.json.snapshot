@@ -1,0 +1,216 @@
+{
+  "protocol_version": 1,
+  "scope": "ordinary-v2-rebuild-inputs-not-authority",
+  "alpine_image": {
+    "tag": "3.19.7",
+    "amd64_manifest": "sha256:06793e3dc83d9a0733c70010283ed1735ff75fc0d40e3eac330aaef41a2f5049"
+  },
+  "sources": {
+    "sources/eudev-3.2.14.tar.gz": {
+      "url": "https://github.com/eudev-project/eudev/releases/download/v3.2.14/eudev-3.2.14.tar.gz",
+      "sha256": "8da4319102f24abbf7fff5ce9c416af848df163b29590e666d334cc1927f006f",
+      "sha512": "1e7593b53c5508a99fe7ff5d24d1d09b3753d9cfba086e7d8cc6ab80cc88013ec687dc4f1eac7b7889051f4e5fd5c40d2b87f5f2d948479d679c8836014d08e0",
+      "bytes": 2188254,
+      "APKBUILD_SHA512_matched": true
+    },
+    "aports/eudev/default-rules.patch": {
+      "url": "https://raw.githubusercontent.com/alpinelinux/aports/2b3d3c0670075a0edd46ed0c8a57688e5df92a12/main/eudev/default-rules.patch",
+      "sha256": "8d6dcd3acbc9c32e0c1ed071e9584a8c78f758198e0e6441c6a202fa60f2fbc9",
+      "sha512": "683e3c26ca4f058303f8db7d4977e436d728386ee6866719c4f11ff31db27572d3f486f51d3173310e1ec2cf995fa4c396f2415bdf45dabdd80e6e55e798a314",
+      "bytes": 300,
+      "APKBUILD_SHA512_matched": true
+    },
+    "aports/eudev/load-fbcon.patch": {
+      "url": "https://raw.githubusercontent.com/alpinelinux/aports/2b3d3c0670075a0edd46ed0c8a57688e5df92a12/main/eudev/load-fbcon.patch",
+      "sha256": "52a1825ad7ce411a3abefc1ffde567dda16ab8f0963c9409ce0ccbb135cddd7e",
+      "sha512": "ff5928fd555e095d9f3234dd004ac4c5925405d308777e9b018e8e03112cd109935b51d75a3bc4a2a1018eb486e8a5e5ef6ee978860002a8fff93b116e9721f5",
+      "bytes": 532,
+      "APKBUILD_SHA512_matched": true
+    },
+    "aports/eudev/no-sgx.patch": {
+      "url": "https://raw.githubusercontent.com/alpinelinux/aports/2b3d3c0670075a0edd46ed0c8a57688e5df92a12/main/eudev/no-sgx.patch",
+      "sha256": "1ee3b6bfb1855ee7f7e26a8ce8101165986d06f8bee7bf7744999a945c109a09",
+      "sha512": "1558800e4132ed2c10b37805fca044ff3129cdfebec71d3e758143fab9ffda824e86d52960926a9042b21fc22f0cda8fe6690484913bd7c3dc4436af92923efe",
+      "bytes": 713,
+      "APKBUILD_SHA512_matched": true
+    },
+    "aports/eudev/78-sound-card.rules_Import_ID_PATH_early.patch": {
+      "url": "https://raw.githubusercontent.com/alpinelinux/aports/2b3d3c0670075a0edd46ed0c8a57688e5df92a12/main/eudev/78-sound-card.rules_Import_ID_PATH_early.patch",
+      "sha256": "2c7a13821c51502cc0aec3d0bead08e70bb1f7816d87a94ac86a5f9061fcd96b",
+      "sha512": "8872f124267485d682dea9c7c47aaa8c228aadef90981c430af7ca7f7025b344d2c3c07c653241190a3f44096aa1d3aff990dd05210f5b278d999d6fede659b5",
+      "bytes": 1604,
+      "APKBUILD_SHA512_matched": true
+    },
+    "sources/chrony-4.5.tar.gz": {
+      "url": "https://chrony-project.org/releases/chrony-4.5.tar.gz",
+      "sha256": "19fe1d9f4664d445a69a96c71e8fdb60bcd8df24c73d1386e02287f7366ad422",
+      "sha512": "58a449e23186da799064b16ab16f799c1673296984b152b43e87c620d86e272c55365e83439d410fc89e4e0ba0befd7d5c625eac78a6665813b7ea75444f71b5",
+      "bytes": 620287,
+      "APKBUILD_SHA512_matched": true
+    },
+    "aports/chrony/max_resolve_interval.patch": {
+      "url": "https://raw.githubusercontent.com/alpinelinux/aports/469ed3ec8fb3d7f787d17deb862d911994f9ea5e/main/chrony/max_resolve_interval.patch",
+      "sha256": "9de1b79445396a0ef626b9ac8f54a42183df5a838355b1a50b27635478e9f7bc",
+      "sha512": "f6f2056d1e70785f66b0fbec6e3ec9b0184785eac262e28e2a2c4d5a49762bf780ed7c2c7990a93f6ef063c167cea01fb8828705be558d0b8ff8c07d6962239f",
+      "bytes": 353,
+      "APKBUILD_SHA512_matched": true
+    },
+    "sources/acpid-2.0.34.tar.xz": {
+      "url": "https://distfiles.alpinelinux.org/distfiles/v3.19/acpid-2.0.34.tar.xz",
+      "sha256": "2d095c8cfcbc847caec746d62cdc8d0bff1ec1bc72ef7c674c721e04da6ab333",
+      "sha512": "2bf92295b55bb44fe83074b3e0c1ae639f63edaeea84b2184ae95b38852be40f380d5413110b8c0fcb2efc2ec01bf4764e1dcb97022fc724bebbfc35c0b63c81",
+      "bytes": 159924,
+      "APKBUILD_SHA512_matched": true
+    },
+    "aports/acpid/lfs64.patch": {
+      "url": "https://raw.githubusercontent.com/alpinelinux/aports/87196a56fc7fcb37e233696399cd9702da9caba1/main/acpid/lfs64.patch",
+      "sha256": "933f4873f19a78805a3d12bcc3d864e4e21c497bdcf735a90bfb3156793cf7c4",
+      "sha512": "a2ba48439f94a079a5d9a4295306b1478a2e025ba32c6b45b46b1b718b209966c2cea2c46c08d17a7d627418e602c4de255f652721d4219bf0c3fff5a8607ad7",
+      "bytes": 252,
+      "APKBUILD_SHA512_matched": true
+    },
+    "sources/busybox-1.35.0.tar.bz2": {
+      "url": "https://busybox.net/downloads/busybox-1.35.0.tar.bz2",
+      "sha256": "faeeb244c35a348a334f4a59e44626ee870fb07b6884d68c10ae8bc19f83a694",
+      "sha512": "62b2e718b6669271380445ed6db249618d777a4e8d5e6d879fa39ffee43887b6a2e93ceef874c615c565ad492deb772b03a19b7475c403202741579fb151e16a",
+      "bytes": 2480624,
+      "APKBUILD_SHA512_matched": false
+    },
+    "sources/vector-x86_64-unknown-linux-musl.tar.gz": {
+      "url": "https://packages.timber.io/vector/0.26.0/vector-x86_64-unknown-linux-musl.tar.gz",
+      "error": "HTTP Error 403: Forbidden"
+    }
+  },
+  "packages": {
+    "apks/acpid-2.0.34-r4.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/acpid-2.0.34-r4.apk",
+      "sha256": "bee2c3c07bf620a36a6c41b54bdc509f020b37e7230f1c4dd51228593356fb62",
+      "bytes": 34070,
+      "seconds": 0.6853116089769173,
+      "status": 200,
+      "content_type": "application/octet-stream"
+    },
+    "apks/busybox-1.36.1-r21.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/busybox-1.36.1-r21.apk",
+      "sha256": "6e665ec49a942593dd516620314f8c82d940fd7c769dfa2894c7e6bb864e2a1c",
+      "bytes": 506980,
+      "seconds": 2.1028154939995147,
+      "status": 200,
+      "content_type": "application/octet-stream"
+    },
+    "apks/chrony-4.5-r0.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/chrony-4.5-r0.apk",
+      "sha256": "bfa03a5276cd54452ee4121505340b6f2cacf276f364ec3538feba380367b738",
+      "bytes": 165952,
+      "seconds": 1.2044951579882763,
+      "status": 200,
+      "content_type": "application/octet-stream"
+    },
+    "apks/eudev-3.2.14-r1.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/eudev-3.2.14-r1.apk",
+      "sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "bytes": 264738,
+      "seconds": 0.9067543639976066,
+      "status": 200,
+      "content_type": "application/octet-stream"
+    },
+    "apks/eudev-libs-3.2.14-r1.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/eudev-libs-3.2.14-r1.apk",
+      "sha256": "7f836c515bad8998158938a8c90ccf79b6738162d74d8fe9c9ce45652f817ea9",
+      "bytes": 26399,
+      "seconds": 0.47233499100548215,
+      "status": 200,
+      "content_type": "application/octet-stream"
+    },
+    "apks/kmod-libs-31-r2.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/kmod-libs-31-r2.apk",
+      "sha256": "7ab73216b9b39adc2da6e4cf5ac718d51bde69c71716705f5def48a88d1d6fe3",
+      "bytes": 39353,
+      "seconds": 0.43327693300670944,
+      "status": 200,
+      "content_type": "application/octet-stream"
+    },
+    "apks/libblkid-2.39.3-r0.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/libblkid-2.39.3-r0.apk",
+      "sha256": "262cf881ab0fdaf19eef1224c88e71192d574ce74cf7948f6084d15afc73051a",
+      "bytes": 92591,
+      "seconds": 0.5751547109975945,
+      "status": 200,
+      "content_type": "application/octet-stream"
+    },
+    "apks/libcap-2.69-r1.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/libcap-2.69-r1.apk",
+      "sha256": "a3fd75659d5b8ce01a499af0aab62b2606b7e8f612c3c75da62a72e68aa8c677",
+      "bytes": 1507,
+      "seconds": 0.8575572810077574,
+      "status": 200,
+      "content_type": "application/octet-stream"
+    },
+    "apks/musl-1.2.4_git20230717-r6.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/musl-1.2.4_git20230717-r6.apk",
+      "sha256": "24b7b3efa92247796f4cfecaf8d08f6a0bdead13aae9c2cf2f04a042bebb9647",
+      "bytes": 408020,
+      "seconds": 1.6458314900228288,
+      "status": 200,
+      "content_type": "application/octet-stream"
+    },
+    "apks/udev-init-scripts-35-r1.apk": {
+      "url": "https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/udev-init-scripts-35-r1.apk",
+      "sha256": "c372a4c74d4a0781b1c9ae5253972ea6646666a62ab7caa475c1524c09dd339b",
+      "bytes": 1490,
+      "seconds": 0.39356610301183537,
+      "status": 200,
+      "content_type": "application/octet-stream"
+    },
+    "aports/eudev/APKBUILD": {
+      "url": "https://raw.githubusercontent.com/alpinelinux/aports/2b3d3c0670075a0edd46ed0c8a57688e5df92a12/main/eudev/APKBUILD",
+      "sha256": "ad8e8da0a8e3725579b0e947f2fa1314fa2e79b699200ab1943bf3b9f7169e1e",
+      "bytes": 4082,
+      "seconds": 0.6482057819957845,
+      "status": 200,
+      "content_type": "text/plain; charset=utf-8"
+    },
+    "aports/chrony/APKBUILD": {
+      "url": "https://raw.githubusercontent.com/alpinelinux/aports/469ed3ec8fb3d7f787d17deb862d911994f9ea5e/main/chrony/APKBUILD",
+      "sha256": "dfd758e641cb3dc17be270bfcbb2679856a436637813a97e26b77f24fde98d31",
+      "bytes": 3090,
+      "seconds": 0.5729775330109987,
+      "status": 200,
+      "content_type": "text/plain; charset=utf-8"
+    },
+    "aports/acpid/APKBUILD": {
+      "url": "https://raw.githubusercontent.com/alpinelinux/aports/87196a56fc7fcb37e233696399cd9702da9caba1/main/acpid/APKBUILD",
+      "sha256": "840e421f48355be735859827ece9eeeda1a1d594c57a45da5ba02f1ed5a94bc2",
+      "bytes": 2606,
+      "seconds": 0.6435717589920387,
+      "status": 200,
+      "content_type": "text/plain; charset=utf-8"
+    }
+  },
+  "patches": {
+    "acpid-fixed-power-v1.patch": "17c1e5c29e61aee412ed413bed115523042945be71a44cc82812388f9220d3b4",
+    "eudev-fixed-device-v1.patch": "349bb486a28d04d3f1207861c3b23cb77f319df673b1983bb0643966e545880e"
+  },
+  "own_sources": {
+    "acpid-fixed-power-client.c": "acfeabc4010aaf5a0f3d792654e5600e55d34f86311894e89f263abe232ec277"
+  },
+  "candidate_vector": {
+    "official_Github_release_url": "https://github.com/vectordotdev/vector/releases/tag/v0.26.0",
+    "asset_url": "https://github.com/vectordotdev/vector/releases/download/v0.26.0/vector-0.26.0-x86_64-unknown-linux-musl.tar.gz",
+    "old_fixed_timber_url_failed_403_preserved": true,
+    "archive_sha256": "c6edc6e973633949a1adb05d6d62335d9d96a954d751714d9b544450dc9491a1",
+    "bytes": 39416828,
+    "ELF_sha256": "f35405a7a28578b25328ce153a8e14490dece3a5e9d37912467c33a1a0f2538d",
+    "ELF_bytes": 114794720,
+    "ELF_path": "/data/neon-build/validation/ordinary-services-v2-research-20261101T044713Z-c6ff82/package-files-v2/vector-0.26.0/bin/vector"
+  },
+  "not_certified_final_ELF": true,
+  "no_original_Gate_installer_or_Root_actions": true,
+  "Root_action_endpoint": {
+    "path": "/run/neon-dsga/ordinary-acpi.sock",
+    "owner_uid": 0,
+    "gid": 60006,
+    "mode": "0660",
+    "Root_requires_SO_PASSCRED_original_peer_PIDFD_and_role_clone": true
+  }
+}
