@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "scope": "INITIAL_STOCK_LIFECYCLE_OPAQUE_COMPONENT_ACTUAL_KVM_ONLY",
+  "code_commit": "a3c3497a8c0ed0240c0a52189cbf428138781310",
+  "source4": {
+    "pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go": "5f53b80ab30674d2e4787741c96f71a39e7170a839c120ce67aa7d3bbb126111",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_linux.go": "379eca71543b2328ca0e03351d07cced1800f301bca678d4d7db427c07b50eff",
+    "pkg/dsga/resourceguard/normal_filesystem_memory_stock_observation_linux_test.go": "161b672d557d90121f0025039df53bf9a862a3349de4e03a02c5bf81281598b2",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_observation_linux_test.go": "0985d0ecba581aebc368ded128eebdee5a75f1f40e822dbfe193c0de29ec5e6b"
+  },
+  "actually_tested_PostgreSQL_versions": [],
+  "target_PostgreSQL_versions": [
+    17
+  ],
+  "U": {
+    "roots": 30,
+    "subtests": 148,
+    "skips": 0,
+    "method": "replace final four roots by stable Test ID; do not add parent and increment counts",
+    "proof": "unit-union-proof.json"
+  },
+  "S": [
+    {
+      "stable_id": "NEON-S-STOCK-UDEV-PREPARATION-001",
+      "status": "PASS_COMPONENT_ONLY",
+      "nonce": "normal-stock-preparation-native-20261101T180719Z-fb3c65-native",
+      "actual_KVM": true,
+      "Guest_vcpus": 2,
+      "original_Ready_s": 25,
+      "original_handshake_s": 30,
+      "actual_R1_alive_and_pidfd_exited_fresh_refs_match": true,
+      "targets_are_inventory_objects_not_test_cases": 198,
+      "Host_API_is_model": true,
+      "ordinary_nine_roles_executed": false,
+      "PostgreSQL_executed": false
+    }
+  ],
+  "continuous_Source_qualification_complete": false,
+  "safe_normal_decrease_accepted": false,
+  "Linux_E": 0,
+  "K8s_E": 0,
+  "original_receipts": {
+    "phase-state.json": {
+      "sha256": "327faf4f3cddcfcc8a9b0804842723bcea70a07233799e270ef9c15c832d87f1",
+      "bytes": 8152
+    },
+    "unit-union-proof.json": {
+      "sha256": "2fd7590589827c4194be4e4c92c69e59d42e38126707ead080969c03333e1f7e",
+      "bytes": 47677
+    },
+    "source-freeze.json": {
+      "sha256": "1d5b02eddeb582bcf0f4ca59567db4c669a6562fd29f5a44bf328792c406893a",
+      "bytes": 806
+    },
+    "independent-implementation-review.json": {
+      "sha256": "863994aa9702390e60626ec15e33ffa5c49638c6c1bd676f35c434c8afad6083",
+      "bytes": 1281
+    },
+    "final-S-review-cleared.json": {
+      "sha256": "fbf029cb96c060c312c810ae13003f4235228c6dc6dabe48f7813f89371a93c3",
+      "bytes": 3168
+    }
+  },
+  "limits": "Initial preparation and opaque lifecycle only; production CLI compiled, DEV compute standin, no full nine-role/PG/source qualification, no normal or final E acceptance"
+}
