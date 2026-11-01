@@ -1,0 +1,152 @@
+diff --git a/neonvm-daemon/cmd/resource-guard/main.go b/neonvm-daemon/cmd/resource-guard/main.go
+index 0560af7..d81d2af 100644
+--- a/neonvm-daemon/cmd/resource-guard/main.go
++++ b/neonvm-daemon/cmd/resource-guard/main.go
+@@ -27,6 +27,9 @@ func run() error {
+ 	if len(os.Args) > 1 && os.Args[1] == "launch-postgres" {
+ 		return resourceguard.ExecPostgres(os.Args[2:])
+ 	}
++	if len(os.Args) == 2 && os.Args[1] == "ordinary-v2-device-check" {
++		return resourceguard.RunNormalSystemOrdinaryV2DeviceCheck(context.Background())
++	}
+ 	if os.Getuid() != 0 {
+ 		return fmt.Errorf("resource operations require real root")
+ 	}
+diff --git a/pkg/dsga/resourceguard/normal_ordinary_actions_v2_protocol_linux.go b/pkg/dsga/resourceguard/normal_ordinary_actions_v2_protocol_linux.go
+index e314e96..202ffa9 100644
+--- a/pkg/dsga/resourceguard/normal_ordinary_actions_v2_protocol_linux.go
++++ b/pkg/dsga/resourceguard/normal_ordinary_actions_v2_protocol_linux.go
+@@ -17,6 +17,7 @@ const normalOrdinaryPowerAction = 1
+ const normalOrdinaryTLSReplaceAction = 2
+ const normalOrdinaryUdevEmitAction = 3
+ const normalOrdinaryTLSChecksumAction = 4
++const normalOrdinaryUdevInitAction = 5
+ 
+ func normalOrdinaryActionFrame(action uint32, payload []byte, reply bool) []byte {
+ 	b := make([]byte, normalOrdinaryActionHeaderBytes+len(payload))
+@@ -41,7 +42,8 @@ func decodeNormalOrdinaryActionFrame(raw []byte, role string) (uint32, []byte, e
+ 	valid := role == "acpi" && action == normalOrdinaryPowerAction && len(body) == 0 ||
+ 		role == "daemon" && action == normalOrdinaryTLSReplaceAction && len(body) > 0 ||
+ 		role == "daemon" && action == normalOrdinaryTLSChecksumAction && len(body) == 0 ||
+-		role == "udev" && action == normalOrdinaryUdevEmitAction && len(body) > 0 && len(body) <= 8192
++		role == "udev" && action == normalOrdinaryUdevEmitAction && len(body) > 0 && len(body) <= 8192 ||
++		role == "udev-init" && action == normalOrdinaryUdevInitAction && len(body) == 0
+ 	if !valid {
+ 		return 0, nil, fmt.Errorf("ordinary action does not belong to fixed endpoint")
+ 	}
+diff --git a/pkg/dsga/resourceguard/normal_ordinary_actions_v2_server_linux.go b/pkg/dsga/resourceguard/normal_ordinary_actions_v2_server_linux.go
+index 8015488..fe88fe9 100644
+--- a/pkg/dsga/resourceguard/normal_ordinary_actions_v2_server_linux.go
++++ b/pkg/dsga/resourceguard/normal_ordinary_actions_v2_server_linux.go
+@@ -22,9 +22,11 @@ type normalOrdinaryActionEndpoint struct {
+ var normalOrdinaryActionEndpoints = []normalOrdinaryActionEndpoint{
+ 	{"acpi", "/run/neon-dsga/ordinary-acpi.sock", 60006},
+ 	{"daemon", "/run/neon-dsga/ordinary-tls.sock", 60009},
++	{"udev", "/run/neon-dsga/ordinary-udev.sock", 60004},
++	{"udev-init", normalOrdinaryDeviceCheckSocket, 60005},
+ }
+ 
+-// 只提供固定ACPI/TLS动作；udev原kernel-event票据producer另批闭合，不能声称全9可用。
++// 固定动作只消费原角色main和同g原udev票据；生产prepared接线/全9资格另行闭合。
+ type normalOrdinaryActionsV2 struct {
+ 	g                  *Guard
+ 	filesystem         *normalFilesystemOriginSource
+@@ -170,7 +172,11 @@ func (q *normalOrdinaryActionsV2) serve(listener *net.UnixListener, endpoint nor
+ 	}
+ }
+ func (q *normalOrdinaryActionsV2) handle(conn *net.UnixConn, endpoint normalOrdinaryActionEndpoint) error {
+-	call, cancel := context.WithTimeout(q.ctx, 2*time.Second)
++	limit := 2 * time.Second
++	if endpoint.role == "udev-init" {
++		limit = 60 * time.Second
++	}
++	call, cancel := context.WithTimeout(q.ctx, limit)
+ 	defer cancel()
+ 	deadline, _ := call.Deadline()
+ 	if e := conn.SetDeadline(deadline); e != nil {
+@@ -200,6 +206,8 @@ func (q *normalOrdinaryActionsV2) handle(conn *net.UnixConn, endpoint normalOrdi
+ 		return e
+ 	}
+ 	var response []byte
++	var cold *normalOrdinaryUdevV2ColdTrigger
++	var originalUdev *normalOrdinaryUdevV2
+ 	e = q.g.withRecord(call, func(r *record, state *lockedState) error {
+ 		if !q.authority.admission.businessAllowed() {
+ 			return ErrUnknown
+@@ -222,6 +230,20 @@ func (q *normalOrdinaryActionsV2) handle(conn *net.UnixConn, endpoint normalOrdi
+ 			return e
+ 		}
+ 		switch action {
++		case normalOrdinaryUdevEmitAction:
++			udev, err := q.originalUdevSourceLocked()
++			if err != nil {
++				return err
++			}
++			return udev.emitOriginalMainLocked(call, state, r, cred, peer, body)
++		case normalOrdinaryUdevInitAction:
++			udev, err := q.originalUdevSourceLocked()
++			if err != nil {
++				return err
++			}
++			originalUdev = udev
++			cold, err = udev.beginColdTriggerLocked(call, state, r, cred, peer)
++			return err
+ 		case normalOrdinaryPowerAction:
+ 			return q.poweroffLocked(call, state, r)
+ 		case normalOrdinaryTLSReplaceAction:
+@@ -253,6 +275,30 @@ func (q *normalOrdinaryActionsV2) handle(conn *net.UnixConn, endpoint normalOrdi
+ 	if e != nil {
+ 		return e
+ 	}
++	// 等待原monitor/processed回报时不得持resource锁，否则action3无法推进。
++	if action == normalOrdinaryUdevInitAction {
++		if originalUdev == nil || cold == nil {
++			return ErrUnknown
++		}
++		if e = cold.wait(call); e != nil {
++			originalUdev.fail(e)
++			return errors.Join(ErrUnknown, e)
++		}
++		e = q.g.withRecord(call, func(r *record, state *lockedState) error {
++			if !q.authority.admission.businessAllowed() {
++				return ErrUnknown
++			}
++			current, err := q.originalUdevSourceLocked()
++			if err != nil || current != originalUdev {
++				return errors.Join(ErrUnknown, err)
++			}
++			return current.finishColdTriggerLocked(call, state, r, cred, peer, cold)
++		})
++		if e != nil {
++			originalUdev.fail(e)
++			return errors.Join(ErrUnknown, e)
++		}
++	}
+ 	reply := normalOrdinaryActionFrame(action, response, true)
+ 	n, _, e = conn.WriteMsgUnix(reply, nil, nil)
+ 	if e != nil || n != len(reply) {
+@@ -315,3 +361,24 @@ func (q *normalOrdinaryActionsV2) poweroffLocked(ctx context.Context, state *loc
+ 	}
+ 	return nil
+ }
++
++// 只借用同Guard/原FS/proof/authority生产的对象；未安装时Unknown，不按packet补建。
++// 调用者持原resource flock，构造/关闭所有权仍属于prepared窗口factory。
++func (q *normalOrdinaryActionsV2) originalUdevSourceLocked() (*normalOrdinaryUdevV2, error) {
++	if q == nil || q.g == nil || q.authority == nil || q.filesystem == nil || q.proof == nil {
++		return nil, ErrUnknown
++	}
++	value, ok := normalOrdinaryUdevV2Slots.Load(q.g)
++	if !ok {
++		return nil, ErrUnknown
++	}
++	slot, ok := value.(*normalOrdinaryUdevV2Slot)
++	if !ok || slot == nil || slot.source == nil {
++		return nil, ErrUnknown
++	}
++	source := slot.source
++	if source.g != q.g || source.authority != q.authority || source.filesystem != q.filesystem || source.proof != q.proof || source.originalFS != q.originalFS {
++		return nil, ErrUnknown
++	}
++	return source, nil
++}

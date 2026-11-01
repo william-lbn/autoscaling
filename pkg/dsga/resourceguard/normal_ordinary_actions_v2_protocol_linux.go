@@ -17,6 +17,7 @@ const normalOrdinaryPowerAction = 1
 const normalOrdinaryTLSReplaceAction = 2
 const normalOrdinaryUdevEmitAction = 3
 const normalOrdinaryTLSChecksumAction = 4
+const normalOrdinaryUdevInitAction = 5
 
 func normalOrdinaryActionFrame(action uint32, payload []byte, reply bool) []byte {
 	b := make([]byte, normalOrdinaryActionHeaderBytes+len(payload))
@@ -41,7 +42,8 @@ func decodeNormalOrdinaryActionFrame(raw []byte, role string) (uint32, []byte, e
 	valid := role == "acpi" && action == normalOrdinaryPowerAction && len(body) == 0 ||
 		role == "daemon" && action == normalOrdinaryTLSReplaceAction && len(body) > 0 ||
 		role == "daemon" && action == normalOrdinaryTLSChecksumAction && len(body) == 0 ||
-		role == "udev" && action == normalOrdinaryUdevEmitAction && len(body) > 0 && len(body) <= 8192
+		role == "udev" && action == normalOrdinaryUdevEmitAction && len(body) > 0 && len(body) <= 8192 ||
+		role == "udev-init" && action == normalOrdinaryUdevInitAction && len(body) == 0
 	if !valid {
 		return 0, nil, fmt.Errorf("ordinary action does not belong to fixed endpoint")
 	}

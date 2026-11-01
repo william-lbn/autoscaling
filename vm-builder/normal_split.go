@@ -262,6 +262,39 @@ func generateNormalSystemManifestForVersion(root string, plan normalBuildPlan, b
 			if e != nil {
 				return nil, e
 			}
+			lockPath := resourceguard.NormalSystemOrdinaryV2PackageLockPath
+			lockCanonical, e := normalImageCanonical(root, lockPath)
+			if e != nil || lockCanonical != lockPath {
+				return nil, fmt.Errorf("stock original package lock path differs or is absent")
+			}
+			lockFile, e := os.OpenFile(filepath.Join(root, lockCanonical), os.O_RDONLY|syscall.O_NONBLOCK|syscall.O_NOFOLLOW, 0)
+			if e != nil {
+				return nil, e
+			}
+			lockStat, e := lockFile.Stat()
+			if e != nil || !lockStat.Mode().IsRegular() || lockStat.Size() <= 0 || lockStat.Size() > 256<<10 {
+				lockFile.Close()
+				return nil, fmt.Errorf("stock package lock is not bounded regular file")
+			}
+			lockRaw, e := io.ReadAll(io.NewSectionReader(lockFile, 0, lockStat.Size()))
+			lockClose := lockFile.Close()
+			if e != nil {
+				return nil, e
+			}
+			if lockClose != nil {
+				return nil, lockClose
+			}
+			lockSHA, e := resourceguard.NormalSystemSourceStockUdevPackageLockSHA256(raw)
+			if e != nil || normalDigest(lockRaw) != lockSHA {
+				return nil, fmt.Errorf("stock actual original package lock bytes differ from MF")
+			}
+			paths[lockPath] = "config"
+			stockExpected[lockPath] = resourceguard.NormalSystemSourceFile{Path: lockPath, CanonicalPath: lockPath, Kind: "config", Bytes: uint64(len(lockRaw)), SHA256: lockSHA}
+			// 新stock/普通控制2只配同一已登记18c，不移动旧模式的kernel选择。
+			m.Kernel, e = resourceguard.LookupPhysicalKernelBuild(resourceguard.NormalSplitMetadataV1PhysicalKernelProfileID)
+			if e != nil {
+				return nil, e
+			}
 			for _, entry := range entries {
 				stockExpected[entry.Path] = entry
 				paths[entry.Path] = entry.Kind
@@ -487,6 +520,14 @@ func normalComputeScriptV3() string {
 // 仅最终rootdisk构建命令使用。固定路径、不覆盖源镜像已有声明、不跟随目录alias；
 // 完整文件随后进入同一个System v3清单，运行期不会生成或修补这些声明。
 func prepareNormalSystemV3Assets(root string, planRaw []byte) error {
+	return prepareNormalSystemV3AssetsForControls(root, planRaw, 1)
+}
+
+// 显式2只改变该构建选择，旧入口仍逐字生成原声明1/controls1。
+func prepareNormalSystemV3AssetsForControls(root string, planRaw []byte, controlsVersion uint32) error {
+	if controlsVersion != 1 && controlsVersion != 2 {
+		return fmt.Errorf("unsupported fixed ordinary controls version")
+	}
 	if _, e := decodeNormalBuildPlan(planRaw); e != nil {
 		return e
 	}
@@ -537,11 +578,19 @@ func prepareNormalSystemV3Assets(root string, planRaw []byte) error {
 	if n != st.Size() {
 		return fmt.Errorf("v3 guard size changed")
 	}
-	broker, e := resourceguard.NormalSystemRoleBrokerDeclarationJSON(hex.EncodeToString(h.Sum(nil)), normalDigest(planRaw))
+	brokerBuilder := resourceguard.NormalSystemRoleBrokerDeclarationJSON
+	if controlsVersion == 2 {
+		brokerBuilder = resourceguard.NormalSystemRoleBrokerDeclarationV3JSON
+	}
+	broker, e := brokerBuilder(hex.EncodeToString(h.Sum(nil)), normalDigest(planRaw))
 	if e != nil {
 		return e
 	}
-	controls, e := resourceguard.NormalKernelControlSourceManifestJSON()
+	controlsBuilder := resourceguard.NormalKernelControlSourceManifestJSON
+	if controlsVersion == 2 {
+		controlsBuilder = resourceguard.NormalSystemOrdinaryV2ManifestJSON
+	}
+	controls, e := controlsBuilder()
 	if e != nil {
 		return e
 	}

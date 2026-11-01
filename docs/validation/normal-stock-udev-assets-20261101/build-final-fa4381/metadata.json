@@ -1,0 +1,25 @@
+{
+  "base": "17cb700d65ae2ebc124efffbe65a391ef27c39e6",
+  "root5": {
+    "vm-builder/main.go": "c77f0aa8b5c6e330c12f82cedf5b9c6aac5906eae8a2d2883407ee30d6d8664b",
+    "vm-builder/normal_split.go": "d1438dc28408e0ad78a7a0ef869a6b2eb234982cd5db67b11a7b4dc9c54150cf",
+    "vm-builder/files/img.Dockerfile": "55f153a577d0e8eb1f4a01b273ca95852feacf45bc774c3c0c122e1810522791",
+    "vm-builder/normal_stock_udev_build_selection.go": "675994c14d93548287c2108a41f479d1ec8d0ace39d349039daf323f70447bcb",
+    "vm-builder/normal_stock_udev_build_selection_test.go": "08fa8fa2b89e1d7eb1e0ffce18fb824055be8dae0e9bab942283cc1b50091de9",
+    "vm-builder/normal_stock_udev_build_selected_v2_test.go": "141c7f13f3c3ed029a6d8531646fd1a36e17960c30918befb1f172d5896c8496"
+  },
+  "owned_prefmt": {
+    "vm-builder/normal_stock_udev_assets.go": "cd81d699604155947a9bc138a808fc67cb1d4f59f54cd153029d6997339b9436",
+    "vm-builder/normal_stock_udev_assets_test.go": "b290dbdecbb8f878af97de118527dc847031de8519952659d8275911ee8469a2",
+    "pkg/dsga/resourceguard/normal_stock_udev_assets.go": "6a7a5c0b4c8d6cc862c825b23f591bd7eab8fe42304fafc75a8b9810a84ffa8f",
+    "pkg/dsga/resourceguard/normal_stock_udev_assets_linux.go": "170f0516e1715df920d2ad456dfa33d8f24ef8e5bc15c9e387449052afd1eaee",
+    "pkg/dsga/resourceguard/normal_stock_udev_assets_other.go": "518001c3d29a2eb6eb7718dcf9b8c3291ef85f48d1ba920f26d709dc7e4c83ef"
+  },
+  "image": "127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1",
+  "scope": "ACTUAL_FINAL_ROOTDISK_STOCK_ASSETS_U_BUILDER_CLI_ONLY_NO_SOURCE_OR_NORMAL",
+  "actual_limits": {
+    "CPU": 3,
+    "memory_GiB": 3
+  },
+  "no_parallel_DAG_RUN": true
+}

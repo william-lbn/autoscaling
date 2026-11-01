@@ -27,6 +27,9 @@ func run() error {
 	if len(os.Args) > 1 && os.Args[1] == "launch-postgres" {
 		return resourceguard.ExecPostgres(os.Args[2:])
 	}
+	if len(os.Args) == 2 && os.Args[1] == "ordinary-v2-device-check" {
+		return resourceguard.RunNormalSystemOrdinaryV2DeviceCheck(context.Background())
+	}
 	if os.Getuid() != 0 {
 		return fmt.Errorf("resource operations require real root")
 	}

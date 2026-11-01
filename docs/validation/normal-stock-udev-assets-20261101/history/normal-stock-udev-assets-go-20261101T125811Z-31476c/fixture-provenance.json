@@ -1,0 +1,607 @@
+{
+  "accounts_and_DNS": "explicit local rootdisk fixture, not a full production image",
+  "all_files": {
+    "/etc/udev/hwdb.d/20-OUI.hwdb": {
+      "bytes": 2364896,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/20-OUI.hwdb",
+      "sha256": "9a5d39088ada35ac11f71c1e2e3a55da7ce9b93fd0427904760b3cdc672b3ff2"
+    },
+    "/etc/udev/hwdb.d/20-acpi-vendor.hwdb": {
+      "bytes": 151677,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/20-acpi-vendor.hwdb",
+      "sha256": "adf07e403ed72e5394dc8dbdf3d44e74d5d33532a96f12c503fb274aa2a245ea"
+    },
+    "/etc/udev/hwdb.d/20-bluetooth-vendor-product.hwdb": {
+      "bytes": 140340,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/20-bluetooth-vendor-product.hwdb",
+      "sha256": "6a6ad8bd08e79a995f11459f6191d922126b4cc2452ca685c2c874b7839caae6"
+    },
+    "/etc/udev/hwdb.d/20-dmi-id.hwdb": {
+      "bytes": 310,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/20-dmi-id.hwdb",
+      "sha256": "7c5a8c675ba019feaf1668947de220a24f303475187ea73c6c1b8c958554878d"
+    },
+    "/etc/udev/hwdb.d/20-net-ifname.hwdb": {
+      "bytes": 111,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/20-net-ifname.hwdb",
+      "sha256": "24f4e463cd34f63b92679b5276190fa854aebd5730b1def5222cf7269c4c5c43"
+    },
+    "/etc/udev/hwdb.d/20-pci-classes.hwdb": {
+      "bytes": 15708,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/20-pci-classes.hwdb",
+      "sha256": "0f90a5a3de5eeaa4dffcb7013dec1b450fcf1a95fa81f70bedb7ab38eba27dfd"
+    },
+    "/etc/udev/hwdb.d/20-pci-vendor-model.hwdb": {
+      "bytes": 3449959,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/20-pci-vendor-model.hwdb",
+      "sha256": "1c576350f25978f6fe057e387ea56689eebea7db7835e87bad6d81c0b3124e1f"
+    },
+    "/etc/udev/hwdb.d/20-sdio-classes.hwdb": {
+      "bytes": 783,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/20-sdio-classes.hwdb",
+      "sha256": "acd02dcf5b5abfb44a46deabe5b0c038da1e7e4172a85f4f60d2d3b887adfbce"
+    },
+    "/etc/udev/hwdb.d/20-sdio-vendor-model.hwdb": {
+      "bytes": 4181,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/20-sdio-vendor-model.hwdb",
+      "sha256": "9eb89fc7a64772697cf84fb588197c057c3a8bb4ed2be7552b5a9dc48de2774a"
+    },
+    "/etc/udev/hwdb.d/20-usb-classes.hwdb": {
+      "bytes": 8070,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/20-usb-classes.hwdb",
+      "sha256": "05e0b47dd70b12083d1ead99c0a35c3260b639483a4fdcbdcb5628225c5e046a"
+    },
+    "/etc/udev/hwdb.d/20-usb-vendor-model.hwdb": {
+      "bytes": 1470385,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/20-usb-vendor-model.hwdb",
+      "sha256": "8afd04f77f7bc933d2cb384562e650ed1ab5d241f54a9ee3864dc67cee799050"
+    },
+    "/etc/udev/hwdb.d/20-vmbus-class.hwdb": {
+      "bytes": 1810,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/20-vmbus-class.hwdb",
+      "sha256": "08e7bdd8e85d9cbaa0cb8c44bda9bad6a784f316eb64fbd839d02588ae68c925"
+    },
+    "/etc/udev/hwdb.d/60-autosuspend-fingerprint-reader.hwdb": {
+      "bytes": 5846,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/60-autosuspend-fingerprint-reader.hwdb",
+      "sha256": "4e57466217e953e2d0d64e3ca9da700d98c066b8c51288543dbcfeaa06ca48fc"
+    },
+    "/etc/udev/hwdb.d/60-autosuspend.hwdb": {
+      "bytes": 2224,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/60-autosuspend.hwdb",
+      "sha256": "938a91d3077ca84440e1beebdc31094339c33ec43e1a5ab6f3f9194a4dfd8028"
+    },
+    "/etc/udev/hwdb.d/60-evdev.hwdb": {
+      "bytes": 20698,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/60-evdev.hwdb",
+      "sha256": "be51ae8e84895749b7128e88cc2b700f745b09516531f8e8bb163a37f428abf4"
+    },
+    "/etc/udev/hwdb.d/60-input-id.hwdb": {
+      "bytes": 2671,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/60-input-id.hwdb",
+      "sha256": "7386a0dfb8ad1212e24a50f0c2baccbbe506a3615ac3ec92c372abd62f578fe3"
+    },
+    "/etc/udev/hwdb.d/60-keyboard.hwdb": {
+      "bytes": 91032,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/60-keyboard.hwdb",
+      "sha256": "fd49b58e069e4b4f8dbfa37d66719bbfa711f9aeb2157aca35ea9e08397bd565"
+    },
+    "/etc/udev/hwdb.d/60-seat.hwdb": {
+      "bytes": 1119,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/60-seat.hwdb",
+      "sha256": "631ad48aa053be33314bef2d079042cbe1f7976134534c89593b5ad1a61ff660"
+    },
+    "/etc/udev/hwdb.d/60-sensor.hwdb": {
+      "bytes": 40169,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/60-sensor.hwdb",
+      "sha256": "9d9e626efc2e5a205bc25f848d3f84741abe3246bacb2db8553210b79beb870b"
+    },
+    "/etc/udev/hwdb.d/70-analyzers.hwdb": {
+      "bytes": 1015,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/70-analyzers.hwdb",
+      "sha256": "0b4873c2e934fad3f9105e25bb09dadf8d2cc3d9cbd1b869b356b2ee7e31948f"
+    },
+    "/etc/udev/hwdb.d/70-av-production.hwdb": {
+      "bytes": 2719,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/70-av-production.hwdb",
+      "sha256": "839906834d73465d2b5ca57ec46bf34e2942a1ab7bc0aca3f88f009c5ebcedf9"
+    },
+    "/etc/udev/hwdb.d/70-cameras.hwdb": {
+      "bytes": 679,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/70-cameras.hwdb",
+      "sha256": "965023ad2987fd8d1798d988d8733864329aee570bb5a0f82c1b666547e2fba9"
+    },
+    "/etc/udev/hwdb.d/70-joystick.hwdb": {
+      "bytes": 1751,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/70-joystick.hwdb",
+      "sha256": "b17b9126733272e5052564dc8145010aa4447e66a987c6dba7caae70b8f62868"
+    },
+    "/etc/udev/hwdb.d/70-mouse.hwdb": {
+      "bytes": 25255,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/70-mouse.hwdb",
+      "sha256": "1bbe69fbaf810585f2ea2e3c42e2fecddde76c3fc2726d7795eac0515d3d6fba"
+    },
+    "/etc/udev/hwdb.d/70-pda.hwdb": {
+      "bytes": 926,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/70-pda.hwdb",
+      "sha256": "e63bdbcaab2ee101a5007e6428ce9cdcd67cd27ec7c4c120789869d8ea45b1c4"
+    },
+    "/etc/udev/hwdb.d/70-pointingstick.hwdb": {
+      "bytes": 7273,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/70-pointingstick.hwdb",
+      "sha256": "494603c7ed4624ab13e48e020443aecfedaa65369b28c341e91d98cd6283825f"
+    },
+    "/etc/udev/hwdb.d/70-touchpad.hwdb": {
+      "bytes": 2316,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/70-touchpad.hwdb",
+      "sha256": "fbc0c75e400de651eb45758f2f50b5925ca6c56f84ee85473e91c77565e143ae"
+    },
+    "/etc/udev/hwdb.d/80-ieee1394-unit-function.hwdb": {
+      "bytes": 47289,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/etc/udev/hwdb.d/80-ieee1394-unit-function.hwdb",
+      "sha256": "ae706a72078b7008ffedacede3f85aca4ae9f17fb60d101cf6116553cd19712b"
+    },
+    "/etc/udev/udev.conf": {
+      "bytes": 215,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "etc/udev/udev.conf",
+      "sha256": "96d43c3414fcdd70cf114c9f1290f2f9240b42b03a077de7e89b4fa2b7d4aa14"
+    },
+    "/lib/ld-musl-x86_64.so.1": {
+      "bytes": 645736,
+      "input": "apk/musl-1.2.4_git20230717-r6.apk",
+      "input_sha256": "24b7b3efa92247796f4cfecaf8d08f6a0bdead13aae9c2cf2f04a042bebb9647",
+      "member": "lib/ld-musl-x86_64.so.1",
+      "sha256": "0ad2aef352c25467ccc2958c254d6c68e5925bc8265700fc109430f54db0b8e6"
+    },
+    "/lib/libblkid.so.1": {
+      "bytes": 191304,
+      "input": "apk/libblkid-2.39.3-r0.apk",
+      "input_sha256": "262cf881ab0fdaf19eef1224c88e71192d574ce74cf7948f6084d15afc73051a",
+      "member": "lib/libblkid.so.1.1.0",
+      "sha256": "9a6331d22fcb1f0d6760f2904fc572fe92e197da5f5329c3041492e16cf3484c"
+    },
+    "/lib/libc.musl-x86_64.so.1": {
+      "bytes": 645736,
+      "input": "apk/musl-1.2.4_git20230717-r6.apk",
+      "input_sha256": "24b7b3efa92247796f4cfecaf8d08f6a0bdead13aae9c2cf2f04a042bebb9647",
+      "member": "lib/ld-musl-x86_64.so.1",
+      "sha256": "0ad2aef352c25467ccc2958c254d6c68e5925bc8265700fc109430f54db0b8e6"
+    },
+    "/lib/libcrypto.so.3": {
+      "bytes": 4314384,
+      "input": "apk/libcrypto3-3.1.8-r1.apk",
+      "input_sha256": "a00a1e717a0a262908d30833d0f4d60c29fd8763e5f6b380a3ee611b7e31c4f3",
+      "member": "lib/libcrypto.so.3",
+      "sha256": "17f1133f04c753e0c7f8727250122b4a47a488f768935022be625526351b6184"
+    },
+    "/lib/libkmod.so.2": {
+      "bytes": 83904,
+      "input": "apk/kmod-libs-31-r2.apk",
+      "input_sha256": "7ab73216b9b39adc2da6e4cf5ac718d51bde69c71716705f5def48a88d1d6fe3",
+      "member": "lib/libkmod.so.2.4.1",
+      "sha256": "edda6a481187efc5004d842582c2ecdc6083a6185187cd455cd2e83c27497198"
+    },
+    "/lib/libudev.so.1": {
+      "bytes": 55168,
+      "input": "apk/eudev-libs-3.2.14-r1.apk",
+      "input_sha256": "7f836c515bad8998158938a8c90ccf79b6738162d74d8fe9c9ce45652f817ea9",
+      "member": "lib/libudev.so.1.6.3",
+      "sha256": "6a96205c57a74ec7d6150494d218e906f4656167b6b0ea2dab63b5f61555a795"
+    },
+    "/lib/libz.so.1": {
+      "bytes": 100208,
+      "input": "apk/zlib-1.3.1-r0.apk",
+      "input_sha256": "dc3160a78662a70a84ed99dbe89cd0e40b8f29b78fe431f16c5f29c97f050466",
+      "member": "lib/libz.so.1.3.1",
+      "sha256": "9993bddaff33bda56d4f130b7dce37598b8f701cbd0b2ede22908d5324bdbf77"
+    },
+    "/lib/udev/ata_id": {
+      "bytes": 22456,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/ata_id",
+      "sha256": "5e67ac61c864bfb3967c5525d0442c162c21fe8e1c65e22b683b57dedf962821"
+    },
+    "/lib/udev/cdrom_id": {
+      "bytes": 34744,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/cdrom_id",
+      "sha256": "b52ca72bfc21a5ddf66adcac91d2eaaf38523247d9717d970b76f6c113f99fbf"
+    },
+    "/lib/udev/collect": {
+      "bytes": 22464,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/collect",
+      "sha256": "7e180dfa9baab7930980ef66e954f33820fabd02d8238f97ea0b23b49a7f821b"
+    },
+    "/lib/udev/dmi_memory_id": {
+      "bytes": 30648,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/dmi_memory_id",
+      "sha256": "3974a6b1c362433c3c91ba89ab745ddce68823e7d24287d77f22607b694cb370"
+    },
+    "/lib/udev/fido_id": {
+      "bytes": 34744,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/fido_id",
+      "sha256": "86d8a88574c608e29fbfee9585bdc7b5bbcb3121f8ab2aeb8629ecf0494e9262"
+    },
+    "/lib/udev/mtd_probe": {
+      "bytes": 14184,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/mtd_probe",
+      "sha256": "0b40207f903fcb3422758e94669caa0d1328be1c646c2b01a85429d594847395"
+    },
+    "/lib/udev/rules.d/50-udev-default.rules": {
+      "bytes": 4888,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/50-udev-default.rules",
+      "sha256": "224c8d0db255f219e57fb61d7ce1ddc286d5bb42d8ee4cb248f688bbc93cb08f"
+    },
+    "/lib/udev/rules.d/60-autosuspend.rules": {
+      "bytes": 532,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/60-autosuspend.rules",
+      "sha256": "7ffae083695390282bc7e953cff18d6bba874c3ca4bd7c77391d5b3c2e3add25"
+    },
+    "/lib/udev/rules.d/60-block.rules": {
+      "bytes": 703,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/60-block.rules",
+      "sha256": "bd9988b957ba416bfdd72f6cc94a7d0e3c0b4d793fe85141ce4920bd1a747c1d"
+    },
+    "/lib/udev/rules.d/60-cdrom_id.rules": {
+      "bytes": 1071,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/60-cdrom_id.rules",
+      "sha256": "16f44dc355a6b5ada3a0706b2f84c95b25ed6c2a09e4e201da94885c93d1a4d2"
+    },
+    "/lib/udev/rules.d/60-drm.rules": {
+      "bytes": 413,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/60-drm.rules",
+      "sha256": "9045c45062fdb03abd55cdec32fb13fe6f196290b52b5c4c9fc350406bf094ce"
+    },
+    "/lib/udev/rules.d/60-evdev.rules": {
+      "bytes": 982,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/60-evdev.rules",
+      "sha256": "e3052a757a28dd43ede1528064b3ca855fa7d9eb3405e0d6f3b032b664cf7381"
+    },
+    "/lib/udev/rules.d/60-fido-id.rules": {
+      "bytes": 491,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/60-fido-id.rules",
+      "sha256": "cca02ad85534572cdbd125bdba411417de1158b0709825114882cb8b8b7735e6"
+    },
+    "/lib/udev/rules.d/60-input-id.rules": {
+      "bytes": 282,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/60-input-id.rules",
+      "sha256": "2983389654fbf42eca6b703543f76867dbf53eeec9288c2c88d0fcb338a2c265"
+    },
+    "/lib/udev/rules.d/60-persistent-alsa.rules": {
+      "bytes": 616,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/60-persistent-alsa.rules",
+      "sha256": "36767245b64ae515fc073c21bc78769f41188140e1d7b9576ec8dee34d585172"
+    },
+    "/lib/udev/rules.d/60-persistent-input.rules": {
+      "bytes": 2719,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/60-persistent-input.rules",
+      "sha256": "1726417b25f78af68845dc3627c3336e7959a3db2a81b7d77c35018d38f840d4"
+    },
+    "/lib/udev/rules.d/60-persistent-storage-tape.rules": {
+      "bytes": 2204,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/60-persistent-storage-tape.rules",
+      "sha256": "1ea5fa3e9f63b6a41d68c36ded365927ce95d8026242533566fd5a9015ebcdb2"
+    },
+    "/lib/udev/rules.d/60-persistent-storage.rules": {
+      "bytes": 8346,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/60-persistent-storage.rules",
+      "sha256": "38ec44b7d342afb863201de148e06e1d693e9e92b5bf0359f1dd72a20324b4cd"
+    },
+    "/lib/udev/rules.d/60-persistent-v4l.rules": {
+      "bytes": 769,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/60-persistent-v4l.rules",
+      "sha256": "219eb6b4c0df4d8701cc5a316b2ddf63797d4c1b689bc0b289d5cb8063a7034e"
+    },
+    "/lib/udev/rules.d/60-sensor.rules": {
+      "bytes": 1618,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/60-sensor.rules",
+      "sha256": "0e8bbe52adaa173d3deba22f9c3a1c7447884ab5c625d3c3b4fdce60e52bd6d3"
+    },
+    "/lib/udev/rules.d/60-serial.rules": {
+      "bytes": 1190,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/60-serial.rules",
+      "sha256": "54367e1335266de43edb6451534c9e69c317075212b216cedf1d3b6896f14ee0"
+    },
+    "/lib/udev/rules.d/64-btrfs.rules": {
+      "bytes": 612,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/64-btrfs.rules",
+      "sha256": "d039055ad6614820d4190ccad91b7c45736e6d541d2506e858e8edb7a8627386"
+    },
+    "/lib/udev/rules.d/70-camera.rules": {
+      "bytes": 281,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/70-camera.rules",
+      "sha256": "48e36a875615bcf113566a8f4b3fcf2c9bcc229d772a074007e854bab67471aa"
+    },
+    "/lib/udev/rules.d/70-joystick.rules": {
+      "bytes": 432,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/70-joystick.rules",
+      "sha256": "199e72c162185b62c0888791c9b3cde2c8b180fae4e4ae3a29564f933d0adffd"
+    },
+    "/lib/udev/rules.d/70-memory.rules": {
+      "bytes": 184,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/70-memory.rules",
+      "sha256": "46b8696d6ad29b2e80b9dcad60ddb2e4a3deee5a5b1df09f116f1ca9d4dfb150"
+    },
+    "/lib/udev/rules.d/70-mouse.rules": {
+      "bytes": 734,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/70-mouse.rules",
+      "sha256": "d495d2b8523e7f8175a9b06704f168e14ab97a8a333d4a52ec9501bc0c509ecb"
+    },
+    "/lib/udev/rules.d/70-touchpad.rules": {
+      "bytes": 473,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/70-touchpad.rules",
+      "sha256": "8d81de6a6d5b5703098518f977c3b984bdf179238402a8ca0205f85cde798a27"
+    },
+    "/lib/udev/rules.d/75-net-description.rules": {
+      "bytes": 452,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/75-net-description.rules",
+      "sha256": "5b8da22a593f2aaffd4697e4cbfb14cb7eb1d52b96f03d9a60c82eeec920e925"
+    },
+    "/lib/udev/rules.d/75-probe_mtd.rules": {
+      "bytes": 174,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/75-probe_mtd.rules",
+      "sha256": "54256aa2ca91172cbce3ea805ccf2cd52de8acbbc2db88d209de84655fa997c5"
+    },
+    "/lib/udev/rules.d/78-sound-card.rules": {
+      "bytes": 4816,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/78-sound-card.rules",
+      "sha256": "c6ab8337ffbfb53e0ff9e23819f3a5b551a03cff542f6c8f190368d635b75823"
+    },
+    "/lib/udev/rules.d/80-drivers.rules": {
+      "bytes": 672,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/80-drivers.rules",
+      "sha256": "3cc024d2fdf70ad3df014b5f0ac69b4635a54ddd087e3134ab77dc86e65dd750"
+    },
+    "/lib/udev/rules.d/80-net-name-slot.rules": {
+      "bytes": 491,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/lib/udev/rules.d/80-net-name-slot.rules",
+      "sha256": "7aa107de17e65af7094c8571fb9bfc5dbcb1a3e568ba1de3c1612fe1aae3a0af"
+    },
+    "/lib/udev/rules.d/81-net-dhcp.rules": {
+      "bytes": 528,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/rules.d/81-net-dhcp.rules",
+      "sha256": "3438299d7e6254472600168b557a467a497d537353511ec07657b494d1b13fec"
+    },
+    "/lib/udev/scsi_id": {
+      "bytes": 35280,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/scsi_id",
+      "sha256": "292df6da81b9574d891f395594f9558144366f0032dac6ad44fed46255d6b6ca"
+    },
+    "/lib/udev/v4l_id": {
+      "bytes": 14256,
+      "input": "apk/eudev-3.2.14-r1.apk",
+      "input_sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68",
+      "member": "lib/udev/v4l_id",
+      "sha256": "610870a7c53a4a3d0d0c7efc4d06260b53ddf123b41b543e3c30cd17f51fc20d"
+    },
+    "/neonvm/bin/udevadm": {
+      "bytes": 412352,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/bin/udevadm",
+      "sha256": "482c30496f772f5e6e7756fdb358c03e9074dff5ceb6be6430c511cdad78d88f"
+    },
+    "/neonvm/bin/udevd": {
+      "bytes": 407696,
+      "input": "privsep-build/source-lock.json",
+      "input_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+      "member": "export/eudev-root/sbin/udevd",
+      "sha256": "db7fe569fe1077e61c8e5883578c0ed81f7ad25d9ee6f7ad4bd781186f5e3568"
+    },
+    "/usr/lib/liblzma.so.5": {
+      "bytes": 222936,
+      "input": "apk/xz-libs-5.4.5-r1.apk",
+      "input_sha256": "a199e1170664ed97d8dd80231d187c3d8a42a6cd44b9fad9e49187d5fc61c8a2",
+      "member": "usr/lib/liblzma.so.5.4.5",
+      "sha256": "7613b1c8d00c7b9dbc0cba8fda4ea0371cd742320033194a2067a3f6b55ed1e6"
+    },
+    "/usr/lib/libzstd.so.1": {
+      "bytes": 714456,
+      "input": "apk/zstd-libs-1.5.5-r8.apk",
+      "input_sha256": "0d3e2084d4e851e25b78d912234e0c06f3afeed1200b5ff08b63b4bb111080e6",
+      "member": "usr/lib/libzstd.so.1.5.5",
+      "sha256": "272d943705a0fa3077e94f2fe809d5d86607b0d22267717c501d38d76925e4cf"
+    }
+  },
+  "original_apks": [
+    {
+      "path": "/data/neon-build/validation/ordinary-services-v2-research-20261101T044713Z-c6ff82/apks/acpid-2.0.34-r4.apk",
+      "regular_members": 11,
+      "sha256": "bee2c3c07bf620a36a6c41b54bdc509f020b37e7230f1c4dd51228593356fb62"
+    },
+    {
+      "path": "/data/neon-build/validation/ordinary-services-v2-research-20261101T044713Z-c6ff82/apks/busybox-1.36.1-r21.apk",
+      "regular_members": 13,
+      "sha256": "6e665ec49a942593dd516620314f8c82d940fd7c769dfa2894c7e6bb864e2a1c"
+    },
+    {
+      "path": "/data/neon-build/validation/ordinary-services-v2-research-20261101T044713Z-c6ff82/apks/chrony-4.5-r0.apk",
+      "regular_members": 9,
+      "sha256": "bfa03a5276cd54452ee4121505340b6f2cacf276f364ec3538feba380367b738"
+    },
+    {
+      "path": "/data/neon-build/validation/ordinary-services-v2-research-20261101T044713Z-c6ff82/apks/eudev-3.2.14-r1.apk",
+      "regular_members": 40,
+      "sha256": "038f7ec225d93156200e7a7fb69e9aa7f4b1b3ba0e4aaab7ba75c18417c1fc68"
+    },
+    {
+      "path": "/data/neon-build/validation/ordinary-services-v2-research-20261101T044713Z-c6ff82/apks/eudev-libs-3.2.14-r1.apk",
+      "regular_members": 3,
+      "sha256": "7f836c515bad8998158938a8c90ccf79b6738162d74d8fe9c9ce45652f817ea9"
+    },
+    {
+      "path": "/data/neon-build/validation/ordinary-services-v2-research-20261101T044713Z-c6ff82/apks/kmod-libs-31-r2.apk",
+      "regular_members": 3,
+      "sha256": "7ab73216b9b39adc2da6e4cf5ac718d51bde69c71716705f5def48a88d1d6fe3"
+    },
+    {
+      "path": "/data/neon-build/validation/ordinary-services-v2-research-20261101T044713Z-c6ff82/apks/libblkid-2.39.3-r0.apk",
+      "regular_members": 3,
+      "sha256": "262cf881ab0fdaf19eef1224c88e71192d574ce74cf7948f6084d15afc73051a"
+    },
+    {
+      "path": "/data/neon-build/validation/ordinary-services-v2-research-20261101T044713Z-c6ff82/apks/libcap-2.69-r1.apk",
+      "regular_members": 3,
+      "sha256": "a3fd75659d5b8ce01a499af0aab62b2606b7e8f612c3c75da62a72e68aa8c677"
+    },
+    {
+      "path": "/data/neon-build/validation/ordinary-services-v2-research-20261101T044713Z-c6ff82/apks/musl-1.2.4_git20230717-r6.apk",
+      "regular_members": 3,
+      "sha256": "24b7b3efa92247796f4cfecaf8d08f6a0bdead13aae9c2cf2f04a042bebb9647"
+    },
+    {
+      "path": "/data/neon-build/validation/ordinary-services-v2-research-20261101T044713Z-c6ff82/apks/udev-init-scripts-35-r1.apk",
+      "regular_members": 3,
+      "sha256": "c372a4c74d4a0781b1c9ae5253972ea6646666a62ab7caa475c1524c09dd339b"
+    },
+    {
+      "path": "/data/neon-build/validation/ordinary-v2-packages-build-20261101T060652Z-8d5217/runtime-apks/libcrypto3-3.1.8-r1.apk",
+      "regular_members": 14,
+      "sha256": "a00a1e717a0a262908d30833d0f4d60c29fd8763e5f6b380a3ee611b7e31c4f3"
+    },
+    {
+      "path": "/data/neon-build/validation/ordinary-v2-packages-build-20261101T060652Z-8d5217/runtime-apks/xz-libs-5.4.5-r1.apk",
+      "regular_members": 3,
+      "sha256": "a199e1170664ed97d8dd80231d187c3d8a42a6cd44b9fad9e49187d5fc61c8a2"
+    },
+    {
+      "path": "/data/neon-build/validation/ordinary-v2-packages-build-20261101T060652Z-8d5217/runtime-apks/zlib-1.3.1-r0.apk",
+      "regular_members": 3,
+      "sha256": "dc3160a78662a70a84ed99dbe89cd0e40b8f29b78fe431f16c5f29c97f050466"
+    },
+    {
+      "path": "/data/neon-build/validation/ordinary-v2-packages-build-20261101T060652Z-8d5217/runtime-apks/zstd-libs-1.5.5-r8.apk",
+      "regular_members": 3,
+      "sha256": "0d3e2084d4e851e25b78d912234e0c06f3afeed1200b5ff08b63b4bb111080e6"
+    }
+  ],
+  "original_signed_APK_verification": "/data/neon-build/validation/ordinary-services-v2-research-20261101T044713Z-c6ff82/apk-verify.json",
+  "original_signed_APK_verification_sha256": "cd3b259d20e481300bb8244258fe1d78e85a73426d6e644b0be7f98f4aa1c64d",
+  "patched_provider_source_lock": "/data/neon-build/validation/ordinary-udev-privsep-build-20261101T080238Z-e47368/source-lock.json",
+  "patched_provider_source_lock_sha256": "4c585dbb7c7e86b97ecfbc221ee40af86c2d8785865463a56dacc71d2fbac8f8",
+  "scope": "ACTUAL_APK_AND_PATCHED_PROVIDER_STATIC_ASSET_FIXTURE_NOT_FULL_SYSTEM_OR_SOURCE"
+}

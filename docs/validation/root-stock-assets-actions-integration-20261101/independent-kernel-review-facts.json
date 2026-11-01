@@ -1,0 +1,26 @@
+{
+  "936_result_sha256": "d4f612337ace4de08bc6ac62e359fab2403bce7bdbdb0f8ad5c6eaa2a7c65127",
+  "936_source_lock_sha256": "6a07c83b1808661b00c2ce79e1f26c74c4d103279ed90bca4fb75850a2b3a6bc",
+  "E": 0,
+  "S": 0,
+  "decision": "NO_DEFINITE_COMPONENT_BLOCKER",
+  "exact7": {
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_inputs_linux.go": "a98bc6074bb16ec9052300ee5646f604f0554c4a09e50393d416febd930caf34",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_inventory.go": "988082c9e81b5b0ccfc6da1537a557260220eac2ec97694bf4f8227269f11427",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_manifest.go": "b6f72b5047c2243f0626f07f2cd89da1b92d9fb7967bc989cf3be6e15351c54f",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_package_lock_linux_test.go": "9551c87882cbdb43f4bc82b1651db1cea69dbc06b677ac5918d7fe85fb3c198b",
+    "vm-builder/normal_split.go": "d62be13be8b0e0c3ff047b894123f36bdf9570de84ec8e48bf81f6d6ff572c04",
+    "vm-builder/normal_stock_inventory_test.go": "e15d5d9dc14b992ffcbcb4dc109fbc5669d991a49bcb376ba475258bf28e21f3",
+    "vm-builder/normal_stock_package_lock_binding_test.go": "3d1f4b4c411add35c4c2358075346d2765c1d6ade3444f181c5645a1cf707b3c"
+  },
+  "management2_exact_commit_and_original_COPY": {
+    "pkg/dsga/resourceguard/normal_ordinary_management_tls_prepare_linux.go": "2519cd04b66539bb0625e6b667368b6d0084ff181d1c740352bb491a48d06039",
+    "pkg/dsga/resourceguard/normal_ordinary_management_tls_prepare_linux_test.go": "72e91f4d298e26e6e0abf6102734a197383f857729bd5bebc526a8cb4d30a5d9"
+  },
+  "management_commit": "2c1cfbf3d100380be5e9449f4f88bde5f499dce6",
+  "management_original_result": "/data/neon-build/src/autoscaling/docs/validation/normal-ordinary-management-root-prepare-20261101/result.json",
+  "management_original_result_sha256": "5f63ba6a97b9dcfd0520c01f7ee30b591528a1154d45f040a81347dba60d2785",
+  "normal": false,
+  "scope": "READONLY_NO_NEW_TESTS_NO_GIT_INDEX_NO_PRODUCTION_EDITS",
+  "source_graph_boundary": "936 source inherits actual fa source + Root7; management2 absent from this tree, audited separately; lock.base is workspace HEAD, original_asset_graph+actual_COPY is authoritative"
+}

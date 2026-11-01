@@ -1,0 +1,23 @@
+{
+  "nonce": "20261101T125524Z-acbdca",
+  "unit": "neon-ordinary-device-check-go-20261101t125524z-acbdca.service",
+  "base": "17cb700d65ae2ebc124efffbe65a391ef27c39e6",
+  "owned6": {
+    "pkg/dsga/resourceguard/normal_system_ordinary_v2_device_check_linux.go": "c47bd096d4776bdda574a6e0f7a0740f19e455efb08efeca417da78cd1910771",
+    "pkg/dsga/resourceguard/normal_system_ordinary_v2_device_check_linux_test.go": "a412a4e373f7cd75ac01569de6cf2a1bca7dea7a23d9a43dca1c6f35a51f8e0c",
+    "pkg/dsga/resourceguard/normal_system_ordinary_v2_device_check_unsupported.go": "2f4464e648d27f516ff675d63f80ac6245850b299d33f518d9afa561b4eade71",
+    "pkg/dsga/resourceguard/normal_ordinary_actions_v2_protocol_linux.go": "d3cf7e75a6821a572d0bb60972901dca3e298f6b81ef4c6bb6bba0067c893930",
+    "pkg/dsga/resourceguard/normal_ordinary_actions_v2_server_linux.go": "0950385091d46c3000cabe1da54f21c9b607e62b3bb31a48ab07a566a6391529",
+    "neonvm-daemon/cmd/resource-guard/main.go": "e4b00b2829d13a282f0d7ac1281bfbd9ade13a88fc688de6c5906c5c640b3c46"
+  },
+  "source_lock_sha256": "14733464cf94a3816bed6e6419d26f051bd8ae8405940a4ec658b00bed72e696",
+  "inputs": 1389,
+  "limits": {
+    "CPU": 3,
+    "MemoryGiB": 3,
+    "GoMaxProcs": 2,
+    "GoMemLimit": "768MiB"
+  },
+  "Source": false,
+  "E": 0
+}

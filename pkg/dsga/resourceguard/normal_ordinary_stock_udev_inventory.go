@@ -73,7 +73,7 @@ func normalOrdinaryStockUdevSortedRequiredPaths() []string {
 }
 
 func normalSystemStockUdevFileKind(name string) (string, bool) {
-	if name == NormalSystemStockUdevManifestPath {
+	if name == NormalSystemStockUdevManifestPath || name == NormalSystemOrdinaryV2PackageLockPath {
 		return "config", true
 	}
 	class, _, ok := normalOrdinaryStockUdevFileClass(name)

@@ -1,0 +1,26 @@
+[
+  {
+    "command": "qmp_capabilities",
+    "response": {
+      "return": {}
+    }
+  },
+  {
+    "command": "query-kvm",
+    "response": {
+      "return": {
+        "enabled": true,
+        "present": true
+      }
+    }
+  },
+  {
+    "command": "query-memory-size-summary",
+    "response": {
+      "return": {
+        "base-memory": 536870912,
+        "plugged-memory": 0
+      }
+    }
+  }
+]

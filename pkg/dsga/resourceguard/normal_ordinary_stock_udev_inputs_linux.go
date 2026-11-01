@@ -118,6 +118,16 @@ func pinNormalOrdinaryStockUdevInputs(ctx context.Context, system *normalSystemL
 	if e = normalOrdinaryStockUdevMatchInventory(system.manifest, i.manifest); e != nil {
 		return fail(e)
 	}
+	lockEntry, e := normalOrdinaryStockUdevPackageLockEntry(system.manifest, i.manifest)
+	if e != nil {
+		return fail(e)
+	}
+	lockFile, lockFact, e := normalOrdinaryStockUdevPinFile(*lockEntry, "package-lock", false)
+	if e != nil {
+		return fail(e)
+	}
+	i.pins[lockFact.Path] = lockFile
+	i.reference.Files = append(i.reference.Files, lockFact)
 	i.reference.ManifestSHA256 = p.SHA256
 	i.reference.PackageLockSHA256 = i.manifest.PackageLockSHA256
 	rules := []normalOrdinaryStockUdevFile{}
@@ -784,4 +794,14 @@ func (i *normalOrdinaryStockUdevInputs) close() {
 		}
 		i.closed = true
 	}
+}
+
+// 固定原RO包锁必须作为同一个System3的实际config对象存在；不是路径存在或MF常数。
+// 返回副本以免后继调用者改原库存。首次pin及每次recheck仍核实际FD/只读祖先/hash。
+func normalOrdinaryStockUdevPackageLockEntry(system NormalSystemSourceManifest, m normalOrdinaryStockUdevManifest) (*NormalSystemSourceFile, error) {
+	e := normalOrdinaryStockUdevSystemEntry(system, NormalSystemOrdinaryV2PackageLockPath)
+	if system.ProtocolVersion != 3 || e == nil || e.Kind != "config" || e.CanonicalPath != e.Path || e.Bytes == 0 || e.Bytes > 256<<10 || e.SHA256 != m.PackageLockSHA256 || !normalOrdinaryStockUdevDigest(e.SHA256) {
+		return nil, fmt.Errorf("actual original stock package lock differs or is absent")
+	}
+	return e, nil
 }

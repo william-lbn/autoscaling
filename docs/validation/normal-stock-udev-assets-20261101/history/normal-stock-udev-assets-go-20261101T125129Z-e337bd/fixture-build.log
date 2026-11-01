@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/data/neon-build/validation/normal-stock-udev-assets-go-20261101T125129Z-e337bd/fixture-builder.py", line 47, in <module>
+    assert choices,('required original member missing',logical)
+           ^^^^^^^
+AssertionError: ('required original member missing', '/lib/udev/rules.d/80-net-name-slot.rules')

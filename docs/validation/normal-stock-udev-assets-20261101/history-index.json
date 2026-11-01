@@ -1,0 +1,17 @@
+[
+  {
+    "path": "/data/neon-build/validation/normal-stock-udev-assets-go-20261101T125129Z-e337bd",
+    "result_sha256": "edc2fb460b99be489c87bb7b558d54ca48ccb818cddb448cba8d64c678f10203",
+    "reason": "实际signed APK只有26规则，缺strict27中80-net-name-slot；fixture构建拒绝、0U/0编译；后继将该实际built member精确绑定e473 source-lock，未删除必填规则"
+  },
+  {
+    "path": "/data/neon-build/validation/normal-stock-udev-assets-go-20261101T125504Z-d7b776",
+    "result_sha256": "982497d11433b277f57586c9c464ccb8b690bb4b9f36d52987d74e6484634f17",
+    "reason": "fixture已构造75 actual files；driver owned33拼成owned53，编译前失败，不是源码编译失败"
+  },
+  {
+    "path": "/data/neon-build/validation/normal-stock-udev-assets-go-20261101T125811Z-31476c",
+    "result_sha256": "0c82c2483f157bc9dd68556ebf42c0a528f736aff597655c344238a03e2cb200",
+    "reason": "实际编译/CLI/Darwin0，资产正控严格拒包锁多声明未消费public libudev；实际ELF全部静态含private libudev。readonly reconcile独立归档；只修fixture删多余DSO，生产5字节未改"
+  }
+]

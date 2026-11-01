@@ -63,7 +63,12 @@ func normalStockBuilderFixture(t *testing.T) string {
 		}
 		entries = append(entries, map[string]any{"path": name, "kind": class, "code": kind == "exec" || kind == "loader", "bytes": control.Uint64(len(raw)), "sha256": normalDigest(raw)})
 	}
-	raw, e := json.Marshal(map[string]any{"protocol_version": 2, "scope": "normal-ordinary-stock-udev-manifest-v2", "package_lock_sha256": strings.Repeat("ab", 32), "files": entries})
+	// 模型包锁只用来核最终原始字节绑定，不称真实provider来源。
+	lockRaw := []byte("TEST_ONLY original package lock, not Source\n")
+	if e := os.WriteFile(filepath.Join(root, resourceguard.NormalSystemOrdinaryV2PackageLockPath), lockRaw, 0444); e != nil {
+		t.Fatal(e)
+	}
+	raw, e := json.Marshal(map[string]any{"protocol_version": 2, "scope": "normal-ordinary-stock-udev-manifest-v2", "package_lock_sha256": normalDigest(lockRaw), "files": entries})
 	if e != nil {
 		t.Fatal(e)
 	}

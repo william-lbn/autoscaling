@@ -1,0 +1,161 @@
+// resource-guard是Guest root执行器；受管服务只监听固定认证UDS，不复用旧无认证
+// HTTP端口。SUID仍只允许PG出生，普通postgres不能借serve进入root资源操作。
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"flag"
+	"fmt"
+	"io"
+	"os"
+	"strconv"
+
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+)
+
+// 固定角色的正常非零退出码要原样返给init，不能误写成资源执行器故障码1。
+type systemRoleExit struct{ code int }
+
+func (e *systemRoleExit) Error() string { return fmt.Sprintf("system role exit %d", e.code) }
+
+func run() error {
+	// SUID场景唯一允许的非root动作必须在flag解析前分流，不能借--config选择
+	// 另一份资源日志，也不能让真实postgres UID以有效root调用bootstrap/apply。
+	if len(os.Args) > 1 && os.Args[1] == "launch-postgres" {
+		return resourceguard.ExecPostgres(os.Args[2:])
+	}
+	if len(os.Args) == 2 && os.Args[1] == "ordinary-v2-device-check" {
+		return resourceguard.RunNormalSystemOrdinaryV2DeviceCheck(context.Background())
+	}
+	if os.Getuid() != 0 {
+		return fmt.Errorf("resource operations require real root")
+	}
+	// 只接受固定动作/枚举；各入口再核原Root能力、RO Source与原进程身份。
+	if len(os.Args) == 2 && os.Args[1] == "role-exec-gate" {
+		return resourceguard.RunNormalSystemRoleExecGate(context.Background())
+	}
+	if len(os.Args) == 2 && os.Args[1] == "system-role-broker" {
+		return resourceguard.RunNormalSystemRoleBroker(context.Background())
+	}
+	if len(os.Args) == 3 && os.Args[1] == "exec-system-role" {
+		code, err := resourceguard.RunNormalSystemRoleClient(context.Background(), os.Args[2])
+		if err != nil {
+			return err
+		}
+		if code != 0 {
+			return &systemRoleExit{code}
+		}
+		return nil
+	}
+	if len(os.Args) == 2 && os.Args[1] == "initial-boot" {
+		return resourceguard.RunInitialBootGuest(context.Background())
+	}
+	if len(os.Args) == 2 && os.Args[1] == "recover-initial-boot" {
+		return resourceguard.RecoverInitialBootGuest(context.Background())
+	}
+	if len(os.Args) == 2 && os.Args[1] == "serve" {
+		return resourceguard.ServeGuest(context.Background())
+	}
+	if len(os.Args) == 2 && os.Args[1] == "provision-guest" {
+		e, err := resourceguard.ProvisionGuest(context.Background())
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(os.Stdout).Encode(e)
+	}
+	if len(os.Args) == 2 && os.Args[1] == "check-guest" {
+		return resourceguard.CheckGuest(context.Background())
+	}
+	configPath := flag.String("config", resourceguard.FixedConfigPath, "root-owned immutable VM resource configuration")
+	flag.Parse()
+	args := flag.Args()
+	if len(args) == 0 {
+		return fmt.Errorf("required action: initialize <epoch>, fence <epoch>, apply, observe or replay-original")
+	}
+	config, err := resourceguard.LoadConfig(*configPath)
+	if err != nil {
+		return err
+	}
+	guard, err := resourceguard.Open(config)
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+	var result any
+	if args[0] == "identity" && len(args) == 1 {
+		result, err = guard.InspectIdentity()
+	} else if args[0] == "fence" || args[0] == "initialize" {
+		if len(args) != 2 {
+			return fmt.Errorf("fence requires one canonical nonzero epoch")
+		}
+		epoch, parseErr := strconv.ParseUint(args[1], 10, 64)
+		if parseErr != nil || epoch == 0 || args[1] != strconv.FormatUint(epoch, 10) {
+			return fmt.Errorf("invalid fence epoch")
+		}
+		if args[0] == "initialize" {
+			result, err = guard.Initialize(ctx, control.Uint64(epoch))
+		} else {
+			result, err = guard.Fence(ctx, control.Uint64(epoch))
+		}
+	} else {
+		if len(args) != 1 || (args[0] != "apply" && args[0] != "observe" && args[0] != "replay-original" && args[0] != "bootstrap" && args[0] != "observe-bootstrap" && args[0] != "replay-bootstrap") {
+			return fmt.Errorf("unsupported resource action")
+		}
+		data, readErr := io.ReadAll(io.LimitReader(os.Stdin, 64*1024+1))
+		if readErr != nil {
+			return readErr
+		}
+		if len(data) > 64*1024 {
+			return fmt.Errorf("resource command exceeds bound")
+		}
+		if args[0] == "bootstrap" || args[0] == "observe-bootstrap" || args[0] == "replay-bootstrap" {
+			var command resourceguard.BootstrapCommand
+			if err := json.Unmarshal(data, &command); err != nil {
+				return err
+			}
+			switch args[0] {
+			case "bootstrap":
+				result, err = guard.Bootstrap(ctx, command)
+			case "observe-bootstrap":
+				result, err = guard.ObserveBootstrap(ctx, command)
+			case "replay-bootstrap":
+				result, err = guard.ReplayBootstrap(ctx, command)
+			}
+			if err != nil {
+				return err
+			}
+			return json.NewEncoder(os.Stdout).Encode(result)
+		}
+		var command resourceguard.Command
+		if err := json.Unmarshal(data, &command); err != nil {
+			return err
+		}
+		switch args[0] {
+		case "apply":
+			result, err = guard.Apply(ctx, command)
+		case "observe":
+			result, err = guard.Observe(ctx, command)
+		case "replay-original":
+			result, err = guard.ReplayOriginal(ctx, command)
+		}
+	}
+	if err != nil {
+		return err
+	}
+	// 输出失败与丢失回复均不能推导NoEffect；原意图仍在持久日志中，必须原查询。
+	return json.NewEncoder(os.Stdout).Encode(result)
+}
+
+func main() {
+	if err := run(); err != nil {
+		var roleExit *systemRoleExit
+		if errors.As(err, &roleExit) {
+			os.Exit(roleExit.code)
+		}
+		fmt.Fprintln(os.Stderr, "DSGA resource guard:", err)
+		os.Exit(1)
+	}
+}

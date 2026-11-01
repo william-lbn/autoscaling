@@ -126,8 +126,11 @@ COPY --from=rootdisk-mod / /rootdisk
 COPY normal-manifest-tool /normal-manifest-tool
 COPY normal-build-plan.json /normal-build-plan.json
 COPY normal-prepare-root.sh /normal-prepare-root.sh
+{{if eq .NormalOrdinaryControlsVersion 2}}
+COPY normal-ordinary-package-lock.json /normal-ordinary-package-lock.json
+{{end}}
 RUN /rootdisk/neonvm/bin/busybox sh /normal-prepare-root.sh {{.NormalUID}} {{.NormalGID}}
-RUN /normal-manifest-tool --system-mode={{.NormalSystemMode}} --normal-manifest-root=/rootdisk --normal-build-plan=/normal-build-plan.json --normal-base-image-sha={{.NormalBaseSHA}}
+RUN /normal-manifest-tool --system-mode={{.NormalSystemMode}} --normal-manifest-root=/rootdisk --normal-build-plan=/normal-build-plan.json --normal-base-image-sha={{.NormalBaseSHA}}{{if eq .NormalOrdinaryControlsVersion 2}} --normal-ordinary-controls-version=2 --normal-ordinary-package-lock=/normal-ordinary-package-lock.json{{end}}
 {{end}}
 
 

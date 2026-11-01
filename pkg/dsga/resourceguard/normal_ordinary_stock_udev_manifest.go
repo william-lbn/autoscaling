@@ -129,3 +129,13 @@ func NormalSystemSourceStockUdevManifestFiles(raw []byte) ([]NormalSystemSourceF
 	}
 	return out, nil
 }
+
+// 只导出严格静态MF中的原锁摘要，供构建器比对真实文件。摘要本身不授运行能力。
+// 包锁不加入MF.files，不形成自身文件摘要循环；原System3另收固定锁文件。
+func NormalSystemSourceStockUdevPackageLockSHA256(raw []byte) (string, error) {
+	m, e := decodeNormalOrdinaryStockUdevManifest(raw)
+	if e != nil {
+		return "", e
+	}
+	return m.PackageLockSHA256, nil
+}

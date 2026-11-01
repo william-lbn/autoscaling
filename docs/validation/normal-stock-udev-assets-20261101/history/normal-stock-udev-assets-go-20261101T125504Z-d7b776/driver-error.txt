@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/data/neon-build/validation/normal-stock-udev-assets-go-20261101T125504Z-d7b776/worker.py", line 18, in <module>
+    prior=Path('/data/neon-build/validation/root-stock-joint-go-20261101T123904Z-b0791a');priorLock=json.loads((prior/'source-lock.json').read_bytes());deps=priorLock['owned53'];assert len(deps)==33
+                                                                                                                                                             ~~~~~~~~~^^^^^^^^^^^
+KeyError: 'owned53'

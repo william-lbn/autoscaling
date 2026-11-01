@@ -1,0 +1,56 @@
+{
+  "new_U_roots": 6,
+  "new_U_named_subtests": 20,
+  "U": [
+    {
+      "id": "PG17-U-ORDINARY2-DEVICE-CHECK-001",
+      "root": "TestNormalOrdinaryDeviceCheckRejectsIdentityAndCapabilities",
+      "receipt": "go/export/test.json"
+    },
+    {
+      "id": "PG17-U-ORDINARY2-DEVICE-CHECK-002",
+      "root": "TestNormalOrdinaryDeviceCheckFixedActionFive",
+      "receipt": "go/export/test.json"
+    },
+    {
+      "id": "PG17-U-ORDINARY2-DEVICE-CHECK-003",
+      "root": "TestNormalOrdinaryDeviceCheckStrictReply",
+      "receipt": "go/export/test.json"
+    },
+    {
+      "id": "PG17-U-ORDINARY2-DEVICE-CHECK-004",
+      "root": "TestNormalOrdinaryDeviceCheckUnknownWithoutOriginalRootPeer",
+      "receipt": "go/export/test.json"
+    },
+    {
+      "id": "PG17-U-ORDINARY2-DEVICE-CHECK-005",
+      "root": "TestNormalOrdinaryDeviceCheckCannotCreateUdevSourceFromIdentity",
+      "receipt": "go/export/test.json"
+    },
+    {
+      "id": "PG17-U-ORDINARY2-DEVICE-CHECK-006",
+      "root": "TestNormalOrdinaryDeviceCheckReceivedRightsAreClosed",
+      "receipt": "go/export/test.json"
+    }
+  ],
+  "direct_old_U_roots": 6,
+  "direct_old_named_subtests": 8,
+  "combined12_28_no_skip": true,
+  "S": [
+    {
+      "id": "PG17-S-ORDINARY2-DEVICE-CHECK-001",
+      "receipt": "native/normal-ordinary-device-check-native-20261101T130531Z-5b11f6/result.json",
+      "cases": 8,
+      "classification": "ACTUAL_CLI_IDENTITY_PIDFS_ACK_WITH_MODEL_ROOT_ONLY"
+    }
+  ],
+  "Source": false,
+  "normal": false,
+  "E": 0,
+  "failure_history": [
+    "normal-ordinary-device-check-native-20261101T130054Z-efb367",
+    "normal-ordinary-device-check-native-20261101T130344Z-2846ad"
+  ],
+  "NNP1_fixture_observation": "preexec UID60005/0/0 but real postexec fourUID60005 observed, so original negative expectation was invalid; production unchanged",
+  "final_SUID_negative": "NNP0 retains forbidden SUID identity and actual client zero-connect refuses"
+}

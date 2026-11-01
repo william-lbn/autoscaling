@@ -90,19 +90,21 @@ var (
 	AlpineImageShaAmd64 string
 	AlpineImageShaArm64 string
 
-	systemModeFlag     = flag.String("system-mode", "legacy", "Fixed System build selector: legacy | normal-split-v1 | normal-split-v3 (not runtime authorization)")
-	normalPlanFlag     = flag.String("normal-build-plan", "", "Explicit versioned fixed compute build plan; values are not logged")
-	normalManifestRoot = flag.String("normal-manifest-root", "", "Build-container-only final root inventory command")
-	normalBaseDigest   = flag.String("normal-base-image-sha", "", "Original base image declaration for final inventory; not final image self hash")
-	srcImage           = flag.String("src", "", `Docker image used as source for virtual machine disk image: --src=alpine:3.19`)
-	dstImage           = flag.String("dst", "", `Docker image with resulting disk image: --dst=vm-alpine:3.19`)
-	size               = flag.String("size", "1G", `Size for disk image: --size=1G`)
-	outFile            = flag.String("file", "", `Save disk image as file: --file=vm-alpine.qcow2`)
-	buildArgs          = MultiStringFlag("build-arg", "Docker build-args to use during the build (multiple allowed)")
-	specFile           = flag.String("spec", "", `File containing additional customization: --spec=spec.yaml`)
-	quiet              = flag.Bool("quiet", false, `Show less output from the docker build process`)
-	forcePull          = flag.Bool("pull", false, `Pull src image even if already present locally`)
-	version            = flag.Bool("version", false, `Print vm-builder version`)
+	systemModeFlag            = flag.String("system-mode", "legacy", "Fixed System build selector: legacy | normal-split-v1 | normal-split-v3 (not runtime authorization)")
+	normalPlanFlag            = flag.String("normal-build-plan", "", "Explicit versioned fixed compute build plan; values are not logged")
+	normalManifestRoot        = flag.String("normal-manifest-root", "", "Build-container-only final root inventory command")
+	normalBaseDigest          = flag.String("normal-base-image-sha", "", "Original base image declaration for final inventory; not final image self hash")
+	normalOrdinaryControls    = flag.Uint("normal-ordinary-controls-version", 1, "Explicit fixed ordinary controls version: 1 or 2; version 2 requires normal-split-v3 and original package lock")
+	normalOrdinaryPackageLock = flag.String("normal-ordinary-package-lock", "", "Original Linux source/package build lock for explicit ordinary controls version 2")
+	srcImage                  = flag.String("src", "", `Docker image used as source for virtual machine disk image: --src=alpine:3.19`)
+	dstImage                  = flag.String("dst", "", `Docker image with resulting disk image: --dst=vm-alpine:3.19`)
+	size                      = flag.String("size", "1G", `Size for disk image: --size=1G`)
+	outFile                   = flag.String("file", "", `Save disk image as file: --file=vm-alpine.qcow2`)
+	buildArgs                 = MultiStringFlag("build-arg", "Docker build-args to use during the build (multiple allowed)")
+	specFile                  = flag.String("spec", "", `File containing additional customization: --spec=spec.yaml`)
+	quiet                     = flag.Bool("quiet", false, `Show less output from the docker build process`)
+	forcePull                 = flag.Bool("pull", false, `Pull src image even if already present locally`)
+	version                   = flag.Bool("version", false, `Print vm-builder version`)
 
 	daemonImageFlag  = flag.String("daemon-image", "", `Specify the neonvm-daemon image: --daemon-image=neonvm-daemon:dev`)
 	alpineImageFlag  = flag.String("alpine-image", "alpine", `Specify the alpine image: --alpine-image=docker.io/library/alpine`)
@@ -156,16 +158,17 @@ type TemplatesContext struct {
 	AlpineImageTag  string
 	AlpineImageSha  string
 
-	SpecBuild        string
-	SpecMerge        string
-	InittabCommands  []inittabCommand
-	AgettyTTY        string
-	ShutdownHook     string
-	NormalSystemMode string
-	NormalSplit      bool
-	NormalBaseSHA    string
-	NormalUID        uint32
-	NormalGID        uint32
+	SpecBuild                     string
+	SpecMerge                     string
+	InittabCommands               []inittabCommand
+	AgettyTTY                     string
+	ShutdownHook                  string
+	NormalSystemMode              string
+	NormalOrdinaryControlsVersion uint32
+	NormalSplit                   bool
+	NormalBaseSHA                 string
+	NormalUID                     uint32
+	NormalGID                     uint32
 }
 
 type inittabCommand struct {
@@ -186,10 +189,19 @@ func main() {
 		if e != nil {
 			log.Fatal(e)
 		}
+		packageLock, e := readNormalOrdinaryV2BuildLock(*systemModeFlag, *normalOrdinaryControls, *normalOrdinaryPackageLock)
+		if e != nil {
+			log.Fatal(e)
+		}
 		version := uint32(2)
 		if *systemModeFlag == normalSplitV3BuildMode {
 			version = 3
-			if e := prepareNormalSystemV3Assets(*normalManifestRoot, raw); e != nil {
+			if *normalOrdinaryControls == 2 {
+				if _, e := prepareNormalSystemStockUdevAssets(*normalManifestRoot, packageLock, plan.ComputeUID, plan.ComputeGID, 2); e != nil {
+					log.Fatal(e)
+				}
+			}
+			if e := prepareNormalSystemV3AssetsForControls(*normalManifestRoot, raw, uint32(*normalOrdinaryControls)); e != nil {
 				log.Fatal(e)
 			}
 		} else if *systemModeFlag != "legacy" && *systemModeFlag != normalSplitBuildMode {
@@ -278,6 +290,10 @@ func main() {
 	}
 	if *systemModeFlag == normalSplitBuildMode || *systemModeFlag == normalSplitV3BuildMode {
 		normalPlan, _ = decodeNormalBuildPlan(normalRaw)
+	}
+	ordinaryLockRaw, e := readNormalOrdinaryV2BuildLock(*systemModeFlag, *normalOrdinaryControls, *normalOrdinaryPackageLock)
+	if e != nil {
+		log.Fatal(e)
 	}
 	log.Println("Load docker credentials")
 	dockerConfig, err := cliconfig.Load("" /* auto-detect right directory */)
@@ -450,6 +466,7 @@ func main() {
 	if *systemModeFlag == normalSplitBuildMode || *systemModeFlag == normalSplitV3BuildMode {
 		tmplArgs.NormalSplit = true
 		tmplArgs.NormalSystemMode = *systemModeFlag
+		tmplArgs.NormalOrdinaryControlsVersion = uint32(*normalOrdinaryControls)
 		tmplArgs.NormalUID = normalPlan.ComputeUID
 		tmplArgs.NormalGID = normalPlan.ComputeGID
 		tmplArgs.User = fmt.Sprintf("%d:%d", normalPlan.ComputeUID, normalPlan.ComputeGID)
@@ -550,6 +567,27 @@ func main() {
 			if v, ok := replacements[files[i].filename]; ok {
 				files[i].tmpl = v
 				normalLiteralFiles[files[i].filename] = true
+			}
+		}
+		if *normalOrdinaryControls == 2 {
+			assets, e := normalOrdinaryV2BuildAssets(2)
+			if e != nil {
+				log.Fatal(e)
+			}
+			for _, a := range assets {
+				name := map[string]string{"/neonvm/bin/vmstart": "vmstart", "/neonvm/bin/vmshutdown": "vmshutdown", "/neonvm/config/vector.yaml": "vector.yaml", "/neonvm/config/chrony.conf": "chrony.conf"}[a.Path]
+				if name == "" {
+					log.Fatal("unknown fixed ordinary asset")
+				}
+				for i := range files {
+					if files[i].filename == name {
+						files[i].tmpl = string(a.Bytes)
+						normalLiteralFiles[name] = true
+					}
+				}
+			}
+			if e := addFileToTar(tw, "normal-ordinary-package-lock.json", ordinaryLockRaw); e != nil {
+				log.Fatal(e)
 			}
 		}
 		tool, e := normalBuilderExecutable()

@@ -1,0 +1,66 @@
+{
+  "actual_needed": {
+    "/lib/ld-musl-x86_64.so.1": [],
+    "/lib/libblkid.so.1": [
+      "libc.musl-x86_64.so.1"
+    ],
+    "/lib/libc.musl-x86_64.so.1": [],
+    "/lib/libcrypto.so.3": [
+      "libc.musl-x86_64.so.1"
+    ],
+    "/lib/libkmod.so.2": [
+      "libzstd.so.1",
+      "liblzma.so.5",
+      "libz.so.1",
+      "libcrypto.so.3",
+      "libc.musl-x86_64.so.1"
+    ],
+    "/lib/libz.so.1": [
+      "libc.musl-x86_64.so.1"
+    ],
+    "/lib/udev/ata_id": [
+      "libc.musl-x86_64.so.1"
+    ],
+    "/lib/udev/cdrom_id": [
+      "libc.musl-x86_64.so.1"
+    ],
+    "/lib/udev/collect": [
+      "libc.musl-x86_64.so.1"
+    ],
+    "/lib/udev/dmi_memory_id": [
+      "libc.musl-x86_64.so.1"
+    ],
+    "/lib/udev/fido_id": [
+      "libc.musl-x86_64.so.1"
+    ],
+    "/lib/udev/mtd_probe": [
+      "libc.musl-x86_64.so.1"
+    ],
+    "/lib/udev/scsi_id": [
+      "libc.musl-x86_64.so.1"
+    ],
+    "/lib/udev/v4l_id": [
+      "libc.musl-x86_64.so.1"
+    ],
+    "/neonvm/bin/udevadm": [
+      "libblkid.so.1",
+      "libkmod.so.2",
+      "libc.musl-x86_64.so.1"
+    ],
+    "/neonvm/bin/udevd": [
+      "libblkid.so.1",
+      "libkmod.so.2",
+      "libc.musl-x86_64.so.1"
+    ],
+    "/usr/lib/liblzma.so.5": [
+      "libc.musl-x86_64.so.1"
+    ],
+    "/usr/lib/libzstd.so.1": [
+      "libc.musl-x86_64.so.1"
+    ]
+  },
+  "scope": "READ_ONLY_EXACT_ELF_DT_NEEDED_RECONCILE_NOT_SOURCE",
+  "unused_DSO_declarations": [
+    "/lib/libudev.so.1"
+  ]
+}

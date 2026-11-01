@@ -1,0 +1,32 @@
+{
+  "counts": {
+    "roots": 17,
+    "subtests": 58,
+    "pass": 75,
+    "skip": 0,
+    "fail": 0
+  },
+  "roots": [
+    "TestNormalSplitV3SelectionKeepsLegacyAndV2",
+    "TestNormalSplitV3AssetsBindExactOriginalBytes",
+    "TestNormalSplitV3AssetsRejectOverwriteAndAliases",
+    "TestNormalSplitV3FinalInventoryAndOldDefault",
+    "TestNormalSplitV3DockerTemplatePassesExplicitMode",
+    "TestNormalSplitV3ComputeScriptKeepsGateAndOriginalFlock",
+    "TestNormalSplitV3StockFinalBytes",
+    "TestNormalSplitV3StockRejectsFinalDrift",
+    "TestNormalSplitV3StockAlternativeRulesEmptyOrSameObject",
+    "TestNormalStockAssetsExplicitVersionAndRoot",
+    "TestNormalStockAssetsAccountInstallation",
+    "TestNormalStockAssetsActualProvider",
+    "TestNormalStockAssetsActualProviderRejectsDrift",
+    "TestNormalOrdinarySelectedBuildEmitsBroker3Controls2",
+    "TestNormalOrdinarySelectedBuildTemplateCarriesLock",
+    "TestNormalOrdinaryBuildSelectionIsExplicit",
+    "TestNormalOrdinaryBuildLockRetainsOriginalBytes"
+  ],
+  "scope": "modified asset logic + Root explicit selection/prepareV3 integration; no unrelated Neon tests",
+  "Source": false,
+  "S": 0,
+  "E": 0
+}
