@@ -10,6 +10,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/bootprotocol"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sys/unix"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -121,26 +122,28 @@ func stockPreparationDEVDelayedStack(stage string) {
 		fmt.Printf("STOCK_PREPARATION_DEV_STACK stage=%s %s\n", stage, b[:n])
 	}()
 }
-func stockPreparationDEVObserve(ctx context.Context, s *lockedState, p *normalOrdinaryStockUdevPreparation) error {
-	if p == nil || p.q == nil || p.q.parent == nil {
+
+// 仅DEV通知，既不由生产读取也不授Source/COMMIT；R1只在生产Start成功后等待它。
+const stockPreparationDEVR1ReleaseName = ".stock-preparation-dev-r1-release"
+
+func stockPreparationDEVObserve(ctx context.Context, _ *lockedState, p *normalOrdinaryStockUdevPreparation) error {
+	if p == nil || p.q == nil || p.q.parent == nil || p.q.authority == nil || p.q.authority.admission == nil {
 		return ErrUnknown
 	}
-	if e := arrayRegistryPIDFDAlive(p.q.parent.pidfd); e != nil {
+	// 原Task.mu下dup，goroutine只拥有自己的原pidfd，不读可能close/reuse的字段。
+	parent := p.q.parent
+	parent.mu.Lock()
+	if parent.closed || parent.pidfd < 0 {
+		parent.mu.Unlock()
+		return ErrUnknown
+	}
+	pidfd, e := unix.FcntlInt(uintptr(parent.pidfd), unix.F_DUPFD_CLOEXEC, 3)
+	parent.mu.Unlock()
+	if e != nil {
 		return e
 	}
-	// 唯一生产调用点刚已完整referenceLocked成功，且尚在同一resource锁/构造栈。
-	// reference之后不再写；这里只观察该已验值，避免DEV重复全FS检查扰动Ready窗口。
-	p.mu.Lock()
-	if p.closed || !p.complete {
-		p.mu.Unlock()
-		return ErrUnknown
-	}
-	ref := p.reference
-	p.mu.Unlock()
-	raw, _ := json.Marshal(ref)
-	fmt.Println("STOCK_PREPARATION_R1_ALIVE_REFERENCE_SHA256", physicalDigest(raw))
-	fmt.Printf("STOCK_PREPARATION_ORIGINAL_JSON {\"projection_sha256\":%q,\"wait_sha256\":%q,\"manifest_sha256\":%q,\"package_lock_sha256\":%q,\"targets\":%d,\"runtime_phase\":3,\"typed_source\":true,\"normal\":false}\n", ref.ProjectionSHA256, ref.WaitSHA256, ref.ManifestSHA256, ref.PackageLockSHA256, len(p.catalog.ordered))
 	go func() {
+		defer unix.Close(pidfd)
 		call, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 		defer cancel()
 		failure := func(e error) {
@@ -150,8 +153,51 @@ func stockPreparationDEVObserve(ctx context.Context, s *lockedState, p *normalOr
 			unix.Sync()
 			_ = unix.Reboot(unix.LINUX_REBOOT_CMD_POWER_OFF)
 		}
+		// 先等真实COMMIT打开business，再取resource flock；不能在Ready路径抢锁。
+		for !p.q.authority.admission.businessAllowed() {
+			if p.q.authority.admission.failed.Load() || call.Err() != nil {
+				failure(errors.Join(ErrUnknown, call.Err()))
+				return
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+		var ref normalOrdinaryUdevV2PreparationReference
+		e := p.q.g.withRecord(call, func(_ *record, state *lockedState) error {
+			if !p.q.authority.admission.businessAllowed() {
+				return ErrUnknown
+			}
+			var e error
+			ref, e = p.referenceLocked(call, state)
+			if e != nil {
+				return e
+			}
+			if !p.q.authority.admission.businessAllowed() {
+				return ErrUnknown
+			}
+			// 独立完整freshref之后再核原R1仍活，才通知生产Start已返回的R1。
+			if e = arrayRegistryPIDFDAlive(pidfd); e != nil {
+				return e
+			}
+			raw, _ := json.Marshal(ref)
+			f, e := os.OpenFile(filepath.Join(p.q.g.config.StateDir, stockPreparationDEVR1ReleaseName), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+			if e != nil {
+				return e
+			}
+			_, writeErr := f.WriteString(physicalDigest(raw) + "\n")
+			closeErr := f.Close()
+			if writeErr != nil || closeErr != nil {
+				return errors.Join(writeErr, closeErr)
+			}
+			fmt.Println("STOCK_PREPARATION_R1_ALIVE_REFERENCE_SHA256", physicalDigest(raw))
+			fmt.Printf("STOCK_PREPARATION_ORIGINAL_JSON {\"projection_sha256\":%q,\"wait_sha256\":%q,\"manifest_sha256\":%q,\"package_lock_sha256\":%q,\"targets\":%d,\"runtime_phase\":3,\"typed_source\":true,\"normal\":false}\n", ref.ProjectionSHA256, ref.WaitSHA256, ref.ManifestSHA256, ref.PackageLockSHA256, len(p.catalog.ordered))
+			return nil
+		})
+		if e != nil {
+			failure(e)
+			return
+		}
 		for {
-			fds := []unix.PollFd{{Fd: int32(p.q.parent.pidfd), Events: unix.POLLIN}}
+			fds := []unix.PollFd{{Fd: int32(pidfd), Events: unix.POLLIN}}
 			n, e := unix.Poll(fds, 50)
 			if errors.Is(e, unix.EINTR) {
 				continue
@@ -163,29 +209,30 @@ func stockPreparationDEVObserve(ctx context.Context, s *lockedState, p *normalOr
 			if n > 0 && fds[0].Revents&unix.POLLIN != 0 {
 				break
 			}
+			if n > 0 && fds[0].Revents != 0 {
+				failure(ErrUnknown)
+				return
+			}
 			if call.Err() != nil {
 				failure(call.Err())
 				return
 			}
 		}
-		e := p.q.g.withRecord(call, func(_ *record, state *lockedState) error {
+		e = p.q.g.withRecord(call, func(_ *record, state *lockedState) error {
 			after, e := p.referenceLocked(call, state)
 			if e != nil {
 				return e
 			}
-			if after != ref {
+			if after != ref || !p.q.authority.admission.businessAllowed() {
 				return ErrUnknown
 			}
-			if !p.q.authority.admission.businessAllowed() {
-				return ErrUnknown
-			}
-			// 原Initial8+FS2+KernelR2+MemoryR2在完整reference内部重核；不是按旧PID/JSON认领。
 			return nil
 		})
 		if e != nil {
 			failure(e)
 			return
 		}
+		raw, _ := json.Marshal(ref)
 		stockPreparationDEVInspectionReport(ctx)
 		fmt.Println("STOCK_PREPARATION_R1_EXITED_REFERENCE_SHA256", physicalDigest(raw))
 		fmt.Println("STOCK_PREPARATION_GUEST_EXIT=0")
@@ -247,9 +294,33 @@ func TestNativeNormalStockUdevPreparationInitial(t *testing.T) {
 	require.NoError(t, e)
 	require.NoError(t, CheckGuest(ctx))
 	// 不调用旧DEVPrepareFixedDirectories/不注入projection/monitor/Wait；全部真实生产ctor。
+	releasePath := filepath.Join(g.config.StateDir, stockPreparationDEVR1ReleaseName)
+	_, e = os.Lstat(releasePath)
+	require.True(t, errors.Is(e, os.ErrNotExist), "DEV release must not preexist")
 	fmt.Println("STOCK_PREPARATION_R1_START_BROKER")
 	stockPreparationDEVDelayedStack("initial")
 	require.NoError(t, startInitialNormalSystemV3Broker(ctx, g))
+	// 生产Ready/COMMIT/ACK已真实返回；现在才增加DEV R1存活观察等待。
+	for {
+		f, readErr := os.Open(releasePath)
+		if readErr == nil {
+			raw, readErr := io.ReadAll(io.LimitReader(f, 66))
+			closeErr := f.Close()
+			require.NoError(t, readErr)
+			require.NoError(t, closeErr)
+			if len(raw) >= 65 {
+				require.Equal(t, 65, len(raw))
+				require.Equal(t, byte('\n'), raw[64])
+				require.True(t, physicalDigestValid(string(raw[:64])))
+				break
+			}
+			// O_EXCL创建至唯一write之间可能读短；只是DEV未通知，继续受ctx约束。
+		} else {
+			require.True(t, errors.Is(readErr, os.ErrNotExist))
+		}
+		require.NoError(t, ctx.Err())
+		time.Sleep(10 * time.Millisecond)
+	}
 	metadata, e := readNormalSystemRoleServiceMetadata()
 	require.NoError(t, e)
 	require.EqualValues(t, 2, metadata.Origin.ProtocolVersion)

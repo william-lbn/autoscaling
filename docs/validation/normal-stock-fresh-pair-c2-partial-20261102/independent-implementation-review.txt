@@ -1,0 +1,11 @@
+C2实际五源补丁独审（2026-11-02；只读，未重测）
+输入freeze 454f1df48ec6f185dfae603b017b7954320d1f25fc0bf01e9e0b914fbf95c519，base9e06；当前五源逐SHA匹配锁。对照047b41不可变C1源逐行审新增差异，并保留C1旧报告/失败原件不重写。
+结论：C1报告两项收口在C2已落实，当前未见新明确阻断；可以进入精确图构建/真实S。此结论不是S/Source/normal/E通过，测试终态由新nonce另记。
+
+1. 私有handoffLive仅cheap状态，不签来源：入口ctx/p/q/authority/admission有效；p.mu短持取closed/complete并释放，再q.mu短持取closed/ledger并释放，末核admission.failed/enabled与ctx。没有q→p并持、反取resource或新增重hash/外部回调。
+2. factory末完整referenceLocked成功后调用cheap gate，错误走原fail=nil+zero且deferclose；成功good=true后直接return tuple。caller先三值接管使原q.close始终拥有p，再精确类型/原p.q==q，并调用同cheap门。原身份/digest/Initial8/FS2/authority字段匹配、catalog后fullref和运行fullref不变；不保存新freshness状态、不授跨生命周期许可。
+3. 异步close在任意检查后仍可发生，这是当前生命周期共有边界；后续原pins/projection/finalref持续拒绝。cheap gate不是以历史状态取代它们。
+4. Native通知读取限制66B，<65表示尚未完整通知而在原ctx内继续等，65必须64hex+LF，66即超长拒；原O_EXCL写65B、pidfd自持、businessAllowed后才flock、活时freshref/admission+pidfdAlive、真POLLIN后freshref同值/admission均保。R1hold仍仅生产Start成功返回后；原25/30/2vCPU未变。
+5. 新9sub的raw-live-only只证明cheap状态门可达，注释明确不是来源/完整ref正控；不将其算真Source或晚端factory整体实证。未要求额外模型、AST或无关重测。
+
+047原14race39sub/8phase通过和真实S失败保持原分类。2e shadow在23.934s消费pair，24.229s进入保留finalref后失败，仅作定位，不重标性能通过。C2必须使用新不可变源码/ELF/原终态判实际结果。

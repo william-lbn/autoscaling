@@ -171,12 +171,17 @@ func (g *Guard) prepareNormalOrdinaryUdevV2Locked(ctx context.Context, state *lo
 	if !ok {
 		return fail(fmt.Errorf("original fixed stock-preparation opaque producer absent"))
 	}
-	q.preparation, e = preparationReader.normalOrdinaryUdevV2PreparationLocked(ctx, state, r, filesystem, proof, authority)
+	// 先接管原opaque，失败时原q.close仍能释放它。reference只来自factory同栈
+	// 最后一次完整校验；中间没有可变回调，非跨调用/生命周期缓存。
+	q.preparation, q.preparationReference, e = preparationReader.normalOrdinaryUdevV2PreparationLocked(ctx, state, r, filesystem, proof, authority)
 	if e != nil || q.preparation == nil {
 		return fail(errors.Join(ErrUnknown, e))
 	}
-	q.preparationReference, e = q.preparation.referenceLocked(ctx, state)
-	if e != nil {
+	stockPreparation, ok := q.preparation.(*normalOrdinaryStockUdevPreparation)
+	if !ok || stockPreparation.q != q {
+		return fail(ErrUnknown)
+	}
+	if e = stockPreparation.handoffLive(ctx); e != nil {
 		return fail(e)
 	}
 	fsRaw, e := json.Marshal(q.originalFS)

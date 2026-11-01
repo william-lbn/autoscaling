@@ -112,17 +112,17 @@ func normalOrdinaryStockUdevPreparationRejectHistory(s *lockedState) error {
 
 // 构造仅由正在原q.prepare里的同g调用。ctx不携来源选择/路径/ready标记。
 // 调用者已经持resource flock；不反取flock，不持q.mu/Runtime.mu跨外部命令Wait。
-func (g *Guard) normalOrdinaryUdevV2PreparationLocked(ctx context.Context, s *lockedState, r *record, fs *normalFilesystemOriginSource, proof *normalSystemRoleBrokerExecProof, a *normalSystemResourceAuthority) (normalOrdinaryUdevV2Preparation, error) {
+func (g *Guard) normalOrdinaryUdevV2PreparationLocked(ctx context.Context, s *lockedState, r *record, fs *normalFilesystemOriginSource, proof *normalSystemRoleBrokerExecProof, a *normalSystemResourceAuthority) (normalOrdinaryUdevV2Preparation, normalOrdinaryUdevV2PreparationReference, error) {
 	if ctx == nil || ctx.Err() != nil || s == nil || r == nil {
-		return nil, ErrUnknown
+		return nil, normalOrdinaryUdevV2PreparationReference{}, ErrUnknown
 	}
 	q, e := originalNormalOrdinaryStockUdevPreparationSource(g, fs, proof, a)
 	if e != nil {
-		return nil, e
+		return nil, normalOrdinaryUdevV2PreparationReference{}, e
 	}
 	p, e := normalOrdinaryStockUdevReservePreparation(q)
 	if e != nil {
-		return nil, e
+		return nil, normalOrdinaryUdevV2PreparationReference{}, e
 	}
 	good := false
 	defer func() {
@@ -130,13 +130,13 @@ func (g *Guard) normalOrdinaryUdevV2PreparationLocked(ctx context.Context, s *lo
 			p.close()
 		}
 	}()
-	fail := func(stage string, e error) (normalOrdinaryUdevV2Preparation, error) {
+	fail := func(stage string, e error) (normalOrdinaryUdevV2Preparation, normalOrdinaryUdevV2PreparationReference, error) {
 		failure := errors.Join(ErrUnknown, fmt.Errorf("original stock preparation %s", stage), e)
 		// 仅私有DEV在原失败已确定后观察；不改返回、清理、路径或任何授权。
 		if observe, ok := ctx.Value(normalOrdinaryStockPreparationFailureKey{}).(func(string, error, *normalOrdinaryStockUdevPreparation)); ok {
 			observe(stage, failure, p)
 		}
-		return nil, failure
+		return nil, normalOrdinaryUdevV2PreparationReference{}, failure
 	}
 	if e = p.checkOriginalLocked(ctx, s, true); e != nil {
 		return fail("initial source", e)
@@ -313,17 +313,44 @@ func (g *Guard) normalOrdinaryUdevV2PreparationLocked(ctx context.Context, s *lo
 	p.mu.Lock()
 	p.complete = true
 	p.mu.Unlock()
-	if _, e = p.referenceLocked(ctx, s); e != nil {
-		return fail("final reference", e)
-	}
-	// 私有DEV观察点只有continue/error，不能替来源/选择路径/预算/ready；生产Background无值。
+	// 私有DEV回调可能改变对象；它必须位于最后完整校验之前。
+	// 返回fresh tuple之后至caller立即接管之间不再执行任何外部回调。
 	if observe, ok := ctx.Value(normalOrdinaryStockPreparationCheckpointKey{}).(func(context.Context, *lockedState, *normalOrdinaryStockUdevPreparation) error); ok {
 		if e = observe(ctx, s, p); e != nil {
 			return fail("original observation", e)
 		}
 	}
+	reference, e := p.referenceLocked(ctx, s)
+	if e != nil {
+		return fail("final reference", e)
+	}
+	if e = p.handoffLive(ctx); e != nil {
+		return fail("fresh reference handoff", e)
+	}
 	good = true
-	return p, nil
+	return p, reference, nil
+}
+
+// 仅同栈移交前后的cheap状态门，不验证来源、不给Source，也不缓存完整校验。
+// 两把锁分开取得，避免与projection已有的p→q顺序形成反向并持。
+func (p *normalOrdinaryStockUdevPreparation) handoffLive(ctx context.Context) error {
+	if p == nil || p.q == nil || ctx == nil || ctx.Err() != nil || p.q.authority == nil || p.q.authority.admission == nil {
+		return ErrUnknown
+	}
+	p.mu.Lock()
+	closed, complete := p.closed, p.complete
+	p.mu.Unlock()
+	if closed || !complete {
+		return ErrUnknown
+	}
+	q := p.q
+	q.mu.Lock()
+	closed, failed := q.closed, q.ledger.failed
+	q.mu.Unlock()
+	if closed || failed != nil || q.authority.admission.failed.Load() || q.authority.admission.enabled.Load() || ctx.Err() != nil {
+		return errors.Join(ErrUnknown, failed, ctx.Err())
+	}
+	return nil
 }
 
 // 所有来源均为原q、原ExecProof/Initial8/FS2/KernelR2/MemoryR2。仅initial=true

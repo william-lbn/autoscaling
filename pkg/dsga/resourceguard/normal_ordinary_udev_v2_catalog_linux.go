@@ -21,7 +21,7 @@ import (
 
 // Root fixed stock-preparation的原opaque，不允许从JSON/current DB补签。
 type normalOrdinaryUdevV2PreparationReader interface {
-	normalOrdinaryUdevV2PreparationLocked(context.Context, *lockedState, *record, *normalFilesystemOriginSource, *normalSystemRoleBrokerExecProof, *normalSystemResourceAuthority) (normalOrdinaryUdevV2Preparation, error)
+	normalOrdinaryUdevV2PreparationLocked(context.Context, *lockedState, *record, *normalFilesystemOriginSource, *normalSystemRoleBrokerExecProof, *normalSystemResourceAuthority) (normalOrdinaryUdevV2Preparation, normalOrdinaryUdevV2PreparationReference, error)
 }
 type normalOrdinaryUdevV2Preparation interface {
 	referenceLocked(context.Context, *lockedState) (normalOrdinaryUdevV2PreparationReference, error)

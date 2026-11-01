@@ -173,7 +173,7 @@ func TestNormalOrdinaryStockPreparationOriginalPrefixIdentity(t *testing.T) {
 }
 func TestNormalOrdinaryStockPreparationCannotAdoptRawInputs(t *testing.T) {
 	g := &Guard{}
-	if p, e := g.normalOrdinaryUdevV2PreparationLocked(context.Background(), nil, nil, nil, nil, nil); e == nil || p != nil {
+	if p, ref, e := g.normalOrdinaryUdevV2PreparationLocked(context.Background(), nil, nil, nil, nil, nil); e == nil || p != nil || ref != (normalOrdinaryUdevV2PreparationReference{}) {
 		t.Fatal("raw inputs made producer")
 	}
 	if _, e := originalNormalOrdinaryStockUdevPreparationSource(g, &normalFilesystemOriginSource{}, &normalSystemRoleBrokerExecProof{}, &normalSystemResourceAuthority{}); e == nil {
@@ -184,5 +184,70 @@ func TestNormalOrdinaryStockPreparationCannotAdoptRawInputs(t *testing.T) {
 	}
 	if _, e := (&normalOrdinaryStockUdevPreparation{complete: true}).projectionForOriginalDeviceLocked(context.Background(), nil, &normalOrdinaryUdevV2CatalogEntry{}); e == nil {
 		t.Fatal("caller ready flag created sealed projection")
+	}
+}
+
+// 错误不能泄出opaque或fresh reference；raw对象/取消ctx不能造来源。
+func TestNormalOrdinaryStockPreparationFactoryFailureTuple(t *testing.T) {
+	cancelled, cancel := context.WithCancel(context.Background())
+	cancel()
+	for _, tc := range []struct {
+		name   string
+		ctx    context.Context
+		state  *lockedState
+		record *record
+	}{
+		{"nil-context", nil, &lockedState{}, &record{}},
+		{"cancelled", cancelled, &lockedState{}, &record{}},
+		{"nil-state", context.Background(), nil, &record{}},
+		{"nil-record", context.Background(), &lockedState{}, nil},
+		{"raw-inputs", context.Background(), &lockedState{}, &record{}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			p, ref, e := (&Guard{}).normalOrdinaryUdevV2PreparationLocked(tc.ctx, tc.state, tc.record, nil, nil, nil)
+			if e == nil || p != nil || ref != (normalOrdinaryUdevV2PreparationReference{}) {
+				t.Fatal("failure exposed preparation/reference", e)
+			}
+		})
+	}
+}
+
+// 只验证移交状态门，raw正控不是来源/完整reference正控。
+func TestNormalOrdinaryStockPreparationHandoffState(t *testing.T) {
+	for _, name := range []string{"raw-live-only", "nil-context", "cancelled", "producer-closed", "producer-incomplete", "source-closed", "source-failed", "admission-failed", "admission-enabled"} {
+		t.Run(name, func(t *testing.T) {
+			ctx := context.Background()
+			a := &normalAuthorityAdmission{}
+			q := &normalOrdinaryUdevV2{authority: &normalSystemResourceAuthority{admission: a}}
+			p := &normalOrdinaryStockUdevPreparation{q: q, complete: true}
+			switch name {
+			case "nil-context":
+				ctx = nil
+			case "cancelled":
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithCancel(ctx)
+				cancel()
+			case "producer-closed":
+				p.closed = true
+			case "producer-incomplete":
+				p.complete = false
+			case "source-closed":
+				q.closed = true
+			case "source-failed":
+				q.ledger.failed = ErrUnknown
+			case "admission-failed":
+				a.failed.Store(true)
+			case "admission-enabled":
+				a.enabled.Store(true)
+			}
+			e := p.handoffLive(ctx)
+			if name == "raw-live-only" {
+				if e != nil {
+					t.Fatal(e)
+				}
+			} else if e == nil {
+				t.Fatal("inactive handoff accepted")
+			}
+		})
 	}
 }

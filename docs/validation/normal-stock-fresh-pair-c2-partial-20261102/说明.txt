@@ -1,0 +1,9 @@
+本阶段C2：原stock准备factory将本次末完整校验的reference与opaque同调用栈一并移交，不缓存跨生命周期资料；所有DEV可变checkpoint置于末完整校验之前，返回后没有外部回调。caller先接管对象，再核同原p.q与cheap取消/closed/complete/ledger/admission。p/q锁分别取得，未新增反向并持。catalog安装后的完整freshref及运行期freshref均保留，FS双hash未删。
+
+C1必要目标14race根39sub、8phase0；独审发现末端cheap gate/DEV短通知问题，C2已修，15race根48sub、0skip、8phase0，独立实施复审无明确阻断。新增9sub仅证明cheap状态门，不充当真实来源正控。原单元/编译与真实S分别记账。
+
+真实047 S失败58.026s；影子诊断Guest24d772编译成功，但第一native driver遗漏reused变量，原NameError保留且未起KVM。仅driver修正后新nonce2e1177，复用真实编译ELF；S失败57.025s。此影子只加原private DEV stage/error，不改repo源码：factory tuple实际完成并被消费23.934s；catalog23.934→24.205s；install24.205→24.224s；必须保留的末freshref24.229s开始，Ready25前未完成。不得把这条影子源码当已提交生产图。
+
+C2原0f8abd S仍失败58.792s，stock complete仅入口20.720s（在WAL写入之前），未取得R1存活/退出reference回执，未Source通过。所有真实KVM18c/2vCPU与Host_API_model范围准确记录；其它9ordinary服务/PG未执行。normal=false、E=0，禁止冒称最终PG17/Linux/K8s端到端通过。原Ready25/handshake30窗口未增。
+
+本必要编译只排根docs/doc历史归档8690文件224591331B；保留Go/C/asm/其它资产、19embed声明与原6fixture，实际COPY1390文件11.617MB。所有旧非doc输入除批准5源均逐SHA一致。完整大source-lock/context历史文档清单保原/data路径+SHA，Git只纳小编译输入摘要，无二进制/镜像/磁盘/缓存。Root唯一Git/index/发行锁写者；本提案没有触Git。

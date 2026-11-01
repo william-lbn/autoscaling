@@ -1,0 +1,9 @@
+Starting normal-stock-preparation-native-20261101t172230z-24d772-native.service - /usr/bin/python3 /data/neon-build/continuous/resource-budget/budget.py _worker --nonce 20261101T172230Z-24d772-native --sha f63b0dc37c3b12cba02ca99bc5fd75fffe5b48a6df276e412f4bbafc41337950...
+Started normal-stock-preparation-native-20261101t172230z-24d772-native.service - /usr/bin/python3 /data/neon-build/continuous/resource-budget/budget.py _worker --nonce 20261101T172230Z-24d772-native --sha f63b0dc37c3b12cba02ca99bc5fd75fffe5b48a6df276e412f4bbafc41337950.
+Traceback (most recent call last):
+  File "/data/neon-build/validation/normal-stock-preparation-native-20261101T172230Z-24d772-native/worker.py", line 7, in <module>
+    artifact=(compiled if n=='service.test' else reused)/'export'/n; assert artifact.stat().st_mode&0o777==0o755; os.link(artifact,build/'export'/n)
+                                                 ^^^^^^
+NameError: name 'reused' is not defined
+normal-stock-preparation-native-20261101t172230z-24d772-native.service: Main process exited, code=exited, status=1/FAILURE
+normal-stock-preparation-native-20261101t172230z-24d772-native.service: Failed with result 'exit-code'.
