@@ -1,0 +1,25 @@
+静态kind3真实KVM fixture独立只读审查
+
+所审新fixture未见明确阻断。原5ec143源/96abaa实际KVM两机制目标与旧e473负对照分账，
+最终f825c6仅改变rawhex为一次有界write及打印lostACK实际消费seq；此时fix2编译已过2.646s，
+最终日志补强runtime仍由owner后继新nonce实跑，不能用旧96直接冒称最终源实际执行。
+
+原CPU0 sysfs uevent以FD/FS身份pin住，独立去掉sysfs两末LF边界取expected；每个实际kernel
+monitor ticket再验证其MODALIAS原单末LF与该expected相符。模型process_packet只用未改strict
+wire canonical，不调用生产新neon_device_canonical算expected。kind3/index0、原action/seq及
+kernel ticket一次性使用、projection允许键/值、无DEVNAME/devnum均有独立判据。
+
+Root模型socket核原main SO_PEERCRED与PIDFS同对象，逐packet唯一SCM凭据，无rights及截断；
+收到rights先关再拒。main/worker实际/proc核四UID/GID、NNP1和五cap集合0；worker经原main
+children取得并独立pidfd核活，两代与原生产generation/sequence日志对应。public消费只用未改
+stock libudev的group2 API，未将raw recv替代它。它仍是Root MODEL，不具真实lease/WAL来源。
+
+原96abaa new-two-events真实2.836s，worker64/PIDFS364两代seq555/556及group2消费对应；
+new-lost-ack真实3.058s，一代实际emit，源内断言一次public消费+原main非零唯一Wait+无新请求。
+旧summary未抽出lost消费seq，最终printf只是补原已经执行的断言收据，不新增生产行为。
+old-e473-control实际原kernel ticket555但缺kind3而无emit/consume/Guest1，属于预期负对照，
+不是新发布正目标；legacy_mode固定0，未走fixture旧legacy分支。
+
+边界：normal只证明main唯一Wait0；worker是独立PIDFS存活/两代，没有另取其唯一Wait；
+lostACK仅一代。单write有利于raw证据完整，不能泛称对所有kernel console写者绝对原子。
+本次只读C/差异/已有结果，不改源、不重编译、不运行测试，不签Source/normal/E。

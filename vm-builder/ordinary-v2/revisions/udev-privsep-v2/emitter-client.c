@@ -1,0 +1,26 @@
+/* main-only fixed Root request. This client does not manufacture a role lease. */
+#include "protocol.h"
+#include <sys/un.h>
+#include <stdio.h>
+static pid_t neon_original_main;
+static int neon_emitter_fd=-1;
+static int neon_root_emit(uint16_t kind,uint16_t action,uint32_t index,uint64_t seq,const char *properties,size_t len,uint32_t count) {
+    unsigned char request[NEON_ROOT_HEADER+NEON_IPC_MAX]={0},ack[16];struct sockaddr_un address={.sun_family=AF_UNIX};struct stat st;
+    int result=-EIO;int64_t end=neon_now()+2000;
+    if(getpid()!=neon_original_main||neon_emitter_fd!=-1)return -EPERM;
+    /* 先拒不合法 selector/frame；实际 Root 继续核原 actor/ticket/projection。 */
+    if(kind<NEON_DEVICE_LOG||kind>NEON_DEVICE_STATIC||!action||action>8||
+       ((kind==NEON_DEVICE_LOG||kind==NEON_DEVICE_STATIC)&&index)||
+       !seq||!count||count>64||!properties||!len||len>NEON_EVENT_MAX)return -EINVAL;
+    if(lstat("/run/neon-dsga",&st)||!S_ISDIR(st.st_mode)||st.st_uid||st.st_gid||(st.st_mode&07777)!=0755)return -EPERM;
+    if(lstat(NEON_EMITTER_PATH,&st)||!S_ISSOCK(st.st_mode)||st.st_uid||st.st_gid!=NEON_ROLE_UID||(st.st_mode&07777)!=0660)return -EPERM;
+    int fd=socket(AF_UNIX,SOCK_SEQPACKET|SOCK_CLOEXEC|SOCK_NONBLOCK,0);if(fd<0)return -errno;neon_emitter_fd=fd;
+    strcpy(address.sun_path,NEON_EMITTER_PATH);if(connect(fd,(struct sockaddr *)&address,sizeof address))goto out;
+    struct ucred peer;socklen_t size=sizeof peer;if(getsockopt(fd,SOL_SOCKET,SO_PEERCRED,&peer,&size)||size!=sizeof peer||peer.uid||peer.gid||peer.pid<=1)goto out;
+    memcpy(request,"NDSGOA02",8);neon_put32(request+8,2);neon_put32(request+12,3);memcpy(request+16,"NDSGUE01",8);neon_put32(request+24,1);neon_put16(request+28,kind);neon_put16(request+30,action);neon_put32(request+32,index);neon_put64(request+36,seq);neon_put32(request+44,count);neon_put32(request+48,len);memcpy(request+56,properties,len);
+    if(neon_wait(fd,POLLOUT,end)||send(fd,request,56+len,MSG_NOSIGNAL)!=(ssize_t)(56+len)||neon_wait(fd,POLLIN,end))goto out;
+    struct iovec iov={ack,sizeof ack};struct msghdr message={.msg_iov=&iov,.msg_iovlen=1};
+    if(recvmsg(fd,&message,MSG_TRUNC)!=16||message.msg_flags&(MSG_TRUNC|MSG_CTRUNC)||memcmp(ack,"NDSGOAOK",8)||neon_get32(ack+8)!=2||neon_get32(ack+12)!=3)goto out;
+    result=0;
+out:close(fd);neon_emitter_fd=-1;return result;
+}

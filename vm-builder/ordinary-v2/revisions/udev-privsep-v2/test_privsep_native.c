@@ -1,0 +1,76 @@
+/* TEST_ONLY Root emitter and original-main fixture. Not production lease/WAL/Source. */
+#define _GNU_SOURCE
+#include "creator-ipc.c"
+#include <linux/netlink.h>
+#include <linux/filter.h>
+#include <linux/capability.h>
+#include <arpa/inet.h>
+#include <grp.h>
+#include <sys/prctl.h>
+#include <sys/wait.h>
+#include <sys/sysmacros.h>
+#include <sys/un.h>
+#include <stdio.h>
+#include <signal.h>
+#include "test_libudev_consumer.c"
+extern unsigned int MurmurHash2(const void *key,int length,unsigned int seed);
+static void fail(const char *s){fprintf(stderr,"PRIVSEP_NATIVE_FAIL %s errno=%d\n",s,errno);exit(1);}
+static void check(int n,const char *s){if(!n)fail(s);}
+static void role_drop(void){struct __user_cap_header_struct h={_LINUX_CAPABILITY_VERSION_3,0};struct __user_cap_data_struct c[2]={{0},{0}};if(setgroups(0,NULL)||setresgid(60004,60004,60004)||setresuid(60004,60004,60004)||syscall(SYS_capset,&h,c)||prctl(PR_SET_NO_NEW_PRIVS,1,0,0,0))_exit(91);}
+struct original{pid_t pid;int fd;};
+static int legacy_mode,drop_ack;
+static struct original main_start(void){pid_t pid=fork();check(pid>=0,"original main fork");if(!pid){if(legacy_mode){execl("/sbin/udevd","/sbin/udevd","--children-max=1",NULL);_exit(92);}role_drop();execl("/sbin/udevd","/sbin/udevd","--neon-fixed-devices-v1","--children-max=1",NULL);_exit(92);}int fd=syscall(SYS_pidfd_open,pid,0);check(fd>=0,"original main pidfd");struct stat st;check(!neon_pidfd_fact(fd,&st),"real PIDFS required");printf("PRIVSEP_ORIGINAL_MAIN=%d:%llu\n",pid,(unsigned long long)st.st_ino);return(struct original){pid,fd};}
+static void original_wait(struct original child){int status;check(waitpid(child.pid,&status,0)==child.pid&&WIFEXITED(status)&&WEXITSTATUS(status)==0,"unique original child Wait0");close(child.fd);}
+static void root_trigger(const char *action){char option[64];snprintf(option,sizeof option,"--action=%s",action);pid_t child=fork();check(child>=0,"Root trigger fork");if(!child){execl("/bin/udevadm","/bin/udevadm","trigger",option,"--subsystem-match=virtio-ports",NULL);_exit(93);}int status;check(waitpid(child,&status,0)==child&&WIFEXITED(status)&&!WEXITSTATUS(status),"actual udevadm trigger");}
+struct ticket {struct udev_device *device;uint64_t seq;int used;};
+static struct ticket tickets[16];static unsigned ticket_count,emitted,accepted;static int emitter;
+static void root_tickets(struct udev_monitor *monitor){for(;;){struct udev_device *device=udev_monitor_receive_device(monitor);if(!device)return;const char *name=udev_device_get_sysattr_value(device,"name");check(name&&!strcmp(name,"tech.neon.log.0"),"fixed Root sysfs log identity");check(ticket_count<16,"bounded kernel ticket table overflow");uint64_t seq=udev_device_get_seqnum(device);check(seq,"original kernel seq");for(unsigned i=0;i<ticket_count;i++)check(tickets[i].seq!=seq,"duplicate kernel ticket");tickets[ticket_count++]=(struct ticket){device,seq,0};}}
+static const char *property(const char *body,size_t len,const char *key){size_t size=strlen(key);for(size_t p=0;p<len;){size_t n=strnlen(body+p,len-p);if(!n||n==len-p)return NULL;if(n>size&&body[p+size]=='='&&!memcmp(body+p,key,size))return body+p+size+1;p+=n+1;}return NULL;}
+static int allowed_property(const char *s,size_t n){static const char *const keys[]={"ACTION","DEVPATH","DEVNAME","MAJOR","MINOR","SUBSYSTEM","SEQNUM","DEVLINKS","USEC_INITIALIZED","NEON_FIXED_TEST","SYNTH_UUID"};for(unsigned i=0;i<sizeof keys/sizeof keys[0];i++)if(strlen(keys[i])==n&&!memcmp(keys[i],s,n))return 1;return 0;}
+static int equal(const char *a,const char *b){return a&&b&&!strcmp(a,b);}
+static int process_packet(unsigned char *raw,size_t n,int do_emit){
+    if(n<56||n>16+NEON_IPC_MAX||memcmp(raw,"NDSGOA02",8)||neon_get32(raw+8)!=2||neon_get32(raw+12)!=3||memcmp(raw+16,"NDSGUE01",8)||neon_get32(raw+24)!=1||raw[28]||raw[29]!=1||raw[30]||raw[31]<1||raw[31]>2||neon_get32(raw+32)||neon_get32(raw+52))return -EINVAL;
+    size_t size=neon_get32(raw+48);if(size!=n-56||size>NEON_EVENT_MAX)return -EINVAL;char canonical[NEON_IPC_MAX];size_t checked;uint32_t count;if(neon_canonical((char *)raw+56,size,canonical,&checked,&count,1)||count!=neon_get32(raw+44))return -EINVAL;
+    char *body=(char *)raw+56;for(size_t pos=0;pos<size;){char *eq=strchr(body+pos,'=');if(!eq||!allowed_property(body+pos,eq-(body+pos)))return -EPERM;pos+=strlen(body+pos)+1;}
+    uint64_t seq=neon_get64(raw+36);struct ticket *ticket=NULL;for(unsigned i=0;i<ticket_count;i++)if(tickets[i].seq==seq)ticket=&tickets[i];if(!ticket)return -ENOENT;if(ticket->used)return -EALREADY;
+    struct udev_device *kernel=ticket->device;char number[64];snprintf(number,sizeof number,"%llu",(unsigned long long)seq);
+    if(!equal(property(body,size,"SEQNUM"),number)||!equal(property(body,size,"ACTION"),raw[31]==1?"add":"change")||!equal(property(body,size,"ACTION"),udev_device_get_action(kernel))||!equal(property(body,size,"DEVPATH"),udev_device_get_devpath(kernel))||!equal(property(body,size,"DEVNAME"),udev_device_get_devnode(kernel))||!equal(property(body,size,"SUBSYSTEM"),udev_device_get_subsystem(kernel))||!equal(property(body,size,"NEON_FIXED_TEST"),"executed"))return -ESTALE;
+    dev_t device=udev_device_get_devnum(kernel);snprintf(number,sizeof number,"%u",major(device));if(!equal(property(body,size,"MAJOR"),number))return -ESTALE;snprintf(number,sizeof number,"%u",minor(device));if(!equal(property(body,size,"MINOR"),number))return -ESTALE;
+    const char *synth=property(body,size,"SYNTH_UUID"),*original_synth=udev_device_get_property_value(kernel,"SYNTH_UUID");
+    if((synth||original_synth)&&!equal(synth,original_synth))return -ESTALE;
+    const char *initialized=property(body,size,"USEC_INITIALIZED");if(initialized){char *end;struct timespec now;errno=0;unsigned long long us=strtoull(initialized,&end,10);int invalid=errno||!*initialized||*end||(initialized[0]=='0'&&initialized[1]);if(clock_gettime(CLOCK_MONOTONIC,&now)||invalid||us>(unsigned long long)now.tv_sec*1000000+(unsigned long long)now.tv_nsec/1000)return -ESTALE;}
+    const char *links=property(body,size,"DEVLINKS");if(!equal(links,"/dev/virtio-ports/tech.neon.log.0"))return -ESTALE;
+    struct stat alias,node;if(stat("/dev/virtio-ports/tech.neon.log.0",&alias)||stat(udev_device_get_devnode(kernel),&node)||!S_ISCHR(node.st_mode)||node.st_uid||node.st_gid!=60007||node.st_rdev!=device||alias.st_rdev!=device)return -ESTALE;
+    if(!do_emit)return 0;
+    /* 标准原public libudev header；真实subsystem BPF hash而非取消consumer filter。 */
+    struct header{char prefix[8];uint32_t magic,header_size,offset,length,subsystem,devtype,bloom_hi,bloom_lo;}header={.prefix="libudev",.magic=htonl(0xfeedcafe),.header_size=40,.offset=40,.length=size,.subsystem=htonl(MurmurHash2("virtio-ports",12,0))};
+    _Static_assert(sizeof header==40,"original libudev ABI");
+    printf("MODEL_SUBSYSTEM_HASH=%08x UID=%d\n",MurmurHash2("virtio-ports",12,0),getuid());
+    struct sockaddr_nl destination={.nl_family=AF_NETLINK,.nl_groups=2};struct iovec iov[2]={{&header,sizeof header},{body,size}};struct msghdr message={.msg_name=&destination,.msg_namelen=sizeof destination,.msg_iov=iov,.msg_iovlen=2};
+    if(sendmsg(emitter,&message,0)!=(ssize_t)(40+size))return -errno;
+    ticket->used=1;emitted++;printf("PRIVSEP_MODEL_EMIT=%llu\n",(unsigned long long)seq);return 0;
+}
+static unsigned char last_packet[16+NEON_IPC_MAX];static size_t last_size;
+static int serve_one(int listener,struct original main){int fd=accept4(listener,NULL,NULL,SOCK_CLOEXEC);if(fd<0)return -errno;struct ucred peer;socklen_t size=sizeof peer;int peerfd=-1;struct stat original,received;
+    int valid=!getsockopt(fd,SOL_SOCKET,SO_PEERCRED,&peer,&size)&&peer.pid==main.pid&&peer.uid==60004&&peer.gid==60004;size=sizeof peerfd;
+    valid=valid&&!getsockopt(fd,SOL_SOCKET,77,&peerfd,&size)&&peerfd>=0&&!neon_pidfd_fact(main.fd,&original)&&!neon_pidfd_fact(peerfd,&received)&&original.st_dev==received.st_dev&&original.st_ino==received.st_ino&&!neon_alive(main.fd);
+    if(peerfd>=0)close(peerfd);
+    unsigned char raw[16+NEON_IPC_MAX];union{struct cmsghdr align;char bytes[CMSG_SPACE(sizeof(struct ucred))+CMSG_SPACE(16*sizeof(int))];}control;
+    struct iovec iov={raw,sizeof raw};struct msghdr message={.msg_iov=&iov,.msg_iovlen=1,.msg_control=control.bytes,.msg_controllen=sizeof control.bytes};ssize_t n=recvmsg(fd,&message,MSG_TRUNC|MSG_CMSG_CLOEXEC);int credentials=0,other=0;struct ucred actual={0};
+    for(struct cmsghdr *c=CMSG_FIRSTHDR(&message);c;c=CMSG_NXTHDR(&message,c)){if(c->cmsg_level==SOL_SOCKET&&c->cmsg_type==SCM_CREDENTIALS&&c->cmsg_len==CMSG_LEN(sizeof actual)){memcpy(&actual,CMSG_DATA(c),sizeof actual);credentials++;}else{other=1;if(c->cmsg_level==SOL_SOCKET&&c->cmsg_type==SCM_RIGHTS){size_t bytes=c->cmsg_len-CMSG_LEN(0);for(size_t i=0;i+sizeof(int)<=bytes;i+=sizeof(int)){int extra;memcpy(&extra,(char *)CMSG_DATA(c)+i,sizeof extra);close(extra);}}}}
+    if(!valid||credentials!=1||other||actual.pid!=main.pid||actual.uid!=60004||actual.gid!=60004||n<0||n>(ssize_t)sizeof raw||message.msg_flags&(MSG_TRUNC|MSG_CTRUNC)){close(fd);return -EPERM;}
+    int rc=process_packet(raw,n,1);if(rc){fprintf(stderr,"MODEL_REQUEST_REJECT=%d bytes=%zd\n",rc,n);for(size_t i=56;i<(size_t)n;i++)fputc(raw[i]?raw[i]:'|',stderr);fputc('\n',stderr);close(fd);return rc;}
+    memcpy(last_packet,raw,n);last_size=n;if(drop_ack){close(fd);puts("PRIVSEP_MODEL_DROP_ACK_ONCE");return 0;}unsigned char ack[16]={'N','D','S','G','O','A','O','K',0,0,0,2,0,0,0,3};check(send(fd,ack,16,MSG_NOSIGNAL)==16,"model exact ACK");close(fd);return 0;
+}
+static pid_t bad_actor(void){pid_t child=fork();check(child>=0,"foreign sameUID fork");if(!child){role_drop();int fd=socket(AF_UNIX,SOCK_SEQPACKET|SOCK_CLOEXEC,0);struct sockaddr_un address={.sun_family=AF_UNIX};strcpy(address.sun_path,NEON_EMITTER_PATH);if(connect(fd,(struct sockaddr *)&address,sizeof address))_exit(94);unsigned char bad[56]={0};send(fd,bad,sizeof bad,MSG_NOSIGNAL);char b;ssize_t n=recv(fd,&b,1,0);close(fd);_exit(n<=0?0:95);}return child;}
+int main(void){setbuf(stdout,NULL);legacy_mode=getenv("PRIVSEP_LEGACY_ROOT_CONTROL")!=NULL;drop_ack=getenv("PRIVSEP_MODEL_DROP_ACK")!=NULL;check(getuid()==0,"model Root only");struct udev *udev=udev_new();check(udev!=NULL,"stock context");struct udev_monitor *kernel=stock_monitor(udev,"kernel"),*consumer=NULL,*diagnostic=NULL;check(kernel!=NULL,"stock original kernel monitor");int listenfd=socket(AF_UNIX,SOCK_SEQPACKET|SOCK_CLOEXEC,0),one=1;check(listenfd>=0&&!setsockopt(listenfd,SOL_SOCKET,SO_PASSCRED,&one,sizeof one),"Root PASSCRED listener");struct sockaddr_un address={.sun_family=AF_UNIX};strcpy(address.sun_path,NEON_EMITTER_PATH);check(!bind(listenfd,(struct sockaddr *)&address,sizeof address)&&!chown(address.sun_path,0,60004)&&!chmod(address.sun_path,0660)&&!listen(listenfd,4),"Root fixed listener");emitter=socket(AF_NETLINK,SOCK_RAW|SOCK_CLOEXEC,NETLINK_KOBJECT_UEVENT);check(emitter>=0,"model Root fixed group2 emitter");struct sockaddr_nl origin={.nl_family=AF_NETLINK};check(!bind(emitter,(struct sockaddr *)&origin,sizeof origin),"original Root netlink OFD");struct original main=main_start();
+    for(int i=0;i<100;i++){struct stat st;if(!lstat("/run/udev/control",&st)&&S_ISSOCK(st.st_mode))break;check(!neon_alive(main.fd),"actual main startup");usleep(25000);}
+    /* stock库在udev/control缺失时会永久禁用udev组；保原库规则，只在真实ready后订阅。 */
+    check(access("/run/udev/control",F_OK)==0,"actual udev control ready");consumer=stock_monitor(udev,"udev");check(consumer!=NULL,"stock processed consumer after ready");
+    struct sockaddr_nl subscription;socklen_t subscription_size=sizeof subscription;check(!getsockname(udev_monitor_get_fd(consumer),(struct sockaddr *)&subscription,&subscription_size)&&subscription.nl_groups==2,"actual stock multicast subscription2");
+    diagnostic=udev_monitor_new_from_netlink(udev,"udev");check(diagnostic&&udev_monitor_enable_receiving(diagnostic)==0,"stock diagnostic monitor");
+    struct sock_filter ins[64];socklen_t insn=64;if(!getsockopt(udev_monitor_get_fd(consumer),SOL_SOCKET,SO_GET_FILTER,ins,&insn))for(unsigned i=0;i<insn;i++)printf("STOCK_SOCKET_BPF=%u:%x:%x\n",i,ins[i].code,ins[i].k);
+    if(!legacy_mode){pid_t foreign=bad_actor();struct pollfd wait_actor={listenfd,POLLIN,0};check(poll(&wait_actor,1,1500)==1&&serve_one(listenfd,main)==-EPERM,"sameUID no original main rejected");int status;check(waitpid(foreign,&status,0)==foreign&&WIFEXITED(status)&&!WEXITSTATUS(status),"foreign unique Wait0");check(emitted==0,"foreign actor emitted");puts("PRIVSEP_SAME_UID_NONMAIN_REJECTED");}
+    uint64_t consumed[2]={0};for(unsigned phase=1;phase<=(drop_ack?1U:2U);phase++){root_trigger(phase==1?"add":"change");int64_t end=neon_now()+7000;while((!legacy_mode&&emitted<phase)||accepted<phase){int64_t now=neon_now();check(now<end,"actual event exchange deadline");struct pollfd fds[4]={{udev_monitor_get_fd(kernel),POLLIN,0},{listenfd,POLLIN,0},{udev_monitor_get_fd(consumer),POLLIN,0},{udev_monitor_get_fd(diagnostic),POLLIN,0}};int rc=poll(fds,4,(int)(end-now));check(rc>0,"actual monitors/Root requests");if(fds[0].revents&POLLIN)root_tickets(kernel);if(fds[1].revents&POLLIN){root_tickets(kernel);check(!legacy_mode&&!serve_one(listenfd,main),"actual main fixed emitter request");if(drop_ack){check(neon_wait(main.fd,POLLIN,neon_now()+4000)==0,"lostACK original main bounded exit");int main_status;check(waitpid(main.pid,&main_status,0)==main.pid&&WIFEXITED(main_status)&&WEXITSTATUS(main_status)!=0,"lostACK actual original nonzero Wait");close(main.fd);struct pollfd no_retry={listenfd,POLLIN,0};check(poll(&no_retry,1,250)==0&&emitted==1,"lostACK no new Root request");puts("PRIVSEP_LOST_ACK_UNKNOWN_NO_RETRY_PASS");return 0;}}if(fds[3].revents&POLLIN){uint64_t diagnostic_seq=0;int diagnostic_got=stock_consume(diagnostic,&diagnostic_seq);printf("DIAGNOSTIC_STOCK_NOFILTER=%d:%llu\n",diagnostic_got,(unsigned long long)diagnostic_seq);}if(fds[2].revents&POLLIN){uint64_t seq;int got=stock_consume(consumer,&seq);check(got>=0,"stock consumer property");if(got){check(accepted<2,"unexpected extra public event");consumed[accepted++]=seq;printf("PRIVSEP_STOCK_LIBUDEV=%llu\n",(unsigned long long)seq);}}}}
+    check(consumed[0]&&consumed[1]>consumed[0]&&emitted==(legacy_mode?0U:2U)&&accepted==2,"two genuine original events");if(legacy_mode){check(!syscall(SYS_pidfd_send_signal,main.fd,SIGTERM,NULL,0),"legacy original TERM");original_wait(main);puts("PRIVSEP_LEGACY_ROOT_STOCK_CONSUMER_PASS");return 0;}check(process_packet(last_packet,last_size,0)==-EALREADY&&emitted==2,"model replay ticket rejected");unsigned char original=last_packet[35];last_packet[35]=1;check(process_packet(last_packet,last_size,0)<0&&emitted==2,"model wrong fixed index rejected");last_packet[35]=original;puts("PRIVSEP_MODEL_REPLAY_AND_FAKE_INDEX_REJECTED");
+    check(!neon_alive(main.fd),"original main remains live");check(!syscall(SYS_pidfd_send_signal,main.fd,SIGTERM,NULL,0),"original main TERM");original_wait(main);for(unsigned i=0;i<ticket_count;i++)udev_device_unref(tickets[i].device);udev_monitor_unref(kernel);udev_monitor_unref(consumer);udev_monitor_unref(diagnostic);udev_unref(udev);close(emitter);close(listenfd);puts("PRIVSEP_NATIVE_PASS_MAIN_WORKER_STOCKLIB_MODEL_NOT_SOURCE");return 0;}

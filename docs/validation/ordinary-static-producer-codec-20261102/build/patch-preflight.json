@@ -1,0 +1,87 @@
+[
+  {
+    "patch": "default-rules.patch",
+    "sha256": "8d6dcd3acbc9c32e0c1ed071e9584a8c78f758198e0e6441c6a202fa60f2fbc9",
+    "command": [
+      "patch",
+      "--batch",
+      "-p1",
+      "-i",
+      "/data/neon-build/validation/root-udev-kind3-build-20261101T185417Z-11e57a/source/aports/eudev/default-rules.patch"
+    ],
+    "exit": 0,
+    "stdout": "patching file rules/50-udev-default.rules\nHunk #1 succeeded at 88 with fuzz 2 (offset 15 lines).\n",
+    "stderr": ""
+  },
+  {
+    "patch": "load-fbcon.patch",
+    "sha256": "52a1825ad7ce411a3abefc1ffde567dda16ab8f0963c9409ce0ccbb135cddd7e",
+    "command": [
+      "patch",
+      "--batch",
+      "-p1",
+      "-i",
+      "/data/neon-build/validation/root-udev-kind3-build-20261101T185417Z-11e57a/source/aports/eudev/load-fbcon.patch"
+    ],
+    "exit": 0,
+    "stdout": "patching file rules/80-drivers.rules\n",
+    "stderr": ""
+  },
+  {
+    "patch": "no-sgx.patch",
+    "sha256": "1ee3b6bfb1855ee7f7e26a8ce8101165986d06f8bee7bf7744999a945c109a09",
+    "command": [
+      "patch",
+      "--batch",
+      "-p1",
+      "-i",
+      "/data/neon-build/validation/root-udev-kind3-build-20261101T185417Z-11e57a/source/aports/eudev/no-sgx.patch"
+    ],
+    "exit": 0,
+    "stdout": "patching file rules/50-udev-default.rules\n",
+    "stderr": ""
+  },
+  {
+    "patch": "78-sound-card.rules_Import_ID_PATH_early.patch",
+    "sha256": "2c7a13821c51502cc0aec3d0bead08e70bb1f7816d87a94ac86a5f9061fcd96b",
+    "command": [
+      "patch",
+      "--batch",
+      "-p1",
+      "-i",
+      "/data/neon-build/validation/root-udev-kind3-build-20261101T185417Z-11e57a/source/aports/eudev/78-sound-card.rules_Import_ID_PATH_early.patch"
+    ],
+    "exit": 0,
+    "stdout": "patching file rules/78-sound-card.rules\n",
+    "stderr": ""
+  },
+  {
+    "patch": "eudev-fixed-device-v1.patch",
+    "sha256": "349bb486a28d04d3f1207861c3b23cb77f319df673b1983bb0643966e545880e",
+    "command": [
+      "patch",
+      "--batch",
+      "-p1",
+      "-i",
+      "/data/neon-build/validation/root-udev-kind3-build-20261101T185417Z-11e57a/source/frozen/eudev-fixed-device-v1.patch"
+    ],
+    "exit": 0,
+    "stdout": "patching file src/udev/udev.h\npatching file src/udev/udevd.c\npatching file src/udev/udev-node.c\npatching file src/udev/udev-rules.c\n",
+    "stderr": ""
+  },
+  {
+    "patch": "eudev-privsep-v2.patch",
+    "sha256": "75ec5625f30ca87c7180cb3a1080188763d379b4508488fc0365e229e7f84867",
+    "command": [
+      "patch",
+      "--batch",
+      "--fuzz=0",
+      "-p1",
+      "-i",
+      "/data/neon-build/validation/root-udev-kind3-build-20261101T185417Z-11e57a/source/revision/eudev-privsep-v2.patch"
+    ],
+    "exit": 0,
+    "stdout": "patching file src/udev/udevd.c\n",
+    "stderr": ""
+  }
+]

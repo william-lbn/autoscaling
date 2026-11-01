@@ -1,0 +1,301 @@
+--- a/src/udev/udevd.c
++++ b/src/udev/udevd.c
+@@ -117,6 +117,7 @@
+         WORKER_KILLED,
+ };
+ 
++struct neon_endpoint;
+ struct worker {
+         struct udev_list_node node;
+         struct udev *udev;
+@@ -125,12 +126,112 @@
+         struct udev_monitor *monitor;
+         enum worker_state state;
+         struct event *event;
++        struct neon_endpoint *neon;
+ };
+ 
+ /* passed from worker to main process */
+ struct worker_message {
+ };
+ 
++/* fixed mode内部有独立原fork对象；不改变公共libudev的Root uid门。 */
++static void event_free(struct event *event);
++static void worker_attach_event(struct worker *worker,struct event *event);
++#include "neon-creator-ipc.c"
++#include "neon-emitter-client.c"
++static struct neon_endpoint neon_child={.fd=-1,.peer_pidfd=-1};
++static bool neon_privsep_failed;
++static void neon_fail_closed(const char *where,int error) {
++        log_error("fixed-device privsep Unknown at %s: %d",where,error);
++        neon_privsep_failed=true;
++        udev_exit=true;
++}
++static struct udev_device *neon_child_receive(struct udev *udev,bool wait) {
++        char body[NEON_IPC_MAX];size_t len;uint64_t seq;
++        if(neon_child.generation==UINT64_MAX)_exit(EXIT_FAILURE);
++        if(wait&&neon_wait(neon_child.fd,POLLIN,neon_now()+2000))_exit(EXIT_FAILURE);
++        int rc=neon_receive(&neon_child,NEON_EVENT,neon_child.generation+1,0,body,&len,&seq);
++        if(rc==0)return NULL;
++        if(rc<0){log_error("fixed-device original creator message rejected: %d",rc);_exit(EXIT_FAILURE);}
++        struct udev_device *device=udev_device_new_from_nulstr(udev,body,len);
++        if(!device||udev_device_get_seqnum(device)!=seq){udev_device_unref(device);_exit(EXIT_FAILURE);}
++        neon_child.generation++;neon_child.seq=seq;
++        return device;
++}
++static int neon_child_done(struct udev_device *device) {
++        char body[NEON_IPC_MAX];const char *raw=NULL;size_t len;uint32_t count;
++        ssize_t n=udev_device_get_properties_monitor_buf(device,&raw);
++        if(n<=0)return -EINVAL;
++        int rc=neon_device_canonical(raw,n,body,&len,&count);if(rc)return rc;
++        return neon_send(&neon_child,NEON_DONE,neon_child.generation,neon_child.seq,body,len);
++}
++static int neon_dispatch(struct worker *worker,struct event *event) {
++        char body[NEON_IPC_MAX];const char *raw=NULL;size_t len;uint32_t count;
++        ssize_t n=udev_device_get_properties_monitor_buf(event->dev,&raw);
++        struct neon_endpoint *endpoint=worker->neon;
++        if(!endpoint||endpoint->awaiting||endpoint->generation==UINT64_MAX||n<=0)return -EINVAL;
++        int rc=neon_device_canonical(raw,n,body,&len,&count);if(rc)return rc;
++        rc=neon_send(endpoint,NEON_EVENT,endpoint->generation+1,event->seqnum,body,len);
++        if(rc)return rc;
++        endpoint->generation++;endpoint->seq=event->seqnum;endpoint->awaiting=1;
++        log_info("fixed IPC original worker %d pidfs %llu generation %llu seq %llu",worker->pid,(unsigned long long)endpoint->peer_inode,(unsigned long long)endpoint->generation,event->seqnum);
++        return 0;
++}
++static int neon_register_worker(struct udev *udev,struct neon_pair *pair,pid_t pid,struct worker **ret) {
++        struct worker *worker=new0(struct worker,1);
++        if(!worker)return -ENOMEM;
++        worker->neon=new0(struct neon_endpoint,1);
++        if(!worker->neon){free(worker);return -ENOMEM;}
++        worker->neon->fd=worker->neon->peer_pidfd=-1;
++        int rc=neon_pair_parent(pair,pid,worker->neon);
++        if(rc)goto fail;
++        worker->refcount=1;worker->udev=udev_ref(udev);worker->pid=pid;
++        rc=hashmap_ensure_allocated(&workers,NULL);if(rc<0)goto fail;
++        rc=hashmap_put(workers,UINT_TO_PTR(pid),worker);if(rc<0)goto fail;
++        struct epoll_event ready={.events=EPOLLIN|EPOLLHUP|EPOLLERR};ready.data.u64=UINT64_MAX;
++        if(epoll_ctl(fd_ep,EPOLL_CTL_ADD,worker->neon->fd,&ready)){hashmap_remove(workers,UINT_TO_PTR(pid));rc=-errno;goto fail;}
++        *ret=worker;return 0;
++fail:
++        neon_endpoint_close(worker->neon);free(worker->neon);udev_unref(worker->udev);free(worker);return rc;
++}
++static int neon_emit_device(struct event *event,struct udev_device *processed,const char *body,size_t len,uint32_t count) {
++        /* parent的原event对象未被worker的COW规则处理修改；shallow clone无ACTION/SEQNUM缓存。 */
++        struct udev_device *kernel=event->dev;
++        if(!streq_ptr(udev_device_get_action(kernel),udev_device_get_action(processed))||
++           !streq_ptr(udev_device_get_devpath(kernel),udev_device_get_devpath(processed))||
++           !streq_ptr(udev_device_get_subsystem(kernel),udev_device_get_subsystem(processed))||
++           !streq_ptr(udev_device_get_devnode(kernel),udev_device_get_devnode(processed))||
++           udev_device_get_devnum(kernel)!=udev_device_get_devnum(processed)||
++           udev_device_get_seqnum(kernel)!=udev_device_get_seqnum(processed))return -ESTALE;
++        const char *subsystem=udev_device_get_subsystem(kernel),*action=udev_device_get_action(kernel);
++        uint16_t kind=0,op=0;uint32_t index=0;
++        const char *actions[]={"add","change","remove","online","offline","bind","unbind","move"};
++        for(unsigned i=0;i<ELEMENTSOF(actions);i++)if(streq_ptr(action,actions[i]))op=i+1;
++        if(!op)return -EINVAL;
++        const char *port_name=streq_ptr(subsystem,"virtio-ports")?udev_device_get_sysattr_value(kernel,"name"):NULL;
++        int selector=neon_device_selector(subsystem,udev_device_get_sysname(kernel),port_name,&kind,&index);
++        if(selector)return selector;
++        /* kind/index仅selector；真Root还须原kernel票据/最大几何与原RO规则全核。 */
++        return neon_root_emit(kind,op,index,event->seqnum,body,len,count);
++}
++static void neon_worker_returned(void) {
++        struct worker *worker;Iterator iterator;
++        HASHMAP_FOREACH(worker,workers,iterator){
++                if(!worker->neon||worker->state==WORKER_KILLED)continue;
++                char body[NEON_IPC_MAX];size_t len;uint64_t seq;
++                int rc=neon_receive(worker->neon,NEON_DONE,worker->neon->generation,worker->neon->seq,body,&len,&seq);
++                if(rc==0)continue;
++                if(rc<0||!worker->neon->awaiting||worker->state!=WORKER_RUNNING||!worker->event){neon_fail_closed("original worker DONE",rc);return;}
++                struct udev_device *processed=udev_device_new_from_nulstr(worker->udev,body,len);
++                if(!processed){neon_fail_closed("processed device decode",-EINVAL);return;}
++                size_t checked;uint32_t count;char canonical[NEON_IPC_MAX];
++                rc=neon_canonical(body,len,canonical,&checked,&count,1);
++                if(!rc)rc=neon_emit_device(worker->event,processed,body,len,count);
++                udev_device_unref(processed);
++                if(rc){neon_fail_closed("main-only Root emitter",rc);return;}
++                worker->neon->awaiting=0;worker->state=WORKER_IDLE;event_free(worker->event);
++        }
++}
++
+ static void event_free(struct event *event) {
+         if (!event)
+                 return;
+@@ -149,6 +250,7 @@
+         if (!worker)
+                 return;
+ 
++        if(worker->neon){if(getpid()==neon_original_main&&fd_ep>=0)epoll_ctl(fd_ep,EPOLL_CTL_DEL,worker->neon->fd,NULL);neon_endpoint_close(worker->neon);free(worker->neon);}
+         hashmap_remove(workers, UINT_TO_PTR(worker->pid));
+         udev_monitor_unref(worker->monitor);
+         udev_unref(worker->udev);
+@@ -226,7 +328,10 @@
+         struct udev *udev = event->udev;
+         _cleanup_udev_monitor_unref_ struct udev_monitor *worker_monitor = NULL;
+         pid_t pid;
+-
++        struct neon_pair pair;
++        if(udev_neon_fixed_devices){
++                if(neon_emitter_fd!=-1||neon_pair_new(&pair)){neon_fail_closed("fork original pair",-EPERM);return;}
++        }else{
+         /* listen for new events */
+         worker_monitor = udev_monitor_new_from_netlink(udev, NULL);
+         if (worker_monitor == NULL)
+@@ -234,7 +339,7 @@
+         /* allow the main daemon netlink address to send devices to the worker */
+         udev_monitor_allow_unicast_sender(worker_monitor, monitor);
+         udev_monitor_enable_receiving(worker_monitor);
+-
++        }
+         pid = fork();
+         switch (pid) {
+         case 0: {
+@@ -245,8 +350,8 @@
+                 int r = 0;
+ 
+                 /* take initial device from queue */
+-                dev = event->dev;
+-                event->dev = NULL;
++                if(udev_neon_fixed_devices)neon_pair_child(&pair,&neon_child);
++                else{dev = event->dev;event->dev = NULL;}
+ 
+                 workers_free();
+                 event_queue_cleanup(udev, EVENT_UNDEF);
+@@ -273,7 +378,7 @@
+                 ep_signal.events = EPOLLIN;
+                 ep_signal.data.fd = fd_signal;
+ 
+-                fd_monitor = udev_monitor_get_fd(worker_monitor);
++                fd_monitor = udev_neon_fixed_devices?neon_child.fd:udev_monitor_get_fd(worker_monitor);
+                 memzero(&ep_monitor, sizeof(struct epoll_event));
+                 ep_monitor.events = EPOLLIN;
+                 ep_monitor.data.fd = fd_monitor;
+@@ -290,6 +395,7 @@
+                 /* reset OOM score, we only protect the main daemon */
+                 write_string_file("/proc/self/oom_score_adj", "0");
+ 
++                if(udev_neon_fixed_devices)dev=neon_child_receive(udev,true);
+                 for (;;) {
+                         struct udev_event *udev_event;
+                         int fd_lock = -1;
+@@ -355,21 +461,15 @@
+                         safe_close(fd_lock);
+ 
+                         /* send processed event back to libudev listeners */
+-                        if (udev_neon_fixed_devices) {
+-                                /* 不能只成功写DB却静默丢失处理后业务事件。 */
+-                                int sent = udev_monitor_send_device(worker_monitor, NULL, dev);
+-                                if (sent < 0) {
+-                                        log_error_errno(sent, "fixed-device processed event broadcast failed: %m");
+-                                        _exit(EXIT_FAILURE);
+-                                }
+-                        } else
+-                                udev_monitor_send_device(worker_monitor, NULL, dev);
++                        if(udev_neon_fixed_devices){
++                                r=neon_child_done(dev);if(r<0){log_error("fixed worker DONE failed: %d",r);goto out;}
++                        }else udev_monitor_send_device(worker_monitor,NULL,dev);
+ 
+ skip:
+                         log_debug("seq %llu processed", udev_device_get_seqnum(dev));
+ 
+                         /* send udevd the result of the event execution */
+-                        r = worker_send_message(worker_watch[WRITE_END]);
++                        r = udev_neon_fixed_devices?0:worker_send_message(worker_watch[WRITE_END]);
+                         if (r < 0)
+                                 log_error_errno(r, "failed to send result of seq %llu to main daemon: %m",
+                                                 udev_device_get_seqnum(dev));
+@@ -400,7 +500,7 @@
+ 
+                                 for (i = 0; i < fdcount; i++) {
+                                         if (ev[i].data.fd == fd_monitor && ev[i].events & EPOLLIN) {
+-                                                dev = udev_monitor_receive_device(worker_monitor);
++                                                dev = udev_neon_fixed_devices?neon_child_receive(udev,false):udev_monitor_receive_device(worker_monitor);
+                                                 break;
+                                         } else if (ev[i].data.fd == fd_signal && ev[i].events & EPOLLIN) {
+                                                 struct signalfd_siginfo fdsi;
+@@ -419,6 +519,7 @@
+                 }
+ out:
+                 udev_device_unref(dev);
++                if(udev_neon_fixed_devices)neon_endpoint_close(&neon_child);
+                 safe_close(fd_signal);
+                 safe_close(fd_ep);
+                 close(fd_inotify);
+@@ -430,6 +531,7 @@
+                 _exit(r < 0 ? EXIT_FAILURE : EXIT_SUCCESS);
+         }
+         case -1:
++                if(udev_neon_fixed_devices){for(int i=0;i<2;i++)close(pair.fd[i]);close(pair.creator_pidfd);neon_fail_closed("fork",-errno);}
+                 event->state = EVENT_QUEUED;
+                 log_error_errno(errno, "fork of child failed: %m");
+                 break;
+@@ -438,11 +540,10 @@
+                 struct worker *worker;
+                 int r;
+ 
+-                r = worker_new(&worker, udev, worker_monitor, pid);
+-                if (r < 0)
+-                        return;
+-
+-                worker_attach_event(worker, event);
++                r = udev_neon_fixed_devices?neon_register_worker(udev,&pair,pid,&worker):worker_new(&worker,udev,worker_monitor,pid);
++                if(r<0){if(udev_neon_fixed_devices){kill(pid,SIGKILL);neon_fail_closed("original child pidfd registration",r);}return;}
++                worker_attach_event(worker,event);
++                if(udev_neon_fixed_devices){r=neon_dispatch(worker,event);if(r<0)neon_fail_closed("initial EVENT",r);}
+ 
+                 log_debug("seq %llu forked new worker ["PID_FMT"]", udev_device_get_seqnum(event->dev), pid);
+                 break;
+@@ -460,7 +561,7 @@
+                 if (worker->state != WORKER_IDLE)
+                         continue;
+ 
+-                count = udev_monitor_send_device(monitor, worker->monitor, event->dev);
++                count=udev_neon_fixed_devices?neon_dispatch(worker,event):udev_monitor_send_device(monitor,worker->monitor,event->dev);
+                 if (count < 0) {
+                         log_error_errno(errno, "worker ["PID_FMT"] did not accept message %zi (%m), kill it",
+                                         worker->pid, count);
+@@ -625,6 +726,7 @@
+ }
+ 
+ static void worker_returned(int fd_worker) {
++        if(udev_neon_fixed_devices){neon_worker_returned();return;}
+         for (;;) {
+                 struct worker_message msg;
+                 struct iovec iovec;
+@@ -970,6 +1072,10 @@
+                                 log_warning("worker ["PID_FMT"] exit with status 0x%04x", pid, status);
+                         }
+ 
++                        if(udev_neon_fixed_devices&&worker->event){
++                                neon_fail_closed("worker exited with unconfirmed event",-ECHILD);
++                                worker_free(worker);continue;
++                        }
+                         if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+                                 if (worker->event) {
+                                         log_error("worker ["PID_FMT"] failed while handling '%s'", pid, worker->event->devpath);
+@@ -1204,6 +1310,7 @@
+                         r = -EPERM;
+                         goto exit;
+                 }
++                neon_original_main=getpid();
+                 log_set_target(LOG_TARGET_CONSOLE);
+         } else if (getuid() != 0) {
+                 r = log_error_errno(EPERM, "root privileges required");
+@@ -1416,6 +1523,7 @@
+                 bool is_worker, is_signal, is_inotify, is_netlink, is_ctrl;
+                 int i;
+ 
++                if(neon_privsep_failed)r=-EIO;
+                 if (udev_exit) {
+                         /* close sources of new events and discard buffered events */
+                         if (fd_ctrl >= 0) {
+@@ -1504,7 +1612,8 @@
+ 
+                 is_worker = is_signal = is_inotify = is_netlink = is_ctrl = false;
+                 for (i = 0; i < fdcount; i++) {
+-                        if (ev[i].data.fd == fd_worker && ev[i].events & EPOLLIN)
++                        if(udev_neon_fixed_devices&&ev[i].data.u64==UINT64_MAX)is_worker=true;
++                        else if (ev[i].data.fd == fd_worker && ev[i].events & EPOLLIN)
+                                 is_worker = true;
+                         else if (ev[i].data.fd == fd_netlink && ev[i].events & EPOLLIN)
+                                 is_netlink = true;

@@ -1,0 +1,37 @@
+{
+  "base_git": "c6e5af38650cac0a43a6bce2a8b6ab03688cb670",
+  "source_inputs": {
+    "source.sha256": "1fc9e8f302c34a6210b177a0b72be9cdbe7fa4eb754615531a96eb8b85041695",
+    "sources/eudev-3.2.14.tar.gz": "8da4319102f24abbf7fff5ce9c416af848df163b29590e666d334cc1927f006f",
+    "revision/Dockerfile.rebuild": "2177e74a792a1e0f0ec3fd2476074baeade8aa48c8d2cf0019fa42e58be0936c",
+    "revision/eudev-privsep-v2.patch": "75ec5625f30ca87c7180cb3a1080188763d379b4508488fc0365e229e7f84867",
+    "revision/creator-ipc.c": "3d56c8c860b9a3a9863e7aeea941c47727f787be03fc75c34be8188c96cd6f40",
+    "revision/inputs.lock.json": "8dca603cf4fc3df39060914d884afcb46300cf5b5913a5faede13021d7cfbcb0",
+    "revision/protocol.h": "0dc0363da021abdd636d5c5eb2beb44ff4770bfb9c30bd299259d83e85d234cf",
+    "revision/emitter-client.c": "94857e5daf38c10f48a01d2826d1f5cc334dd283ac9bdce9f726d94466e0fc70",
+    "revision/test_event_properties.c": "950b5dbdda63d22af4ac40116b963e862b5b06bcfb7b5c00988d645ecc659035",
+    "revision/build-eudev.sh": "a42fe2ffa3638e2000bc25ca88a06d9219553f5650d05c60ad4b9d239d0e59f2",
+    "frozen/eudev-fixed-device-v1.patch": "349bb486a28d04d3f1207861c3b23cb77f319df673b1983bb0643966e545880e",
+    "aports/eudev/default-rules.patch": "8d6dcd3acbc9c32e0c1ed071e9584a8c78f758198e0e6441c6a202fa60f2fbc9",
+    "aports/eudev/78-sound-card.rules_Import_ID_PATH_early.patch": "2c7a13821c51502cc0aec3d0bead08e70bb1f7816d87a94ac86a5f9061fcd96b",
+    "aports/eudev/no-sgx.patch": "1ee3b6bfb1855ee7f7e26a8ce8101165986d06f8bee7bf7744999a945c109a09",
+    "aports/eudev/load-fbcon.patch": "52a1825ad7ce411a3abefc1ffde567dda16ab8f0963c9409ce0ccbb135cddd7e",
+    "aports/eudev/APKBUILD": "ad8e8da0a8e3725579b0e947f2fa1314fa2e79b699200ab1943bf3b9f7169e1e"
+  },
+  "revision_source": {
+    "protocol.h": "0dc0363da021abdd636d5c5eb2beb44ff4770bfb9c30bd299259d83e85d234cf",
+    "creator-ipc.c": "3d56c8c860b9a3a9863e7aeea941c47727f787be03fc75c34be8188c96cd6f40",
+    "emitter-client.c": "94857e5daf38c10f48a01d2826d1f5cc334dd283ac9bdce9f726d94466e0fc70",
+    "eudev-privsep-v2.patch": "75ec5625f30ca87c7180cb3a1080188763d379b4508488fc0365e229e7f84867"
+  },
+  "baseline_untracked_source_provenance": "ordinary-udev-privsep-build-20261101T080238Z-e47368 and root-udev-kind3-preparation-20261102/baseline",
+  "limits": {
+    "registered_cpu": 2,
+    "registered_memory_GiB": 3,
+    "BuildKit_each_single_RUN_cpu": 2,
+    "BuildKit_each_single_RUN_memory_GiB": 2
+  },
+  "Source": false,
+  "normal": false,
+  "E": 0
+}

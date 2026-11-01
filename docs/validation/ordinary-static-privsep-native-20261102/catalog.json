@@ -1,0 +1,1825 @@
+{
+  "scope": "ACTUAL_18C_KVM_CPU0_STATIC_C_PRIVSEP_MECHANISM_ROOT_MODEL_ONLY",
+  "AS_HEAD_at_freeze": "c6e5af38650cac0a43a6bce2a8b6ab03688cb670",
+  "owned_source": {
+    "vm-builder/ordinary-v2/revisions/udev-privsep-v2/test_static_privsep_native.c": "df8c3a21f90b4c3476e2dfe5705d3c80a0f5a235d75eaf5bf04628ae8dfe3801"
+  },
+  "actual_stable_service_targets": {
+    "ORDINARY-S-STATIC-CPU0-ADD-CHANGE-001": {
+      "label": "new-two-events",
+      "status": "PASS_TWO_REAL_CPU_EVENTS_MODEL_ONLY",
+      "passed": true,
+      "seconds": 3.1152274960186332,
+      "QEMU_exit": 0,
+      "Guest_exit": [
+        "0"
+      ],
+      "actual_KVM": {
+        "enabled": true,
+        "present": true
+      },
+      "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+      "actual_original_workers": [
+        [
+          "64",
+          "364",
+          "1",
+          "555"
+        ],
+        [
+          "64",
+          "364",
+          "2",
+          "556"
+        ]
+      ],
+      "production_worker_trace": [
+        [
+          "64",
+          "364",
+          "1",
+          "555"
+        ],
+        [
+          "64",
+          "364",
+          "2",
+          "556"
+        ]
+      ],
+      "public_libudev_consumed_sequences": [
+        "555",
+        "556"
+      ],
+      "Root_model_emits": [
+        [
+          "555",
+          "1"
+        ],
+        [
+          "556",
+          "2"
+        ]
+      ],
+      "original_kernel_tickets": [
+        [
+          "555",
+          "add"
+        ],
+        [
+          "556",
+          "change"
+        ]
+      ],
+      "actual_role_status": [
+        [
+          "main-ready",
+          "61"
+        ],
+        [
+          "main",
+          "61"
+        ],
+        [
+          "worker",
+          "64"
+        ],
+        [
+          "main",
+          "61"
+        ],
+        [
+          "worker",
+          "64"
+        ]
+      ],
+      "raw_role_status": [
+        {
+          "role": "main-ready",
+          "pid": 61,
+          "parent_pid": 60,
+          "actual_Uid": "60004\t60004\t60004\t60004",
+          "actual_Gid": "60004\t60004\t60004\t60004",
+          "actual_NoNewPrivs": "1",
+          "actual_capability_hex": {
+            "CapInh": "0000000000000000",
+            "CapPrm": "0000000000000000",
+            "CapEff": "0000000000000000",
+            "CapBnd": "0000000000000000",
+            "CapAmb": "0000000000000000"
+          },
+          "original_status_sha256": "747fab86bb18e69732a439e34075122b7ae861087cb4c09483acf133cd0fce77"
+        },
+        {
+          "role": "main",
+          "pid": 61,
+          "parent_pid": 60,
+          "actual_Uid": "60004\t60004\t60004\t60004",
+          "actual_Gid": "60004\t60004\t60004\t60004",
+          "actual_NoNewPrivs": "1",
+          "actual_capability_hex": {
+            "CapInh": "0000000000000000",
+            "CapPrm": "0000000000000000",
+            "CapEff": "0000000000000000",
+            "CapBnd": "0000000000000000",
+            "CapAmb": "0000000000000000"
+          },
+          "original_status_sha256": "4728bacc3f6a7da3cc05d5ce206f776fa050b266497883370fa321ea4e804a6a"
+        },
+        {
+          "role": "worker",
+          "pid": 64,
+          "parent_pid": 61,
+          "actual_Uid": "60004\t60004\t60004\t60004",
+          "actual_Gid": "60004\t60004\t60004\t60004",
+          "actual_NoNewPrivs": "1",
+          "actual_capability_hex": {
+            "CapInh": "0000000000000000",
+            "CapPrm": "0000000000000000",
+            "CapEff": "0000000000000000",
+            "CapBnd": "0000000000000000",
+            "CapAmb": "0000000000000000"
+          },
+          "original_status_sha256": "a02014ad60fed7ccb7fc8c3da8f13542293a53d0c8c4492309e41c779281f5cc"
+        },
+        {
+          "role": "main",
+          "pid": 61,
+          "parent_pid": 60,
+          "actual_Uid": "60004\t60004\t60004\t60004",
+          "actual_Gid": "60004\t60004\t60004\t60004",
+          "actual_NoNewPrivs": "1",
+          "actual_capability_hex": {
+            "CapInh": "0000000000000000",
+            "CapPrm": "0000000000000000",
+            "CapEff": "0000000000000000",
+            "CapBnd": "0000000000000000",
+            "CapAmb": "0000000000000000"
+          },
+          "original_status_sha256": "443e5e49cb1bf0abcf914c73323f9f8f0760f0c4624e47eeab1a4cea5dae32c4"
+        },
+        {
+          "role": "worker",
+          "pid": 64,
+          "parent_pid": 61,
+          "actual_Uid": "60004\t60004\t60004\t60004",
+          "actual_Gid": "60004\t60004\t60004\t60004",
+          "actual_NoNewPrivs": "1",
+          "actual_capability_hex": {
+            "CapInh": "0000000000000000",
+            "CapPrm": "0000000000000000",
+            "CapEff": "0000000000000000",
+            "CapBnd": "0000000000000000",
+            "CapAmb": "0000000000000000"
+          },
+          "original_status_sha256": "39095c9e92362da4ff811df5a02e1d6f3355a4a5073a049da94c0296a1628cae"
+        }
+      ],
+      "complete_raw_CPU_and_role_evidence_verified": true,
+      "actual_lost_ACK_public_sequences": [],
+      "old_control_not_release_target": false,
+      "Source": false,
+      "normal": false,
+      "E": 0,
+      "PG_executed": false,
+      "Root_MODEL_not_real_lease_or_WAL": true,
+      "host_network_time_power_actions": 0,
+      "QMP_power_commands": 0
+    },
+    "ORDINARY-S-STATIC-CPU0-LOST-ACK-001": {
+      "label": "new-lost-ack",
+      "status": "PASS_LOST_ACK_MODEL_ONLY",
+      "passed": true,
+      "seconds": 3.2424204850103706,
+      "QEMU_exit": 0,
+      "Guest_exit": [
+        "0"
+      ],
+      "actual_KVM": {
+        "enabled": true,
+        "present": true
+      },
+      "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+      "actual_original_workers": [
+        [
+          "64",
+          "364",
+          "1",
+          "555"
+        ]
+      ],
+      "production_worker_trace": [
+        [
+          "64",
+          "364",
+          "1",
+          "555"
+        ]
+      ],
+      "public_libudev_consumed_sequences": [],
+      "Root_model_emits": [
+        [
+          "555",
+          "1"
+        ]
+      ],
+      "original_kernel_tickets": [
+        [
+          "555",
+          "add"
+        ]
+      ],
+      "actual_role_status": [
+        [
+          "main-ready",
+          "61"
+        ],
+        [
+          "main",
+          "61"
+        ],
+        [
+          "worker",
+          "64"
+        ]
+      ],
+      "raw_role_status": [
+        {
+          "role": "main-ready",
+          "pid": 61,
+          "parent_pid": 60,
+          "actual_Uid": "60004\t60004\t60004\t60004",
+          "actual_Gid": "60004\t60004\t60004\t60004",
+          "actual_NoNewPrivs": "1",
+          "actual_capability_hex": {
+            "CapInh": "0000000000000000",
+            "CapPrm": "0000000000000000",
+            "CapEff": "0000000000000000",
+            "CapBnd": "0000000000000000",
+            "CapAmb": "0000000000000000"
+          },
+          "original_status_sha256": "7b7f532a54cb3d3f5c1c55e6c4ef0fb5d7856762fd8b7f80e8c6585e32847329"
+        },
+        {
+          "role": "main",
+          "pid": 61,
+          "parent_pid": 60,
+          "actual_Uid": "60004\t60004\t60004\t60004",
+          "actual_Gid": "60004\t60004\t60004\t60004",
+          "actual_NoNewPrivs": "1",
+          "actual_capability_hex": {
+            "CapInh": "0000000000000000",
+            "CapPrm": "0000000000000000",
+            "CapEff": "0000000000000000",
+            "CapBnd": "0000000000000000",
+            "CapAmb": "0000000000000000"
+          },
+          "original_status_sha256": "ee8b7b8567093ae0ee5891770fd84b3c83063306ef90606eeeb3e8729fb627af"
+        },
+        {
+          "role": "worker",
+          "pid": 64,
+          "parent_pid": 61,
+          "actual_Uid": "60004\t60004\t60004\t60004",
+          "actual_Gid": "60004\t60004\t60004\t60004",
+          "actual_NoNewPrivs": "1",
+          "actual_capability_hex": {
+            "CapInh": "0000000000000000",
+            "CapPrm": "0000000000000000",
+            "CapEff": "0000000000000000",
+            "CapBnd": "0000000000000000",
+            "CapAmb": "0000000000000000"
+          },
+          "original_status_sha256": "46df552ab86dcd2fae9bb3581b718fdaa924ba227ffe9d2b958ddd26276a5eb5"
+        }
+      ],
+      "complete_raw_CPU_and_role_evidence_verified": true,
+      "actual_lost_ACK_public_sequences": [
+        "555"
+      ],
+      "old_control_not_release_target": false,
+      "Source": false,
+      "normal": false,
+      "E": 0,
+      "PG_executed": false,
+      "Root_MODEL_not_real_lease_or_WAL": true,
+      "host_network_time_power_actions": 0,
+      "QMP_power_commands": 0
+    }
+  },
+  "stable_S_count": 2,
+  "unit_tests_claimed_here": 0,
+  "old_control_is_ENV_not_S": {
+    "label": "old-e473-control",
+    "status": "EXPECTED_OLD_CPU_PATH_REJECT_OBSERVED",
+    "passed": true,
+    "seconds": 9.78312069902313,
+    "QEMU_exit": 0,
+    "Guest_exit": [
+      "1"
+    ],
+    "actual_KVM": {
+      "enabled": true,
+      "present": true
+    },
+    "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+    "actual_original_workers": [],
+    "production_worker_trace": [],
+    "public_libudev_consumed_sequences": [],
+    "Root_model_emits": [],
+    "original_kernel_tickets": [
+      [
+        "555",
+        "add"
+      ]
+    ],
+    "actual_role_status": [
+      [
+        "main-ready",
+        "61"
+      ]
+    ],
+    "old_control_not_release_target": true,
+    "Source": false,
+    "normal": false,
+    "E": 0,
+    "PG_executed": false,
+    "Root_MODEL_not_real_lease_or_WAL": true,
+    "host_network_time_power_actions": 0,
+    "QMP_power_commands": 0
+  },
+  "first_runtime_preserved": {
+    "component_targets": 2,
+    "old_control": {
+      "label": "old-e473-control",
+      "status": "EXPECTED_OLD_CPU_PATH_REJECT_OBSERVED",
+      "passed": true,
+      "seconds": 9.78312069902313,
+      "QEMU_exit": 0,
+      "Guest_exit": [
+        "1"
+      ],
+      "actual_KVM": {
+        "enabled": true,
+        "present": true
+      },
+      "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+      "actual_original_workers": [],
+      "production_worker_trace": [],
+      "public_libudev_consumed_sequences": [],
+      "Root_model_emits": [],
+      "original_kernel_tickets": [
+        [
+          "555",
+          "add"
+        ]
+      ],
+      "actual_role_status": [
+        [
+          "main-ready",
+          "61"
+        ]
+      ],
+      "old_control_not_release_target": true,
+      "Source": false,
+      "normal": false,
+      "E": 0,
+      "PG_executed": false,
+      "Root_MODEL_not_real_lease_or_WAL": true,
+      "host_network_time_power_actions": 0,
+      "QMP_power_commands": 0
+    },
+    "cases": [
+      {
+        "label": "old-e473-control",
+        "status": "EXPECTED_OLD_CPU_PATH_REJECT_OBSERVED",
+        "passed": true,
+        "seconds": 9.78312069902313,
+        "QEMU_exit": 0,
+        "Guest_exit": [
+          "1"
+        ],
+        "actual_KVM": {
+          "enabled": true,
+          "present": true
+        },
+        "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+        "actual_original_workers": [],
+        "production_worker_trace": [],
+        "public_libudev_consumed_sequences": [],
+        "Root_model_emits": [],
+        "original_kernel_tickets": [
+          [
+            "555",
+            "add"
+          ]
+        ],
+        "actual_role_status": [
+          [
+            "main-ready",
+            "61"
+          ]
+        ],
+        "old_control_not_release_target": true,
+        "Source": false,
+        "normal": false,
+        "E": 0,
+        "PG_executed": false,
+        "Root_MODEL_not_real_lease_or_WAL": true,
+        "host_network_time_power_actions": 0,
+        "QMP_power_commands": 0
+      },
+      {
+        "label": "new-two-events",
+        "status": "PASS_TWO_REAL_CPU_EVENTS_MODEL_ONLY",
+        "passed": true,
+        "seconds": 2.836240717995679,
+        "QEMU_exit": 0,
+        "Guest_exit": [
+          "0"
+        ],
+        "actual_KVM": {
+          "enabled": true,
+          "present": true
+        },
+        "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+        "actual_original_workers": [
+          [
+            "64",
+            "364",
+            "1",
+            "555"
+          ],
+          [
+            "64",
+            "364",
+            "2",
+            "556"
+          ]
+        ],
+        "production_worker_trace": [
+          [
+            "64",
+            "364",
+            "1",
+            "555"
+          ],
+          [
+            "64",
+            "364",
+            "2",
+            "556"
+          ]
+        ],
+        "public_libudev_consumed_sequences": [
+          "555",
+          "556"
+        ],
+        "Root_model_emits": [
+          [
+            "555",
+            "1"
+          ],
+          [
+            "556",
+            "2"
+          ]
+        ],
+        "original_kernel_tickets": [
+          [
+            "555",
+            "add"
+          ],
+          [
+            "556",
+            "change"
+          ]
+        ],
+        "actual_role_status": [
+          [
+            "main-ready",
+            "61"
+          ],
+          [
+            "main",
+            "61"
+          ],
+          [
+            "worker",
+            "64"
+          ],
+          [
+            "main",
+            "61"
+          ],
+          [
+            "worker",
+            "64"
+          ]
+        ],
+        "old_control_not_release_target": false,
+        "Source": false,
+        "normal": false,
+        "E": 0,
+        "PG_executed": false,
+        "Root_MODEL_not_real_lease_or_WAL": true,
+        "host_network_time_power_actions": 0,
+        "QMP_power_commands": 0
+      },
+      {
+        "label": "new-lost-ack",
+        "status": "PASS_LOST_ACK_MODEL_ONLY",
+        "passed": true,
+        "seconds": 3.058010605018353,
+        "QEMU_exit": 0,
+        "Guest_exit": [
+          "0"
+        ],
+        "actual_KVM": {
+          "enabled": true,
+          "present": true
+        },
+        "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+        "actual_original_workers": [
+          [
+            "65",
+            "365",
+            "1",
+            "555"
+          ]
+        ],
+        "production_worker_trace": [
+          [
+            "65",
+            "365",
+            "1",
+            "555"
+          ]
+        ],
+        "public_libudev_consumed_sequences": [],
+        "Root_model_emits": [
+          [
+            "555",
+            "1"
+          ]
+        ],
+        "original_kernel_tickets": [
+          [
+            "555",
+            "add"
+          ]
+        ],
+        "actual_role_status": [
+          [
+            "main-ready",
+            "62"
+          ],
+          [
+            "main",
+            "62"
+          ],
+          [
+            "worker",
+            "65"
+          ]
+        ],
+        "old_control_not_release_target": false,
+        "Source": false,
+        "normal": false,
+        "E": 0,
+        "PG_executed": false,
+        "Root_MODEL_not_real_lease_or_WAL": true,
+        "host_network_time_power_actions": 0,
+        "QMP_power_commands": 0
+      }
+    ],
+    "passed": true,
+    "Source": false,
+    "normal": false,
+    "E": 0
+  },
+  "final_runtime": {
+    "component_targets": 2,
+    "old_control_reference": "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/old-e473-control",
+    "cases": [
+      {
+        "label": "new-two-events",
+        "status": "PASS_TWO_REAL_CPU_EVENTS_MODEL_ONLY",
+        "passed": true,
+        "seconds": 3.1152274960186332,
+        "QEMU_exit": 0,
+        "Guest_exit": [
+          "0"
+        ],
+        "actual_KVM": {
+          "enabled": true,
+          "present": true
+        },
+        "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+        "actual_original_workers": [
+          [
+            "64",
+            "364",
+            "1",
+            "555"
+          ],
+          [
+            "64",
+            "364",
+            "2",
+            "556"
+          ]
+        ],
+        "production_worker_trace": [
+          [
+            "64",
+            "364",
+            "1",
+            "555"
+          ],
+          [
+            "64",
+            "364",
+            "2",
+            "556"
+          ]
+        ],
+        "public_libudev_consumed_sequences": [
+          "555",
+          "556"
+        ],
+        "Root_model_emits": [
+          [
+            "555",
+            "1"
+          ],
+          [
+            "556",
+            "2"
+          ]
+        ],
+        "original_kernel_tickets": [
+          [
+            "555",
+            "add"
+          ],
+          [
+            "556",
+            "change"
+          ]
+        ],
+        "actual_role_status": [
+          [
+            "main-ready",
+            "61"
+          ],
+          [
+            "main",
+            "61"
+          ],
+          [
+            "worker",
+            "64"
+          ],
+          [
+            "main",
+            "61"
+          ],
+          [
+            "worker",
+            "64"
+          ]
+        ],
+        "raw_role_status": [
+          {
+            "role": "main-ready",
+            "pid": 61,
+            "parent_pid": 60,
+            "actual_Uid": "60004\t60004\t60004\t60004",
+            "actual_Gid": "60004\t60004\t60004\t60004",
+            "actual_NoNewPrivs": "1",
+            "actual_capability_hex": {
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapBnd": "0000000000000000",
+              "CapAmb": "0000000000000000"
+            },
+            "original_status_sha256": "747fab86bb18e69732a439e34075122b7ae861087cb4c09483acf133cd0fce77"
+          },
+          {
+            "role": "main",
+            "pid": 61,
+            "parent_pid": 60,
+            "actual_Uid": "60004\t60004\t60004\t60004",
+            "actual_Gid": "60004\t60004\t60004\t60004",
+            "actual_NoNewPrivs": "1",
+            "actual_capability_hex": {
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapBnd": "0000000000000000",
+              "CapAmb": "0000000000000000"
+            },
+            "original_status_sha256": "4728bacc3f6a7da3cc05d5ce206f776fa050b266497883370fa321ea4e804a6a"
+          },
+          {
+            "role": "worker",
+            "pid": 64,
+            "parent_pid": 61,
+            "actual_Uid": "60004\t60004\t60004\t60004",
+            "actual_Gid": "60004\t60004\t60004\t60004",
+            "actual_NoNewPrivs": "1",
+            "actual_capability_hex": {
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapBnd": "0000000000000000",
+              "CapAmb": "0000000000000000"
+            },
+            "original_status_sha256": "a02014ad60fed7ccb7fc8c3da8f13542293a53d0c8c4492309e41c779281f5cc"
+          },
+          {
+            "role": "main",
+            "pid": 61,
+            "parent_pid": 60,
+            "actual_Uid": "60004\t60004\t60004\t60004",
+            "actual_Gid": "60004\t60004\t60004\t60004",
+            "actual_NoNewPrivs": "1",
+            "actual_capability_hex": {
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapBnd": "0000000000000000",
+              "CapAmb": "0000000000000000"
+            },
+            "original_status_sha256": "443e5e49cb1bf0abcf914c73323f9f8f0760f0c4624e47eeab1a4cea5dae32c4"
+          },
+          {
+            "role": "worker",
+            "pid": 64,
+            "parent_pid": 61,
+            "actual_Uid": "60004\t60004\t60004\t60004",
+            "actual_Gid": "60004\t60004\t60004\t60004",
+            "actual_NoNewPrivs": "1",
+            "actual_capability_hex": {
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapBnd": "0000000000000000",
+              "CapAmb": "0000000000000000"
+            },
+            "original_status_sha256": "39095c9e92362da4ff811df5a02e1d6f3355a4a5073a049da94c0296a1628cae"
+          }
+        ],
+        "complete_raw_CPU_and_role_evidence_verified": true,
+        "actual_lost_ACK_public_sequences": [],
+        "old_control_not_release_target": false,
+        "Source": false,
+        "normal": false,
+        "E": 0,
+        "PG_executed": false,
+        "Root_MODEL_not_real_lease_or_WAL": true,
+        "host_network_time_power_actions": 0,
+        "QMP_power_commands": 0
+      },
+      {
+        "label": "new-lost-ack",
+        "status": "PASS_LOST_ACK_MODEL_ONLY",
+        "passed": true,
+        "seconds": 3.2424204850103706,
+        "QEMU_exit": 0,
+        "Guest_exit": [
+          "0"
+        ],
+        "actual_KVM": {
+          "enabled": true,
+          "present": true
+        },
+        "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+        "actual_original_workers": [
+          [
+            "64",
+            "364",
+            "1",
+            "555"
+          ]
+        ],
+        "production_worker_trace": [
+          [
+            "64",
+            "364",
+            "1",
+            "555"
+          ]
+        ],
+        "public_libudev_consumed_sequences": [],
+        "Root_model_emits": [
+          [
+            "555",
+            "1"
+          ]
+        ],
+        "original_kernel_tickets": [
+          [
+            "555",
+            "add"
+          ]
+        ],
+        "actual_role_status": [
+          [
+            "main-ready",
+            "61"
+          ],
+          [
+            "main",
+            "61"
+          ],
+          [
+            "worker",
+            "64"
+          ]
+        ],
+        "raw_role_status": [
+          {
+            "role": "main-ready",
+            "pid": 61,
+            "parent_pid": 60,
+            "actual_Uid": "60004\t60004\t60004\t60004",
+            "actual_Gid": "60004\t60004\t60004\t60004",
+            "actual_NoNewPrivs": "1",
+            "actual_capability_hex": {
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapBnd": "0000000000000000",
+              "CapAmb": "0000000000000000"
+            },
+            "original_status_sha256": "7b7f532a54cb3d3f5c1c55e6c4ef0fb5d7856762fd8b7f80e8c6585e32847329"
+          },
+          {
+            "role": "main",
+            "pid": 61,
+            "parent_pid": 60,
+            "actual_Uid": "60004\t60004\t60004\t60004",
+            "actual_Gid": "60004\t60004\t60004\t60004",
+            "actual_NoNewPrivs": "1",
+            "actual_capability_hex": {
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapBnd": "0000000000000000",
+              "CapAmb": "0000000000000000"
+            },
+            "original_status_sha256": "ee8b7b8567093ae0ee5891770fd84b3c83063306ef90606eeeb3e8729fb627af"
+          },
+          {
+            "role": "worker",
+            "pid": 64,
+            "parent_pid": 61,
+            "actual_Uid": "60004\t60004\t60004\t60004",
+            "actual_Gid": "60004\t60004\t60004\t60004",
+            "actual_NoNewPrivs": "1",
+            "actual_capability_hex": {
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapBnd": "0000000000000000",
+              "CapAmb": "0000000000000000"
+            },
+            "original_status_sha256": "46df552ab86dcd2fae9bb3581b718fdaa924ba227ffe9d2b958ddd26276a5eb5"
+          }
+        ],
+        "complete_raw_CPU_and_role_evidence_verified": true,
+        "actual_lost_ACK_public_sequences": [
+          "555"
+        ],
+        "old_control_not_release_target": false,
+        "Source": false,
+        "normal": false,
+        "E": 0,
+        "PG_executed": false,
+        "Root_MODEL_not_real_lease_or_WAL": true,
+        "host_network_time_power_actions": 0,
+        "QMP_power_commands": 0
+      }
+    ],
+    "passed": true,
+    "Source": false,
+    "normal": false,
+    "E": 0
+  },
+  "final_fixture_ELF_sha256": "ce9545253e7596ab5e97a681ff88b567bc593aafe0788c980a18a3ba5646ce3f",
+  "final_fixture_source_lock_sha256": "abc5aa8059766b32342f2e2fb7fae4f2f76466c4c4f155484f5faa796508cf43",
+  "unchanged_production_udevd_sha256": "c93446d3c232ff55b75980bc7948e9ee5b9a72e37c6a5fddaa9c86d643b71c0a",
+  "stock_public_libudev": {
+    "ELF_sha256": "6a96205c57a74ec7d6150494d218e906f4656167b6b0ea2dab63b5f61555a795",
+    "APK_sha256": "7f836c515bad8998158938a8c90ccf79b6738162d74d8fe9c9ce45652f817ea9",
+    "APK_member": "lib/libudev.so.1.6.3",
+    "runtime_original_signed_APK_verification_exit": 0,
+    "ELF_bytes": 55168,
+    "unchanged": true
+  },
+  "production_udevd_flags_not_inferred_from_fixture_Werror": true,
+  "Main_unique_Wait_proven": true,
+  "worker_unique_Wait_not_claimed": true,
+  "worker_evidence": "actual original-main children list+same live PIDFS across normal two generations; lostACK only one generation",
+  "Root_role_lease_WAL_not_used": true,
+  "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+  "Source": false,
+  "normal": false,
+  "E": 0,
+  "PG_executed": false,
+  "no_Host_network_time_power_actions": true,
+  "QMP_power_commands": 0,
+  "original_small_files": {
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190415Z-9f2546/source-lock.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190415Z-9f2546/source-lock.json",
+      "sha256": "ccfd4f7a693dc1ceebcde30093975de9bc0342d4f038cb30e54fc4413d55bdb4"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190415Z-9f2546/result.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190415Z-9f2546/result.json",
+      "sha256": "9647fc35f5ef29a7df478ac386dfb7bc1955cea8a6fea8459ef1754006e9a813"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190415Z-9f2546/metadata.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190415Z-9f2546/metadata.json",
+      "sha256": "efc1b0a3dc88b5f4b3543bf62144c51410e998f510b83f15e5809d2664bd6ac3"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190415Z-9f2546/worker.py": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190415Z-9f2546/worker.py",
+      "sha256": "ca0e7968084d06a93bd541e11da177bd484e41cda105ad24433bcbca7b34fc1b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190415Z-9f2546/Dockerfile": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190415Z-9f2546/Dockerfile",
+      "sha256": "326254ce37e6bd697a9f20d361a16598a722755c6514a0a60190c733452febe8"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190415Z-9f2546/command.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190415Z-9f2546/command.json",
+      "sha256": "46a220a199c40216be77328bf34d357ef5061e64ccfad8c098cf8fc2d8ba9cfa"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190415Z-9f2546/build.log": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190415Z-9f2546/build.log",
+      "sha256": "7411d53bd243c19c51d5006d918f762bc851e20cc376ccb2edfccb9d4739d737"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190415Z-9f2546/budget-terminal.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190415Z-9f2546/budget-terminal.json",
+      "sha256": "90095300aa63d12bb11c5403d546a7783900da1f0e812aaeed14da4dcc564c35"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190415Z-9f2546/spec.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190415Z-9f2546/spec.json",
+      "sha256": "43ed5f77a042980e99111ff79e16a10192b8e650a6f32fd76f21dab960fc7ae8"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190415Z-9f2546/reserve-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190415Z-9f2546/reserve-receipt.json",
+      "sha256": "5043c85029f0fa898d98b33fea4521737a36166f2bc34ff72ee008aee48ae781"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190415Z-9f2546/launch-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190415Z-9f2546/launch-receipt.json",
+      "sha256": "0756d86666b18f981c1b0eeb763ebb3cbf13c4954ab1a5763726892951f1f91b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190814Z-f77000/source-lock.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190814Z-f77000/source-lock.json",
+      "sha256": "ccfd4f7a693dc1ceebcde30093975de9bc0342d4f038cb30e54fc4413d55bdb4"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190814Z-f77000/result.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190814Z-f77000/result.json",
+      "sha256": "e784ea2d28e9f1683ec092d3460010afb3ca4b1561cd85daf8ed36ed0953a6e3"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190814Z-f77000/metadata.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190814Z-f77000/metadata.json",
+      "sha256": "44021a2345d0ccb0feebc1457af0aea062d7d8c6655cbfa3bb8bab0485559162"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190814Z-f77000/worker.py": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190814Z-f77000/worker.py",
+      "sha256": "2daac95dabd5d015340f4191ebd4386f226d2ef4ec7be75be3a04e2739953d84"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190814Z-f77000/Dockerfile": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190814Z-f77000/Dockerfile",
+      "sha256": "326254ce37e6bd697a9f20d361a16598a722755c6514a0a60190c733452febe8"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190814Z-f77000/command.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190814Z-f77000/command.json",
+      "sha256": "83e4b454800a5edbd1e8c3d07eb98259ee8890c88c1d304dc2cd6e9b231cc24e"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190814Z-f77000/build.log": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190814Z-f77000/build.log",
+      "sha256": "2d8aac376f2231e5fc4c2d449023fffcd64c7784eb12adf03a600be3c973514b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190814Z-f77000/budget-terminal.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190814Z-f77000/budget-terminal.json",
+      "sha256": "c21bd6a1a60b8097aeede0ed86dac559c99f525347c617f2d22130516b9cc14c"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190814Z-f77000/spec.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190814Z-f77000/spec.json",
+      "sha256": "b00c87e7e98700656ce37f133c58bb7116601566bd584ee9127706361e955fa9"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190814Z-f77000/reserve-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190814Z-f77000/reserve-receipt.json",
+      "sha256": "710d3d9f645df824f9215c400dab27d1fcf09cf39300d6b5209f8ac2c8aeb525"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190814Z-f77000/launch-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190814Z-f77000/launch-receipt.json",
+      "sha256": "770836c2b6342826e38ce81868df41b68789bea34a238375670be0750766c612"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T190814Z-f77000/docker-buildx-version.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T190814Z-f77000/docker-buildx-version.json",
+      "sha256": "ba847b486ed063ab23e2576dc4a4cc978a0f2eea6c84717abcbbc51c57bb78c0"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/source-lock.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/source-lock.json",
+      "sha256": "ccfd4f7a693dc1ceebcde30093975de9bc0342d4f038cb30e54fc4413d55bdb4"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/result.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/result.json",
+      "sha256": "30d3515824c5699fb36a052d6c91cd444d7632a0a21e982a6cb1127a5c4175dd"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/metadata.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/metadata.json",
+      "sha256": "d600ebc6631a108eb41833f34bc86e7401f012348255327f1856e80aa253833b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/worker.py": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/worker.py",
+      "sha256": "d4f6731a3008fe007c7ea74e5deff2521ba562acfeb85bba9a3223b4d4807880"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/Dockerfile": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/Dockerfile",
+      "sha256": "b5d620fe2d055bfe2231bf18f0746ece3d4802e9e09c1da6473df97d76543563"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/command.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/command.json",
+      "sha256": "0370d55ebc3256ed5296c1732c3331eebae61d636c47216b8530415c1f7f868a"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/build.log": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/build.log",
+      "sha256": "361ecffb6f18005f7835da5c2492b46744b7895365721e3e9b5734029702c06d"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/budget-terminal.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/budget-terminal.json",
+      "sha256": "2bcd07545e74faadd9d4e115bc158c8e009045bba47586b5c70bc8d78e6413a6"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/spec.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/spec.json",
+      "sha256": "680cee458aeee8645c8834fa692728382427e8e0973c5989002fa814e990e755"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/reserve-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/reserve-receipt.json",
+      "sha256": "399be4834664cadcb9631b8b45a18ffcd10733463dd3c0cf85b50ce293c4a175"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/launch-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/launch-receipt.json",
+      "sha256": "dabc9648c8aecb442db7b3b844e66e908ac5cd4c27ff2af7a6e574335be4fb19"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/docker-buildx-version.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/docker-buildx-version.json",
+      "sha256": "ba847b486ed063ab23e2576dc4a4cc978a0f2eea6c84717abcbbc51c57bb78c0"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/export/compile.stdout": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/export/compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/export/compile.stderr": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/export/compile.stderr",
+      "sha256": "fa000d1a4bc009901fa6375d610ede88910bdff8c25a0403528bcf6f887a16ef"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/export/compile.exitcode": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/export/compile.exitcode",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/export/compiler.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/export/compiler.txt",
+      "sha256": "0e8b316161076f257494c8ce0621c3b61b108070ceb12cbd61fa5545c03181d9"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/export/actual-source.sha256": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/export/actual-source.sha256",
+      "sha256": "a0e19df64549e3d263ad00364a6c91dd3518e78f7234aaf9607a4722b2d49a38"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/export/actual-source-check.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/export/actual-source-check.txt",
+      "sha256": "866ed57bcbaf347daaf99f3b5f2710013913c826b16cd80583deb6b255dee354"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/export/cpu.max": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/export/cpu.max",
+      "sha256": "07eb5019b2babb019fbbfe1cb328ec5b7affac5e07da4b94ebedb5e110dfab69"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/export/memory.max": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/export/memory.max",
+      "sha256": "604fec38960d7c5bd3bd6c06ad8f4b42eac0bb30ea02d43518d0f9f11d5e131e"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/export/cpu.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/export/cpu.stat",
+      "sha256": "b9fc85677f6bb271012cfef315461a6302263122cfad96b238954ea34f67658f"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/export/memory.peak": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/export/memory.peak",
+      "sha256": "13833a87a2beaa11fb69a3ca828dacd74d9118e865b49952c350f8ecfc4f3ed5"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/export/io.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/export/io.stat",
+      "sha256": "5f2db941b29b2092c8c8ec0c8b74c60cb8088294d39e2b4128f32b7f62246c98"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/export/memory.events": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191156Z-bee0cd/export/memory.events",
+      "sha256": "28fe05a1d7b8467a03fb54454f7b6a130fab752864d0454f5f6c4a4b6ce307f2"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/source-lock.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/source-lock.json",
+      "sha256": "f469b415ab636343464d6144a1284cb2c68d46f283b91e5f6e639d41ec4f6268"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/result.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/result.json",
+      "sha256": "4ec7908be68b987d5b5d371cf8d5419a77518abcc06c6206b67066a59fb9ea0b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/metadata.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/metadata.json",
+      "sha256": "6338eb2f23bf60b0dd5bbd8e16396f8b6942fcbf3afd3ca2714230fbca2b32a0"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/worker.py": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/worker.py",
+      "sha256": "d4f6731a3008fe007c7ea74e5deff2521ba562acfeb85bba9a3223b4d4807880"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/Dockerfile": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/Dockerfile",
+      "sha256": "b5d620fe2d055bfe2231bf18f0746ece3d4802e9e09c1da6473df97d76543563"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/command.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/command.json",
+      "sha256": "7283eb927f5bb112b6117706f91e4d9c2ad08ca4408072ca4e343450f5304f4b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/build.log": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/build.log",
+      "sha256": "feefc0dd30c07d355e9115e1d1f0f77cf2fe6fca32cab200c4a659ac42aefe52"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/budget-terminal.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/budget-terminal.json",
+      "sha256": "63f6b0f0cbdeb1867e2f48f63facc2402ab1350b68345c250cac15c802fbf838"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/spec.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/spec.json",
+      "sha256": "d5c218c02cc7a54a183288167630158ea40fdfcf2e1a69cc73839afbcb9eadc5"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/reserve-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/reserve-receipt.json",
+      "sha256": "bf5e130dcf5491d1f65fda0f7bea6d4e3533441642e139a5f2f9ffee8ea22d32"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/launch-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/launch-receipt.json",
+      "sha256": "5a565415398e5d51117bfcb77d3877a747681b31eb99beb4d972bffac7c230ef"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/docker-buildx-version.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/docker-buildx-version.json",
+      "sha256": "ba847b486ed063ab23e2576dc4a4cc978a0f2eea6c84717abcbbc51c57bb78c0"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/export/compile.stdout": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/export/compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/export/compile.stderr": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/export/compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/export/compile.exitcode": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/export/compile.exitcode",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/export/compiler.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/export/compiler.txt",
+      "sha256": "0e8b316161076f257494c8ce0621c3b61b108070ceb12cbd61fa5545c03181d9"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/export/readelf.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/export/readelf.txt",
+      "sha256": "f1d2112274116307ac0573fa84d26e860574f06ad1bc596b15bbfbb123a48533"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/export/actual-source.sha256": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/export/actual-source.sha256",
+      "sha256": "7ad12812b8a4772eb368cd93121d59683815c27c527cb7f8dd59626a5d6e4c28"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/export/actual-source-check.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/export/actual-source-check.txt",
+      "sha256": "866ed57bcbaf347daaf99f3b5f2710013913c826b16cd80583deb6b255dee354"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/export/cpu.max": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/export/cpu.max",
+      "sha256": "07eb5019b2babb019fbbfe1cb328ec5b7affac5e07da4b94ebedb5e110dfab69"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/export/memory.max": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/export/memory.max",
+      "sha256": "604fec38960d7c5bd3bd6c06ad8f4b42eac0bb30ea02d43518d0f9f11d5e131e"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/export/cpu.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/export/cpu.stat",
+      "sha256": "c21de8dc9eb3a2c1d91764111bf82152e5d3aa9353bb72ff0f9ef9a8c2fb0d4b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/export/memory.peak": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/export/memory.peak",
+      "sha256": "060ca5accaa54a623ce8a64d6bfcbf46995fe0ca6f1174a5e9387838717148cb"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/export/io.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/export/io.stat",
+      "sha256": "055867c7a02bfef585e1acff9369c69f8abf33523e1d45846b36b05df2d425bc"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/export/memory.events": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T191439Z-5ec143/export/memory.events",
+      "sha256": "28fe05a1d7b8467a03fb54454f7b6a130fab752864d0454f5f6c4a4b6ce307f2"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/source-lock.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/source-lock.json",
+      "sha256": "b8a3a31a1b4a722e0d6e8bf7c5cf44c9f08648756ca90c26def4d90f33529046"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/result.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/result.json",
+      "sha256": "4c6a2277cd83682aceff128c3e03885ff9ff37104c43b096fd694db04483b1b0"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/metadata.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/metadata.json",
+      "sha256": "ad6fb57f27aaf4650caa72612a12ae3c2d2bcad6252da7529ffa49a1505a16a8"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/worker.py": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/worker.py",
+      "sha256": "d4f6731a3008fe007c7ea74e5deff2521ba562acfeb85bba9a3223b4d4807880"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/Dockerfile": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/Dockerfile",
+      "sha256": "b5d620fe2d055bfe2231bf18f0746ece3d4802e9e09c1da6473df97d76543563"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/command.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/command.json",
+      "sha256": "f88b66464b152e992e0c6900dc88ea00fb5f31e5331e14c4ab0408eb2d351202"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/build.log": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/build.log",
+      "sha256": "cf862e42037d18f28c348fd15b8c7a3b6346a5d5cc17761d864ee2d86c9403a5"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/budget-terminal.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/budget-terminal.json",
+      "sha256": "9cfd17bb9c4785cf98b791e490d4e803fde00485e61d721f4ac6347c8e9c19b2"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/spec.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/spec.json",
+      "sha256": "e9bf8c5b3ee232c697fd36eca75888caaa5d3c14a0555bcf620b6919ec47bc65"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/reserve-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/reserve-receipt.json",
+      "sha256": "7eb05949662394c96ecb61fd5cdb9f99316619a5c7a09b1b5ae84a9784a44bbc"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/launch-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/launch-receipt.json",
+      "sha256": "c767e71629085dfc874b9a51218d08baf3c57227a8e47e94e81b2a6cfb07f7a0"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/docker-buildx-version.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/docker-buildx-version.json",
+      "sha256": "ba847b486ed063ab23e2576dc4a4cc978a0f2eea6c84717abcbbc51c57bb78c0"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/export/compile.stdout": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/export/compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/export/compile.stderr": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/export/compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/export/compile.exitcode": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/export/compile.exitcode",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/export/compiler.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/export/compiler.txt",
+      "sha256": "0e8b316161076f257494c8ce0621c3b61b108070ceb12cbd61fa5545c03181d9"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/export/readelf.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/export/readelf.txt",
+      "sha256": "5097cb5b9c5f09a5daf8b73e7f2f76e45b1f59e9d45a7917ad288e4e95dc4922"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/export/actual-source.sha256": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/export/actual-source.sha256",
+      "sha256": "43ff5e287913c946f6e8602756114eec0df1f532837c1aa58424442462e02b96"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/export/actual-source-check.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/export/actual-source-check.txt",
+      "sha256": "866ed57bcbaf347daaf99f3b5f2710013913c826b16cd80583deb6b255dee354"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/export/cpu.max": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/export/cpu.max",
+      "sha256": "07eb5019b2babb019fbbfe1cb328ec5b7affac5e07da4b94ebedb5e110dfab69"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/export/memory.max": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/export/memory.max",
+      "sha256": "604fec38960d7c5bd3bd6c06ad8f4b42eac0bb30ea02d43518d0f9f11d5e131e"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/export/cpu.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/export/cpu.stat",
+      "sha256": "264ae6c4c815523bc7440ddddbf59bfd4c0062555f5b149dfb9055493d20b086"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/export/memory.peak": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/export/memory.peak",
+      "sha256": "d13de268ac1079ad2c4c3288d971721ff274adcbb099077ccd6a92a225e1e440"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/export/io.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/export/io.stat",
+      "sha256": "547eb2a2ca5415373ad1b35de45e888285749263e42f544c1a3f67c6952133a7"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192010Z-f825c6/export/memory.events": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192010Z-f825c6/export/memory.events",
+      "sha256": "28fe05a1d7b8467a03fb54454f7b6a130fab752864d0454f5f6c4a4b6ce307f2"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/source-lock.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/source-lock.json",
+      "sha256": "abc5aa8059766b32342f2e2fb7fae4f2f76466c4c4f155484f5faa796508cf43"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/result.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/result.json",
+      "sha256": "e1a933aa62b5fc278b10f7907eb535b13702e4c35bda1545c33d2a4c09ef051c"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/metadata.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/metadata.json",
+      "sha256": "927d51310248b44c0bceb227ed31f8dad8fb9888f796ee6c02108ee45ad79bb5"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/worker.py": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/worker.py",
+      "sha256": "d4f6731a3008fe007c7ea74e5deff2521ba562acfeb85bba9a3223b4d4807880"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/Dockerfile": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/Dockerfile",
+      "sha256": "b5d620fe2d055bfe2231bf18f0746ece3d4802e9e09c1da6473df97d76543563"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/command.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/command.json",
+      "sha256": "02c9778e568e0e4b6a163590e03c9f8653dc4fa503f8414b5dca391a7a66604f"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/build.log": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/build.log",
+      "sha256": "bbd5e3d9fd02964a70e83cc2f1b583ebcdddb7229276f4b520a51b418161f751"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/budget-terminal.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/budget-terminal.json",
+      "sha256": "a3b8672dadd6921544b9a6f13f9c808c1e64f4dfea4aa2c0e0794f5f00d6b55b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/spec.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/spec.json",
+      "sha256": "c879eeadf7a0206a24194d86929fe4a4f5914087af10ef5b00c09c838a38cfc3"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/reserve-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/reserve-receipt.json",
+      "sha256": "fa88522168a93b34a6ce25b7ca3e89a7ac13bc6f618c720cec8a0d4e7549fa59"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/launch-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/launch-receipt.json",
+      "sha256": "c98e07652fc602f58c32635609d9d0bec408668465dc029aeb0dedb09fbe942b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/docker-buildx-version.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/docker-buildx-version.json",
+      "sha256": "ba847b486ed063ab23e2576dc4a4cc978a0f2eea6c84717abcbbc51c57bb78c0"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/export/compile.stdout": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/export/compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/export/compile.stderr": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/export/compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/export/compile.exitcode": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/export/compile.exitcode",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/export/compiler.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/export/compiler.txt",
+      "sha256": "0e8b316161076f257494c8ce0621c3b61b108070ceb12cbd61fa5545c03181d9"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/export/readelf.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/export/readelf.txt",
+      "sha256": "8a42bcd1be61fd11503d959f60b5b46f378a894dbf49f17f7343b8cd17780cda"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/export/actual-source.sha256": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/export/actual-source.sha256",
+      "sha256": "2f26dec3d78476905fdd09cf31f2ced4a5694d2f1ac4d5476e0e5561f51ffff0"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/export/actual-source-check.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/export/actual-source-check.txt",
+      "sha256": "866ed57bcbaf347daaf99f3b5f2710013913c826b16cd80583deb6b255dee354"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/export/cpu.max": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/export/cpu.max",
+      "sha256": "07eb5019b2babb019fbbfe1cb328ec5b7affac5e07da4b94ebedb5e110dfab69"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/export/memory.max": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/export/memory.max",
+      "sha256": "604fec38960d7c5bd3bd6c06ad8f4b42eac0bb30ea02d43518d0f9f11d5e131e"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/export/cpu.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/export/cpu.stat",
+      "sha256": "462aae4e962bf48e8d6ad588ce6fe5f2400bd1f47a69566172dbbaa0435ce11d"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/export/memory.peak": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/export/memory.peak",
+      "sha256": "45ec14cdd209e57e0ddf7b6b3189997e154df3fae3195b8f0fdcbd90015b9290"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/export/io.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/export/io.stat",
+      "sha256": "547eb2a2ca5415373ad1b35de45e888285749263e42f544c1a3f67c6952133a7"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7/export/memory.events": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/compile/20261101T192324Z-2375c7/export/memory.events",
+      "sha256": "28fe05a1d7b8467a03fb54454f7b6a130fab752864d0454f5f6c4a4b6ce307f2"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/worker.py": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/worker.py",
+      "sha256": "1cb6e4fb047ad24cce6b75001d070e061a0b94402cc881e2e546e942c3e69786"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/metadata.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/metadata.json",
+      "sha256": "eac2e32d04e6f8324cfd020da921033dbd3107e4714d9136069c47654790160a"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/spec.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/spec.json",
+      "sha256": "73765265e3c2dacc54096de7f694b5018b58f4594d050babb4438fb67b16290b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/reserve-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/reserve-receipt.json",
+      "sha256": "f69b36c57ecef2a6e71b00e3cda24ef6fa661d930a306eaa83aaf6c276f2a5c1"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/launch-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/launch-receipt.json",
+      "sha256": "ce4cfd01490139bd5ec11ab463ddfe16226dcaf850702ac88c191ffca51faa3d"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/budget-terminal.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/budget-terminal.json",
+      "sha256": "39fc1c56052ca8fd6004b66e78302220db91b8e35b34667eca577a2d39eda726"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/result.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/result.json",
+      "sha256": "e34d45d629eec0f04a8190ceb827c5b186910a47a6382a2fea10f10dab8ededd"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/progress.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/progress.json",
+      "sha256": "5cbcd73f1e762c2b189293e81d0ff7ac1c9b6342a12c33752be4a1ae8e3fc4a8"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-lost-ack/source-lock.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-lost-ack/source-lock.json",
+      "sha256": "ec4aad1aa2a924e9b4b3cb1029c8f7ddb357e545afea1bc0dad7e48a3b63503e"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-lost-ack/result.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-lost-ack/result.json",
+      "sha256": "be4cb75c389d74120e440f20c1533cbc1b1996394c7b185d0f0ad2315895820a"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-lost-ack/console.log": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-lost-ack/console.log",
+      "sha256": "58a869b4dbc0d65044012fe4498fc92f2d8f86aa793963eb7565b5393632d861"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-lost-ack/command.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-lost-ack/command.json",
+      "sha256": "e779a94da845bb150988433e67d6393deea496a3e42b3818560e81d74ef4b1e7"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-lost-ack/qmp.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-lost-ack/qmp.json",
+      "sha256": "c8aaa1c8ea8f68b893182a1f7f013c336437376967c0d9b01604d58cafbe501b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-lost-ack/container.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-lost-ack/container.json",
+      "sha256": "6800d067528eaa14e4e32399927a1b82b4e9bee560ed09b8c0bfe76db755366e"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-lost-ack/cleanup.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-lost-ack/cleanup.json",
+      "sha256": "93df27c6c14766488c7a4e43284402337d053ddd468b07f309420ee9a49ee01b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-lost-ack/initramfs-manifest.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-lost-ack/initramfs-manifest.json",
+      "sha256": "74a9f959ddcbff109cd94256fc552c52c570fd163f16e0e6ea3e4369ea3aa841"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-lost-ack/cpu.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-lost-ack/cpu.stat",
+      "sha256": "423afa4609ebc26b7be81f59a9a0a93c110f27fb54330ed8063849d6e53373fc"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-lost-ack/memory.peak": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-lost-ack/memory.peak",
+      "sha256": "4ca318dbde54d2e5d16c1123e4054d0c76e31abd207f0e5907e82e3d11ab494f"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-lost-ack/io.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-lost-ack/io.stat",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-lost-ack/memory.events": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-lost-ack/memory.events",
+      "sha256": "28fe05a1d7b8467a03fb54454f7b6a130fab752864d0454f5f6c4a4b6ce307f2"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-two-events/source-lock.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-two-events/source-lock.json",
+      "sha256": "ec4aad1aa2a924e9b4b3cb1029c8f7ddb357e545afea1bc0dad7e48a3b63503e"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-two-events/result.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-two-events/result.json",
+      "sha256": "3824897d3722e5ef6970b61f74547227a768129edb899489308904e62c4fa9d2"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-two-events/console.log": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-two-events/console.log",
+      "sha256": "ced7b69beba57baa60ddda111b89b2ecefa59e536bc85e495b5fdc96805da662"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-two-events/command.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-two-events/command.json",
+      "sha256": "7a32f1de017ae36b90c788d92d16e61792e9841347b45d78cb91cd9bdcb23d61"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-two-events/qmp.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-two-events/qmp.json",
+      "sha256": "c8aaa1c8ea8f68b893182a1f7f013c336437376967c0d9b01604d58cafbe501b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-two-events/container.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-two-events/container.json",
+      "sha256": "bc785475b39b357b0e82688f5006ee04c83636dfbb57871af89e9942d684554e"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-two-events/cleanup.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-two-events/cleanup.json",
+      "sha256": "18110fb08f2c7956d586d52ec9d09d5e523270bff5954a20ba3cb250348c732f"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-two-events/initramfs-manifest.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-two-events/initramfs-manifest.json",
+      "sha256": "4dfe877bac9eb72f3db43dd027d36f53a9d13763b6933318be5c293dd721fe45"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-two-events/cpu.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-two-events/cpu.stat",
+      "sha256": "23009e3de66030aedd1a8b84f9f0200932c87304ddddd3f3e212235c81ec9c36"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-two-events/memory.peak": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-two-events/memory.peak",
+      "sha256": "72aaba5d84b69534d54a6b0588c6b35123d21e0cb83236e4f1bbd34c9c07d40c"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-two-events/io.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-two-events/io.stat",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/new-two-events/memory.events": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/new-two-events/memory.events",
+      "sha256": "28fe05a1d7b8467a03fb54454f7b6a130fab752864d0454f5f6c4a4b6ce307f2"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/old-e473-control/source-lock.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/old-e473-control/source-lock.json",
+      "sha256": "bd9e87838626308d8112d899a889083a0203ec4d667b614b2f13d7dd014972d9"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/old-e473-control/result.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/old-e473-control/result.json",
+      "sha256": "ca9b8165205e79a59282103e4a6cc540c9b7c1a997ec7a7c464e9ced71fcb353"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/old-e473-control/console.log": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/old-e473-control/console.log",
+      "sha256": "fef23b11df0bedb3b36801a2dadbd6b3e36c7f92a4dc0b75702ffe8ef1135b69"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/old-e473-control/command.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/old-e473-control/command.json",
+      "sha256": "452003499c0279b54737d0bc58a8205f058a9bbae1116c8c71285994fbcc1c57"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/old-e473-control/qmp.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/old-e473-control/qmp.json",
+      "sha256": "c8aaa1c8ea8f68b893182a1f7f013c336437376967c0d9b01604d58cafbe501b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/old-e473-control/container.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/old-e473-control/container.json",
+      "sha256": "72b2728a074c7ca72771d94f12115bd07fdc63d61d62bf65985f5e2dd1756ec0"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/old-e473-control/cleanup.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/old-e473-control/cleanup.json",
+      "sha256": "504cda42f3144d1d77342e159475289028afc89383106d33c0300a404b42bb52"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/old-e473-control/initramfs-manifest.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/old-e473-control/initramfs-manifest.json",
+      "sha256": "8772a6b56e1eefd5326cff9f6fcefb6371f84b3c22f10618e79b2ad81d7019a5"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/old-e473-control/cpu.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/old-e473-control/cpu.stat",
+      "sha256": "b1eb154283eaa2c4093324dd99b8ccbd33f6cd3945ac1f710d7553baac26a10f"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/old-e473-control/memory.peak": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/old-e473-control/memory.peak",
+      "sha256": "284c753eaa775fd6a7a873bc90537f10085b03d0e10f7d694dd6fabb733988cc"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/old-e473-control/io.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/old-e473-control/io.stat",
+      "sha256": "abfadac03d125a1ad28398d55c07317e68e8632ad055841a9bf191a10beffebd"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/old-e473-control/memory.events": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/first-three-KVM-cases/old-e473-control/memory.events",
+      "sha256": "28fe05a1d7b8467a03fb54454f7b6a130fab752864d0454f5f6c4a4b6ce307f2"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/worker.py": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/worker.py",
+      "sha256": "539bce956ab01e1694f4e1ed68af6f065801994f81a3933f7cc9e107b7776fdf"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/metadata.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/metadata.json",
+      "sha256": "8495d873b5f549c497252915a41452a442bb7eeb4adf2146bb797e24ea88b652"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/spec.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/spec.json",
+      "sha256": "21a2e1087d9d164d2d833872a2a89aa9870419f7b2617d4d0f15f0fd4a19a69b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/reserve-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/reserve-receipt.json",
+      "sha256": "e88806d24e2bf4d2cf1140a56a34fb0643adc1d16f9d25e0ba6cb87968e1b19d"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/launch-receipt.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/launch-receipt.json",
+      "sha256": "263e4b1e1919bc1983c333e542064294020cd2208b95541e4dd3bb1c7dc5f6c6"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/budget-terminal.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/budget-terminal.json",
+      "sha256": "81d38157e4c639d040cbc043da8699f359e1623368053643c42a3513f32adadd"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/result.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/result.json",
+      "sha256": "a131d03d9bc53d06d03b67c658fa03bd73af8f880d15e02daf29d6879ce4929c"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/progress.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/progress.json",
+      "sha256": "75e42e458034c87ffbe92dc82b535df43bcf8fe8f0a2ed2f13299ab317f852e9"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/source-lock.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/source-lock.json",
+      "sha256": "5de3427bb93d8c8312cfd9f17a80b660e5fafe429a60e858798c6178c5728dde"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/result.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/result.json",
+      "sha256": "83343404ee1794661fabfff1ca9947c18cfe1754769e2109e9661d6f0e984856"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/console.log": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/console.log",
+      "sha256": "8f792b1da6026225092b52f4f5639360cb5d5d88dbcff635c4f2f83672bb599b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/command.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/command.json",
+      "sha256": "3d8a10ec0e9618508ac450c4528e84559a0563dbdaa36a91f2e22c0aef74471d"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/qmp.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/qmp.json",
+      "sha256": "c8aaa1c8ea8f68b893182a1f7f013c336437376967c0d9b01604d58cafbe501b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/container.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/container.json",
+      "sha256": "9b81538a5e306944d5cce651ab1515fe7ecc034e3466ca86f9ec924e448b13a5"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/cleanup.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/cleanup.json",
+      "sha256": "71f9aacc3560f70a4eed513abcc18bf62899aed34673a131074af7f488ab2c26"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/initramfs-manifest.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/initramfs-manifest.json",
+      "sha256": "e76995056fa7fc269351577e76168e6d5a0c6a7569af9ce22d82dd723a4aeb5e"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/cpu.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/cpu.stat",
+      "sha256": "90c35c91886ba716d3a19f3fdf09a78cea2a5b4917f157520f5f940b8c60bdbc"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/memory.peak": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/memory.peak",
+      "sha256": "5cc128d17665622015728b6ff157f996e00e00a04e4ba3019c8bc140748cf1c7"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/io.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/io.stat",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/memory.events": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/memory.events",
+      "sha256": "28fe05a1d7b8467a03fb54454f7b6a130fab752864d0454f5f6c4a4b6ce307f2"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/original-sysfs-uevent.bin.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/original-sysfs-uevent.bin.txt",
+      "sha256": "72b7c0bc33cc7aa79994222475a4255e6e4612ed5f69eef7e8e020e92a76ec77"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/original-kernel-MODALIAS-1.bin.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/original-kernel-MODALIAS-1.bin.txt",
+      "sha256": "0a519461f9c9ed657d529cbe679c29f59427f3d7c63835e7131c042651ddca3d"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/decoded-role-status/1-main-ready-61.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/decoded-role-status/1-main-ready-61.txt",
+      "sha256": "7b7f532a54cb3d3f5c1c55e6c4ef0fb5d7856762fd8b7f80e8c6585e32847329"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/decoded-role-status/2-main-61.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/decoded-role-status/2-main-61.txt",
+      "sha256": "ee8b7b8567093ae0ee5891770fd84b3c83063306ef90606eeeb3e8729fb627af"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-lost-ack/decoded-role-status/3-worker-64.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-lost-ack/decoded-role-status/3-worker-64.txt",
+      "sha256": "46df552ab86dcd2fae9bb3581b718fdaa924ba227ffe9d2b958ddd26276a5eb5"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/source-lock.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/source-lock.json",
+      "sha256": "5de3427bb93d8c8312cfd9f17a80b660e5fafe429a60e858798c6178c5728dde"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/result.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/result.json",
+      "sha256": "0099e0851faca01db5524d6106a40d5da8b100a4cc0576355aead95186f1ec8c"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/console.log": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/console.log",
+      "sha256": "ae0d8e5bb4e94427eae9ae91adb9a923d18b6d68d0c133847038b34072ea635e"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/command.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/command.json",
+      "sha256": "ec986958dcb0c105e4828cf684edbadddfc0f52275eda3831bb6ab3a7c4e3be1"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/qmp.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/qmp.json",
+      "sha256": "c8aaa1c8ea8f68b893182a1f7f013c336437376967c0d9b01604d58cafbe501b"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/container.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/container.json",
+      "sha256": "3a9178b8ae3baaf1cd4a745796cf97396c4272cd9c2774983f8db830660fd34e"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/cleanup.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/cleanup.json",
+      "sha256": "2525d4a4a499f57c773575bd505858fa36bb61d287ead5b3d6ea0600d6114a52"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/initramfs-manifest.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/initramfs-manifest.json",
+      "sha256": "393645ce76e1815dbae7855a423f204a6262fac8294ca7d2282cbb31373d804f"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/cpu.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/cpu.stat",
+      "sha256": "db909f2849642fddc63967d9ea7297427f63296408d88bad385f63bf328e845c"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/memory.peak": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/memory.peak",
+      "sha256": "62960993b8042a0d696a75d6ba174804e5bbbd8a491335e0f5aea2c7ebcfdc25"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/io.stat": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/io.stat",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/memory.events": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/memory.events",
+      "sha256": "28fe05a1d7b8467a03fb54454f7b6a130fab752864d0454f5f6c4a4b6ce307f2"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/original-sysfs-uevent.bin.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/original-sysfs-uevent.bin.txt",
+      "sha256": "72b7c0bc33cc7aa79994222475a4255e6e4612ed5f69eef7e8e020e92a76ec77"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/original-kernel-MODALIAS-1.bin.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/original-kernel-MODALIAS-1.bin.txt",
+      "sha256": "0a519461f9c9ed657d529cbe679c29f59427f3d7c63835e7131c042651ddca3d"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/original-kernel-MODALIAS-2.bin.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/original-kernel-MODALIAS-2.bin.txt",
+      "sha256": "0a519461f9c9ed657d529cbe679c29f59427f3d7c63835e7131c042651ddca3d"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/decoded-role-status/1-main-ready-61.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/decoded-role-status/1-main-ready-61.txt",
+      "sha256": "747fab86bb18e69732a439e34075122b7ae861087cb4c09483acf133cd0fce77"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/decoded-role-status/2-main-61.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/decoded-role-status/2-main-61.txt",
+      "sha256": "4728bacc3f6a7da3cc05d5ce206f776fa050b266497883370fa321ea4e804a6a"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/decoded-role-status/3-worker-64.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/decoded-role-status/3-worker-64.txt",
+      "sha256": "a02014ad60fed7ccb7fc8c3da8f13542293a53d0c8c4492309e41c779281f5cc"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/decoded-role-status/4-main-61.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/decoded-role-status/4-main-61.txt",
+      "sha256": "443e5e49cb1bf0abcf914c73323f9f8f0760f0c4624e47eeab1a4cea5dae32c4"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/new-two-events/decoded-role-status/5-worker-64.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/final-two-KVM-cases/new-two-events/decoded-role-status/5-worker-64.txt",
+      "sha256": "39095c9e92362da4ff811df5a02e1d6f3355a4a5073a049da94c0296a1628cae"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/independent-static-fixture-review.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/independent-static-fixture-review.txt",
+      "sha256": "785fc85558af6277a3a0fc97a6fee0953749a669d85b0b01199339bf83746b61"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/independent-static-fixture-review.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/independent-static-fixture-review.json",
+      "sha256": "43881f6f9c266d6b090f5ae181676ab9318498a9fd423651b02485d961cb0cbf"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/independent-static-fixture-final-addendum.txt": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/independent-static-fixture-final-addendum.txt",
+      "sha256": "0a788d336417cba78fc63a943f3cfcb6438d22ede5a298b33aa708277bffc8d1"
+    },
+    "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626/independent-static-fixture-final-addendum.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/independent-static-fixture-final-addendum.json",
+      "sha256": "3d9644b380fac74ed9d189e3afedc29d2604f780e26389df7bc32ce3e50d59db"
+    },
+    "/data/neon-build/validation/ordinary-udev-privsep-native-build-20261101T075104Z-de1bed/source-lock.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/stock-original-public-libudev-source-lock.json",
+      "sha256": "2d359a72c434187e50fc7fe555cc62ec05570b08d6cca8198aca4d91ca07c918"
+    },
+    "/data/neon-build/validation/ordinary-v2-packages-build-20261101T060652Z-8d5217/runtime-apk-verify.exitcode": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/stock-runtime-origin/runtime-apk-verify.exitcode",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/data/neon-build/validation/ordinary-v2-packages-build-20261101T060652Z-8d5217/runtime-apk-verify.stdout": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/stock-runtime-origin/runtime-apk-verify.stdout",
+      "sha256": "187765bbdf7e3e9254b604dc93c55afd51c456692dba63cececbb5cbf571b5ed"
+    },
+    "/data/neon-build/validation/ordinary-v2-packages-build-20261101T060652Z-8d5217/runtime-apk-verify.stderr": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/stock-runtime-origin/runtime-apk-verify.stderr",
+      "sha256": "15570942c8553a12c99d00ac2914d04ff3d54dc619c77dfbe67c8e66b6d35536"
+    },
+    "/data/neon-build/validation/ordinary-v2-packages-build-20261101T060652Z-8d5217/guest-runtime-link-lock.json": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/stock-runtime-origin/guest-runtime-link-lock.json",
+      "sha256": "e34a98081a93c26abd3e6b06077cb47c36a4b87bd81c23cc00abf30341f54d4a"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191156Z-bee0cd/source/revision/test_static_privsep_native.c": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/history/first-C-printf-compile-failure.c.txt",
+      "sha256": "556a61432edff59838b17fe2c95b864b09994e7e53682b422262642c74ff8f51"
+    },
+    "/data/neon-build/validation/static-udev-privsep-c-build-20261101T191439Z-5ec143/source/revision/test_static_privsep_native.c": {
+      "included": "docs/validation/ordinary-static-privsep-native-20261102/history/first-passing-C-fixture-before-log-only-updates.c.txt",
+      "sha256": "6e3425d342d4364a53502e54c2ac345847e157b11a62fac23af034dcec28b16c"
+    }
+  }
+}

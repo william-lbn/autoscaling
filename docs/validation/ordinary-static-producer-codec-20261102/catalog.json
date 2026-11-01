@@ -1,0 +1,328 @@
+{
+  "schema_version": 1,
+  "scope": "C_STATIC_SELECTOR3_AND_RAW_CPU_SERIALIZATION_CODEC_COMPONENT_ONLY",
+  "code_inputs": {
+    "vm-builder/ordinary-v2/revisions/udev-privsep-v2/protocol.h": "0dc0363da021abdd636d5c5eb2beb44ff4770bfb9c30bd299259d83e85d234cf",
+    "vm-builder/ordinary-v2/revisions/udev-privsep-v2/creator-ipc.c": "3d56c8c860b9a3a9863e7aeea941c47727f787be03fc75c34be8188c96cd6f40",
+    "vm-builder/ordinary-v2/revisions/udev-privsep-v2/emitter-client.c": "94857e5daf38c10f48a01d2826d1f5cc334dd283ac9bdce9f726d94466e0fc70",
+    "vm-builder/ordinary-v2/revisions/udev-privsep-v2/eudev-privsep-v2.patch": "75ec5625f30ca87c7180cb3a1080188763d379b4508488fc0365e229e7f84867",
+    "vm-builder/ordinary-v2/revisions/udev-privsep-v2/inputs.lock.json": "8dca603cf4fc3df39060914d884afcb46300cf5b5913a5faede13021d7cfbcb0",
+    "vm-builder/ordinary-v2/revisions/udev-privsep-v2/build-eudev.sh": "a42fe2ffa3638e2000bc25ca88a06d9219553f5650d05c60ad4b9d239d0e59f2",
+    "vm-builder/ordinary-v2/revisions/udev-privsep-v2/Dockerfile.rebuild": "2177e74a792a1e0f0ec3fd2476074baeade8aa48c8d2cf0019fa42e58be0936c",
+    "vm-builder/ordinary-v2/revisions/udev-privsep-v2/README.txt": "18de1f1da36ca62ba36c7d48a950c7d17a16274045ed5e0d8ce864a5b03f2b41",
+    "vm-builder/ordinary-v2/revisions/udev-privsep-v2/test_creator_ipc.c": "914fba61e0a751b2a66107cfdca9045c220ba3ac2f624d2664c570835a97a961",
+    "vm-builder/ordinary-v2/revisions/udev-privsep-v2/test_libudev_consumer.c": "f1e2cbc84ba63e4700eb897b39a6174efc263c8a98088511de69ec8b8f5b6c5d",
+    "vm-builder/ordinary-v2/revisions/udev-privsep-v2/test_privsep_native.c": "905b74e049c7a2efff33a583b4ec9249dc9039d6c8983b299328c6ad0b7bdb94",
+    "vm-builder/ordinary-v2/revisions/udev-privsep-v2/verify-driver.py": "c935aa20bbaa1e1c7a7b3bc14e60c268ef62b972feff3ffebee2d67c14160ebd",
+    "vm-builder/ordinary-v2/revisions/udev-privsep-v2/test_event_properties.c": "950b5dbdda63d22af4ac40116b963e862b5b06bcfb7b5c00988d645ecc659035",
+    "vm-builder/ordinary-v2/revisions/udev-privsep-v2/test_static_privsep_native.c": "df8c3a21f90b4c3476e2dfe5705d3c80a0f5a235d75eaf5bf04628ae8dfe3801"
+  },
+  "previous_revision12_were_untracked_now_archived": true,
+  "compiled_production_four_source": {
+    "protocol.h": "0dc0363da021abdd636d5c5eb2beb44ff4770bfb9c30bd299259d83e85d234cf",
+    "creator-ipc.c": "3d56c8c860b9a3a9863e7aeea941c47727f787be03fc75c34be8188c96cd6f40",
+    "emitter-client.c": "94857e5daf38c10f48a01d2826d1f5cc334dd283ac9bdce9f726d94466e0fc70",
+    "eudev-privsep-v2.patch": "75ec5625f30ca87c7180cb3a1080188763d379b4508488fc0365e229e7f84867"
+  },
+  "build_source_lock_sha256": "d5f71e38739277cb7bbfcb69ddf3e9c3b1941a3d3ba83adea9182044fe906404",
+  "unit_groups": 6,
+  "unit_cases": 46,
+  "case_rows": [
+    {
+      "root": "NEON-U-C-UDEV3-001",
+      "case": "original-log",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-001",
+      "case": "memory-zero",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-001",
+      "case": "memory-twelve",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-001",
+      "case": "memory-uint32-max",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-001",
+      "case": "static-cpu",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-001",
+      "case": "static-pci",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-001",
+      "case": "static-acpi",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-001",
+      "case": "non-log-virtio",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-002",
+      "case": "missing-subsystem",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-002",
+      "case": "empty-subsystem",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-002",
+      "case": "missing-memory-name",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-002",
+      "case": "empty-memory-index",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-002",
+      "case": "memory-leading-zero",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-002",
+      "case": "memory-plus",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-002",
+      "case": "memory-negative",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-002",
+      "case": "memory-suffix",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-002",
+      "case": "memory-overflow",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-003",
+      "case": "single-terminal-LF-original-and-wire",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-004",
+      "case": "wrong-subsystem",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-004",
+      "case": "wrong-path",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-004",
+      "case": "cpu-leading-zero",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-004",
+      "case": "cpu-plus",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-004",
+      "case": "cpu-overflow",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-004",
+      "case": "two-LF",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-004",
+      "case": "interior-LF",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-004",
+      "case": "wrong-alias-prefix",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-004",
+      "case": "missing-final-NUL",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-004",
+      "case": "duplicate-alias",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-004",
+      "case": "duplicate-path",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-004",
+      "case": "duplicate-subsystem",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-004",
+      "case": "other-LF",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-004",
+      "case": "other-control",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-004",
+      "case": "other-invalid-UTF8",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-005",
+      "case": "ordinary-codec-invariants",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-006",
+      "case": "kind-zero",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-006",
+      "case": "kind-unknown",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-006",
+      "case": "static-index",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-006",
+      "case": "log-index",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-006",
+      "case": "action-zero",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-006",
+      "case": "action-unknown",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-006",
+      "case": "seq-zero",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-006",
+      "case": "count-zero",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-006",
+      "case": "count-overflow",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-006",
+      "case": "null-properties",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-006",
+      "case": "empty-properties",
+      "status": "PASS"
+    },
+    {
+      "root": "NEON-U-C-UDEV3-006",
+      "case": "oversized-properties",
+      "status": "PASS"
+    }
+  ],
+  "native_mechanism_catalog": "docs/validation/ordinary-static-privsep-native-20261102/catalog.json",
+  "native_S_not_counted_again_here": true,
+  "actually_tested_PostgreSQL_versions": [],
+  "Root_server_is_model_for_native_tests": true,
+  "public_libudev_source_unchanged": true,
+  "codec_Werror_not_claimed_for_full_udevd": true,
+  "Source": false,
+  "normal": false,
+  "Linux_E": 0,
+  "K8s_E": 0,
+  "original_files": {
+    "docs/validation/ordinary-static-producer-codec-20261102/implementation-state.json": "34ab011468954a152e53726f371c622d5755f3a5099e31c8d1a33e52b74ce8ed",
+    "docs/validation/ordinary-static-producer-codec-20261102/test-inputs.json": "6df1757376b7ef9ddf366b3a45bcc2ef9c227eb67d5019caf9bef944234d90ed",
+    "docs/validation/ordinary-static-producer-codec-20261102/independent-kind3-source-review.txt": "4723d5f9407b34d75e5db145a9667874f28ef6b428a017aeb9bfd9299bcee658",
+    "docs/validation/ordinary-static-producer-codec-20261102/independent-kind3-source-review.json": "c7bd9a438b957db2503dea23bdfa2604efeb4df15c9cbc59e3cd8337d1497146",
+    "docs/validation/ordinary-static-producer-codec-20261102/baseline12/Dockerfile.rebuild.before.txt": "5b338ce4f1263025f27a873e5bcad3ed8d8f802b96183359fce7a8796b9b85a8",
+    "docs/validation/ordinary-static-producer-codec-20261102/baseline12/README.txt.before.txt": "c395c3a9f299e3ea4888a5d2bd90af0f75d0d473d96e0609cf7dc55abf7e3889",
+    "docs/validation/ordinary-static-producer-codec-20261102/baseline12/build-eudev.sh.before.txt": "a42fe2ffa3638e2000bc25ca88a06d9219553f5650d05c60ad4b9d239d0e59f2",
+    "docs/validation/ordinary-static-producer-codec-20261102/baseline12/creator-ipc.c.before.txt": "d05b1ca5917bcc4a62d40bf69c8de20c1311f652227dd2243f7f1aa050bc3e35",
+    "docs/validation/ordinary-static-producer-codec-20261102/baseline12/emitter-client.c.before.txt": "085b67b6dca11e30d8d59b27cca120f63ecf50cee0e007ecf921b1290f7d6a83",
+    "docs/validation/ordinary-static-producer-codec-20261102/baseline12/eudev-privsep-v2.patch.before.txt": "79ba5affe5b3ca30476cc8a30c132cbef7db1b676d47e9018aaf40f1a114b6cd",
+    "docs/validation/ordinary-static-producer-codec-20261102/baseline12/inputs.lock.json.before.txt": "80df3af70b260564f7d03bcaa17f181683ec68659950ef0b7dc35b5f0c4e8a82",
+    "docs/validation/ordinary-static-producer-codec-20261102/baseline12/protocol.h.before.txt": "ec303765688812b1a9ddef5893b63255e3ac2f9927ecabba63cb5949a58d82a4",
+    "docs/validation/ordinary-static-producer-codec-20261102/baseline12/test_creator_ipc.c.before.txt": "914fba61e0a751b2a66107cfdca9045c220ba3ac2f624d2664c570835a97a961",
+    "docs/validation/ordinary-static-producer-codec-20261102/baseline12/test_libudev_consumer.c.before.txt": "f1e2cbc84ba63e4700eb897b39a6174efc263c8a98088511de69ec8b8f5b6c5d",
+    "docs/validation/ordinary-static-producer-codec-20261102/baseline12/test_privsep_native.c.before.txt": "905b74e049c7a2efff33a583b4ec9249dc9039d6c8983b299328c6ad0b7bdb94",
+    "docs/validation/ordinary-static-producer-codec-20261102/baseline12/verify-driver.py.before.txt": "aea8fe0ccf30fff03c7ef59d33572d5946e4efe1ea627abd5c8026f09ed66ec7",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/source-lock.json": "d5f71e38739277cb7bbfcb69ddf3e9c3b1941a3d3ba83adea9182044fe906404",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/result.json": "5f362c1d3d340014df5ed20d2c6d132bb4f987527a39e81050bccdcdaf5b91ef",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/patch-preflight.json": "7bc6d4905d158e933676866f67be8f7c21afe68661d1f86c012b029d98e081dd",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/proxy-probe.json": "a22af008d806983db7da9ceccf31c6d73daa15f33eed864bdeeca3263dfd5d99",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/build-command.json": "fd1d3c2d05bfc017e75c0b9a5d2de0f44477801df6872a542e02a718b1f0640a",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/build-metadata.json": "6f42d12f5da59dda155a447bf978ae7fe1fd7c718da5634fac8a38912d1897a3",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/artifact-and-codec-summary.json": "d00a9480e85a7e7e47e51fd556b5cc1b5959e2ee7768e24fb4a4228a9a34ee10",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/Dockerfile": "2177e74a792a1e0f0ec3fd2476074baeade8aa48c8d2cf0019fa42e58be0936c",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/worker.py": "afc9e6c4d86b20a93208578f5b2682b563141bdb14a3edb817aeca75b3da4099",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/run.log": "dbc55bdc789628f6c62454ec8158c8c1206905420fbb9dc846869259d84e1a9b",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/context-preparation.stdout": "3c22980090da3913fbf4efc7d96dfd4091f165d5e0e37473c30b13bb93afd22d",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/context-preparation.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/budget-spec.json": "bf42a6566a3921b6c0d2ba5ff4d7227549c5e1c60803e3bff054374edda67d35",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/budget-reserve.json": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/budget-reserve.stderr": "83b68285bc878363ab468458b31daf8b7e3ee2edf5ad13cf0aa87f4c3451ad24",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/budget-reserve-modefix1.json": "ee172c27dee8e33f52a89acbb41be73f44474fdf5f28343f0f0382222810d782",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/budget-reserve-modefix1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/budget-launch-modefix1.json": "909f38bda996050db23e429c4bd495963e58a2f741f2271071a97e6cd7dba72e",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/actual-source-check.txt": "1533b6d6204a74c2b8066c0ce4efbf8bf2d38565fe2162fb2c6ac0fcbe997a16",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/actual-source.sha256": "1fc9e8f302c34a6210b177a0b72be9cdbe7fa4eb754615531a96eb8b85041695",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/actual-build-apks.txt": "3e2d102b6190b1e3de1348da8f29dfe3c31e23fd3acb96d3062d2f12b2dc00b4",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/compiler.txt": "0e8b316161076f257494c8ce0621c3b61b108070ceb12cbd61fa5545c03181d9",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/eudev-readelf.txt": "9117c839e257c04e7b3f91fdedf89c44e3514775313f673b21c2f6f2701e90ff",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/eudev-build.log": "9e5735909b5e296e4bd547b347d05eccd923c4066b5eb2762e01153f6e41e229",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/test.exitcode": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/source.exitcode": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/codec-build.exitcode": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/codec.exitcode": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/codec.jsonl": "581a8ee288e18523e7377cb43a48d1a7de207dbf6025dc4640514e058f0d71f0",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/codec.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/codec-build.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/cpu.max": "07eb5019b2babb019fbbfe1cb328ec5b7affac5e07da4b94ebedb5e110dfab69",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/memory.max": "604fec38960d7c5bd3bd6c06ad8f4b42eac0bb30ea02d43518d0f9f11d5e131e",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/cpu.stat": "7b02509faf6abfb0ba5645baab166f6d71ab0f73c366577712cdf9c5032dc154",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/memory.peak": "f6520cb191bb15a9b612306183a730c2d0867ef1daa2087c7d611ab2872b377a",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/io.stat": "df9376194035be316268875a0fae113905c516ea0336f6480754d8bc3135b46f",
+    "docs/validation/ordinary-static-producer-codec-20261102/build/export/public-libudev-source.sha256": "145356032f19030c51e0a9177de986a29a838ab59b7d44c810f4011cb78f134e",
+    "docs/validation/ordinary-static-producer-codec-20261102/history/original-upstream-fuzz0-preflight-failed.json": "cb575172707e6fa05b0063122ae069054c5cfc8cb1b67369fd7728f5c54273b7"
+  }
+}

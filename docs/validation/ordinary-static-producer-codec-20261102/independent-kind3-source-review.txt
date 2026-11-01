@@ -1,0 +1,40 @@
+Root C kind3 / CPU raw适配 / client早拒：独立只读复核
+
+结论：所审新差异未发现明确阻断；不签真实Root Source、normal或E。
+准确build11e57a source-lock d5f71e38739277cb7bbfcb69ddf3e9c3b1941a3d3ba83adea9182044fe906404，
+实际full eudev构建与codec编译/执行四phase全0、33.328s。逐SHA核所有锁定输入及当前四C/patch。
+实际codec ELF21739f3a1bed2792117aed5e741d40351e93eb9085816646cb26dc8cd1bbfff7，
+raw JSONL581a8ee288e18523e7377cb43a48d1a7de207dbf6025dc4640514e058f0d71f0；
+逐行确认6组46case：8/9/1/15/1/12，全PASS。它们是codec U，不是真Root S。
+
+selector来源：patch neon_emit_device仍从parent保存的原event->dev读取，先与processed核原
+ACTION/DEVPATH/SUBSYSTEM/devnode/devnum/seq；只将virtio-ports且原name=tech.neon.log.0
+置kind1；memory须memory+规范十进制uint32置kind2；其余kind3且index固定0。非法memory
+仍拒，不能跌入kind3。C decimal拒符号/空/前导零/后缀/溢出；上限UINT32_MAX真正控已过。
+Go catalog kind3仍核原票据/entry、index0、非memory/原log，再完整projection；selector本身
+没有授予来源或预算。此审查未把Go原catalog当新实现或重跑其旧矩阵。
+
+CPU适配：仅neon_dispatch和neon_child_done取得原设备raw后调用新私有adapter。含LF时，
+必须恰好一个DEVPATH=/devices/system/cpu/cpuN、SUBSYSTEM=cpu和MODALIAS=cpu:type:...单末LF；
+N以规范uint32核。重复tuple、其它字段LF、内部/双LF、不合法UTF8/control仍拒。只有那个
+LF被复制时移除，原raw不变；随后原neon_canonical完整检查键/重复/控制字节/UTF8/大小并
+排序。无LF走原canonical。与Go normalOrdinaryUdevV2CPUPropertyBytes及其后strict parser
+同义；Go SHA181627dc0edbaccc4e75bae4f99ded7756b79dc953413616d0ae2e3c80a953f5。
+
+内部wire仍直接调用原require_sorted canonical，不调用raw适配；对baseline12去掉新三私有
+helper后creator原body逐字相同。因此原pair creator/pidfs/peer pidfd/alive、socket cookie/
+身份、逐包SCM_CREDENTIALS、rights先close再拒、generation/seq/reserved/length及接收后
+再次活性检查无删改。未凭新U冒称这些身份合同已重新做实际native验证。
+
+client新kind1..3/action1..8/index0约束、非零seq、count1..64、非空properties及最大frame
+检查在lstat/socket前，12个直接负例均达-EINVAL且emitter_fd仍-1。其后从lstat到Root uid/gid/
+PEERCRED、固定schema/frame、ACK版本/角色/截断检查及close清理与baseline逐字相同。
+原成功wire帧布局未改；新早拒不会打开socket或发包。公共libudev monitor源码hash仍由实际
+full build断言原e5cbc5e1…未变。
+
+构建与范围分账：六编译C/配置/构建输入是protocol/creator/emitter/patch/inputs-lock/Dockerfile，
+另有外层verify-driver修正（先核精确4源锁再准备context）及新codec C。与baseline12比共有
+7个既有文件变化+1个新test，详见JSON；不能漏掉Dockerfile或外层driver。full eudev沿原
+hardening CFLAGS；-Wall/-Wextra/-Werror只用于codec，唯一-Wno-unused-function为包含
+原static实现而非降低其它诊断。未修改业务源、未重编译或重跑；未读改Kernel独占的
+新test_static_privsep_native.c。后继真实KVM/Root原对象闭合仍由其实际nonce单独验收。

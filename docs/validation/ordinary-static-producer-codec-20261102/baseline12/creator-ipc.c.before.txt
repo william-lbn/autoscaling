@@ -1,0 +1,137 @@
+/* 原fork前pair+pidfd：只认证内部IPC actor，不能产生Root资格。 */
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+#include "protocol.h"
+#include <sys/socket.h>
+#include <sys/syscall.h>
+#include <sys/stat.h>
+#include <sys/vfs.h>
+#include <poll.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <limits.h>
+#ifndef SO_COOKIE
+#define SO_COOKIE 57
+#endif
+static int64_t neon_now(void) { struct timespec t;if(clock_gettime(CLOCK_MONOTONIC,&t))return -1;return (int64_t)t.tv_sec*1000+t.tv_nsec/1000000; }
+static int neon_wait(int fd,short events,int64_t end) {
+    for(;;){int64_t now=neon_now();if(now<0||now>=end)return -ETIMEDOUT;struct pollfd p={fd,events,0};int n=poll(&p,1,(int)(end-now));if(n<0&&errno==EINTR)continue;if(n!=1)return n<0?-errno:-ETIMEDOUT;if(p.revents&(POLLNVAL|POLLERR))return -EIO;if(p.revents&events)return 0;return -EPIPE;}
+}
+/* 6.8 anoninode对不同pidfd共享st_ino，不能据它声称同task；本profile只接受
+ * 已核6.12 pidfs。未知backend直接拒，不降级为numeric PID身份。 */
+static int neon_pidfd_fact(int fd,struct stat *st) {
+    struct statfs fs;
+    if(fstatfs(fd,&fs)||(unsigned long)fs.f_type!=0x50494446UL)return -EOPNOTSUPP;
+    if(fstat(fd,st)||!st->st_ino)return -EINVAL;
+    return 0;
+}
+static int neon_alive(int fd) {
+    struct pollfd p={fd,POLLIN,0};int n=poll(&p,1,0);
+    if(n!=0)return -ESRCH;
+    return syscall(SYS_pidfd_send_signal,fd,0,NULL,0)<0?-errno:0;
+}
+static int neon_socket_fact(int fd,uint64_t *cookie,uint64_t *device,uint64_t *inode) {
+    struct stat st;int type=0,domain=0;socklen_t n=sizeof(type);
+    if(fstat(fd,&st)||!S_ISSOCK(st.st_mode)||getsockopt(fd,SOL_SOCKET,SO_TYPE,&type,&n)||type!=SOCK_SEQPACKET)return -EINVAL;
+    n=sizeof(domain);if(getsockopt(fd,SOL_SOCKET,SO_DOMAIN,&domain,&n)||domain!=AF_UNIX)return -EINVAL;
+    n=sizeof(*cookie);if(getsockopt(fd,SOL_SOCKET,SO_COOKIE,cookie,&n)||n!=sizeof(*cookie)||!*cookie)return -EINVAL;
+    *device=st.st_dev;*inode=st.st_ino;return 0;
+}
+static int neon_endpoint_check(const struct neon_endpoint *e) {
+    uint64_t c,d,i;struct ucred peer;socklen_t n=sizeof(peer);
+    if(neon_socket_fact(e->fd,&c,&d,&i)||c!=e->cookie||d!=e->device||i!=e->inode)return -ESTALE;
+    /* socketpair PEERCRED仍是fork前creator；fork后实际actor必须另逐包检查。 */
+    if(getsockopt(e->fd,SOL_SOCKET,SO_PEERCRED,&peer,&n)||n!=sizeof(peer)||peer.pid!=e->creator_pid||peer.uid!=NEON_ROLE_UID||peer.gid!=NEON_ROLE_UID)return -EPERM;
+    struct stat pinned;int creator=-1;
+    if(neon_pidfd_fact(e->peer_pidfd,&pinned)||pinned.st_dev!=e->peer_device||pinned.st_ino!=e->peer_inode)return -ESTALE;
+    /* 原匿名pair内核保存fork前creator的pid对象；不是事后/proc PID反查。 */
+    n=sizeof(creator);int valid=getsockopt(e->fd,SOL_SOCKET,77,&creator,&n)==0&&n==sizeof(creator)&&creator>=0;
+    if(valid)valid=neon_pidfd_fact(creator,&pinned)==0&&pinned.st_dev==e->creator_device&&pinned.st_ino==e->creator_inode;
+    if(creator>=0)close(creator);
+    if(!valid)return -ESTALE;
+    return neon_alive(e->peer_pidfd);
+}
+static int neon_pair_new(struct neon_pair *p) {
+    memset(p,0,sizeof(*p));p->fd[0]=p->fd[1]=p->creator_pidfd=-1;
+    p->creator_pid=getpid();p->creator_pidfd=syscall(SYS_pidfd_open,p->creator_pid,0);
+    if(p->creator_pidfd<0)return -errno;
+    struct stat creator;int backend=neon_pidfd_fact(p->creator_pidfd,&creator);if(backend){close(p->creator_pidfd);p->creator_pidfd=-1;return backend;}
+    p->creator_device=creator.st_dev;p->creator_inode=creator.st_ino;
+    if(socketpair(AF_UNIX,SOCK_SEQPACKET|SOCK_CLOEXEC|SOCK_NONBLOCK,0,p->fd))goto fail;
+    for(int i=0;i<2;i++){int one=1;if(setsockopt(p->fd[i],SOL_SOCKET,SO_PASSCRED,&one,sizeof(one))||neon_socket_fact(p->fd[i],&p->cookie[i],&p->device[i],&p->inode[i]))goto fail;}
+    return 0;
+fail:{int error=errno?errno:EIO;for(int i=0;i<2;i++)if(p->fd[i]>=0)close(p->fd[i]);close(p->creator_pidfd);p->fd[0]=p->fd[1]=p->creator_pidfd=-1;return -error;}
+}
+static void neon_endpoint_close(struct neon_endpoint *e) { if(!e)return;if(e->fd>=0)close(e->fd);if(e->peer_pidfd>=0)close(e->peer_pidfd);e->fd=e->peer_pidfd=-1; }
+static void neon_pair_child(struct neon_pair *p,struct neon_endpoint *e) {
+    *e=(struct neon_endpoint){.fd=p->fd[1],.peer_pidfd=p->creator_pidfd,.peer_pid=p->creator_pid,.creator_pid=p->creator_pid,.cookie=p->cookie[1],.device=p->device[1],.inode=p->inode[1]};
+    e->peer_device=e->creator_device=p->creator_device;e->peer_inode=e->creator_inode=p->creator_inode;
+    close(p->fd[0]);p->fd[0]=p->fd[1]=p->creator_pidfd=-1;
+}
+static int neon_pair_parent(struct neon_pair *p,pid_t child,struct neon_endpoint *e) {
+    int fd=syscall(SYS_pidfd_open,child,0);
+    if(fd<0)return -errno;
+    *e=(struct neon_endpoint){.fd=p->fd[0],.peer_pidfd=fd,.peer_pid=child,.creator_pid=p->creator_pid,.cookie=p->cookie[0],.device=p->device[0],.inode=p->inode[0]};
+    struct stat child_fact;if(neon_pidfd_fact(fd,&child_fact)){close(fd);e->peer_pidfd=-1;return -EOPNOTSUPP;}
+    e->peer_device=child_fact.st_dev;e->peer_inode=child_fact.st_ino;e->creator_device=p->creator_device;e->creator_inode=p->creator_inode;
+    close(p->fd[1]);close(p->creator_pidfd);p->fd[0]=p->fd[1]=p->creator_pidfd=-1;
+    return neon_endpoint_check(e);
+}
+static int neon_utf8_value(const unsigned char *s,size_t n) {
+    for(size_t i=0;i<n;){uint32_t v=s[i++];unsigned more=0;
+        if(v<0x20||v==0x7f)return -EINVAL;
+        if(v<0x80)continue;
+        if(v>=0xc2&&v<=0xdf){v&=31;more=1;}else if(v>=0xe0&&v<=0xef){v&=15;more=2;}else if(v>=0xf0&&v<=0xf4){v&=7;more=3;}else return -EINVAL;
+        if(n-i<more)return -EINVAL;
+        for(unsigned j=0;j<more;j++){if((s[i]&0xc0)!=0x80)return -EINVAL;v=(v<<6)|(s[i++]&63);}
+        if((more==1&&v<0x80)||(more==2&&v<0x800)||(more==3&&v<0x10000)||v>0x10ffff||(v>=0xd800&&v<=0xdfff))return -EINVAL;
+    }return 0;
+}
+struct neon_property { const char *s;size_t key,len; };
+static int neon_property_cmp(const void *a,const void *b) {
+    const struct neon_property *x=a,*y=b;size_t n=x->key<y->key?x->key:y->key;int c=memcmp(x->s,y->s,n);return c?c:(x->key>y->key)-(x->key<y->key);
+}
+static int neon_canonical(const char *raw,size_t len,char out[NEON_IPC_MAX],size_t *written,uint32_t *count,int require_sorted) {
+    struct neon_property entries[64];size_t pos=0;unsigned used=0;
+    if(!len||len>NEON_IPC_MAX||raw[len-1])return -EMSGSIZE;
+    while(pos<len){if(used==64)return -E2BIG;size_t n=strnlen(raw+pos,len-pos);if(!n||n==len-pos)return -EINVAL;
+        const char *eq=memchr(raw+pos,'=',n);if(!eq)return -EINVAL;size_t key=eq-(raw+pos);if(!key||key>64||n-key-1>1024)return -EINVAL;
+        for(size_t i=0;i<key;i++)if(!((raw[pos+i]>='A'&&raw[pos+i]<='Z')||(raw[pos+i]>='0'&&raw[pos+i]<='9')||raw[pos+i]=='_'))return -EINVAL;
+        if(neon_utf8_value((const unsigned char *)eq+1,n-key-1))return -EINVAL;
+        entries[used++]=(struct neon_property){raw+pos,key,n+1};pos+=n+1;
+    }
+    if(require_sorted)for(unsigned i=1;i<used;i++)if(neon_property_cmp(&entries[i-1],&entries[i])>=0)return -EINVAL;
+    qsort(entries,used,sizeof(entries[0]),neon_property_cmp);pos=0;
+    for(unsigned i=0;i<used;i++){if(i&&neon_property_cmp(&entries[i-1],&entries[i])==0)return -EINVAL;memcpy(out+pos,entries[i].s,entries[i].len);pos+=entries[i].len;}
+    *written=pos;*count=used;return 0;
+}
+static int neon_send(struct neon_endpoint *e,uint32_t kind,uint64_t gen,uint64_t seq,const char *body,size_t len) {
+    unsigned char packet[NEON_IPC_HEADER+NEON_IPC_MAX]={0};
+    if(!gen||!seq||len>NEON_IPC_MAX||neon_endpoint_check(e))return -EPERM;
+    memcpy(packet,"NDSGWI01",8);neon_put32(packet+8,1);neon_put32(packet+12,kind);neon_put64(packet+16,gen);neon_put64(packet+24,seq);neon_put32(packet+32,len);memcpy(packet+40,body,len);
+    int r=neon_wait(e->fd,POLLOUT,neon_now()+2000);if(r)return r;
+    ssize_t n=send(e->fd,packet,40+len,MSG_NOSIGNAL);return n==(ssize_t)(40+len)?neon_endpoint_check(e):(n<0?-errno:-EIO);
+}
+/* 返回1为完整包，0仅EAGAIN，负数均Unknown。收到的所有Rights先close再拒。 */
+static int neon_receive(struct neon_endpoint *e,uint32_t kind,uint64_t generation,uint64_t expected_seq,char body[NEON_IPC_MAX],size_t *len,uint64_t *seq) {
+    unsigned char packet[NEON_IPC_HEADER+NEON_IPC_MAX];union{struct cmsghdr align;unsigned char b[CMSG_SPACE(sizeof(struct ucred))+CMSG_SPACE(16*sizeof(int))];}control;
+    struct iovec iov={packet,sizeof(packet)};struct msghdr msg={.msg_iov=&iov,.msg_iovlen=1,.msg_control=control.b,.msg_controllen=sizeof(control.b)};
+    if(neon_endpoint_check(e))return -EPERM;
+    ssize_t n=recvmsg(e->fd,&msg,MSG_DONTWAIT|MSG_TRUNC|MSG_CMSG_CLOEXEC);if(n<0)return errno==EAGAIN?0:-errno;
+    int credentials=0,other=0;struct ucred peer={0};
+    for(struct cmsghdr *c=CMSG_FIRSTHDR(&msg);c;c=CMSG_NXTHDR(&msg,c)){
+        if(c->cmsg_level==SOL_SOCKET&&c->cmsg_type==SCM_RIGHTS){size_t size=c->cmsg_len>=CMSG_LEN(0)?c->cmsg_len-CMSG_LEN(0):0;for(size_t i=0;i+sizeof(int)<=size;i+=sizeof(int)){int received;memcpy(&received,(char *)CMSG_DATA(c)+i,sizeof received);close(received);}other=1;}
+        else if(c->cmsg_level==SOL_SOCKET&&c->cmsg_type==SCM_CREDENTIALS&&c->cmsg_len==CMSG_LEN(sizeof peer)){memcpy(&peer,CMSG_DATA(c),sizeof peer);credentials++;}else other=1;
+    }
+    if(n<40||n>(ssize_t)sizeof(packet)||msg.msg_flags&(MSG_TRUNC|MSG_CTRUNC)||other||credentials!=1||peer.pid!=e->peer_pid||peer.uid!=NEON_ROLE_UID||peer.gid!=NEON_ROLE_UID)return -EPERM;
+    if(memcmp(packet,"NDSGWI01",8)||neon_get32(packet+8)!=1||neon_get32(packet+12)!=kind||neon_get64(packet+16)!=generation||!generation||!neon_get64(packet+24)||neon_get32(packet+36)||neon_get32(packet+32)!=(uint32_t)n-40)return -EINVAL;
+    if(expected_seq&&neon_get64(packet+24)!=expected_seq)return -ESTALE;
+    size_t canonical_len;uint32_t count;int rc=neon_canonical((char *)packet+40,n-40,body,&canonical_len,&count,1);if(rc)return rc;
+    if(neon_endpoint_check(e))return -ESRCH;
+    *len=canonical_len;*seq=neon_get64(packet+24);return 1;
+}

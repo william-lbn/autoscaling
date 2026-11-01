@@ -1,0 +1,26 @@
+{
+  "scope": "CPU0_KIND3_NATIVE_MODEL_ROOT_NOT_SOURCE",
+  "owned_new_test": {
+    "path": "vm-builder/ordinary-v2/revisions/udev-privsep-v2/test_static_privsep_native.c",
+    "sha256": "6fa4e0b8b593010c273b9f14d4a83cb1464b4ec5d9d454efe067fe1635d89743"
+  },
+  "inputs": {
+    "revision/creator-ipc.c": "3d56c8c860b9a3a9863e7aeea941c47727f787be03fc75c34be8188c96cd6f40",
+    "revision/protocol.h": "0dc0363da021abdd636d5c5eb2beb44ff4770bfb9c30bd299259d83e85d234cf",
+    "revision/test_static_privsep_native.c": "6fa4e0b8b593010c273b9f14d4a83cb1464b4ec5d9d454efe067fe1635d89743",
+    "stock/MurmurHash2.c": "78613e3a0e6c1d2cc5006af6dbca0d1d1c010a0293c545c1b029787167a12f9f",
+    "stock/MurmurHash2.h": "0b7d2ae8b3916c4771d95665391017c02fb1ef58ed2a64eea378b211322c8efc",
+    "stock/libudev.h": "efa3a64936cb86e71f1ff157684cefce5f291cdee7862a2fcefa5cc396b598d2",
+    "stock/libudev.so.1": "6a96205c57a74ec7d6150494d218e906f4656167b6b0ea2dab63b5f61555a795"
+  },
+  "exact_new_product": "/data/neon-build/validation/root-udev-kind3-build-20261101T185417Z-11e57a",
+  "new_product_source_lock_sha256": "d5f71e38739277cb7bbfcb69ddf3e9c3b1941a3d3ba83adea9182044fe906404",
+  "new_udevd_sha256": "c93446d3c232ff55b75980bc7948e9ee5b9a72e37c6a5fddaa9c86d643b71c0a",
+  "model_does_not_use_production_CPU_canonical_to_compute_expected": true,
+  "stock_libudev_origin": "/data/neon-build/validation/ordinary-udev-privsep-native-build-20261101T075104Z-de1bed/source/stock",
+  "stock_ELF_sha256": "6a96205c57a74ec7d6150494d218e906f4656167b6b0ea2dab63b5f61555a795",
+  "old_two_fixtures_not_modified": true,
+  "Source": false,
+  "normal": false,
+  "E": 0
+}

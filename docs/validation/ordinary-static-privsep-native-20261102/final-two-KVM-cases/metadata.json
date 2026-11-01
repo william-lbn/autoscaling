@@ -1,0 +1,30 @@
+{
+  "nonce": "20261101T192533Z-17a626",
+  "fixture_build": "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7",
+  "fixture_source_lock_sha256": "abc5aa8059766b32342f2e2fb7fae4f2f76466c4c4f155484f5faa796508cf43",
+  "fixture_ELF_sha256": "ce9545253e7596ab5e97a681ff88b567bc593aafe0788c980a18a3ba5646ce3f",
+  "product_build": "/data/neon-build/validation/root-udev-kind3-build-20261101T185417Z-11e57a",
+  "kernel_export": "/data/neon-build/validation/normal-kernel-metadata-build-20261101T023713Z-58603b/build/export",
+  "scope": "REAL_CPU0_ADD_CHANGE_PRIVSEP_AND_UNMODIFIED_STOCK_LIB_GROUP2_MODEL_ROOT_NOT_SOURCE",
+  "selected_labels": [
+    "new-two-events",
+    "new-lost-ack"
+  ],
+  "old_control_reference": "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/old-e473-control",
+  "cases": [
+    "new-two-events",
+    "new-lost-ack"
+  ],
+  "limits": {
+    "CPU": 2,
+    "memoryGiB": 3,
+    "GuestCPU": 2,
+    "GuestMemoryMiB": 1024
+  },
+  "network": "Docker none / QEMU nic none",
+  "Host_network_time_power_actions": 0,
+  "QMP_power_commands": 0,
+  "Source": false,
+  "normal": false,
+  "E": 0
+}

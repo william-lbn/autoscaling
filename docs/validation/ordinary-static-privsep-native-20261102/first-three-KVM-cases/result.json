@@ -1,0 +1,250 @@
+{
+  "component_targets": 2,
+  "old_control": {
+    "label": "old-e473-control",
+    "status": "EXPECTED_OLD_CPU_PATH_REJECT_OBSERVED",
+    "passed": true,
+    "seconds": 9.78312069902313,
+    "QEMU_exit": 0,
+    "Guest_exit": [
+      "1"
+    ],
+    "actual_KVM": {
+      "enabled": true,
+      "present": true
+    },
+    "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+    "actual_original_workers": [],
+    "production_worker_trace": [],
+    "public_libudev_consumed_sequences": [],
+    "Root_model_emits": [],
+    "original_kernel_tickets": [
+      [
+        "555",
+        "add"
+      ]
+    ],
+    "actual_role_status": [
+      [
+        "main-ready",
+        "61"
+      ]
+    ],
+    "old_control_not_release_target": true,
+    "Source": false,
+    "normal": false,
+    "E": 0,
+    "PG_executed": false,
+    "Root_MODEL_not_real_lease_or_WAL": true,
+    "host_network_time_power_actions": 0,
+    "QMP_power_commands": 0
+  },
+  "cases": [
+    {
+      "label": "old-e473-control",
+      "status": "EXPECTED_OLD_CPU_PATH_REJECT_OBSERVED",
+      "passed": true,
+      "seconds": 9.78312069902313,
+      "QEMU_exit": 0,
+      "Guest_exit": [
+        "1"
+      ],
+      "actual_KVM": {
+        "enabled": true,
+        "present": true
+      },
+      "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+      "actual_original_workers": [],
+      "production_worker_trace": [],
+      "public_libudev_consumed_sequences": [],
+      "Root_model_emits": [],
+      "original_kernel_tickets": [
+        [
+          "555",
+          "add"
+        ]
+      ],
+      "actual_role_status": [
+        [
+          "main-ready",
+          "61"
+        ]
+      ],
+      "old_control_not_release_target": true,
+      "Source": false,
+      "normal": false,
+      "E": 0,
+      "PG_executed": false,
+      "Root_MODEL_not_real_lease_or_WAL": true,
+      "host_network_time_power_actions": 0,
+      "QMP_power_commands": 0
+    },
+    {
+      "label": "new-two-events",
+      "status": "PASS_TWO_REAL_CPU_EVENTS_MODEL_ONLY",
+      "passed": true,
+      "seconds": 2.836240717995679,
+      "QEMU_exit": 0,
+      "Guest_exit": [
+        "0"
+      ],
+      "actual_KVM": {
+        "enabled": true,
+        "present": true
+      },
+      "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+      "actual_original_workers": [
+        [
+          "64",
+          "364",
+          "1",
+          "555"
+        ],
+        [
+          "64",
+          "364",
+          "2",
+          "556"
+        ]
+      ],
+      "production_worker_trace": [
+        [
+          "64",
+          "364",
+          "1",
+          "555"
+        ],
+        [
+          "64",
+          "364",
+          "2",
+          "556"
+        ]
+      ],
+      "public_libudev_consumed_sequences": [
+        "555",
+        "556"
+      ],
+      "Root_model_emits": [
+        [
+          "555",
+          "1"
+        ],
+        [
+          "556",
+          "2"
+        ]
+      ],
+      "original_kernel_tickets": [
+        [
+          "555",
+          "add"
+        ],
+        [
+          "556",
+          "change"
+        ]
+      ],
+      "actual_role_status": [
+        [
+          "main-ready",
+          "61"
+        ],
+        [
+          "main",
+          "61"
+        ],
+        [
+          "worker",
+          "64"
+        ],
+        [
+          "main",
+          "61"
+        ],
+        [
+          "worker",
+          "64"
+        ]
+      ],
+      "old_control_not_release_target": false,
+      "Source": false,
+      "normal": false,
+      "E": 0,
+      "PG_executed": false,
+      "Root_MODEL_not_real_lease_or_WAL": true,
+      "host_network_time_power_actions": 0,
+      "QMP_power_commands": 0
+    },
+    {
+      "label": "new-lost-ack",
+      "status": "PASS_LOST_ACK_MODEL_ONLY",
+      "passed": true,
+      "seconds": 3.058010605018353,
+      "QEMU_exit": 0,
+      "Guest_exit": [
+        "0"
+      ],
+      "actual_KVM": {
+        "enabled": true,
+        "present": true
+      },
+      "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+      "actual_original_workers": [
+        [
+          "65",
+          "365",
+          "1",
+          "555"
+        ]
+      ],
+      "production_worker_trace": [
+        [
+          "65",
+          "365",
+          "1",
+          "555"
+        ]
+      ],
+      "public_libudev_consumed_sequences": [],
+      "Root_model_emits": [
+        [
+          "555",
+          "1"
+        ]
+      ],
+      "original_kernel_tickets": [
+        [
+          "555",
+          "add"
+        ]
+      ],
+      "actual_role_status": [
+        [
+          "main-ready",
+          "62"
+        ],
+        [
+          "main",
+          "62"
+        ],
+        [
+          "worker",
+          "65"
+        ]
+      ],
+      "old_control_not_release_target": false,
+      "Source": false,
+      "normal": false,
+      "E": 0,
+      "PG_executed": false,
+      "Root_MODEL_not_real_lease_or_WAL": true,
+      "host_network_time_power_actions": 0,
+      "QMP_power_commands": 0
+    }
+  ],
+  "passed": true,
+  "Source": false,
+  "normal": false,
+  "E": 0
+}

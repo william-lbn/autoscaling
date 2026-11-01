@@ -1,0 +1,32 @@
+{
+  "scope": "FINAL_RAW_EVIDENCE_ADDENDUM_NOT_SOURCE",
+  "fixture_build": "/data/neon-build/validation/static-udev-privsep-c-build-20261101T192324Z-2375c7",
+  "fixture_C_sha256": "df8c3a21f90b4c3476e2dfe5705d3c80a0f5a235d75eaf5bf04628ae8dfe3801",
+  "fixture_source_lock_sha256": "abc5aa8059766b32342f2e2fb7fae4f2f76466c4c4f155484f5faa796508cf43",
+  "native_run": "/data/neon-build/validation/static-udev-privsep-kvm-20261101T192533Z-17a626",
+  "raw_independently_verified": [
+    {
+      "label": "new-two-events",
+      "raw_sysfs_bytes": 671,
+      "kernel_alias_raw_count": 2,
+      "role_status_raw_count": 5,
+      "lostACK_public_sequence": [],
+      "console_sha256": "ae0d8e5bb4e94427eae9ae91adb9a923d18b6d68d0c133847038b34072ea635e"
+    },
+    {
+      "label": "new-lost-ack",
+      "raw_sysfs_bytes": 671,
+      "kernel_alias_raw_count": 1,
+      "role_status_raw_count": 3,
+      "lostACK_public_sequence": [
+        "555"
+      ],
+      "console_sha256": "8f792b1da6026225092b52f4f5639360cb5d5d88dbcff635c4f2f83672bb599b"
+    }
+  ],
+  "prior_review": "/data/neon-build/validation/static-udev-privsep-kvm-20261101T191608Z-96abaa/independent-static-fixture-review.txt",
+  "two_component_targets_not_additive": 2,
+  "Source": false,
+  "normal": false,
+  "E": 0
+}

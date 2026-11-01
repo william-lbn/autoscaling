@@ -1,0 +1,73 @@
+{
+  "buildx.build.provenance": {
+    "builder": {
+      "id": ""
+    },
+    "buildType": "https://mobyproject.org/buildkit@v1",
+    "materials": [
+      {
+        "uri": "pkg:docker/127.0.0.1:5001/neon/ordinary-v2-tools-base?digest=sha256:bd15f43fe3c7fc4e3c09b8cab3595ec33b25ed8a7a4d9b47ee0d23556b0a9886\u0026platform=linux%2Famd64",
+        "digest": {
+          "sha256": "bd15f43fe3c7fc4e3c09b8cab3595ec33b25ed8a7a4d9b47ee0d23556b0a9886"
+        }
+      }
+    ],
+    "invocation": {
+      "configSource": {
+        "entryPoint": "Dockerfile"
+      },
+      "parameters": {
+        "frontend": "dockerfile.v0",
+        "args": {
+          "build-arg:HTTPS_PROXY": "http://127.0.0.1:7890",
+          "build-arg:HTTP_PROXY": "http://127.0.0.1:7890",
+          "build-arg:NONCE": "root-udev-kind3-build-20261101T185417Z-11e57a",
+          "build-arg:NO_PROXY": "localhost,127.0.0.1,::1",
+          "build-arg:TOOLS_BASE": "127.0.0.1:5001/neon/ordinary-v2-tools-base@sha256:bd15f43fe3c7fc4e3c09b8cab3595ec33b25ed8a7a4d9b47ee0d23556b0a9886",
+          "build-arg:http_proxy": "http://127.0.0.1:7890",
+          "build-arg:https_proxy": "http://127.0.0.1:7890",
+          "build-arg:no_proxy": "localhost,127.0.0.1,::1",
+          "cpuquota": "200000",
+          "force-network-mode": "host",
+          "memory": "2147483648",
+          "memswap": "2147483648"
+        },
+        "locals": [
+          {
+            "name": "context"
+          },
+          {
+            "name": "dockerfile"
+          }
+        ],
+        "root": {
+          "configSource": {
+            "path": "Dockerfile"
+          },
+          "request": {
+            "args": {
+              "build-arg:HTTPS_PROXY": "http://127.0.0.1:7890",
+              "build-arg:HTTP_PROXY": "http://127.0.0.1:7890",
+              "build-arg:NONCE": "root-udev-kind3-build-20261101T185417Z-11e57a",
+              "build-arg:NO_PROXY": "localhost,127.0.0.1,::1",
+              "build-arg:TOOLS_BASE": "127.0.0.1:5001/neon/ordinary-v2-tools-base@sha256:bd15f43fe3c7fc4e3c09b8cab3595ec33b25ed8a7a4d9b47ee0d23556b0a9886",
+              "build-arg:http_proxy": "http://127.0.0.1:7890",
+              "build-arg:https_proxy": "http://127.0.0.1:7890",
+              "build-arg:no_proxy": "localhost,127.0.0.1,::1",
+              "cpuquota": "200000",
+              "force-network-mode": "host",
+              "memory": "2147483648",
+              "memswap": "2147483648"
+            }
+          }
+        },
+        "compatibilityVersion": 30
+      },
+      "environment": {
+        "dockerfileVersion": "1.28.0",
+        "platform": "linux/amd64"
+      }
+    }
+  },
+  "buildx.build.ref": "neon-data/neon-data0/dexuzaqke4kv6po78rvec27i9"
+}

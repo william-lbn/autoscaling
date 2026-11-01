@@ -1,0 +1,42 @@
+
+Dynamic section at offset 0x7b60 contains 28 entries:
+  Tag        Type                         Name/Value
+ 0x0000000000000001 (NEEDED)             Shared library: [libudev.so.1]
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]
+ 0x000000000000000c (INIT)               0x2000
+ 0x000000000000000d (FINI)               0x576d
+ 0x0000000000000019 (INIT_ARRAY)         0x8af0
+ 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)
+ 0x000000000000001a (FINI_ARRAY)         0x8af8
+ 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)
+ 0x000000006ffffef5 (GNU_HASH)           0x390
+ 0x0000000000000005 (STRTAB)             0xba8
+ 0x0000000000000006 (SYMTAB)             0x3c8
+ 0x000000000000000a (STRSZ)              1015 (bytes)
+ 0x000000000000000b (SYMENT)             24 (bytes)
+ 0x0000000000000015 (DEBUG)              0x0
+ 0x0000000000000003 (PLTGOT)             0x8d60
+ 0x0000000000000002 (PLTRELSZ)           1776 (bytes)
+ 0x0000000000000014 (PLTREL)             RELA
+ 0x0000000000000017 (JMPREL)             0x1248
+ 0x0000000000000007 (RELA)               0x1068
+ 0x0000000000000008 (RELASZ)             480 (bytes)
+ 0x0000000000000009 (RELAENT)            24 (bytes)
+ 0x000000000000001e (FLAGS)              BIND_NOW
+ 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE
+ 0x000000006ffffffe (VERNEED)            0x1048
+ 0x000000006fffffff (VERNEEDNUM)         1
+ 0x000000006ffffff0 (VERSYM)             0xfa0
+ 0x000000006ffffff9 (RELACOUNT)          13
+ 0x0000000000000000 (NULL)               0x0
+
+Displaying notes found in: .note.gnu.property
+  Owner                Data size 	Description
+  GNU                  0x00000020	NT_GNU_PROPERTY_TYPE_0
+      Properties: x86 feature used: x86, XMM
+	x86 ISA used: x86-64-baseline
+
+Displaying notes found in: .note.gnu.build-id
+  Owner                Data size 	Description
+  GNU                  0x00000014	NT_GNU_BUILD_ID (unique build ID bitstring)
+    Build ID: 0dbf5ba465bbb45df5d80ab213947f93b68be6fb

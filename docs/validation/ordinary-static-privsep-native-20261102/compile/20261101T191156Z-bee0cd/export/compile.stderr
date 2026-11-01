@@ -1,0 +1,33 @@
+revision/test_static_privsep_native.c: In function 'serve_one':
+revision/test_static_privsep_native.c:107:80: error: missing terminating " character [-Werror]
+  107 |     role_fact(main.pid,"main");worker_fact(main.pid,neon_get64(raw+36));printf("STATIC_RECEIVER_FRAME_CREDENTIALS=%d:%u:%u SCM_CREDENTIALS=1 SCM_RIGHTS=0
+      |                                                                                ^
+revision/test_static_privsep_native.c:107:80: error: missing terminating " character
+  107 |     role_fact(main.pid,"main");worker_fact(main.pid,neon_get64(raw+36));printf("STATIC_RECEIVER_FRAME_CREDENTIALS=%d:%u:%u SCM_CREDENTIALS=1 SCM_RIGHTS=0
+      |                                                                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+revision/test_static_privsep_native.c:108:91: error: expected ')' before 'MODEL_REQUEST_REJECT'
+  108 | ",actual.pid,actual.uid,actual.gid);int rc=process_packet(raw,n,1);if(rc){fprintf(stderr,"MODEL_REQUEST_REJECT=%d bytes=%zd\n",rc,n);for(size_t i=56;i<(size_t)n;i++)fputc(raw[i]?raw[i]:'|',stderr);fputc('\n',stderr);close(fd);return rc;}
+      |                                                                                           ^~~~~~~~~~~~~~~~~~~~
+      |                                                                                           )
+revision/test_static_privsep_native.c:107:79: note: to match this '('
+  107 |     role_fact(main.pid,"main");worker_fact(main.pid,neon_get64(raw+36));printf("STATIC_RECEIVER_FRAME_CREDENTIALS=%d:%u:%u SCM_CREDENTIALS=1 SCM_RIGHTS=0
+      |                                                                               ^
+revision/test_static_privsep_native.c:108:124: error: stray '\' in program
+  108 | ",actual.pid,actual.uid,actual.gid);int rc=process_packet(raw,n,1);if(rc){fprintf(stderr,"MODEL_REQUEST_REJECT=%d bytes=%zd\n",rc,n);for(size_t i=56;i<(size_t)n;i++)fputc(raw[i]?raw[i]:'|',stderr);fputc('\n',stderr);close(fd);return rc;}
+      |                                                                                                                            ^
+revision/test_static_privsep_native.c:108:126: error: missing terminating " character [-Werror]
+  108 | ",actual.pid,actual.uid,actual.gid);int rc=process_packet(raw,n,1);if(rc){fprintf(stderr,"MODEL_REQUEST_REJECT=%d bytes=%zd\n",rc,n);for(size_t i=56;i<(size_t)n;i++)fputc(raw[i]?raw[i]:'|',stderr);fputc('\n',stderr);close(fd);return rc;}
+      |                                                                                                                              ^
+revision/test_static_privsep_native.c:108:126: error: missing terminating " character
+  108 | ",actual.pid,actual.uid,actual.gid);int rc=process_packet(raw,n,1);if(rc){fprintf(stderr,"MODEL_REQUEST_REJECT=%d bytes=%zd\n",rc,n);for(size_t i=56;i<(size_t)n;i++)fputc(raw[i]?raw[i]:'|',stderr);fputc('\n',stderr);close(fd);return rc;}
+      |                                                                                                                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+revision/test_static_privsep_native.c:109:268: error: expected ';' before '}' token
+  109 |     memcpy(last_packet,raw,n);last_size=n;if(drop_ack){close(fd);puts("STATIC_PRIVSEP_MODEL_DROP_ACK_ONCE");return 0;}unsigned char ack[16]={'N','D','S','G','O','A','O','K',0,0,0,2,0,0,0,3};check(send(fd,ack,16,MSG_NOSIGNAL)==16,"model exact ACK");close(fd);return 0;
+      |                                                                                                                                                                                                                                                                            ^
+      |                                                                                                                                                                                                                                                                            ;
+  110 | }
+      | ~                                                                                                                                                                                                                                                                           
+revision/test_static_privsep_native.c:110:1: error: control reaches end of non-void function [-Werror=return-type]
+  110 | }
+      | ^
+cc1: all warnings being treated as errors

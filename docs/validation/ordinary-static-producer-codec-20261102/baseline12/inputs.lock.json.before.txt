@@ -1,0 +1,23 @@
+{
+  "scope": "EXPLICIT_PRIVSEP_COMPONENT_NO_PRODUCTION_SOURCE",
+  "base_eudev_archive_sha256": "8da4319102f24abbf7fff5ce9c416af848df163b29590e666d334cc1927f006f",
+  "base_patch_sha256": "349bb486a28d04d3f1207861c3b23cb77f319df673b1983bb0643966e545880e",
+  "public_libudev_source_unchanged_sha256": "e5cbc5e1e50a1e1635eea8e91c4cc3690034e9a5ed1673597caa8a3f5da1a461",
+  "Root_server_is_model_for_tests": true,
+  "production_Unsupported": true,
+  "revision_source_sha256": {
+    "protocol.h": "ec303765688812b1a9ddef5893b63255e3ac2f9927ecabba63cb5949a58d82a4",
+    "creator-ipc.c": "d05b1ca5917bcc4a62d40bf69c8de20c1311f652227dd2243f7f1aa050bc3e35",
+    "emitter-client.c": "085b67b6dca11e30d8d59b27cca120f63ecf50cee0e007ecf921b1290f7d6a83",
+    "eudev-privsep-v2.patch": "79ba5affe5b3ca30476cc8a30c132cbef7db1b676d47e9018aaf40f1a114b6cd"
+  },
+  "upstream_aports_sha256": {
+    "default-rules.patch": "8d6dcd3acbc9c32e0c1ed071e9584a8c78f758198e0e6441c6a202fa60f2fbc9",
+    "78-sound-card.rules_Import_ID_PATH_early.patch": "2c7a13821c51502cc0aec3d0bead08e70bb1f7816d87a94ac86a5f9061fcd96b",
+    "no-sgx.patch": "1ee3b6bfb1855ee7f7e26a8ce8101165986d06f8bee7bf7744999a945c109a09",
+    "load-fbcon.patch": "52a1825ad7ce411a3abefc1ffde567dda16ab8f0963c9409ce0ccbb135cddd7e",
+    "APKBUILD": "ad8e8da0a8e3725579b0e947f2fa1314fa2e79b699200ab1943bf3b9f7169e1e"
+  },
+  "reviewed_body": "16B NDSGOA02/2/3 + 40B NDSGUE01/schema1 + canonical NUL properties",
+  "supported_model_scope": "kind1 original virtio log only; kind2 requires original maximum geometry/holes; other static devices still Unknown"
+}

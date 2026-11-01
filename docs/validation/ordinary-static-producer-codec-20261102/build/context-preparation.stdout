@@ -1,0 +1,23 @@
+{
+  "result": "CONTEXT_ONLY_NOT_SOURCE",
+  "context": "/data/neon-build/validation/root-udev-kind3-build-20261101T185417Z-11e57a/source",
+  "inputs": 15,
+  "command": [
+    "docker",
+    "buildx",
+    "build",
+    "--builder",
+    "neon-data",
+    "--resource",
+    "memory=2g",
+    "--resource",
+    "memory-swap=2g",
+    "--resource",
+    "cpu-quota=200000",
+    "--build-arg",
+    "TOOLS_BASE=127.0.0.1:5001/neon/ordinary-v2-tools-base@sha256:bd15f43fe3c7fc4e3c09b8cab3595ec33b25ed8a7a4d9b47ee0d23556b0a9886",
+    "--file",
+    "/data/neon-build/src/autoscaling/vm-builder/ordinary-v2/revisions/udev-privsep-v2/Dockerfile.rebuild",
+    "/data/neon-build/validation/root-udev-kind3-build-20261101T185417Z-11e57a/source"
+  ]
+}
