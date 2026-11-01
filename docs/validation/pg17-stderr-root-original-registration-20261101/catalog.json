@@ -1,0 +1,589 @@
+{
+  "schema_version": 1,
+  "postgres_versions_actually_tested": [],
+  "scope": "PG17 Root stderr原登记组件八个单元根；90dde5与bd4ed9十六根组合为包含关系，非累计24根",
+  "Source": false,
+  "realRootComputeSource": false,
+  "safeNormal": false,
+  "normal": false,
+  "E": 0,
+  "Linux_E": 0,
+  "K8s_E": 0,
+  "PG18_included": false,
+  "release_lock_changed": false,
+  "counting": {
+    "base_aggregate_counts_changed": false,
+    "historical_repeats_are_not_added": true,
+    "compile_or_help_smoke_is_not_service_E": true
+  },
+  "U": [
+    {
+      "id": "PG17-U-STDERR-ROOT-001",
+      "root": "TestNormalPgStderrEndpointsOriginalPipeOnly",
+      "classification": "UNIT_WITH_ACTUAL_HOST_KERNEL_PRIMITIVES_NOT_GUEST_SOURCE",
+      "authoritative_run_nonce": "20261101T151727Z-90dde5",
+      "result": "PASS",
+      "receipt": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/export/test.json",
+        "sha256": "b0241cb1490b4fbf914c2fb05b7678298245506b61de0fe7dd3979a71f08e5fc",
+        "bytes": 31425
+      },
+      "executed_production_source_sha256": "79f01a35970358bd1068d9ff3d2373cdf328e4ee09e07f08772fc5d01a05f850",
+      "included_in_joint_regression_nonce": "20261101T152942Z-bd4ed9"
+    },
+    {
+      "id": "PG17-U-STDERR-ROOT-002",
+      "root": "TestNormalPgStderrExactFrame",
+      "classification": "UNIT_WITH_ACTUAL_HOST_KERNEL_PRIMITIVES_NOT_GUEST_SOURCE",
+      "authoritative_run_nonce": "20261101T151727Z-90dde5",
+      "result": "PASS",
+      "receipt": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/export/test.json",
+        "sha256": "b0241cb1490b4fbf914c2fb05b7678298245506b61de0fe7dd3979a71f08e5fc",
+        "bytes": 31425
+      },
+      "executed_production_source_sha256": "79f01a35970358bd1068d9ff3d2373cdf328e4ee09e07f08772fc5d01a05f850",
+      "included_in_joint_regression_nonce": "20261101T152942Z-bd4ed9"
+    },
+    {
+      "id": "PG17-U-STDERR-ROOT-003",
+      "root": "TestNormalPgStderrFinalCloseRaceFailClosed",
+      "classification": "UNIT_WITH_ACTUAL_HOST_KERNEL_PRIMITIVES_NOT_GUEST_SOURCE",
+      "authoritative_run_nonce": "20261101T151727Z-90dde5",
+      "result": "PASS",
+      "receipt": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/export/test.json",
+        "sha256": "b0241cb1490b4fbf914c2fb05b7678298245506b61de0fe7dd3979a71f08e5fc",
+        "bytes": 31425
+      },
+      "executed_production_source_sha256": "79f01a35970358bd1068d9ff3d2373cdf328e4ee09e07f08772fc5d01a05f850",
+      "included_in_joint_regression_nonce": "20261101T152942Z-bd4ed9"
+    },
+    {
+      "id": "PG17-U-STDERR-ROOT-004",
+      "root": "TestNormalPgStderrNewProtocolCannotLoseAuthority",
+      "classification": "UNIT_WITH_ACTUAL_HOST_KERNEL_PRIMITIVES_NOT_GUEST_SOURCE",
+      "authoritative_run_nonce": "20261101T151727Z-90dde5",
+      "result": "PASS",
+      "receipt": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/export/test.json",
+        "sha256": "b0241cb1490b4fbf914c2fb05b7678298245506b61de0fe7dd3979a71f08e5fc",
+        "bytes": 31425
+      },
+      "executed_production_source_sha256": "79f01a35970358bd1068d9ff3d2373cdf328e4ee09e07f08772fc5d01a05f850",
+      "included_in_joint_regression_nonce": "20261101T152942Z-bd4ed9"
+    },
+    {
+      "id": "PG17-U-STDERR-ROOT-005",
+      "root": "TestNormalPgStderrNoSyntheticFinalSource",
+      "classification": "UNIT_WITH_ACTUAL_HOST_KERNEL_PRIMITIVES_NOT_GUEST_SOURCE",
+      "authoritative_run_nonce": "20261101T151727Z-90dde5",
+      "result": "PASS",
+      "receipt": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/export/test.json",
+        "sha256": "b0241cb1490b4fbf914c2fb05b7678298245506b61de0fe7dd3979a71f08e5fc",
+        "bytes": 31425
+      },
+      "executed_production_source_sha256": "79f01a35970358bd1068d9ff3d2373cdf328e4ee09e07f08772fc5d01a05f850",
+      "included_in_joint_regression_nonce": "20261101T152942Z-bd4ed9"
+    },
+    {
+      "id": "PG17-U-STDERR-ROOT-006",
+      "root": "TestNormalPgStderrReceiveExactAncillary",
+      "classification": "UNIT_WITH_ACTUAL_HOST_KERNEL_PRIMITIVES_NOT_GUEST_SOURCE",
+      "authoritative_run_nonce": "20261101T151727Z-90dde5",
+      "result": "PASS",
+      "receipt": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/export/test.json",
+        "sha256": "b0241cb1490b4fbf914c2fb05b7678298245506b61de0fe7dd3979a71f08e5fc",
+        "bytes": 31425
+      },
+      "executed_production_source_sha256": "79f01a35970358bd1068d9ff3d2373cdf328e4ee09e07f08772fc5d01a05f850",
+      "included_in_joint_regression_nonce": "20261101T152942Z-bd4ed9"
+    },
+    {
+      "id": "PG17-U-STDERR-ROOT-007",
+      "root": "TestNormalPgStderrRetireNeedsRealExitAndEmptyEOF",
+      "classification": "UNIT_WITH_ACTUAL_HOST_KERNEL_PRIMITIVES_NOT_GUEST_SOURCE",
+      "authoritative_run_nonce": "20261101T151727Z-90dde5",
+      "result": "PASS",
+      "receipt": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/export/test.json",
+        "sha256": "b0241cb1490b4fbf914c2fb05b7678298245506b61de0fe7dd3979a71f08e5fc",
+        "bytes": 31425
+      },
+      "executed_production_source_sha256": "79f01a35970358bd1068d9ff3d2373cdf328e4ee09e07f08772fc5d01a05f850",
+      "included_in_joint_regression_nonce": "20261101T152942Z-bd4ed9"
+    },
+    {
+      "id": "PG17-U-STDERR-ROOT-008",
+      "root": "TestNormalPgStderrStageWitnessRejectsMutationOrReplacement",
+      "classification": "UNIT_WITH_ACTUAL_HOST_KERNEL_PRIMITIVES_NOT_GUEST_SOURCE",
+      "authoritative_run_nonce": "20261101T151727Z-90dde5",
+      "result": "PASS",
+      "receipt": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/export/test.json",
+        "sha256": "b0241cb1490b4fbf914c2fb05b7678298245506b61de0fe7dd3979a71f08e5fc",
+        "bytes": 31425
+      },
+      "executed_production_source_sha256": "79f01a35970358bd1068d9ff3d2373cdf328e4ee09e07f08772fc5d01a05f850",
+      "included_in_joint_regression_nonce": "20261101T152942Z-bd4ed9"
+    }
+  ],
+  "S": [],
+  "BUILD": [],
+  "SMOKE": [],
+  "git_context": {
+    "repository": "/data/neon-build/src/autoscaling",
+    "committed_head_at_catalog_preparation": "dd23075dbef5aada37744d5d6c0423de54e1ff59"
+  },
+  "exact_owned6_sha256": {
+    "pkg/dsga/resourceguard/normal_pg_stderr_source_linux.go": "79f01a35970358bd1068d9ff3d2373cdf328e4ee09e07f08772fc5d01a05f850",
+    "pkg/dsga/resourceguard/normal_pg_stderr_source_linux_test.go": "634bb51952d05d92e891d0e7e83b6e4b47d9a0b6cae680bd300c068104c56d96",
+    "pkg/dsga/resourceguard/array_registry_linux.go": "6d03ac32196630c8eea7c425821b7c99900a2265267e605d72956cfd1023e3b0",
+    "pkg/dsga/resourceguard/array_service_preexec_linux.go": "e4eeee9cb5f093abe85344e6d77d4e32d088554912ed19aeedf37ff6d3c025e9",
+    "pkg/dsga/resourceguard/array_service_preexec_begin_linux.go": "a197f20de271f8df14ba97b2b5a64d5cd1582f4458c23380c8a7232e13b26c94",
+    "pkg/dsga/resourceguard/array_service_socket_linux.go": "9a828e25ff140efd0b0610bf210992c03afd3341817becb33771455f499174ce"
+  },
+  "final_eight_U_graph": {
+    "evidence": {
+      "directory": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5",
+      "result": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/result.json",
+        "sha256": "31f8296ca9351b32bc11704b9832a6621c2424bef2aa67c0eedcf95096dbd341",
+        "bytes": 725
+      },
+      "source_lock": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/source-lock.json",
+        "sha256": "7e200bec6199ae5af2178b497b2d9c5ea80c5a21befa46122d7c9d801ad25e93",
+        "bytes": 207941
+      },
+      "metadata_json": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/metadata.json",
+        "sha256": "47e2881ca2b7aa042853be0be3aa3dd25a744efd5a648e96d1f30079ecd137b0",
+        "bytes": 266
+      },
+      "budget-spec_json": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/budget-spec.json",
+        "sha256": "f14565ff474de0b436e2eb617705d95f7197c1a4b0dda683128a1ce2ed8a9f94",
+        "bytes": 392
+      },
+      "worker_py": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/worker.py",
+        "sha256": "af0d6ed7c5d41fa8c8822e518677d96e51c1bebca0efa32d7b1d0d60617d7d08",
+        "bytes": 1769
+      },
+      "Dockerfile": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/Dockerfile",
+        "sha256": "d84e1dec609dba954226051dc9015fae5c33cc15b243362425e96631c56f8fc7",
+        "bytes": 1995
+      },
+      "export_resource_receipts": {
+        "cpu.stat": {
+          "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/export/cpu.stat",
+          "sha256": "f847ad64a1e88c5b27d7d6f94058619868f8e83416530426bc370fc5e322a1bc",
+          "bytes": 164
+        },
+        "memory.peak": {
+          "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/export/memory.peak",
+          "sha256": "9b132fe2edd0e86ade32b4a8ff5018577c14f34f515e726c6e4d8a8b17f0294e",
+          "bytes": 10
+        },
+        "io.stat": {
+          "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/export/io.stat",
+          "sha256": "fe76557491df8ec1a85855de2996c670a9f9ac05315be5b193c13e205b738194",
+          "bytes": 77
+        },
+        "memory.max": {
+          "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/export/memory.max",
+          "sha256": "e299e7e064963e64b8955bf05efe3e8151603ac8410068ae44c09285dd88707b",
+          "bytes": 11
+        },
+        "cpu.max": {
+          "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/export/cpu.max",
+          "sha256": "309af899ee7bd98ba4868342f16baa2390cf24d9739ca56ff680875f7113b426",
+          "bytes": 14
+        }
+      },
+      "native-report_resource_receipts": {},
+      "report_resource_receipts": {},
+      "actual_cgroup_limit_values": {
+        "export/cpu.max": "300000 100000",
+        "export/memory.max": "3221225472"
+      },
+      "actual_host_worker_argv_from_budget_spec": [
+        "/usr/bin/python3",
+        "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/worker.py"
+      ]
+    },
+    "roots": 8,
+    "named_subtests": 25,
+    "race": true,
+    "native_Guest_executed": false,
+    "checks": {
+      "u_exit": 0,
+      "cli_exit": 0,
+      "builder_exit": 0,
+      "darwin_exit": 0,
+      "builder-darwin_exit": 0
+    }
+  },
+  "non_additive_joint_regression": {
+    "evidence": {
+      "directory": "/data/neon-build/validation/root-cpu-pg-stderr-integration-go-20261101T152942Z-bd4ed9",
+      "result": {
+        "path": "/data/neon-build/validation/root-cpu-pg-stderr-integration-go-20261101T152942Z-bd4ed9/result.json",
+        "sha256": "57e14d8f5c87818d39e84d0ed6a9e883714a9d4b9514525b7ef23b934225bb6d",
+        "bytes": 1186
+      },
+      "source_lock": {
+        "path": "/data/neon-build/validation/root-cpu-pg-stderr-integration-go-20261101T152942Z-bd4ed9/source-lock.json",
+        "sha256": "a139a1a64864d362cb2ef07f049d9d9a2a21a4269f1a21ef88929f964b2e6018",
+        "bytes": 231258
+      },
+      "metadata_json": {
+        "path": "/data/neon-build/validation/root-cpu-pg-stderr-integration-go-20261101T152942Z-bd4ed9/metadata.json",
+        "sha256": "efe3ebbc1ff24c36d9267e3def36cd0b5a1d2a46ba63cc5f97ae515f9d056fb5",
+        "bytes": 318
+      },
+      "budget-spec_json": {
+        "path": "/data/neon-build/validation/root-cpu-pg-stderr-integration-go-20261101T152942Z-bd4ed9/budget-spec.json",
+        "sha256": "7950b5e21564e8194f7ab6695d9a5fcc7f73454306847a071e01cc47a0d11605",
+        "bytes": 413
+      },
+      "worker_py": {
+        "path": "/data/neon-build/validation/root-cpu-pg-stderr-integration-go-20261101T152942Z-bd4ed9/worker.py",
+        "sha256": "349a7fe19387f0c4a28bf409e9930a8520c1858e2313a141b977adf3148cb674",
+        "bytes": 1870
+      },
+      "Dockerfile": {
+        "path": "/data/neon-build/validation/root-cpu-pg-stderr-integration-go-20261101T152942Z-bd4ed9/Dockerfile",
+        "sha256": "36047351b994e8ed5baa289796ee8fc9c42e15a9edbb430a30e3b18de8d4f694",
+        "bytes": 2262
+      },
+      "export_resource_receipts": {
+        "memory.peak": {
+          "path": "/data/neon-build/validation/root-cpu-pg-stderr-integration-go-20261101T152942Z-bd4ed9/export/memory.peak",
+          "sha256": "dcdc4f8c3d20f0f4eaf7a18cdd7ca1cdbdcf93fb94e90b3461febc5f86684b96",
+          "bytes": 10
+        },
+        "memory.max": {
+          "path": "/data/neon-build/validation/root-cpu-pg-stderr-integration-go-20261101T152942Z-bd4ed9/export/memory.max",
+          "sha256": "e299e7e064963e64b8955bf05efe3e8151603ac8410068ae44c09285dd88707b",
+          "bytes": 11
+        },
+        "cpu.max": {
+          "path": "/data/neon-build/validation/root-cpu-pg-stderr-integration-go-20261101T152942Z-bd4ed9/export/cpu.max",
+          "sha256": "309af899ee7bd98ba4868342f16baa2390cf24d9739ca56ff680875f7113b426",
+          "bytes": 14
+        }
+      },
+      "native-report_resource_receipts": {},
+      "report_resource_receipts": {},
+      "actual_cgroup_limit_values": {
+        "export/cpu.max": "300000 100000",
+        "export/memory.max": "3221225472"
+      },
+      "actual_host_worker_argv_from_budget_spec": [
+        "/usr/bin/python3",
+        "/data/neon-build/validation/root-cpu-pg-stderr-integration-go-20261101T152942Z-bd4ed9/worker.py"
+      ]
+    },
+    "original_base": "c0ed935b15a958e24d342b512bf3082a6abefeef",
+    "exact_six_overlay_sha256": {
+      "pkg/dsga/resourceguard/normal_pg_stderr_source_linux.go": "79f01a35970358bd1068d9ff3d2373cdf328e4ee09e07f08772fc5d01a05f850",
+      "pkg/dsga/resourceguard/normal_pg_stderr_source_linux_test.go": "634bb51952d05d92e891d0e7e83b6e4b47d9a0b6cae680bd300c068104c56d96",
+      "pkg/dsga/resourceguard/array_registry_linux.go": "6d03ac32196630c8eea7c425821b7c99900a2265267e605d72956cfd1023e3b0",
+      "pkg/dsga/resourceguard/array_service_preexec_linux.go": "e4eeee9cb5f093abe85344e6d77d4e32d088554912ed19aeedf37ff6d3c025e9",
+      "pkg/dsga/resourceguard/array_service_preexec_begin_linux.go": "a197f20de271f8df14ba97b2b5a64d5cd1582f4458c23380c8a7232e13b26c94",
+      "pkg/dsga/resourceguard/array_service_socket_linux.go": "9a828e25ff140efd0b0610bf210992c03afd3341817becb33771455f499174ce"
+    },
+    "roots": 16,
+    "named_subtests": 84,
+    "race": true,
+    "roots_already_in_U_above": [
+      "TestNormalPgStderrEndpointsOriginalPipeOnly",
+      "TestNormalPgStderrExactFrame",
+      "TestNormalPgStderrFinalCloseRaceFailClosed",
+      "TestNormalPgStderrNewProtocolCannotLoseAuthority",
+      "TestNormalPgStderrNoSyntheticFinalSource",
+      "TestNormalPgStderrReceiveExactAncillary",
+      "TestNormalPgStderrRetireNeedsRealExitAndEmptyEOF",
+      "TestNormalPgStderrStageWitnessRejectsMutationOrReplacement"
+    ],
+    "other_direct_monitor_framing_regression_roots": [
+      "TestNormalStockUdevMonitorCPUSingleLFRequiresSameOriginalProjection",
+      "TestNormalStockUdevMonitorDuplicateAndLedgerBound",
+      "TestNormalStockUdevMonitorFinitePropertyBounds",
+      "TestNormalStockUdevMonitorKernelOriginalCredentials",
+      "TestNormalStockUdevMonitorOriginalSequenceMatchAndCopy",
+      "TestNormalStockUdevMonitorProcessedOriginalFraming",
+      "TestOrdinaryUdevV2KernelCPUOriginalSingleLFIsNarrow",
+      "TestOrdinaryUdevV2KernelOnlyPIDZeroCredAndGroupOne"
+    ],
+    "never_add_to_eight_as_twenty_four": true,
+    "original_passed_root_list": [
+      "TestNormalPgStderrEndpointsOriginalPipeOnly",
+      "TestNormalPgStderrExactFrame",
+      "TestNormalPgStderrFinalCloseRaceFailClosed",
+      "TestNormalPgStderrNewProtocolCannotLoseAuthority",
+      "TestNormalPgStderrNoSyntheticFinalSource",
+      "TestNormalPgStderrReceiveExactAncillary",
+      "TestNormalPgStderrRetireNeedsRealExitAndEmptyEOF",
+      "TestNormalPgStderrStageWitnessRejectsMutationOrReplacement",
+      "TestNormalStockUdevMonitorCPUSingleLFRequiresSameOriginalProjection",
+      "TestNormalStockUdevMonitorDuplicateAndLedgerBound",
+      "TestNormalStockUdevMonitorFinitePropertyBounds",
+      "TestNormalStockUdevMonitorKernelOriginalCredentials",
+      "TestNormalStockUdevMonitorOriginalSequenceMatchAndCopy",
+      "TestNormalStockUdevMonitorProcessedOriginalFraming",
+      "TestOrdinaryUdevV2KernelCPUOriginalSingleLFIsNarrow",
+      "TestOrdinaryUdevV2KernelOnlyPIDZeroCredAndGroupOne"
+    ],
+    "original_test_json": {
+      "path": "/data/neon-build/validation/root-cpu-pg-stderr-integration-go-20261101T152942Z-bd4ed9/export/test.json",
+      "sha256": "123543481fce9db4485787a485747953cc39196ef4dac471e57f1da6920e4469",
+      "bytes": 98937
+    },
+    "native_Guest_executed": false
+  },
+  "failure_and_review_history": [
+    {
+      "phase": "first-five-U-has-review-gaps",
+      "original_result": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/first-five-U-has-review-gaps/result.json",
+        "sha256": "92b246237aed6e40e61b020d48530b95a602dab33b7df9f21da180a9763f08e3",
+        "bytes": 553
+      },
+      "nonzero_exit_fields": {},
+      "original_status_preserved": null,
+      "reclassified_as_pass": false,
+      "historical_only_not_additive": true,
+      "source-lock_json": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/first-five-U-has-review-gaps/source-lock.json",
+        "sha256": "187225aa348ba995866becbab7eebd46487ea85ae844e693bd3a036a5e92353c",
+        "bytes": 207769
+      },
+      "metadata_json": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/first-five-U-has-review-gaps/metadata.json",
+        "sha256": "58f8bcb77f2ba7ea83796f507db4e222d361ccb0bf02f06bdb3641dc417a6156",
+        "bytes": 266
+      },
+      "worker_py": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/first-five-U-has-review-gaps/worker.py",
+        "sha256": "af0d6ed7c5d41fa8c8822e518677d96e51c1bebca0efa32d7b1d0d60617d7d08",
+        "bytes": 1769
+      },
+      "Dockerfile": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/first-five-U-has-review-gaps/Dockerfile",
+        "sha256": "6f72afbfc6a90b37dbff09c545d5bea671da5757bffe95b1d180e005fcd44635",
+        "bytes": 1844
+      },
+      "original_data_result": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T145512Z-e6553a/result.json",
+        "sha256": "92b246237aed6e40e61b020d48530b95a602dab33b7df9f21da180a9763f08e3",
+        "bytes": 553
+      },
+      "original_nonce": "20261101T145512Z-e6553a"
+    },
+    {
+      "phase": "authority-and-close-race-fix",
+      "original_result": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/authority-and-close-race-fix/result.json",
+        "sha256": "b13a5401eecc41a40cf2834b004c91ed2098fb35e57453eb7abbae23ea95cdc7",
+        "bytes": 659
+      },
+      "nonzero_exit_fields": {},
+      "original_status_preserved": null,
+      "reclassified_as_pass": false,
+      "historical_only_not_additive": true,
+      "source-lock_json": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/authority-and-close-race-fix/source-lock.json",
+        "sha256": "d51a3fb00be15581d0ba0226ac3a4bd5a6bceb93dfd4d0fd9ad0114a8e83b0c0",
+        "bytes": 207875
+      },
+      "metadata_json": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/authority-and-close-race-fix/metadata.json",
+        "sha256": "8af1846749b454c89d3e06799daf6df499753ec0c33027fd83b16ad8e08c7e0c",
+        "bytes": 266
+      },
+      "worker_py": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/authority-and-close-race-fix/worker.py",
+        "sha256": "af0d6ed7c5d41fa8c8822e518677d96e51c1bebca0efa32d7b1d0d60617d7d08",
+        "bytes": 1769
+      },
+      "Dockerfile": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/authority-and-close-race-fix/Dockerfile",
+        "sha256": "ec7382e8df3adba0aa012d7fd92985036701010e9829a1aa57e6faa8eb5e8efb",
+        "bytes": 1936
+      },
+      "original_data_result": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T145946Z-358f73/result.json",
+        "sha256": "b13a5401eecc41a40cf2834b004c91ed2098fb35e57453eb7abbae23ea95cdc7",
+        "bytes": 659
+      },
+      "original_nonce": "20261101T145946Z-358f73"
+    },
+    {
+      "phase": "bound-WAL-witness",
+      "original_result": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/bound-WAL-witness/result.json",
+        "sha256": "9a54ad4db2c9e2dbf712b67bf27eda3b99961c5b36cf20955b828b843d30d851",
+        "bytes": 725
+      },
+      "nonzero_exit_fields": {},
+      "original_status_preserved": null,
+      "reclassified_as_pass": false,
+      "historical_only_not_additive": true,
+      "source-lock_json": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/bound-WAL-witness/source-lock.json",
+        "sha256": "6a9a04171ec19bc5171215021fd7ba44117fe36f5758cbb01f169945135f59bb",
+        "bytes": 207941
+      },
+      "metadata_json": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/bound-WAL-witness/metadata.json",
+        "sha256": "986f8541607ef1955a0b3899f5d5755171eecc6928b1c9613d5c1a557a650d95",
+        "bytes": 266
+      },
+      "worker_py": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/bound-WAL-witness/worker.py",
+        "sha256": "af0d6ed7c5d41fa8c8822e518677d96e51c1bebca0efa32d7b1d0d60617d7d08",
+        "bytes": 1769
+      },
+      "Dockerfile": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/bound-WAL-witness/Dockerfile",
+        "sha256": "d84e1dec609dba954226051dc9015fae5c33cc15b243362425e96631c56f8fc7",
+        "bytes": 1995
+      },
+      "original_data_result": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T150715Z-f6e1eb/result.json",
+        "sha256": "9a54ad4db2c9e2dbf712b67bf27eda3b99961c5b36cf20955b828b843d30d851",
+        "bytes": 725
+      },
+      "original_nonce": "20261101T150715Z-f6e1eb"
+    },
+    {
+      "phase": "repeated-old-graph-no-new-claim",
+      "original_result": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/repeated-old-graph-no-new-claim/result.json",
+        "sha256": "3acd8658673339964feec0cd0a4f1e18036d90c3cf9f556cd414f10fd3ffc6d5",
+        "bytes": 725
+      },
+      "nonzero_exit_fields": {},
+      "original_status_preserved": null,
+      "reclassified_as_pass": false,
+      "historical_only_not_additive": true,
+      "source-lock_json": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/repeated-old-graph-no-new-claim/source-lock.json",
+        "sha256": "6a9a04171ec19bc5171215021fd7ba44117fe36f5758cbb01f169945135f59bb",
+        "bytes": 207941
+      },
+      "metadata_json": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/repeated-old-graph-no-new-claim/metadata.json",
+        "sha256": "a133983513d25ff0190a9943c6a033c2ae3e4acc4ab894cc88c8a99f4a8475f0",
+        "bytes": 266
+      },
+      "worker_py": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/repeated-old-graph-no-new-claim/worker.py",
+        "sha256": "af0d6ed7c5d41fa8c8822e518677d96e51c1bebca0efa32d7b1d0d60617d7d08",
+        "bytes": 1769
+      },
+      "Dockerfile": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/repeated-old-graph-no-new-claim/Dockerfile",
+        "sha256": "d84e1dec609dba954226051dc9015fae5c33cc15b243362425e96631c56f8fc7",
+        "bytes": 1995
+      },
+      "original_data_result": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151257Z-c3c1b8/result.json",
+        "sha256": "3acd8658673339964feec0cd0a4f1e18036d90c3cf9f556cd414f10fd3ffc6d5",
+        "bytes": 725
+      },
+      "original_nonce": "20261101T151257Z-c3c1b8"
+    },
+    {
+      "phase": "linux-gofmt",
+      "original_result": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/linux-gofmt/result.json",
+        "sha256": "65fcd7d82ee60ef1abcd4760058b0f6094afe74fb69df25041dcb1610c960336",
+        "bytes": 725
+      },
+      "nonzero_exit_fields": {},
+      "original_status_preserved": null,
+      "reclassified_as_pass": false,
+      "historical_only_not_additive": true,
+      "source-lock_json": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/linux-gofmt/source-lock.json",
+        "sha256": "a97d6d2f00c066e0e66637b1a11c933e9ac889f12de4e9d9c297181aadf8ae88",
+        "bytes": 207941
+      },
+      "metadata_json": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/linux-gofmt/metadata.json",
+        "sha256": "12fc7d6adc58272549e71c2fb2abcf46db484d2d80adc34c79de3290bad3d313",
+        "bytes": 266
+      },
+      "worker_py": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/linux-gofmt/worker.py",
+        "sha256": "af0d6ed7c5d41fa8c8822e518677d96e51c1bebca0efa32d7b1d0d60617d7d08",
+        "bytes": 1769
+      },
+      "Dockerfile": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/linux-gofmt/Dockerfile",
+        "sha256": "d84e1dec609dba954226051dc9015fae5c33cc15b243362425e96631c56f8fc7",
+        "bytes": 1995
+      },
+      "original_data_result": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151409Z-69eaec/result.json",
+        "sha256": "65fcd7d82ee60ef1abcd4760058b0f6094afe74fb69df25041dcb1610c960336",
+        "bytes": 725
+      },
+      "original_nonce": "20261101T151409Z-69eaec"
+    },
+    {
+      "phase": "final-receive-error-boundary",
+      "original_result": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/final-receive-error-boundary/result.json",
+        "sha256": "31f8296ca9351b32bc11704b9832a6621c2424bef2aa67c0eedcf95096dbd341",
+        "bytes": 725
+      },
+      "nonzero_exit_fields": {},
+      "original_status_preserved": null,
+      "reclassified_as_pass": false,
+      "historical_only_not_additive": true,
+      "source-lock_json": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/final-receive-error-boundary/source-lock.json",
+        "sha256": "7e200bec6199ae5af2178b497b2d9c5ea80c5a21befa46122d7c9d801ad25e93",
+        "bytes": 207941
+      },
+      "metadata_json": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/final-receive-error-boundary/metadata.json",
+        "sha256": "47e2881ca2b7aa042853be0be3aa3dd25a744efd5a648e96d1f30079ecd137b0",
+        "bytes": 266
+      },
+      "worker_py": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/final-receive-error-boundary/worker.py",
+        "sha256": "af0d6ed7c5d41fa8c8822e518677d96e51c1bebca0efa32d7b1d0d60617d7d08",
+        "bytes": 1769
+      },
+      "Dockerfile": {
+        "path": "/data/neon-build/src/autoscaling/docs/validation/pg17-stderr-root-original-registration-20261101/phases/final-receive-error-boundary/Dockerfile",
+        "sha256": "d84e1dec609dba954226051dc9015fae5c33cc15b243362425e96631c56f8fc7",
+        "bytes": 1995
+      },
+      "original_data_result": {
+        "path": "/data/neon-build/validation/normal-pg-stderr-source-go-20261101T151727Z-90dde5/result.json",
+        "sha256": "31f8296ca9351b32bc11704b9832a6621c2424bef2aa67c0eedcf95096dbd341",
+        "bytes": 725
+      },
+      "original_nonce": "20261101T151727Z-90dde5"
+    }
+  ],
+  "scope_limits": [
+    "e6553a旧五U通过不覆盖后独审发现的新1缺admission降级/Final-close竞逐；只按其原源码解释",
+    "四个编译退出与U根数分账，不能冒单服务/真实Guest Source",
+    "S尚无真实同g Compute/Root/PG登记-Begin-NativeFinal链；S列表为空",
+    "90的8/25已包含于bd4的16/84；不改原基表counts、不重跑业务测试"
+  ],
+  "target_backend_versions": [
+    17
+  ]
+}
