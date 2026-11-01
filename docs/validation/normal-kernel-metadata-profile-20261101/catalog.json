@@ -1,0 +1,48 @@
+{
+  "scope": "EXPLICIT_NEW_GUEST_KERNEL_CONTROL_METADATA_CAP_COMPONENT_ONLY",
+  "unit": {
+    "new_U_roots": 0,
+    "C_compile_is_ENV_not_U": true,
+    "source_patch_dryrun_and_apply_fuzz0": true,
+    "new_symbol_default_off": true,
+    "resolved_only_new_symbol": true
+  },
+  "native": {
+    "id": "PG17-S-KERNEL-CONTROL-METADATA-001",
+    "new_roots": 1,
+    "named_subcases": 0,
+    "internal_metadata_denials": 16,
+    "ordinary_ext4_tmpfs_positive_operations": 18,
+    "cohort": "/data/neon-build/validation/normal-kernel-metadata-native-20261101T024308Z-304d4f",
+    "real_KVM": true,
+    "Guest_exit": 0,
+    "QEMU_exit": 0,
+    "C_ELF_SHA256": "fa8340ced8375bacc64237f97d387f11891c4d90fa47835969c5da0c1571b001",
+    "actual_LSM": "lockdown,capability,landlock,yama,apparmor",
+    "actual_child_UIDs_GIDs": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "actual_child_Caps5": 0,
+    "actual_child_NNP": 1,
+    "actual_child_Seccomp": 0,
+    "fresh_fixture_cgroup_empty": true,
+    "no_actual_PG_or_Root_control_objects_changed": true,
+    "Root_parent_full_caps_Seccomp0_preserved": true,
+    "sysfs_file_symlink_metadata_negative_executed": false,
+    "real_nine_services_executed": false,
+    "production_Source_composed": false
+  },
+  "kernel_tuple": {
+    "release": "6.12.26-william-normal-split-metadata-v1-c67181104ec1",
+    "artifact_sha256": "18c9fd3a38bbe5a087b98998c856898e97ee3f0bc68681b13f0287912849e1ad",
+    "config_sha256": "966e615127358d6d0dcf4f6ca884a07702e957ad07a95909cf95feca4aae5441",
+    "notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e"
+  },
+  "normal_authorized": false,
+  "all_sources_closed": false,
+  "E": 0,
+  "K8s_E": 0
+}

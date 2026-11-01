@@ -1,0 +1,8 @@
+/work/metadata-probe.c: In function 'fixture_denials':
+/work/metadata-probe.c:33:1: error: this 'if' clause does not guard... [-Werror=misleading-indentation]
+   33 | if(stat(cg,&after)||before.st_mode!=after.st_mode||before.st_uid!=after.st_uid||before.st_gid!=after.st_gid||before.st_dev!=after.st_dev||before.st_ino!=after.st_ino)die("fixture attributes changed");memset(original,0,sizeof(original));if(getxattr(cg,"user.neon-metadata",original,sizeof(original))!=6||memcmp(original,"sealed",6))die("fixture xattr changed");}
+      | ^~
+/work/metadata-probe.c:33:201: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'
+   33 | if(stat(cg,&after)||before.st_mode!=after.st_mode||before.st_uid!=after.st_uid||before.st_gid!=after.st_gid||before.st_dev!=after.st_dev||before.st_ino!=after.st_ino)die("fixture attributes changed");memset(original,0,sizeof(original));if(getxattr(cg,"user.neon-metadata",original,sizeof(original))!=6||memcmp(original,"sealed",6))die("fixture xattr changed");}
+      |                                                                                                                                                                                                         ^~~~~~
+cc1: all warnings being treated as errors

@@ -1,0 +1,22 @@
+#!/bin/busybox sh
+set -eu
+export PATH=/bin
+mountpoint -q /dev || mount -t devtmpfs devtmpfs /dev
+exec </dev/console >/dev/console 2>&1
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t securityfs -o ro,nosuid,nodev,noexec none /sys/kernel/security
+mount -t cgroup2 none /sys/fs/cgroup
+mount -t tmpfs -o size=64m,mode=1777 tmp /tmp
+mount -t tmpfs -o size=16m,mode=0755 run /run
+echo METADATA_KERNEL_RELEASE=$(uname -r)
+echo METADATA_KERNEL_NOTES=$(sha256sum /sys/kernel/notes | cut -d' ' -f1)
+echo METADATA_ACTUAL_LSM=$(cat /sys/kernel/security/lsm)
+set +e
+/neonvm/bin/metadata-probe 20261101T024308Z-304d4f 6.12.26-william-normal-split-metadata-v1-c67181104ec1
+rc=$?
+set -e
+echo CONTROL_METADATA_GUEST_EXIT=$rc
+sync
+sleep 1
+poweroff -f

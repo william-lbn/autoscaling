@@ -1,0 +1,169 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 9.43kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [check-arg 1/3] FROM docker.io/library/ubuntu:24.04@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790
+#5 resolve docker.io/library/ubuntu:24.04@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790 0.0s done
+#5 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 192.84kB done
+#4 DONE 0.0s
+
+#6 [build-deps 4/8] COPY --from=check-arg /build/arg-check-succeeded arg-check-succeeded
+#6 CACHED
+
+#7 [build_amd64 1/2] ADD profiles/normal-v1/linux-config-amd64-6.12.26 linux-6.12.26/.config
+#7 CACHED
+
+#8 [build_amd64 2/2] RUN cd linux-6.12.26 	&& make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION="-william-normal-v1-pidcap-946be0d25506" -j 8
+#8 CACHED
+
+#9 [normal_split_build 3/6] COPY linux-config-amd64-6.12.26 /tmp/kernel-default.config
+#9 CACHED
+
+#10 [build-deps 3/8] RUN apt-get update && apt-get -y install     curl     ca-certificates     build-essential     gcc-x86-64-linux-gnu     gcc-aarch64-linux-gnu     flex     bison     libelf-dev     bc     libssl-dev     python3     cpio     zstd     libncurses-dev
+#10 CACHED
+
+#11 [build-deps 6/8] RUN set -e     && rm arg-check-succeeded     && mkdir -p linux-6.12.26     && echo "downloading linux-6.12.26.tar.xz"     && curl -sfL "$(./echo-source-url.sh "6.12.26")" -o "linux-6.12.26.tar.xz"     && echo "unpacking kernel archive"     && tar --strip-components=1 -C linux-6.12.26 -xf linux-6.12.26.tar.xz
+#11 CACHED
+
+#12 [check-arg 3/3] RUN set -e     && echo "Build linux kernel 6.12.26"     && test -n "6.12.26"     && echo "force this as a requirement for build-deps" > /build/arg-check-succeeded
+#12 CACHED
+
+#13 [normal_split_build 1/6] COPY split-patches/0007-Neon-mm-Bound-hierarchical-page-counter-cancel-IRQ-gap.patch /build/patches/0007-Neon-mm-Bound-hierarchical-page-counter-cancel-IRQ-gap.patch
+#13 CACHED
+
+#14 [build-deps 8/8] RUN set -e     && cd linux-6.12.26     && for f in $(ls -1 ../patches | sort); do echo "Applying $f..."; patch -p1 < ../patches/$f; done
+#14 CACHED
+
+#15 [normal_split_build 5/6] COPY profiles/normal-split-v1/linux-config-amd64-6.12.26 /build/linux-6.12.26/.config
+#15 CACHED
+
+#16 [normal_split_build 2/6] RUN --network=none set -eu; cd /build/linux-6.12.26; patch -p1 < ../patches/0007-Neon-mm-Bound-hierarchical-page-counter-cancel-IRQ-gap.patch
+#16 CACHED
+
+#17 [check-arg 2/3] WORKDIR /build
+#17 CACHED
+
+#18 [build-deps 7/8] COPY patches patches
+#18 CACHED
+
+#19 [normal_split_build 4/6] RUN --network=none set -eu; cd /build/linux-6.12.26; make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- KCONFIG_CONFIG=/tmp/kernel-default.config olddefconfig; grep -qx '# CONFIG_NEON_DSGA_STRICT_PAGE_COUNTER is not set' /tmp/kernel-default.config
+#19 CACHED
+
+#20 [build-deps 5/8] COPY echo-source-url.sh echo-source-url.sh
+#20 CACHED
+
+#21 [normal_split_build 6/6] RUN --network=none cd /build/linux-6.12.26 && make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION="-william-normal-split-v1-e210f5e3ee94" -j 8
+#21 CACHED
+
+#22 [control_metadata_build 1/6] COPY profiles/normal-split-metadata-v1/0008-Neon-kernfs-Require-admin-for-control-metadata.patch /build/patches/0008-Neon-kernfs-Require-admin-for-control-metadata.patch
+#22 DONE 0.1s
+
+#23 [control_metadata_build 2/6] RUN --network=none set -eu; cat /sys/fs/cgroup/memory.max; cat /sys/fs/cgroup/cpu.max; test "$(cat /sys/fs/cgroup/memory.max)" = 6442450944; cd /build/linux-6.12.26; patch --dry-run --fuzz=0 -p1 < ../patches/0008-Neon-kernfs-Require-admin-for-control-metadata.patch; patch --fuzz=0 -p1 < ../patches/0008-Neon-kernfs-Require-admin-for-control-metadata.patch
+#23 0.140 6442450944
+#23 0.141 400000 100000
+#23 0.143 checking file init/Kconfig
+#23 0.143 checking file fs/kernfs/inode.c
+#23 0.144 patching file init/Kconfig
+#23 0.145 patching file fs/kernfs/inode.c
+#23 DONE 0.2s
+
+#24 [control_metadata_build 3/6] COPY metadata-baseline.config /tmp/control-default-off.config
+#24 DONE 0.1s
+
+#25 [control_metadata_build 4/6] RUN --network=none set -eu; cd /build/linux-6.12.26; make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- KCONFIG_CONFIG=/tmp/control-default-off.config olddefconfig; grep -qx "# CONFIG_NEON_DSGA_CONTROL_METADATA_GUARD is not set" /tmp/control-default-off.config
+#25 10.79 #
+#25 10.79 # configuration written to /tmp/control-default-off.config
+#25 10.79 #
+#25 DONE 10.8s
+
+#26 [control_metadata_build 5/6] COPY profiles/normal-split-metadata-v1/linux-config-amd64-6.12.26 /build/linux-6.12.26/.config
+#26 DONE 0.1s
+
+#27 [control_metadata_build 6/6] RUN --network=none cd /build/linux-6.12.26 && make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION="-william-normal-split-metadata-v1-c67181104ec1" -j 4
+#27 0.593   SYNC    include/config/auto.conf.cmd
+#27 2.783   UPD     include/config/kernel.release
+#27 2.817   UPD     include/generated/utsrelease.h
+#27 2.950   DESCEND objtool
+#27 2.983   CALL    scripts/checksyscalls.sh
+#27 3.090   INSTALL libsubcmd_headers
+#27 3.914   CC      init/version.o
+#27 4.480   CC      kernel/sys.o
+#27 5.901   AR      init/built-in.a
+#27 7.193   CC      fs/kernfs/inode.o
+#27 7.947   AR      fs/kernfs/built-in.a
+#27 9.853   AR      fs/built-in.a
+#27 10.03   CC      kernel/module/main.o
+#27 12.07   AR      kernel/module/built-in.a
+#27 13.68   AR      kernel/built-in.a
+#27 16.44   AR      built-in.a
+#27 37.57   AR      vmlinux.a
+#27 38.56   LD      vmlinux.o
+#27 160.6   OBJCOPY modules.builtin.modinfo
+#27 160.7   GEN     modules.builtin
+#27 160.7   GEN     .vmlinux.objs
+#27 160.8   MODPOST Module.symvers
+#27 164.3   UPD     include/generated/utsversion.h
+#27 164.3   CC      init/version-timestamp.o
+#27 164.4   KSYMS   .tmp_vmlinux0.kallsyms.S
+#27 164.5   AS      .tmp_vmlinux0.kallsyms.o
+#27 164.5   LD      .tmp_vmlinux1
+#27 166.3   NM      .tmp_vmlinux1.syms
+#27 166.7   KSYMS   .tmp_vmlinux1.kallsyms.S
+#27 167.5   AS      .tmp_vmlinux1.kallsyms.o
+#27 168.7   LD      .tmp_vmlinux2
+#27 170.5   NM      .tmp_vmlinux2.syms
+#27 170.9   KSYMS   .tmp_vmlinux2.kallsyms.S
+#27 171.8   AS      .tmp_vmlinux2.kallsyms.o
+#27 173.3   LD      vmlinux
+#27 197.2   NM      System.map
+#27 197.6   SORTTAB vmlinux
+#27 197.7   RELOCS  arch/x86/boot/compressed/vmlinux.relocs
+#27 198.3   RSTRIP  vmlinux
+#27 201.8   CC      arch/x86/boot/version.o
+#27 201.9   VOFFSET arch/x86/boot/compressed/../voffset.h
+#27 201.9   OBJCOPY arch/x86/boot/compressed/vmlinux.bin
+#27 201.9   CC      arch/x86/boot/compressed/kaslr.o
+#27 202.0   ZSTD22  arch/x86/boot/compressed/vmlinux.bin.zst
+#27 202.1   CC      arch/x86/boot/compressed/misc.o
+#27 212.3   MKPIGGY arch/x86/boot/compressed/piggy.S
+#27 212.3   AS      arch/x86/boot/compressed/piggy.o
+#27 212.3   LD      arch/x86/boot/compressed/vmlinux
+#27 212.4   ZOFFSET arch/x86/boot/zoffset.h
+#27 212.4   OBJCOPY arch/x86/boot/vmlinux.bin
+#27 212.4   AS      arch/x86/boot/header.o
+#27 212.4   LD      arch/x86/boot/setup.elf
+#27 212.5   OBJCOPY arch/x86/boot/setup.bin
+#27 212.5   BUILD   arch/x86/boot/bzImage
+#27 212.5 Kernel: arch/x86/boot/bzImage is ready  (#3)
+#27 DONE 213.2s
+
+#28 [control_metadata_receipt 1/1] RUN --network=none set -eu; cd /build/linux-6.12.26; mkdir /control-metadata-receipt; cp .config /control-metadata-receipt/kernel.config; cp /tmp/control-default-off.config /control-metadata-receipt/default-off.config; cp include/config/kernel.release /control-metadata-receipt/kernel.release; cp init/Kconfig /control-metadata-receipt/Kconfig.source; cp fs/kernfs/inode.c /control-metadata-receipt/kernfs-inode.source.c; objcopy --dump-section .notes=/control-metadata-receipt/kernel-notes.bin vmlinux; sha256sum /build/linux-6.12.26.tar.xz init/Kconfig fs/kernfs/inode.c mm/page_counter.c security/landlock/task.c include/uapi/linux/landlock.h /build/patches/*.patch .config arch/x86/boot/bzImage >/control-metadata-receipt/actual-source-SHA256SUMS; objdump -d --disassemble=kernfs_iop_setattr vmlinux >/control-metadata-receipt/kernfs-setattr.asm; objdump -d --disassemble=kernfs_vfs_xattr_set vmlinux >/control-metadata-receipt/kernfs-xattr.asm; objdump -d --disassemble=kernfs_vfs_user_xattr_set vmlinux >/control-metadata-receipt/kernfs-user-xattr.asm; cat /sys/fs/cgroup/memory.max >/control-metadata-receipt/memory.max; cat /sys/fs/cgroup/cpu.max >/control-metadata-receipt/cpu.max
+#28 DONE 7.4s
+
+#29 [control_metadata_export 1/2] COPY --from=control_metadata_receipt /build/linux-6.12.26/arch/x86/boot/bzImage /vmlinuz
+#29 DONE 0.1s
+
+#30 [control_metadata_export 2/2] COPY --from=control_metadata_receipt /control-metadata-receipt/ /
+#30 DONE 0.4s
+
+#31 exporting to client directory
+#31 copying files 8.75MB 0.1s done
+#31 DONE 0.1s
+
+#32 resolving provenance for metadata file
+#32 DONE 0.1s

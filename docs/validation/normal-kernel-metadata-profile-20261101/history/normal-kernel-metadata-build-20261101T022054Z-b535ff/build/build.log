@@ -1,0 +1,58 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 9.43kB done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790
+#2 DONE 2.8s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [check-arg 1/3] FROM docker.io/library/ubuntu:24.04@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790
+#4 resolve docker.io/library/ubuntu:24.04@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 516.84kB 0.0s done
+#5 DONE 0.0s
+
+#6 [check-arg 3/3] RUN set -e     && echo "Build linux kernel 6.12.26"     && test -n "6.12.26"     && echo "force this as a requirement for build-deps" > /build/arg-check-succeeded
+#6 CACHED
+
+#7 [check-arg 2/3] WORKDIR /build
+#7 CACHED
+
+#8 [build-deps 3/8] RUN apt-get update && apt-get -y install     curl     ca-certificates     build-essential     gcc-x86-64-linux-gnu     gcc-aarch64-linux-gnu     flex     bison     libelf-dev     bc     libssl-dev     python3     cpio     zstd     libncurses-dev
+#8 CACHED
+
+#9 [build-deps 4/8] COPY --from=check-arg /build/arg-check-succeeded arg-check-succeeded
+#9 CACHED
+
+#10 [build-deps 5/8] COPY echo-source-url.sh echo-source-url.sh
+#10 DONE 0.1s
+
+#11 [build-deps 6/8] RUN set -e     && rm arg-check-succeeded     && mkdir -p linux-6.12.26     && echo "downloading linux-6.12.26.tar.xz"     && curl -sfL "$(./echo-source-url.sh "6.12.26")" -o "linux-6.12.26.tar.xz"     && echo "unpacking kernel archive"     && tar --strip-components=1 -C linux-6.12.26 -xf linux-6.12.26.tar.xz
+#11 0.160 downloading linux-6.12.26.tar.xz
+#11 0.160 /bin/sh: 1: ./echo-source-url.sh: Permission denied
+#11 ERROR: process "/bin/sh -c set -e     && rm arg-check-succeeded     && mkdir -p linux-${KERNEL_VERSION}     && echo \"downloading linux-${KERNEL_VERSION}.tar.xz\"     && curl -sfL \"$(./echo-source-url.sh \"${KERNEL_VERSION}\")\" -o \"linux-${KERNEL_VERSION}.tar.xz\"     && echo \"unpacking kernel archive\"     && tar --strip-components=1 -C linux-${KERNEL_VERSION} -xf linux-${KERNEL_VERSION}.tar.xz" did not complete successfully: exit code: 3
+------
+ > [build-deps 6/8] RUN set -e     && rm arg-check-succeeded     && mkdir -p linux-6.12.26     && echo "downloading linux-6.12.26.tar.xz"     && curl -sfL "$(./echo-source-url.sh "6.12.26")" -o "linux-6.12.26.tar.xz"     && echo "unpacking kernel archive"     && tar --strip-components=1 -C linux-6.12.26 -xf linux-6.12.26.tar.xz:
+0.160 downloading linux-6.12.26.tar.xz
+0.160 /bin/sh: 1: ./echo-source-url.sh: Permission denied
+------
+Dockerfile:48
+--------------------
+  47 |     
+  48 | >>> RUN set -e \
+  49 | >>>     && rm arg-check-succeeded \
+  50 | >>>     && mkdir -p linux-${KERNEL_VERSION} \
+  51 | >>>     && echo "downloading linux-${KERNEL_VERSION}.tar.xz" \
+  52 | >>>     && curl -sfL "$(./echo-source-url.sh "${KERNEL_VERSION}")" -o "linux-${KERNEL_VERSION}.tar.xz" \
+  53 | >>>     && echo "unpacking kernel archive" \
+  54 | >>>     && tar --strip-components=1 -C linux-${KERNEL_VERSION} -xf linux-${KERNEL_VERSION}.tar.xz
+  55 |     
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c set -e     && rm arg-check-succeeded     && mkdir -p linux-${KERNEL_VERSION}     && echo \"downloading linux-${KERNEL_VERSION}.tar.xz\"     && curl -sfL \"$(./echo-source-url.sh \"${KERNEL_VERSION}\")\" -o \"linux-${KERNEL_VERSION}.tar.xz\"     && echo \"unpacking kernel archive\"     && tar --strip-components=1 -C linux-${KERNEL_VERSION} -xf linux-${KERNEL_VERSION}.tar.xz" did not complete successfully: exit code: 3

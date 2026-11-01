@@ -1,0 +1,36 @@
+{
+  "unit": "neon-kernel-metadata-build-20261101t023332z-6177e4",
+  "nonce": "20261101T023332Z-6177e4",
+  "source": {
+    "owned5": {
+      "neonvm-kernel/profiles/normal-split-metadata-v1/0008-Neon-kernfs-Require-admin-for-control-metadata.patch": "d2e7c83abb90a8c5cc7970a707f175754f89f7cdc2a26d1a3c4901c0ba3c53ab",
+      "neonvm-kernel/profiles/normal-split-metadata-v1/README.md": "85be84864b5df74cc4a4572c559fa75e328265412671bc5e9bc3af076e0f455d",
+      "neonvm-kernel/profiles/normal-split-metadata-v1/build.py": "51d086dbf22953ad3550b73f75d8646253422fe2c196def7a92a3fa2c68d064a",
+      "neonvm-kernel/profiles/normal-split-metadata-v1/config-source.json": "91ffce97e38cbc0c68546570b3f157ccf136b931821fea39fa64988dc5046a48",
+      "neonvm-kernel/profiles/normal-split-metadata-v1/linux-config-amd64-6.12.26": "e3bf02e5c1fac42a297fb84efbfec443eaee17cc23fcc0a423e2190059b179c9"
+    },
+    "readback": "/data/neon-build/validation/normal-kernel-metadata-source-readback-20261101T021057Z-83399f",
+    "source_kind": "NEW_PROFILE_ONLY_KCONFIG_DEFAULT_OFF_3_VFS_GATES",
+    "normal_authorized": false,
+    "E": 0,
+    "previous_source_lock": "source-lock-v2.json",
+    "reason": "restore exact original tar baseline input modes only in new context for cache identity; repo originals unchanged; kernel patch/config unchanged",
+    "previous_source_snapshot": "/data/neon-build/validation/normal-kernel-metadata-profile-source-20261101/source-v2"
+  },
+  "source_guard_sha256": "7f678de7fee4ee9c3fad0ca7144ea3b7f95734c76eb768593e1a7d1eec924ecc",
+  "MemAvailable_kB_before": 21883384,
+  "scope": "NEW_GUEST_PROFILE_ONLY_DEFAULT_OFF_CONTROL_METADATA_3_VFS_GATES_NO_RELEASE_LOCK_MOVE",
+  "limits": {
+    "CPUQuota": "400%",
+    "MemoryMax": "6G",
+    "RuntimeMaxSec": 1800,
+    "BuildKit_memory": "6g",
+    "BuildKit_memory_swap": "6g",
+    "BuildKit_cpu_quota": 400000,
+    "new_phase_make_jobs": 4,
+    "old_cached_baseline_jobs_unchanged": 8
+  },
+  "previous_ENV_failure": "/data/neon-build/validation/normal-kernel-metadata-build-20261101T022054Z-b535ff",
+  "previous_cancelled_for_mode_cache": "/data/neon-build/validation/normal-kernel-metadata-build-20261101T022218Z-a5db2e",
+  "previous_cancel_terminal_sha256": "fa3a7469ae43629e4822f0a030ec33301ccb0f71b0ab53e14218508ee3e5c7ec"
+}

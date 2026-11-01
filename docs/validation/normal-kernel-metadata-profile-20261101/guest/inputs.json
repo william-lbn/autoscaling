@@ -1,0 +1,26 @@
+{
+  "kernel_build": "/data/neon-build/validation/normal-kernel-metadata-build-20261101T023713Z-58603b",
+  "kernel_tuple": {
+    "release": "6.12.26-william-normal-split-metadata-v1-c67181104ec1",
+    "artifact_sha256": "18c9fd3a38bbe5a087b98998c856898e97ee3f0bc68681b13f0287912849e1ad",
+    "config_sha256": "966e615127358d6d0dcf4f6ca884a07702e957ad07a95909cf95feca4aae5441",
+    "notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e"
+  },
+  "kernel_actual_source_sha256": "88612bf9a94b8d05f8bb71e5a4d5711a2ed35afc7cd025efea346fc6032f058c",
+  "probe_cohort": "/data/neon-build/validation/normal-kernel-metadata-native-probe-20261101T023952Z-1b92f4",
+  "C_source_sha256": "1745dc0c12ddf9c17ac878c1391fe865ac009d41617b80ff75293990c5a2763d",
+  "C_ELF_sha256": "fa8340ced8375bacc64237f97d387f11891c4d90fa47835969c5da0c1571b001",
+  "rootdisk_initial_sha256": "c12c6604d3616804ed5a823af5450a290af7728487c9b8113cac236a065ec405",
+  "guest_files": {
+    "bin/busybox": "672ec674aa77a9699a4313cbf75c6be1d7f2e81c939460954eadab9d36196c6c",
+    "etc/resolv.conf": "f7d6bc67ccc2a74b165028c983169f7fb81f2f31e7738e42d2a973a60f5f1cce",
+    "init": "e09422b050376e75f354c90b408cdcace5b3588cbbcd5d7f4265c30a869ac1c9",
+    "lib/ld-musl-x86_64.so.1": "4e5f9d95fbf01b1375090a257faf28d5f00436e20a4f054d1ee80ff5750f166c",
+    "neonvm/bin/kernel-controls.test": "9188ef38fa025c743eb1b25dd726e9166e8924bae4dfe65e58272ccfa8be7876",
+    "neonvm/bin/metadata-probe": "fa8340ced8375bacc64237f97d387f11891c4d90fa47835969c5da0c1571b001"
+  },
+  "scope": "NEW_KERNEL_METADATA_CAP_GUARD_COMPONENT_ONLY_NO_PG_OR_PRODUCTION_SOURCE",
+  "all_metadata_targets": "only the probe freshly creates nonce-private empty fixture cgroup and ordinary ext4/tmpfs temp files; no PG/Root actual control objects",
+  "normal_authorized": false,
+  "E": 0
+}

@@ -1,0 +1,75 @@
+From: Neon DSGA memory validation <noreply@example.invalid>
+Subject: [PATCH] Neon kernfs: 显式Guest profile封VFS控制元数据权限
+
+默认关闭；不修改内部kernfs_setattr/__kernfs_setattr/kernfs_xattr_set。
+不修改proc_sys已有的mode/uid/gid无条件拒绝，不修改普通文件或设备元数据。
+
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1,4 +1,16 @@
+ 	  未显式选择时保持原内核行为。不能把旧构建补签为已启用。
++
++config NEON_DSGA_CONTROL_METADATA_GUARD
++	bool "Require initial-namespace admin for control metadata changes"
++	depends on X86_64 && KERNFS
++	default n
++	help
++	  仅显式Neon normal-split-metadata Guest profile启用。用户VFS修改
++	  kernfs/sysfs/cgroup的mode、uid、gid或xattr（含remove）前要求
++	  初始user namespace的CAP_SYS_ADMIN，普通UID0不能靠owner身份
++	  放宽控制DAC；内核内部创建/属性操作以及devtmpfs/ext4/tmpfs不变。
++	  这只封元数据入口，不授予normal硬降限或替代其余原始Source证明。
++	  默认关闭，旧配置、旧profile和旧发行记录保持各自原行为。
+ 
+ config MEMCG_V1
+ 	bool "Legacy cgroup v1 memory controller"
+--- a/fs/kernfs/inode.c
++++ b/fs/kernfs/inode.c
+@@ -16,6 +16,13 @@
+ #include <linux/security.h>
+ 
+ #include "kernfs-internal.h"
++
++// 新显式Guest profile才封控制文件系统的VFS元数据；内部kernel创建/属性更新不变。
++static bool kernfs_neon_control_metadata_capable(void)
++{
++	return !IS_ENABLED(CONFIG_NEON_DSGA_CONTROL_METADATA_GUARD) ||
++		capable(CAP_SYS_ADMIN);
++}
+ 
+ static const struct inode_operations kernfs_iops = {
+ 	.permission	= kernfs_iop_permission,
+@@ -114,6 +121,11 @@
+ 	struct kernfs_node *kn = inode->i_private;
+ 	struct kernfs_root *root;
+ 	int error;
++
++	/* 覆盖path/FD/symlink的mode/owner请求，先拒绝再碰持久iattr。 */
++	if ((iattr->ia_valid & (ATTR_MODE | ATTR_UID | ATTR_GID)) &&
++	    !kernfs_neon_control_metadata_capable())
++		return -EPERM;
+ 
+ 	if (!kn)
+ 		return -EINVAL;
+@@ -337,6 +349,10 @@
+ 	const char *name = xattr_full_name(handler, suffix);
+ 	struct kernfs_node *kn = inode->i_private;
+ 
++	/* value==NULL同样是remove；普通九角色不能借xattr绕权限封口。 */
++	if (!kernfs_neon_control_metadata_capable())
++		return -EPERM;
++
+ 	return kernfs_xattr_set(kn, name, value, size, flags);
+ }
+ 
+@@ -411,6 +427,10 @@
+ 	struct kernfs_node *kn = inode->i_private;
+ 	struct kernfs_iattrs *attrs;
+ 
++	/* value==NULL同样是remove；普通九角色不能借xattr绕权限封口。 */
++	if (!kernfs_neon_control_metadata_capable())
++		return -EPERM;
++
+ 	if (!(kernfs_root(kn)->flags & KERNFS_ROOT_SUPPORT_USER_XATTR))
+ 		return -EOPNOTSUPP;
+ 

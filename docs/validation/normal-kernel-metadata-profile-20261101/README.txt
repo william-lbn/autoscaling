@@ -1,0 +1,15 @@
+PG17安全normal收口：独立Guest控制元数据CAP profile（2026-11-01）
+
+仅新增profiles/normal-split-metadata-v1五文件，ID neon-linux-6.12.26-dsga-normal-split-metadata-v1；不是宿主内核更改。旧公共patches/默认config/旧profile/369/Go PhysicalKernelBuild/发行锁全部保持。默认n的新NEON_DSGA_CONTROL_METADATA_GUARD仅在新profile开启，从原369 resolved11344757逐字复制配置加该y；实编olddefconfig语义校验default-off相对旧369零差异，new只n→y一项。capable(CAP_SYS_ADMIN)检查初始user namespace，不因普通UID0拥有inode而放行。
+
+原准确源码已从369原上下文/完整CACHED阶段只读导出，完整post7 Kconfig16f90ca、inode8bb27fed；新patchc6718110在完整原文件fuzz0 dry及实际source scratch apply均零offset/fuzz成功，产出Kconfig5849135e、inodeca20a682。三窄VFS门：kernfs_iop_setattr对MODE/UID/GID拒，kernfs_vfs_xattr_set和kernfs_vfs_user_xattr_set对set/remove拒；Root初始CAP_SYS_ADMIN仍需通过原DAC等检查，不是绕过原权限。内部kernfs_setattr/__kernfs_setattr/kernfs_xattr_set不加门，避免破kernel自身节点创建/owner/mode更新。文件/目录/symlink共用同setattr；sysfs/cgroup2同kernfs。普通devtmpfs/ext4/tmpfs未改。
+
+proc_sysctl原816..830本来对MODE/UID/GID无条件EPERM，其permission用ctl_table.mode，不应改成Root可chmod。kernfs只有trusted/security/user xattr handlers，没有ACL handler；cgroup2显式支持user xattrs。kernfs/proc_sys无fileattr_set或driver ioctl；FS_IOC_SETFLAGS/FSSETXATTR经VFS无fileattr_set拒，没发现DAC元数据ioctl路。security xattr的LSM fallback不能凭“没FS handler”忽略：准确源security_inode_setxattr/removexattr默认先cap检查；commoncap要求security非capability的sb userns CAP_SYS_ADMIN，capability另需CAP_SETFCAP。实际本次LSM lockdown,capability,landlock,yama,apparmor，AppArmor/Landlock无skipcap/setsecurity hook；编译CONFIG_SELINUX/SMACK不表示active。后续生产Source仍须核实际LSM/原cmdline，不对任意新LSM/用户namespace或driver扩展签通用结论。
+
+58603b构建235.176s：旧6+split7两次make真实CACHED，新增phase j4、实际memory.max6442450944/cpu.max400000/100000、outer4CPU6G1800s；无网新RUN、保留所有缓存。release 6.12.26-william-normal-split-metadata-v1-c67181104ec1，vmlinuz18c9fd3a、resolvedconfig966e6151、notesa496a3c4完整SHA在config-source/source-proof。原tar和1..8patch/C/config/LL源实编SHA、三入口objdump均留；没有把旧369 receipt改签。
+
+新304d4f实际KVM/新kernel准确release-notes/Guest0/唯一QEMU0/OOMfalse，3.565s，1536MiB2CPU Guest/outer2GiB2CPU/noNIC。独立static C只允许内部生成nonce专用空cgroup和自己的普通ext4/tmpfs临时目录，读cgroup.procs证明空；不触PG/Root/broker或任何既有控制对象。Parent full Root cap/NNP0/Seccomp0正控和最后状态保留。Child四UID/GID0、五cap集合全0/NNP1/Seccomp0，无BPF/Landlock帮忙拒：chmod/fchmod/fchmodat/fchmodat2-empty、chown/lchown/fchown/fchownat-empty、user set/lset/fset/remove/lremove/fremove、trusted set/remove共16请求均EPERM，原mode/UID/GID/dev/ino/user-xattr保持。Root该fixture修改/xattr正控与清理通过；同child真实ext4/tmpfs chmod/fchmod/fchmodat/chown/fchown/set/fset/remove及unlink各9共18正控通过，证明未 blanket deny metadata。没有执行sysfs真实控制文件/符号链接负例，只有共享VFS源码证明；不把16内部门槛当16个S。
+
+保留失败/取消：b535ff构建器copyfile丢脚本执行mode的ENV失败；a5db2e实际旧基线因原tar0664/0775与checkout0644/0755差异没命中，按Root授权仅停止该unit并核make/compiler均无，记取消而非PASS/编译FAIL。source-v2/v3完整保留，build.py新临时context显式还原原mode，repo原文件mode不动，6177已准确所有base CACHED，但片段Kconfig行1的fuzz0 preflight失败，保持原错误。改完整canonical上下文的新patch并重跑58603b。TEST_ONLY C初次Werror歧义缩进失败、随后仅编译未执行的版本同留；未删断言或降-Werror。所有新结果是各准确新nonce/新artifact，没有合并旧失败进PASS。
+
+边界：这是控制DAC元数据封口组件，未跑PG/真实九服务/生产Gate；没有假改现ExactBuild检查。Root后继独占新PhysicalKernelBuild引用与上层版本化能力接线；PID1/Root/Compute、typed stdio、全部future writer/respawn和force/I/原Host/持续normal还需组合及真实回归。normal许可仍拒，Linux E/K8s E均0。单机是快速回滚，最终117/118/119 Helm真实E仍是最终门槛。

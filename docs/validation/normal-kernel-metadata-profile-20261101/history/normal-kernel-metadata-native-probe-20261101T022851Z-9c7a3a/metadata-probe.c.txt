@@ -1,0 +1,37 @@
+#define _GNU_SOURCE
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/xattr.h>
+#include <sys/statfs.h>
+#include <sys/prctl.h>
+#include <sys/syscall.h>
+#include <sys/utsname.h>
+#include <sys/wait.h>
+#include <linux/capability.h>
+#include <linux/magic.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+
+static char cg[256], ext[256], tmp[256];
+static unsigned denied,positive;
+static void die(const char *what){fprintf(stderr,"metadata component failure: %s errno=%d\n",what,errno);exit(91);}
+static void ok(int rc,const char *what){if(rc!=0)die(what);positive++;}
+static void no(int rc,const char *what){if(rc!=-1||errno!=EPERM)die(what);denied++;}
+static void status(const char *actor){char buf[1024];FILE*f=fopen("/proc/self/status","r");if(!f)die("status");printf("METADATA_ACTOR=%s\n",actor);while(fgets(buf,sizeof(buf),f))if(!strncmp(buf,"Uid:",4)||!strncmp(buf,"Gid:",4)||!strncmp(buf,"Cap",3)||!strncmp(buf,"NoNewPrivs:",11)||!strncmp(buf,"Seccomp:",8))fputs(buf,stdout);fclose(f);fflush(stdout);}
+static void lower(uint64_t keep){struct __user_cap_header_struct h={_LINUX_CAPABILITY_VERSION_3,0};struct __user_cap_data_struct c[2]={{0}};for(int i=0;i<=40;i++)if(!(keep&(1ULL<<i)))ok(prctl(PR_CAPBSET_DROP,i,0,0,0),"drop bounds");ok(prctl(PR_CAP_AMBIENT,PR_CAP_AMBIENT_CLEAR_ALL,0,0,0),"clear ambient");ok(prctl(PR_SET_SECUREBITS,1|2|4|8,0,0,0),"securebits");for(int i=0;i<2;i++)c[i].effective=c[i].permitted=c[i].inheritable=(uint32_t)(keep>>(32*i));ok(syscall(SYS_capset,&h,c),"capset");ok(prctl(PR_SET_NO_NEW_PRIVS,1,0,0,0),"NNP");}
+static void ordinary(const char *base){char path[320];snprintf(path,sizeof(path),"%s/tls-test",base);int fd=open(path,O_CREAT|O_EXCL|O_RDWR|O_CLOEXEC,0600);if(fd<0)die("ordinary create");ok(fchmod(fd,0644),"ordinary fchmod");ok(chmod(path,0600),"ordinary chmod");ok(fchmodat(AT_FDCWD,path,0644,0),"ordinary fchmodat");ok(chown(path,0,0),"ordinary same owner chown");ok(fchown(fd,0,0),"ordinary same owner fchown");ok(setxattr(path,"user.neon-metadata","ok",2,0),"ordinary setxattr");ok(fsetxattr(fd,"user.neon-metadata","ok2",3,0),"ordinary fsetxattr");ok(removexattr(path,"user.neon-metadata"),"ordinary remove xattr");close(fd);ok(unlink(path),"ordinary cleanup");}
+static void fixture_denials(int fd){struct stat before,after;char original[16]={0};if(stat(cg,&before))die("fixture stat");if(getxattr(cg,"user.neon-metadata",original,sizeof(original))!=6||memcmp(original,"sealed",6))die("original fixture xattr");
+no(chmod(cg,0777),"fixture chmod");no(fchmod(fd,0777),"fixture fchmod");no(fchmodat(AT_FDCWD,cg,0777,0),"fixture fchmodat");no(syscall(452,fd,"",0777,AT_EMPTY_PATH),"fixture fchmodat2 empty path");
+no(chown(cg,0,0),"fixture same owner chown");no(lchown(cg,0,0),"fixture lchown");no(fchown(fd,0,0),"fixture fchown");no(fchownat(fd,"",0,0,AT_EMPTY_PATH),"fixture fchownat empty path");
+no(setxattr(cg,"user.neon-metadata","open",4,0),"fixture user setxattr");no(lsetxattr(cg,"user.neon-metadata","open",4,0),"fixture user lsetxattr");no(fsetxattr(fd,"user.neon-metadata","open",4,0),"fixture user fsetxattr");no(removexattr(cg,"user.neon-metadata"),"fixture user removexattr");no(lremovexattr(cg,"user.neon-metadata"),"fixture user lremovexattr");no(fremovexattr(fd,"user.neon-metadata"),"fixture user fremovexattr");
+no(setxattr(cg,"trusted.neon-metadata","open",4,0),"fixture trusted setxattr");no(removexattr(cg,"trusted.neon-metadata"),"fixture trusted removexattr");
+if(stat(cg,&after)||before.st_mode!=after.st_mode||before.st_uid!=after.st_uid||before.st_gid!=after.st_gid||before.st_dev!=after.st_dev||before.st_ino!=after.st_ino){die("fixture attributes changed");}
+memset(original,0,sizeof(original));if(getxattr(cg,"user.neon-metadata",original,sizeof(original))!=6||memcmp(original,"sealed",6))die("fixture xattr changed");}
+int main(int argc,char**argv){if(argc!=3)die("fixed test nonce/release required");if(strlen(argv[1])>64||strspn(argv[1],"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-")!=strlen(argv[1]))die("invalid fixture nonce");struct utsname u;if(uname(&u)||strcmp(u.release,argv[2])||!strstr(u.release,"normal-split-metadata-v1-"))die("new exact metadata kernel release");if(getuid()!=0||geteuid()!=0||getgid()!=0||getegid()!=0)die("isolated Guest root required");status("dedicated-test-parent-root");snprintf(cg,sizeof(cg),"/sys/fs/cgroup/neon-metadata-fixture-%s",argv[1]);snprintf(ext,sizeof(ext),"/metadata-fixture-ext4-%s",argv[1]);snprintf(tmp,sizeof(tmp),"/tmp/metadata-fixture-%s",argv[1]);struct statfs fs;if(statfs("/sys/fs/cgroup",&fs)||fs.f_type!=CGROUP2_SUPER_MAGIC)die("actual cgroup2");if(statfs("/",&fs)||fs.f_type!=EXT4_SUPER_MAGIC)die("actual ext4");if(statfs("/tmp",&fs)||fs.f_type!=TMPFS_MAGIC)die("actual tmpfs");
+ok(mkdir(cg,0755),"dedicated empty fixture create");int fd=open(cg,O_RDONLY|O_DIRECTORY|O_CLOEXEC);if(fd<0)die("dedicated fixture fd");ok(chmod(cg,0700),"Root fixture chmod positive");ok(fchmod(fd,0755),"Root fixture fchmod positive");ok(chown(cg,0,0),"Root fixture chown positive");ok(setxattr(cg,"user.neon-metadata","sealed",6,0),"Root user xattr positive");ok(setxattr(cg,"trusted.neon-metadata","sealed",6,0),"Root trusted xattr positive");ok(mkdir(ext,0700),"ordinary ext fixture");ok(mkdir(tmp,0700),"ordinary tmp fixture");fflush(NULL);
+pid_t child=fork();if(child<0)die("dedicated child fork");if(child==0){lower(0);status("dedicated-test-child-uid0-cap0");fixture_denials(fd);ordinary(ext);ordinary(tmp);printf("METADATA_CHILD_RESULT={\"denied\":%u,\"ordinary_positive\":%u,\"fixture_unchanged\":true,\"normal_authorized\":false,\"E\":0}\n",denied,positive);fflush(NULL);_exit(0);}int w;ok(waitpid(child,&w,0)==child?0:-1,"dedicated child Wait");if(!WIFEXITED(w)||WEXITSTATUS(w))die("dedicated child failed");char value[16]={0};if(getxattr(cg,"user.neon-metadata",value,sizeof(value))!=6||memcmp(value,"sealed",6))die("parent final fixture sealed");ok(removexattr(cg,"user.neon-metadata"),"Root final user xattr remove");ok(removexattr(cg,"trusted.neon-metadata"),"Root final trusted xattr remove");close(fd);ok(rmdir(cg),"dedicated fixture cleanup");ok(rmdir(ext),"ext fixture cleanup");ok(rmdir(tmp),"tmp fixture cleanup");status("dedicated-test-parent-root-final");puts("METADATA_COMPONENT_PASS=1");return 0;}

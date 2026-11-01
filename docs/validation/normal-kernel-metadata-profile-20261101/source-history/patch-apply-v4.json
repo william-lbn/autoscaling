@@ -1,0 +1,35 @@
+{
+  "readback": "/data/neon-build/validation/normal-kernel-metadata-patch-base-readback-20261101T023444Z-2f3d26",
+  "receipts": [
+    {
+      "command": [
+        "patch",
+        "--dry-run",
+        "--fuzz=0",
+        "-p1",
+        "-i",
+        "/data/neon-build/src/autoscaling/neonvm-kernel/profiles/normal-split-metadata-v1/0008-Neon-kernfs-Require-admin-for-control-metadata.patch"
+      ],
+      "exit": 0,
+      "stdout": "checking file init/Kconfig\nchecking file fs/kernfs/inode.c\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "patch",
+        "--fuzz=0",
+        "-p1",
+        "-i",
+        "/data/neon-build/src/autoscaling/neonvm-kernel/profiles/normal-split-metadata-v1/0008-Neon-kernfs-Require-admin-for-control-metadata.patch"
+      ],
+      "exit": 0,
+      "stdout": "patching file init/Kconfig\npatching file fs/kernfs/inode.c\n",
+      "stderr": ""
+    }
+  ],
+  "patched_sources": {
+    "init/Kconfig": "5849135e18150ed62891f22d1e2e204d30918495fc9cf8dec9f0b6cc860c415c",
+    "fs/kernfs/inode.c": "ca20a682e0df82fd0197fdd4b6708a5fa460d39deb5dc39c7930912aea009e25"
+  },
+  "old_failed_fragment_hunk_retained": true
+}

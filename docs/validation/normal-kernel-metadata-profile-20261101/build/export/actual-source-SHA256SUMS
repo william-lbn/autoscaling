@@ -1,0 +1,16 @@
+402de222c7425893c38102ddd53d2b602c74c2eabcf6631bb0791089c05e3bca  /build/linux-6.12.26.tar.xz
+5849135e18150ed62891f22d1e2e204d30918495fc9cf8dec9f0b6cc860c415c  init/Kconfig
+ca20a682e0df82fd0197fdd4b6708a5fa460d39deb5dc39c7930912aea009e25  fs/kernfs/inode.c
+d93ef617a216fe05d88e75da40546776a1c16569c6332bf30c2e12a564f81e79  mm/page_counter.c
+2098698b4a7a0cd3b171c323e03bc079a6c8633925821aa2194e3ea04a2484a0  security/landlock/task.c
+a7fe4ba107aae27fe992e0aebbcef04f81c6fb1a8aa8aaf3482c34490f315daa  include/uapi/linux/landlock.h
+01bd47eaea82fb99eea4cb25be1063e6f2f14e3e03289be644a9bac03edfba5e  /build/patches/0001-x86-mm-Update-mapped-addresses-in-phys_-pmd-pud-_ini.patch
+b4cf630bf5cd5e64b6702cbc5aa952bc718c45d22bca5ec2fb082fede7d6d0d5  /build/patches/0002-x86-mm-Allow-error-returns-from-phys_-_init.patch
+9ee75c0a474f68303ef8c32141445b687056c228cfe31f822e983206139112d0  /build/patches/0003-x86-mm-Handle-alloc-failure-in-phys_-_init.patch
+5ac67ef964af106fc5f36bdd3c711b9241bfdfac19b5c9faa6c162b765004ae8  /build/patches/0004-x86-mm-Use-GFP_KERNEL-for-alloc_low_pages-after-boot.patch
+959e9d4701586312a3dd9e03386c849efd3f7b78038fd13dd56c5e58d6d037e4  /build/patches/0005-Neon-mm-Add-debug-logs-for-kcompactd-offlining-race.patch
+946be0d25506edae50217b976bdf3b02283e3236acefdc119648ba5172c5ab5a  /build/patches/0006-Neon-pid-Add-opt-in-early-global-PID-hard-limit.patch
+e210f5e3ee9436089be24b318aa6e10019f4014303f26e5964a994a0f717cb88  /build/patches/0007-Neon-mm-Bound-hierarchical-page-counter-cancel-IRQ-gap.patch
+c67181104ec112e893c61943e0821153d7fba051dbee62ac69bf6336c120679b  /build/patches/0008-Neon-kernfs-Require-admin-for-control-metadata.patch
+966e615127358d6d0dcf4f6ca884a07702e957ad07a95909cf95feca4aae5441  .config
+18c9fd3a38bbe5a087b98998c856898e97ee3f0bc68681b13f0287912849e1ad  arch/x86/boot/bzImage

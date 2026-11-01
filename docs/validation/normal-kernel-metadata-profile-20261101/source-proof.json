@@ -1,0 +1,43 @@
+{
+  "owned5_current": {
+    "neonvm-kernel/profiles/normal-split-metadata-v1/0008-Neon-kernfs-Require-admin-for-control-metadata.patch": "c67181104ec112e893c61943e0821153d7fba051dbee62ac69bf6336c120679b",
+    "neonvm-kernel/profiles/normal-split-metadata-v1/README.md": "8801957288d52cae34800fc155494ff087096f96fc47583e4c325ac977458059",
+    "neonvm-kernel/profiles/normal-split-metadata-v1/build.py": "51d086dbf22953ad3550b73f75d8646253422fe2c196def7a92a3fa2c68d064a",
+    "neonvm-kernel/profiles/normal-split-metadata-v1/config-source.json": "213089e9f32f467d070db88f11d3b29e6c36b53ef77b82576ab1dc2c3658f082",
+    "neonvm-kernel/profiles/normal-split-metadata-v1/linux-config-amd64-6.12.26": "e3bf02e5c1fac42a297fb84efbfec443eaee17cc23fcc0a423e2190059b179c9"
+  },
+  "owned5_at_actual_compile": {
+    "neonvm-kernel/profiles/normal-split-metadata-v1/0008-Neon-kernfs-Require-admin-for-control-metadata.patch": "c67181104ec112e893c61943e0821153d7fba051dbee62ac69bf6336c120679b",
+    "neonvm-kernel/profiles/normal-split-metadata-v1/README.md": "85be84864b5df74cc4a4572c559fa75e328265412671bc5e9bc3af076e0f455d",
+    "neonvm-kernel/profiles/normal-split-metadata-v1/build.py": "51d086dbf22953ad3550b73f75d8646253422fe2c196def7a92a3fa2c68d064a",
+    "neonvm-kernel/profiles/normal-split-metadata-v1/config-source.json": "154a5ffe9dab4c19a97056e5b61daa8b78153fbb7ef00280f0233a87aac1369f",
+    "neonvm-kernel/profiles/normal-split-metadata-v1/linux-config-amd64-6.12.26": "e3bf02e5c1fac42a297fb84efbfec443eaee17cc23fcc0a423e2190059b179c9"
+  },
+  "post_validation_document_only_delta": [
+    "neonvm-kernel/profiles/normal-split-metadata-v1/README.md",
+    "neonvm-kernel/profiles/normal-split-metadata-v1/config-source.json"
+  ],
+  "patch_config_build_py_byte_identical_to_actual_compiled_graph": true,
+  "actual_build_source_lock_sha256": "23f2bf318f07d9e91daa8502eadca88b0800e39bf4a2344b898d2e932055aada",
+  "input_count": 20,
+  "all_input_hashes_and_modes_equal": true,
+  "base_369_context_modes_restored_only_in_validation_snapshot": true,
+  "old_base_and_split7_make_actual_CACHED": true,
+  "new_phase_actual_memory_max": 6442450944,
+  "new_phase_actual_cpu_max": "400000 100000",
+  "new_phase_make_jobs": 4,
+  "old_369_or_public_patch_default_config_or_Go_table_or_release_lock_modified": false,
+  "new_kernel_tuple": {
+    "release": "6.12.26-william-normal-split-metadata-v1-c67181104ec1",
+    "artifact_sha256": "18c9fd3a38bbe5a087b98998c856898e97ee3f0bc68681b13f0287912849e1ad",
+    "config_sha256": "966e615127358d6d0dcf4f6ca884a07702e957ad07a95909cf95feca4aae5441",
+    "notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e"
+  },
+  "actual_C_ELF_SHA256": "fa8340ced8375bacc64237f97d387f11891c4d90fa47835969c5da0c1571b001",
+  "native_inputs_sha256": "5fca3dbe4728150cdc3f4cfe98179659560469f1ec1cad425a3fa60410985018",
+  "full_original_post7_Kconfig_sha256": "16f90ca98b6b9378df80b2c971dd1df45e3c199bcd30f27b5743eb197f0c8c7c",
+  "exact_6plus7_compiler_source_readback_confirmed": true,
+  "readback_no_new_patch_or_kernel_compile": true,
+  "normal_authorized": false,
+  "E": 0
+}

@@ -1,0 +1,35 @@
+{
+  "reviewer": "Root",
+  "utc": "2026-11-01T04:21:08.767007+00:00",
+  "result": "PASS_NEW_KERNEL_COMPONENT_ONLY",
+  "reviewed_source5": {
+    "neonvm-kernel/profiles/normal-split-metadata-v1/0008-Neon-kernfs-Require-admin-for-control-metadata.patch": "c67181104ec112e893c61943e0821153d7fba051dbee62ac69bf6336c120679b",
+    "neonvm-kernel/profiles/normal-split-metadata-v1/README.md": "8801957288d52cae34800fc155494ff087096f96fc47583e4c325ac977458059",
+    "neonvm-kernel/profiles/normal-split-metadata-v1/build.py": "51d086dbf22953ad3550b73f75d8646253422fe2c196def7a92a3fa2c68d064a",
+    "neonvm-kernel/profiles/normal-split-metadata-v1/config-source.json": "213089e9f32f467d070db88f11d3b29e6c36b53ef77b82576ab1dc2c3658f082",
+    "neonvm-kernel/profiles/normal-split-metadata-v1/linux-config-amd64-6.12.26": "e3bf02e5c1fac42a297fb84efbfec443eaee17cc23fcc0a423e2190059b179c9"
+  },
+  "reviewed": [
+    "full default-off patch three VFS metadata entries with initial-userns capable(CAP_SYS_ADMIN)",
+    "internal kernfs setters/ordinary ext4 tmpfs devtmpfs unmodified; no sysctl or fileattr implicit protection claim",
+    "full build.py pinned baseline literal/cache SHA+original modes; explicit newstage fuzz0 patch and default-off semantic check",
+    "actual 20 input hashes and modes, make6/make7 cache receipts and 4CPU/6GiB new make, resolved tuple",
+    "dedicated fresh empty cgroup; no actual PG or protected Root control objects mutated",
+    "raw failures, original 162 path frozen manifest and postvalidation documentary-only delta retained"
+  ],
+  "new_U": 0,
+  "new_S": 1,
+  "S_internal_denials": 16,
+  "S_ordinary_positive_operations": 18,
+  "actual_KVM_Guest_QEMU_exit0": true,
+  "outstanding": [
+    "UID0 ordinary actors may still change devtmpfs/ext4/tmpfs metadata; actual role compatibility and future writer closure required",
+    "not yet selected by production boot/Builder or source qualification",
+    "Go reference/readonly capability test separately archived",
+    "no safe normal hard decrease, Linux E or Helm K8s E"
+  ],
+  "normal_authorized": false,
+  "all_sources_closed": false,
+  "E": 0,
+  "K8s_E": 0
+}

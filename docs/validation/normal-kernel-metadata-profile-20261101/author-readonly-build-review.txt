@@ -1,0 +1,22 @@
+metadata profile 5源/162归档：作者只读复审
+
+这是原实现作者的只读复审，不代替另一个人的独立审计。freeze.json中的independent_root_review_required保持原值，由Root完成最终独审与Git提交。本复审没有改5源码、旧profile/默认config、原manifest/receipt或Git，没有重编内核/重新运行S。
+
+已逐项复核
+1. 原stage-paths.txt与NUL列表162条完全一致，两个SHA等freeze；flat JSON manifest的161个内容项与自身单独SHA共覆盖162条，全部当前字节匹配。当前5源SHA等current_owned5；实际compiled_owned5中仅README/config-source为验证后的事实说明增补，build.py/patch/config实际构建字节未变。
+2. 实际58603b/build/source-lock.json SHA23f2bf318f07d9e91daa8502eadca88b0800e39bf4a2344b898d2e932055aada；20项input_hashes逐项等原context字节，20项input_modes逐项等原inode mode。BASE_DOCKERFILE用AST仅提取字符串，SHA等descriptor 4a31010ab0fa32a0f53e85c3f61abb876b16fcf19e8ee7457b9cd51361aff550，并为实际context/Dockerfile的原字节前缀。脚本不会把当前公共Dockerfile内容误作旧缓存基线。
+3. baseline16输入的0664/0775或0644由原tar mode显式固定，仅在新context chmod；repo文件模式不变。当前descriptor与实际编译时descriptor中全部被build.py消费的baseline_inputs/基线SHA/base-resolved/source-config/patchSHA字段完全相等。验证后加入compiled_tuple/原生S等说明没有影响实际构建输入。
+4. 原build.log中6patch build_amd64 make-j8（#8）、原7patch应用（#16）、default-off olddefconfig（#19）及normal_split make-j8（#21）均为CACHED。旧6patch应用也CACHED。新0008随后独立fuzz=0 dry-run/apply、default-off与新config阶段，再make-j4；没有把旧baseline全编译冒充新phase资源上限。
+5. 实际outer unit CPUQuota400%/MemoryMax6G与BuildKit CPU400000/内存6g/swap6g固定；新RUN读memory.max=6442450944并使用-j4。新patch/config/make/receipt步骤network=none；全局host网络仅供原baseline镜像/下载依赖，不改宿主网络。proxy只按已有env变量名转交，不将值写入command.json。
+6. 当前source config去掉唯一CONFIG_NEON_DSGA_CONTROL_METADATA_GUARD=y后，精确恢复原369 resolved config SHA11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be；实际default-off semantic diff为空，新resolved与基线只该symbol n→y。新Kconfig默认n，原公共patches/默认config/369五元组保持独立；新0008仅改init/Kconfig及kernfs/inode.c三个VFS用户入口，common内核内部setter未改。
+7. 实际artifact/config/notes与build result及freeze同一四元组：release 6.12.26-william-normal-split-metadata-v1-c67181104ec1，vmlinuz18c9fd3a38bbe5a087b98998c856898e97ee3f0bc68681b13f0287912849e1ad，config966e615127358d6d0dcf4f6ca884a07702e957ad07a95909cf95feca4aae5441，notesa496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e。pipeline/build exit0，235.176306秒。
+
+脚本与历史边界
+构建器使用Python assertions做输入/语义核验，应按原记录python3正常模式执行，不能带-O关闭assert。若post-build语义断言或文件读取失败，外层pipeline必须保留异常终态，不把已有vmlinuz当认证；脚本本身未用try/finally保证每种Python异常都落result.json。这是将来执行包装的健壮性边界，不影响本次已有完整exit0原receipt和精确artifact锁。本次不为此改已冻结脚本。
+
+b535ff为copy导致可执行模式丢失的环境故障；a5db2e为原tar modes未匹配导致baseline cache miss，Root批准取消自有unit并核终态，不能写源码编译失败或PASS；6177e4为新Kconfig hunk不匹配的dry-run失败。最终输入/模式修复只在新nonce/context，旧日志/source-lock/cancel终态保留，未覆盖或prune缓存。原6+7-j8文字保留是缓存身份要求；未来若baseline不再CACHED，应先记录并分配相应有界构建，不能暗改参数假缓存命中。
+
+原S只读复核边界
+304d4f为独立无业务18c KVM、专用空cgroup与普通ext4/tmpfs对象，16次元数据请求拒绝与18项普通metadata正控、Root正控清理；它不是production Gate/真实九服务/PG/normal。18c只封kernfs mode/uid/gid和set/remove xattr用户入口；普通Root WAL/run/devtmpfs metadata、Compute userns、完整Root未来writer以及其它Source仍需独立闭合。原freeze S计数1、E0不变；本复审没有新增测试计数。
+
+结论：在准确本次输入/模式/缓存/产物及声明范围内，未见新的确定构建归档阻断；可供Root独审后统一提交。不能因此升级生产资格或移动任何旧锁。

@@ -1,0 +1,117 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 8.75kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [check-arg 1/3] FROM docker.io/library/ubuntu:24.04@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790
+#4 resolve docker.io/library/ubuntu:24.04@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 518B done
+#5 DONE 0.0s
+
+#6 [build-deps 7/8] COPY patches patches
+#6 CACHED
+
+#7 [build-deps 4/8] COPY --from=check-arg /build/arg-check-succeeded arg-check-succeeded
+#7 CACHED
+
+#8 [build-deps 5/8] COPY echo-source-url.sh echo-source-url.sh
+#8 CACHED
+
+#9 [build-deps 3/8] RUN apt-get update && apt-get -y install     curl     ca-certificates     build-essential     gcc-x86-64-linux-gnu     gcc-aarch64-linux-gnu     flex     bison     libelf-dev     bc     libssl-dev     python3     cpio     zstd     libncurses-dev
+#9 CACHED
+
+#10 [check-arg 3/3] RUN set -e     && echo "Build linux kernel 6.12.26"     && test -n "6.12.26"     && echo "force this as a requirement for build-deps" > /build/arg-check-succeeded
+#10 CACHED
+
+#11 [build-deps 6/8] RUN set -e     && rm arg-check-succeeded     && mkdir -p linux-6.12.26     && echo "downloading linux-6.12.26.tar.xz"     && curl -sfL "$(./echo-source-url.sh "6.12.26")" -o "linux-6.12.26.tar.xz"     && echo "unpacking kernel archive"     && tar --strip-components=1 -C linux-6.12.26 -xf linux-6.12.26.tar.xz
+#11 CACHED
+
+#12 [check-arg 2/3] WORKDIR /build
+#12 CACHED
+
+#13 [build-deps 8/8] RUN set -e     && cd linux-6.12.26     && for f in $(ls -1 ../patches | sort); do echo "Applying $f..."; patch -p1 < ../patches/$f; done
+#13 CACHED
+
+#14 [control_metadata_source_readback  4/22] COPY --from=build-deps /build/linux-6.12.26/security/landlock/ /security/landlock/
+#14 CACHED
+
+#15 [control_metadata_source_readback  1/22] COPY --from=build-deps /build/linux-6.12.26/fs/kernfs/ /fs/kernfs/
+#15 CACHED
+
+#16 [control_metadata_source_readback 13/22] COPY --from=build-deps /build/linux-6.12.26/include/linux/sysctl.h /include/linux/sysctl.h
+#16 CACHED
+
+#17 [control_metadata_source_readback 11/22] COPY --from=build-deps /build/linux-6.12.26/fs/ioctl.c /fs/ioctl.c
+#17 CACHED
+
+#18 [control_metadata_source_readback  5/22] COPY --from=build-deps /build/linux-6.12.26/tools/testing/selftests/landlock/ /tools/testing/selftests/landlock/
+#18 CACHED
+
+#19 [control_metadata_source_readback  8/22] COPY --from=build-deps /build/linux-6.12.26/fs/proc/base.c /fs/proc/base.c
+#19 CACHED
+
+#20 [control_metadata_source_readback 15/22] COPY --from=build-deps /build/linux-6.12.26/security/commoncap.c /security/commoncap.c
+#20 CACHED
+
+#21 [control_metadata_source_readback 10/22] COPY --from=build-deps /build/linux-6.12.26/fs/xattr.c /fs/xattr.c
+#21 CACHED
+
+#22 [control_metadata_source_readback  7/22] COPY --from=build-deps /build/linux-6.12.26/fs/proc/inode.c /fs/proc/inode.c
+#22 CACHED
+
+#23 [control_metadata_source_readback  3/22] COPY --from=build-deps /build/linux-6.12.26/kernel/cgroup/ /kernel/cgroup/
+#23 CACHED
+
+#24 [control_metadata_source_readback  6/22] COPY --from=build-deps /build/linux-6.12.26/fs/proc/proc_sysctl.c /fs/proc/proc_sysctl.c
+#24 CACHED
+
+#25 [control_metadata_source_readback  9/22] COPY --from=build-deps /build/linux-6.12.26/fs/attr.c /fs/attr.c
+#25 CACHED
+
+#26 [control_metadata_source_readback 14/22] COPY --from=build-deps /build/linux-6.12.26/include/uapi/linux/landlock.h /include/uapi/linux/landlock.h
+#26 CACHED
+
+#27 [control_metadata_source_readback 16/22] COPY --from=build-deps /build/linux-6.12.26/include/uapi/asm-generic/unistd.h /include/uapi/asm-generic/unistd.h
+#27 CACHED
+
+#28 [control_metadata_source_readback  2/22] COPY --from=build-deps /build/linux-6.12.26/fs/sysfs/ /fs/sysfs/
+#28 CACHED
+
+#29 [control_metadata_source_readback 12/22] COPY --from=build-deps /build/linux-6.12.26/include/linux/kernfs.h /include/linux/kernfs.h
+#29 CACHED
+
+#30 [control_metadata_source_readback 17/22] COPY --from=build-deps /build/linux-6.12.26/arch/x86/entry/syscalls/syscall_64.tbl /arch/x86/entry/syscalls/syscall_64.tbl
+#30 CACHED
+
+#31 [control_metadata_source_readback 18/22] COPY --from=build-deps /build/linux-6.12.26/security/security.c /security/security.c
+#31 DONE 1.1s
+
+#32 [control_metadata_source_readback 19/22] COPY --from=build-deps /build/linux-6.12.26/security/apparmor/lsm.c /security/apparmor/lsm.c
+#32 DONE 0.1s
+
+#33 [control_metadata_source_readback 20/22] COPY --from=build-deps /build/linux-6.12.26/security/landlock/setup.c /security/landlock/setup.c
+#33 DONE 0.3s
+
+#34 [control_metadata_source_readback 21/22] COPY --from=build-deps /build/linux-6.12.26/fs/proc/root.c /fs/proc/root.c
+#34 DONE 0.1s
+
+#35 [control_metadata_source_readback 22/22] COPY --from=build-deps /build/linux-6.12.26/fs/proc/internal.h /fs/proc/internal.h
+#35 DONE 0.1s
+
+#36 exporting to client directory
+#36 copying files 1.69MB 0.0s done
+#36 DONE 0.0s
+
+#37 resolving provenance for metadata file
+#37 DONE 0.0s

@@ -1,0 +1,21 @@
+{
+  "unit": "neon-kernel-metadata-source-readback-20261101t021057z-83399f",
+  "nonce": "20261101T021057Z-83399f",
+  "scope": "READ_ONLY_ORIGINAL_SOURCE_EXPORT_TARGET_NO_MAKE_NO_NEW_PATCH",
+  "original_kernel_directory": "/data/neon-build/validation/normal-split-kernel-20261030T224843Z",
+  "original_context_tar_sha256": "18e1667e3b04b7721dd773cd95dd539d2b09eb108a48cf305dd83a29b24ddbdd",
+  "original_Dockerfile_sha256": "4a31010ab0fa32a0f53e85c3f61abb876b16fcf19e8ee7457b9cd51361aff550",
+  "original_kernel_source_lock_sha256": "49a8a0ea7e342547256340e3e10731d1198bfc35d84662583597e69f32c9b791",
+  "readback_Dockerfile_sha256": "d98385772b2c497792e3b787091dde58982356e31796bf89b7b85f2a2c6c7aac",
+  "unreached_make_stages": [
+    "build_amd64",
+    "normal_split_build"
+  ],
+  "limits": {
+    "CPUQuota": "200%",
+    "MemoryMax": "2G",
+    "RuntimeMaxSec": 120
+  },
+  "preceding_readback": "/data/neon-build/validation/normal-kernel-metadata-source-readback-20261101T020540Z-d22b49",
+  "reason": "append-only source export to audit active LSM setsecurity fallback and proc sb"
+}
