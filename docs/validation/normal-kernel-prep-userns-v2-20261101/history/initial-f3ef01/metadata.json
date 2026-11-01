@@ -1,0 +1,28 @@
+{
+  "unit": "neon-kernel-prep-userns-v2-go-20261101t044252z-f3ef01",
+  "nonce": "20261101T044252Z-f3ef01",
+  "source_count": 5973,
+  "owned5": {
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_journal_linux.go": "e4a367725fc05613c63369251ec4a277beeabbd66ff22b38b564d70637072697",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_linux_test.go": "7e4f893cd7c6a469f41286a449fe73b7e617960a5c953edcbb2a725c82abf36c",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_native_test.go": "c363a20f92f37025b4c14c77c8540a221fe943010ff724ba034950a73668b136",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_policy_linux.go": "e039594f542c5a2d02d864c43ea813dbba9f19248b0ec9709f3ea32fcee2c7b4",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_source_linux.go": "cb1d6ae4ff427c73c6a495bb6d662aaab2f476af0359de934af7cfecb6bd818c"
+  },
+  "Root5": {
+    "pkg/dsga/resourceguard/physical_kernel_build.go": "e593845439c289a7243d41fe273cffc06767d49d6d21a149d827982e5148d0cd",
+    "pkg/dsga/resourceguard/physical_kernel_capabilities.go": "ef2823221600fc98f8b5ef3d01429ce65a427c03c1f6bfa318d177e26c6ffb87",
+    "pkg/dsga/resourceguard/physical_kernel_profile_linux.go": "d2e67678b904515e4c8c280da5e6ab1ea934dbf9302b6baaf7435219aa09c259",
+    "pkg/dsga/resourceguard/physical_kernel_profile_reviewed_native_test.go": "e6a246241ee0d48d5fa34edc7f62a3844903bc6c4eddc5daf5fb91457f945314",
+    "pkg/dsga/resourceguard/physical_kernel_metadata_test.go": "622dc86049f027b2ab44d883f9a77f552c0f7f80edf2b9eb2f37ab0554b228de"
+  },
+  "source_lock_sha256": "896ae5e406cd25de64963ff9963e3855b8d9d5a1fe11ad43dad283b72f56aaf0",
+  "resources": {
+    "CPUQuota": "200%",
+    "MemoryMax": "2G",
+    "RuntimeMaxSec": 900,
+    "BuildKitMemory": "2g",
+    "BuildKitCPU": 200000
+  },
+  "scope": "EXACT_BASE151_PLUS_FROZEN_ROOT5_PLUS_USERNS5_COMPONENT_ONLY_NO_INITIAL8_DISPATCH_NO_PG_NORMAL"
+}

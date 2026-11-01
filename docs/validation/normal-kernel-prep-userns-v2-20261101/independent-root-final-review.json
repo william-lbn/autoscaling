@@ -1,0 +1,52 @@
+{
+  "reviewer": "Root",
+  "utc": "2026-11-01T05:24:13.926853+00:00",
+  "result": "PASS_ORIGINAL_R1_BARRIER_COMPONENT_ONLY",
+  "reviewed_source5": {
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_journal_linux.go": "0b5ece4f74b063fef20416d926240542f70db5c33334b36280cd973759ed77bf",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_linux_test.go": "b099a30728e319970ebd7817df0535505f92d392796050776caa013d093bb8ce",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_native_test.go": "c363a20f92f37025b4c14c77c8540a221fe943010ff724ba034950a73668b136",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_policy_linux.go": "687f3516fc46dbbbdc59846bf26e33971457ec1c959930c8b112f3bffaae4c09",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_source_linux.go": "0418badb51e51c9b5b37e201e95cbb65813937c150ffda9b0f626c29946c9aa1"
+  },
+  "checks": [
+    "strict independent policy2 exact18c profile plus explicit pointer zero; legacy4 unchanged",
+    "originalR1 Root real/effective/saved/fs credentials, namespace/initial userns, actual ELF/pidfd/procfs control FD",
+    "resource directory+lock inode/mode/owner binding before any state or sysctl side effect",
+    "intent before fixed0 and immutable modules policy; no public arbitrary path/value sysctl writer",
+    "private O_EXCL actual creator FD+full rawSHA then matched readonly pin; pre-open EROFS/EACCES/EPERM/EEXIST never registers matching visible bytes",
+    "file/directory sync failures retain original objects for explicit sameRoot replay, never ordinary Observe repair",
+    "Prepare/Replay require zeroMOVABLE/noPG/nootherWAL; Observe reads historical completed facts without re-demanding PGEmpty",
+    "private complete evidence required to obtain opaque Source; rawJSON/current0 cannot recreate it",
+    "original caller-only read/source lifetime; normal and continuous qualification remain Unknown",
+    "real independent unfiltered UID1000 caps5zero NNP0 before positive and after zero ENOSPC for three paths; plainfork and Go4M positive"
+  ],
+  "actual_U": {
+    "roots": 9,
+    "subcases": 28,
+    "source_COPY": 5973,
+    "failed": 0,
+    "skipped": 0
+  },
+  "actual_native_scenarios": {
+    "fresh_VMs": 2,
+    "modes": [
+      "positive",
+      "partial-replay"
+    ],
+    "same_root_Go_component_test_two_scenarios_not_subcase_sum": true,
+    "Guest_QEMU_zero_and_KVM_verified": true,
+    "PG_started": false
+  },
+  "scope_limits": [
+    "not selected by production runtime_boot_requirements or initial8 map",
+    "R1-only opaque; no newR2 adoption/typedFS transfer, original source root not overwritten",
+    "foreign child test is a different producer/PPID case, not a complete Runner restart recovery proof",
+    "future Root/control writers and final forceI/normalAuthority not closed",
+    "actualPG normal harddecrease/LinuxE/HelmK8sE not run"
+  ],
+  "normal_authorized": false,
+  "all_sources_closed": false,
+  "E": 0,
+  "K8s_E": 0
+}

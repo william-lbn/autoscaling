@@ -1,0 +1,83 @@
+{
+  "scope": "ORIGINAL_R1_USERNS_BARRIER_V2_COMPONENT_ONLY",
+  "base": "1518377e9f099bc4ac122c7eb5565af3d81c5677",
+  "Root5_source": "/data/neon-build/validation/normal-metadata-kernel-reference-go-20261101T025755Z-1ac143",
+  "owned": {
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_journal_linux.go": "0b5ece4f74b063fef20416d926240542f70db5c33334b36280cd973759ed77bf",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_linux_test.go": "b099a30728e319970ebd7817df0535505f92d392796050776caa013d093bb8ce",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_native_test.go": "c363a20f92f37025b4c14c77c8540a221fe943010ff724ba034950a73668b136",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_policy_linux.go": "687f3516fc46dbbbdc59846bf26e33971457ec1c959930c8b112f3bffaae4c09",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_source_linux.go": "0418badb51e51c9b5b37e201e95cbb65813937c150ffda9b0f626c29946c9aa1"
+  },
+  "legacy_v1_exact_base_bytes": {
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap.go": "0b5e361fb6a87a15fd2e3d913a48643159cebe63ea6015f9951b6ba6a059cf94",
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap_linux.go": "a2daf8e3fd8b7e5bc9dc29be1c0e15a37b7bbb59a7e8179703b5495d17bf50e3",
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap_test.go": "ad7f46922c138c4665c0ea77903c88519bb9a6e623c1dc93086fa7520ee3d905",
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap_native_test.go": "9227c2566a9015341276d3cce9b849a5e9c01744eb8f915e0a39d8c971f3b4d6"
+  },
+  "go_cohort": "/data/neon-build/validation/normal-kernel-prep-userns-v2-go-20261101T045408Z-63b78f",
+  "go_source_lock_sha256": "78611c68418739b5dd3129ac0fefec44c56ba06f519a2f6f6c64aefe74b2487c",
+  "actual_COPY_count": 5973,
+  "race_U": {
+    "roots": 9,
+    "subcases": 28,
+    "fail": 0,
+    "skip": 0,
+    "seconds": 31.842098497989355
+  },
+  "native_cohort": "/data/neon-build/validation/normal-kernel-prep-userns-v2-native-20261101T050118Z-678594",
+  "S": {
+    "fresh_VM_cases": 2,
+    "both_actual_QMP_KVM": true,
+    "both_Guest_QEMU_exit0": true,
+    "modes": [
+      {
+        "mode": "positive",
+        "seconds": 6.038679352001054,
+        "before_max": "1860",
+        "after_max": "0"
+      },
+      {
+        "mode": "partial-replay",
+        "seconds": 5.9164466410002206,
+        "before_max": "1860",
+        "after_max": "0"
+      }
+    ],
+    "kernel_sha256": "18c9fd3a38bbe5a087b98998c856898e97ee3f0bc68681b13f0287912849e1ad",
+    "UID1000_caps5zero_NNP0_Seccomp0": true,
+    "pre_zero_unshare_positive": true,
+    "post_zero_unshare_clone_clone3_ENOSPC": true,
+    "plainfork_real_Wait0": true,
+    "Go_distinct_M_threads_each_VM": 4
+  },
+  "go_and_C_ELF": {
+    "go_ELF_sha256": "6c855f301da43ae116b7999b9323823bbc51e8717c7617d208010ebdce755602",
+    "C_ELF_sha256": "ec6b4f776ba83e89cf63eac146aebf66a664bd2f02b247426c9ce4e8b2267fe9"
+  },
+  "history": [
+    {
+      "cohort": "/data/neon-build/validation/normal-kernel-prep-userns-v2-go-20261101T044252Z-f3ef01",
+      "status": "PASS_PRELIMINARY_OLD_SOURCE_NOT_FINAL",
+      "seconds": 36.86835127300583,
+      "note": "后续原资源lock/真实O_EXCL FD见证收紧后，已以63b78f准确重编重跑；不合并计数为当前图的U。"
+    }
+  ],
+  "not_connected": [
+    "original initial8 WAL version mapping",
+    "R1 to R2 typed transfer/historical projection and independent R2 consumer",
+    "typed filesystem Source binding",
+    "future Root writer closure",
+    "production profile and dispatch",
+    "actual PG Birth/resize/fence lifecycle",
+    "ordinary nine real service compatibility",
+    "normal hard decrease",
+    "Helm real workers117/118/119 regression"
+  ],
+  "normal_authorized": false,
+  "all_sources_closed": false,
+  "vm_shrink_permit": false,
+  "PG_started": false,
+  "E": 0,
+  "created_utc": "2026-11-01T05:04:33.797372+00:00"
+}

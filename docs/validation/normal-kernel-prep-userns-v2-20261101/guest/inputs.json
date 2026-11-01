@@ -1,0 +1,31 @@
+{
+  "nonce": "20261101T050118Z-678594",
+  "go_cohort": "/data/neon-build/validation/normal-kernel-prep-userns-v2-go-20261101T045408Z-63b78f",
+  "go_source_lock_sha256": "78611c68418739b5dd3129ac0fefec44c56ba06f519a2f6f6c64aefe74b2487c",
+  "owned": {
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_journal_linux.go": "0b5ece4f74b063fef20416d926240542f70db5c33334b36280cd973759ed77bf",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_linux_test.go": "b099a30728e319970ebd7817df0535505f92d392796050776caa013d093bb8ce",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_native_test.go": "c363a20f92f37025b4c14c77c8540a221fe943010ff724ba034950a73668b136",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_policy_linux.go": "687f3516fc46dbbbdc59846bf26e33971457ec1c959930c8b112f3bffaae4c09",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_source_linux.go": "0418badb51e51c9b5b37e201e95cbb65813937c150ffda9b0f626c29946c9aa1"
+  },
+  "Root5": {
+    "pkg/dsga/resourceguard/physical_kernel_build.go": "e593845439c289a7243d41fe273cffc06767d49d6d21a149d827982e5148d0cd",
+    "pkg/dsga/resourceguard/physical_kernel_capabilities.go": "ef2823221600fc98f8b5ef3d01429ce65a427c03c1f6bfa318d177e26c6ffb87",
+    "pkg/dsga/resourceguard/physical_kernel_profile_linux.go": "d2e67678b904515e4c8c280da5e6ab1ea934dbf9302b6baaf7435219aa09c259",
+    "pkg/dsga/resourceguard/physical_kernel_profile_reviewed_native_test.go": "e6a246241ee0d48d5fa34edc7f62a3844903bc6c4eddc5daf5fb91457f945314",
+    "pkg/dsga/resourceguard/physical_kernel_metadata_test.go": "622dc86049f027b2ab44d883f9a77f552c0f7f80edf2b9eb2f37ab0554b228de"
+  },
+  "go_ELF_sha256": "6c855f301da43ae116b7999b9323823bbc51e8717c7617d208010ebdce755602",
+  "C_ELF_sha256": "ec6b4f776ba83e89cf63eac146aebf66a664bd2f02b247426c9ce4e8b2267fe9",
+  "C_source_sha256": "3c54ac354e08419ff9b09c05fdb1203c8d5fda21a8a9c24987d9deb33f853c32",
+  "runtime_iso_sha256": "6ad515e7cce8d9e31c4f07cb881138066cfad37648e5d4cb46c33dc87b42c427",
+  "kernel_directory": "/data/neon-build/validation/normal-kernel-metadata-build-20261101T023713Z-58603b/build/export",
+  "kernel_sha256": "18c9fd3a38bbe5a087b98998c856898e97ee3f0bc68681b13f0287912849e1ad",
+  "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+  "iso_tools_image": "sha256:cb6635e1790c7ceae132b6a75a61e85e33be1fde8dbd9c421a17a33cd2494b9d",
+  "host_meminfo_before": "MemTotal:       24621936 kB\nMemFree:          225676 kB\nMemAvailable:   21136896 kB\nBuffers:         1453892 kB\nCached:         13407748 kB\nSwapCached:         4044 kB\nActive:          3417376 kB\nInactive:       13184876 kB\nActive(anon):    1631620 kB\nInactive(anon):   163328 kB\nActive(file):    1785756 kB\nInactive(file): 13021548 kB\nUnevictable:       28876 kB\nMlocked:           27292 kB\nSwapTotal:       8388604 kB\nSwapFree:        8338720 kB\nZswap:                 0 kB\nZswapped:              0 kB\nDirty:             32208 kB\nWriteback:             0 kB\nAnonPages:       1766296 kB\nMapped:           462280 kB\nShmem:             45400 kB\nKReclaimable:    6524160 kB\nSlab:            7188728 kB\nSReclaimable:    6524160 kB\nSUnreclaim:       664568 kB\nKernelStack:       13168 kB\nPageTables:        14212 kB\nSecPageTables:        32 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:    20699572 kB\nCommitted_AS:    6638116 kB\nVmallocTotal:   34359738367 kB\nVmallocUsed:      163708 kB\nVmallocChunk:          0 kB\nPercpu:           240000 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:    260096 kB\nShmemHugePages:        0 kB\nShmemPmdMapped:        0 kB\nFileHugePages:         0 kB\nFilePmdMapped:         0 kB\nUnaccepted:            0 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\nDirectMap4k:      266076 kB\nDirectMap2M:     6025216 kB\nDirectMap1G:    20971520 kB\n",
+  "scope": "NEW_USERNS_PREP_V2_COMPONENT_ONLY_ISOLATED_NO_PG",
+  "normal_authorized": false,
+  "E": 0
+}
