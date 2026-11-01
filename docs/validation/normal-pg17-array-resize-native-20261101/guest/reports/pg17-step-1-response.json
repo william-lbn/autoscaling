@@ -1,0 +1,263 @@
+{
+  "protocol_version": 1,
+  "vm_shrink_permit": false,
+  "receipt": {
+    "key": {
+      "instance": {
+        "vm_uid": "template-vm",
+        "compute_instance_id": "template-compute",
+        "pg_boot_id": "9537754100536088515"
+      },
+      "issuer_epoch": "1",
+      "revision": "1",
+      "operation_id": {
+        "high": "0",
+        "low": "1"
+      }
+    },
+    "disposition": "accepted",
+    "has_result": true,
+    "result": {
+      "instance": {
+        "vm_uid": "template-vm",
+        "compute_instance_id": "template-compute",
+        "pg_boot_id": "9537754100536088515"
+      },
+      "issuer_floor_epoch": "1",
+      "capacity_generation": "2",
+      "low_buffers": 1024,
+      "high_buffers": 1024,
+      "maximum_buffers": 8192,
+      "admission_open": true,
+      "admission_revision": "0",
+      "startup_shared_upper_bytes": "11132928",
+      "operation": {
+        "key": {
+          "instance": {
+            "vm_uid": "template-vm",
+            "compute_instance_id": "template-compute",
+            "pg_boot_id": "9537754100536088515"
+          },
+          "issuer_epoch": "1",
+          "revision": "1",
+          "operation_id": {
+            "high": "0",
+            "low": "1"
+          }
+        },
+        "kind": "grow",
+        "phase": "committed",
+        "reason": "none",
+        "target_buffers": 1024,
+        "expected_capacity_generation": "1",
+        "context_sha256": "aea278b21a2c74991f422a01235ee582d5379519184118d575faf4e222043123",
+        "cancel_requested": false,
+        "cancel_closed": true,
+        "replayed": false
+      },
+      "arrays": [
+        {
+          "array": "descriptors",
+          "committed_upper_bytes": "65536",
+          "allocation_unknown": false,
+          "release_state": "none",
+          "release_key": null,
+          "release_capacity_generation": "0",
+          "provider": {
+            "has_result": false,
+            "status": "unknown",
+            "system_errno": 0,
+            "requested_offset": "0",
+            "requested_bytes": "0",
+            "affected_offset": "0",
+            "affected_bytes": "0",
+            "physical_release_verified": false,
+            "allocation_may_be_partial": false,
+            "release_may_be_partial": false
+          }
+        },
+        {
+          "array": "blocks",
+          "committed_upper_bytes": "8388608",
+          "allocation_unknown": false,
+          "release_state": "none",
+          "release_key": null,
+          "release_capacity_generation": "0",
+          "provider": {
+            "has_result": false,
+            "status": "unknown",
+            "system_errno": 0,
+            "requested_offset": "0",
+            "requested_bytes": "0",
+            "affected_offset": "0",
+            "affected_bytes": "0",
+            "physical_release_verified": false,
+            "allocation_may_be_partial": false,
+            "release_may_be_partial": false
+          }
+        },
+        {
+          "array": "iocv",
+          "committed_upper_bytes": "16384",
+          "allocation_unknown": false,
+          "release_state": "none",
+          "release_key": null,
+          "release_capacity_generation": "0",
+          "provider": {
+            "has_result": false,
+            "status": "unknown",
+            "system_errno": 0,
+            "requested_offset": "0",
+            "requested_bytes": "0",
+            "affected_offset": "0",
+            "affected_bytes": "0",
+            "physical_release_verified": false,
+            "allocation_may_be_partial": false,
+            "release_may_be_partial": false
+          }
+        },
+        {
+          "array": "checkpoint",
+          "committed_upper_bytes": "20480",
+          "allocation_unknown": false,
+          "release_state": "none",
+          "release_key": null,
+          "release_capacity_generation": "0",
+          "provider": {
+            "has_result": false,
+            "status": "unknown",
+            "system_errno": 0,
+            "requested_offset": "0",
+            "requested_bytes": "0",
+            "affected_offset": "0",
+            "affected_bytes": "0",
+            "physical_release_verified": false,
+            "allocation_may_be_partial": false,
+            "release_may_be_partial": false
+          }
+        }
+      ]
+    }
+  },
+  "observed": {
+    "instance": {
+      "vm_uid": "template-vm",
+      "compute_instance_id": "template-compute",
+      "pg_boot_id": "9537754100536088515"
+    },
+    "issuer_floor_epoch": "1",
+    "capacity_generation": "2",
+    "low_buffers": 1024,
+    "high_buffers": 1024,
+    "maximum_buffers": 8192,
+    "admission_open": true,
+    "admission_revision": "0",
+    "startup_shared_upper_bytes": "11132928",
+    "operation": {
+      "key": {
+        "instance": {
+          "vm_uid": "template-vm",
+          "compute_instance_id": "template-compute",
+          "pg_boot_id": "9537754100536088515"
+        },
+        "issuer_epoch": "1",
+        "revision": "1",
+        "operation_id": {
+          "high": "0",
+          "low": "1"
+        }
+      },
+      "kind": "grow",
+      "phase": "committed",
+      "reason": "none",
+      "target_buffers": 1024,
+      "expected_capacity_generation": "1",
+      "context_sha256": "aea278b21a2c74991f422a01235ee582d5379519184118d575faf4e222043123",
+      "cancel_requested": false,
+      "cancel_closed": true,
+      "replayed": false
+    },
+    "arrays": [
+      {
+        "array": "descriptors",
+        "committed_upper_bytes": "65536",
+        "allocation_unknown": false,
+        "release_state": "none",
+        "release_key": null,
+        "release_capacity_generation": "0",
+        "provider": {
+          "has_result": false,
+          "status": "unknown",
+          "system_errno": 0,
+          "requested_offset": "0",
+          "requested_bytes": "0",
+          "affected_offset": "0",
+          "affected_bytes": "0",
+          "physical_release_verified": false,
+          "allocation_may_be_partial": false,
+          "release_may_be_partial": false
+        }
+      },
+      {
+        "array": "blocks",
+        "committed_upper_bytes": "8388608",
+        "allocation_unknown": false,
+        "release_state": "none",
+        "release_key": null,
+        "release_capacity_generation": "0",
+        "provider": {
+          "has_result": false,
+          "status": "unknown",
+          "system_errno": 0,
+          "requested_offset": "0",
+          "requested_bytes": "0",
+          "affected_offset": "0",
+          "affected_bytes": "0",
+          "physical_release_verified": false,
+          "allocation_may_be_partial": false,
+          "release_may_be_partial": false
+        }
+      },
+      {
+        "array": "iocv",
+        "committed_upper_bytes": "16384",
+        "allocation_unknown": false,
+        "release_state": "none",
+        "release_key": null,
+        "release_capacity_generation": "0",
+        "provider": {
+          "has_result": false,
+          "status": "unknown",
+          "system_errno": 0,
+          "requested_offset": "0",
+          "requested_bytes": "0",
+          "affected_offset": "0",
+          "affected_bytes": "0",
+          "physical_release_verified": false,
+          "allocation_may_be_partial": false,
+          "release_may_be_partial": false
+        }
+      },
+      {
+        "array": "checkpoint",
+        "committed_upper_bytes": "20480",
+        "allocation_unknown": false,
+        "release_state": "none",
+        "release_key": null,
+        "release_capacity_generation": "0",
+        "provider": {
+          "has_result": false,
+          "status": "unknown",
+          "system_errno": 0,
+          "requested_offset": "0",
+          "requested_bytes": "0",
+          "affected_offset": "0",
+          "affected_bytes": "0",
+          "physical_release_verified": false,
+          "allocation_may_be_partial": false,
+          "release_may_be_partial": false
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "result": "PASS_REAL_PG17_COMPONENT_ONLY",
+  "reviewed_utc": "2026-11-01T00:41:44.260695+00:00",
+  "source": {
+    "pkg/dsga/resourceguard/normal_pg17_array_resize_native_test.go": "879556315db6f06d8cd9565b5758d95383e1c6d7cf3b7f6721b6fcebfd8046ba"
+  },
+  "stage101_sha256": "60eb9e454d2e8c63bcd718068039ac3fdb246765433cf84815981ce562cdc925",
+  "all_artifact_manifest_entries_verified": true,
+  "original_source_base": "f553f074f3f745689eb3145bf8cef8037b6e22ea",
+  "actual_four_transactions": [
+    {
+      "target": 1024,
+      "generation": 2,
+      "actual_response_status_shared_cost_all_match": true,
+      "four_costs": [
+        65536,
+        8388608,
+        16384,
+        20480
+      ],
+      "checksum_unchanged": true,
+      "four_live_prefixes_all_pages_owner_A": true
+    },
+    {
+      "target": 256,
+      "generation": 3,
+      "actual_response_status_shared_cost_all_match": true,
+      "four_costs": [
+        16384,
+        2097152,
+        4096,
+        8192
+      ],
+      "checksum_unchanged": true,
+      "four_live_prefixes_all_pages_owner_A": true
+    },
+    {
+      "target": 2048,
+      "generation": 4,
+      "actual_response_status_shared_cost_all_match": true,
+      "four_costs": [
+        131072,
+        16777216,
+        32768,
+        40960
+      ],
+      "checksum_unchanged": true,
+      "four_live_prefixes_all_pages_owner_A": true
+    },
+    {
+      "target": 256,
+      "generation": 5,
+      "actual_response_status_shared_cost_all_match": true,
+      "four_costs": [
+        16384,
+        2097152,
+        4096,
+        8192
+      ],
+      "checksum_unchanged": true,
+      "four_live_prefixes_all_pages_owner_A": true
+    }
+  ],
+  "actual369_KVM_Guest_QEMU_exit0": true,
+  "Go_ELF": "00cbcf4b8765d4ce3e74802df48eea1826e8b19d64f95202a0f8cd05748cdc46",
+  "new_U": 0,
+  "new_S": 1,
+  "E": 0,
+  "normal_qualified": false,
+  "limitations": [
+    "Host/issuer fixtures",
+    "direct SQL and real body-bound Root authority; no journal StartCAS or formal Rust client",
+    "plugin run closure separate from pre-main16 original Source",
+    "normal memory.max unchanged; no complete normal/VM proof"
+  ]
+}

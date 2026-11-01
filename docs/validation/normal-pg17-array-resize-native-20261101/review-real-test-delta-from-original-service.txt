@@ -1,0 +1,98 @@
+--- f553/original-service-body-renamed-for-review
++++ new-formal-Grow-Shrink-test
+@@ -95,7 +95,7 @@
+ 	}
+ 	// initdb为真实非特权System进程；不伪造PGDATA，也不提前发原生Birth。
+ 	arrayServiceNativeCommand(t, ctx, "/usr/local/bin/initdb", "-D", "/data/pgdata", "-A", "trust", "--no-locale", "--no-sync")
+-	config := []byte("listen_addresses=''\nunix_socket_directories='/data'\nport=55432\nenable_dynamic_shared_buffers=on\nshared_buffers='2MB'\nmax_shared_buffers='64MB'\nhuge_pages=off\nmax_connections=20\nlogging_collector=on\nlog_directory='log'\nlog_filename='postgres.log'\ntimezone='GMT'\nlog_timezone='GMT'\n")
++	config := []byte(fmt.Sprintf("listen_addresses=''\nunix_socket_directories='/data'\nport=55432\nshared_preload_libraries='neon'\nwal_consistency_checking='neon'\nneon.last_written_lsn_cache_size=1024\nneon.dsg_vm_uid='%s'\nneon.dsg_compute_instance_id='%s'\nenable_dynamic_shared_buffers=on\nshared_buffers='2MB'\nmax_shared_buffers='64MB'\nhuge_pages=off\nmax_connections=20\nlogging_collector=on\nlog_directory='log'\nlog_filename='postgres.log'\ntimezone='GMT'\nlog_timezone='GMT'\n", source.Config.VMUID, source.Config.ComputeInstanceID))
+ 	if e = os.WriteFile("/data/pgdata/postgresql.conf", config, 0600); e != nil {
+ 		t.Fatal(e)
+ 	}
+@@ -290,15 +290,77 @@
+ 	if e != nil || !client.ArrayAuthorityEnabled() {
+ 		t.Fatal("actual source capability", e)
+ 	}
+-	request := control.Request{ProtocolVersion: 1, Key: control.Key{Instance: control.Instance{VMUID: view.Identity.VMUID, ComputeInstanceID: view.Identity.ComputeInstanceID, PGBootID: control.Uint64(registration.PGBoot)}, IssuerEpoch: 1, Revision: 1, OperationID: control.OperationID{Low: 1}}, Kind: control.Grow, ExpectedCapacityGeneration: 1, TargetBuffers: 1024, TargetVMMemoryBytes: 1536 << 20, BudgetCommitmentID: source.BudgetCommitmentID, DeadlineUnixMillis: control.Uint64(time.Now().Add(time.Minute).UnixMilli())}
+-	authority, e := client.AuthorizeArrayRequest(ctx, request)
+-	if e != nil {
+-		t.Fatal("actual body-bound Root original authority", e)
+-	}
+-	if authority.VMShrinkPermit {
+-		t.Fatal("component issued normal/VM permit")
+-	}
+-	arrayServiceNativeSave(t, "array-service-real", map[string]any{"scope": "REAL369_PRODUCTION_FUNCTIONS_FIXED_SOURCE_SUID_NATIVE_REGISTRY_HELPER_TEST_HOST_ISSUER_NO_NORMAL", "pg_pid": cmd.Process.Pid, "actual_pg_source_sha256": o.pending.Source.BinarySHA256, "birth": o.birthRef, "released_sha256": o.releasedSHA, "registration_nonce": nonce, "registration": registration, "actual_four_files": files, "actual_original_shmem_pfns": owners, "resident_prefix_pages_before_observer_read": resident, "array_authority": authority, "normal_authorized": false, "HostSource_is_fixture": true, "journal_StartCAS_in_this_S": false, "E": 0})
++	// 使用同正式镜像的Neon管理入口；绝不装test_dsg_region或替换Provider。
++	normalPG17ArraySQL(t, ctx, "CREATE EXTENSION neon WITH SCHEMA public")
++	capabilities := normalPG17ArraySQL(t, ctx, "SELECT public.neon_dsg_capabilities()::text")
++	arrayServiceNativeSave(t, "pg17-capabilities", json.RawMessage(capabilities))
++	var baseline control.MemoryResponse
++	if e = json.Unmarshal(normalPG17ArraySQL(t, ctx, "SELECT public.neon_dsg_memory_status()::text"), &baseline); e != nil {
++		t.Fatal(e)
++	}
++	instance := baseline.Observed.Instance
++	if instance.PGBootID != control.Uint64(registration.PGBoot) || instance.VMUID != view.Identity.VMUID || instance.ComputeInstanceID != view.Identity.ComputeInstanceID || baseline.Observed.HighBuffers != 256 || baseline.Observed.CapacityGeneration != 1 {
++		t.Fatal("formal API did not bind original native boot", baseline)
++	}
++	fenceRequest := control.FenceRequest{ProtocolVersion: 1, Instance: instance, IssuerEpoch: 1}
++	var fence control.FenceResponse
++	if e = json.Unmarshal(normalPG17ArrayManagement(t, ctx, "neon_dsg_fence_issuer", fenceRequest), &fence); e != nil || fence.ValidateFor(fenceRequest, instance) != nil {
++		t.Fatal("formal issuer fence", e, fence)
++	}
++	normalPG17ArraySQL(t, ctx, "CREATE TABLE public.pg17_array_data(i integer,pad text); ALTER TABLE public.pg17_array_data ALTER pad SET STORAGE PLAIN; INSERT INTO public.pg17_array_data SELECT i,repeat(md5(i::text),100) FROM generate_series(1,2000) i")
++	checksum := string(normalPG17ArraySQL(t, ctx, "SELECT count(*),sum(i),md5(string_agg(pad,',' ORDER BY i)) FROM public.pg17_array_data"))
++	steps := make([]map[string]any, 0, 4)
++	generation := baseline.Observed.CapacityGeneration
++	previous := uint32(256)
++	for step, target := range []uint32{1024, 256, 2048, 256} {
++		kind := control.Grow
++		if target < previous {
++			kind = control.Shrink
++		}
++		request := control.Request{ProtocolVersion: 1, Key: control.Key{Instance: instance, IssuerEpoch: 1, Revision: control.Uint64(step + 1), OperationID: control.OperationID{Low: control.Uint64(step + 1)}}, Kind: kind, ExpectedCapacityGeneration: generation, TargetBuffers: target, TargetVMMemoryBytes: 1536 << 20, BudgetCommitmentID: source.BudgetCommitmentID, DeadlineUnixMillis: control.Uint64(time.Now().Add(30 * time.Second).UnixMilli())}
++		var authority *ArrayAuthorityEvidence
++		if kind == control.Grow {
++			actual, err := client.AuthorizeArrayRequest(ctx, request)
++			if err != nil {
++				t.Fatal("real signed Root array authority", err)
++			}
++			authority = &actual
++		}
++		rawResponse := normalPG17ArrayManagement(t, ctx, "neon_dsg_request_resize", request)
++		var response control.ControlResponse
++		if e = json.Unmarshal(rawResponse, &response); e != nil {
++			t.Fatal(e)
++		}
++		arrayServiceNativeSave(t, fmt.Sprintf("pg17-step-%d-response", step+1), response)
++		if e = response.ValidateResize(request, instance); e != nil {
++			t.Fatal("formal resize validation", e, string(rawResponse))
++		}
++		if response.Receipt.Result == nil || response.Receipt.Result.Operation == nil || response.Receipt.Result.Operation.Phase != control.Committed || response.Observed.HighBuffers != target || response.Observed.LowBuffers != target || response.Observed.CapacityGeneration != generation+1 || response.VMShrinkPermit {
++			t.Fatal("native operation did not actually commit", string(rawResponse))
++		}
++		probe := normalPG17ArrayPages(t, o, registration, uint64(target), uint64(previous), uint64(arrays.Inode), kind == control.Shrink)
++		if kind == control.Shrink {
++			for i, a := range response.Observed.Arrays {
++				upper := (uint64(target)*registration.Ranges[i].Element + 4095) &^ uint64(4095)
++				if a.AllocationUnknown || uint64(a.CommittedUpperBytes) != upper || a.ReleaseState != control.ReleaseVerified || !a.Provider.PhysicalReleaseVerified || a.Provider.ReleaseMayBePartial {
++					t.Fatal("one array lacks actual tail release/cost", i, a)
++				}
++			}
++		}
++		got := string(normalPG17ArraySQL(t, ctx, "SELECT count(*),sum(i),md5(string_agg(pad,',' ORDER BY i)) FROM public.pg17_array_data"))
++		if got != checksum {
++			t.Fatal("data changed after native resize", got, checksum)
++		}
++		query := control.Query{ProtocolVersion: 1, Key: request.Key}
++		var status control.ControlResponse
++		if e = json.Unmarshal(normalPG17ArrayManagement(t, ctx, "neon_dsg_resize_status", query), &status); e != nil || status.ValidateResize(request, instance) != nil || status.Receipt.Result == nil || status.Receipt.Result.CapacityGeneration != response.Receipt.Result.CapacityGeneration {
++			t.Fatal("actual post-transaction observation/history", e, status)
++		}
++		sharedCost := json.RawMessage(normalPG17ArraySQL(t, ctx, "SELECT public.neon_dsg_shared_cost()::text"))
++		steps = append(steps, map[string]any{"request": request, "root_authority": authority, "response": response, "status_after_transaction": status, "four_array_pages": probe, "shared_cost": sharedCost, "checksum": got})
++		generation, previous = response.Observed.CapacityGeneration, target
++	}
++	arrayServiceNativeSave(t, "normal-pg17-array-resize", map[string]any{"id": "PG17-S-ARRAY-RESIZE-001", "scope": "REAL369_FORMAL_NEON_SQL_ROOT_BIRTH_REGISTRY_HELPER_HOST_ISSUER_FIXTURE_NOT_NORMAL", "steps": steps, "original_pg_sha256": o.pending.Source.BinarySHA256, "birth": o.birthRef, "released_sha256": o.releasedSHA, "registration": registration, "original_four_inode_files": files, "registration_nonce": nonce, "original_startup_resident": resident, "original_startup_owner_samples": owners, "Host_Source_is_fixture": true, "issuer_is_fixture": true, "journal_StartCAS_in_this_S": false, "formal_SQL_resize_executed": true, "normal_authorized": false, "E": 0})
+ 	if e = unix.PidfdSendSignal(pmfd, unix.SIGTERM, nil, 0); e != nil {
+ 		t.Fatal(e)
+ 	}

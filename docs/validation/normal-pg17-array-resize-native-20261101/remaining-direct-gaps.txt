@@ -1,0 +1,3 @@
+1 完整原StartCAS链：pgexec.Executor.Advance在真实Store.Start成功后调用resourceguard.Client.AuthorizeArrayRequest再compute.Client.Resize；本S真实Root签验与SQL，但未执行该journal层。可独立pgexec包native driver复用prepareStore的真实typed UID/RV HTTP CAS（其它前置明确fixture），并把compute HTTP适配到实际SQL，不能在resourceguard同包反向import形成循环。
+2 正常Source插件：当前readNativeBirthOriginalSource固定pre-main PG16ELF闭包不含实际运行neon.so。新组件独立记录同image实际neon/依赖，并非最终插件manifest/配置资格。Root最终正常能力需把实际静态插件/依赖纳入独立来源，不能把unreached DSO直接塞files。
+3 本S保P/A/parent原固定cap，不写normal memory.max，不证明持续I/force/F/角色控制写者或Host安全下降。Grow/Shrink逻辑+真实四数组pop/release通过是直接功能证据，不是VM/normal许可。

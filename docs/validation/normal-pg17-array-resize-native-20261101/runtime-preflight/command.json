@@ -1,0 +1,18 @@
+[
+  "docker",
+  "run",
+  "--rm",
+  "--pull=never",
+  "--network=none",
+  "--read-only",
+  "--cap-drop=ALL",
+  "--security-opt=no-new-privileges",
+  "--cpus=1",
+  "--memory=256m",
+  "--memory-swap=256m",
+  "--entrypoint",
+  "/bin/sh",
+  "127.0.0.1:5001/neon/compute-v17@sha256:47ef74c7bee6018c1e8578486d1196bd0c9b6d84040f6ccdba97823dcd019e55",
+  "-c",
+  "/usr/local/bin/pg_config --pkglibdir --sharedir; sha256sum /usr/local/lib/neon.so /usr/local/share/extension/neon.control /usr/local/bin/psql; /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 --list /usr/local/lib/neon.so"
+]

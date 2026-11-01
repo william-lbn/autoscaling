@@ -1,0 +1,26 @@
+{
+  "command": [
+    "docker",
+    "run",
+    "--rm",
+    "--network=none",
+    "--pull=never",
+    "--cpus=1",
+    "--memory=256m",
+    "--memory-swap=256m",
+    "--entrypoint",
+    "genisoimage",
+    "-v",
+    "/data/neon-build/validation/normal-pg17-array-resize-native-20261101T003254Z-09debc:/work:rw",
+    "neon-test-only/dsga-kernel-bootstrap-iso:20261031",
+    "-quiet",
+    "-R",
+    "-J",
+    "-o",
+    "/work/runtime.iso",
+    "/work/isofiles"
+  ],
+  "exit": 0,
+  "stdout": "",
+  "stderr": ""
+}

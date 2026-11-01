@@ -1,0 +1,93 @@
+
+Dynamic section at offset 0x12caa10 contains 28 entries:
+  Tag        Type                         Name/Value
+ 0x0000000000000001 (NEEDED)             Shared library: [libpq.so.5]
+ 0x0000000000000001 (NEEDED)             Shared library: [libcurl.so.4]
+ 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+ 0x0000000000000001 (NEEDED)             Shared library: [ld-linux-x86-64.so.2]
+ 0x000000000000000c (INIT)               0x2a3000
+ 0x000000000000000d (FINI)               0xdd507c
+ 0x0000000000000019 (INIT_ARRAY)         0x11f0f68
+ 0x000000000000001b (INIT_ARRAYSZ)       16 (bytes)
+ 0x000000000000001a (FINI_ARRAY)         0x11f0f78
+ 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)
+ 0x000000006ffffef5 (GNU_HASH)           0x298
+ 0x0000000000000005 (STRTAB)             0x5f248
+ 0x0000000000000006 (SYMTAB)             0x15cb8
+ 0x000000000000000a (STRSZ)              1153193 (bytes)
+ 0x000000000000000b (SYMENT)             24 (bytes)
+ 0x0000000000000003 (PLTGOT)             0x12d3fe8
+ 0x0000000000000002 (PLTRELSZ)           7848 (bytes)
+ 0x0000000000000014 (PLTREL)             RELA
+ 0x0000000000000017 (JMPREL)             0x2a0998
+ 0x0000000000000007 (RELA)               0x17eeb0
+ 0x0000000000000008 (RELASZ)             1186536 (bytes)
+ 0x0000000000000009 (RELAENT)            24 (bytes)
+ 0x000000006ffffffe (VERNEED)            0x17ecc0
+ 0x000000006fffffff (VERNEEDNUM)         4
+ 0x000000006ffffff0 (VERSYM)             0x178af2
+ 0x000000006ffffff9 (RELACOUNT)          43188
+ 0x0000000000000000 (NULL)               0x0
+00000000002f0ce0 T neon_dsg_admission_lease
+00000000002f0d00 T neon_dsg_admission_rearm_status
+00000000002f0cc0 T neon_dsg_admission_status
+00000000002f0c60 T neon_dsg_cancel_resize
+00000000002f0760 T neon_dsg_capabilities
+00000000002f0990 T neon_dsg_connection_state
+00000000002f0a90 T neon_dsg_dsm_state
+00000000002f0c80 T neon_dsg_fence_issuer
+00000000002f0bb0 T neon_dsg_memory_status
+00000000002f09f0 T neon_dsg_prepared_state
+00000000002f0c20 T neon_dsg_request_resize
+00000000002f0c40 T neon_dsg_resize_status
+00000000002f0ca0 T neon_dsg_set_admission
+00000000002f08b0 T neon_dsg_shared_cost
+00000000002f0930 T neon_dsg_work_state
+00000000002f05e0 T pg_finfo_neon_dsg_admission_lease
+00000000002f05f0 T pg_finfo_neon_dsg_admission_rearm_status
+00000000002f05d0 T pg_finfo_neon_dsg_admission_status
+00000000002f0590 T pg_finfo_neon_dsg_cancel_resize
+00000000002f0560 T pg_finfo_neon_dsg_capabilities
+00000000002f0620 T pg_finfo_neon_dsg_connection_state
+00000000002f0640 T pg_finfo_neon_dsg_dsm_state
+00000000002f05b0 T pg_finfo_neon_dsg_fence_issuer
+00000000002f05a0 T pg_finfo_neon_dsg_memory_status
+00000000002f0630 T pg_finfo_neon_dsg_prepared_state
+00000000002f0570 T pg_finfo_neon_dsg_request_resize
+00000000002f0580 T pg_finfo_neon_dsg_resize_status
+00000000002f05c0 T pg_finfo_neon_dsg_set_admission
+00000000002f0600 T pg_finfo_neon_dsg_shared_cost
+00000000002f0610 T pg_finfo_neon_dsg_work_state
+
+Dynamic section at offset 0xb9d98 contains 29 entries:
+  Tag        Type                         Name/Value
+ 0x0000000000000001 (NEEDED)             Shared library: [libpq.so.5]
+ 0x0000000000000001 (NEEDED)             Shared library: [libreadline.so.8]
+ 0x0000000000000001 (NEEDED)             Shared library: [libm.so.6]
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+ 0x000000000000000c (INIT)               0x19000
+ 0x000000000000000d (FINI)               0x6b6a0
+ 0x0000000000000019 (INIT_ARRAY)         0xb0930
+ 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)
+ 0x000000000000001a (FINI_ARRAY)         0xb0938
+ 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)
+ 0x000000006ffffef5 (GNU_HASH)           0x3a0
+ 0x0000000000000005 (STRTAB)             0x18c8
+ 0x0000000000000006 (SYMTAB)             0x410
+ 0x000000000000000a (STRSZ)              2838 (bytes)
+ 0x000000000000000b (SYMENT)             24 (bytes)
+ 0x0000000000000015 (DEBUG)              0x0
+ 0x0000000000000003 (PLTGOT)             0xbafe8
+ 0x0000000000000002 (PLTRELSZ)           4800 (bytes)
+ 0x0000000000000014 (PLTREL)             RELA
+ 0x0000000000000017 (JMPREL)             0x16da0
+ 0x0000000000000007 (RELA)               0x2628
+ 0x0000000000000008 (RELASZ)             83832 (bytes)
+ 0x0000000000000009 (RELAENT)            24 (bytes)
+ 0x000000006ffffffb (FLAGS_1)            Flags: PIE
+ 0x000000006ffffffe (VERNEED)            0x2598
+ 0x000000006fffffff (VERNEEDNUM)         2
+ 0x000000006ffffff0 (VERSYM)             0x23de
+ 0x000000006ffffff9 (RELACOUNT)          3473
+ 0x0000000000000000 (NULL)               0x0

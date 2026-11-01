@@ -1,0 +1,1 @@
+真实PG17新S PG17-S-ARRAY-RESIZE-001已通过：同369/b95/47ef原neon1.17，公开SQL四笔1024Grow→256Shrink→2048Regrow→256Shrink、gen2/3/4/5，四数组逐页resident/A-owner、尾洞/物理release/cost、数据checksum与事务后status均过；原Root出生/helper真执行，PG正常Wait0，Guest0/QEMU0。U0（编译ENV），新1S/E0；未StartCAS/完整插件Source/normal/K8s。首编译错误和旧Neon1.8首S失败全保留，精确新源/ELF/tuple/提交清单见docs/validation/normal-pg17-array-resize-native-20261101。

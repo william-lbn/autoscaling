@@ -1,0 +1,29 @@
+[
+  {
+    "directory": "/data/neon-build/validation/normal-pg17-array-resize-build-20261101T002812Z-7b56bd",
+    "phases": {
+      "test.exitcode": "0",
+      "source.exitcode": "0",
+      "native-compile.exitcode": "1"
+    },
+    "history_only": true,
+    "reason": "new test type-name/unused variable compile failure"
+  },
+  {
+    "directory": "/data/neon-build/validation/normal-pg17-array-resize-build-20261101T002855Z-e294aa",
+    "phases": {
+      "test.exitcode": "0",
+      "source.exitcode": "0",
+      "native-compile.exitcode": "0",
+      "fixture-export.exitcode": "0"
+    },
+    "history_only": true,
+    "reason": "valid compile of earlier test installing old Neon1.8; actual firstS fails missing shared_cost"
+  },
+  {
+    "directory": "/data/neon-build/validation/normal-pg17-array-resize-native-20261101T003023Z-b3d427",
+    "history_only": true,
+    "reason": "first formal Grow1024/gen2 and page/checksum/status passed; test wrongly installed Neon1.8 then queried shared_cost added1.11, so entire S FAIL; new test installs original default1.17 without manual aliases",
+    "result_sha256": "14fcc1203c44eb58e24d20be5086cf2c182c24e5e604fce62fb2a400fdc8604f"
+  }
+]
