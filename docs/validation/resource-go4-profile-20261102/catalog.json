@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "scope": "ENV_RESOURCE_SCHEDULER_PROFILE_ONLY",
+  "source_directory": "/data/neon-build/validation/resource-go4-profile-20261101T175608Z",
+  "classification": "operational isolated capacity boundary checks; not business U/S/E",
+  "profile": "go4=4CPU/4GiB; GOMAXPROCS4/GOMEMLIMIT1536MiB/GOFLAGS=-p2",
+  "global_cpu": 12,
+  "global_memory_GiB": 16,
+  "host_available_reserve_GiB": 4,
+  "old_profiles_and_inflight_specs_unchanged": true,
+  "boundary_checks": {
+    "fits_heavy_native_go4": {
+      "rc": 0,
+      "state": "reserved",
+      "reason": "",
+      "cpu": 4,
+      "memory": 4294967296
+    },
+    "reject_cpu": {
+      "rc": 75,
+      "state": "queued",
+      "reason": "declared-capacity",
+      "cpu": 4,
+      "memory": 4294967296
+    },
+    "reject_memory": {
+      "rc": 75,
+      "state": "queued",
+      "reason": "declared-capacity",
+      "cpu": 4,
+      "memory": 4294967296
+    },
+    "reject_host_reserve": {
+      "rc": 75,
+      "state": "queued",
+      "reason": "MemAvailable-reserve4GiB-plus-new-declaration",
+      "cpu": 4,
+      "memory": 4294967296
+    }
+  },
+  "artifacts": {
+    "before-budget.py.txt": {
+      "sha256": "a6b017b60469706e58a150e90820e72e96cbb1052e8150459ca7c10d0226b057",
+      "bytes": 14636
+    },
+    "after-budget.py.txt": {
+      "sha256": "ddd54a6a22cd289f7c8a3c19252dc7e02b24a60babd28731b29b8c35e555880a",
+      "bytes": 14753
+    },
+    "before-config.json": {
+      "sha256": "d526b032f54a19838f84b5e1fbe20f8f993e2389dcc18269a97ef52b78f59859",
+      "bytes": 348
+    },
+    "after-config.json": {
+      "sha256": "0e625705a4dba1d2f8facafb90aaa9354f90146a47cd93024d2df24d5e0a3cc2",
+      "bytes": 411
+    },
+    "result.json": {
+      "sha256": "f570708e481f0919c0259a24a38c7462a43bb2f284da7a8d55adfee55814b22d",
+      "bytes": 1204
+    }
+  },
+  "external_RUN_actual_limit_required": true,
+  "performance_improvement_proven": false,
+  "business_tests_added": 0,
+  "Source": false,
+  "normal": false,
+  "E": 0
+}

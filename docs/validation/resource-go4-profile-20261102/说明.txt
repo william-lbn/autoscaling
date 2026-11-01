@@ -1,0 +1,4 @@
+新增Go4规格只用于后继必要编译，保原go/native/heavy与全局余量，不改在途spec、不重启服务。
+外部BuildKit RUN仍须真实4核4GiB并归档cpu.max/memory.max和Go env；worker环境不是执行器硬限制。
+四个隔离容量边界检查验证允许12CPU15GiB组合及CPU/内存/宿主余量不足排队，属于运行环境检查，不算PG17业务单元/单服务/端到端通过。
+安装规格不代表性能改善。后继按真实wall/CPU/peak/IO及原业务结果衡量，不重复旧绿填满利用率，不放宽25/30秒与Guest2vCPU。

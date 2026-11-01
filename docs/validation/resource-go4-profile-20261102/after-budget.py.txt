@@ -1,0 +1,204 @@
+#!/usr/bin/python3
+"""Root本地构建/验证额度；不是业务预算账本，也不产生测试PASS。"""
+import argparse,contextlib,fcntl,hashlib,json,os,re,stat,subprocess,sys,tempfile,time
+from pathlib import Path
+
+ROOT=Path('/data/neon-build/continuous/resource-budget')
+GIB=1<<30
+BUSY={'reserved','launching','running','unknown'}
+PROFILES={'go':{'cpu':3,'memory':3*GIB},'go4':{'cpu':4,'memory':4*GIB},'native':{'cpu':2,'memory':3*GIB},'heavy':{'cpu':6,'memory':8*GIB}}
+CONFIG={'protocol_version':1,'total_cpu':12,'total_memory':16*GIB,'mem_available_reserve':4*GIB,'max_heavy':1,'profiles':PROFILES}
+class BudgetError(Exception):pass
+
+def digest(raw):return hashlib.sha256(raw).hexdigest()
+def exact(pairs):
+ d={}
+ for k,v in pairs:
+  if k in d:raise BudgetError('duplicate JSON key')
+  d[k]=v
+ return d
+def decode(raw):
+ try:return json.loads(raw,object_pairs_hook=exact)
+ except (ValueError,TypeError) as e:raise BudgetError('invalid JSON')from e
+def atom(path,obj):
+ path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
+ data=(json.dumps(obj,ensure_ascii=False,sort_keys=True,indent=2)+'\n').encode()
+ fd,tmp=tempfile.mkstemp(prefix='.pending-',dir=path.parent)
+ try:
+  os.fchmod(fd,0o600)
+  with os.fdopen(fd,'wb')as f:f.write(data);f.flush();os.fsync(f.fileno())
+  os.replace(tmp,path)
+  d=os.open(path.parent,os.O_RDONLY|os.O_DIRECTORY)
+  try:os.fsync(d)
+  finally:os.close(d)
+ finally:
+  if os.path.exists(tmp):os.unlink(tmp)
+def rootfile(p,private=False):
+ st=p.lstat()
+ if not stat.S_ISREG(st.st_mode)or st.st_uid!=0 or st.st_mode&0o022 or private and st.st_mode&0o077:raise BudgetError('Root file mode/owner differs')
+ return p.read_bytes()
+def available():
+ for line in Path('/proc/meminfo').read_text().splitlines():
+  if line.startswith('MemAvailable:'):return int(line.split()[1])*1024
+ raise BudgetError('MemAvailable unavailable')
+def unitshow(unit):
+ props=['LoadState','ActiveState','SubState','MainPID','ExecMainPID','ExecMainCode','ExecMainStatus','ExecMainExitTimestampMonotonic','Result','InvocationID','ControlGroup','CPUQuotaPerSecUSec','MemoryMax','MemorySwapMax','ExecStart']
+ p=subprocess.run(['systemctl','show',unit,'--property='+','.join(props),'--no-pager'],capture_output=True,text=True,timeout=5)
+ if p.returncode not in(0,1):raise BudgetError('unit observation failed')
+ d=dict(x.split('=',1)for x in p.stdout.splitlines()if '='in x)
+ if 'LoadState'not in d:raise BudgetError('unit observation missing')
+ return d
+def cgempty(group):
+ if not group or not group.startswith('/')or '..'in group.split('/'):return False
+ p=Path('/sys/fs/cgroup')/group.lstrip('/')
+ try:raw=(p/'cgroup.events').read_text()
+ except FileNotFoundError:return not p.exists()
+ return any(x.split()==['populated','0']for x in raw.splitlines())
+def specfile(path):
+ p=Path(path);raw=rootfile(p,True)
+ if len(raw)>16384:raise BudgetError('spec exceeds 16KiB')
+ s=decode(raw)
+ if not isinstance(s,dict)or set(s)!={'protocol_version','nonce','unit','kind','evidence_dir','argv'}or s['protocol_version']!=1:raise BudgetError('unknown spec fields/version')
+ if not isinstance(s['nonce'],str)or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{5,100}',s['nonce']):raise BudgetError('invalid nonce')
+ if not isinstance(s['unit'],str)or not re.fullmatch(r'(?:neon|normal)-[a-z0-9][a-z0-9_.@-]{1,190}\.service',s['unit']):raise BudgetError('invalid fixed unit name')
+ if s['kind']not in PROFILES:raise BudgetError('unknown profile')
+ if s['nonce'].lower()not in s['unit']:raise BudgetError('unit must bind original nonce')
+ ed=Path(s['evidence_dir'])
+ if not ed.is_absolute()or ed.resolve()!=ed or not ed.is_dir()or not str(ed).startswith('/data/neon-build/validation/'):raise BudgetError('evidence must be original canonical validation directory')
+ if ed.name!=s['nonce']and not ed.name.endswith('-'+s['nonce']):raise BudgetError('evidence basename must bind original nonce')
+ for q in [ed,*list(ed.parents)[:-1]]:
+  st=q.lstat()
+  if not stat.S_ISDIR(st.st_mode)or st.st_uid!=0 or st.st_mode&0o022:raise BudgetError('evidence ancestor not Root controlled')
+ a=s['argv']
+ if not isinstance(a,list)or len(a)!=2 or a[0]not in('/usr/bin/python3','/bin/bash','/usr/bin/bash')or not isinstance(a[1],str):raise BudgetError('argv must be fixed interpreter plus local worker')
+ worker=Path(a[1])
+ if not worker.is_absolute()or worker.resolve()!=worker or not worker.is_relative_to(ed):raise BudgetError('worker outside original evidence directory')
+ workerraw=rootfile(worker)
+ return s,digest(raw),digest(workerraw)
+
+class Store:
+ def __init__(self,root=ROOT,show=unitshow,mem=available,empty=cgempty):self.root=root;self.show=show;self.mem=mem;self.empty=empty
+ @contextlib.contextmanager
+ def locked(self):
+  self.root.mkdir(parents=True,exist_ok=True,mode=0o700)
+  fd=os.open(self.root/'lock',os.O_RDWR|os.O_CREAT|os.O_NOFOLLOW,0o600)
+  try:
+   fcntl.flock(fd,fcntl.LOCK_EX)
+   cfg=decode(rootfile(self.root/'config.json',True))
+   if cfg!=CONFIG:raise BudgetError('Root configuration differs from approved bounded policy')
+   yield
+  finally:os.close(fd)
+ def path(self,nonce):return self.root/'jobs'/(nonce+'.json')
+ def jobs(self):
+  d=self.root/'jobs';d.mkdir(exist_ok=True,mode=0o700);files=sorted(d.glob('*.json'))
+  if len(files)>4096:raise BudgetError('job index needs Root archival before more reservations')
+  return [decode(rootfile(p,True))for p in files]
+ def save(self,j):j['updated_utc']=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime());atom(self.path(j['nonce']),j)
+ def receipt(self,j):
+  p=self.root/'receipts'/(j['nonce']+'.json')
+  if not p.exists():return None
+  q=decode(rootfile(p,True))
+  if q.get('nonce')!=j['nonce']or q.get('unit')!=j['unit']or q.get('spec_sha256')!=j['spec_sha256']or q.get('worker_sha256')!=j['worker_sha256']or q.get('invocation_id')!=j.get('invocation_id')or q.get('wait_observed')is not True:return None
+  return q
+ def reconcile_one(self,j):
+  if j['state']not in BUSY or j['state']=='reserved':return j
+  try:
+   u=self.show(j['unit']);inv=j.get('invocation_id');actual=u.get('InvocationID');rcpt=self.receipt(j)
+   if actual and inv and actual!=inv:raise BudgetError('original invocation differs')
+   # 即使receipt已写，原unit/后代仍活也绝不释放。未知状态保额度。
+   if u.get('ActiveState')in('active','activating','deactivating','reloading')or u.get('MainPID','0')!='0':
+    j['state']='running';j['last_observation']='unit-live';self.save(j);return j
+   terminal=u.get('ActiveState')in('inactive','failed')and u.get('SubState')in('dead','failed','exited')
+   absent=u.get('LoadState')=='not-found'
+   group=u.get('ControlGroup')or j.get('control_group')
+   if not self.empty(group):raise BudgetError('original unit control group not confirmed empty')
+   # BuildKit/Docker执行器在独立daemon；父unit死亡不代表远端RUN清理完毕。
+   # 缺原wrapper唯一Wait收据，即使kernel已见原unit终态也保持Unknown/额度。
+   # adopt旧任务没有本收据时由Root核原worker/executor证据，不在此自动认领。
+   if not((terminal or absent)and inv and rcpt):raise BudgetError('terminal original unit and unique worker receipt not proven')
+   j['state']='terminal';j['last_observation']='original-unit-terminal';j['unit_result']=u.get('Result','unit-gc');j['process_exit_code']=rcpt.get('process_exit_code')if rcpt else None;j['test_verdict']='NOT_INTERPRETED';self.save(j)
+  except (BudgetError,OSError,ValueError,subprocess.TimeoutExpired):j['state']='unknown';j['last_observation']='retain-uncertain';self.save(j)
+  return j
+ def reserve(self,s,h,worker):
+  jobs=self.jobs();old=next((j for j in jobs if j['nonce']==s['nonce']),None)
+  if old and(old['spec_sha256']!=h or old['worker_sha256']!=worker):raise BudgetError('nonce original spec/worker differs')
+  if old and old['state']not in('queued',):return old,0
+  if any(j['nonce']!=s['nonce']and(j['unit']==s['unit']or j['evidence_dir']==s['evidence_dir'])for j in jobs):raise BudgetError('unit/evidence already bound to another nonce')
+  for j in jobs:self.reconcile_one(j)
+  if self.show(s['unit']).get('LoadState')!='not-found':raise BudgetError('unit already exists; no retrospective adoption')
+  used=[j for j in jobs if j['state']in BUSY];p=PROFILES[s['kind']];mem=self.mem()
+  reason=''
+  if sum(j['cpu']for j in used)+p['cpu']>12 or sum(j['memory']for j in used)+p['memory']>16*GIB:reason='declared-capacity'
+  elif s['kind']=='heavy'and any(j['kind']=='heavy'for j in used):reason='one-heavy-only'
+  elif mem<4*GIB+p['memory']:reason='MemAvailable-reserve4GiB-plus-new-declaration'
+  j={**s,'spec_sha256':h,'worker_sha256':worker,**p,'state':'queued'if reason else'reserved','queue_reason':reason,'test_verdict':'NOT_INTERPRETED'};self.save(j);return j,75 if reason else 0
+ def adopt(self,s,h,worker):
+  # 仅Root用于登记已经在跑的旧任务；不改旧worker/nonce/规格，也不启动它。
+  jobs=self.jobs()
+  if any(j['nonce']==s['nonce']or j['unit']==s['unit']or j['evidence_dir']==s['evidence_dir']for j in jobs):raise BudgetError('adopt identity already registered')
+  u=self.show(s['unit']);profile=PROFILES[s['kind']]
+  import shlex
+  from decimal import Decimal
+  starts=re.findall(r'argv\[\]=([^;}]*)',u.get('ExecStart',''))
+  quota=u.get('CPUQuotaPerSecUSec','')
+  match=re.fullmatch(r'([0-9]+(?:\.[0-9]+)?)(us|ms|s)',quota)
+  if not match:raise BudgetError('adopt unit CPU quota unbounded/unknown')
+  cpu=Decimal(match.group(1))*{'us':Decimal('0.000001'),'ms':Decimal('0.001'),'s':Decimal(1)}[match.group(2)]
+  if u.get('ActiveState')not in('active','activating')or int(u.get('MainPID','0'))<=0 or not re.fullmatch('[0-9a-f]{32}',u.get('InvocationID',''))or len(starts)!=1 or shlex.split(starts[0])!=s['argv']or cpu>profile['cpu']or int(u.get('MemoryMax','0'))<=0 or int(u.get('MemoryMax','0'))>profile['memory']or not u.get('ControlGroup'):raise BudgetError('adopt unit original command/state/limits differ')
+  used=[j for j in jobs if j['state']in BUSY]
+  if sum(j['cpu']for j in used)+profile['cpu']>12 or sum(j['memory']for j in used)+profile['memory']>16*GIB or s['kind']=='heavy'and any(j['kind']=='heavy'for j in used):raise BudgetError('adopt exceeds approved capacity; Root must resolve prior registration')
+  j={**s,'spec_sha256':h,'worker_sha256':worker,**profile,'state':'running','adopted_existing_unit':True,'invocation_id':u['InvocationID'],'control_group':u['ControlGroup'],'test_verdict':'NOT_INTERPRETED'};self.save(j);return j,0
+ def launch(self,s,h,worker):
+  j=decode(rootfile(self.path(s['nonce']),True))
+  if j['spec_sha256']!=h or j['worker_sha256']!=worker or j['state']!='reserved':raise BudgetError('launch requires exact original reserved spec')
+  if self.show(j['unit']).get('LoadState')!='not-found':raise BudgetError('unit exists before original launch')
+  if self.mem()<4*GIB+j['memory']:j['state']='queued';j['queue_reason']='MemAvailable-before-launch';self.save(j);return j,75
+  # intent持久后才创建unit；丢回复绝不重新launch同nonce。
+  j['state']='launching';self.save(j)
+  cmd=['systemd-run','--unit='+j['unit'],'--property=Type=exec','--property=CPUQuota='+str(j['cpu']*100)+'%','--property=MemoryMax='+str(j['memory']),'--property=MemorySwapMax=0','--property=KillMode=control-group','--property=RemainAfterExit=no','--working-directory='+j['evidence_dir'],'/usr/bin/python3',str(ROOT/'budget.py'),'_worker','--nonce',j['nonce'],'--sha',h]
+  try:
+   p=subprocess.run(cmd,capture_output=True,text=True,timeout=15)
+   u=self.show(j['unit']);inv=u.get('InvocationID')
+   if p.returncode or not inv:raise BudgetError('launch acknowledgement uncertain')
+   j['invocation_id']=inv;j['control_group']=u.get('ControlGroup');j['state']='running';self.save(j);return j,0
+  except (BudgetError,OSError,subprocess.TimeoutExpired):j['state']='unknown';j['last_observation']='launch-uncertain';self.save(j);return j,1
+ def summary(self,j):return {k:j.get(k)for k in('nonce','unit','kind','cpu','memory','state','queue_reason','spec_sha256','worker_sha256','last_observation','unit_result','process_exit_code','test_verdict')}
+
+def worker_run(nonce,h):
+ store=Store()
+ with store.locked():
+  j=decode(rootfile(store.path(nonce),True));inv=os.environ.get('INVOCATION_ID','')
+  if j['spec_sha256']!=h or j['state']not in('launching','running','unknown')or not re.fullmatch('[0-9a-f]{32}',inv)or j.get('invocation_id',inv)!=inv:raise BudgetError('original worker invocation unavailable')
+  if digest(rootfile(Path(j['argv'][1])))!=j['worker_sha256']:raise BudgetError('worker changed before execution')
+  j['invocation_id']=inv;j['state']='running';store.save(j)
+ env=dict(os.environ)
+ if j['kind']=='go':env.update(GOMAXPROCS='2',GOMEMLIMIT='768MiB')
+ elif j['kind']=='go4':env.update(GOMAXPROCS='4',GOMEMLIMIT='1536MiB',GOFLAGS='-p=2')
+ process=subprocess.Popen(j['argv'],cwd=j['evidence_dir'],env=env)
+ rc=process.wait()
+ # 此收据只证明唯一直接worker的Wait；reconcile还须原unit终态/cgroup空。
+ with store.locked():
+  atom(store.root/'receipts'/(nonce+'.json'),{'protocol_version':1,'nonce':nonce,'unit':j['unit'],'spec_sha256':h,'worker_sha256':j['worker_sha256'],'invocation_id':inv,'wait_observed':True,'process_exit_code':rc,'test_verdict':'NOT_INTERPRETED'})
+ return rc if 0<=rc<=255 else 1
+
+def main():
+ if os.getuid()!=0 or os.geteuid()!=0:raise BudgetError('Root-only local operation')
+ a=argparse.ArgumentParser(description=__doc__);sub=a.add_subparsers(dest='action',required=True)
+ for name in('reserve','launch','adopt'):p=sub.add_parser(name);p.add_argument('--spec',required=True)
+ p=sub.add_parser('reconcile');p.add_argument('--nonce')
+ sub.add_parser('status')
+ p=sub.add_parser('_worker');p.add_argument('--nonce',required=True);p.add_argument('--sha',required=True)
+ args=a.parse_args()
+ if args.action=='_worker':return worker_run(args.nonce,args.sha)
+ store=Store()
+ with store.locked():
+  if args.action in('reserve','launch','adopt'):
+   s,h,w=specfile(args.spec);j,rc=getattr(store,args.action)(s,h,w);print(json.dumps(store.summary(j),sort_keys=True));return rc
+  jobs=store.jobs()
+  if args.action=='reconcile':
+   if args.nonce and not any(j['nonce']==args.nonce for j in jobs):raise BudgetError('unknown nonce')
+   jobs=[store.reconcile_one(j)if not args.nonce or j['nonce']==args.nonce else j for j in jobs]
+  print(json.dumps({'jobs':[store.summary(j)for j in jobs],'reserved_cpu':sum(j['cpu']for j in jobs if j['state']in BUSY),'reserved_memory':sum(j['memory']for j in jobs if j['state']in BUSY),'test_verdict':'NOT_INTERPRETED'},sort_keys=True));return 0
+if __name__=='__main__':
+ try:sys.exit(main())
+ except (BudgetError,OSError,ValueError,subprocess.TimeoutExpired) as e:print(json.dumps({'error':type(e).__name__,'message':str(e)}),file=sys.stderr);sys.exit(1)
