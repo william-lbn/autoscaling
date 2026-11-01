@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "scope": "PG17_TARGETED_STOCK_PRIVATE_HANDOFF_COMPONENT_PARTIAL",
+  "component_commit": "e4348ba32b7d9017d6bba78346d6e49bea4740c1",
+  "actual_tested_postgres_versions": [],
+  "target_postgres_versions": [
+    17
+  ],
+  "source5": {
+    "pkg/dsga/resourceguard/normal_ordinary_udev_v2_catalog_linux.go": "b40bfb73453f5baa840918c14dfae04bd09382c124e80f16df23ac16679108a9",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_linux.go": "9fa290e060592c1fe78811df8c16270a463c20faa82ac30b0edce75f8565c3b7",
+    "pkg/dsga/resourceguard/normal_ordinary_udev_v2_source_linux.go": "549267f498a74131b46ce3aff263d9dac45961221dd1a8dc9bcbe793378dde99",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_linux_test.go": "69cd37adb05a6935e74cacf4a1c85c37ec2b711a1a777be1a11d6d317ca42d19",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_preparation_native_test.go": "e835711f664e58094af6532d13d8ccdd86761d94cabb8e3aca4f1ae50e9e15f3"
+  },
+  "U": {
+    "root_count": 15,
+    "subtest_count": 48,
+    "skips": 0,
+    "stable_original_Go_test_names": [
+      "TestNormalOrdinaryStockPreparationWaitReceipt",
+      "TestNormalOrdinaryStockPreparationSingleUseTombstone",
+      "TestNormalOrdinaryStockPreparationHistoryNeverImplicitlyReplayed",
+      "TestNormalOrdinaryStockPreparationOriginalPrefixIdentity",
+      "TestNormalOrdinaryStockPreparationCannotAdoptRawInputs",
+      "TestNormalOrdinaryStockPreparationFactoryFailureTuple",
+      "TestNormalOrdinaryStockPreparationHandoffState",
+      "TestNormalOrdinaryUdevV2RuleReaderNoConfigELFFallback",
+      "TestNormalOrdinaryUdevV2RuleReaderClosesTransferredPinsOnFailure",
+      "TestNormalOrdinaryUdevV2RuleReaderReleasesSystemBeforeInputs",
+      "TestNormalOrdinaryUdevV2RuleReaderCloseOwnPreparation",
+      "TestOrdinaryUdevV2RawJSONAndNewGuardNeverProduceSource",
+      "TestNormalSystemRoleV2MissingRuntimeCannotSpawnOrPublish",
+      "TestNormalSystemRoleV2PlanPreservesLegacyDigestAndBindsMode",
+      "TestNormalSystemRoleV2MissingSourceCannotSelectCapability"
+    ],
+    "execution": "actual Linux Go race JSON; model/cheap gate tests do not prove full source"
+  },
+  "build": {
+    "phases": {
+      "u.exitcode": 0,
+      "cli.exitcode": 0,
+      "builder.exitcode": 0,
+      "darwin.exitcode": 0,
+      "native-compile.exitcode": 0,
+      "host-compile.exitcode": 0,
+      "host-export.exitcode": 0,
+      "fixture-seed.exitcode": 0
+    },
+    "scope": "actual CLI/Builder/Darwin/Guest/Host/seed required artifacts; no real PostgreSQL runtime"
+  },
+  "S": {
+    "actual_KVM_stock_start_passed": false,
+    "original_evidence_directory": "/data/neon-build/validation/normal-stock-preparation-native-20261101T172833Z-0f8abd-native",
+    "original_Ready_seconds": 25,
+    "original_handshake_seconds": 30,
+    "guest_vcpus": 2,
+    "scope": "actual locked stock preparation attempt; Host API model, DEV compute standin, no nine role/PG acceptance; all failed attempts retained"
+  },
+  "Source": false,
+  "safe_normal_decrease_accepted": false,
+  "Linux_E": 0,
+  "K8s_E": 0,
+  "counting_note": "Directly affected regression roots, overlapping older catalogs; do not sum phase counts or S attempts as new passed functions",
+  "original_receipts": {
+    "phase-state.json": {
+      "sha256": "e7e732767ce5b51586f1a105920aa70aef43eacc980ecf6bb9854f302be25b21",
+      "bytes": 18517
+    },
+    "source-freeze.json": {
+      "sha256": "454f1df48ec6f185dfae603b017b7954320d1f25fc0bf01e9e0b914fbf95c519",
+      "bytes": 989
+    },
+    "C2-U/export/test.json": {
+      "sha256": "fcbe33eb9c3ccdc7b16771cea39d8a642b0e1e9cc25b7f58fb745fd7447c5c5f",
+      "bytes": 63897
+    },
+    "C2-U/phase-results.json": {
+      "sha256": "8547135385ae6f45f70be25edcbea4df6ab601edf64875297681bef724746003",
+      "bytes": 213
+    },
+    "independent-implementation-review.json": {
+      "sha256": "c774f64fc01e0c044b12f582e580f63c17dc6df112e81379ba7e3e89bf737a31",
+      "bytes": 512
+    }
+  }
+}
