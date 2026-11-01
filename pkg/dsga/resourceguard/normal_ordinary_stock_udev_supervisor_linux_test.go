@@ -22,7 +22,7 @@ import (
 func TestNormalStockUdevSupervisorFixedStages(t *testing.T) {
 	expected := [][]string{
 		{"/neonvm/bin/udevd", "--children-max=1"},
-		{"/neonvm/bin/udevadm", "trigger", "--type=subsystems", "--action=add"},
+		{"/neonvm/bin/udevadm", "control", "--timeout=5", "--children-max=1"},
 		{"/neonvm/bin/udevadm", "trigger", "--type=devices", "--action=add"},
 		{"/neonvm/bin/udevadm", "settle", "--timeout=10"},
 	}
@@ -186,5 +186,17 @@ func TestNormalStockUdevSupervisorKernelOverrideRejected(t *testing.T) {
 		if e := normalOrdinaryStockUdevCommandLine(raw); e != nil {
 			t.Fatalf("fixed boot rejected: %v", e)
 		}
+	}
+}
+
+func TestNormalStockUdevSupervisorFixedEnvironment(t *testing.T) {
+	want := []string{"PATH=/neonvm/bin:/usr/sbin:/usr/bin:/sbin:/bin", "LANG=C", "LC_ALL=C"}
+	got := normalOrdinaryStockUdevEnvironment()
+	if !reflect.DeepEqual(got, want) {
+		t.Fatal("Root stock environment drift")
+	}
+	got[0] = "KMOD_LOG=debug"
+	if !reflect.DeepEqual(normalOrdinaryStockUdevEnvironment(), want) {
+		t.Fatal("caller changed later child environment")
 	}
 }

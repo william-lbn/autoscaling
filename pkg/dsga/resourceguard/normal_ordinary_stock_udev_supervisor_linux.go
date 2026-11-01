@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -115,11 +116,16 @@ func (p *normalOrdinaryStockUdevPrograms) verify() error {
 	return nil
 }
 
+// Root实际exec和kmod输入读者共用此固定环境；返回副本，无caller覆盖。
+func normalOrdinaryStockUdevEnvironment() []string {
+	return []string{"PATH=/neonvm/bin:/usr/sbin:/usr/bin:/sbin:/bin", "LANG=C", "LC_ALL=C"}
+}
+
 type normalOrdinaryStockUdevStage uint8
 
 const (
 	normalOrdinaryStockUdevDaemon normalOrdinaryStockUdevStage = iota + 1
-	normalOrdinaryStockUdevTriggerSubsystems
+	normalOrdinaryStockUdevControlReady
 	normalOrdinaryStockUdevTriggerDevices
 	normalOrdinaryStockUdevSettle
 )
@@ -129,8 +135,10 @@ func normalOrdinaryStockUdevArgv(stage normalOrdinaryStockUdevStage) ([]string, 
 	case normalOrdinaryStockUdevDaemon:
 		// 不传--daemon；新privsep版本未获ordinary标记，明确执行原Root分支。
 		return []string{normalOrdinaryStockUdevProgramPaths[0], "--children-max=1"}, nil
-	case normalOrdinaryStockUdevTriggerSubsystems:
-		return []string{normalOrdinaryStockUdevProgramPaths[1], "trigger", "--type=subsystems", "--action=add"}, nil
+	case normalOrdinaryStockUdevControlReady:
+		// 原eudev3.2.14无--ping。固定timeout先于动作；该原控制命令
+		// send/poll失败会非0，但连接关闭不是内容ACK，更不代表queue空。
+		return []string{normalOrdinaryStockUdevProgramPaths[1], "control", "--timeout=5", "--children-max=1"}, nil
 	case normalOrdinaryStockUdevTriggerDevices:
 		return []string{normalOrdinaryStockUdevProgramPaths[1], "trigger", "--type=devices", "--action=add"}, nil
 	case normalOrdinaryStockUdevSettle:
@@ -200,7 +208,7 @@ func (p *normalOrdinaryStockUdevPrograms) start(stage normalOrdinaryStockUdevSta
 	}
 	fd := -1
 	cmd := exec.Command(argv[0], argv[1:]...)
-	cmd.Env = []string{"PATH=/neonvm/bin:/usr/sbin:/usr/bin:/sbin:/bin", "LANG=C", "LC_ALL=C"}
+	cmd.Env = normalOrdinaryStockUdevEnvironment()
 	cmd.Dir = "/"
 	cmd.Stdout, cmd.Stderr = log, log
 	cmd.WaitDelay = time.Second
@@ -340,6 +348,10 @@ func reapNormalOrdinaryStockUdevOrphans(ctx context.Context) ([]normalOrdinarySt
 func (p *normalOrdinaryStockUdevPrograms) run(ctx context.Context) (waits []normalOrdinaryStockUdevWait, logRaw []byte, err error) {
 	normalOrdinaryStockUdevSupervisorMu.Lock()
 	defer normalOrdinaryStockUdevSupervisorMu.Unlock()
+	// Linux Pdeathsig绑定fork创建线程而非整个TGID。原Wait前保持同一M，
+	// 防Go runtime退休创建M时将仍合法的stock daemon误杀。
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	if ctx == nil || ctx.Err() != nil {
 		return nil, nil, ErrUnknown
 	}
@@ -444,7 +456,7 @@ func (p *normalOrdinaryStockUdevPrograms) run(ctx context.Context) (waits []norm
 		case <-time.After(10 * time.Millisecond):
 		}
 	}
-	for _, stage := range []normalOrdinaryStockUdevStage{normalOrdinaryStockUdevTriggerSubsystems, normalOrdinaryStockUdevTriggerDevices, normalOrdinaryStockUdevSettle} {
+	for _, stage := range []normalOrdinaryStockUdevStage{normalOrdinaryStockUdevControlReady, normalOrdinaryStockUdevTriggerDevices, normalOrdinaryStockUdevSettle} {
 		if e = arrayRegistryPIDFDAlive(int(daemon.pidfd.Fd())); e != nil {
 			return nil, nil, e
 		}

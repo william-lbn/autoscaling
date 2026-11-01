@@ -1,0 +1,41 @@
+{
+  "result": "BLOCKED_PENDING_MF_GATE_FIX",
+  "scope": "COMPONENT_ONLY_NOT_SOURCE_OR_NORMAL",
+  "source_lock_sha256": "de13ff3a7116568987fd35a396e02d6000dc3e1915fb7daceae9aa0d4149d8d8",
+  "owned8": {
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_inventory.go": "c9072dd4330f1627cabcdb9da05106deed188fbff7278522b4f5e5f52e505b1d",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_manifest.go": "94c32d37d9ae3ef0a195f5ff2560df39b00ae15ec6d394a1fe438a6c28853eab",
+    "pkg/dsga/resourceguard/normal_system_source.go": "d23f7eed893cdbab639615a7f64ceb10f50724afe99246a6e28a5ccc7b8e54c6",
+    "pkg/dsga/resourceguard/normal_system_source_linux.go": "846a7153acfdc93a238969c15b2d0845fd9d917c5e5c257593316ad298cf6664",
+    "pkg/dsga/resourceguard/normal_system_stock_inventory_test.go": "97a0502ffbe98e642821a956cf8935dba2a7b5e54465e8ccdd4b739e3bb5a3dd",
+    "pkg/dsga/resourceguard/normal_system_stock_inventory_linux_test.go": "216132bcbbab61ad5890a16dcf0f5a43b3e2967648ea6f26665830471ed63725",
+    "vm-builder/normal_split.go": "c2b7369301aac9cd92fc1409226d9cc230445422d08e3fde27aabd1dea4f43e3",
+    "vm-builder/normal_stock_inventory_test.go": "e707d4995b7dc726ec9b5f78c0e71e8554b11be10639a2d4600eac65ffc533b1"
+  },
+  "deleted1": [
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_manifest_linux.go"
+  ],
+  "actual_COPY": 1358,
+  "actual_COPY_mismatch": [],
+  "U_roots": 13,
+  "U_named_subtests": 132,
+  "fail": 0,
+  "skip": 0,
+  "S": 0,
+  "E": 0,
+  "finding": {
+    "severity": "component-blocker",
+    "file": "pkg/dsga/resourceguard/normal_system_source.go",
+    "lines": [
+      156,
+      159,
+      201
+    ],
+    "cause": "version3 stock allowlist is not gated by actual fixed MF presence",
+    "Root_acknowledged": true,
+    "fix_not_reviewed_yet": true
+  },
+  "old_extracted_functions_byte_equal": true,
+  "no_tests_rerun": true,
+  "no_source_or_git_changes": true
+}

@@ -1,0 +1,21 @@
+Root System3 stock inventory 独立审查初报（原8e37b8，后继修复前历史）
+审阅范围：Git97d+Root8/deleted1 immutable，source-lock de13ff3a7116568987fd35a396e02d6000dc3e1915fb7daceae9aa0d4149d8d8。
+结论：BLOCKED_PENDING_MF_GATE_FIX，非normal/Source认证。
+
+唯一实质finding：normal_system_source.go156..159仅version3即准新stock路径，Validate200..202使用该函数；
+inventory.go122..124无MF直接nil。因此原合法metadata-only3追加一个固定helper exec（例如/lib/udev/ata_id，
+相同CanonicalPath/合法bytes/hash/排序）即可Validate，不要求入口MF和完整70。Inputs仍因缺MF拒绝，没有认证提升；
+但违反本包“仅MF显式选择扩展、旧3库存照旧”的版本选择合同。Root已确认并唯一修复，下一新cohort须核delta。
+建议旧normalSystemAllowedVersionFile恢复逐字，新增manifest-aware selector只在原MF存在时纳固定新path，
+同时保旧rules/loader本来允许路径；测缺MF追加每种新helper/udevadm/account/hwdb均拒，旧metadata-only3仍过。
+
+其余8源：原Manifest Linux迁common的8个既有函数逐字节比对完全相等（ExactKeys/UnmarshalJSON/decoder/
+Digest及4库存函数）；export转换仅复用严格MF，Code类别不可自报提升。helper alias仅同名/lib/udev→/usr/lib/udev，
+不开放udevadm arbitraryalias；canonical MF仍固定。同一配置目录selector控制Linux真实hwdb扫描与Builder，
+Builder严格原MF schema、实际file size/hash和可选两孔hwdb.bin存在时必须列入，额外rules/hwdb拒。
+Root树canonical解析保持Guest根，不FollowHost绝对alias。ELF完整闭包/真实RO源仍后继Inputs/Source负责，
+不是builder魔数ELF或至少一DSO就授权。legacy1/2分支没有新库存；上述缺MF3分支待修。
+
+原事件独立读取13race根/132命名子项、fail0skip0；实际1358COPY逐hash零差异；Linux/Darwin Guard+Builder
+4编译0。没有重新运行测试、没有改源/Git，没有把U编译当实际stock执行。live已有Root后继，不以旧hash签current。
+后继监督Rootargv timeout5/children-max1与去subsystems是另图，本文不转签。S0/E0。

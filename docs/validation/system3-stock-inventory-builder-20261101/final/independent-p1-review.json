@@ -1,0 +1,48 @@
+{
+  "result": "PASS_COMPONENT_SCOPE_ONLY",
+  "source_lock_sha256": "3137f51dca7096b7e30e49f0cf673cb2d090c5c2973662692e15c604ef923e29",
+  "owned10": {
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_inventory.go": "c94c4bb1d05d750942703e1efe15133e895a14be16b2510342e746839b74c3e1",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_manifest.go": "94c32d37d9ae3ef0a195f5ff2560df39b00ae15ec6d394a1fe438a6c28853eab",
+    "pkg/dsga/resourceguard/normal_system_source.go": "061675dfec3d198659d2ae75b66173d4748be6ae588ffdae8951d0d96fbb5427",
+    "pkg/dsga/resourceguard/normal_system_source_linux.go": "846a7153acfdc93a238969c15b2d0845fd9d917c5e5c257593316ad298cf6664",
+    "pkg/dsga/resourceguard/normal_system_stock_inventory_test.go": "9e1464e3a1806b1b5fa5302db78a2a1ed51301c93e51f67a362a6c7a2ca704bd",
+    "pkg/dsga/resourceguard/normal_system_stock_inventory_linux_test.go": "216132bcbbab61ad5890a16dcf0f5a43b3e2967648ea6f26665830471ed63725",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_supervisor_linux.go": "b504e6a493452e01632d4872e444c14ac0f5c42966146a47cca6346c975e5045",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_supervisor_linux_test.go": "49ea0ccecbeb278c6c61e02d9c6a2befee98a0b24c4a06eae945810082f26bea",
+    "vm-builder/normal_split.go": "b2f467b5135659603d862620539188d56dbd9de22c4f5d2bcef4d4d87da5f2f5",
+    "vm-builder/normal_stock_inventory_test.go": "70879751c10e9e3603e37838929937e25a540bb5fc816d0543f62e99496527ec"
+  },
+  "deleted1": [
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_manifest_linux.go"
+  ],
+  "actual_COPY": 1358,
+  "actual_COPY_mismatch": [],
+  "current10_equals_source": {
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_inventory.go": true,
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_manifest.go": true,
+    "pkg/dsga/resourceguard/normal_system_source.go": true,
+    "pkg/dsga/resourceguard/normal_system_source_linux.go": true,
+    "pkg/dsga/resourceguard/normal_system_stock_inventory_test.go": true,
+    "pkg/dsga/resourceguard/normal_system_stock_inventory_linux_test.go": true,
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_supervisor_linux.go": true,
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_supervisor_linux_test.go": true,
+    "vm-builder/normal_split.go": true,
+    "vm-builder/normal_stock_inventory_test.go": true
+  },
+  "U_roots": 21,
+  "U_named_subtests": 145,
+  "fail": 0,
+  "skip": 0,
+  "S": 0,
+  "E": 0,
+  "Source": false,
+  "normal": false,
+  "raw_old_RW_MF_results_not_relabelled": true,
+  "limitations": [
+    "bounded cleanup Unknown is not proof every writer Wait completed",
+    "actual stock processing/sealed Source still future"
+  ],
+  "no_test_rerun": true,
+  "no_source_git_changes": true
+}

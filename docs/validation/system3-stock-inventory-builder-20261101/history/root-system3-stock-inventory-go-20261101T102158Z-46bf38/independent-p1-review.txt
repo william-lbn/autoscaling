@@ -1,0 +1,36 @@
+Root System3 stock 库存/固定ControlReady 独立审查 / 2026-11-01
+结论 PASS_COMPONENT_SCOPE_ONLY；当前限定组件可阶段提交，未见剩余组件阻断。没有修改源码/Git或重跑测试。
+精确图 Git97d90bc180bf6a2e9a9d9f0800ddddd21e6c7427 + Root10 / deleted1；
+immutable /validation/root-system3-stock-inventory-go-20261101T102158Z-46bf38，
+source-lock 5c3283864c9275b9da4879b2e588c2dd67ee9bef86289dc49fdc0387abda302a。
+
+1 首轮8e37b8无MF单项新stock输入可通过的finding已实际关闭，不覆盖原首报。
+normal_system_source.go旧normalSystemAllowedVersionFile与Git97d逐字完全一致；新inventory.go153
+normalSystemAllowedManifestFile只在同一原manifest有固定MF且版本3时叠有限stock表，Validate196
+使用此入口。无MF追加helper/udevadm/账号/hwdb等8反例、新MF删去而留其余库存都必须拒；
+合法原metadata-only3和原rules/loader范围保持，旧1/2不扩。MF选中后必须完整70+自身，
+并非版本3常量或外部bool就是Source。
+
+2 Schema与库存纯函数迁common原八函数逐字节不变，private Linux parser没有另一份漂移副本。
+原类型/严格键/Code语义/非零SHA/decimal size/sorted bounded inventory全部保留；新export仅转换
+原MF条目到System类别，不产Root路径/命令/预算或来源。helper alias仅原八同名/lib/udev→
+/usr/lib/udev；MF自身canonical路径固定。不能靠多个有效静态文件名就冒ELF闭包已关闭。
+
+3 Linux和Builder按同一实际MF selector扩hwdb目录；没有MF仍旧四目录。Builder从固定MF读
+严格同schema，实际最终file每项size/hash/class逐比，必须包含原70，存在的可选hwdb.bin两孔
+必须纳入；原rules/hwdb额外文件、坏schema/alias/遗漏helper/内容漂移拒。其canonical逻辑
+保留Guest根解释，不FollowHost绝对alias。actual RO/原inode以及完整musl ELF closure仍由
+后继Inputs和System原reader执行，Builder只作构建库存，未被当授权。
+
+4 supervisor只改私有enum2及相应循环/断言：ControlReady固定原udevadm control --timeout=5
+--children-max=1，timeout先动作，去无依据subsystems触发。stage1 daemon、3 devices、4 settle
+原行为未变。普通控制连接关闭仅为控制命令结果，源码已明说不是内容ACK，更非全部queue处理完成；
+没有据control0/settle0签stock seal或normal。真实原包语义与后继完整处理仍需Source/S证据。
+
+5 原始机器材料已独立读取：19race根140命名子项、fail0skip0；实际1358COPY与source-lock
+逐hash无差异；Linux/Darwin Guard+Builder四编译0，BuildRUN memory3221225472/cpu300000 100000；
+当前10文件hash与immutable一致，旧Linux manifest文件确不在编译图。没有借wrapper0当测试绿，
+也没有将这19根全部计新覆盖（包含已有直接回归）。原8e37b8首报/原结果保留，未改SHA或转签。
+
+范围：仅静态库存、共享严格schema、精确版本门禁和固定stage修正。真实Inputs3actor/nscd/run防护、
+实际stock exec/wait/完整事件处理/投影seal/角色能力、连续normal和K8s均未认证，S0/E0。

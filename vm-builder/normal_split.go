@@ -231,12 +231,95 @@ func generateNormalSystemManifestForVersion(root string, plan normalBuildPlan, b
 	if e != nil {
 		return nil, e
 	}
+	inventorySelection := m
+	stockExpected := map[string]resourceguard.NormalSystemSourceFile{}
+	// 新清单必须是最终rootdisk的实际固定对象。缺省仍用原System3库存；
+	// 缺清单绝不意味着新ordinary2输入可用，运行期producer仍会拒绝。
+	if version == 3 {
+		canonical, err := normalImageCanonical(root, resourceguard.NormalSystemStockUdevManifestPath)
+		if err == nil {
+			if canonical != resourceguard.NormalSystemStockUdevManifestPath {
+				return nil, fmt.Errorf("stock manifest alias is unsupported")
+			}
+			mf, e := os.OpenFile(filepath.Join(root, canonical), os.O_RDONLY|syscall.O_NONBLOCK|syscall.O_NOFOLLOW, 0)
+			if e != nil {
+				return nil, e
+			}
+			st, e := mf.Stat()
+			if e != nil || !st.Mode().IsRegular() || st.Size() <= 0 || st.Size() > 64<<10 {
+				mf.Close()
+				return nil, fmt.Errorf("stock manifest is not bounded regular file")
+			}
+			raw, e := io.ReadAll(io.NewSectionReader(mf, 0, st.Size()))
+			ce := mf.Close()
+			if e != nil {
+				return nil, e
+			}
+			if ce != nil {
+				return nil, ce
+			}
+			entries, e := resourceguard.NormalSystemSourceStockUdevManifestFiles(raw)
+			if e != nil {
+				return nil, e
+			}
+			for _, entry := range entries {
+				stockExpected[entry.Path] = entry
+				paths[entry.Path] = entry.Kind
+			}
+			mfPath := resourceguard.NormalSystemStockUdevManifestPath
+			stockExpected[mfPath] = resourceguard.NormalSystemSourceFile{Path: mfPath, Kind: "config", Bytes: uint64(len(raw)), SHA256: normalDigest(raw)}
+			paths[mfPath] = "config"
+			inventorySelection.Files = []resourceguard.NormalSystemSourceFile{{Path: mfPath}}
+			for _, path := range []string{"/etc/udev/hwdb.bin", "/lib/udev/hwdb.bin"} {
+				_, err := normalImageCanonical(root, path)
+				if err == nil {
+					if _, ok := stockExpected[path]; !ok {
+						return nil, fmt.Errorf("actual stock hwdb is absent from prep manifest")
+					}
+				} else if !os.IsNotExist(err) {
+					return nil, err
+				}
+			}
+		} else if !os.IsNotExist(err) {
+			return nil, err
+		}
+	}
+	if len(stockExpected) > 0 {
+		known := map[string]bool{}
+		dirs := resourceguard.NormalSystemStockUdevStaticRuleDirectories()
+		for _, logical := range dirs[:2] {
+			canonical, e := normalImageCanonical(root, logical)
+			if e != nil {
+				return nil, e
+			}
+			known[canonical] = true
+		}
+		for _, logical := range dirs[2:] {
+			canonical, e := normalImageCanonical(root, logical)
+			if os.IsNotExist(e) {
+				continue
+			}
+			if e != nil {
+				return nil, e
+			}
+			if known[canonical] {
+				continue
+			}
+			entries, e := os.ReadDir(filepath.Join(root, canonical))
+			if e != nil {
+				return nil, e
+			}
+			if len(entries) != 0 {
+				return nil, fmt.Errorf("stock alternative rule directory is not covered: %s", logical)
+			}
+		}
+	}
 	for _, p := range plan.LoaderPaths {
 		paths[p] = "loader"
 	}
-	// 固定四棵配置目录全量收录，不让空glob或未声明新文件绕过库存。别跟随目录alias。
+	// 按已选库存全量收录配置目录，不让空glob或未声明新文件绕过库存。别跟随目录alias。
 	count := 0
-	for _, d := range resourceguard.NormalSystemSourceConfigDirectories() {
+	for _, d := range resourceguard.NormalSystemSourceConfigDirectoriesForManifest(inventorySelection) {
 		base, e := normalImageCanonical(root, d)
 		if e != nil {
 			return nil, e
@@ -267,6 +350,12 @@ func generateNormalSystemManifestForVersion(root string, plan normalBuildPlan, b
 			}
 			if !de.Type().IsRegular() {
 				return fmt.Errorf("config must be regular")
+			}
+			logical := filepath.Join(d, rel)
+			if len(stockExpected) > 0 && (d == "/lib/udev/rules.d" || d == "/etc/udev/rules.d" || d == "/etc/udev/hwdb.d") {
+				if _, ok := stockExpected[logical]; !ok {
+					return fmt.Errorf("actual stock configuration absent from prep manifest: %s", logical)
+				}
 			}
 			paths[filepath.Join(d, rel)] = "config"
 			return nil
@@ -327,7 +416,11 @@ func generateNormalSystemManifestForVersion(root string, plan normalBuildPlan, b
 		if closeErr != nil {
 			return nil, closeErr
 		}
-		m.Files = append(m.Files, resourceguard.NormalSystemSourceFile{Path: p, CanonicalPath: canonical, Kind: paths[p], Bytes: uint64(st.Size()), SHA256: hex.EncodeToString(h.Sum(nil))})
+		digest := hex.EncodeToString(h.Sum(nil))
+		if expected, ok := stockExpected[p]; ok && (expected.Kind != paths[p] || expected.Bytes != uint64(st.Size()) || expected.SHA256 != digest) {
+			return nil, fmt.Errorf("actual stock file bytes differ from prep manifest: %s", p)
+		}
+		m.Files = append(m.Files, resourceguard.NormalSystemSourceFile{Path: p, CanonicalPath: canonical, Kind: paths[p], Bytes: uint64(st.Size()), SHA256: digest})
 	}
 	if e = m.Validate(); e != nil {
 		return nil, e

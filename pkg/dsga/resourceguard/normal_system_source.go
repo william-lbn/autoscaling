@@ -193,7 +193,7 @@ func (m NormalSystemSourceManifest) Validate() error {
 	var total uint64
 	prev := ""
 	for _, f := range m.Files {
-		if !normalSystemAllowedVersionFile(m.ProtocolVersion, f.Path, f.Kind) || !normalSystemCleanPath(f.CanonicalPath) || !physicalDigestValid(f.SHA256) || f.Bytes == 0 || f.Bytes > 256<<20 || f.Path <= prev || seen[f.Path] {
+		if !normalSystemAllowedManifestFile(m, f.Path, f.Kind) || !normalSystemCleanPath(f.CanonicalPath) || !physicalDigestValid(f.SHA256) || f.Bytes == 0 || f.Bytes > 256<<20 || f.Path <= prev || seen[f.Path] {
 			return fmt.Errorf("system source file is invalid/duplicate/unordered")
 		}
 		// v3三项固定原元数据不可借logical alias指向另一份文件；旧v1/v2规则不改。
@@ -205,7 +205,11 @@ func (m NormalSystemSourceManifest) Validate() error {
 			}
 		}
 		if f.Kind == "exec" {
-			if f.CanonicalPath != f.Path && (f.CanonicalPath != "/neonvm/bin/busybox" || !normalSystemBusyboxApplet(f.Path)) {
+			validAlias := f.CanonicalPath == "/neonvm/bin/busybox" && normalSystemBusyboxApplet(f.Path)
+			if normalSystemStockUdevSelected(m) && normalSystemStockUdevHelperAlias(f.Path, f.CanonicalPath) {
+				validAlias = true
+			}
+			if f.CanonicalPath != f.Path && !validAlias {
 				return fmt.Errorf("system executable alias is not fixed busybox")
 			}
 		}
@@ -221,6 +225,9 @@ func (m NormalSystemSourceManifest) Validate() error {
 		}
 		seen[f.Path] = true
 		prev = f.Path
+	}
+	if e := normalSystemStockUdevValidateInventory(m); e != nil {
+		return e
 	}
 	for p := range required {
 		if !seen[p] {

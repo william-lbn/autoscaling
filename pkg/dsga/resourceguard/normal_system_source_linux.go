@@ -111,7 +111,7 @@ func InspectNormalSystemSource(ctx context.Context, raw []byte) (NormalSystemSou
 		o.Files = append(o.Files, NormalSystemSourceFileObservation{Path: f.Path, CanonicalPath: actual, SHA256: digest, Device: uint64(before.Dev), Inode: before.Ino, Bytes: uint64(before.Size)})
 	}
 
-	for _, dir := range NormalSystemSourceConfigDirectories() {
+	for _, dir := range NormalSystemSourceConfigDirectoriesForManifest(m) {
 		if e = nativeBirthReadonlyPath(filepath.Join(dir, ".source-inventory-check")); e != nil {
 			return NormalSystemSourceObservation{}, e
 		}
@@ -172,7 +172,7 @@ func normalSystemConfigInventory(root string, m NormalSystemSourceManifest) (str
 	}
 	var observed []string
 	count := 0
-	for _, logical := range NormalSystemSourceConfigDirectories() {
+	for _, logical := range NormalSystemSourceConfigDirectoriesForManifest(m) {
 		base, e := filepath.EvalSymlinks(filepath.Join(root, logical))
 		if e != nil {
 			return "", e

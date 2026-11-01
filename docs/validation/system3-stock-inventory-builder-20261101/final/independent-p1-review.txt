@@ -1,0 +1,24 @@
+Root最终RO-MF10源独立只读审查 / 2026-11-01
+结论 PASS_COMPONENT_SCOPE_ONLY；限定静态库存/监督组件无新增阻断，非Source/normal认证。
+精确 /validation/root-system3-stock-inventory-go-20261101T111321Z-e93aac，source-lock
+3137f51dca7096b7e30e49f0cf673cb2d090c5c2973662692e15c604ef923e29，Git97d+Root10/deleted1。
+
+相对已签46bf38的窄delta已逐条读：固定MF迁/neonvm/config/dsga-ordinary-stock-udev-manifest.json，
+该点属于原17mount RO根，原/etc/neon-dsga在六RW孔的设计错误历史保NoSource，不放宽RO。
+旧normalSystemAllowedVersionFile逻辑逐字不变；旧1/2原generic /neonvm/config可列该config，
+但Selected只版本3，不能选择stock扩展。测试保真实旧边界，不伪造旧路径应拒。
+
+StaticRuleDirectories返回固定新slice四根，不含/run；builder额外/usr/lib与/usr/local/lib根只
+缺失/独立空/与原etc/lib两规则根同canonical可过，独立非空影子拒。canonical resolver保Guest根
+解释绝对alias，不跳Host。完整实际RO/原FD和父pin由InputsIUSR001另核，该静态表不自报来源。
+共享Env精确PATH/LANG/LC_ALL，start唯一定值，无caller覆盖，后继kmod2可核同函数，非取os.Getenv。
+
+正常路径创建M已从Start到所有直属Wait及清理锁OSThread；完整读run的defer次序，cleanup在
+Unlock前执行，且只有直属cmd唯一Wait后才收养后代reap，非零reaped仍失败不签规则完成。
+准确限制：异常cleanup自身仅5s，allWaited=false时返回Unknown并最终释放M/自身pin，不等同
+所有故障都已Wait零进程；后继factory必须不发布Source/不把该Unknown作为可重试新epoch的全Wait。
+此限制是旧bounded cleanup合同的事实，本文不把新M锁称失败恢复或全部根源已闭合。
+
+只读核原机器事件与source-check：实际COPY1358逐hash零差异、current10==immutable、deleted旧
+manifest_linux.go不在图；Linux&Darwin Guard/Builder四编译及原race全0，无skip。没有重跑U，
+不将含直接旧回归的全部roots算新增。不修改任何源/Git/原历史。S0/E0/Sourcefalse/normalfalse。

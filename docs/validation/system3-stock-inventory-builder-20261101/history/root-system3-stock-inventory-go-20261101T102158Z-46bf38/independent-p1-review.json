@@ -1,0 +1,44 @@
+{
+  "result": "PASS_COMPONENT_SCOPE_ONLY",
+  "base": "97d90bc180bf6a2e9a9d9f0800ddddd21e6c7427",
+  "source_lock_sha256": "5c3283864c9275b9da4879b2e588c2dd67ee9bef86289dc49fdc0387abda302a",
+  "owned10": {
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_inventory.go": "56a93ed53ac9434fb105cb89292aa287a7a904a0607d9f48ac9f7e44063e172e",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_manifest.go": "94c32d37d9ae3ef0a195f5ff2560df39b00ae15ec6d394a1fe438a6c28853eab",
+    "pkg/dsga/resourceguard/normal_system_source.go": "061675dfec3d198659d2ae75b66173d4748be6ae588ffdae8951d0d96fbb5427",
+    "pkg/dsga/resourceguard/normal_system_source_linux.go": "846a7153acfdc93a238969c15b2d0845fd9d917c5e5c257593316ad298cf6664",
+    "pkg/dsga/resourceguard/normal_system_stock_inventory_test.go": "68b42eaa62683e1c820ec684c3f9b10781ce2e093ce198a3385530fb951ec973",
+    "pkg/dsga/resourceguard/normal_system_stock_inventory_linux_test.go": "216132bcbbab61ad5890a16dcf0f5a43b3e2967648ea6f26665830471ed63725",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_supervisor_linux.go": "7b210d7d831b1a8915a41fa01bb66717b4093b26152e2884f2956047323c270f",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_supervisor_linux_test.go": "abf74aeeb1b5b59cf66026ef86c8422eb37052c5da6f44ee9fb45a9d6bf3c3c9",
+    "vm-builder/normal_split.go": "c2b7369301aac9cd92fc1409226d9cc230445422d08e3fde27aabd1dea4f43e3",
+    "vm-builder/normal_stock_inventory_test.go": "e707d4995b7dc726ec9b5f78c0e71e8554b11be10639a2d4600eac65ffc533b1"
+  },
+  "deleted1": [
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_manifest_linux.go"
+  ],
+  "actual_COPY": 1358,
+  "actual_COPY_mismatch": [],
+  "current10_equals_immutable": true,
+  "old_allowed_version_function_exact_Git_bytes": true,
+  "old_eight_extracted_schema_inventory_functions_exact": true,
+  "prior_finding": {
+    "cohort": "20261101T101238Z-8e37b8",
+    "status": "CLOSED_BY_EXPLICIT_MANIFEST_SELECTOR",
+    "original_report_json_sha256": "7c8b9c0d647b447d465fd44bb4e8afa1af2c1cd3f772bd56b0b861a9f448d435"
+  },
+  "race_roots": 19,
+  "race_named_subtests": 140,
+  "fail": 0,
+  "skip": 0,
+  "Linux_Guard_build": 0,
+  "Darwin_Guard_build": 0,
+  "Linux_Builder_build": 0,
+  "Darwin_Builder_build": 0,
+  "S": 0,
+  "E": 0,
+  "normal_authorized": false,
+  "new_coverage_not_claimed_as_19": true,
+  "no_test_rerun": true,
+  "no_source_git_mutation": true
+}
