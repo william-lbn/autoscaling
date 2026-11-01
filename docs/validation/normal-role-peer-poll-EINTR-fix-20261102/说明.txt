@@ -1,0 +1,5 @@
+只修本次已实证EINTR误杀：listener在原peer.mu保护同原fd下最多4次Poll0，只EINTR可继续，每次原core重建pollfd/revents；只有真实n0/revents0才alive，退出/NVAL/其它错误/耗尽仍拒。先放peer.mu才执行原kill/Wait。公共41处Alive仍原单Poll，不越owner.close。
+23race根137子/0skip、8必要产物阶段均0。隔离真实SIGURG子进程4229次调用观察EINTR1后实际成功，未使用模型Poll序列；耗尽0不冒耗尽机制已过。
+真6.12 Guest原stage21记录attempts2/EINTR1/final n0/revents0/errno0、原peerPID131，未kill/afterCapturedfalse，证明该恢复路径实际执行。
+整体S仍FAIL134.7045s：原stock198与R1两ref过，后继DeviceCheck/brokerUnknown，只有udev-init，无完整9角色/PG。原Busybox WAIT→RESPAWN依赖是下一确定接线缺口，但未无证据将Unknown全部归为deadline。
+不把阶段组件改成整体通过，Source/normal/E/K8s仍0；不重标旧失败，不扩大超时，不采用RSS/idle/固定normal限额冒安全降限。

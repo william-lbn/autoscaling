@@ -1,0 +1,68 @@
+{
+  "status": "ACTUAL_6_12_GUEST_EINTR_RESTART_PROVEN_OVERALL_ROLE_CHAIN_STILL_FAIL",
+  "native": "/data/neon-build/validation/normal-role-peer-poll-EINTR-fix-native-20261101T201732Z-4b9e1d-native",
+  "result_sha256": "c9f8282da0b04ee6251e4024d18407b92bdf2451919633eacb5bbf7f4884f232",
+  "console_sha256": "855ba4877f82ed4153a5d2f9c8c03c589aab70c215f4fcc006a9044e4eaa095c",
+  "raw_result_status": "FAIL_COMPONENT_OR_FIXTURE",
+  "seconds": 134.7045256049896,
+  "actual_guest_restart_event": {
+    "stage": 21,
+    "role": 5,
+    "decision_unix_nano": 1793564615752807877,
+    "recorded_unix_nano": 1793564615752807877,
+    "value": 0,
+    "peer_pidfd": {
+      "baseline_captured": true,
+      "original_peer_pid": 131,
+      "original_fd": 881,
+      "before_monitor": {
+        "stat_ok": true,
+        "stat_errno": 0,
+        "stat_errno_known": false,
+        "device": 5,
+        "inode": 431,
+        "mode": 448,
+        "statfs_ok": true,
+        "statfs_errno": 0,
+        "statfs_errno_known": false,
+        "fs_type": 1346978886
+      },
+      "original_poll": {
+        "fd_present": true,
+        "poll_called": true,
+        "n": 0,
+        "revents": 0,
+        "errno": 0,
+        "errno_known": false,
+        "attempts": 2,
+        "interruptions": 1
+      },
+      "after_kill_wait": {
+        "stat_ok": false,
+        "stat_errno": 0,
+        "stat_errno_known": false,
+        "device": 0,
+        "inode": 0,
+        "mode": 0,
+        "statfs_ok": false,
+        "statfs_errno": 0,
+        "statfs_errno_known": false,
+        "fs_type": 0
+      },
+      "after_kill_wait_captured": false
+    }
+  },
+  "only_actual_role_entries": [
+    "udev-init"
+  ],
+  "classification": [
+    "actual successful restart is observed component behavior, not overall S PASS",
+    "after_kill_wait_captured=false means no killWait sampling for this successful restart",
+    "new Guest proof complements real Host SIGURG component mechanism",
+    "old6aa causal FAIL is unchanged",
+    "no observed four-attempt exhaustion or complete9/PG/E claimed"
+  ],
+  "Source": false,
+  "normal": false,
+  "E": 0
+}

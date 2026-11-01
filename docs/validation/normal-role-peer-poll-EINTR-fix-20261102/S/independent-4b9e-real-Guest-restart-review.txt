@@ -1,0 +1,18 @@
+4b9e修复后的真实Guest复核：EINTR重启已证，整体仍FAIL
+
+准确4b9e1d-native原result FAIL_COMPONENT_OR_FIXTURE，134.705s，仅真实udev-init入口；后续
+DeviceCheck与broker返回Unknown，没有完整9角色/PG/E。原FAIL不重标。
+
+同真实6.12.26 Guest原stage21：peer PID131（与Client entry实际PID一致）/原FD881，
+Attempts2、Interruptions1，最终真实Poll n0/revents0/errno0。afterKillWaitCaptured=false，
+表示该成功重启没有走killWait采样，不是FD后态Fstat失败。observer已把stage21与旧kill范围
+分开；新逻辑在真实运行中确实消费过EINTR后成功，未把这次中断误判失活。
+
+此前编译U23根137子/8phase0与隔离Host SIGURG真实4229calls中1次EINTR后成功，已有独立
+artifact/signal收据。现在真实Guest也有直接见证；不声称Guest这次打断信号一定是SIGURG，
+不声称四次全耗尽分支实际发生，不把组件修复通过写成角色链通过。公共41callers仍旧单Poll。
+
+直接后继仍是cold.wait与实际启动依赖。生产normalSystemV3InitEntries把udev标RESPAWN而
+udev-init标WAIT，实际fixture/prepared/rootdisk三份表一致；P2已另外核准确BusyBox1.36.1
+阶段顺序。应另在新授权/新nonce解决该依赖，不通过放宽cold检查或延长期限绕过。
+本轮只读原件，无重测或源码/Git变更；旧6aa/a45/4b/cd8/d915历史均保。

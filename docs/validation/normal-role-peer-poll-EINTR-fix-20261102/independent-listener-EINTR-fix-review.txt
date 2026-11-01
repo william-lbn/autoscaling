@@ -1,0 +1,28 @@
+EINTR误杀最窄修复：listener-only四次，最终五源独立审查
+
+准确freeze 5b9fbe3936387090be1bdf5a53cebcddc2abe476c6ce2f5e278c8b06d1de3961、base e6e36b91；
+五源逐SHA匹配。所审代码无明确阻断，必要Go4与真实信号机制/新产物另验后才能起精确S。
+
+公共Alive wrapper仍仅一次原core，原41处调用行为/错误/判据不改。新增私有restart生产调用
+点精确只有listener一个。它跨整个尝试范围持同peer.mu，owner peer.close也取同mu，且原
+handler本就monitor join后才defer close，因此四次内无合法owner.close/复用窗口。peer.mu在
+判断返回后立即释放，再走原kill+Wait/记录，没有跨Wait持锁或反向资源锁。
+
+for attempt<4是总共最多四次而非额外四重试。每次重新调用原core，重新创建PollFd，清空
+revents；只有e==unix.EINTR继续。任其它errno、n/flags异常、IN/HUP/NVAL均原错误立即拒；
+四次全中断返回EINTR仍非alive。只有真实完成的n0/revents0/errnil能成功，不把中断当许可，
+不按PID重开/切换FD，也不加ctx timeout/资源/公共接口放宽。最终observation带Attempts和
+累计Interruptions，final n/revents/errno来自最后一次真实Poll。
+
+成功重启仅stage21私有观测，无新Fstat或Source状态。afterKillWaitCaptured显式区分未执行
+kill的空后态；observer把21与旧13..20 kill范围分开，不会把一次成功重启叫kill。原固定64
+槽/通知/深复制/锁外输出保持；没有将diag布尔用于任何授权或选择。
+
+直接真实FD四状态保持；信号机制只在隔离test子进程用真实SIGURG对已锁定TID发信号，
+同原self pidfd执行实际helper，五秒/两百万次外限，每helper最多4。必须实际观察到非零
+EINTR后同原成功零/零才PASS，否则失败不skip；没有注入Poll函数或用序列模型冒机制。
+父子进程超时均有界、只给自身进程发信号，不影响生产Root/VM。Go4 worker还须核原机制
+JSON observed_EINTR_attempts>0/actual_success_after_EINTR=true/synthetic_Poll_sequence=false。
+
+本审查只读源/调用点，不重跑业务或修改Git。旧6aa FAIL仍保，当前不声称真9角色、PG、
+normal或E通过。4b9e1d新图的必要测试与四新ELF将按精确nonce独立核门。

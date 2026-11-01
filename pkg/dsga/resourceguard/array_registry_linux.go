@@ -73,12 +73,14 @@ func (o *arrayRegistryOriginal) close() {
 
 // 同一次原Poll的私有事实。不是alive权限；完整保留int n/int16 revents/原errno，不截断编码。
 type arrayRegistryPIDFDObservation struct {
-	FDPresent  bool   `json:"fd_present"`
-	PollCalled bool   `json:"poll_called"`
-	N          int    `json:"n"`
-	Revents    int16  `json:"revents"`
-	Errno      uint64 `json:"errno"`
-	ErrnoKnown bool   `json:"errno_known"`
+	FDPresent     bool   `json:"fd_present"`
+	PollCalled    bool   `json:"poll_called"`
+	N             int    `json:"n"`
+	Revents       int16  `json:"revents"`
+	Errno         uint64 `json:"errno"`
+	ErrnoKnown    bool   `json:"errno_known"`
+	Attempts      int    `json:"attempts"`
+	Interruptions int    `json:"interruptions"`
 }
 
 func arrayRegistryPIDFDAlive(fd int) error {
@@ -92,9 +94,13 @@ func arrayRegistryPIDFDAliveObservation(fd int) (arrayRegistryPIDFDObservation, 
 	}
 	p := []unix.PollFd{{Fd: int32(fd), Events: unix.POLLIN}}
 	out.PollCalled = true
+	out.Attempts = 1
 	n, err := unix.Poll(p, 0)
 	out.N, out.Revents = n, p[0].Revents
 	if err != nil {
+		if err == unix.EINTR {
+			out.Interruptions = 1
+		}
 		if errno, ok := err.(unix.Errno); ok {
 			out.Errno, out.ErrnoKnown = uint64(errno), true
 		}
@@ -104,6 +110,27 @@ func arrayRegistryPIDFDAliveObservation(fd int) (arrayRegistryPIDFDObservation, 
 		return out, fmt.Errorf("original pidfd exited or unknown")
 	}
 	return out, nil
+}
+
+// 仅listener在持原peer.mu时调用；公共Alive及其余caller仍为原单次Poll。
+// 最多4次，同原fd且每次由原core重建pollfd；EINTR从不直接算alive。
+func arrayRegistryPIDFDAliveListenerRestart(fd int) (arrayRegistryPIDFDObservation, error) {
+	var out arrayRegistryPIDFDObservation
+	interruptions := 0
+	for attempt := 0; attempt < 4; attempt++ {
+		current, e := arrayRegistryPIDFDAliveObservation(fd)
+		interruptions += current.Interruptions
+		current.Attempts = attempt + 1
+		if !current.PollCalled {
+			current.Attempts = 0
+		}
+		current.Interruptions = interruptions
+		out = current
+		if e != unix.EINTR {
+			return out, e
+		}
+	}
+	return out, unix.EINTR
 }
 func arrayRegistryDup(fd int) (int, error) {
 	if fd < 0 {

@@ -1,0 +1,116 @@
+{
+  "scope": "本轮PIDFD listener有界重启组件实证，不是Source/完整角色/PG/normal验收",
+  "actual_host_signal_mechanism": {
+    "actual_calls": 4229,
+    "actual_signal": "SIGURG",
+    "actual_success_after_EINTR": true,
+    "four_attempt_exhaustions": 0,
+    "observed_EINTR_attempts": 1,
+    "same_original_PIDFD": true,
+    "synthetic_Poll_sequence": false
+  },
+  "actual_guest_kernel6_12_restart_event": {
+    "stage": 21,
+    "role": 5,
+    "decision_unix_nano": 1793564615752807877,
+    "recorded_unix_nano": 1793564615752807877,
+    "value": 0,
+    "peer_pidfd": {
+      "baseline_captured": true,
+      "original_peer_pid": 131,
+      "original_fd": 881,
+      "before_monitor": {
+        "stat_ok": true,
+        "stat_errno": 0,
+        "stat_errno_known": false,
+        "device": 5,
+        "inode": 431,
+        "mode": 448,
+        "statfs_ok": true,
+        "statfs_errno": 0,
+        "statfs_errno_known": false,
+        "fs_type": 1346978886
+      },
+      "original_poll": {
+        "fd_present": true,
+        "poll_called": true,
+        "n": 0,
+        "revents": 0,
+        "errno": 0,
+        "errno_known": false,
+        "attempts": 2,
+        "interruptions": 1
+      },
+      "after_kill_wait": {
+        "stat_ok": false,
+        "stat_errno": 0,
+        "stat_errno_known": false,
+        "device": 0,
+        "inode": 0,
+        "mode": 0,
+        "statfs_ok": false,
+        "statfs_errno": 0,
+        "statfs_errno_known": false,
+        "fs_type": 0
+      },
+      "after_kill_wait_captured": false
+    }
+  },
+  "actual_guest_kill_markers": 0,
+  "whole_S_original": {
+    "stable_id": "NEON-S-ROLE-PEER-POLL-EINTR-FIX-001",
+    "status": "FAIL_COMPONENT_OR_FIXTURE",
+    "Host_container_exit": 1,
+    "Guest_exits": [
+      "1",
+      "1"
+    ],
+    "initial_exits": [
+      "0"
+    ],
+    "R1_alive_refs": [
+      "4fa982a3154b07c2036f71b4aed0afbe884f378e6bd788d611743d353a03ff0f"
+    ],
+    "R1_exited_refs": [
+      "4fa982a3154b07c2036f71b4aed0afbe884f378e6bd788d611743d353a03ff0f"
+    ],
+    "actual_stock_receipts": [
+      {
+        "projection_sha256": "127d8ce15d3c6b043f5059389dba0b9f976ad3691077434cfb26603c165a25c4",
+        "wait_sha256": "1109f9b2870cb4ff59446aaec30b476db8c1d9d9ac0b822c21c697efacd2c2a6",
+        "manifest_sha256": "885ab22a3873a51f2c8feac800ec635337cec8d6491cd81f8e3862fdd5bccece",
+        "package_lock_sha256": "cca0c098d0138d7159f1a09a90ec71618e798ac87272825d3e12778cbc6e5332",
+        "targets": 198,
+        "runtime_phase": 3,
+        "typed_source": true,
+        "normal": false
+      }
+    ],
+    "actual_kvm": {
+      "enabled": true,
+      "present": true
+    },
+    "seconds": 134.7045256049896,
+    "actual_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+    "Guest_ELF_sha256": "75d2cfbb795abf6acae074c7f0cd4f0652176348d9e78c385228ea0fab9b7c89",
+    "Host_ELF_sha256": "6c25c0100befdf88599d2c4b6bdf33dc09dfe09ce61f02714b733b1111e2ab29",
+    "Host_API_is_model": true,
+    "production_CLI_only_compiled": true,
+    "ordinary_services_executed": false,
+    "PG_executed": false,
+    "normal_authorized": false,
+    "E": 0,
+    "diagnostic_only": true,
+    "actual_role_entries": [
+      "udev-init"
+    ],
+    "role_kill_diagnostic_json": [],
+    "ordinary9_qualified": false
+  },
+  "global41_Alive_callers_singlePoll_unchanged": true,
+  "listener_owns_same_peer_mu_for_four_total_attempts": true,
+  "no_held_peer_mu_during_original_killWait": true,
+  "attempt_exhaustion_mechanism_observed": false,
+  "remaining_actual_failure": "DeviceCheck/broker Unknown after cold.wait; not asserted to be exact deadline cause without receipt",
+  "future_lifecycle_dependency": "actual PID1 BusyBox WAIT init precedes RESPawn main; deterministic dependency requires correction, not yet changed"
+}

@@ -1,0 +1,50 @@
+{
+  "stable_id": "NEON-S-ROLE-PEER-POLL-EINTR-FIX-001",
+  "status": "FAIL_COMPONENT_OR_FIXTURE",
+  "Host_container_exit": 1,
+  "Guest_exits": [
+    "1",
+    "1"
+  ],
+  "initial_exits": [
+    "0"
+  ],
+  "R1_alive_refs": [
+    "4fa982a3154b07c2036f71b4aed0afbe884f378e6bd788d611743d353a03ff0f"
+  ],
+  "R1_exited_refs": [
+    "4fa982a3154b07c2036f71b4aed0afbe884f378e6bd788d611743d353a03ff0f"
+  ],
+  "actual_stock_receipts": [
+    {
+      "projection_sha256": "127d8ce15d3c6b043f5059389dba0b9f976ad3691077434cfb26603c165a25c4",
+      "wait_sha256": "1109f9b2870cb4ff59446aaec30b476db8c1d9d9ac0b822c21c697efacd2c2a6",
+      "manifest_sha256": "885ab22a3873a51f2c8feac800ec635337cec8d6491cd81f8e3862fdd5bccece",
+      "package_lock_sha256": "cca0c098d0138d7159f1a09a90ec71618e798ac87272825d3e12778cbc6e5332",
+      "targets": 198,
+      "runtime_phase": 3,
+      "typed_source": true,
+      "normal": false
+    }
+  ],
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "seconds": 134.7045256049896,
+  "actual_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+  "Guest_ELF_sha256": "75d2cfbb795abf6acae074c7f0cd4f0652176348d9e78c385228ea0fab9b7c89",
+  "Host_ELF_sha256": "6c25c0100befdf88599d2c4b6bdf33dc09dfe09ce61f02714b733b1111e2ab29",
+  "Host_API_is_model": true,
+  "production_CLI_only_compiled": true,
+  "ordinary_services_executed": false,
+  "PG_executed": false,
+  "normal_authorized": false,
+  "E": 0,
+  "diagnostic_only": true,
+  "actual_role_entries": [
+    "udev-init"
+  ],
+  "role_kill_diagnostic_json": [],
+  "ordinary9_qualified": false
+}

@@ -34,6 +34,7 @@ const (
 	normalRoleDiagKillCreatorDefer
 	normalRoleDiagKillCreatorCleanup
 	normalRoleDiagCreatorUnexpected
+	normalRoleDiagClientPollRestarted
 )
 const normalSystemRoleDiagnosticCapacity = 64
 
@@ -133,12 +134,13 @@ type normalSystemRoleDiagnosticFDObject struct {
 	FSType           int64  `json:"fs_type"`
 }
 type normalSystemRoleDiagnosticPeerPIDFD struct {
-	BaselineCaptured bool                               `json:"baseline_captured"`
-	OriginalPeerPID  int                                `json:"original_peer_pid"`
-	OriginalFD       int                                `json:"original_fd"`
-	BeforeMonitor    normalSystemRoleDiagnosticFDObject `json:"before_monitor"`
-	OriginalPoll     arrayRegistryPIDFDObservation      `json:"original_poll"`
-	AfterKillWait    normalSystemRoleDiagnosticFDObject `json:"after_kill_wait"`
+	BaselineCaptured      bool                               `json:"baseline_captured"`
+	OriginalPeerPID       int                                `json:"original_peer_pid"`
+	OriginalFD            int                                `json:"original_fd"`
+	BeforeMonitor         normalSystemRoleDiagnosticFDObject `json:"before_monitor"`
+	OriginalPoll          arrayRegistryPIDFDObservation      `json:"original_poll"`
+	AfterKillWait         normalSystemRoleDiagnosticFDObject `json:"after_kill_wait"`
+	AfterKillWaitCaptured bool                               `json:"after_kill_wait_captured"`
 }
 
 func normalSystemRoleDiagnosticFDObjectRead(fd int) normalSystemRoleDiagnosticFDObject {
@@ -187,5 +189,19 @@ func normalSystemRoleDiagnosticRecordPeerPoll(ctx context.Context, role string, 
 	baseline.OriginalPoll = poll
 	// 调用点已执行原cancelAndWait；不重Poll、不dup、不按PID重开，不取任何业务锁。
 	baseline.AfterKillWait = normalSystemRoleDiagnosticFDObjectRead(baseline.OriginalFD)
+	baseline.AfterKillWaitCaptured = true
 	normalSystemRoleDiagnosticAppend(d, normalRoleDiagKillClientPIDFD, role, decision, 0, &baseline)
+}
+
+func normalSystemRoleDiagnosticRecordPeerRestart(ctx context.Context, role string, baseline normalSystemRoleDiagnosticPeerPIDFD, poll arrayRegistryPIDFDObservation) {
+	if ctx == nil {
+		return
+	}
+	d, _ := ctx.Value(normalSystemRoleDiagnosticKey{}).(*normalSystemRoleDiagnostic)
+	if d == nil {
+		return
+	}
+	baseline.OriginalPoll = poll
+	// 只记同次真实成功结果，不加Fstat/Poll/授权；未执行kill/Wait则after明确未采样。
+	normalSystemRoleDiagnosticAppend(d, normalRoleDiagClientPollRestarted, role, 0, 0, &baseline)
 }

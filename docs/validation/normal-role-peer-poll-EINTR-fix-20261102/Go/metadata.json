@@ -1,0 +1,38 @@
+{
+  "nonce": "20261101T201732Z-4b9e1d",
+  "unit": "normal-role-peer-poll-eintr-fix-go-20261101t201732z-4b9e1d.service",
+  "base": "e6e36b91819721d0e07c63407c531a1c39a64c02",
+  "source_lock_sha256": "c775d9020047bb5bfd42fff3723fd4b0c3be31e38a9506c441c426700de6ed31",
+  "source_freeze_sha256": "5b9fbe3936387090be1bdf5a53cebcddc2abe476c6ce2f5e278c8b06d1de3961",
+  "source_owned5": {
+    "pkg/dsga/resourceguard/array_registry_pidfd_restart_linux_test.go": "af7eb161bafe7a335ebcaafbdbb36c380729217bc27d8aa544390ed0d38d3a94",
+    "pkg/dsga/resourceguard/normal_system_role_diagnostic_linux.go": "88d26b24cf76314bc0a26947e16a99c256cc6a7aae8fadd79aa249c27558fc73",
+    "pkg/dsga/resourceguard/normal_zz_stock_real_roles_native_test.go": "85556c4e72b982387136f7ba0e9883bb6b4cf41104b3471c84c017b7e17f1ed5",
+    "pkg/dsga/resourceguard/normal_system_role_service_listener_linux.go": "4b2a6ae18a12787c99edb361bd7814959c13c7fb2f17ce6a9f6938c832becaa1",
+    "pkg/dsga/resourceguard/array_registry_linux.go": "ac5f6e923fb70b1f5448f3e93a90f116b98fb7635a2db584288ad18f2f73e6ff"
+  },
+  "support1": {},
+  "COPY_files": 1398,
+  "COPY_bytes": 11669948,
+  "phase_keys": [
+    "u.exitcode",
+    "cli.exitcode",
+    "builder.exitcode",
+    "native-compile.exitcode",
+    "native-target-list.exitcode",
+    "host-compile.exitcode",
+    "host-export.exitcode",
+    "fixture-seed.exitcode"
+  ],
+  "native_successor": "/data/neon-build/validation/normal-role-peer-poll-EINTR-fix-native-20261101T201732Z-4b9e1d-native",
+  "runtime_review_path": "/data/neon-build/validation/normal-role-peer-poll-EINTR-fix-20261102/runtime-review-20261101T201732Z-4b9e1d.json",
+  "necessary_new_artifacts": [
+    "service.test",
+    "host-memory.test",
+    "resource-guard.real",
+    "vm-builder.real"
+  ],
+  "normal_authorized": false,
+  "ordinary9_qualified": false,
+  "E": 0
+}

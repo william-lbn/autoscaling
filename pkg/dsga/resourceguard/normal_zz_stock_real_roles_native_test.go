@@ -23,12 +23,23 @@ func init() {
 		ctx = context.WithValue(ctx, normalSystemRoleDiagnosticKey{}, diagnostic)
 		// changed永不close；生产仅nonblocking通知，不携callback或权限。
 		go func() {
+			restartPrinted := false
 			for range diagnostic.changed {
 				snapshot := diagnostic.snapshot()
 				kill := false
 				for _, event := range snapshot.Events {
-					if event.Stage >= normalRoleDiagKillAcceptedWrite {
+					if event.Stage >= normalRoleDiagKillAcceptedWrite && event.Stage <= normalRoleDiagCreatorUnexpected {
 						kill = true
+					}
+				}
+				if !restartPrinted {
+					for _, event := range snapshot.Events {
+						if event.Stage == normalRoleDiagClientPollRestarted {
+							raw, _ := json.Marshal(snapshot)
+							fmt.Printf("REAL_ROLES_DEV_PIDFD_RESTART_DIAGNOSTIC_JSON %s\n", raw)
+							restartPrinted = true
+							break
+						}
 					}
 				}
 				if kill {

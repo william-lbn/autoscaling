@@ -1,0 +1,40 @@
+{
+  "status": "EXACT_4B9E_ARTIFACT_AND_REAL_SIGNAL_GATE_WRITTEN_NATIVE_NOT_YET_INTERPRETED",
+  "source_lock_sha256": "c775d9020047bb5bfd42fff3723fd4b0c3be31e38a9506c441c426700de6ed31",
+  "source_freeze_sha256": "5b9fbe3936387090be1bdf5a53cebcddc2abe476c6ce2f5e278c8b06d1de3961",
+  "gate_path": "/data/neon-build/validation/normal-role-peer-poll-EINTR-fix-20261102/runtime-review-20261101T201732Z-4b9e1d.json",
+  "gate_sha256": "552273c0e6161e3ef992ab0a2614b55961d1ecf1db458585273662f94c0db0ba",
+  "actual_artifacts": {
+    "service.test": "75d2cfbb795abf6acae074c7f0cd4f0652176348d9e78c385228ea0fab9b7c89",
+    "host-memory.test": "6c25c0100befdf88599d2c4b6bdf33dc09dfe09ce61f02714b733b1111e2ab29",
+    "resource-guard.real": "8b67936bd38526936dfae2245f46ce7d8936eedfec2e522131a8d657d97dd8fb",
+    "vm-builder.real": "33d5d9205d06c6bb165caf6b233febe585b45400fbd7fb32bbaf64385e110e9f"
+  },
+  "actual_roots": 23,
+  "actual_subcases": 137,
+  "skips": 0,
+  "actual_signal_mechanism": {
+    "actual_calls": 4229,
+    "actual_signal": "SIGURG",
+    "actual_success_after_EINTR": true,
+    "four_attempt_exhaustions": 0,
+    "observed_EINTR_attempts": 1,
+    "same_original_PIDFD": true,
+    "synthetic_Poll_sequence": false
+  },
+  "four_attempt_exhaustion_not_claimed_as_observed": true,
+  "phase_exits": {
+    "u.exitcode": 0,
+    "cli.exitcode": 0,
+    "builder.exitcode": 0,
+    "native-compile.exitcode": 0,
+    "native-target-list.exitcode": 0,
+    "host-compile.exitcode": 0,
+    "host-export.exitcode": 0,
+    "fixture-seed.exitcode": 0
+  },
+  "native_nonce": "20261101T201732Z-4b9e1d-native",
+  "Source": false,
+  "normal": false,
+  "E": 0
+}

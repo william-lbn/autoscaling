@@ -273,11 +273,17 @@ func (v *normalSystemRoleService) handle(conn *net.UnixConn) error {
 				return
 			case <-ticker.C:
 				// 保原OR短路顺序；先确定原杀分支，原kill/Wait完毕后才记诊断。
-				if observation, aliveErr := arrayRegistryPIDFDAliveObservation(peer.pidfd); aliveErr != nil {
+				peer.mu.Lock()
+				observation, aliveErr := arrayRegistryPIDFDAliveListenerRestart(peer.pidfd)
+				peer.mu.Unlock()
+				if aliveErr != nil {
 					decision := normalSystemRoleDiagnosticDecision(v.ctx)
 					_ = run.child.cancelAndWait()
 					normalSystemRoleDiagnosticRecordPeerPoll(v.ctx, role, decision, peerDiagnostic, observation)
 					return
+				}
+				if observation.Interruptions > 0 {
+					normalSystemRoleDiagnosticRecordPeerRestart(v.ctx, role, peerDiagnostic, observation)
 				}
 				if normalSystemRoleServiceConnectionGone(conn) {
 					decision := normalSystemRoleDiagnosticDecision(v.ctx)

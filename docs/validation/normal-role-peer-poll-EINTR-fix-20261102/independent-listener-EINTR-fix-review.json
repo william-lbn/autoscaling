@@ -1,0 +1,31 @@
+{
+  "status": "LISTENER_ONLY_BOUNDED4_SOURCE_REVIEW_NO_NEW_BLOCKER",
+  "source_freeze_sha256": "5b9fbe3936387090be1bdf5a53cebcddc2abe476c6ce2f5e278c8b06d1de3961",
+  "files": {
+    "pkg/dsga/resourceguard/array_registry_pidfd_restart_linux_test.go": "af7eb161bafe7a335ebcaafbdbb36c380729217bc27d8aa544390ed0d38d3a94",
+    "pkg/dsga/resourceguard/normal_system_role_diagnostic_linux.go": "88d26b24cf76314bc0a26947e16a99c256cc6a7aae8fadd79aa249c27558fc73",
+    "pkg/dsga/resourceguard/normal_zz_stock_real_roles_native_test.go": "85556c4e72b982387136f7ba0e9883bb6b4cf41104b3471c84c017b7e17f1ed5",
+    "pkg/dsga/resourceguard/normal_system_role_service_listener_linux.go": "4b2a6ae18a12787c99edb361bd7814959c13c7fb2f17ce6a9f6938c832becaa1",
+    "pkg/dsga/resourceguard/array_registry_linux.go": "ac5f6e923fb70b1f5448f3e93a90f116b98fb7635a2db584288ad18f2f73e6ff"
+  },
+  "single_production_restart_callsite": [
+    [
+      "normal_system_role_service_listener_linux.go",
+      277,
+      "observation, aliveErr := arrayRegistryPIDFDAliveListenerRestart(peer.pidfd)"
+    ]
+  ],
+  "public_wrapper_41_callers_keep_one_Poll": true,
+  "owned_fd_lock": "same peer.mu from before first Poll through final result, released before killWait",
+  "total_attempt_limit": 4,
+  "retry_only_errno": "EINTR",
+  "alive_requires": "actual successful original fd Poll n0/revents0/errornil",
+  "exhaustion_and_other_results_fail_closed": true,
+  "no_production_Poll_callback_or_PID_reopen": true,
+  "actual_signal_test_source": "TestArrayPIDFDListenerRestartRealSignal; isolated self-SIGURG, no synthetic sequence; actual observation required",
+  "reviewer_reruns": 0,
+  "actual_Go4_and_S_gate": "4b9e1d pending receipt; source review alone is not test PASS",
+  "Source": false,
+  "normal": false,
+  "E": 0
+}
