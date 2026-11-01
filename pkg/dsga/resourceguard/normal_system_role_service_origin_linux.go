@@ -36,15 +36,16 @@ type normalSystemRoleServiceOrigin struct {
 	ResourceStageSHA256 string                              `json:"resource_stage_sha256"`
 }
 type normalSystemRoleServiceStage struct {
-	ProtocolVersion  uint32                        `json:"protocol_version"`
-	Origin           normalSystemRoleServiceOrigin `json:"origin"`
-	Stage            string                        `json:"stage"`
-	PreviousSHA256   string                        `json:"previous_sha256,omitempty"`
-	BrokerTask       *normalSystemRoleObservation  `json:"broker_task,omitempty"`
-	Broker           *normalSystemLifecycleBinding `json:"broker,omitempty"`
-	SocketDevice     uint64                        `json:"socket_device,omitempty"`
-	SocketInode      uint64                        `json:"socket_inode,omitempty"`
-	ProbeNonceSHA256 string                        `json:"probe_nonce_sha256,omitempty"`
+	ResourceAuthority *normalSystemAuthorityReference `json:"resource_authority,omitempty"`
+	ProtocolVersion   uint32                          `json:"protocol_version"`
+	Origin            normalSystemRoleServiceOrigin   `json:"origin"`
+	Stage             string                          `json:"stage"`
+	PreviousSHA256    string                          `json:"previous_sha256,omitempty"`
+	BrokerTask        *normalSystemRoleObservation    `json:"broker_task,omitempty"`
+	Broker            *normalSystemLifecycleBinding   `json:"broker,omitempty"`
+	SocketDevice      uint64                          `json:"socket_device,omitempty"`
+	SocketInode       uint64                          `json:"socket_inode,omitempty"`
+	ProbeNonceSHA256  string                          `json:"probe_nonce_sha256,omitempty"`
 }
 type normalSystemRoleServiceStartup struct {
 	ProtocolVersion uint32                       `json:"protocol_version"`
@@ -52,13 +53,14 @@ type normalSystemRoleServiceStartup struct {
 	ReleasedSHA256  string                       `json:"released_sha256"`
 }
 type normalSystemRoleServiceMetadata struct {
-	ProtocolVersion uint32                        `json:"protocol_version"`
-	Origin          normalSystemRoleServiceOrigin `json:"origin"`
-	Broker          normalSystemLifecycleBinding  `json:"broker"`
-	ReleasedSHA256  string                        `json:"released_sha256"`
-	ReadySHA256     string                        `json:"ready_sha256,omitempty"`
-	SocketDevice    uint64                        `json:"socket_device"`
-	SocketInode     uint64                        `json:"socket_inode"`
+	ResourceAuthority *normalSystemAuthorityReference `json:"resource_authority,omitempty"`
+	ProtocolVersion   uint32                          `json:"protocol_version"`
+	Origin            normalSystemRoleServiceOrigin   `json:"origin"`
+	Broker            normalSystemLifecycleBinding    `json:"broker"`
+	ReleasedSHA256    string                          `json:"released_sha256"`
+	ReadySHA256       string                          `json:"ready_sha256,omitempty"`
+	SocketDevice      uint64                          `json:"socket_device"`
+	SocketInode       uint64                          `json:"socket_inode"`
 }
 
 func normalSystemRoleServiceStageName(nonce, stage string) string {
@@ -69,7 +71,7 @@ func (o normalSystemRoleServiceOrigin) validate() error {
 		return fmt.Errorf("original broker origin malformed")
 	}
 	f := o.Filesystem
-	if f.LayoutVersion != 2 || f.ProtocolVersion != 1 || f.OriginalRoot != o.Parent.RootConsumer || f.GuestBootID != o.Parent.GuestBootID || f.RuntimeDocumentSHA256 != o.Parent.RuntimeDocumentSHA256 || f.NativeBuildSHA256 != o.Parent.NativeBuildSHA256 || f.SystemManifestSHA256 != o.Parent.SystemManifestSHA256 || !normalSystemRoleDeclarationDigest(f.IntentSHA256) || !normalSystemRoleDeclarationDigest(f.CompletionSHA256) || !normalSystemRoleDeclarationDigest(f.VminitSHA256) || !f.Root.Readonly || f.Root.MountID == 0 || f.Namespace.Inode == 0 {
+	if f.LayoutVersion != 2 || normalFilesystemValidateReferenceVersion(f) != nil || f.OriginalRoot != o.Parent.RootConsumer || f.GuestBootID != o.Parent.GuestBootID || f.RuntimeDocumentSHA256 != o.Parent.RuntimeDocumentSHA256 || f.NativeBuildSHA256 != o.Parent.NativeBuildSHA256 || f.SystemManifestSHA256 != o.Parent.SystemManifestSHA256 || !normalSystemRoleDeclarationDigest(f.IntentSHA256) || !normalSystemRoleDeclarationDigest(f.CompletionSHA256) || !normalSystemRoleDeclarationDigest(f.VminitSHA256) || !f.Root.Readonly || f.Root.MountID == 0 || f.Namespace.Inode == 0 {
 		return fmt.Errorf("original broker filesystem producer differs")
 	}
 	if len(o.Namespace) != 8 {
@@ -96,6 +98,9 @@ func (o normalSystemRoleServiceOrigin) validate() error {
 	return nil
 }
 func (m normalSystemRoleServiceMetadata) validatePair() error {
+	if m.ResourceAuthority != nil && (m.ResourceAuthority.validate() != nil || m.ResourceAuthority.Broker != m.Broker.RootConsumer || m.ResourceAuthority.DeclarationSHA256 != m.Origin.DeclarationSHA256) {
+		return ErrUnknown
+	}
 	if m.ProtocolVersion != 1 || m.Origin.validate() != nil || !normalSystemRoleImmutableBindingsEqual(m.Origin.Parent, m.Broker) || m.Broker.RootConsumer.PID <= 1 || m.Broker.RootConsumer.StartTicks == 0 || !normalSystemRoleDeclarationDigest(m.Broker.RootConsumer.InstanceNonce) || m.Broker.RootConsumer == m.Origin.Parent.RootConsumer || !normalSystemRoleDeclarationDigest(m.ReleasedSHA256) {
 		return fmt.Errorf("original initialRoot/broker pair differs")
 	}

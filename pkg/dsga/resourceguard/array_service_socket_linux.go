@@ -19,6 +19,7 @@ import (
 )
 
 type arrayNativeServices struct {
+	admission     *normalAuthorityAdmission
 	guard         *Guard
 	source        nativeBirthSource
 	split         normalSplitInputs
@@ -67,6 +68,12 @@ func arrayFixedListener(path string) (*net.UnixListener, error) {
 
 // 唯一固定生产构造器在原server.lock内调用，不接受路径/Expected/ready布尔。
 func startArrayNativeServices(parent context.Context, g *Guard, sealed SourceConfig) (*arrayNativeServices, error) {
+	return startArrayNativeServicesWithAdmission(parent, g, sealed, nil)
+}
+func startArrayNativeServicesWithAdmission(parent context.Context, g *Guard, sealed SourceConfig, admission *normalAuthorityAdmission) (*arrayNativeServices, error) {
+	if admission != nil && admission.guard != g {
+		return nil, ErrUnknown
+	}
 	source, pg, err := readNativeBirthOriginalSource()
 	if err != nil {
 		return nil, err
@@ -94,7 +101,7 @@ func startArrayNativeServices(parent context.Context, g *Guard, sealed SourceCon
 		return nil, err
 	}
 	ctx, cancel := context.WithCancel(parent)
-	s := &arrayNativeServices{guard: g, source: source, split: split, birth: birth, arrays: arrays, cancel: cancel, launchPins: map[string]*arrayLaunchPin{}}
+	s := &arrayNativeServices{admission: admission, guard: g, source: source, split: split, birth: birth, arrays: arrays, cancel: cancel, launchPins: map[string]*arrayLaunchPin{}}
 	s.workers.Add(2)
 	go s.serve(ctx, birth, true)
 	go s.serve(ctx, arrays, false)
@@ -121,9 +128,24 @@ func (s *arrayNativeServices) serve(ctx context.Context, listener *net.UnixListe
 			if n, ok := err.(net.Error); ok && n.Timeout() {
 				continue
 			}
+			if s.admission != nil && ctx.Err() == nil {
+				s.admission.fail()
+			}
 			return
 		}
 		call, cancel := context.WithTimeout(ctx, 30*time.Second)
+		if s.admission != nil {
+			kind := uint32(2)
+			if birth {
+				kind = 1
+			}
+			handled, e := s.admission.native(call, s.guard, conn, kind)
+			if handled || e != nil {
+				cancel()
+				_ = conn.Close()
+				continue
+			}
+		}
 		if birth {
 			_ = s.handleBirth(call, conn)
 		} else {

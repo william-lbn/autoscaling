@@ -4,6 +4,7 @@ package resourceguard
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -25,7 +26,13 @@ func decodeNormalSystemRoleBrokerDeclaration(raw []byte) (normalSystemRoleBroker
 	}
 	argv, _ := normalSystemVectorSHA(normalSystemRoleBrokerArgv())
 	env, _ := normalSystemVectorSHA(normalSystemRoleBrokerEnvironment())
-	if d.ProtocolVersion != 1 || d.Scope != normalSystemRoleBrokerDeclarationScope || d.ExecutablePath != normalSystemRoleBrokerExecutable || d.ArgvSHA256 != argv || d.EnvironmentSHA256 != env || d.NamespaceProtocolVersion != 1 || d.GateProtocolVersion != 1 || d.Lifetime != normalSystemRoleBrokerLifetime || !normalSystemRoleDeclarationDigest(d.ExecutableSHA256) || !normalSystemRoleDeclarationDigest(d.ComputeBuildPlanSHA256) {
+	var fields map[string]json.RawMessage
+	if e := json.Unmarshal(raw, &fields); e != nil {
+		return d, fmt.Errorf("fixed broker declaration malformed")
+	}
+	modeRaw, hasMode := fields["resource_authority_mode"]
+	validVersion := d.ProtocolVersion == 1 && d.Scope == normalSystemRoleBrokerDeclarationScope && !hasMode && d.ResourceAuthorityMode == "" || d.ProtocolVersion == 2 && d.Scope == normalSystemRoleBrokerDeclarationV2Scope && hasMode && string(modeRaw) != "null" && d.ResourceAuthorityMode == normalSystemRoleBrokerOwnedAuthorityMode
+	if !validVersion || d.ExecutablePath != normalSystemRoleBrokerExecutable || d.ArgvSHA256 != argv || d.EnvironmentSHA256 != env || d.NamespaceProtocolVersion != 1 || d.GateProtocolVersion != 1 || d.Lifetime != normalSystemRoleBrokerLifetime || !normalSystemRoleDeclarationDigest(d.ExecutableSHA256) || !normalSystemRoleDeclarationDigest(d.ComputeBuildPlanSHA256) {
 		return d, fmt.Errorf("fixed broker declaration differs from supported original role")
 	}
 	return d, nil

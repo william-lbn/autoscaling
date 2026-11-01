@@ -92,6 +92,9 @@ func runNormalSystemRoleClient(ctx context.Context, role string) error {
 	if e != nil {
 		return e
 	}
+	if e = decl.checkAuthorityMetadata(metadata); e != nil {
+		return e
+	}
 	if metadata.ReadySHA256 == "" || metadata.Origin.DeclarationSHA256 != decl.rawSHA || !normalSystemRoleImmutableBindingsEqual(metadata.Broker, source.binding) {
 		return errors.Join(ErrUnknown, fmt.Errorf("original role broker metadata/source differs"))
 	}

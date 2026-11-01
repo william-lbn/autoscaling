@@ -1,0 +1,23 @@
+[
+  "docker",
+  "run",
+  "--rm",
+  "--network=none",
+  "--pull=never",
+  "--cpus=1",
+  "--memory=512m",
+  "--memory-swap=512m",
+  "-v",
+  "/data/neon-build/validation/normal-role-authority-v2-final-native-build-20261101T054417Z-dfe59c/export/fixture/isofiles:/isofiles:ro",
+  "-v",
+  "/data/neon-build/validation/normal-role-authority-v2-final-native-build-20261101T054417Z-dfe59c/native-run:/proof:rw",
+  "--entrypoint",
+  "genisoimage",
+  "sha256:cb6635e1790c7ceae132b6a75a61e85e33be1fde8dbd9c421a17a33cd2494b9d",
+  "-quiet",
+  "-R",
+  "-J",
+  "-o",
+  "/proof/runtime.iso",
+  "/isofiles"
+]

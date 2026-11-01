@@ -23,6 +23,7 @@ import (
 const normalSystemRoleServiceLockName = "role-broker-service.lock"
 
 type normalSystemRoleService struct {
+	authority   *normalSystemResourceAuthority
 	source      *normalSystemLifecycleSource
 	declaration *normalSystemRoleDeclarationSource
 	namespace   *normalSystemRoleNamespaceSource
@@ -219,6 +220,9 @@ func (v *normalSystemRoleService) handle(conn *net.UnixConn) error {
 	}
 	v.requests[request.RequestNonce] = struct{}{}
 	v.mu.Unlock()
+	if role == "resource" && v.authority != nil {
+		return v.attachResource(conn, peer, request)
+	}
 	queue, queueCancel := context.WithTimeout(v.ctx, 90*time.Second)
 	defer queueCancel()
 	run, e := v.spawnRole(queue, role, peer)
@@ -309,6 +313,13 @@ func (v *normalSystemRoleService) spawnRole(ctx context.Context, role string, pe
 		v.broker.mu.Unlock()
 		run, e := v.broker.spawn(stage, role)
 		if e == nil {
+			if role == "compute" && v.authority != nil {
+				if e = v.authority.bindOriginalCompute(stage, run); e != nil {
+					_ = run.child.cancelAndWait()
+					_ = v.finishExitedRoleLocked(run)
+					return nil, errors.Join(ErrUnknown, e)
+				}
+			}
 			return run, nil
 		}
 		v.broker.mu.Lock()
@@ -569,7 +580,8 @@ func normalSystemRoleServiceConnectionGone(conn *net.UnixConn) bool {
 	e = raw.Control(func(fd uintptr) {
 		var b [1]byte
 		n, _, _, _, e := unix.Recvmsg(int(fd), b[:], nil, unix.MSG_PEEK|unix.MSG_DONTWAIT)
-		gone = e != unix.EAGAIN && e != unix.EWOULDBLOCK && (e != nil || n >= 0)
+		// EINTR只是不确定，不能证明原连接结束；下个受限tick重核。
+		gone = e != unix.EAGAIN && e != unix.EWOULDBLOCK && e != unix.EINTR && (e != nil || n >= 0)
 	})
 	return e != nil || gone
 }
@@ -612,6 +624,11 @@ func (v *normalSystemRoleService) publishReady(ctx context.Context, readySHA str
 	}
 	if e = ctx.Err(); e != nil {
 		return e
+	}
+	if v.authority != nil {
+		if e = v.authority.activate(v.metadata.ResourceAuthority); e != nil {
+			return e
+		}
 	}
 	v.enabled.Store(true)
 	return nil

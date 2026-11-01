@@ -1,0 +1,40 @@
+{
+  "status": "PASS_COMPONENT_ONLY",
+  "pass": true,
+  "Host_QEMU_exit": 0,
+  "Guest_exit": [
+    "0"
+  ],
+  "initial_exit": [
+    "0"
+  ],
+  "caseIDs": [
+    "NEON-S-SYSTEM-ROLE-SERVICE-008",
+    "NEON-S-SYSTEM-ROLE-SERVICE-001",
+    "NEON-S-SYSTEM-ROLE-SERVICE-002",
+    "NEON-S-SYSTEM-ROLE-SERVICE-010",
+    "NEON-S-SYSTEM-ROLE-SERVICE-003",
+    "NEON-S-SYSTEM-ROLE-SERVICE-007",
+    "NEON-S-SYSTEM-ROLE-SERVICE-005",
+    "NEON-S-SYSTEM-ROLE-SERVICE-006",
+    "NEON-S-SYSTEM-ROLE-SERVICE-009",
+    "NEON-S-SYSTEM-ROLE-SERVICE-004"
+  ],
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "seconds": 75.4819564690115,
+  "actual_notes_SHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "Go_test_ELF_sha256": "30dc3bcd42cf74a6baac601223b7a232a63f517f6ab8fcc95c264e90e24679cb",
+  "production_CLI_SHA256": "d6c93052eb10fd615f7c1dd7b374a8b5d6484988aec029cf168f8be315d84340",
+  "production_CLI_compiled_not_executed": true,
+  "base_memory_bytes": 2147483648,
+  "vCPUs": 2,
+  "source_fixture": true,
+  "ordinary9_controls_not_installed_yet": true,
+  "other_System_programs_standins": true,
+  "PG_executed": false,
+  "normal_authorized": false,
+  "E": 0
+}

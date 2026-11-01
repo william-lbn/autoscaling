@@ -1,0 +1,11 @@
+最终补充批：原159历史档案不覆写，本目录与union stage用于最终源码评审。
+
+仅解冻三文件：Compute lease保存原pending/exec-stopped/released三个FileWitness；getter在原resource锁→producerMu下逐份只读核dev/inode/size/ctime/SHA，任一删除/同字节换inode/改字节返回Unknown。不fsync、不补记录、不取broker.mu/execMu、不按PID重开。取回副本复制固定3值。getter依然只证明原task与历史来源，不是预算/stdio或持续Compute执行代码资格。新U1根9子例对三个phase的三种真实文件变更逐一拒绝，并确认读回门不补删文件/新增历史。
+
+生产floor比较没有改。原matchOriginalRecord只在precommit intent/prepared使用固定floor/整recordSHA；runtime保持同identity且floor>=原floor。真实S在COMMIT后以原fixture签名key/原Identity/原FenceRequest发合法HTTP POST floor+1，实际GET完整View及原state.json核已推进和Bootstrap/SystemObserved。然后取回同原Compute clone lease；first resource真实退出、新PID1客户端重生附着同Authority、迟到旧nonce结束不影响新nonce。这些分别合并进原009/010检查点，不新增S根。candidate原有效fence仍503，原state/Birth/launchPins零变化断言保持。
+
+准确图：Git7a3e8fa66b916444b7c750e40fec1abb367463e1+owned23+独立已验DTO3依赖，Root5/P116与该提交逐项匹配；6543实际COPY全OK。Linux34race根212sub零fail/skip，CLI/native/fixture0。声明2实际369/KVM Guest/R1/QEMU=0，001..010共10检查点，62.67秒；同新ELF的声明1旧R3 ServeGuest实际HTTP兼容、001..007+011共8唯一检查点，66.73秒，Guest/R1/QEMU=0。两者都是同一个native根的两个环境，不新增10/8个S根。声明1新driver在运行前已规定仅011可以重复一次而不增加稳定ID；此轮实际011只一次，原恰好一次判定也成立。旧原FAIL及独立重评仍原样在历史目录，不改结果。
+
+新ELF9ac413f4a39d606b6dc4a225ce5864d749393752418b91d205d4587d7dd8822f，真实CLIad70d233e050bd559fce1df483e37e42fc34dc5dec9c5b04ebd8f39c21daef42只编译。Guest用TEST_ONLY TestMain调用生产函数，不能称生产CLI实执行。原其它20源SHA不变。独立同6543图Darwin/arm64 CGO0编译0，弥补的是通过另批DTO3修复后的新图；旧Darwin原失败不转签、不删除。
+
+本S仍FS协议1、旧369，不冒FS2→R2memory/18c/PG正例；其它角色/Compute standin、issuer fixture、ordinary9 controls未装、无typedstdio/完整continuous Source/normal授权/VM缩内存/K8s E。AllSourcesClosed=false，E0，五个最终normal拒绝保持。后继decl3/transfer2/第五原FD是另一批合同，未夹入本次修复。所有Git由Root串行完成。

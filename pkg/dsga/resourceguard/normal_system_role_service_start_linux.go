@@ -175,7 +175,10 @@ func startNormalSystemRoleBroker(ctx context.Context, g *Guard, system *normalSy
 		if e = probeNormalSystemRoleServiceOriginal(call, system, preparation.declaration, preparation.namespaces, preparation.child, metadata); e != nil {
 			return e
 		}
-		ready := normalSystemRoleServiceStage{ProtocolVersion: 1, Origin: origin, Stage: "ready", PreviousSHA256: preparation.transfer.GateSHA256[2], BrokerTask: &preparation.transfer.Task, Broker: &metadata.Broker, SocketDevice: metadata.SocketDevice, SocketInode: metadata.SocketInode}
+		if e = preparation.declaration.checkAuthorityMetadata(metadata); e != nil {
+			return e
+		}
+		ready := normalSystemRoleServiceStage{ProtocolVersion: 1, Origin: origin, Stage: "ready", ResourceAuthority: metadata.ResourceAuthority, PreviousSHA256: preparation.transfer.GateSHA256[2], BrokerTask: &preparation.transfer.Task, Broker: &metadata.Broker, SocketDevice: metadata.SocketDevice, SocketInode: metadata.SocketInode}
 		readySHA, e = normalSystemRoleServiceAppendStage(state, ready)
 		if e != nil {
 			return e

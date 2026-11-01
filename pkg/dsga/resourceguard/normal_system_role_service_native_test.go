@@ -4,6 +4,8 @@ package resourceguard
 
 import (
 	"context"
+	"crypto/ed25519"
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -178,7 +180,10 @@ func exportNormalRoleServiceV3(t *testing.T) {
 	planRaw, e := json.Marshal(plan)
 	require.NoError(t, e)
 	guard := read(filepath.Join(root, normalSystemRoleBrokerExecutable))
-	broker, e := NormalSystemRoleBrokerDeclarationJSON(physicalDigest(guard), physicalDigest(planRaw))
+	broker, e := NormalSystemRoleBrokerDeclarationV2JSON(physicalDigest(guard), physicalDigest(planRaw))
+	if os.Getenv("DSGA_TEST_BROKER_DECLARATION_VERSION") == "1" {
+		broker, e = NormalSystemRoleBrokerDeclarationJSON(physicalDigest(guard), physicalDigest(planRaw))
+	}
 	require.NoError(t, e)
 	controls, e := NormalKernelControlSourceManifestJSON()
 	require.NoError(t, e)
@@ -220,6 +225,7 @@ func exportNormalRoleServiceV3(t *testing.T) {
 	require.NoError(t, json.Unmarshal(read(filepath.Join(root, FixedSealedRuntimePath)), &d))
 	var source SourceConfig
 	require.NoError(t, json.Unmarshal(d.SourceJSON, &source))
+	source.ControlPublicKey = base64.RawURLEncoding.EncodeToString(normalAuthorityDEVKey().Public().(ed25519.PublicKey))
 	source.Limits.SystemMemoryMaxBytes = 512 << 20
 	source.Limits.OutsideUpperBytes = 768 << 20
 	d.SourceJSON, e = json.Marshal(source)
@@ -310,7 +316,13 @@ func TestMain(m *testing.M) {
 			}
 			os.Exit(0)
 		case "system-role-broker":
-			if e := RunNormalSystemRoleBroker(context.Background()); e != nil {
+			ctx := context.WithValue(context.Background(), normalAuthorityPrepareCheckpointKey{}, func(a *normalSystemResourceAuthority) error {
+				call, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+				return normalAuthorityDEVCandidate(call, a)
+			})
+			go normalAuthorityDEVObserve(ctx)
+			if e := RunNormalSystemRoleBroker(ctx); e != nil {
 				fmt.Println("ROLE_SERVICE_BROKER_REFUSED", e)
 				os.Exit(43)
 			}
@@ -336,7 +348,30 @@ func TestMain(m *testing.M) {
 			if len(os.Args) != 3 {
 				os.Exit(45)
 			}
-			code, e := RunNormalSystemRoleClient(context.Background(), os.Args[2])
+			clientCtx := context.Background()
+			firstResource := false
+			if os.Args[2] == "resource" {
+				raw, readErr := os.ReadFile(normalSystemRoleBrokerDeclarationPath)
+				d, decodeErr := decodeNormalSystemRoleBrokerDeclaration(raw)
+				if readErr == nil && decodeErr == nil && d.brokerOwnsAuthority() {
+					f, e := os.OpenFile("/run/neon-dsga/dev-resource-first-client", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+					if e == nil {
+						f.Close()
+						firstResource = true
+						var cancel context.CancelFunc
+						clientCtx, cancel = context.WithTimeout(clientCtx, 20*time.Second)
+						defer cancel()
+					}
+				}
+			}
+			code, e := RunNormalSystemRoleClient(clientCtx, os.Args[2])
+			if firstResource {
+				if e == nil {
+					os.Exit(63)
+				}
+				fmt.Println("ROLE_AUTHORITY_DEV_FIRST_RESOURCE_CLIENT_END")
+				os.Exit(62)
+			}
 			if e != nil {
 				fmt.Println("ROLE_SERVICE_CLIENT_REFUSED", os.Args[2], e)
 				os.Exit(46)
@@ -384,9 +419,13 @@ func TestMain(m *testing.M) {
 			}
 			os.Exit(code)
 		case "serve":
-			for {
-				time.Sleep(time.Second)
-			} // DEV resource stand-in; no PG/TLS authority.
+			// 声明1真实走旧R3原入口；声明2不spawn此角色且入口会明确拒绝。
+			go normalAuthorityDEVLegacyObserve()
+			if e := ServeGuest(context.Background()); e != nil {
+				fmt.Println("ROLE_AUTHORITY_DEV_LEGACY_SERVE_REFUSED", e)
+				os.Exit(64)
+			}
+			os.Exit(0)
 		}
 	}
 
@@ -420,7 +459,15 @@ func TestMain(m *testing.M) {
 		until := time.Now().Add(30 * time.Second)
 		for {
 			all := true
-			for _, id := range []string{"005", "006", "007"} {
+			ids := []string{"005", "006", "007"}
+			raw, readErr := os.ReadFile(normalSystemRoleBrokerDeclarationPath)
+			declaration, decodeErr := decodeNormalSystemRoleBrokerDeclaration(raw)
+			if readErr == nil && decodeErr == nil && declaration.brokerOwnsAuthority() {
+				ids = append(ids, "009", "010")
+			} else {
+				ids = append(ids, "011")
+			}
+			for _, id := range ids {
 				if _, e := os.Stat("/run/neon-dsga/dev-exit-" + id); e != nil {
 					all = false
 				}

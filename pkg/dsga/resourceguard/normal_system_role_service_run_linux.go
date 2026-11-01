@@ -86,10 +86,21 @@ func RunNormalSystemRoleBroker(ctx context.Context) error {
 	}
 	defer namespaces.close()
 	metadata := normalSystemRoleServiceMetadata{ProtocolVersion: 1, Origin: proof.transfer.Origin, Broker: source.binding, ReleasedSHA256: proof.transfer.GateSHA256[2]}
+	var authority *normalSystemResourceAuthority
+	if declaration.declaration.brokerOwnsAuthority() {
+		authority, e = prepareNormalSystemResourceAuthority(ctx, call, g, source, declaration, proof)
+		if e != nil {
+			return e
+		}
+		defer authority.close()
+		reference := authority.reference
+		metadata.ResourceAuthority = &reference
+	}
 	service, e := openNormalSystemRoleService(ctx, g, source, declaration, namespaces, proof.parent, metadata)
 	if e != nil {
 		return e
 	}
+	service.authority = authority
 	defer service.close()
 	serviceErrors := make(chan error, 1)
 	go func() { serviceErrors <- service.serve() }()
@@ -109,7 +120,7 @@ func RunNormalSystemRoleBroker(ctx context.Context) error {
 	if e != nil {
 		return e
 	}
-	if stage.PreviousSHA256 != proof.transfer.GateSHA256[2] || stage.BrokerTask == nil || !reflect.DeepEqual(*stage.BrokerTask, proof.transfer.Task) || stage.Broker == nil || *stage.Broker != source.binding || stage.SocketDevice != service.metadata.SocketDevice || stage.SocketInode != service.metadata.SocketInode {
+	if stage.PreviousSHA256 != proof.transfer.GateSHA256[2] || stage.BrokerTask == nil || !reflect.DeepEqual(*stage.BrokerTask, proof.transfer.Task) || stage.Broker == nil || *stage.Broker != source.binding || stage.SocketDevice != service.metadata.SocketDevice || stage.SocketInode != service.metadata.SocketInode || !reflect.DeepEqual(stage.ResourceAuthority, service.metadata.ResourceAuthority) {
 		return fmt.Errorf("original broker ready prefix differs")
 	}
 	if e = service.publishReady(call, commit.ReadySHA256); e != nil {
@@ -121,7 +132,13 @@ func RunNormalSystemRoleBroker(ctx context.Context) error {
 	_ = connection.Close()
 	// original initialRoot允许正常退出；new broker角色、原task/FS对象继续存活。
 	// Source消费者必须另以本原pidfd/ready前缀监测broker，死亡即Unknown。
+	var authorityDone <-chan struct{}
+	if authority != nil {
+		authorityDone = authority.admission.done
+	}
 	select {
+	case <-authorityDone:
+		return errors.Join(ErrUnknown, fmt.Errorf("original broker resource authority failed"))
 	case e := <-serviceErrors:
 		return errors.Join(ErrUnknown, e)
 	case <-ctx.Done():

@@ -1,0 +1,197 @@
+{
+  "component": "R2 broker-owned same original Guard Authority; PG-neutral ABI",
+  "base": "9da1f48800e60bb6e144dbac37af36a5f406ee7d",
+  "owned_source_count": 23,
+  "actual_COPY_count": 6403,
+  "actual_COPY_all_OK": true,
+  "U": {
+    "roots": 33,
+    "subcases": 203,
+    "fail": 0,
+    "skip": 0,
+    "package_seconds": 3.678,
+    "new_roots": [
+      {
+        "id": "NEON-U-SYSTEM-AUTHORITY-001",
+        "root": "TestNormalSystemRoleAuthorityDeclarationVersions",
+        "subcases": 10,
+        "status": "PASS"
+      },
+      {
+        "id": "NEON-U-SYSTEM-AUTHORITY-002",
+        "root": "TestNormalSystemRoleAuthorityCandidateHTTPHasNoBusinessEffects",
+        "subcases": 0,
+        "status": "PASS"
+      },
+      {
+        "id": "NEON-U-SYSTEM-AUTHORITY-003",
+        "root": "TestNormalSystemRoleAuthorityCandidateNativeHasNoBirthEffects",
+        "subcases": 0,
+        "status": "PASS"
+      },
+      {
+        "id": "NEON-U-SYSTEM-AUTHORITY-004",
+        "root": "TestNormalSystemRoleAuthorityHTTPPeerTypeBoundary",
+        "subcases": 2,
+        "status": "PASS"
+      }
+    ],
+    "direct_command": "go test -race -count=1 -timeout=150s -json -run \"^TestNormalSystem(Role|Lifecycle|V3)|^TestArrayServiceLegacyGateHasNoEffects$\" ./pkg/dsga/resourceguard"
+  },
+  "S": {
+    "native_root": "TestNativeNormalSystemRoleServiceInitial",
+    "distinct_native_roots": 1,
+    "environment_variants": 2,
+    "declaration2": {
+      "status": "PASS_COMPONENT_ONLY",
+      "pass": true,
+      "Host_QEMU_exit": 0,
+      "Guest_exit": [
+        "0"
+      ],
+      "initial_exit": [
+        "0"
+      ],
+      "caseIDs": [
+        "NEON-S-SYSTEM-ROLE-SERVICE-008",
+        "NEON-S-SYSTEM-ROLE-SERVICE-001",
+        "NEON-S-SYSTEM-ROLE-SERVICE-002",
+        "NEON-S-SYSTEM-ROLE-SERVICE-003",
+        "NEON-S-SYSTEM-ROLE-SERVICE-010",
+        "NEON-S-SYSTEM-ROLE-SERVICE-007",
+        "NEON-S-SYSTEM-ROLE-SERVICE-005",
+        "NEON-S-SYSTEM-ROLE-SERVICE-006",
+        "NEON-S-SYSTEM-ROLE-SERVICE-009",
+        "NEON-S-SYSTEM-ROLE-SERVICE-004"
+      ],
+      "actual_kvm": {
+        "enabled": true,
+        "present": true
+      },
+      "seconds": 77.67994881200138,
+      "actual_notes_SHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+      "Go_test_ELF_sha256": "4184b6a6a100cae59ee2851398075f13449a4c0f77cfb201799b77d153fef982",
+      "production_CLI_SHA256": "4948757a80c331e0bd30941f5518ade3ef90abfd1139b287b822905690c7db6c",
+      "production_CLI_compiled_not_executed": true,
+      "base_memory_bytes": 2147483648,
+      "vCPUs": 2,
+      "source_fixture": true,
+      "ordinary9_controls_not_installed_yet": true,
+      "other_System_programs_standins": true,
+      "PG_executed": false,
+      "normal_authorized": false,
+      "E": 0
+    },
+    "declaration1_original": {
+      "status": "FAIL_COMPONENT_OR_INFRA",
+      "pass": false,
+      "Host_QEMU_exit": 0,
+      "Guest_exit": [
+        "0"
+      ],
+      "initial_exit": [
+        "0"
+      ],
+      "caseIDs": [
+        "NEON-S-SYSTEM-ROLE-SERVICE-001",
+        "NEON-S-SYSTEM-ROLE-SERVICE-002",
+        "NEON-S-SYSTEM-ROLE-SERVICE-011",
+        "NEON-S-SYSTEM-ROLE-SERVICE-007",
+        "NEON-S-SYSTEM-ROLE-SERVICE-005",
+        "NEON-S-SYSTEM-ROLE-SERVICE-003",
+        "NEON-S-SYSTEM-ROLE-SERVICE-006",
+        "NEON-S-SYSTEM-ROLE-SERVICE-011",
+        "NEON-S-SYSTEM-ROLE-SERVICE-004"
+      ],
+      "actual_kvm": {
+        "enabled": true,
+        "present": true
+      },
+      "seconds": 61.294217282003956,
+      "actual_notes_SHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+      "Go_test_ELF_sha256": "4184b6a6a100cae59ee2851398075f13449a4c0f77cfb201799b77d153fef982",
+      "production_CLI_SHA256": "4948757a80c331e0bd30941f5518ade3ef90abfd1139b287b822905690c7db6c",
+      "production_CLI_compiled_not_executed": true,
+      "base_memory_bytes": 2147483648,
+      "vCPUs": 2,
+      "source_fixture": true,
+      "ordinary9_controls_not_installed_yet": true,
+      "other_System_programs_standins": true,
+      "PG_executed": false,
+      "normal_authorized": false,
+      "E": 0
+    },
+    "declaration1_independent_reevaluation": {
+      "status": "PASS_COMPONENT_ONLY_REEVALUATED",
+      "pass": true,
+      "checks": {
+        "original_report_is_preserved_FAIL": true,
+        "Guest_single_zero": true,
+        "initialRoot_single_zero": true,
+        "actual_QEMU_container_zero_not_OOM": true,
+        "original_QMP_query_KVM_exact": true,
+        "actual_notes_equal_original_kernel_bytes": true,
+        "all_expected_stable_IDs_and_only_those": true,
+        "first_7_checkpoints_exactly_once": true,
+        "legacy_repeated_011_only": true,
+        "no_panic_or_failure_or_legacy_refusal": true,
+        "same_compiled_Go_ELF_as_declaration2": true
+      },
+      "case_ID_counts": {
+        "NEON-S-SYSTEM-ROLE-SERVICE-001": 1,
+        "NEON-S-SYSTEM-ROLE-SERVICE-002": 1,
+        "NEON-S-SYSTEM-ROLE-SERVICE-003": 1,
+        "NEON-S-SYSTEM-ROLE-SERVICE-004": 1,
+        "NEON-S-SYSTEM-ROLE-SERVICE-005": 1,
+        "NEON-S-SYSTEM-ROLE-SERVICE-006": 1,
+        "NEON-S-SYSTEM-ROLE-SERVICE-007": 1,
+        "NEON-S-SYSTEM-ROLE-SERVICE-011": 2
+      },
+      "native_roots": 1,
+      "stable_IDs": [
+        "NEON-S-SYSTEM-ROLE-SERVICE-001",
+        "NEON-S-SYSTEM-ROLE-SERVICE-002",
+        "NEON-S-SYSTEM-ROLE-SERVICE-003",
+        "NEON-S-SYSTEM-ROLE-SERVICE-004",
+        "NEON-S-SYSTEM-ROLE-SERVICE-005",
+        "NEON-S-SYSTEM-ROLE-SERVICE-006",
+        "NEON-S-SYSTEM-ROLE-SERVICE-007",
+        "NEON-S-SYSTEM-ROLE-SERVICE-011"
+      ],
+      "raw_SHA256": {
+        "console": "2e4592c321df82da52889d006236834279b6cac7db7da36146ca1c500db11553",
+        "original_FAIL_result": "350edecb783d14e6ec6772509e46ddbf8fadbbfc4ef2b9a63b1b5861133e02c6",
+        "original_driver": "7928078dfcdfcdd11bc01fa0d0003fe31d498b8034149a544c72b2b7eebfc370",
+        "actual_container": "53b602448eaf951419134d4f814628d6fcad1cc80db5193b34c7a4d49d818d1c",
+        "Go_ELF": "4184b6a6a100cae59ee2851398075f13449a4c0f77cfb201799b77d153fef982"
+      },
+      "reason": "原检查器对PASS行按列表恰好一次比较。TEST_ONLY legacy observer在marker已存在时仍打印同一011；本收据仅将重复011视为同一稳定检查点，其他检查不放宽，不重跑Guest，不覆盖原FAIL。重复诊断本身不证明服务重生次数。",
+      "actual_KVM_fact_source": "原driver真实QMP query-kvm结果；QEMU原实际容器亦已退出0。未新造QMP实测。",
+      "source_fixture": true,
+      "actual_CLI_executed": false,
+      "FS_protocol": 1,
+      "PG_executed": false,
+      "normal_authorized": false,
+      "E": 0
+    }
+  },
+  "CLI": {
+    "compiled": true,
+    "actual_executed": false,
+    "SHA256": "4948757a80c331e0bd30941f5518ade3ef90abfd1139b287b822905690c7db6c"
+  },
+  "compatibility": {
+    "GOOS": "darwin",
+    "GOARCH": "arm64",
+    "CGO_ENABLED": "0",
+    "compile_exit": 1,
+    "status": "FAIL_EXISTING_COMMITTED_SOURCE",
+    "diagnostic": "normal_pg_memory_control_source.go:24:29 undefined: arrayPopulateFile",
+    "same_as_base_file_SHA256": "01d6668ba61839fb91207ac2ed0d64417a49acf31fa8a47be474fa07b916fc69",
+    "baseline_file_byte_equality_checked": true,
+    "base_not_separately_compiled": true
+  },
+  "E": 0,
+  "normal_authorized": false,
+  "all_sources_closed": false
+}

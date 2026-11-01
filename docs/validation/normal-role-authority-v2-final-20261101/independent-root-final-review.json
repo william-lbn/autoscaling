@@ -1,0 +1,68 @@
+{
+  "reviewer": "Root",
+  "utc": "2026-11-01T06:35:12.741714+00:00",
+  "status": "PASS_SAME_GUARD_AUTHORITY_COMPONENT_ONLY",
+  "owned23": {
+    "pkg/dsga/resourceguard/array_service_socket_linux.go": "ffa225118a30f138a73b290529c270bbc5d9e28c5ff5ce529285b2577f2a49c0",
+    "pkg/dsga/resourceguard/normal_system_role_authority_v2_linux_test.go": "0558ff7d564a18ee930c334ccc64281227cba5a5ed6ddc7ed86cc4685972f31d",
+    "pkg/dsga/resourceguard/normal_system_role_authority_v2_native_test.go": "e1679a39ea4bc0efa256b4afb69c2c564c5e8e30901683b23894e4af8a8c5687",
+    "pkg/dsga/resourceguard/normal_system_role_build_source.go": "1e0b207992478f9c4f152c930a5dbb521dbd86f4e56c7b42e623aea3ce616a6b",
+    "pkg/dsga/resourceguard/normal_system_role_declaration_linux.go": "9baed2f51c18692ac905d2201f4cbf5c764fb99c4b3f671559c0600a56aea4dc",
+    "pkg/dsga/resourceguard/normal_system_role_service_admission_linux.go": "8cf8c274c1c58114fff4057ad880fbcd8bd1877c651920058ecbc0cfa2e9cfd2",
+    "pkg/dsga/resourceguard/normal_system_role_service_attachment_linux.go": "e303df891ce1e4f3a3226d0bc4da21f92796be8d0f528897ac1991d7c7f18727",
+    "pkg/dsga/resourceguard/normal_system_role_service_authority_linux.go": "8dd795891072051bc670005e20a296e8a2c0d73fd12e6446461503597e4cc95d",
+    "pkg/dsga/resourceguard/normal_system_role_service_client_fd_linux.go": "e38a48265a1801180a25edccf0c84c37963b43b6903d2ae2851773e63c1c3abc",
+    "pkg/dsga/resourceguard/normal_system_role_service_client_linux.go": "cfe9bf50c36ef7cbf31ac8b690e6b7c17a5c81c6058bb629f82ead0191ee65aa",
+    "pkg/dsga/resourceguard/normal_system_role_service_compute_lease_linux.go": "b38bf1b4fba4a89065ab3f90b66e3f1aba349ed862077bfdd88fdff33719f79d",
+    "pkg/dsga/resourceguard/normal_system_role_service_linux_test.go": "bd3d98072bd6480c77b333343aa4cc45f4892423582698151302ede0498200a8",
+    "pkg/dsga/resourceguard/normal_system_role_service_listener_linux.go": "11ed8869e57af0c2065f8322d2dc0ee3b0db40bacb1e9829bac94c4f3a8b39b6",
+    "pkg/dsga/resourceguard/normal_system_role_service_native_test.go": "437137cd8558ba04cbabba93070a63a03946d437cd0ec30f72b99422ef6d33c3",
+    "pkg/dsga/resourceguard/normal_system_role_service_origin_linux.go": "94190f2d0400f71bea8ea4bfa831b198ae9b7190d968cb0b4aa1226a1e0b0d4c",
+    "pkg/dsga/resourceguard/normal_system_role_service_peer_linux.go": "0e5d319c91333a84771e2943a92a48b8576a3671d9ce6990e67029a1e105c04e",
+    "pkg/dsga/resourceguard/normal_system_role_service_protocol_linux.go": "875973309c3fe2dbdd062cc7db98055dfddc844c4fea717b8df5ddb93088c756",
+    "pkg/dsga/resourceguard/normal_system_role_service_resource_linux.go": "9876dc71edeb0bd88138494199d18b0fb57f95edf049972ae1a47f4133ff5bb7",
+    "pkg/dsga/resourceguard/normal_system_role_service_run_linux.go": "2bd4608ced0a10056b5952daaa01ac84610d4999b757135e92ca1b5dd918f7bc",
+    "pkg/dsga/resourceguard/normal_system_role_service_start_linux.go": "4e0d30b901a9411b2a34e99c0d91158a4dfece81e1ba2929ed3468bc657ce049",
+    "pkg/dsga/resourceguard/normal_system_role_service_transfer_linux.go": "a544fd1e2ad337732b5c249e431b796c68c8afc329abb69a4c3e8e26dbfd35aa",
+    "pkg/dsga/resourceguard/normal_system_role_service_unsupported.go": "d97153aede039c873f6b9daa6ce0432bd2e0f5230791dc21f1692be4db82921e",
+    "pkg/dsga/resourceguard/server_linux.go": "7090abbb7515920df7955a0ffb4a2f89846b8945c84af4a4e2f6e7c56eba689e"
+  },
+  "final_source_lock_sha256": "af163acb973437ec371d981a31487814c5164fc5545cc06d086f230ccbf14db8",
+  "reviewed": [
+    "explicit declaration2 only; declaration1 field omission and original R3 behavior retained",
+    "single original Guard used by signed HTTP and both native handlers; server lock retained",
+    "precommit candidate probes use original peer pidfd and private nonce; business requests denied before mutation",
+    "resource lock held for ready commit, released for child construction; no child reentrant flock",
+    "runtime identity fixed but floor may advance; same signed HTTP fence is actually persisted",
+    "Compute original clone task is duplicated; resource -> producerMu -> Task; all three durable prefixes rechecked read-only",
+    "resource attach is explicit attachment, not an invented executable; original pidfd exit and own nonce journal prevent late old handler ending new client",
+    "same final ELF tested in independent declaration2 and legacy declaration1 VM modes; exact Guest/R1/QEMU success",
+    "prior failures and independent re-evaluation retained as history, never overwritten"
+  ],
+  "actual_U": {
+    "roots": 34,
+    "subcases": 212,
+    "failed": 0,
+    "skipped": 0,
+    "actual_COPY_inputs": 6543
+  },
+  "actual_S": {
+    "native_root_environments": 2,
+    "unique_roots_not_checkpoint_sum": 1,
+    "kernel": "369 legacy",
+    "FS_protocol": 1
+  },
+  "Darwin_arm64_compile_exit": 0,
+  "limits": [
+    "production CLI compiled, native TestMain executes production functions",
+    "original lease is task/history origin, not Compute continuous code or memory budget qualification",
+    "post-detach lease publication must be integrated before actual untrusted target actions in the next role installer",
+    "other services and Compute standins; no ordinary-v2 controls or typedstdio factory positive",
+    "no FS2 -> kernel2 fifth FD -> R2 memory -> realPG complete chain",
+    "normal hard-decrease and Linux/K8s E remain unverified"
+  ],
+  "normal_authorized": false,
+  "all_sources_closed": false,
+  "E": 0,
+  "K8s_E": 0
+}

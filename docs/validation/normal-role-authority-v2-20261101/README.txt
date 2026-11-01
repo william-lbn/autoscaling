@@ -1,0 +1,17 @@
+本批范围：声明2、R2唯一资源Authority与原同一Guard的实际服务组件。
+
+新声明使用固定resource_authority_mode=broker-owned-same-guard-v1；旧声明1省略该字段、旧R3 ServeGuest路径保留。新mode拒绝另建Guard的standalone serve。R2在原typed FS重绑定后，用原Guard启动HTTP与两native监听器。candidate只处理原Root peer-pidfd/nonce固定probe；COMMIT前真实有效HTTP fence和原Begin正文都在业务handler之前拒绝，state.json/launchPins不变。原prepared持久完成，parent的原ready/COMMIT链通过后才启用同一实例。
+
+resource枚举在新mode只附着/监视该Authority，不伪造另一个target exec。独立attached/ended持久链绑定原request nonce/原peer pidfd。原已退出client重生可附着同实例；迟到旧handler只能结束它自己的原nonce。实际Compute原clone pidfd/proc与pending/stopped/released私有durability witness组成独立租约，getter只用同Guard索引和resource锁→producerMu→Task，不取得broker.mu/execMu、不按数字PID/WAL重开。该租约不代表stdio或持续代码执行来源资格。独立索引和历史均有界；耗尽/partial/原对象丢失保持Unknown，关闭Authority保留tombstone不重建。
+
+最终准确图为Git9da1f48800e60bb6e144dbac37af36a5f406ee7d+本批23源；6403非.github实际COPY逐项OK，33race根203子例零fail/skip。新增4个根12子例，其余为直接回归。真实CLI编译成功但Guest未执行该CLI文件；Guest以TEST_ONLY TestMain调用同生产API，真实369/KVM/BusyBox PID1、单ext4、原FS capture/4FD/Start/Run/client确实执行。一个native根的声明2环境有001..010十检查点，77.68秒；同一ELF的声明1环境有001..007与011八个唯一检查点，61.29秒。不能将检查点或两个环境重复计算成多个S根。
+
+旧声明1原评估器因011 PASS打印两次而原任务exit1/原FAIL；所有原文件不变。TEST_ONLY marker函数遇Exist仍返回nil而调用者仍打印，故重复诊断不增加根/不证明具体服务重生次数。独立reevaluation保持前7各恰好一次、唯一ID全集、仅011恰好两次、真实Guest/R1/QEMU=0、原QMP KVM、实际notes及无任何REFUSED/FAIL等条件。结果为PASS_COMPONENT_ONLY_REEVALUATED，原FAIL不改。最终声明2严格要求每个001..010恰好一次且无resource拒绝。
+
+首轮真实HTTP probe EOF是STREAM listener误用seqpacket peer reader，本批new admission独立修正STREAM并核真实CLOEXEC；原array seqpacket读取不放宽。0b00f9十检查点后出现额外resource EOF被保留，未称已闭。后继EINTR不再当连接断开，但没有声称原EOF已实测为EINTR。首874f70的1224清单不是完整COPY，最终6403才是全图。所有原失败、旧PASS与中间源均保存在外部原目录，history记录准确范围，绝不向新ELF转签。
+
+兼容编译：同6403图的Darwin/arm64 CGO0编译真实FAIL，公共normal_pg_memory_control_source.go:24引用Linux arrayPopulateFile。该文件与原9da提交逐字相同，属于另owner已提交源；本批不改它，也不伪报兼容0。仅从逐字一致推断既有问题，未另执行纯基线Darwin编译。Linux实际结果单列。
+
+仍未完成：本S的FS协议为1，不是实际FS2原MemorySource→R2consumer→PG联验；源metadata接口精确支持Root的FS2不能替代实证。其它System程序/Compute为固定standin、issuer为TEST_ONLY种子、ordinary9 controls未装、无PG/Host全来源/stdio持续writer/normal授权/VM缩内存/K8s E2E。AllSourcesClosed=false，E=0，五个最终normal安全拒绝不变。后继必须由Root接真实FS2、同g PG Birth/四数组/typed stdio与完整Source，不能通过raw Memoryref或布尔字段补签。
+
+所有Git由Root统一；本批仅列独占23源和本目录小收据，不stage任何其它owner的依赖。

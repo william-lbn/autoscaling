@@ -1,0 +1,29 @@
+{
+  "status": "FAIL_COMPONENT_OR_INFRA",
+  "pass": false,
+  "Host_QEMU_exit": 0,
+  "Guest_exit": [
+    "1"
+  ],
+  "initial_exit": [
+    "1"
+  ],
+  "caseIDs": [],
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "seconds": 16.341250939003658,
+  "actual_notes_SHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "Go_test_ELF_sha256": "403eccf8bcbf5d8c21e0f821ab8942cd8c78e70066dfee2a9023d3d3db35a46c",
+  "production_CLI_SHA256": "4a8dfd2bc374c97de28313ae6e2c71e90b9c18e2f78c407bbb8c21b64ec6587d",
+  "production_CLI_compiled_not_executed": true,
+  "base_memory_bytes": 2147483648,
+  "vCPUs": 2,
+  "source_fixture": true,
+  "ordinary9_controls_not_installed_yet": true,
+  "other_System_programs_standins": true,
+  "PG_executed": false,
+  "normal_authorized": false,
+  "E": 0
+}
