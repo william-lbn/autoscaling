@@ -1,0 +1,7 @@
+PreSys3 actual raw reader / task census 两处版本门修复
+
+P2真实18c KVM首图a3a77d在initialGuestExchange→PreSys raw read失败unsupported pre-System physical profile；原数据由P2保留，没有到达R2/FD5，不宣PASS。本批在Root明确授权下仅修改prebootstrap_system_linux.go与既有metadata定向test，原344/949与282/916证据保持历史。
+系统搜preSystemPolicyVersionMatches全部生产调用：common policy.validate与boot marker均已用真实policy版本；遗漏恰是Linux raw reader308与task census163只接受v1/2。本次二者共享显式preSystemPhysicalProfileSupported（只逐profile/version1/2/3调用原匹配器，不泛化recognized），raw reader通过preSystemOriginalPhysicalProfile精确release/notes已知build再进版本门。旧空profile census前提原样；未知/跨notes/profile依旧拒。未修改原policy JSON/legacy版本字节。
+新增U直接调用生产raw reader选择边界与同一census选择门，核原v1/split/meta三个准确build、错notes、未知/空/PIDcap未适配版本与两向cross build拒。它没有在宿主运行实际PreSys census，也不能代替真实VM重跑。
+119661严格继承不可变949全tree仅2源，未夹新udev前缀/活动Root/P2源码；16race根57sub全部PASS、0fail/skip，nativeCGO0测试程序只编译及Darwin arm64三包编译全0，build0，68.815秒，7458实际COPY逐SHA。额外4编译退出码已逐原rc核0，不仅依据外层result.test_exit。S=0/E=0/normal=false。
+P2现可用119661当前31+自己的确切5FD图重跑实际Kernel2→memory2→FS2→R2原FD5；还需R1仍活bind/正常退出后同R2观察两phase，未来Root受约束phase/ordinary9/实际PG normal与三节点Helm仍待闭合。未经新真实S，不把该版本门U当整链通过。

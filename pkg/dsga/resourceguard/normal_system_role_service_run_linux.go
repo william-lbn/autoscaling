@@ -80,6 +80,9 @@ func RunNormalSystemRoleBroker(ctx context.Context) error {
 		return e
 	}
 	defer filesystem.close()
+	if e = normalSystemRoleTransferPreparedCheckpoint(ctx, g, filesystem, proof); e != nil {
+		return e
+	}
 	namespaces, e := captureNormalSystemRoleNamespaces()
 	if e != nil {
 		return e

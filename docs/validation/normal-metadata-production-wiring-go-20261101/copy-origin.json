@@ -1,0 +1,994 @@
+{
+  "go/Dockerfile": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/Dockerfile",
+    "sha256": "6d197fdc02959b7d0d97250567fb2e2505bc134776187f2d21307ebaecc674cf"
+  },
+  "go/build.log": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/build.log",
+    "sha256": "37bb96e6fac7e6a3b0707824c7b3d8f968f316eb5751f6ed5b758496f10fc4e2"
+  },
+  "go/command.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/command.json",
+    "sha256": "9e9a51c6770fcb1097c42a565e09d49d7647fd5f6f3254d11f3dcece5fa98a1e"
+  },
+  "go/host-meminfo-before.txt": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/host-meminfo-before.txt",
+    "sha256": "f683efb581adb6817303f1be3838201f43f36f681b6aec3a938554951932fe0f"
+  },
+  "go/metadata.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/metadata.json",
+    "sha256": "629c3d7f2b3e23a00128d80fc54d3c1c3ab47f9b11430b8a45d0e43b3271fe92"
+  },
+  "go/result.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/result.json",
+    "sha256": "b69c7be19986646353c3c05782a07c3c322c40ddd99d6c966497b5b2d41fbe4f"
+  },
+  "go/source-lock.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source-lock.json",
+    "sha256": "f8583e5083a3dc8ed3c7378c7de3cbc865997382d8468857b772ca2fac9d6821"
+  },
+  "go/worker.py": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/worker.py",
+    "sha256": "389d124d55ecfd0a7ba2063b9107828634e04bb30e27b5da3a758e46bc920f09"
+  },
+  "go/export/actual-source.sha256": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/actual-source.sha256",
+    "sha256": "4869d683f197ab4d24326095cd2eb423b3c8756157e373f6494efe920ec2859c"
+  },
+  "go/export/cpu.max": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/cpu.max",
+    "sha256": "07eb5019b2babb019fbbfe1cb328ec5b7affac5e07da4b94ebedb5e110dfab69"
+  },
+  "go/export/darwin-bootprotocol.log": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/darwin-bootprotocol.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "go/export/darwin-bootprotocol.rc": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/darwin-bootprotocol.rc",
+    "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  "go/export/darwin-resourceguard.log": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/darwin-resourceguard.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "go/export/darwin-resourceguard.rc": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/darwin-resourceguard.rc",
+    "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  "go/export/darwin-vmguard.log": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/darwin-vmguard.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "go/export/darwin-vmguard.rc": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/darwin-vmguard.rc",
+    "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  "go/export/go-version.txt": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/go-version.txt",
+    "sha256": "3fcbda2c06ef581842ae70da25dc029931a022da959585bc88491b0a549306da"
+  },
+  "go/export/memory.max": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/memory.max",
+    "sha256": "604fec38960d7c5bd3bd6c06ad8f4b42eac0bb30ea02d43518d0f9f11d5e131e"
+  },
+  "go/export/native-compile.log": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/native-compile.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "go/export/native-compile.rc": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/native-compile.rc",
+    "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  "go/export/source-check.txt": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/source-check.txt",
+    "sha256": "1051c532ca4f9f96ec1aa8eb8040f760a5d39de8a2c4665f149637045315417a"
+  },
+  "go/export/test.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/test.json",
+    "sha256": "8d2f6fa58f792d4a1bbd4492937904289d6f60869d1f9f7fff60aa71de6d8646"
+  },
+  "go/export/test.rc": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/test.rc",
+    "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  "go/export/test.stderr": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/export/test.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "go/source/pkg/dsga/resourceguard/runtime_boot_requirements.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/runtime_boot_requirements.go",
+    "sha256": "8a1f7a051918a4052d1fd2f5ea7cde14a25871a9d36443cf25a45452dcf7cfba"
+  },
+  "go/source/pkg/dsga/resourceguard/runtime_boot_requirements_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/runtime_boot_requirements_linux.go",
+    "sha256": "9bb915d4a3702cddecdc7f6f3f9ae2a5d37b68185feddd35f27b5db3259808d5"
+  },
+  "go/source/pkg/dsga/resourceguard/runtime_policy_templates_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/runtime_policy_templates_linux.go",
+    "sha256": "8dc324a6e164d8335e73aa5be2696372f1cd752cb1a8973132e0057821a0e0c1"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_split_topology.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_split_topology.go",
+    "sha256": "d89aa0a38e6a56f889c64653c332cda9fa0085b440d188560866fa26cece4d48"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_split_topology_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_split_topology_linux.go",
+    "sha256": "5130dea59a74c4c809781d7efb6fdaea3faf051fe42bff3077afa3f950e8298f"
+  },
+  "go/source/pkg/dsga/resourceguard/prebootstrap_system.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/prebootstrap_system.go",
+    "sha256": "c1726c952504758b2300bad7c7b3e2d31212a640184eef9c6f721f64a01e3e81"
+  },
+  "go/source/pkg/dsga/resourceguard/prebootstrap_system_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/prebootstrap_system_linux.go",
+    "sha256": "e1581ef775c65adcfe7288b214787cd1067fb06e8ca89acc9a489525c422b8a7"
+  },
+  "go/source/pkg/dsga/resourceguard/initial_preboot_guest_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/initial_preboot_guest_linux.go",
+    "sha256": "6391a317cad202cad3a57f8853d474ce377f8536a56742ac0aaa1bb4b2d83689"
+  },
+  "go/source/pkg/dsga/resourceguard/initial_preboot_channel_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/initial_preboot_channel_linux.go",
+    "sha256": "03684e5e0a829ca469b62fe8acc86069cb119434ce7e86d55d075b3aff28334b"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_memory_origin_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_memory_origin_source_linux.go",
+    "sha256": "c432b58aa511d013fa9850d8e68c0b33d9343c326d0cd29905f3a80bea83cce8"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_memory_origin_commit_reference_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_memory_origin_commit_reference_linux.go",
+    "sha256": "08673e3c270d3d8f287de2bbf89ffc6457b6a33be3f83e3c0b8ffdaad1ceda14"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go",
+    "sha256": "56e14af79e50adeae1162e87171b61966dc08a9f594a015698e092ced84ffadb"
+  },
+  "go/source/pkg/dsga/resourceguard/guest_memory_maximum.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/guest_memory_maximum.go",
+    "sha256": "14b7ef0d595555c9b79e279fbdc79e11497a46b7f883ee5ba00d566d8508d912"
+  },
+  "go/source/pkg/dsga/resourceguard/guest_memory_maximum_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/guest_memory_maximum_linux.go",
+    "sha256": "3b0d43f2aa4c56691b89ce347dc84a13151942429e5059c92b6a8400ef6a16e9"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_immutable_bounds.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_immutable_bounds.go",
+    "sha256": "0c0a73cc7d0eea8691f1180c497eebafccf0e6f88d818d3b74b46b41a3fcdeb8"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_immutable_bounds_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_immutable_bounds_linux.go",
+    "sha256": "8ee4d02aa83f17b201b377b0e3ca571addbfa7c6c315c3f991cb40ecf18d8ddd"
+  },
+  "go/source/pkg/dsga/vmguard/normal_memory_origin_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/vmguard/normal_memory_origin_source_linux.go",
+    "sha256": "4966a7a4746670c383fb4f4edbb6d28cbea6f5c90b071292b7a97f0dc7040e71"
+  },
+  "go/source/pkg/dsga/bootprotocol/normal_memory_origin.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/bootprotocol/normal_memory_origin.go",
+    "sha256": "2c67150b2c650c418c19727bdd20d75d366ecb56cd86e1ff4bb802a46328bb4e"
+  },
+  "go/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux.go",
+    "sha256": "1d90642768586e5555f855245694b549469ac41fdb2d8bf25b7210f4b4e72e4b"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_guard_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_guard_linux.go",
+    "sha256": "36d5acf163c9663abf71a463db8f0b86e1af77e6e545a6c162159652199caee5"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux.go",
+    "sha256": "9c618c435e5a3e096297612adfcf9c2762f6348f99e498f3a094e93f7a240756"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux.go",
+    "sha256": "505112aa440fcc0375ded95a21b362afecfb3c6171db37a4b75d5f97a5aa2c54"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_current_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_current_linux.go",
+    "sha256": "9b4f1b383b84c13f3e3b2f5986bd11d8a6cb5a1ec32ceb4d542b528b6f719ff2"
+  },
+  "go/source/pkg/dsga/resourceguard/runtime_boot_requirements_metadata_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/runtime_boot_requirements_metadata_linux_test.go",
+    "sha256": "d6d86c4a0ec93f57d54e704843ad04a4c871c5688a311b49df1e6529b32ddd33"
+  },
+  "go/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux_test.go",
+    "sha256": "85611ce9138444684c5d0f629657550116f6fd13907eb3a5205f1cf38901f398"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux_test.go",
+    "sha256": "a08738aa1547d2b7eab86aaff4c2e4664f0959424ae90d7d388e633bb6640a2d"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux_test.go",
+    "sha256": "bc87e3fe0f15866494982b5b57a082c1b7e41f5cf46ac082d8e6325b6a43039b"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_native_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_native_test.go",
+    "sha256": "401605cbd986cf34f43f906b6a81b3b9072ecddcd150fbb715991e0cf54b4fc3"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_memory_origin_metadata_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_memory_origin_metadata_linux_test.go",
+    "sha256": "25b3a4a4389abe50aedfaf044a6bf96395c967b35049cdd7466ef0b4175d5755"
+  },
+  "go/source/pkg/dsga/vmguard/normal_memory_origin_metadata_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/vmguard/normal_memory_origin_metadata_linux_test.go",
+    "sha256": "ebae3fa467306d845157a999872e65a492d118bc2674061511ec83d82a9f22f7"
+  },
+  "go/source/pkg/dsga/bootprotocol/normal_memory_origin_metadata_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/bootprotocol/normal_memory_origin_metadata_test.go",
+    "sha256": "a17782ef44f9f674fe7bea6658f54972b0fa4d8b3738945c6df4a5319475f743"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go",
+    "sha256": "e272fe67bc4fe3cf06cbbbd63ac7d718f40ca1571a6a11b2196767ef227dc312"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_filesystem_broker_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_filesystem_broker_source_linux.go",
+    "sha256": "249f7fd1d7f388609c1082fb56146ed2e0d7fe64cdc7c93d304fbd84fdb837c7"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_preflight_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_preflight_linux.go",
+    "sha256": "fd5ff10b45a17616f002e1b57b20ef78ef883bfbda7646096b31e97ebfa355c1"
+  },
+  "go/source/pkg/dsga/resourceguard/normal_system_source.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_system_source.go",
+    "sha256": "664ea9bcb9b97aaf0b42d5c08996309f0799c3cc9884fd5ed4299161b7ef7787"
+  },
+  "history/compile-first/Dockerfile": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/Dockerfile",
+    "sha256": "54f745d2470cd4b45ceb68ddae4d193d6a0d038fd9fed407ee08b8c0dd10403a"
+  },
+  "history/compile-first/build.log": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/build.log",
+    "sha256": "7b8a31e559395847a26d26d5e1543304d7e9de0cb9a3b96fb5da64c92e263e13"
+  },
+  "history/compile-first/command.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/command.json",
+    "sha256": "ad279325d23ca48e45d80081fe2a4e16997b95723f79872e6013dc6be6657075"
+  },
+  "history/compile-first/host-meminfo-before.txt": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/host-meminfo-before.txt",
+    "sha256": "56afeae4ae15250907d456fd7f7e6bc8b63e060ccf545d4dd8175606be00edb3"
+  },
+  "history/compile-first/metadata.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/metadata.json",
+    "sha256": "9096c968b882da147b4d429c0f5e8f4776e716d049eb9d1ea7bedac25491e199"
+  },
+  "history/compile-first/result.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/result.json",
+    "sha256": "76fb18b366d8f12fde1bbf2e33158c217abc4d2173d7b7b85893ed5bb71f6a35"
+  },
+  "history/compile-first/source-lock.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source-lock.json",
+    "sha256": "92f4ccb5447526a53dbe9e000c8163b374b8dff2fe90986178ca6e48c5987502"
+  },
+  "history/compile-first/worker.py": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/worker.py",
+    "sha256": "0ab04d303e0bdbf9cc7ad98d4be3eaebeeb4d6696ae74dad4640f0f4dbf7d253"
+  },
+  "history/compile-first/export/actual-source.sha256": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/export/actual-source.sha256",
+    "sha256": "5867b020530bb3d2649c0028e361a8a91559c631f3eef8045ddfd4884ebd683a"
+  },
+  "history/compile-first/export/compile.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/export/compile.json",
+    "sha256": "67f9f09675e355a31c4491c300125fbdab9ef1a37af200202cca9686e502c377"
+  },
+  "history/compile-first/export/compile.rc": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/export/compile.rc",
+    "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  "history/compile-first/export/compile.stderr": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/export/compile.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "history/compile-first/export/cpu.max": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/export/cpu.max",
+    "sha256": "07eb5019b2babb019fbbfe1cb328ec5b7affac5e07da4b94ebedb5e110dfab69"
+  },
+  "history/compile-first/export/go-version.txt": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/export/go-version.txt",
+    "sha256": "3fcbda2c06ef581842ae70da25dc029931a022da959585bc88491b0a549306da"
+  },
+  "history/compile-first/export/memory.max": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/export/memory.max",
+    "sha256": "604fec38960d7c5bd3bd6c06ad8f4b42eac0bb30ea02d43518d0f9f11d5e131e"
+  },
+  "history/compile-first/export/source-check.txt": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/export/source-check.txt",
+    "sha256": "e98240a7231b1dc22b8d9bd6b9f95320041671eab8707fec20eeb861f7d0e01f"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/runtime_boot_requirements.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/runtime_boot_requirements.go",
+    "sha256": "8a1f7a051918a4052d1fd2f5ea7cde14a25871a9d36443cf25a45452dcf7cfba"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/runtime_boot_requirements_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/runtime_boot_requirements_linux.go",
+    "sha256": "4868dfdf8708eb79c86e49e11b67eb8a9870aac747adedcd005a734eb9f1aba2"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/runtime_policy_templates_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/runtime_policy_templates_linux.go",
+    "sha256": "8dc324a6e164d8335e73aa5be2696372f1cd752cb1a8973132e0057821a0e0c1"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/normal_split_topology.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/normal_split_topology.go",
+    "sha256": "d89aa0a38e6a56f889c64653c332cda9fa0085b440d188560866fa26cece4d48"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/normal_split_topology_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/normal_split_topology_linux.go",
+    "sha256": "5130dea59a74c4c809781d7efb6fdaea3faf051fe42bff3077afa3f950e8298f"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/prebootstrap_system.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/prebootstrap_system.go",
+    "sha256": "c1726c952504758b2300bad7c7b3e2d31212a640184eef9c6f721f64a01e3e81"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/prebootstrap_system_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/prebootstrap_system_linux.go",
+    "sha256": "e1581ef775c65adcfe7288b214787cd1067fb06e8ca89acc9a489525c422b8a7"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/initial_preboot_guest_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/initial_preboot_guest_linux.go",
+    "sha256": "6391a317cad202cad3a57f8853d474ce377f8536a56742ac0aaa1bb4b2d83689"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/initial_preboot_channel_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/initial_preboot_channel_linux.go",
+    "sha256": "03684e5e0a829ca469b62fe8acc86069cb119434ce7e86d55d075b3aff28334b"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/normal_memory_origin_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/normal_memory_origin_source_linux.go",
+    "sha256": "c432b58aa511d013fa9850d8e68c0b33d9343c326d0cd29905f3a80bea83cce8"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/normal_memory_origin_commit_reference_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/normal_memory_origin_commit_reference_linux.go",
+    "sha256": "08673e3c270d3d8f287de2bbf89ffc6457b6a33be3f83e3c0b8ffdaad1ceda14"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go",
+    "sha256": "56e14af79e50adeae1162e87171b61966dc08a9f594a015698e092ced84ffadb"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/guest_memory_maximum.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/guest_memory_maximum.go",
+    "sha256": "14b7ef0d595555c9b79e279fbdc79e11497a46b7f883ee5ba00d566d8508d912"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/guest_memory_maximum_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/guest_memory_maximum_linux.go",
+    "sha256": "3b0d43f2aa4c56691b89ce347dc84a13151942429e5059c92b6a8400ef6a16e9"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/normal_immutable_bounds.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/normal_immutable_bounds.go",
+    "sha256": "0c0a73cc7d0eea8691f1180c497eebafccf0e6f88d818d3b74b46b41a3fcdeb8"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/normal_immutable_bounds_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/normal_immutable_bounds_linux.go",
+    "sha256": "8ee4d02aa83f17b201b377b0e3ca571addbfa7c6c315c3f991cb40ecf18d8ddd"
+  },
+  "history/compile-first/source/pkg/dsga/vmguard/normal_memory_origin_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/vmguard/normal_memory_origin_source_linux.go",
+    "sha256": "4966a7a4746670c383fb4f4edbb6d28cbea6f5c90b071292b7a97f0dc7040e71"
+  },
+  "history/compile-first/source/pkg/dsga/bootprotocol/normal_memory_origin.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/bootprotocol/normal_memory_origin.go",
+    "sha256": "2c67150b2c650c418c19727bdd20d75d366ecb56cd86e1ff4bb802a46328bb4e"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux.go",
+    "sha256": "1d90642768586e5555f855245694b549469ac41fdb2d8bf25b7210f4b4e72e4b"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_guard_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_guard_linux.go",
+    "sha256": "36d5acf163c9663abf71a463db8f0b86e1af77e6e545a6c162159652199caee5"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux.go",
+    "sha256": "9c618c435e5a3e096297612adfcf9c2762f6348f99e498f3a094e93f7a240756"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux.go",
+    "sha256": "505112aa440fcc0375ded95a21b362afecfb3c6171db37a4b75d5f97a5aa2c54"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_current_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_current_linux.go",
+    "sha256": "9b4f1b383b84c13f3e3b2f5986bd11d8a6cb5a1ec32ceb4d542b528b6f719ff2"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go",
+    "sha256": "e272fe67bc4fe3cf06cbbbd63ac7d718f40ca1571a6a11b2196767ef227dc312"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/normal_filesystem_broker_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/normal_filesystem_broker_source_linux.go",
+    "sha256": "249f7fd1d7f388609c1082fb56146ed2e0d7fe64cdc7c93d304fbd84fdb837c7"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_preflight_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_preflight_linux.go",
+    "sha256": "fd5ff10b45a17616f002e1b57b20ef78ef883bfbda7646096b31e97ebfa355c1"
+  },
+  "history/compile-first/source/pkg/dsga/resourceguard/normal_system_source.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-compile-20261101T065439Z-df73f0/source/pkg/dsga/resourceguard/normal_system_source.go",
+    "sha256": "664ea9bcb9b97aaf0b42d5c08996309f0799c3cc9884fd5ed4299161b7ef7787"
+  },
+  "history/focused-first-failed/Dockerfile": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/Dockerfile",
+    "sha256": "3d3a430082b3fed4c0c21ae6ff063c089a604336888a9fabca991d2e08d161ea"
+  },
+  "history/focused-first-failed/build.log": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/build.log",
+    "sha256": "e3f006e1402f183edb4f6afecbc4d24f158e87597c070f89fc334082d6961463"
+  },
+  "history/focused-first-failed/command.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/command.json",
+    "sha256": "cc7f7d9f896559d56eb976a070ff52c8d03b73b243cb2ea2dda8e4f6e61062e4"
+  },
+  "history/focused-first-failed/host-meminfo-before.txt": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/host-meminfo-before.txt",
+    "sha256": "dbfa508aa024f3e7913f2448fdeeee9478365bb199a4f0ef8ff8dd78737b095f"
+  },
+  "history/focused-first-failed/metadata.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/metadata.json",
+    "sha256": "4f8390e9e45a20d2d92f7675e4378baba9860dc9e4d010fd686cfb78ddce473f"
+  },
+  "history/focused-first-failed/result.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/result.json",
+    "sha256": "b33c172918131a713aca9eaf389db14ee3e639209a9cd8c1ecfd7d5ed6dfebfe"
+  },
+  "history/focused-first-failed/source-lock.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source-lock.json",
+    "sha256": "bcc567c7278671b97198e0955e75a71b1f98bcbb3959bb61a4fcf6806cf26d4f"
+  },
+  "history/focused-first-failed/worker.py": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/worker.py",
+    "sha256": "0ab04d303e0bdbf9cc7ad98d4be3eaebeeb4d6696ae74dad4640f0f4dbf7d253"
+  },
+  "history/focused-first-failed/export/actual-source.sha256": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/export/actual-source.sha256",
+    "sha256": "06234daf4bd14791e076ebd5e80c3d6b1e5f08f87f2fda44398f828212a3ab8a"
+  },
+  "history/focused-first-failed/export/compile.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/export/compile.json",
+    "sha256": "16d5dd173a9b7d5a8cd24dfd8eeddc382df4f48b25873d7695e657d88f0fb2ad"
+  },
+  "history/focused-first-failed/export/compile.rc": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/export/compile.rc",
+    "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  "history/focused-first-failed/export/compile.stderr": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/export/compile.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "history/focused-first-failed/export/cpu.max": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/export/cpu.max",
+    "sha256": "07eb5019b2babb019fbbfe1cb328ec5b7affac5e07da4b94ebedb5e110dfab69"
+  },
+  "history/focused-first-failed/export/go-version.txt": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/export/go-version.txt",
+    "sha256": "3fcbda2c06ef581842ae70da25dc029931a022da959585bc88491b0a549306da"
+  },
+  "history/focused-first-failed/export/memory.max": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/export/memory.max",
+    "sha256": "604fec38960d7c5bd3bd6c06ad8f4b42eac0bb30ea02d43518d0f9f11d5e131e"
+  },
+  "history/focused-first-failed/export/source-check.txt": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/export/source-check.txt",
+    "sha256": "829d1ea685965c079a7884b4f4aaceb3afb62f650cdb5202103f2feebfe3e765"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/runtime_boot_requirements.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/runtime_boot_requirements.go",
+    "sha256": "8a1f7a051918a4052d1fd2f5ea7cde14a25871a9d36443cf25a45452dcf7cfba"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/runtime_boot_requirements_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/runtime_boot_requirements_linux.go",
+    "sha256": "4868dfdf8708eb79c86e49e11b67eb8a9870aac747adedcd005a734eb9f1aba2"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/runtime_policy_templates_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/runtime_policy_templates_linux.go",
+    "sha256": "8dc324a6e164d8335e73aa5be2696372f1cd752cb1a8973132e0057821a0e0c1"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_split_topology.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_split_topology.go",
+    "sha256": "d89aa0a38e6a56f889c64653c332cda9fa0085b440d188560866fa26cece4d48"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_split_topology_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_split_topology_linux.go",
+    "sha256": "5130dea59a74c4c809781d7efb6fdaea3faf051fe42bff3077afa3f950e8298f"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/prebootstrap_system.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/prebootstrap_system.go",
+    "sha256": "c1726c952504758b2300bad7c7b3e2d31212a640184eef9c6f721f64a01e3e81"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/prebootstrap_system_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/prebootstrap_system_linux.go",
+    "sha256": "e1581ef775c65adcfe7288b214787cd1067fb06e8ca89acc9a489525c422b8a7"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/initial_preboot_guest_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/initial_preboot_guest_linux.go",
+    "sha256": "6391a317cad202cad3a57f8853d474ce377f8536a56742ac0aaa1bb4b2d83689"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/initial_preboot_channel_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/initial_preboot_channel_linux.go",
+    "sha256": "03684e5e0a829ca469b62fe8acc86069cb119434ce7e86d55d075b3aff28334b"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_memory_origin_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_memory_origin_source_linux.go",
+    "sha256": "c432b58aa511d013fa9850d8e68c0b33d9343c326d0cd29905f3a80bea83cce8"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_memory_origin_commit_reference_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_memory_origin_commit_reference_linux.go",
+    "sha256": "08673e3c270d3d8f287de2bbf89ffc6457b6a33be3f83e3c0b8ffdaad1ceda14"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go",
+    "sha256": "56e14af79e50adeae1162e87171b61966dc08a9f594a015698e092ced84ffadb"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/guest_memory_maximum.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/guest_memory_maximum.go",
+    "sha256": "14b7ef0d595555c9b79e279fbdc79e11497a46b7f883ee5ba00d566d8508d912"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/guest_memory_maximum_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/guest_memory_maximum_linux.go",
+    "sha256": "3b0d43f2aa4c56691b89ce347dc84a13151942429e5059c92b6a8400ef6a16e9"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_immutable_bounds.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_immutable_bounds.go",
+    "sha256": "0c0a73cc7d0eea8691f1180c497eebafccf0e6f88d818d3b74b46b41a3fcdeb8"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_immutable_bounds_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_immutable_bounds_linux.go",
+    "sha256": "8ee4d02aa83f17b201b377b0e3ca571addbfa7c6c315c3f991cb40ecf18d8ddd"
+  },
+  "history/focused-first-failed/source/pkg/dsga/vmguard/normal_memory_origin_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/vmguard/normal_memory_origin_source_linux.go",
+    "sha256": "4966a7a4746670c383fb4f4edbb6d28cbea6f5c90b071292b7a97f0dc7040e71"
+  },
+  "history/focused-first-failed/source/pkg/dsga/bootprotocol/normal_memory_origin.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/bootprotocol/normal_memory_origin.go",
+    "sha256": "2c67150b2c650c418c19727bdd20d75d366ecb56cd86e1ff4bb802a46328bb4e"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux.go",
+    "sha256": "1d90642768586e5555f855245694b549469ac41fdb2d8bf25b7210f4b4e72e4b"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_guard_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_guard_linux.go",
+    "sha256": "36d5acf163c9663abf71a463db8f0b86e1af77e6e545a6c162159652199caee5"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux.go",
+    "sha256": "9c618c435e5a3e096297612adfcf9c2762f6348f99e498f3a094e93f7a240756"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux.go",
+    "sha256": "505112aa440fcc0375ded95a21b362afecfb3c6171db37a4b75d5f97a5aa2c54"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_current_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_current_linux.go",
+    "sha256": "9b4f1b383b84c13f3e3b2f5986bd11d8a6cb5a1ec32ceb4d542b528b6f719ff2"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/runtime_boot_requirements_metadata_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/runtime_boot_requirements_metadata_linux_test.go",
+    "sha256": "d6d86c4a0ec93f57d54e704843ad04a4c871c5688a311b49df1e6529b32ddd33"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux_test.go",
+    "sha256": "85611ce9138444684c5d0f629657550116f6fd13907eb3a5205f1cf38901f398"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux_test.go",
+    "sha256": "e1b6adc13e29c730f8927d8a576f9c60a3cbf674479c08605a936b228151b0ff"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux_test.go",
+    "sha256": "bc87e3fe0f15866494982b5b57a082c1b7e41f5cf46ac082d8e6325b6a43039b"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_native_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_native_test.go",
+    "sha256": "401605cbd986cf34f43f906b6a81b3b9072ecddcd150fbb715991e0cf54b4fc3"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_memory_origin_metadata_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_memory_origin_metadata_linux_test.go",
+    "sha256": "25b3a4a4389abe50aedfaf044a6bf96395c967b35049cdd7466ef0b4175d5755"
+  },
+  "history/focused-first-failed/source/pkg/dsga/vmguard/normal_memory_origin_metadata_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/vmguard/normal_memory_origin_metadata_linux_test.go",
+    "sha256": "ebae3fa467306d845157a999872e65a492d118bc2674061511ec83d82a9f22f7"
+  },
+  "history/focused-first-failed/source/pkg/dsga/bootprotocol/normal_memory_origin_metadata_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/bootprotocol/normal_memory_origin_metadata_test.go",
+    "sha256": "a17782ef44f9f674fe7bea6658f54972b0fa4d8b3738945c6df4a5319475f743"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go",
+    "sha256": "e272fe67bc4fe3cf06cbbbd63ac7d718f40ca1571a6a11b2196767ef227dc312"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_filesystem_broker_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_filesystem_broker_source_linux.go",
+    "sha256": "249f7fd1d7f388609c1082fb56146ed2e0d7fe64cdc7c93d304fbd84fdb837c7"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_preflight_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_preflight_linux.go",
+    "sha256": "fd5ff10b45a17616f002e1b57b20ef78ef883bfbda7646096b31e97ebfa355c1"
+  },
+  "history/focused-first-failed/source/pkg/dsga/resourceguard/normal_system_source.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070301Z-617af5/source/pkg/dsga/resourceguard/normal_system_source.go",
+    "sha256": "664ea9bcb9b97aaf0b42d5c08996309f0799c3cc9884fd5ed4299161b7ef7787"
+  },
+  "history/focused-second/Dockerfile": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/Dockerfile",
+    "sha256": "c8dd396e8b24fd6495af20484d1b81a0a0336f7e7ba72e29c362fcde708c65d0"
+  },
+  "history/focused-second/build.log": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/build.log",
+    "sha256": "821d090aad3d72f004d5e8c142e8afc586029eadb2c4b88c7294ce8cf116cbe7"
+  },
+  "history/focused-second/command.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/command.json",
+    "sha256": "4c706f6ad4d58a4f58915508a87e9bbfb14a49ccb828b0abcb000a18b321ca4b"
+  },
+  "history/focused-second/host-meminfo-before.txt": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/host-meminfo-before.txt",
+    "sha256": "13ecf9664727a4390eefa2e887e74c7307446147bce3ebbe6a03fd588883d999"
+  },
+  "history/focused-second/metadata.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/metadata.json",
+    "sha256": "7252dd85d388f6f8b5d5f681b3fa412736284d52cc67f13851e6d036fc024362"
+  },
+  "history/focused-second/result.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/result.json",
+    "sha256": "fd5954bee013d621ef9b38a61776445191e07560700a024658e5debd55cacb30"
+  },
+  "history/focused-second/source-lock.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source-lock.json",
+    "sha256": "e915d4dd29b8967ab3f2558ae5d18b246490968bda7768d8ba49e3d892905242"
+  },
+  "history/focused-second/worker.py": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/worker.py",
+    "sha256": "389d124d55ecfd0a7ba2063b9107828634e04bb30e27b5da3a758e46bc920f09"
+  },
+  "history/focused-second/export/actual-source.sha256": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/export/actual-source.sha256",
+    "sha256": "b83c763af0563513bd1c927cbe742dcce61c7f67cb2ab5dc79390c71a3eefb85"
+  },
+  "history/focused-second/export/cpu.max": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/export/cpu.max",
+    "sha256": "07eb5019b2babb019fbbfe1cb328ec5b7affac5e07da4b94ebedb5e110dfab69"
+  },
+  "history/focused-second/export/go-version.txt": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/export/go-version.txt",
+    "sha256": "3fcbda2c06ef581842ae70da25dc029931a022da959585bc88491b0a549306da"
+  },
+  "history/focused-second/export/memory.max": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/export/memory.max",
+    "sha256": "604fec38960d7c5bd3bd6c06ad8f4b42eac0bb30ea02d43518d0f9f11d5e131e"
+  },
+  "history/focused-second/export/source-check.txt": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/export/source-check.txt",
+    "sha256": "829d1ea685965c079a7884b4f4aaceb3afb62f650cdb5202103f2feebfe3e765"
+  },
+  "history/focused-second/export/test.json": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/export/test.json",
+    "sha256": "4850ed49297ee28aa202374c484a40ebd6a50f465b4b8d68b4c50ffcb22c1716"
+  },
+  "history/focused-second/export/test.rc": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/export/test.rc",
+    "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  "history/focused-second/export/test.stderr": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/export/test.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/runtime_boot_requirements.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/runtime_boot_requirements.go",
+    "sha256": "8a1f7a051918a4052d1fd2f5ea7cde14a25871a9d36443cf25a45452dcf7cfba"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/runtime_boot_requirements_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/runtime_boot_requirements_linux.go",
+    "sha256": "9bb915d4a3702cddecdc7f6f3f9ae2a5d37b68185feddd35f27b5db3259808d5"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/runtime_policy_templates_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/runtime_policy_templates_linux.go",
+    "sha256": "8dc324a6e164d8335e73aa5be2696372f1cd752cb1a8973132e0057821a0e0c1"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_split_topology.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_split_topology.go",
+    "sha256": "d89aa0a38e6a56f889c64653c332cda9fa0085b440d188560866fa26cece4d48"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_split_topology_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_split_topology_linux.go",
+    "sha256": "5130dea59a74c4c809781d7efb6fdaea3faf051fe42bff3077afa3f950e8298f"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/prebootstrap_system.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/prebootstrap_system.go",
+    "sha256": "c1726c952504758b2300bad7c7b3e2d31212a640184eef9c6f721f64a01e3e81"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/prebootstrap_system_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/prebootstrap_system_linux.go",
+    "sha256": "e1581ef775c65adcfe7288b214787cd1067fb06e8ca89acc9a489525c422b8a7"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/initial_preboot_guest_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/initial_preboot_guest_linux.go",
+    "sha256": "6391a317cad202cad3a57f8853d474ce377f8536a56742ac0aaa1bb4b2d83689"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/initial_preboot_channel_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/initial_preboot_channel_linux.go",
+    "sha256": "03684e5e0a829ca469b62fe8acc86069cb119434ce7e86d55d075b3aff28334b"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_memory_origin_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_memory_origin_source_linux.go",
+    "sha256": "c432b58aa511d013fa9850d8e68c0b33d9343c326d0cd29905f3a80bea83cce8"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_memory_origin_commit_reference_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_memory_origin_commit_reference_linux.go",
+    "sha256": "08673e3c270d3d8f287de2bbf89ffc6457b6a33be3f83e3c0b8ffdaad1ceda14"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go",
+    "sha256": "56e14af79e50adeae1162e87171b61966dc08a9f594a015698e092ced84ffadb"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/guest_memory_maximum.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/guest_memory_maximum.go",
+    "sha256": "14b7ef0d595555c9b79e279fbdc79e11497a46b7f883ee5ba00d566d8508d912"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/guest_memory_maximum_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/guest_memory_maximum_linux.go",
+    "sha256": "3b0d43f2aa4c56691b89ce347dc84a13151942429e5059c92b6a8400ef6a16e9"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_immutable_bounds.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_immutable_bounds.go",
+    "sha256": "0c0a73cc7d0eea8691f1180c497eebafccf0e6f88d818d3b74b46b41a3fcdeb8"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_immutable_bounds_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_immutable_bounds_linux.go",
+    "sha256": "8ee4d02aa83f17b201b377b0e3ca571addbfa7c6c315c3f991cb40ecf18d8ddd"
+  },
+  "history/focused-second/source/pkg/dsga/vmguard/normal_memory_origin_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/vmguard/normal_memory_origin_source_linux.go",
+    "sha256": "4966a7a4746670c383fb4f4edbb6d28cbea6f5c90b071292b7a97f0dc7040e71"
+  },
+  "history/focused-second/source/pkg/dsga/bootprotocol/normal_memory_origin.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/bootprotocol/normal_memory_origin.go",
+    "sha256": "2c67150b2c650c418c19727bdd20d75d366ecb56cd86e1ff4bb802a46328bb4e"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux.go",
+    "sha256": "1d90642768586e5555f855245694b549469ac41fdb2d8bf25b7210f4b4e72e4b"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_guard_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_guard_linux.go",
+    "sha256": "36d5acf163c9663abf71a463db8f0b86e1af77e6e545a6c162159652199caee5"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux.go",
+    "sha256": "9c618c435e5a3e096297612adfcf9c2762f6348f99e498f3a094e93f7a240756"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux.go",
+    "sha256": "505112aa440fcc0375ded95a21b362afecfb3c6171db37a4b75d5f97a5aa2c54"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_current_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_current_linux.go",
+    "sha256": "9b4f1b383b84c13f3e3b2f5986bd11d8a6cb5a1ec32ceb4d542b528b6f719ff2"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/runtime_boot_requirements_metadata_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/runtime_boot_requirements_metadata_linux_test.go",
+    "sha256": "d6d86c4a0ec93f57d54e704843ad04a4c871c5688a311b49df1e6529b32ddd33"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux_test.go",
+    "sha256": "85611ce9138444684c5d0f629657550116f6fd13907eb3a5205f1cf38901f398"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux_test.go",
+    "sha256": "2591ad5d6594b34472081894d7cb243be38af4626b1995e056aaadf5d64cdccc"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux_test.go",
+    "sha256": "bc87e3fe0f15866494982b5b57a082c1b7e41f5cf46ac082d8e6325b6a43039b"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_native_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_native_test.go",
+    "sha256": "401605cbd986cf34f43f906b6a81b3b9072ecddcd150fbb715991e0cf54b4fc3"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_memory_origin_metadata_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_memory_origin_metadata_linux_test.go",
+    "sha256": "25b3a4a4389abe50aedfaf044a6bf96395c967b35049cdd7466ef0b4175d5755"
+  },
+  "history/focused-second/source/pkg/dsga/vmguard/normal_memory_origin_metadata_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/vmguard/normal_memory_origin_metadata_linux_test.go",
+    "sha256": "ebae3fa467306d845157a999872e65a492d118bc2674061511ec83d82a9f22f7"
+  },
+  "history/focused-second/source/pkg/dsga/bootprotocol/normal_memory_origin_metadata_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/bootprotocol/normal_memory_origin_metadata_test.go",
+    "sha256": "a17782ef44f9f674fe7bea6658f54972b0fa4d8b3738945c6df4a5319475f743"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go",
+    "sha256": "e272fe67bc4fe3cf06cbbbd63ac7d718f40ca1571a6a11b2196767ef227dc312"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_filesystem_broker_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_filesystem_broker_source_linux.go",
+    "sha256": "249f7fd1d7f388609c1082fb56146ed2e0d7fe64cdc7c93d304fbd84fdb837c7"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_preflight_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_preflight_linux.go",
+    "sha256": "fd5ff10b45a17616f002e1b57b20ef78ef883bfbda7646096b31e97ebfa355c1"
+  },
+  "history/focused-second/source/pkg/dsga/resourceguard/normal_system_source.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-20261101T070605Z-ccb917/source/pkg/dsga/resourceguard/normal_system_source.go",
+    "sha256": "664ea9bcb9b97aaf0b42d5c08996309f0799c3cc9884fd5ed4299161b7ef7787"
+  },
+  "design/P2-frozen-source-lock.json": {
+    "from": "/data/neon-build/validation/normal-v2-production-wiring-design-20261101T053432Z-7afe28/P2-frozen-source-lock.json",
+    "sha256": "4661e888c4b25cba8d35c9c80308e1275df9bc2f57c3eb1aa7427d87e1fad257"
+  },
+  "design/design-owner-map-v2.json": {
+    "from": "/data/neon-build/validation/normal-v2-production-wiring-design-20261101T053432Z-7afe28/design-owner-map-v2.json",
+    "sha256": "8663d78db61cecdf40eeb27ad81f9c8f9fd6e1150d5880f3026cb1462d457c80"
+  },
+  "design/design-owner-map.json": {
+    "from": "/data/neon-build/validation/normal-v2-production-wiring-design-20261101T053432Z-7afe28/design-owner-map.json",
+    "sha256": "07cf37bd085507db14fccee5b726dbe18f8f005619c66fad82c8ba87e5e83941"
+  },
+  "design/design-receipt-v2.json": {
+    "from": "/data/neon-build/validation/normal-v2-production-wiring-design-20261101T053432Z-7afe28/design-receipt-v2.json",
+    "sha256": "3c89f7c8c07c3a404e5318501dc3e8ae10f6862bf16b1f01328cf1a2daf18543"
+  },
+  "design/design-receipt.json": {
+    "from": "/data/neon-build/validation/normal-v2-production-wiring-design-20261101T053432Z-7afe28/design-receipt.json",
+    "sha256": "9dec17d2355aa0a42eb60648fb37134eadca990e92f214bfc36d25ea5624eb3a"
+  },
+  "design/design.txt": {
+    "from": "/data/neon-build/validation/normal-v2-production-wiring-design-20261101T053432Z-7afe28/design.txt",
+    "sha256": "a37f63c9e35a066fb820300fde42e8e1f873d93854300015302cb5c7abd0674b"
+  },
+  "design/fixed-eight-usage.json": {
+    "from": "/data/neon-build/validation/normal-v2-production-wiring-design-20261101T053432Z-7afe28/fixed-eight-usage.json",
+    "sha256": "1e9ffb0d2196d73f3104656665ab6ec8c70c857df7b7f7b45582a15a140632e9"
+  },
+  "design/host-source-lock.json": {
+    "from": "/data/neon-build/validation/normal-v2-production-wiring-design-20261101T053432Z-7afe28/host-source-lock.json",
+    "sha256": "47b53394f202a0e9b93a152643eb3d28cac0a49a3f5a697f37ea0e6a5ce9dd13"
+  },
+  "design/interface-contract.txt": {
+    "from": "/data/neon-build/validation/normal-v2-production-wiring-design-20261101T053432Z-7afe28/interface-contract.txt",
+    "sha256": "27ea7268bde82158d6b1a92e855c0db2cef066ff1c09ef26906caba26d1a6619"
+  },
+  "design/kernel-proc_sysctl.c": {
+    "from": "/data/neon-build/validation/normal-v2-production-wiring-design-20261101T053432Z-7afe28/kernel-proc_sysctl.c",
+    "sha256": "f8617360d99934b6b4c7a3d9de9d9540e61ed31dec0ed67fb5b404b5dd3ae12f"
+  },
+  "design/owned23-current-hashes.json": {
+    "from": "/data/neon-build/validation/normal-v2-production-wiring-design-20261101T053432Z-7afe28/owned23-current-hashes.json",
+    "sha256": "e608aa331c4ba5061d47727f75deddcd449d341d59bac4415bc216929fd2b788"
+  },
+  "design/source-lock.json": {
+    "from": "/data/neon-build/validation/normal-v2-production-wiring-design-20261101T053432Z-7afe28/source-lock.json",
+    "sha256": "e8d8b754a060b50f1663245fbf5b0f761d63362058b8080b7c6909024472e14f"
+  },
+  "design/static-edits.json": {
+    "from": "/data/neon-build/validation/normal-v2-production-wiring-design-20261101T053432Z-7afe28/static-edits.json",
+    "sha256": "4447373ae0735bb5543634a2e5004388ebf13d8e4668d50027be9b6563e8621e"
+  },
+  "source/pkg/dsga/resourceguard/runtime_boot_requirements.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/runtime_boot_requirements.go",
+    "sha256": "8a1f7a051918a4052d1fd2f5ea7cde14a25871a9d36443cf25a45452dcf7cfba"
+  },
+  "source/pkg/dsga/resourceguard/runtime_boot_requirements_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/runtime_boot_requirements_linux.go",
+    "sha256": "9bb915d4a3702cddecdc7f6f3f9ae2a5d37b68185feddd35f27b5db3259808d5"
+  },
+  "source/pkg/dsga/resourceguard/runtime_policy_templates_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/runtime_policy_templates_linux.go",
+    "sha256": "8dc324a6e164d8335e73aa5be2696372f1cd752cb1a8973132e0057821a0e0c1"
+  },
+  "source/pkg/dsga/resourceguard/normal_split_topology.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_split_topology.go",
+    "sha256": "d89aa0a38e6a56f889c64653c332cda9fa0085b440d188560866fa26cece4d48"
+  },
+  "source/pkg/dsga/resourceguard/normal_split_topology_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_split_topology_linux.go",
+    "sha256": "5130dea59a74c4c809781d7efb6fdaea3faf051fe42bff3077afa3f950e8298f"
+  },
+  "source/pkg/dsga/resourceguard/prebootstrap_system.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/prebootstrap_system.go",
+    "sha256": "c1726c952504758b2300bad7c7b3e2d31212a640184eef9c6f721f64a01e3e81"
+  },
+  "source/pkg/dsga/resourceguard/prebootstrap_system_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/prebootstrap_system_linux.go",
+    "sha256": "e1581ef775c65adcfe7288b214787cd1067fb06e8ca89acc9a489525c422b8a7"
+  },
+  "source/pkg/dsga/resourceguard/initial_preboot_guest_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/initial_preboot_guest_linux.go",
+    "sha256": "6391a317cad202cad3a57f8853d474ce377f8536a56742ac0aaa1bb4b2d83689"
+  },
+  "source/pkg/dsga/resourceguard/initial_preboot_channel_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/initial_preboot_channel_linux.go",
+    "sha256": "03684e5e0a829ca469b62fe8acc86069cb119434ce7e86d55d075b3aff28334b"
+  },
+  "source/pkg/dsga/resourceguard/normal_memory_origin_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_memory_origin_source_linux.go",
+    "sha256": "c432b58aa511d013fa9850d8e68c0b33d9343c326d0cd29905f3a80bea83cce8"
+  },
+  "source/pkg/dsga/resourceguard/normal_memory_origin_commit_reference_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_memory_origin_commit_reference_linux.go",
+    "sha256": "08673e3c270d3d8f287de2bbf89ffc6457b6a33be3f83e3c0b8ffdaad1ceda14"
+  },
+  "source/pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go",
+    "sha256": "56e14af79e50adeae1162e87171b61966dc08a9f594a015698e092ced84ffadb"
+  },
+  "source/pkg/dsga/resourceguard/guest_memory_maximum.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/guest_memory_maximum.go",
+    "sha256": "14b7ef0d595555c9b79e279fbdc79e11497a46b7f883ee5ba00d566d8508d912"
+  },
+  "source/pkg/dsga/resourceguard/guest_memory_maximum_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/guest_memory_maximum_linux.go",
+    "sha256": "3b0d43f2aa4c56691b89ce347dc84a13151942429e5059c92b6a8400ef6a16e9"
+  },
+  "source/pkg/dsga/resourceguard/normal_immutable_bounds.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_immutable_bounds.go",
+    "sha256": "0c0a73cc7d0eea8691f1180c497eebafccf0e6f88d818d3b74b46b41a3fcdeb8"
+  },
+  "source/pkg/dsga/resourceguard/normal_immutable_bounds_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_immutable_bounds_linux.go",
+    "sha256": "8ee4d02aa83f17b201b377b0e3ca571addbfa7c6c315c3f991cb40ecf18d8ddd"
+  },
+  "source/pkg/dsga/vmguard/normal_memory_origin_source_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/vmguard/normal_memory_origin_source_linux.go",
+    "sha256": "4966a7a4746670c383fb4f4edbb6d28cbea6f5c90b071292b7a97f0dc7040e71"
+  },
+  "source/pkg/dsga/bootprotocol/normal_memory_origin.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/bootprotocol/normal_memory_origin.go",
+    "sha256": "2c67150b2c650c418c19727bdd20d75d366ecb56cd86e1ff4bb802a46328bb4e"
+  },
+  "source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux.go",
+    "sha256": "1d90642768586e5555f855245694b549469ac41fdb2d8bf25b7210f4b4e72e4b"
+  },
+  "source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_guard_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_guard_linux.go",
+    "sha256": "36d5acf163c9663abf71a463db8f0b86e1af77e6e545a6c162159652199caee5"
+  },
+  "source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux.go",
+    "sha256": "9c618c435e5a3e096297612adfcf9c2762f6348f99e498f3a094e93f7a240756"
+  },
+  "source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux.go",
+    "sha256": "505112aa440fcc0375ded95a21b362afecfb3c6171db37a4b75d5f97a5aa2c54"
+  },
+  "source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_current_linux.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_current_linux.go",
+    "sha256": "9b4f1b383b84c13f3e3b2f5986bd11d8a6cb5a1ec32ceb4d542b528b6f719ff2"
+  },
+  "source/pkg/dsga/resourceguard/runtime_boot_requirements_metadata_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/runtime_boot_requirements_metadata_linux_test.go",
+    "sha256": "d6d86c4a0ec93f57d54e704843ad04a4c871c5688a311b49df1e6529b32ddd33"
+  },
+  "source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/initial_preboot_wal_family_linux_test.go",
+    "sha256": "85611ce9138444684c5d0f629657550116f6fd13907eb3a5205f1cf38901f398"
+  },
+  "source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux_test.go",
+    "sha256": "a08738aa1547d2b7eab86aaff4c2e4664f0959424ae90d7d388e633bb6640a2d"
+  },
+  "source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux_test.go",
+    "sha256": "bc87e3fe0f15866494982b5b57a082c1b7e41f5cf46ac082d8e6325b6a43039b"
+  },
+  "source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_native_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_native_test.go",
+    "sha256": "401605cbd986cf34f43f906b6a81b3b9072ecddcd150fbb715991e0cf54b4fc3"
+  },
+  "source/pkg/dsga/resourceguard/normal_memory_origin_metadata_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/resourceguard/normal_memory_origin_metadata_linux_test.go",
+    "sha256": "25b3a4a4389abe50aedfaf044a6bf96395c967b35049cdd7466ef0b4175d5755"
+  },
+  "source/pkg/dsga/vmguard/normal_memory_origin_metadata_linux_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/vmguard/normal_memory_origin_metadata_linux_test.go",
+    "sha256": "ebae3fa467306d845157a999872e65a492d118bc2674061511ec83d82a9f22f7"
+  },
+  "source/pkg/dsga/bootprotocol/normal_memory_origin_metadata_test.go": {
+    "from": "/data/neon-build/validation/normal-metadata-wiring-focused-final-20261101T071219Z-916818/source/pkg/dsga/bootprotocol/normal_memory_origin_metadata_test.go",
+    "sha256": "a17782ef44f9f674fe7bea6658f54972b0fa4d8b3738945c6df4a5319475f743"
+  }
+}

@@ -21,8 +21,11 @@ func normalImmutableBoundsPreflight(k kernel, target Limits) error {
 // 预算协议变化；hstate全0、任务/System/AS则必须逐字保持原创建值。原record-v3
 // 之前也不能开放HugeTLB池；事后Observe发现漂移不能替代写前阻止。
 func normalImmutableBoundsTarget(plan RuntimeBootRequirements, source SourceConfig, target Limits) error {
-	if plan.ProfileID() != NormalSplitV1PhysicalKernelProfileID {
+	if plan.ProfileID() != NormalSplitV1PhysicalKernelProfileID && plan.ProfileID() != NormalSplitMetadataV1PhysicalKernelProfileID {
 		return nil
+	}
+	if plan.ProfileID() == NormalSplitMetadataV1PhysicalKernelProfileID && (plan.version != 2 || plan.kernelPreparationProtocol != 2 || plan.memoryOriginProtocol != 2 || plan.initialWALFamily != "initial8-kernel-prep-userns-v2" || !plan.build.ControlMetadataGuard()) {
+		return errors.Join(ErrUnknown, fmt.Errorf("immutable metadata plan incomplete"))
 	}
 	fail := func(s string) error { return errors.Join(ErrUnknown, fmt.Errorf("immutable normal bounds: %s", s)) }
 	if !plan.Enabled() || source.Validate() != nil || len(source.Limits.HugePools) == 0 {

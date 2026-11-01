@@ -14,6 +14,7 @@ import (
 )
 
 const guestMemoryMaximumScope = "guest-immutable-virtio-region-observation-only"
+const guestMemoryMaximumMetadataScope = "guest-immutable-virtio-region-observation-metadata-v2"
 
 // 此私有结果只记Guest实际观察事实。region是probe时驱动保留的完整上限，
 // 不是online/requested/plugged。没有全Guest最大值、原出生、Host保留或normal票据。
@@ -47,8 +48,14 @@ func guestMaximumCanonicalPath(name, canonical string) bool {
 }
 
 func (o guestMemoryMaximumObservation) validate() error {
-	ref, err := LookupPhysicalKernelBuild(NormalSplitV1PhysicalKernelProfileID)
-	if err != nil || o.Build != ref || o.ProtocolVersion != 1 || o.Scope != guestMemoryMaximumScope ||
+	profile := NormalSplitV1PhysicalKernelProfileID
+	versionOK := o.ProtocolVersion == 1 && o.Scope == guestMemoryMaximumScope
+	if o.ProtocolVersion == 2 && o.Scope == guestMemoryMaximumMetadataScope {
+		profile = NormalSplitMetadataV1PhysicalKernelProfileID
+		versionOK = true
+	}
+	ref, err := LookupPhysicalKernelBuild(profile)
+	if err != nil || o.Build != ref || !versionOK ||
 		!validGuestBoot(o.GuestBootID) || !guestMaximumCanonicalPath(o.DeviceName, o.CanonicalPath) ||
 		o.SysfsDevice == 0 || o.SysfsInode == 0 || o.DeviceID != 24 || o.VendorID != 0x1af4 ||
 		o.DriverPath != "/sys/bus/virtio/drivers/virtio_mem" || o.Address == 0 || o.RegionBytes == 0 ||

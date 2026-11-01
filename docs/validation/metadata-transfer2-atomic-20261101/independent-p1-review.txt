@@ -1,0 +1,48 @@
+Kernel31 + RootFS3/test + marker 独立只读审查 / P1 / 2026-11-01
+结论：PASS_COMPONENT_SCOPE_ONLY。未见本限定组件提交阻断；不代表完整Source、normal降限或E通过。
+
+精确审物：stable-minfree-866a9e，source-lock a05f4b0ce1079fbe34f197fbfb0dbfb89dfd1e9b0ab66b5b60d4d0e3ae68760a。
+7458 actual_COPY逐实际文件hash均匹配，31owned+Root4当前均同锁。该实际cohort17race根57命名子项
+零FAIL/skip，source/build/test均0；未重复运行测试。Root9自有文件与其独立freeze逐hash一致，但
+旧Root9 source图不转签为最新31整图；这里只引用其自有FS3+test与已独审固定动作组件范围。
+array_service_kernel_linux.go marker SHA1df80c7a7183b137ed0438e2e4bace87ece9d74f4d4bc0ddbcbb7c8fe671d684，
+唯一hunk改为按已严格解码policy核显式split marker，旧marker行为仍沿旧policy分支。
+
+1 minfree：准确已编译18c page_alloc.c SHA1910e8ae784507957fe92351be7f0a075ab15498bc5f740384c57fc14ca45802
+:6121 calculate_min_free_kbytes，raw=floor_sqrt(nr_free_buffer_pages()*(4096>>10)*16)，先与
+user_min_free比较、再clamp128..262144；sysctl写后设置user_min_free。Go用BootUpper/1024*16，
+整数除法二分避免平方溢出，floor sqrt后向2次幂上取整；0/非页对齐拒，乘法有显式溢出检查。
+实际accepted PreSystem原policy将BootUpper限制128MiB..16GiB且128MiB对齐，初始snapshot实核
+NonMovableUpper<=BootUpper/无MOVABLE。GFP_USER nr_free_buffer_pages只计算非MOVABLE低zone，
+不超过原固定K，因此推荐值最高16384KiB，policy>=它可阻止后续hotplug推荐改变exacttarget。
+该上界来自原ISO政策+真实初始物理快照，非current采样反推将来，也不证明当前QMPbase。
+
+审查勘误：我曾先按helper公开uint64域提出>4TiB且policy>262144可能被内核clamp改小的疑点；
+继续读到上游BootUpper<=16GiB后确认反例不在实际accepted plan域，已明确撤回并通知Root。
+不得把这个排除后的假设记成实际Guest失败/生产缺口或据此额外限制旧target。原源码/结果没改。
+
+2 完整显式族：plan2/kernel2/PreSystem3/Topology4-memory2/精确18c artifact-config-notes-release/profile
+相互核对；其它recognized kernel不泛化。旧369/selector0/1/2分支与JSON值保留，新增family字段
+omitempty保证legacy confirmed-reference逐字节兼容，实际UT以旧结构marshal核对。
+normalInitialWALFiles从固定array值拷贝，只替前2 Kernel WAL；其它6份位置/语义原样，未知族拒。
+
+3 R1不从JSON产生能力：固定initial成功后同*Guard、same真实Linux backend、原durable Source
+reference核验后存私有槽；Loaded不能替换成别的对象/摘要。无槽/另Guard/raw evidence均Unknown。
+R1 pin移交只dup原控制ROFD，原procfs/devino/mount/flags与8NS/2WAL逐项绑定；不重新open认领。
+
+4 R2独立consumer：须原typed BrokerExecProof显式transfer reader和slot5原ROFD；原FS2/memory2
+的RootR1/boot/runtime/state/lock/前2WAL exact绑定，原clone Task是真当前R2，R2!=R1。校原完整
+2WAL canonical/nonce/Before/After/ProducerELF/policy/三原raw摘要后，显式消费同步才存本进程见证。
+R2观察只用自己原task/ns/ROFD、当前BaseRead与原WAL pins/可见inode，既不要求R1仍活，也不要求
+PPID1、不重新PGEmpty。共享OFD用Pread offset0，严格只收0换行；不Seek、不回路径/不猜0。
+
+5 锁/因果：FS显式重绑定先形成自身原namespace/root/witness，KernelR2独立消费者不回FS，
+再MemoryR2。Memory观察可读FS→KernelR2→当前物理，但FS.observe不回Memory/Kernel source；
+不存在该链的递归锁。KernelR2.observe/reference与Memory.recheck/FS.observe均零sync/零WAL写。
+只有显式首次消费/恢复路径同步固定2、10/13或11份原文件，普通可见JSON不取得durability资格。
+FS2新family确认名单13份（原8前2替换+FS2+Memory3）；单份sync失败/族漂移负例模型准确。
+
+范围限制：该31/Root9图没有证明P2真实5FD consumer正链已通过。当前真实R2 stop/transfer/parent
+正常退出的联合S以其后继准确producer/cohort为准，不能把本17U或已有Source模型当它。
+所有requireContinuousQualification保持Unknown；未来Root写者、ordinary controls/Gate/stdio/PG等
+仍独立闭合，normal授权false/E0。未修改任何业务、P2/lease2/udev新prefix、Git/index或发行锁。

@@ -16,6 +16,10 @@ const NormalMemoryOriginScope = "normal-memory-origin-host-reference-v1"
 const NormalMemoryOriginAckScope = "normal-memory-origin-guest-reference-v1"
 const NormalMemoryOriginProfileID = "neon-linux-6.12.26-dsga-normal-split-v1"
 
+// 新分支只认准确18c，旧profile的语法/JSON行为不改变；opaque来源仍由Host/Guest核。
+const NormalMemoryOriginMetadataProfileID = "neon-linux-6.12.26-dsga-normal-split-metadata-v1"
+const NormalMemoryOriginMetadataKernelSHA256 = "18c9fd3a38bbe5a087b98998c856898e97ee3f0bc68681b13f0287912849e1ad"
+
 // 六份[]byte保留同一QMP连接真实return原字节；不是调用者自报最大值。
 // 中立线类型只能核语法/绑定，无法凭JSON证明Host来源或持续控制写者。
 type NormalMemoryQMPInputs struct {
@@ -51,7 +55,8 @@ type NormalMemoryOriginHostReference struct {
 }
 
 func (r NormalMemoryOriginHostReference) Validate() error {
-	if r.ProtocolVersion != NormalMemoryOriginProtocolVersion || r.Scope != NormalMemoryOriginScope || r.ProfileID != NormalMemoryOriginProfileID ||
+	profileAllowed := r.ProfileID == NormalMemoryOriginProfileID || r.ProfileID == NormalMemoryOriginMetadataProfileID && r.Prepared.Challenge.KernelBuildSHA256 == NormalMemoryOriginMetadataKernelSHA256
+	if r.ProtocolVersion != NormalMemoryOriginProtocolVersion || r.Scope != NormalMemoryOriginScope || !profileAllowed ||
 		r.Prepared.Validate() != nil || r.Movable.Validate() != nil || r.Movable.Challenge.Preboot != r.Prepared || r.Completion.MatchReceipt(r.Movable) != nil ||
 		r.Process.PID <= 1 || r.Process.StartTicks == 0 || r.Process.ExecutableDevice == 0 || r.Process.ExecutableInode == 0 ||
 		!digest(r.Process.ExecutableSHA256) || !digest(r.Process.CommandSHA256) || control.ValidateIncarnation(r.Process.LaunchNonce) != nil ||

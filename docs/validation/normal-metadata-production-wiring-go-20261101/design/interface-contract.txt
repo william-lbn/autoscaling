@@ -1,0 +1,45 @@
+私有Linux API契约草案（Root审批后实施；未写生产Go）
+
+type normalKernelPrepV2HandoffReference struct {
+    ProtocolVersion uint32 // 固定1；wire transfer2强制携带，非Source资格
+    Family string // 固定initial8-kernel-prep-userns-v2
+    PreparationSHA256 string
+    RuntimeDocumentSHA256 string
+    PhysicalPolicySHA256 string
+    KernelPolicySHA256 string
+    ProducerELFSHA256 string
+    OriginalRoot nativeBirthConsumer // 永远R1；不改成R2
+    Identity Identity
+    Build PhysicalKernelBuildReference // 全部5元组精确18c
+    StateDevice, StateInode uint64
+    OriginalLock normalKernelPrepV2Object
+    OriginalControl normalKernelPrepV2Object
+    OriginalNamespaces [8]normalSystemRoleNamespaceIdentity
+    OriginalWAL [2]normalSystemRoleFileWitness // 固定intent/complete顺序
+}
+// 所有字段value可比较；无map/slice/pointer/File。固定顺序和canonical SHA严格验证。
+
+type normalKernelPrepV2HandoffPin struct { /* private originalGuard/source/ref/controlFD/witness */ }
+// 只能从同原R1 Guard生产槽及真实durable opaque创建；不可接受外部JSON/ref/fd pair。
+func (g *Guard) pinOriginalKernelPrepV2ForBrokerLocked(ctx context.Context, state *lockedState,
+    filesystem *normalFilesystemOriginSource) (*normalKernelPrepV2HandoffPin, error)
+func (p *normalKernelPrepV2HandoffPin) originalTransferDescriptorLocked(ctx context.Context,
+    state *lockedState) (normalKernelPrepV2HandoffReference, *os.File, error)
+// 返回原RO sysctl对象的F_DUPFD_CLOEXEC；使用后close仅关闭此dup；不公开path/value setter。
+
+// P2唯一owner实现于原opaque exec proof；只从ReadTransfer2真实slot5返回dup。
+func (p *normalSystemRoleBrokerExecProof) originalKernelPrepV2TransferLocked(ctx context.Context,
+    state *lockedState, system *normalSystemLifecycleSource) (normalKernelPrepV2HandoffReference, *os.File, error)
+// 前置resource flock；内部proof.mu→System/Task校验；不能已持System.mu调用；绝不重新open路径。
+
+type normalKernelPrepV2BrokerConsumerSource struct { /* private new R2 owner/held originalFD/history pins */ }
+func (g *Guard) bindNormalKernelPrepV2BrokerConsumerLocked(ctx context.Context, state *lockedState,
+    filesystem *normalFilesystemOriginSource, proof *normalSystemRoleBrokerExecProof) (*normalKernelPrepV2BrokerConsumerSource, error)
+// 不接任意ref/FD参数；内部只调用上面proof getter，保证能力来自原5FD接收对象。
+func (o *normalKernelPrepV2BrokerConsumerSource) referenceLocked(ctx context.Context,
+    state *lockedState) (normalKernelPrepV2HandoffReference, error)
+// 运行期该方法只读本consumer/R2task/ns/原FD和历史，不回调FS，不碰R1 backend.verify，不Sync/PGEmpty/floor。
+func (o *normalKernelPrepV2BrokerConsumerSource) requireContinuousQualification() error // 恒Unknown
+
+// R1新Guard槽与R2独立槽分离；initial-boot defer仅清自己的槽/FD，不清WAL/预算。
+// 原R1五文件和公开组件Prepare/Observe/Replay不因此改；新bridge只认生产initial同Guard槽。

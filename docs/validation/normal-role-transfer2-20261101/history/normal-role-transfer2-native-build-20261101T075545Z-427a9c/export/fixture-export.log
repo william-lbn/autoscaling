@@ -1,0 +1,9 @@
+=== RUN   TestExportNormalSystemRoleTransferV2Fixture
+    normal_system_role_service_transfer_v2_native_test.go:99: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/normal_system_role_service_transfer_v2_native_test.go:99
+        	            				/workspace/pkg/dsga/resourceguard/normal_system_role_service_transfer_v2_native_test.go:103
+        	Error:      	Received unexpected error:
+        	            	open /out/host-seed-runtime.json: no such file or directory
+        	Test:       	TestExportNormalSystemRoleTransferV2Fixture
+--- FAIL: TestExportNormalSystemRoleTransferV2Fixture (1.32s)
+FAIL

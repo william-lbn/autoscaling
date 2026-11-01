@@ -306,6 +306,9 @@ func normalRoleServiceDEVLongStandin(path string) bool {
 	}
 	return false
 }
+
+var normalRoleServiceNativeBrokerContext = func(ctx context.Context) context.Context { return ctx }
+
 func TestMain(m *testing.M) {
 	if len(os.Args) >= 2 && os.Args[0] == normalSystemRoleBrokerExecutable {
 		switch os.Args[1] {
@@ -321,6 +324,7 @@ func TestMain(m *testing.M) {
 				defer cancel()
 				return normalAuthorityDEVCandidate(call, a)
 			})
+			ctx = normalRoleServiceNativeBrokerContext(ctx)
 			go normalAuthorityDEVObserve(ctx)
 			if e := RunNormalSystemRoleBroker(ctx); e != nil {
 				fmt.Println("ROLE_SERVICE_BROKER_REFUSED", e)

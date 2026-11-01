@@ -88,15 +88,16 @@ func (j *normalSystemRoleServiceGateJournal) persistOriginalSystemRoleStopped(ct
 }
 
 type normalSystemRoleServiceTransfer struct {
-	ProtocolVersion uint32                        `json:"protocol_version"`
-	Origin          normalSystemRoleServiceOrigin `json:"origin"`
-	IntentSHA256    string                        `json:"intent_sha256"`
-	GateSHA256      [3]string                     `json:"gate_sha256"`
-	Task            normalSystemRoleObservation   `json:"task"`
+	KernelPreparation *normalKernelPrepV2HandoffReference `json:"kernel_preparation,omitempty"`
+	ProtocolVersion   uint32                              `json:"protocol_version"`
+	Origin            normalSystemRoleServiceOrigin       `json:"origin"`
+	IntentSHA256      string                              `json:"intent_sha256"`
+	GateSHA256        [3]string                           `json:"gate_sha256"`
+	Task              normalSystemRoleObservation         `json:"task"`
 }
 
 func (t normalSystemRoleServiceTransfer) validate() error {
-	if t.ProtocolVersion != 1 || t.Origin.validate() != nil || !normalSystemRoleDeclarationDigest(t.IntentSHA256) {
+	if t.validateKernelBinding() != nil || t.Origin.validate() != nil || !normalSystemRoleDeclarationDigest(t.IntentSHA256) {
 		return fmt.Errorf("original broker transfer origin differs")
 	}
 	for _, h := range t.GateSHA256 {
@@ -159,6 +160,17 @@ func startNormalSystemRoleBroker(ctx context.Context, g *Guard, system *normalSy
 		if e != nil || current != origin.Parent.RootConsumer {
 			return fmt.Errorf("original broker parent consumer changed")
 		}
+		// R1原pin保留到R2完整ready，COMMIT前再核同原reference；dup只核验后关闭。
+		if preparation.kernelPin != nil {
+			kr, kfd, ke := preparation.kernelPin.originalTransferDescriptorLocked(call, state)
+			if ke != nil {
+				return ke
+			}
+			kfd.Close()
+			if preparation.transfer.KernelPreparation == nil || kr != *preparation.transfer.KernelPreparation {
+				return ErrUnknown
+			}
+		}
 		if e = preparation.child.task.verify(); e != nil {
 			return e
 		}
@@ -207,6 +219,8 @@ type normalSystemRoleBrokerPreparation struct {
 	declaration         *normalSystemRoleDeclarationSource
 	namespaces          *normalSystemRoleNamespaceSource
 	namespaceFD, rootFD *os.File
+	kernelPin           *normalKernelPrepV2HandoffPin
+	kernelFD            *os.File
 }
 
 func (p *normalSystemRoleBrokerPreparation) close() {
@@ -222,6 +236,12 @@ func (p *normalSystemRoleBrokerPreparation) close() {
 	if p.namespaces != nil {
 		p.namespaces.close()
 	}
+	if p.kernelFD != nil {
+		p.kernelFD.Close()
+	}
+	if p.kernelPin != nil {
+		p.kernelPin.close()
+	}
 	if p.namespaceFD != nil {
 		p.namespaceFD.Close()
 	}
@@ -236,12 +256,19 @@ func prepareNormalSystemRoleBrokerLocked(ctx context.Context, g *Guard, state *l
 	fail := func(e error) (*normalSystemRoleBrokerPreparation, error) { return nil, errors.Join(ErrUnknown, e) }
 	var ownedDeclaration *normalSystemRoleDeclarationSource
 	var ownedNamespaces *normalSystemRoleNamespaceSource
-	var ownedNS, ownedRoot *os.File
+	var ownedNS, ownedRoot, ownedKernel *os.File
+	var ownedKernelPin *normalKernelPrepV2HandoffPin
 	var ownedConn *net.UnixConn
 	var ownedChild *normalSystemRoleOriginalChild
 	success := false
 	defer func() {
 		if !success {
+			if ownedKernel != nil {
+				ownedKernel.Close()
+			}
+			if ownedKernelPin != nil {
+				ownedKernelPin.close()
+			}
 			if ownedChild != nil {
 				_ = ownedChild.cancelAndWait()
 			}
@@ -311,6 +338,27 @@ func prepareNormalSystemRoleBrokerLocked(ctx context.Context, g *Guard, state *l
 	if ref.OriginalRoot != system.binding.RootConsumer {
 		return fail(fmt.Errorf("original broker FS producer is not this initial Root"))
 	}
+	var kernelReference *normalKernelPrepV2HandoffReference
+	if declaration.declaration.kernelPreparationV2() {
+		family, e := normalFilesystemInitialFamilyFromMemory(filesystem.intent.Memory)
+		if e != nil || ref.ProtocolVersion != 2 || family != normalInitialWALFamilyKernelPrepV2 {
+			return fail(ErrUnknown)
+		}
+		pin, e := g.pinOriginalKernelPrepV2ForBrokerLocked(ctx, state, filesystem)
+		if e != nil {
+			return fail(e)
+		}
+		ownedKernelPin = pin
+		kr, kfd, e := pin.originalTransferDescriptorLocked(ctx, state)
+		if e != nil {
+			return fail(e)
+		}
+		ownedKernel = kfd
+		if kr.Build != system.manifest.Kernel {
+			return fail(fmt.Errorf("original System kernel differs from KernelPrep2"))
+		}
+		kernelReference = &kr
+	}
 	var st unix.Stat_t
 	if e = unix.Fstat(int(state.dir.Fd()), &st); e != nil {
 		return fail(e)
@@ -324,6 +372,14 @@ func prepareNormalSystemRoleBrokerLocked(ctx context.Context, g *Guard, state *l
 		return fail(e)
 	}
 	origin := normalSystemRoleServiceOrigin{ResourceStageSHA256: physicalDigest(recordRaw), ProtocolVersion: 1, Scope: normalSystemRoleServiceStartScope, Nonce: nonce, Parent: system.binding, Filesystem: ref, DeclarationSHA256: declaration.rawSHA, Namespace: ns, ResourceIdentity: r.Identity, ResourceFloor: r.Floor, StateDevice: st.Dev, StateInode: st.Ino}
+	if kernelReference != nil {
+		origin.ProtocolVersion = 2
+		origin.Scope = normalSystemRoleServiceStartV2Scope
+		origin.KernelPreparationSHA256, e = kernelReference.referenceSHA256()
+		if e != nil {
+			return fail(e)
+		}
+	}
 	if e = origin.validate(); e != nil {
 		return fail(e)
 	}
@@ -372,10 +428,14 @@ func prepareNormalSystemRoleBrokerLocked(ctx context.Context, g *Guard, state *l
 	}
 	ownedChild = child
 	transfer := normalSystemRoleServiceTransfer{ProtocolVersion: 1, Origin: origin, IntentSHA256: intentSHA, GateSHA256: journal.hashes, Task: child.observed.Task}
+	if kernelReference != nil {
+		transfer.ProtocolVersion = 2
+		transfer.KernelPreparation = kernelReference
+	}
 	if e = transfer.validate(); e != nil {
 		return fail(e)
 	}
-	// 固定4个原kernel对象，不发送新开self pidfd、不按WAL numeric PID重开。
+	// 前四个原kernel对象顺序不变；声明3只追加原KernelPrep2只读OFD，不按路径或PID重开。
 	child.task.mu.Lock()
 	proc, e := unix.FcntlInt(uintptr(child.task.procfd), unix.F_DUPFD_CLOEXEC, 0)
 	child.task.mu.Unlock()
@@ -384,11 +444,15 @@ func prepareNormalSystemRoleBrokerLocked(ctx context.Context, g *Guard, state *l
 	}
 	procfd := os.NewFile(uintptr(proc), "original broker pinned proc handoff")
 	defer procfd.Close()
-	if e = normalSystemRoleServiceWriteTransfer(conn, transfer, []*os.File{child.pidfd, procfd, nsfd, rootfd}, call); e != nil {
+	files := []*os.File{child.pidfd, procfd, nsfd, rootfd}
+	if kernelReference != nil {
+		files = append(files, ownedKernel)
+	}
+	if e = normalSystemRoleServiceWriteTransfer(conn, transfer, files, call); e != nil {
 		return fail(e)
 	}
 	success = true
-	return &normalSystemRoleBrokerPreparation{child: child, transfer: transfer, connection: conn, declaration: declaration, namespaces: namespaces, namespaceFD: nsfd, rootFD: rootfd}, nil
+	return &normalSystemRoleBrokerPreparation{child: child, transfer: transfer, connection: conn, declaration: declaration, namespaces: namespaces, namespaceFD: nsfd, rootFD: rootfd, kernelPin: ownedKernelPin, kernelFD: ownedKernel}, nil
 }
 
 type normalSystemRoleServiceCommit struct {

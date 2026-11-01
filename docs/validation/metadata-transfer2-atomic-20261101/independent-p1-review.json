@@ -1,0 +1,147 @@
+{
+  "result": "PASS_COMPONENT_SCOPE_ONLY",
+  "blocking_findings": [],
+  "reviewer": "P1-independent-read-only",
+  "source_lock_sha256": "a05f4b0ce1079fbe34f197fbfb0dbfb89dfd1e9b0ab66b5b60d4d0e3ae68760a",
+  "base": "80bab8ae87eb6a3c8377e46b79d9d0b14c696f65",
+  "owned31": {
+    "pkg/dsga/resourceguard/runtime_boot_requirements.go": "9dc97424e1ebb06045de9d1ac3c6b3e157de7b4536f40712b09947b5c24ddd21",
+    "pkg/dsga/resourceguard/runtime_boot_requirements_linux.go": "c4a948976f342c36bd3d275e5522ac7293479914fa7224cce23eebbb039742a3",
+    "pkg/dsga/resourceguard/runtime_policy_templates_linux.go": "8dc324a6e164d8335e73aa5be2696372f1cd752cb1a8973132e0057821a0e0c1",
+    "pkg/dsga/resourceguard/normal_split_topology.go": "d89aa0a38e6a56f889c64653c332cda9fa0085b440d188560866fa26cece4d48",
+    "pkg/dsga/resourceguard/normal_split_topology_linux.go": "5130dea59a74c4c809781d7efb6fdaea3faf051fe42bff3077afa3f950e8298f",
+    "pkg/dsga/resourceguard/prebootstrap_system.go": "c1726c952504758b2300bad7c7b3e2d31212a640184eef9c6f721f64a01e3e81",
+    "pkg/dsga/resourceguard/prebootstrap_system_linux.go": "3e5422d099670b192e2340fde483f427b28ab4768b42241e150d5389ccdc3031",
+    "pkg/dsga/resourceguard/initial_preboot_guest_linux.go": "6391a317cad202cad3a57f8853d474ce377f8536a56742ac0aaa1bb4b2d83689",
+    "pkg/dsga/resourceguard/initial_preboot_channel_linux.go": "03684e5e0a829ca469b62fe8acc86069cb119434ce7e86d55d075b3aff28334b",
+    "pkg/dsga/resourceguard/normal_memory_origin_source_linux.go": "c432b58aa511d013fa9850d8e68c0b33d9343c326d0cd29905f3a80bea83cce8",
+    "pkg/dsga/resourceguard/normal_memory_origin_commit_reference_linux.go": "08673e3c270d3d8f287de2bbf89ffc6457b6a33be3f83e3c0b8ffdaad1ceda14",
+    "pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go": "56e14af79e50adeae1162e87171b61966dc08a9f594a015698e092ced84ffadb",
+    "pkg/dsga/resourceguard/guest_memory_maximum.go": "14b7ef0d595555c9b79e279fbdc79e11497a46b7f883ee5ba00d566d8508d912",
+    "pkg/dsga/resourceguard/guest_memory_maximum_linux.go": "3b0d43f2aa4c56691b89ce347dc84a13151942429e5059c92b6a8400ef6a16e9",
+    "pkg/dsga/resourceguard/normal_immutable_bounds.go": "0c0a73cc7d0eea8691f1180c497eebafccf0e6f88d818d3b74b46b41a3fcdeb8",
+    "pkg/dsga/resourceguard/normal_immutable_bounds_linux.go": "8ee4d02aa83f17b201b377b0e3ca571addbfa7c6c315c3f991cb40ecf18d8ddd",
+    "pkg/dsga/vmguard/normal_memory_origin_source_linux.go": "4966a7a4746670c383fb4f4edbb6d28cbea6f5c90b071292b7a97f0dc7040e71",
+    "pkg/dsga/bootprotocol/normal_memory_origin.go": "2c67150b2c650c418c19727bdd20d75d366ecb56cd86e1ff4bb802a46328bb4e",
+    "pkg/dsga/resourceguard/initial_preboot_wal_family_linux.go": "1d90642768586e5555f855245694b549469ac41fdb2d8bf25b7210f4b4e72e4b",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_guard_linux.go": "36d5acf163c9663abf71a463db8f0b86e1af77e6e545a6c162159652199caee5",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux.go": "9c618c435e5a3e096297612adfcf9c2762f6348f99e498f3a094e93f7a240756",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux.go": "e5e6ccef8cc922215ac94e918b92242528d3fff8294b68544bbdc6ddf1c71909",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_current_linux.go": "9b4f1b383b84c13f3e3b2f5986bd11d8a6cb5a1ec32ceb4d542b528b6f719ff2",
+    "pkg/dsga/resourceguard/runtime_boot_requirements_metadata_linux_test.go": "8009d28bc4cbab3c3b806a9a05ebf9420427a5a9462308dd0557e5498fbb9269",
+    "pkg/dsga/resourceguard/initial_preboot_wal_family_linux_test.go": "85611ce9138444684c5d0f629657550116f6fd13907eb3a5205f1cf38901f398",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux_test.go": "a08738aa1547d2b7eab86aaff4c2e4664f0959424ae90d7d388e633bb6640a2d",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux_test.go": "23c4218dce9a9cae1068d5bfca5e00f19047ee4684f031f660467bcbe51aed3c",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_native_test.go": "401605cbd986cf34f43f906b6a81b3b9072ecddcd150fbb715991e0cf54b4fc3",
+    "pkg/dsga/resourceguard/normal_memory_origin_metadata_linux_test.go": "25b3a4a4389abe50aedfaf044a6bf96395c967b35049cdd7466ef0b4175d5755",
+    "pkg/dsga/vmguard/normal_memory_origin_metadata_linux_test.go": "16e9f5202be68ff6f7a88f7c05bec86350c13839dd1df6c03ef3a2179c833a59",
+    "pkg/dsga/bootprotocol/normal_memory_origin_metadata_test.go": "a17782ef44f9f674fe7bea6658f54972b0fa4d8b3738945c6df4a5319475f743"
+  },
+  "Root4_current_match": {
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go": "e272fe67bc4fe3cf06cbbbd63ac7d718f40ca1571a6a11b2196767ef227dc312",
+    "pkg/dsga/resourceguard/normal_filesystem_broker_source_linux.go": "249f7fd1d7f388609c1082fb56146ed2e0d7fe64cdc7c93d304fbd84fdb837c7",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_preflight_linux.go": "fd5ff10b45a17616f002e1b57b20ef78ef883bfbda7646096b31e97ebfa355c1",
+    "pkg/dsga/resourceguard/normal_system_source.go": "664ea9bcb9b97aaf0b42d5c08996309f0799c3cc9884fd5ed4299161b7ef7787"
+  },
+  "Root9_current_match": {
+    "pkg/dsga/resourceguard/normal_filesystem_broker_source_linux.go": "249f7fd1d7f388609c1082fb56146ed2e0d7fe64cdc7c93d304fbd84fdb837c7",
+    "pkg/dsga/resourceguard/normal_filesystem_metadata_wiring_linux_test.go": "8ad9e8ba54ab8c3688ad0c78aa19ab09a4c00a46c7e1064746d0b573bffa4f8d",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go": "e272fe67bc4fe3cf06cbbbd63ac7d718f40ca1571a6a11b2196767ef227dc312",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_preflight_linux.go": "fd5ff10b45a17616f002e1b57b20ef78ef883bfbda7646096b31e97ebfa355c1",
+    "pkg/dsga/resourceguard/normal_ordinary_actions_v2_linux_test.go": "79d2c3c3ddd5d6b3d19a4e792bf42f7d7e8bb79e3faf6fcef7a0c403f25964dc",
+    "pkg/dsga/resourceguard/normal_ordinary_actions_v2_protocol_linux.go": "1d297fe5598051d6a086af2d896c7d6aec82280594a892edf597d0e5ffe7b82b",
+    "pkg/dsga/resourceguard/normal_ordinary_actions_v2_server_linux.go": "181c4f997339ed1885ef0793ddbfaf59531a87096f9a232db921318b2fd352da",
+    "pkg/dsga/resourceguard/normal_ordinary_actions_v2_server_linux_test.go": "db9e5584b8104978b587d02e5c58b6679c465390880eea5dfee06699523f7a09",
+    "pkg/dsga/resourceguard/normal_ordinary_actions_v2_tls_linux.go": "f00903311afc018be1acc20afdb47425f44b6708c7f47af725bc038e7115861f"
+  },
+  "marker_sha256": "1df80c7a7183b137ed0438e2e4bace87ece9d74f4d4bc0ddbcbb7c8fe671d684",
+  "actual_COPY_count": 7458,
+  "actual_COPY_mismatches": [],
+  "existing_test_roots": 17,
+  "existing_named_subtests": 57,
+  "tests_rerun": false,
+  "line_anchors": {
+    "runtime_boot_requirements.go": {
+      "func NormalMetadataStableMinFreeKBytes": [
+        156
+      ]
+    },
+    "runtime_boot_requirements_linux.go": {
+      "func deriveMetadataRuntimeBootRequirements": [
+        67
+      ]
+    },
+    "prebootstrap_system.go": {
+      "p.BootMemoryUpperBytes <": [
+        37
+      ],
+      "if !s.PGEmpty": [
+        197
+      ]
+    },
+    "initial_preboot_wal_family_linux.go": {
+      "func normalInitialWALFiles": [
+        16
+      ],
+      "func normalFilesystemSyncFilesForWitness": [
+        97
+      ]
+    },
+    "normal_kernel_prep_userns_v2_guard_linux.go": {
+      "func (g *Guard) installNormalKernelPrepV2OriginalLocked": [
+        21
+      ],
+      "func (o *normalKernelPrepV2OriginalGuardSource) preparationReferenceLocked": [
+        73
+      ]
+    },
+    "normal_kernel_prep_userns_v2_handoff_linux.go": {
+      "func (g *Guard) pinOriginalKernelPrepV2ForBrokerLocked": [
+        98
+      ]
+    },
+    "normal_kernel_prep_userns_v2_broker_linux.go": {
+      "func normalKernelPrepV2ReadAtControl": [
+        76
+      ],
+      "func (g *Guard) bindNormalKernelPrepV2BrokerConsumerLocked": [
+        132
+      ],
+      "func (o *normalKernelPrepV2BrokerConsumerSource) readCurrentLocked": [
+        272
+      ]
+    },
+    "normal_filesystem_broker_source_linux.go": {
+      "out.kernelConsumer, e =": [
+        155
+      ],
+      "out.memoryConsumer, e =": [
+        160
+      ]
+    },
+    "normal_filesystem_origin_source_linux.go": {
+      "func (o *normalFilesystemOriginSource) observeLocked": [
+        654
+      ],
+      "func normalFilesystemInitialFamilyFromInput": [
+        395
+      ],
+      "func normalFilesystemConfirmPrefix": [
+        454
+      ]
+    },
+    "normal_filesystem_memory_v2_linux.go": {
+      "func (g *Guard) bindNormalMemoryBrokerConsumerLocked": [
+        113
+      ],
+      "func (o *normalMemoryBrokerConsumerSource) recheckLocked": [
+        193
+      ]
+    }
+  },
+  "exact_built_page_alloc_sha256": "1910e8ae784507957fe92351be7f0a075ab15498bc5f740384c57fc14ca45802",
+  "withdrawn_hypothesis": "BootUpper>4TiB minfree clamp case excluded by existing accepted PreSystem BootUpper<=16GiB and actual initial NonMovable bound; not a real accepted-input finding",
+  "S_not_certified_here": true,
+  "normal_authorized": false,
+  "E": 0
+}

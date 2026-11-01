@@ -69,11 +69,21 @@ func guestMaximumDirectory(path string) (*os.File, unix.Stat_t, error) {
 // Source消费者提供；独立测试用真实boot构造fixture，不能当生产原身份。
 // 准确369构建没有新能力补签，也没有从当前online量反推上限。
 func readGuestMemoryMaximumComponent(expectedBoot string) (guestMemoryMaximumObservation, error) {
+	return readGuestMemoryMaximumFixedComponent(expectedBoot, false)
+}
+func readGuestMemoryMaximumMetadataComponent(expectedBoot string) (guestMemoryMaximumObservation, error) {
+	return readGuestMemoryMaximumFixedComponent(expectedBoot, true)
+}
+func readGuestMemoryMaximumFixedComponent(expectedBoot string, metadata bool) (guestMemoryMaximumObservation, error) {
 	var zero guestMemoryMaximumObservation
 	if os.Geteuid() != 0 || runtime.GOARCH != "amd64" || os.Getpagesize() != 4096 || !validGuestBoot(expectedBoot) {
 		return zero, fmt.Errorf("Guest maximum reader requires isolated supported root/boot")
 	}
-	ref, err := LookupPhysicalKernelBuild(NormalSplitV1PhysicalKernelProfileID)
+	profile := NormalSplitV1PhysicalKernelProfileID
+	if metadata {
+		profile = NormalSplitMetadataV1PhysicalKernelProfileID
+	}
+	ref, err := LookupPhysicalKernelBuild(profile)
 	if err != nil {
 		return zero, err
 	}
@@ -169,6 +179,10 @@ func readGuestMemoryMaximumComponent(expectedBoot string) (guestMemoryMaximumObs
 	addr2, size2, pe := parseGuestMaximumIOMem(iomem2, observation.DeviceName)
 	if ie != nil || pe != nil || addr2 != uint64(observation.Address) || size2 != uint64(observation.RegionBytes) {
 		return zero, fmt.Errorf("Guest immutable resource changed while reading")
+	}
+	if metadata {
+		observation.ProtocolVersion = 2
+		observation.Scope = guestMemoryMaximumMetadataScope
 	}
 	return observation, observation.validate()
 }

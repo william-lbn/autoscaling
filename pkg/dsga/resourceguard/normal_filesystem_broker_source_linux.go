@@ -146,6 +146,17 @@ func (g *Guard) rebindNormalFilesystemOriginForBrokerLocked(ctx context.Context,
 	out.pid1.namespace = ns
 	out.pid1.root = rt
 	if in.ProtocolVersion == 2 {
+		family, e := normalFilesystemInitialFamilyFromMemory(in.Memory)
+		if e != nil {
+			return fail(e)
+		}
+		if family == normalInitialWALFamilyKernelPrepV2 {
+			// 必须先消费原slot5形成独立R2；其运行重核不可回调FS，避免环。
+			out.kernelConsumer, e = g.bindNormalKernelPrepV2BrokerConsumerLocked(ctx, state, out, proof)
+			if e != nil {
+				return fail(e)
+			}
+		}
 		out.memoryConsumer, e = g.bindNormalMemoryBrokerConsumerLocked(ctx, state, out, proof)
 		if e != nil {
 			return fail(e)

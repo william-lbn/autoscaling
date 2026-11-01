@@ -160,7 +160,11 @@ func captureNormalMemoryHostOriginLocked(ctx context.Context, s *lockedState, l 
 	if e = p.checkPeer(c, source); e != nil {
 		return nil, e
 	}
-	ref := bootprotocol.NormalMemoryOriginHostReference{ProtocolVersion: bootprotocol.NormalMemoryOriginProtocolVersion, Scope: bootprotocol.NormalMemoryOriginScope, ProfileID: bootprotocol.NormalMemoryOriginProfileID, Prepared: evidence.Preboot, Movable: evidence.Movable, Completion: proof.Completion, Process: bootprotocol.NormalMemoryQEMUReference{PID: uint32(p.pid), StartTicks: p.start, ExecutableDevice: source.QEMUDevice, ExecutableInode: source.QEMUInode, ExecutableSHA256: source.QEMUSHA256, CommandSHA256: source.CommandSHA256, LaunchNonce: source.LaunchNonce}, MaximumVCPUs: hardware.MaximumVCPUs, HardwareSHA256: initialBootSHA(initialBootCanonical(hardware)), QMP: normalMemoryNeutralInputs(first)}
+	plan, e := normalMemoryHostPlan(l.config.RuntimeJSON, source)
+	if e != nil {
+		return nil, e
+	}
+	ref := bootprotocol.NormalMemoryOriginHostReference{ProtocolVersion: bootprotocol.NormalMemoryOriginProtocolVersion, Scope: bootprotocol.NormalMemoryOriginScope, ProfileID: plan.ProfileID(), Prepared: evidence.Preboot, Movable: evidence.Movable, Completion: proof.Completion, Process: bootprotocol.NormalMemoryQEMUReference{PID: uint32(p.pid), StartTicks: p.start, ExecutableDevice: source.QEMUDevice, ExecutableInode: source.QEMUInode, ExecutableSHA256: source.QEMUSHA256, CommandSHA256: source.CommandSHA256, LaunchNonce: source.LaunchNonce}, MaximumVCPUs: hardware.MaximumVCPUs, HardwareSHA256: initialBootSHA(initialBootCanonical(hardware)), QMP: normalMemoryNeutralInputs(first)}
 	if e = ref.Validate(); e != nil {
 		return nil, e
 	}
@@ -458,24 +462,34 @@ func normalMemoryHostWALFileIDs(s *lockedState, sha [8]string) ([8][3]uint64, er
 
 // 仅从固定原Runtime全组资产重渲染派生；不接bool/env，不以profile名隐式启6/7。
 func normalMemoryHostSelection(raw []byte, source initialBootSource) (uint32, error) {
+	plan, e := normalMemoryHostPlan(raw, source)
+	if e != nil {
+		return 0, e
+	}
+	return plan.MemoryOriginProtocolVersion(), nil
+}
+func normalMemoryHostPlan(raw []byte, source initialBootSource) (resourceguard.RuntimeBootRequirements, error) {
+	var zero resourceguard.RuntimeBootRequirements
 	if initialBootSHA(raw) != source.RuntimeSHA256 {
-		return 0, fmt.Errorf("memory protocol changed original runtime bytes")
+		return zero, fmt.Errorf("memory protocol changed original runtime bytes")
 	}
 	assets, e := resourceguard.RenderRuntimePolicyAssets(raw)
 	if e != nil {
-		return 0, e
+		return zero, e
 	}
 	assets[resourceguard.RuntimeResourceAssetName] = bytes.Clone(raw)
 	plan, e := resourceguard.DeriveRuntimeBootRequirements(raw, assets)
 	if e != nil {
-		return 0, e
+		return zero, e
 	}
-	if !plan.Enabled() || plan.ProfileID() != bootprotocol.NormalMemoryOriginProfileID || plan.KernelBuildReference().KernelArtifactSHA256 != source.KernelBuildSHA256 || plan.ResourceSourceSHA256() != source.ResourceSHA256 {
-		return 0, fmt.Errorf("memory protocol differs from original full source")
+	legacy := plan.ProfileID() == bootprotocol.NormalMemoryOriginProfileID && plan.ProtocolVersion() == 1
+	metadata := plan.ProfileID() == bootprotocol.NormalMemoryOriginMetadataProfileID && plan.ProtocolVersion() == 2 && plan.KernelPreparationProtocolVersion() == 2 && plan.MemoryOriginProtocolVersion() == 2 && plan.InitialWALFamily() == "initial8-kernel-prep-userns-v2" && plan.KernelBuildReference().KernelArtifactSHA256 == bootprotocol.NormalMemoryOriginMetadataKernelSHA256
+	if !plan.Enabled() || !(legacy || metadata) || plan.KernelBuildReference().KernelArtifactSHA256 != source.KernelBuildSHA256 || plan.ResourceSourceSHA256() != source.ResourceSHA256 {
+		return zero, fmt.Errorf("memory protocol differs from original full source")
 	}
 	v := plan.MemoryOriginProtocolVersion()
 	if v > 2 {
-		return 0, fmt.Errorf("memory origin protocol unsupported")
+		return zero, fmt.Errorf("memory origin protocol unsupported")
 	}
-	return v, nil
+	return plan, nil
 }

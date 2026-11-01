@@ -31,7 +31,11 @@ func decodeNormalSystemRoleBrokerDeclaration(raw []byte) (normalSystemRoleBroker
 		return d, fmt.Errorf("fixed broker declaration malformed")
 	}
 	modeRaw, hasMode := fields["resource_authority_mode"]
-	validVersion := d.ProtocolVersion == 1 && d.Scope == normalSystemRoleBrokerDeclarationScope && !hasMode && d.ResourceAuthorityMode == "" || d.ProtocolVersion == 2 && d.Scope == normalSystemRoleBrokerDeclarationV2Scope && hasMode && string(modeRaw) != "null" && d.ResourceAuthorityMode == normalSystemRoleBrokerOwnedAuthorityMode
+	kernelRaw, hasKernel := fields["kernel_preparation_mode"]
+	// presence检查保持旧版拒绝新字段（包括空/null），不让omitempty偷偷补签。
+	validVersion := d.ProtocolVersion == 1 && d.Scope == normalSystemRoleBrokerDeclarationScope && !hasMode && d.ResourceAuthorityMode == "" && !hasKernel && d.KernelPreparationMode == "" ||
+		d.ProtocolVersion == 2 && d.Scope == normalSystemRoleBrokerDeclarationV2Scope && hasMode && string(modeRaw) != "null" && d.ResourceAuthorityMode == normalSystemRoleBrokerOwnedAuthorityMode && !hasKernel && d.KernelPreparationMode == "" ||
+		d.kernelPreparationV2() && hasMode && string(modeRaw) != "null" && hasKernel && string(kernelRaw) != "null"
 	if !validVersion || d.ExecutablePath != normalSystemRoleBrokerExecutable || d.ArgvSHA256 != argv || d.EnvironmentSHA256 != env || d.NamespaceProtocolVersion != 1 || d.GateProtocolVersion != 1 || d.Lifetime != normalSystemRoleBrokerLifetime || !normalSystemRoleDeclarationDigest(d.ExecutableSHA256) || !normalSystemRoleDeclarationDigest(d.ComputeBuildPlanSHA256) {
 		return d, fmt.Errorf("fixed broker declaration differs from supported original role")
 	}
@@ -130,6 +134,7 @@ func readNormalSystemRoleDeclarationOriginal(ctx context.Context, s *normalSyste
 	if e != nil {
 		return nil, e
 	}
+
 	planFile, planRaw, _, e := read(normalSystemRoleBuildPlanPath, 64<<10)
 	if e != nil {
 		return nil, e

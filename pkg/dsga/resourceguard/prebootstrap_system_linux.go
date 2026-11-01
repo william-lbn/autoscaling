@@ -160,7 +160,7 @@ func preSystemTaskCensus(pidMax uint32) (control.Uint64, control.Uint64, error) 
 // 读取阶段中立：仅允许适配器声明的角色。首次/pending是否可有PG另由recursive
 // PGEmpty门禁控制；完成后还须同源正式Bootstrap.Applied及SystemObserved，绝不补出生。
 func preSystemTaskCensusProfile(pidMax uint32, profile string) (control.Uint64, control.Uint64, error) {
-	if profile != "" && !preSystemPolicyVersionMatches(profile, 1) && !preSystemPolicyVersionMatches(profile, 2) {
+	if profile != "" && !preSystemPhysicalProfileSupported(profile) {
 		return 0, 0, fmt.Errorf("unrecognized System census profile")
 	}
 	for attempt := 0; attempt < 4; attempt++ {
@@ -304,8 +304,8 @@ func (k *linuxKernel) prebootstrapSystemRead() (prebootstrapSystemSnapshot, erro
 	s.RootFilesystemReadonly = true
 	s.StateDevice = control.Uint64(st.Dev)
 	s.StateInode = control.Uint64(st.Ino)
-	profile, err := physicalKernelObservationBuild(s.Physical.KernelRelease, s.Physical.KernelNotesSHA256)
-	if err != nil || !preSystemPolicyVersionMatches(profile, 1) && !preSystemPolicyVersionMatches(profile, 2) {
+	profile, err := preSystemOriginalPhysicalProfile(s.Physical.KernelRelease, s.Physical.KernelNotesSHA256)
+	if err != nil {
 		return s, fmt.Errorf("unsupported pre-System physical profile")
 	}
 	s.TaskCount, s.MaximumTaskID, err = preSystemTaskCensusProfile(s.Physical.PIDMax, profile)
@@ -367,6 +367,8 @@ func preSystemLockedDirectory(s *lockedState, current prebootstrapSystemSnapshot
 	return nil
 }
 
+const PrebootstrapSystemMetadataKernelArg = "neonvm.dsga.prebootstrap_system=normal-split-metadata-v1"
+
 func preSystemBootMarker(cmdline string, p prebootstrapSystemPolicy) error {
 	if !preSystemPolicyVersionMatches(p.PhysicalProfileID, p.ProtocolVersion) {
 		return fmt.Errorf("unsupported original System policy version")
@@ -374,6 +376,9 @@ func preSystemBootMarker(cmdline string, p prebootstrapSystemPolicy) error {
 	want := PrebootstrapSystemKernelArg
 	if p.PhysicalProfileID == NormalSplitV1PhysicalKernelProfileID {
 		want = PrebootstrapSystemNormalSplitKernelArg
+	}
+	if p.PhysicalProfileID == NormalSplitMetadataV1PhysicalKernelProfileID {
+		want = PrebootstrapSystemMetadataKernelArg
 	}
 	count := 0
 	for _, token := range strings.Fields(cmdline) {
@@ -400,6 +405,8 @@ func preSystemTaskGroupAllowed(profile, group string) bool {
 	case NormalV1PhysicalKernelProfileID:
 		return group == "/neon-postgres"
 	case NormalSplitV1PhysicalKernelProfileID:
+		return group == "/neon-postgres/private" || group == "/neon-postgres/arrays"
+	case NormalSplitMetadataV1PhysicalKernelProfileID:
 		return group == "/neon-postgres/private" || group == "/neon-postgres/arrays"
 	default:
 		return false
@@ -467,4 +474,16 @@ func preSystemRecursiveEmptyEvents(text string) (bool, error) {
 		return false, fmt.Errorf("recursive PG populated fact missing")
 	}
 	return empty, nil
+}
+
+// raw reader与task census共享显式版本门；recognized profile本身不能绕过policy版本。
+func preSystemPhysicalProfileSupported(profile string) bool {
+	return preSystemPolicyVersionMatches(profile, 1) || preSystemPolicyVersionMatches(profile, 2) || preSystemPolicyVersionMatches(profile, 3)
+}
+func preSystemOriginalPhysicalProfile(release, notes string) (string, error) {
+	profile, e := physicalKernelObservationBuild(release, notes)
+	if e != nil || !preSystemPhysicalProfileSupported(profile) {
+		return "", fmt.Errorf("unsupported pre-System physical profile")
+	}
+	return profile, nil
 }

@@ -1,0 +1,45 @@
+18c + KernelPrep2 + memory2 + FS2生产接线设计（只读，未获实施授权）
+
+依据与结论
+基线为7a3e8fa66b916444b7c750e40fec1abb367463e1；266个resourceguard文件和68个Host/bootprotocol文件按git blob提取，source-lock/host-source-lock保原SHA。P2以62cf67冻结23源为参考（原decl2/transfer1/4FD，实际369），其source-lock另存，后继新freeze由其owner继续裁定。此轮未改业务源、未跑U/S、未碰Git/index/发行锁。
+最窄合理路径是明确新启动能力版本：RuntimeBootRequirements2、kernel policy2、preSystem policy3、Topology policy4/memory selector2、物理profile精确18c；FS仍使用既有FS2绑定memory2，另加可比较family字符串区分初始8文件族。旧369、selector0/1以及旧policy1/2/3各分支原行为/输出字节保持；不因Lookup认识18c就放过旧policy。新组合仍是component-only/Unknown，不取得fullSource、PG/normal降限或VM资格。
+
+一、完整拒点及明确版本分派
+runtime_policy_templates_linux.go20/22现在只走kernelPrepRawInputs.decode(policy1)。新分支必须先核profile/policy版本头，再以decodeNormalKernelPrepV2核完整raw/物理SHA/必填zero；不能fallback旧decoder。通用runtime_policy_templates.go现有五资产顺序与SHA注入可保持，纯render不产Source。
+runtime_boot_requirements_linux.go24/38固定NormalV1与369；common.go100也固定profile。新private plan version2必须一次确认5资产：PhysicalPolicy精确18c tuple；Kernel2唯一marker/max_userns0；PreSystem3精确18c；Topology4+memory selector2精确18c；NativeBirth仍按原ABI/build/System完整清单核。不得接受metadata+kernel1、369+kernel2、metadata+Topology3或selector0/1，未知版本不降级。旧plan1只走原代码。
+新8个arg维持结构：managed、KernelPrep2原marker、原physical marker、新PreSystem3 marker、新Topology4 marker、原pid hard参数、online_movable、nokmem/nosocket/nobpf。新marker建议normal-split-metadata-v1与split-metadata-v1；原别名/重复/2047截断防护保持。先不新增preempt=none，理由见第七节。
+prebootstrap_system.go420和_linux.go370/395均需新明确profile18c/policy3分支，允许仍同private/arrays两个PG叶子。normal_split_topology.go39/109现所有1/2/3政策锁369；新增policy4，只允许memory2+18c，_linux.go原20/59 marker检查要按已解码原只读policy明确分派，原1/2/3不泛化。
+initial_preboot_guest_linux.go51与initial_preboot_channel_linux.go363均拒非369；new plan2接受条件必须同时核原challenge全identity/runtime/resource/secret/build、显式new policy族。所有原challenge字段继续使用，没有PG17/18分支。
+guest_memory_maximum.go50/_linux.go76固定369；新增仅18c的reader/observation显式版本（建议region observation2），不要把参数变成任意recognized build。所有物理readback/notes/实际virtio设备region几何保留。normal_memory_origin_source_linux.go67/396同样新增严格18c选择，并按原plan调用reader。
+normal_immutable_bounds.go24/_linux.go41对非369会返回nil；18c启用前必须新增明确新profile分支，保原零hstate、task/System/AS不可扩写门。不能只启新Boot profile而让它绕过该写前门。
+normal_filesystem_origin_source_preflight_linux.go39也拒非369，Root需显式新plan分支；同SB生产state的KernelPrep2 preflight依赖新System manifest准确18c，而当前normal_system_source.go174还固定369。此项归P1/Root显式新System/controls版本，不能由本lane偷偷泛化或以standin签实际普通9。
+后继arrays/helper/inflight/kernel-control各369门仍由其owner明示新能力分支；本批不清MissingSources，未接到的生产步骤应继续拒绝，不能顺手改为任何已认识profile通行。
+
+二、Host和6/7/8同一合同
+vmguard/normal_memory_origin_source_linux.go163把capture ProfileID写死旧值，473 selection也只接受旧profile。新增一个private strict original-plan helper由同原RuntimeJSON+source hash+原KernelBuild推导：原369保持原selector0/1/2；新18c只接受Kernel2/PreSystem3/Topology4/memory2。capture使用已核plan.ProfileID，QMP原6组/原硬MaximumVCPUs/原Host进程与8阶段WAL核验不改变。initial_bootstrap_lifecycle.go经Derive生成原challenge kernel SHA已是正确接点，无必要新增版本分叉。
+精确勘核：bootprotocol/normal_memory_origin.go54现只限制旧ProfileID；preboot.go54对KernelBuildSHA只核digest，并非这个Validate自身已有369 artifact pair。实际pair由原Host selection/Guest plan额外约束。为保持旧行为，原profile分支不收紧；新18c wire分支必须在Validate中明确profile18c+artifact18c9fd3a...，拒交叉配对及其它recognized profile。建议bootprotocol新增精确新常量/私有pair helper，不import resourceguard造成循环；定向U核其常量和已批准18c tuple相等。旧6/7 JSON shape/protocol1与commit8 shape不动，新ProfileID/原challenge SHA自然入原HostRefSHA和Ack/8绑定。wire JSON依旧不是Host opaque权限。
+
+三、初始8文件族与不可比较陷阱
+保原initialPrebootGuestFiles数组不变，新增private selection→[8]string值副本；新族只把槽0/1改为kernel-bootstrap-v2-intent.json、kernel-bootstrap-v2-complete.json，其余6槽顺序原样。family常量建议initial8-kernel-prep-userns-v2，空串仅legacy。selector只能由完整原plan/profile/policy矩阵或已核的历史Host/profile+原plan产生，不能按文件是否存在猜、不能扫描后来WAL。
+所有直接使用点已归档fixed-eight-usage.json：生产6处（含定义），initial_preboot_guest_linux.go136/446/498，normal_memory_origin_source_linux.go272，normal_filesystem_memory_v2_linux.go145，normal_filesystem_origin_source_linux.go420；另witness生产9处（含定义），Guest492/518/555、Memory70/136/164、ConfirmedReference107、FS367必须同步分派。FS confirm调用capture580/recover815/broker139也要得到同一selection。相关3组旧测试作为兼容golden保留，新族定向验证。
+normalMemoryOriginConfirmedReference新增InitialWALFamily string，json:"original_initial_wal_family,omitempty"。旧369 memory2空串Marshal完全不增字段，struct仍可比较；新18c必须填上述固定族。不要加入pointer/slice/动态文件数组。其Files[3]/InitialWAL[8]/SHA数组全保原type。参考验证必须核family==strict原Host.ProfileID/build/plan推导；纯历史Observe依据已验证expected family取固定8文件，既不产opaque，也不要求原R1存活。挑战原kernel artifact SHA已区分family，原WitnessKey不必新增字段以免改变旧WAL字节。
+
+四、同原R1 Guard与真实FD5
+新normal_kernel_prep_userns_v2_guard/handoff桥文件把initial-boot首次durable evidence.source存入以原Guard为key的私有单次槽，只在新initial分支安装；JSON、current0、新建Guard无该槽不能pin。原KernelPrep2已冻5源不改，尤其不能把原backend.root改成R2或删除其R1活检查来“复用”。初始8聚合调用KernelPrep2成功后保存原opaque，再做Origin/PreSys；运行期Memory R1重核直接取该槽referenceLocked，而不是公开Observe再open新路径。
+精确API见interface-contract.txt。HandoffRef全部值/固定[2]WAL和[8]namespace可比，绑定exact5元组、原R1/VM/boot/state/lock、runtime/policy/ELF、原control/procfs身份与prepare reference。factory只在资源锁中从同Guard原source和FS2原memory family/前2WAL/原complete SHA核后，F_DUPFD_CLOEXEC原b.control；返回opaque Pin，不能让service caller传任意path/ref/fd pair。
+与P2已确认getter无命名冲突：proof.originalKernelPrepV2TransferLocked(ctx,state,system)→(Ref,*os.File,error)，只由decl3/transfer2、真实接收5FD且完整原protected proof验证后返回slot5 dup。前四顺序完全不变：clone pidfd、原proc目录FD、原PID1 mount ns、原root；第五原userns RO控制FD。旧decl2/transfer1严格4FD，新增decl3/transfer2严格5FD/MSG_CMSG_CLOEXEC/关闭所有错误FD。新ref canonical SHA必须入原protected Origin/intent/两Gate transcript；可用Origin新增omitempty string KernelPreparationSHA256保旧字节与比较性，具体versioned wire DTO由P2独占，不能旁路未绑定JSON。
+R1 source/原WAL pins保留到R2完成FS→KernelR2→MemoryR2后既有ready；R2在该窗口按typed FS/proof与原inode/fullSHA钉住原WAL，随后R1退出不影响R2。SCM/F_DUPFD共享OFD offset；新R2只用Pread/ReadAt(offset0)有界读，禁止Seek+Read。已按18c全树索引SHA核fs/proc/proc_sysctl.c=f8617360...：548/595把iocb->ki_pos传handler，614 read_iter，852/859声明default_llseek，支持独立偏移的静态依据。真实18c S仍必须验证Pread及并发OFD读；不支持时先Unknown，不自动重开路径，单消费者两phase fallback须另行审定。proc_sysctl589还有BPF hook，未来BPF写者并未因此关闭。
+
+五、独立R2消费与无递归依赖
+Root adapter先建typed FS/proof并完成其原13文件显式消费，然后bindNormalKernelPrepV2BrokerConsumerLocked(ctx,state,fs,proof)，内部只从proof getter取得原slot5，不接受外部FD pair。核RO且非O_PATH、regular/procfs/原inode/mount/mode/owner、原8ns/原WAL/policy/原prepare SHA和当前R2 clone/Guard/ELF，显式工厂可Sync固定2旧文件并前后fingerprint，但不写sysctl、不造WAL、不要求PGEmpty或当前floor等于初值。R2 Source私有字段持不可变R1Ref、独立currentR2、原ROFD和本R2 history pins；正常R1退出后只核R2 task/proof，不回原backend.verify/R1 task。
+随后新MemoryR2工厂接上述KernelR2指针，再核当前immutable region与FS2+原11历史。旧MemoryR2入口对legacy family保持原路径。新normalMemoryOriginCurrentWithKernelLocked把可只读reference接口显式传入；R1走原Guard槽，R2走新consumer，不从JSON补构造，不换R1currentRoot。
+依赖方向必须固定：FS.reference只核静态原历史投影与FS实物；其normalMemoryObserveConfirmedReferenceLocked是raw历史验证，不调用Memory opaque或Kernel consumer。KernelR2运行期recheck只核自己的R2/task/ns/controlFD/原历史，不反调FS。MemoryR2作为高层依次FS.reference→KernelR2.recheck→region；最终聚合器再组合权限。Root现FS broker尾部直接bindMemory，需改为上述两步；绝不能FS.reference内再调用MemoryR2.recheck，否则FS→Memory→Kernel→FS或FS mutex递归。
+统一锁序resource flock→FS（仅单次纯reference，退出即释放）/producer或kernel.mu→proof.mu→System/Task；不要跨后续factory保FS.mu，不在已持System.mu调proof getter。Locked函数绝不再lockState；公共入口先取一次资源锁。broker.mu/execMu/ready等待不能包住resource或producer锁。构造后运行Observe严格零write/零sync，不重PGEmpty、不过时initial floor、不扫描后继WAL；current budget/owner由normalAuthority另核。
+
+六、owner与验证顺序（待Root批准）
+design-owner-map.json列18个拟修改生产文件及5个新prefix文件，另8个定向测试候选。Root保FS源三文件的极窄seam、physical_*和所有锁；P2独占service/decl3/transfer2/proof getter；P1保ordinary新prefix/System与kernel controls新版本。各源码阶段可并行写/验证，公共family/Ref/API冻结后再顺序集成，Root唯一Git writer。不要自动把未列owner的hard369 gate改成泛化lookup。
+先定版本矩阵与family/Ref common schema；再Host/Guest静态分派及new8历史模型U（旧0/1/2 canonical字节golden、混policy/profile/5资产/marker交叉拒绝）；并行原R1 slot/Pin及R2 Pread/identity/JSON不可认领U；Root接FS新族和无递归seam、P2接明确decl3/transfer2/真实slot5。最后在准确18c独立有界2CPU2GiB VM做原Host6→Guest8→FS2→R2五FD/KernelR2→MemoryR2，R1正常退出后继续只读重核；原sysctl不重开，Pread offset竞争正反例，错family/少多FD/ROFD替换/Sync错误/partial/取消均Unknown。真实PG生命周期和普通9兼容仍各自必须完成，不能把无PG组件S冒称生产全链或normal E。
+
+七、PREEMPT_DYNAMIC与I裁定
+准确I当前normal_inflight_source.go并非普遍用C×Q：TaskPrecharge、TaskRetire(31+1+1)、Speculative用硬J512，late单页用K/16KiB额外栈槽，IRQ/异常/softirq按C64真实栈frame槽；另migration512批。full preempt使任务停在窗口，并不自动超出J的同时任务计数。因此目前没有足够理由为本次生产接线强加preempt=none或改变性能。
+但这不表示现I已完整：原硬J来源、每task/nested callback峰值、late PID后释放/pipe ops/taskfrag、IRQ入口不可换栈/注入、Q1/FS/设备/未来writer和原Host硬C仍缺opaque来源。PREEMPT_DYNAMIC=y意味着不能用默认voluntary或当前possible2替代它们；I应继续Unknown。若未来要把某个按J的项优化为C项，必须先逐窗口证明不能sleep/resched/迁移且保护完整窗口，再评估新boot preempt=none和全部动态入口；仅加none既不封异步late，也不替代J/IRQ来源。已编DEBUG_FS=n且SCHED_DEBUG absent，不应虚报当前有debugfs preempt写节点；确定full选择入口是原cmdline。该裁定避免无必要新增约束，同时不为缺口补签。

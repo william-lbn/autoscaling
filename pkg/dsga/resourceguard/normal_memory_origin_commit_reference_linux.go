@@ -20,6 +20,7 @@ type normalMemoryOriginConfirmedReference struct {
 	GuestBootID           string                          `json:"guest_boot_id"`
 	RuntimeDocumentSHA256 string                          `json:"runtime_document_sha256"`
 	ResourceSourceSHA256  string                          `json:"resource_source_sha256"`
+	InitialWALFamily      string                          `json:"original_initial_wal_family,omitempty"`
 	InitialWAL            initialPrebootGuestWitnessKey   `json:"original_initial_wal"`
 	Files                 [3]arrayPopulateHistoryIdentity `json:"files"`
 	SHA256                [3]string                       `json:"sha256"`
@@ -31,6 +32,9 @@ func normalMemoryConfirmedFiles() [3]string {
 func (v normalMemoryOriginConfirmedReference) referenceSHA256() (string, error) {
 	if v.ProtocolVersion != 2 || v.OriginalRoot.PID <= 1 || v.OriginalRoot.StartTicks == 0 || !physicalDigestValid(v.OriginalRoot.InstanceNonce) || !physicalDigestValid(v.RuntimeDocumentSHA256) || !physicalDigestValid(v.ResourceSourceSHA256) {
 		return "", ErrUnknown
+	}
+	if _, e := normalInitialWALFiles(v.InitialWALFamily); e != nil {
+		return "", e
 	}
 	for _, h := range v.SHA256 {
 		if !physicalDigestValid(h) {
@@ -51,7 +55,11 @@ func (o *normalMemoryOriginSource) confirmedReferenceLocked(ctx context.Context,
 	if e := o.recheckLocked(ctx, s, g); e != nil {
 		return z, e
 	}
-	ref := normalMemoryOriginConfirmedReference{ProtocolVersion: 2, OriginalRoot: o.intent.OriginalRoot, GuestBootID: o.intent.Host.Prepared.GuestBootID, RuntimeDocumentSHA256: o.intent.Host.Prepared.Challenge.RuntimeSHA256, ResourceSourceSHA256: o.intent.Host.Prepared.Challenge.ResourceSHA256, InitialWAL: o.intent.InitialWAL}
+	family, e := normalInitialWALFamilyForHost(o.intent.Host)
+	if e != nil {
+		return z, e
+	}
+	ref := normalMemoryOriginConfirmedReference{InitialWALFamily: family, ProtocolVersion: 2, OriginalRoot: o.intent.OriginalRoot, GuestBootID: o.intent.Host.Prepared.GuestBootID, RuntimeDocumentSHA256: o.intent.Host.Prepared.Challenge.RuntimeSHA256, ResourceSourceSHA256: o.intent.Host.Prepared.Challenge.ResourceSHA256, InitialWAL: o.intent.InitialWAL}
 	for i, name := range normalMemoryConfirmedFiles() {
 		raw, id, e := arrayPopulateHistoryRaw(s, name)
 		if e != nil {
@@ -104,7 +112,16 @@ func normalMemoryObserveConfirmedReferenceLocked(s *lockedState, expected normal
 	if final.ProtocolVersion != 2 || final.Scope != normalMemoryGuestCommitScope || final.IntentSHA256 != expected.SHA256[0] || final.CompletionSHA256 != expected.SHA256[1] || final.OriginalRoot != expected.OriginalRoot || final.Commit.MatchReferenceAndAck(in.Host, done.Ack) != nil {
 		return errors.Join(ErrUnknown, fmt.Errorf("FS-bound memory2 original Host commit differs"))
 	}
-	prefix, e := initialPrebootGuestWitnessLocked(s, in.Host.Prepared.Challenge)
+	family := expected.InitialWALFamily
+	if in.Host.ProfileID == NormalSplitMetadataV1PhysicalKernelProfileID {
+		selected, e := normalInitialWALFamilyForHost(in.Host)
+		if e != nil || selected != family {
+			return errors.Join(ErrUnknown, e)
+		}
+	} else if family != "" {
+		return ErrUnknown
+	}
+	prefix, e := initialPrebootGuestWitnessFamilyLocked(s, in.Host.Prepared.Challenge, family)
 	if e != nil || prefix != expected.InitialWAL {
 		return errors.Join(ErrUnknown, fmt.Errorf("FS-bound memory2 original8 prefix drifted"), e)
 	}

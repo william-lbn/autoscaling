@@ -1,0 +1,300 @@
+{
+  "initialPrebootGuestFiles": [
+    {
+      "file": "normal_memory_origin_source_linux.go",
+      "line": 272,
+      "text": "for _, n := range append(append([]string(nil), initialPrebootGuestFiles[:]...), normalMemoryGuestIntentFile, normalMemoryGuestCompleteFile) {",
+      "test": false
+    },
+    {
+      "file": "normal_filesystem_memory_v2_linux.go",
+      "line": 145,
+      "text": "names := append([]string(nil), initialPrebootGuestFiles[:]...)",
+      "test": false
+    },
+    {
+      "file": "initial_preboot_guest_test.go",
+      "line": 229,
+      "text": "for _, name := range initialPrebootGuestFiles {",
+      "test": true
+    },
+    {
+      "file": "initial_preboot_guest_linux.go",
+      "line": 136,
+      "text": "var initialPrebootGuestFiles = [...]string{kernelPrepIntentName, kernelPrepCompleteName, physicalOriginDataName, physicalOriginConfirmName, preSystemIntentName, preSystemCompleteName, initialPrebootGuestIntentName, initialPrebootGuestCompleteName}",
+      "test": false
+    },
+    {
+      "file": "initial_preboot_guest_linux.go",
+      "line": 446,
+      "text": "for i, name := range initialPrebootGuestFiles {",
+      "test": false
+    },
+    {
+      "file": "initial_preboot_guest_linux.go",
+      "line": 498,
+      "text": "for _, name := range initialPrebootGuestFiles {",
+      "test": false
+    },
+    {
+      "file": "normal_filesystem_origin_source_native_test.go",
+      "line": 220,
+      "text": "for _, name := range append(append([]string(nil), initialPrebootGuestFiles[:]...), normalFilesystemOriginIntentName, normalFilesystemOriginCompleteName) {",
+      "test": true
+    },
+    {
+      "file": "normal_filesystem_memory_v2_linux_test.go",
+      "line": 92,
+      "text": "names := append(append([]string(nil), initialPrebootGuestFiles[:]...), normalFilesystemOriginIntentName, normalFilesystemOriginCompleteName)",
+      "test": true
+    },
+    {
+      "file": "normal_filesystem_origin_source_linux.go",
+      "line": 420,
+      "text": "names := append(append([]string(nil), initialPrebootGuestFiles[:]...), normalFilesystemOriginIntentName, normalFilesystemOriginCompleteName)",
+      "test": false
+    }
+  ],
+  "initialPrebootGuestWitnessLocked": [
+    {
+      "file": "normal_memory_origin_source_linux.go",
+      "line": 70,
+      "text": "before, e := initialPrebootGuestWitnessLocked(s, v.Host.Prepared.Challenge)",
+      "test": false
+    },
+    {
+      "file": "normal_memory_origin_source_linux.go",
+      "line": 136,
+      "text": "after, e := initialPrebootGuestWitnessLocked(s, v.Host.Prepared.Challenge)",
+      "test": false
+    },
+    {
+      "file": "normal_memory_origin_source_linux.go",
+      "line": 164,
+      "text": "w, e := initialPrebootGuestWitnessLocked(s, prepared.Challenge)",
+      "test": false
+    },
+    {
+      "file": "initial_preboot_guest_test.go",
+      "line": 234,
+      "text": "original, err := initialPrebootGuestWitnessLocked(s, c)",
+      "test": true
+    },
+    {
+      "file": "initial_preboot_guest_test.go",
+      "line": 241,
+      "text": "changed, err := initialPrebootGuestWitnessLocked(s, next)",
+      "test": true
+    },
+    {
+      "file": "initial_preboot_guest_test.go",
+      "line": 255,
+      "text": "replaced, err := initialPrebootGuestWitnessLocked(s, c)",
+      "test": true
+    },
+    {
+      "file": "initial_preboot_guest_linux.go",
+      "line": 433,
+      "text": "func initialPrebootGuestWitnessLocked(s *lockedState, c bootprotocol.InitialPrebootChallenge) (initialPrebootGuestWitnessKey, error) {",
+      "test": false
+    },
+    {
+      "file": "initial_preboot_guest_linux.go",
+      "line": 492,
+      "text": "before, err := initialPrebootGuestWitnessLocked(s, in.challenge)",
+      "test": false
+    },
+    {
+      "file": "initial_preboot_guest_linux.go",
+      "line": 518,
+      "text": "after, err := initialPrebootGuestWitnessLocked(s, in.challenge)",
+      "test": false
+    },
+    {
+      "file": "initial_preboot_guest_linux.go",
+      "line": 555,
+      "text": "key, err := initialPrebootGuestWitnessLocked(s, in.challenge)",
+      "test": false
+    },
+    {
+      "file": "normal_memory_origin_commit_reference_linux.go",
+      "line": 107,
+      "text": "prefix, e := initialPrebootGuestWitnessLocked(s, in.Host.Prepared.Challenge)",
+      "test": false
+    },
+    {
+      "file": "normal_filesystem_origin_source_linux.go",
+      "line": 367,
+      "text": "key, e := initialPrebootGuestWitnessLocked(s, in.Challenge)",
+      "test": false
+    }
+  ],
+  "normalFilesystemConfirmPrefix": [
+    {
+      "file": "normal_filesystem_broker_source_linux.go",
+      "line": 139,
+      "text": "out.witness, e = normalFilesystemConfirmPrefix(ctx, state.syncPhysicalFile, fingerprint)",
+      "test": false
+    },
+    {
+      "file": "normal_filesystem_memory_v2_linux_test.go",
+      "line": 98,
+      "text": "got, e := normalFilesystemConfirmPrefix(context.Background(), func(name string) error { seen = append(seen, name); return nil }, func() (normalFilesystemOriginWitnessKey, error) { return key, nil })",
+      "test": true
+    },
+    {
+      "file": "normal_filesystem_memory_v2_linux_test.go",
+      "line": 105,
+      "text": "_, e := normalFilesystemConfirmPrefix(context.Background(), func(string) error {",
+      "test": true
+    },
+    {
+      "file": "normal_filesystem_memory_v2_linux_test.go",
+      "line": 120,
+      "text": "_, e = normalFilesystemConfirmPrefix(context.Background(), func(string) error { return nil }, func() (normalFilesystemOriginWitnessKey, error) {",
+      "test": true
+    },
+    {
+      "file": "normal_filesystem_origin_source_linux_test.go",
+      "line": 24,
+      "text": "_, e := normalFilesystemConfirmPrefix(context.Background(), func(string) error {",
+      "test": true
+    },
+    {
+      "file": "normal_filesystem_origin_source_linux_test.go",
+      "line": 43,
+      "text": "got, e := normalFilesystemConfirmPrefix(context.Background(), func(string) error { count++; return nil }, func() (normalFilesystemOriginWitnessKey, error) { return key, nil })",
+      "test": true
+    },
+    {
+      "file": "normal_filesystem_origin_source_linux_test.go",
+      "line": 63,
+      "text": "_, e = normalFilesystemConfirmPrefix(context.Background(), func(string) error { return nil }, func() (normalFilesystemOriginWitnessKey, error) {",
+      "test": true
+    },
+    {
+      "file": "normal_filesystem_origin_source_linux_test.go",
+      "line": 73,
+      "text": "_, e = normalFilesystemConfirmPrefix(ctx, func(string) error { t.Fatal(\"canceled prefix must not sync\"); return nil }, func() (normalFilesystemOriginWitnessKey, error) { return key, nil })",
+      "test": true
+    },
+    {
+      "file": "normal_filesystem_origin_source_linux.go",
+      "line": 415,
+      "text": "func normalFilesystemConfirmPrefix(ctx context.Context, syncOne func(string) error, fingerprint func() (normalFilesystemOriginWitnessKey, error)) (normalFilesystemOriginWitnessKey, error) {",
+      "test": false
+    },
+    {
+      "file": "normal_filesystem_origin_source_linux.go",
+      "line": 580,
+      "text": "o.witness, e = normalFilesystemConfirmPrefix(ctx, s.syncPhysicalFile, fingerprint)",
+      "test": false
+    },
+    {
+      "file": "normal_filesystem_origin_source_linux.go",
+      "line": 815,
+      "text": "o.witness, e = normalFilesystemConfirmPrefix(ctx, s.syncPhysicalFile, fingerprint)",
+      "test": false
+    }
+  ],
+  "normalMemoryOriginCurrentLocked": [
+    {
+      "file": "normal_memory_origin_source_linux.go",
+      "line": 55,
+      "text": "func (g *Guard) normalMemoryOriginCurrentLocked(ctx context.Context, s *lockedState, v normalMemoryOriginIntent) (guestMemoryMaximumObservation, error) {",
+      "test": false
+    },
+    {
+      "file": "normal_memory_origin_source_linux.go",
+      "line": 196,
+      "text": "if _, e = g.normalMemoryOriginCurrentLocked(ctx, s, v); e != nil {",
+      "test": false
+    },
+    {
+      "file": "normal_memory_origin_source_linux.go",
+      "line": 269,
+      "text": "if _, e := g.normalMemoryOriginCurrentLocked(ctx, s, v); e != nil {",
+      "test": false
+    },
+    {
+      "file": "normal_memory_origin_source_linux.go",
+      "line": 283,
+      "text": "if _, e := g.normalMemoryOriginCurrentLocked(ctx, s, v); e != nil {",
+      "test": false
+    },
+    {
+      "file": "normal_memory_origin_source_linux.go",
+      "line": 337,
+      "text": "_, e = g.normalMemoryOriginCurrentLocked(ctx, s, o.intent)",
+      "test": false
+    },
+    {
+      "file": "normal_filesystem_memory_v2_linux.go",
+      "line": 140,
+      "text": "if _, e = g.normalMemoryOriginCurrentLocked(ctx, s, original); e != nil {",
+      "test": false
+    },
+    {
+      "file": "normal_filesystem_memory_v2_linux.go",
+      "line": 160,
+      "text": "if _, e = g.normalMemoryOriginCurrentLocked(ctx, s, original); e != nil {",
+      "test": false
+    },
+    {
+      "file": "normal_filesystem_memory_v2_linux.go",
+      "line": 198,
+      "text": "_, e = g.normalMemoryOriginCurrentLocked(ctx, s, o.intent)",
+      "test": false
+    },
+    {
+      "file": "normal_memory_origin_source_linux_test.go",
+      "line": 33,
+      "text": "if _, e = g.normalMemoryOriginCurrentLocked(context.Background(), s, normalMemoryOriginIntent{}); !errors.Is(e, ErrUnknown) {",
+      "test": true
+    }
+  ],
+  "readGuestMemoryMaximumComponent": [
+    {
+      "file": "normal_memory_origin_source_linux.go",
+      "line": 114,
+      "text": "one, e := readGuestMemoryMaximumComponent(current.Identity.GuestBootID)",
+      "test": false
+    },
+    {
+      "file": "normal_memory_origin_source_linux.go",
+      "line": 121,
+      "text": "two, e := readGuestMemoryMaximumComponent(current.Identity.GuestBootID)",
+      "test": false
+    },
+    {
+      "file": "normal_memory_origin_source_linux.go",
+      "line": 183,
+      "text": "region, e := readGuestMemoryMaximumComponent(prepared.GuestBootID)",
+      "test": false
+    },
+    {
+      "file": "guest_memory_maximum_native_test.go",
+      "line": 32,
+      "text": "o, e := readGuestMemoryMaximumComponent(boot)",
+      "test": true
+    },
+    {
+      "file": "guest_memory_maximum_native_test.go",
+      "line": 36,
+      "text": "again, e := readGuestMemoryMaximumComponent(boot)",
+      "test": true
+    },
+    {
+      "file": "guest_memory_maximum_native_test.go",
+      "line": 48,
+      "text": "if _, e = readGuestMemoryMaximumComponent(\"ffffffff-ffff-ffff-ffff-ffffffffffff\"); e == nil {",
+      "test": true
+    },
+    {
+      "file": "guest_memory_maximum_linux.go",
+      "line": 71,
+      "text": "func readGuestMemoryMaximumComponent(expectedBoot string) (guestMemoryMaximumObservation, error) {",
+      "test": false
+    }
+  ]
+}

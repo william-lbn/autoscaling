@@ -1,0 +1,11 @@
+{
+  "utc": "2026-11-01T08:20:13.112217+00:00",
+  "owner": "Root",
+  "source": "pkg/dsga/resourceguard/array_service_kernel_linux.go",
+  "before_sha256": "cc79b940f4fc895615c291ab65863af41050a56403c7467ddb0a33b6c5259ab0",
+  "after_sha256": "1df80c7a7183b137ed0438e2e4bace87ece9d74f4d4bc0ddbcbb7c8fe671d684",
+  "reason": "real18c Provision exposed old marker-only helper despite original exact decoded+sealed+ISO policy",
+  "scope": "single policy-specific call; old policies dispatch same legacy marker; no permissive OR marker",
+  "actual_S_pending": true,
+  "normal_authorized": false
+}

@@ -48,7 +48,8 @@ func initialPrebootBindInputs(c bootprotocol.InitialPrebootChallenge, raw []byte
 	if err != nil {
 		return zero, err
 	}
-	if d.ProtocolVersion != 2 || !req.Enabled() || req.ProfileID() != NormalSplitV1PhysicalKernelProfileID || source.Config != config || c.Identity.VMUID != config.VMUID || c.Identity.Incarnation != d.Incarnation || c.RuntimeSHA256 != req.RuntimeDocumentSHA256() || c.ResourceSHA256 != req.ResourceSourceSHA256() || c.ConfigSecretUID != req.ConfigSecretUID() || c.KernelBuildSHA256 != req.KernelBuildReference().KernelArtifactSHA256 || uint64(c.OriginalBase) > req.BootMemoryUpperBoundBytes() {
+	_, familyErr := normalInitialWALFamilyForRequirements(req)
+	if d.ProtocolVersion != 2 || !req.Enabled() || familyErr != nil || source.Config != config || c.Identity.VMUID != config.VMUID || c.Identity.Incarnation != d.Incarnation || c.RuntimeSHA256 != req.RuntimeDocumentSHA256() || c.ResourceSHA256 != req.ResourceSourceSHA256() || c.ConfigSecretUID != req.ConfigSecretUID() || c.KernelBuildSHA256 != req.KernelBuildReference().KernelArtifactSHA256 || uint64(c.OriginalBase) > req.BootMemoryUpperBoundBytes() {
 		return zero, fmt.Errorf("initial Guest challenge differs from fixed full original runtime source")
 	}
 	upper, err := source.Limits.totalUpper()
@@ -249,35 +250,53 @@ func (g *Guard) initialPrebootGuest(ctx context.Context, c bootprotocol.InitialP
 	// 不在resource flock内调用会再次取锁的公开阶段入口。每阶段持自己的同一原锁；
 	// 最终组合重新持单锁核全部原文件与当前内核，而非拼接锁外旧快照。
 	s.close()
-	var kp NormalV1KernelBootstrapEvidence
-	if op == initialPrebootGuestRecover {
-		// 无原kernel intent时是明确恢复尚未开始的准备；已有partial只能显式Replay。
-		probe, e := lockState(ctx, g.config.StateDir)
+	family, err := normalInitialWALFamilyForRequirements(in.requirements)
+	if err != nil {
+		return zero, err
+	}
+	var kernelSHA, kernelBoot string
+	if family == normalInitialWALFamilyKernelPrepV2 {
+		kp, e := g.initialKernelPreparationV2ForBoot(ctx, op)
+		if e != nil {
+			return zero, errors.Join(ErrUnknown, e)
+		}
+		kernelSHA, e = kp.ReferenceSHA256()
 		if e != nil {
 			return zero, e
 		}
-		_, hasKernel, e := probe.readPhysicalFile(kernelPrepIntentName)
-		probe.close()
-		if e != nil {
-			return zero, e
-		}
-		if hasKernel {
-			kp, err = g.ReplayKernelBeforeOrigin(ctx)
+		kernelBoot = kp.After.Kernel.Identity.GuestBootID
+	} else {
+		var kp NormalV1KernelBootstrapEvidence
+		if op == initialPrebootGuestRecover {
+			// 无原kernel intent时是明确恢复尚未开始的准备；已有partial只能显式Replay。
+			probe, e := lockState(ctx, g.config.StateDir)
+			if e != nil {
+				return zero, e
+			}
+			_, hasKernel, e := probe.readPhysicalFile(kernelPrepIntentName)
+			probe.close()
+			if e != nil {
+				return zero, e
+			}
+			if hasKernel {
+				kp, err = g.ReplayKernelBeforeOrigin(ctx)
+			} else {
+				kp, err = g.PrepareKernelBeforeOrigin(ctx)
+			}
 		} else {
 			kp, err = g.PrepareKernelBeforeOrigin(ctx)
 		}
-	} else {
-		kp, err = g.PrepareKernelBeforeOrigin(ctx)
-	}
-	if err != nil {
-		return zero, errors.Join(ErrUnknown, err)
-	}
-	if !kp.DurabilityConfirmed() {
-		return zero, errors.Join(ErrUnknown, fmt.Errorf("original kernel preparation requires explicit durable recovery"))
-	}
-	kernelSHA, err := kp.ReferenceSHA256()
-	if err != nil {
-		return zero, errors.Join(ErrUnknown, err)
+		if err != nil {
+			return zero, errors.Join(ErrUnknown, err)
+		}
+		if !kp.DurabilityConfirmed() {
+			return zero, errors.Join(ErrUnknown, fmt.Errorf("original kernel preparation requires explicit durable recovery"))
+		}
+		kernelSHA, err = kp.ReferenceSHA256()
+		if err != nil {
+			return zero, errors.Join(ErrUnknown, err)
+		}
+		kernelBoot = kp.After.Identity.GuestBootID
 	}
 	if !exists {
 		s, err = lockState(ctx, g.config.StateDir)
@@ -298,7 +317,7 @@ func (g *Guard) initialPrebootGuest(ctx context.Context, c bootprotocol.InitialP
 			e = statErr
 		}
 		if e == nil {
-			intent = initialPrebootGuestIntent{ProtocolVersion: 1, Scope: initialPrebootGuestScope, Challenge: c, GuestBootID: kp.After.Identity.GuestBootID, OriginalRoot: consumer, KernelPreparationSHA256: kernelSHA, StateDevice: control.Uint64(st.Dev), StateInode: control.Uint64(st.Ino)}
+			intent = initialPrebootGuestIntent{ProtocolVersion: 1, Scope: initialPrebootGuestScope, Challenge: c, GuestBootID: kernelBoot, OriginalRoot: consumer, KernelPreparationSHA256: kernelSHA, StateDevice: control.Uint64(st.Dev), StateInode: control.Uint64(st.Ino)}
 			raw, merr := json.Marshal(intent)
 			if merr != nil {
 				e = merr
@@ -379,15 +398,7 @@ func (g *Guard) initialPrebootFactsLocked(ctx context.Context, s *lockedState, i
 	if err != nil || !exists {
 		return intent, facts, nil, errors.Join(ErrUnknown, fmt.Errorf("initial Guest original intent missing"), err)
 	}
-	ki, err := g.normalKernelBootstrapInputs()
-	if err != nil {
-		return intent, facts, nil, err
-	}
-	kp, err := g.normalKernelPreparationLocked(ctx, ki, kernelPrepObserve, s)
-	if err != nil {
-		return intent, facts, nil, err
-	}
-	ksha, err := kp.ReferenceSHA256()
+	ksha, err := g.initialKernelPreparationReferenceLocked(ctx, s, in.requirements)
 	if err != nil {
 		return intent, facts, nil, err
 	}
@@ -489,13 +500,21 @@ func (g *Guard) initialPrebootReceiptLocked(ctx context.Context, s *lockedState,
 			return zero, errors.Join(ErrUnknown, err)
 		}
 	}
-	before, err := initialPrebootGuestWitnessLocked(s, in.challenge)
+	family, err := normalInitialWALFamilyForRequirements(in.requirements)
+	if err != nil {
+		return zero, err
+	}
+	before, err := initialPrebootGuestWitnessFamilyLocked(s, in.challenge, family)
 	if err != nil {
 		return zero, errors.Join(ErrUnknown, err)
 	}
 	if durable {
 		initialPrebootGuestWitnesses.Delete(before)
-		for _, name := range initialPrebootGuestFiles {
+		names, e := normalInitialWALFiles(family)
+		if e != nil {
+			return zero, e
+		}
+		for _, name := range names {
 			if err := ctx.Err(); err != nil {
 				return zero, errors.Join(ErrUnknown, err)
 			}
@@ -515,7 +534,7 @@ func (g *Guard) initialPrebootReceiptLocked(ctx context.Context, s *lockedState,
 		}
 		afterFacts.PreparedPhysical = facts.PreparedPhysical
 		afterFacts.IssuingRoot = facts.IssuingRoot
-		after, err := initialPrebootGuestWitnessLocked(s, in.challenge)
+		after, err := initialPrebootGuestWitnessFamilyLocked(s, in.challenge, family)
 		afterRaw, _ := json.Marshal(afterFacts)
 		if err != nil || after != before || !bytes.Equal(want, afterRaw) {
 			return zero, errors.Join(ErrUnknown, fmt.Errorf("initial Guest prefix changed while syncing"), err)
@@ -552,7 +571,11 @@ func (g *Guard) InspectInitialPrebootMovable(ctx context.Context, prepared bootp
 	if err != nil || !exists {
 		return zero, errors.Join(ErrUnknown, fmt.Errorf("initial Guest original prepared facts unavailable"), err)
 	}
-	key, err := initialPrebootGuestWitnessLocked(s, in.challenge)
+	family, err := normalInitialWALFamilyForRequirements(in.requirements)
+	if err != nil {
+		return zero, err
+	}
+	key, err := initialPrebootGuestWitnessFamilyLocked(s, in.challenge, family)
 	if err != nil {
 		return zero, err
 	}

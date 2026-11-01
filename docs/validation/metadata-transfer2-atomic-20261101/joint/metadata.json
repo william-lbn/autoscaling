@@ -1,0 +1,9 @@
+{
+  "nonce": "20261101T091417Z-e11c0c",
+  "unit": "neon-root-metadata-transfer-20261101t091417z-e11c0c.service",
+  "owned_sources": 55,
+  "copy_go_mod": 1080,
+  "source_lock_sha256": "c4a4e2f4a5d6070d68ca6724baf5c607bc55dec75364504a4e4c59f9d0ce4bc9",
+  "single_RUN_in_DAG": true,
+  "test_regex": "^(TestMetadataWiring|TestKernelPrepV2Handoff|TestNormalOrdinaryActionsV2|TestNormalFilesystem|TestNormalSystemRole(TransferV2.*|KernelTransferRequiresOriginalProof|ServiceFixedFiveDescriptorTransfer|ServiceFixedFourDescriptorTransfer|ServiceOriginalTransferBinding|ServiceGateJournalAndOriginalChain|BrokerDeclarationV3RequiresKernelPrep2|AuthorityDeclarationVersions|BrokerLifetimeDeclaration))"
+}

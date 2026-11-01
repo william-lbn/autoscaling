@@ -97,6 +97,7 @@ type normalMemoryBrokerConsumerSource struct {
 	proof      *normalSystemRoleBrokerExecProof
 	intent     normalMemoryOriginIntent
 	reference  normalMemoryOriginConfirmedReference
+	kernel     *normalKernelPrepV2BrokerConsumerSource
 	witness    normalMemoryBrokerConsumerWitness
 }
 type normalMemoryBrokerConsumerWitness struct {
@@ -104,6 +105,7 @@ type normalMemoryBrokerConsumerWitness struct {
 	Consumer   nativeBirthConsumer
 	Filesystem normalFilesystemOriginReference
 	Memory     normalMemoryOriginConfirmedReference
+	KernelSHA  string
 }
 
 var normalMemoryBrokerConsumerWitnesses sync.Map
@@ -137,12 +139,16 @@ func (g *Guard) bindNormalMemoryBrokerConsumerLocked(ctx context.Context, s *loc
 	if _, exists, err := initialPrebootReadRecord(s, normalMemoryGuestIntentFile, &original); err != nil || !exists {
 		return fail(errors.Join(fmt.Errorf("original memory intent absent"), err))
 	}
-	if _, e = g.normalMemoryOriginCurrentLocked(ctx, s, original); e != nil {
+	if _, e = normalMemoryBrokerCurrentLocked(ctx, g, s, original, filesystem.kernelConsumer); e != nil {
 		return fail(e)
 	}
 	// 显式当前Root消费同步；观察器不调用本工厂，也不重新要求原R1仍存活/PGEmpty。
 	before := *in.Memory
-	names := append([]string(nil), initialPrebootGuestFiles[:]...)
+	initial, e := normalInitialWALFiles(before.InitialWALFamily)
+	if e != nil {
+		return fail(e)
+	}
+	names := append([]string(nil), initial[:]...)
 	for _, name := range normalMemoryConfirmedFiles() {
 		names = append(names, name)
 	}
@@ -157,15 +163,29 @@ func (g *Guard) bindNormalMemoryBrokerConsumerLocked(ctx context.Context, s *loc
 	if e = normalMemoryObserveConfirmedReferenceLocked(s, before); e != nil {
 		return fail(e)
 	}
-	if _, e = g.normalMemoryOriginCurrentLocked(ctx, s, original); e != nil {
+	if _, e = normalMemoryBrokerCurrentLocked(ctx, g, s, original, filesystem.kernelConsumer); e != nil {
 		return fail(e)
 	}
 	after, e := filesystem.referenceLocked(ctx, s)
 	if e != nil || after != ref {
 		return fail(errors.Join(fmt.Errorf("original filesystem changed during memory consumption"), e))
 	}
-	out := &normalMemoryBrokerConsumerSource{g: g, filesystem: filesystem, proof: proof, intent: original, reference: before}
-	out.witness = normalMemoryBrokerConsumerWitness{Guard: g, Consumer: current, Filesystem: ref, Memory: before}
+	kernelSHA := ""
+	if before.InitialWALFamily == normalInitialWALFamilyKernelPrepV2 {
+		if filesystem.kernelConsumer == nil {
+			return fail(fmt.Errorf("memory2 requires original independent Kernel2 R2 consumer"))
+		}
+		ref, e := filesystem.kernelConsumer.referenceLocked(ctx, s)
+		if e != nil {
+			return fail(e)
+		}
+		kernelSHA, e = ref.referenceSHA256()
+		if e != nil {
+			return fail(e)
+		}
+	}
+	out := &normalMemoryBrokerConsumerSource{g: g, filesystem: filesystem, proof: proof, intent: original, reference: before, kernel: filesystem.kernelConsumer}
+	out.witness = normalMemoryBrokerConsumerWitness{Guard: g, Consumer: current, Filesystem: ref, Memory: before, KernelSHA: kernelSHA}
 	normalMemoryBrokerConsumerWitnesses.Store(out, out.witness)
 	return out, nil
 }
@@ -195,7 +215,20 @@ func (o *normalMemoryBrokerConsumerSource) recheckLocked(ctx context.Context, s 
 	if e = normalMemoryObserveConfirmedReferenceLocked(s, o.reference); e != nil {
 		return e
 	}
-	_, e = g.normalMemoryOriginCurrentLocked(ctx, s, o.intent)
+	if o.reference.InitialWALFamily == normalInitialWALFamilyKernelPrepV2 {
+		if o.kernel == nil {
+			return ErrUnknown
+		}
+		ref, e := o.kernel.referenceLocked(ctx, s)
+		if e != nil {
+			return e
+		}
+		h, e := ref.referenceSHA256()
+		if e != nil || h != o.witness.KernelSHA {
+			return errors.Join(ErrUnknown, e)
+		}
+	}
+	_, e = normalMemoryBrokerCurrentLocked(ctx, g, s, o.intent, o.kernel)
 	return e
 }
 

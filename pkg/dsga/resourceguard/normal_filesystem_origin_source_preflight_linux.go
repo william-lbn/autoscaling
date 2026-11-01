@@ -36,7 +36,12 @@ func normalFilesystemPreflightSameSuperblockState(config Config) error {
 		}
 		return out
 	}())
-	if e != nil || !requirements.Enabled() || requirements.ProfileID() != NormalSplitV1PhysicalKernelProfileID {
+	accepted := requirements.Enabled() && requirements.ProfileID() == NormalSplitV1PhysicalKernelProfileID
+	if requirements.ProfileID() == NormalSplitMetadataV1PhysicalKernelProfileID {
+		family, familyErr := normalInitialWALFamilyForRequirements(requirements)
+		accepted = familyErr == nil && requirements.version == 2 && family == normalInitialWALFamilyKernelPrepV2
+	}
+	if e != nil || !accepted {
 		return fmt.Errorf("same-superblock state needs canonical explicit normal split source")
 	}
 	cmd, e := kernelText("/proc/cmdline")
@@ -78,6 +83,9 @@ func normalFilesystemPreflightSameSuperblockState(config Config) error {
 	manifest, e := DecodeNormalSystemSourceManifest(systemRaw)
 	if e != nil || manifest.ProtocolVersion != 2 && manifest.ProtocolVersion != 3 {
 		return fmt.Errorf("same-superblock state requires original System v2/v3")
+	}
+	if requirements.ProfileID() == NormalSplitMetadataV1PhysicalKernelProfileID && manifest.ProtocolVersion != 3 {
+		return fmt.Errorf("metadata state requires explicit System3 inventory")
 	}
 	// 原只读完整静态文件/配置清单包含vminit准确字节；不反调Native Birth总入口。
 	if _, e = CheckNormalSystemSource(context.Background(), systemRaw); e != nil {

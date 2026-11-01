@@ -36,7 +36,10 @@ type NormalSplitTopologyPolicy struct {
 }
 
 func (p NormalSplitTopologyPolicy) validate() error {
-	if !(p.ProtocolVersion == 1 && p.MemoryOriginProtocolVersion == 0 || p.ProtocolVersion == 2 && p.MemoryOriginProtocolVersion == 1 || p.ProtocolVersion == 3 && p.MemoryOriginProtocolVersion == 2) || p.Scope != normalSplitScope || p.PhysicalProfileID != NormalSplitV1PhysicalKernelProfileID ||
+	legacy := (p.ProtocolVersion == 1 && p.MemoryOriginProtocolVersion == 0 || p.ProtocolVersion == 2 && p.MemoryOriginProtocolVersion == 1 || p.ProtocolVersion == 3 && p.MemoryOriginProtocolVersion == 2) && p.PhysicalProfileID == NormalSplitV1PhysicalKernelProfileID
+	metaRef, metaErr := LookupPhysicalKernelBuild(NormalSplitMetadataV1PhysicalKernelProfileID)
+	metadata := p.ProtocolVersion == 4 && p.MemoryOriginProtocolVersion == 2 && p.PhysicalProfileID == NormalSplitMetadataV1PhysicalKernelProfileID && metaErr == nil && metaRef.StrictPageCounterIRQBoundary() && metaRef.ControlMetadataGuard()
+	if !(legacy || metadata) || p.Scope != normalSplitScope ||
 		!physicalDigestValid(p.RuntimeDocumentSHA256) || !physicalDigestValid(p.ResourceSourceSHA256) ||
 		p.PrivateMemoryMaxBytes == 0 || p.InitialArraysMemoryMaxBytes == 0 || uint64(p.PrivateMemoryMaxBytes)%(64<<10) != 0 || uint64(p.InitialArraysMemoryMaxBytes)%(64<<10) != 0 ||
 		uint64(p.PrivateMemoryMaxBytes) >= math.MaxInt64 || uint64(p.InitialArraysMemoryMaxBytes) >= math.MaxInt64 || p.PrivatePidsMaxTasks == 0 || p.PrivatePidsMaxTasks >= control.Uint64(math.MaxInt64) || uint64(p.PrivateMemoryMaxBytes) > math.MaxInt64-uint64(p.InitialArraysMemoryMaxBytes) {
@@ -56,7 +59,7 @@ func (p *NormalSplitTopologyPolicy) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	_, hasOrigin := fields["memory_origin_protocol_version"]
-	if n.ProtocolVersion == 1 && hasOrigin || (n.ProtocolVersion == 2 || n.ProtocolVersion == 3) && !hasOrigin {
+	if n.ProtocolVersion == 1 && hasOrigin || (n.ProtocolVersion == 2 || n.ProtocolVersion == 3 || n.ProtocolVersion == 4) && !hasOrigin {
 		return fmt.Errorf("memory origin protocol requires explicit original versioned policy")
 	}
 	if err := n.validate(); err != nil {
@@ -106,7 +109,7 @@ func (i normalSplitInputs) validate(c Config) error {
 		json.Unmarshal(i.sourceRaw, &source) != nil || json.Unmarshal(i.policyRaw, &policy) != nil || !reflect.DeepEqual(source, i.source) || policy != i.policy ||
 		i.source.Validate() != nil || i.source.Config != c || !c.SystemCgroup || i.policy.validate() != nil ||
 		i.policy.ResourceSourceSHA256 != physicalDigest(i.sourceRaw) || i.origin.ResourceSourceSHA256 != i.policy.ResourceSourceSHA256 ||
-		i.origin.Validate() != nil || i.origin.Config != c || i.origin.Policy.ProfileID != NormalSplitV1PhysicalKernelProfileID ||
+		i.origin.Validate() != nil || i.origin.Config != c || i.origin.Policy.ProfileID != i.policy.PhysicalProfileID ||
 		i.origin.RuntimeDocumentSHA256 != i.policy.RuntimeDocumentSHA256 || sameBootstrapSource(i.source, i.origin.ExpectedBootstrap) != nil ||
 		uint64(i.policy.PrivateMemoryMaxBytes)+uint64(i.policy.InitialArraysMemoryMaxBytes) > uint64(i.source.Limits.MemoryMaxBytes) ||
 		i.source.Limits.PidsMaxTasks <= i.policy.PrivatePidsMaxTasks {

@@ -54,6 +54,13 @@ type normalMemoryOriginSource struct {
 // 不重放Kernel/Origin/PreSys准备，仅复用原KernelPrep的只读Observe和Physical.Match。
 func (g *Guard) normalMemoryOriginCurrentLocked(ctx context.Context, s *lockedState, v normalMemoryOriginIntent) (guestMemoryMaximumObservation, error) {
 	var zero guestMemoryMaximumObservation
+	if v.Host.ProfileID == NormalSplitMetadataV1PhysicalKernelProfileID {
+		o, e := g.normalKernelPrepV2OriginalLocked(ctx, s)
+		if e != nil {
+			return zero, e
+		}
+		return g.normalMemoryOriginCurrentMetadataLocked(ctx, s, v, o)
+	}
 	if g == nil || s == nil || s.dir == nil || s.lock == nil || ctx == nil || ctx.Err() != nil || v.OriginalRoot.PID <= 1 || v.OriginalRoot.StartTicks == 0 || !physicalDigestValid(v.OriginalRoot.InstanceNonce) || v.ProtocolVersion != 1 || v.Scope != normalMemoryGuestScope || v.Host.Validate() != nil || v.Physical.Validate() != nil || v.Region.validate() != nil {
 		return zero, errors.Join(ErrUnknown, fmt.Errorf("original memory Guest source malformed"))
 	}
@@ -161,7 +168,11 @@ func captureNormalMemoryOriginLocked(ctx context.Context, s *lockedState, g *Gua
 	if _, exists, e := s.readPhysicalFile(normalMemoryGuestCompleteFile); e != nil || exists {
 		return nil, errors.Join(ErrUnknown, e, fmt.Errorf("orphan memory source completion"))
 	}
-	w, e := initialPrebootGuestWitnessLocked(s, prepared.Challenge)
+	family, e := normalInitialWALFamilyForRequirements(in.requirements)
+	if e != nil {
+		return nil, e
+	}
+	w, e := initialPrebootGuestWitnessFamilyLocked(s, prepared.Challenge, family)
 	if e != nil {
 		return nil, e
 	}
@@ -180,7 +191,7 @@ func captureNormalMemoryOriginLocked(ctx context.Context, s *lockedState, g *Gua
 	if e != nil {
 		return nil, e
 	}
-	region, e := readGuestMemoryMaximumComponent(prepared.GuestBootID)
+	region, e := readGuestMemoryMaximumForRequirements(prepared.GuestBootID, in.requirements)
 	if e != nil {
 		return nil, e
 	}
@@ -269,7 +280,15 @@ func (g *Guard) normalMemorySyncSourceLocked(ctx context.Context, s *lockedState
 	if _, e := g.normalMemoryOriginCurrentLocked(ctx, s, v); e != nil {
 		return e
 	}
-	for _, n := range append(append([]string(nil), initialPrebootGuestFiles[:]...), normalMemoryGuestIntentFile, normalMemoryGuestCompleteFile) {
+	family, e := normalInitialWALFamilyForHost(v.Host)
+	if e != nil {
+		return e
+	}
+	initial, e := normalInitialWALFiles(family)
+	if e != nil {
+		return e
+	}
+	for _, n := range append(append([]string(nil), initial[:]...), normalMemoryGuestIntentFile, normalMemoryGuestCompleteFile) {
 		if e := ctx.Err(); e != nil {
 			return errors.Join(ErrUnknown, e)
 		}
@@ -393,7 +412,8 @@ func normalMemoryGuestJournalIdentity(s *lockedState) ([2][3]uint64, error) {
 }
 
 func normalMemoryGuestSelection(in initialPrebootGuestInputs) error {
-	if !in.requirements.Enabled() || in.requirements.ProfileID() != NormalSplitV1PhysicalKernelProfileID || (in.requirements.MemoryOriginProtocolVersion() != 1 && in.requirements.MemoryOriginProtocolVersion() != 2) || in.requirements.RuntimeDocumentSHA256() != physicalDigest(in.runtime) {
+	_, e := normalInitialWALFamilyForRequirements(in.requirements)
+	if e != nil || !in.requirements.Enabled() || (in.requirements.MemoryOriginProtocolVersion() != 1 && in.requirements.MemoryOriginProtocolVersion() != 2) || in.requirements.RuntimeDocumentSHA256() != physicalDigest(in.runtime) {
 		return errors.Join(ErrUnknown, fmt.Errorf("original ISO did not explicitly select normal memory origin wire v1"))
 	}
 	return nil

@@ -1,0 +1,84 @@
+{
+  "protocol_version": 1,
+  "source_lock_sha256": "71a7ee6d3ed13cf18526dc9d1b7dc211b0e65a0c6bfa1e56efc197f015fc92a8",
+  "parent_source_lock_sha256": "f8583e5083a3dc8ed3c7378c7de3cbc865997382d8468857b772ca2fac9d6821",
+  "only_two_source_changes": {
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux.go": {
+      "before": "505112aa440fcc0375ded95a21b362afecfb3c6171db37a4b75d5f97a5aa2c54",
+      "after": "e5e6ccef8cc922215ac94e918b92242528d3fff8294b68544bbdc6ddf1c71909"
+    },
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux_test.go": {
+      "before": "bc87e3fe0f15866494982b5b57a082c1b7e41f5cf46ac082d8e6325b6a43039b",
+      "after": "23c4218dce9a9cae1068d5bfca5e00f19047ee4684f031f660467bcbe51aed3c"
+    }
+  },
+  "owned31": {
+    "pkg/dsga/resourceguard/runtime_boot_requirements.go": "8a1f7a051918a4052d1fd2f5ea7cde14a25871a9d36443cf25a45452dcf7cfba",
+    "pkg/dsga/resourceguard/runtime_boot_requirements_linux.go": "9bb915d4a3702cddecdc7f6f3f9ae2a5d37b68185feddd35f27b5db3259808d5",
+    "pkg/dsga/resourceguard/runtime_policy_templates_linux.go": "8dc324a6e164d8335e73aa5be2696372f1cd752cb1a8973132e0057821a0e0c1",
+    "pkg/dsga/resourceguard/normal_split_topology.go": "d89aa0a38e6a56f889c64653c332cda9fa0085b440d188560866fa26cece4d48",
+    "pkg/dsga/resourceguard/normal_split_topology_linux.go": "5130dea59a74c4c809781d7efb6fdaea3faf051fe42bff3077afa3f950e8298f",
+    "pkg/dsga/resourceguard/prebootstrap_system.go": "c1726c952504758b2300bad7c7b3e2d31212a640184eef9c6f721f64a01e3e81",
+    "pkg/dsga/resourceguard/prebootstrap_system_linux.go": "e1581ef775c65adcfe7288b214787cd1067fb06e8ca89acc9a489525c422b8a7",
+    "pkg/dsga/resourceguard/initial_preboot_guest_linux.go": "6391a317cad202cad3a57f8853d474ce377f8536a56742ac0aaa1bb4b2d83689",
+    "pkg/dsga/resourceguard/initial_preboot_channel_linux.go": "03684e5e0a829ca469b62fe8acc86069cb119434ce7e86d55d075b3aff28334b",
+    "pkg/dsga/resourceguard/normal_memory_origin_source_linux.go": "c432b58aa511d013fa9850d8e68c0b33d9343c326d0cd29905f3a80bea83cce8",
+    "pkg/dsga/resourceguard/normal_memory_origin_commit_reference_linux.go": "08673e3c270d3d8f287de2bbf89ffc6457b6a33be3f83e3c0b8ffdaad1ceda14",
+    "pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go": "56e14af79e50adeae1162e87171b61966dc08a9f594a015698e092ced84ffadb",
+    "pkg/dsga/resourceguard/guest_memory_maximum.go": "14b7ef0d595555c9b79e279fbdc79e11497a46b7f883ee5ba00d566d8508d912",
+    "pkg/dsga/resourceguard/guest_memory_maximum_linux.go": "3b0d43f2aa4c56691b89ce347dc84a13151942429e5059c92b6a8400ef6a16e9",
+    "pkg/dsga/resourceguard/normal_immutable_bounds.go": "0c0a73cc7d0eea8691f1180c497eebafccf0e6f88d818d3b74b46b41a3fcdeb8",
+    "pkg/dsga/resourceguard/normal_immutable_bounds_linux.go": "8ee4d02aa83f17b201b377b0e3ca571addbfa7c6c315c3f991cb40ecf18d8ddd",
+    "pkg/dsga/vmguard/normal_memory_origin_source_linux.go": "4966a7a4746670c383fb4f4edbb6d28cbea6f5c90b071292b7a97f0dc7040e71",
+    "pkg/dsga/bootprotocol/normal_memory_origin.go": "2c67150b2c650c418c19727bdd20d75d366ecb56cd86e1ff4bb802a46328bb4e",
+    "pkg/dsga/resourceguard/initial_preboot_wal_family_linux.go": "1d90642768586e5555f855245694b549469ac41fdb2d8bf25b7210f4b4e72e4b",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_guard_linux.go": "36d5acf163c9663abf71a463db8f0b86e1af77e6e545a6c162159652199caee5",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux.go": "9c618c435e5a3e096297612adfcf9c2762f6348f99e498f3a094e93f7a240756",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux.go": "e5e6ccef8cc922215ac94e918b92242528d3fff8294b68544bbdc6ddf1c71909",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_current_linux.go": "9b4f1b383b84c13f3e3b2f5986bd11d8a6cb5a1ec32ceb4d542b528b6f719ff2",
+    "pkg/dsga/resourceguard/runtime_boot_requirements_metadata_linux_test.go": "d6d86c4a0ec93f57d54e704843ad04a4c871c5688a311b49df1e6529b32ddd33",
+    "pkg/dsga/resourceguard/initial_preboot_wal_family_linux_test.go": "85611ce9138444684c5d0f629657550116f6fd13907eb3a5205f1cf38901f398",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux_test.go": "a08738aa1547d2b7eab86aaff4c2e4664f0959424ae90d7d388e633bb6640a2d",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux_test.go": "23c4218dce9a9cae1068d5bfca5e00f19047ee4684f031f660467bcbe51aed3c",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_native_test.go": "401605cbd986cf34f43f906b6a81b3b9072ecddcd150fbb715991e0cf54b4fc3",
+    "pkg/dsga/resourceguard/normal_memory_origin_metadata_linux_test.go": "25b3a4a4389abe50aedfaf044a6bf96395c967b35049cdd7466ef0b4175d5755",
+    "pkg/dsga/vmguard/normal_memory_origin_metadata_linux_test.go": "ebae3fa467306d845157a999872e65a492d118bc2674061511ec83d82a9f22f7",
+    "pkg/dsga/bootprotocol/normal_memory_origin_metadata_test.go": "a17782ef44f9f674fe7bea6658f54972b0fa4d8b3738945c6df4a5319475f743"
+  },
+  "Root4_support_not_owned": {
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go": "e272fe67bc4fe3cf06cbbbd63ac7d718f40ca1571a6a11b2196767ef227dc312",
+    "pkg/dsga/resourceguard/normal_filesystem_broker_source_linux.go": "249f7fd1d7f388609c1082fb56146ed2e0d7fe64cdc7c93d304fbd84fdb837c7",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_preflight_linux.go": "fd5ff10b45a17616f002e1b57b20ef78ef883bfbda7646096b31e97ebfa355c1",
+    "pkg/dsga/resourceguard/normal_system_source.go": "664ea9bcb9b97aaf0b42d5c08996309f0799c3cc9884fd5ed4299161b7ef7787"
+  },
+  "actual_COPY": 7458,
+  "return_codes": {
+    "native-compile.rc": 0,
+    "darwin-vmguard.rc": 0,
+    "test.rc": 0,
+    "darwin-resourceguard.rc": 0,
+    "darwin-bootprotocol.rc": 0
+  },
+  "counts": {
+    "roots": {
+      "pass": 15
+    },
+    "subtests": {
+      "pass": 51
+    }
+  },
+  "raw_result": {
+    "build_exit": 0,
+    "test_exit": 0,
+    "seconds": 58.49364095402416,
+    "end_utc": "2026-11-01T07:21:44.245782+00:00",
+    "U": "derive from actual test.json events",
+    "S": 0,
+    "normal_authorized": false,
+    "E": 0
+  },
+  "supersedes_for_current_candidate": "normal-metadata-production-wiring-go-freeze-20261101 stage manifest; original282 remains immutable history",
+  "S": 0,
+  "E": 0,
+  "normal_authorized": false
+}

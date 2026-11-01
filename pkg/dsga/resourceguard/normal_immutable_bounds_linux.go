@@ -38,7 +38,7 @@ func (k *linuxKernel) normalImmutableBounds(target Limits) error {
 		return errors.Join(ErrUnknown, fmt.Errorf("immutable normal original config differs"))
 	}
 	plan, err := DeriveRuntimeBootRequirements(raw, assets)
-	if err != nil || plan.ProfileID() != NormalSplitV1PhysicalKernelProfileID {
+	if err != nil || (plan.ProfileID() != NormalSplitV1PhysicalKernelProfileID && plan.ProfileID() != NormalSplitMetadataV1PhysicalKernelProfileID) {
 		return errors.Join(ErrUnknown, fmt.Errorf("immutable normal exact original profile missing"), err)
 	}
 	return normalImmutableBoundsTarget(plan, source, target)

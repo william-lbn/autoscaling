@@ -1,0 +1,42 @@
+{
+  "stable_id": "NEON-S-SYSTEM-ROLE-TRANSFER2-001",
+  "status": "PASS_COMPONENT_ONLY",
+  "Host_container_exit": 0,
+  "Guest_exits": [
+    "0"
+  ],
+  "initial_exits": [
+    "0"
+  ],
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "seconds": 90.02228943799855,
+  "caseIDs": [
+    "NEON-S-SYSTEM-ROLE-SERVICE-008",
+    "NEON-S-SYSTEM-ROLE-SERVICE-001",
+    "NEON-S-SYSTEM-ROLE-SERVICE-002",
+    "NEON-S-SYSTEM-ROLE-SERVICE-007",
+    "NEON-S-SYSTEM-ROLE-SERVICE-003",
+    "NEON-S-SYSTEM-ROLE-SERVICE-006",
+    "NEON-S-SYSTEM-ROLE-SERVICE-010",
+    "NEON-S-SYSTEM-ROLE-SERVICE-005",
+    "NEON-S-SYSTEM-ROLE-SERVICE-009",
+    "NEON-S-SYSTEM-ROLE-SERVICE-004"
+  ],
+  "R1_alive_KernelR2_MemoryR2_checkpoints": 1,
+  "R1_exited_KernelR2_MemoryR2_checkpoints": 1,
+  "actual_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+  "Host_ELF_sha256": "507e950581ba68fa5cc4bea775a8bde972100f56cd23e73182445aede5e3f054",
+  "Guest_ELF_sha256": "915ce92a9f619957d9f965defade43b294144705dccd538521b6fe11368ca8ec",
+  "production_CLI_sha256": "c73a372ced265db6d3dfc0c0ccbcde11a747fec6c7bc8b3c3103de85399006bc",
+  "production_CLI_only_compiled": true,
+  "actual_single_commit8_then_FS2_then_sameGuard_R2": true,
+  "Host_API_is_model": true,
+  "System_services_are_standins": true,
+  "ordinary_controls2_installed": false,
+  "PG_executed": false,
+  "normal_authorized": false,
+  "E": 0
+}

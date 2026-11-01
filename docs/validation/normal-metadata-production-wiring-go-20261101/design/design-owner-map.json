@@ -1,0 +1,66 @@
+{
+  "proposed_kernel_agent_existing_not_authorized_yet": [
+    "pkg/dsga/resourceguard/runtime_boot_requirements.go",
+    "pkg/dsga/resourceguard/runtime_boot_requirements_linux.go",
+    "pkg/dsga/resourceguard/runtime_policy_templates_linux.go",
+    "pkg/dsga/resourceguard/normal_split_topology.go",
+    "pkg/dsga/resourceguard/normal_split_topology_linux.go",
+    "pkg/dsga/resourceguard/prebootstrap_system.go",
+    "pkg/dsga/resourceguard/prebootstrap_system_linux.go",
+    "pkg/dsga/resourceguard/initial_preboot_guest_linux.go",
+    "pkg/dsga/resourceguard/initial_preboot_channel_linux.go",
+    "pkg/dsga/resourceguard/normal_memory_origin_source_linux.go",
+    "pkg/dsga/resourceguard/normal_memory_origin_commit_reference_linux.go",
+    "pkg/dsga/resourceguard/normal_filesystem_memory_v2_linux.go",
+    "pkg/dsga/resourceguard/guest_memory_maximum.go",
+    "pkg/dsga/resourceguard/guest_memory_maximum_linux.go",
+    "pkg/dsga/resourceguard/normal_immutable_bounds.go",
+    "pkg/dsga/resourceguard/normal_immutable_bounds_linux.go",
+    "pkg/dsga/vmguard/normal_memory_origin_source_linux.go",
+    "pkg/dsga/bootprotocol/normal_memory_origin.go"
+  ],
+  "proposed_kernel_agent_new_not_authorized_yet": [
+    "pkg/dsga/resourceguard/initial_preboot_wal_family_linux.go",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_guard_linux.go",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_handoff_linux.go",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_broker_linux.go",
+    "pkg/dsga/resourceguard/normal_kernel_prep_userns_v2_current_linux.go"
+  ],
+  "proposed_focused_tests": [
+    "runtime_boot_requirements_metadata_linux_test.go",
+    "initial_preboot_wal_family_linux_test.go",
+    "normal_kernel_prep_userns_v2_handoff_linux_test.go",
+    "normal_kernel_prep_userns_v2_broker_linux_test.go",
+    "normal_kernel_prep_userns_v2_handoff_native_test.go",
+    "normal_memory_origin_metadata_linux_test.go",
+    "pkg/dsga/vmguard/normal_memory_origin_metadata_linux_test.go",
+    "pkg/dsga/bootprotocol/normal_memory_origin_metadata_test.go"
+  ],
+  "Root_retains": [
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go",
+    "pkg/dsga/resourceguard/normal_filesystem_broker_source_linux.go",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_preflight_linux.go",
+    "all physical_kernel_*",
+    "PG17/PG18 gitlinks and release locks",
+    "final owner allocation/Git/index"
+  ],
+  "P2_retains": [
+    "all normal_system_role_service_*",
+    "normal_system_role_declaration_linux.go",
+    "normal_system_role_build_source.go",
+    "array_service_socket_linux.go",
+    "server_linux.go"
+  ],
+  "P1_dependency_not_owned": [
+    "ordinary new-prefix source/asset v2",
+    "normal_system_source manifest explicit18c profile/new version",
+    "normal_kernel_control_* adaptation and actual ordinary role compatibility"
+  ],
+  "untouched": [
+    "old KernelPrep1 files and the frozen KernelPrep2 original5",
+    "runtime_policy_templates.go generic renderer (existing injection sufficient)",
+    "bootprotocol 6/7/8 frame shape and old selectors0/1",
+    "existing369 profile / release locks",
+    "PG17/18 public upper-level API"
+  ]
+}

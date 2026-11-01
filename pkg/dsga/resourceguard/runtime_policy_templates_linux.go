@@ -19,7 +19,11 @@ func validateRenderedRuntimePolicyAssets(raw []byte, _ RuntimeDocument, source S
 	}
 	if policy, ok := assets["dsga-kernel-bootstrap.json"]; ok {
 		inputs := kernelPrepRawInputs{RuntimeRaw: raw, PhysicalPolicyRaw: assets["dsga-physical-kernel.json"], PolicyRaw: policy}
-		if _, err := inputs.decode(source.Config); err != nil {
+		if physical.ProfileID == NormalSplitMetadataV1PhysicalKernelProfileID {
+			if _, err := decodeNormalKernelPrepV2(inputs, source.Config); err != nil {
+				return err
+			}
+		} else if _, err := inputs.decode(source.Config); err != nil {
 			return err
 		}
 	}

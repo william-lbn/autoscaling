@@ -360,7 +360,12 @@ func initialGuestExchangeWithRequirements(ctx context.Context, port io.ReadWrite
 	if plan.MemoryOriginProtocolVersion() > 2 {
 		return fmt.Errorf("unsupported original memory origin plan")
 	}
-	if plan.Enabled() && (plan.RuntimeDocumentSHA256() != c.RuntimeSHA256 || plan.ResourceSourceSHA256() != c.ResourceSHA256 || plan.ConfigSecretUID() != c.ConfigSecretUID || plan.KernelBuildReference().KernelArtifactSHA256 != c.KernelBuildSHA256 || plan.ProfileID() != NormalSplitV1PhysicalKernelProfileID) {
+	if plan.Enabled() {
+		if _, e := normalInitialWALFamilyForRequirements(plan); e != nil {
+			return e
+		}
+	}
+	if plan.Enabled() && (plan.RuntimeDocumentSHA256() != c.RuntimeSHA256 || plan.ResourceSourceSHA256() != c.ResourceSHA256 || plan.ConfigSecretUID() != c.ConfigSecretUID || plan.KernelBuildReference().KernelArtifactSHA256 != c.KernelBuildSHA256) {
 		return fmt.Errorf("initial Guest plan differs from original full runtime")
 	}
 	if plan.MemoryOriginProtocolVersion() != 0 && !plan.Enabled() {
@@ -467,6 +472,7 @@ func runInitialBootGuest(ctx context.Context, recoverOriginal bool) error {
 	}
 	// 同一Guard原指针仅活到本次初始流程结束；失败不留可接纳槽，不删除原WAL。
 	defer g.normalMemoryDiscardOriginalConfirmedSource()
+	defer g.discardNormalKernelPrepV2OriginalSource()
 	if e = initialGuestExchangeWithRequirements(call, port, g, challenge, recoverOriginal, plan); e != nil {
 		return e
 	}

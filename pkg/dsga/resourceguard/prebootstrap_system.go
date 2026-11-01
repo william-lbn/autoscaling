@@ -424,6 +424,9 @@ func preSystemPolicyVersionMatches(profile string, version uint32) bool {
 	case NormalSplitV1PhysicalKernelProfileID:
 		ref, err := LookupPhysicalKernelBuild(profile)
 		return version == 2 && err == nil && ref.StrictPageCounterIRQBoundary()
+	case NormalSplitMetadataV1PhysicalKernelProfileID:
+		ref, err := LookupPhysicalKernelBuild(NormalSplitMetadataV1PhysicalKernelProfileID)
+		return version == 3 && err == nil && ref.StrictPageCounterIRQBoundary() && ref.ControlMetadataGuard()
 	default:
 		return false
 	}

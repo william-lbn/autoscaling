@@ -92,6 +92,7 @@ type normalFilesystemOriginSource struct {
 	witness        normalFilesystemOriginWitnessKey
 	current        nativeBirthConsumer
 	memoryConsumer *normalMemoryBrokerConsumerSource
+	kernelConsumer *normalKernelPrepV2BrokerConsumerSource
 }
 
 func (o *normalFilesystemOriginSource) close() {
@@ -103,6 +104,9 @@ func (o *normalFilesystemOriginSource) close() {
 	if !o.closed {
 		if o.memoryConsumer != nil {
 			normalMemoryBrokerConsumerWitnesses.Delete(o.memoryConsumer)
+		}
+		if o.kernelConsumer != nil {
+			o.kernelConsumer.close()
 		}
 		o.self.close()
 		o.pid1.close()
@@ -364,7 +368,11 @@ func normalFilesystemInitialPrefix(s *lockedState, system normalSystemLifecycleB
 	if e != nil || in.StateDevice != control.Uint64(state.Dev) || in.StateInode != control.Uint64(state.Ino) {
 		return in, done, empty, fmt.Errorf("filesystem original preparation state inode differs")
 	}
-	key, e := initialPrebootGuestWitnessLocked(s, in.Challenge)
+	family, e := normalFilesystemInitialFamilyFromInput(system, in)
+	if e != nil {
+		return in, done, empty, e
+	}
+	key, e := initialPrebootGuestWitnessFamilyLocked(s, in.Challenge, family)
 	if e != nil {
 		return in, done, empty, e
 	}
@@ -381,6 +389,37 @@ func normalFilesystemInitialPrefix(s *lockedState, system normalSystemLifecycleB
 	}
 	return in, done, key, nil
 }
+
+// 仅精确18c挑战启新分支，完整原runtime/五资产/plan矩阵先核，再选固定8文件。
+// 此处是只读历史投影，不能由当前文件存在性或JSON认领原Root/Source。
+func normalFilesystemInitialFamilyFromInput(system normalSystemLifecycleBinding, in initialPrebootGuestIntent) (string, error) {
+	build, e := LookupPhysicalKernelBuild(NormalSplitMetadataV1PhysicalKernelProfileID)
+	if e != nil {
+		return "", e
+	}
+	if in.Challenge.KernelBuildSHA256 != build.KernelArtifactSHA256 {
+		return "", nil // 原369及旧调用约束保持；不是任何recognized kernel的放行。
+	}
+	source, raw, e := runtimeSource()
+	if e != nil || physicalDigest(raw) != system.RuntimeDocumentSHA256 || in.Challenge.RuntimeSHA256 != system.RuntimeDocumentSHA256 {
+		return "", errors.Join(ErrUnknown, e, fmt.Errorf("filesystem metadata original runtime differs"))
+	}
+	assets, e := RenderRuntimePolicyAssets(raw)
+	if e != nil {
+		return "", e
+	}
+	assets[RuntimeResourceAssetName] = raw
+	inputs, e := initialPrebootBindInputs(in.Challenge, raw, assets, source.Config)
+	if e != nil {
+		return "", e
+	}
+	family, e := normalInitialWALFamilyForRequirements(inputs.requirements)
+	if e != nil || family != normalInitialWALFamilyKernelPrepV2 {
+		return "", errors.Join(ErrUnknown, e, fmt.Errorf("filesystem metadata needs original plan2/kernel2 family"))
+	}
+	return family, nil
+}
+
 func normalFilesystemWitnessLocked(g *Guard, s *lockedState, c nativeBirthConsumer, prefix initialPrebootGuestWitnessKey) (normalFilesystemOriginWitnessKey, error) {
 	k := normalFilesystemOriginWitnessKey{Guard: g, Consumer: c, Prefix: prefix}
 	for i, name := range []string{normalFilesystemOriginIntentName, normalFilesystemOriginCompleteName} {
@@ -417,12 +456,10 @@ func normalFilesystemConfirmPrefix(ctx context.Context, syncOne func(string) err
 	if e != nil {
 		return before, e
 	}
-	names := append(append([]string(nil), initialPrebootGuestFiles[:]...), normalFilesystemOriginIntentName, normalFilesystemOriginCompleteName)
-	// v1仍同步原10文件；v2额外同步FS明确绑定的memory3，不把可见8当耐久。
-	if before.Memory.ProtocolVersion == 2 {
-		for _, name := range normalMemoryConfirmedFiles() {
-			names = append(names, name)
-		}
+	// 名单仅取已核固定family；新族只替换前两WAL，完整10/13文件仍须同步。
+	names, e := normalFilesystemSyncFilesForWitness(before)
+	if e != nil {
+		return before, e
 	}
 	for _, name := range names {
 		if e = ctx.Err(); e != nil {

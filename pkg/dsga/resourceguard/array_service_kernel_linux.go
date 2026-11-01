@@ -60,7 +60,7 @@ func arraySplitKernelLayout(config Config) (NormalSplitTopologySnapshot, error) 
 		return zero, fmt.Errorf("array split actual policy differs from original renderer")
 	}
 	cmdline, e := kernelText("/proc/cmdline")
-	if e != nil || normalSplitBootMarker(cmdline) != nil {
+	if e != nil || normalSplitBootMarkerForPolicy(cmdline, policy) != nil {
 		return zero, fmt.Errorf("array split original boot selection missing")
 	}
 	read := func(name string) ([]byte, error) {

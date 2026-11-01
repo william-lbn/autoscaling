@@ -11,16 +11,18 @@ import (
 // 字段私有，调用者不能把BootUpper改成观察值或修改必要参数；每次都从原准确文档
 // 与完整有效资产派生。它不证明QMP base、Guest实际内核/阶段或normal许可已成立。
 type RuntimeBootRequirements struct {
-	version              uint32
-	profile              string
-	runtimeSHA           string
-	sourceSHA            string
-	secretUID            string
-	bootUpper            uint64
-	pidLimit             uint32
-	memoryOriginProtocol uint32
-	build                PhysicalKernelBuildReference
-	args                 []string
+	version                   uint32
+	profile                   string
+	runtimeSHA                string
+	sourceSHA                 string
+	secretUID                 string
+	bootUpper                 uint64
+	pidLimit                  uint32
+	memoryOriginProtocol      uint32
+	kernelPreparationProtocol uint32
+	initialWALFamily          string
+	build                     PhysicalKernelBuildReference
+	args                      []string
 }
 
 func (r RuntimeBootRequirements) ProtocolVersion() uint32                            { return r.version }
@@ -35,6 +37,10 @@ func (r RuntimeBootRequirements) KernelBuildReference() PhysicalKernelBuildRefer
 
 // 0为原旧协议，1仅表示原ISO明确选择新来源握手，不是Mmax或normal许可。
 func (r RuntimeBootRequirements) MemoryOriginProtocolVersion() uint32 { return r.memoryOriginProtocol }
+func (r RuntimeBootRequirements) KernelPreparationProtocolVersion() uint32 {
+	return r.kernelPreparationProtocol
+}
+func (r RuntimeBootRequirements) InitialWALFamily() string { return r.initialWALFamily }
 
 func (r RuntimeBootRequirements) RequiredKernelArgs() []string {
 	return append([]string(nil), r.args...)
@@ -81,11 +87,14 @@ func DeriveRuntimeBootRequirements(raw []byte, assets map[string][]byte) (Runtim
 // 新profile不能与旧auto-movable字符串叠加，追加参数也不能重复/别名覆盖原参数。
 // 不验证QMP实际base，也不把命令行通过当内核原来源或任何预算阶段完成。
 func (r RuntimeBootRequirements) ValidateKernelCommandLine(cmdline string) error {
-	if r.version != 1 {
+	if r.version != 1 && r.version != 2 {
 		return fmt.Errorf("unknown runtime boot requirements version")
 	}
 	if strings.IndexByte(cmdline, 0) >= 0 {
 		return fmt.Errorf("NUL in kernel command line")
+	}
+	if r.version == 2 && !r.Enabled() {
+		return fmt.Errorf("metadata boot plan is incomplete")
 	}
 	if !r.Enabled() {
 		for _, token := range strings.Fields(cmdline) {
@@ -97,7 +106,9 @@ func (r RuntimeBootRequirements) ValidateKernelCommandLine(cmdline string) error
 		}
 		return nil
 	}
-	if r.profile != NormalSplitV1PhysicalKernelProfileID || !r.build.StrictPageCounterIRQBoundary() || len(r.args) != 8 || r.bootUpper == 0 || r.pidLimit == 0 {
+	legacy := r.version == 1 && r.profile == NormalSplitV1PhysicalKernelProfileID
+	metadata := r.version == 2 && r.profile == NormalSplitMetadataV1PhysicalKernelProfileID && r.kernelPreparationProtocol == 2 && r.memoryOriginProtocol == 2 && r.initialWALFamily == "initial8-kernel-prep-userns-v2" && r.build.ControlMetadataGuard()
+	if !(legacy || metadata) || !r.build.StrictPageCounterIRQBoundary() || len(r.args) != 8 || r.bootUpper == 0 || r.pidLimit == 0 {
 		return fmt.Errorf("incomplete runtime boot requirements")
 	}
 	// 准确6.12.26 x86 arch/x86/include/asm/setup.h的COMMAND_LINE_SIZE=2048，
@@ -137,4 +148,40 @@ func (r RuntimeBootRequirements) ValidateKernelCommandLine(cmdline string) error
 		return fmt.Errorf("required normal-split kernel argument missing")
 	}
 	return nil
+}
+
+// NormalMetadataStableMinFreeKBytes从原PreSys3启动硬上界导出稳定policy下界，
+// 不使用current水位。exact6.12.26 hotadd/offline会重算sqrt(lowmemKB*16)，
+// 其中lowmem<=原boot upper；预先配置不小于其最大推荐值，保留Observe exacttarget。
+func NormalMetadataStableMinFreeKBytes(bootUpperBytes uint64) (uint64, error) {
+	if bootUpperBytes == 0 || bootUpperBytes%4096 != 0 {
+		return 0, fmt.Errorf("metadata original boot upper must be positive base-page aligned")
+	}
+	lowmemKB := bootUpperBytes / 1024
+	if lowmemKB > ^uint64(0)/16 {
+		return 0, fmt.Errorf("metadata lowmem recommendation overflows")
+	}
+	value := lowmemKB * 16
+	// floor(sqrt(value))，用除法比较避免平方溢出；不使用浮点或采样。
+	lo, hi := uint64(0), uint64(1)<<32
+	for lo+1 < hi {
+		mid := lo + (hi-lo)/2
+		if mid <= value/mid {
+			lo = mid
+		} else {
+			hi = mid
+		}
+	}
+	automatic := lo
+	if automatic < 128 {
+		automatic = 128
+	}
+	if automatic > 262144 {
+		automatic = 262144
+	}
+	recommended := uint64(128)
+	for recommended < automatic {
+		recommended <<= 1
+	}
+	return recommended, nil
 }

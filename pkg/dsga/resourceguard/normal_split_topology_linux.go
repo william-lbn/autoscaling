@@ -18,6 +18,7 @@ import (
 
 const FixedNormalSplitTopologyPolicyPath = "/neonvm/runtime/dsga-normal-split.json"
 const NormalSplitTopologyKernelArg = "neonvm.dsga.normal_split=split-v1"
+const NormalSplitMetadataTopologyKernelArg = "neonvm.dsga.normal_split=split-metadata-v1"
 
 func (g *Guard) PrepareNormalSplitTopology(ctx context.Context) (NormalSplitTopologyResult, error) {
 	in, err := g.normalSplitRuntimeInputs(ctx)
@@ -56,9 +57,7 @@ func (g *Guard) normalSplitRuntimeInputs(ctx context.Context) (normalSplitInputs
 	if err != nil {
 		return in, err
 	}
-	if err := normalSplitBootMarker(cmdline); err != nil {
-		return in, err
-	}
+	// marker必须在原policy解码后按明确版本核；不根据目录或已认识profile猜。
 	f, err := rootFile(FixedNormalSplitTopologyPolicyPath, false)
 	if err != nil {
 		return in, err
@@ -80,6 +79,9 @@ func (g *Guard) normalSplitRuntimeInputs(ctx context.Context) (normalSplitInputs
 	}
 	var policy NormalSplitTopologyPolicy
 	if err := json.Unmarshal(raw, &policy); err != nil {
+		return in, err
+	}
+	if err := normalSplitBootMarkerForPolicy(cmdline, policy); err != nil {
 		return in, err
 	}
 	if policy.RuntimeDocumentSHA256 != physicalDigest(runtimeRaw) {
@@ -388,6 +390,29 @@ func (k *linuxKernel) normalSplitSet(name string, cap, pids control.Uint64) erro
 		if err := writeNumber(path+"/"+v.name, v.value); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func normalSplitBootMarkerForPolicy(line string, p NormalSplitTopologyPolicy) error {
+	if e := p.validate(); e != nil {
+		return e
+	}
+	if p.ProtocolVersion != 4 {
+		return normalSplitBootMarker(line)
+	}
+	count := 0
+	for _, token := range strings.Fields(line) {
+		key, _, _ := strings.Cut(token, "=")
+		if key == "neonvm.dsga.normal_split" {
+			count++
+			if token != NormalSplitMetadataTopologyKernelArg || count != 1 {
+				return fmt.Errorf("metadata split marker differs")
+			}
+		}
+	}
+	if count != 1 {
+		return fmt.Errorf("metadata split marker absent")
 	}
 	return nil
 }

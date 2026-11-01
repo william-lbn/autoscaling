@@ -1,0 +1,11 @@
+精确元数据启动链与原五FD交接的原子阶段归档
+
+本提交同时保留可编译的31源Kernel/PreSys/Memory族、4源FS来源、真实五FD交接13源、Root固定ACPI/TLS动作5源及私有main租约接口1源，另修复数组启动仍使用旧marker的唯一调用点，共55源。仅明确选用新版本时接入；既有版本、PG17/PG18 gitlink和发行锁不移动。
+
+最终提交精确图由原Git HEAD eaf2243和本55源构成，完全排除其他未提交的installer、udev、main租约后端及Gate2挂接。1080 Go/mod输入逐文件校验；Linux 3CPU/3GiB单RUN实际cgroup内49 race根、225子项全部通过，Linux/Darwin生产CLI编译通过。该编译CLI尚未执行，不冒充端到端或Source资格。
+
+已归档真实KVM五FD组件场景：准确c2e12e原Guest/Host ELF，单Host8提交→FS2→同Guard R2，原R1活时及真实退出后各通过一次KernelR2/MemoryR2检查。一个S根含10检查点，不累计为10根；System/Compute/普通服务仍为standin且Host API为模型，ordinary-controls2未安装，未运行PG。后继27cdcb保留同图实际Docker cgroup限额证据。此场景ELF属于其原精确构建图，不能改标为本次联合图CLI。
+
+min_free_kbytes按原BootUpper纯推导并首次固定，不用hotplug后采样或放宽观察值。此前超4TiB担忧经原输入域复查不可达，草拟额外cap已撤回，31源恢复准确866a9e；原失败及修复日志均保留。Root固定动作由真实typedFS/proof/同Guard构造，逐包仍需原main租约；接口存在不等于实际普通main已安装。
+
+本阶段只签组件范围。安全normal真实工作域降限、普通服务隔离完整闭环、实际PG stderr、持续安全证明、负载与恢复、Linux真实端到端、全部镜像及117/118/119自有Helm回归均未验收。不得由此部署或称首版完成。

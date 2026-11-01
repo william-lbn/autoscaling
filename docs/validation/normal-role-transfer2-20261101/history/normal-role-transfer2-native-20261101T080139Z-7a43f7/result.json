@@ -1,0 +1,31 @@
+{
+  "stable_id": "NEON-S-SYSTEM-ROLE-TRANSFER2-001",
+  "status": "FAIL_COMPONENT_OR_FIXTURE",
+  "Host_container_exit": 1,
+  "Guest_exits": [
+    "1"
+  ],
+  "initial_exits": [
+    "1"
+  ],
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "seconds": 13.208274262025952,
+  "caseIDs": [],
+  "R1_alive_KernelR2_MemoryR2_checkpoints": 0,
+  "R1_exited_KernelR2_MemoryR2_checkpoints": 0,
+  "actual_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+  "Host_ELF_sha256": "b51e9107f3e7f0a7ad3e5b8ea75d8fa9b1f73e447f84c16b787c64b24db22421",
+  "Guest_ELF_sha256": "5edc300b5d069cb4098bd5af7fa8b850b74a7275d6cec0cc702aea3fdec60c4c",
+  "production_CLI_sha256": "fb6f2a039142f57c11575ad3063bd595e4c658c86614295a12f1e1e69023747c",
+  "production_CLI_only_compiled": true,
+  "actual_single_commit8_then_FS2_then_sameGuard_R2": false,
+  "Host_API_is_model": true,
+  "System_services_are_standins": true,
+  "ordinary_controls2_installed": false,
+  "PG_executed": false,
+  "normal_authorized": false,
+  "E": 0
+}

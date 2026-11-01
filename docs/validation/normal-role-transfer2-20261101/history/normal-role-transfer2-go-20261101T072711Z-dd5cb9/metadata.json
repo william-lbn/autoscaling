@@ -1,0 +1,24 @@
+{
+  "unit": "normal-role-transfer2-go-20261101t072711z-dd5cb9",
+  "nonce": "20261101T072711Z-dd5cb9",
+  "dependency": "/data/neon-build/validation/normal-metadata-wiring-r2-caller-fix-20261101T072043Z-949aa7",
+  "dependency_lock_sha256": "71a7ee6d3ed13cf18526dc9d1b7dc211b0e65a0c6bfa1e56efc197f015fc92a8",
+  "owned8": {
+    "pkg/dsga/resourceguard/normal_system_role_build_source.go": "ed427075e10985ec0d88c08a7a947847e34713d5f9c21241c5f65030ba073d59",
+    "pkg/dsga/resourceguard/normal_system_role_declaration_linux.go": "86349788170c6a184ce382498752ea25f3c1063a240358f2d721b996a6047b32",
+    "pkg/dsga/resourceguard/normal_system_role_declaration_v3_linux_test.go": "e9282e349b010ca4718443852511e07a2b700d837a954d4c77a57738dc10dee2",
+    "pkg/dsga/resourceguard/normal_system_role_service_origin_linux.go": "856fff99dedcf3b467e75dc5c13c967e0875a613c73cdace2ffe8b4480425edb",
+    "pkg/dsga/resourceguard/normal_system_role_service_start_linux.go": "51fa4f5c0f669d293fa9a1eeafabc2cb3ee7a7e4635fd5a218a4fdb23348a890",
+    "pkg/dsga/resourceguard/normal_system_role_service_transfer_linux.go": "766c4bb13924e1e7ba71250dfdf46152e1b13251939db5057ff69c003f0639a5",
+    "pkg/dsga/resourceguard/normal_system_role_service_transfer_v2_linux.go": "f3cc233155058749e007e43ecf80e991e514426465ac0f1cd27326765378236d",
+    "pkg/dsga/resourceguard/normal_system_role_service_transfer_v2_linux_test.go": "5f916d73c91094abce5cf6c374102fb3704106d7e82f3862d20144e40e4578cd"
+  },
+  "source_lock_sha256": "f0c1a2b03c67ce1abceef0459d9a3b4ff3919e0339bb6f30b0d8dcb2075161fd",
+  "COPY_count": 7462,
+  "RUN_memory": 2147483648,
+  "RUN_CPU": 2,
+  "unit_memory": "512M",
+  "unit_CPU": "100%",
+  "run": "^TestNormalSystemRole(TransferV2.*|KernelTransferRequiresOriginalProof|ServiceFixedFiveDescriptorTransfer|ServiceFixedFourDescriptorTransfer|ServiceOriginalTransferBinding|ServiceGateJournalAndOriginalChain|BrokerDeclarationV3RequiresKernelPrep2|AuthorityDeclarationVersions|BrokerLifetimeDeclaration)$",
+  "S": "NOT_RUN"
+}

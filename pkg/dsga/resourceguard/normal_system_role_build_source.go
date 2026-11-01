@@ -14,10 +14,16 @@ const normalSystemRoleBrokerDeclarationPath = NormalSystemRoleBrokerDeclarationP
 const normalSystemRoleServiceSocketPath = "/run/neon-dsga/system-role.sock"
 const normalSystemRoleBrokerDeclarationScope = "fixed-system-role-broker-declaration-v1"
 const normalSystemRoleBrokerDeclarationV2Scope = "fixed-system-role-broker-declaration-v2"
+const normalSystemRoleBrokerDeclarationV3Scope = "fixed-system-role-broker-declaration-v3"
+
+// 与KernelPrep2来源的固定family一致；这里只是构建期能力选择，不含原FD/预算。
+const normalSystemRoleKernelPreparationV2Mode = "initial8-kernel-prep-userns-v2"
 const normalSystemRoleBrokerOwnedAuthorityMode = "broker-owned-same-guard-v1"
 const normalSystemRoleBrokerExecutable = "/neonvm/bin/dsga-resource-guard"
 
 type normalSystemRoleBrokerDeclaration struct {
+	// 仅声明3显式选择原KernelPrep2的第五FD移交；旧1/2必须完全省略。
+	KernelPreparationMode string `json:"kernel_preparation_mode,omitempty"`
 	// 仅新声明2显式选择；声明1省略此字段，原JSON字节与R3行为不变。
 	ResourceAuthorityMode    string `json:"resource_authority_mode,omitempty"`
 	ProtocolVersion          uint32 `json:"protocol_version"`
@@ -73,6 +79,25 @@ func NormalSystemRoleBrokerDeclarationV2JSON(executableSHA256, computeBuildPlanS
 	d.ResourceAuthorityMode = normalSystemRoleBrokerOwnedAuthorityMode
 	return json.Marshal(d)
 }
+
+// 声明3选择transfer2/五FD与原KernelPrep2；生成JSON本身不产来源能力。
+func NormalSystemRoleBrokerDeclarationV3JSON(executableSHA256, computeBuildPlanSHA256 string) ([]byte, error) {
+	raw, e := NormalSystemRoleBrokerDeclarationV2JSON(executableSHA256, computeBuildPlanSHA256)
+	if e != nil {
+		return nil, e
+	}
+	var d normalSystemRoleBrokerDeclaration
+	if e = json.Unmarshal(raw, &d); e != nil {
+		return nil, e
+	}
+	d.ProtocolVersion = 3
+	d.Scope = normalSystemRoleBrokerDeclarationV3Scope
+	d.KernelPreparationMode = normalSystemRoleKernelPreparationV2Mode
+	return json.Marshal(d)
+}
+func (d normalSystemRoleBrokerDeclaration) kernelPreparationV2() bool {
+	return d.ProtocolVersion == 3 && d.Scope == normalSystemRoleBrokerDeclarationV3Scope && d.ResourceAuthorityMode == normalSystemRoleBrokerOwnedAuthorityMode && d.KernelPreparationMode == normalSystemRoleKernelPreparationV2Mode
+}
 func (d normalSystemRoleBrokerDeclaration) brokerOwnsAuthority() bool {
-	return d.ProtocolVersion == 2 && d.Scope == normalSystemRoleBrokerDeclarationV2Scope && d.ResourceAuthorityMode == normalSystemRoleBrokerOwnedAuthorityMode
+	return d.ProtocolVersion == 2 && d.Scope == normalSystemRoleBrokerDeclarationV2Scope && d.ResourceAuthorityMode == normalSystemRoleBrokerOwnedAuthorityMode && d.KernelPreparationMode == "" || d.kernelPreparationV2()
 }

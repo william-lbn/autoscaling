@@ -1,0 +1,3 @@
+稳定minfree附加上限审查撤回（只读结论）
+Root/P1完整复核上游prebootstrap_system.go:34..38：accepted BootMemoryUpper属于[128MiB,16GiB]且128MiB对齐，初始challenge原Host Base<=Upper并由snapshot核原NonMovable<=Upper。因而raw sqrt((lowmemKB)*16)最大floor16384；推荐helper在本真实域最大16384。policy300000虽然大于clamp262144，但raw至多16384不会先超过user300000，内核不走覆写路径。64TiB反例仅适用于无上游域约束的孤立helper输入，不在真实accepted plan，不能据此收紧业务或称实际漏洞。
+按Root撤回指令，已将common runtime、Linux derive、Guest metadata test三个文件精确恢复866a9e源SHA，Host test与其它28本未改变。冻结866及471仍为当前候选。先前区间草案及其已启动新nonce保留独立validation历史，不采纳、不用于当前Source/S结论；不覆盖原raw、不重跑已恢复的未改源码。

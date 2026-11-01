@@ -18,12 +18,12 @@ import (
 )
 
 // SCM接收使用内核MSG_CMSG_CLOEXEC；不是先收普通FD再在另一线程spawn可能
-// 竞态的窗口补fcntl。固定恰好4个对象，所有错误都关闭已收FD，不接受额外控制消息。
+// 竞态的窗口补fcntl。旧版恰好4个、新版恰好5个对象，所有错误都关闭已收FD，不接受额外控制消息。
 func normalSystemRoleServiceWriteTransfer(conn *net.UnixConn, t normalSystemRoleServiceTransfer, files []*os.File, ctx context.Context) error {
-	if t.validate() != nil || len(files) != 4 {
+	if t.validate() != nil || len(files) != t.descriptorCount() {
 		return ErrUnknown
 	}
-	fds := make([]int, 4)
+	fds := make([]int, len(files))
 	for i, f := range files {
 		if f == nil {
 			return ErrUnknown
@@ -35,7 +35,7 @@ func normalSystemRoleServiceWriteTransfer(conn *net.UnixConn, t normalSystemRole
 		return fmt.Errorf("original broker transfer exceeds bound")
 	}
 	frame := make([]byte, normalSystemRoleServiceStartupBytes)
-	copy(frame, "NSYSBF01")
+	copy(frame, t.transferMagic())
 	binary.BigEndian.PutUint32(frame[8:12], uint32(len(raw)))
 	copy(frame[12:], raw)
 	deadline, ok := ctx.Deadline()
@@ -67,7 +67,7 @@ func normalSystemRoleServiceReadTransfer(conn *net.UnixConn, ctx context.Context
 		return fail(e)
 	}
 	raw := make([]byte, normalSystemRoleServiceStartupBytes)
-	oob := make([]byte, unix.CmsgSpace(16))
+	oob := make([]byte, unix.CmsgSpace(20))
 	var n, on, flags int
 	var receive error
 	fd, e := conn.SyscallConn()
@@ -102,7 +102,7 @@ func normalSystemRoleServiceReadTransfer(conn *net.UnixConn, ctx context.Context
 			files = append(files, os.NewFile(uintptr(r), "original broker received kernel object"))
 		}
 	}
-	if !valid || len(files) != 4 || n != len(raw) || flags&(unix.MSG_TRUNC|unix.MSG_CTRUNC) != 0 || string(raw[:8]) != "NSYSBF01" {
+	if !valid || n != len(raw) || flags&(unix.MSG_TRUNC|unix.MSG_CTRUNC) != 0 || string(raw[:8]) != "NSYSBF01" && string(raw[:8]) != "NSYSBF02" {
 		return fail(fmt.Errorf("original broker fixed FD frame differs"))
 	}
 	size := int(binary.BigEndian.Uint32(raw[8:12]))
@@ -114,11 +114,14 @@ func normalSystemRoleServiceReadTransfer(conn *net.UnixConn, ctx context.Context
 			return fail(fmt.Errorf("original transfer padding differs"))
 		}
 	}
-	if e = control.UnmarshalObject(raw[12:12+size], &t); e != nil {
+	if e = json.Unmarshal(raw[12:12+size], &t); e != nil {
 		return fail(e)
 	}
 	if e = t.validate(); e != nil {
 		return fail(e)
+	}
+	if len(files) != t.descriptorCount() || string(raw[:8]) != t.transferMagic() {
+		return fail(fmt.Errorf("original versioned FD count/header differs"))
 	}
 	for _, f := range files {
 		flags, e := unix.FcntlInt(f.Fd(), unix.F_GETFD, 0)
@@ -184,6 +187,7 @@ func normalSystemRoleServiceValidateTransferLocked(ctx context.Context, state *l
 // 只能由固定启动通道、原clone PIDFD+原procFD以及原FS两FD构造。raw receipt、
 // 当前self pidfd或numeric PID不能独立生产本对象。持有FD直到broker退出。
 type normalSystemRoleBrokerExecProof struct {
+	kernelPreparation                              *os.File
 	mu                                             sync.Mutex
 	closed                                         bool
 	system                                         *normalSystemLifecycleSource
@@ -203,6 +207,9 @@ func (p *normalSystemRoleBrokerExecProof) close() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if !p.closed {
+		if p.kernelPreparation != nil {
+			p.kernelPreparation.Close()
+		}
 		p.closed = true
 		if p.namespace != nil {
 			p.namespace.Close()
@@ -361,6 +368,12 @@ func receiveNormalSystemRoleBrokerExecProof(ctx context.Context, g *Guard, syste
 			}
 		}
 	}()
+	if e = transfer.matchesDeclaration(declaration.declaration); e != nil {
+		return fail(e)
+	}
+	if transfer.KernelPreparation != nil && transfer.KernelPreparation.Build != system.manifest.Kernel {
+		return fail(ErrUnknown)
+	}
 	if transfer.Origin.DeclarationSHA256 != declaration.rawSHA || !normalSystemRoleImmutableBindingsEqual(transfer.Origin.Parent, system.binding) || transfer.Origin.Parent.RootConsumer == system.binding.RootConsumer || parent.source.PID != transfer.Origin.Parent.RootConsumer.PID || parent.source.StartTicks != uint64(transfer.Origin.Parent.RootConsumer.StartTicks) || transfer.Task.PID != os.Getpid() || transfer.Task.StartTicks != uint64(system.binding.RootConsumer.StartTicks) {
 		return fail(fmt.Errorf("original initialRoot/broker pair differs"))
 	}
@@ -371,6 +384,9 @@ func receiveNormalSystemRoleBrokerExecProof(ctx context.Context, g *Guard, syste
 	files[0].Close()
 	files[1].Close()
 	proof := &normalSystemRoleBrokerExecProof{system: system, declaration: declaration, transfer: transfer, namespace: files[2], root: files[3], task: task, parent: parent, binding: system.binding, witnesses: map[string]normalSystemRoleFileWitness{}}
+	if transfer.ProtocolVersion == 2 {
+		proof.kernelPreparation = files[4]
+	}
 	owned = true
 	success := false
 	defer func() {

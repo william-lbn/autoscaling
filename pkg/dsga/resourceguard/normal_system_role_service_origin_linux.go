@@ -18,22 +18,24 @@ import (
 )
 
 const normalSystemRoleServiceStartScope = "original-system-role-broker-start-v1"
+const normalSystemRoleServiceStartV2Scope = "original-system-role-broker-start-v2"
 const normalSystemRoleServiceStartupBytes = 32768
 const normalSystemRoleServiceMetadataPath = "/run/neon-dsga/system-role-consumer.json"
 
 type normalSystemRoleServiceOrigin struct {
-	ProtocolVersion     uint32                              `json:"protocol_version"`
-	Scope               string                              `json:"scope"`
-	Nonce               string                              `json:"nonce"`
-	Parent              normalSystemLifecycleBinding        `json:"parent"`
-	Filesystem          normalFilesystemOriginReference     `json:"filesystem"`
-	DeclarationSHA256   string                              `json:"declaration_sha256"`
-	Namespace           []normalSystemRoleNamespaceIdentity `json:"namespace"`
-	ResourceIdentity    Identity                            `json:"resource_identity"`
-	ResourceFloor       control.Uint64                      `json:"resource_floor"`
-	StateDevice         uint64                              `json:"state_device"`
-	StateInode          uint64                              `json:"state_inode"`
-	ResourceStageSHA256 string                              `json:"resource_stage_sha256"`
+	KernelPreparationSHA256 string                              `json:"kernel_preparation_sha256,omitempty"`
+	ProtocolVersion         uint32                              `json:"protocol_version"`
+	Scope                   string                              `json:"scope"`
+	Nonce                   string                              `json:"nonce"`
+	Parent                  normalSystemLifecycleBinding        `json:"parent"`
+	Filesystem              normalFilesystemOriginReference     `json:"filesystem"`
+	DeclarationSHA256       string                              `json:"declaration_sha256"`
+	Namespace               []normalSystemRoleNamespaceIdentity `json:"namespace"`
+	ResourceIdentity        Identity                            `json:"resource_identity"`
+	ResourceFloor           control.Uint64                      `json:"resource_floor"`
+	StateDevice             uint64                              `json:"state_device"`
+	StateInode              uint64                              `json:"state_inode"`
+	ResourceStageSHA256     string                              `json:"resource_stage_sha256"`
 }
 type normalSystemRoleServiceStage struct {
 	ResourceAuthority *normalSystemAuthorityReference `json:"resource_authority,omitempty"`
@@ -67,7 +69,8 @@ func normalSystemRoleServiceStageName(nonce, stage string) string {
 	return "role-broker-start-" + nonce + "-" + stage + ".json"
 }
 func (o normalSystemRoleServiceOrigin) validate() error {
-	if o.ProtocolVersion != 1 || o.Scope != normalSystemRoleServiceStartScope || !normalSystemRoleDeclarationDigest(o.Nonce) || !normalSystemRoleDeclarationDigest(o.DeclarationSHA256) || !normalSystemRoleDeclarationDigest(o.ResourceStageSHA256) || o.ResourceFloor == 0 || o.StateDevice == 0 || o.StateInode == 0 || o.Parent.RootConsumer.PID <= 1 || o.Parent.RootConsumer.StartTicks == 0 || !normalSystemRoleDeclarationDigest(o.Parent.RootConsumer.InstanceNonce) || !validGuestBoot(o.Parent.GuestBootID) {
+	validVersion := o.ProtocolVersion == 1 && o.Scope == normalSystemRoleServiceStartScope && o.KernelPreparationSHA256 == "" || o.ProtocolVersion == 2 && o.Scope == normalSystemRoleServiceStartV2Scope && normalSystemRoleDeclarationDigest(o.KernelPreparationSHA256) && o.Filesystem.ProtocolVersion == 2
+	if !validVersion || !normalSystemRoleDeclarationDigest(o.Nonce) || !normalSystemRoleDeclarationDigest(o.DeclarationSHA256) || !normalSystemRoleDeclarationDigest(o.ResourceStageSHA256) || o.ResourceFloor == 0 || o.StateDevice == 0 || o.StateInode == 0 || o.Parent.RootConsumer.PID <= 1 || o.Parent.RootConsumer.StartTicks == 0 || !normalSystemRoleDeclarationDigest(o.Parent.RootConsumer.InstanceNonce) || !validGuestBoot(o.Parent.GuestBootID) {
 		return fmt.Errorf("original broker origin malformed")
 	}
 	f := o.Filesystem

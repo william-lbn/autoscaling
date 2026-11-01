@@ -1,0 +1,28 @@
+{
+  "dateUTC": "2026-11-01T07:06:35.281882+00:00",
+  "reviewed3": {
+    "normal_ordinary_actions_v2_protocol_linux.go": "1d297fe5598051d6a086af2d896c7d6aec82280594a892edf597d0e5ffe7b82b",
+    "normal_ordinary_actions_v2_tls_linux.go": "f00903311afc018be1acc20afdb47425f44b6708c7f47af725bc038e7115861f",
+    "normal_ordinary_actions_v2_server_linux.go": "181c4f997339ed1885ef0793ddbfaf59531a87096f9a232db921318b2fd352da"
+  },
+  "source_only": true,
+  "tests_run_by_reviewer": 0,
+  "blockers": [],
+  "scope": "固定ACPI/TLS组件，未声称udev或normal/全Source",
+  "findings": [
+    "构造器要求同g typedFS2/new kernel family和原exec proof；缺getter实现即Unknown。候选准备监听，但所有动作前重核admission、同原FS、真实proof与每包新原main lease。",
+    "固定端点选择角色，request无PID/FD/path；seqpacket每包PASSCRED与SO_PEERPIDFD交给真实lease matcher，须保main-only与fork worker拒绝，尚无producer原生S不能声称已验证。",
+    "rights逐一关闭拒绝；当前rawRecvmsg显式MSG_CMSG_CLOEXEC。另已核准确Go1.24.3 net.UnixConn.ReadMsgUnix在Linux本身亦使用readMsgFlags=MSG_CMSG_CLOEXEC，因此旧ReadMsgUnix并无已证明的非原子CLOEXEC窗口，新helper是显式化，不将旧字节说成已被利用的竞态。",
+    "TLS只三固定文件/有界raw-map JSON，保AtomicWriter/原checksum；body不进入WAL/日志，Root持目录实际dev/inode/mount ref，正常generation内容变化不改变该对象类型。",
+    "ACPI固定原PID1 pidfd，intent先file+dir持久再SIGUSR2，一次attempt失败不重发，complete不意味着已停机/物理释放。",
+    "构造失败close在原flock内等待worker的潜在锁环已核实际lockState：LOCK_NB+ctx取消，所以q.cancel能使等待者退出，不按阻断报告。"
+  ],
+  "integration_requirements": [
+    "prepare应传broker lifetime ctx（不是30秒握手call ctx），内部每包2秒可保；否则RootAction会随握手期自动死亡。",
+    "RunBroker应defer q.close并select q.done；原caller完整typedFS/proof只来自同Root原启动。",
+    "新lease实现必须先原resource锁→producerMu→Task核active/三WAL/creatorPIDFD活，再逐packet match；不可用UID/PID或unimplemented接口替代。",
+    "Root udev票据未闭保持Unsupported，不把当前两endpoint当全九role资格。"
+  ],
+  "normal_authorized": false,
+  "E": 0
+}
