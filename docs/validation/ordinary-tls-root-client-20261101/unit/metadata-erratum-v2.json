@@ -1,0 +1,27 @@
+{
+  "kind": "METADATA_LABEL_VARIABLE_SHADOWING_NOT_SOURCE_OR_TEST_FAILURE",
+  "utc": "2026-11-01T07:16:44.638074+00:00",
+  "original_metadata_sha256": "6d4aaf57dc39ba8159d2ccbfb036759c2937cbe01e64e6eb9a50cb44bd87ab7c",
+  "original_unit_label": "neon-tls-root-client-neonvm-daemon/cmd/ordinary_tls_root_client_linux_test.go",
+  "actual_unit": "neon-tls-root-client-neonvm-daemon-cmd-ordinary_tls_root_client_linux_test.go.service",
+  "nonce": "20261101T071031Z-bebe8e",
+  "actual_directory": "/data/neon-build/validation/ordinary-tls-root-client-go-20261101T071031Z-bebe8e",
+  "cause": "recipe loop reused variable n for file names after directory nonce creation; systemd escaped slash label",
+  "source_lock_sha256": "675b081a842b48b171b4e4e20d3d974a0391f226b3537745467ec5f67e8e7549",
+  "actual_unit_properties": {
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "LoadState": "not-found",
+    "ActiveState": "inactive",
+    "SubState": "dead"
+  },
+  "original_receipts_unchanged": true,
+  "per_phase_exitcodes": {
+    "source.exitcode": "0",
+    "test.exitcode": "0",
+    "CLI-compile.exitcode": "0",
+    "Darwin-compile.exitcode": "0"
+  },
+  "normal_authorized": false
+}

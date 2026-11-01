@@ -1,0 +1,17 @@
+Root ordinary TLS delegate4 独立只读审查：PASS_COMPONENT_SCOPE_ONLY / 无组件级阻断。
+
+实际完整读取immutable source四文件，四hash逐项=current=source-lock=actual COPY；未改源码/Git，未重跑已过测试。
+main.go117..134/211..222仅managed nonRoot固定管理TLS路径走新delegate；Root与unmanaged原路径保留。
+client仅固定2/4动作和既有三文件/64KiB原HTTP形状，RolePlan daemon固定UID/GID只作client启动前提，
+不是Root授权。Root真端还须原role lease/每包actor，当前没有把UID/新DTO布尔作为Source。
+
+固定Root-owned非可写祖先及0660 GID60009 socket；直接SO_PEERPIDFD持原peer，poll而非signal0；
+逐包唯一Root credential==connect-time原peer、前后pidfd活。fork继承server fd不能借PEERCRED冒原Root，
+最后的SCM actor会不同。MSG_CMSG_CLOEXEC在接收时生效，rights逐一close后拒；trunc/其它cmsg拒。
+16B ACK/动作与checksum43B规范base64严格；分支先len再slice避免短包panic。2秒绝对deadline、单次发送，
+无自动重连；受控Root ACK后连接close的POLLIN/HUP走正常recv不凭HUP丢完整包。
+
+已核source/test0、Linux/Darwin CLI compile0。新增3根是codec/missingidentity U，旧DTO及HTTP为直接回归，
+不是实际nonRoot服务S；本审查不代签真实Root服务/lease/AtomicWriter轮转/normal/E。后继联合S须验证
+实际uid60009→原Root服务/逐包credentials/rights/取消与原30s checksum轮转；当前组件范围无阻断。
+未发现需要扩大本次修改的实际问题。

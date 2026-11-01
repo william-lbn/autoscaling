@@ -114,6 +114,25 @@ func (s *cpuServer) handleGetFileChecksum(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	if resourceguard.ManagedGuest() && ordinaryTLSNeedsRootDelegate() {
+		if path != resourceguard.FixedManagementTLSPath {
+			http.NotFound(w, r)
+			return
+		}
+		delegate, err := newOrdinaryTLSRootDelegate()
+		if err != nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		checksum, err := delegate.managementTLSChecksum(r.Context())
+		if err != nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(checksum))
+		return
+	}
 	dir := filepath.Join(path, "..data")
 	checksum, err := util.ChecksumFlatDir(dir)
 	if err != nil {
@@ -189,6 +208,19 @@ func (s *cpuServer) handleUploadFile(w http.ResponseWriter, r *http.Request, pat
 		}
 	}
 
+	if managed && ordinaryTLSNeedsRootDelegate() {
+		delegate, err := newOrdinaryTLSRootDelegate()
+		if err != nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		if err = delegate.replaceManagementTLS(r.Context(), ordinaryTLSReplacement{ProtocolVersion: 2, Operation: "replace-management-tls", Files: files}); err != nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 	payload := make(map[string]k8sutil.FileProjection)
 	for k, v := range files {
 		data, err := base64.StdEncoding.DecodeString(v.Data)

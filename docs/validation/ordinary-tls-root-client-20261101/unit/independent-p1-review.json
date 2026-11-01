@@ -1,0 +1,29 @@
+{
+  "result": "PASS_COMPONENT_SCOPE_ONLY",
+  "source_lock_sha256": "675b081a842b48b171b4e4e20d3d974a0391f226b3537745467ec5f67e8e7549",
+  "owned4": {
+    "neonvm-daemon/cmd/main.go": "f8724ac8e59b807e14986717130a3637c2c19187490cdcb08d34a4abe1da2083",
+    "neonvm-daemon/cmd/ordinary_tls_root_client_linux.go": "270b9421830d2a997f32631d00ef014e923dd2d84d4d929ae10b0a02c660f041",
+    "neonvm-daemon/cmd/ordinary_tls_root_client_unsupported.go": "511048a4bbe64c6854ff7a932207e14fc10c17fe389b115aec8748395ffeadf9",
+    "neonvm-daemon/cmd/ordinary_tls_root_client_linux_test.go": "807be1ed203142d1f2f56b7d3d4c52b70555eaf06729bedcc5164c3447a343f1"
+  },
+  "current_and_actual_COPY_match": true,
+  "root_names_passed": [
+    "TestManagedDaemonRejectsLegacyResourceWritesAndNonTLSFiles",
+    "TestOrdinaryTLSReplacementIsBoundedFixedAndUnavailable",
+    "TestOrdinaryTLSReplacementRejectsPathsDuplicatesAndOversize",
+    "TestOrdinaryTLSRootChecksumCanonicalReply",
+    "TestOrdinaryTLSRootMissingIdentityNeverDials",
+    "TestOrdinaryTLSRootReplyRejectsOtherActionsAndPartialACK"
+  ],
+  "new_root_names": [
+    "TestOrdinaryTLSRootChecksumCanonicalReply",
+    "TestOrdinaryTLSRootMissingIdentityNeverDials",
+    "TestOrdinaryTLSRootReplyRejectsOtherActionsAndPartialACK"
+  ],
+  "tests_exit": 0,
+  "LinuxCLI_exit": 0,
+  "DarwinCLI_exit": 0,
+  "production_Source_or_S_or_normal_not_certified": true,
+  "text_sha256": "36f2f0a98d9345a7242a33a982adb0d1b0268283136db5c6fac27483fa538fd8"
+}

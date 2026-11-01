@@ -1,0 +1,28 @@
+{
+  "scope": "MANAGED_NONROOT_TLS_ACTUAL_CLIENT_AND_HTTP_HOOK_COMPONENT_ONLY",
+  "base": "80bab8ae87eb6a3c8377e46b79d9d0b14c696f65",
+  "owned4": {
+    "neonvm-daemon/cmd/main.go": "f8724ac8e59b807e14986717130a3637c2c19187490cdcb08d34a4abe1da2083",
+    "neonvm-daemon/cmd/ordinary_tls_root_client_linux.go": "270b9421830d2a997f32631d00ef014e923dd2d84d4d929ae10b0a02c660f041",
+    "neonvm-daemon/cmd/ordinary_tls_root_client_unsupported.go": "511048a4bbe64c6854ff7a932207e14fc10c17fe389b115aec8748395ffeadf9",
+    "neonvm-daemon/cmd/ordinary_tls_root_client_linux_test.go": "807be1ed203142d1f2f56b7d3d4c52b70555eaf06729bedcc5164c3447a343f1"
+  },
+  "source_lock_sha256": "675b081a842b48b171b4e4e20d3d974a0391f226b3537745467ec5f67e8e7549",
+  "actual_Go_mod_COPY_inputs": 1054,
+  "U": {
+    "roots": 6,
+    "new_roots": 3,
+    "direct_regression_roots": 3,
+    "subcases": 0,
+    "failed": 0,
+    "skipped": 0
+  },
+  "Linux_CLI_compile_exit": 0,
+  "Darwin_arm64_CLI_compile_exit": 0,
+  "Linux_CLI_sha256": "bf17ebe1e399e285226e542a9a1f5115c585d34ec9c777e3f41955a0cbaea2d4",
+  "S": 0,
+  "E": 0,
+  "K8s_E": 0,
+  "actual_nonroot_role_main_lease_server_positive_pending": true,
+  "normal_authorized": false
+}
