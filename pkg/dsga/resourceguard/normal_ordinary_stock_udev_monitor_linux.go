@@ -61,6 +61,11 @@ func normalOrdinaryStockUdevMonitorCopy(v normalOrdinaryStockUdevMonitorEvent) n
 }
 
 func normalOrdinaryStockUdevMonitorProperties(raw []byte) (map[string]string, error) {
+	normalized, e := normalOrdinaryUdevV2CPUPropertyBytes(raw, 4096)
+	if e != nil {
+		return nil, e
+	}
+	raw = normalized
 	if len(raw) == 0 || len(raw) > 4096 || raw[len(raw)-1] != 0 {
 		return nil, ErrUnknown
 	}

@@ -83,7 +83,7 @@ func normalOrdinaryUdevV2DecodeKernelPacket(raw, oob []byte, flags int, from uni
 	if !ok || action == "" || path == "" || !strings.HasPrefix(path, "/") {
 		return out, ErrUnknown
 	}
-	properties, e := normalOrdinaryUdevV2Properties(raw[split+1:], false)
+	properties, e := normalOrdinaryUdevV2KernelProperties(raw[split+1:])
 	if e != nil {
 		return out, errors.Join(ErrUnknown, e)
 	}

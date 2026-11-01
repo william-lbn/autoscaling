@@ -1,0 +1,185 @@
+{
+  "base": "9de949c3e69bf9c9d74989df43dac215d0c911ca",
+  "owned5": {
+    "pkg/dsga/resourceguard/normal_ordinary_udev_v2_kernel_properties_linux.go": "181627dc0edbaccc4e75bae4f99ded7756b79dc953413616d0ae2e3c80a953f5",
+    "pkg/dsga/resourceguard/normal_ordinary_udev_v2_kernel_linux.go": "539da5d5a5b4088490363cdd45bdbd8922458977faf2a453fb7c39a15c44df81",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_monitor_linux.go": "434d6568c54a35908ac6a2b03896acaefc43d14ec661ed159ebf4ba7b5c0992e",
+    "pkg/dsga/resourceguard/normal_ordinary_udev_v2_kernel_properties_linux_test.go": "ac7fade4ab43d838d62bffdd1e2c17f592a004e9b6e6807c5e2de7a1af3d0464",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_monitor_linux_test.go": "187484f7b2a8158b0ba09a3f2db47ab6074544f334b8ce4a389d808044e6ff47"
+  },
+  "direct_go": "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250",
+  "source_lock_sha256": "44dd3fe278c54e846463fe2def43332cb88fb96e1c2ba077add4c4143baf5f5f",
+  "direct_result": {
+    "build_exit": 0,
+    "end_utc": "2026-11-01T15:20:08.941575+00:00",
+    "seconds": 30.75757908198284,
+    "normal": false,
+    "Source": false,
+    "E": 0,
+    "u_exit": 0,
+    "cli_exit": 0,
+    "darwin_exit": 0,
+    "passed_roots": [
+      "TestNormalStockUdevMonitorCPUSingleLFRequiresSameOriginalProjection",
+      "TestNormalStockUdevMonitorDuplicateAndLedgerBound",
+      "TestNormalStockUdevMonitorFinitePropertyBounds",
+      "TestNormalStockUdevMonitorKernelOriginalCredentials",
+      "TestNormalStockUdevMonitorOriginalSequenceMatchAndCopy",
+      "TestNormalStockUdevMonitorProcessedOriginalFraming",
+      "TestOrdinaryUdevV2KernelCPUOriginalSingleLFIsNarrow",
+      "TestOrdinaryUdevV2KernelOnlyPIDZeroCredAndGroupOne"
+    ],
+    "passed_subtests": 59,
+    "missing_expected": [],
+    "skipped": []
+  },
+  "scope": "CPU_NETLINK_PROPERTY_BYTE_SEMANTICS_COMPONENT_ONLY",
+  "new_roots": 2,
+  "directly_affected_old_roots": 6,
+  "original_small_files": {
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/metadata.json": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/metadata.json",
+      "sha256": "2541bdaac08d91aa5584a03abd023091300d639defb6d29e48ec96f7f189241d"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/source-lock.json": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/source-lock.json",
+      "sha256": "44dd3fe278c54e846463fe2def43332cb88fb96e1c2ba077add4c4143baf5f5f"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/result.json": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/result.json",
+      "sha256": "5cdddcfcda165b2cc496c8a4f71f998539e5727c7be2dad01bc538f5bd76db98"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/Dockerfile": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/Dockerfile",
+      "sha256": "610b1785c49339ec9eb2bd47a34159866c0bb7aaaf7a6c9bd061859ec618fa7c"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/budget-spec.json": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/budget-spec.json",
+      "sha256": "38e7a6fca39c1a64a3825b007f6118e753ce5f9a5530663a5552a8e7fb116095"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/build-metadata.json": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/build-metadata.json",
+      "sha256": "6161b9fa0f4ad691a2dab678e23031d4bf6a32b640d92e856e7a5a98cb00c704"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/worker.py": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/worker.py",
+      "sha256": "349a7fe19387f0c4a28bf409e9930a8520c1858e2313a141b977adf3148cb674"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/run.log": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/run.log",
+      "sha256": "f4f1675ce9881045feec8f4ed16dddcfa13bae073705c96e6293a3398a9631d5"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/export/test.json": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/export/test.json",
+      "sha256": "75bc892f2e4be9bca4f46294516df684c9f33e2fa3e033ccf91803f7a8fea429"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/export/test.stderr": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/export/test.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/export/u.exitcode": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/export/u.exitcode",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/export/cli.exitcode": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/export/cli.exitcode",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/export/darwin.exitcode": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/export/darwin.exitcode",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/export/cli.log": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/export/cli.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/export/darwin.log": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/export/darwin.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/export/memory.max": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/export/memory.max",
+      "sha256": "e299e7e064963e64b8955bf05efe3e8151603ac8410068ae44c09285dd88707b"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/export/cpu.max": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/export/cpu.max",
+      "sha256": "309af899ee7bd98ba4868342f16baa2390cf24d9739ca56ff680875f7113b426"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/export/cpu.stat.before": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/export/cpu.stat.before",
+      "sha256": "25bb4476d0a9cb249cdfdceb91065eafb4ca482afd3f0d6682058455eddf30a7"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/export/cpu.stat.after": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/export/cpu.stat.after",
+      "sha256": "56bee4785ff928ab81f98b4aabcf7b1d7c741464ebbc4f8d1eeae7734bf1db66"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/export/memory.peak": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/export/memory.peak",
+      "sha256": "ebd4e1e7a6f4be705c7e1cea7419ccac8759d2b9e6a6b3acbf3daec1eae6661a"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/export/io.stat.before": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/export/io.stat.before",
+      "sha256": "f7517df8b200013676919469c8c5b8280ebca4aa3894fe05bb86bc64d5df907e"
+    },
+    "/data/neon-build/validation/root-cpu-packet-properties-go-20261101T151936Z-219250/export/io.stat.after": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/direct-219250/export/io.stat.after",
+      "sha256": "fd1fdd8b5618ce8e7691bec7f764069dde742b4915d4cad6715ed9fd8607d301"
+    },
+    "/data/neon-build/validation/normal-udev-cpu-packet-properties-20261101/prefmt.json": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/research/prefmt.json",
+      "sha256": "8b9c62c5914349c12d76253b136960fc54964e0728149e702bb6b822d225d53b"
+    },
+    "/data/neon-build/validation/normal-udev-cpu-packet-properties-20261101/format.json": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/research/format.json",
+      "sha256": "d53453111a9204ff7d7cad8186cfb4f3cd8a10eeb2900418b0e4687568bb0807"
+    },
+    "/data/neon-build/validation/normal-udev-cpu-packet-properties-20261101/source-freeze.json": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/research/source-freeze.json",
+      "sha256": "7bb775958c13fd7468720d47a32b626bea034a485681e409d50e6e99099ea913"
+    },
+    "/data/neon-build/validation/normal-stock-preparation-native-20261101T150130Z-ae3f57-native/result.json": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/history/old-stock-waits-pass-drain-controls-fail/result.json",
+      "sha256": "9c7309a9d7077754d11876416356e1b3cbb3a87a136cf3619b5cc7200a20cc6b"
+    },
+    "/data/neon-build/validation/normal-stock-preparation-native-20261101T150130Z-ae3f57-native/console.log": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/history/old-stock-waits-pass-drain-controls-fail/console.log",
+      "sha256": "6f25b98b439b9bac161f3dff818579ab1a4e59f34bd6492fcc3a8aaf9ea8d47b"
+    },
+    "/data/neon-build/validation/normal-stock-preparation-native-20261101T150130Z-ae3f57-native/compiled-artifact-link.json": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/history/old-stock-waits-pass-drain-controls-fail/compiled-artifact-link.json",
+      "sha256": "6b658b0ce0faceaac75dcf4a95604bf01de8f8edbe15bda621730105eb75ace7"
+    },
+    "/data/neon-build/validation/normal-stock-preparation-native-20261101T150130Z-ae3f57-native/actual-usage-last.json": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/history/old-stock-waits-pass-drain-controls-fail/actual-usage-last.json",
+      "sha256": "fea9ce55c0c976d1ec9d8cca639f0ddef7f68e86731c241e549c4973d70cbf50"
+    },
+    "/data/neon-build/validation/normal-stock-preparation-native-20261101T151254Z-4cc9dd-native/result.json": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/history/new-helper-combination-early-handoff-fail/result.json",
+      "sha256": "fae7685b48da2704d4e000ba981b8335ca5ef985008336656043fd17552b85ff"
+    },
+    "/data/neon-build/validation/normal-stock-preparation-native-20261101T151254Z-4cc9dd-native/console.log": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/history/new-helper-combination-early-handoff-fail/console.log",
+      "sha256": "d92a609c0deea4e0d2efc29d709731ffe2e25c14875eb4d8453a53da029b53db"
+    },
+    "/data/neon-build/validation/normal-stock-preparation-native-20261101T151254Z-4cc9dd-native/compiled-artifact-link.json": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/history/new-helper-combination-early-handoff-fail/compiled-artifact-link.json",
+      "sha256": "e1c34a36d2411c4dc810e4aabcd448febee00e1599b0b18ef137b13a31769f42"
+    },
+    "/data/neon-build/validation/normal-stock-preparation-native-20261101T151254Z-4cc9dd-native/actual-usage-last.json": {
+      "path": "docs/validation/ordinary2-cpu-netlink-properties-20261101/history/new-helper-combination-early-handoff-fail/actual-usage-last.json",
+      "sha256": "7ddb71f3fa93791800519be2f433df98633d05dca287edd156e9e1b0263ffb18"
+    }
+  },
+  "Source": false,
+  "normal": false,
+  "E": 0,
+  "actual_guest_state": "old actual stock4 Wait succeeded then controls reject; subsequent new helper graph Guest failed before RoleTransfer2/catalog/monitor stage, so not proof of new coldtrigger success",
+  "not_proven": [
+    "new helper through complete actual stock drain and Source",
+    "new ordinary C creator CPU event relay",
+    "future dynamic memory projection enum2",
+    "complete9services",
+    "normal lowering",
+    "Linux/Kubernetes end-to-end"
+  ]
+}

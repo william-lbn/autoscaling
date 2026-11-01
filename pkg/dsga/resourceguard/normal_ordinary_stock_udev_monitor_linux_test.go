@@ -195,3 +195,80 @@ func TestNormalStockUdevMonitorDuplicateAndLedgerBound(t *testing.T) {
 		t.Fatal("record overflow")
 	}
 }
+
+func TestNormalStockUdevMonitorCPUSingleLFRequiresSameOriginalProjection(t *testing.T) {
+	const path = "/devices/system/cpu/cpu0"
+	const alias = "cpu:type:x86,ven0000fam0006mod0006:feature:,0001"
+	body := []byte("ACTION=add\x00DEVPATH=" + path + "\x00DRIVER=processor\x00MODALIAS=" + alias + "\n\x00SEQNUM=22\x00SUBSYSTEM=cpu\x00")
+	kernel := append([]byte("add@"+path+"\x00"), body...)
+	_, ke, e := decodeNormalOrdinaryStockUdevMonitorEvent(kernel, unix.UnixCredentials(&unix.Ucred{}), 0, &unix.SockaddrNetlink{Family: unix.AF_NETLINK, Groups: 1})
+	if e != nil {
+		t.Fatal(e)
+	}
+	// 使用实际libudev40B格式构造原单LF，不经公共canonical writer补签。
+	makeProcessed := func(body []byte) []byte {
+		p := make([]byte, 40)
+		copy(p, "libudev\x00")
+		binary.BigEndian.PutUint32(p[8:12], 0xfeedcafe)
+		binary.NativeEndian.PutUint32(p[12:16], 40)
+		binary.NativeEndian.PutUint32(p[16:20], 40)
+		binary.NativeEndian.PutUint32(p[20:24], uint32(len(body)))
+		binary.BigEndian.PutUint32(p[24:28], normalOrdinaryUdevV2Hash("cpu"))
+		return append(p, body...)
+	}
+	raw := makeProcessed(body)
+	saved := bytes.Clone(raw)
+	cred := unix.UnixCredentials(&unix.Ucred{Pid: 88})
+	from := &unix.SockaddrNetlink{Family: unix.AF_NETLINK, Pid: 9001, Groups: 2}
+	_, pe, e := decodeNormalOrdinaryStockUdevMonitorEvent(raw, cred, 0, from)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if !bytes.Equal(raw, saved) || !bytes.Equal(pe.Raw, saved) || !bytes.Equal(ke.Raw, kernel) {
+		t.Fatal("original raw packet was altered")
+	}
+	original, e := normalOrdinaryUdevV2KernelStaticProperties("/sys"+path, "cpu", []byte("DRIVER=processor\nMODALIAS="+alias+"\n\n"))
+	if e != nil {
+		t.Fatal(e)
+	}
+	target := []normalOrdinaryStockUdevMonitorTarget{{Devpath: path, Subsystem: "cpu", KernelProperties: original}}
+	ks := map[uint64]normalOrdinaryStockUdevMonitorEvent{22: ke}
+	ps := map[uint64]normalOrdinaryStockUdevMonitorEvent{22: pe}
+	if _, e = normalOrdinaryStockUdevMonitorMatch(ks, ps, target); e != nil {
+		t.Fatal(e)
+	}
+	// 两端解码成功不等于来源合格：原catalog漂移或stock篡改原值仍严格拒。
+	for _, which := range []string{"catalog", "processed", "missing-original", "nonroot"} {
+		t.Run(which, func(t *testing.T) {
+			cp := normalOrdinaryStockUdevMonitorCopy(pe)
+			ct := map[string]string{}
+			for k, v := range original {
+				ct[k] = v
+			}
+			switch which {
+			case "catalog":
+				ct["MODALIAS"] = "cpu:type:forged"
+			case "processed":
+				cp.Properties["MODALIAS"] = "cpu:type:forged"
+			case "missing-original":
+				if _, e := normalOrdinaryStockUdevMonitorMatch(nil, map[uint64]normalOrdinaryStockUdevMonitorEvent{22: cp}, target); !errors.Is(e, ErrUnknown) {
+					t.Fatal("processed-only accepted")
+				}
+				return
+			case "nonroot":
+				if _, _, e := decodeNormalOrdinaryStockUdevMonitorEvent(raw, unix.UnixCredentials(&unix.Ucred{Pid: 88, Uid: 60004, Gid: 60004}), 0, from); !errors.Is(e, ErrUnknown) {
+					t.Fatal("foreign sender accepted")
+				}
+				return
+			}
+			if _, e := normalOrdinaryStockUdevMonitorMatch(ks, map[uint64]normalOrdinaryStockUdevMonitorEvent{22: cp}, []normalOrdinaryStockUdevMonitorTarget{{Devpath: path, Subsystem: "cpu", KernelProperties: ct}}); !errors.Is(e, ErrUnknown) {
+				t.Fatal("changed original accepted")
+			}
+		})
+	}
+	for _, b := range [][]byte{bytes.Replace(body, []byte("SUBSYSTEM=cpu"), []byte("SUBSYSTEM=pci"), 1), append(bytes.Clone(body), []byte("UNKNOWN=bad\n\x00")...), append(bytes.Clone(body), []byte("MODALIAS=cpu:type:forged\n\x00")...), bytes.Replace(body, []byte(alias+"\n"), []byte(alias+"\n\n"), 1)} {
+		if _, e := normalOrdinaryStockUdevMonitorProperties(b); !errors.Is(e, ErrUnknown) {
+			t.Fatal("noncanonical CPU control accepted")
+		}
+	}
+}

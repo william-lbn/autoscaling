@@ -1,0 +1,9 @@
+{
+  "Linux_6_12_26_references_already_in_Git": "docs/validation/ordinary2-catalog-kernel-semantics-20261101/research/upstream-sources.json",
+  "eudev_3_2_14_original_archive": "/data/neon-build/validation/ordinary-services-v2-research-20261101T044713Z-c6ff82/sources/eudev-3.2.14.tar.gz",
+  "eudev_archive_sha256": "8da4319102f24abbf7fff5ce9c416af848df163b29590e666d334cc1927f006f",
+  "libudev_device_member_path": "eudev-3.2.14/src/libudev/libudev-device.c",
+  "original_unpacked_file": "/data/neon-build/validation/ordinary-services-v2-research-20261101T044713Z-c6ff82/unpacked/eudev-3.2.14.tar.gz/eudev-3.2.14/src/libudev/libudev-device.c",
+  "libudev_device_sha256": "54a44aa1e49c1737631042979a84997639fab016e49b874742cf1e473096f69e",
+  "source_observation": "cpu_uevent adds modalias endingLF; libudev new_from_nulstr/add_property_from_string_parse preserves MODALIAS value bytes, unlike sysfs fgets parser"
+}
