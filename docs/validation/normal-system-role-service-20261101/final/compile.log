@@ -1,0 +1,40 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.07kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 343B done
+#3 DONE 0.0s
+
+#4 [test 1/4] FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#4 resolve 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 1.47MB 0.2s done
+#5 DONE 0.2s
+
+#6 [test 2/4] WORKDIR /workspace
+#6 CACHED
+
+#7 [test 3/4] COPY . .
+#7 DONE 1.3s
+
+#8 [test 4/4] RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared set -eu; mkdir -p /out; test "$(cat /sys/fs/cgroup/memory.max)" = 2147483648; cat /sys/fs/cgroup/memory.max >/out/memory.max; cat /sys/fs/cgroup/cpu.max >/out/cpu.max; printf "%s\n" "normal-role-service-native-build-20261101T024658Z-b44dd6" >/out/nonce; sha256sum -c cohort.sha256 >/out/actual-copy-verification.txt; cp cohort.sha256 /out/compiled-source-sha256.txt; echo 0 >/out/source.exitcode; echo NOT_RUN >/out/cli.exitcode; echo NOT_RUN >/out/nativeCompile.exitcode; echo NOT_RUN >/out/fixture.exitcode; set +e; go test -race -count=1 -timeout=150s -json -run "^TestNormalSystem(Role|Lifecycle|V3)" ./pkg/dsga/resourceguard >/out/test.json 2>/out/test.stderr; unit=$?; echo "$unit" >/out/u.exitcode; echo "$unit" >/out/test.exitcode; status=$unit; if test "$status" = 0; then CGO_ENABLED=0 go build -o /out/resource-guard.real ./neonvm-daemon/cmd/resource-guard; status=$?; echo "$status" >/out/cli.exitcode; fi; if test "$status" = 0; then CGO_ENABLED=0 go test -c -tags=dsga_native_role_service,dsga_native_system_lifecycle -o /out/service.test ./pkg/dsga/resourceguard; status=$?; echo "$status" >/out/nativeCompile.exitcode; fi; if test "$status" = 0; then DSGA_SYSTEM_ROLE_ELF=/out/service.test DSGA_SERVICE_GUARD_ELF=/out/service.test DSGA_SYSTEM_LIFECYCLE_EXPORT=/out/fixture /out/service.test -test.run "^TestExportNormalSystemRoleServiceFixture$" -test.v >/out/fixture-export.log 2>&1; status=$?; echo "$status" >/out/fixture.exitcode; fi; sha256sum /out/resource-guard.real /out/service.test >/out/binaries.sha256 2>/dev/null; echo "$status" >/out/component.exitcode
+#8 DONE 15.7s
+
+#9 [stage-1 1/1] COPY --from=test /out/ /
+#9 DONE 0.2s
+
+#10 exporting to client directory
+#10 copying files 17.49MB 0.1s
+#10 copying files 191.42MB 0.9s done
+#10 DONE 0.9s
+
+#11 resolving provenance for metadata file
+#11 DONE 0.0s

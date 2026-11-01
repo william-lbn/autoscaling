@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -15,6 +16,11 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 )
 
+// 固定角色的正常非零退出码要原样返给init，不能误写成资源执行器故障码1。
+type systemRoleExit struct{ code int }
+
+func (e *systemRoleExit) Error() string { return fmt.Sprintf("system role exit %d", e.code) }
+
 func run() error {
 	// SUID场景唯一允许的非root动作必须在flag解析前分流，不能借--config选择
 	// 另一份资源日志，也不能让真实postgres UID以有效root调用bootstrap/apply。
@@ -23,6 +29,23 @@ func run() error {
 	}
 	if os.Getuid() != 0 {
 		return fmt.Errorf("resource operations require real root")
+	}
+	// 只接受固定动作/枚举；各入口再核原Root能力、RO Source与原进程身份。
+	if len(os.Args) == 2 && os.Args[1] == "role-exec-gate" {
+		return resourceguard.RunNormalSystemRoleExecGate(context.Background())
+	}
+	if len(os.Args) == 2 && os.Args[1] == "system-role-broker" {
+		return resourceguard.RunNormalSystemRoleBroker(context.Background())
+	}
+	if len(os.Args) == 3 && os.Args[1] == "exec-system-role" {
+		code, err := resourceguard.RunNormalSystemRoleClient(context.Background(), os.Args[2])
+		if err != nil {
+			return err
+		}
+		if code != 0 {
+			return &systemRoleExit{code}
+		}
+		return nil
 	}
 	if len(os.Args) == 2 && os.Args[1] == "initial-boot" {
 		return resourceguard.RunInitialBootGuest(context.Background())
@@ -125,6 +148,10 @@ func run() error {
 
 func main() {
 	if err := run(); err != nil {
+		var roleExit *systemRoleExit
+		if errors.As(err, &roleExit) {
+			os.Exit(roleExit.code)
+		}
 		fmt.Fprintln(os.Stderr, "DSGA resource guard:", err)
 		os.Exit(1)
 	}

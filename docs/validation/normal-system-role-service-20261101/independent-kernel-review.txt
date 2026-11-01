@@ -1,0 +1,36 @@
+冻结 service12 + Root8：内核组件所有者独立静态审查
+
+审查对象与边界
+本次仅只读审查 freeze.json 指定的 service12 与 Root8 全部20文件；以当前字节逐项核对冻结SHA，20/20一致。没有运行新测试，没有修改20源码、原raw receipt、冻结清单或Git索引。本文新增后由Root统一决定提交。独审结论仅覆盖此固定broker服务组件，不签真实九服务、PG、全Source、持续writer闭合、安全normal降限或K8s E。
+
+总体结论
+原socket peer PIDFD/procdir/startticks、PPID1与完整Root能力、空环境客户端、原4FD跨进程handoff、两阶段resource锁、typed RootFS rebind、原run单一Wait与已确认退出后归档，在所审准确源码中未见新增的确定放行阻断。发现一项确定功能缺口：已确认的非零目标退出码在服务端被压成1，阻断“退出码原样传回”的合同。现有通过证据可以归档为组件阶段成果；后继控制门与真实服务仍须在新准确ELF上验证。
+
+确定问题 IKR-001：非零目标退出码未原样传播
+normal_system_role_service_listener_linux.go:266–278 的 finishErr != nil && run.terminal 分支固定 exit=1。原 normal_system_role_journal_linux.go:294–334 调用 child.wait()，该路径返回真实 cmd.Wait 结果；因此目标正常退出2/7，或者由信号退出时，均不能由当前协议保留目标状态。client:20–29及main的CLI分支只能转发服务端给出的code，不能恢复丢失状态。本结论来自静态控制流，没有执行新反例。当前S仅断言allow-start/compute成功0，不覆盖真实非零状态。建议后续owner在新cohort中从原单一Wait的ProcessState明确区分正常ExitStatus、128+signal和未知/持久失败；不应仅凭Join中能提取ExitError而吞掉其它Unknown。当前normal授权本来即为false，不受此文误签。
+
+原peer、能力、环境与FD9
+1. peer:19–54 使用内核SO_PEERPIDFD并保留原proc目录、startticks，经原task构造器校验；verifyTask:56–120前后核原task，固定8namespace、System cgroup/devino/memory.max/swap0/high、Guard原ELF devino/hash及精确argv/environment。PID1Client:181–200要求原namespace PPID1，ordinary NNP1/cap0及PG SUID ruid!=0不能借UID0通过原Root client门。
+2. client的空环境是显式[]，payload/broker是PATHonly；不是继承请求或shell环境。固定13行init避免“=”使BusyBox init隐式经shell分派；v3必须显式选择，旧v2不被默改。
+3. client_fd:20–68仅检查可继承FD，允许compute的9，CLOEXEC运行时FD不冒成调用方能力；此扫描并非typed stdio或未来FD闭合证明。compute使用pidfd_getfd/F_DUPFD_CLOEXEC取得原OFD，不经/proc/fd重开；核Root0600/nlink1/tmpfs、固定path devino和/run mount，以及全文件FLOCK WRITE。短命flock helper的PID无需等于client是正确OFD语义。server持有pin至handle结束/原Wait之后，target没有收到9。原FD0..2的可信来源仍未闭合。
+
+Parent → R2 原4FD、两阶段锁与部分状态
+1. start:232–388只在原resource flock下从原System/FS对象产生intent和broker独立Gate三链；跨SCM_RIGHTS转原clone pidfd、原procfd和原FS namespace/root恰好4个对象。transfer:55–129采用MSG_CMSG_CLOEXEC、固定32KiB帧和恰好4FD，拒截断/额外消息/非零padding，错误关闭已收对象。
+2. receive:322–417将socket原Parent与origin、原broker task、自身原consumer和不可变来源配对；typed proof持有上述原FD，并校验intent、pending、exec-stopped、released的完整链。接收时仅在已核原4FD/parent的显式handoff阶段逐文件+目录sync，建立新consumer的私有durability见证；ordinary请求不靠扫描WAL重新认领。state目录/lock原对象及4个prefix witness都保留。
+3. 锁序两阶段成立：prepare在flock内完成原Gate/transfer，返回后释放锁，Parent才等待R2候选metadata；R2此时可以取同flock接收proof/rebind。Parent第二阶段重新持flock核完整resource record/FS/transfer、probe、持久ready，然后等待COMMIT ACK；R2在此阶段专用ReadStageWithoutLock，publishReady不反取resource锁，因此没有同锁环。不是“所有跨进程等待都在锁外”。现README该句可在后续文档更新时收窄。
+4. 旧intent/partial/socket/未知history不会被删除或自动接管。启动失败取消并join原child，partial marker保留；完成ACK前不返回成功，metadata/ready/fsync或socket身份差异继续Unknown。publishReady早于ACK发送，但只发生在原Parent已持久ready且通过固定COMMIT的可信控制流；当前组件不把连接断开解释成无效果或许可。
+
+长服务、单一Wait与期限
+1. listener:264–278不对活服务立即调用旧finish。只有原child.done且waited，再在exec序列锁内核原resource身份、state devino以及三阶段inode/ctime/hash私有见证后调用旧finish；finish结果缓存，不扫描或接管其它runs。下一spawn仅retire本broker持有的已确认退出run；unknown、无Wait或缺见证继续Unknown。
+2. 原child.waitOnce是cmd.Wait唯一所有者。取消只原clone pidfd，实际Wait未知则不假释放。长驻角色保留原creatorM租约直到真实Wait；初始broker角色在已核固定受控prelude清Pdeathsig，原Parent正常退出后允许长期broker继续存在，不以当前self pidfd补原clone来源。
+3. packet/auth10s与queue90s区分；取得execMu后再建exec-stop30s子ctx并重核peer/Source/FD。30s受queue90s父ctx约束，不能写成总120s独立预算。client等待Accepted100s，Accepted后两端清deadline；长期target不受握手期限误杀。monitor只因原client死/断连、显式ctx取消或真Wait结束处理目标。
+4. execMu是普通Mutex，锁等待不可直接由ctx取消；实际内核Wait/fsync若未返回，不能承诺立即按墙钟释放handler或预算。当前做法保持fail-closed，而非假称超时即物理退出。requests去重表终生上限1024、目录扫描4096也会有界耗尽后Unknown；本次S不证明无限respawn可用性。
+
+RootFS adapter与原source见证
+normal_filesystem_broker_source_linux.go:16–150要求同一proof对象/同一System pointer及准确FS reference；通过proof原task和current consumer再匹配PID1/namespace/root、原initialRoot两个WAL、初始prefix、原vminit、实际Guard/BusyBox ELF与完整mount graph。新self pidfd仅作与移交原clone的match，不独立生产资格。所有输入核过才对既有10WAL同步并建立process-private witness，不改变oldRoot nonce或重拍initial两task。当前仍仅FS Protocol1/Layout2；selector2/MemorySourceSHA等后继协议不能被本次proof自动接受，须Root单独精确适配。
+
+实际证据终态（只读复核）
+b44dd6原export/test.json：27个race根、136子例、失败0、跳过0。compile-result exit0。native-run/result.json及console：真实369 KVM，一个TestNativeNormalSystemRoleServiceInitial根，001–004是四个稳定检查点；Host QEMU/Guest/initialRoot均0，48.081989秒。原Go Test ELF为9c1c8375a23bde3f7b0a4faf8dbdc295eceadbdba49fa36bb4816a3d083071b6；真实CLI c42cb92b762c0becb2467d55e6d36e9135439271cd2d65263f8cfb83b0036488只编译，Guest实际由TestMain执行生产函数。BusyBox init/vminit/musl是真实字节，其余daemon/compute明确DEV替身，network无NIC可真失败。不能将四检查点算四S，不能将替身转成实际九服务，也不能把CLI编译成功写成实际CLI运行。
+
+仍未闭合的上线门槛
+冻结Gate仍直接syscall.Exec，普通9的Landlock/cap/seccomp/SIGNAL终端门没有接入此图；原stdio、未来writer/后代、实际compute/PG/Host以及完整Source/I未闭合。udev-init受控后check-guest、daemon真实TLS AtomicWriter、chrony真实dropuid/cap与日志、ACPI向PID1关机信号都需准确真实服务验证。新Guest metadata kernel profile是独立cohort，未替换这里的369或ExactBuild，也不封普通ext4/tmpfs Root WAL/run元数据。安全normal降限、完整PG17端到端与117/118/119真实Helm回归仍未完成，E=0。

@@ -1,0 +1,65 @@
+{
+  "protocol_version": 1,
+  "reviewer": "kernel_component_archive",
+  "kind": "read-only static followup",
+  "reviewed_at_utc": "2026-11-01T03:26:59.267955+00:00",
+  "source_hashes": {
+    "pkg/dsga/resourceguard/normal_system_role_journal_linux.go": "9023bdca565d43b3011a55d27cbb7696e538293f274d2c4e8d0daf21d7bd587f",
+    "pkg/dsga/resourceguard/normal_system_role_service_start_linux.go": "3fae10996720b33be28375580beda12df71195634763e3381ec0023756337efb",
+    "pkg/dsga/resourceguard/normal_system_role_service_transfer_linux.go": "a544fd1e2ad337732b5c249e431b796c68c8afc329abb69a4c3e8e26dbfd35aa",
+    "pkg/dsga/resourceguard/normal_system_role_service_run_linux.go": "0f1d3a23a8629a1819e1ceb3974e1003e4e6015637be1f72674f05b517513e56",
+    "pkg/dsga/resourceguard/normal_system_role_service_listener_linux.go": "6609ad3f6fdd645c123092ce237d8156c7407b2c1ac141cb09effcd8d9206bb6",
+    "pkg/dsga/resourceguard/normal_system_role_declaration_linux.go": "4c29b9bf82ccc9db84f130a8c49a33e01161fef3b9bfcf10c88f27c561a61afe",
+    "pkg/dsga/resourceguard/normal_system_role_plan_linux.go": "154db69bc65695f8c3e1a53535fd8befc4226e940b74952ceaf0f3c4fe77fab1",
+    "pkg/dsga/resourceguard/normal_system_lifecycle_source_linux.go": "09e34587e4d37811a8c5dfe5a3e2c3477c582b7fdd208cf57eb86c801596f608",
+    "pkg/dsga/resourceguard/normal_system_lifecycle_source_task_linux.go": "bc43bd4bf126b7cd68bb4e00b607d64dff9107e684ebf23cab38fb7bfe178ec6",
+    "pkg/dsga/resourceguard/guard.go": "aca6c5c4e9a24af480b6eaf9198db6150d7f1ff69e72af35e6b03f365b405a0e",
+    "pkg/dsga/resourceguard/launch.go": "c0188c39c5a4ba2e5466df9b86204bbfa3609ed30a8d01e538282e98ad7b38da",
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap.go": "0b5e361fb6a87a15fd2e3d913a48643159cebe63ea6015f9951b6ba6a059cf94",
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap_linux.go": "a2daf8e3fd8b7e5bc9dc29be1c0e15a37b7bbb59a7e8179703b5495d17bf50e3",
+    "pkg/dsga/resourceguard/physical_kernel_capabilities.go": "ef2823221600fc98f8b5ef3d01429ce65a427c03c1f6bfa318d177e26c6ffb87",
+    "pkg/dsga/resourceguard/physical_kernel_capabilities_linux.go": "ce0d41406fefb9a1b0fd2eaaf2a02c5d11d83baa2f90c352770e4e1182a1e79a",
+    "pkg/dsga/resourceguard/normal_system_role_gate_linux.go": "7652dd571f8a36a20fd22019c2edaf32460eda3b0bb25ee079c896ee7bc482a5",
+    "pkg/dsga/resourceguard/normal_kernel_control_source_filter_linux.go": "c11a8fd5a3e151bcac7fac762dac68d8012716bbfe4fc8eb2127263620a852f2"
+  },
+  "runtime_floor_review": {
+    "permanent_initial_record_equality_blocker_found": false,
+    "initial_record_checks": [
+      "normal_system_role_service_start_linux.go:153-166",
+      "normal_system_role_service_transfer_linux.go:381-387"
+    ],
+    "historical_runs_bind_private_witness_not_current_floor": true,
+    "new_pending_records_current_floor": true,
+    "pending_resource_command_temporarily_denies_spawn": true,
+    "real_PG_fence_resize_then_respawn_tested": false
+  },
+  "userns_review": {
+    "status": "open source/continuous-writer gap; no counterexample executed",
+    "actual_kernel_artifact_sha256": "18c9fd3a38bbe5a087b98998c856898e97ee3f0bc68681b13f0287912849e1ad",
+    "actual_config_sha256": "966e615127358d6d0dcf4f6ca884a07702e957ad07a95909cf95feca4aae5441",
+    "CONFIG_USER_NS": "y",
+    "CONFIG_NET_NS": "y",
+    "existing_KernelPrep_sets_or_records_max_user_namespaces_zero": false,
+    "cap0_alone_closes_userns": false,
+    "actual_AppArmor_Compute_deny_policy_proven": false,
+    "kernel_tar_sha256": "402de222c7425893c38102ddd53d2b602c74c2eabcf6631bb0791089c05e3bca",
+    "kernel_source_directory": "/data/neon-build/cache/buildkit/runc-overlayfs/snapshots/snapshots/287/fs/build/linux-6.12.26",
+    "direct_tar_members_match": {
+      "include/linux/lsm_hook_defs.h": "ab01388507f9d4275cef5f6fe40d3110967beb4831a8b7f91866f9288a3bd0a0",
+      "kernel/fork.c": "cc74d2293e9960db61f154c18f38c5e1658a5e98f03131f3085e27872e487f9e",
+      "kernel/ucount.c": "79dd8980bc6a7aedefc949d94af3f4ac569c53955743faa8e78a4f0ea22c999e",
+      "kernel/user_namespace.c": "1ee1a746ea8e1ba1d3316c2500b3fe305adc0447e8526e745eab0dc6f3aa061f",
+      "security/apparmor/lsm.c": "850e180a4ae3459bce329e21a2089b58c16ef5e58224e34585ff435f7678542d",
+      "security/security.c": "4502c95ba0a1ceeb3fb72bde8e2f5a8452fda859eb2454c318d72e09fba120b8"
+    },
+    "namespace_create_experiment_executed": false,
+    "kernel_metadata_initial_userns_cap_gate_bypass_claimed": false
+  },
+  "new_tests_run": false,
+  "source_or_kernel_or_policy_changed": false,
+  "Git_changed": false,
+  "wholeSource": false,
+  "normal_authority": false,
+  "E": 0,
+  "text_sha256": "2205edd2a52e08e894a85b2667a221076825cd395c2ba76ea03888694c6a6acc"
+}

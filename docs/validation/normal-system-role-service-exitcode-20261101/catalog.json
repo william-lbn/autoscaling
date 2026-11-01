@@ -1,0 +1,98 @@
+{
+  "cohort": "/data/neon-build/validation/normal-role-service-native-build-20261101T030933Z-bffc9f",
+  "base": "b73d77ef5960b32da91d3e60b38daeffcd712482",
+  "actual_COPY": 5636,
+  "Go_roots": 28,
+  "Go_subcases": 191,
+  "new_exitcode_U_roots": 1,
+  "new_exitcode_U_subcases_including_5_main_modes": 55,
+  "fail": 0,
+  "skip": 0,
+  "root_names": [
+    "TestNormalSystemLifecycleMissingOriginalInputNeverQualifies",
+    "TestNormalSystemLifecycleFixedVectorsAndNoEnvironmentDisclosure",
+    "TestNormalSystemLifecycleFixedRoleTableCannotSelectProgram",
+    "TestNormalSystemRoleGateStrictOriginalWire",
+    "TestNormalSystemRoleGateNoOriginalReferenceNoSpawn",
+    "TestNormalSystemRoleEntryASLRAndAmbiguity",
+    "TestNormalSystemRoleBrokerLifetimeDeclaration",
+    "TestNormalSystemRoleJournalOriginalDurabilityWitness",
+    "TestNormalSystemRoleStoppedWriterCannotChangeBinding",
+    "TestNormalSystemRolePlanExactAndNoEnvironmentDisclosure",
+    "TestNormalSystemRoleCannotSpawnWithoutOriginalSource",
+    "TestNormalSystemRoleServiceStrictFrame",
+    "TestNormalSystemRoleServiceOriginalTransferBinding",
+    "TestNormalSystemRoleServiceRequiresOriginalRootCapabilities",
+    "TestNormalSystemRoleServiceFixedFourDescriptorTransfer",
+    "TestNormalSystemRoleServiceMissingOriginalSourcesHaveNoEffect",
+    "TestNormalSystemRoleServiceGateJournalAndOriginalChain",
+    "TestNormalSystemRoleServiceComputeLockFDInfo",
+    "TestNormalSystemRoleServiceEmptyClientEnvironment",
+    "TestNormalSystemRoleServiceLockDoesNotOccupyRoleNonceHistory",
+    "TestNormalSystemRoleServiceRetiresOnlyConfirmedOriginalExitedRuns",
+    "TestNormalSystemRoleServiceExactOriginalExitCode",
+    "TestNormalSystemV3RolePlanUsesManifestVersion",
+    "TestNormalSystemV3RequiresOriginalMetadataAssets",
+    "TestNormalSystemV3JSONRemainsExact",
+    "TestNormalSystemV3FixedInitPreservesComputeWrapper",
+    "TestNormalSystemV3RolePayloadsKeepExactV2Vectors",
+    "TestNormalSystemV3KeepsVersionAndKernelBoundaries"
+  ],
+  "native_S_roots": 1,
+  "native_test_root": "TestNativeNormalSystemRoleServiceInitial",
+  "checkpoints_not_independent_roots": [
+    "NEON-S-SYSTEM-ROLE-SERVICE-001",
+    "NEON-S-SYSTEM-ROLE-SERVICE-002",
+    "NEON-S-SYSTEM-ROLE-SERVICE-006",
+    "NEON-S-SYSTEM-ROLE-SERVICE-005",
+    "NEON-S-SYSTEM-ROLE-SERVICE-003",
+    "NEON-S-SYSTEM-ROLE-SERVICE-007",
+    "NEON-S-SYSTEM-ROLE-SERVICE-004"
+  ],
+  "native_result": {
+    "status": "PASS_COMPONENT_ONLY",
+    "pass": true,
+    "Host_QEMU_exit": 0,
+    "Guest_exit": [
+      "0"
+    ],
+    "initial_exit": [
+      "0"
+    ],
+    "caseIDs": [
+      "NEON-S-SYSTEM-ROLE-SERVICE-001",
+      "NEON-S-SYSTEM-ROLE-SERVICE-002",
+      "NEON-S-SYSTEM-ROLE-SERVICE-006",
+      "NEON-S-SYSTEM-ROLE-SERVICE-005",
+      "NEON-S-SYSTEM-ROLE-SERVICE-003",
+      "NEON-S-SYSTEM-ROLE-SERVICE-007",
+      "NEON-S-SYSTEM-ROLE-SERVICE-004"
+    ],
+    "actual_kvm": {
+      "enabled": true,
+      "present": true
+    },
+    "seconds": 57.8295803660003,
+    "actual_notes_SHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+    "Go_test_ELF_sha256": "a0fdfba9aee005aa783fde0781d50dccebd6aee49458bb248a629ad76e1d21ac",
+    "production_CLI_SHA256": "a30d7eb1d8945376d7f45ba36d693823d18c9215041ed4d0ca62118775959bec",
+    "production_CLI_compiled_not_executed": true,
+    "base_memory_bytes": 2147483648,
+    "vCPUs": 2,
+    "source_fixture": true,
+    "ordinary9_controls_not_installed_yet": true,
+    "other_System_programs_standins": true,
+    "PG_executed": false,
+    "normal_authorized": false,
+    "E": 0
+  },
+  "old164_superseded_as_current_source_not_deleted": "/data/neon-build/validation/normal-system-role-service-freeze-20261101",
+  "old_archive_docs_unchanged": true,
+  "changed_source": [
+    "pkg/dsga/resourceguard/normal_system_role_service_linux_test.go",
+    "pkg/dsga/resourceguard/normal_system_role_service_listener_linux.go",
+    "pkg/dsga/resourceguard/normal_system_role_service_native_test.go"
+  ],
+  "normal_permission": false,
+  "E": 0
+}

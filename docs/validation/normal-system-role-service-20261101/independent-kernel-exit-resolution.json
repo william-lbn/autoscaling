@@ -1,0 +1,52 @@
+{
+  "protocol_version": 1,
+  "finding": "IKR-001",
+  "resolution": "closed for exact bffc9f component; historical finding retained",
+  "reviewer": "kernel_component_archive",
+  "reviewed_at_utc": "2026-11-01T03:15:42.029884+00:00",
+  "cohort": "/data/neon-build/validation/normal-role-service-native-build-20261101T030933Z-bffc9f",
+  "changed_source_hashes": {
+    "pkg/dsga/resourceguard/normal_system_role_service_linux_test.go": "bd3d98072bd6480c77b333343aa4cc45f4892423582698151302ede0498200a8",
+    "pkg/dsga/resourceguard/normal_system_role_service_listener_linux.go": "6609ad3f6fdd645c123092ce237d8156c7407b2c1ac141cb09effcd8d9206bb6",
+    "pkg/dsga/resourceguard/normal_system_role_service_native_test.go": "a5d3994e331b4a47993e84e5d2c4bc9f87e081e985ceebcdedbaff1f2f4b2bd1"
+  },
+  "other17_match_old_freeze": true,
+  "current20_match_cohort": true,
+  "all_actual_COPY_inputs_match": 5636,
+  "receipts": {
+    "source-lock.json": "7545618d12ba61e7e69ad56475a05b676244513cf3e31b7e2c8f01b775afc1b9",
+    "compile-result.json": "01ba697297944f1988d75ad591d5b53094af98424a09bf263d9b545efde0680d",
+    "export/test.json": "3f2adeeaea6f078e1083764f8e34c71aac323273a32515699b8fcec82c8775c4",
+    "native-run/result.json": "7bd9d6f7c870430c36fcc773cad3a2ae845079d836901966b87e101f942545fb",
+    "native-run/console.log": "cfa23617a9647e132f316b3464da90532786a4c39e5a9e3316c24e5fac2f56b1"
+  },
+  "race_roots": 28,
+  "race_subcases": 191,
+  "fail": 0,
+  "skip": 0,
+  "KVM_roots": 1,
+  "KVM_checkpoints": 7,
+  "actual_exit_statuses_through_broker_client": [
+    2,
+    7,
+    143
+  ],
+  "actual_U_statuses": [
+    0,
+    2,
+    7,
+    255,
+    143
+  ],
+  "new_tests_run_by_reviewer": false,
+  "source_or_git_changed_by_reviewer": false,
+  "old_independent_review_unchanged": true,
+  "production_CLI_compiled_not_executed": true,
+  "real_nine_services": false,
+  "PG_executed": false,
+  "ordinary9_controls_installed_in_this_cohort": false,
+  "wholeSource": false,
+  "normal_authority": false,
+  "E": 0,
+  "text_sha256": "024bbc9c73387a5e90bc8c1a15bdf140cb3ec1534631daf74b1349700a9fd5a9"
+}

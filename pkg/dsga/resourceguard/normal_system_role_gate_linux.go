@@ -175,7 +175,12 @@ func RunNormalSystemRoleExecGate(ctx context.Context) error {
 	if e != nil {
 		return e
 	}
-	f, e := rootFile(filepath.Join(source.Config.StateDir, normalSystemRoleStageName(command.OriginalNonce, "pending")), false)
+	// 初始broker三链独立命名，不能被ordinary角色旧history误认成当前runs见证。
+	pendingName := normalSystemRoleStageName(command.OriginalNonce, "pending")
+	if command.Role == normalSystemRoleBrokerKind {
+		pendingName = normalSystemRoleServiceGateName(command.OriginalNonce, normalSystemRoleBrokerGatePending)
+	}
+	f, e := rootFile(filepath.Join(source.Config.StateDir, pendingName), false)
 	if e != nil {
 		return e
 	}

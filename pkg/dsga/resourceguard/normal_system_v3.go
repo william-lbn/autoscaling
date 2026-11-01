@@ -26,8 +26,10 @@ func normalSystemV3MetadataPaths() []string {
 
 // BusyBox的env applet由同一个原busybox ELF执行，不增加env alias/任意shell。
 // compute保vmstart的allow-start/flock，真正broker payload仍为原ComputeCtl。
+// init会把含=的命令隐式交/bin/sh，故client用严格空环境且argv全是固定绝对路径。
+// broker/实际目标仍用各自PATH或build-plan环境，不把client空环境泛化到其它角色。
 func normalSystemV3InitEntries() []string {
-	const prefix = "/neonvm/bin/busybox env -i PATH=/neonvm/bin /neonvm/bin/dsga-resource-guard exec-system-role "
+	const prefix = "/neonvm/bin/busybox env -i /neonvm/bin/dsga-resource-guard exec-system-role "
 	return []string{
 		"::sysinit:/neonvm/bin/vminit",
 		"::once:" + prefix + "allow-start",
@@ -44,3 +46,5 @@ func normalSystemV3InitEntries() []string {
 		"::shutdown:/neonvm/bin/vmshutdown",
 	}
 }
+
+func normalSystemV3ClientEnvironment() []string { return []string{} }

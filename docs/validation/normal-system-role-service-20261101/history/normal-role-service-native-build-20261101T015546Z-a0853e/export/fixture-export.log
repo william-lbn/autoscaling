@@ -1,0 +1,9 @@
+=== RUN   TestExportNormalSystemRoleServiceFixture
+    normal_system_role_service_native_test.go:245: 
+        	Error Trace:	/workspace/pkg/dsga/resourceguard/normal_system_role_service_native_test.go:245
+        	            				/workspace/pkg/dsga/resourceguard/normal_system_role_service_native_test.go:276
+        	Error:      	Received unexpected error:
+        	            	system charged-domain cap exceeds retained outside bound
+        	Test:       	TestExportNormalSystemRoleServiceFixture
+--- FAIL: TestExportNormalSystemRoleServiceFixture (0.99s)
+FAIL

@@ -1,0 +1,11 @@
+{
+  "original_top_source_lock_was_overwritten_by_driver": true,
+  "cause": "build and VM driver used same directory; VM source-lock replaced build full graph after recording its SHA",
+  "original_build_lock_recovered_exact_SHA256": "7c1ed18a125cfefe031413602feae58a59bd64dc1609bcd51922e1f39c0d05c1",
+  "metadata_expected_SHA256": "7c1ed18a125cfefe031413602feae58a59bd64dc1609bcd51922e1f39c0d05c1",
+  "driver_recorded_original_SHA256": "7c1ed18a125cfefe031413602feae58a59bd64dc1609bcd51922e1f39c0d05c1",
+  "recovered_file": "build-source-lock-recovered.json",
+  "original_driver_source_lock_preserved": true,
+  "actual_COPY_count": 5636,
+  "correction": "next independent native-run subdir keeps build and Guest evidence distinct"
+}

@@ -86,8 +86,9 @@ func TestNormalSystemV3FixedInitPreservesComputeWrapper(t *testing.T) {
 	require.Equal(t, "::shutdown:/neonvm/bin/vmshutdown", entries[12])
 	roles := []string{"allow-start", "kernel-version", "network", "udev", "udev-init", "acpi", "logs", "clock", "daemon", "resource"}
 	for i, role := range roles {
-		require.True(t, strings.HasSuffix(entries[i+1], "/neonvm/bin/busybox env -i PATH=/neonvm/bin /neonvm/bin/dsga-resource-guard exec-system-role "+role))
+		require.True(t, strings.HasSuffix(entries[i+1], "/neonvm/bin/busybox env -i /neonvm/bin/dsga-resource-guard exec-system-role "+role))
 		require.NotContains(t, entries[i+1], "dsga-resource-service")
+		require.NotContains(t, entries[i+1], "=", "BusyBox init must not dispatch client through implicit /bin/sh")
 	}
 	good := []byte(strings.Join(entries, "\n") + "\n")
 	require.NoError(t, normalSystemCheckVersionInittab(3, good))

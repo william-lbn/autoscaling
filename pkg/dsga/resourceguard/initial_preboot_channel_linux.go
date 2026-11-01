@@ -463,6 +463,9 @@ func runInitialBootGuest(ctx context.Context, recoverOriginal bool) error {
 	if e = initialGuestExchangeWithRequirements(call, port, g, challenge, recoverOriginal, plan); e != nil {
 		return e
 	}
+	// 完整5/6/7已完成，后续不再读该通道；在FS原始FD清退前关闭唯一可写virtio端点。
+	// close幂等，失败路径的原defer仍保留；不得把通道泄给长期broker/角色。
+	port.close()
 	// 首次split必须先于Bootstrap journal；后者一旦存在，拓扑首次收养门须拒绝。
 	if _, e = g.PrepareNormalSplitTopology(call); e != nil {
 		return e
@@ -471,7 +474,10 @@ func runInitialBootGuest(ctx context.Context, recoverOriginal bool) error {
 		return e
 	}
 	// 初次内存握手不是服务/PG就绪；仍须原全量生产检查，不能以ACK替代。
-	return CheckGuest(call)
+	if e = CheckGuest(call); e != nil {
+		return e
+	}
+	return startInitialNormalSystemV3Broker(call, g)
 }
 func RunInitialBootGuest(ctx context.Context) error     { return runInitialBootGuest(ctx, false) }
 func RecoverInitialBootGuest(ctx context.Context) error { return runInitialBootGuest(ctx, true) }

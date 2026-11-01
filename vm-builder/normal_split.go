@@ -388,7 +388,7 @@ func normalRequirePinnedImage(v string) error {
 // v3 compute仍保留原CheckGuest、allow-start与flock；真正compute向量由
 // broker读取原RO build-plan并直接执行compute_ctl，不递归执行vmstart。
 func normalComputeScriptV3() string {
-	return "#!/neonvm/bin/sh\nset -eu\n/neonvm/bin/dsga-resource-guard check-guest >/dev/null || exit 1\n[ -f /run/neon-dsga/vmstart.allowed ] || exit 1\numask 077\nexec 9>/run/neon-dsga/vmstart.lock\n/neonvm/bin/busybox flock -x 9\nexec /neonvm/bin/busybox env -i PATH=/neonvm/bin /neonvm/bin/dsga-resource-guard exec-system-role compute\n"
+	return "#!/neonvm/bin/sh\nset -eu\n/neonvm/bin/dsga-resource-guard check-guest >/dev/null || exit 1\n[ -f /run/neon-dsga/vmstart.allowed ] || exit 1\numask 077\nexec 9>/run/neon-dsga/vmstart.lock\n/neonvm/bin/busybox flock -x 9\nexec /neonvm/bin/busybox env -i /neonvm/bin/dsga-resource-guard exec-system-role compute\n"
 }
 
 // 仅最终rootdisk构建命令使用。固定路径、不覆盖源镜像已有声明、不跟随目录alias；

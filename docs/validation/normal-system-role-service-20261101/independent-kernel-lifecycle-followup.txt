@@ -1,0 +1,36 @@
+独立内核复审追加：资源floor推进与Compute user namespace来源
+
+仅静态只读；没有运行新测试、创建namespace、发送试验信号、修改kernel/策略/源码或Git。旧审查/退出码resolution与原raw receipt保持原字节。本说明不将初次组件S提升为PG完整生命周期或normal认证。
+
+一、原resource record/floor是否错误阻断后继respawn
+结论：在当前service及旧component调用路径中，未发现“永久要求当前state.json等于初始record摘要/初始floor”的确定bug。该结论是静态检查，不是已经实际跑过PG Birth/fence/resize后重启服务。
+
+1. 启动期有意严格：prepare在flock下从原record建立Origin.ResourceStageSHA256、ResourceFloor；Start ready前再次核当前完整record SHA与初始floor，并要求无PG Birth/Original（start:153–166）。R2首次receive同样核当前record SHA/floor（transfer:381–387）。这两处均在原Parent/R2启动交接阶段，不能移除以掩盖初始来源改变。
+2. 普通运行期不重复receive：listener spawnRole经原peer/声明/namespace/FD复核，调用broker.spawn；broker.spawn在journal:247–269以Guard.withRecord读当前合法record，要求原Bootstrap完成以及不存在未Applied的Original，核sameBootstrapSource与原runs/history，然后新pending只记录此刻的r.Floor。sameBootstrapSource比较保留的原Bootstrap issuer/source/config/limits，不要求当前floor等其初始issuer。
+3. 原历史允许来自旧floor：rejectUnknownHistoryLocked（journal:152–217）查本broker私有runs、binding、实际文件inode/ctime/hash及原child活性，不与当前floor比较。service退出前核pending的稳定Identity/state对象与三阶段私有见证；旧finish（journal:317–326）仅核同原Identity/state目录，沿旧pending追加exited。旧pending.ResourceFloor保留其历史值，不会为当前floor补签。
+4. proof.verifyLocked的transfer校验比对原Gate WAL和原Origin，属于原历史一致性；不是对当前record再次Marshal比较。当前RunBroker初始化FS rebind之后不在每个普通请求中重放这一步。
+5. Guard.withRecord仍会核当前record完整合法性和同incarnation Identity；PG Birth本身允许存在，floor合法前进也不构成上述静态必拒条件。resize进行中若r.Original!=nil&&!r.Applied，会按现有保守门暂拒新spawn；这是明确的pending状态边界，不是初始record永久绑定。
+
+最窄后继方向：当前没有证据要求删除已有启动校验或改写历史floor。后继normalAuthority应分开验证“不可变启动/原run历史见证”与“当前mutable record/budget/fence/owner”。若新Source合同发现确实将当前floor误与旧pending相等，只修该比较点，保留原FD、见证和当前authority校验；不能把原WAL重写成新floor。需补真正PG Birth→fence→一次合法resize完成→原服务退出归档/同role新spawn的独立回归，另核未Applied阶段应Unknown；现bffc9f无真实PG/资源操作，尚未覆盖此生命周期。
+
+二、Compute未来user namespace：确定的来源缺口，非已执行反例
+新18c准确resolved config的CONFIG_USER_NS=y、CONFIG_NET_NS=y。当前Compute为保原SUID采用NNP0/cap0且无seccomp/LL；ordinary9独立BPF的namespace拒绝不能借给Compute。对整个pkg/dsga的静态搜索未找到max_user_namespaces、unprivileged_userns_clone或CLONE_NEWUSER策略；KernelPrep固定8项write（normal_v1_kernel_bootstrap.go:460–477及_linux.go:327–338）只有modules/NUMA/demotion和五项allocator值，snapshot、target/readback、PhysicalKernelRuntimeCapabilities均没有max_user_namespaces字段。现有Namespaces[4]是原PID1/self身份快照，不能代表禁止未来namespace。引用既有KernelPrep/WAL摘要也不能证明一个从未设置、记录或读回的值是0。
+
+准确内核静态论据
+1. 实际18c构建原tar SHA为402de222c7425893c38102ddd53d2b602c74c2eabcf6631bb0791089c05e3bca；已只读从该tar直接核六份相关原源码，全部与缓存解包字节相等；6+7+8补丁均未修改这些userns机制文件。
+2. kernel/user_namespace.c:82–161的create_user_ns核层数、ucount、chroot、父namespace UID/GID mapping及security_create_user_ns，然后创建新namespace并给新namespace范围内FULL cap集合（43–53）；没有父initial namespace的CAP_SYS_ADMIN前置。cap0并非禁止userns创建的充分条件。
+3. kernel/fork.c:1072–1073给initial user namespace的ucount_max设max_threads/2，是正的默认数量，非0；ucount.c:74公开max_user_namespaces，:230–249沿祖先ucount检查上限。user_namespace.c:139–145对子namespace设INT_MAX，但祖先检查仍生效。
+4. security/security.c:3715和lsm_hook_defs.h:257默认userns_create返回0；AppArmor lsm.c:1040–1059只在非unconfined label上查userns权限。仅记录AppArmor“active”不证明存在针对实际Compute的deny policy，当前Source也未记录此profile事实。不能凭LSM名字补签拒绝。
+5. ucount.c:40–54对user sysctl写权限要求相应user namespace的CAP_SYS_RESOURCE。若initial max_user_namespaces在任何非受信进程出生前固定0，且原Root未来写者合同禁止放宽，祖先ucount检查可阻断后来新userns；但当前代码没有建立这条事实或连续性。
+
+影响的准确边界
+这是Compute future writer/namespace闭合来源缺口，未实际创建namespace、未对PG或现有Root服务执行任何试验，也不是“已验证能绕过normal”。新metadata kernel对原kernfs的capable(CAP_SYS_ADMIN)仍要求initial user namespace能力；新userns里的scoped caps不能据此自动修改原control元数据。缺口仍需处理，因为“不能写原kernfs”不等于所有未来namespace/网络/内核内存写者均已约束。
+
+候选最窄方案（只设计，Root裁决后实施）
+A. 若采用全Guest禁止新userns：在原可信早期阶段、Compute/ordinary/PG出生前将initial user.max_user_namespaces固定0；扩展独立版本化KernelPrep/physical capability原始字段和WAL/readback，把原initial namespace、实际procfs对象/值与新policy绑定。还必须以准确Root控制流/单调内核硬门封住未来CAP_SYS_RESOURCE放宽和先存namespace，不可只周期读0。旧WAL不含该字段，必须新profile/selector或明确Unknown，不能事后补签旧证据。
+B. 若采用Compute专属syscall门：可研究在仍有CAP_SYS_ADMIN的固定Root Gate中安装只拒new namespace的过滤而保持NNP0，再按原计划drop UID；这种路径必须重新核SUID exec、原PG native-base/final资格与精确第二exec-stop审计，不能直接复用ordinary9的NNP1/LL门或自称已兼容。clone3、clone namespace位、unshare、setns必须一并处理。当前未选择或实现该方案。
+
+安全验证设计（未执行）
+仅在新的无业务隔离Guest和其新建专用测试子进程：记录准确kernel/config/LSM、initial namespace、原Root与UID1000的NNP/cap/seccomp；从原早期固定0来源验证unshare(CLONE_NEWUSER)、clone/clone3 NEWUSER受拒，plain fork/Go多M保持正控；若设计全局单调门，Root的放宽也须明确按合同受拒。另用专用构建期SUID helper和最终真实PG受控启动确认NNP0/SUID能力没有破坏。任何实际写都只能针对该隔离Guest预先声明的专用对象，不能重试旧受拦截针对现有控制对象的反例。未获策略与测试owner批准前不执行。
+
+终态：IKR-001已经由独立resolution在bffc9f组件范围关闭；本报告未新增测试计数。真实九服务/完整Source/normal/E仍false，K8s E=0。

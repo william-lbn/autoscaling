@@ -1,0 +1,30 @@
+{
+  "status": "FAIL_COMPONENT_OR_INFRA",
+  "pass": false,
+  "Host_QEMU_exit": 124,
+  "Guest_exit": [],
+  "initial_exit": [
+    "0"
+  ],
+  "caseIDs": [
+    "NEON-S-SYSTEM-ROLE-SERVICE-001",
+    "NEON-S-SYSTEM-ROLE-SERVICE-002"
+  ],
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "seconds": 180.22205221300828,
+  "actual_notes_SHA256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "Go_test_ELF_sha256": "a4ed63cd52f2f607616029165fee10ccc2e31a585c16c0faf9d8eebf50c80222",
+  "production_CLI_SHA256": "c8acab410e8ba4dbeee522f4749f5ab091fc5153a546e539871b083252bd38c4",
+  "production_CLI_compiled_not_executed": true,
+  "base_memory_bytes": 2147483648,
+  "vCPUs": 2,
+  "source_fixture": true,
+  "ordinary9_controls_not_installed_yet": true,
+  "other_System_programs_standins": true,
+  "PG_executed": false,
+  "normal_authorized": false,
+  "E": 0
+}

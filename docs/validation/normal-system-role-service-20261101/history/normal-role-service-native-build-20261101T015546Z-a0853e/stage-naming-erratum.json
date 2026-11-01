@@ -1,0 +1,24 @@
+{
+  "utc": "2026-11-01T01:59:31.291616+00:00",
+  "original_files_unchanged": true,
+  "legacy_file_test_exitcode_is_combined_pipeline_status": "1",
+  "actual_U": {
+    "roots": 24,
+    "subcases": 131,
+    "package_pass": [
+      {
+        "Time": "2026-11-01T01:56:06.482819477Z",
+        "Action": "pass",
+        "Package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "Elapsed": 1.339
+      }
+    ],
+    "fail_events": [],
+    "skip_events": []
+  },
+  "CLI_compile": "0 (binary exists; original sequential conditional pipeline)",
+  "nativeCompile": "0 (binary exists; original sequential conditional pipeline)",
+  "fixture_export": "1; actual original fixture-export.log Scope validation rejects System512M > Outside256M",
+  "Guest": "NOT_RUN",
+  "correction": "next independent Dockerfile records source/U/CLI/nativeCompile/fixture/component separate statuses; no original receipt overwritten"
+}
