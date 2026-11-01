@@ -1,0 +1,59 @@
+{
+  "scope": "PURE_STATIC_NON_AUTHORIZING_MANIFEST_AND_CANONICAL_DB_PROJECTION",
+  "U_roots": 7,
+  "U_named_subtests": 70,
+  "U": [
+    {
+      "id": "PG17-U-STOCK-UDEV-001",
+      "root": "TestNormalOrdinaryStockUdevManifestExactInventory",
+      "receipt": "history/normal-stock-udev-go-20261101T093936Z-963edc/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-UDEV-002",
+      "root": "TestNormalOrdinaryStockUdevManifestRejectsUnsupported",
+      "receipt": "history/normal-stock-udev-go-20261101T093936Z-963edc/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-UDEV-003",
+      "root": "TestNormalOrdinaryStockUdevManifestStrictJSON",
+      "receipt": "history/normal-stock-udev-go-20261101T093936Z-963edc/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-UDEV-004",
+      "root": "TestNormalOrdinaryStockUdevProjectionOfficialGolden",
+      "receipt": "history/normal-stock-udev-go-20261101T093936Z-963edc/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-UDEV-005",
+      "root": "TestNormalOrdinaryStockUdevProjectionNoInformationDB",
+      "receipt": "history/normal-stock-udev-go-20261101T093936Z-963edc/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-UDEV-006",
+      "root": "TestNormalOrdinaryStockUdevProjectionRejectsUnsupported",
+      "receipt": "history/normal-stock-udev-go-20261101T093936Z-963edc/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-UDEV-007",
+      "root": "TestNormalOrdinaryStockUdevProjectionBounds",
+      "receipt": "history/normal-stock-udev-go-20261101T093936Z-963edc/export/test.json"
+    }
+  ],
+  "S": 0,
+  "E": 0,
+  "ENV": [
+    "Linux resource-guard CLI build0",
+    "Darwinarm64 package compile0",
+    "actual BuildKit3CPU3GiB Go2/768MiB",
+    "budget original Wait/unit terminal release"
+  ],
+  "normal_authorized": false,
+  "Source_qualification": false,
+  "Golden_scope": "expected strings from exact official C semantics; no real stock prep/actual libudev golden run certified",
+  "missing": [
+    "Root original RO70/actual files+ELF/helper/dso closure/accounts+NSS absence",
+    "Root actual stock supervisor original exec/wait + complete queue handling",
+    "sealed projection from original privileged prep, not runtime60004 mutableDB",
+    "FutureMemoryIdentity actual semantic Source and complete normal producers"
+  ]
+}

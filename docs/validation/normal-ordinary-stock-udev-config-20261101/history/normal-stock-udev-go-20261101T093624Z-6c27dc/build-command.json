@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "docker",
+    "buildx",
+    "build",
+    "--builder",
+    "neon-data",
+    "--resource",
+    "memory=3g",
+    "--resource",
+    "memory-swap=3g",
+    "--resource",
+    "cpu-quota=300000",
+    "--build-arg",
+    "NONCE=normal-stock-udev-go-20261101T093624Z-6c27dc",
+    "--file",
+    "/data/neon-build/validation/normal-stock-udev-go-20261101T093624Z-6c27dc/Dockerfile",
+    "--output",
+    "type=local,dest=/data/neon-build/validation/normal-stock-udev-go-20261101T093624Z-6c27dc/export",
+    "/data/neon-build/validation/normal-stock-udev-go-20261101T093624Z-6c27dc/source"
+  ],
+  "env_values_not_recorded": true
+}

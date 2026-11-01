@@ -1,0 +1,183 @@
+{
+  "base": "7b573e9683974009fc7bd87ac8b94159f45246c5",
+  "owned4": {
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_manifest_linux.go": "8f8b5219d962d0fbff4c22f0b3ea64e04dd59c0a0fcb7db1d882e4eab2b79561",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_manifest_linux_test.go": "68ad1c083b5b68acf8425310f1d25269749ef67e59355a0efb5e8229e9b448af",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_projection_linux.go": "06099375be12df8287ff752a2afda6384e2900a6e3b7170fa0080c31a29f44d2",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_projection_linux_test.go": "583f94299e067bf47062c31c03d7cf2061e1f8e021dfded7f4d95a8a5487b54d"
+  },
+  "source_lock_sha256": "8e11e92988aa087f7037fea080c41248f6e35203f7dd296e0b102613471390ec",
+  "actualCOPY_go_inputs": 1354,
+  "official_source_sha256": {
+    "src/libudev/libudev-device.c": "54a44aa1e49c1737631042979a84997639fab016e49b874742cf1e473096f69e",
+    "src/libudev/libudev-monitor.c": "e5cbc5e1e50a1e1635eea8e91c4cc3690034e9a5ed1673597caa8a3f5da1a461",
+    "src/libudev/libudev-util.c": "38ec89f3b25cd091269d6b532843873a9dbf02b20374bd3cfc1973bdc370d42d",
+    "src/udev/udev-node.c": "f295f4e0add1fbfade6cf6b3f706abd9960237d76be43f29426659a0db376619",
+    "src/udev/udev-event.c": "5134005ad3343422798fe2c8bb3a98bd300b38d7ccaf0cd7095307e0ff7768c6",
+    "src/udev/udev-ctrl.c": "b1712d1439b0e62dc9e343b45799c2ae6f4eb428f239204170ad550f0cb92c15",
+    "src/libudev/libudev-device-private.c": "84781b45e86fa10fd5dc4c684c6aa9e7e97e453ab7f02894203b9be18d9456fa",
+    "src/libudev/libudev-list.c": "d690d2811830212e626b9cac3e74847120bb3fd46132599f5c0446a58225a681",
+    "src/libudev/libudev-private.h": "6318cffb2afefee96980aacbde2fea109ab979385e11e2e175c9985902ead095",
+    "src/libudev/libudev-hwdb.c": "af77153ee6a15d0ace5b6aff3afc98a0122d429de1a9476b1067b1d8c6d036fc",
+    "src/dmi_memory_id/dmi_memory_id.c": "c9f061f7f17b1f09aa5a165571b8cb7cc8234d99d887e9b5ffffd2773f690c90"
+  },
+  "official_tar_sha256": "8da4319102f24abbf7fff5ce9c416af848df163b29590e666d334cc1927f006f",
+  "original_27_provider_rules": [
+    {
+      "path": "lib/udev/rules.d/50-udev-default.rules",
+      "sha256": "224c8d0db255f219e57fb61d7ce1ddc286d5bb42d8ee4cb248f688bbc93cb08f",
+      "bytes": 4888
+    },
+    {
+      "path": "lib/udev/rules.d/60-autosuspend.rules",
+      "sha256": "7ffae083695390282bc7e953cff18d6bba874c3ca4bd7c77391d5b3c2e3add25",
+      "bytes": 532
+    },
+    {
+      "path": "lib/udev/rules.d/60-block.rules",
+      "sha256": "bd9988b957ba416bfdd72f6cc94a7d0e3c0b4d793fe85141ce4920bd1a747c1d",
+      "bytes": 703
+    },
+    {
+      "path": "lib/udev/rules.d/60-cdrom_id.rules",
+      "sha256": "16f44dc355a6b5ada3a0706b2f84c95b25ed6c2a09e4e201da94885c93d1a4d2",
+      "bytes": 1071
+    },
+    {
+      "path": "lib/udev/rules.d/60-drm.rules",
+      "sha256": "9045c45062fdb03abd55cdec32fb13fe6f196290b52b5c4c9fc350406bf094ce",
+      "bytes": 413
+    },
+    {
+      "path": "lib/udev/rules.d/60-evdev.rules",
+      "sha256": "e3052a757a28dd43ede1528064b3ca855fa7d9eb3405e0d6f3b032b664cf7381",
+      "bytes": 982
+    },
+    {
+      "path": "lib/udev/rules.d/60-fido-id.rules",
+      "sha256": "cca02ad85534572cdbd125bdba411417de1158b0709825114882cb8b8b7735e6",
+      "bytes": 491
+    },
+    {
+      "path": "lib/udev/rules.d/60-input-id.rules",
+      "sha256": "2983389654fbf42eca6b703543f76867dbf53eeec9288c2c88d0fcb338a2c265",
+      "bytes": 282
+    },
+    {
+      "path": "lib/udev/rules.d/60-persistent-alsa.rules",
+      "sha256": "36767245b64ae515fc073c21bc78769f41188140e1d7b9576ec8dee34d585172",
+      "bytes": 616
+    },
+    {
+      "path": "lib/udev/rules.d/60-persistent-input.rules",
+      "sha256": "1726417b25f78af68845dc3627c3336e7959a3db2a81b7d77c35018d38f840d4",
+      "bytes": 2719
+    },
+    {
+      "path": "lib/udev/rules.d/60-persistent-storage-tape.rules",
+      "sha256": "1ea5fa3e9f63b6a41d68c36ded365927ce95d8026242533566fd5a9015ebcdb2",
+      "bytes": 2204
+    },
+    {
+      "path": "lib/udev/rules.d/60-persistent-storage.rules",
+      "sha256": "38ec44b7d342afb863201de148e06e1d693e9e92b5bf0359f1dd72a20324b4cd",
+      "bytes": 8346
+    },
+    {
+      "path": "lib/udev/rules.d/60-persistent-v4l.rules",
+      "sha256": "219eb6b4c0df4d8701cc5a316b2ddf63797d4c1b689bc0b289d5cb8063a7034e",
+      "bytes": 769
+    },
+    {
+      "path": "lib/udev/rules.d/60-sensor.rules",
+      "sha256": "0e8bbe52adaa173d3deba22f9c3a1c7447884ab5c625d3c3b4fdce60e52bd6d3",
+      "bytes": 1618
+    },
+    {
+      "path": "lib/udev/rules.d/60-serial.rules",
+      "sha256": "54367e1335266de43edb6451534c9e69c317075212b216cedf1d3b6896f14ee0",
+      "bytes": 1190
+    },
+    {
+      "path": "lib/udev/rules.d/64-btrfs.rules",
+      "sha256": "d039055ad6614820d4190ccad91b7c45736e6d541d2506e858e8edb7a8627386",
+      "bytes": 612
+    },
+    {
+      "path": "lib/udev/rules.d/70-camera.rules",
+      "sha256": "48e36a875615bcf113566a8f4b3fcf2c9bcc229d772a074007e854bab67471aa",
+      "bytes": 281
+    },
+    {
+      "path": "lib/udev/rules.d/70-joystick.rules",
+      "sha256": "199e72c162185b62c0888791c9b3cde2c8b180fae4e4ae3a29564f933d0adffd",
+      "bytes": 432
+    },
+    {
+      "path": "lib/udev/rules.d/70-memory.rules",
+      "sha256": "46b8696d6ad29b2e80b9dcad60ddb2e4a3deee5a5b1df09f116f1ca9d4dfb150",
+      "bytes": 184
+    },
+    {
+      "path": "lib/udev/rules.d/70-mouse.rules",
+      "sha256": "d495d2b8523e7f8175a9b06704f168e14ab97a8a333d4a52ec9501bc0c509ecb",
+      "bytes": 734
+    },
+    {
+      "path": "lib/udev/rules.d/70-touchpad.rules",
+      "sha256": "8d81de6a6d5b5703098518f977c3b984bdf179238402a8ca0205f85cde798a27",
+      "bytes": 473
+    },
+    {
+      "path": "lib/udev/rules.d/75-net-description.rules",
+      "sha256": "5b8da22a593f2aaffd4697e4cbfb14cb7eb1d52b96f03d9a60c82eeec920e925",
+      "bytes": 452
+    },
+    {
+      "path": "lib/udev/rules.d/75-probe_mtd.rules",
+      "sha256": "54256aa2ca91172cbce3ea805ccf2cd52de8acbbc2db88d209de84655fa997c5",
+      "bytes": 174
+    },
+    {
+      "path": "lib/udev/rules.d/78-sound-card.rules",
+      "sha256": "c6ab8337ffbfb53e0ff9e23819f3a5b551a03cff542f6c8f190368d635b75823",
+      "bytes": 4816
+    },
+    {
+      "path": "lib/udev/rules.d/80-drivers.rules",
+      "sha256": "3cc024d2fdf70ad3df014b5f0ac69b4635a54ddd087e3134ab77dc86e65dd750",
+      "bytes": 672
+    },
+    {
+      "path": "lib/udev/rules.d/80-net-name-slot.rules",
+      "sha256": "7aa107de17e65af7094c8571fb9bfc5dbcb1a3e568ba1de3c1612fe1aae3a0af",
+      "bytes": 491
+    },
+    {
+      "path": "lib/udev/rules.d/81-net-dhcp.rules",
+      "sha256": "3438299d7e6254472600168b557a467a497d537353511ec07657b494d1b13fec",
+      "bytes": 528
+    }
+  ],
+  "actual_helpers8": [
+    "ata_id",
+    "cdrom_id",
+    "collect",
+    "dmi_memory_id",
+    "fido_id",
+    "mtd_probe",
+    "scsi_id",
+    "v4l_id"
+  ],
+  "additional_original_generated_rule": "/lib/udev/rules.d/99-virtio-ports.rules",
+  "generated_rule_source_sha256": "fb5be1e9f4219bc9cd22dbf248eaa37cb40809d0dd693934c8401b1592b3d68c",
+  "generated_rule_line": 24,
+  "generated_rule_does_not_override_MODE_OWNER_GROUP": true,
+  "required_count": 70,
+  "required_hwdb_text_count": 28,
+  "hwdb_bin_lookup": [
+    "/etc/udev/hwdb.bin",
+    "/lib/udev/hwdb.bin"
+  ],
+  "hwdb_bin_presence_NOT_proved_by_pure_parser": true
+}

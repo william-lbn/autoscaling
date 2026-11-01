@@ -1,0 +1,9 @@
+stock udev 纯配置/投影四源独立审查（最终963edc）
+
+只读完整审查4ad8ab四源，并复核963edc全部窄diff；未修改源码/索引，未重跑测试。最终manifest 8f8b5219d962d0fbff4c22f0b3ea64e04dd59c0a0fcb7db1d882e4eab2b79561，test68ad1c083b5b68acf8425310f1d25269749ef67e59355a0efb5e8229e9b448af；projection06099375be12df8287ff752a2afda6384e2900a6e3b7170fa0080c31a29f44d2，test583f94299e067bf47062c31c03d7cf2061e1f8e021dfded7f4d95a8a5487b54d后两源与4ad8ab逐字相同。
+
+最终delta只有原prepare-root.sh第24行生成的99-virtio-ports.rules强制纳库存（原27vendor之外）及实际hwdb默认fallback更正/usr/lib为/lib/udev，定向fixture总71=70必选+1DSO、rule28同步。原99virtio完整单行只virtio-ports/vport*/ATTRname/SYMLINK，没有MODE/OWNER/GROUP，与input/ptp ACL也不交。官方libudev-hwdb.c SHAaf77153ee6a15d0ace5b6aff3afc98a0122d429de1a9476b1067b1d8c6d036fc:260..264默认/etc/udev/hwdb.bin和UDEV_LIBEXEC_DIR/hwdb.bin；真实build-eudev.sh SHAa42fe2ffa3638e2000bc25ca88a06d9219553f5650d05c60ad4b9d239d0e59f2明确--with-rootlibexecdir=/lib/udev。真实环境覆盖名UDEV_HWDB_BIN，Root supervisor固定Env不带此项。该两点修复后未见本纯组件blocking。
+
+清单strict schema/有限路径/类别/Code/size/排序哈希与账户输入合理；至少一DSO只为静态shape，绝不等真实loader/DT_NEEDED闭包已核。投影I/S/G/E/L/W及初始化语义、拒未知ID和kernel覆盖/重复、126envp/4096monitor/1024link限制已逐项对照官方libudev-device.c:597..658、1862..1911。私有属性不泄露，返回map/monitor独立copy；未知属性严格Unknown。DMI MEMORY_DEVICE_N语法不认领memory几何或任何Root权限。
+
+原result build/source/test/Linux/Darwin exits全0、scope PURE_STATIC_COMPONENT_NO_SOURCE_NORMAL_E已读；可明确组件阶段提交。present与kernel map只是纯parser输入，不能证明原DB/原ticket存在；后继仍须同g原FS/proof/prepared/三actor、实际RO70及完整DSO/账户/nscd、真实stock处理/原Wait、独立seal投影，并保护所有规则lookup目录（含/run/udev/rules.d）。未有真实stock Guest S、Source、normal或E，不以U通过转签。
