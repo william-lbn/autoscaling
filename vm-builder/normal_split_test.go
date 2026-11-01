@@ -340,7 +340,7 @@ op=$1; shift
 case "$op" in
  mountpoint)
   for last do :; done
-  case "$last" in */root-writable) [ -f "$ROOT/view-mounted" ];; *) exit 0;; esac;;
+  case "$last" in */root-writable) [ -f "$ROOT/view-mounted" ];; */sys/kernel/security) exit 1;; *) exit 0;; esac;;
  mount)
   for last do :; done
   case "$last" in */root-writable) /bin/touch "$ROOT/view-mounted"; printf 'view\n' >>"$ROOT/trace";;

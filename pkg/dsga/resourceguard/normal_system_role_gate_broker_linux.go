@@ -13,7 +13,6 @@ import (
 )
 
 const normalSystemRoleBrokerKind = "initial-role-broker"
-const normalSystemRoleBrokerLifetime = "initial-root-to-pid1-after-durable-release"
 
 // broker不是普通socket角色枚举；必须额外由原RO声明固定其特殊父生命周期。
 // 只此角色在可信Gate中清Pdeathsig。其它角色仍由原creator M租约覆盖到真Wait。

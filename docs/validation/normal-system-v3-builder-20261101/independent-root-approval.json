@@ -1,0 +1,32 @@
+{
+  "reviewer": "Root",
+  "utc": "2026-11-01T01:51:16.241123+00:00",
+  "source": {
+    "pkg/dsga/resourceguard/normal_system_role_build_source.go": "d49d207f54ffb60813175b330a28ce4daf456dc75af6249472f9c14935a7d216",
+    "pkg/dsga/resourceguard/normal_system_role_declaration_linux.go": "4c29b9bf82ccc9db84f130a8c49a33e01161fef3b9bfcf10c88f27c561a61afe",
+    "pkg/dsga/resourceguard/normal_system_role_gate_broker_linux.go": "5791516d74b9ddec5297c6b352d7d50803a1eb878a6ea51b7bf444c45d9481ca",
+    "vm-builder/normal_split.go": "85f1904075c5871e932ddab9381d2417bce0229f1dc2de47e60637926be5bfd5",
+    "vm-builder/main.go": "f7b2463ed8c65d57b089070bedb4009087e62ffc2eb5acf604b02dfd464ad777",
+    "vm-builder/files/img.Dockerfile": "9f098c391acf7571c54dda04873a3fd7fd5113912fa98af4980aa1f2b2491b15",
+    "vm-builder/normal_split_v3_test.go": "39d4ecfb580b872ec9e3a5d2823f2921dce561bdbad660b205ae31ccf8d463be",
+    "vm-builder/normal_split_test.go": "cd9dcfd186fc08712dd59d20da48afb1ab5d9ae69a45f351965e582c94ff49dc"
+  },
+  "actual_source_lock_sha256": "0e04ea9ac4ac941ed66ee0458c124f526412587377903784c89c63226952c61b",
+  "actual_inputs": 998,
+  "actual_U_roots": 15,
+  "actual_subcases": 70,
+  "new_distinct_U": 6,
+  "CGO0_static_Builder_compiled": true,
+  "independent_P1_review": "0015886fba9dd4ca0d0e274e25a16527bfb0838cc1dc16d65e68b555274a57c0",
+  "old_fixture_and_actual_baseline_failures_preserved": true,
+  "scope": "explicitv3 Builder and shared fixed broker declaration component only",
+  "not_covered": [
+    "real v3 Guest/CLI/broker handoff",
+    "compute-only FD9 provenance",
+    "allservices metadata/FS/Kernel constraints",
+    "normal authority"
+  ],
+  "normal_authorized": false,
+  "S": 0,
+  "E": 0
+}

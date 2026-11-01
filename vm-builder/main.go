@@ -90,7 +90,7 @@ var (
 	AlpineImageShaAmd64 string
 	AlpineImageShaArm64 string
 
-	systemModeFlag     = flag.String("system-mode", "legacy", "Fixed System build selector: legacy | normal-split-v1 (not runtime authorization)")
+	systemModeFlag     = flag.String("system-mode", "legacy", "Fixed System build selector: legacy | normal-split-v1 | normal-split-v3 (not runtime authorization)")
 	normalPlanFlag     = flag.String("normal-build-plan", "", "Explicit versioned fixed compute build plan; values are not logged")
 	normalManifestRoot = flag.String("normal-manifest-root", "", "Build-container-only final root inventory command")
 	normalBaseDigest   = flag.String("normal-base-image-sha", "", "Original base image declaration for final inventory; not final image self hash")
@@ -156,15 +156,16 @@ type TemplatesContext struct {
 	AlpineImageTag  string
 	AlpineImageSha  string
 
-	SpecBuild       string
-	SpecMerge       string
-	InittabCommands []inittabCommand
-	AgettyTTY       string
-	ShutdownHook    string
-	NormalSplit     bool
-	NormalBaseSHA   string
-	NormalUID       uint32
-	NormalGID       uint32
+	SpecBuild        string
+	SpecMerge        string
+	InittabCommands  []inittabCommand
+	AgettyTTY        string
+	ShutdownHook     string
+	NormalSystemMode string
+	NormalSplit      bool
+	NormalBaseSHA    string
+	NormalUID        uint32
+	NormalGID        uint32
 }
 
 type inittabCommand struct {
@@ -185,7 +186,16 @@ func main() {
 		if e != nil {
 			log.Fatal(e)
 		}
-		b, e := generateNormalSystemManifest(*normalManifestRoot, plan, *normalBaseDigest)
+		version := uint32(2)
+		if *systemModeFlag == normalSplitV3BuildMode {
+			version = 3
+			if e := prepareNormalSystemV3Assets(*normalManifestRoot, raw); e != nil {
+				log.Fatal(e)
+			}
+		} else if *systemModeFlag != "legacy" && *systemModeFlag != normalSplitBuildMode {
+			log.Fatal("unsupported final inventory mode")
+		}
+		b, e := generateNormalSystemManifestForVersion(*normalManifestRoot, plan, *normalBaseDigest, version)
 		if e != nil {
 			log.Fatal(e)
 		}
@@ -266,7 +276,7 @@ func main() {
 	if e := validateNormalBuildSelection(*systemModeFlag, *targetArch, spec, *buildArgs, normalRaw); e != nil {
 		log.Fatal(e)
 	}
-	if *systemModeFlag == normalSplitBuildMode {
+	if *systemModeFlag == normalSplitBuildMode || *systemModeFlag == normalSplitV3BuildMode {
 		normalPlan, _ = decodeNormalBuildPlan(normalRaw)
 	}
 	log.Println("Load docker credentials")
@@ -437,8 +447,9 @@ func main() {
 		tmplArgs.User = imageSpec.Config.User
 	}
 
-	if *systemModeFlag == normalSplitBuildMode {
+	if *systemModeFlag == normalSplitBuildMode || *systemModeFlag == normalSplitV3BuildMode {
 		tmplArgs.NormalSplit = true
+		tmplArgs.NormalSystemMode = *systemModeFlag
 		tmplArgs.NormalUID = normalPlan.ComputeUID
 		tmplArgs.NormalGID = normalPlan.ComputeGID
 		tmplArgs.User = fmt.Sprintf("%d:%d", normalPlan.ComputeUID, normalPlan.ComputeGID)
@@ -521,11 +532,20 @@ func main() {
 
 	normalLiteralFiles := map[string]bool{}
 	if tmplArgs.NormalSplit {
-		entries, e := resourceguard.NormalSystemSourceInitEntriesForVersion(2)
+		version := uint32(2)
+		if *systemModeFlag == normalSplitV3BuildMode {
+			version = 3
+		}
+		entries, e := resourceguard.NormalSystemSourceInitEntriesForVersion(version)
 		if e != nil {
 			log.Fatal(e)
 		}
 		replacements := map[string]string{"inittab": strings.Join(entries, "\n") + "\n", "vminit": scriptNormalVmInit, "vmstart": normalComputeScript(normalPlan), "dsga-resource-service": scriptNormalResourceService, "vmshutdown": scriptNormalShutdown, "udev-init.sh": scriptNormalUdevInit}
+		if version == 3 {
+			replacements["vmstart"] = normalComputeScriptV3()
+			// env-i在exec前构造真实proc/environ；os.Clearenv不能证明原始来源。
+			replacements["vminit"] = strings.Replace(scriptNormalVmInit, "exec /neonvm/bin/dsga-resource-guard initial-boot", "exec /neonvm/bin/busybox env -i PATH=/neonvm/bin /neonvm/bin/dsga-resource-guard initial-boot", 1)
+		}
 		for i := range files {
 			if v, ok := replacements[files[i].filename]; ok {
 				files[i].tmpl = v

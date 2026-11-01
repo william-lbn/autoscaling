@@ -1,0 +1,54 @@
+package resourceguard
+
+import (
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"strings"
+)
+
+const normalSystemRoleBrokerLifetime = "initial-root-to-pid1-after-durable-release"
+
+const NormalSystemRoleBrokerDeclarationPath = "/neonvm/config/dsga-normal-role-broker.json"
+const normalSystemRoleBrokerDeclarationPath = NormalSystemRoleBrokerDeclarationPath
+const normalSystemRoleServiceSocketPath = "/run/neon-dsga/system-role.sock"
+const normalSystemRoleBrokerDeclarationScope = "fixed-system-role-broker-declaration-v1"
+const normalSystemRoleBrokerExecutable = "/neonvm/bin/dsga-resource-guard"
+
+type normalSystemRoleBrokerDeclaration struct {
+	ProtocolVersion          uint32 `json:"protocol_version"`
+	Scope                    string `json:"scope"`
+	ExecutablePath           string `json:"executable_path"`
+	ExecutableSHA256         string `json:"executable_sha256"`
+	ArgvSHA256               string `json:"argv_sha256"`
+	EnvironmentSHA256        string `json:"environment_sha256"`
+	NamespaceProtocolVersion uint32 `json:"namespace_protocol_version"`
+	GateProtocolVersion      uint32 `json:"gate_protocol_version"`
+	Lifetime                 string `json:"lifetime"`
+	ComputeBuildPlanSHA256   string `json:"compute_build_plan_sha256"`
+}
+
+func normalSystemRoleBrokerArgv() []string {
+	return []string{normalSystemRoleBrokerExecutable, "system-role-broker"}
+}
+func normalSystemRoleBrokerEnvironment() []string { return []string{"PATH=/neonvm/bin"} }
+
+// 只生成构建期固定声明；两个摘要不能授予Guest来源或normal降限资格。
+// 与运行期typed reader共用同一个DTO/固定向量，避免不同构建端重复协议。
+func NormalSystemRoleBrokerDeclarationJSON(executableSHA256, computeBuildPlanSHA256 string) ([]byte, error) {
+	for _, h := range []string{executableSHA256, computeBuildPlanSHA256} {
+		b, e := hex.DecodeString(h)
+		if e != nil || len(b) != 32 || hex.EncodeToString(b) != h || h == strings.Repeat("0", 64) {
+			return nil, fmt.Errorf("fixed broker declaration requires canonical nonzero SHA256")
+		}
+	}
+	argv, e := normalSystemVectorSHA(normalSystemRoleBrokerArgv())
+	if e != nil {
+		return nil, e
+	}
+	env, e := normalSystemVectorSHA(normalSystemRoleBrokerEnvironment())
+	if e != nil {
+		return nil, e
+	}
+	return json.Marshal(normalSystemRoleBrokerDeclaration{ProtocolVersion: 1, Scope: normalSystemRoleBrokerDeclarationScope, ExecutablePath: normalSystemRoleBrokerExecutable, ExecutableSHA256: executableSHA256, ArgvSHA256: argv, EnvironmentSHA256: env, NamespaceProtocolVersion: 1, GateProtocolVersion: 1, Lifetime: normalSystemRoleBrokerLifetime, ComputeBuildPlanSHA256: computeBuildPlanSHA256})
+}

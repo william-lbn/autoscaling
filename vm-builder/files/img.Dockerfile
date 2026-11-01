@@ -127,7 +127,7 @@ COPY normal-manifest-tool /normal-manifest-tool
 COPY normal-build-plan.json /normal-build-plan.json
 COPY normal-prepare-root.sh /normal-prepare-root.sh
 RUN /rootdisk/neonvm/bin/busybox sh /normal-prepare-root.sh {{.NormalUID}} {{.NormalGID}}
-RUN /normal-manifest-tool --normal-manifest-root=/rootdisk --normal-build-plan=/normal-build-plan.json --normal-base-image-sha={{.NormalBaseSHA}}
+RUN /normal-manifest-tool --system-mode={{.NormalSystemMode}} --normal-manifest-root=/rootdisk --normal-build-plan=/normal-build-plan.json --normal-base-image-sha={{.NormalBaseSHA}}
 {{end}}
 
 

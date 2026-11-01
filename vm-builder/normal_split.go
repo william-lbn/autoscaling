@@ -22,6 +22,9 @@ import (
 )
 
 const normalSplitBuildMode = "normal-split-v1"
+
+// v3显式选择原broker/受控角色；旧模式仍生成System v2，绝不隐式升级。
+const normalSplitV3BuildMode = "normal-split-v3"
 const normalPlanPath = "/neonvm/config/dsga-normal-build-plan.json"
 
 // 这是构建输入，不是Guest授权协议。原ISO/镜像来源、固定角色和ELF依赖闭包
@@ -106,7 +109,7 @@ func validateNormalBuildSelection(mode, arch string, spec *imageSpec, args []str
 		}
 		return nil
 	}
-	if mode != normalSplitBuildMode || arch != targetArchLinuxAmd64 {
+	if (mode != normalSplitBuildMode && mode != normalSplitV3BuildMode) || arch != targetArchLinuxAmd64 {
 		return fmt.Errorf("unsupported fixed System build mode or architecture")
 	}
 	// spec即便内容空也不接受：不让后继增加字段悄悄开任意Docker/shell入口。
@@ -199,6 +202,13 @@ func normalImageCanonical(root, logical string) (string, error) {
 	return "/" + filepath.Join(done...), nil
 }
 func generateNormalSystemManifest(root string, plan normalBuildPlan, baseSHA string) ([]byte, error) {
+	return generateNormalSystemManifestForVersion(root, plan, baseSHA, 2)
+}
+
+func generateNormalSystemManifestForVersion(root string, plan normalBuildPlan, baseSHA string, version uint32) ([]byte, error) {
+	if version != 2 && version != 3 {
+		return nil, fmt.Errorf("unsupported final System inventory version")
+	}
 	if len(baseSHA) != 64 {
 		return nil, fmt.Errorf("original base image digest absent")
 	}
@@ -212,8 +222,12 @@ func generateNormalSystemManifest(root string, plan normalBuildPlan, baseSHA str
 	}
 	argv, _ := json.Marshal(plan.ComputeArgv)
 	env, _ := json.Marshal(plan.ComputeEnv)
-	m := resourceguard.NormalSystemSourceManifest{ProtocolVersion: 2, ProfileID: resourceguard.NormalSystemSourceV2ProfileID, Kernel: ref, DeclaredImageSHA256: baseSHA, ComputePath: "/usr/local/bin/compute_ctl", ComputeArgvSHA256: normalDigest(argv), ComputeEnvironmentSHA256: normalDigest(env)}
-	paths, e := resourceguard.NormalSystemSourceRequiredFilesForVersion(2)
+	profile := resourceguard.NormalSystemSourceV2ProfileID
+	if version == 3 {
+		profile = resourceguard.NormalSystemSourceV3ProfileID
+	}
+	m := resourceguard.NormalSystemSourceManifest{ProtocolVersion: version, ProfileID: profile, Kernel: ref, DeclaredImageSHA256: baseSHA, ComputePath: "/usr/local/bin/compute_ctl", ComputeArgvSHA256: normalDigest(argv), ComputeEnvironmentSHA256: normalDigest(env)}
+	paths, e := resourceguard.NormalSystemSourceRequiredFilesForVersion(version)
 	if e != nil {
 		return nil, e
 	}
@@ -367,6 +381,94 @@ func normalRequirePinnedImage(v string) error {
 	c, ok := n.(reference.Canonical)
 	if !ok || c.Digest().Algorithm().String() != "sha256" {
 		return fmt.Errorf("normal runtime image requires immutable sha256 reference")
+	}
+	return nil
+}
+
+// v3 compute仍保留原CheckGuest、allow-start与flock；真正compute向量由
+// broker读取原RO build-plan并直接执行compute_ctl，不递归执行vmstart。
+func normalComputeScriptV3() string {
+	return "#!/neonvm/bin/sh\nset -eu\n/neonvm/bin/dsga-resource-guard check-guest >/dev/null || exit 1\n[ -f /run/neon-dsga/vmstart.allowed ] || exit 1\numask 077\nexec 9>/run/neon-dsga/vmstart.lock\n/neonvm/bin/busybox flock -x 9\nexec /neonvm/bin/busybox env -i PATH=/neonvm/bin /neonvm/bin/dsga-resource-guard exec-system-role compute\n"
+}
+
+// 仅最终rootdisk构建命令使用。固定路径、不覆盖源镜像已有声明、不跟随目录alias；
+// 完整文件随后进入同一个System v3清单，运行期不会生成或修补这些声明。
+func prepareNormalSystemV3Assets(root string, planRaw []byte) error {
+	if _, e := decodeNormalBuildPlan(planRaw); e != nil {
+		return e
+	}
+	for _, p := range []string{"/neonvm", "/neonvm/config", "/neonvm/bin"} {
+		canonical, e := normalImageCanonical(root, p)
+		if e != nil || canonical != p {
+			return fmt.Errorf("v3 fixed build directory alias differs: %s", p)
+		}
+		st, e := os.Stat(filepath.Join(root, p))
+		if e != nil || !st.IsDir() {
+			return fmt.Errorf("v3 fixed build directory missing: %s", p)
+		}
+	}
+	guardPath := "/neonvm/bin/dsga-resource-guard"
+	canonical, e := normalImageCanonical(root, guardPath)
+	if e != nil || canonical != guardPath {
+		return fmt.Errorf("v3 fixed guard path differs")
+	}
+	f, e := os.OpenFile(filepath.Join(root, guardPath), os.O_RDONLY|syscall.O_NONBLOCK|syscall.O_NOFOLLOW, 0)
+	if e != nil {
+		return e
+	}
+	st, e := f.Stat()
+	if e != nil || !st.Mode().IsRegular() || st.Size() <= 0 || st.Size() > 256<<20 {
+		f.Close()
+		return fmt.Errorf("v3 fixed guard object differs")
+	}
+	elfFile, e := elf.NewFile(f)
+	if e != nil {
+		f.Close()
+		return e
+	}
+	for _, ph := range elfFile.Progs {
+		if ph.Type == elf.PT_INTERP {
+			f.Close()
+			return fmt.Errorf("v3 fixed guard must be static")
+		}
+	}
+	h := sha256.New()
+	n, e := io.Copy(h, io.NewSectionReader(f, 0, st.Size()))
+	ce := f.Close()
+	if e != nil {
+		return e
+	}
+	if ce != nil {
+		return ce
+	}
+	if n != st.Size() {
+		return fmt.Errorf("v3 guard size changed")
+	}
+	broker, e := resourceguard.NormalSystemRoleBrokerDeclarationJSON(hex.EncodeToString(h.Sum(nil)), normalDigest(planRaw))
+	if e != nil {
+		return e
+	}
+	controls, e := resourceguard.NormalKernelControlSourceManifestJSON()
+	if e != nil {
+		return e
+	}
+	assets := []struct {
+		path string
+		raw  []byte
+	}{{normalPlanPath, planRaw}, {resourceguard.NormalSystemRoleBrokerDeclarationPath, broker}, {resourceguard.NormalKernelControlSourceManifestPath, controls}}
+	for _, a := range assets {
+		fd, e := os.OpenFile(filepath.Join(root, a.path), os.O_WRONLY|os.O_CREATE|os.O_EXCL|syscall.O_NOFOLLOW, 0444)
+		if e != nil {
+			return e
+		}
+		_, e = fd.Write(a.raw)
+		ce = fd.Close()
+		if e != nil {
+			return e
+		}
+		if ce != nil {
+			return ce
+		}
 	}
 	return nil
 }

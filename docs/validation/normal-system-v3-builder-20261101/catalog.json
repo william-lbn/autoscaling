@@ -1,0 +1,48 @@
+{
+  "scope": "BUILDER_V3_STATIC_INVENTORY_ASSETS_AND_REAL_SHELL_FLOCK_UNIT_ONLY",
+  "actual": "/data/neon-build/validation/normal-system-v3-builder-go-20261101T014251Z-03a645",
+  "base": "5acb0fc33f970fae9abd3c32c80c75c17b6e8bd7",
+  "new_U_roots": 6,
+  "new_U_named_subtests": 26,
+  "new_U_cases": [
+    {
+      "id": "PG17-U-BUILDER-V3-001",
+      "root": "TestNormalSplitV3AssetsBindExactOriginalBytes",
+      "subtests": 0
+    },
+    {
+      "id": "PG17-U-BUILDER-V3-002",
+      "root": "TestNormalSplitV3AssetsRejectOverwriteAndAliases",
+      "subtests": 9
+    },
+    {
+      "id": "PG17-U-BUILDER-V3-003",
+      "root": "TestNormalSplitV3ComputeScriptKeepsGateAndOriginalFlock",
+      "subtests": 4
+    },
+    {
+      "id": "PG17-U-BUILDER-V3-004",
+      "root": "TestNormalSplitV3DockerTemplatePassesExplicitMode",
+      "subtests": 3
+    },
+    {
+      "id": "PG17-U-BUILDER-V3-005",
+      "root": "TestNormalSplitV3FinalInventoryAndOldDefault",
+      "subtests": 0
+    },
+    {
+      "id": "PG17-U-BUILDER-V3-006",
+      "root": "TestNormalSplitV3SelectionKeepsLegacyAndV2",
+      "subtests": 10
+    }
+  ],
+  "direct_old_U_roots": 9,
+  "direct_old_U_subtests": 44,
+  "total_race_roots": 15,
+  "total_subtests": 70,
+  "fail": 0,
+  "skip": 0,
+  "S_new": 0,
+  "E": 0,
+  "normal_authorized": false
+}

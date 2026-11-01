@@ -1,0 +1,52 @@
+{
+  "result": "PASS_COMPONENT_SCOPE_ONLY",
+  "finding": "NO_COMPONENT_BLOCKER",
+  "reviewer": "p1 independent reviewer; Root authored Builder6; p1 authored test2",
+  "actual_cohort": "/data/neon-build/validation/normal-system-v3-builder-go-20261101T014251Z-03a645",
+  "base": "5acb0fc33f970fae9abd3c32c80c75c17b6e8bd7",
+  "Root6": {
+    "pkg/dsga/resourceguard/normal_system_role_build_source.go": "d49d207f54ffb60813175b330a28ce4daf456dc75af6249472f9c14935a7d216",
+    "pkg/dsga/resourceguard/normal_system_role_declaration_linux.go": "4c29b9bf82ccc9db84f130a8c49a33e01161fef3b9bfcf10c88f27c561a61afe",
+    "pkg/dsga/resourceguard/normal_system_role_gate_broker_linux.go": "5791516d74b9ddec5297c6b352d7d50803a1eb878a6ea51b7bf444c45d9481ca",
+    "vm-builder/normal_split.go": "85f1904075c5871e932ddab9381d2417bce0229f1dc2de47e60637926be5bfd5",
+    "vm-builder/main.go": "f7b2463ed8c65d57b089070bedb4009087e62ffc2eb5acf604b02dfd464ad777",
+    "vm-builder/files/img.Dockerfile": "9f098c391acf7571c54dda04873a3fd7fd5113912fa98af4980aa1f2b2491b15"
+  },
+  "test2": {
+    "vm-builder/normal_split_v3_test.go": "39d4ecfb580b872ec9e3a5d2823f2921dce561bdbad660b205ae31ccf8d463be",
+    "vm-builder/normal_split_test.go": "cd9dcfd186fc08712dd59d20da48afb1ab5d9ae69a45f351965e582c94ff49dc"
+  },
+  "source_lock_sha256": "0e04ea9ac4ac941ed66ee0458c124f526412587377903784c89c63226952c61b",
+  "actual_COPY_count": 998,
+  "Linux_race_roots": 15,
+  "Linux_subtests": 70,
+  "new_U_roots": 6,
+  "new_U_subtests": 26,
+  "direct_regression_roots": 9,
+  "direct_regression_subtests": 44,
+  "fail": 0,
+  "skip": 0,
+  "static_Builder_compile_exit": 0,
+  "static_Builder_ELF_sha256": "522bf1cbac5d7ca6b39cbdcab6ae26a320d5f62ee24bf400019c1f542382d04e",
+  "reviewed_boundaries": [
+    "legacy/no-flag final inventory remainsv2; explicit mode3 only selects3",
+    "common declaration DTO/vectors/lifetime moved withoutruntime semantics change",
+    "original guard ELF SHA and exact planraw SHA bound in broker declaration",
+    "fixed three assets O_EXCL and noalias; mode0444 not runtime readonlymount proof",
+    "manifest3 inventories actual fixed canonical assets and inittab3; inventoryafterprepare andbeforemkfs",
+    "compute script checkGuest+allowstart before lock; FD9 original OFD lock retained acrossexec; no su-exec/compute_ctl/vmstart recursion",
+    "ordinary payloadvectors unchanged v2→v3; Rootconsumer/P2 readiness is separatebatch"
+  ],
+  "limitations": [
+    "Builder-only static model/real shell flock tests; no v3 PID1/broker/Guest integration",
+    "minimal ELF64 fixture parses structure but is never executed and is not realguardSource",
+    "six-new-root coverage counts U only, Linuxstatic compileENV only",
+    "late O_EXCL asseterror may leave earlier newassets; buildfails and no all-or-nothing transaction is claimed",
+    "CLI resource-guard main584ee5f7 explicitly excluded due P2 WIP dependency",
+    "P2 future role proof must verifyoriginal FD9 object/FLOCK and typedstdio; this test not productionopaque",
+    "normal continuous qualification and S/E remainabsent"
+  ],
+  "S_new": 0,
+  "E": 0,
+  "normal_authorized": false
+}

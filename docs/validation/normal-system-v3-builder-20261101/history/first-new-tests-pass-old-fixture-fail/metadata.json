@@ -1,0 +1,20 @@
+{
+  "unit": "neon-system-v3-builder-20261101t013933z-2615f4",
+  "nonce": "20261101T013933Z-2615f4",
+  "base": "5acb0fc33f970fae9abd3c32c80c75c17b6e8bd7",
+  "overlay_count": 28,
+  "actual_input_count": 998,
+  "source_lock_sha256": "386af7e83c985c1e68609bb41685b8718afac98de0bbd9ff5cad2e101c286c45",
+  "race_regex": "^TestNormalSplit",
+  "static_Linux_builder_build_only": true,
+  "hard_limits": {
+    "memory": 2147483648,
+    "memory_swap": 2147483648,
+    "cpu_quota": 200000
+  },
+  "per_process": {
+    "GOMAXPROCS": 1,
+    "GOMEMLIMIT": "384MiB"
+  },
+  "scope": "BUILDER_V3_STATIC_ASSETS_AND_SHELL_FLOCK_U_NOT_PRODUCTION_GUEST"
+}

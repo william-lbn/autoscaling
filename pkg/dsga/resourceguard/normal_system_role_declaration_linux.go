@@ -14,28 +14,6 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-const normalSystemRoleBrokerDeclarationPath = "/neonvm/config/dsga-normal-role-broker.json"
-const normalSystemRoleServiceSocketPath = "/run/neon-dsga/system-role.sock"
-const normalSystemRoleBrokerDeclarationScope = "fixed-system-role-broker-declaration-v1"
-const normalSystemRoleBrokerExecutable = "/neonvm/bin/dsga-resource-guard"
-
-type normalSystemRoleBrokerDeclaration struct {
-	ProtocolVersion          uint32 `json:"protocol_version"`
-	Scope                    string `json:"scope"`
-	ExecutablePath           string `json:"executable_path"`
-	ExecutableSHA256         string `json:"executable_sha256"`
-	ArgvSHA256               string `json:"argv_sha256"`
-	EnvironmentSHA256        string `json:"environment_sha256"`
-	NamespaceProtocolVersion uint32 `json:"namespace_protocol_version"`
-	GateProtocolVersion      uint32 `json:"gate_protocol_version"`
-	Lifetime                 string `json:"lifetime"`
-	ComputeBuildPlanSHA256   string `json:"compute_build_plan_sha256"`
-}
-
-func normalSystemRoleBrokerArgv() []string {
-	return []string{normalSystemRoleBrokerExecutable, "system-role-broker"}
-}
-func normalSystemRoleBrokerEnvironment() []string     { return []string{"PATH=/neonvm/bin"} }
 func normalSystemRoleDeclarationDigest(h string) bool { _, e := nativeBirthDigest(h); return e == nil }
 func decodeNormalSystemRoleBrokerDeclaration(raw []byte) (normalSystemRoleBrokerDeclaration, error) {
 	var d normalSystemRoleBrokerDeclaration
