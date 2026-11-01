@@ -1,0 +1,13 @@
+一次性 stock udev supervisor 独立静态审查（原5a图）
+
+范围：normal_ordinary_stock_udev_supervisor_linux.go，SHA 5aef3df7a7bea1b73e7b4fb4c8ef25b20f4d036531f591a2fc536aa1c870b60b。只读，不运行测试、程序或信号试验，不改生产源码。该模块尚无真实Source/主接线；不证明normal、真实九服务或完整规则处理资格。
+
+SUDEV-R001 参数覆盖：官方udevd.c:1163先parse_argv、1167后parse_proc_cmdline；990..1027消费udev.log-priority、children-max、exec-delay、event-timeout。因此argv --children-max=1单独不足以证明单worker/固定期限。新explicit配置应拒全部udev.*覆盖并绑定原命令行来源，旧v1不动。
+
+SUDEV-R002 规则语义：udevd.c:68默认不daemonize，69默认resolve_names=1(early)，1037/1070只有-d才后台；前台与--children-max=1参数有效。never虽为合法参数，但udev-rules.c:1489..1497、1511..1519在never时完全省略符号OWNER/GROUP。原库normal_system_source.go:77、normal_system_lifecycle_source.go:117仅裸udevd。原27规则符号GROUP为audio,cdrom,dialout,disk,input,kmem,kvm,lp,tape,tty,video；无符号OWNER。因此应恢复Root原early，并封存真实账户解析输入，不能以两条numeric ACL代替全部原规则的DAC语义。shared/util.c:1169..1272实际经getpwnam/getgrnam；root名特判。构建/ELF证明为musl1.2.4_git20230717-r6而非glibc，最小需原/etc/passwd、/etc/group、loader与完整DSO，实际核所有组唯一正确解析。未知组日志/默认gid0不是成功。musl具体NSCD fallback待准确源码核，不能臆称其消费glibc NSS配置。
+
+SUDEV-R003 settle证据边界：udevadm-settle.c:111..120在Root ping失败时也会return EXIT_SUCCESS，135..137无queue watch FD也返回success。daemon原pidfd每阶段/终止前仍活可排除部分早退，但不能把命令exit0升级成真实处理/握手成功。后继Source必须有同原prepare的实际完成DB投影、连续monitor/settle和原Wait证据。本项是后继来源约束，不声称当前局部已错误签发Source。
+
+Wait独审：每个直属exec.Cmd仅一次cmd.Wait goroutine；process.wait只消费原done，超时不伪造waited；cleanup在全部直属cmd真实waited后才Wait4收养后代，不抢直属Wait。开启subreaper前拒已有孩子，完成后核本R2所有线程children。仍有后代即使kill/reap也失败；不完整回收不冒已清空。clone原pidfd用于主进程信号/活性；pin失败仍将已启动对象交唯一清理者。日志持续吞吐但保留上限32KiB，overflow失败。当前局部未见确定假PASS，仍需真实隔离Guest前台/退出/残后代/IO尾部/超时验证。
+
+剩余边界：完整sealed helper/DSO/rules/hwdb/账户manifest、同g三actor/prepared/tombstone、静态投影封存及后继60004移交未接。Pdeathsig的Go创建线程生命周期与R2 leader约束仍需实际实现/测试核，不凭字段推持续存活。未运行原Neon无修改逻辑、受保护metadata反例或任何现有PG/Root/PID1信号试验。

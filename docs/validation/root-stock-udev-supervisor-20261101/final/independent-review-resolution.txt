@@ -1,0 +1,11 @@
+一次性 stock udev supervisor 窄差异复审（1d8b54图）
+
+实际新source c991fada57d90878be8803fbf129baa047bff5639b6afb9d1f44edb702b551ca；test 2bc404384998a2a9a151cc1dcba50475bf9c53492328cd9fe3aecbe0d9fa60a8。与263dce原5a图完整diff仅：移除Root --resolve-names=never；新增命令行守卫并在启动前实际读取/proc/cmdline调用；对应定向U。
+
+SUDEV-R001局部已解除：拒空/过大/NUL/CR/LF及任意udev.子串，覆盖官方argv后解析的udev.*、rd.udev.*与嵌入参数覆盖，不以单个children-max白名单遗漏其它delay/timeout/log覆盖。后继Source仍须绑定原procfs/boot来源，不以任意raw字符串生成来源。
+
+SUDEV-R002局部已解除：去never恢复官方默认early；原符号GROUP规则再次执行解析。新U同步固定argv。实际账户与libc/nscd封存尚未实现，本组件不声称完整账户来源。
+
+SUDEV-R003仍是后继Source边界：零退出仅代表原命令Wait，不证明ping/queue/处理完整。必须由RO69及实际账户/代理集合、原处理完成与独立seal投影、同g typed来源闭合；不可据此清MissingSources或给normal资格。
+
+已只读核原result.json：build_exit/test_exit/cli_exit/darwin_exit均0，S=0/E=0/normal_authorized=false。未重跑测试。Root报告5聚焦race根，该数字不替代实际stock Guest S。可作为明确标注组件阶段提交，未发现本窄差异新增阻断。原5a报告、源码和原raw保持历史不覆盖。
