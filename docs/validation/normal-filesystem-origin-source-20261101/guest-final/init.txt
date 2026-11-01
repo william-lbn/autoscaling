@@ -1,0 +1,19 @@
+#!/bin/busybox sh
+set -eu
+export PATH=/bin
+export DSGA_FS_COMPONENT=DEV369_FILESYSTEM_ORIGIN
+/bin/busybox --install -s /bin
+mount -t devtmpfs devtmpfs /dev
+exec </dev/console >/dev/console 2>&1
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+echo KERNEL_RELEASE=$(uname -r)
+echo KERNEL_NOTES_BEGIN
+base64 /sys/kernel/notes
+echo KERNEL_NOTES_END
+mount -t ext4 /dev/vda /newroot
+mount --move /dev /newroot/dev
+mount --move /proc /newroot/proc
+mount --move /sys /newroot/sys
+# 真正PID1切根，不用chroot子进程把initrd PID1伪称同root。
+exec /bin/busybox switch_root -c /dev/console /newroot /neonvm/bin/busybox init

@@ -1,0 +1,29 @@
+--- old208/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go
++++ Layout2-ref-fix/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go
+@@ -313,7 +313,7 @@
+ 		facts = append(facts, normalFilesystemMountFact{m, object})
+ 	}
+ 	// 所有静态逻辑与canonical祖先均由System原reader验证；这里独立核固定孔的
+-	// 每一祖先。任何额外RW覆盖已被16mount图拒绝，不用路径字符串冒充mount对象。
++	// 每一祖先。任何额外RW覆盖已被17mount图拒绝，不用路径字符串冒充mount对象。
+ 	for _, hole := range normalFilesystemPersistentHoles {
+ 		for at := filepath.Dir(hole); ; at = filepath.Dir(at) {
+ 			var fs unix.Statfs_t
+@@ -811,11 +811,13 @@
+ 	if e != nil {
+ 		return zero, e
+ 	}
+-	return normalFilesystemOriginReference{LayoutVersion: normalFilesystemLayoutVersion, ProtocolVersion: 1, IntentSHA256: observed.IntentSHA256, CompletionSHA256: observed.CompletionSHA256, OriginalRoot: o.intent.System.RootConsumer, GuestBootID: o.intent.System.GuestBootID, RuntimeDocumentSHA256: o.intent.System.RuntimeDocumentSHA256, NativeBuildSHA256: o.intent.System.NativeBuildSHA256, SystemManifestSHA256: o.intent.System.SystemManifestSHA256, VminitSHA256: o.intent.VminitSHA256, Namespace: o.intent.Namespace, Root: o.intent.Root}, nil
+-}
+-
++	return normalFilesystemReferenceFromIntent(o.intent, observed.IntentSHA256, observed.CompletionSHA256), nil
++}
++
++// 原始引用、FD移交和显式重绑定必须共用同一版本化投影。这里的intent已由调用者
++// 核验为当前17mount布局；漏填LayoutVersion会把FD路径降成0，与只读引用不一致。
+ func normalFilesystemReferenceFromIntent(in normalFilesystemOriginIntent, intentSHA, completeSHA string) normalFilesystemOriginReference {
+-	return normalFilesystemOriginReference{ProtocolVersion: 1, IntentSHA256: intentSHA, CompletionSHA256: completeSHA, OriginalRoot: in.System.RootConsumer, GuestBootID: in.System.GuestBootID, RuntimeDocumentSHA256: in.System.RuntimeDocumentSHA256, NativeBuildSHA256: in.System.NativeBuildSHA256, SystemManifestSHA256: in.System.SystemManifestSHA256, VminitSHA256: in.VminitSHA256, Namespace: in.Namespace, Root: in.Root}
++	return normalFilesystemOriginReference{LayoutVersion: normalFilesystemLayoutVersion, ProtocolVersion: 1, IntentSHA256: intentSHA, CompletionSHA256: completeSHA, OriginalRoot: in.System.RootConsumer, GuestBootID: in.System.GuestBootID, RuntimeDocumentSHA256: in.System.RuntimeDocumentSHA256, NativeBuildSHA256: in.System.NativeBuildSHA256, SystemManifestSHA256: in.System.SystemManifestSHA256, VminitSHA256: in.VminitSHA256, Namespace: in.Namespace, Root: in.Root}
+ }
+ 
+ // 调用者持原resource flock，且未持System.mu/Task.mu。两个返回FD由调用者负责关闭，

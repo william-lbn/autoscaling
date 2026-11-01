@@ -1,0 +1,8 @@
+{
+  "scope": "RUNNER_METADATA_CORRECTION_ONLY",
+  "original_metadata_preserved": true,
+  "actual_nonce": "20261031T225144Z-a6913f",
+  "actual_unit": "neon-fs-origin-build-fixture-system-role",
+  "cause": "Python preparation loop shadowed nonce variable with fixture/system-role; systemd escaped slash; build source and directory nonce unaffected",
+  "subsequent_runner_fixed": true
+}

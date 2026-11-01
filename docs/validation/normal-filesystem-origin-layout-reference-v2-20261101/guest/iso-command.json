@@ -1,0 +1,23 @@
+[
+  "docker",
+  "run",
+  "--rm",
+  "--network=none",
+  "--pull=never",
+  "--cpus=1",
+  "--memory=512m",
+  "--memory-swap=512m",
+  "-v",
+  "/data/neon-build/validation/filesystem-origin-native-build-20261101T001436Z-570b76/export/fixture/isofiles:/isofiles:ro",
+  "-v",
+  "/data/neon-build/validation/filesystem-origin-native-20261101T001537Z-640aa7:/proof:rw",
+  "--entrypoint",
+  "genisoimage",
+  "neon-test-only/dsga-kernel-bootstrap-iso:20261031",
+  "-quiet",
+  "-R",
+  "-J",
+  "-o",
+  "/proof/runtime.iso",
+  "/isofiles"
+]

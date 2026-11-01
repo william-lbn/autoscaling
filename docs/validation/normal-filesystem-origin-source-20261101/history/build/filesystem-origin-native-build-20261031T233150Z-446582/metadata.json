@@ -1,0 +1,15 @@
+{
+  "unit": "neon-fs-origin-build-20261031t233150z-446582",
+  "nonce": "20261031T233150Z-446582",
+  "source_count": 918,
+  "source_lock_sha256": "8244e561a58e9aa8809468a7ab8c402ba56e80e935a750549c267f0b5e3d1872",
+  "base": "d1f7de01ef90dca2eab1ee8026986dc2296d6593",
+  "scope": "FILESYSTEM_NATIVE_BUILD_TEST_ONLY_NOT_PG_NORMAL",
+  "hard_limits": {
+    "buildx_memory": "2g",
+    "buildx_memory_swap": "2g",
+    "buildx_cpu_quota": 200000,
+    "outer_cpu": "200%",
+    "outer_memory": "2G"
+  }
+}

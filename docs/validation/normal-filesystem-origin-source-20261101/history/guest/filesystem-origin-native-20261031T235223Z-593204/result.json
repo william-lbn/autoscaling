@@ -1,0 +1,26 @@
+{
+  "id": "PG17-S-FILESYSTEM-ORIGIN-001",
+  "status": "FAIL_COMPONENT",
+  "Host_QEMU_exit": 0,
+  "Guest_exits": [
+    "1"
+  ],
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "seconds": 7.1685505300119985,
+  "reports": {
+    "filesystem-diagnostics.json": "ac582d458456d4bba831ca3934a560e70e8daf08a94e097ef4cb85031359ee0a"
+  },
+  "report_errors": [],
+  "actual_runtime_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "Go_test_ELF_sha256": "69ab905904f310d1bbb56c7cfe0a67699ea272565e35911b45a780202b384d53",
+  "base_memory_bytes": 1073741824,
+  "vCPUs": 2,
+  "source_fixture": true,
+  "System_programs_standins": true,
+  "PG_executed": false,
+  "normal_authorized": false,
+  "E": 0
+}

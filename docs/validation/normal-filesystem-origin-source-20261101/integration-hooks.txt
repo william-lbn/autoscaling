@@ -1,0 +1,8 @@
+固定API及锁序：
+g.captureNormalFilesystemOrigin(ctx,system) 外封锁；g.captureNormalFilesystemOriginLocked(ctx,state,record,system) 内部不重入flock。仅原初始入口current consumer/完整8WAL见证、无Birth/原bootstrap同源时首拍。
+o.observe(ctx) / o.observeLocked(ctx,state) 纯读。o.referenceLocked(ctx,state) 从真实对象实读产normalFilesystemOriginReference，LayoutVersion2，不吃raw hash/bool。
+o.pinOriginalNamespaceLocked(ctx,state) 从原对象实读ref并dup原namespace/root，caller负责二FD寿命。
+g.recoverNormalFilesystemOriginLocked(ctx,state,system,currentRole) 显式完整prefix同步；新Root必须原role task，现仅resource/serve实际argv/env路径。
+g.rebindNormalFilesystemOriginLocked(ctx,state,system,currentRole,reference,nsFD,rootFD) 拒wrongref/FD先于sync，Root/FD只读引用不能自产opaque。
+后继专有broker的normalSystemRoleBrokerExecProof.originalTaskForFilesystem(ctx,system)→原task由P2真实producer负责；该类型尚未实写/验证，不得当前假接。后继FS private interface只消费真实proof，不接受raw role或verified bool，也不放宽旧resource语义。READY/COMMIT角色授权由broker另处理。
+StartBroker前可用已捕获事实reference；全continuous normal资格要等所有真实producer拼接，不制造先qualified才允许broker出生的循环。

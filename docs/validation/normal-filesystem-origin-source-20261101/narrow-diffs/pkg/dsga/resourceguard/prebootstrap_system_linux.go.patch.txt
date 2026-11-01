@@ -1,0 +1,20 @@
+--- d1f7de01ef90dca2eab1ee8026986dc2296d6593/pkg/dsga/resourceguard/prebootstrap_system_linux.go
++++ FS-layout2/pkg/dsga/resourceguard/prebootstrap_system_linux.go
+@@ -291,8 +291,15 @@
+ 	if err := unix.Stat("/", &rootStat); err != nil {
+ 		return s, err
+ 	}
+-	if st.Dev == rootStat.Dev || rootFS.Flags&unix.ST_RDONLY == 0 {
+-		return s, fmt.Errorf("pre-bootstrap requires a separate persistent state volume and read-only RootFS")
++	if rootFS.Flags&unix.ST_RDONLY == 0 {
++		return s, fmt.Errorf("pre-bootstrap requires read-only RootFS")
++	}
++	// 旧独立状态盘仍原样；同SB只能是原17mount布局的固定持久bind孔，不能把
++	// 任意可写目录或临时文件系统当原状态盘。这里只预检，不补FS出生历史。
++	if st.Dev == rootStat.Dev {
++		if err := normalFilesystemPreflightSameSuperblockState(k.config); err != nil {
++			return s, fmt.Errorf("pre-bootstrap original same-superblock state layout: %w", err)
++		}
+ 	}
+ 	s.RootFilesystemReadonly = true
+ 	s.StateDevice = control.Uint64(st.Dev)

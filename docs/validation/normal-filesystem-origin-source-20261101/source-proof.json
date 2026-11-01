@@ -1,0 +1,36 @@
+{
+  "base": "d1f7de01ef90dca2eab1ee8026986dc2296d6593",
+  "current_HEAD_for_review_only": "26f1d48ab17330959e87be64ad95f968ff1006f7",
+  "owned_10": {
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source.go": "18f9469c6ebcef9a0d0f99203f1812f54440412ed5fe20bd945d77cc3f800929",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_test.go": "3e6a38a3f19a826ff95111b1d4c93bf7641a9454a4bc074eabcc5d7e268827f5",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go": "fe5177d4f7ff9c72aee5abd1a87529b3669bb4b0d57544d1b1f068ddf2d176f8",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_task_linux.go": "1f39f7f8fccc91896be0b49fca399aac58da28cbbeb218439ec2e8f1f5d87e5c",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_linux_test.go": "2474ad70710063bba3cd62e16e845e68e286231a613a20125a58320068112307",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_native_test.go": "0aeea59722ff746e1072560d7b6ee959568176a9416ce2bcd5fdee441cce076e",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_preflight_linux.go": "63e6e413ea6a8aefa935f2daab3d2d013bd91aab0c10ffeb32ca2c336a50b2b2",
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap_linux.go": "a2daf8e3fd8b7e5bc9dc29be1c0e15a37b7bbb59a7e8179703b5495d17bf50e3",
+    "pkg/dsga/resourceguard/prebootstrap_system_linux.go": "371ff5f96e8363d038778dd5d461d7bfb23f09d29503342ec9155ec9667c15c0",
+    "vm-builder/files/normal-split/vminit": "4dc5c255f068072ce9734946f1c5703a4e56625af6374a5a22ded31e6f979e52"
+  },
+  "final_build_source_lock_sha256": "f408377ac2a6badd9dcc86a7e4ef03be81c53a2823c4411eea0cad5aedcdae52",
+  "final_unit_source_lock_sha256": "3117b0b12ef81d5b926feafd4f4ada3b213c2fc9f829ea5f7da677cca0820158",
+  "actual_COPY_inputs": 919,
+  "all_actual_COPY_equal": true,
+  "only_source_difference_between_latest_U_and_S_build": [
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_native_test.go"
+  ],
+  "all_production_and_ordinary_U_sources_byte_identical": true,
+  "S_Go_test_ELF_sha256": "63bfb34a98f37795cc3a544e9d86e28385e8f29a19c98294fb7c193cec8444f3",
+  "kernel_image_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+  "kernel_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+  "kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "vminit_sha256": "4dc5c255f068072ce9734946f1c5703a4e56625af6374a5a22ded31e6f979e52",
+  "generic_vminit_unchanged": true,
+  "FS_layout_version": 2,
+  "scope": "original_namespace_FD_and_durable_facts_only",
+  "new_broker_opaque_exec_proof_adapter_not_yet_connected": true,
+  "continuous_control_writers_closed": false,
+  "normal_authorized": false,
+  "E": 0
+}

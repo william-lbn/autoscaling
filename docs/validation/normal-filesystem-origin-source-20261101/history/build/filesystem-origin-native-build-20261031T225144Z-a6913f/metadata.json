@@ -1,0 +1,15 @@
+{
+  "unit": "neon-fs-origin-build-fixture/system-role",
+  "nonce": "fixture/system-role",
+  "source_count": 917,
+  "source_lock_sha256": "4138adff27affc4472ef5e9f47253c919ba6e486d14529c1aafeff52e6532115",
+  "base": "d1f7de01ef90dca2eab1ee8026986dc2296d6593",
+  "scope": "FILESYSTEM_NATIVE_BUILD_TEST_ONLY_NOT_PG_NORMAL",
+  "hard_limits": {
+    "buildx_memory": "2g",
+    "buildx_memory_swap": "2g",
+    "buildx_cpu_quota": 200000,
+    "outer_cpu": "200%",
+    "outer_memory": "2G"
+  }
+}

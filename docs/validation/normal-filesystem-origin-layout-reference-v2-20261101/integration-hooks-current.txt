@@ -1,0 +1,2 @@
+固定锁序仍resource flock→FS→System→Task。referenceLocked/pinOriginalNamespaceLocked/rebind均共用normalFilesystemReferenceFromIntent，LayoutVersion2，完整17mount原intent。pin返回原两FD由调用者关闭；重绑定先在os.File引用锁下dup，严格比较全引用与dev/inode/mount对象后才显式Recover。
+StartBroker新opaque exec proof尚未接，不能raw role/bool重建来源或默认跨Root认领。此次S只同Root新Guard准确FD重绑定；continuous normal始终Unknown。初始生产capture仍须CheckGuest成功后/任何role spawn前同原flock，旧16布局不升级。

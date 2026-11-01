@@ -1,0 +1,24 @@
+--- old208/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux_test.go
++++ Layout2-ref-fix/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux_test.go
+@@ -127,3 +127,21 @@
+ 	require.NoError(t, e)
+ 	require.Equal(t, "original", string(data[:n]))
+ }
++
++// PG17-U-FS-010：固定17mount原始来源的三条引用路径不得丢失布局版本。
++// 这里只检验纯投影；实际namespace/root FD及拒绝发生在任何Recover之前由Guest用例验证。
++func TestNormalFilesystemReferenceCarriesOriginalLayout(t *testing.T) {
++	in := normalFilesystemOriginIntent{LayoutVersion: normalFilesystemLayoutVersion, VminitSHA256: "vminit", Namespace: normalFilesystemObject{Device: 1, Inode: 2}, Root: normalFilesystemObject{Device: 3, Inode: 4, MountID: 5}}
++	in.System.RootConsumer = nativeBirthConsumer{PID: 123, StartTicks: 456, InstanceNonce: "original-root"}
++	in.System.GuestBootID = "original-boot"
++	in.System.RuntimeDocumentSHA256 = "runtime"
++	in.System.NativeBuildSHA256 = "build"
++	in.System.SystemManifestSHA256 = "system"
++	want := normalFilesystemOriginReference{LayoutVersion: normalFilesystemLayoutVersion, ProtocolVersion: 1, IntentSHA256: "intent", CompletionSHA256: "complete", OriginalRoot: in.System.RootConsumer, GuestBootID: in.System.GuestBootID, RuntimeDocumentSHA256: in.System.RuntimeDocumentSHA256, NativeBuildSHA256: in.System.NativeBuildSHA256, SystemManifestSHA256: in.System.SystemManifestSHA256, VminitSHA256: in.VminitSHA256, Namespace: in.Namespace, Root: in.Root}
++	got := normalFilesystemReferenceFromIntent(in, "intent", "complete")
++	require.Equal(t, uint32(2), got.LayoutVersion)
++	require.Equal(t, want, got, "every original binding survives namespace/root FD handoff")
++	legacy := got
++	legacy.LayoutVersion = 0
++	require.NotEqual(t, legacy, got, "an omitted layout cannot identify the current original source")
++}

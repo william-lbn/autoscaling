@@ -256,8 +256,15 @@ func (k *linuxKernel) kernelPrepRead() (kernelPrepSnapshot, error) {
 	if e = unix.Stat("/", &root); e != nil {
 		return s, e
 	}
-	if fs.Type != unix.EXT4_SUPER_MAGIC || fs.Flags&unix.ST_RDONLY != 0 || st.Dev == root.Dev || st.Ino == 0 {
-		return s, fmt.Errorf("kernel original intent requires separate writable persistent ext4 state")
+	if fs.Type != unix.EXT4_SUPER_MAGIC || fs.Flags&unix.ST_RDONLY != 0 || st.Ino == 0 {
+		return s, fmt.Errorf("kernel original intent requires writable persistent ext4 state")
+	}
+	// 旧独立ext4状态盘路径原样保留。同SB仅原显式normal镜像的固定持久bind孔，
+	// 必须实际核完整Layout2/原ISO+vminit；不能泛化为任意RW目录或消费未出生FS complete。
+	if st.Dev == root.Dev {
+		if err := normalFilesystemPreflightSameSuperblockState(k.config); err != nil {
+			return s, fmt.Errorf("same-superblock original state layout: %w", err)
+		}
 	}
 	s.StateDevice, s.StateInode = control.Uint64(st.Dev), control.Uint64(st.Ino)
 	return s, nil

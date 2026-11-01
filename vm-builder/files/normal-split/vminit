@@ -6,6 +6,11 @@ export PATH=/neonvm/bin
 bb=/neonvm/bin/busybox
 $bb mountpoint -q /proc || $bb mount -t proc proc /proc
 $bb mountpoint -q /sys || $bb mount -t sysfs sysfs /sys
+# 原LSM reader在KernelPrep/运行期均实读securityfs；新布局固定只读挂载，
+# 不能用缺失文件或临时卸载伪造旧16mount图。既有未知覆盖拒绝，不收养。
+$bb mkdir -p /sys/kernel/security
+if $bb mountpoint -q /sys/kernel/security; then exit 1; fi
+$bb mount -t securityfs -o ro,nosuid,nodev,noexec securityfs /sys/kernel/security
 $bb mountpoint -q /dev || $bb mount -t devtmpfs devtmpfs /dev
 $bb mkdir -p /sys/fs/cgroup /dev/pts /dev/shm /run /tmp /neonvm/runtime
 $bb mountpoint -q /sys/fs/cgroup || $bb mount -t cgroup2 cgroup2 /sys/fs/cgroup

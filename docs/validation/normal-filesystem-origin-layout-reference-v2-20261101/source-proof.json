@@ -1,0 +1,32 @@
+{
+  "base": "955ad6477ba89ade35ffaf73828d53d44a0bb3b8",
+  "owned10": {
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source.go": "18f9469c6ebcef9a0d0f99203f1812f54440412ed5fe20bd945d77cc3f800929",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_test.go": "3e6a38a3f19a826ff95111b1d4c93bf7641a9454a4bc074eabcc5d7e268827f5",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go": "49263c65321ff2db81b37c035d50099663ac7f0f2ab8c789569a5c24ee5852d8",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_task_linux.go": "1f39f7f8fccc91896be0b49fca399aac58da28cbbeb218439ec2e8f1f5d87e5c",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_linux_test.go": "381a4109c3e2b013066c506ade6ac42e9c11755808d482916d3173f28f8639b2",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_native_test.go": "c324f0b774e6dcb355f68f3c3c85cd826ef268fead4e610485df49713c45f4b1",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_preflight_linux.go": "63e6e413ea6a8aefa935f2daab3d2d013bd91aab0c10ffeb32ca2c336a50b2b2",
+    "pkg/dsga/resourceguard/normal_v1_kernel_bootstrap_linux.go": "a2daf8e3fd8b7e5bc9dc29be1c0e15a37b7bbb59a7e8179703b5495d17bf50e3",
+    "pkg/dsga/resourceguard/prebootstrap_system_linux.go": "371ff5f96e8363d038778dd5d461d7bfb23f09d29503342ec9155ec9667c15c0",
+    "vm-builder/files/normal-split/vminit": "4dc5c255f068072ce9734946f1c5703a4e56625af6374a5a22ded31e6f979e52"
+  },
+  "changed3": [
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_linux_test.go",
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_native_test.go"
+  ],
+  "actual_COPY_inputs": 949,
+  "all_actual_COPY_equal": true,
+  "source_lock_sha256": "c4f890147c68c93eccf1dc1b5afdaf813683e9d8a2064c3503586d184302d91b",
+  "Go_ELF_sha256": "496dc476545538b37723d4eaa68ae071deffa452d3e9be5d5c8c15452839c47f",
+  "actual_kernel_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "kernel_image_sha256": "3693200bb10997988129955750382e586d13eef75e06f46aa3b9f56c6f8833f0",
+  "kernel_config_sha256": "11344757b0f979c7fee35e354bd706616c4283deaa67cc30c50747e4bca855be",
+  "exact_scope": "original reference equality + actual FD handoff; not role-broker proof/continuous normal",
+  "zero_sync_rejection_basis": "actual wrong-reference returns exact error at comparison before recovery call; no new-Guard witness, JSON unchanged; no syscall-fsync fault injection claimed",
+  "actual_Guest_exit": 0,
+  "actual_unique_QEMU_Wait_exit": 0,
+  "E": 0
+}

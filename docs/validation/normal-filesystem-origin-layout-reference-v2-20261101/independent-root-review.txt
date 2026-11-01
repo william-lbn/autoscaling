@@ -1,0 +1,6 @@
+Root独立复核：文件系统原始来源及Layout2补正，组件范围通过。
+已独立读取4个生产source全文及KernelPrep/PreSys/vminit三窄变更、两普通测试文件、原生FD移交实际断言和新旧全部SHA映射。新17mount图保持只读根、六持久孔和必要securityfs；同SB状态只准原完整ISO/build/System/vminit与实际固定持久bind孔，不放宽任意RW状态目录或删除原LSM读取要求。
+初始仅pin原PID1和self的pidfd/proc/namespace/root，检查全部线程FD/cwd/O_PATH及TGID map_files，已卸载仍持有的隐藏RW原始别名被拒；准确原Kernel/Origin/PreSys前缀与10WALfsync/current Guard见证不可由可见JSON替代。普通运行期Observe不写/不补初始task census；显式恢复重核原引用、同步旧文件而不改原Root nonce。
+独审发现引用路径遗漏LayoutVersion并要求修复，现所有路径复用同一Layout2投影。新增普通投影根以及真实369原namespace/root两FD pin/rebind：错误0先于Recover拒绝，新Guard无见证、JSON不变；正确原引用与原FD显式重绑定通过。并未声称真实sync故障注入或新Root broker移交完成。
+旧208/25根117子例/19640d保持原实际图，不转签；新955ad+10源图949输入、10race根39子例、实际新ELF496dc476与KVM Guest0/唯一QEMUWait0，三隐藏RW负例/私有COW/UID1000实际ext4持久payload均通过。只变化1生产+1UT+1native，其余7源相同；旧16根不重复计新覆盖。原始FAIL和console CRLF保持。
+尚无真实PG、全部实际System服务、跨Root broker证明、未来mount/FD/control写者闭合及安全normal下降。资格继续Unknown；此提交不改变发行锁，不部署K8s，Linux/K8s E0。

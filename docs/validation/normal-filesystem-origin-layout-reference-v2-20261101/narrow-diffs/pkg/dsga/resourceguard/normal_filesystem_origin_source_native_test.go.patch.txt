@@ -1,0 +1,66 @@
+--- old208/pkg/dsga/resourceguard/normal_filesystem_origin_source_native_test.go
++++ Layout2-ref-fix/pkg/dsga/resourceguard/normal_filesystem_origin_source_native_test.go
+@@ -267,7 +267,7 @@
+ 		require.True(t, os.IsNotExist(statErr), "FD rejection must create zero FS WAL")
+ 		return e
+ 	}
+-	// 真实已经卸载的全RW ext4对象。可见16mount图恢复正常仍必须拒FD/cwd。
++	// 真实已经卸载的全RW ext4对象。可见17mount图恢复正常仍必须拒FD/cwd。
+ 	view := "/run/neon-dsga/fs-detached-view"
+ 	require.NoError(t, os.Mkdir(view, 0700))
+ 	mountRW := func() {
+@@ -344,10 +344,44 @@
+ 		require.NoError(t, e)
+ 		rawBefore[name] = physicalDigest(b)
+ 	}
+-	recovered, e := newGuard.recoverNormalFilesystemOrigin(ctx, system, nil)
++	// 原始只读引用和真正移交的namespace/root FD必须是相同Layout2合同。
++	// 故意给零版本只应在输入核验阶段拒绝；不能调用后面的显式Recover来补造见证。
++	s, e := lockState(ctx, source.Config.StateDir)
++	require.NoError(t, e)
++	defer s.close()
++	reference, e := origin.referenceLocked(ctx, s)
++	require.NoError(t, e)
++	pinned, ns, root, e := origin.pinOriginalNamespaceLocked(ctx, s)
++	require.NoError(t, e)
++	defer ns.Close()
++	defer root.Close()
++	require.Equal(t, uint32(2), reference.LayoutVersion)
++	require.Equal(t, reference, pinned)
++	_, _, prefix, e := normalFilesystemInitialPrefix(s, system.binding, false)
++	require.NoError(t, e)
++	witness, e := normalFilesystemWitnessLocked(newGuard, s, system.binding.RootConsumer, prefix)
++	require.NoError(t, e)
++	_, beforeWitness := normalFilesystemOriginWitnesses.Load(witness)
++	require.False(t, beforeWitness, "new Guard must not inherit a visible complete prefix")
++	wrong := pinned
++	wrong.LayoutVersion = 0
++	rejected, e := newGuard.rebindNormalFilesystemOriginLocked(ctx, s, system, nil, wrong, ns, root)
++	require.Nil(t, rejected)
++	require.ErrorContains(t, e, "transferred original reference differs")
++	_, afterRejectWitness := normalFilesystemOriginWitnesses.Load(witness)
++	require.False(t, afterRejectWitness, "invalid reference must return before recovery/sync enrollment")
++	for name, h := range rawBefore {
++		b, readErr := os.ReadFile(filepath.Join(FixedStateDir, name))
++		require.NoError(t, readErr)
++		require.Equal(t, h, physicalDigest(b))
++	}
++	// 只有准确原引用和原FD才进入显式恢复；同步现有10WAL而不重新捕获两task。
++	recovered, e := newGuard.rebindNormalFilesystemOriginLocked(ctx, s, system, nil, pinned, ns, root)
+ 	require.NoError(t, e)
+ 	defer recovered.close()
+-	final, e := recovered.observe(ctx)
++	recovered.mu.Lock()
++	final, e := recovered.observeLocked(ctx, s)
++	recovered.mu.Unlock()
+ 	require.NoError(t, e)
+ 	require.Equal(t, observed.IntentSHA256, final.IntentSHA256)
+ 	for name, h := range rawBefore {
+@@ -355,5 +389,5 @@
+ 		require.NoError(t, e)
+ 		require.Equal(t, h, physicalDigest(b))
+ 	}
+-	normalFilesystemNativeSave("filesystem-origin.json", map[string]any{"id": "PG17-S-FILESYSTEM-ORIGIN-001", "scope": "REAL_369_SWITCH_ROOT_EXT4_DEV_SOURCE_NOT_PG_NORMAL", "observation": final, "same_namespace_and_root_as_PID1": true, "hidden_detached_RW_O_PATH_rejected": true, "hidden_RW_cwd_rejected": true, "hidden_shared_write_mapping_rejected": true, "private_COW_allowed": true, "new_Guard_explicit_sync_no_bytes_changed": true, "actual_original_8_preparation_WAL": true, "actual_formal_Bootstrap": true, "PGDATA_recreate_warmup_actual_UID1000": true, "runtime_observe_with_other_live_task": true, "actual_System_programs_are_standins": true, "Host_challenge_is_fixture": true, "PG_executed": false, "normal_authorized": false, "E": 0})
+-}
++	normalFilesystemNativeSave("filesystem-origin.json", map[string]any{"id": "PG17-S-FILESYSTEM-ORIGIN-001", "scope": "REAL_369_SWITCH_ROOT_EXT4_DEV_SOURCE_NOT_PG_NORMAL", "observation": final, "same_namespace_and_root_as_PID1": true, "hidden_detached_RW_O_PATH_rejected": true, "hidden_RW_cwd_rejected": true, "hidden_shared_write_mapping_rejected": true, "private_COW_allowed": true, "new_Guard_explicit_sync_no_bytes_changed": true, "reference_and_pinned_layout_version": reference.LayoutVersion, "reference_equals_namespace_root_FD_handoff": reference == pinned, "zero_layout_rejected_before_recovery": true, "rebind_exact_original_FDs_passed": true, "actual_original_8_preparation_WAL": true, "actual_formal_Bootstrap": true, "PGDATA_recreate_warmup_actual_UID1000": true, "runtime_observe_with_other_live_task": true, "actual_System_programs_are_standins": true, "Host_challenge_is_fixture": true, "PG_executed": false, "normal_authorized": false, "E": 0})
++}

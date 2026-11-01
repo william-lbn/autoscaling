@@ -1,0 +1,34 @@
+{
+  "old_stage_count": 208,
+  "old_stage_sha256": "c62cb88d3fc4d00d72de1549614596606b9ddc0aa715ea3005ef13b10ffc767b",
+  "old_manifest_sha256": "dba327908725f3b32a362694c9b184f4939e65e506e48010642f558fd938485b",
+  "old_freeze": "/data/neon-build/validation/normal-filesystem-origin-source-freeze-20261101",
+  "old_actual_S": "/data/neon-build/validation/filesystem-origin-native-20261031T235617Z-19640d",
+  "old_actual_S_ELF": "63bfb34a98f37795cc3a544e9d86e28385e8f29a19c98294fb7c193cec8444f3",
+  "old_receipts_unchanged": true,
+  "changed_paths": {
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go": {
+      "before": "fe5177d4f7ff9c72aee5abd1a87529b3669bb4b0d57544d1b1f068ddf2d176f8",
+      "after": "49263c65321ff2db81b37c035d50099663ac7f0f2ab8c789569a5c24ee5852d8",
+      "old_source_copy": "docs/validation/normal-filesystem-origin-source-20261101/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go.txt",
+      "new_source_copy": "docs/validation/normal-filesystem-origin-layout-reference-v2-20261101/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux.go.txt"
+    },
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_linux_test.go": {
+      "before": "2474ad70710063bba3cd62e16e845e68e286231a613a20125a58320068112307",
+      "after": "381a4109c3e2b013066c506ade6ac42e9c11755808d482916d3173f28f8639b2",
+      "old_source_copy": "docs/validation/normal-filesystem-origin-source-20261101/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux_test.go.txt",
+      "new_source_copy": "docs/validation/normal-filesystem-origin-layout-reference-v2-20261101/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_linux_test.go.txt"
+    },
+    "pkg/dsga/resourceguard/normal_filesystem_origin_source_native_test.go": {
+      "before": "0aeea59722ff746e1072560d7b6ee959568176a9416ce2bcd5fdee441cce076e",
+      "after": "c324f0b774e6dcb355f68f3c3c85cd826ef268fead4e610485df49713c45f4b1",
+      "old_source_copy": "docs/validation/normal-filesystem-origin-source-20261101/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_native_test.go.txt",
+      "new_source_copy": "docs/validation/normal-filesystem-origin-layout-reference-v2-20261101/source/pkg/dsga/resourceguard/normal_filesystem_origin_source_native_test.go.txt"
+    }
+  },
+  "remaining_7_sources_byte_identical": true,
+  "old_208_manifest_is_historical_not_current_source_certification": true,
+  "new_manifest_is_current_union": true,
+  "old_25_race_roots_117_subcases_not_relabelled_as_new_source_execution": true,
+  "old_failed_nonce_history_and_artifacts_preserved": true
+}

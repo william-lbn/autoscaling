@@ -1,0 +1,109 @@
+{
+  "scope": "FS_ORIGINAL_NAMESPACE_FD_DURABILITY_COMPONENT_ONLY",
+  "base": "955ad6477ba89ade35ffaf73828d53d44a0bb3b8",
+  "unit": {
+    "cohort": "/data/neon-build/validation/filesystem-origin-native-build-20261101T001436Z-570b76",
+    "race": true,
+    "roots": 10,
+    "subcases": 39,
+    "fail": 0,
+    "skip": 0,
+    "direct_old_FS_roots": 9,
+    "new_roots": 1,
+    "new_cases": [
+      {
+        "id": "PG17-U-FS-ORIGIN-009",
+        "root": "TestNormalFilesystemVisibleCompleteCannotCreateWitness",
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "new_in_this_increment": false,
+        "source_comment_alias": null
+      },
+      {
+        "id": "PG17-U-FS-ORIGIN-003",
+        "root": "TestNormalFilesystemExplicitSyncIdentityAndCurrentGuard",
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "new_in_this_increment": false,
+        "source_comment_alias": null
+      },
+      {
+        "id": "PG17-U-FS-ORIGIN-006",
+        "root": "TestNormalFilesystemRealStateRejectsSameBytesNewInode",
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "new_in_this_increment": false,
+        "source_comment_alias": null
+      },
+      {
+        "id": "PG17-U-FS-ORIGIN-007",
+        "root": "TestNormalFilesystemSameSuperblockPreflightRejectsNonFixedState",
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "new_in_this_increment": false,
+        "source_comment_alias": null
+      },
+      {
+        "id": "PG17-U-FS-ORIGIN-008",
+        "root": "TestNormalFilesystemTransferredFDRemainsOriginalAfterClose",
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "new_in_this_increment": false,
+        "source_comment_alias": null
+      },
+      {
+        "id": "PG17-U-FS-ORIGIN-010",
+        "root": "TestNormalFilesystemReferenceCarriesOriginalLayout",
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "new_in_this_increment": true,
+        "source_comment_alias": "PG17-U-FS-010"
+      },
+      {
+        "id": "PG17-U-FS-ORIGIN-005",
+        "root": "TestNormalFilesystemMountParserRejectsAmbiguity",
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "new_in_this_increment": false,
+        "source_comment_alias": null
+      },
+      {
+        "id": "PG17-U-FS-ORIGIN-004",
+        "root": "TestNormalFilesystemFixedGraphPreservesPersistentHoles",
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "new_in_this_increment": false,
+        "source_comment_alias": null
+      },
+      {
+        "id": "PG17-U-FS-ORIGIN-002",
+        "root": "TestNormalFilesystemDAXAllowsOnlyExplicitNever",
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "new_in_this_increment": false,
+        "source_comment_alias": null
+      },
+      {
+        "id": "PG17-U-FS-ORIGIN-001",
+        "root": "TestNormalFilesystemActual369MountInfo",
+        "package": "github.com/neondatabase/autoscaling/pkg/dsga/resourceguard",
+        "new_in_this_increment": false,
+        "source_comment_alias": null
+      }
+    ]
+  },
+  "native": {
+    "id": "PG17-S-FILESYSTEM-ORIGIN-001",
+    "root": "TestNativeNormalFilesystemOriginalSource",
+    "same_existing_logical_root_new_source_validation": true,
+    "new_roots": 0,
+    "cohort": "/data/neon-build/validation/filesystem-origin-native-20261101T001537Z-640aa7",
+    "real_KVM": true,
+    "Guest_exit": 0,
+    "QEMU_exit": 0,
+    "layout_version": 2,
+    "mounts": 17,
+    "reference_equals_pinned_FD_reference": true,
+    "zero_layout_rejected_before_recovery_enrollment": true,
+    "correct_original_namespace_and_root_FDs_rebind": true,
+    "new_Guard_same_Root": true,
+    "new_Root_broker_rebind": false,
+    "PG_executed": false,
+    "System_services_standins": true,
+    "Host_challenge_fixture": true
+  },
+  "normal_authorized": false,
+  "continuous_writers_closed": false,
+  "E": 0
+}
