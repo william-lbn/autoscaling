@@ -36,7 +36,7 @@ func normalSystemV3InitEntries() []string {
 		"::once:" + prefix + "kernel-version",
 		"::respawn:" + prefix + "network",
 		"::respawn:" + prefix + "udev",
-		"::wait:" + prefix + "udev-init",
+		"::once:" + prefix + "udev-init",
 		"::respawn:" + prefix + "acpi",
 		"::respawn:" + prefix + "logs",
 		"::respawn:" + prefix + "clock",

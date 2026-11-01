@@ -169,6 +169,12 @@ func (v *normalSystemRoleV2Runtime) prepareOriginalRoleLocked(ctx context.Contex
 		if e := v.stock.checkLocked(ctx, state, rec); e != nil {
 			return nil, e
 		}
+		if plan.role == "compute" {
+			// broker.mu→resource已持有；只fresh核，不在事务内等待。
+			if e := v.stock.computeStartupLocked(ctx, state, rec, v.broker); e != nil {
+				return nil, errors.Join(ErrUnknown, e)
+			}
+		}
 	}
 	endpoints, e := v.stdio.prepareOriginalLocked(ctx, state, rec, plan.role)
 	if e != nil {

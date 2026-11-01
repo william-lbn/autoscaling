@@ -1,0 +1,27 @@
+{
+  "archive": "/data/neon-build/validation/root-udev-kind3-build-20261101T185417Z-11e57a/source/sources/eudev-3.2.14.tar.gz",
+  "sha256": "8da4319102f24abbf7fff5ce9c416af848df163b29590e666d334cc1927f006f",
+  "facts": [
+    {
+      "member": "eudev-3.2.14/src/udev/udev-ctrl.c",
+      "sha256": "b1712d1439b0e62dc9e343b45799c2ae6f4eb428f239204170ad550f0cb92c15",
+      "selected_source": [
+        "84:         uctrl->udev = udev;\n85: \n86:         if (fd < 0) {\n87:                 uctrl->sock = socket(AF_LOCAL, SOCK_SEQPACKET|SOCK_NONBLOCK|SOCK_CLOEXEC, 0);\n88:                 if (uctrl->sock < 0) {\n89:                         log_error_errno(errno, \"error getting socket: %m\");\n90:                         udev_ctrl_unref(uctrl);\n91:                         return NULL;",
+        "124:                         return err;\n125:                 }\n126: \n127:                 err = listen(uctrl->sock, 0);\n128:                 if (err < 0) {\n129:                         err = -errno;\n130:                         log_error_errno(errno, \"listen failed: %m\");\n131:                         return err;"
+      ]
+    },
+    {
+      "member": "eudev-3.2.14/src/libudev/libudev-monitor.c",
+      "sha256": "e5cbc5e1e50a1e1635eea8e91c4cc3690034e9a5ed1673597caa8a3f5da1a461",
+      "selected_source": [
+        "64: \n65: enum udev_monitor_netlink_group {\n66:         UDEV_MONITOR_NONE,\n67:         UDEV_MONITOR_KERNEL,\n68:         UDEV_MONITOR_UDEV,\n69: };\n70: \n71: #define UDEV_MONITOR_MAGIC                0xfeedcafe",
+        "192:                 } else\n193:                         group = UDEV_MONITOR_UDEV;\n194:         } else if (streq(name, \"kernel\"))\n195:                 group = UDEV_MONITOR_KERNEL;\n196:         else\n197:                 return NULL;\n198: \n199:         udev_monitor = udev_monitor_new(udev);",
+        "214:         }\n215: \n216:         udev_monitor->snl.nl.nl_family = AF_NETLINK;\n217:         udev_monitor->snl.nl.nl_groups = group;\n218: \n219:         /* default destination for sending */\n220:         udev_monitor->snl_destination.nl.nl_family = AF_NETLINK;\n221:         udev_monitor->snl_destination.nl.nl_groups = UDEV_MONITOR_UDEV;",
+        "218: \n219:         /* default destination for sending */\n220:         udev_monitor->snl_destination.nl.nl_family = AF_NETLINK;\n221:         udev_monitor->snl_destination.nl.nl_groups = UDEV_MONITOR_UDEV;\n222: \n223:         return udev_monitor;\n224: }\n225: ",
+        "620:                 return NULL;\n621:         }\n622: \n623:         if (snl.nl.nl_groups == 0) {\n624:                 /* unicast message, check if we trust the sender */\n625:                 if (udev_monitor->snl_trusted_sender.nl.nl_pid == 0 ||\n626:                     snl.nl.nl_pid != udev_monitor->snl_trusted_sender.nl.nl_pid) {\n627:                         log_debug(\"unicast netlink message ignored\");",
+        "627:                         log_debug(\"unicast netlink message ignored\");\n628:                         return NULL;\n629:                 }\n630:         } else if (snl.nl.nl_groups == UDEV_MONITOR_KERNEL) {\n631:                 if (snl.nl.nl_pid > 0) {\n632:                         log_debug(\"multicast kernel netlink message from PID %\"PRIu32\" ignored\",\n633:                                   snl.nl.nl_pid);\n634:                         return NULL;"
+      ]
+    }
+  ],
+  "meaning": "original main creates control SOCK_SEQPACKET listen and kernel group1; observation uses original pinned Task FD/OFD not path existence; actual runtime remains required"
+}

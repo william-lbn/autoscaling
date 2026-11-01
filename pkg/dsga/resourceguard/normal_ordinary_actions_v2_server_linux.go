@@ -206,6 +206,11 @@ func (q *normalOrdinaryActionsV2) handle(conn *net.UnixConn, endpoint normalOrdi
 		return e
 	}
 	normalSystemRoleDiagnosticRecord(call, normalRoleDiagFrameDecoded, endpoint.role, 0, uint64(action))
+	if action == normalOrdinaryUdevInitAction {
+		if e = q.awaitOriginalUdevReady(call, cred, peer); e != nil {
+			return e
+		}
+	}
 	var response []byte
 	var cold *normalOrdinaryUdevV2ColdTrigger
 	var originalUdev *normalOrdinaryUdevV2

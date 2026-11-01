@@ -226,6 +226,12 @@ func (v *normalSystemRoleService) handle(conn *net.UnixConn) error {
 	}
 	queue, queueCancel := context.WithTimeout(v.ctx, 90*time.Second)
 	defer queueCancel()
+	if role == "compute" {
+		// 原排队预算内锁外等待，尚无pending/stdio/exec效果。
+		if e = v.awaitComputeStartup(queue); e != nil {
+			return normalSystemRoleServiceWriteReply(conn, request, normalSystemRoleServiceUnknown, 0, time.Now().Add(5*time.Second))
+		}
+	}
 	run, e := v.spawnRole(queue, role, peer)
 	result := uint64(0)
 	if e != nil {

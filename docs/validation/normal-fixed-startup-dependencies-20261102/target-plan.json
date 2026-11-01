@@ -1,0 +1,39 @@
+{
+  "base": "3d56c406d5acb9fd3a2ffc0cb4b3207fbe486d23",
+  "production_files": 7,
+  "test_files": 3,
+  "direct_targets": [
+    "TestNormalOriginalUdevSocketReadiness",
+    "TestNormalOriginalUdevReadinessClosedAndUnowned",
+    "TestNormalFixedStartupRequiresOriginalSources",
+    "TestNormalSystemV3ColdStartupOrdering"
+  ],
+  "coupled_original_target_prefixes": [
+    "TestNormalSystemRoleService",
+    "TestNormalOrdinaryActionsV2CannotPrepareWithoutOriginalSources",
+    "TestOrdinaryUdevV2RawJSONAndNewGuardNeverProduceSource"
+  ],
+  "required_artifacts": [
+    "resource-guard.real",
+    "vm-builder.real",
+    "service.test",
+    "host-memory.test"
+  ],
+  "source_freeze_sha256": "e5db1559f6cd57e408b425029824e11dcc4ceea452bf79ce50d5625f81501a7b",
+  "not_claimed": [
+    "Root real9 complete",
+    "real Compute PG17 startup",
+    "normal safe lowering",
+    "K8s",
+    "end to end"
+  ],
+  "lock_order": "broker.mu -> resource flock -> authority.producerMu; no wait under resource/execMu",
+  "retry": "only errNormalStartupUnpublished; Unknown/replacement/invalid candidate/socket/OFD errors return immediately",
+  "resource_request": {
+    "Go": {
+      "cpu": 4,
+      "memory_bytes": 4294967296
+    }
+  },
+  "production_budget_changes": false
+}

@@ -1,0 +1,798 @@
+--- a/normal_system_v3.go
++++ b/normal_system_v3.go
+@@ -36,7 +36,7 @@
+ 		"::once:" + prefix + "kernel-version",
+ 		"::respawn:" + prefix + "network",
+ 		"::respawn:" + prefix + "udev",
+-		"::wait:" + prefix + "udev-init",
++		"::once:" + prefix + "udev-init",
+ 		"::respawn:" + prefix + "acpi",
+ 		"::respawn:" + prefix + "logs",
+ 		"::respawn:" + prefix + "clock",
+--- a/normal_ordinary_actions_v2_server_linux.go
++++ b/normal_ordinary_actions_v2_server_linux.go
+@@ -206,6 +206,11 @@
+ 		return e
+ 	}
+ 	normalSystemRoleDiagnosticRecord(call, normalRoleDiagFrameDecoded, endpoint.role, 0, uint64(action))
++	if action == normalOrdinaryUdevInitAction {
++		if e = q.awaitOriginalUdevReady(call, cred, peer); e != nil {
++			return e
++		}
++	}
+ 	var response []byte
+ 	var cold *normalOrdinaryUdevV2ColdTrigger
+ 	var originalUdev *normalOrdinaryUdevV2
+--- a/normal_ordinary_udev_v2_source_linux.go
++++ b/normal_ordinary_udev_v2_source_linux.go
+@@ -40,6 +40,7 @@
+ 	catalog              *normalOrdinaryUdevV2Catalog
+ 	ledger               normalOrdinaryUdevV2Ledger
+ 	cold                 *normalOrdinaryUdevV2ColdTrigger
++	readiness            *normalOrdinaryUdevReadiness
+ 	done                 chan error
+ 	changed              chan struct{}
+ 	once                 sync.Once
+@@ -48,13 +49,15 @@
+ 	preparationReference normalOrdinaryUdevV2PreparationReference
+ }
+ type normalOrdinaryUdevV2ColdTrigger struct {
+-	source     *normalOrdinaryUdevV2
+-	uuid       string
+-	peer       *os.File
+-	credential unix.Ucred
+-	next       int
+-	pending    map[string]bool
+-	finished   bool
++	source        *normalOrdinaryUdevV2
++	uuid          string
++	peer          *os.File
++	credential    unix.Ucred
++	next          int
++	pending       map[string]bool
++	finished      bool
++	confirmed     bool
++	initCandidate *normalSystemRoleLeaseCandidate
+ }
+ 
+ // 唯一首次阶段：原5FD→FS2→KernelR2→MemoryR2后，authority prepared且未COMMIT。
+@@ -545,6 +548,18 @@
+ 		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagBeginPeer)
+ 		return nil, ErrUnknown
+ 	}
++	// 等待已在锁外完成；首批发出前仍在原事务fresh核同原udev和真实socket。
++	if e := q.ensureOriginalUdevReadyLocked(ctx, state, r); e != nil {
++		return nil, errors.Join(ErrUnknown, e)
++	}
++	initLease, e := normalStartupActiveLeaseLocked(ctx, q, state, r, "udev-init")
++	if e != nil {
++		return nil, errors.Join(ErrUnknown, e)
++	}
++	defer initLease.close()
++	if e = initLease.matchOriginalMainPacket(ctx, credential, peer); e != nil {
++		return nil, e
++	}
+ 	uuid, e := normalOrdinaryUdevV2NewTriggerUUID()
+ 	if e != nil {
+ 		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagBeginUUID)
+@@ -555,7 +570,7 @@
+ 		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagBeginDuplicate)
+ 		return nil, e
+ 	}
+-	t := &normalOrdinaryUdevV2ColdTrigger{source: q, uuid: uuid, peer: os.NewFile(uintptr(fd), "original cold-trigger init main peer"), credential: *credential}
++	t := &normalOrdinaryUdevV2ColdTrigger{source: q, uuid: uuid, peer: os.NewFile(uintptr(fd), "original cold-trigger init main peer"), credential: *credential, initCandidate: initLease.candidate}
+ 	q.mu.Lock()
+ 	if q.closed || q.cold != nil {
+ 		q.mu.Unlock()
+@@ -585,6 +600,17 @@
+ 		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagAdvanceLease)
+ 		return e
+ 	}
++	if e := q.ensureOriginalUdevReadyLocked(ctx, state, r); e != nil {
++		return errors.Join(ErrUnknown, e)
++	}
++	initLease, e := normalStartupActiveLeaseLocked(ctx, q, state, r, "udev-init")
++	if e != nil {
++		return errors.Join(ErrUnknown, e)
++	}
++	defer initLease.close()
++	if initLease.candidate != t.initCandidate {
++		return ErrUnknown
++	}
+ 	q.mu.Lock()
+ 	defer q.mu.Unlock()
+ 	if q.closed || q.cold != t || q.ledger.failed != nil {
+@@ -677,11 +703,24 @@
+ 	if e := q.originalMainLocked(ctx, state, r, "udev-init", credential, peer); e != nil {
+ 		return e
+ 	}
++	if e := q.ensureOriginalUdevReadyLocked(ctx, state, r); e != nil {
++		return errors.Join(ErrUnknown, e)
++	}
++	initLease, e := normalStartupActiveLeaseLocked(ctx, q, state, r, "udev-init")
++	if e != nil {
++		return errors.Join(ErrUnknown, e)
++	}
++	defer initLease.close()
++	if initLease.candidate != t.initCandidate {
++		return ErrUnknown
++	}
+ 	q.mu.Lock()
+ 	defer q.mu.Unlock()
+-	if q.closed || q.cold != t || !t.finished || q.ledger.failed != nil {
++	if q.closed || q.cold != t || !t.finished || t.confirmed || q.ledger.failed != nil {
+ 		return ErrUnknown
+ 	}
++	// 仅原请求最终完整核验后置位；Compute仍要求同candidate原唯一Wait0和exited见证。
++	t.confirmed = true
+ 	return nil
+ }
+ func (q *normalOrdinaryUdevV2) requireContinuousQualification() error {
+@@ -694,7 +733,11 @@
+ 	q.closeOnce.Do(func() {
+ 		q.mu.Lock()
+ 		q.closed = true
++		readiness := q.readiness
+ 		q.mu.Unlock()
++		if readiness != nil {
++			readiness.close()
++		}
+ 		if q.monitor != nil {
+ 			q.monitor.close()
+ 		}
+--- a/normal_system_role_service_listener_linux.go
++++ b/normal_system_role_service_listener_linux.go
+@@ -226,6 +226,12 @@
+ 	}
+ 	queue, queueCancel := context.WithTimeout(v.ctx, 90*time.Second)
+ 	defer queueCancel()
++	if role == "compute" {
++		// 原排队预算内锁外等待，尚无pending/stdio/exec效果。
++		if e = v.awaitComputeStartup(queue); e != nil {
++			return normalSystemRoleServiceWriteReply(conn, request, normalSystemRoleServiceUnknown, 0, time.Now().Add(5*time.Second))
++		}
++	}
+ 	run, e := v.spawnRole(queue, role, peer)
+ 	result := uint64(0)
+ 	if e != nil {
+--- a/normal_system_role_v2_runtime_linux.go
++++ b/normal_system_role_v2_runtime_linux.go
+@@ -169,6 +169,12 @@
+ 		if e := v.stock.checkLocked(ctx, state, rec); e != nil {
+ 			return nil, e
+ 		}
++		if plan.role == "compute" {
++			// broker.mu→resource已持有；只fresh核，不在事务内等待。
++			if e := v.stock.computeStartupLocked(ctx, state, rec, v.broker); e != nil {
++				return nil, errors.Join(ErrUnknown, e)
++			}
++		}
+ 	}
+ 	endpoints, e := v.stdio.prepareOriginalLocked(ctx, state, rec, plan.role)
+ 	if e != nil {
+--- /dev/null
++++ b/normal_system_role_startup_dependencies_linux.go
+@@ -0,0 +1,193 @@
++//go:build linux
++
++package resourceguard
++
++import (
++	"context"
++	"errors"
++	"golang.org/x/sys/unix"
++	"os"
++	"time"
++)
++
++// 仅表示原受控publisher尚未发布/应用尚未就绪；任何Unknown不进入等待重试。
++var errNormalStartupUnpublished = errors.New("original fixed startup dependency not yet published")
++
++// caller持原resource flock且已完成q.checkLocked。只借原publisher，不从WAL/PID补建。
++func normalStartupPublisher(q *normalOrdinaryUdevV2) (*normalSystemRoleLeasePublisher, error) {
++	if q == nil || q.authority == nil || q.authority.admission == nil || q.g == nil || lookupNormalSystemAuthority(q.g) != q.authority || !q.authority.admission.businessAllowed() {
++		return nil, ErrUnknown
++	}
++	normalSystemRoleLeasePublishers.Lock()
++	p := normalSystemRoleLeasePublishers.byAuthority[q.authority]
++	normalSystemRoleLeasePublishers.Unlock()
++	if p == nil {
++		return nil, errNormalStartupUnpublished
++	}
++	if p.authority != q.authority {
++		return nil, ErrUnknown
++	}
++	return p, nil
++}
++func normalStartupActiveLeaseLocked(ctx context.Context, q *normalOrdinaryUdevV2, state *lockedState, r *record, role string) (*normalSystemRoleMainLeaseHandle, error) {
++	p, e := normalStartupPublisher(q)
++	if e != nil {
++		return nil, e
++	}
++	q.authority.producerMu.Lock()
++	c := p.roles[role]
++	if c == nil {
++		q.authority.producerMu.Unlock()
++		return nil, errNormalStartupUnpublished
++	}
++	active := c.phase == normalSystemRoleLeaseActivePhase
++	q.authority.producerMu.Unlock()
++	// prepare/activate原本同一resource事务；外部可见非Active不是可重试的未发布。
++	if !active {
++		return nil, ErrUnknown
++	}
++	lease, e := q.g.normalSystemOriginalRoleMainLeaseLocked(ctx, state, r, role)
++	if e != nil {
++		return nil, e
++	}
++	h, ok := lease.(*normalSystemRoleMainLeaseHandle)
++	if !ok || h == nil || h.candidate != c {
++		if lease != nil {
++			lease.close()
++		}
++		return nil, ErrUnknown
++	}
++	return h, nil
++}
++
++// 生产等待在broker/resource/exec锁外；timer仅唤醒，绝不根据经过时间授ready。
++func (q *normalOrdinaryActionsV2) awaitOriginalUdevReady(ctx context.Context, credential *unix.Ucred, peer *os.File) error {
++	if q == nil || q.g == nil || ctx == nil || credential == nil || peer == nil {
++		return ErrUnknown
++	}
++	ticker := time.NewTicker(100 * time.Millisecond)
++	defer ticker.Stop()
++	for {
++		if ctx.Err() != nil {
++			return errors.Join(ErrUnknown, ctx.Err())
++		}
++		e := q.g.withRecord(ctx, func(r *record, state *lockedState) error {
++			source, e := q.originalUdevSourceLocked()
++			if e != nil {
++				return e
++			}
++			if e = source.checkLocked(ctx, state, r); e != nil {
++				return e
++			}
++			if e = source.originalMainLocked(ctx, state, r, "udev-init", credential, peer); e != nil {
++				return e
++			}
++			return source.ensureOriginalUdevReadyLocked(ctx, state, r)
++		})
++		if e == nil {
++			return nil
++		}
++		if e != errNormalStartupUnpublished {
++			return e
++		}
++		select {
++		case <-ctx.Done():
++			return errors.Join(ErrUnknown, ctx.Err())
++		case <-ticker.C:
++		}
++	}
++}
++
++// caller已持broker.mu→resource；与原spawn/finish同序，不反向取broker或exec锁。
++func (q *normalOrdinaryUdevV2) computeStartupLocked(ctx context.Context, state *lockedState, r *record, b *normalSystemRoleBrokerComponent) error {
++	if q == nil || b == nil || b.guard != q.g {
++		return ErrUnknown
++	}
++	if e := q.checkLocked(ctx, state, r); e != nil {
++		return e
++	}
++	if e := q.ensureOriginalUdevReadyLocked(ctx, state, r); e != nil {
++		return e
++	}
++	p, e := normalStartupPublisher(q)
++	if e != nil {
++		return e
++	}
++	q.authority.producerMu.Lock()
++	defer q.authority.producerMu.Unlock()
++	c := p.roles["udev-init"]
++	if c == nil {
++		return errNormalStartupUnpublished
++	}
++	run := b.byRole["udev-init"]
++	if run == nil || run.child != c.input.Child || run.pending.Nonce != c.input.Nonce || c.publisher != p {
++		return ErrUnknown
++	}
++	if run.unknown || c.phase == normalSystemRoleLeaseUnknownPhase {
++		return ErrUnknown
++	}
++	if c.phase == normalSystemRoleLeaseActivePhase || c.phase == normalSystemRoleLeasePendingExitPhase {
++		if e := c.verifyOriginalHistoryBindingLocked(ctx, state, r); e != nil {
++			return e
++		}
++		return errNormalStartupUnpublished
++	}
++	if c.phase != normalSystemRoleLeaseExitedPhase || !run.terminal || c.waitResult == nil || !c.waitResult.Status.Exited() || c.waitResult.Status.ExitStatus() != 0 || c.waitResult.ExitCode != 0 {
++		return ErrUnknown
++	}
++	if e := c.verifyOriginalHistoryBindingLocked(ctx, state, r); e != nil {
++		return e
++	}
++	q.mu.Lock()
++	cold := q.cold
++	ready := !q.closed && q.ledger.failed == nil && cold != nil && cold.finished && cold.confirmed && cold.initCandidate == c
++	q.mu.Unlock()
++	if !ready {
++		return ErrUnknown
++	}
++	name := normalSystemRoleStageName(run.pending.Nonce, "exited")
++	expected, ok := run.seen[name]
++	if !ok {
++		return ErrUnknown
++	}
++	got, e := readNormalSystemRoleFileWitness(state, name)
++	if e != nil || got != expected {
++		return errors.Join(ErrUnknown, e)
++	}
++	return nil
++}
++func (v *normalSystemRoleService) awaitComputeStartup(ctx context.Context) error {
++	if v == nil || v.source == nil {
++		return ErrUnknown
++	}
++	if !normalSystemStockUdevSelected(v.source.manifest) {
++		return nil
++	}
++	runtime, e := originalNormalSystemRoleV2Runtime(v.broker)
++	if e != nil || runtime.stock == nil {
++		return errors.Join(ErrUnknown, e)
++	}
++	ticker := time.NewTicker(100 * time.Millisecond)
++	defer ticker.Stop()
++	for {
++		if ctx == nil || ctx.Err() != nil {
++			return ErrUnknown
++		}
++		v.broker.mu.Lock()
++		e = v.broker.guard.withRecord(ctx, func(r *record, state *lockedState) error {
++			return runtime.stock.computeStartupLocked(ctx, state, r, v.broker)
++		})
++		v.broker.mu.Unlock()
++		if e == nil {
++			return nil
++		}
++		if e != errNormalStartupUnpublished {
++			return e
++		}
++		select {
++		case <-ctx.Done():
++			return errors.Join(ErrUnknown, ctx.Err())
++		case <-ticker.C:
++		}
++	}
++}
+--- /dev/null
++++ b/normal_ordinary_udev_v2_readiness_linux.go
+@@ -0,0 +1,252 @@
++//go:build linux
++
++package resourceguard
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"golang.org/x/sys/unix"
++	"io"
++	"os"
++	"strconv"
++	"sync"
++)
++
++const normalUdevOriginalControlPath = "/run/udev/control"
++const normalUdevReadinessMaximumFDs = 1024
++
++// 只持原active main的真实dup；每次使用还核同候选/原FD/OFD及当前socket状态。
++type normalOrdinaryUdevReadiness struct {
++	mu                           sync.Mutex
++	closed                       bool
++	candidate                    *normalSystemRoleLeaseCandidate
++	task                         *normalSystemOriginalTask
++	control, netlink             *os.File
++	controlNumber, netlinkNumber int
++}
++
++func (p *normalOrdinaryUdevReadiness) close() {
++	if p == nil {
++		return
++	}
++	p.mu.Lock()
++	defer p.mu.Unlock()
++	if p.closed {
++		return
++	}
++	p.closed = true
++	if p.control != nil {
++		p.control.Close()
++	}
++	if p.netlink != nil {
++		p.netlink.Close()
++	}
++	if p.task != nil {
++		p.task.close()
++	}
++}
++
++// kind=1: 原control，kind=2: 原kernel netlink，0: 非候选。ready只取内核实际状态。
++func normalUdevReadinessSocket(fd int) (kind int, ready bool, err error) {
++	var st unix.Stat_t
++	if e := unix.Fstat(fd, &st); e != nil {
++		return 0, false, e
++	}
++	if st.Mode&unix.S_IFMT != unix.S_IFSOCK {
++		return 0, false, nil
++	}
++	domain, e := unix.GetsockoptInt(fd, unix.SOL_SOCKET, unix.SO_DOMAIN)
++	if e != nil {
++		return 0, false, e
++	}
++	typ, e := unix.GetsockoptInt(fd, unix.SOL_SOCKET, unix.SO_TYPE)
++	if e != nil {
++		return 0, false, e
++	}
++	address, e := unix.Getsockname(fd)
++	if e != nil {
++		return 0, false, e
++	}
++	if domain == unix.AF_UNIX && typ == unix.SOCK_SEQPACKET {
++		a, ok := address.(*unix.SockaddrUnix)
++		if !ok {
++			return 0, false, ErrUnknown
++		}
++		listening, e := unix.GetsockoptInt(fd, unix.SOL_SOCKET, unix.SO_ACCEPTCONN)
++		if e != nil {
++			return 0, false, e
++		}
++		if a.Name != normalUdevOriginalControlPath {
++			if listening != 0 {
++				return 0, false, ErrUnknown
++			}
++			return 0, false, nil
++		}
++		if listening != 0 && listening != 1 {
++			return 0, false, ErrUnknown
++		}
++		return 1, listening == 1, nil
++	}
++	if domain == unix.AF_NETLINK {
++		protocol, e := unix.GetsockoptInt(fd, unix.SOL_SOCKET, unix.SO_PROTOCOL)
++		if e != nil {
++			return 0, false, e
++		}
++		if protocol != unix.NETLINK_KOBJECT_UEVENT {
++			return 0, false, nil
++		}
++		if typ != unix.SOCK_RAW && typ != unix.SOCK_DGRAM {
++			return 0, false, ErrUnknown
++		}
++		a, ok := address.(*unix.SockaddrNetlink)
++		if !ok || a.Groups&^uint32(1) != 0 {
++			return 0, false, ErrUnknown
++		}
++		return 2, a.Pid != 0 && a.Groups == 1, nil
++	}
++	return 0, false, nil
++}
++func (p *normalOrdinaryUdevReadiness) recheckFile(task *normalSystemOriginalTask, held *os.File, number, kind int) (bool, error) {
++	fd, e := unix.PidfdGetfd(task.pidfd, number, 0)
++	if e != nil {
++		return false, e
++	}
++	defer unix.Close(fd)
++	if e = normalRoleStdioSameOFD(int(held.Fd()), fd); e != nil {
++		return false, e
++	}
++	k, ready, e := normalUdevReadinessSocket(fd)
++	if e != nil || k != kind {
++		return false, errors.Join(ErrUnknown, e)
++	}
++	return ready, nil
++}
++func (p *normalOrdinaryUdevReadiness) refresh(task *normalSystemOriginalTask) error {
++	p.mu.Lock()
++	defer p.mu.Unlock()
++	if p.closed || p.task == nil || task == nil {
++		return ErrUnknown
++	}
++	task.mu.Lock()
++	defer task.mu.Unlock()
++	if e := task.verify(); e != nil {
++		return e
++	}
++	if e := arrayMatchPIDFD(task.pidfd, p.task.pidfd); e != nil {
++		return e
++	}
++	if p.control == nil || p.netlink == nil {
++		fd, e := unix.Openat(task.procfd, "fd", unix.O_RDONLY|unix.O_DIRECTORY|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0)
++		if e != nil {
++			return e
++		}
++		directory := os.NewFile(uintptr(fd), "original-udev-main-fds")
++		names, e := directory.Readdirnames(normalUdevReadinessMaximumFDs + 1)
++		directory.Close()
++		if e != nil && !errors.Is(e, io.EOF) {
++			return e
++		}
++		if len(names) > normalUdevReadinessMaximumFDs {
++			return ErrUnknown
++		}
++		for _, name := range names {
++			n, e := strconv.Atoi(name)
++			if e != nil || n < 0 || strconv.Itoa(n) != name {
++				return ErrUnknown
++			}
++			if p.control != nil && n == p.controlNumber || p.netlink != nil && n == p.netlinkNumber {
++				continue
++			}
++			dup, e := unix.PidfdGetfd(task.pidfd, n, 0)
++			if errors.Is(e, unix.EBADF) {
++				// 尚未捕获的FD可由原应用正常关闭；原Task前后真活才忽略该次扫描项。
++				// 已持有control/netlink从recheckFile走严格同OFD校验，不进此分支。
++				if e = task.verify(); e != nil {
++					return e
++				}
++				continue
++			}
++			if e != nil {
++				return e
++			}
++			kind, _, e := normalUdevReadinessSocket(dup)
++			if e != nil {
++				unix.Close(dup)
++				return e
++			}
++			if kind == 1 {
++				if p.control != nil {
++					unix.Close(dup)
++					return ErrUnknown
++				}
++				p.control, p.controlNumber = os.NewFile(uintptr(dup), "original-udev-control"), n
++			} else if kind == 2 {
++				if p.netlink != nil {
++					unix.Close(dup)
++					return ErrUnknown
++				}
++				p.netlink, p.netlinkNumber = os.NewFile(uintptr(dup), "original-udev-kernel-monitor"), n
++			} else {
++				unix.Close(dup)
++			}
++		}
++	}
++	controlReady, netlinkReady := false, false
++	var e error
++	if p.control != nil {
++		controlReady, e = p.recheckFile(task, p.control, p.controlNumber, 1)
++		if e != nil {
++			return e
++		}
++	}
++	if p.netlink != nil {
++		netlinkReady, e = p.recheckFile(task, p.netlink, p.netlinkNumber, 2)
++		if e != nil {
++			return e
++		}
++	}
++	if e = task.verify(); e != nil {
++		return e
++	}
++	if !controlReady || !netlinkReady {
++		return errNormalStartupUnpublished
++	}
++	return nil
++}
++func (q *normalOrdinaryUdevV2) ensureOriginalUdevReadyLocked(ctx context.Context, state *lockedState, r *record) error {
++	if q == nil || ctx == nil || ctx.Err() != nil {
++		return ErrUnknown
++	}
++	lease, e := normalStartupActiveLeaseLocked(ctx, q, state, r, "udev")
++	if e != nil {
++		return e
++	}
++	defer lease.close()
++	q.mu.Lock()
++	ready := q.readiness
++	closed := q.closed
++	q.mu.Unlock()
++	if closed {
++		return ErrUnknown
++	}
++	if ready == nil {
++		task, e := duplicateNormalSystemOriginalTask(lease.task)
++		if e != nil {
++			return e
++		}
++		ready = &normalOrdinaryUdevReadiness{candidate: lease.candidate, task: task, controlNumber: -1, netlinkNumber: -1}
++		q.mu.Lock()
++		if q.closed || q.readiness != nil {
++			q.mu.Unlock()
++			ready.close()
++			return ErrUnknown
++		}
++		q.readiness = ready
++		q.mu.Unlock()
++	}
++	if ready.candidate != lease.candidate {
++		return fmt.Errorf("%w: original udev generation changed", ErrUnknown)
++	}
++	return ready.refresh(lease.task)
++}
+--- /dev/null
++++ b/normal_system_role_startup_dependencies_linux_test.go
+@@ -0,0 +1,35 @@
++//go:build linux
++
++package resourceguard
++
++import (
++	"context"
++	"errors"
++	"testing"
++)
++
++// 缺原对象不能进入等待或获得许可；实际原lease/socket/Wait0正例由真PID1组件验证。
++func TestNormalFixedStartupRequiresOriginalSources(t *testing.T) {
++	t.Run("noPublisherAuthority", func(t *testing.T) {
++		if _, e := normalStartupPublisher(&normalOrdinaryUdevV2{}); !errors.Is(e, ErrUnknown) {
++			t.Fatalf("raw source: %v", e)
++		}
++	})
++	t.Run("noActionSource", func(t *testing.T) {
++		if e := (&normalOrdinaryActionsV2{}).awaitOriginalUdevReady(context.Background(), nil, nil); !errors.Is(e, ErrUnknown) {
++			t.Fatalf("raw action: %v", e)
++		}
++	})
++	t.Run("noOriginalComputeBroker", func(t *testing.T) {
++		if e := (&normalOrdinaryUdevV2{}).computeStartupLocked(context.Background(), nil, nil, nil); !errors.Is(e, ErrUnknown) {
++			t.Fatalf("raw compute: %v", e)
++		}
++	})
++	t.Run("canceledReadiness", func(t *testing.T) {
++		ctx, cancel := context.WithCancel(context.Background())
++		cancel()
++		if e := (&normalOrdinaryUdevV2{}).ensureOriginalUdevReadyLocked(ctx, nil, nil); !errors.Is(e, ErrUnknown) {
++			t.Fatalf("canceled: %v", e)
++		}
++	})
++}
+--- /dev/null
++++ b/normal_ordinary_udev_v2_readiness_linux_test.go
+@@ -0,0 +1,82 @@
++//go:build linux
++
++package resourceguard
++
++import (
++	"errors"
++	"golang.org/x/sys/unix"
++	"os"
++	"path/filepath"
++	"testing"
++)
++
++// 真实内核socket状态定向U，不构造RoleMainLease或Source正例。
++func TestNormalOriginalUdevSocketReadiness(t *testing.T) {
++	t.Run("nonSocket", func(t *testing.T) {
++		r, w, e := os.Pipe()
++		if e != nil {
++			t.Fatal(e)
++		}
++		defer r.Close()
++		defer w.Close()
++		k, ready, e := normalUdevReadinessSocket(int(r.Fd()))
++		if e != nil || k != 0 || ready {
++			t.Fatalf("pipe: %d %t %v", k, ready, e)
++		}
++	})
++	t.Run("anonymousControlNotListening", func(t *testing.T) {
++		fds, e := unix.Socketpair(unix.AF_UNIX, unix.SOCK_SEQPACKET|unix.SOCK_CLOEXEC, 0)
++		if e != nil {
++			t.Fatal(e)
++		}
++		defer unix.Close(fds[0])
++		defer unix.Close(fds[1])
++		k, ready, e := normalUdevReadinessSocket(fds[0])
++		if e != nil || k != 0 || ready {
++			t.Fatalf("anonymous pair: %d %t %v", k, ready, e)
++		}
++	})
++	t.Run("differentListenerRejected", func(t *testing.T) {
++		fd, e := unix.Socket(unix.AF_UNIX, unix.SOCK_SEQPACKET|unix.SOCK_CLOEXEC, 0)
++		if e != nil {
++			t.Fatal(e)
++		}
++		defer unix.Close(fd)
++		if e = unix.Bind(fd, &unix.SockaddrUnix{Name: filepath.Join(t.TempDir(), "control")}); e != nil {
++			t.Fatal(e)
++		}
++		if e = unix.Listen(fd, 1); e != nil {
++			t.Fatal(e)
++		}
++		if _, _, e = normalUdevReadinessSocket(fd); !errors.Is(e, ErrUnknown) {
++			t.Fatalf("foreign listener: %v", e)
++		}
++	})
++	t.Run("unboundKernelMonitorPending", func(t *testing.T) {
++		fd, e := unix.Socket(unix.AF_NETLINK, unix.SOCK_RAW|unix.SOCK_CLOEXEC, unix.NETLINK_KOBJECT_UEVENT)
++		if e != nil {
++			t.Fatal(e)
++		}
++		defer unix.Close(fd)
++		k, ready, e := normalUdevReadinessSocket(fd)
++		if e != nil || k != 2 || ready {
++			t.Fatalf("unsubscribed: %d %t %v", k, ready, e)
++		}
++	})
++	t.Run("closedDescriptorRejected", func(t *testing.T) {
++		if _, _, e := normalUdevReadinessSocket(-1); !errors.Is(e, unix.EBADF) {
++			t.Fatalf("closed: %v", e)
++		}
++	})
++}
++
++func TestNormalOriginalUdevReadinessClosedAndUnowned(t *testing.T) {
++	for _, closed := range []bool{false, true} {
++		p := &normalOrdinaryUdevReadiness{closed: closed}
++		if e := p.refresh(nil); !errors.Is(e, ErrUnknown) {
++			t.Fatalf("no owned task closed=%t: %v", closed, e)
++		}
++		p.close()
++		p.close()
++	}
++}
+--- /dev/null
++++ b/normal_system_v3_startup_test.go
+@@ -0,0 +1,49 @@
++package resourceguard
++
++import (
++	"strings"
++	"testing"
++)
++
++func TestNormalSystemV3ColdStartupOrdering(t *testing.T) {
++	entries, e := NormalSystemSourceInitEntriesForVersion(3)
++	if e != nil {
++		t.Fatal(e)
++	}
++	initCount, udevCount := 0, 0
++	for _, line := range entries {
++		if strings.HasSuffix(line, "exec-system-role udev-init") {
++			initCount++
++			if !strings.HasPrefix(line, "::once:") {
++				t.Fatalf("cold init must not block RESPWAN phase: %s", line)
++			}
++		}
++		if strings.HasSuffix(line, "exec-system-role udev") {
++			udevCount++
++			if !strings.HasPrefix(line, "::respawn:") {
++				t.Fatalf("udev daemon restart contract changed: %s", line)
++			}
++		}
++	}
++	if initCount != 1 || udevCount != 1 {
++		t.Fatalf("fixed roles differ: init=%d udev=%d", initCount, udevCount)
++	}
++	for _, version := range []uint32{1, 2} {
++		previous, e := NormalSystemSourceInitEntriesForVersion(version)
++		if e != nil {
++			t.Fatal(e)
++		}
++		found := false
++		for _, line := range previous {
++			if strings.Contains(line, "udev-init") {
++				found = true
++				if !strings.HasPrefix(line, "::wait:") {
++					t.Fatalf("old version %d unexpectedly changed: %s", version, line)
++				}
++			}
++		}
++		if !found {
++			t.Fatalf("missing old init v%d", version)
++		}
++	}
++}

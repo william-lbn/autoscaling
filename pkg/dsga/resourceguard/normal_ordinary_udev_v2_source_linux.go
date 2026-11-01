@@ -40,6 +40,7 @@ type normalOrdinaryUdevV2 struct {
 	catalog              *normalOrdinaryUdevV2Catalog
 	ledger               normalOrdinaryUdevV2Ledger
 	cold                 *normalOrdinaryUdevV2ColdTrigger
+	readiness            *normalOrdinaryUdevReadiness
 	done                 chan error
 	changed              chan struct{}
 	once                 sync.Once
@@ -48,13 +49,15 @@ type normalOrdinaryUdevV2 struct {
 	preparationReference normalOrdinaryUdevV2PreparationReference
 }
 type normalOrdinaryUdevV2ColdTrigger struct {
-	source     *normalOrdinaryUdevV2
-	uuid       string
-	peer       *os.File
-	credential unix.Ucred
-	next       int
-	pending    map[string]bool
-	finished   bool
+	source        *normalOrdinaryUdevV2
+	uuid          string
+	peer          *os.File
+	credential    unix.Ucred
+	next          int
+	pending       map[string]bool
+	finished      bool
+	confirmed     bool
+	initCandidate *normalSystemRoleLeaseCandidate
 }
 
 // 唯一首次阶段：原5FD→FS2→KernelR2→MemoryR2后，authority prepared且未COMMIT。
@@ -545,6 +548,18 @@ func (q *normalOrdinaryUdevV2) beginColdTriggerLocked(ctx context.Context, state
 		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagBeginPeer)
 		return nil, ErrUnknown
 	}
+	// 等待已在锁外完成；首批发出前仍在原事务fresh核同原udev和真实socket。
+	if e := q.ensureOriginalUdevReadyLocked(ctx, state, r); e != nil {
+		return nil, errors.Join(ErrUnknown, e)
+	}
+	initLease, e := normalStartupActiveLeaseLocked(ctx, q, state, r, "udev-init")
+	if e != nil {
+		return nil, errors.Join(ErrUnknown, e)
+	}
+	defer initLease.close()
+	if e = initLease.matchOriginalMainPacket(ctx, credential, peer); e != nil {
+		return nil, e
+	}
 	uuid, e := normalOrdinaryUdevV2NewTriggerUUID()
 	if e != nil {
 		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagBeginUUID)
@@ -555,7 +570,7 @@ func (q *normalOrdinaryUdevV2) beginColdTriggerLocked(ctx context.Context, state
 		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagBeginDuplicate)
 		return nil, e
 	}
-	t := &normalOrdinaryUdevV2ColdTrigger{source: q, uuid: uuid, peer: os.NewFile(uintptr(fd), "original cold-trigger init main peer"), credential: *credential}
+	t := &normalOrdinaryUdevV2ColdTrigger{source: q, uuid: uuid, peer: os.NewFile(uintptr(fd), "original cold-trigger init main peer"), credential: *credential, initCandidate: initLease.candidate}
 	q.mu.Lock()
 	if q.closed || q.cold != nil {
 		q.mu.Unlock()
@@ -584,6 +599,17 @@ func (q *normalOrdinaryUdevV2) advanceColdLocked(ctx context.Context, state *loc
 	if e := q.originalMainLocked(ctx, state, r, "udev-init", &t.credential, t.peer); e != nil {
 		normalSystemRoleDiagnosticRecord(ctx, normalRoleDiagAfterColdBegin, "udev-init", 0, normalUdevDiagAdvanceLease)
 		return e
+	}
+	if e := q.ensureOriginalUdevReadyLocked(ctx, state, r); e != nil {
+		return errors.Join(ErrUnknown, e)
+	}
+	initLease, e := normalStartupActiveLeaseLocked(ctx, q, state, r, "udev-init")
+	if e != nil {
+		return errors.Join(ErrUnknown, e)
+	}
+	defer initLease.close()
+	if initLease.candidate != t.initCandidate {
+		return ErrUnknown
 	}
 	q.mu.Lock()
 	defer q.mu.Unlock()
@@ -677,11 +703,24 @@ func (q *normalOrdinaryUdevV2) finishColdTriggerLocked(ctx context.Context, stat
 	if e := q.originalMainLocked(ctx, state, r, "udev-init", credential, peer); e != nil {
 		return e
 	}
-	q.mu.Lock()
-	defer q.mu.Unlock()
-	if q.closed || q.cold != t || !t.finished || q.ledger.failed != nil {
+	if e := q.ensureOriginalUdevReadyLocked(ctx, state, r); e != nil {
+		return errors.Join(ErrUnknown, e)
+	}
+	initLease, e := normalStartupActiveLeaseLocked(ctx, q, state, r, "udev-init")
+	if e != nil {
+		return errors.Join(ErrUnknown, e)
+	}
+	defer initLease.close()
+	if initLease.candidate != t.initCandidate {
 		return ErrUnknown
 	}
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	if q.closed || q.cold != t || !t.finished || t.confirmed || q.ledger.failed != nil {
+		return ErrUnknown
+	}
+	// 仅原请求最终完整核验后置位；Compute仍要求同candidate原唯一Wait0和exited见证。
+	t.confirmed = true
 	return nil
 }
 func (q *normalOrdinaryUdevV2) requireContinuousQualification() error {
@@ -694,7 +733,11 @@ func (q *normalOrdinaryUdevV2) close() {
 	q.closeOnce.Do(func() {
 		q.mu.Lock()
 		q.closed = true
+		readiness := q.readiness
 		q.mu.Unlock()
+		if readiness != nil {
+			readiness.close()
+		}
 		if q.monitor != nil {
 			q.monitor.close()
 		}
