@@ -1,0 +1,57 @@
+{
+  "scope": "POST_STOCK_DATABASE_PERSISTENT_SUBSET_CAPTURE_NOT_SOURCE",
+  "U_roots": 5,
+  "U_named_subtests": 43,
+  "U": [
+    {
+      "id": "PG17-U-STOCK-DB-001",
+      "root": "TestNormalOrdinaryStockUdevDatabaseIDs",
+      "receipt": "history/normal-stock-udev-database-go-20261101T122632Z-21bf9c/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-DB-002",
+      "root": "TestNormalOrdinaryStockUdevDatabaseProjection",
+      "receipt": "history/normal-stock-udev-database-go-20261101T122632Z-21bf9c/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-DB-003",
+      "root": "TestNormalOrdinaryStockUdevDatabaseRejectsInjection",
+      "receipt": "history/normal-stock-udev-database-go-20261101T122632Z-21bf9c/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-DB-004",
+      "root": "TestNormalOrdinaryStockUdevDatabaseReadAt",
+      "receipt": "history/normal-stock-udev-database-go-20261101T122632Z-21bf9c/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-DB-005",
+      "root": "TestNormalOrdinaryStockUdevDatabaseFailClosed",
+      "receipt": "history/normal-stock-udev-database-go-20261101T122632Z-21bf9c/export/test.json"
+    }
+  ],
+  "fail": 0,
+  "skip": 0,
+  "S": 0,
+  "E": 0,
+  "Source": false,
+  "normal": false,
+  "before_fix_2_direct_counterexamples": {
+    "cohort": "normal-stock-udev-database-before-noinfo-go-20261101T122630Z-fec819",
+    "source_sha256": {
+      "pkg/dsga/resourceguard/normal_ordinary_stock_udev_database_linux.go": "6b5e2926f074f0cc63d86dc19e2a8ac866b1a6cee2c7755746e83a09a62fd1ca",
+      "pkg/dsga/resourceguard/normal_ordinary_stock_udev_database_linux_test.go": "515afefa4eaf4d682d6508f4f5720020762fdcfe1d09430fac51355e8b1e7b81"
+    },
+    "test_exit": 1,
+    "failed_subtests": [
+      "TestNormalOrdinaryStockUdevDatabaseRejectsInjection/empty-db-has-info",
+      "TestNormalOrdinaryStockUdevDatabaseRejectsInjection/missing-db-has-info"
+    ]
+  },
+  "initial_949_scope": "old5U41sub passed before two new info-like negative cases, not reclassified",
+  "ENV": [
+    "Linux CLI build0",
+    "Darwinarm64 package compile0",
+    "per-job3CPU3GiB BuildRUN/Go2/768",
+    "original unit/unique Wait terminal budget release"
+  ]
+}

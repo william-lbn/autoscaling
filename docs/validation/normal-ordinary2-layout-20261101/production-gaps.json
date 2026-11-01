@@ -1,0 +1,75 @@
+{
+  "scope": "precise paths only; planned WorkingDir / not yet installed",
+  "roles": [
+    {
+      "role": "allow-start",
+      "required_working_directory": "/",
+      "read_write_paths": "new marker父/60001:60001/0700",
+      "observed_gap": "无目录；旧vmstart marker不同",
+      "owner_and_next": "本helper+新2启动/关机资产；Root最终串接"
+    },
+    {
+      "role": "kernel-version",
+      "required_working_directory": "/",
+      "read_write_paths": "仅/proc/version读",
+      "observed_gap": "无私有目录",
+      "owner_and_next": "无新增写孔"
+    },
+    {
+      "role": "network",
+      "required_working_directory": "/",
+      "read_write_paths": "/run/neon-ordinary/network 60003/0700；原/etc/resolv.conf 60003/0644",
+      "observed_gap": "DEV0600会破其它角色DNS读；原Gate泛mode拒0644",
+      "owner_and_next": "本helper；后继Gate精确regular共享读例外，不增权到父/etc"
+    },
+    {
+      "role": "udev",
+      "required_working_directory": "/",
+      "read_write_paths": "/run/udev Root:60004/01771；rules.d Root0755",
+      "observed_gap": "stock交接不是泛private60004/0700",
+      "owner_and_next": "Root/Kernel stock opaque唯一owner；本helper不碰；后继Gate typed-stock适配"
+    },
+    {
+      "role": "udev-init",
+      "required_working_directory": "/",
+      "read_write_paths": "Root fixed-device-check，不运行旧Rootstate脚本",
+      "observed_gap": "旧脚本包含check-guest/mknod/chmod",
+      "owner_and_next": "由Root受控设备源；不普通开放Rootstate"
+    },
+    {
+      "role": "acpi",
+      "required_working_directory": "/",
+      "read_write_paths": "/run/neon-ordinary/acpi 60006/0700；Root socket0660:GID60006",
+      "observed_gap": "普通无父/run/neon-dsga写权限",
+      "owner_and_next": "本helper叶；RootAction服务owner Root"
+    },
+    {
+      "role": "logs",
+      "required_working_directory": "/",
+      "read_write_paths": "/run/neon-ordinary/logs和/var/log/vector 60007/0700",
+      "observed_gap": "实际vector data_dir=/tmp，LL无该写孔",
+      "owner_and_next": "新2配置仅改data_dir；真实vector服务仍待测"
+    },
+    {
+      "role": "clock",
+      "required_working_directory": "/",
+      "read_write_paths": "/run/chrony、/var/lib/chrony、/var/log/chrony 60008/0700",
+      "observed_gap": "目录owner不足；default runtime路径/真实chronyd-U行为需实际验证",
+      "owner_and_next": "本helper；仅初次受控空目录，不毁旧drift"
+    },
+    {
+      "role": "daemon",
+      "required_working_directory": "/",
+      "read_write_paths": "Root TLS两个固定动作；无本role新目录",
+      "observed_gap": "TLS由RootAction处理",
+      "owner_and_next": "不开放Rootstate/父目录写"
+    },
+    {
+      "role": "compute",
+      "required_working_directory": "/",
+      "read_write_paths": "PGDATA父原持久孔；Root vmstart FD9/marker",
+      "observed_gap": "旧marker不同；stdio/PGstderr来源另链",
+      "owner_and_next": "新2脚本，Root原flock/allow/Check不丢；不安装ordinary控制"
+    }
+  ]
+}

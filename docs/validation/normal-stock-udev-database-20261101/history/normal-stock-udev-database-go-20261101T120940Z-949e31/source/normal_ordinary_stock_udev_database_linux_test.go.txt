@@ -1,0 +1,273 @@
+//go:build linux
+
+package resourceguard
+
+import (
+	"context"
+	"errors"
+	"os"
+	"path/filepath"
+	"reflect"
+	"strings"
+	"testing"
+
+	"golang.org/x/sys/unix"
+)
+
+func stockDatabaseKernel() map[string]string {
+	return map[string]string{"DEVPATH": "/devices/model", "SUBSYSTEM": "misc", "DEVNAME": "model", "MAJOR": "10", "MINOR": "200"}
+}
+func stockDatabaseProcessed(kernel map[string]string) map[string]string {
+	p := map[string]string{}
+	for k, v := range kernel {
+		p[k] = v
+	}
+	if p["DEVNAME"] != "" {
+		p["DEVNAME"] = "/dev/" + p["DEVNAME"]
+	}
+	p["ACTION"] = "add"
+	p["SEQNUM"] = "7"
+	return p
+}
+
+// PG17-U-STOCK-DB-001 纯官方id派生，不把map当原devnum/ueventFD来源。
+func TestNormalOrdinaryStockUdevDatabaseIDs(t *testing.T) {
+	for _, tc := range []struct {
+		name, subsystem string
+		props           map[string]string
+		want            string
+	}{
+		{"character", "misc", map[string]string{"MAJOR": "10", "MINOR": "200"}, "c10:200"},
+		{"block", "block", map[string]string{"MAJOR": "259", "MINOR": "131072"}, "b259:131072"},
+		{"network", "net", map[string]string{"IFINDEX": "3"}, "n3"},
+		{"plain-name-with-colon", "pci", map[string]string{}, "+pci:0000:00:1f.2"},
+		{"original-devpath-name", "virtio-ports", map[string]string{}, "+virtio-ports:vport0p1"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			devpath := "/devices/model"
+			if tc.name == "plain-name-with-colon" {
+				devpath = "/devices/0000:00:1f.2"
+			}
+			if tc.name == "original-devpath-name" {
+				devpath = "/devices/vport0p1"
+			}
+			got, e := normalOrdinaryStockUdevDatabaseID(tc.props, devpath, tc.subsystem)
+			if e != nil || got != tc.want {
+				t.Fatal(got, e)
+			}
+		})
+	}
+	for _, props := range []map[string]string{{"MAJOR": "1"}, {"MAJOR": "01", "MINOR": "2"}, {"MAJOR": "4294967296", "MINOR": "0"}, {"IFINDEX": "0"}, {"IFINDEX": "03"}} {
+		if _, e := normalOrdinaryStockUdevDatabaseID(props, "/devices/model", "misc"); e == nil {
+			t.Fatal("noncanonical identity admitted")
+		}
+	}
+	if _, e := normalOrdinaryStockUdevDatabaseID(nil, "/devices/../escape", "misc"); e == nil {
+		t.Fatal("escaping devpath admitted")
+	}
+}
+
+// PG17-U-STOCK-DB-002 持久子集逐项对原消息；输出保全部额外消息字段且深copy，不产Source。
+func TestNormalOrdinaryStockUdevDatabaseProjection(t *testing.T) {
+	t.Run("persistent-extra-public-and-private", func(t *testing.T) {
+		k := stockDatabaseKernel()
+		p := stockDatabaseProcessed(k)
+		p["CUSTOM_STOCK_PROPERTY"] = "actual-root-value"
+		p["NONPERSISTENT_MONITOR"] = "root-only-message"
+		p["DEVLINKS"] = "/dev/alias/a /dev/alias/z"
+		p["TAGS"] = ":seat:uaccess:"
+		p["USEC_INITIALIZED"] = "1"
+		db := []byte("I:1\nS:alias/z\nS:alias/a\nG:uaccess\nG:seat\nL:-2\nW:1\nE:CUSTOM_STOCK_PROPERTY=actual-root-value\nE:.BSG_DEV=private-not-monitor\n")
+		got, dynamic, e := normalOrdinaryStockUdevDatabaseProjection(k, db, true, p)
+		if e != nil || !reflect.DeepEqual(got, p) || !reflect.DeepEqual(dynamic, []normalOrdinaryUdevV2DynamicProperty{1}) {
+			t.Fatal(got, dynamic, e)
+		}
+		got["CUSTOM_STOCK_PROPERTY"] = "changed"
+		if p["CUSTOM_STOCK_PROPERTY"] != "actual-root-value" {
+			t.Fatal("caller alias")
+		}
+		if _, yes := got[".BSG_DEV"]; yes {
+			t.Fatal("private DB E leaked")
+		}
+	})
+	t.Run("empty-db-with-observed-nonpersistent-time", func(t *testing.T) {
+		k := stockDatabaseKernel()
+		p := stockDatabaseProcessed(k)
+		p["USEC_INITIALIZED"] = "1"
+		p["DEVUID"] = "0"
+		got, d, e := normalOrdinaryStockUdevDatabaseProjection(k, nil, true, p)
+		if e != nil || got["USEC_INITIALIZED"] != "1" || len(d) != 1 {
+			t.Fatal(got, d, e)
+		}
+	})
+	t.Run("no-info-no-file", func(t *testing.T) {
+		k := map[string]string{"DEVPATH": "/devices/virtual/model", "SUBSYSTEM": "memory"}
+		p := stockDatabaseProcessed(k)
+		got, d, e := normalOrdinaryStockUdevDatabaseProjection(k, nil, false, p)
+		if e != nil || !reflect.DeepEqual(got, p) || len(d) != 0 {
+			t.Fatal(got, d, e)
+		}
+		if _, yes := got["USEC_INITIALIZED"]; yes {
+			t.Fatal("invented initialization time")
+		}
+	})
+}
+
+// PG17-U-STOCK-DB-003 覆盖/控制/缺文件/集合偏差均Unknown；不silentdrop未知E。
+func TestNormalOrdinaryStockUdevDatabaseRejectsInjection(t *testing.T) {
+	for _, name := range []string{"missing-devnum-db", "missing-ifindex-db", "db-despite-absent", "extra-E-not-in-message", "extra-E-wrong-value", "duplicate-E", "kernel-override", "reserved-identity", "LD-control", "KMOD-control", "UDEV-control", "RUN-control", "NUL", "truncated", "empty-E", "wrong-action", "kernel-changed", "missing-devlinks", "extra-devlinks", "wrong-tags", "different-time", "zero-time", "future-time"} {
+		t.Run(name, func(t *testing.T) {
+			k := stockDatabaseKernel()
+			p := stockDatabaseProcessed(k)
+			db := []byte("E:ID_MODEL=original\n")
+			p["ID_MODEL"] = "original"
+			present := true
+			switch name {
+			case "missing-devnum-db":
+				present = false
+				db = nil
+			case "missing-ifindex-db":
+				k = map[string]string{"DEVPATH": "/devices/model", "SUBSYSTEM": "net", "IFINDEX": "3"}
+				p = stockDatabaseProcessed(k)
+				present = false
+				db = nil
+			case "db-despite-absent":
+				present = false
+			case "extra-E-not-in-message":
+				db = []byte("E:CUSTOM=not-observed\n")
+			case "extra-E-wrong-value":
+				p["ID_MODEL"] = "different"
+			case "duplicate-E":
+				db = append(db, db...)
+			case "kernel-override":
+				db = []byte("E:MAJOR=10\n")
+			case "reserved-identity":
+				db = []byte("E:DEVTYPE=made-up\n")
+				p["DEVTYPE"] = "made-up"
+			case "LD-control":
+				db = []byte("E:LD_PRELOAD=evil\n")
+				p["LD_PRELOAD"] = "evil"
+			case "KMOD-control":
+				db = []byte("E:KMOD_LOG=debug\n")
+				p["KMOD_LOG"] = "debug"
+			case "UDEV-control":
+				db = []byte("E:UDEV_HWDB_PATH=evil\n")
+				p["UDEV_HWDB_PATH"] = "evil"
+			case "RUN-control":
+				db = []byte("E:REMOVE_CMD=evil\n")
+				p["REMOVE_CMD"] = "evil"
+			case "NUL":
+				db = append(db, 0)
+			case "truncated":
+				db = db[:len(db)-1]
+			case "empty-E":
+				db = []byte("E:ID_MODEL=\n")
+			case "wrong-action":
+				p["ACTION"] = "remove"
+			case "kernel-changed":
+				p["MINOR"] = "201"
+			case "missing-devlinks":
+				db = []byte("S:alias/a\n")
+			case "extra-devlinks":
+				db = nil
+				p["DEVLINKS"] = "/dev/not-in-db"
+			case "wrong-tags":
+				db = []byte("G:seat\n")
+				p["TAGS"] = ":uaccess:"
+			case "different-time":
+				db = []byte("I:1\n")
+				p["USEC_INITIALIZED"] = "2"
+			case "zero-time":
+				p["USEC_INITIALIZED"] = "0"
+			case "future-time":
+				p["USEC_INITIALIZED"] = "18446744073709551615"
+			}
+			if _, _, e := normalOrdinaryStockUdevDatabaseProjection(k, db, present, p); e == nil {
+				t.Fatal("inconsistent/injected projection admitted")
+			}
+		})
+	}
+}
+
+// PG17-U-STOCK-DB-004 仅私有临时树的固定dirFD读取；NOFOLLOW/regular/单link/大小界。
+func TestNormalOrdinaryStockUdevDatabaseReadAt(t *testing.T) {
+	for _, name := range []string{"missing-data", "missing-file", "empty-db", "regular-db", "symlink-data", "symlink-file", "fifo", "directory-file", "hardlink", "oversize"} {
+		t.Run(name, func(t *testing.T) {
+			root := t.TempDir()
+			f, e := os.Open(root)
+			if e != nil {
+				t.Fatal(e)
+			}
+			defer f.Close()
+			data := filepath.Join(root, "data")
+			path := filepath.Join(data, "c10:200")
+			if name != "missing-data" {
+				if name == "symlink-data" {
+					if e = os.Symlink(root, data); e != nil {
+						t.Fatal(e)
+					}
+				} else {
+					if e = os.Mkdir(data, 0755); e != nil {
+						t.Fatal(e)
+					}
+				}
+			}
+			switch name {
+			case "empty-db", "regular-db", "hardlink", "oversize":
+				raw := []byte("I:1\n")
+				if name == "empty-db" {
+					raw = nil
+				}
+				e = os.WriteFile(path, raw, 0600)
+				if e == nil && name == "hardlink" {
+					e = os.Link(path, filepath.Join(root, "outside-link"))
+				}
+				if e == nil && name == "oversize" {
+					e = os.Truncate(path, (64<<10)+1)
+				}
+			case "symlink-file":
+				e = os.Symlink("/etc/passwd", path)
+			case "fifo":
+				e = unix.Mkfifo(path, 0600)
+			case "directory-file":
+				e = os.Mkdir(path, 0755)
+			}
+			if e != nil {
+				t.Fatal(e)
+			}
+			b, present, e := normalOrdinaryStockUdevReadDatabaseAt(f, "c10:200")
+			switch name {
+			case "missing-data", "missing-file":
+				if e != nil || present || len(b) != 0 {
+					t.Fatal(b, present, e)
+				}
+			case "empty-db":
+				if e != nil || !present || len(b) != 0 {
+					t.Fatal(b, present, e)
+				}
+			case "regular-db":
+				if e != nil || !present || string(b) != "I:1\n" {
+					t.Fatal(b, present, e)
+				}
+			default:
+				if e == nil {
+					t.Fatal("unsafe database object admitted")
+				}
+			}
+		})
+	}
+}
+
+// PG17-U-STOCK-DB-005 无Runtime原pin/阶段/catalog/monitor时无真实捕获正控。
+func TestNormalOrdinaryStockUdevDatabaseFailClosed(t *testing.T) {
+	for _, ctx := range []context.Context{nil, context.Background()} {
+		if got, e := captureNormalOrdinaryStockUdevDatabase(ctx, nil, nil, normalOrdinaryStockUdevMonitorReceipt{}); !errors.Is(e, ErrUnknown) || got != nil {
+			t.Fatal("no original objects admitted", e)
+		}
+	}
+	for _, id := range []string{"../escape", "/etc/passwd", "c1:2.tmp", "c1:2\n", strings.Repeat("a", 300)} {
+		if _, _, e := normalOrdinaryStockUdevReadDatabaseAt(nil, id); !errors.Is(e, ErrUnknown) {
+			t.Fatal("unsafe or nil path admitted")
+		}
+	}
+}

@@ -1,0 +1,38 @@
+{
+  "tar_path": "/data/neon-build/validation/ordinary-udev-privsep-build-20261101T071308Z-24654f/source/sources/eudev-3.2.14.tar.gz",
+  "tar_sha256": "8da4319102f24abbf7fff5ce9c416af848df163b29590e666d334cc1927f006f",
+  "sources_sha256": {
+    "src/libudev/libudev-device.c": "54a44aa1e49c1737631042979a84997639fab016e49b874742cf1e473096f69e",
+    "src/libudev/libudev-device-private.c": "84781b45e86fa10fd5dc4c684c6aa9e7e97e453ab7f02894203b9be18d9456fa",
+    "src/libudev/libudev-monitor.c": "e5cbc5e1e50a1e1635eea8e91c4cc3690034e9a5ed1673597caa8a3f5da1a461",
+    "src/udev/udev-event.c": "5134005ad3343422798fe2c8bb3a98bd300b38d7ccaf0cd7095307e0ff7768c6",
+    "src/udev/udevd.c": "86736606a1b0db0725854e14c20dc9490eb2cc41905e4f33cec9d105698d2d47"
+  },
+  "id_filename": "device.c1714..1745 devnum >0 => b/c; ifindex>0=>n; else +subsys:original devpath final name",
+  "persistent_marker": "device.c383..393 public add nonprivate sets num=true; internal literal setters are nonpersistent",
+  "DB": "private.c88..175 has_info includes E/links/tags/priority/watch; no-info non-devnum/non-ifindex removes file; otherwise empty file possible",
+  "read": "device.c597..658 E/S/G/I public projection; L/W internal",
+  "generated": "device.c1357..1399 unique sorted DEVLINKS/TAGS; device.c452..464 ensure observed monotonic USEC",
+  "monitor": "device.c1864..1922 skips private variables, extra nonpersistent message fields allowed",
+  "ignored_DB_error": "event.c1053..1058 ensure time before update_db but caller ignores return; missing/empty with info-like message cannot be certified",
+  "narrow_nonpersistent_internal_literals": [
+    "SEQNUM",
+    "IFINDEX",
+    "MAJOR",
+    "MINOR",
+    "DEVPATH_OLD",
+    "DRIVER",
+    "DEVTYPE",
+    "SUBSYSTEM",
+    "DEVMODE",
+    "DEVUID",
+    "DEVGID",
+    "DEVPATH",
+    "USEC_INITIALIZED",
+    "ACTION",
+    "DEVNAME",
+    "INTERFACE_OLD",
+    "INTERFACE"
+  ],
+  "SYNTH_UUID_is_original_kernel_message_not_synthesized": true
+}

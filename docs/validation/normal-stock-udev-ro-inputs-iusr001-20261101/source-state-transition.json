@@ -1,0 +1,22 @@
+{
+  "finding": "IUSR001 exact --enable-split-usr static rule roots missing from original Inputs",
+  "old37_stage_sha256": "76653d7e91a5ea51644b90fd6eef52f2f14faf05cb5991871f6833554a950082",
+  "old37_review_manifest_sha256": "589ff79c6dff1db8875d9f8389f357bc23f50752695f2e33a5abaedb8a498b85",
+  "old37_reference_is_historical_not_current_source_hash": true,
+  "old_source_hashes": {
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_inputs_linux.go": "95cbcb1c58109da9ddec1dee67e0dd4783304b00bdad766fc600cb2d946c20ee",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_inputs_linux_test.go": "5f6b9dafa98b1799cafb3ce95d58cb91d30ab7502929152c0256ac5c346df8e9"
+  },
+  "current_successor_source_hashes": {
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_inputs_linux.go": "709a60d2637b5b293c0eecc0443be8b0160c2c9beb127a6e7bd7c9821e1b5267",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_inputs_linux_test.go": "0d73059b1c80279477108ce20bb2004f80141dccade0b48c744b2361a719a0f3"
+  },
+  "old_source_copies_preserved": "docs/validation/normal-stock-udev-ro-inputs-20261101/owned-source/",
+  "old_raw_receipts_and_manifests_NOT_modified": true,
+  "new_root10_immutable_dependency": "/data/neon-build/validation/root-system3-stock-inventory-go-20261101T104042Z-a1f4d9/source",
+  "new_root10_source_lock_sha256": "b94f570e923bd6fef9060416a467e9e9a0b3a7d5985b67d6def15ff20ebd2bea",
+  "deleted_dependency": [
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_manifest_linux.go"
+  ],
+  "new_own_source_lock_sha256": "aba66c25cf0ea398f19d6d6094c23cced0aeeee7de4e82d66d2d1cfbe84d62e8"
+}

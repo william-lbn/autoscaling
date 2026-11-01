@@ -1,0 +1,16 @@
+[
+  "docker",
+  "run",
+  "--rm",
+  "--network=none",
+  "--cpus=1",
+  "--memory=256m",
+  "--memory-swap=256m",
+  "-v",
+  "/data/neon-build/validation/normal-ordinary2-layout-native-20261101T120308Z-4301f9:/proof:rw",
+  "--entrypoint",
+  "/bin/bash",
+  "127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1",
+  "-c",
+  "set -eu; debugfs -R \"cat /etc/resolv.conf\" /proof/root.ext4 >/proof/offline-dns 2>/proof/debugfs-dns.log; for p in /var/lib/chrony /var/log/chrony /var/log/vector /etc/resolv.conf /var/lib/neon-dsga/ordinary-layout-component/complete.json; do debugfs -R \"stat $p\" /proof/root.ext4; done"
+]

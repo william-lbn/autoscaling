@@ -1,0 +1,156 @@
+[
+  {
+    "scope": "DEV_FD_MECHANISM_ONLY_NOT_ORIGINAL_SOURCE",
+    "graph_mounts": 17,
+    "stages": [
+      "intent",
+      "identity",
+      "complete"
+    ],
+    "paths": [
+      {
+        "path": "/run/neon-ordinary",
+        "object": {
+          "device": 25,
+          "inode": 4,
+          "mount_id": 30,
+          "filesystem": 16914836,
+          "readonly": false
+        },
+        "uid": 0,
+        "gid": 0,
+        "mode": 16877,
+        "links": 0
+      },
+      {
+        "path": "/run/neon-ordinary/allow-start",
+        "object": {
+          "device": 25,
+          "inode": 5,
+          "mount_id": 30,
+          "filesystem": 16914836,
+          "readonly": false
+        },
+        "uid": 60001,
+        "gid": 60001,
+        "mode": 16832,
+        "links": 0
+      },
+      {
+        "path": "/run/neon-ordinary/network",
+        "object": {
+          "device": 25,
+          "inode": 6,
+          "mount_id": 30,
+          "filesystem": 16914836,
+          "readonly": false
+        },
+        "uid": 60003,
+        "gid": 60003,
+        "mode": 16832,
+        "links": 0
+      },
+      {
+        "path": "/run/neon-ordinary/acpi",
+        "object": {
+          "device": 25,
+          "inode": 7,
+          "mount_id": 30,
+          "filesystem": 16914836,
+          "readonly": false
+        },
+        "uid": 60006,
+        "gid": 60006,
+        "mode": 16832,
+        "links": 0
+      },
+      {
+        "path": "/run/neon-ordinary/logs",
+        "object": {
+          "device": 25,
+          "inode": 8,
+          "mount_id": 30,
+          "filesystem": 16914836,
+          "readonly": false
+        },
+        "uid": 60007,
+        "gid": 60007,
+        "mode": 16832,
+        "links": 0
+      },
+      {
+        "path": "/run/chrony",
+        "object": {
+          "device": 25,
+          "inode": 9,
+          "mount_id": 30,
+          "filesystem": 16914836,
+          "readonly": false
+        },
+        "uid": 60008,
+        "gid": 60008,
+        "mode": 16832,
+        "links": 0
+      },
+      {
+        "path": "/var/log/vector",
+        "object": {
+          "device": 65024,
+          "inode": 86,
+          "mount_id": 38,
+          "filesystem": 61267,
+          "readonly": false
+        },
+        "uid": 60007,
+        "gid": 60007,
+        "mode": 16832,
+        "links": 0
+      },
+      {
+        "path": "/var/log/chrony",
+        "object": {
+          "device": 65024,
+          "inode": 83,
+          "mount_id": 38,
+          "filesystem": 61267,
+          "readonly": false
+        },
+        "uid": 60008,
+        "gid": 60008,
+        "mode": 16832,
+        "links": 0
+      },
+      {
+        "path": "/var/lib/chrony",
+        "object": {
+          "device": 65024,
+          "inode": 79,
+          "mount_id": 39,
+          "filesystem": 61267,
+          "readonly": false
+        },
+        "uid": 60008,
+        "gid": 60008,
+        "mode": 16832,
+        "links": 0
+      },
+      {
+        "path": "/etc/resolv.conf",
+        "object": {
+          "device": 65024,
+          "inode": 22,
+          "mount_id": 40,
+          "filesystem": 61267,
+          "readonly": false
+        },
+        "uid": 60003,
+        "gid": 60003,
+        "mode": 33188,
+        "links": 1
+      }
+    ],
+    "marker_uid": 60001,
+    "check_guest_denied_before_flock": true,
+    "source_qualified": false
+  }
+]

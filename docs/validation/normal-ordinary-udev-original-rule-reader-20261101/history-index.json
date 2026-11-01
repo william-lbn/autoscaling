@@ -1,0 +1,22 @@
+[
+  {
+    "path": "/data/neon-build/validation/normal-ordinary-udev-rulesocket-go-20261101T121429Z-f691a1",
+    "result_sha256": "e5c37fb5cc612b56d97990e8589ee43fd2ca0204d125426c08ae0e6176949c45",
+    "scope": "reader首图8race49sub+CLI/native compile全0；尚未closehook，不能转签最终Source"
+  },
+  {
+    "path": "/data/neon-build/validation/normal-ordinary-udev-socket-native-20261101T121608Z-fe0530",
+    "result_sha256": "1b50d7516c75468f508b575ddc49379033764017fc30cf41e0ad03a3714d24a0",
+    "scope": "真实18c socket两open均成功，排除mountID嫌疑；无规则FD正控"
+  },
+  {
+    "path": "/data/neon-build/validation/normal-ordinary-udev-rulesocket-go-20261101T121824Z-ff804b",
+    "result_sha256": "e123b331ecef831aa3ea82754e618a208a937d81ee5ea4561a17cee129cb2c87",
+    "scope": "新增规则FD机制ELF编译通过；尚未closehook"
+  },
+  {
+    "path": "/data/neon-build/validation/normal-ordinary-udev-socket-native-20261101T122025Z-74f1d9",
+    "result_sha256": "4207ca5ec7d05706e17359e93a9c91dedc2a0e3ec8330b5316ee8c596eb1cec6",
+    "scope": "驱动init未给regex加引号，shell unexpected (，测试零执行；保FAIL原raw，不当源码编译或业务机制失败"
+  }
+]

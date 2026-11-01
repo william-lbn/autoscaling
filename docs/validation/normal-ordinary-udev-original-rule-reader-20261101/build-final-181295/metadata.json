@@ -1,0 +1,19 @@
+{
+  "base": "b39c2e1596ed19c8a80a750c9bd979a1c859777d",
+  "owned_prefmt": {
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_monitor_linux.go": "ac9ea917b13a3fa01b0b977e2327cef04998d604e727dfef52df2ebc94286de5",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_monitor_linux_test.go": "89edce5e330bd290016e9cd7e1d047afd180aac78270726941390fd26f186a74",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_sticky_native_test.go": "4061a2bcca033f4b05ff1fb761ef06f9c8b7ffbaa85c2db9236e69daa52a8645",
+    "pkg/dsga/resourceguard/normal_ordinary_udev_v2_catalog_linux.go": "3be4be83ea88baddb3a2c21925dbfce761904e1ed1369c0dbb6c412210d900db",
+    "pkg/dsga/resourceguard/normal_ordinary_udev_v2_source_linux.go": "ed1a37140c60f335a1bd9cafc39f7c27ec68f2c7c9927d335242956b05fa3c77",
+    "pkg/dsga/resourceguard/normal_ordinary_udev_v2_rule_reader_linux_test.go": "c6cbcc3dd3aa3ac00d8ea14f03f92a2923cbeaba9a61dcc3d15f5ed653e64d57",
+    "pkg/dsga/resourceguard/normal_ordinary_udev_v2_socket_native_test.go": "8f7e6049462493026cfe6b5c82a61033496c37eac95d4ca1631a665d340169e8"
+  },
+  "image": "127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1",
+  "scope": "RULE_ORIGINAL_FD_WIRING_U_SOCKET_FACT_ELF_ONLY_NO_SOURCE_OR_NORMAL",
+  "actual_limits": {
+    "CPU": 3,
+    "memory_GiB": 3
+  },
+  "no_parallel_DAG_RUN": true
+}

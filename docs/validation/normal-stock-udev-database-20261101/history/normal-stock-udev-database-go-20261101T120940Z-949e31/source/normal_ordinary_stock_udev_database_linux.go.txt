@@ -1,0 +1,356 @@
+//go:build linux
+
+package resourceguard
+
+import (
+	"bytes"
+	"context"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
+	"sort"
+	"strconv"
+	"strings"
+
+	"golang.org/x/sys/unix"
+)
+
+// 仅初次Root处理后的数据一致性捕获；Root factory另证明同g/R2/三个原actor、
+// 全writer真Wait和原monitor已finish。receipt、UID0或本函数返回map均不是Source。
+func captureNormalOrdinaryStockUdevDatabase(ctx context.Context, dirs *normalOrdinaryStockUdevRuntimeDirs, catalog *normalOrdinaryUdevV2Catalog, receipt normalOrdinaryStockUdevMonitorReceipt) ([]normalOrdinaryUdevV2DeviceProjection, error) {
+	fail := func(e error) ([]normalOrdinaryUdevV2DeviceProjection, error) { return nil, errors.Join(ErrUnknown, e) }
+	if ctx == nil || ctx.Err() != nil || dirs == nil || catalog == nil || os.Getuid() != 0 || os.Geteuid() != 0 {
+		return fail(ErrUnknown)
+	}
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	dirs.mu.Lock()
+	defer dirs.mu.Unlock()
+	if dirs.phase != 1 {
+		return fail(fmt.Errorf("stock database capture requires original pre-handoff phase"))
+	}
+	if e := dirs.recheckLocked(ctx); e != nil {
+		return fail(e)
+	}
+	if e := catalog.verify(); e != nil {
+		return fail(e)
+	}
+	if len(catalog.ordered) == 0 || len(catalog.ordered) > 4096 || len(catalog.entries) != len(catalog.ordered) || receipt.Cookie == 0 || receipt.Port == 0 || receipt.Object.Inode == 0 {
+		return fail(fmt.Errorf("stock original catalog/monitor reference absent"))
+	}
+	kernel := map[uint64]normalOrdinaryStockUdevMonitorEvent{}
+	targets := make([]normalOrdinaryStockUdevMonitorTarget, 0, len(catalog.ordered))
+	for _, entry := range catalog.ordered {
+		if entry == nil || entry.uevent == nil || catalog.entries[entry.path] != entry {
+			return fail(fmt.Errorf("stock original catalog entry missing"))
+		}
+		props := map[string]string{}
+		for k, v := range entry.properties {
+			if k != "DEVPATH" && k != "SUBSYSTEM" {
+				props[k] = v
+			}
+		}
+		targets = append(targets, normalOrdinaryStockUdevMonitorTarget{Devpath: entry.path, Subsystem: entry.subsystem, KernelProperties: props})
+	}
+	for _, e := range receipt.KernelEvents {
+		if _, yes := kernel[e.Sequence]; yes {
+			return fail(fmt.Errorf("stock receipt repeated kernel sequence"))
+		}
+		kernel[e.Sequence] = e
+	}
+	matched, e := normalOrdinaryStockUdevMonitorMatch(kernel, receipt.ProcessedBySequence, targets)
+	if e != nil {
+		return fail(e)
+	}
+	byPath := map[string]normalOrdinaryStockUdevMonitorEvent{}
+	for _, k := range matched.KernelEvents {
+		if k.Properties["ACTION"] != "add" {
+			continue
+		}
+		p := matched.ProcessedBySequence[k.Sequence]
+		// 固定children-max=1的原初次执行链按sequence取该目标最后一次add，DB必须对它一致。
+		if old, yes := byPath[k.Properties["DEVPATH"]]; !yes || p.Sequence > old.Sequence {
+			byPath[k.Properties["DEVPATH"]] = p
+		}
+	}
+	out := make([]normalOrdinaryUdevV2DeviceProjection, 0, len(catalog.ordered))
+	for _, entry := range catalog.ordered {
+		if e = ctx.Err(); e != nil {
+			return fail(e)
+		}
+		raw, e := normalOrdinaryUdevV2ReadFD(entry.uevent, 64<<10)
+		if e != nil {
+			return fail(e)
+		}
+		current, e := normalOrdinaryUdevV2StaticProperties(raw)
+		if e != nil {
+			return fail(e)
+		}
+		for key, value := range current {
+			if entry.properties[key] != value {
+				return fail(fmt.Errorf("stock original uevent value changed"))
+			}
+		}
+		for key, value := range entry.properties {
+			if key != "DEVPATH" && key != "SUBSYSTEM" && current[key] != value {
+				return fail(fmt.Errorf("stock original uevent property disappeared"))
+			}
+		}
+		current["DEVPATH"], current["SUBSYSTEM"] = entry.path, entry.subsystem
+		id, e := normalOrdinaryStockUdevDatabaseID(current, entry.path, entry.subsystem)
+		if e != nil {
+			return fail(e)
+		}
+		if major := current["MAJOR"]; major != "" && major != "0" {
+			if entry.node == nil {
+				return fail(fmt.Errorf("stock original devnum node pin missing"))
+			}
+			var node unix.Stat_t
+			if e = unix.Fstat(int(entry.node.Fd()), &node); e != nil {
+				return fail(e)
+			}
+			a, x := normalOrdinaryStockUdevUnsigned(current["MAJOR"], 32)
+			b, y := normalOrdinaryStockUdevUnsigned(current["MINOR"], 32)
+			typ := uint32(unix.S_IFCHR)
+			if entry.subsystem == "block" {
+				typ = unix.S_IFBLK
+			}
+			if x != nil || y != nil || node.Mode&unix.S_IFMT != typ || uint64(unix.Major(node.Rdev)) != a || uint64(unix.Minor(node.Rdev)) != b {
+				return fail(fmt.Errorf("stock original node actual devnum differs"))
+			}
+		}
+		db, present, e := normalOrdinaryStockUdevReadDatabaseAt(dirs.root, id)
+		if e != nil {
+			return fail(e)
+		}
+		event, yes := byPath[entry.path]
+		if !yes {
+			return fail(fmt.Errorf("stock catalog target has no original matched add"))
+		}
+		properties, dynamic, e := normalOrdinaryStockUdevDatabaseProjection(current, db, present, event.Properties)
+		if e != nil {
+			return fail(e)
+		}
+		out = append(out, normalOrdinaryUdevV2DeviceProjection{Devpath: entry.path, Subsystem: entry.subsystem, UeventObject: entry.object, Properties: properties, DynamicProperties: dynamic})
+	}
+	if e = catalog.verify(); e != nil {
+		return fail(e)
+	}
+	if e = dirs.recheckLocked(ctx); e != nil {
+		return fail(e)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].Devpath < out[j].Devpath })
+	return out, nil
+}
+
+// 官方device.c1714：用真正devnum/ifindex，否则devpath末段（不是已翻译!的sysname）。
+// 这里只做纯派生；调用者必须先核原ueventFD/实际node及原catalog对象。
+func normalOrdinaryStockUdevDatabaseID(kernel map[string]string, devpath, subsystem string) (string, error) {
+	if !normalOrdinaryStockUdevAbsolute(devpath, "") || !normalOrdinaryStockUdevWord(subsystem) {
+		return "", ErrUnknown
+	}
+	a, aok := kernel["MAJOR"]
+	b, bok := kernel["MINOR"]
+	if aok != bok {
+		return "", ErrUnknown
+	}
+	if aok {
+		major, e := normalOrdinaryStockUdevUnsigned(a, 32)
+		minor, x := normalOrdinaryStockUdevUnsigned(b, 32)
+		if e != nil || x != nil {
+			return "", ErrUnknown
+		}
+		if major != 0 {
+			prefix := "c"
+			if subsystem == "block" {
+				prefix = "b"
+			}
+			return prefix + strconv.FormatUint(major, 10) + ":" + strconv.FormatUint(minor, 10), nil
+		}
+	}
+	if text, yes := kernel["IFINDEX"]; yes {
+		n, e := normalOrdinaryStockUdevUnsigned(text, 31)
+		if e != nil || n == 0 {
+			return "", ErrUnknown
+		}
+		return "n" + text, nil
+	}
+	id := "+" + subsystem + ":" + filepath.Base(devpath)
+	if !normalOrdinaryStockUdevRuntimeName(id) {
+		return "", ErrUnknown
+	}
+	return id, nil
+}
+
+func normalOrdinaryStockUdevReadDatabaseAt(root *os.File, id string) ([]byte, bool, error) {
+	if root == nil || !normalOrdinaryStockUdevRuntimeDeviceID(id) {
+		return nil, false, ErrUnknown
+	}
+	data, e := normalFilesystemOpenAt(int(root.Fd()), "data", unix.O_RDONLY|unix.O_DIRECTORY|unix.O_NOFOLLOW)
+	if e == unix.ENOENT {
+		return nil, false, nil
+	}
+	if e != nil {
+		return nil, false, e
+	}
+	defer data.Close()
+	var ds unix.Stat_t
+	if unix.Fstat(int(data.Fd()), &ds) != nil || ds.Uid != 0 || ds.Gid != 0 || ds.Mode&0022 != 0 {
+		return nil, false, fmt.Errorf("stock original database directory ownership differs")
+	}
+	parent, e := normalFilesystemFDObject(int(root.Fd()))
+	if e != nil {
+		return nil, false, e
+	}
+	dataObject, e := normalFilesystemFDObject(int(data.Fd()))
+	if e != nil || dataObject.Device != parent.Device || dataObject.MountID != parent.MountID || dataObject.Filesystem != parent.Filesystem {
+		return nil, false, fmt.Errorf("stock database directory is not original runtime filesystem")
+	}
+	f, e := normalFilesystemOpenAt(int(data.Fd()), id, unix.O_RDONLY|unix.O_NONBLOCK|unix.O_NOFOLLOW)
+	if e == unix.ENOENT {
+		return nil, false, nil
+	}
+	if e != nil {
+		return nil, false, e
+	}
+	defer f.Close()
+	var before, after unix.Stat_t
+	if unix.Fstat(int(f.Fd()), &before) != nil || before.Mode&unix.S_IFMT != unix.S_IFREG || before.Uid != 0 || before.Gid != 0 || before.Nlink != 1 || before.Mode&0022 != 0 || before.Size < 0 || before.Size > 64<<10 {
+		return nil, false, fmt.Errorf("stock original database is not bounded root regular file")
+	}
+	object, e := normalFilesystemFDObject(int(f.Fd()))
+	if e != nil || object.Device != parent.Device || object.MountID != parent.MountID || object.Filesystem != parent.Filesystem {
+		return nil, false, fmt.Errorf("stock database lies outside original runtime filesystem")
+	}
+	raw, e := normalOrdinaryUdevV2ReadFD(f, 64<<10)
+	if e != nil {
+		return nil, false, e
+	}
+	if unix.Fstat(int(f.Fd()), &after) != nil || before.Dev != after.Dev || before.Ino != after.Ino || before.Size != after.Size || before.Ctim != after.Ctim || before.Mtim != after.Mtim || int64(len(raw)) != before.Size {
+		return nil, false, fmt.Errorf("stock original database changed during read")
+	}
+	return raw, true, nil
+}
+
+func normalOrdinaryStockUdevDatabaseEKey(name string) bool {
+	if name == "" || len(name) > 64 {
+		return false
+	}
+	word := name
+	if strings.HasPrefix(word, ".") {
+		word = word[1:]
+		if word == "" {
+			return false
+		}
+	}
+	for _, c := range word {
+		if !(c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_') {
+			return false
+		}
+	}
+	switch word {
+	case "DEVPATH", "SUBSYSTEM", "DEVNAME", "DEVTYPE", "MAJOR", "MINOR", "IFINDEX", "DRIVER", "ACTION", "SEQNUM", "SYNTH_UUID", "USEC_INITIALIZED", "DEVLINKS", "TAGS", "RUN", "PROGRAM", "IMPORT", "REMOVE_CMD", "PATH", "ENV", "BASH_ENV", "IFS", "SHELLOPTS", "GLIBC_TUNABLES", "MUSL_LOCPATH", "HOME", "SHELL":
+		return false
+	}
+	for _, prefix := range []string{"LD_", "KMOD_", "MODPROBE_", "GLIBC_"} {
+		if strings.HasPrefix(word, prefix) {
+			return false
+		}
+	}
+	if strings.HasPrefix(word, "UDEV_") && word != "UDEV_DISABLE_PERSISTENT_STORAGE_RULES_FLAG" {
+		return false
+	}
+	return true
+}
+
+// full Root processed是独立原消息；DB只验证持久子集，不倒造缺失的monitor属性。
+// 额外E只能逐项与该消息完全相等；旧pure parser有限E表保持原样。
+func normalOrdinaryStockUdevDatabaseProjection(kernel map[string]string, db []byte, present bool, processed map[string]string) (map[string]string, []normalOrdinaryUdevV2DynamicProperty, error) {
+	if len(kernel) == 0 || len(kernel) > 126 || len(db) > 64<<10 || !present && len(db) != 0 || len(processed) == 0 {
+		return nil, nil, ErrUnknown
+	}
+	if processed["ACTION"] != "add" || processed["DEVPATH"] != kernel["DEVPATH"] || processed["SUBSYSTEM"] != kernel["SUBSYSTEM"] {
+		return nil, nil, fmt.Errorf("stock original add identity differs")
+	}
+	if _, e := normalOrdinaryUdevV2CanonicalProperties(processed); e != nil {
+		return nil, nil, e
+	}
+	for key, value := range kernel {
+		if key == "DEVNAME" && !strings.HasPrefix(value, "/") {
+			value = "/dev/" + value
+		}
+		if processed[key] != value {
+			return nil, nil, fmt.Errorf("stock original kernel property differs from Root processed")
+		}
+	}
+	base := map[string]string{}
+	for _, key := range []string{"DEVPATH", "SUBSYSTEM", "DEVNAME", "MAJOR", "MINOR", "IFINDEX"} {
+		if v, yes := kernel[key]; yes {
+			base[key] = v
+		}
+	}
+	seen := map[string]bool{}
+	var rest bytes.Buffer
+	if len(db) > 0 {
+		if db[len(db)-1] != '\n' || bytes.IndexByte(db, 0) >= 0 {
+			return nil, nil, fmt.Errorf("stock DB truncated")
+		}
+		for _, line := range strings.Split(string(db[:len(db)-1]), "\n") {
+			if !strings.HasPrefix(line, "E:") {
+				rest.WriteString(line)
+				rest.WriteByte('\n')
+				continue
+			}
+			name, value, ok := strings.Cut(line[2:], "=")
+			if !ok || !normalOrdinaryStockUdevDatabaseEKey(name) || !normalOrdinaryStockUdevScalar(value) || value == "" || len(value) > 4095 || seen[name] || len(seen) >= 126 {
+				return nil, nil, fmt.Errorf("stock DB E key/value/control differs")
+			}
+			seen[name] = true
+			if _, override := kernel[name]; override {
+				return nil, nil, fmt.Errorf("stock DB E cannot overwrite original kernel property")
+			}
+			if strings.HasPrefix(name, ".") {
+				continue
+			} // 官方monitor跳private，不把私有值投进授权消息。
+			if processed[name] != value {
+				return nil, nil, fmt.Errorf("stock DB persistent property absent/different in original Root processed")
+			}
+		}
+	}
+	projection, e := projectNormalOrdinaryStockUdevDB(base, rest.Bytes(), present)
+	if e != nil {
+		return nil, nil, e
+	}
+	for key, value := range projection.Properties {
+		if processed[key] != value {
+			return nil, nil, fmt.Errorf("stock persisted/generated projection differs from Root processed")
+		}
+	}
+	// 两个集合生成项要求精确存在性，不能用Root消息额外DEVLINKS/TAGS掩盖遗漏DB行。
+	for _, key := range []string{"DEVLINKS", "TAGS"} {
+		a, ay := projection.Properties[key]
+		b, by := processed[key]
+		if ay != by || a != b {
+			return nil, nil, fmt.Errorf("stock generated link/tag set differs from database")
+		}
+	}
+	dynamic := []normalOrdinaryUdevV2DynamicProperty{}
+	if text, yes := processed["USEC_INITIALIZED"]; yes {
+		n, e := normalOrdinaryStockUdevUnsigned(text, 64)
+		if e != nil || n == 0 {
+			return nil, nil, fmt.Errorf("stock original initialized time differs")
+		}
+		var now unix.Timespec
+		if unix.ClockGettime(unix.CLOCK_MONOTONIC, &now) != nil || n > uint64(now.Sec)*1000000+uint64(now.Nsec)/1000 {
+			return nil, nil, fmt.Errorf("stock initialized time exceeds original monotonic clock")
+		}
+		dynamic = append(dynamic, normalOrdinaryUdevV2DynamicInitializedMonotonicUsec)
+	}
+	out := make(map[string]string, len(processed))
+	for k, v := range processed {
+		out[k] = v
+	}
+	return out, dynamic, nil
+}

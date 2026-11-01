@@ -1,0 +1,60 @@
+{
+  "scope": "ORIGINAL_STOCK_UDEV_RO_INPUT_PRIMITIVES_UNIT_ONLY",
+  "new_U_roots": 5,
+  "new_U_named_subtests": 35,
+  "U": [
+    {
+      "id": "PG17-U-STOCK-INPUT-001",
+      "root": "TestNormalOrdinaryStockUdevInputsAccounts",
+      "receipt": "receipt/export/test.json",
+      "layer": "unit"
+    },
+    {
+      "id": "PG17-U-STOCK-INPUT-002",
+      "root": "TestNormalOrdinaryStockUdevInputsInventory",
+      "receipt": "receipt/export/test.json",
+      "layer": "unit"
+    },
+    {
+      "id": "PG17-U-STOCK-INPUT-003",
+      "root": "TestNormalOrdinaryStockUdevInputsReadAt",
+      "receipt": "receipt/export/test.json",
+      "layer": "unit"
+    },
+    {
+      "id": "PG17-U-STOCK-INPUT-004",
+      "root": "TestNormalOrdinaryStockUdevInputsFailClosed",
+      "receipt": "receipt/export/test.json",
+      "layer": "unit"
+    },
+    {
+      "id": "PG17-U-STOCK-INPUT-005",
+      "root": "TestNormalOrdinaryStockUdevInputsSnapshot",
+      "receipt": "receipt/export/test.json",
+      "layer": "unit"
+    }
+  ],
+  "direct_old_regression_U_roots": 7,
+  "direct_old_regression_subtests": 70,
+  "all_actual_race_roots": 12,
+  "all_actual_subtests": 105,
+  "fail": 0,
+  "skip": 0,
+  "S": 0,
+  "E": 0,
+  "Source_qualification": false,
+  "normal_decrease_authorized": false,
+  "ENV": [
+    "Linux resource-guard build0",
+    "Darwinarm64 package compile0",
+    "BuildRUN memory.max3221225472/cpu.max300000 100000",
+    "original budget wrapper unique Wait and actual original unit terminal"
+  ],
+  "explicit_missing": [
+    "real complete System3 RO inputs constructor positive in isolated Guest",
+    "Root original actor/nscd and protected /run lookup enforcement",
+    "Root actual stock supervisor exec/wait and complete processing",
+    "projection seal and broker handoff",
+    "full continuous sources and normal decrease"
+  ]
+}

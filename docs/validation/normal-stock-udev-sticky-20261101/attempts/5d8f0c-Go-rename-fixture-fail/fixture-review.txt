@@ -1,0 +1,1 @@
+原FAIL保留。Go1.24.3 os/file_unix.go24..42在newname为其它现存目录时直接返回EEXIST，未触达syscall.Rename，故该结果不能证明VFS sticky拒绝。后继独立夹具改unix.Renameat实际syscall，不把EEXIST宽许为PASS。原前两EPERM、全cap0/NNP1/UID60004事实仍是原范围，后四项未完成不冒PASS。官方依据 https://raw.githubusercontent.com/golang/go/go1.24.3/src/os/file_unix.go

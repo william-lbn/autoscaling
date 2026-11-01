@@ -1,0 +1,46 @@
+[
+  {
+    "command": "qmp_capabilities",
+    "response": {
+      "return": {}
+    }
+  },
+  {
+    "command": "query-kvm",
+    "response": {
+      "return": {
+        "enabled": true,
+        "present": true
+      }
+    }
+  },
+  {
+    "command": "query-memory-size-summary",
+    "response": {
+      "return": {
+        "base-memory": 536870912,
+        "plugged-memory": 0
+      }
+    }
+  },
+  {
+    "command": "query-memory-devices",
+    "response": {
+      "return": [
+        {
+          "type": "virtio-mem",
+          "data": {
+            "memdev": "/objects/vmem0",
+            "memaddr": 4294967296,
+            "block-size": 8388608,
+            "size": 0,
+            "node": 0,
+            "max-size": 3758096384,
+            "requested-size": 0,
+            "id": "vm0"
+          }
+        }
+      ]
+    }
+  }
+]

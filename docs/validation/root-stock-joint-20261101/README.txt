@@ -1,0 +1,8 @@
+stock准备输入/规则/数据库/封存/ordinary目录组合组件归档
+本次在17cb700原分支上只叠加冻结33源，1408 Go/mod实际COPY，48 race根/227子例、Guard和Builder的Linux/Darwin编译均0；全部预定用例实际pass。
+第一次07b1cd有47根通过、DEV asset export跳过，worker严格判missing_expected而失败，原始历史保持；b0791a仅显式设置DEV导出目录，新增第48根确实执行。不重标旧图。
+数据库缺/空DB红绿直接反例已归档：旧949生产错误接纳信息字段，fec819两case真实test1；21bf9c收紧后5根43子例通过。非空DB只核实际Root processed持久子集，不要求消息全map等于数据库。
+真实18c隔离机制分别为socket/原RO规则FD、sticky运行目录权限、17mount图下目录布局；保各原ELF/源码/原始串口、nonce、资源及退出码，不能将它们改称真实stock producer或全Source正控。
+投影memfd是只读密封存储，匿名memfd缺MountID用私有精确校验；真实sockfs有MountID9，故通用Filesystem helper及socket检查没有被放宽。
+静态MF现位于原RO根/neonvm/config，Inputs/Kmod/Runtime的schema及只读祖先保持严格；P1独审只签layout7组件，原577图未包含Inputs6，本联合图独立补足编译与相关U。
+这仍不授予normal硬降限或业务资格。主Root stock实际exec/全Wait生产者及prepared→Ready接线、全部普通角色、真实PG stderr/持续安全、未来memory动态证明与恢复、Linux/K8s端到端继续完成；所有发行锁保持不动。

@@ -1,0 +1,30 @@
+{
+  "scope": "IUSR001_STATIC_RULE_LOOKUP_PINNING_NOT_SOURCE",
+  "new_U": [
+    {
+      "id": "PG17-U-STOCK-INPUT-006",
+      "root": "TestNormalOrdinaryStockUdevInputsAdditionalRuleRoots",
+      "named_subtests": 6,
+      "layer": "unit-pure-policy",
+      "receipt": "receipt/export/test.json"
+    }
+  ],
+  "old_Input_direct_regression_roots": 5,
+  "old_Input_direct_regression_subtests": 35,
+  "old_Stock_direct_regression_roots": 7,
+  "old_Stock_direct_regression_subtests": 70,
+  "actual_all_roots": 13,
+  "actual_all_named_subtests": 111,
+  "fail": 0,
+  "skip": 0,
+  "S": 0,
+  "E": 0,
+  "Source": false,
+  "normal": false,
+  "missing": [
+    "real RO alias/absent/empty original constructor Guest positive",
+    "Kernel IUSR002 actual compiled kmod and module/config/default lookup provenance",
+    "Root actors+nscd+runtime directory ownership and stock completion/seal",
+    "full normal continuous producer closure"
+  ]
+}

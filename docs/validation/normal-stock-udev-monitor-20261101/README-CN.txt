@@ -1,0 +1,11 @@
+stock udev准备期双group监视器组件归档
+
+最终74ec9c精确图：5个race根/31子例通过，COPY/Linux CLI/Darwin/native ELF编译均0；Go1.24.3，本轮实际53.666462秒；RUN3CPU3GiB/GOMAXPROCS2、单RUN、原预算Wait terminal。实际数值以原result/limit为准，不叠加多轮通过数冒新图。
+
+唯一生产新源normal_ordinary_stock_udev_monitor_linux.go及其定向U；另有隔离sticky tagged native测试文件（不属于生产Source）。open立即固定原group1|2同OFD/PASSCRED连续捕获；原kernel pid0与Root stock userspace pid>1 uid/gid0区分，验证完整原stock40header/hash/bloom。seq只为selector，ACTION/DEVPATH/SUBSYSTEM及全部原kernel属性与原Target逐项核，DEVNAME按官方转/dev/。缺票据、重复、未知目标、断流、截断、溢出、错credentials均Unknown。最多8192总记录/32MiB原包，终态最多4096原kernel票据。receipt为深copy，不暴露可追加的来源。
+
+finish只在调用者已对原supervisor所有writer真实Wait且复核原三actor后，才从原OFD实际drain到EAGAIN；50ms poll仅唤醒调度，不作为队列完成证明。Target map由Root原/sys捕获，API不认证map/UID/PID，不产Source或ready布尔。Root还须原RO70/账户及完整ELF闭包、原prepared/FS/VM与独立sealed投影；本组件无真实stock联合S、真实九服务、PG或normal资格。
+
+533438是首版通过但静审发现畸形单冒号TAGS边界；后继增加len门与Family门。e45199保留原失败：畸形fixture经旧public encoder提前拒，未触达待审decoder。最终b424e7用实际原包字节畸形帧覆盖，不放宽生产拒绝。原日志和每轮owned源码不覆盖。旧ordinary11/Root监督/FS17/P2均未被本lane修改。
+
+Root独审发现原b424 Match仅核已观察事件，未拒原Target A/B但只处理A；该历史保留。本后继74ec9c明确要求每个原Target至少一条完整kernel+processed匹配，并加未处理额外Target负例。literal add仍由RootSource按原固定阶段核，不以任意action替代。原sticky source4061与4c1e21机制S全部保持原b424 ELF/cohort，不因monitor后继U通过转签新ELF；本后继monitor真实stock S仍0。

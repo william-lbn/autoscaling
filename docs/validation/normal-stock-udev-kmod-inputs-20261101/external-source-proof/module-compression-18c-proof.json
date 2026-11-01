@@ -1,0 +1,69 @@
+{
+  "protocol_version": 1,
+  "scope": "EXACT_18C_FINITE_COMPILED_ATTRIBUTE_ABSENCE_NOT_RUNTIME_SOURCE",
+  "kernel_profile": "neon-linux-6.12.26-dsga-normal-split-metadata-v1",
+  "kernel_image_sha256": "18c9fd3a38bbe5a087b98998c856898e97ee3f0bc68681b13f0287912849e1ad",
+  "kernel_release": "6.12.26-william-normal-split-metadata-v1-c67181104ec1",
+  "kernel_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+  "config_sha256": "966e615127358d6d0dcf4f6ca884a07702e957ad07a95909cf95feca4aae5441",
+  "full_C_header_index_sha256": "273af74cfed5f69b98b189a4c12e95128af0a9e5605bda728868c9e2ac4833b1",
+  "actual_source_files": {
+    "include/config/auto.conf": "1b3239efe3c635cde731171a8f549a812e88543b459db531b4dee2db41d47baf",
+    "include/generated/autoconf.h": "2f8d147d73fd61dd818eaf7728ae4bbfc9bd280d4d9135fcca4f696279c89e11",
+    "init/Kconfig": "5849135e18150ed62891f22d1e2e204d30918495fc9cf8dec9f0b6cc860c415c",
+    "kernel/module/Kconfig": "7ac58cfc0f38ec291a0217fc8524fecfb6f70f7ba121d7f7303afc4c01254740",
+    "kernel/module/Makefile": "3c6166fab71f512aa26afa03e85ca255d2c708bcd98f1ea535fde32535cec420",
+    "kernel/module/decompress.c": "309a95d45f0596ae2833c287a4b8d8f587501f72f656c2b4eb1b99b5381b4d4f",
+    "kernel/module/sysfs.c": "9fa7e0e09d28197ff8a01794ed1e1162d248ca8e1f27794592c1a61c34443fa8"
+  },
+  "C_and_generated_header_match_original_full_index": {
+    "include/generated/autoconf.h": true,
+    "kernel/module/decompress.c": true,
+    "kernel/module/sysfs.c": true
+  },
+  "resolved_config_facts": [
+    "CONFIG_MODULES=y",
+    "# CONFIG_MODULE_COMPRESS is not set",
+    "CONFIG_SYSFS=y",
+    "no selected CONFIG_MODULE_DECOMPRESS or COMPRESS algorithm/all symbols"
+  ],
+  "actual_generated_facts": "include/generated/autoconf.h and include/config/auto.conf only select CONFIG_MODULES; COMPRESS and DECOMPRESS absent",
+  "creator_chain": [
+    {
+      "file": "kernel/module/Kconfig",
+      "lines": [
+        283,
+        300,
+        335,
+        337
+      ],
+      "fact": "MODULE_DECOMPRESS requires MODULE_COMPRESS"
+    },
+    {
+      "file": "kernel/module/Makefile",
+      "lines": [
+        14
+      ],
+      "fact": "only CONFIG_MODULE_DECOMPRESS selects decompress.o"
+    },
+    {
+      "file": "kernel/module/decompress.c",
+      "lines": [
+        347,
+        348,
+        354,
+        356,
+        360,
+        367
+      ],
+      "fact": "CONFIG_SYSFS guarded sole compression attr in this TU, via late_initcall; TU not selected in exact build"
+    }
+  ],
+  "allowed_runtime_requirement": "Only this exact complete tuple may expect actual original sysfs /sys/module/compression ENOENT, with held original sysfs/module parent identity and typed FS/Kernel/NS. If node present, symlink, mount mismatch or any non-ENOENT read error: Unknown. No arbitrary recognized-profile or current-sampling inference.",
+  "actual_export_seconds": 25.210029733978445,
+  "old_three_make_and_full_index": "CACHED, read_only_single_export_RUN_only",
+  "U": 0,
+  "S": 0,
+  "normal": false,
+  "fullSource": false
+}

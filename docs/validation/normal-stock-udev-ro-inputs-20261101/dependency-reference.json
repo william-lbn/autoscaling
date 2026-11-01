@@ -1,0 +1,15 @@
+{
+  "base": "97d90bc180bf6a2e9a9d9f0800ddddd21e6c7427",
+  "immutable_Root8_source": "/data/neon-build/validation/root-system3-stock-inventory-go-20261101T101238Z-8e37b8/source",
+  "immutable_Root8_source_lock_sha256": "de13ff3a7116568987fd35a396e02d6000dc3e1915fb7daceae9aa0d4149d8d8",
+  "must_commit_Root8_schema_and_inventory_dependency_first_or_atomically": true,
+  "deleted_old_dependency": "pkg/dsga/resourceguard/normal_ordinary_stock_udev_manifest_linux.go",
+  "new_dependency_common": [
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_manifest.go",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_inventory.go"
+  ],
+  "Root8_validation_not_relabelled_as_own_new_coverage": true,
+  "own_snapshot_source_lock_sha256": "7358b4a6647ef0faab2fc63cfb4acc1077384f0cc59d108a2c1e48c44cd7097f",
+  "actual_copy_inputs": 1360,
+  "actual_copy_mismatch": []
+}

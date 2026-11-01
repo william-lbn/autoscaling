@@ -1,0 +1,21 @@
+{
+  "tar_path": "/data/neon-build/validation/ordinary-udev-privsep-build-20261101T071308Z-24654f/source/sources/eudev-3.2.14.tar.gz",
+  "tar_sha256": "8da4319102f24abbf7fff5ce9c416af848df163b29590e666d334cc1927f006f",
+  "source_sha256": {
+    "src/libudev/libudev-device.c": "54a44aa1e49c1737631042979a84997639fab016e49b874742cf1e473096f69e",
+    "src/libudev/libudev-device-private.c": "84781b45e86fa10fd5dc4c684c6aa9e7e97e453ab7f02894203b9be18d9456fa",
+    "src/udev/udev-node.c": "f295f4e0add1fbfade6cf6b3f706abd9960237d76be43f29426659a0db376619",
+    "src/udev/udev-watch.c": "195eabcf6e0ec4e80de30b758066033b840480331eec060d9191c667b3c25a05",
+    "src/udev/udev-ctrl.c": "b1712d1439b0e62dc9e343b45799c2ae6f4eb428f239204170ad550f0cb92c15",
+    "src/udev/udev-rules.c": "a1ceb115a85c3522553443f605cd936f7ec5e30a88c9b48ae30b3514ba617757",
+    "src/udev/udevd.c": "86736606a1b0db0725854e14c20dc9490eb2cc41905e4f33cec9d105698d2d47"
+  },
+  "data": "device-private.c118/128..174 regular DB; optional sticky01644",
+  "tags": "device-private.c41..49 <tag>/<id> empty regular0444",
+  "links": "node.c190..217 <encoded-link>/<id> empty regular0444",
+  "watch": "watch.c111..115 <wd> symlink to original device-id",
+  "static_node_tags": "rules.c2713..2724 <tag>/<escaped-node> symlink to /dev/...; finish f remains nil, not justification for top regular",
+  "control_cleanup": "ctrl.c161..165 cleanup_socket then unlink; udevd.c1565 actual exit invokes",
+  "queue_cleanup": "udevd.c1566 unlink on actual exit, not settle0 proof",
+  "scope": "read exact official original bytes; not claiming stock writer was executed in this U cohort"
+}

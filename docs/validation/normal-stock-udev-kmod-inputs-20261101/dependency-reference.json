@@ -1,0 +1,31 @@
+{
+  "base": "97d90bc180bf6a2e9a9d9f0800ddddd21e6c7427",
+  "Root10_immutable_source": "/data/neon-build/validation/root-system3-stock-inventory-go-20261101T110027Z-339616/source",
+  "Root10_source_lock_sha256": "b96077587a7f626159ac618d80652580e6cf7d463e2d6e8f5ce9f0341e827b1e",
+  "own_SourceLockSHA256": "0a7107870855974daa69532a14dd09e760502bc238da65d63f420df07a8d4c21",
+  "immutable_Inputs_Runtime4": {
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_inputs_linux.go": {
+      "sha256": "709a60d2637b5b293c0eecc0443be8b0160c2c9beb127a6e7bd7c9821e1b5267",
+      "immutable_source": "/data/neon-build/validation/normal-stock-udev-inputs-iusr001-go-20261101T104722Z-a57172/source/pkg/dsga/resourceguard/normal_ordinary_stock_udev_inputs_linux.go"
+    },
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_inputs_linux_test.go": {
+      "sha256": "0d73059b1c80279477108ce20bb2004f80141dccade0b48c744b2361a719a0f3",
+      "immutable_source": "/data/neon-build/validation/normal-stock-udev-inputs-iusr001-go-20261101T104722Z-a57172/source/pkg/dsga/resourceguard/normal_ordinary_stock_udev_inputs_linux_test.go"
+    },
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_runtime_dirs_linux.go": {
+      "sha256": "c8f96ca3b27666085958539f56a9861912153caed04eb6cc810d99058e50abb2",
+      "immutable_source": "/data/neon-build/validation/normal-stock-udev-runtime-go-20261101T104147Z-89492a/source/pkg/dsga/resourceguard/normal_ordinary_stock_udev_runtime_dirs_linux.go"
+    },
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_runtime_dirs_linux_test.go": {
+      "sha256": "a884d40c6d1068208de7192fdeecb962c941b911ddc67e4195e48ba8ff8ae10f",
+      "immutable_source": "/data/neon-build/validation/normal-stock-udev-runtime-go-20261101T104147Z-89492a/source/pkg/dsga/resourceguard/normal_ordinary_stock_udev_runtime_dirs_linux_test.go"
+    }
+  },
+  "Kernel_source_lock_sha256": "435ebab8edbb9dc1a9538b3f0aa1bf84b9f96459a984e2fe1b9486fb5c067e9c",
+  "exact18c_compression_proof_sha256": "835c41986fd34f33cb8b0b646991db31afaa53180d8bb86cf5721ce5343bfd49",
+  "MF_path_at_compile": "/etc/neon-dsga/ordinary-stock-udev-manifest.json",
+  "MF_path_is_RW_hole_and_not_a_real_RO_constructor_positive": true,
+  "Root_new_RO_path_successor": "/neonvm/config/dsga-ordinary-stock-udev-manifest.json",
+  "no_historical_receipt_relabelled_as_new_path": true,
+  "production_source_is_not_wired_or_qualified": true
+}

@@ -1,0 +1,50 @@
+{
+  "scope": "KMOD31_R2_STATIC_EMPTY_AND_ORIGINAL_PSEUDO_INPUT_PRIMITIVES_ONLY",
+  "new_U_roots": 5,
+  "new_U_named_subtests": 34,
+  "U": [
+    {
+      "id": "PG17-U-STOCK-KMOD-001",
+      "root": "TestNormalOrdinaryStockUdevKmodEmptyRoots",
+      "receipt": "receipt/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-KMOD-002",
+      "root": "TestNormalOrdinaryStockUdevKmodRunAbsent",
+      "receipt": "receipt/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-KMOD-003",
+      "root": "TestNormalOrdinaryStockUdevKmodEnvironment",
+      "receipt": "receipt/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-KMOD-004",
+      "root": "TestNormalOrdinaryStockUdevKmodKernelBinding",
+      "receipt": "receipt/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-KMOD-005",
+      "root": "TestNormalOrdinaryStockUdevKmodFailClosed",
+      "receipt": "receipt/export/test.json"
+    }
+  ],
+  "old_Inputs_direct_regression_roots": 6,
+  "old_Inputs_direct_regression_subtests": 41,
+  "old_Runtime_direct_regression_roots": 5,
+  "old_Runtime_direct_regression_subtests": 27,
+  "actual_all_roots": 16,
+  "actual_all_named_subtests": 102,
+  "fail": 0,
+  "skip": 0,
+  "S": 0,
+  "E": 0,
+  "Source": false,
+  "normal": false,
+  "missing": [
+    "Root actual original KernelPrep2 modules-disabled opaque",
+    "Root sameGuard original R2 and all three actors/writers actual Wait",
+    "real corrected-RO-MF constructor and fixed complete stock exec",
+    "actual sealed projection and full continuous normal source producer"
+  ]
+}

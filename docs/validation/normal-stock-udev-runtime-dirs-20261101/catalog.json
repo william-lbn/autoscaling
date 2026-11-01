@@ -1,0 +1,50 @@
+{
+  "scope": "FIXED_FD_PERMISSION_PRIMITIVES_PRIVATE_TEMP_TREE_ONLY",
+  "U_roots": 5,
+  "U_named_subtests": 27,
+  "U": [
+    {
+      "id": "PG17-U-STOCK-RUNTIME-001",
+      "root": "TestNormalOrdinaryStockUdevRuntimePrepare",
+      "receipt": "receipt/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-RUNTIME-002",
+      "root": "TestNormalOrdinaryStockUdevRuntimeTypes",
+      "receipt": "receipt/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-RUNTIME-003",
+      "root": "TestNormalOrdinaryStockUdevRuntimeRejectsResidualOrWrongTypes",
+      "receipt": "receipt/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-RUNTIME-004",
+      "root": "TestNormalOrdinaryStockUdevRuntimeHandoff",
+      "receipt": "receipt/export/test.json"
+    },
+    {
+      "id": "PG17-U-STOCK-RUNTIME-005",
+      "root": "TestNormalOrdinaryStockUdevRuntimeFailClosed",
+      "receipt": "receipt/export/test.json"
+    }
+  ],
+  "fail": 0,
+  "skip": 0,
+  "S": 0,
+  "E": 0,
+  "normal": false,
+  "Source": false,
+  "ENV": [
+    "Linux resource-guard build0",
+    "Darwinarm64 package compile0",
+    "BuildRUN3CPU3GiB Go2/768MiB",
+    "original worker uniqueWait+unit terminal budget release"
+  ],
+  "missing": [
+    "original R2/sameGuard/phase and writer actual Wait factory",
+    "actual stock completion/projection seal/durable handoff",
+    "real17graph RuntimeDirs production constructor positive",
+    "full continuous Source qualification"
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "result": "PASS_COMPONENT_SCOPE_ONLY",
+  "source7": {
+    "pkg/dsga/resourceguard/normal_system_ordinary_v2_layout.go": "0369bf465064ba296e73ff2cc866dc3293def8f865d705bb6409fe7e5f1db383",
+    "pkg/dsga/resourceguard/normal_system_ordinary_v2_layout_linux.go": "6b0a19ddafa0a569be03bdf27207d7752ca69ef0a692806c34b317508015b602",
+    "pkg/dsga/resourceguard/normal_system_ordinary_v2_layout_linux_test.go": "8c233c6f28e2029c2ee5cb624b937766bc0b4069f294ae83fdde56ec9eb4df58",
+    "pkg/dsga/resourceguard/normal_system_ordinary_v2_layout_native_test.go": "93e6dc596d8f819f8ac737c9f17d50362be506c9265b9d1953cdb4bf1380682f",
+    "pkg/dsga/resourceguard/normal_system_ordinary_v2_layout_runtime_linux.go": "8359aa7f22cf2117b275a65bc6f328ba00dcd3a4a5a05f7967731dd2653226df",
+    "vm-builder/ordinary_v2_assets.go": "0ba5526a7b1cd686ca09ca2c9c344ba25a44aef9241d65e6a29db339cd6dde97",
+    "vm-builder/ordinary_v2_assets_test.go": "aa626c909d205a97b1ffad674cddb5c5a22fd4ce2fb26b4b6270e669907fb0cd"
+  },
+  "freeze_sha256": "40ee7a1ea483529faee276a64846887393e2ca6a33655a573fe692f6c0a003f8",
+  "stage_sha256": "bf7d91af66e16cd1a5e847a97f3b4334c40b6c514d3f23b5bed3448449b856b1",
+  "archive57_all_current_hash_equal": true,
+  "immutable": "/data/neon-build/validation/normal-ordinary2-layout-go-20261101T115946Z-577d62",
+  "source_lock_sha256": "2670b54b2e8ce72df81311d33489d5e428dbeb37cca843a257dd1fc552eeee15",
+  "actual_COPY": 8506,
+  "all7phases": {
+    "u.exitcode": 0,
+    "cli.exitcode": 0,
+    "builder.exitcode": 0,
+    "darwin-resourceguard.exitcode": 0,
+    "darwin-builder.exitcode": 0,
+    "native-compile.exitcode": 0,
+    "asset-export.exitcode": 0
+  },
+  "U_roots": 5,
+  "named_subtests": 5,
+  "fail": 0,
+  "skip": 0,
+  "native_original_result": {
+    "id": "NEON-S-ORDINARY2-DIRECTORY-001",
+    "status": "PASS_MECHANISM_ONLY",
+    "QEMU_unique_Wait": 0,
+    "Guest_diagnostic_exit42": 1,
+    "actual_notes_sha256": "a496a3c44fc0b374f100ba0331a2e21f02d6e79ac999769a8d3ad4d71b76024e",
+    "actual_graph_count": 17,
+    "offline_DNS_bytes_unchanged": true,
+    "offline_owner_checks": true,
+    "seconds": 4.276498530001845,
+    "source_qualified": false,
+    "normal": false,
+    "E": 0
+  },
+  "read_Inputs6": {
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_inputs_linux.go": "709a60d2637b5b293c0eecc0443be8b0160c2c9beb127a6e7bd7c9821e1b5267",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_inputs_linux_test.go": "0d73059b1c80279477108ce20bb2004f80141dccade0b48c744b2361a719a0f3",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_runtime_dirs_linux.go": "c8f96ca3b27666085958539f56a9861912153caed04eb6cc810d99058e50abb2",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_runtime_dirs_linux_test.go": "a884d40c6d1068208de7192fdeecb962c941b911ddc67e4195e48ba8ff8ae10f",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_kmod_inputs_linux.go": "e26263c8b5aa4044aaaa9911a59f32086830b5f474b9fce2344dff0a41c5db2a",
+    "pkg/dsga/resourceguard/normal_ordinary_stock_udev_kmod_inputs_linux_test.go": "8f4e585a4dbaeaa0a3d2836dc312cbb73a4752b54be68c352a8e3c82017ea295"
+  },
+  "Inputs6_not_in_layout577d62_compiled_graph": true,
+  "read_only_path_compatibility_not_joint_test": true,
+  "MF_path": "/neonvm/config/dsga-ordinary-stock-udev-manifest.json",
+  "fixed_node_notes": {
+    "Root_stock_default_branch_all_devices": true,
+    "ordinary_device_check_CLI_missing": true,
+    "current_privsep_supported": [
+      "log",
+      "memory"
+    ],
+    "power_ptp_future_expected_metadata_hunk_required_if_enabled": true
+  },
+  "blockers": [],
+  "not_certified": [
+    "formal layout producer positive",
+    "all9 services compatibility",
+    "layout7+Inputs6 actual joint cohort",
+    "stock all-device ordinary mode",
+    "Source",
+    "normal",
+    "E"
+  ],
+  "no_source_modified": true,
+  "no_tests_rerun": true,
+  "no_Git_mutation": true,
+  "review_txt_sha256": "be18dac5134edf626e6a0f749b1d002f5a166b302bef81eab7a0e1d9ef07e856"
+}
