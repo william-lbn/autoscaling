@@ -170,6 +170,9 @@ func (g *Guard) RepairHeld(ctx context.Context, request HeldRepairRequest) (Evid
 		if evidence.matchesLimits(r.Identity, limits) == nil {
 			return nil // 已恢复只读，不因显式重复选择再次写同一组文件。
 		}
+		if err := normalImmutableBoundsPreflight(g.kernel, limits); err != nil {
+			return err
+		}
 		if err := ctx.Err(); err != nil {
 			return err
 		}

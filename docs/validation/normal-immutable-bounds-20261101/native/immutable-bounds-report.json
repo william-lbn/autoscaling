@@ -1,0 +1,15 @@
+{
+  "E": 0,
+  "PG_executed": false,
+  "actual_final_writer_negative_cases": {
+    "address-space": "resource command requires original readback or explicit replay\nimmutable normal bounds: task/System/address-space target differs from original creation",
+    "huge-before-all-other-writes": "resource command requires original readback or explicit replay\nimmutable normal bounds: HugeTLB target differs from original complete zero hstates",
+    "system": "resource command requires original readback or explicit replay\nimmutable normal bounds: task/System/address-space target differs from original creation",
+    "task": "resource command requires original readback or explicit replay\nimmutable normal bounds: task/System/address-space target differs from original creation"
+  },
+  "actual_original_Bootstrap_positive": true,
+  "all_controls_unchanged": true,
+  "all_original_JSON_unchanged": true,
+  "id": "PG17-S-NORMAL-IMMUTABLE-BOUNDS-001",
+  "normal_authorized": false
+}

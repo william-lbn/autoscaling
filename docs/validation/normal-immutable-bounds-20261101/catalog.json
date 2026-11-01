@@ -1,0 +1,41 @@
+{
+  "scope": "NORMAL_ORIGINAL_IMMUTABLE_KERNEL_WRITER_REFUSAL_ONLY",
+  "actual_U": {
+    "roots": 36,
+    "subcases": 82,
+    "race": true,
+    "fail": 0,
+    "skip": 0,
+    "new_roots": 3,
+    "new_subcases": 12,
+    "direct_prior_roots": 33,
+    "actual_source_checked": 4604
+  },
+  "native": {
+    "id": "PG17-S-NORMAL-IMMUTABLE-BOUNDS-001",
+    "new_roots": 1,
+    "negative_cases": 4,
+    "actual_KVM": true,
+    "Guest_exit": 0,
+    "QEMU_Wait_exit": 0,
+    "source_inputs": 954,
+    "old_FS_Bootstrap_is_direct_regression": true
+  },
+  "E": 0,
+  "normal_qualified": false,
+  "ordinary_source8_vs_native9": "only additional independently tagged native test; other8 exact equal, original ordinary results not relabelled",
+  "cases": [
+    {
+      "id": "PG17-U-NORMAL-IMMUTABLE-003",
+      "root": "TestNormalImmutableBoundsDerivedOriginalTargets"
+    },
+    {
+      "id": "PG17-U-NORMAL-IMMUTABLE-001",
+      "root": "TestNormalImmutableBoundsRejectsBeforeNewIntent"
+    },
+    {
+      "id": "PG17-U-NORMAL-IMMUTABLE-002",
+      "root": "TestNormalImmutableBoundsKeepsCompletedReadbackReadOnly"
+    }
+  ]
+}

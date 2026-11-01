@@ -1,0 +1,6 @@
+normal原始不可变控制的真实最后写者门（2026-11-01）
+实证缺口：尚未进入record-v3 quota的normal369启动后，通用认证Apply/Replay可传入不同HugePools目标；原ReadBounds只核hstate列表并读当前值，KernelPrep后续Observe能发现漂移却不能阻止Root先写nr_hugepages。本批既不等待v3出现，也不以Root代码身份取代真正限制。
+Linux最后ApplyBounds第一项写之前，由原内核normal标记或固定ISO policy存在（包括损坏）选择严格路径，复用initialGuestChannelInputs逐项核实际完整原raw/五资产、原参数与namespace，绑定原Config和私有BootRequirements。完整hstate全0以及原task/System/AS上限逐字保留，N和Outside仍由独立预算协议控制。缺失/损坏/漂移拒绝；不读PGEmpty、不重放准备、不重入flock，不修改旧未选择normal的VM逻辑。
+普通Apply/Replay新WAL前、Bootstrap新intent前、RepairHeld真需写时也做同一precheck。已完成原命令/普通观察继续只读，不否认旧实际效果。最终writer重复校验，覆盖所有ApplyBounds调用者，拒绝发生于System/pids/swap/Huge任何实际写之前。
+实际U8源图：36race根82子例全部通过，新3根12子例，其余33直接回归；模型核Bootstrap/Apply/Replay/Repair拒绝后state原inode/字节不变和零新内核写，保已完成只读。最终native只追加独立tag新测试，8生产/普通测试字节完全相同。954实际COPY/准确369 KVM Guest0/唯一QEMU Wait0，先跑实际原Bootstrap/FS正控，再直接lastwriter四负例；故意同时改Huge/System/pids/N的请求在Huge拒绝处返回，原全部控制与JSON保持。GoELFa5e003acc46e4437f33c8b0747d611a2426d21e63a19ab4b4d1b5cc6ba67fc12。
+独立Helm审查9源与4hook及原始结果，NO_COMPONENT_BLOCKER。原console CRLF字节保留，镜像/大盘留Linux原nonce目录。本阶段是一个真实Root后续写者缺口的修复；System/Host DEV stand-in，没有PG、全角色/force/I闭合或安全normal降限，E0/未部署K8s/发行锁不变。

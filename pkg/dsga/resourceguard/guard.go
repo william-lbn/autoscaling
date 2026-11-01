@@ -454,6 +454,10 @@ func (g *Guard) apply(ctx context.Context, command Command, replay bool) (Eviden
 				return fmt.Errorf("resource revision is not consecutive")
 			}
 		}
+		// 原normal不可变控制先于新WAL拒绝；已完成原命令上方只读分支保留。
+		if err := normalImmutableBoundsPreflight(g.kernel, command.limits()); err != nil {
+			return err
+		}
 		// 最终写者与上层resourceexec保持同一安全边界：生产Bootstrap后的运行命令
 		// 尚不具备normal安全降限协议。锁内先核原Held（没有运行命令时为Bootstrap），
 		// 在新WAL及任何内核写之前拒绝缩小。已完成原命令的上方幂等分支只读，不能

@@ -1,0 +1,23 @@
+[
+  "docker",
+  "run",
+  "--rm",
+  "--network=none",
+  "--pull=never",
+  "--cpus=1",
+  "--memory=512m",
+  "--memory-swap=512m",
+  "-v",
+  "/data/neon-build/validation/normal-immutable-bounds-native-build-20261101T003410Z-f7ce98/export/fixture/isofiles:/isofiles:ro",
+  "-v",
+  "/data/neon-build/validation/normal-immutable-bounds-native-20261101T003542Z-5d4099:/proof:rw",
+  "--entrypoint",
+  "genisoimage",
+  "neon-test-only/dsga-kernel-bootstrap-iso:20261031",
+  "-quiet",
+  "-R",
+  "-J",
+  "-o",
+  "/proof/runtime.iso",
+  "/isofiles"
+]

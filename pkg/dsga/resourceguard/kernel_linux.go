@@ -496,6 +496,10 @@ func (k *linuxKernel) Apply(c Command) error {
 }
 
 func (k *linuxKernel) ApplyBounds(c Limits) error {
+	// 最后写者门先于System/pids/swap/巨页的第一项写入，覆盖所有调用者。
+	if err := k.normalImmutableBounds(c); err != nil {
+		return err
+	}
 	// 原WAL已落盘；系统组尚空时先落实不可变额度，再由独立归组步骤迁入PID1。
 	// 运行期仅重写原值，Guard写前已核原值/占用/归组；不因缩容调低系统额度。
 	if c.SystemMemoryMaxBytes != 0 {

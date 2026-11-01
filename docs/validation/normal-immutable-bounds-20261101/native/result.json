@@ -1,0 +1,43 @@
+{
+  "id": "PG17-S-NORMAL-IMMUTABLE-BOUNDS-001",
+  "actual_immutable_controls_rejection": {
+    "E": 0,
+    "PG_executed": false,
+    "actual_final_writer_negative_cases": {
+      "address-space": "resource command requires original readback or explicit replay\nimmutable normal bounds: task/System/address-space target differs from original creation",
+      "huge-before-all-other-writes": "resource command requires original readback or explicit replay\nimmutable normal bounds: HugeTLB target differs from original complete zero hstates",
+      "system": "resource command requires original readback or explicit replay\nimmutable normal bounds: task/System/address-space target differs from original creation",
+      "task": "resource command requires original readback or explicit replay\nimmutable normal bounds: task/System/address-space target differs from original creation"
+    },
+    "actual_original_Bootstrap_positive": true,
+    "all_controls_unchanged": true,
+    "all_original_JSON_unchanged": true,
+    "id": "PG17-S-NORMAL-IMMUTABLE-BOUNDS-001",
+    "normal_authorized": false
+  },
+  "original_FS_is_direct_regression": true,
+  "status": "PASS_COMPONENT_ONLY",
+  "Host_QEMU_exit": 0,
+  "Guest_exits": [
+    "0"
+  ],
+  "actual_kvm": {
+    "enabled": true,
+    "present": true
+  },
+  "seconds": 7.8773553560022265,
+  "reports": {
+    "filesystem-origin.json": "b553f9e001ec593a23c5109b3cc42a18c2126bd18501d4e40699c3385769fed1",
+    "filesystem-diagnostics.json": "d3bfd4ae5df337fe593ad3f668b017555aea5f512bea5a57ef39a5d4709d33b3"
+  },
+  "report_errors": [],
+  "actual_runtime_notes_sha256": "7cf45ced24c800ec8390fc7f04f07b8dc9e73ac0efa4bf8abd11d8513c8eb828",
+  "Go_test_ELF_sha256": "a5e003acc46e4437f33c8b0747d611a2426d21e63a19ab4b4d1b5cc6ba67fc12",
+  "base_memory_bytes": 1073741824,
+  "vCPUs": 2,
+  "source_fixture": true,
+  "System_programs_standins": true,
+  "PG_executed": false,
+  "normal_authorized": false,
+  "E": 0
+}

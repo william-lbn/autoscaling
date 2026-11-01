@@ -204,6 +204,10 @@ func (g *Guard) bootstrapLocked(ctx context.Context, c BootstrapCommand, observe
 	if r.Floor != c.IssuerEpoch {
 		return evidence, fmt.Errorf("bootstrap write is fenced")
 	}
+	// 原normal拒绝门不消费未出生FS/PG来源，也不能先写Bootstrap原意图。
+	if err := normalImmutableBoundsPreflight(g.kernel, c.Limits); err != nil {
+		return evidence, err
+	}
 	before, err := g.kernel.ReadBounds(id, c.Limits)
 	if err != nil {
 		return evidence, err

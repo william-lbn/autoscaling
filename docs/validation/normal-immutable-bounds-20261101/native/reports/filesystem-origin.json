@@ -1,0 +1,504 @@
+{
+  "E": 0,
+  "Host_challenge_is_fixture": true,
+  "PGDATA_recreate_warmup_actual_UID1000": true,
+  "PG_executed": false,
+  "actual_System_programs_are_standins": true,
+  "actual_formal_Bootstrap": true,
+  "actual_original_8_preparation_WAL": true,
+  "hidden_RW_cwd_rejected": true,
+  "hidden_detached_RW_O_PATH_rejected": true,
+  "hidden_shared_write_mapping_rejected": true,
+  "id": "PG17-S-FILESYSTEM-ORIGIN-001",
+  "new_Guard_explicit_sync_no_bytes_changed": true,
+  "normal_authorized": false,
+  "observation": {
+    "scope": "original-normal-filesystem-origin-v1",
+    "intent_sha256": "45a39d852411d6eda25f2edff500b583357125ea02e093f0749c40a371ab3b66",
+    "completion_sha256": "75ef19a4a59ce2752fd4bb2502c21f781fb4d84f70bb9e29760a2a3635d6866c",
+    "original_root": {
+      "instance_nonce": "8be821bd54b79310512eb9d6396c74bba555bfbfc08f406a36a1b20e18035b3e",
+      "pid": 62,
+      "start_ticks": "104"
+    },
+    "current_root": {
+      "instance_nonce": "8be821bd54b79310512eb9d6396c74bba555bfbfc08f406a36a1b20e18035b3e",
+      "pid": 62,
+      "start_ticks": "104"
+    },
+    "guest_boot_id": "899c108f-d8ca-4bde-ab9b-b2b80cb6dcaa",
+    "vminit_sha256": "4dc5c255f068072ce9734946f1c5703a4e56625af6374a5a22ded31e6f979e52",
+    "mounts": [
+      {
+        "mount": {
+          "ID": 26,
+          "Parent": 1,
+          "Device": "254:0",
+          "Root": "/",
+          "Point": "/",
+          "Options": {
+            "relatime": true,
+            "ro": true
+          },
+          "FSType": "ext4",
+          "Source": "/dev/vda",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 65024,
+          "inode": 2,
+          "mount_id": 26,
+          "filesystem": 61267,
+          "readonly": true
+        }
+      },
+      {
+        "mount": {
+          "ID": 23,
+          "Parent": 26,
+          "Device": "0:6",
+          "Root": "/",
+          "Point": "/dev",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "devtmpfs",
+          "Source": "devtmpfs",
+          "SuperOptions": {
+            "inode64": true,
+            "mode=755": true,
+            "nr_inodes=125177": true,
+            "rw": true,
+            "size=500708k": true
+          }
+        },
+        "object": {
+          "device": 6,
+          "inode": 1,
+          "mount_id": 23,
+          "filesystem": 16914836,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 29,
+          "Parent": 23,
+          "Device": "0:24",
+          "Root": "/",
+          "Point": "/dev/pts",
+          "Options": {
+            "noexec": true,
+            "nosuid": true,
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "devpts",
+          "Source": "devpts",
+          "SuperOptions": {
+            "mode=600": true,
+            "ptmxmode=000": true,
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 24,
+          "inode": 1,
+          "mount_id": 29,
+          "filesystem": 7377,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 32,
+          "Parent": 23,
+          "Device": "0:27",
+          "Root": "/",
+          "Point": "/dev/shm",
+          "Options": {
+            "nodev": true,
+            "noexec": true,
+            "nosuid": true,
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "tmpfs",
+          "Source": "shm",
+          "SuperOptions": {
+            "inode64": true,
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 27,
+          "inode": 1,
+          "mount_id": 32,
+          "filesystem": 16914836,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 35,
+          "Parent": 26,
+          "Device": "254:0",
+          "Root": "/etc/neon-dsga",
+          "Point": "/etc/neon-dsga",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "ext4",
+          "Source": "/dev/vda",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 65024,
+          "inode": 18,
+          "mount_id": 35,
+          "filesystem": 61267,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 40,
+          "Parent": 26,
+          "Device": "254:0",
+          "Root": "/etc/resolv.conf",
+          "Point": "/etc/resolv.conf",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "ext4",
+          "Source": "/dev/vda",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 65024,
+          "inode": 22,
+          "mount_id": 40,
+          "filesystem": 61267,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 33,
+          "Parent": 26,
+          "Device": "254:16",
+          "Root": "/",
+          "Point": "/neonvm/runtime",
+          "Options": {
+            "relatime": true,
+            "ro": true
+          },
+          "FSType": "iso9660",
+          "Source": "/dev/vdb",
+          "SuperOptions": {
+            "blocksize=2048": true,
+            "check=s": true,
+            "fmode=644": true,
+            "map=n": true,
+            "nojoliet": true,
+            "ro": true
+          }
+        },
+        "object": {
+          "device": 65040,
+          "inode": 1792,
+          "mount_id": 33,
+          "filesystem": 38496,
+          "readonly": true
+        }
+      },
+      {
+        "mount": {
+          "ID": 24,
+          "Parent": 26,
+          "Device": "0:21",
+          "Root": "/",
+          "Point": "/proc",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "proc",
+          "Source": "proc",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 21,
+          "inode": 1,
+          "mount_id": 24,
+          "filesystem": 40864,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 30,
+          "Parent": 26,
+          "Device": "0:25",
+          "Root": "/",
+          "Point": "/run",
+          "Options": {
+            "nodev": true,
+            "noexec": true,
+            "nosuid": true,
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "tmpfs",
+          "Source": "run",
+          "SuperOptions": {
+            "inode64": true,
+            "mode=755": true,
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 25,
+          "inode": 1,
+          "mount_id": 30,
+          "filesystem": 16914836,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 25,
+          "Parent": 26,
+          "Device": "0:22",
+          "Root": "/",
+          "Point": "/sys",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "sysfs",
+          "Source": "sysfs",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 22,
+          "inode": 1,
+          "mount_id": 25,
+          "filesystem": 1650812274,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 28,
+          "Parent": 25,
+          "Device": "0:23",
+          "Root": "/",
+          "Point": "/sys/fs/cgroup",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "cgroup2",
+          "Source": "cgroup2",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 23,
+          "inode": 1,
+          "mount_id": 28,
+          "filesystem": 1667723888,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 27,
+          "Parent": 25,
+          "Device": "0:7",
+          "Root": "/",
+          "Point": "/sys/kernel/security",
+          "Options": {
+            "nodev": true,
+            "noexec": true,
+            "nosuid": true,
+            "relatime": true,
+            "ro": true
+          },
+          "FSType": "securityfs",
+          "Source": "securityfs",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 7,
+          "inode": 1,
+          "mount_id": 27,
+          "filesystem": 1935894131,
+          "readonly": true
+        }
+      },
+      {
+        "mount": {
+          "ID": 31,
+          "Parent": 26,
+          "Device": "0:26",
+          "Root": "/",
+          "Point": "/tmp",
+          "Options": {
+            "nodev": true,
+            "noexec": true,
+            "nosuid": true,
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "tmpfs",
+          "Source": "tmp",
+          "SuperOptions": {
+            "inode64": true,
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 26,
+          "inode": 1,
+          "mount_id": 31,
+          "filesystem": 16914836,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 37,
+          "Parent": 26,
+          "Device": "254:0",
+          "Root": "/var/db/postgres",
+          "Point": "/var/db/postgres",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "ext4",
+          "Source": "/dev/vda",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 65024,
+          "inode": 74,
+          "mount_id": 37,
+          "filesystem": 61267,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 39,
+          "Parent": 26,
+          "Device": "254:0",
+          "Root": "/var/lib/chrony",
+          "Point": "/var/lib/chrony",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "ext4",
+          "Source": "/dev/vda",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 65024,
+          "inode": 76,
+          "mount_id": 39,
+          "filesystem": 61267,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 36,
+          "Parent": 26,
+          "Device": "254:0",
+          "Root": "/var/lib/neon-dsga",
+          "Point": "/var/lib/neon-dsga",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "ext4",
+          "Source": "/dev/vda",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 65024,
+          "inode": 77,
+          "mount_id": 36,
+          "filesystem": 61267,
+          "readonly": false
+        }
+      },
+      {
+        "mount": {
+          "ID": 38,
+          "Parent": 26,
+          "Device": "254:0",
+          "Root": "/var/log",
+          "Point": "/var/log",
+          "Options": {
+            "relatime": true,
+            "rw": true
+          },
+          "FSType": "ext4",
+          "Source": "/dev/vda",
+          "SuperOptions": {
+            "rw": true
+          }
+        },
+        "object": {
+          "device": 65024,
+          "inode": 79,
+          "mount_id": 38,
+          "filesystem": 61267,
+          "readonly": false
+        }
+      }
+    ],
+    "original_fd_inventory_captured": true,
+    "durability_confirmed": true,
+    "continuous_writers_closed": false,
+    "normal_decrease_authorized": false,
+    "missing_sources": [
+      "continuous-original-namespace-mount-control-writers",
+      "future-role-spawn-FD-and-SCM_RIGHTS-source-closure"
+    ]
+  },
+  "private_COW_allowed": true,
+  "rebind_exact_original_FDs_passed": true,
+  "reference_and_pinned_layout_version": 2,
+  "reference_equals_namespace_root_FD_handoff": true,
+  "runtime_observe_with_other_live_task": true,
+  "same_namespace_and_root_as_PID1": true,
+  "scope": "REAL_369_SWITCH_ROOT_EXT4_DEV_SOURCE_NOT_PG_NORMAL",
+  "zero_layout_rejected_before_recovery": true
+}
