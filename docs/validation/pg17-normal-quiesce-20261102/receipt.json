@@ -1,0 +1,36 @@
+{
+  "owned2": {
+    "pkg/dsga/budget/quiesced.go": "07593e8f0c6b2d6b3136a79bd9fce685fd4889c862e7a8a7cef021e361209c5a",
+    "pkg/dsga/budget/quiesced_normal_quota_test.go": "8f5cfe6310e643a58d3b13a6aa6396358a9e1a13a0758e7cace35736307912b4"
+  },
+  "compiled_source_lock": {
+    "path": "/data/neon-build/validation/pg17-normal-quiesce-host-go-20261102T150911Z-60aa97/source-lock.json",
+    "sha256": "3eab23c23fd3c0dcce758f58c6a85f28b36e0b4739e5b017185ae1a8769349fd"
+  },
+  "actual_race_roots": [
+    "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside",
+    "TestNormalQuiesceLowerLimitOnlyPreparesDrain",
+    "TestNormalQuiesceRequiresCompleteOriginalQualification",
+    "TestContinuousQuiesceKeepsRetainedCostsAndRejectsUnprovedLowerLimit"
+  ],
+  "actual_pass_including_subtests": 22,
+  "actual_fail": 0,
+  "actual_skip": 0,
+  "phase_exits": {
+    "u": 0,
+    "host": 0,
+    "seed": 0
+  },
+  "build_seconds": 77.56403057300486,
+  "scope": "normal1 quiesce and drain qualification only",
+  "run": "pg17-normal-quiesce-host-go-20261102T150911Z-60aa97",
+  "previous_Held_N": 1077411840,
+  "prepared_target_N": 1006632960,
+  "quiesce_VM_shrink_permit": false,
+  "legacy0_lowering_reject_retained": true,
+  "Root_actual_lowering_proof_unchanged": true,
+  "independent_boundary_proof_sha256": "565938fea08115dcdfb547526ab2d8835e4488b52d18bf8ce6616743bbb9f6e4",
+  "normal_decrease_accepted": false,
+  "E": 0,
+  "K8s": 0
+}

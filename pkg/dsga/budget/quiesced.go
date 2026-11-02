@@ -37,7 +37,8 @@ func (c QuiesceCommand) ValidateFor(p Prepared, epoch control.Uint64) error {
 	if p.Limits.AddressSpaceMaxBytes != c.PGAggregate.Bootstrap.Limits.AddressSpaceMaxBytes || p.Limits.PidsMaxTasks != c.PGAggregate.Bootstrap.Limits.PidsMaxTasks || p.Limits.SystemMemoryMaxBytes != c.PGAggregate.Bootstrap.Limits.SystemMemoryMaxBytes {
 		return fmt.Errorf("quiesce cannot change immutable task limit")
 	}
-	if p.Limits.MemoryMaxBytes < normal {
+	// 完整 normal1 Prepared 只允许继续关准入和排水；硬限及 VM 下降仍由后段原证明授权。
+	if p.Limits.MemoryMaxBytes < normal && p.NormalQuotaProtocolVersion != 1 {
 		return fmt.Errorf("continuous aggregate quiesce cannot authorize memory.max decrease")
 	}
 	return nil
