@@ -1,0 +1,36 @@
+#0 building with "neon-data" instance using remote driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.72kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#2 DONE 0.0s
+
+#3 [check 1/4] FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1
+#3 resolve 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 0.0s done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context:
+#4 transferring context: 22.27MB 0.3s done
+#4 DONE 0.3s
+
+#5 [check 2/4] WORKDIR /workspace
+#5 CACHED
+
+#6 [check 3/4] COPY . .
+#6 DONE 4.6s
+
+#7 [check 4/4] RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared set -eu; mkdir /out; test "$(cat /sys/fs/cgroup/memory.max)" = 3221225472; test "$(cat /sys/fs/cgroup/cpu.max)" = "300000 100000"; sha256sum -c .joint-source.sha256 >/out/actual-copy-verification.txt; cp .joint-source.sha256 /out/compiled-source.sha256; cat /sys/fs/cgroup/cpu.stat >/out/cpu.stat.before; cat /sys/fs/cgroup/io.stat >/out/io.stat.before; set +e; go test -p=2 -race -count=1 -timeout=180s -json -run '^(TestCoordinationConfirmNormalQuotaDurabilityUsesOnlyOriginalKey|TestOwnedRootOnlyDurabilityPreservesClosedAndExpiredOriginal|TestOwnedRootOnlyDurabilityRejectsPartialCancelKeyAndOwner|TestProductionControlRecoverNormalQuotaPreservesClosedAndExpiredGates)$' ./pkg/api/dsga ./pkg/dsga/owner >/out/test.json 2>/out/test.stderr; echo $? >/out/u.exitcode; echo 0 >/out/runner.exitcode; cat /sys/fs/cgroup/cpu.stat >/out/cpu.stat.after; cat /sys/fs/cgroup/memory.peak >/out/memory.peak; cat /sys/fs/cgroup/io.stat >/out/io.stat.after; cat /sys/fs/cgroup/memory.events >/out/memory.events; cat /sys/fs/cgroup/cpu.max >/out/cpu.max; cat /sys/fs/cgroup/memory.max >/out/memory.max
+#7 DONE 41.8s
+
+#8 [stage-1 1/1] COPY --from=check /out/ /
+#8 DONE 0.1s
+
+#9 exporting to client directory
+#9 copying files 381.78kB done
+#9 DONE 0.0s
+
+#10 resolving provenance for metadata file
+#10 DONE 0.0s

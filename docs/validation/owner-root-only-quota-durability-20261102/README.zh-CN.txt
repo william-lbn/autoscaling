@@ -1,0 +1,11 @@
+本批新增独立confirm_normal_quota_durability动作，不将旧完整Recover加入白名单。
+
+本次通过正常工具自动审批精确应用6c27四生产文件：新枚举严格原Key校验、同Session/coupled ctx wrapper、原串行executeControl分发、closed/expired允许表只新增此Root-only动作。旧recover_normal_quota仍保原完整后验/关闭及过期拒；独立primitive源码7bc605逐字不变。动作成功只AwaitingFact，不清关闭/expired latch，不进入PG Fence/SharedCost、GuestReady CAS或VM动作，不将原未知签为NoEffect。
+
+稳定去重4个race根15子：60c schema7子和旧A关闭/过期门2子；c693新owner正控2子（closed/expired）与partial/cancel/错Key-owner负控4子。真实Elector/Session/typed UID-RV Store/NewProductionPGWorker/ControlEndpoint.Run和HTTPS SDK均执行。closed复用原initial-domain永久预算/首次开放完整WAL，再建原Prepared/GuestReady Unconfirmed和v16 Settled关闭；Root identity、Birth、固定硬限及huge向量完全对齐。expired保原期限peer事实与Run latch。成功Root-only一次原count4确认，原WAL/闭门/GuestReady/VM版本不变，PG所有业务调用含Fence为0、Root旧fence/Apply/Replay/Cancel为0、core预算/VM来源API为空、无续租/rearm，旧A动作仍ErrServiceSafety。
+
+Root normal-recover分支是明确count4协议模型（只模拟原Applied/Held耐久确认，实际caps不变），原identity/state/fence复用原Guest Root TLS peer；不将模型自报count4冒原内核/Source资格。真正低层完整prefix/partial/fsync语义已由独立原Root handoff组件归档，本批只验证新生产接线。实际PG/KVM/K8s故障及新Root opaque恢复未验，native S0/E0/Source和normal false。
+
+两轮真实失败原图保留：60c closed夹具无永久Held被原Model版本门拒；21d补永久头后huge池向量与原bootstrap不一致，被原NewResourceWorker confirmed-limit门拒。修复仅完善新test原既有fixture/同原Birth/Shared来源和huge向量，未放宽生产门；4生产SHA自正常审批到最终图逐字不变。schema/旧A绿目标不重复；重复expired/负控不累加数量。最终c693两root6sub通过24.919s，无跳过。
+
+此前原B完整Recover白名单提案未应用；此处新动作与新Root-only原语有实质不同，并已正常独立审批，不通过Root代写绕过拒绝。提案/效果票原状态是审批前历史，由implementation-receipt和本次真实测试承接。nonce/spec/源码锁/原日志/资源/终态均在/data归档并已reconcile；worker runner_exit仅模板占位，CLI_builds0。后续若需真实故障恢复，仍须原Controller/Guest停止与新birth数据验证，不能将本结果替代。

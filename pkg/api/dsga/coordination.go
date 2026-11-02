@@ -63,6 +63,9 @@ const (
 	CoordinationObserveHeld        CoordinationAction = "observe_held_resources"
 )
 
+// 独立Root耐久确认；不沿用完整Recover的PG/GuestReady后验。
+const CoordinationConfirmNormalQuotaDurability CoordinationAction = "confirm_normal_quota_durability"
+
 // 只选择已经持久保存的异常关闭摘要，不接受新的门禁/预算参数。
 const CoordinationReplayServiceClosure CoordinationAction = "replay_service_closure"
 
@@ -133,7 +136,7 @@ func (c CoordinationCommand) Validate() error {
 			return fmt.Errorf("source selection requires the original SHA256")
 		}
 	case CoordinationCancel, CoordinationReplayPG, CoordinationReplayQuiesce, CoordinationReplayAdmission,
-		CoordinationReplayResource, CoordinationRecoverNormalQuota, CoordinationReplayPrepare, CoordinationReplayVM, CoordinationReplayAbort,
+		CoordinationReplayResource, CoordinationRecoverNormalQuota, CoordinationConfirmNormalQuotaDurability, CoordinationReplayPrepare, CoordinationReplayVM, CoordinationReplayAbort,
 		CoordinationRecoverUnchanged, CoordinationRecoverCapacity:
 		if c.Key == nil || c.Key.Validate() != nil || c.Key.Instance != Instance(c.Instance) || c.Key.IssuerEpoch > c.ExpectedOwnerEpoch || c.Request != nil || c.Selector != "" {
 			return fmt.Errorf("coordination action requires only its original operation key")

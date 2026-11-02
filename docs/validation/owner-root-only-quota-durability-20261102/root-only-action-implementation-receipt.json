@@ -1,0 +1,14 @@
+{
+  "scope": "NORMAL_APPROVAL_EXACT_FOUR_FILE_SEPARATE_ROOT_ONLY_ACTION",
+  "patch_sha256": "6c27a71e5d29339b46db4977b11adda153a66868267b37ec0a671c4a4d494b58",
+  "after": {
+    "pkg/api/dsga/coordination.go": "1703f7f591a789c1b40fa151c6e443ed163993adf97ca38ac7c2f886396d30f7",
+    "pkg/dsga/owner/pg.go": "3abcce683c083716f20340424e0fd76ac3a53296e42dc12540a0a366de0e1911",
+    "pkg/dsga/owner/control.go": "48809f72b4b9589d2fee550bbb65ec9d8cdf39c863436d365979400b3bff3645",
+    "pkg/dsga/owner/admission_lease.go": "09294f98c7dd00c0a0967a5aefa4b5591205e20d889130774ce3441a6a401737"
+  },
+  "old_A_semantics_changed": false,
+  "old_A_expired_allowed": false,
+  "new_action_calls_only": "resourceexec.ConfirmNormalQuotaDurability",
+  "tests_not_yet_run": true
+}

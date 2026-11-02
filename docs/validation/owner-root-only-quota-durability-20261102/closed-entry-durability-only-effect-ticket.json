@@ -1,0 +1,47 @@
+{
+  "status": "PROPOSAL_ONLY_NOT_APPLIED_REQUIRES_SEPARATE_NORMAL_APPROVAL",
+  "old_B_is_not_applied": true,
+  "semantic_difference": "new separate durability-only action calls new primitive and never old full Recover continuation; old A semantics and whitelist remain unchanged",
+  "files": {
+    "pkg/api/dsga/coordination.go": {
+      "actual_before_sha256": "03d177082e2db56a8a4b117a41dcb37157b219765efc3c3e64fed29fc6e46ff7",
+      "proposed_after_sha256": "1703f7f591a789c1b40fa151c6e443ed163993adf97ca38ac7c2f886396d30f7"
+    },
+    "pkg/dsga/owner/pg.go": {
+      "actual_before_sha256": "736dae026c275147f851b17ec87fb56965165a1d4ee2811eba7167a35830ddb8",
+      "proposed_after_sha256": "3abcce683c083716f20340424e0fd76ac3a53296e42dc12540a0a366de0e1911"
+    },
+    "pkg/dsga/owner/control.go": {
+      "actual_before_sha256": "43b06e35b6f64ee1d6473c9f0bcb0853d072493a4bc0603e992315aa80494b3b",
+      "proposed_after_sha256": "48809f72b4b9589d2fee550bbb65ec9d8cdf39c863436d365979400b3bff3645"
+    },
+    "pkg/dsga/owner/admission_lease.go": {
+      "actual_before_sha256": "eb6eb1cc886d4015fd40847cb5000bfa1946979ff517a0b7ef3ef76050b1cb23",
+      "proposed_after_sha256": "09294f98c7dd00c0a0967a5aefa4b5591205e20d889130774ce3441a6a401737"
+    }
+  },
+  "patch_sha256": "6c27a71e5d29339b46db4977b11adda153a66868267b37ec0a671c4a4d494b58",
+  "effect_review": {
+    "new_caps": false,
+    "PG_Fence": false,
+    "PG_SharedCost": false,
+    "PG_Resize": false,
+    "admission_setter": false,
+    "VM_writer": false,
+    "GuestReady_CAS": false,
+    "Root_effect": "only existing exact envelope/prefix and metadata fsync under original count4/fresh bounds/pin/source checks",
+    "SDK_effect": "clear only exact validated pending envelope",
+    "old_A_expired_allowed": false,
+    "new_action_requires_nonzero_PG_boot_and_original_Key": true,
+    "Run_initial_native_lease_negotiation_unchanged": true,
+    "new_Root_opaque_recovery": false
+  },
+  "required_direct_tests": [
+    "original-Key schema forbids mixed request/selector/future epoch/zero boot",
+    "real ControlEndpoint Run reaches only new primitive; old A remains blocked",
+    "real closed precursor count4: zero PG all requests/VM/CAS, old closure and Unconfirmed unchanged",
+    "real expired precursor count4: original expired latch unchanged and no ordinary Advance",
+    "partial/missing original and cancel/cleanup/owner/active drift reject; no cap rewrite",
+    "sameN metadata retained semantic explicit; no claim old command equals new currentOriginal"
+  ]
+}

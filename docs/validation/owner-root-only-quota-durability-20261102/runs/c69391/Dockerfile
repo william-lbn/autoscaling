@@ -1,0 +1,7 @@
+FROM 127.0.0.1:5001/neon/pg17-dev-tools@sha256:c940750ed64e18dbe1d5acda5f12b61bb3f1930be149140c54b4e09e62379ba1 AS check
+WORKDIR /workspace
+ENV GOPATH=/go GOMODCACHE=/go/pkg/mod GOCACHE=/root/.cache/go-build GOMAXPROCS=3 GOMEMLIMIT=1536MiB GOPROXY=off
+COPY . .
+RUN --network=none --mount=type=cache,id=autoscaling-gomod-amd64-shared-v2,target=/go/pkg/mod,sharing=shared --mount=type=cache,id=autoscaling-gobuild-amd64,target=/root/.cache/go-build,sharing=shared set -eu; mkdir /out; test "$(cat /sys/fs/cgroup/memory.max)" = 3221225472; test "$(cat /sys/fs/cgroup/cpu.max)" = "300000 100000"; sha256sum -c .joint-source.sha256 >/out/actual-copy-verification.txt; cp .joint-source.sha256 /out/compiled-source.sha256; cat /sys/fs/cgroup/cpu.stat >/out/cpu.stat.before; cat /sys/fs/cgroup/io.stat >/out/io.stat.before; set +e; go test -p=2 -race -count=1 -timeout=180s -json -run '^(TestOwnedRootOnlyDurabilityPreservesClosedAndExpiredOriginal|TestOwnedRootOnlyDurabilityRejectsPartialCancelKeyAndOwner)$' ./pkg/dsga/owner >/out/test.json 2>/out/test.stderr; echo $? >/out/u.exitcode; echo 0 >/out/runner.exitcode; cat /sys/fs/cgroup/cpu.stat >/out/cpu.stat.after; cat /sys/fs/cgroup/memory.peak >/out/memory.peak; cat /sys/fs/cgroup/io.stat >/out/io.stat.after; cat /sys/fs/cgroup/memory.events >/out/memory.events; cat /sys/fs/cgroup/cpu.max >/out/cpu.max; cat /sys/fs/cgroup/memory.max >/out/memory.max
+FROM scratch
+COPY --from=check /out/ /

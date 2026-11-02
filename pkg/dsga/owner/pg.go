@@ -555,6 +555,20 @@ func (worker *PGWorker) RecoverNormalQuotaOriginal(ctx context.Context, key cont
 	return worker.resources.RecoverNormalQuota(callCtx, key)
 }
 
+// ConfirmNormalQuotaDurabilityOriginal只确认原完整quota耐久性；恒返回等待，
+// 不进入原Recover的PG Fence/SharedCost/GuestReady CAS，也不清关闭或过期状态。
+func (worker *PGWorker) ConfirmNormalQuotaDurabilityOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {
+	if err := worker.session.Check(ctx); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	if worker.resources == nil {
+		return pgexec.AwaitingFact, fmt.Errorf("original normal quota resource executor is unavailable")
+	}
+	callCtx, cancel := worker.session.coupledContext(ctx)
+	defer cancel()
+	return worker.resources.ConfirmNormalQuotaDurability(callCtx, key)
+}
+
 // 原VM重放使用独立受信选择，与PG/Root重放分开；Session检查和完整原
 // not_sent/预算复核先于持久UID/RV选择。普通轮询永远不调用此入口。
 func (worker *PGWorker) ReplayVMOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {

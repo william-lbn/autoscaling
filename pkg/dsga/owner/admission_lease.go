@@ -17,6 +17,9 @@ var errNativeAdmissionExpired = fmt.Errorf("%w: native admission lease expired",
 // 完整持久WAL及来源审计，不能把此处普通恢复动作当作rearm许可。
 func expiredAdmissionControlAllowed(action control.CoordinationAction) bool {
 	switch action {
+	case control.CoordinationConfirmNormalQuotaDurability:
+		// 仅独立Root确认原count4耐久性；不继续PG/VM/CAS，不清expired latch。
+		return true
 	case control.CoordinationState, control.CoordinationReplayServiceClosure, control.CoordinationContinueServiceClosure,
 		control.CoordinationRearmService, control.CoordinationObserveServiceRearm, control.CoordinationReplayServiceRearm,
 		control.CoordinationReopenService, control.CoordinationObserveServiceReopen, control.CoordinationReplayServiceReopen,

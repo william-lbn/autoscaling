@@ -176,6 +176,8 @@ func (worker *PGWorker) executeControl(ctx context.Context, command control.Coor
 		result.Progress, err = worker.ReplayResourceOriginal(callCtx, *command.Key)
 	case control.CoordinationRecoverNormalQuota:
 		result.Progress, err = worker.RecoverNormalQuotaOriginal(callCtx, *command.Key)
+	case control.CoordinationConfirmNormalQuotaDurability:
+		result.Progress, err = worker.ConfirmNormalQuotaDurabilityOriginal(callCtx, *command.Key)
 	case control.CoordinationReplayPrepare:
 		result.Progress, err = worker.ReplayPrepareOriginal(callCtx, *command.Key)
 	case control.CoordinationReplayInitial:

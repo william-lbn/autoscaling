@@ -1,0 +1,124 @@
+{
+  "scope": "SEPARATE_ORIGINAL_KEY_ROOT_DURABILITY_ACTION_WITHOUT_FULL_RECOVER_CONTINUATION",
+  "owned6": {
+    "pkg/api/dsga/coordination.go": "1703f7f591a789c1b40fa151c6e443ed163993adf97ca38ac7c2f886396d30f7",
+    "pkg/dsga/owner/pg.go": "3abcce683c083716f20340424e0fd76ac3a53296e42dc12540a0a366de0e1911",
+    "pkg/dsga/owner/control.go": "48809f72b4b9589d2fee550bbb65ec9d8cdf39c863436d365979400b3bff3645",
+    "pkg/dsga/owner/admission_lease.go": "09294f98c7dd00c0a0967a5aefa4b5591205e20d889130774ce3441a6a401737",
+    "pkg/api/dsga/coordination_durability_test.go": "d20b603e9039e4ed50ad5af385e74b1b4eb1f98642f4ba0dd48f63990fb55d1e",
+    "pkg/dsga/owner/control_durability_test.go": "2cbf887b7182329f79923cb30893f5684da014c017d9d87f5fd8e5506a15931c"
+  },
+  "protected_primitive_sha256": "7bc6051da0158e28d2fe11507dff1dfe474c26139e9ba12795c0525207494e93",
+  "normal_automatic_approval_patch_sha256": "6c27a71e5d29339b46db4977b11adda153a66868267b37ec0a671c4a4d494b58",
+  "old_B_full_Recover_whitelist_applied": false,
+  "old_A_semantics_changed": false,
+  "old_A_closed_expired_still_rejected": true,
+  "new_action": "confirm_normal_quota_durability",
+  "new_action_calls": "ConfirmNormalQuotaDurability",
+  "stable_target_map": {
+    "TestCoordinationConfirmNormalQuotaDurabilityUsesOnlyOriginalKey": {
+      "run": "/data/neon-build/validation/owner-root-only-quota-durability-go-20261102T055439Z-60cce6",
+      "classification": "Go-race-component-or-unit"
+    },
+    "TestProductionControlRecoverNormalQuotaPreservesClosedAndExpiredGates": {
+      "run": "/data/neon-build/validation/owner-root-only-quota-durability-go-20261102T055439Z-60cce6",
+      "classification": "Go-race-component-or-unit"
+    },
+    "TestOwnedRootOnlyDurabilityPreservesClosedAndExpiredOriginal": {
+      "run": "/data/neon-build/validation/owner-root-only-quota-durability-go-20261102T060702Z-c69391",
+      "classification": "Go-race-component-or-unit"
+    },
+    "TestOwnedRootOnlyDurabilityRejectsPartialCancelKeyAndOwner": {
+      "run": "/data/neon-build/validation/owner-root-only-quota-durability-go-20261102T060702Z-c69391",
+      "classification": "Go-race-component-or-unit"
+    }
+  },
+  "stable_counts": {
+    "roots": 4,
+    "subtests": 15,
+    "new_roots": 3,
+    "related_existing_roots": 1,
+    "native_PG_or_Kubernetes_services": 0,
+    "Source": false,
+    "normal": false,
+    "E": 0
+  },
+  "final_source_lock_sha256": "b394ecaba955a55d20005cc27ab4e3a000b67044bfe9751f6a0aafe19b71edce",
+  "initial_source_lock_sha256": "83e9fc936d8a3e9ccb7bd3759ebf10e0a7b0d916a8238f72fcf08e58f81aec3a",
+  "closed_positive": "existing initial-domain held/Start/Record first admission followed by original prepared/GuestReady Unconfirmed and Settled v16 closure; identical root identity/Birth/limits/huge vector",
+  "expired_positive": "original complete GuestReady WAL and strict expired native lease protocol peer; Run latch kept",
+  "Root_peer_is_model": true,
+  "count4_source": "explicit protocol model; original lower Root fullprefix/fsync tests are independently archived, not actual kernel Source in this test",
+  "zero_effect_assertions": [
+    "PG all business calls including Fence/SharedCost/Resize/Admission",
+    "Root legacy fence/Apply/Replay/Cancel",
+    "outer VM version/CAS",
+    "core budget/VM source API writes",
+    "lease renew/rearm"
+  ],
+  "only_Root_effect": "model original applied/Held durability acknowledgement, no changed hard cap",
+  "original_failures": [
+    {
+      "path": "/data/neon-build/validation/owner-root-only-quota-durability-go-20261102T055439Z-60cce6",
+      "reason": "closed fixture lacked permanent held head; original strict Model rejected before new action",
+      "result": {
+        "build_exit": 0,
+        "seconds": 48.013740127993515,
+        "normal": false,
+        "Source": false,
+        "E": 0,
+        "u_exit": 1,
+        "runner_exit": 0,
+        "passed_roots": [
+          "TestCoordinationConfirmNormalQuotaDurabilityUsesOnlyOriginalKey",
+          "TestOwnedRootOnlyDurabilityRejectsPartialCancelKeyAndOwner",
+          "TestProductionControlRecoverNormalQuotaPreservesClosedAndExpiredGates"
+        ],
+        "passed_subtests": 14,
+        "missing_expected": [
+          "TestOwnedRootOnlyDurabilityPreservesClosedAndExpiredOriginal"
+        ],
+        "skipped": []
+      }
+    },
+    {
+      "path": "/data/neon-build/validation/owner-root-only-quota-durability-go-20261102T060343Z-21d7d8",
+      "reason": "closed fixture original huge vector mismatched; strict NewResourceWorker confirmed-limit gate rejected before new action",
+      "result": {
+        "build_exit": 0,
+        "seconds": 49.208563346997835,
+        "normal": false,
+        "Source": false,
+        "E": 0,
+        "u_exit": 1,
+        "runner_exit": 0,
+        "passed_roots": [
+          "TestOwnedRootOnlyDurabilityRejectsPartialCancelKeyAndOwner"
+        ],
+        "passed_subtests": 5,
+        "missing_expected": [
+          "TestOwnedRootOnlyDurabilityPreservesClosedAndExpiredOriginal"
+        ],
+        "skipped": []
+      }
+    }
+  ],
+  "final_result": {
+    "build_exit": 0,
+    "seconds": 24.919249046011828,
+    "normal": false,
+    "Source": false,
+    "E": 0,
+    "u_exit": 0,
+    "runner_exit": 0,
+    "passed_roots": [
+      "TestOwnedRootOnlyDurabilityPreservesClosedAndExpiredOriginal",
+      "TestOwnedRootOnlyDurabilityRejectsPartialCancelKeyAndOwner"
+    ],
+    "passed_subtests": 6,
+    "missing_expected": [],
+    "skipped": []
+  },
+  "CLI_builds": 0,
+  "worker_runner_exit_field_is_placeholder": true
+}

@@ -1,0 +1,67 @@
+--- a/pkg/api/dsga/coordination.go
++++ b/pkg/api/dsga/coordination.go
+@@ -62,6 +62,9 @@
+ 	CoordinationRepairHeld         CoordinationAction = "repair_held_resources"
+ 	CoordinationObserveHeld        CoordinationAction = "observe_held_resources"
+ )
++
++// 独立Root耐久确认；不沿用完整Recover的PG/GuestReady后验。
++const CoordinationConfirmNormalQuotaDurability CoordinationAction = "confirm_normal_quota_durability"
+ 
+ // 只选择已经持久保存的异常关闭摘要，不接受新的门禁/预算参数。
+ const CoordinationReplayServiceClosure CoordinationAction = "replay_service_closure"
+@@ -133,7 +136,7 @@
+ 			return fmt.Errorf("source selection requires the original SHA256")
+ 		}
+ 	case CoordinationCancel, CoordinationReplayPG, CoordinationReplayQuiesce, CoordinationReplayAdmission,
+-		CoordinationReplayResource, CoordinationRecoverNormalQuota, CoordinationReplayPrepare, CoordinationReplayVM, CoordinationReplayAbort,
++		CoordinationReplayResource, CoordinationRecoverNormalQuota, CoordinationConfirmNormalQuotaDurability, CoordinationReplayPrepare, CoordinationReplayVM, CoordinationReplayAbort,
+ 		CoordinationRecoverUnchanged, CoordinationRecoverCapacity:
+ 		if c.Key == nil || c.Key.Validate() != nil || c.Key.Instance != Instance(c.Instance) || c.Key.IssuerEpoch > c.ExpectedOwnerEpoch || c.Request != nil || c.Selector != "" {
+ 			return fmt.Errorf("coordination action requires only its original operation key")
+--- a/pkg/dsga/owner/pg.go
++++ b/pkg/dsga/owner/pg.go
+@@ -553,6 +553,20 @@
+ 	callCtx, cancel := worker.session.coupledContext(ctx)
+ 	defer cancel()
+ 	return worker.resources.RecoverNormalQuota(callCtx, key)
++}
++
++// ConfirmNormalQuotaDurabilityOriginal只确认原完整quota耐久性；恒返回等待，
++// 不进入原Recover的PG Fence/SharedCost/GuestReady CAS，也不清关闭或过期状态。
++func (worker *PGWorker) ConfirmNormalQuotaDurabilityOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {
++	if err := worker.session.Check(ctx); err != nil {
++		return pgexec.AwaitingFact, err
++	}
++	if worker.resources == nil {
++		return pgexec.AwaitingFact, fmt.Errorf("original normal quota resource executor is unavailable")
++	}
++	callCtx, cancel := worker.session.coupledContext(ctx)
++	defer cancel()
++	return worker.resources.ConfirmNormalQuotaDurability(callCtx, key)
+ }
+ 
+ // 原VM重放使用独立受信选择，与PG/Root重放分开；Session检查和完整原
+--- a/pkg/dsga/owner/control.go
++++ b/pkg/dsga/owner/control.go
+@@ -176,6 +176,8 @@
+ 		result.Progress, err = worker.ReplayResourceOriginal(callCtx, *command.Key)
+ 	case control.CoordinationRecoverNormalQuota:
+ 		result.Progress, err = worker.RecoverNormalQuotaOriginal(callCtx, *command.Key)
++	case control.CoordinationConfirmNormalQuotaDurability:
++		result.Progress, err = worker.ConfirmNormalQuotaDurabilityOriginal(callCtx, *command.Key)
+ 	case control.CoordinationReplayPrepare:
+ 		result.Progress, err = worker.ReplayPrepareOriginal(callCtx, *command.Key)
+ 	case control.CoordinationReplayInitial:
+--- a/pkg/dsga/owner/admission_lease.go
++++ b/pkg/dsga/owner/admission_lease.go
+@@ -17,6 +17,9 @@
+ // 完整持久WAL及来源审计，不能把此处普通恢复动作当作rearm许可。
+ func expiredAdmissionControlAllowed(action control.CoordinationAction) bool {
+ 	switch action {
++	case control.CoordinationConfirmNormalQuotaDurability:
++		// 仅独立Root确认原count4耐久性；不继续PG/VM/CAS，不清expired latch。
++		return true
+ 	case control.CoordinationState, control.CoordinationReplayServiceClosure, control.CoordinationContinueServiceClosure,
+ 		control.CoordinationRearmService, control.CoordinationObserveServiceRearm, control.CoordinationReplayServiceRearm,
+ 		control.CoordinationReopenService, control.CoordinationObserveServiceReopen, control.CoordinationReplayServiceReopen,
