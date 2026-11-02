@@ -72,9 +72,8 @@ func (v normalSplitQuotaOriginal) validate() error {
 		if v.TargetArraysBytes <= a.MemoryMaxBytes {
 			return fmt.Errorf("quota grow must enlarge actual array domain")
 		}
-	} else {
-		return fmt.Errorf("quota transaction must change actual normal parent")
 	}
+	// 同一父限额仍需交付本次预算与数组限额；上方来源、几何及连续覆盖检查全部保留。
 	return nil
 }
 func (v normalSplitQuotaOriginal) growing() bool {

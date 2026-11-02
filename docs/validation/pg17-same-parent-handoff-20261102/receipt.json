@@ -1,0 +1,41 @@
+{
+  "owned2": {
+    "pkg/dsga/resourceguard/normal_split_quota_linux.go": "f50a5b1074c59a6e88b65f23c0ce994ea3c2c42e0b3afbd37e8a5b9f8ac2cb95",
+    "pkg/dsga/resourceguard/normal_split_quota_same_parent_linux_test.go": "17c8699e731e48a4fcb17145379170171e1ead8f3d6c0c99921ef4a5c99c861f"
+  },
+  "compiled_source_lock": {
+    "path": "/data/neon-build/validation/pg17-normal-same-parent-cli-guest-go-20261102T144051Z-94b95c/source-lock.json",
+    "sha256": "8fc205c8c7c175442bb1f90c15c060b6ea763106495f2ee9de5aba2a8656bc3b"
+  },
+  "actual_phase_exits": {
+    "u": 0,
+    "cli": 0,
+    "guest": 0,
+    "cli-help": 0
+  },
+  "actual_race_roots": [
+    "TestNormalSplitQuotaSameParentArraysHandoff",
+    "TestNormalSplitQuotaSameParentKeepsCoverage",
+    "TestNormalSplitQuotaSameParentPartialRequiresExactReplay",
+    "TestNormalSplitQuotaActualDomainsOrderedAndGrow",
+    "TestNormalSplitQuotaPartialWritesOnlyExactReplay",
+    "TestNormalSplitQuotaRejectsDriftAndIncompleteEnvelope"
+  ],
+  "actual_pass_including_subtests": 32,
+  "actual_failed": 0,
+  "actual_skipped": 0,
+  "build_seconds": 62.65332855400629,
+  "scope": "same-parent authenticated quota and arrays handoff",
+  "runtime": "pg17-trusted-control-full-native-20261102T144319Z-e78ee1",
+  "runtime_observed_stages": [
+    "baseline",
+    "grow"
+  ],
+  "runtime_native_exit": 1,
+  "runtime_native_seconds": 177.771,
+  "runtime_shrink_observed": false,
+  "original_before_parent_runtime_read_captured": false,
+  "normal_decrease_accepted": false,
+  "E": 0,
+  "K8s": 0
+}
