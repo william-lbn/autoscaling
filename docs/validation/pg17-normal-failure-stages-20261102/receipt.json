@@ -1,0 +1,23 @@
+{
+  "scope": "Root normal fixed scalar failure diagnostics only",
+  "source_sha256": {
+    "pkg/dsga/resourceguard/normal_quota_consumer_linux.go": "67bd236b590b3f0e9f7a0cf6ffd93ff56d71fb3b062583d7f5ff8122115cf822",
+    "pkg/dsga/resourceguard/normal_quota_failure_linux.go": "02ad8b1af97736b746a3ddae538b49bce1d25243c8335c1af732cbef7c9f98d6",
+    "pkg/dsga/resourceguard/normal_quota_failure_linux_test.go": "6986b7aa34b90dc41171426034508e856b2adc6dd1355eee6db3f42eb35b8b5b"
+  },
+  "equivalence_proof_sha256": "c0747122a6684370f747455968079e2777433eabfa07ea4ed72e5058a6b89476",
+  "original_consumer_sha256": "d56cdfff94698d80800e6d57577efa342a1533da7d3a64e0e33d891a26cf5415",
+  "inverse_annotations_byte_equal": true,
+  "run": "pg17-normal-stage-cli-guest-go-20261102T135950Z-2b6227",
+  "build_exit": 0,
+  "phase_exit": {
+    "u.exitcode": 0,
+    "cli.exitcode": 0,
+    "guest.exitcode": 0,
+    "cli-help.exitcode": 0
+  },
+  "seconds": 225.9100274509983,
+  "normal_decrease_accepted": false,
+  "Linux_full_E": 0,
+  "K8s_E": 0
+}
