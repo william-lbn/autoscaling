@@ -1,0 +1,9 @@
+# Quiesce：合法ACK与前台排空等待
+
+关闭请求已提交后，PM ACK和前台工作排空可能暂未完成。旧Quiesced.ValidateFor把这类正常等待与身份/代次/内存来源非法混成plain error，executor直接交给owner.Run并结束循环；bc130后继Shrink暴露该缺口，不是DEV classifier自行误杀。
+
+本批新增纯ReadyFor：先复用完整command/DSM/原aggregate及boot/floor/capacity/closeRevision、buffer/backing/capability等严格验证，再返回ACK/PublicBlocked/ForegroundIdle是否已就绪。合法false,nil只让executor保持原Unconfirmed继续原AdmissionStatus+DSM观察；初次关闭POST已发送，等待期间不重发，不记录完成或派发降限。混合非法和notready仍先报非法。
+
+ValidateFor仍调用同严格逻辑，notready继续返回原错误；持久Record也没有放宽。未改Owner白名单、TTL、原生门、DTO或PG版本合同。既有资源/关闭身份错误不能因本次等待分类被吞掉。
+
+Linux隔离快照7个唯一根、42子例race全通过，无fail/skip。真实Run连续等待不结束、Model不变/单次POST/零resize，ready后才记录；预算测试覆盖5种合法等待及14混合非法优先负控，并深拷贝DSM数组避免污染Prepared造假拒绝。旧快照保留不累计。本轮为协议peer测试，真实SQL Work2忙排空、buffer pin与完整Linux后继仍待P2独立验证，不能据U测试签Source/E/K8s。

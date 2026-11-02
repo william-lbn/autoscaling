@@ -241,7 +241,11 @@ func TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts(t *te
 					require.NoError(t, err)
 					require.Equal(t, pgexec.Recorded, progress)
 				} else {
-					require.Error(t, err)
+					if mode == "busy" || mode == "ack-pending" {
+						require.NoError(t, err, "合法未就绪必须保留生产Run继续观察")
+					} else {
+						require.Error(t, err)
+					}
 					require.Equal(t, pgexec.AwaitingFact, progress)
 				}
 				after, err := store.Load(ctx)
@@ -300,7 +304,28 @@ func TestPGWorkerContinuousQuiesceUsesOriginalCloseAndRetainsAllOtherCosts(t *te
 					worker = restored
 				}
 				if mode == "busy" || mode == "ack-pending" {
+					waiting := after.State()
+					require.Equal(t, journal.Unconfirmed, waiting.Active.Steps[1].Phase)
+					require.Nil(t, waiting.Active.Steps[1].Observation)
+					waitCtx, stopWait := context.WithCancel(ctx)
+					ticks := 0
+					e := worker.Run(waitCtx, PGLoopOptions{PollInterval: 10 * time.Millisecond, Observe: func(tick Tick) {
+						require.NoError(t, tick.Err)
+						require.Equal(t, pgexec.AwaitingFact, tick.Progress)
+						ticks++
+						if ticks == 2 {
+							stopWait()
+						}
+					}})
+					stopWait()
+					require.ErrorIs(t, e, context.Canceled)
+					require.Equal(t, 2, ticks, "生产Run不能将第一次未就绪当fatal退出")
+					still, e := store.Load(ctx)
+					require.NoError(t, e)
+					require.Equal(t, waiting, still.State(), "等待不得重选原命令或提前Record")
 					mu.Lock()
+					require.Equal(t, 1, posts)
+					require.Zero(t, resizes)
 					busy, ackPending = false, false
 					mu.Unlock()
 				}

@@ -1,0 +1,47 @@
+{
+  "scope": "合法关闭ACK/前台排空等待分类，严格证据门保持；协议peer，非实际SQL忙验收",
+  "sources": [
+    {
+      "path": "pkg/dsga/budget/quiesced.go",
+      "sha256": "7f720f831660a38b4d0376518206a58493de2906de01bcdd8392abf373e2f850",
+      "bytes": 5916,
+      "lines": 121
+    },
+    {
+      "path": "pkg/dsga/quiesceexec/executor.go",
+      "sha256": "0eb953e52d86d1881023c96705e9926f3df602119be9d040b13f740ecdd565e8",
+      "bytes": 11585,
+      "lines": 252
+    },
+    {
+      "path": "pkg/dsga/budget/quiesced_readiness_test.go",
+      "sha256": "4b6b87d18c73556143efcb3b9027fd8e68c01a1510da5265d16bfff4c4cc18a9",
+      "bytes": 3967,
+      "lines": 106
+    },
+    {
+      "path": "pkg/dsga/owner/quiesce_test.go",
+      "sha256": "1e26f001d5dd0c80b83708f33e46cc4f0ac14c829453310ad611b047670a299b",
+      "bytes": 17770,
+      "lines": 388
+    }
+  ],
+  "evidence_dir": "/data/neon-build/validation/quiesce-readiness-go-20261102T210312Z-7f54b8",
+  "stage_proposal_sha256": "43aecd4148d6c1a38242d71729cfa5064d844664f8210b0ffe0e5af5851c828b",
+  "source_lock_sha256": "35d95adcba33a3bd2985add9b5196a7e6cccd7b5d2e3bf1a637165f8994853ac",
+  "result_sha256": "ad056657de7b3957ceaf8bc2fb3e00eab93ec487989c9c0f3630d613bf54e711",
+  "unique_race_roots": 7,
+  "unique_subcases": 42,
+  "fails": 0,
+  "skips": 0,
+  "strict_ValidateFor_and_Record_still_reject_notready": true,
+  "only_legal_notready_awaits": true,
+  "one_initial_close_POST_no_repeat_while_waiting": true,
+  "no_early_record_resize_or_quota_change": true,
+  "Root_source_diff_review": "all prior identity/generation/revision/buffer/capability/accounting/backing checks retained; transient readiness evaluated last",
+  "bc130_cause_limit": "bc original plain fatal literal matches this classifier gap; exact false field not inferred from literal",
+  "Source": false,
+  "E": 0,
+  "K8s": false,
+  "real_SQL_busy_and_pin": "NOT_RUN"
+}

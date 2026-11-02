@@ -75,26 +75,39 @@ type Quiesced struct {
 // 的Prepared/Connection/Work，不能拼接不同时间的门禁ack和“空闲”。背景/2PC/
 // DSM计数可以非零，只有持续原约束覆盖它们时才采用此策略，不能清原未知占用。
 func (q Quiesced) ValidateFor(p Prepared, epoch control.Uint64) error {
+	ready, err := q.ReadyFor(p, epoch)
+	if err != nil {
+		return err
+	}
+	if !ready {
+		return fmt.Errorf("original close is not continuously acknowledged and foreground idle")
+	}
+	return nil
+}
+
+// ReadyFor先完整核验同一原关闭、来源和原生采样，最后才区分正常ACK/前台
+// 排空等待。false,nil不构成Quiesced证明；ValidateFor及持久Record仍严格拒绝。
+func (q Quiesced) ReadyFor(p Prepared, epoch control.Uint64) (bool, error) {
 	r := p.Request
 	command := QuiesceCommand{ProtocolVersion: q.ProtocolVersion, VMShrinkPermit: q.VMShrinkPermit, Request: q.Request, Close: q.Close, PGAggregate: q.PGAggregate}
 	if err := command.ValidateFor(p, epoch); err != nil {
-		return err
+		return false, err
 	}
 	if q.DSM.ValidateFor(r.Key.Instance) != nil {
-		return fmt.Errorf("quiesce lacks original aggregate or native accounting")
+		return false, fmt.Errorf("quiesce lacks original aggregate or native accounting")
 	}
 	c := q.DSM.Prepared.Connections
 	w := c.Work
 	s := w.Observed
-	if !c.Enabled || !c.PrivateManagementReady || !c.Acknowledged || !c.PublicConnectionsBlocked || !w.ObserverExcluded || !w.ForegroundIdle || s.AdmissionOpen || s.AdmissionRevision != q.Close.Revision || s.IssuerFloorEpoch != epoch || s.CapacityGeneration != r.ExpectedCapacityGeneration || s.LowBuffers != p.Shared.Observed.LowBuffers || s.HighBuffers != s.LowBuffers || s.MaximumBuffers != p.Shared.Observed.MaximumBuffers || (s.Operation != nil && s.Operation.Phase == control.Preparing) {
-		return fmt.Errorf("original close is not continuously acknowledged and foreground idle")
+	if !c.Enabled || !c.PrivateManagementReady || !w.ObserverExcluded || s.AdmissionOpen || s.AdmissionRevision != q.Close.Revision || s.IssuerFloorEpoch != epoch || s.CapacityGeneration != r.ExpectedCapacityGeneration || s.LowBuffers != p.Shared.Observed.LowBuffers || s.HighBuffers != s.LowBuffers || s.MaximumBuffers != p.Shared.Observed.MaximumBuffers || (s.Operation != nil && s.Operation.Phase == control.Preparing) {
+		return false, fmt.Errorf("original close is not continuously acknowledged and foreground idle")
 	}
 	for _, a := range s.Arrays {
 		if a.AllocationUnknown {
-			return fmt.Errorf("quiesce native backing is unknown")
+			return false, fmt.Errorf("quiesce native backing is unknown")
 		}
 	}
-	return nil
+	return c.Acknowledged && c.PublicConnectionsBlocked && w.ForegroundIdle, nil
 }
 
 func (q *Quiesced) UnmarshalJSON(data []byte) error {

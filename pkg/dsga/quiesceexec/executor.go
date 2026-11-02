@@ -189,8 +189,14 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		return pgexec.AwaitingFact, err
 	}
 	result := budget.Quiesced{ProtocolVersion: 1, Request: op.Request, Close: closeIntent, DSM: dsm, PGAggregate: aggregate}
-	if err := result.ValidateFor(prepared, e.actor.Epoch); err != nil {
+	ready, err := result.ReadyFor(prepared, e.actor.Epoch)
+	if err != nil {
 		return pgexec.AwaitingFact, err
+	}
+	if !ready {
+		// 原关闭已发；PM尚未ACK或合法前台仍在途只保持原Unconfirmed。
+		// 下一轮先查询原AdmissionStatus再读同点DSM，不重发setter或补Record。
+		return pgexec.AwaitingFact, nil
 	}
 	latest, _, err := e.aggregate(ctx)
 	if err != nil {
