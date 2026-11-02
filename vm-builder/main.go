@@ -92,7 +92,9 @@ var (
 
 	systemModeFlag            = flag.String("system-mode", "legacy", "Fixed System build selector: legacy | normal-split-v1 | normal-split-v3 (not runtime authorization)")
 	normalPlanFlag            = flag.String("normal-build-plan", "", "Explicit versioned fixed compute build plan; values are not logged")
-	normalNativeBirthVersion  = flag.Uint("normal-native-birth-version", 0, "Explicit build-only NativeBirth collector: 0 old behavior | 1 fixed GNU PG17 image")
+	normalNativeBirthVersion  = flag.Uint("normal-native-birth-version", 0, "Explicit build-only NativeBirth collector: 0 old behavior | 1 fixed GNU image")
+	normalNativePGMajor       = flag.Uint("normal-native-pg-major", 17, "Private image PG major selection: 17 default | 18 explicit; not collector ABI")
+	normalNativePostgresSHA   = flag.String("normal-native-postgres-sha256", "", "Original PostgreSQL ELF SHA256 from trusted build input; required for explicit PG18")
 	normalManifestRoot        = flag.String("normal-manifest-root", "", "Build-container-only final root inventory command")
 	normalBaseDigest          = flag.String("normal-base-image-sha", "", "Original base image declaration for final inventory; not final image self hash")
 	normalOrdinaryControls    = flag.Uint("normal-ordinary-controls-version", 1, "Explicit fixed ordinary controls version: 1 or 2; version 2 requires normal-split-v3 and original package lock")
@@ -167,6 +169,8 @@ type TemplatesContext struct {
 	NormalSystemMode              string
 	NormalOrdinaryControlsVersion uint32
 	NormalNativeBirthVersion      uint32
+	NormalNativePGMajor           uint32
+	NormalNativePostgresSHA       string
 	NormalSplit                   bool
 	NormalBaseSHA                 string
 	NormalUID                     uint32
@@ -181,7 +185,7 @@ type inittabCommand struct {
 
 func main() {
 	flag.Parse()
-	if e := validateNormalNativeBirthBuildSelection(*systemModeFlag, *targetArch, *normalOrdinaryControls, *normalNativeBirthVersion); e != nil {
+	if e := validateNormalNativePGSelection(*systemModeFlag, *targetArch, *normalOrdinaryControls, *normalNativeBirthVersion, *normalNativePGMajor, *normalNativePostgresSHA); e != nil {
 		log.Fatal(e)
 	}
 	// 仅构建容器的固定库存命令，发生在完整rootdisk和库alias之后；不连接Docker/网络。
@@ -217,7 +221,7 @@ func main() {
 			log.Fatal(e)
 		}
 		if *normalNativeBirthVersion == 1 {
-			if e := publishCompleteNormalNativeBirthImage(*normalManifestRoot, b); e != nil {
+			if e := publishCompleteNormalNativeBirthImageForPG(*normalManifestRoot, b, uint32(*normalNativePGMajor), *normalNativePostgresSHA); e != nil {
 				log.Fatal(e)
 			}
 			return
@@ -479,6 +483,8 @@ func main() {
 		tmplArgs.NormalSystemMode = *systemModeFlag
 		tmplArgs.NormalOrdinaryControlsVersion = uint32(*normalOrdinaryControls)
 		tmplArgs.NormalNativeBirthVersion = uint32(*normalNativeBirthVersion)
+		tmplArgs.NormalNativePGMajor = uint32(*normalNativePGMajor)
+		tmplArgs.NormalNativePostgresSHA = *normalNativePostgresSHA
 		tmplArgs.NormalUID = normalPlan.ComputeUID
 		tmplArgs.NormalGID = normalPlan.ComputeGID
 		tmplArgs.User = fmt.Sprintf("%d:%d", normalPlan.ComputeUID, normalPlan.ComputeGID)

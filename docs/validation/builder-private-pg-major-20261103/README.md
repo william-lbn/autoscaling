@@ -1,0 +1,7 @@
+# Builder私有PG17/PG18选择
+
+此前实际Builder只有normal-native-birth-version=0/1，1固定PG17；collector能够读取PG18并不等于Builder已有PG18选择。本批新增私有normal-native-pg-major（默认17、显式18）与normal-native-postgres-sha256原ELF选择，不把PGmajor混成collector ABI，也不修改Root/Guest共享协议。
+
+PG18要求collector1、现System3/controls2/linux-amd64组合及规范非零原SHA；原collector先完成实际ELF/seed验证和规范输出，再核实际pg_major与PostgresPath对应文件摘要均符合明确选择，任一不符在manifest/stage发布前拒绝。不会执行输入PG或凭版本字符串猜版本。PG17默认不增加模板参数，原wrapper仍17/空pin，原默认模板和manifest字节兼容。
+
+Linux11个唯一根、44子例race通过，无fail/skip；静态Builder及真实CLI预检通过，18缺pin在Docker前拒绝。独审逐SHA核5源及参数可达，P1真实ed134 ELF亦只读独立摘要核对。原GNU测试ELF只是选择逻辑夹具，不当Linux内存资格。完整PG18资产/Guest镜像、真实normal/VM和Source/K8s仍须后续独立验证。

@@ -137,14 +137,22 @@ func (im *normalNativeImage) seed() ([]byte, os.FileInfo, error) {
 // 任一写入失败令本Docker RUN失败，并移除本次System输出，不留可用的半个构建声明。
 // 显式native1唯一命令入口先形成完整System3/metadata18c，再沿原事务发布。
 func publishCompleteNormalNativeBirthImage(root string, input []byte) error {
+	return publishCompleteNormalNativeBirthImageForPG(root, input, 17, "")
+}
+
+func publishCompleteNormalNativeBirthImageForPG(root string, input []byte, major uint32, postgresSHA string) error {
 	finalSystem, e := completeNormalSystemBuildManifest(root, input)
 	if e != nil {
 		return e
 	}
-	return publishNormalNativeBirthImage(root, append(finalSystem, '\n'))
+	return publishNormalNativeBirthImageForPG(root, append(finalSystem, '\n'), major, postgresSHA)
 }
 
 func publishNormalNativeBirthImage(root string, finalSystem []byte) (err error) {
+	return publishNormalNativeBirthImageForPG(root, finalSystem, 17, "")
+}
+
+func publishNormalNativeBirthImageForPG(root string, finalSystem []byte, major uint32, postgresSHA string) (err error) {
 	im, e := newNormalNativeImage(root)
 	if e != nil {
 		return e
@@ -155,6 +163,10 @@ func publishNormalNativeBirthImage(root string, finalSystem []byte) (err error) 
 	}
 	raw, e := resourceguard.BuildNativeBirthManifestJSON(seed, finalSystem, im.canonical, im.open, im.lstat)
 	if e != nil {
+		return e
+	}
+	// 采集器只读真实ELF；在创建任何manifest或stage文件之前核原major/pin。
+	if e = validateNormalNativePGManifest(raw, major, postgresSHA); e != nil {
 		return e
 	}
 	systemPath := resourceguard.NormalSystemSourceManifestPath

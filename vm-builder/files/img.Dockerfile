@@ -130,7 +130,7 @@ COPY normal-prepare-root.sh /normal-prepare-root.sh
 COPY normal-ordinary-package-lock.json /normal-ordinary-package-lock.json
 {{end}}
 RUN /rootdisk/neonvm/bin/busybox sh /normal-prepare-root.sh {{.NormalUID}} {{.NormalGID}}
-RUN /normal-manifest-tool --system-mode={{.NormalSystemMode}} --normal-manifest-root=/rootdisk --normal-build-plan=/normal-build-plan.json --normal-base-image-sha={{.NormalBaseSHA}}{{if eq .NormalOrdinaryControlsVersion 2}} --normal-ordinary-controls-version=2 --normal-ordinary-package-lock=/normal-ordinary-package-lock.json{{end}}{{if eq .NormalNativeBirthVersion 1}} --normal-native-birth-version=1 --target-arch=linux/amd64{{end}}
+RUN /normal-manifest-tool --system-mode={{.NormalSystemMode}} --normal-manifest-root=/rootdisk --normal-build-plan=/normal-build-plan.json --normal-base-image-sha={{.NormalBaseSHA}}{{if eq .NormalOrdinaryControlsVersion 2}} --normal-ordinary-controls-version=2 --normal-ordinary-package-lock=/normal-ordinary-package-lock.json{{end}}{{if eq .NormalNativeBirthVersion 1}} --normal-native-birth-version=1 --target-arch=linux/amd64{{if eq .NormalNativePGMajor 18}} --normal-native-pg-major=18{{end}}{{if .NormalNativePostgresSHA}} --normal-native-postgres-sha256={{.NormalNativePostgresSHA}}{{end}}{{end}}
 {{end}}
 
 

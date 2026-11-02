@@ -1,0 +1,51 @@
+{
+  "scope": "私有Builder明确PG版本/原ELF选择，不是运行资格",
+  "sources": [
+    {
+      "path": "vm-builder/main.go",
+      "sha256": "d784715be0943e0a3b01d154efcbf22fee5bd6e74479cb07d9e603ddcc809e57",
+      "bytes": 27418,
+      "lines": 855
+    },
+    {
+      "path": "vm-builder/normal_native_birth.go",
+      "sha256": "939adaa87964246d01497dcd03d6b061cc57bffee6ec7bf3498117f50a429ef7",
+      "bytes": 8135,
+      "lines": 237
+    },
+    {
+      "path": "vm-builder/files/img.Dockerfile",
+      "sha256": "63a9e3f5f4b145ff2ea7d7492cda1c9933851eb7d701c7a5df19285d77054de9",
+      "bytes": 6055,
+      "lines": 153
+    },
+    {
+      "path": "vm-builder/normal_native_pg.go",
+      "sha256": "03f59031306c440424e823e905317a087d8c530c1c06898373beb6b82a0b8012",
+      "bytes": 2518,
+      "lines": 69
+    },
+    {
+      "path": "vm-builder/normal_native_pg_test.go",
+      "sha256": "946f360305a0feb53accc22333f5349fe0b4a0de007247c659809cac5ed6b32b",
+      "bytes": 7799,
+      "lines": 203
+    }
+  ],
+  "test_dir": "/data/neon-build/validation/builder-native-pg-major-go-20261102T211816Z-d92c7f",
+  "proposal_sha256": "5f9e6b53a7bb56b10bc70ff286e0e28bab04f918ab327abc66c6fe903e26e2f4",
+  "result_sha256": "ca728fc87524bbf565cc42a077a0d24158197c64ee0b9fe791ef038508f5689b",
+  "independent_review_sha256": "f3265db41f8e74635e5e57bbc830dc87b20f0a7a35265218d9e98a9d5bd81eca",
+  "unique_race_roots": 11,
+  "unique_subcases": 44,
+  "fails": 0,
+  "skips": 0,
+  "static_Builder_build_exit": 0,
+  "PG17_default_bytes_compatible": true,
+  "PG18_major_and_actual_ELF_pin_checked_before_publication": true,
+  "shared_ABI_DTO_unchanged": true,
+  "Source": false,
+  "normal": false,
+  "E": 0,
+  "K8s": false
+}
