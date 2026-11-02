@@ -1,0 +1,4 @@
+PG17自动策略normal降限能力接线
+原生产采样无条件排除更低normal目标；现仅在真实Root状态已协商normal协议v1时允许其进入原资格候选。Prepare、PG真实释放、Root持续预算和最终VM门均继续独立验证，候选不是降限或VM许可。
+定向生产worker测试1根6子race通过：旧协议拒绝、新协议可选、固定AS/任务数/System/hstate不匹配均拒绝；采样不生成Begin、不写硬限。PG/Root/Kube是协议peer，本阶段不冒Linux物理normal/全链或K8s通过。
+首轮两个能力用例通过，但AS负样本不合法（1字节未按页对齐）导致整轮失败；原失败和后继合法64MiB样本完整保留。修正测试上下文不改变生产门。

@@ -355,7 +355,8 @@ func productionInitialService(t *testing.T, mode string) {
 	}
 	expiredRetry := strings.HasPrefix(mode, "service-retry-expired-")
 	committedExpiry := mode == "resume-safety-recover-expired" || mode == "finalize-safety-recover-expired"
-	automaticMode := mode == "cleanup-safety-recover-automatic" || mode == "finalize-safety-recover-automatic" || mode == "resume-safety-recover-automatic" || mode == "service-retry-expired-automatic" || mode == "automatic-policy" || mode == "service-lifecycle-first-unknown-automatic" || mode == "service-retry-first-unknown-automatic"
+	normalEligibilityMode := mode == "automatic-normal-eligibility"
+	automaticMode := normalEligibilityMode || mode == "cleanup-safety-recover-automatic" || mode == "finalize-safety-recover-automatic" || mode == "resume-safety-recover-automatic" || mode == "service-retry-expired-automatic" || mode == "automatic-policy" || mode == "service-lifecycle-first-unknown-automatic" || mode == "service-retry-first-unknown-automatic"
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
 	committedCompletionTransfer := mode == "resume-safety-recover-complete-takeover"
 	finalizationTransfer := strings.HasPrefix(mode, "finalize-safety-recover-") && strings.HasSuffix(mode, "takeover")
@@ -740,6 +741,10 @@ func productionInitialService(t *testing.T, mode string) {
 		// 头只能在完整Finalize的同CAS被替换；不注入领域Completed。
 		s, err := store.Load(ctx)
 		require.NoError(t, err)
+		if normalEligibilityMode {
+			verifyAutomaticNormalEligibility(t, ctx, client, store, session, config, resourceConfig, source, pg, root)
+			return nil
+		}
 		if automaticMode {
 			verifyProductionAutomaticBegin(t, ctx, api, client, store, worker, source, pg, root)
 		} else {

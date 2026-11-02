@@ -131,9 +131,10 @@ func (w *PGWorker) sampleAutomatic(ctx context.Context, s *journal.Snapshot) (po
 		if err != nil || target.Buffers > pg.MaximumBuffers || target.VMMemoryBytes < birth.Identity.MinimumBytes || target.VMMemoryBytes > birth.Identity.MaximumBytes || (target.VMMemoryBytes-birth.Identity.MinimumBytes)%birth.Identity.BlockBytes != 0 {
 			return result, fmt.Errorf("automatic target lacks exact original qualification or native geometry")
 		}
-		// 安全降normal尚须专属执行协议，不能由策略低占用绕过Prepare的
-		// 拒绝。资格是不可变来源，不能临时按比例修改成可派发的额度。
-		eligible[i] = qualified.Limits.MemoryMaxBytes >= limits.MemoryMaxBytes && qualified.Limits.AddressSpaceMaxBytes == limits.AddressSpaceMaxBytes && qualified.Limits.PidsMaxTasks == limits.PidsMaxTasks && qualified.Limits.SystemMemoryMaxBytes == limits.SystemMemoryMaxBytes && len(qualified.Limits.HugePools) == len(limits.HugePools)
+		// 策略只提出原资格中的目标，不签发降限许可。Root明确协商到专属
+		// normal协议后，允许更低N进入原Prepare/PG释放/Guest核验；旧协议
+		// 仍在这里过滤。不能因占用低或资格存在而跳过后续真实安全证明。
+		eligible[i] = (qualified.Limits.MemoryMaxBytes >= limits.MemoryMaxBytes || rootClient.NormalQuotaEnabled()) && qualified.Limits.AddressSpaceMaxBytes == limits.AddressSpaceMaxBytes && qualified.Limits.PidsMaxTasks == limits.PidsMaxTasks && qualified.Limits.SystemMemoryMaxBytes == limits.SystemMemoryMaxBytes && len(qualified.Limits.HugePools) == len(limits.HugePools)
 		if eligible[i] {
 			for j := range limits.HugePools {
 				if qualified.Limits.HugePools[j].PageSizeKB != limits.HugePools[j].PageSizeKB {
