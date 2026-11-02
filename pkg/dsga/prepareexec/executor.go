@@ -54,23 +54,25 @@ func New(store *journal.Store, pg *compute.Client, resources *resourceguard.Clie
 // command先持久完整原承诺、资格UID/摘要及当时Root来源，后才创建Outside。
 // 首次Create的服务端UID只能在真实回复/原保护对象读回后得到；Completed同时
 // 将其存入Prepared。发布后所有消费者固定该UID，不能同名收养替代来源。
-type command struct {
-	ProtocolVersion uint32                     `json:"protocol_version"`
-	Qualification   budget.QualificationSource `json:"qualification"`
-	Prepared        budget.Prepared            `json:"prepared"`
-	RootSHA256      string                     `json:"root_sha256"`
-	OutsideName     string                     `json:"outside_name"`
-}
+type command budget.PrepareCommand
 
 func outsideName(c command) (string, error) {
-	// 名称内容寻址包含完整原命令；不含自己，避免循环摘要。不同原资格/
-	// Root/成本不能碰巧共用来源。重读相同命令所得名称必须逐字节一致。
-	c.OutsideName = ""
-	raw, err := json.Marshal(c)
-	if err != nil {
-		return "", err
+	return budget.PrepareCommand(c).CanonicalOutsideName()
+}
+
+func (c *command) UnmarshalJSON(data []byte) error {
+	var value budget.PrepareCommand
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
 	}
-	return "dsga-o-" + vmguard.SourceDigest(raw)[:56], nil
+	*c = command(value)
+	return nil
+}
+
+func decodeOriginalPrepareCommand(raw []byte) (command, error) {
+	var original command
+	err := json.Unmarshal(raw, &original)
+	return original, err
 }
 
 func (c command) outside(incarnation string) budget.OutsideReservation {
@@ -268,6 +270,9 @@ func (e *Executor) inspect(ctx context.Context, s *journal.Snapshot) (c command,
 	}
 	c = command{ProtocolVersion: 1, Qualification: e.source, Prepared: p, RootSHA256: digest, OutsideName: ""}
 	c.OutsideName, err = outsideName(c)
+	if err == nil && c.Prepared.NormalQuotaProtocolVersion == 1 {
+		err = budget.PrepareCommand(c).Validate()
+	}
 	diagnosticStage = 195
 	return c, err
 }
@@ -405,9 +410,9 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (progress p
 		}
 		step = dispatch.Step
 	} else {
-		var original command
+		original, decodeErr := decodeOriginalPrepareCommand(step.Command)
 		diagnosticStage = 281
-		if control.UnmarshalObject(step.Command, &original) != nil || !reflect.DeepEqual(original, c) || step.TargetID != op.Request.Key.Instance.ComputeInstanceID {
+		if decodeErr != nil || !reflect.DeepEqual(original, c) || step.TargetID != op.Request.Key.Instance.ComputeInstanceID {
 			diagnosticStage = 282
 			return pgexec.AwaitingFact, fmt.Errorf("original prepare source or current facts changed")
 		}

@@ -1054,6 +1054,9 @@ func (model Model) StartCleanup(actor Owner, key control.Key, targetID string, c
 // 原始字节不可改，来源实例和派发owner也绑定摘要。这里不认证业务DTO的领域语义。
 func commandDigest(requestHash string, step Step) (string, error) {
 	limit := MaxCommandBytes
+	if completeNormalPrepareCommand(requestHash, step) {
+		limit = MaxPrepareBudgetCommandBytes
+	}
 	if len(step.Command) > MaxCommandBytes && len(step.Command) <= MaxInitialCapacityCommandBytes && step.Action == AbortReconcile && step.DispatchedBy != nil {
 		// 先限字节/深度/节点/重复键，之后才能做typed解码；不因请求
 		// 自报protocol_version就给任意大命令扩界。畸形或普通合同

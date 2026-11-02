@@ -1,0 +1,38 @@
+{
+  "scope": "strict typed bounded normal1 Prepare command only",
+  "source_sha256": {
+    "pkg/dsga/budget/prepare_command.go": "88469a324bb3f69d9d0c0e4df9a901189681ce8ccd237a5423eaa3f5417b2e43",
+    "pkg/dsga/budget/prepare_command_contract_test.go": "ca21411708f86e3dece572adecc72b225e21901674551ef7192e749edab630a9",
+    "pkg/dsga/journal/prepare_command.go": "3495ccadfe251afbec4c2fa08f04282cc1887c8fe1e60d464488317b9a82a252",
+    "pkg/dsga/journal/model.go": "755a828b7309a0db5fa4e220d8de5712befdbaaece5858fdd15c9e1ab2d7bd7f",
+    "pkg/dsga/journal/prepare_command_bound_test.go": "2d4ac27a9c208ffb38eaffa41cf96b4f529ecdb0cb24af69b61bf8f6bb5198d0",
+    "pkg/dsga/prepareexec/executor.go": "b032cd74f92571f5d8e15e1fba19a7b4402f3cbddf36198e813c380251e784dc",
+    "pkg/dsga/prepareexec/prepare_command_redecode_test.go": "3ee626974d9caad00a3920832753515ec83efff5016fb165ff6ffaa81320a5f6"
+  },
+  "default_command_bytes": 8192,
+  "complete_normal1_prepare_max_bytes": 16384,
+  "JSON_nodes_max": 2048,
+  "codec_limits_unchanged": true,
+  "unique_coverage": {
+    "roots": 9,
+    "subtests": 66,
+    "skip": 0,
+    "repeated_attempts_not_added": true
+  },
+  "run_refs": [
+    "/data/neon-build/validation/pg17-typed-prepare-host-go-20261102T174221Z-b1bc30",
+    "/data/neon-build/validation/pg17-typed-prepare-artifact-go-20261102T174839Z-dda860",
+    "/data/neon-build/validation/pg17-typed-prepare-artifact-go-20261102T175720Z-b32c54"
+  ],
+  "earlier_ENV_failures_preserved": true,
+  "original_wire_bytes": [
+    6451,
+    7338
+  ],
+  "original_wire_and_name_exact": true,
+  "Host_sha256": "fee148bdb47592b49459769c866cd1e3656dfe6d54da4d0c29c027efc27cc8bf",
+  "full_cycle_status": "RUNNING_NOT_ACCEPTED",
+  "Source": false,
+  "E": 0,
+  "K8s": 0
+}
