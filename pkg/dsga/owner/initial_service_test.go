@@ -356,7 +356,8 @@ func productionInitialService(t *testing.T, mode string) {
 	expiredRetry := strings.HasPrefix(mode, "service-retry-expired-")
 	committedExpiry := mode == "resume-safety-recover-expired" || mode == "finalize-safety-recover-expired"
 	normalEligibilityMode := mode == "automatic-normal-eligibility"
-	automaticMode := normalEligibilityMode || mode == "cleanup-safety-recover-automatic" || mode == "finalize-safety-recover-automatic" || mode == "resume-safety-recover-automatic" || mode == "service-retry-expired-automatic" || mode == "automatic-policy" || mode == "service-lifecycle-first-unknown-automatic" || mode == "service-retry-first-unknown-automatic"
+	normalPrepareMode := strings.HasPrefix(mode, "normal-prepare-equal-")
+	automaticMode := normalPrepareMode || normalEligibilityMode || mode == "cleanup-safety-recover-automatic" || mode == "finalize-safety-recover-automatic" || mode == "resume-safety-recover-automatic" || mode == "service-retry-expired-automatic" || mode == "automatic-policy" || mode == "service-lifecycle-first-unknown-automatic" || mode == "service-retry-first-unknown-automatic"
 	ownerTransfer := strings.HasPrefix(mode, "owner-transfer")
 	committedCompletionTransfer := mode == "resume-safety-recover-complete-takeover"
 	finalizationTransfer := strings.HasPrefix(mode, "finalize-safety-recover-") && strings.HasSuffix(mode, "takeover")
@@ -409,6 +410,13 @@ func productionInitialService(t *testing.T, mode string) {
 	qualifiedRootFixture(root)
 	root.mu.Lock()
 	root.view.Actual.GuestMemTotalBytes = 480 << 20
+	if normalPrepareMode {
+		root.view.Bootstrap.Limits.MemoryMaxBytes = 256 << 20
+		root.view.Actual.MemoryMaxBytes = 256 << 20
+		if strings.HasSuffix(mode, "supported") {
+			root.view.NormalQuotaProtocolVersion = 1
+		}
+	}
 	if finiteAddressSpace {
 		root.view.Bootstrap.Limits.AddressSpaceMaxBytes = 512 << 20
 		root.view.Birth.AddressSpaceMaxBytes = 512 << 20
@@ -741,6 +749,10 @@ func productionInitialService(t *testing.T, mode string) {
 		// 头只能在完整Finalize的同CAS被替换；不注入领域Completed。
 		s, err := store.Load(ctx)
 		require.NoError(t, err)
+		if normalPrepareMode {
+			verifyProductionNormalPrepareEqualLimit(t, ctx, client, store, session, resources, config, source, pg, root, strings.HasSuffix(mode, "supported"))
+			return nil
+		}
 		if normalEligibilityMode {
 			verifyAutomaticNormalEligibility(t, ctx, client, store, session, config, resourceConfig, source, pg, root)
 			return nil

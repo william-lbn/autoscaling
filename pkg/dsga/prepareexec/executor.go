@@ -176,7 +176,9 @@ func (e *Executor) inspect(ctx context.Context, s *journal.Snapshot) (command, e
 	}
 	system, transition, safety := target.Bounds(e.source)
 	p := budget.Prepared{ProtocolVersion: 1, VMShrinkPermit: false, Request: request, Identity: id, RunnerPodName: q.RunnerPodName, RunnerRestartCount: q.RunnerRestartCount, VMBeforeMemoryBytes: control.Uint64(before), GuestUsableMemoryBytes: target.GuestUsableMemoryBytes, Shared: shared, TargetSharedUpperBytes: upper, Limits: target.Limits, SystemOutsidePG: system, Transition: transition, Safety: safety, OutsideClaim: nil}
-	if target.Limits.MemoryMaxBytes != held.MemoryMaxBytes && e.resources.NormalQuotaEnabled() {
+	// 新profile的预算ID/数组权限合同跨相同N阶段仍须保持，不能因本轮N恰好
+	// 相等退回旧Apply；首次Grow也要由Root新协议核原PG事实和预算移交。
+	if e.resources.NormalQuotaEnabled() {
 		p.NormalQuotaProtocolVersion = 1
 		originalFence := fence
 		p.NormalQuotaFence = &originalFence

@@ -1,0 +1,4 @@
+新normal协议跨相同N阶段保留
+首Grow即使N不变仍必须携带原normal协议与确切PG fence，保持新budget/数组移交合同；仅当Root实际协商新协议时选择，旧0协议保持原行为。Prepare只创建原Outside/原CAS记录，不写PG/Root硬限。
+生产Session/worker/Prepare+原CAS定向race验证：原自动策略1根6子+同N旧0/新1选择1根2子全部通过，合图34.779秒。PG/Root/Kube明确协议peer，不能代替真实Linux normal或VM/K8s验收。
+独立审查catalog_kernel_runtime：fresh InspectState及sticky降级拒绝保留；原Fence与Shared一致；原AS/pids/System/hstates/资格/外预算/VM CAS门保持，无明确阻断。
