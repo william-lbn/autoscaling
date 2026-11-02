@@ -1,0 +1,4 @@
+PG17 trusted固定启动表的真实生产接线
+真实376前置20f轨暴露InspectNormalSystemSource仍无条件验证旧version3 broker表，新trusted direct表必拒。现只从原sealed Runtime配置选择：trusted且version3逐字核TrustedControllerInitEntries完整唯一表；旧模式保原version表；无sealed不能把direct文本收养成新模式。来源实际canonical/大小/hash/fstat与只读挂载检查保持。
+本生产文件已有原固定2 worker只读哈希改动，之前尚未单独提交；本次一并归档准确原源码与123f02真实只读race（3根含完整RO、实际FD并发、取消join，34.166秒）。每job独立FD、返回前close/join，失败不返回部分Source、不跨调用缓存；这不签normal许可。
+新cf7cb8：固定表1根9子race全过、CLI与Guest编译3phase0/71.778秒。新固定表旧表互斥、陌生模式/旧version/空白/新增项/改action均拒。新CLI源含此前pool2同字节，后继真实KVM仍须验收。普通单元、构建与只读组件均不代表正常硬降限或K8s E。本阶段不改PG17发行锁、不包含DEV Guest/Host探针全文件。

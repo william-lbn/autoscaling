@@ -1,0 +1,25 @@
+=== RUN   TestNormalSystemSourceParallelFilesOriginalRO
+=== RUN   TestNormalSystemSourceParallelFilesOriginalRO/orderedFullRead
+=== RUN   TestNormalSystemSourceParallelFilesOriginalRO/wrongDigestJoinsAll
+=== RUN   TestNormalSystemSourceParallelFilesOriginalRO/wrongCanonical
+=== RUN   TestNormalSystemSourceParallelFilesOriginalRO/nonELF
+=== RUN   TestNormalSystemSourceParallelFilesOriginalRO/nonExecutable
+=== RUN   TestNormalSystemSourceParallelFilesOriginalRO/inittabWrongVersion
+--- PASS: TestNormalSystemSourceParallelFilesOriginalRO (0.79s)
+    --- PASS: TestNormalSystemSourceParallelFilesOriginalRO/orderedFullRead (0.40s)
+    --- PASS: TestNormalSystemSourceParallelFilesOriginalRO/wrongDigestJoinsAll (0.39s)
+    --- PASS: TestNormalSystemSourceParallelFilesOriginalRO/wrongCanonical (0.00s)
+    --- PASS: TestNormalSystemSourceParallelFilesOriginalRO/nonELF (0.00s)
+    --- PASS: TestNormalSystemSourceParallelFilesOriginalRO/nonExecutable (0.00s)
+    --- PASS: TestNormalSystemSourceParallelFilesOriginalRO/inittabWrongVersion (0.00s)
+=== RUN   TestNormalSystemSourceParallelFilesActualOverlap
+ACTUAL_SOURCE_PARALLEL_FILE_OVERLAP observed_open_fds=2 synthetic_verifier=false after_return_open=0
+--- PASS: TestNormalSystemSourceParallelFilesActualOverlap (0.40s)
+=== RUN   TestNormalSystemSourceParallelFilesCancellationJoin
+=== RUN   TestNormalSystemSourceParallelFilesCancellationJoin/alreadyCanceled
+=== RUN   TestNormalSystemSourceParallelFilesCancellationJoin/cancelDuringActualHash
+ACTUAL_SOURCE_PARALLEL_CANCEL actual_open_file_observed=true joined=true after_return_open=0
+--- PASS: TestNormalSystemSourceParallelFilesCancellationJoin (0.40s)
+    --- PASS: TestNormalSystemSourceParallelFilesCancellationJoin/alreadyCanceled (0.00s)
+    --- PASS: TestNormalSystemSourceParallelFilesCancellationJoin/cancelDuringActualHash (0.39s)
+PASS

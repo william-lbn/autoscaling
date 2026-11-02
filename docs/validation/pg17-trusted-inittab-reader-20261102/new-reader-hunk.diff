@@ -1,0 +1,34 @@
+--- /data/neon-build/validation/pg17-trusted-inittab-reader-20261102/before-with-existing-pool2.go	2026-11-02 11:33:26.263044021 +0800
++++ /data/neon-build/src/autoscaling/pkg/dsga/resourceguard/normal_system_source_linux.go	2026-11-02 11:33:26.505041539 +0800
+@@ -206,7 +206,7 @@
+ 
+ 			return normalSystemParallelFileResult{}, e
+ 		}
+-		if e = normalSystemCheckVersionInittab(version, b); e != nil {
++		if e = normalSystemCheckRuntimeInittab(version, b); e != nil {
+ 
+ 			return normalSystemParallelFileResult{}, e
+ 		}
+@@ -342,3 +342,22 @@
+ 	}
+ 	return f, nil
+ }
++
++// 只读部署合同必须取原sealed Runtime；裸table/model不产生Source或normal资格。
++// 无新模式时保留旧完整version检查，trusted仍逐字匹配自己的唯一固定表。
++func normalSystemCheckRuntimeInittab(version uint32, raw []byte) error {
++	source, e := sealedRuntimeSource()
++	if e != nil {
++		return normalSystemCheckVersionInittab(version, raw)
++	}
++	return normalSystemCheckDeploymentInittab(version, source.Config.ExecutionModel, raw)
++}
++func normalSystemCheckDeploymentInittab(version uint32, model string, raw []byte) error {
++	if model == "" {
++		return normalSystemCheckVersionInittab(version, raw)
++	}
++	if model != TrustedControllerExecutionModel || version != 3 || !bytes.Equal(raw, []byte(strings.Join(TrustedControllerInitEntries(), "\n")+"\n")) {
++		return fmt.Errorf("system inittab differs from sealed fixed deployment contract")
++	}
++	return nil
++}
