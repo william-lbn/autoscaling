@@ -208,18 +208,31 @@ func (o *arrayRegistryOriginal) matchesCurrent(q arrayRegistryWireRequest) error
 	return nil
 }
 
-func (s *arrayNativeServices) handleArrays(ctx context.Context, conn *net.UnixConn) error {
+func (s *arrayNativeServices) handleArrays(ctx context.Context, conn *net.UnixConn) (err error) {
+	stage := uint32(100)
+	defer func() {
+		if err != nil {
+			var inner *arrayPopulateStageError
+			if !errors.As(err, &inner) {
+				err = &arrayPopulateStageError{stage: stage, err: err}
+			}
+		}
+	}()
 	deadline, _ := ctx.Deadline()
+	stage = 101
 	raw, err := arrayServicePacket(conn, deadline, arrayRegistryRequestBytes, false)
 	if err != nil {
 		return err
 	}
+	stage = 102
 	q, err := decodeArrayRegistryWire(raw)
 	if err != nil {
 		return err
 	}
 	var reply []byte
+	stage = 103
 	err = s.guard.withRecord(ctx, func(r *record, state *lockedState) error {
+		stage = 104
 		value, exists := arrayGuardBindings.Load(s.guard)
 		if !exists {
 			return errors.Join(ErrUnknown, fmt.Errorf("array native original is not activated"))
@@ -228,15 +241,19 @@ func (s *arrayNativeServices) handleArrays(ctx context.Context, conn *net.UnixCo
 		o := binding.original
 		o.mu.Lock()
 		defer o.mu.Unlock()
+		stage = 105
 		if err := o.verifyOriginal(); err != nil {
 			return err
 		}
+		stage = 106
 		if r.Birth == nil || *r.Birth != o.pending.Original || r.Original != nil && !r.Applied {
 			return errors.Join(ErrUnknown, fmt.Errorf("array original Birth/resource source changed"))
 		}
+		stage = 107
 		if err := o.matchesBirth(q); err != nil {
 			return err
 		}
+		stage = 108
 		peer, pidfd, procfd, err := arrayRegistryPeer(o, conn)
 		if err != nil {
 			return err
@@ -245,12 +262,15 @@ func (s *arrayNativeServices) handleArrays(ctx context.Context, conn *net.UnixCo
 		defer unix.Close(procfd)
 		switch q.Op {
 		case arrayRegistryRegister:
+			stage = 110
 			if err = binding.rejectRPCUnknown(state); err != nil {
 				return err
 			}
+			stage = 111
 			if err = rejectOutstandingArrayPopulateLocked(state); err != nil {
 				return err
 			}
+			stage = 112
 			err = o.registerLocked(state, q, raw, peer, pidfd, procfd)
 		case arrayRegistryRetireBegin:
 			if err = binding.rejectRPCUnknown(state); err != nil {
@@ -259,8 +279,10 @@ func (s *arrayNativeServices) handleArrays(ctx context.Context, conn *net.UnixCo
 			if err = rejectOutstandingArrayPopulateLocked(state); err != nil {
 				return err
 			}
+			stage = 113
 			err = o.retireLocked(state, q, raw, peer, pidfd)
 		case arrayRegistryPopulate:
+			stage = 114
 			err = s.populateLocked(ctx, state, r, binding, q, raw, peer, pidfd, procfd)
 		default:
 			err = fmt.Errorf("array action unsupported")
@@ -268,6 +290,7 @@ func (s *arrayNativeServices) handleArrays(ctx context.Context, conn *net.UnixCo
 		if err != nil {
 			return err
 		}
+		stage = 115
 		encoded, e := (arrayRegistryWireReply{RequestSHA: arrayRegistryRequestSHA(raw), RegistrationNonce: o.current.nonce, ResourceFloor: uint64(r.Floor), MappingGeneration: q.MappingGeneration, Offset: q.Offset, Bytes: q.Bytes}).encode()
 		if e != nil {
 			return e
@@ -278,9 +301,11 @@ func (s *arrayNativeServices) handleArrays(ctx context.Context, conn *net.UnixCo
 	if err != nil {
 		return err
 	}
+	stage = 116
 	if err = conn.SetWriteDeadline(deadline); err != nil {
 		return err
 	}
+	stage = 117
 	n, err := conn.Write(reply)
 	if err != nil || n != len(reply) {
 		return errors.Join(ErrUnknown, err, fmt.Errorf("array reply unconfirmed"))
