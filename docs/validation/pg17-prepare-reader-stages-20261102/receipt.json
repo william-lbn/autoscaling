@@ -1,0 +1,28 @@
+{
+  "owned2": {
+    "pkg/dsga/prepareexec/executor.go": "96ecafca1c60223caaf606240fae79fda870643353f7c0cbcca3a71e417ed519",
+    "pkg/dsga/prepareexec/reader_stage_diagnostic_test.go": "ab6ae868d0061c1d18755ee66d2cf88de440253dccb81e35e4074ef73a755ab6"
+  },
+  "original_source_sha256": "15c2945c02d9e3d725ac527ba519472c4b7732d7a752c545a64b3e03cbb8658f",
+  "inverse_sha256": "15c2945c02d9e3d725ac527ba519472c4b7732d7a752c545a64b3e03cbb8658f",
+  "inverse_byte_equal": true,
+  "direct_run": "/data/neon-build/validation/pg17-prepare-reader-stage-direct-go-20261102T163441Z-ef98fd",
+  "direct_build_exit": 0,
+  "direct_test_exit": 0,
+  "direct_pass_including_subtests": 3,
+  "direct_fail": 0,
+  "direct_skip": 0,
+  "Host_compile_run": "/data/neon-build/validation/pg17-prepare-reader-stage-host-go-20261102T162830Z-d7ef44",
+  "Host_exit": 0,
+  "seed_exit": 0,
+  "scope": "fixed numeric failure stages only",
+  "actual_runtime": "pg17-trusted-control-full-native-20261102T164003Z-520499",
+  "observed_first_failure": {
+    "scope": 2,
+    "stage": 276,
+    "call": "journal.Store.Start"
+  },
+  "normal_release_accepted": false,
+  "E": 0,
+  "K8s": 0
+}
