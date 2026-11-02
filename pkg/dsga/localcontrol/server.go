@@ -104,6 +104,16 @@ func ValidateSocketPath(path string) error {
 }
 
 func Listen(path string, registry *Registry) (*Server, error) {
+	return listen(path, registry, false)
+}
+
+// ListenResourceRead使用独立私有UDS，只允许发现owner和读取原Root资源状态。
+// 文件系统只读挂载不能限制socket动作，因此必须在进入正式端点前拒绝其他命令。
+func ListenResourceRead(path string, registry *Registry) (*Server, error) {
+	return listen(path, registry, true)
+}
+
+func listen(path string, registry *Registry, resourceReadOnly bool) (*Server, error) {
 	if err := ValidateSocketPath(path); err != nil {
 		return nil, err
 	}
@@ -149,7 +159,7 @@ func Listen(path string, registry *Registry) (*Server, error) {
 		return nil, err
 	}
 	server := &http.Server{
-		Handler: newHandler(registry), ReadHeaderTimeout: 5 * time.Second,
+		Handler: newHandlerMode(registry, resourceReadOnly), ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout: 10 * time.Second, WriteTimeout: callTimeout + 5*time.Second,
 		IdleTimeout: 15 * time.Second, MaxHeaderBytes: 8 * 1024,
 	}
@@ -195,6 +205,10 @@ func writeError(w http.ResponseWriter, status int, code string) {
 }
 
 func newHandler(registry *Registry) http.Handler {
+	return newHandlerMode(registry, false)
+}
+
+func newHandlerMode(registry *Registry, resourceReadOnly bool) http.Handler {
 	inFlight := make(chan struct{}, maxInFlight)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == OwnerPath && r.URL.RawPath == "" {
@@ -256,6 +270,10 @@ func newHandler(registry *Registry) http.Handler {
 		var command control.CoordinationCommand
 		if json.Unmarshal(body, &command) != nil {
 			writeError(w, http.StatusBadRequest, "invalid_coordination_command")
+			return
+		}
+		if resourceReadOnly && command.Action != control.CoordinationResourceState {
+			writeError(w, http.StatusForbidden, "resource_read_only")
 			return
 		}
 		endpoint := registry.lookup(command.Instance.VMUID)

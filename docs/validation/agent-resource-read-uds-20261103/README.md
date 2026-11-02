@@ -1,0 +1,11 @@
+# 独立资源读取UDS
+
+资格发布器只需读取Root事实，原Agent只提供完整本地管理socket，且Helm没有挂载任何UDS目录。只读hostPath不会限制Unix socket的管理动作，所以不能将完整管理socket共享给独立发布器。
+
+本批在现localcontrol内提供ListenResourceRead，沿原owner发现和同一版本DTO，只允许resource_state。任何其他合法动作在registry lookup/Submit之前返回403，未创建新代理或另一套执行器。原Listen管理端点语义不变；请求大小、期限、并发、原实例及owner校验仍沿既有实现。
+
+Agent新增可选resourceReadSocketPath。只启用该通道时仍注册原正式ControlEndpoint，随同一taskgroup启动/关闭；初始化失败也关闭已绑定listener。若同时配置完整管理socket，两个私有目录必须互不包含。默认空值不监听，预建目录与socket仍要求Agent UID私有、规范绝对路径和不可替换祖先。
+
+验证使用真实Unix socket及协议peer，核owner发现、唯一资源状态转发和合法state/repair/replay动作进入Submit前拒绝，并保留原管理传输与路径回归；Agent配置独立启用、JSON往返、不安全路径与目录隔离均验证。定向race及Agent静态构建通过，精确根/子例和源码/ELF摘要见receipt.json。
+
+Helm仅将独立资源目录以Directory类型挂给Agent，不自动创建/chown，不共享完整管理目录。实际资格发布器独立只读挂载同原inode；运行期权威及报告认证仍由原合同决定。本批未部署、未签发平台资格，不代表Source/内存E/K8s通过。原生准入过期持久关闭接续由独立owner任务继续实现，未混入本批源码或测试快照。

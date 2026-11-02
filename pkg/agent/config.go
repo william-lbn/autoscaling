@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/tychoish/fun/erc"
 
@@ -185,6 +186,13 @@ func (c *Config) validate() error {
 		}
 		if c.DSGA.ControlSocketPath != "" {
 			erc.Whenf(ec, localcontrol.ValidateSocketPath(c.DSGA.ControlSocketPath) != nil, "invalid private DSGA coordination socket path")
+		}
+		if c.DSGA.ResourceReadSocketPath != "" {
+			erc.Whenf(ec, localcontrol.ValidateSocketPath(c.DSGA.ResourceReadSocketPath) != nil, "invalid private DSGA resource socket path")
+			if c.DSGA.ControlSocketPath != "" {
+				management, resource := filepath.Dir(c.DSGA.ControlSocketPath), filepath.Dir(c.DSGA.ResourceReadSocketPath)
+				erc.Whenf(ec, management == resource || strings.HasPrefix(management, resource+string(filepath.Separator)) || strings.HasPrefix(resource, management+string(filepath.Separator)), "DSGA management and resource socket directories must be disjoint")
+			}
 		}
 	}
 

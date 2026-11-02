@@ -72,12 +72,20 @@ func (r MainRunner) Run(logger *zap.Logger, ctx context.Context) error {
 		perVMMetrics,
 	)
 	var controlServer *localcontrol.Server
+	var resourceReadServer *localcontrol.Server
 	if r.Config.DSGA != nil && r.Config.DSGA.ControlSocketPath != "" {
 		controlServer, err = localcontrol.Listen(r.Config.DSGA.ControlSocketPath, globalState.dsgaControls)
 		if err != nil {
 			return fmt.Errorf("starting private DSGA control socket: %w", err)
 		}
 		defer controlServer.Close()
+	}
+	if r.Config.DSGA != nil && r.Config.DSGA.ResourceReadSocketPath != "" {
+		resourceReadServer, err = localcontrol.ListenResourceRead(r.Config.DSGA.ResourceReadSocketPath, globalState.dsgaControls)
+		if err != nil {
+			return fmt.Errorf("starting private DSGA resource-read socket: %w", err)
+		}
+		defer resourceReadServer.Close()
 	}
 
 	logger.Info("Starting billing metrics collector")
@@ -108,6 +116,9 @@ func (r MainRunner) Run(logger *zap.Logger, ctx context.Context) error {
 	tg := taskgroup.NewGroup(logger, taskgroup.WithParentContext(ctx))
 	if controlServer != nil {
 		tg.Go("dsga-local-control", func(_ *zap.Logger) error { return controlServer.Run(tg.Ctx()) })
+	}
+	if resourceReadServer != nil {
+		tg.Go("dsga-local-resource-read", func(_ *zap.Logger) error { return resourceReadServer.Run(tg.Ctx()) })
 	}
 	tg.Go("scalingevents-run", func(logger *zap.Logger) error {
 		return scalingReporter.Run(tg.Ctx())

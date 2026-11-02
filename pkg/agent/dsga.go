@@ -34,6 +34,8 @@ type DSGAConfig struct {
 	// 可选的受信本地管理UDS；专用目录仅Agent服务UID/root可访问。调用者
 	// 仍须选择完整实例和当前owner，不能把此路径挂给Guest或普通租户。
 	ControlSocketPath string `json:"controlSocketPath,omitempty"`
+	// 独立平台资格发布器只能挂此资源读取UDS，不共享完整管理端点目录。
+	ResourceReadSocketPath string `json:"resourceReadSocketPath,omitempty"`
 	// 仅可信配置可按VM UID选择原平台资格。跨Pod/boot不会自动收养新资格；
 	// 未配置时不生产Prepare。值没有平台默认数，也不从VM普通注解读取。
 	// 首次服务同样使用该原资格，必须包含真实启动VM的独立认证规格；
@@ -146,7 +148,7 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		r.dsgaState(ownerCtx, DSGARunnerState{Phase: "running", IssuerEpoch: epoch, Instance: instance})
 		logger.Info("DSGA owner PG reconciliation started")
 		var endpoint *owner.ControlEndpoint
-		if config.ControlSocketPath != "" {
+		if config.ControlSocketPath != "" || config.ResourceReadSocketPath != "" {
 			endpoint = worker.NewControlEndpoint()
 			unregister, err := r.global.dsgaControls.Register(endpoint)
 			if err != nil {
@@ -177,7 +179,7 @@ func (r *Runner) awaitDSGAResources(ctx context.Context, config *DSGAConfig, res
 	endpoint := resources.NewRecoveryControlEndpoint()
 	instance, epoch := endpoint.Binding()
 	r.dsgaState(ctx, DSGARunnerState{Phase: "recovering-resources", IssuerEpoch: epoch, Instance: instance})
-	if config.ControlSocketPath != "" {
+	if config.ControlSocketPath != "" || config.ResourceReadSocketPath != "" {
 		unregister, err := r.global.dsgaControls.Register(endpoint)
 		if err != nil {
 			return err
