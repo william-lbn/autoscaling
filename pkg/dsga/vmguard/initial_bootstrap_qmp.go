@@ -69,16 +69,61 @@ func (p *initialBootProcess) close() {
 		p.pidfd = -1
 	}
 }
+
+// 此私有fd在发布前由构造者独占；发布后调用者全程持processGuard读锁，
+// close只在join启动者后持同一写锁。只重启被信号中断的真实Poll，不按PID重开。
+// 计数只供失败取证和直接机制测试，不授予任何来源或调度资格。
+type initialBootPIDFDPollObservation struct {
+	N             int
+	Revents       int16
+	Attempts      int
+	Interruptions int
+	PollCalled    bool
+	Err           error
+}
+
+type initialBootPIDFDPollError struct {
+	Observation initialBootPIDFDPollObservation
+}
+
+func (e *initialBootPIDFDPollError) Error() string {
+	return "original QEMU exited or pidfd is unknown"
+}
+func (e *initialBootPIDFDPollError) Unwrap() error { return e.Observation.Err }
+
+func initialBootPIDFDAliveRestart(fd int) (initialBootPIDFDPollObservation, error) {
+	var o initialBootPIDFDPollObservation
+	if fd < 0 {
+		o.Err = unix.EBADF
+		return o, &initialBootPIDFDPollError{Observation: o}
+	}
+	for o.Attempts < 4 {
+		// 每次重建pollfd，不能沿用一次中断留下的revents。
+		poll := []unix.PollFd{{Fd: int32(fd), Events: unix.POLLIN}}
+		o.Attempts++
+		o.PollCalled = true
+		o.N, o.Err = unix.Poll(poll, 0)
+		o.Revents = poll[0].Revents
+		if o.Err == unix.EINTR {
+			o.Interruptions++
+			continue
+		}
+		if o.Err != nil || o.N != 0 || o.Revents != 0 {
+			return o, &initialBootPIDFDPollError{Observation: o}
+		}
+		return o, nil
+	}
+	return o, &initialBootPIDFDPollError{Observation: o}
+}
+
 func (p *initialBootProcess) alive() error {
 	if p == nil || p.pidfd < 0 || p.proc == nil {
 		return fmt.Errorf("original process handles missing")
 	}
-	poll := []unix.PollFd{{Fd: int32(p.pidfd), Events: unix.POLLIN}}
-	n, e := unix.Poll(poll, 0)
-	if e != nil || n != 0 {
-		return fmt.Errorf("original QEMU exited or pidfd is unknown")
+	if _, e := initialBootPIDFDAliveRestart(p.pidfd); e != nil {
+		return e
 	}
-	if e = unix.PidfdSendSignal(p.pidfd, 0, nil, 0); e != nil {
+	if e := unix.PidfdSendSignal(p.pidfd, 0, nil, 0); e != nil {
 		return fmt.Errorf("original pidfd no longer live: %w", e)
 	}
 	start, e := p.startTime()

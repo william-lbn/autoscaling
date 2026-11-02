@@ -1,0 +1,46 @@
+{
+  "source_sha256": {
+    "pkg/dsga/vmguard/initial_bootstrap_qmp.go": "1727e9bdc313cb4bb9e8c9ec36b643044db87b33fc9089a9eb008a7752eddaab",
+    "pkg/dsga/vmguard/initial_bootstrap_pidfd_restart_linux_test.go": "73ff57019aace928c9fdf194e65c6f12a4d8751123ea45727ee536362e69fc8c"
+  },
+  "actual_run": "/data/neon-build/validation/pg17-initial-pidfd-restart-go-20261102T122736Z-23d205",
+  "small_result_sha256": "3678c2200e696105e653c35e615f47bd1d600af4a5f79c4381cb9864704b22c3",
+  "phase_exits": {
+    "u.exitcode": 0,
+    "host.exitcode": 0,
+    "seed.exitcode": 0
+  },
+  "race_roots": [
+    "TestInitialBootPIDFDOriginalStates",
+    "TestInitialBootPIDFDRestartRealSignal",
+    "TestInitialBootPIDFDOriginalProcessChecks",
+    "TestPG17TrustedControlHostFixtureBindsSevenToEightGiBBeforeInitialize"
+  ],
+  "subtests": [
+    "TestInitialBootPIDFDOriginalStates/live-original",
+    "TestInitialBootPIDFDOriginalStates/missing-original",
+    "TestInitialBootPIDFDOriginalStates/invalid-descriptor-still-rejected",
+    "TestInitialBootPIDFDOriginalStates/confirmed-exit-still-rejected"
+  ],
+  "skip": [],
+  "seconds": 37.88884140102891,
+  "actual_signal": {
+    "actual_calls": 110,
+    "actual_signal": "SIGURG",
+    "actual_success_after_EINTR": true,
+    "four_attempt_exhaustions": 0,
+    "observed_EINTR_attempts": 1,
+    "same_original_PIDFD": true,
+    "synthetic_Poll_sequence": false
+  },
+  "full_Host_sha256": "a26022d715571445b42e3de8ef61ceae9421d13db1bac295724b6e40cb99f051",
+  "ownership_independent_review": {
+    "path": "/data/neon-build/validation/pg17-initial-qemu-pidfd-eintr-fix-20261102/independent-review.json",
+    "sha256": "a32f29a178f09ebc69abea682c34afba2bc532e0401276a5e119dee8f1da94d0"
+  },
+  "prior_r3_exact_errno": "NOT_OBSERVED; do not claim original failure was EINTR",
+  "four_EINTR_exhaustion_runtime_case": "NOT_OBSERVED; code remains bounded and rejects exhaustion",
+  "normal_accepted": false,
+  "Linux_full_E": 0,
+  "K8s_E": 0
+}
