@@ -13,12 +13,14 @@ func ServeGuest(ctx context.Context) error {
 	if os.Getuid() != 0 || os.Geteuid() != 0 {
 		return fmt.Errorf("resource service requires real root")
 	}
-	if e := rejectNormalStandaloneBrokerOwnedAuthority(); e != nil {
-		return e
-	}
 	source, e := sealedRuntimeSource()
 	if e != nil {
 		return e
+	}
+	if source.Config.ExecutionModel != TrustedControllerExecutionModel {
+		if e := rejectNormalStandaloneBrokerOwnedAuthority(); e != nil {
+			return e
+		}
 	}
 	g, e := Open(source.Config)
 	if e != nil {

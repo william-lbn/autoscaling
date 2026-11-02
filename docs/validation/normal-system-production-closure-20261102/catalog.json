@@ -1,0 +1,94 @@
+{
+  "scope": "production construction stage2A whole role ELF default-loader closure only; stage2B original Secret-precreation/sidecar binding still mandatory",
+  "owned8": {
+    "pkg/dsga/resourceguard/normal_system_build_closure_linux.go": "b024485d41d4bdfcedbaf2f46b77c2917d402c413f4a14d1eb48d38603631099",
+    "pkg/dsga/resourceguard/normal_system_build_closure_other.go": "fd63a9505a28443425f09d5920311a08072ae7a213cc1b89e4a4567a6d964d3c",
+    "pkg/dsga/resourceguard/normal_system_lifecycle_source_linux.go": "f536b033ebc4a8fb81d532614a4cd13536046e31d1808050ed627d6c4261d21e",
+    "vm-builder/normal_system_build.go": "1dd3470b54a28467361ef7893cd5367f410149dc598ad5d80e883c07f8fb8f18",
+    "vm-builder/main.go": "3e223ef8c93acd6e0044b17c608d1954ccf64b2857fcc8efbc00add602cb5284",
+    "vm-builder/normal_native_birth.go": "5035423a0e57ec4e4b70d08ae6c334473c4581e30806df3b430f37c47cd0597f",
+    "pkg/dsga/resourceguard/normal_system_build_closure_linux_test.go": "62138d662e95019d29b07cab21e4437431b483604bd17569bb04f9a9a0078cee",
+    "vm-builder/normal_system_build_test.go": "e74870a2994af4978a6513d05ff216ad9e34bee6157fb6e574f54f330d16b0aa"
+  },
+  "first_compile_source_lock_SHA256": "a35d8cb08c0b097778c047828af1e8ba038f273313a85c5b02087314af51b9e1",
+  "final_component_compile_source_lock_SHA256": "2da2030fc68dbd918a5c0cae6ac7d3c0642a4e791aa4a6df4bad54977133bfd8",
+  "source6_production_unchanged_between_runs": true,
+  "unit7_function_bodies_unchanged": true,
+  "final_actual_unit_targets": 7,
+  "final_unit_subtests": 19,
+  "actual_component_targets": 1,
+  "actual_component_final_pass": true,
+  "old_component_FAIL_preserved": "/data/neon-build/validation/normal-system-production-closure-go-20261101T224701Z-d58cfe",
+  "driver_failure_cause": "oracle from different DEV Guest has changed resource-guard ELF; original26 ELF SHA must remain original, plus independently recorded14 derived loader hashes. Constructor already produced119 and passed14 new/105 unchanged before aggregate wrong cross-version hash assertion.",
+  "no_checks_removed": "same original105 entries, same full40 canonical paths, expected exactSHA original26+oracle14, exact metadata18c five tuple, PG16 unchanged plus final System SHA reference",
+  "actual_derived_System3_entries": 119,
+  "actual_added_loader_entries": 14,
+  "actual_logical_exec_entries": 22,
+  "actual_canonical_ELFs": 40,
+  "actual_original_PG_closure_files": 16,
+  "derived_System_SHA256": "9a15cb419d3321cd1d919638fd7babc5f5c5a71eee3cbaa4fb7b308fe614ba5f",
+  "derived_NativeBuild_SHA256": "292917b765cbda7789cdacbc838acf11d23508f8d4c5c7762c4adfeb15fb9b20",
+  "Source": false,
+  "normal": false,
+  "Linux_E": 0,
+  "K8s_E": 0,
+  "new_VM_runs": 0,
+  "PG18_supported": false,
+  "runtime_Source_checks_preserved": "only exact three profile selector/directory switches moved to shared functions; all RO/source/FD gates unchanged",
+  "default0": "old369 build declaration unchanged; only explicit native1 declares registry complete metadata18c tuple",
+  "B_not_implemented": true,
+  "excluded_artifacts": {
+    "/data/neon-build/validation/normal-system-production-closure-go-20261101T224701Z-d58cfe/export/vm-builder": {
+      "sha256": "948b124d8038c40db866da9984306cba4ae856247c061f7a38f82ff0152f1a60",
+      "bytes": 54092335,
+      "reason": "compiled ELF retained /data original nonce only"
+    },
+    "/data/neon-build/validation/normal-system-production-closure-go-20261101T224701Z-d58cfe/export/vm-builder-darwin": {
+      "sha256": "e164176e6db711a9b139f27a7221d37d354a18c2b67ccb6e7a89bccb75373356",
+      "bytes": 14258098,
+      "reason": "compiled ELF retained /data original nonce only"
+    },
+    "/data/neon-build/validation/normal-system-production-closure-go-20261101T224701Z-d58cfe/export/native-builder.test": {
+      "sha256": "66749f248ba8cbf8703eaec3f1a9ed1dc2eb1681037cdb383d212c865563d7b2",
+      "bytes": 54327644,
+      "reason": "compiled ELF retained /data original nonce only"
+    },
+    "/data/neon-build/validation/normal-system-production-closure-component-retry-20261101T225254Z-500a61/export/native-builder.test": {
+      "sha256": "a9209bb84e71264a1e1945fdc01aa8d7fd7308cacfd1c4419ac7638d643cc78d",
+      "bytes": 54334276,
+      "reason": "compiled ELF retained /data original nonce only"
+    }
+  },
+  "resource_jobs_terminal": [
+    {
+      "cpu": 4,
+      "kind": "go4",
+      "last_observation": "original-unit-terminal",
+      "memory": 4294967296,
+      "nonce": "20261101T224701Z-d58cfe",
+      "process_exit_code": 1,
+      "queue_reason": "",
+      "spec_sha256": "0ac4cc72cb2c7b2ff0a5d2cf083600d944fad9e71119d7090a5bba5cc53eb7a4",
+      "state": "terminal",
+      "test_verdict": "NOT_INTERPRETED",
+      "unit": "neon-system-role-closure-20261101t224701z-d58cfe.service",
+      "unit_result": "exit-code",
+      "worker_sha256": "a55adb77becc898a05fb7c60728675ddecedce29fe6a47fcf3fc1ace4a3d6ea8"
+    },
+    {
+      "cpu": 4,
+      "kind": "go4",
+      "last_observation": "original-unit-terminal",
+      "memory": 4294967296,
+      "nonce": "20261101T225254Z-500a61",
+      "process_exit_code": 0,
+      "queue_reason": "",
+      "spec_sha256": "a137c9761fc44d0fb20428a4e505878d8b9afb03c567b56215fc573ed21fd117",
+      "state": "terminal",
+      "test_verdict": "NOT_INTERPRETED",
+      "unit": "neon-system-closure-component-20261101t225254z-500a61.service",
+      "unit_result": "success",
+      "worker_sha256": "6d214c6d0026a2be012e213df5e075487bbab6f2e52c94b10177b85fed5d20cc"
+    }
+  ]
+}

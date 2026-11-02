@@ -1,0 +1,11 @@
+受信控制器内存域与normal预算合同（PG17/PG18共用上层接口）
+
+execution_model=trusted-controller-v1由原只读SourceConfig选择部署模型，缺省保持原模型。该字符串不提供字节预算或缩容许可。唯一Root必须持原server.lock、同Guest/资源目录与固定System域；Compute须实际pidfd、UID/原exe及PG stderr OFD绑定。PG四数组和固定P均沿原出生/FD/代际/持久日志合同。
+
+本模型只运行原受审Neon组件和内存控制器。operator不得并发修改cgroup、CPU槽、设备/驱动、挂载/交换、allocator/NUMA策略，不接入任意第三方应用或未审内核模块。尤其禁止普通用户程序调用mbind(MPOL_MF_MOVE)、move_pages、migrate_pages等将Normal页迁到Movable；单NUMA和numa_balancing=0不能替代此条件。PG侧由原NativeFinal实际安装的完整过滤器与现成语义审核强制拒绝这些接口；Root与System固定受审代码按此运行合同执行。本模型没有声称可防恶意operator/Root。
+
+来源工厂只消费已经完成的原metadata18c、KernelPrep2、initial8、memory2及Host commit8历史，再核当前真实内核notes/build、原Guest boot/几何/原固定possible CPU槽、普通任务实际P/A/System域、System原inode/有限memory.max和swap0。固定K来自原nonMOVABLE present容量，P与System来自出生硬限；数组目标是原四数组计划加真实helper reserve，不取RSS/idle。无swap、THP编译关闭、无FUSE/huge/外来设备，且受审ext4/tmpfs普通路径成立时，沿准确18c源码定理保留force K、counter D和完整在途/allocator余量。不能把fixed P说成fixed N。
+
+旧pure inflight组件仍为conditional，旧入口C64不改，旧strict Source的Unknown不改。新预算仅在原Host最大槽与原/当前Guest possible一致后细化CPU项，任务512、迁移/退出与compaction项不随CPU细化消失。每个A/N写前后重新核同一私有来源，PG NativeFinal的audit字节与三迁移禁止语义必须同时成立；任何来源/预算/控制漂移或未确认旧helper/代际均拒绝并保原账。
+
+必须真实验证：完成PG排空/四数组释放后先A再N降限并读回，扩容先N再A后允许PG触页；新预算ID只经完整原请求交接，旧Held保留到完成；丢ACK/部分写/接管只处理原意图。VM物理块offline成功和Host实际QMP容量另验。Linux全链通过后立即使用自有Helm在117/118/119回归，不等待PG18或后续控制面。当前本文件不是测试通过或发行认证。

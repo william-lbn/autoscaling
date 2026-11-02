@@ -1,0 +1,9 @@
+{"Time":"2026-11-01T22:53:03.568155377Z","Action":"start","Package":"vm-builder"}
+{"Time":"2026-11-01T22:53:03.590150882Z","Action":"run","Package":"vm-builder","Test":"TestNormalSystemBuildOriginal105To119And40ELFs"}
+{"Time":"2026-11-01T22:53:03.590173994Z","Action":"output","Package":"vm-builder","Test":"TestNormalSystemBuildOriginal105To119And40ELFs","Output":"=== RUN   TestNormalSystemBuildOriginal105To119And40ELFs\n"}
+{"Time":"2026-11-01T22:53:14.92828464Z","Action":"output","Package":"vm-builder","Test":"TestNormalSystemBuildOriginal105To119And40ELFs","Output":"    normal_system_build_test.go:277: different DEV Guest inputs preserve original guardSHA=73fddc47fc395bd2cf023ba5903817bfac321ba3e464a7d632d973dca657ee43; oracle guardSHA=6446a1f45f9214ef3eca52e2034fbca29e07e9e47f73e22952d2951f034a0d84; expected ELF SHA from original26 plus independent added14\n"}
+{"Time":"2026-11-01T22:53:14.9283353Z","Action":"output","Package":"vm-builder","Test":"TestNormalSystemBuildOriginal105To119And40ELFs","Output":"    normal_system_build_test.go:278: actual original105 -\u003e complete119,14 added,22 exec logical,40 canonical ELF; GNU/musl/static original source; PG16 same; SystemSHA=9a15cb419d3321cd1d919638fd7babc5f5c5a71eee3cbaa4fb7b308fe614ba5f nativeSHA=292917b765cbda7789cdacbc838acf11d23508f8d4c5c7762c4adfeb15fb9b20 Source=false normal=false\n"}
+{"Time":"2026-11-01T22:53:14.92834423Z","Action":"output","Package":"vm-builder","Test":"TestNormalSystemBuildOriginal105To119And40ELFs","Output":"--- PASS: TestNormalSystemBuildOriginal105To119And40ELFs (11.34s)\n"}
+{"Time":"2026-11-01T22:53:14.928353639Z","Action":"pass","Package":"vm-builder","Test":"TestNormalSystemBuildOriginal105To119And40ELFs","Elapsed":11.34}
+{"Time":"2026-11-01T22:53:14.928359805Z","Action":"output","Package":"vm-builder","Output":"PASS\n"}
+{"Time":"2026-11-01T22:53:14.93056472Z","Action":"pass","Package":"vm-builder","Elapsed":11.362}

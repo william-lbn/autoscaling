@@ -39,15 +39,17 @@ type ClientError struct {
 func (e *ClientError) Error() string { return "DSGA resource call: " + e.Code }
 
 type Client struct {
-	config               ClientConfig
-	http                 [2]*http.Client
-	transport            [2]*http.Transport
-	mu                   sync.Mutex
-	busy                 bool
-	pending              *Command
-	repair               *HeldRepairRequest
-	arrayPending         *ArrayAuthorityCommand
-	arrayProtocolVersion uint32
+	config                ClientConfig
+	http                  [2]*http.Client
+	transport             [2]*http.Transport
+	mu                    sync.Mutex
+	busy                  bool
+	pending               *Command
+	repair                *HeldRepairRequest
+	arrayPending          *ArrayAuthorityCommand
+	arrayProtocolVersion  uint32
+	normalProtocolVersion uint32
+	normalPending         *NormalQuotaEnvelope
 }
 
 func cloneCommand(c Command) Command { c.HugePools = append([]HugePool(nil), c.HugePools...); return c }
@@ -125,6 +127,13 @@ func (c *Client) InspectState(ctx context.Context) (View, error) {
 	}
 	if v.ArrayAuthorityProtocolVersion == 1 {
 		c.arrayProtocolVersion = 1
+	}
+	if c.normalProtocolVersion == 1 && v.NormalQuotaProtocolVersion != 1 {
+		c.mu.Unlock()
+		return View{}, &ClientError{Code: "normal_original_profile_downgraded"}
+	}
+	if v.NormalQuotaProtocolVersion == 1 {
+		c.normalProtocolVersion = 1
 	}
 	c.mu.Unlock()
 	return v, nil
@@ -269,7 +278,7 @@ func (c *Client) command(ctx context.Context, command Command, action string, ex
 		return e, &ClientError{Code: "invalid_command"}
 	}
 	c.mu.Lock()
-	if !observe && (c.busy || c.arrayPending != nil || c.repair != nil || (c.pending != nil && (!explicit || !reflect.DeepEqual(*c.pending, command)))) {
+	if !observe && (c.busy || c.normalPending != nil || c.arrayPending != nil || c.repair != nil || (c.pending != nil && (!explicit || !reflect.DeepEqual(*c.pending, command)))) {
 		c.mu.Unlock()
 		return e, &ClientError{Code: "original_pending"}
 	}
@@ -295,7 +304,7 @@ func (c *Client) command(ctx context.Context, command Command, action string, ex
 		return Evidence{}, &ClientError{MayHaveExecuted: !observe, Code: "evidence_unconfirmed"}
 	}
 	c.mu.Lock()
-	if c.pending != nil && reflect.DeepEqual(*c.pending, command) {
+	if c.normalPending == nil && c.pending != nil && reflect.DeepEqual(*c.pending, command) {
 		c.pending = nil
 	}
 	c.mu.Unlock()

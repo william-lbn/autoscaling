@@ -135,6 +135,15 @@ func (im *normalNativeImage) seed() ([]byte, os.FileInfo, error) {
 
 // finalSystem是将实际写出的原字节（包括newline）。所有检查/闭包收集成功后才发布；
 // 任一写入失败令本Docker RUN失败，并移除本次System输出，不留可用的半个构建声明。
+// 显式native1唯一命令入口先形成完整System3/metadata18c，再沿原事务发布。
+func publishCompleteNormalNativeBirthImage(root string, input []byte) error {
+	finalSystem, e := completeNormalSystemBuildManifest(root, input)
+	if e != nil {
+		return e
+	}
+	return publishNormalNativeBirthImage(root, append(finalSystem, '\n'))
+}
+
 func publishNormalNativeBirthImage(root string, finalSystem []byte) (err error) {
 	im, e := newNormalNativeImage(root)
 	if e != nil {

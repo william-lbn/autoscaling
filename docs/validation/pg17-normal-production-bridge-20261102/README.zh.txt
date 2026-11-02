@@ -1,0 +1,8 @@
+PG17生产normal扩缩容阶段实现与直接验证
+
+原统一Command v1/WAL保持，新pre-grow与released-shrink信封只引用原CAS事实；先真实A后N降限、扩时N后A、逐步读回和耐久交接，预算ID原交接/原key恢复续接，不自动重放未知动作。修正实际PG尾页逻辑范围与完整映射回收范围不同导致的Go消费者误拒，Root仍按原4FD几何/页粒度严格检查。
+显式trusted-controller-v1选择唯一受信Root部署合同，保原server.lock/真实Compute pidfd、PG stderr原OFD、System实际硬限和原inode；Initial/Builder提供实际生产启动分支与真peer ready。PG三迁移syscall的禁止语义必须与原NativeFinal完整audit一致。原memory2/KernelPrep2/Host commit8与当前物理源派生预算，CPU细化仅来自原固定槽与possible，任务/退出/compaction余量不删除。旧strict Source/旧C64与默认行为不升级。
+
+本批直接race、相关编译及小收据通过；最终core25同源6根39sub通过，恢复原key续接1根6sub另外分账。旧失败wrapper与独立通过根按targeted-results原件保留，不将重复或空package相加。startup原17同源实际13race根25sub+Builder1根与CLI/Builder/Guest/Host六phase通过；构建collector原7race根19sub与一个真实rootfs组件通过仅说明构建数据，不授运行权限。
+
+尚未完成：真实PG+Root A/N+VM组合安全降限、新Root重启后的数组来源/完成历史恢复producer、最终三节点Helm及PG18生产适配。操作员过期准入例外因自动审批拒绝未实施。当前提交不是normal/VM/K8s验收、没有移动发行锁。Native Guest/Host运行驱动作为独立后继，不混本次尚未执行的S结果。

@@ -1,0 +1,34 @@
+{
+  "Source": false,
+  "normal": false,
+  "E": 0,
+  "build_exit": 0,
+  "u0_exit": 0,
+  "u1_exit": 0,
+  "cli_exit": 0,
+  "darwin_exit": 0,
+  "component-compile_exit": 0,
+  "unit_passed_roots": [
+    "TestNormalSystemBuildCompletePublicationRejectsBadFirstHitAndUnused",
+    "TestNormalSystemBuildCompletePublicationUsesFull18cAndNativeBinding",
+    "TestNormalSystemBuildRejectsDeclaredDataAndUnsupportedTags",
+    "TestNormalSystemBuildRejectsNonregularAndChangedOriginalFiles",
+    "TestNormalSystemBuildRejectsUnknownInsteadOfSkipping",
+    "TestNormalSystemBuildSharedThreeLoaderProfiles",
+    "TestNormalSystemBuildStaticInventoryAndExactMetadata18c"
+  ],
+  "unit_subtests": 19,
+  "missing_units": [],
+  "skipped_units": [],
+  "component_exit": 1,
+  "component_passed": [],
+  "component_skipped": [],
+  "provider_after_sha256": {
+    "usr/share/neon-dsga/native-build.json": "a21c82576f0c1bfa39cf6810da206e7beb76cb81f5ccbc328c5e8efac6fa3a4a",
+    "neonvm/config/dsga-normal-system-source.json": "1cd85546f802476c6dc1ff2e3d68879f7d6cb28695929b54bb576b87aa2b0ceb",
+    "neonvm/config/dsga-kernel-control-source.json": "9a07219e75a909b439d54272aa258803d4aa3f88f9689653430ae436fe2a30cd",
+    "usr/local/bin/postgres": "649f4535d07e682fe5015fd8df8be23f626e73bd772da21b16e1c032721c53c6"
+  },
+  "oracle_after_sha256": "6166ab5c943a20e99b3a788d7cd1f699a82624b6e8a88999582167c5cfe62cdc",
+  "seconds": 70.53583230197546
+}

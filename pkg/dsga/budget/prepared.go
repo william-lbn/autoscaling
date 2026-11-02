@@ -3,6 +3,7 @@ package budget
 import (
 	"fmt"
 	"math"
+	"reflect"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
@@ -13,20 +14,22 @@ import (
 // 寿命；本结构只核验完整绑定、去重和算术，不能认证自报的kind/SourceID。
 // GuestReady只消费原Completed步骤，不接受HTTP调用者临时传入另一份预算。
 type Prepared struct {
-	ProtocolVersion        uint32                     `json:"protocol_version"`
-	VMShrinkPermit         bool                       `json:"vm_shrink_permit"`
-	Request                control.Request            `json:"request"`
-	Identity               resourceguard.Identity     `json:"identity"`
-	RunnerPodName          string                     `json:"runner_pod_name"`
-	RunnerRestartCount     int32                      `json:"runner_restart_count"`
-	VMBeforeMemoryBytes    control.Uint64             `json:"vm_before_memory_bytes"`
-	GuestUsableMemoryBytes control.Uint64             `json:"guest_usable_memory_bytes"`
-	Shared                 control.SharedCostResponse `json:"shared"`
-	TargetSharedUpperBytes control.Uint64             `json:"target_shared_upper_bytes"`
-	Limits                 resourceguard.Limits       `json:"limits"`
-	SystemOutsidePG        Bound                      `json:"system_outside_pg"`
-	Transition             Bound                      `json:"transition"`
-	Safety                 Bound                      `json:"safety"`
+	NormalQuotaProtocolVersion uint32                     `json:"normal_quota_protocol_version,omitempty"`
+	NormalQuotaFence           *control.FenceResponse     `json:"normal_quota_fence,omitempty"`
+	ProtocolVersion            uint32                     `json:"protocol_version"`
+	VMShrinkPermit             bool                       `json:"vm_shrink_permit"`
+	Request                    control.Request            `json:"request"`
+	Identity                   resourceguard.Identity     `json:"identity"`
+	RunnerPodName              string                     `json:"runner_pod_name"`
+	RunnerRestartCount         int32                      `json:"runner_restart_count"`
+	VMBeforeMemoryBytes        control.Uint64             `json:"vm_before_memory_bytes"`
+	GuestUsableMemoryBytes     control.Uint64             `json:"guest_usable_memory_bytes"`
+	Shared                     control.SharedCostResponse `json:"shared"`
+	TargetSharedUpperBytes     control.Uint64             `json:"target_shared_upper_bytes"`
+	Limits                     resourceguard.Limits       `json:"limits"`
+	SystemOutsidePG            Bound                      `json:"system_outside_pg"`
+	Transition                 Bound                      `json:"transition"`
+	Safety                     Bound                      `json:"safety"`
 	// 新生产结算必须读取原可信持久对象；旧无引用格式仅保留历史读取，不能补造。
 	OutsideClaim *ObjectRef `json:"outside_claim,omitempty"`
 }
@@ -63,8 +66,11 @@ func (p Prepared) ValidateFor(request control.Request, id resourceguard.Identity
 	if p.OutsideClaim != nil && p.OutsideClaim.Validate() != nil {
 		return fmt.Errorf("invalid prepared outside reservation reference")
 	}
+	if p.NormalQuotaProtocolVersion == 0 && p.NormalQuotaFence != nil || p.NormalQuotaProtocolVersion == 1 && (p.NormalQuotaFence == nil || p.NormalQuotaFence.ValidateFor(control.FenceRequest{ProtocolVersion: 1, Instance: request.Key.Instance, IssuerEpoch: request.Key.IssuerEpoch}, request.Key.Instance) != nil || p.NormalQuotaFence.Disposition != control.Fenced || !reflect.DeepEqual(p.NormalQuotaFence.Observed, p.Shared.Observed)) {
+		return fmt.Errorf("prepared normal quota original fence missing or changed")
+	}
 	s := p.Shared.Observed
-	if p.ProtocolVersion != 1 || p.VMShrinkPermit || p.Request != request || p.Identity != id || id.VMUID != request.Key.Instance.VMUID || id.ComputeInstanceID != request.Key.Instance.ComputeInstanceID || p.RunnerRestartCount < 0 || control.ValidateID(p.RunnerPodName, "Runner") != nil || p.VMBeforeMemoryBytes == 0 || p.GuestUsableMemoryBytes == 0 || p.GuestUsableMemoryBytes > request.TargetVMMemoryBytes || s.IssuerFloorEpoch != request.Key.IssuerEpoch || s.CapacityGeneration != request.ExpectedCapacityGeneration || s.LowBuffers != s.HighBuffers || (s.Operation != nil && s.Operation.Phase == control.Preparing) {
+	if p.NormalQuotaProtocolVersion > 1 || p.ProtocolVersion != 1 || p.VMShrinkPermit || p.Request != request || p.Identity != id || id.VMUID != request.Key.Instance.VMUID || id.ComputeInstanceID != request.Key.Instance.ComputeInstanceID || p.RunnerRestartCount < 0 || control.ValidateID(p.RunnerPodName, "Runner") != nil || p.VMBeforeMemoryBytes == 0 || p.GuestUsableMemoryBytes == 0 || p.GuestUsableMemoryBytes > request.TargetVMMemoryBytes || s.IssuerFloorEpoch != request.Key.IssuerEpoch || s.CapacityGeneration != request.ExpectedCapacityGeneration || s.LowBuffers != s.HighBuffers || (s.Operation != nil && s.Operation.Phase == control.Preparing) {
 		return fmt.Errorf("prepared budget differs from original operation/Guest/Runner")
 	}
 	minimum := p.Shared.StartupMainUpperBytes
@@ -132,10 +138,7 @@ func (p Prepared) ValidateCurrent(latest control.SharedCostResponse, epoch contr
 		if a.ReleaseState != control.ReleaseVerified || a.ReleaseKey == nil || *a.ReleaseKey != r.Key || a.ReleaseCapacityGeneration != s.CapacityGeneration || !v.HasResult || v.AllocationMayBePartial || v.ReleaseMayBePartial || v.SystemErrno != 0 {
 			return fmt.Errorf("current shrink provider is not verified")
 		}
-		if v.Status == control.ProviderNoop && v.RequestedBytes == 0 && v.AffectedBytes == 0 {
-			continue
-		}
-		if v.Status != control.ProviderOK || !v.PhysicalReleaseVerified || v.RequestedOffset != v.AffectedOffset || v.RequestedBytes == 0 || v.RequestedBytes != v.AffectedBytes {
+		if v.ValidateReleasedTail() != nil {
 			return fmt.Errorf("current shrink physical release is not verified")
 		}
 	}

@@ -31,6 +31,7 @@ const normalPlanPath = "/neonvm/config/dsga-normal-build-plan.json"
 // 仍须独立封存；不因用户给了合格JSON就发normal许可。Env不打印到构建日志。
 type normalBuildPlan struct {
 	ProtocolVersion uint32   `json:"protocol_version"`
+	ExecutionModel  string   `json:"execution_model,omitempty"`
 	ComputeUID      uint32   `json:"compute_uid"`
 	ComputeGID      uint32   `json:"compute_gid"`
 	ComputeArgv     []string `json:"compute_argv"`
@@ -48,6 +49,9 @@ func decodeNormalBuildPlan(raw []byte) (normalBuildPlan, error) {
 	}
 	if e := control.UnmarshalObject(raw, &p); e != nil {
 		return p, e
+	}
+	if p.ExecutionModel != "" && p.ExecutionModel != resourceguard.TrustedControllerExecutionModel {
+		return p, fmt.Errorf("unsupported normal execution model")
 	}
 	if p.ProtocolVersion != 1 || p.ComputeEnv == nil || p.LoaderPaths == nil || p.ComputeUID == 0 || p.ComputeGID == 0 || p.ComputeUID > 1<<31-1 || p.ComputeGID > 1<<31-1 || len(p.ComputeArgv) == 0 || len(p.ComputeArgv) > 64 || p.ComputeArgv[0] != "/usr/local/bin/compute_ctl" || len(p.ComputeEnv) > 128 || len(p.LoaderPaths) > 128 {
 		return p, fmt.Errorf("normal build plan requires exact nonroot compute identity and fixed compute_ctl")
@@ -129,6 +133,9 @@ func normalComputeScript(p normalBuildPlan) string {
 	}
 	// 不生成可变vmstarter.sh，不读runtime command/env，不使用eval或二次shell引用。
 	return "#!/neonvm/bin/sh\nset -eu\n/neonvm/bin/dsga-resource-guard check-guest >/dev/null || exit 1\n[ -f /run/neon-dsga/vmstart.allowed ] || exit 1\nexec /neonvm/bin/busybox flock -x /run/neon-dsga/vmstart.lock " + strings.Join(quoted, " ") + "\n"
+}
+func normalTrustedComputeScript(p normalBuildPlan) string {
+	return strings.Replace(normalComputeScript(p), "[ -f /run/neon-dsga/vmstart.allowed ] || exit 1", "/neonvm/bin/dsga-resource-guard wait-controller-ready || exit 1", 1)
 }
 func normalBuilderExecutable() ([]byte, error) {
 	if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {

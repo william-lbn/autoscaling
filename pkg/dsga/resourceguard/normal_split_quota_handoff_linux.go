@@ -252,7 +252,7 @@ func (g *Guard) normalQuotaHandoffLocked(ctx context.Context, s *lockedState, r 
 	if r.validate(c.Identity) != nil || r.Bootstrap == nil || !r.Bootstrap.Applied || r.Birth == nil || mode != "recover" && !r.Birth.matches(c) || c.PidsMaxTasks != r.taskLimit() || c.SystemMemoryMaxBytes != r.systemLimit() || c.AddressSpaceMaxBytes != r.addressSpaceLimit() {
 		return unknown(fmt.Errorf("quota handoff original Birth/bootstrap or immutable bounds changed"))
 	}
-	if c.IssuerEpoch != r.Floor && (mode != "recover" || c.IssuerEpoch > r.Floor) {
+	if c.IssuerEpoch != r.Floor && ((mode != "recover" && mode != "observe") || c.IssuerEpoch > r.Floor) {
 		return unknown(fmt.Errorf("quota handoff owner is fenced"))
 	}
 	if e = g.kernel.VerifyProcess(*r.Birth); e != nil {
@@ -357,7 +357,7 @@ func (g *Guard) normalQuotaHandoffLocked(ctx context.Context, s *lockedState, r 
 		if r.Held != nil {
 			held, budget = r.Held.limits(), r.Held.BudgetCommitmentID
 		}
-		if auth.original.Original.Parent.MemoryMaxBytes != held.MemoryMaxBytes || c.BudgetCommitmentID != budget || c.OutsideUpperBytes != held.OutsideUpperBytes || !reflect.DeepEqual(c.HugePools, held.HugePools) {
+		if auth.original.Original.Parent.MemoryMaxBytes != held.MemoryMaxBytes || c.BudgetCommitmentID != budget && !normalQuotaBudgetHandoffMatches(auth.budgetHandoff, budget, c, auth.original.PGRequestSHA256) || c.OutsideUpperBytes != held.OutsideUpperBytes || !reflect.DeepEqual(c.HugePools, held.HugePools) {
 			return unknown(fmt.Errorf("quota changes original held budget/pools/outside envelope"))
 		}
 		before, e := g.kernel.ReadBounds(r.Identity, held)

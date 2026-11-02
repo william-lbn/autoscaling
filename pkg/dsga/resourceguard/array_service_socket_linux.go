@@ -19,6 +19,7 @@ import (
 )
 
 type arrayNativeServices struct {
+	trusted       *trustedControllerOwner
 	admission     *normalAuthorityAdmission
 	guard         *Guard
 	source        nativeBirthSource
@@ -71,6 +72,15 @@ func startArrayNativeServices(parent context.Context, g *Guard, sealed SourceCon
 	return startArrayNativeServicesWithAdmission(parent, g, sealed, nil)
 }
 func startArrayNativeServicesWithAdmission(parent context.Context, g *Guard, sealed SourceConfig, admission *normalAuthorityAdmission) (*arrayNativeServices, error) {
+	return startArrayNativeServicesWithOwner(parent, g, sealed, admission, nil)
+}
+func startArrayNativeServicesWithOwner(parent context.Context, g *Guard, sealed SourceConfig, admission *normalAuthorityAdmission, trusted *trustedControllerOwner) (*arrayNativeServices, error) {
+	if trusted != nil && (trusted.guard != g || admission != nil || sealed.Config.ExecutionModel != TrustedControllerExecutionModel) {
+		return nil, ErrUnknown
+	}
+	if sealed.Config.ExecutionModel == TrustedControllerExecutionModel && trusted == nil {
+		return nil, ErrUnknown
+	}
 	if admission != nil && admission.guard != g {
 		return nil, ErrUnknown
 	}
@@ -101,7 +111,7 @@ func startArrayNativeServicesWithAdmission(parent context.Context, g *Guard, sea
 		return nil, err
 	}
 	ctx, cancel := context.WithCancel(parent)
-	s := &arrayNativeServices{admission: admission, guard: g, source: source, split: split, birth: birth, arrays: arrays, cancel: cancel, launchPins: map[string]*arrayLaunchPin{}}
+	s := &arrayNativeServices{trusted: trusted, admission: admission, guard: g, source: source, split: split, birth: birth, arrays: arrays, cancel: cancel, launchPins: map[string]*arrayLaunchPin{}}
 	if err = startNormalPgStderrSource(ctx, s, sealed); err != nil {
 		cancel()
 		birth.Close()

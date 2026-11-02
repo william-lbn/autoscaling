@@ -27,6 +27,7 @@ type normalPgStderrPin struct {
 	registry         *normalPgStderrRegistry
 	nonce            string
 	lease            *normalSystemOriginalComputeLease
+	trusted          *trustedControllerComputePin
 	read, write      *os.File
 	device, inode    uint64
 	pending, binding normalSystemRoleFileWitness
@@ -62,7 +63,7 @@ func normalPgStderrProtocolMode(version uint32, s *arrayNativeServices) (bool, e
 	if version == 0 {
 		return false, nil
 	}
-	if version != 1 || s == nil || s.admission == nil {
+	if version != 1 || s == nil || (s.admission == nil && (s.trusted == nil || s.guard == nil || s.guard.config.ExecutionModel != TrustedControllerExecutionModel || s.trusted.guard != s.guard)) {
 		return false, ErrUnknown
 	}
 	return true, nil
@@ -80,7 +81,7 @@ func startNormalPgStderrSource(parent context.Context, s *arrayNativeServices, s
 		return nil
 	}
 	a := lookupNormalSystemAuthority(s.guard)
-	if version != 1 || a == nil || a.guard != s.guard || a.admission != s.admission {
+	if s.trusted == nil && (version != 1 || a == nil || a.guard != s.guard || a.admission != s.admission) {
 		return ErrUnknown
 	}
 	listener, e := arrayFixedListener(normalPgStderrSocket)
@@ -150,6 +151,10 @@ func (p *normalPgStderrPin) close() {
 		unix.Close(p.pidfd)
 		p.pidfd = -1
 	}
+	if p.trusted != nil {
+		p.trusted.close()
+		p.trusted = nil
+	}
 	if p.lease != nil {
 		p.lease.close()
 		p.lease = nil
@@ -165,7 +170,12 @@ func (q *normalPgStderrRegistry) serve(ctx context.Context) {
 				continue
 			}
 			if ctx.Err() == nil {
-				q.service.admission.fail()
+				if q.service.admission != nil {
+					q.service.admission.fail()
+				}
+				if q.service.trusted != nil {
+					q.service.trusted.close()
+				}
 			}
 			return
 		}
@@ -309,22 +319,41 @@ func (q *normalPgStderrRegistry) register(ctx context.Context, conn *net.UnixCon
 		return e
 	}
 	e = q.service.guard.withRecord(ctx, func(r *record, state *lockedState) error {
-		lease, e := q.service.guard.normalSystemOriginalComputeLeaseLocked(ctx, state, r)
-		if e != nil {
-			return e
+		var lease *normalSystemOriginalComputeLease
+		var trusted *trustedControllerComputePin
+		var computeNonce string
+		if q.service.trusted != nil {
+			trusted, e = q.service.trusted.registerComputeLocked(ctx, state, r, peer, pidfd)
+			if e != nil {
+				return e
+			}
+			computeNonce = trusted.nonce
+		} else {
+			lease, e = q.service.guard.normalSystemOriginalComputeLeaseLocked(ctx, state, r)
+			if e != nil {
+				return e
+			}
+			if e = arrayMatchPIDFD(lease.task.pidfd, pidfd); e != nil {
+				lease.close()
+				return e
+			}
+			if _, e = lease.authority.source.inspectOriginalTask(ctx, lease.task, "compute", lease.authority.declaration.compute.ComputeArgv, lease.authority.declaration.compute.ComputeEnv); e != nil {
+				lease.close()
+				return e
+			}
+			computeNonce = lease.pending.Nonce
 		}
 		own := false
 		defer func() {
 			if !own {
-				lease.close()
+				if lease != nil {
+					lease.close()
+				}
+				if trusted != nil {
+					trusted.close()
+				}
 			}
 		}()
-		if e = arrayMatchPIDFD(lease.task.pidfd, pidfd); e != nil {
-			return e
-		}
-		if _, e = lease.authority.source.inspectOriginalTask(ctx, lease.task, "compute", lease.authority.declaration.compute.ComputeArgv, lease.authority.declaration.compute.ComputeEnv); e != nil {
-			return e
-		}
 		q.mu.Lock()
 		defer q.mu.Unlock()
 		if q.closed {
@@ -349,14 +378,14 @@ func (q *normalPgStderrRegistry) register(ctx context.Context, conn *net.UnixCon
 		if e != nil {
 			return e
 		}
-		p := &normalPgStderrPin{registry: q, nonce: nonce, lease: lease, read: files[0], write: files[1], device: device, inode: inode, pidfd: -1}
+		p := &normalPgStderrPin{registry: q, nonce: nonce, lease: lease, trusted: trusted, read: files[0], write: files[1], device: device, inode: inode, pidfd: -1}
 		raw, e := json.Marshal(struct {
 			Version       uint32 `json:"protocol_version"`
 			Scope         string `json:"scope"`
 			Nonce         string `json:"nonce"`
 			ComputeNonce  string `json:"compute_nonce"`
 			Device, Inode uint64
-		}{1, "original-rust-pg-stderr-v1", nonce, lease.pending.Nonce, device, inode})
+		}{1, "original-rust-pg-stderr-v1", nonce, computeNonce, device, inode})
 		if e != nil {
 			return e
 		}
@@ -410,11 +439,31 @@ func normalPgStderrBindBeginLocked(ctx context.Context, s *arrayNativeServices, 
 	if q == nil {
 		return nil
 	} // 旧协议没有此来源。
-	current, e := s.guard.normalSystemOriginalComputeLeaseLocked(ctx, state, r)
-	if e != nil {
-		return e
+	var current *normalSystemOriginalComputeLease
+	var trusted *trustedControllerComputePin
+	var e error
+	var computeNonce string
+	if s.trusted != nil {
+		trusted, e = s.trusted.currentComputeLocked(ctx, state, r)
+		if e != nil {
+			return e
+		}
+		defer trusted.close()
+		if e = trusted.verify(ctx, state, r); e != nil {
+			return e
+		}
+		if e = trusted.verifyLaunchParent(launch); e != nil {
+			return e
+		}
+		computeNonce = trusted.nonce
+	} else {
+		current, e = s.guard.normalSystemOriginalComputeLeaseLocked(ctx, state, r)
+		if e != nil {
+			return e
+		}
+		defer current.close()
+		computeNonce = current.pending.Nonce
 	}
-	defer current.close()
 	fd, e := unix.PidfdGetfd(launch.pidfd, 2, 0)
 	if e != nil {
 		return e
@@ -427,7 +476,7 @@ func normalPgStderrBindBeginLocked(ctx context.Context, s *arrayNativeServices, 
 	}
 	var match *normalPgStderrPin
 	for _, p := range q.pins {
-		if p.unknown || p.bound || p.write == nil || p.lease == nil || p.lease.pending.Nonce != current.pending.Nonce {
+		if p.unknown || p.bound || p.write == nil || p.computeNonce() != computeNonce {
 			continue
 		}
 		if e = normalRoleStdioSameOFD(int(p.write.Fd()), fd); e == nil {
@@ -514,6 +563,9 @@ func (p *normalPgStderrPin) verifyNativeFinal(ctx context.Context, g *Guard, sta
 	if q == nil {
 		return ErrUnknown
 	}
+	if q.service != nil && q.service.trusted != nil {
+		return p.verifyTrustedNativeFinal(ctx, g, state, pidfd)
+	}
 	// 先在q锁下复制并独立dup原Task，锁外执行System复核，最后重新核同一pin。
 	// close仅关闭registry自己所有的FD，不得与下面的独立lease竞争。
 	q.mu.Lock()
@@ -590,4 +642,60 @@ func (p *normalPgStderrPin) releasedOriginalFinal() error {
 // 仅诊断用的数字，不据此按/proc路径重建来源。
 func (p *normalPgStderrPin) String() string {
 	return "original-pg-stderr:" + strconv.FormatUint(p.inode, 10)
+}
+
+func (p *normalPgStderrPin) computeNonce() string {
+	if p == nil {
+		return ""
+	}
+	if p.trusted != nil {
+		return p.trusted.nonce
+	}
+	if p.lease != nil {
+		return p.lease.pending.Nonce
+	}
+	return ""
+}
+func (p *normalPgStderrPin) verifyTrustedNativeFinal(ctx context.Context, g *Guard, state *lockedState, pidfd int) error {
+	q := p.registry
+	q.mu.Lock()
+	if q.closed || q.service.guard != g || q.service.trusted == nil || q.pins[p.nonce] != p || p.unknown || p.trusted == nil || p.trusted.owner != q.service.trusted {
+		q.mu.Unlock()
+		return ErrUnknown
+	}
+	original := p.trusted
+	pin, e := original.duplicate()
+	q.mu.Unlock()
+	if e != nil {
+		return e
+	}
+	defer pin.close()
+	r, e := state.load()
+	if e != nil || r == nil {
+		return ErrUnknown
+	}
+	if e = pin.verify(ctx, state, r); e != nil {
+		return e
+	}
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	if q.closed || q.pins[p.nonce] != p || p.trusted != original || p.unknown || !p.bound || p.action != 1 || p.finalized || p.read == nil || p.write == nil {
+		return ErrUnknown
+	}
+	if e = p.recheckOriginalStagesLocked(state); e != nil {
+		return e
+	}
+	if e = arrayMatchPIDFD(p.pidfd, pidfd); e != nil {
+		return e
+	}
+	fd, e := unix.PidfdGetfd(pidfd, 2, 0)
+	if e != nil {
+		return e
+	}
+	defer unix.Close(fd)
+	if e = normalRoleStdioSameOFD(int(p.write.Fd()), fd); e != nil {
+		return e
+	}
+	_, _, e = normalPgStderrEndpoints([2]*os.File{p.read, p.write})
+	return e
 }

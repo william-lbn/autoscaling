@@ -25,12 +25,20 @@ var ErrUnsafeNormalDecrease = errors.New("normal memory decrease requires a prov
 
 // Config必须来自原VM的可信只读配置，不能从远程请求构造路径。StateDir位于Guest
 // 持久盘，独占本VM incarnation；不得放/tmp、重启即清空的/run或PG数据目录内。
+const TrustedControllerExecutionModel = "trusted-controller-v1"
+
+func validExecutionModel(model string) bool {
+	return model == "" || model == TrustedControllerExecutionModel
+}
+
 type Config struct {
 	VMUID             string `json:"vm_uid"`
 	ComputeInstanceID string `json:"compute_instance_id"`
 	StateDir          string `json:"state_dir"`
 	// 只由封存来源启用固定系统计费域，不接受请求指定路径或运行期切换。
 	SystemCgroup bool `json:"system_cgroup,omitempty"`
+	// 显式可信节点/唯一控制器合同；该字段本身不提供normal预算资格。
+	ExecutionModel string `json:"execution_model,omitempty"`
 }
 
 type Identity struct {
@@ -598,6 +606,9 @@ func (v *Config) UnmarshalJSON(data []byte) error {
 	var next plain
 	if err := control.UnmarshalObject(data, &next); err != nil {
 		return err
+	}
+	if !validExecutionModel(next.ExecutionModel) {
+		return fmt.Errorf("unsupported resource execution model")
 	}
 	*v = Config(next)
 	return nil

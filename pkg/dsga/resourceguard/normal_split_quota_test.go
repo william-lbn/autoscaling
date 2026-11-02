@@ -66,7 +66,7 @@ func newQuotaFixture(t *testing.T) *quotaFixture {
 	cmd := Command{ProtocolVersion: 1, Identity: k.snapshot.Identity, IssuerEpoch: 1, Revision: 1, BudgetCommitmentID: "quota-test-original", PostmasterPID: 123, PostmasterStartTicks: 1, MemoryMaxBytes: 256 << 20, PidsMaxTasks: 16, AddressSpaceMaxBytes: l.AddressSpaceMaxBytes, SystemMemoryMaxBytes: l.SystemMemoryMaxBytes, OutsideUpperBytes: l.OutsideUpperBytes, HugePools: append([]HugePool(nil), l.HugePools...)}
 	v := normalSplitQuotaOriginal{Command: cmd, SourceSHA256: strings.Repeat("ab", 32), SplitIntentSHA256: strings.Repeat("cd", 32), SplitCompletionSHA256: strings.Repeat("ef", 32), PGRequestSHA256: strings.Repeat("12", 32), MappingGeneration: 1, Original: cloneSplit(k.snapshot), TargetArraysBytes: 32 << 20, ForceUpperBytes: 64 << 10, CounterGapBytes: 64 << 10}
 	require.NoError(t, v.validate())
-	return &quotaFixture{f, k, normalSplitQuotaAuthorization{v, func(ctx context.Context, _ *lockedState, _ *record, _ normalSplitQuotaOriginal) error {
+	return &quotaFixture{f, k, normalSplitQuotaAuthorization{original: v, check: func(ctx context.Context, _ *lockedState, _ *record, _ normalSplitQuotaOriginal) error {
 		return ctx.Err()
 	}}}
 }

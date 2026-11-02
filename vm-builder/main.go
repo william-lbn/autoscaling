@@ -217,7 +217,7 @@ func main() {
 			log.Fatal(e)
 		}
 		if *normalNativeBirthVersion == 1 {
-			if e := publishNormalNativeBirthImage(*normalManifestRoot, append(b, '\n')); e != nil {
+			if e := publishCompleteNormalNativeBirthImage(*normalManifestRoot, b); e != nil {
 				log.Fatal(e)
 			}
 			return
@@ -569,11 +569,18 @@ func main() {
 		if e != nil {
 			log.Fatal(e)
 		}
+		if normalPlan.ExecutionModel == resourceguard.TrustedControllerExecutionModel {
+			entries = resourceguard.TrustedControllerInitEntries()
+		}
+
 		replacements := map[string]string{"inittab": strings.Join(entries, "\n") + "\n", "vminit": scriptNormalVmInit, "vmstart": normalComputeScript(normalPlan), "dsga-resource-service": scriptNormalResourceService, "vmshutdown": scriptNormalShutdown, "udev-init.sh": scriptNormalUdevInit}
 		if version == 3 {
 			replacements["vmstart"] = normalComputeScriptV3()
 			// env-i在exec前构造真实proc/environ；os.Clearenv不能证明原始来源。
 			replacements["vminit"] = strings.Replace(scriptNormalVmInit, "exec /neonvm/bin/dsga-resource-guard initial-boot", "exec /neonvm/bin/busybox env -i PATH=/neonvm/bin /neonvm/bin/dsga-resource-guard initial-boot", 1)
+		}
+		if normalPlan.ExecutionModel == resourceguard.TrustedControllerExecutionModel {
+			replacements["vmstart"] = normalTrustedComputeScript(normalPlan)
 		}
 		for i := range files {
 			if v, ok := replacements[files[i].filename]; ok {

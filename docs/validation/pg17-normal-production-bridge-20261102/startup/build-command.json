@@ -1,0 +1,22 @@
+[
+  "docker",
+  "buildx",
+  "build",
+  "--builder",
+  "neon-data",
+  "--resource",
+  "memory=4g",
+  "--resource",
+  "memory-swap=4g",
+  "--resource",
+  "cpu-quota=400000",
+  "--network",
+  "none",
+  "--progress",
+  "plain",
+  "--output",
+  "type=local,dest=/data/neon-build/validation/pg17-trusted-control-combined-go-20261102T011110Z-7eb16c/export",
+  "-f",
+  "/data/neon-build/validation/pg17-trusted-control-combined-go-20261102T011110Z-7eb16c/Dockerfile",
+  "/data/neon-build/validation/pg17-trusted-control-combined-go-20261102T011110Z-7eb16c/source"
+]

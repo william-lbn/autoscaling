@@ -13,6 +13,7 @@ import (
 type View struct {
 	ProtocolVersion uint32 `json:"protocol_version"`
 	// 原只读创建profile所需内部协议，不是授权/normal许可；旧v1精确省略。
+	NormalQuotaProtocolVersion    uint32           `json:"normal_quota_protocol_version,omitempty"`
 	ArrayAuthorityProtocolVersion uint32           `json:"array_authority_protocol_version,omitempty"`
 	VMShrinkPermit                bool             `json:"vm_shrink_permit"`
 	Identity                      Identity         `json:"identity"`
@@ -29,7 +30,7 @@ type View struct {
 }
 
 func (v View) Validate() error {
-	if v.ArrayAuthorityProtocolVersion > 1 || v.ProtocolVersion != 1 || v.VMShrinkPermit || v.Actual.ProtocolVersion != 1 || v.Actual.VMShrinkPermit || v.Actual.Identity != v.Identity {
+	if v.NormalQuotaProtocolVersion > 1 || v.ArrayAuthorityProtocolVersion > 1 || v.ProtocolVersion != 1 || v.VMShrinkPermit || v.Actual.ProtocolVersion != 1 || v.Actual.VMShrinkPermit || v.Actual.Identity != v.Identity {
 		return fmt.Errorf("invalid resource journal observation")
 	}
 	r := record{Version: 1, Identity: v.Identity, Floor: v.IssuerFloorEpoch, Original: v.Original, Held: v.Held, Applied: v.Applied, Cancelled: v.Cancelled, Bootstrap: &bootstrapRecord{Original: v.Bootstrap, Applied: v.BootstrapApplied, SystemPlacementObserved: v.SystemPlacementObserved}, Birth: v.Birth}

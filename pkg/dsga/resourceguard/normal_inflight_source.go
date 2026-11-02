@@ -157,13 +157,22 @@ func normalInflightCalculate(f normalInflightSourceFacts) (normalInflightSourceT
 }
 
 func normalInflightCalculateFixed(f normalInflightSourceFacts, ref PhysicalKernelBuildReference) (normalInflightSourceTerms, error) {
+	return normalInflightCalculateCPUFixed(f, ref, normalInflightCompiledCPUCeiling)
+}
+
+// cpuCeiling只能由原Host最大槽与Guest possible的同出生来源给出；本函数仍是
+// 非授权算术。旧369/metadata组件入口保留C64，不能从online采样收紧预算。
+func normalInflightCalculateCPUFixed(f normalInflightSourceFacts, ref PhysicalKernelBuildReference, cpuCeiling uint64) (normalInflightSourceTerms, error) {
+	if cpuCeiling == 0 || cpuCeiling > normalInflightCompiledCPUCeiling || cpuCeiling < uint64(f.Physical.PossibleCPUs) {
+		return normalInflightSourceTerms{}, fmt.Errorf("inflight original CPU ceiling is invalid")
+	}
 	if err := f.validateFixed(ref); err != nil {
 		return normalInflightSourceTerms{}, err
 	}
 	p := normalInflightBasePage
 	j := normalInflightHardTasks
-	c := normalInflightCompiledCPUCeiling
-	t := normalInflightSourceTerms{Scope: normalInflightSourceScope, HardTaskCeiling: j, CompiledCPUCeiling: c,
+	c := cpuCeiling
+	t := normalInflightSourceTerms{Scope: normalInflightSourceScope, HardTaskCeiling: j, CompiledCPUCeiling: normalInflightCompiledCPUCeiling,
 		CurrentPossibleCPUs: f.Physical.PossibleCPUs, PageBytes: p, LateExitStackSlots: uint64(f.Physical.NonMovableUpperBytes) / normalInflightKernelStack}
 	// x86 IDT完整pt_regs=168B，实际entry调用C前压入15通用寄存器、origAX和IRET帧。
 	// hardirq_stack_inuse在切栈前置位；嵌套IRQ不重置栈顶，因此任意重开IRQ
@@ -255,13 +264,17 @@ func normalInflightPlan(f normalInflightSourceFacts, in normalInflightPlanningIn
 }
 
 func normalInflightPlanFixed(f normalInflightSourceFacts, in normalInflightPlanningInput, ref PhysicalKernelBuildReference) (normalInflightPlanningResult, error) {
+	return normalInflightPlanCPUFixed(f, in, ref, normalInflightCompiledCPUCeiling)
+}
+
+func normalInflightPlanCPUFixed(f normalInflightSourceFacts, in normalInflightPlanningInput, ref PhysicalKernelBuildReference, cpuCeiling uint64) (normalInflightPlanningResult, error) {
 	var r normalInflightPlanningResult
-	t, e := normalInflightCalculateFixed(f, ref)
+	t, e := normalInflightCalculateCPUFixed(f, ref, cpuCeiling)
 	if e != nil {
 		return r, e
 	}
 	p := normalInflightBasePage
-	c := normalInflightCompiledCPUCeiling
+	c := cpuCeiling
 	k := uint64(f.Physical.NonMovableUpperBytes)
 	if in.MaximumBytes == 0 || in.MaximumBytes > 1<<52 || in.MaximumBytes%p != 0 || in.NormalLeavesBytes == 0 || in.SystemBytes == 0 {
 		return r, fmt.Errorf("inflight invalid candidate plan")

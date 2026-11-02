@@ -1,0 +1,4 @@
+{
+  "directories": "\t\tdirs := []string{}\n\t\tswitch profile {\n\t\tcase \"static\":\n\t\t\tif len(m.Needed) != 0 || m.Interpreter != \"\" {\n\t\t\t\treturn fmt.Errorf(\"static System ELF has dynamic inputs\")\n\t\t\t}\n\t\t\treturn nil\n\t\tcase \"glibc\":\n\t\t\tdirs = nativeBirthLoaderDirs\n\t\tcase \"musl\":\n\t\t\tdirs = []string{\"/lib\", \"/usr/local/lib\", \"/usr/lib\"}\n\t\tdefault:\n\t\t\treturn fmt.Errorf(\"unsupported System loader profile\")\n\t\t}\n",
+  "profile": "\t\tprofile := \"static\"\n\t\tif m.Interpreter != \"\" {\n\t\t\tswitch m.Interpreter {\n\t\t\tcase \"/lib64/ld-linux-x86-64.so.2\", \"/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2\":\n\t\t\t\tprofile = \"glibc\"\n\t\t\tcase \"/lib/ld-musl-x86_64.so.1\":\n\t\t\t\tprofile = \"musl\"\n\t\t\tdefault:\n\t\t\t\treturn fmt.Errorf(\"System executable interpreter unsupported\")\n\t\t\t}\n"
+}

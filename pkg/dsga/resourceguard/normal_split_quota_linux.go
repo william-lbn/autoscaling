@@ -88,13 +88,14 @@ func normalSplitQuotaName(key, stage string) string {
 	return normalSplitQuotaPrefix + key + "." + stage + ".json"
 }
 
-// 此opaque私有检查尚不从任何public入口生产。后继生产消费者必须在同flock内
-// 重核原Birth/pin、PG完成事实、固定P/369/System/F/I/预算，再创建它；nil绝不放行。
-// 还须覆盖A_target自身的旧代收费/helper预留及force-counter余量、无未来收费入口。
+// 此opaque只由normalQuotaAuthorizeLocked在同原flock中消费原Birth/pin、PG原
+// 完成或pre-grow计划、固定P/Kernel/System/F/I预算后创建；nil绝不放行。
+// A_target包含旧代真实收费与helper预留；未来helper仍由同锁和持续A硬cap约束。
 // 单有N等式、结构合法、来源SHA或一次current采样均不能代替完整检查。
 type normalSplitQuotaAuthorization struct {
-	original normalSplitQuotaOriginal
-	check    func(context.Context, *lockedState, *record, normalSplitQuotaOriginal) error
+	original      normalSplitQuotaOriginal
+	check         func(context.Context, *lockedState, *record, normalSplitQuotaOriginal) error
+	budgetHandoff *normalQuotaBudgetHandoff
 }
 type normalSplitQuotaKernel interface {
 	normalSplitRead() (NormalSplitTopologySnapshot, error)
@@ -285,8 +286,8 @@ func normalSplitQuotaMatches(v normalSplitQuotaOriginal, now NormalSplitTopology
 	return nil
 }
 
-// 私有有界事务；没有public/HTTP入口，也不输出Normal/VM许可。完整生产来源消费者
-// 尚须另批接入。普通Apply的原降限拒绝保持。本函数不改state.json/Held、不代签交接。
+// 私有有界事务，只由完整normal生产信封消费者交入opaque授权，不输出VM许可。
+// 普通Apply的原降限拒绝保持；本函数不改state.json/Held，交接由独立handoff完成。
 func (g *Guard) normalSplitQuotaLocked(ctx context.Context, s *lockedState, r *record, auth normalSplitQuotaAuthorization, mode string, disk normalSplitQuotaIO) (NormalSplitTopologySnapshot, error) {
 	var zero NormalSplitTopologySnapshot
 	unknown := func(e error) (NormalSplitTopologySnapshot, error) { return zero, errors.Join(ErrUnknown, e) }

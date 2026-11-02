@@ -100,6 +100,12 @@ func guestStep(op *journal.Operation) (*journal.Step, *journal.Step) {
 }
 
 func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Progress, error) {
+	return e.advanceSelected(ctx, replay, nil)
+}
+
+// expected只由显式完整quota恢复携入；强制同一原Request/Unconfirmed Command，
+// 不允许恢复网络返回后重新选择新Planned GuestReady或触发副作用重放。
+func (e *Executor) advanceSelected(ctx context.Context, replay *control.Key, expected *resourceguard.NormalQuotaEnvelope) (pgexec.Progress, error) {
 	snapshot, err := e.store.Load(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, err
@@ -115,7 +121,13 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		return pgexec.Idle, nil
 	}
 	op := state.Active
+	if expected != nil && (replay != nil || op.Request != expected.PGRequest) {
+		return pgexec.AwaitingFact, resourceguard.ErrUnknown
+	}
 	step, source := guestStep(op)
+	if expected != nil && (step == nil || step.Phase != journal.Unconfirmed) {
+		return pgexec.AwaitingFact, resourceguard.ErrUnknown
+	}
 	if step == nil {
 		if replay != nil {
 			return pgexec.AwaitingFact, fmt.Errorf("no pending original GuestReady")
@@ -139,6 +151,10 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
+	normal := prepared.NormalQuotaProtocolVersion == 1
+	if normal && !e.resources.NormalQuotaEnabled() {
+		return pgexec.AwaitingFact, fmt.Errorf("original normal quota interface unavailable")
+	}
 	if view.IssuerFloorEpoch != e.actor.Epoch {
 		return pgexec.AwaitingFact, fmt.Errorf("resource floor differs from current owner")
 	}
@@ -149,7 +165,7 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		if view.Held != nil {
 			held = view.Held.MemoryMaxBytes
 		}
-		if prepared.Limits.MemoryMaxBytes < held {
+		if prepared.Limits.MemoryMaxBytes < held && prepared.NormalQuotaProtocolVersion != 1 {
 			return pgexec.AwaitingFact, fmt.Errorf("continuous aggregate cannot authorize memory.max decrease")
 		}
 	}
@@ -159,14 +175,26 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		if json.Unmarshal(step.Command, &command) != nil || command.Validate() != nil || step.DispatchedBy == nil || command.IssuerEpoch != step.DispatchedBy.Epoch || command.IssuerEpoch > e.actor.Epoch || step.TargetID != e.instance.ComputeInstanceID || !commandMatches(command, prepared) {
 			return pgexec.AwaitingFact, fmt.Errorf("GuestReady command differs from complete original budget")
 		}
+		if err := normalQuotaContinuationMatches(expected, op, step, command); err != nil {
+			return pgexec.AwaitingFact, err
+		}
 		if err := e.resources.RetainOriginal(command); err != nil {
 			return pgexec.AwaitingFact, err
+		}
+		if normal {
+			envelope, envelopeErr := normalQuotaEnvelope(op, command, prepared)
+			if envelopeErr != nil {
+				return pgexec.AwaitingFact, envelopeErr
+			}
+			if envelopeErr = e.resources.RetainNormalQuota(envelope); envelopeErr != nil {
+				return pgexec.AwaitingFact, envelopeErr
+			}
 		}
 	}
 	var evidence resourceguard.Evidence
 	query := !planned && replay == nil
 	if query {
-		if op.AbortRequested {
+		if op.AbortRequested && expected == nil {
 			// 原取消是外层已持久的选择。先查Root自己的持久取消屏障，
 			// 有完整回执才可NoEffect；没有屏障时若Root确实未接收，
 			// 在其最终文件锁内创建屏障。部分效果/另一未知命令仍拒绝。
@@ -178,7 +206,17 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		// 必须先观察原root意图，即使PG暂不可达也不能自动重发或替换PID。
 		// Observe成功只解除SDK相同Pending；下面全套预算/PG/VM检查尚未成功
 		// 时外层仍保留Unconfirmed，不会提前落成GuestReady或VM完成。
-		evidence, err = e.resources.Observe(ctx, command)
+		if normal {
+			envelope, envelopeErr := normalQuotaEnvelope(op, command, prepared)
+			if envelopeErr != nil {
+				return pgexec.AwaitingFact, envelopeErr
+			}
+			var response resourceguard.NormalQuotaEvidence
+			response, err = e.resources.ObserveNormalQuota(ctx, envelope)
+			evidence = response.Actual
+		} else {
+			evidence, err = e.resources.Observe(ctx, command)
+		}
 		if err != nil {
 			return pgexec.AwaitingFact, err
 		}
@@ -229,7 +267,17 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 			return pgexec.AwaitingFact, err
 		}
 		step = &dispatch.Step
-		evidence, err = e.resources.Apply(ctx, command)
+		if normal {
+			envelope, envelopeErr := normalQuotaEnvelope(op, command, prepared)
+			if envelopeErr != nil {
+				return pgexec.AwaitingFact, envelopeErr
+			}
+			var response resourceguard.NormalQuotaEvidence
+			response, err = e.resources.ApplyNormalQuota(ctx, envelope)
+			evidence = response.Actual
+		} else {
+			evidence, err = e.resources.Apply(ctx, command)
+		}
 	} else if replay != nil {
 		if err := checkGuest(view, prepared); err != nil {
 			return pgexec.AwaitingFact, err
@@ -237,7 +285,17 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		// 两种显式恢复都保留完整原意图。root保留同命令则原样Replay；若
 		// root尚未收到，Deliver发固定Apply并由root锁内再校验连续代次。
 		// 此分支不推导NoEffect；旧epoch/未知另一命令仍由最终root拒绝。
-		if view.Original != nil && reflect.DeepEqual(*view.Original, command) {
+		if normal {
+			envelope, envelopeErr := normalQuotaEnvelope(op, command, prepared)
+			if envelopeErr != nil {
+				return pgexec.AwaitingFact, envelopeErr
+			}
+			var response resourceguard.NormalQuotaEvidence
+			// 精确原信封由Root判断持久partial/complete；显式Replay可交付未开始
+			// cap的原信封，普通Advance仅Observe而不重发。
+			response, err = e.resources.ReplayNormalQuota(ctx, envelope)
+			evidence = response.Actual
+		} else if view.Original != nil && reflect.DeepEqual(*view.Original, command) {
 			evidence, err = e.resources.ReplayOriginal(ctx, command)
 		} else {
 			evidence, err = e.resources.DeliverOriginal(ctx, command)

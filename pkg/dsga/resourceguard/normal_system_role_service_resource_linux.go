@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -19,6 +20,7 @@ import (
 
 // 实例只保原g；HTTP与native都实际引用它，不能Open第二个Guard补私有producer。
 type normalGuestResourceInstance struct {
+	trusted   *trustedControllerOwner
 	guard     *Guard
 	handler   *resourceHTTP
 	native    *arrayNativeServices
@@ -79,11 +81,24 @@ func prepareNormalGuestResourceInstance(parent context.Context, g *Guard, source
 	if err = unix.Flock(fd, unix.LOCK_EX|unix.LOCK_NB); err != nil {
 		return nil, fmt.Errorf("resource service already active")
 	}
+	if source.Config.ExecutionModel == TrustedControllerExecutionModel {
+		if admission != nil || v.handler.arrayProtocolVersion != 1 {
+			return nil, ErrUnknown
+		}
+		v.trusted, err = newTrustedControllerOwner(ctx, g, source, v.lock)
+		if err != nil {
+			return nil, err
+		}
+		// 预算恢复失败不签资格，正常PG仍可启动；每个normal请求独立保持Unknown。
+		if budgetErr := g.prepareNormalQuotaBudgetSource(ctx); budgetErr != nil {
+			log.Printf("trusted-controller original normal budget unavailable: %v", budgetErr)
+		}
+	}
 	if err = rootDirectory(filepath.Dir(FixedSocketPath), 0755); err != nil {
 		return nil, err
 	}
 	if v.handler.arrayProtocolVersion == 1 {
-		v.native, err = startArrayNativeServicesWithAdmission(ctx, g, source, admission)
+		v.native, err = startArrayNativeServicesWithOwner(ctx, g, source, admission, v.trusted)
 		if err != nil {
 			return nil, err
 		}
@@ -159,6 +174,9 @@ func (v *normalGuestResourceInstance) close() {
 			v.native.close()
 		}
 		<-v.done
+		if v.trusted != nil {
+			v.trusted.close()
+		}
 		if v.lock != nil {
 			unix.Flock(int(v.lock.Fd()), unix.LOCK_UN)
 			v.lock.Close()

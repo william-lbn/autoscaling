@@ -1,0 +1,19 @@
+trusted-controller-v1 预算独立只读审查（2026-11-02）
+
+本收据是具体在读源码的静态审查，不是生产准入、Source、normal或E通过。未改任何业务源、Git、中央账本，未重复已有测试。
+
+部署合同可收敛为受信节点/operator + 唯一原server.lock控制器 + 原受审Neon/PG服务。无需为内存主线再证明九角色隔离、整机ELF闭包或防恶意Root。默认旧strict模式及旧C64组件不得因此变绿。
+
+已核新预算消费原memory2/KernelPrep/完整initial WAL/Host ACK8及commit历史，fresh绑定原actor、文件见证、18c准确构建、原区域/最大几何和Host固定MaximumVCPUs==Guest possible上界，而不是online采样。SourceSHA不含交易变化N/A。
+
+发现并已由Root补正：最初fresh只Stat(System目录)，same-pending replay会在quota写后才走原ReadBounds。当前normal_quota_budget_linux.go SHA见JSON已在fresh读取原System dev/inode、readSystemBound及systemPlacementMatches(r.systemLimit())，不再只凭policy数值计System。
+
+尚须处理的明确语义门：normalQuotaArraysLocked的o.verifyOriginal只核原pin/PID/start/UID/released摘要存在。NativeBirthTraceFlow编译bundle并逐字核实安装与同PG ELF audit一致，但原流程没有调用normalPGMemoryControlReviewBundle。真正三迁移deny审核已有在normal_pg_memory_control_source_linux.go:193-202（同原audit摘要绑定后ReviewBundle），新quota链未消费它。最小建议：在原出生compile后/发布pin前复用该语义审核，或在quota用原PG audit+原NativeFinal transcript绑定后审核；不需要九角色框架。审核失败须保拒，不把已知PG源码“通常不调用”当实际BPF门。
+
+该门具有真实kernel必要性：准确18c mempolicy.c的mbind(MPOL_DEFAULT,空mask,MPOL_MF_MOVE)可在single NUMA下把页按GFP_HIGHUSER_MOVABLE重分配。1307设置discontig，1330空mask+INVERT扫描页，1214-1243分配目标；所以numa_balancing=0/demotion=false不足以独立证明Normal不迁出。PG原C filter确有mbind/move_pages/migrate_pages deny；普通System/Root必须明确只跑受审服务且不运行用户迁移调用，禁止外部程序/驱动。受信operator合同须包括此项，不能仅禁sysctl修改。
+
+F<=K在上述实际受审18c/noSwap/noFUSE/huge0/无Normal迁出条件下有原built证据支持：普通ext4/tmpfs的PF/NOFAIL force页来自Normal；K取nonMOVABLE present，不取managed/free/RSS。真实force charge和层级countergap仍分开保留。
+
+I本轮未发现新增明确算术反例：受审Q1路径下migrate.c:2057-2064批至多512；目标order0分配在page_alloc.c:3678不进入direct compaction，因此不因目标分配再递归堆叠另一512影子。compaction孤立free/capture沿原保守J项；swap.c:992->993先uncharge后free的真实31页窗口沿原retire项；仍收费GUP/FD不可重复加I。此结论不扩展到任意插件、驱动、huge、FUSE或新CPU槽。
+
+Kernel offline仍须实际成功并readback；busy/迁移失败拒绝，不能把一次memory.current或offline成功单独当normal预算证明。本收据不声称已获得生产正例，待上述PG语义门与真实受信部署回归闭环。

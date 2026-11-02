@@ -238,19 +238,12 @@ func (s *normalSystemLifecycleSource) readClosure(ctx context.Context) error {
 		if !ok {
 			return fmt.Errorf("System loader resolved an undeclared ELF")
 		}
-		dirs := []string{}
-		switch profile {
-		case "static":
-			if len(m.Needed) != 0 || m.Interpreter != "" {
-				return fmt.Errorf("static System ELF has dynamic inputs")
-			}
+		dirs, e := normalSystemLoaderDirectories(m, profile)
+		if e != nil {
+			return e
+		}
+		if profile == "static" {
 			return nil
-		case "glibc":
-			dirs = nativeBirthLoaderDirs
-		case "musl":
-			dirs = []string{"/lib", "/usr/local/lib", "/usr/lib"}
-		default:
-			return fmt.Errorf("unsupported System loader profile")
 		}
 		for _, dir := range dirs {
 			if _, e := os.Lstat(dir); os.IsNotExist(e) {
@@ -307,16 +300,11 @@ func (s *normalSystemLifecycleSource) readClosure(ctx context.Context) error {
 			continue
 		}
 		m := s.metadata[path]
-		profile := "static"
+		profile, e := normalSystemLoaderProfile(m)
+		if e != nil {
+			return e
+		}
 		if m.Interpreter != "" {
-			switch m.Interpreter {
-			case "/lib64/ld-linux-x86-64.so.2", "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2":
-				profile = "glibc"
-			case "/lib/ld-musl-x86_64.so.1":
-				profile = "musl"
-			default:
-				return fmt.Errorf("System executable interpreter unsupported")
-			}
 			interp, e := nativeBirthCanonical(m.Interpreter)
 			if e != nil {
 				return e

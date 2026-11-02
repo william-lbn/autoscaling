@@ -192,6 +192,41 @@ func (h *resourceHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		deny(http.StatusForbidden)
 		return
 	}
+	if normalQuotaPath(r.URL.Path) {
+		if h.source.Config.ExecutionModel != TrustedControllerExecutionModel || h.arrayProtocolVersion != 1 || r.Method != http.MethodPost || r.Header.Get("Content-Type") != "application/json" {
+			deny(http.StatusForbidden)
+			return
+		}
+		raw, readErr := io.ReadAll(http.MaxBytesReader(w, r.Body, 16*1024))
+		var command NormalQuotaEnvelope
+		if readErr != nil || json.Unmarshal(raw, &command) != nil || command.Command.Identity.VMUID != claims.VMUID || command.Command.Identity.ComputeInstanceID != claims.ComputeInstanceID || command.Command.IssuerEpoch > claims.IssuerEpoch ||
+			(r.URL.Path != "/dsg/v1/resource/normal-observe" && r.URL.Path != "/dsg/v1/resource/normal-recover" && command.Command.IssuerEpoch != claims.IssuerEpoch) {
+			deny(http.StatusForbidden)
+			return
+		}
+		backend, ok := h.guard.(normalQuotaBackend)
+		if !ok {
+			deny(http.StatusConflict)
+			return
+		}
+		var evidence NormalQuotaEvidence
+		switch r.URL.Path {
+		case "/dsg/v1/resource/normal-apply":
+			evidence, err = backend.ApplyNormalQuota(r.Context(), command)
+		case "/dsg/v1/resource/normal-observe":
+			evidence, err = backend.ObserveNormalQuota(r.Context(), command)
+		case "/dsg/v1/resource/normal-replay-original":
+			evidence, err = backend.ReplayNormalQuota(r.Context(), command)
+		case "/dsg/v1/resource/normal-recover":
+			evidence, err = backend.RecoverNormalQuota(r.Context(), command)
+		}
+		if err != nil || evidence.validateFor(command) != nil {
+			deny(http.StatusConflict)
+			return
+		}
+		_ = json.NewEncoder(w).Encode(evidence)
+		return
+	}
 	var result any
 	if r.URL.Path == "/dsg/v1/resource/identity" && r.Method == http.MethodGet {
 		result, err = h.guard.InspectIdentity()
@@ -201,6 +236,9 @@ func (h *resourceHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		var state View
 		state, err = h.guard.InspectState(r.Context())
 		state.ArrayAuthorityProtocolVersion = h.arrayProtocolVersion
+		if _, ok := h.guard.(normalQuotaBackend); ok && h.source.Config.ExecutionModel == TrustedControllerExecutionModel && h.arrayProtocolVersion == 1 {
+			state.NormalQuotaProtocolVersion = 1
+		}
 		result = state
 	} else {
 		if r.Method != http.MethodPost {

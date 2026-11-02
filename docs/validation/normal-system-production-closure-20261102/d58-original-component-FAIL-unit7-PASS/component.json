@@ -1,0 +1,8 @@
+{"Time":"2026-11-01T22:48:00.94070874Z","Action":"start","Package":"vm-builder"}
+{"Time":"2026-11-01T22:48:00.960973498Z","Action":"run","Package":"vm-builder","Test":"TestNormalSystemBuildOriginal105To119And40ELFs"}
+{"Time":"2026-11-01T22:48:00.961001734Z","Action":"output","Package":"vm-builder","Test":"TestNormalSystemBuildOriginal105To119And40ELFs","Output":"=== RUN   TestNormalSystemBuildOriginal105To119And40ELFs\n"}
+{"Time":"2026-11-01T22:48:13.206015751Z","Action":"output","Package":"vm-builder","Test":"TestNormalSystemBuildOriginal105To119And40ELFs","Output":"    normal_system_build_test.go:233: independent role/loader/registry graph differs\n"}
+{"Time":"2026-11-01T22:48:13.206076155Z","Action":"output","Package":"vm-builder","Test":"TestNormalSystemBuildOriginal105To119And40ELFs","Output":"--- FAIL: TestNormalSystemBuildOriginal105To119And40ELFs (12.25s)\n"}
+{"Time":"2026-11-01T22:48:13.206082454Z","Action":"fail","Package":"vm-builder","Test":"TestNormalSystemBuildOriginal105To119And40ELFs","Elapsed":12.25}
+{"Time":"2026-11-01T22:48:13.206096834Z","Action":"output","Package":"vm-builder","Output":"FAIL\n"}
+{"Time":"2026-11-01T22:48:13.20791283Z","Action":"fail","Package":"vm-builder","Elapsed":12.267}

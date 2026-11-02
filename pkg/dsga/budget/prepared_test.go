@@ -36,6 +36,22 @@ func TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside(t *testing.T) 
 	p := Prepared{ProtocolVersion: 1, Request: request, Identity: id, RunnerPodName: "runner", VMBeforeMemoryBytes: 512 << 20, GuestUsableMemoryBytes: 768 << 20, Shared: shared, TargetSharedUpperBytes: u, Limits: resourceguard.Limits{MemoryMaxBytes: 512 << 20, OutsideUpperBytes: 32 << 20, HugePools: []resourceguard.HugePool{{PageSizeKB: 2048, Pages: 8}}}, SystemOutsidePG: Bound{Kind: CommittedUpper, UpperBytes: 24 << 20, SourceID: "system"}, Transition: Bound{Kind: CommittedUpper, UpperBytes: 4 << 20, SourceID: "transition"}, Safety: Bound{Kind: CommittedUpper, UpperBytes: 4 << 20, SourceID: "safety"}}
 	require.NoError(t, p.ValidateFor(request, id))
 	require.NoError(t, p.ValidateCurrent(shared, request.Key.IssuerEpoch))
+	t.Run("normal-original-fence-selection", func(t *testing.T) {
+		legacy, err := json.Marshal(p)
+		require.NoError(t, err)
+		require.NotContains(t, string(legacy), "normal_quota_")
+		n := p
+		n.NormalQuotaProtocolVersion = 1
+		f := control.FenceResponse{ProtocolVersion: 1, RequestedInstance: request.Key.Instance, RequestedEpoch: request.Key.IssuerEpoch, Disposition: control.Fenced, Observed: shared.Observed}
+		n.NormalQuotaFence = &f
+		require.NoError(t, n.ValidateFor(request, id))
+		f.Observed.CapacityGeneration++
+		require.Error(t, n.ValidateFor(request, id), "actual fence必须同原Prepare.Shared")
+		n.NormalQuotaFence = nil
+		require.Error(t, n.ValidateFor(request, id))
+		n.NormalQuotaProtocolVersion = 2
+		require.Error(t, n.ValidateFor(request, id))
+	})
 	drift := shared
 	drift.Observed.MaximumBuffers++
 	require.Error(t, p.ValidateCurrent(drift, request.Key.IssuerEpoch), "同boot最大映射不得悄悄变化")

@@ -83,8 +83,11 @@ type RuntimeDocument struct {
 }
 
 func (s SourceConfig) Validate() error {
-	if s.ProtocolVersion != 1 || s.IssuerEpoch != 1 || s.Config.StateDir != FixedStateDir || control.ValidateID(s.Config.VMUID, "VM UID") != nil || control.ValidateID(s.Config.ComputeInstanceID, "Compute instance") != nil || control.ValidateID(s.BudgetCommitmentID, "bootstrap commitment") != nil {
+	if !validExecutionModel(s.Config.ExecutionModel) || s.ProtocolVersion != 1 || s.IssuerEpoch != 1 || s.Config.StateDir != FixedStateDir || control.ValidateID(s.Config.VMUID, "VM UID") != nil || control.ValidateID(s.Config.ComputeInstanceID, "Compute instance") != nil || control.ValidateID(s.BudgetCommitmentID, "bootstrap commitment") != nil {
 		return fmt.Errorf("invalid original resource source")
+	}
+	if s.Config.ExecutionModel == TrustedControllerExecutionModel && !s.Config.SystemCgroup {
+		return fmt.Errorf("trusted-controller requires fixed System cgroup")
 	}
 	if err := s.Limits.Validate(); err != nil {
 		return err

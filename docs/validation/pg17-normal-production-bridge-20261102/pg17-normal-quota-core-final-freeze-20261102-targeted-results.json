@@ -1,0 +1,284 @@
+{
+  "schema_version": 1,
+  "classification": "U/race only; first 3 ELF compile smoke not final release",
+  "target_backend_versions": [
+    17
+  ],
+  "postgres_versions_actually_tested": [],
+  "runs": [
+    {
+      "run": "/data/neon-build/validation/pg17-normal-quota-core-go-20261101T233610Z-fb79d8",
+      "source_lock_sha256": "3d503d5cd95989e19b34e34560368084dfc1500c4914b138ce1c15f654ab266d",
+      "test_json_sha256": "c7682ac9522c28115124394184063900ba9d8c35a8044753977dbeaa08956658",
+      "wrapper_result": {
+        "build_exit": 0,
+        "phases": {
+          "u.exitcode": 1,
+          "cli.exitcode": 0,
+          "guest-compile.exitcode": 0,
+          "host-compile.exitcode": 0
+        },
+        "seconds": 114.48431484500179,
+        "safe_normal_qualified": false,
+        "S": 0,
+        "E": 0,
+        "K8s": 0,
+        "pass": false,
+        "artifacts": {
+          "host.test": {
+            "sha256": "292ac7f719c17be2beaa84982c7fb8dbd8e98f76c3f3ebf2c257750dba64d366",
+            "bytes": 41251000
+          },
+          "guest.test": {
+            "sha256": "0ccfcb5cddba768a1d59608ece72b58c552b84ee4c15196a1d6105209be97f18",
+            "bytes": 44978360
+          },
+          "resource-guard.real": {
+            "sha256": "cf0e3fa6b62d64c5dba6804394fb73134d719c3ea08e5dc5eae6830e268eaa0a",
+            "bytes": 59053804
+          }
+        }
+      },
+      "actual_passing_roots": [
+        {
+          "name": "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside",
+          "subtests": [
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/normal-original-fence-selection",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/observed_outside",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/outside_mismatch",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/guest_overcommitted",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/unknown_tail",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/old_generation",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/permit",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/underquoted",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/overlapping"
+          ],
+          "raw_pass_line": 44
+        },
+        {
+          "name": "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal",
+          "subtests": [
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/different-budget",
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/future-boot",
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/partial-release",
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/old-array-key",
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/old-generation",
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/public-open",
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/unfenced",
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/mixed-phase"
+          ],
+          "raw_pass_line": 81
+        }
+      ],
+      "skip_count": 0,
+      "not_one_combined_suite": true
+    },
+    {
+      "run": "/data/neon-build/validation/pg17-normal-quota-direct-go-20261101T234255Z-529635",
+      "source_lock_sha256": "94d2b58572b0cefb826e272ddd9f2e8070626d34d3e1c61d0403bbe403092bde",
+      "test_json_sha256": "c0c2fe821032d6b32ade2ab0da1d41beca292472abc5468071d78187ac9be89a",
+      "wrapper_result": {
+        "build_exit": 0,
+        "race_direct_exit": 1,
+        "seconds": 49.82380442399881,
+        "safe_normal_qualified": false,
+        "S": 0,
+        "E": 0,
+        "K8s": 0,
+        "pass": false,
+        "no_ELF_rebuild": true
+      },
+      "actual_passing_roots": [
+        {
+          "name": "TestNormalQuotaBudgetFixedCPUKeepsLegacyAndTaskMargins",
+          "subtests": [],
+          "raw_pass_line": 6
+        },
+        {
+          "name": "TestNormalQuotaBudgetUnboundCannotAuthorizeOrWrite",
+          "subtests": [],
+          "raw_pass_line": 10
+        },
+        {
+          "name": "TestNormalQuotaHTTPAndSDKRetainOriginalAfterLostReply",
+          "subtests": [],
+          "raw_pass_line": 16
+        },
+        {
+          "name": "TestNormalQuotaNewBudgetHandoffKeepsOldHeldUntilComplete",
+          "subtests": [
+            "TestNormalQuotaNewBudgetHandoffKeepsOldHeldUntilComplete/legacy-authorization-stays-fixed",
+            "TestNormalQuotaNewBudgetHandoffKeepsOldHeldUntilComplete/original-transition-survives-partial-cap",
+            "TestNormalQuotaNewBudgetHandoffKeepsOldHeldUntilComplete/wrong-request-cannot-release-old-budget"
+          ],
+          "raw_pass_line": 34
+        }
+      ],
+      "skip_count": 0,
+      "not_one_combined_suite": true
+    },
+    {
+      "run": "/data/neon-build/validation/pg17-normal-quota-executor-direct-20261101T234843Z-7736c0",
+      "source_lock_sha256": "8649c9b918b5d02ed36272451483882346d2f863e6e284ae056f7c13e7ad94ea",
+      "test_json_sha256": "cc6ddb08bb72c9859ef002fe8a05b08789335589ad6ea3b8669c6284a7415e7c",
+      "wrapper_result": {
+        "build_exit": 0,
+        "race_direct_exit": 0,
+        "seconds": 17.65647453200654,
+        "safe_normal_qualified": false,
+        "S": 0,
+        "E": 0,
+        "K8s": 0,
+        "pass": true,
+        "no_ELF_rebuild": true
+      },
+      "actual_passing_roots": [
+        {
+          "name": "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease",
+          "subtests": [
+            "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease/pre-grow-is-plan-without-false-release",
+            "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease/rejected",
+            "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease/changed-command",
+            "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease/no-release",
+            "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease/unconfirmed"
+          ],
+          "raw_pass_line": 25
+        }
+      ],
+      "skip_count": 0,
+      "not_one_combined_suite": true
+    },
+    {
+      "run": "/data/neon-build/validation/pg17-normal-quota-recovery-bound-go-20261102T000700Z-a94cc2",
+      "source_lock_sha256": "81c7a9d187345554cc4700b7c8a57d6a11908b08a097e64dc90ca1fb81bea6c2",
+      "test_json_sha256": "60dd01527943d2b4643ff19fd4d0ece021b949a3da789eda12afdb3a51e68ef8",
+      "wrapper_result": {
+        "build_exit": 0,
+        "race_direct_exit": 0,
+        "seconds": 44.994060713012004,
+        "safe_normal_qualified": false,
+        "S": 0,
+        "E": 0,
+        "K8s": 0,
+        "pass": true,
+        "no_ELF_rebuild": true
+      },
+      "actual_passing_roots": [
+        {
+          "name": "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease",
+          "subtests": [
+            "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease/recovery-continuation-exact-only",
+            "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease/pre-grow-is-plan-without-false-release",
+            "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease/changed-command",
+            "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease/no-release",
+            "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease/unconfirmed",
+            "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease/rejected"
+          ],
+          "raw_pass_line": 29
+        }
+      ],
+      "skip_count": 0,
+      "not_one_combined_suite": true
+    },
+    {
+      "run": "/data/neon-build/validation/pg17-tail-release-go-20261102T010451Z-fae1ac",
+      "source_lock_sha256": "22723dea1270a5c98ff03886cbd3e02e0042771cf837a775d455f1bd885a9adb",
+      "test_json_sha256": "f4833995280d9260ca9385728960c64b2baf568994f7c67257e86e5efbdad611",
+      "wrapper_result": {
+        "build_exit": 0,
+        "race_direct_exit": 0,
+        "seconds": 46.91153226798633,
+        "safe_normal_qualified": false,
+        "S": 0,
+        "E": 0,
+        "K8s": 0,
+        "pass": true,
+        "no_ELF_rebuild": true
+      },
+      "actual_passing_roots": [
+        {
+          "name": "TestReleasedTailAcceptsActualPG17RoundedCheckpoint",
+          "subtests": [
+            "TestReleasedTailAcceptsActualPG17RoundedCheckpoint/missing-physical",
+            "TestReleasedTailAcceptsActualPG17RoundedCheckpoint/partial",
+            "TestReleasedTailAcceptsActualPG17RoundedCheckpoint/short-tail",
+            "TestReleasedTailAcceptsActualPG17RoundedCheckpoint/overflow"
+          ],
+          "raw_pass_line": 21
+        },
+        {
+          "name": "TestReleasedTailNoopKeepsPhysicalEffectSeparate",
+          "subtests": [],
+          "raw_pass_line": 25
+        },
+        {
+          "name": "TestProviderRequiresAllCurrentArrayFactsAndCannotBorrowHistory",
+          "subtests": [
+            "TestProviderRequiresAllCurrentArrayFactsAndCannotBorrowHistory/pending-executor",
+            "TestProviderRequiresAllCurrentArrayFactsAndCannotBorrowHistory/unsupported",
+            "TestProviderRequiresAllCurrentArrayFactsAndCannotBorrowHistory/partial",
+            "TestProviderRequiresAllCurrentArrayFactsAndCannotBorrowHistory/allocation-unknown",
+            "TestProviderRequiresAllCurrentArrayFactsAndCannotBorrowHistory/old-release",
+            "TestProviderRequiresAllCurrentArrayFactsAndCannotBorrowHistory/new-generation",
+            "TestProviderRequiresAllCurrentArrayFactsAndCannotBorrowHistory/different-budget",
+            "TestProviderRequiresAllCurrentArrayFactsAndCannotBorrowHistory/incomplete-range",
+            "TestProviderRequiresAllCurrentArrayFactsAndCannotBorrowHistory/checkpoint-wait",
+            "TestProviderRequiresAllCurrentArrayFactsAndCannotBorrowHistory/unverified"
+          ],
+          "raw_pass_line": 90
+        },
+        {
+          "name": "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal",
+          "subtests": [
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/old-generation",
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/public-open",
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/unfenced",
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/mixed-phase",
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/different-budget",
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/future-boot",
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/partial-release",
+            "TestNormalQuotaEnvelopeRejectsIncompleteAndMixedOriginal/old-array-key"
+          ],
+          "raw_pass_line": 111
+        },
+        {
+          "name": "TestNormalQuotaReleasedTailUsesActualPG17OriginalGeometry",
+          "subtests": [
+            "TestNormalQuotaReleasedTailUsesActualPG17OriginalGeometry/unknown-allocation",
+            "TestNormalQuotaReleasedTailUsesActualPG17OriginalGeometry/one-page-short",
+            "TestNormalQuotaReleasedTailUsesActualPG17OriginalGeometry/inside-active-boundary-page",
+            "TestNormalQuotaReleasedTailUsesActualPG17OriginalGeometry/past-mapped",
+            "TestNormalQuotaReleasedTailUsesActualPG17OriginalGeometry/different-logical-target",
+            "TestNormalQuotaReleasedTailUsesActualPG17OriginalGeometry/owned-last-page-padding",
+            "TestNormalQuotaReleasedTailUsesActualPG17OriginalGeometry/known-zero-request-fast-path",
+            "TestNormalQuotaReleasedTailUsesActualPG17OriginalGeometry/logical-noop-only-when-whole-tail-pages-empty"
+          ],
+          "raw_pass_line": 147
+        },
+        {
+          "name": "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside",
+          "subtests": [
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/normal-original-fence-selection",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/observed_outside",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/outside_mismatch",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/guest_overcommitted",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/unknown_tail",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/old_generation",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/permit",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/underquoted",
+            "TestPreparedGrowBudgetUsesRetainedPrefixesAndCompleteOutside/overlapping"
+          ],
+          "raw_pass_line": 193
+        }
+      ],
+      "skip_count": 0,
+      "not_one_combined_suite": true
+    }
+  ],
+  "current_final25_race_run": "/data/neon-build/validation/pg17-tail-release-go-20261102T010451Z-fae1ac",
+  "final_current25_actual_pass_roots": 6,
+  "final_current25_actual_pass_subtests": 39,
+  "S": 0,
+  "E": 0,
+  "K8s": 0
+}

@@ -1,0 +1,82 @@
+{
+  "scope": "trusted-controller production owner/startup targeted U+build, no actual trusted KVM yet",
+  "Source": false,
+  "normal": false,
+  "E": 0,
+  "stable17": {
+    "pkg/dsga/resourceguard/guard.go": "ec9f584e97fc876e351e783991c301d3ee50a9cf3854fbaf44a49d30777f70d2",
+    "pkg/dsga/resourceguard/provision.go": "1a6d5e5008394504a88b9139531a8087828e4ea72eef5d74afdb87d5cafad685",
+    "pkg/dsga/resourceguard/server_linux.go": "39c1e223ad0d93de733859b23f697dedda172ba679764e6025d73622a056baaa",
+    "pkg/dsga/resourceguard/normal_system_role_service_resource_linux.go": "37ccb3d2ddfa55af0577889d5b60db2e80c6167d60f0029edb83aca0336e045f",
+    "pkg/dsga/resourceguard/array_service_socket_linux.go": "5b151147f4a6e1c0e5174ab621c30bd517aab0921dc7b6753d1f3495e26e0d76",
+    "pkg/dsga/resourceguard/normal_pg_stderr_source_linux.go": "0c72c76e6f1102d3098d509f27eacb9b6c1e234f7218b294f6a04c43024b2d02",
+    "pkg/dsga/resourceguard/trusted_controller_owner_linux.go": "0958a05850eb113db090b0018d9a12e553f110696cfbe16a84d2ea0189179ce2",
+    "pkg/dsga/resourceguard/trusted_controller_owner_linux_test.go": "224d004ec07e8d8595ba58c78c37b0f1eb14fdf862fd24b293a3a0f6b5a7f91a",
+    "pkg/dsga/resourceguard/trusted_controller_startup.go": "a0406e525d1f1c419d9a00577931583b778f00fe5e1d271653ffcf4df0cb1a55",
+    "pkg/dsga/resourceguard/trusted_controller_startup_linux.go": "f564309bfce09cd76a08972dcc315634291adb3994f387d4c98c32ead6c4410d",
+    "pkg/dsga/resourceguard/trusted_controller_startup_other.go": "3cd9712eefcdc0594601773bc266f96d44ddb178b0bf1e923e30274cc2ba38b6",
+    "pkg/dsga/resourceguard/trusted_controller_startup_test.go": "be5e9760da57df940ab05158c04ca6490fdbf19e1ee69190f53ca4fef399cdb1",
+    "pkg/dsga/resourceguard/initial_preboot_channel_linux.go": "71ce289f4a3c48357f894c9eab4bb2622694d6acdfe1b63f0a6cc736d731b19f",
+    "neonvm-daemon/cmd/resource-guard/main.go": "b98e28ea96354a20838575ae3a2ba2e964a244aa4518f7f5fc25667d720cfe22",
+    "vm-builder/main.go": "dd963a9711107fbef43823fff69b8e48dc7f03647a08455de9bd201ab59c5196",
+    "vm-builder/normal_split.go": "1cddfd6c8f190b191062783505cfe057fcd947db7c0d5e7721fc1d6307d552b8",
+    "vm-builder/normal_trusted_startup_test.go": "ea24096e1e187524cd07932293fcc9532182b5733c92b1cc348233169d40269f"
+  },
+  "native_old_source_only_at_7eb": "8fa3f6401042088fb50502bf326a931452785deececfa2ac6eac48be5eb3e37b",
+  "native_current_pending_VM_increment": "c466abf16d278f39aaf2c1b378a4d9c64489ca7aa56d7d1e22f0b3a4a6cf7d6a",
+  "actual_direct_race_roots": [
+    "TestNormalPgStderrNewProtocolCannotLoseAuthority",
+    "TestNormalPgStderrFinalCloseRaceFailClosed",
+    "TestNormalPgStderrExactFrame",
+    "TestNormalPgStderrEndpointsOriginalPipeOnly",
+    "TestNormalPgStderrReceiveExactAncillary",
+    "TestNormalPgStderrRetireNeedsRealExitAndEmptyEOF",
+    "TestNormalPgStderrNoSyntheticFinalSource",
+    "TestNormalPgStderrStageWitnessRejectsMutationOrReplacement",
+    "TestResourceSourceStrictBytesAndBounds",
+    "TestTrustedControllerExecutionModelStrictContract",
+    "TestTrustedControllerRawModeCannotConstructOwner",
+    "TestTrustedControllerLaunchParentUsesOriginalProcAndTask",
+    "TestTrustedControllerFixedStartupDoesNotBlockPID1"
+  ],
+  "actual_direct_subcases": 25,
+  "actual_direct_skips": 0,
+  "builder_direct_roots": [
+    "TestNormalTrustedControllerUsesOriginalComputeAndReadyGate"
+  ],
+  "six_phase_result": {
+    "build_exit": 0,
+    "phases": {
+      "u.exitcode": 0,
+      "builder-u.exitcode": 0,
+      "cli.exitcode": 0,
+      "builder.exitcode": 0,
+      "guest.exitcode": 0,
+      "host.exitcode": 0
+    },
+    "seconds": 103.0876764220011,
+    "Source": false,
+    "normal": false,
+    "E": 0
+  },
+  "ELFs": {
+    "resource-guard.real": {
+      "sha256": "95019724914ea1338d71ae4c1a39d696928ca32df2115f7d0e4e960ed5af04aa",
+      "bytes": 59209713
+    },
+    "vm-builder.real": {
+      "sha256": "063d5ea56930ad6a3fd3f804575f535b2fb06583e64073e69c7c22106ca3d6e4",
+      "bytes": 54092567
+    },
+    "trusted-guest.test": {
+      "sha256": "bc4cc7ba09cd13580adcc33e7265063bc591854c596389d8dbc156c0ca660c10",
+      "bytes": 45519032
+    },
+    "host-memory.test": {
+      "sha256": "233f61a38b2861b7c3629dfb25558b19dc5893e0c4b645dbe9ee7fbc6417a979",
+      "bytes": 41414840
+    }
+  },
+  "Root_soleGit": true,
+  "current_K8s": "NOT_RUN"
+}

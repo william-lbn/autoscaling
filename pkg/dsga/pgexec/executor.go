@@ -439,11 +439,7 @@ func releaseVerified(intent control.Request, fence control.FenceResponse, fact c
 			!p.HasResult || p.AllocationMayBePartial || p.ReleaseMayBePartial || p.SystemErrno != 0 {
 			return false
 		}
-		if p.Status == control.ProviderNoop && p.RequestedBytes == 0 && p.AffectedBytes == 0 {
-			continue
-		}
-		if p.Status != control.ProviderOK || !p.PhysicalReleaseVerified || p.RequestedOffset != p.AffectedOffset ||
-			p.RequestedBytes == 0 || p.RequestedBytes != p.AffectedBytes {
+		if p.ValidateReleasedTail() != nil {
 			return false
 		}
 	}

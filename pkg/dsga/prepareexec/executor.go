@@ -156,10 +156,10 @@ func (e *Executor) inspect(ctx context.Context, s *journal.Snapshot) (command, e
 	if err != nil {
 		return c, err
 	}
-	// N、每进程AS和系统组额度在bootstrap后固定；所有hstate须原样列全。当前没有安全
-	// 降normal生产协议，不能靠一次排空/采样直接压低memory.max。Prepare仅
-	// 保留目标，grow尚小时也绝不写入更大的硬限额。
-	if target.Limits.MemoryMaxBytes < held.MemoryMaxBytes || target.Limits.AddressSpaceMaxBytes != held.AddressSpaceMaxBytes || target.Limits.PidsMaxTasks != held.PidsMaxTasks || target.Limits.SystemMemoryMaxBytes != held.SystemMemoryMaxBytes || len(target.Limits.HugePools) != len(held.HugePools) {
+	// 旧profile仍不允许降低normal；显式新接口只在此持久选择，实际授权由Root
+	// 消费完整PG事实和真实预算。每进程AS/pids/System及全部hstate保持原样；
+	// Prepare只保留目标，不能靠排空/采样在这里写任何硬限额。
+	if target.Limits.MemoryMaxBytes < held.MemoryMaxBytes && !e.resources.NormalQuotaEnabled() || target.Limits.AddressSpaceMaxBytes != held.AddressSpaceMaxBytes || target.Limits.PidsMaxTasks != held.PidsMaxTasks || target.Limits.SystemMemoryMaxBytes != held.SystemMemoryMaxBytes || len(target.Limits.HugePools) != len(held.HugePools) {
 		return c, fmt.Errorf("qualified target changes fixed limits or requires unsupported normal-cap decrease")
 	}
 	for i := range held.HugePools {
@@ -176,6 +176,11 @@ func (e *Executor) inspect(ctx context.Context, s *journal.Snapshot) (command, e
 	}
 	system, transition, safety := target.Bounds(e.source)
 	p := budget.Prepared{ProtocolVersion: 1, VMShrinkPermit: false, Request: request, Identity: id, RunnerPodName: q.RunnerPodName, RunnerRestartCount: q.RunnerRestartCount, VMBeforeMemoryBytes: control.Uint64(before), GuestUsableMemoryBytes: target.GuestUsableMemoryBytes, Shared: shared, TargetSharedUpperBytes: upper, Limits: target.Limits, SystemOutsidePG: system, Transition: transition, Safety: safety, OutsideClaim: nil}
+	if target.Limits.MemoryMaxBytes != held.MemoryMaxBytes && e.resources.NormalQuotaEnabled() {
+		p.NormalQuotaProtocolVersion = 1
+		originalFence := fence
+		p.NormalQuotaFence = &originalFence
+	}
 	if err := p.ValidateFor(request, id); err != nil {
 		return c, err
 	}

@@ -1,0 +1,7 @@
+生产构建阶段2A：System3全角色loader闭包
+
+显式native1在最终库存文件上按原static/GNU/musl规则，对每个固定exec、script interpreter及递归DT_NEEDED核实际canonical/有界普通Root文件/原声明SHA。首个命中不合格必须拒绝，拒cache/preload/hwcaps/错误tag、别名、未达额外库、未知读取与全部文件中途漂移。运行期仅将两个原profile选择switch抽共用，RO、原FD、来源门保持。选择1从registry读取完整metadata18c五元组，旧0/369字节流程不动；最终System3加原newline再沿生产NativeBirth collector绑定。
+
+真实d58：7race目标/19子例与Linux/Darwin/组件ELF编译全部通过。首次实际原105库存构造至119并逐条保留原105、14新增与独立oracle一致，但driver错误要求不同DEV Guest的所有ELF摘要相同而失败；原件保留。只修该组件断言，新500图仅重编测试driver并重跑1组件；6生产及全部其他编译输入、7U函数字节不变，7U/CLI/Darwin不重复。最终核原26 ELF SHA+独立14库SHA、相同40路径集、22 logical exec、119库存、完整18c五元组、同最终System原字节绑定原PG16，全部通过。原/参照rootfs关键文件SHA前后不变。
+
+这是构建期真实文件组件验证，无新VM，不授Source、normal、Linux/K8s端到端资格。阶段2B仍须完成创建immutable Secret之前的静态模板绑定、同原build aux.ID配对sidecar，复用真正Controller UID→Runtime→ISO消费；DEV Finalize不能替代生产发行。未改PG17、发行锁或P1独占normal_system_source_linux.go。

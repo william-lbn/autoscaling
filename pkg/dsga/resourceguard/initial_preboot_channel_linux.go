@@ -491,6 +491,11 @@ func runInitialBootGuest(ctx context.Context, recoverOriginal bool) error {
 	if e = CheckGuest(call); e != nil {
 		return e
 	}
+	// 可信节点模式由PID1在sysinit返回后启动固定Root服务。该选择不改前面的
+	// memory2/KernelPrep2/Host8WAL、Bootstrap和CheckGuest，也不产生normal资格。
+	if source.Config.ExecutionModel == TrustedControllerExecutionModel {
+		return trustedControllerImageContract()
+	}
 	return startInitialNormalSystemV3Broker(call, g)
 }
 func RunInitialBootGuest(ctx context.Context) error     { return runInitialBootGuest(ctx, false) }
