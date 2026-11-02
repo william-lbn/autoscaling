@@ -1,0 +1,39 @@
+{
+  "scope": "DEV shared PG17/PG18 runner and strict opt-in wrappers; actual PGmajor must be read over same original private SQL after PRIVATE_READY; not any runtime authority",
+  "files": {
+    "pkg/dsga/resourceguard/normal_pg17_trusted_control_native_test.go": "248a8e851c3468c08401ce26bd4233f8e7e2f8e17668cac269e8c65641e0cb66",
+    "pkg/dsga/resourceguard/normal_pg18_trusted_control_native_test.go": "86047e9855211efb3eaaa48c6ddf624f158091c9b262e102fb7754d7e9cc56f9"
+  },
+  "diff_sha256": "d80b5ce4e06438fb477e72c106b093102627eb6bb35401e3d13163cfd4e4647b",
+  "base_before_SHA256": "255edffa60eadaf7f5cebdd3708defc3bdd7801e46a1609217c53d9b5b133d1c",
+  "unchanged_default_PG17_optin": "isolated18c-real-compute-normal-v1",
+  "PG18_explicit_optin": "isolated18c-real-compute-normal-pg18-v1",
+  "current_final_build": "/data/neon-build/validation/pg18-trusted-control-guest-go-20261102T223901Z-ddd374",
+  "actual_source_commit": "6b65f2c7a4278dd5770f6f29ae093b5171f6164c",
+  "CGO_ENABLED": 0,
+  "race": false,
+  "phases": {
+    "guest": 0,
+    "major-entrypoints": 0,
+    "major-list": 0
+  },
+  "direct_roots": 1,
+  "direct_subtests": 3,
+  "registered_native_targets": [
+    "TestNativePG17TrustedControl",
+    "TestNativePG18TrustedControl"
+  ],
+  "Guest_ELF_sha256": "0c7024e55b2cac217f6b698a35a4f55a07384f7424b93bc93d931a053abd3ff6",
+  "Guest_ELF_bytes": 45654200,
+  "repeat447_ELF_exact_same": true,
+  "early7ff_compile_failure_preserved": "missing unchanged committed SQL busy helper; no ELF/direct test",
+  "not_claimed": [
+    "PG18 real SQL version18 observed yet",
+    "PG18 normal memory cycle",
+    "Source/production identity",
+    "K8s"
+  ],
+  "Source": false,
+  "normal": false,
+  "E": 0
+}

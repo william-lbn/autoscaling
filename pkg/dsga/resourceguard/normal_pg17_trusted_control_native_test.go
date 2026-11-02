@@ -29,8 +29,9 @@ import (
 const trustedControlNativeOptIn = "isolated18c-real-compute-normal-v1"
 
 func init() {
-	if os.Getenv("DSGA_TRUSTED_CONTROL_NATIVE") == trustedControlNativeOptIn && len(os.Args) == 2 && os.Args[0] == "/neonvm/bin/dsga-system-role-broker" && os.Args[1] == "initial-boot" {
-		os.Args = []string{os.Args[0], "-test.run=^TestNativePG17TrustedControl$", "-test.v", "-test.timeout=420s"}
+	target := trustedControlNativeEntrypoint(os.Getenv("DSGA_TRUSTED_CONTROL_NATIVE"))
+	if target != "" && len(os.Args) == 2 && os.Args[0] == "/neonvm/bin/dsga-system-role-broker" && os.Args[1] == "initial-boot" {
+		os.Args = []string{os.Args[0], "-test.run=^" + target + "$", "-test.v", "-test.timeout=420s"}
 	}
 }
 
@@ -551,6 +552,12 @@ func trustedControlNativePublish(t *testing.T, o trustedControlNativeObservation
 }
 func TestNativePG17TrustedControl(t *testing.T) {
 	require.Equal(t, trustedControlNativeOptIn, os.Getenv("DSGA_TRUSTED_CONTROL_NATIVE"))
+	trustedControlNativeRun(t, 17)
+}
+
+// 两个DEV包装只选择实际版本断言；共同生产HTTP/PG/Root/VM流程不按major分叉。
+func trustedControlNativeRun(t *testing.T, expectedMajor int) {
+	require.Contains(t, []int{17, 18}, expectedMajor)
 	require.Equal(t, 1, os.Getppid())
 	defer func() {
 		status := 0
@@ -660,6 +667,12 @@ func TestNativePG17TrustedControl(t *testing.T) {
 		return err == nil
 	})
 	fmt.Println("TRUSTED_PG17_PRIVATE_READY")
+	// 从同一真实管理连接读取server版本；旧同步前缀不是版本来源。
+	actualMajor, majorErr := strconv.Atoi(strings.TrimSpace(trustedControlNativeSQL(t, ctx, "SELECT current_setting('server_version_num')::int / 10000")))
+	require.NoError(t, majorErr)
+	require.Equal(t, expectedMajor, actualMajor)
+	trustedControlNativeSave(t, "actual-pg-major", map[string]any{"actual_pg_major": actualMajor, "expected_pg_major": expectedMajor, "vm_shrink_permit": false})
+	fmt.Printf("TRUSTED_PG_ACTUAL_MAJOR=%d\n", actualMajor)
 	require.True(t, client.NormalQuotaEnabled())
 	require.True(t, client.ArrayAuthorityEnabled())
 	view, e := client.InspectState(ctx)
@@ -774,5 +787,5 @@ func TestNativePG17TrustedControl(t *testing.T) {
 	require.NoError(t, arrayRegistryPIDFDAlive(computeFD))
 	require.NoError(t, arrayRegistryPIDFDAlive(rootFD))
 	// Guest完成全阶段读回；Host的原生产journal/claims/发布链另行归档。
-	trustedControlNativeSave(t, "functional-complete", map[string]any{"PG17": true, "real_Compute": true, "formal_HTTP": true, "normal_lowering_executed": true, "checksum": checksum, "VM_Guest_MemTotal_7_8_7_8_observed": true, "E": 0})
+	trustedControlNativeSave(t, "functional-complete", map[string]any{"PG17": actualMajor == 17, "PG18": actualMajor == 18, "actual_pg_major": actualMajor, "expected_pg_major": expectedMajor, "real_Compute": true, "formal_HTTP": true, "normal_lowering_executed": true, "checksum": checksum, "VM_Guest_MemTotal_7_8_7_8_observed": true, "E": 0})
 }
