@@ -1,0 +1,63 @@
+{
+  "scope": "candidate-A-enum/key-only/PGWorker-wrapper/explicit-control-dispatch-only",
+  "source_graph_base": "b5c6f4317189ff8e04c2a71eff6a85781cb6a93e",
+  "source_lock_sha256": "3ef59fde99e5b42ced6d9ddd52fa71c0ebcfa186a5d37784d9330455e2d1634d",
+  "owned6": {
+    "pkg/api/dsga/coordination.go": "03d177082e2db56a8a4b117a41dcb37157b219765efc3c3e64fed29fc6e46ff7",
+    "pkg/dsga/owner/pg.go": "736dae026c275147f851b17ec87fb56965165a1d4ee2811eba7167a35830ddb8",
+    "pkg/dsga/owner/control.go": "43b06e35b6f64ee1d6473c9f0bcb0853d072493a4bc0603e992315aa80494b3b",
+    "pkg/dsga/owner/initial_service_test.go": "50d7019d38e37978395256c17c1aa75f04e2c90b13a84490a7c04a2349ad22e1",
+    "pkg/api/dsga/coordination_normal_quota_test.go": "f6e46bc7900b4be49a917d9ca077f587944bd9044169bec52a6e6d206d70017b",
+    "pkg/dsga/owner/control_normal_quota_test.go": "ec2e345eb839f35906f9faa011288ad61b800ffb4dec4eaa7ef70ae4f48351cc"
+  },
+  "preserved_admission_lease_sha256": "eb6eb1cc886d4015fd40847cb5000bfa1946979ff517a0b7ef3ef76050b1cb23",
+  "result": {
+    "build_exit": 0,
+    "seconds": 36.76123438999639,
+    "normal": false,
+    "Source": false,
+    "E": 0,
+    "u_exit": 0,
+    "runner_exit": 0,
+    "passed_roots": [
+      "TestCoordinationRecoverNormalQuotaOriginalKeyOnly",
+      "TestOwnedControlRecoverNormalQuotaRequiresOriginalResourceAndGuestReady",
+      "TestProductionControlRecoverNormalQuotaPreservesClosedAndExpiredGates"
+    ],
+    "passed_subtests": 14,
+    "missing_expected": [],
+    "skipped": []
+  },
+  "classification": {
+    "new_race_roots": 3,
+    "new_race_subtests": 14,
+    "schema_roots": 1,
+    "owner_component_roots": 2,
+    "real_Linux_native_services": 0,
+    "CLI_builds": 0,
+    "E": 0,
+    "Source": false,
+    "normal": false
+  },
+  "legacy_runner_exit_field_is_placeholder_no_CLI_compiled": true,
+  "prebuild_environment_refusal": "/data/neon-build/validation/owner-normal-quota-control-A-go-20261102T040153Z-1ea20d",
+  "reconcile_invocation_error_is_not_test_failure": true,
+  "side_effect_boundaries": {
+    "same_session": true,
+    "same_original_key": true,
+    "new_request_or_selector": false,
+    "zero_pg_boot": false,
+    "closed_or_expired_admission_exception": false,
+    "root_restart_recovery_validated": false,
+    "recover_is_not_pure_query": "can fsync original normal state/SDK matching pending, then original fenced/fresh GuestReady CAS; no partial cap rewrite"
+  },
+  "resources": {
+    "cpu_seconds": 43.838982,
+    "memory_peak_bytes": 703471616,
+    "oom_kill": 0,
+    "throttled_usec": 88617,
+    "budget_kind": "go",
+    "cpu": 3,
+    "memory_GiB": 3
+  }
+}

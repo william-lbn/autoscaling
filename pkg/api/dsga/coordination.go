@@ -43,22 +43,24 @@ func (a CoordinationAction) ResourceOnly() bool {
 }
 
 const (
-	CoordinationState            CoordinationAction = "state"
-	CoordinationResourceState    CoordinationAction = "resource_state"
-	CoordinationBegin            CoordinationAction = "begin"
-	CoordinationCancel           CoordinationAction = "cancel"
-	CoordinationReplayPG         CoordinationAction = "replay_pg"
-	CoordinationReplayQuiesce    CoordinationAction = "replay_quiesce"
-	CoordinationReplayAdmission  CoordinationAction = "replay_admission"
-	CoordinationReplayResource   CoordinationAction = "replay_resource"
-	CoordinationReplayPrepare    CoordinationAction = "replay_prepare"
-	CoordinationReplayInitial    CoordinationAction = "replay_initial_admission"
-	CoordinationReplayVM         CoordinationAction = "replay_vm"
-	CoordinationReplayAbort      CoordinationAction = "replay_abort"
-	CoordinationRecoverUnchanged CoordinationAction = "recover_unchanged_admission"
-	CoordinationRecoverCapacity  CoordinationAction = "recover_capacity_admission"
-	CoordinationRepairHeld       CoordinationAction = "repair_held_resources"
-	CoordinationObserveHeld      CoordinationAction = "observe_held_resources"
+	CoordinationState           CoordinationAction = "state"
+	CoordinationResourceState   CoordinationAction = "resource_state"
+	CoordinationBegin           CoordinationAction = "begin"
+	CoordinationCancel          CoordinationAction = "cancel"
+	CoordinationReplayPG        CoordinationAction = "replay_pg"
+	CoordinationReplayQuiesce   CoordinationAction = "replay_quiesce"
+	CoordinationReplayAdmission CoordinationAction = "replay_admission"
+	CoordinationReplayResource  CoordinationAction = "replay_resource"
+	// 显式确认原完整normal quota；partial cap和准入期限门仍由原实现拒绝。
+	CoordinationRecoverNormalQuota CoordinationAction = "recover_normal_quota"
+	CoordinationReplayPrepare      CoordinationAction = "replay_prepare"
+	CoordinationReplayInitial      CoordinationAction = "replay_initial_admission"
+	CoordinationReplayVM           CoordinationAction = "replay_vm"
+	CoordinationReplayAbort        CoordinationAction = "replay_abort"
+	CoordinationRecoverUnchanged   CoordinationAction = "recover_unchanged_admission"
+	CoordinationRecoverCapacity    CoordinationAction = "recover_capacity_admission"
+	CoordinationRepairHeld         CoordinationAction = "repair_held_resources"
+	CoordinationObserveHeld        CoordinationAction = "observe_held_resources"
 )
 
 // 只选择已经持久保存的异常关闭摘要，不接受新的门禁/预算参数。
@@ -131,7 +133,7 @@ func (c CoordinationCommand) Validate() error {
 			return fmt.Errorf("source selection requires the original SHA256")
 		}
 	case CoordinationCancel, CoordinationReplayPG, CoordinationReplayQuiesce, CoordinationReplayAdmission,
-		CoordinationReplayResource, CoordinationReplayPrepare, CoordinationReplayVM, CoordinationReplayAbort,
+		CoordinationReplayResource, CoordinationRecoverNormalQuota, CoordinationReplayPrepare, CoordinationReplayVM, CoordinationReplayAbort,
 		CoordinationRecoverUnchanged, CoordinationRecoverCapacity:
 		if c.Key == nil || c.Key.Validate() != nil || c.Key.Instance != Instance(c.Instance) || c.Key.IssuerEpoch > c.ExpectedOwnerEpoch || c.Request != nil || c.Selector != "" {
 			return fmt.Errorf("coordination action requires only its original operation key")

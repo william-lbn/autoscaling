@@ -1,0 +1,49 @@
+--- a/pkg/api/dsga/coordination.go
++++ b/pkg/api/dsga/coordination.go
+@@ -51,6 +51,8 @@
+ 	CoordinationReplayQuiesce    CoordinationAction = "replay_quiesce"
+ 	CoordinationReplayAdmission  CoordinationAction = "replay_admission"
+ 	CoordinationReplayResource   CoordinationAction = "replay_resource"
++    // 只确认原完整normal quota，不重放partial cap或开放准入。
++    CoordinationRecoverNormalQuota CoordinationAction = "recover_normal_quota"
+ 	CoordinationReplayPrepare    CoordinationAction = "replay_prepare"
+ 	CoordinationReplayInitial    CoordinationAction = "replay_initial_admission"
+ 	CoordinationReplayVM         CoordinationAction = "replay_vm"
+@@ -131,7 +133,7 @@
+ 			return fmt.Errorf("source selection requires the original SHA256")
+ 		}
+ 	case CoordinationCancel, CoordinationReplayPG, CoordinationReplayQuiesce, CoordinationReplayAdmission,
+-		CoordinationReplayResource, CoordinationReplayPrepare, CoordinationReplayVM, CoordinationReplayAbort,
++		CoordinationReplayResource, CoordinationRecoverNormalQuota, CoordinationReplayPrepare, CoordinationReplayVM, CoordinationReplayAbort,
+ 		CoordinationRecoverUnchanged, CoordinationRecoverCapacity:
+ 		if c.Key == nil || c.Key.Validate() != nil || c.Key.Instance != Instance(c.Instance) || c.Key.IssuerEpoch > c.ExpectedOwnerEpoch || c.Request != nil || c.Selector != "" {
+ 			return fmt.Errorf("coordination action requires only its original operation key")
+--- a/pkg/dsga/owner/pg.go
++++ b/pkg/dsga/owner/pg.go
+@@ -538,6 +538,15 @@
+ 	callCtx, cancel := worker.session.coupledContext(ctx)
+ 	defer cancel()
+ 	return worker.resources.ReplayOriginal(callCtx, key)
++}
++
++// RecoverNormalQuotaOriginal只接受显式原Key，保留当前Session/取消边界；不从普通
++// Advance错误自动转入，不修改原命令epoch/目标/预算。
++func(worker *PGWorker)RecoverNormalQuotaOriginal(ctx context.Context,key control.Key)(pgexec.Progress,error){
++    if err:=worker.session.Check(ctx);err!=nil{return pgexec.AwaitingFact,err}
++    if worker.resources==nil{return pgexec.AwaitingFact,fmt.Errorf("original normal quota resource executor is unavailable")}
++    callCtx,cancel:=worker.session.coupledContext(ctx);defer cancel()
++    return worker.resources.RecoverNormalQuota(callCtx,key)
+ }
+ 
+ // 原VM重放使用独立受信选择，与PG/Root重放分开；Session检查和完整原
+--- a/pkg/dsga/owner/control.go
++++ b/pkg/dsga/owner/control.go
+@@ -174,6 +174,8 @@
+ 		result.Progress, err = worker.ReplayAdmissionOriginal(callCtx, *command.Key)
+ 	case control.CoordinationReplayResource:
+ 		result.Progress, err = worker.ReplayResourceOriginal(callCtx, *command.Key)
++    case control.CoordinationRecoverNormalQuota:
++        result.Progress,err=worker.RecoverNormalQuotaOriginal(callCtx,*command.Key)
+ 	case control.CoordinationReplayPrepare:
+ 		result.Progress, err = worker.ReplayPrepareOriginal(callCtx, *command.Key)
+ 	case control.CoordinationReplayInitial:

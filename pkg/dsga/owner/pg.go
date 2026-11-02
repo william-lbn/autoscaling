@@ -540,6 +540,21 @@ func (worker *PGWorker) ReplayResourceOriginal(ctx context.Context, key control.
 	return worker.resources.ReplayOriginal(callCtx, key)
 }
 
+// RecoverNormalQuotaOriginal只接受显式原Key，保留当前Session/取消边界；不从普通
+// Advance错误自动转入，不修改原命令epoch/目标/预算。原执行器仍核完整prefix，
+// 成功后还会Fence/观察PG并核原GuestReady CAS；本入口不是纯查询或准入开放许可。
+func (worker *PGWorker) RecoverNormalQuotaOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {
+	if err := worker.session.Check(ctx); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	if worker.resources == nil {
+		return pgexec.AwaitingFact, fmt.Errorf("original normal quota resource executor is unavailable")
+	}
+	callCtx, cancel := worker.session.coupledContext(ctx)
+	defer cancel()
+	return worker.resources.RecoverNormalQuota(callCtx, key)
+}
+
 // 原VM重放使用独立受信选择，与PG/Root重放分开；Session检查和完整原
 // not_sent/预算复核先于持久UID/RV选择。普通轮询永远不调用此入口。
 func (worker *PGWorker) ReplayVMOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {

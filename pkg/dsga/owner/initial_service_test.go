@@ -673,6 +673,15 @@ func productionInitialService(t *testing.T, mode string) {
 			verifyProductionServiceReopen(t, ctx, strings.TrimPrefix(mode, "service-reopen-"), api, store, session, resources, worker, config, client, source, pg, root)
 			return nil
 		}
+		if strings.HasPrefix(mode, "normal-quota-control-") {
+			for range 2 {
+				progress, err := worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress)
+			}
+			verifyNormalQuotaControlGates(t, ctx, mode, store, worker, pg, root, qmp)
+			return nil
+		}
 		if strings.HasPrefix(mode, "native-lease-") {
 			for range 2 {
 				progress, err := worker.Advance(ctx)
