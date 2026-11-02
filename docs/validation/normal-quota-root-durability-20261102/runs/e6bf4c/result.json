@@ -1,0 +1,23 @@
+{
+  "build_exit": 0,
+  "seconds": 35.17210691899527,
+  "normal": false,
+  "Source": false,
+  "E": 0,
+  "u_exit": 1,
+  "runner_exit": 0,
+  "passed_roots": [
+    "TestNormalQuotaHandoffPartialCapPreservesOldHeld",
+    "TestNormalQuotaHandoffPendingAndLostStateReply",
+    "TestNormalQuotaMetadataRestartRecoversRetainedQuotaWithoutCapReplay"
+  ],
+  "passed_subtests": 4,
+  "missing_expected": [
+    "TestNormalQuotaDurabilityConfirmsOriginalWithoutContinuation",
+    "TestNormalQuotaDurabilityKeepsLegacyRecoverContinuation",
+    "TestNormalQuotaDurabilityRechecksOriginalAfterRootConfirmation",
+    "TestNormalQuotaDurabilityRejectsInvalidCancelledAndPartialOriginal",
+    "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease"
+  ],
+  "skipped": []
+}

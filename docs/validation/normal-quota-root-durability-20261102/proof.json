@@ -1,0 +1,213 @@
+{
+  "scope": "EXPLICIT_ORIGINAL_KEY_ROOT_DURABILITY_PRIMITIVE_ONLY_NO_ADMISSION_OR_ACTION_CHANGES",
+  "owned2": {
+    "pkg/dsga/resourceexec/normal_quota.go": "7bc6051da0158e28d2fe11507dff1dfe474c26139e9ba12795c0525207494e93",
+    "pkg/dsga/resourceexec/normal_quota_durability_test.go": "26aa379f74b94e0561a52ae3aec4839cadd8187a7792cca74ea837ae693b5d5f"
+  },
+  "protected_unchanged": {
+    "pkg/api/dsga/coordination.go": "03d177082e2db56a8a4b117a41dcb37157b219765efc3c3e64fed29fc6e46ff7",
+    "pkg/dsga/owner/pg.go": "736dae026c275147f851b17ec87fb56965165a1d4ee2811eba7167a35830ddb8",
+    "pkg/dsga/owner/control.go": "43b06e35b6f64ee1d6473c9f0bcb0853d072493a4bc0603e992315aa80494b3b",
+    "pkg/dsga/owner/admission_lease.go": "eb6eb1cc886d4015fd40847cb5000bfa1946979ff517a0b7ef3ef76050b1cb23"
+  },
+  "base": "60cbd114d8d415624e49d7ad4b8c22c180f8f751",
+  "final_source_lock_sha256": "6e917a28165878a2f94422134b50b0d3d9d765942dc41131fa7286dcb2d08594",
+  "selected_stable_targets": {
+    "TestNormalQuotaHandoffPartialCapPreservesOldHeld": {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T044953Z-e6bf4c",
+      "source_lock_sha256": "35a6041b9ccf859c0ac17f2093afd70f5a816e53c6db43c2f67aaacffeece42c",
+      "classification": "Go-race-component-or-unit",
+      "scope": "existing-root-handoff"
+    },
+    "TestNormalQuotaHandoffPendingAndLostStateReply": {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T044953Z-e6bf4c",
+      "source_lock_sha256": "35a6041b9ccf859c0ac17f2093afd70f5a816e53c6db43c2f67aaacffeece42c",
+      "classification": "Go-race-component-or-unit",
+      "scope": "existing-root-handoff"
+    },
+    "TestNormalQuotaMetadataRestartRecoversRetainedQuotaWithoutCapReplay": {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T044953Z-e6bf4c",
+      "source_lock_sha256": "35a6041b9ccf859c0ac17f2093afd70f5a816e53c6db43c2f67aaacffeece42c",
+      "classification": "Go-race-component-or-unit",
+      "scope": "existing-root-handoff"
+    },
+    "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease": {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T045127Z-1cf2f4",
+      "source_lock_sha256": "2c927a24a5e074d9272da65b4818764624a7411e24e7be360091ed2026319190",
+      "classification": "Go-race-component-or-unit",
+      "scope": "existing-envelope-key"
+    },
+    "TestNormalQuotaDurabilityConfirmsOriginalWithoutContinuation": {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T045427Z-7a822b",
+      "source_lock_sha256": "6e917a28165878a2f94422134b50b0d3d9d765942dc41131fa7286dcb2d08594",
+      "classification": "Go-race-component-or-unit",
+      "scope": "new-durability"
+    },
+    "TestNormalQuotaDurabilityKeepsLegacyRecoverContinuation": {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T045427Z-7a822b",
+      "source_lock_sha256": "6e917a28165878a2f94422134b50b0d3d9d765942dc41131fa7286dcb2d08594",
+      "classification": "Go-race-component-or-unit",
+      "scope": "new-durability"
+    },
+    "TestNormalQuotaDurabilityRechecksOriginalAfterRootConfirmation": {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T045427Z-7a822b",
+      "source_lock_sha256": "6e917a28165878a2f94422134b50b0d3d9d765942dc41131fa7286dcb2d08594",
+      "classification": "Go-race-component-or-unit",
+      "scope": "new-durability"
+    },
+    "TestNormalQuotaDurabilityRejectsInvalidCancelledAndPartialOriginal": {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T045427Z-7a822b",
+      "source_lock_sha256": "6e917a28165878a2f94422134b50b0d3d9d765942dc41131fa7286dcb2d08594",
+      "classification": "Go-race-component-or-unit",
+      "scope": "new-durability"
+    }
+  },
+  "stable_counts": {
+    "roots": 8,
+    "subtests": 18,
+    "new_roots": 4,
+    "related_existing_roots": 4,
+    "real_native_PG_or_VM_services": 0,
+    "E": 0,
+    "Source": false,
+    "normal": false
+  },
+  "original_results": [
+    {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T044953Z-e6bf4c",
+      "result": {
+        "build_exit": 0,
+        "seconds": 35.17210691899527,
+        "normal": false,
+        "Source": false,
+        "E": 0,
+        "u_exit": 1,
+        "runner_exit": 0,
+        "passed_roots": [
+          "TestNormalQuotaHandoffPartialCapPreservesOldHeld",
+          "TestNormalQuotaHandoffPendingAndLostStateReply",
+          "TestNormalQuotaMetadataRestartRecoversRetainedQuotaWithoutCapReplay"
+        ],
+        "passed_subtests": 4,
+        "missing_expected": [
+          "TestNormalQuotaDurabilityConfirmsOriginalWithoutContinuation",
+          "TestNormalQuotaDurabilityKeepsLegacyRecoverContinuation",
+          "TestNormalQuotaDurabilityRechecksOriginalAfterRootConfirmation",
+          "TestNormalQuotaDurabilityRejectsInvalidCancelledAndPartialOriginal",
+          "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease"
+        ],
+        "skipped": []
+      }
+    },
+    {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T045127Z-1cf2f4",
+      "result": {
+        "build_exit": 0,
+        "seconds": 9.09902952198172,
+        "normal": false,
+        "Source": false,
+        "E": 0,
+        "u_exit": 1,
+        "runner_exit": 0,
+        "passed_roots": [
+          "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease"
+        ],
+        "passed_subtests": 6,
+        "missing_expected": [
+          "TestNormalQuotaDurabilityConfirmsOriginalWithoutContinuation",
+          "TestNormalQuotaDurabilityKeepsLegacyRecoverContinuation",
+          "TestNormalQuotaDurabilityRechecksOriginalAfterRootConfirmation",
+          "TestNormalQuotaDurabilityRejectsInvalidCancelledAndPartialOriginal"
+        ],
+        "skipped": []
+      }
+    },
+    {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T045235Z-3b6fc1",
+      "result": {
+        "build_exit": 0,
+        "seconds": 7.23222214600537,
+        "normal": false,
+        "Source": false,
+        "E": 0,
+        "u_exit": 1,
+        "runner_exit": 0,
+        "passed_roots": [],
+        "passed_subtests": 4,
+        "missing_expected": [
+          "TestNormalQuotaDurabilityConfirmsOriginalWithoutContinuation",
+          "TestNormalQuotaDurabilityKeepsLegacyRecoverContinuation",
+          "TestNormalQuotaDurabilityRechecksOriginalAfterRootConfirmation",
+          "TestNormalQuotaDurabilityRejectsInvalidCancelledAndPartialOriginal"
+        ],
+        "skipped": []
+      }
+    },
+    {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T045427Z-7a822b",
+      "result": {
+        "build_exit": 0,
+        "seconds": 8.971292303001974,
+        "normal": false,
+        "Source": false,
+        "E": 0,
+        "u_exit": 0,
+        "runner_exit": 0,
+        "passed_roots": [
+          "TestNormalQuotaDurabilityConfirmsOriginalWithoutContinuation",
+          "TestNormalQuotaDurabilityKeepsLegacyRecoverContinuation",
+          "TestNormalQuotaDurabilityRechecksOriginalAfterRootConfirmation",
+          "TestNormalQuotaDurabilityRejectsInvalidCancelledAndPartialOriginal"
+        ],
+        "passed_subtests": 8,
+        "missing_expected": [],
+        "skipped": []
+      }
+    }
+  ],
+  "metrics": [
+    {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T044953Z-e6bf4c",
+      "wall_seconds": 35.17210691899527,
+      "CPU_seconds": 27.026736,
+      "memory_peak_bytes": 893186048,
+      "OOM_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\n",
+      "budget_kind": "go",
+      "CPU_limit": 3,
+      "memory_limit_GiB": 3
+    },
+    {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T045127Z-1cf2f4",
+      "wall_seconds": 9.09902952198172,
+      "CPU_seconds": 5.034718,
+      "memory_peak_bytes": 472842240,
+      "OOM_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\n",
+      "budget_kind": "go",
+      "CPU_limit": 3,
+      "memory_limit_GiB": 3
+    },
+    {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T045235Z-3b6fc1",
+      "wall_seconds": 7.23222214600537,
+      "CPU_seconds": 5.053092,
+      "memory_peak_bytes": 449253376,
+      "OOM_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\n",
+      "budget_kind": "go",
+      "CPU_limit": 3,
+      "memory_limit_GiB": 3
+    },
+    {
+      "run": "/data/neon-build/validation/normal-quota-root-durability-go-20261102T045427Z-7a822b",
+      "wall_seconds": 8.971292303001974,
+      "CPU_seconds": 6.306276,
+      "memory_peak_bytes": 459165696,
+      "OOM_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\n",
+      "budget_kind": "go",
+      "CPU_limit": 3,
+      "memory_limit_GiB": 3
+    }
+  ],
+  "legacy_runner_exit_field_is_placeholder_no_CLI_build": true,
+  "proposal_only_not_applied": true,
+  "session_check_boundary": "caller owns real Session/coupled ctx; primitive checks current journal actor/full operation but cannot inspect Session lease"
+}

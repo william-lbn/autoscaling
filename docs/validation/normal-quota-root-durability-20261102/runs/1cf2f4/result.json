@@ -1,0 +1,20 @@
+{
+  "build_exit": 0,
+  "seconds": 9.09902952198172,
+  "normal": false,
+  "Source": false,
+  "E": 0,
+  "u_exit": 1,
+  "runner_exit": 0,
+  "passed_roots": [
+    "TestNormalQuotaExecutorConsumesOnlyRetainedCompletedRelease"
+  ],
+  "passed_subtests": 6,
+  "missing_expected": [
+    "TestNormalQuotaDurabilityConfirmsOriginalWithoutContinuation",
+    "TestNormalQuotaDurabilityKeepsLegacyRecoverContinuation",
+    "TestNormalQuotaDurabilityRechecksOriginalAfterRootConfirmation",
+    "TestNormalQuotaDurabilityRejectsInvalidCancelledAndPartialOriginal"
+  ],
+  "skipped": []
+}
