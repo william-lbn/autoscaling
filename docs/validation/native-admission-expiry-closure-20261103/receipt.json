@@ -1,0 +1,61 @@
+{
+  "scope": "原生准入过期到原关闭WAL接续；protocol-peer验证，非真实Linux内存验收",
+  "sources": [
+    {
+      "path": "pkg/dsga/owner/admission_expiry.go",
+      "sha256": "d3bc359cdbb19305143d42c57d3f48e0d4177db42300a4e30efc5b6c6ae452c0",
+      "bytes": 2364,
+      "lines": 51
+    },
+    {
+      "path": "pkg/dsga/owner/service_safety.go",
+      "sha256": "eda9562c21df7277173044281e5345c055613fc9389eac60a18aaea567f8795a",
+      "bytes": 27059,
+      "lines": 569
+    },
+    {
+      "path": "pkg/dsga/owner/pg.go",
+      "sha256": "b2b37035d801b64479a5bc8e92c67e85d13e40fdb29f5dd11df7637c0f8f5235",
+      "bytes": 44198,
+      "lines": 986
+    },
+    {
+      "path": "pkg/dsga/owner/admission_expiry_test.go",
+      "sha256": "1c0626a8472b9a1af7057f378cfa7212e3b3ce1f9ea7a8ab5595f9dc86f42690",
+      "bytes": 10450,
+      "lines": 268
+    },
+    {
+      "path": "pkg/dsga/owner/initial_service_test.go",
+      "sha256": "835048a7f0906d1b6ec2235e1e902504b17f1e9ab6f085598416c63b055631fc",
+      "bytes": 55426,
+      "lines": 1194
+    },
+    {
+      "path": "pkg/dsga/owner/admission_lease_test.go",
+      "sha256": "42c5a4e13ca8fbec7af7704d705a6e258fe711c5879dfd7e16275e04d58a6a4a",
+      "bytes": 11361,
+      "lines": 261
+    }
+  ],
+  "final_owner_dir": "/data/neon-build/validation/owner-native-expiry-go-20261102T201336Z-823526",
+  "stage_proposal_sha256": "f582a9e43a0e4d9434d988175ec69fd7fb137f7780c9aadc69ec022847d90088",
+  "result_sha256": "dde7a9f21f95d6cddb7aa6239fae1ffc9aaad7ac51cc1de326c256416c21a557",
+  "unique_owner_race_roots": 4,
+  "unique_owner_subcases": 50,
+  "fails": 0,
+  "skips": 0,
+  "same_source_combined_dir": "/data/neon-build/validation/owner-resource-read-combined-go-20261102T203125Z-0d8c3a",
+  "combined_result_sha256": "7b48395732f75faf95bc0d607b01278fed92b6d91fc39015855f4388748ee285",
+  "combined_Agent_static_build_exit": 0,
+  "resource_UDS_and_config_narrow_regression_exit": 0,
+  "preserves_Active_Key_Unknown_and_budget": true,
+  "does_not_renew_or_change_TTL": true,
+  "does_not_auto_resume_PG_VM_or_clear_expired_latch": true,
+  "requires_explicit_existing_higher_owner_rearm_reopen_finalization": true,
+  "not_cause_of_354": "354 actual Expired=false and deadline advanced; that failure was DEV stale-selection/deadline handling",
+  "Source": false,
+  "E": 0,
+  "K8s": false,
+  "real_Linux_expiry_closure_integration": "NOT_RUN"
+}

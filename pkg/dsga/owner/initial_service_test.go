@@ -527,6 +527,9 @@ func productionInitialService(t *testing.T, mode string) {
 		var nativeFence http.HandlerFunc
 		if transfer != nil {
 			nativeFence = pg.ownerFence(t)
+			if mode == "closure-transfer-native-expiry-fence-unknown" {
+				nativeFence = nativeExpiryFenceFailures(t, pg, nativeFence)
+			}
 		}
 		config := pgConfigWithFence(t, request, func(w http.ResponseWriter, r *http.Request) {
 			if actualLatePG && r.URL.Path == "/dsg/v1/resize" {
@@ -693,6 +696,10 @@ func productionInitialService(t *testing.T, mode string) {
 		}
 		if strings.HasPrefix(mode, "initial-safety-") {
 			verifyInitialServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, transfer)
+			return nil
+		}
+		if strings.HasPrefix(mode, "closure-transfer-native-expiry-") {
+			verifyNativeAdmissionExpiry(t, ctx, mode, api, store, session, resources, worker, config, client, source, pg, root, transfer, runner)
 			return nil
 		}
 		if strings.HasPrefix(mode, "closure-transfer-") {

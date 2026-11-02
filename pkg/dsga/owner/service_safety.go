@@ -157,6 +157,12 @@ func idleServiceBound(m journal.Model) (budget.Bound, control.Uint64, error) {
 // 重建或丢回复只查询原命令。明确重放还须原派发owner与完整摘要均匹配，
 // 不用“关闭幂等”作自动重发理由；旧命令可能仍在网络中，不能换代次覆盖。
 func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (bool, pgexec.Progress, error) {
+	return w.advanceServiceSafetySelected(ctx, replay, false)
+}
+
+// nativeExpired仅由原生期限观察已验证过期的串行入口传入；健康来源也只能
+// 选择原关闭WAL，不能恢复期限、开放服务或继续任何原资源步骤。
+func (w *PGWorker) advanceServiceSafetySelected(ctx context.Context, replay string, nativeExpired bool) (bool, pgexec.Progress, error) {
 	s, err := w.session.store.Load(ctx)
 	if err != nil {
 		return true, pgexec.AwaitingFact, err
@@ -285,7 +291,7 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 			if err != nil {
 				return false, pgexec.Idle, nil
 			}
-			if err := w.inspectCleanupService(ctx, s); err == nil {
+			if err := w.inspectCleanupService(ctx, s); err == nil && !nativeExpired {
 				return false, pgexec.Idle, nil
 			}
 			return w.closeCleanupService(ctx, s, boundary)
@@ -304,22 +310,22 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 					if _, boundaryErr := m.ActiveAdmissionForClosure(); boundaryErr != nil {
 						return false, pgexec.Idle, nil
 					}
-					if err := w.inspectActiveService(ctx, s); err == nil {
+					if err := w.inspectActiveService(ctx, s); err == nil && !nativeExpired {
 						return false, pgexec.Idle, nil
 					}
 					return w.closeActiveService(ctx, s)
 				}
-				if err := w.finalize.CheckBeforeFinalization(ctx, s); err == nil {
+				if err := w.finalize.CheckBeforeFinalization(ctx, s); err == nil && !nativeExpired {
 					return false, pgexec.Idle, nil
 				}
 				return w.closePlannedResumeService(ctx, s, generation)
 			}
-			if err := w.admission.CheckRetainedService(ctx, s); err == nil {
+			if err := w.admission.CheckRetainedService(ctx, s); err == nil && !nativeExpired {
 				return false, pgexec.Idle, nil
 			}
 			return w.closePlannedResumeService(ctx, s, f.Shared.Observed.CapacityGeneration)
 		}
-		if err := w.admission.CheckRetainedService(ctx, s); err == nil {
+		if err := w.admission.CheckRetainedService(ctx, s); err == nil && !nativeExpired {
 			return false, pgexec.Idle, nil
 		}
 		return w.closeOriginalService(ctx, s, original, true)
@@ -329,13 +335,13 @@ func (w *PGWorker) advanceServiceSafety(ctx context.Context, replay string) (boo
 			return false, pgexec.Idle, nil
 		}
 		if h.Admission.Phase == journal.Unconfirmed && !m.InitialAdmissionReady() {
-			return w.advanceInitialServiceSafety(ctx, s)
+			return w.advanceInitialServiceSafety(ctx, s, nativeExpired)
 		}
 	}
 	if pending, closing := w.client.PendingAdmission(); pending != nil || closing != nil || w.client.Pending() != nil {
 		return true, pgexec.AwaitingFact, ErrServiceSafety
 	}
-	if err := w.inspectIdleService(ctx, s); err == nil {
+	if err := w.inspectIdleService(ctx, s); err == nil && !nativeExpired {
 		return false, pgexec.Idle, nil
 	}
 	// 来源不可用时仍能独立认证PG的同boot、floor和当前准入代次。只从
@@ -493,12 +499,12 @@ func (w *PGWorker) continueServiceClosure(ctx context.Context, selector string) 
 // 时写独立关闭WAL，再关闭同boot/容量/预算下所有更低revision，保留原开放
 // Unconfirmed。此处不调用原开放Status来清本地栅栏，也不以NotFound重发。
 // 网络期间无本地锁，失租取消通过Session ctx及SDK凭据检查逐次传播。
-func (w *PGWorker) advanceInitialServiceSafety(ctx context.Context, s *journal.Snapshot) (bool, pgexec.Progress, error) {
+func (w *PGWorker) advanceInitialServiceSafety(ctx context.Context, s *journal.Snapshot, nativeExpired bool) (bool, pgexec.Progress, error) {
 	m := s.State()
 	if w.initial == nil {
 		return true, pgexec.AwaitingFact, ErrServiceSafety
 	}
-	if err := w.initial.CheckRetained(ctx, s); err == nil {
+	if err := w.initial.CheckRetained(ctx, s); err == nil && !nativeExpired {
 		return false, pgexec.Idle, nil
 	}
 	var command budget.InitialAdmissionCommand

@@ -824,13 +824,18 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 					leaseRenewInterval = time.Duration(current.TimeoutMS) * time.Millisecond / 3
 					nextLeaseRenew = time.Time{}
 					progress = pgexec.Recorded
+				} else {
+					// 完成CAS后期限也可能再次失效；当前来源审计失败不能
+					// 清latch。仅新验证确已过期时可进入同一持久关闭。
+					progress, err = worker.advanceNativeAdmissionExpiry(callCtx)
 				}
-			} else if c := snapshot.State().ServiceClosure; c != nil {
-				if c.Reopen != nil {
-					progress, err = worker.advanceServiceReopen(callCtx)
-				} else if c.Rearm != nil && c.Rearm.Phase == journal.Unconfirmed {
-					progress, err = worker.advanceServiceRearm(callCtx, c.Rearm.CommandSHA256, false)
-				}
+			} else if snapshot.State().ServiceClosure != nil {
+				// 普通过期轮次只观察原关闭/rearm/reopen，不自动重放setter。
+				_, progress, err = worker.advanceServiceSafety(callCtx, "")
+			} else {
+				// 原生过期本身会关闭服务，却不会生成外层关闭WAL。先以
+				// 新观察认证过期，再接上既有持久关闭；仍不派发原PG/VM。
+				progress, err = worker.advanceNativeAdmissionExpiry(callCtx)
 			}
 		} else if replay != nil {
 			progress, err = worker.ReplayOriginal(callCtx, *replay)

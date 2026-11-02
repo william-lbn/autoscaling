@@ -1,0 +1,11 @@
+# 原生准入过期：建立可恢复的原关闭WAL
+
+原Run观察到原生准入已过期时会安全停止派发PG/VM，但若ServiceClosure尚不存在，旧代码没有可达的初始关闭入口；现rearm/reopen又要求已有完整关闭WAL，因而只能等待。这个静态可达性缺口独立于354现场：该次实际Expired=false且deadline前进，不能用本提交冒充其根因修复。
+
+本批每次从正式Session和原生同boot事实重新认证Armed+Expired，拒绝已更高native floor；通过现Fence取得Fenced串行屏障后复读，要求当前floor及原deadline/LeaseEpoch/TimeoutMS不变，并再次核正式Session。Fence失败/Pending、复读变化、观察错误或未过期都不选择新关闭WAL。Fence只单调隔离，不续租、不清原Pending。不能用下一轮floor相等替代尚未取得的串行屏障。
+
+认证后仅接现serviceSafety的持久关闭选择，保留Active、原Key、Unknown、历史与预算；原健康轮次的选择语义保持。后续轮次仅沿原关闭/rearm/reopen观察，不盲重放setter，不派发原PG/VM，也不清过期latch。恢复仍要求原真实更高owner接管、原关闭接续及PG/VM/Guest/实际预算最终证明，再由管理者显式走既有rearm/reopen和完整Lifecycle。没有新增DTO、延长TTL或第二套恢复框架。
+
+最终精确六文件经Linux隔离快照：4个唯一race根、50子例全通过，无fail/skip。覆盖Active保留、首次开放Unknown保留、真实Lease接管前PG低floor、丢关闭ACK后原SDK/Owner重建、原显式恢复链，以及更高floor/Fence错误/Pending/复读变化等负控。旧过期管理与坏/缺WAL不续租保留；历史测试版本不累加为覆盖。结合已提交资源读取UDS的同源Agent静态编译及窄回归再次通过。
+
+本轮Kubernetes/PG端为明确协议peer，未做实际Linux准入过期整链、平台资格或K8s验收。生产ABI/PG17/PG18公共合同不变，后续需用真实原生期限事实验证该接续；所有原nonce/日志和源码摘要见receipt.json。

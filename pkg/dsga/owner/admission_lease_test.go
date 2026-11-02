@@ -224,7 +224,7 @@ func verifyExpiredNativeManagement(t *testing.T, ctx context.Context, mode strin
 	command := control.CoordinationCommand{ProtocolVersion: 1, Instance: control.CoordinationBinding(instance), ExpectedOwnerEpoch: epoch, Action: control.CoordinationState, Request: nil, Key: nil, Selector: ""}
 	state, err := endpoint.Submit(ctx, command)
 	require.NoError(t, err)
-	require.Equal(t, before.State(), *state.State)
+	assertNativeExpiryRetainsOriginal(t, before.State(), *state.State)
 	for _, action := range []control.CoordinationAction{control.CoordinationBegin, control.CoordinationCancel, control.CoordinationReplayPG, control.CoordinationReplayQuiesce, control.CoordinationReplayAdmission, control.CoordinationReplayResource, control.CoordinationReplayPrepare, control.CoordinationReplayVM, control.CoordinationReplayAbort, control.CoordinationRecoverUnchanged, control.CoordinationRecoverCapacity, control.CoordinationReplayInitial} {
 		t.Run(string(action), func(t *testing.T) {
 			denied := command
@@ -246,12 +246,12 @@ func verifyExpiredNativeManagement(t *testing.T, ctx context.Context, mode strin
 	}
 	state, err = endpoint.Submit(ctx, command)
 	require.NoError(t, err, "被拒绝的管理动作不能杀死查询入口")
-	require.Equal(t, before.State(), *state.State)
+	assertNativeExpiryRetainsOriginal(t, before.State(), *state.State)
 	stop()
 	require.ErrorIs(t, <-done, context.Canceled)
 	gotPosts, gotQueries, gotResize := pg.counts()
-	require.Equal(t, posts, gotPosts)
-	require.Equal(t, queries, gotQueries)
+	require.Equal(t, posts+1, gotPosts, "过期只新增一次持久关闭，不开放或重发业务")
+	require.GreaterOrEqual(t, gotQueries, queries)
 	require.Equal(t, resizePosts, gotResize)
 	pg.mu.Lock()
 	require.Equal(t, deadline, pg.leaseDeadline)
