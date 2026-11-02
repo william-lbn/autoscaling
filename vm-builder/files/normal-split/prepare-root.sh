@@ -14,6 +14,31 @@ $bb chown "$1:$2" "$root/var/db/postgres"
 # resolv.conf是动态网络孔，必须是真实普通文件，不跟随源镜像的运行时alias。
 if [ -L "$root/etc/resolv.conf" ]; then $bb rm "$root/etc/resolv.conf"; fi
 [ -f "$root/etc/resolv.conf" ] || : >"$root/etc/resolv.conf"
+# 原Alpine DHCP hook以/etc/resolv.conf.$$+rename发布，不能用于RO /etc下的
+# 单文件RW bind孔。仅本normal镜像构建期替换DNS函数的输出方式；IP/route与
+# legacy镜像原样保留，DNS失败仍明确失败，绝不改Guest/Host网络配置补绕过。
+dhcp="$root/neonvm/bin/udhcpc.script"
+[ -f "$dhcp" ] && [ ! -L "$dhcp" ] || exit 1
+patched="$dhcp.normal-prepared.$$"
+trap '$bb rm -f "$patched"' 0
+$bb awk '
+BEGIN { suffix=" >> \"$RESOLV_CONF.$$\""; nopen=0; nappend=0; nmode=0; nclose=0; inside=0 }
+$0=="resolvconf() {" { inside=1 }
+{
+ line=$0
+ if (inside && line=="\techo -n > \"$RESOLV_CONF.$$\"") { line="\t{"; nopen++ }
+ else if (inside && length(line)>=length(suffix) && substr(line,length(line)-length(suffix)+1)==suffix) { line=substr(line,1,length(line)-length(suffix)); nappend++ }
+ else if (inside && line=="\tchmod a+r \"$RESOLV_CONF.$$\"") { nmode++; next }
+ else if (inside && line=="\tmv -f \"$RESOLV_CONF.$$\" \"$RESOLV_CONF\"") { line="\t} > \"$RESOLV_CONF\" || exit 1"; nclose++ }
+ print line
+ if (inside && $0=="}") inside=0
+}
+END { if (nopen!=1 || nappend!=3 || nmode!=1 || nclose!=1 || inside) exit 1 }
+' "$dhcp" >"$patched"
+$bb sh -n "$patched"
+$bb chmod 0755 "$patched"
+$bb mv -f "$patched" "$dhcp"
+trap - 0
 for f in "$root"/neonvm/lib/*; do
  [ -f "$f" ] || continue
  n=${f##*/}

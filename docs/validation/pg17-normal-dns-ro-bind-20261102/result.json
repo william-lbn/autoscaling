@@ -1,0 +1,38 @@
+{
+  "seconds": 1.974118982005166,
+  "prepare_exit": 0,
+  "actual_hook_sha256": "8a3296afeb02b556f12c0b0a6915f374ba71e9c02791a70194deb83bbd714e08",
+  "cases": [
+    {
+      "case": "original-rename-control",
+      "exit": 0,
+      "same_original_inode": true,
+      "DNS_written": false,
+      "pass": true,
+      "root_readonly_assertion_failed": false
+    },
+    {
+      "case": "normal-inode-update",
+      "exit": 0,
+      "same_original_inode": true,
+      "DNS_written": true,
+      "pass": true,
+      "root_readonly_assertion_failed": false
+    },
+    {
+      "case": "normal-RO-hole-reject",
+      "exit": 1,
+      "same_original_inode": true,
+      "DNS_written": false,
+      "pass": true,
+      "root_readonly_assertion_failed": false
+    }
+  ],
+  "all_pass": true,
+  "classification": "actual isolated Linux filesystem/DHCP hook mechanism; no PG/Guest18c/Source/normal budget/K8s",
+  "host_network_changed": false,
+  "Source": false,
+  "normal": false,
+  "K8s": false,
+  "E": 0
+}

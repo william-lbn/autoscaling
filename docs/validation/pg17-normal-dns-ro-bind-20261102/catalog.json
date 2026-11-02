@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "target_backend_versions": [
+    17
+  ],
+  "postgres_versions_actually_tested": [],
+  "production_source": "vm-builder/files/normal-split/prepare-root.sh",
+  "source_sha256": "83aa9deb06790246bdf705b57d01e2bfe72576daa8ea3629065e792535c0afd8",
+  "actual_run": "/data/neon-build/validation/pg17-normal-dns-RO-bind-20261102T053206Z-4d98a5",
+  "classification": "isolated real RO-root/resolv bind + complete original DHCP hook mechanism",
+  "case_count": 3,
+  "all_pass": true,
+  "Scope": [
+    "normal build only",
+    "original IP/route preserved",
+    "no legacy or host network change"
+  ],
+  "raw_result": "result.json",
+  "Source": false,
+  "normal": false,
+  "K8s": false,
+  "E": 0
+}
