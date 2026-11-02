@@ -1,0 +1,66 @@
+{
+  "scope": "完整DEV controller orderly handoff + authoritative native expiry + new owner recovery；非Root重启收养/非crash/非Source认证",
+  "parent_head": "c40bec6811a3057cbb2218e749317cdfb8c5aa02",
+  "compiled_build": "/data/neon-build/validation/pg17-controller-observation-budget-go-20261102T231508Z-e5bb0f",
+  "build_source_lock_sha256": "48c582cc06420b7c8c436ca5b883205c7927b193ff183a26952df1b206aa4ea1",
+  "build_exit": 0,
+  "build_phases": {
+    "Host": 0,
+    "Guest": 0,
+    "seed": 0
+  },
+  "build_seconds": 107.28145482199034,
+  "actual_native": "/data/neon-build/validation/pg17-trusted-control-full-native-20261102T231919Z-cb705a",
+  "native_exit": 0,
+  "native_seconds": 413.6652644200367,
+  "total_seconds": 429.9343444959959,
+  "actual_history": 3,
+  "actual_active_nil": true,
+  "actual_owner_epoch": 3,
+  "actual_service_closure_nil": true,
+  "actual_native_TTL_ms": 30000,
+  "new_request_timeout_seconds": 120,
+  "original_existing_deadlines_not_extended": true,
+  "Go_Guest_watchdog_seconds": 420,
+  "Go_Guest_watchdog_510_NOT_APPLIED": true,
+  "harness": {
+    "PG17_Guest": 480,
+    "PG18_Guest": 390,
+    "Host": 560,
+    "outerHostTest": 610,
+    "worker": 650
+  },
+  "targeted_U": {
+    "prior_run": "/data/neon-build/validation/pg17-controller-expiry-host-go-20261102T222349Z-ca62b7",
+    "root_count": 2,
+    "sub_count": 8,
+    "not_rerun_in_e5": true,
+    "scope": "closed-mode selector and readonly bridge existing mechanism; r3 Complete/r4 harness covered by final real cb run",
+    "pass_names_found": [
+      "TestTrustedPG17ActualModeReceipt/busy-cancel",
+      "TestTrustedPG17ActualModeReceipt/normal-reply-loss",
+      "TestTrustedPG17ActualModeReceipt/sql-busy-drain",
+      "TestTrustedPG17ActualModeReceipt/controller-takeover",
+      "TestTrustedPG17ActualModeReceipt",
+      "TestTrustedPG17FaultCaseIsClosed/normal",
+      "TestTrustedPG17FaultCaseIsClosed/busy",
+      "TestTrustedPG17FaultCaseIsClosed/loss",
+      "TestTrustedPG17FaultCaseIsClosed/reject",
+      "TestTrustedPG17FaultCaseIsClosed"
+    ]
+  },
+  "cheap_actual_mode_check": "/data/neon-build/validation/pg17-controller-observation-assembly-dry-20261102T232226Z-281972/result.json",
+  "root_original_sha256": "8e49468b78341833d71f3f0b40117c3d7a1253e1ff4af180feb13bbe302b9927",
+  "Root_regular_files": 127,
+  "storage_receipt_sha256": "81fcbc9d9cff9c02ba94f7c5595484f23c10d3d21fb16e1b78492afdc55a325d",
+  "Source": false,
+  "Host_API_is_model": true,
+  "E": 0,
+  "K8s": false,
+  "old_failures_preserved": [
+    "3e5c3e missing Complete",
+    "ad8a67 observation390 truncated"
+  ],
+  "independent_review_sha256": "9ba2fa5dd69c70590ab795305505d7f976cbe8f343fbb849adcc663fbcb4ca3b",
+  "independent_scope": "realPG/Root/QMP plus modelHost; orderly handoff and natural expiry only"
+}

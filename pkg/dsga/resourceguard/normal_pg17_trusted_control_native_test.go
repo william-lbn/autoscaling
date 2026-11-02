@@ -570,7 +570,11 @@ func trustedControlNativeRun(t *testing.T, expectedMajor int) {
 		fmt.Printf("TRUSTED_PG17_GUEST_EXIT=%d\n", status)
 		_ = unix.Reboot(unix.LINUX_REBOOT_CMD_POWER_OFF)
 	}()
-	ctx, cancel := context.WithTimeout(context.Background(), 390*time.Second)
+	observationTimeout := 390 * time.Second
+	if expectedMajor == 17 {
+		observationTimeout = 480 * time.Second
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), observationTimeout)
 	defer cancel()
 	// 同正式CLI完成原KernelPrep2/memory2/Host6/7/8、split和Bootstrap。显式模式
 	// 在CheckGuest后返回，让PID1可启动Root/Compute；默认broker分支仍原样保留。

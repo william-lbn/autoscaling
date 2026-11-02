@@ -172,7 +172,7 @@ func runNativePG17TrustedControlHost(t *testing.T, fixture *NativePG17TrustedHos
 		require.NoError(t, e)
 		require.Equal(t, want, initialBootSHA(b))
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 480*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 560*time.Second)
 	defer cancel()
 	pod, e := f.core.CoreV1().Pods(f.store.Binding().Namespace).Get(ctx, f.config.PodName, metav1.GetOptions{})
 	require.NoError(t, e)

@@ -296,7 +296,12 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 		w.Header().Set("Cache-Control", "no-store")
 		// 固定 DEV 同步仅安排真实 SQL 任务，不提供任何 PG/Root/VM 许可。
 		if r.Method == http.MethodGet && r.URL.RawQuery == "" && r.URL.Path == "/pg17-fault-case" {
-			_, _ = w.Write([]byte(faultCase))
+			// 该端点仅选择Guest额外SQL任务；完整Host实际mode由独立entry收据核验。
+			guestWorkCase := faultCase
+			if faultCase == trustedPG17ControllerTakeoverMode {
+				guestWorkCase = ""
+			}
+			_, _ = w.Write([]byte(guestWorkCase))
 			return
 		}
 		if r.Method == http.MethodGet && r.URL.RawQuery == "" && r.URL.Path == "/pg17-sql-busy-release" {
@@ -340,11 +345,7 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 	if _, e = f.Core.CoordinationV1().Leases(lease.Namespace).Update(ctx, lease, metav1.UpdateOptions{}); e != nil {
 		return e
 	}
-	elector, e := owner.New(f.Core.CoordinationV1(), f.Store, owner.Options{LeaseDuration: 6 * time.Second, RenewDeadline: 4 * time.Second, RetryPeriod: time.Second, PodUID: "pod-uid"})
-	if e != nil {
-		return e
-	}
-	return elector.Run(ctx, func(ownerCtx context.Context, session *owner.Session) error {
+	return trustedPG17RunControllers(ctx, f, faultCase, func(ownerCtx context.Context, session *owner.Session, continuation bool, handoff *trustedPG17ControllerHandoff) error {
 		if e := session.Check(ownerCtx); e != nil {
 			return e
 		}
@@ -394,7 +395,16 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 		if e != nil {
 			return e
 		}
-		qualification, e := trustedDriverQualification(ownerCtx, f, view, false)
+		var qualification budget.QualificationSource
+		if continuation {
+			retained, read := f.Store.Load(ownerCtx)
+			if read != nil {
+				return read
+			}
+			qualification, e = trustedPG17RetainedQualification(retained.State())
+		} else {
+			qualification, e = trustedDriverQualification(ownerCtx, f, view, false)
+		}
 		if e != nil {
 			return e
 		}
@@ -517,64 +527,68 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 		defer func() { stop(); background.Wait() }()
 		// 先用7G/8G均保持出生N的原资格完成真实InitialBudget与InitialAdmission。
 		// 该loop退出与join后才选择另一immutable资格，不改旧CM或手填初开事实。
-		initialCtx, stopInitial := context.WithCancel(controlCtx)
-		initialDone := make(chan error, 1)
-		go func() {
-			initialDone <- worker.Run(initialCtx, owner.PGLoopOptions{PollInterval: 100 * time.Millisecond})
-		}()
-		initialJoined := false
-		defer func() {
-			stopInitial()
-			if !initialJoined {
-				<-initialDone
-			}
-		}()
-		for controlCtx.Err() == nil {
-			select {
-			case failure := <-failures:
-				return trustedDriverRecordFailure(failure.source, failure.err, failure.decisionUnixNano)
-			case failure := <-initialDone:
-				initialJoined = true
-				return trustedDriverRecordFailure("initial_owner_loop", fmt.Errorf("production initial owner loop exited: %w", failure))
-			default:
-			}
-			s, read := f.Store.Load(controlCtx)
-			if read != nil {
-				return read
-			}
-			if s.State().InitialAdmissionReady() {
-				if e = trustedDriverSave("initial-admission", map[string]any{"state": s.State(), "Host_API_is_model": true, "E": 0}); e != nil {
+		if !continuation {
+			initialCtx, stopInitial := context.WithCancel(controlCtx)
+			initialDone := make(chan error, 1)
+			go func() {
+				initialDone <- worker.Run(initialCtx, owner.PGLoopOptions{PollInterval: 100 * time.Millisecond})
+			}()
+			initialJoined := false
+			defer func() {
+				stopInitial()
+				if !initialJoined {
+					<-initialDone
+				}
+			}()
+			for controlCtx.Err() == nil {
+				select {
+				case failure := <-failures:
+					return trustedDriverRecordFailure(failure.source, failure.err, failure.decisionUnixNano)
+				case failure := <-initialDone:
+					initialJoined = true
+					return trustedDriverRecordFailure("initial_owner_loop", fmt.Errorf("production initial owner loop exited: %w", failure))
+				default:
+				}
+				s, read := f.Store.Load(controlCtx)
+				if read != nil {
+					return read
+				}
+				if s.State().InitialAdmissionReady() {
+					if e = trustedDriverSave("initial-admission", map[string]any{"state": s.State(), "Host_API_is_model": true, "E": 0}); e != nil {
+						return e
+					}
+					break
+				}
+				if e = trustedDriverPause(controlCtx); e != nil {
 					return e
 				}
-				break
 			}
-			if e = trustedDriverPause(controlCtx); e != nil {
+			if controlCtx.Err() != nil {
+				return controlCtx.Err()
+			}
+			stopInitial()
+			initialErr := <-initialDone
+			initialJoined = true
+			if initialErr != nil && !errors.Is(initialErr, context.Canceled) {
+				return initialErr
+			}
+			worker.CloseIdleConnections()
+			view, e = observer.InspectState(controlCtx)
+			if e != nil {
 				return e
 			}
 		}
-		if controlCtx.Err() != nil {
-			return controlCtx.Err()
+		if !continuation {
+			qualification, e = trustedDriverQualification(controlCtx, f, view, true)
+			if e != nil {
+				return e
+			}
+			worker, e = session.NewProductionPGWorker(controlCtx, pc, resources, f.Core.CoreV1(), qualification)
+			if e != nil {
+				return e
+			}
+			defer worker.CloseIdleConnections()
 		}
-		stopInitial()
-		initialErr := <-initialDone
-		initialJoined = true
-		if initialErr != nil && !errors.Is(initialErr, context.Canceled) {
-			return initialErr
-		}
-		worker.CloseIdleConnections()
-		view, e = observer.InspectState(controlCtx)
-		if e != nil {
-			return e
-		}
-		qualification, e = trustedDriverQualification(controlCtx, f, view, true)
-		if e != nil {
-			return e
-		}
-		worker, e = session.NewProductionPGWorker(controlCtx, pc, resources, f.Core.CoreV1(), qualification)
-		if e != nil {
-			return e
-		}
-		defer worker.CloseIdleConnections()
 		pgLoopCtx, stopPGLoop := context.WithCancel(controlCtx)
 		defer func() { stopPGLoop() }()
 		historyOffset := 0
@@ -585,6 +599,7 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 			historyOffset = 1
 		}
 		loopDone := make(chan error, 1)
+		pgControl := worker.NewControlEndpoint()
 		loopStarted := false
 		defer func() {
 			stop()
@@ -592,7 +607,19 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 				<-loopDone
 			}
 		}()
+		if continuation {
+			loopStarted = true
+			go func() {
+				loopDone <- worker.Run(pgLoopCtx, owner.PGLoopOptions{PollInterval: 100 * time.Millisecond, Control: pgControl})
+			}()
+			if e = trustedPG17AwaitControllerAdmission(controlCtx, f, session, pg, pgControl); e != nil {
+				return e
+			}
+		}
 		for index, target := range []uint32{1024, 256, 2048} {
+			if continuation && index == 0 {
+				continue
+			}
 			current, e := pg.Memory(controlCtx)
 			if e != nil {
 				return e
@@ -621,7 +648,9 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 			}
 			if !loopStarted {
 				loopStarted = true
-				go func() { loopDone <- worker.Run(pgLoopCtx, owner.PGLoopOptions{PollInterval: 100 * time.Millisecond}) }()
+				go func() {
+					loopDone <- worker.Run(pgLoopCtx, owner.PGLoopOptions{PollInterval: 100 * time.Millisecond, Control: pgControl})
+				}()
 			}
 			for controlCtx.Err() == nil {
 				select {
@@ -665,9 +694,12 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 					}
 					defer resources.CloseIdleConnections()
 					defer worker.CloseIdleConnections()
+					pgControl = worker.NewControlEndpoint()
 					pgLoopCtx, stopPGLoop = context.WithCancel(controlCtx)
 					loopStarted = true
-					go func() { loopDone <- worker.Run(pgLoopCtx, owner.PGLoopOptions{PollInterval: 100 * time.Millisecond}) }()
+					go func() {
+						loopDone <- worker.Run(pgLoopCtx, owner.PGLoopOptions{PollInterval: 100 * time.Millisecond, Control: pgControl})
+					}()
 					continue
 				}
 				if m.Active == nil {
@@ -715,6 +747,13 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 			stage := []string{"grow-8", "shrink-7", "regrow-8"}[index]
 			if e = trustedDriverStage(controlCtx, stage); e != nil {
 				return e
+			}
+			if faultMode == trustedPG17ControllerTakeoverMode && !continuation && index == 0 {
+				if _, e = trustedPG17LeaseObservation(controlCtx, pg, request.Key, "before-controller-yield"); e != nil {
+					return e
+				}
+				handoff.PG, handoff.Root, handoff.Ready = pc, rc, true
+				return errTrustedPG17YieldController
 			}
 		}
 		final, e := f.Store.Load(controlCtx)

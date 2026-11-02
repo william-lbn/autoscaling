@@ -35,7 +35,7 @@ import (
 func trustedPG17FaultMode() (string, error) {
 	mode := os.Getenv("DSGA_PG17_FAULT_CASE")
 	switch mode {
-	case "", "busy-cancel", "normal-reply-loss", "sql-busy-drain":
+	case "", "busy-cancel", "normal-reply-loss", "sql-busy-drain", trustedPG17ControllerTakeoverMode:
 		return mode, nil
 	}
 	return "", errors.New("unknown fixed trusted PG17 fault case")
@@ -43,7 +43,7 @@ func trustedPG17FaultMode() (string, error) {
 
 // 最早入口保存实际进程读取的闭集mode，不从父配置自报替代现场。
 func trustedPG17WriteModeReceipt(dir, mode string) error {
-	if mode != "" && mode != "busy-cancel" && mode != "normal-reply-loss" && mode != "sql-busy-drain" {
+	if mode != "" && mode != "busy-cancel" && mode != "normal-reply-loss" && mode != "sql-busy-drain" && mode != trustedPG17ControllerTakeoverMode {
 		return errors.New("invalid fixed mode receipt")
 	}
 	if e := os.MkdirAll(dir, 0700); e != nil {
@@ -64,7 +64,7 @@ func trustedPG17WriteModeReceipt(dir, mode string) error {
 	return f.Sync()
 }
 func TestTrustedPG17ActualModeReceipt(t *testing.T) {
-	for _, mode := range []string{"busy-cancel", "normal-reply-loss", "sql-busy-drain"} {
+	for _, mode := range []string{"busy-cancel", "normal-reply-loss", "sql-busy-drain", trustedPG17ControllerTakeoverMode} {
 		t.Run(mode, func(t *testing.T) {
 			dir := t.TempDir()
 			t.Setenv("DSGA_PG17_FAULT_CASE", mode)
