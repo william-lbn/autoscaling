@@ -1,0 +1,66 @@
+{
+  "scope": "独立平台资格发布器生产入口及协议peer读取/发布回归；不是实际平台认证",
+  "base_head": "5fe2a34cc32da69b06799cab8fb4363f63c344e0",
+  "sources": [
+    {
+      "path": "pkg/dsga/qualificationissuer/inputs.go",
+      "sha256": "518df5957b566064e879c5ef91f262ac78974798294fe4d5601ee4524289c6fb",
+      "bytes": 3705,
+      "lines": 109
+    },
+    {
+      "path": "pkg/dsga/qualificationissuer/inspect.go",
+      "sha256": "d0555f6517bbd598257a4d62df513875a7f58e904f8bf8eb69d804157307c76e",
+      "bytes": 12779,
+      "lines": 225
+    },
+    {
+      "path": "pkg/dsga/qualificationissuer/issuer.go",
+      "sha256": "00257cddc48a88dd2d3919d51305f7a7d6a3615ab65866571357e7aab4105c0b",
+      "bytes": 6790,
+      "lines": 140
+    },
+    {
+      "path": "pkg/dsga/qualificationissuer/issuer_test.go",
+      "sha256": "99bd199ce12c2e9eb50e40a0db3ccb2162d0cabbbf1ee20462df16b61509b07a",
+      "bytes": 28465,
+      "lines": 505
+    },
+    {
+      "path": "pkg/dsga/qualificationissuer/report.go",
+      "sha256": "b06cf7bb6c28614c3443906394088d2cff03d2f7ccf94adecd2997b819b48a08",
+      "bytes": 6429,
+      "lines": 124
+    },
+    {
+      "path": "pkg/dsga/qualificationissuer/root.go",
+      "sha256": "ac3bb9180ae3f08618c772e6a1283dbe50366404a40e0a4563050a2e2303f3e4",
+      "bytes": 4195,
+      "lines": 97
+    },
+    {
+      "path": "dsga-platform-qualifier/cmd/main.go",
+      "sha256": "86d2b4444ca8be43146410d62645be3baabdcbe162ff790cdeb20fc43a6a9748",
+      "bytes": 2933,
+      "lines": 85
+    }
+  ],
+  "test_dir": "/data/neon-build/validation/qualificationissuer-capture-go-20261102T191551Z-593864",
+  "stage_proposal_sha256": "df24d55de0dfc84208743a06a47e0cd0b08200143529b465324e40d6ecdccbdf",
+  "source_lock_sha256": "faf25042539eebbdbb8c4bc385122a9ba1f08f8d7fefed0db6d620f4c89397d6",
+  "result_sha256": "e664a9b106bf1c291264a1cecfe0c8a7edcc3a2357dfba4263044d0519da9c10",
+  "independent_review_sha256": "8a18cba43e718d1a0e4ab60ceac0b275a3c5e2b68e7b738a21c975b4be4ba875",
+  "capture_review_sha256": "20d766b5d6793648e3a514b5f02aa9835a0e61382e09b952e0b6ea62df063817",
+  "unique_race_roots": 10,
+  "unique_race_subcases": 15,
+  "fails": 0,
+  "skips": 0,
+  "static_CLI_build_exit": 0,
+  "actual_capture_3_reads_and_original_consumer_passed": true,
+  "before_create_Node_UID_drift_refused": true,
+  "actual_platform_qualification_issued": false,
+  "real_cluster_capture_executed": false,
+  "Source": false,
+  "E": 0,
+  "K8s": false
+}
