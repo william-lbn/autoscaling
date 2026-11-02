@@ -1,0 +1,61 @@
+{
+  "scope": "private ABI version selection only; no public wire/protocol changes",
+  "source_sha256": {
+    "pkg/dsga/resourceguard/native_birth_source.go": "ff01e8d720ef514ddcd82beae420a3b869a819da68afa4e517bf2ab0de9bac4a",
+    "pkg/dsga/resourceguard/normal_pg_memory_control_source_linux.go": "c0fba68b1e3f3ad830d4295e700ec40c3f91e93068d8f997d4052e8f1e273a43",
+    "pkg/dsga/resourceguard/native_birth_abi.go": "6258b0da30e9c4871826619348a6287665f7a783851246e8f5b790f8a69cfd5b",
+    "pkg/dsga/resourceguard/native_birth_source_test.go": "919fdf0420cd58c114824aecc47c50e3aaada33e63d63190ab0b29da61c98c29",
+    "pkg/dsga/resourceguard/native_birth_abi_test.go": "339b990c2afe166773fa685c0aaa82598c9b938e393cd609ca4a53ba861b2c56",
+    "pkg/dsga/resourceguard/native_birth_abi_linux_test.go": "6542ef6a5f5c14c16ea5984d91da666133dbe7acec9f23dabe969440e5f4784e"
+  },
+  "compiled_base": "05c40ad4961dfa04792959bee6b2cb4ae2e8db13",
+  "commit_parent": "2989f4bba182b63a41b3e8c3fb62219dedeb23e5",
+  "evidence_index": [
+    {
+      "path": "/data/neon-build/validation/pg18-native-birth-abi-go-20261102T082426Z-a797ec/result.json",
+      "sha256": "60bae51992349b852945541a58a672647d100f84c3e948b5b7073fcfa437465d"
+    },
+    {
+      "path": "/data/neon-build/validation/pg18-native-birth-no-rpath-native-20261102T083412Z-c83745/result.json",
+      "sha256": "3d530631b33ffc5d6faa19ccb2836da61d2a2af1a42fb34692597bdd8bb6cb92"
+    }
+  ],
+  "go_results": {
+    "race_roots": 5,
+    "race_subtests": 14,
+    "u_exit": 0,
+    "cli_exit": 0,
+    "darwin_exit": 0,
+    "native_compile_exit": 0,
+    "first_native_exit": 1,
+    "first_native_reason": "original PG18 ELF RPATH rejected; parser retained"
+  },
+  "native_component": {
+    "roots": 1,
+    "subtests": 1,
+    "relink_exit": 0,
+    "test_exit": 0,
+    "original_objects": 806,
+    "objects_unchanged": true,
+    "original_elf_unchanged": true,
+    "new_elf_sha256": "9a7d0e168f3416f13d4ae2d0402a4a37f28d27ecd2a35ef3d865b80d8c4091a4",
+    "actual_c_element_bytes": [
+      64,
+      8192,
+      16,
+      20
+    ],
+    "filter_instructions": [
+      801,
+      794,
+      534
+    ],
+    "wrong_c_layout_rejected": true,
+    "mapping_addresses_are_fixture": true
+  },
+  "NativeFinal_accepted": false,
+  "normal_accepted": false,
+  "Linux_full_E": 0,
+  "K8s_E": 0,
+  "PG17_release_lock_moved": false
+}

@@ -88,8 +88,9 @@ func newNativeBirthNonce() (string, error) {
 	return hex.EncodeToString(nonce[:]), nil
 }
 func (p nativeBirthPolicy) validate() error {
-	if p.ProtocolVersion != 1 || p.Scope != nativeBirthPolicyScope || p.PGmajor != 17 ||
-		p.PageBytes != 4096 || p.ElementBytes != [4]uint64{64, 8192, 16, 20} ||
+	abi, err := nativeBirthABIForPG(p.PGmajor)
+	if err != nil || p.ProtocolVersion != 1 || p.Scope != nativeBirthPolicyScope ||
+		p.PageBytes != abi.pageBytes || p.ElementBytes != abi.elementBytes ||
 		p.MaxBuffers == 0 || p.MaxBuffers > 0x7fffffff || p.StartupBuffers == 0 || p.StartupBuffers > p.MaxBuffers {
 		return fmt.Errorf("unsupported original native birth ABI or geometry")
 	}
@@ -107,7 +108,8 @@ func nativeBirthCleanPath(s string) bool {
 	return strings.HasPrefix(s, "/") && path.Clean(s) == s && s != "/" && len(s) <= 4096 && !strings.ContainsAny(s, "\x00\r\n")
 }
 func (m nativeBirthBuildManifest) validate() error {
-	if m.ProtocolVersion != 1 || m.Scope != nativeBirthBuildScope || m.PGmajor != 17 ||
+	_, err := nativeBirthABIForPG(m.PGmajor)
+	if err != nil || m.ProtocolVersion != 1 || m.Scope != nativeBirthBuildScope ||
 		m.LaunchPath != FixedPostgresPath || !nativeBirthCleanPath(m.PostgresPath) ||
 		len(m.Files) == 0 || len(m.Files) > 64 || m.InterpreterPath != "" && !nativeBirthCleanPath(m.InterpreterPath) {
 		return fmt.Errorf("unsupported native pre-main build manifest")

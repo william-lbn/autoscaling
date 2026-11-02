@@ -173,7 +173,8 @@ func (g *Guard) captureNormalPGMemoryControlSourceLocked(ctx context.Context, s 
 		return fail(err)
 	}
 	defer pg.Close()
-	if source.binding != original.pending.Source || !reflect.DeepEqual(source.resource.Config, g.config) || source.binding.Policy.PGmajor != 17 {
+	abi, err := nativeBirthABIForPG(source.binding.Policy.PGmajor)
+	if err != nil || source.binding != original.pending.Source || !reflect.DeepEqual(source.resource.Config, g.config) {
 		return fail(fmt.Errorf("original fixed PG source differs"))
 	}
 	stage, err := observeNativeBirthStageLocked(s, original.birthRef)
@@ -205,7 +206,7 @@ func (g *Guard) captureNormalPGMemoryControlSourceLocked(ctx context.Context, s 
 	if err != nil {
 		return fail(err)
 	}
-	ref := normalPGMemoryControlReference{ProtocolVersion: 1, Scope: normalPGMemoryControlScope, Birth: original.birthRef, ReleasedSHA256: original.releasedSHA, AuditSHA256: hex.EncodeToString(bundle.EncodedSHA256[:]), PGELFSHA256: source.binding.BinarySHA256, ResourceReferenceSHA256: resourceRef, RegistrationNonce: hex.EncodeToString(current.nonce[:]), MappingGeneration: current.request.MappingGeneration, PGBootID: current.request.PGBoot, Files: current.identities}
+	ref := normalPGMemoryControlReference{ProtocolVersion: 1, Scope: abi.memoryControlScope, Birth: original.birthRef, ReleasedSHA256: original.releasedSHA, AuditSHA256: hex.EncodeToString(bundle.EncodedSHA256[:]), PGELFSHA256: source.binding.BinarySHA256, ResourceReferenceSHA256: resourceRef, RegistrationNonce: hex.EncodeToString(current.nonce[:]), MappingGeneration: current.request.MappingGeneration, PGBootID: current.request.PGBoot, Files: current.identities}
 	out := &normalPGMemoryControlSource{guard: g, original: original, generation: current, reference: ref, bundle: bundle}
 	good := false
 	defer func() {

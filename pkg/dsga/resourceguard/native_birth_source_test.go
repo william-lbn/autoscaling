@@ -44,7 +44,7 @@ func TestNativeBirthSourceExactBytesAndUnsupportedABI(t *testing.T) {
 		name  string
 		alter func(*nativeBirthPolicy)
 	}{
-		{"PG18-unimplemented", func(p *nativeBirthPolicy) { p.PGmajor = 18 }},
+		{"PG18-policy-PG17-build-mismatch", func(p *nativeBirthPolicy) { p.PGmajor = 18 }},
 		{"startup-over-max", func(p *nativeBirthPolicy) { p.StartupBuffers = p.MaxBuffers + 1 }},
 		{"wrong-element", func(p *nativeBirthPolicy) { p.ElementBytes[3] = 24 }},
 		{"wrong-page", func(p *nativeBirthPolicy) { p.PageBytes = 65536 }},
@@ -95,7 +95,7 @@ func TestNativeBirthSourceManifestIsBoundedAndStrict(t *testing.T) {
 	for _, alter := range []func(*nativeBirthBuildManifest){
 		func(m *nativeBirthBuildManifest) { m.LaunchPath = "/tmp/postgres" },
 		func(m *nativeBirthBuildManifest) { m.PostgresPath = "/a/../b" },
-		func(m *nativeBirthBuildManifest) { m.PGmajor = 18 },
+		func(m *nativeBirthBuildManifest) { m.PGmajor = 19 },
 		func(m *nativeBirthBuildManifest) { m.Files = append(m.Files, m.Files[0]) },
 		func(m *nativeBirthBuildManifest) { m.InterpreterPath = "/missing" },
 		func(m *nativeBirthBuildManifest) { m.Files = nil },
