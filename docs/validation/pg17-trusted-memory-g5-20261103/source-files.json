@@ -1,0 +1,53 @@
+{
+  "files": [
+    {
+      "path": "pkg/dsga/resourceguard/normal_pg17_trusted_control_native_test.go",
+      "sha256": "255edffa60eadaf7f5cebdd3708defc3bdd7801e46a1609217c53d9b5b133d1c",
+      "bytes": 30749,
+      "host_compiled_source_sha256": "255edffa60eadaf7f5cebdd3708defc3bdd7801e46a1609217c53d9b5b133d1c",
+      "guest_compiled_source_sha256": "255edffa60eadaf7f5cebdd3708defc3bdd7801e46a1609217c53d9b5b133d1c",
+      "matches_pass_host": true,
+      "matches_pass_guest": true
+    },
+    {
+      "path": "pkg/dsga/resourceguard/normal_pg17_trusted_sql_busy_native_test.go",
+      "sha256": "a977f7b4bde376e172c157b9d51dcee0f2ec1c3d0dbfa57ace2023d878bc8279",
+      "bytes": 5045,
+      "host_compiled_source_sha256": "008a633d162dd8947359c46d8d798663a26225a192faa9e5bf9bcc1ed5cc658d",
+      "guest_compiled_source_sha256": "a977f7b4bde376e172c157b9d51dcee0f2ec1c3d0dbfa57ace2023d878bc8279",
+      "matches_pass_host": false,
+      "matches_pass_guest": true
+    },
+    {
+      "path": "pkg/dsga/vmguard/normal_pg17_trusted_control_native_test.go",
+      "sha256": "27406f73698028898937c97b7e9f0f193d3a41cd4be9c8c3ebfe9b33abc64097",
+      "bytes": 21483,
+      "host_compiled_source_sha256": "27406f73698028898937c97b7e9f0f193d3a41cd4be9c8c3ebfe9b33abc64097",
+      "guest_compiled_source_sha256": "27406f73698028898937c97b7e9f0f193d3a41cd4be9c8c3ebfe9b33abc64097",
+      "matches_pass_host": true,
+      "matches_pass_guest": true
+    },
+    {
+      "path": "pkg/dsga/vmguard/normal_pg17_trusted_control_driver_native_test.go",
+      "sha256": "710b03bb5c281fa1f23a2c4239181ccca683eadcdb17908ae23615f78796762e",
+      "bytes": 56035,
+      "host_compiled_source_sha256": "710b03bb5c281fa1f23a2c4239181ccca683eadcdb17908ae23615f78796762e",
+      "guest_compiled_source_sha256": "710b03bb5c281fa1f23a2c4239181ccca683eadcdb17908ae23615f78796762e",
+      "matches_pass_host": true,
+      "matches_pass_guest": true
+    },
+    {
+      "path": "pkg/dsga/vmguard/normal_pg17_trusted_faults_native_test.go",
+      "sha256": "1c1421e56469e5eb7d9f5e99b5a3c4d4b6fb3804364c400cee135f1474e86826",
+      "bytes": 27608,
+      "host_compiled_source_sha256": "1c1421e56469e5eb7d9f5e99b5a3c4d4b6fb3804364c400cee135f1474e86826",
+      "guest_compiled_source_sha256": "1c1421e56469e5eb7d9f5e99b5a3c4d4b6fb3804364c400cee135f1474e86826",
+      "matches_pass_host": true,
+      "matches_pass_guest": true
+    }
+  ],
+  "Host_actual_sha256": "14ec11934522f027923359a9a12a1f73a8b87988e0a9a631ae6e0feaf50942e6",
+  "Guest_actual_sha256": "0a8238d0578e042d7306e33d1c186ad873d8f707a42e33b48e41adce54cb2b7b",
+  "stock_dependency": "HEAD original85556c4e; current unverified stock observer WIP is excluded",
+  "Host_sql_busy_test_not_compiled_by_Host_tags": true
+}

@@ -1,0 +1,46 @@
+{
+  "protocol_version": 1,
+  "scope": "DEV non-default native component API/integration/recovery; not real Kubernetes E2E",
+  "native_SQL_busy": {
+    "path": "/data/neon-build/validation/pg17-trusted-control-full-native-20261102T213336Z-d36f7d",
+    "native_exit": 0,
+    "seconds": 303.257,
+    "independent_review_sha256": "b600237db0973e38b2885bab9485ff1f4bd64da58f356609fd630878b8eb8019",
+    "checks": [
+      "real Work2 executing and non-idle; three samples preserve N/P/A/VM",
+      "same original Quiesce Key/command retained; later steps planned while busy",
+      "actual pg_cancel_backend/57014/uniqueWait1",
+      "same original request drains then four-array physical release and actual N/A lower",
+      "VM8->7->8; data checksum unchanged; three operations settled"
+    ],
+    "not_claimed": [
+      "buffer pin",
+      "new owner takeover",
+      "Root live-PG adoption"
+    ]
+  },
+  "lost_reply_component": {
+    "path": "/data/neon-build/validation/pg17-trusted-control-full-native-20261102T203024Z-065283",
+    "native_exit": 0,
+    "seconds": 346.041,
+    "independent_review_sha256": "fa086968cc85491349e3d8db0fdd8415a7ca8a5d5d66c4d8d3ebc6c626756dac",
+    "scope": "same Session client/worker restart and original read-confirmation; not higher-epoch takeover"
+  },
+  "unit_race": {
+    "unique_roots": 10,
+    "unique_subcases": 37,
+    "first_path": "/data/neon-build/validation/pg17-g5-final-dev-unit-go-20261102T215158Z-f70697",
+    "first_result_sha256": "6c7f6330782d47bd787c5bfceb2aadaaedd0789018603adfea48ff3efc43cee2",
+    "first_environment_failure": "OriginalReadyReadConfirmation lacked original before.json fixture; other nine roots pass. Original failure preserved.",
+    "one_root_retry_path": "/data/neon-build/validation/pg17-g5-original-wal-readcheck-go-20261102T215504Z-ac2309",
+    "one_root_retry_result_sha256": "8d4ac8ddc94db36530a52e50b6fd870bde14346255575f666b902a07735a3206",
+    "one_root_retry_seconds": 12.114815082983114,
+    "retry_provenance_sha256": "e858dae7f8c4e4cac23346e123217a4f002b85778568b82e89dfe66f54167d11",
+    "other_nine_roots_not_repeated": true
+  },
+  "Host_API_is_model": true,
+  "Source": false,
+  "E": 0,
+  "K8s": false,
+  "all_gates_accepted": false
+}
