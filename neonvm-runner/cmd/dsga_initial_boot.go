@@ -12,6 +12,7 @@ import (
 // 明确首版base选择；BootUpper仅限制此选择，不是观测事实。真正base仍由原QMP核验。
 // 不从当前RSS、spec.Use、环境变量或现有requested-size推导初始Origin。
 const managedInitialBaseBytes uint64 = 256 << 20
+const trustedControllerInitialBaseBytes uint64 = 512 << 20
 
 func initialBootMemoryArguments(cfg *Config, spec *vmv1.VirtualMachineSpec) ([]string, error) {
 	if cfg == nil || spec == nil {
@@ -25,12 +26,18 @@ func initialBootMemoryArguments(cfg *Config, spec *vmv1.VirtualMachineSpec) ([]s
 		return nil, nil
 	}
 	initial := cfg.initialBootstrap
-	if spec.DSGABootstrap == nil || cfg.architecture != architectureAmd64 || cfg.cpuScalingMode != vmv1.CpuScalingModeSysfs || initial == nil || initial.OriginalBaseBytes != managedInitialBaseBytes {
+	if spec.DSGABootstrap == nil || cfg.architecture != architectureAmd64 || cfg.cpuScalingMode != vmv1.CpuScalingModeSysfs || initial == nil {
 		return nil, fmt.Errorf("new boot requires original managed amd64 sysfs mode and fixed base")
 	}
 	hash := sha256.Sum256(initial.RuntimeJSON)
 	if hex.EncodeToString(hash[:]) != cfg.runtimeBoot.RuntimeDocumentSHA256() || initial.OriginalBaseBytes > cfg.runtimeBoot.BootMemoryUpperBoundBytes() {
 		return nil, fmt.Errorf("initial mode differs from original runtime bytes")
+	}
+	// 只有已绑定同一原raw的执行模型可选择另一个固定base；不能按请求、
+	// 当前Use/占用或BootUpper推导值，也不能修改initial字段绕过最终核验。
+	fixedBase, err := initialBaseForRuntime(initial.RuntimeJSON)
+	if err != nil || initial.OriginalBaseBytes != fixedBase {
+		return nil, fmt.Errorf("initial base differs from original runtime execution model")
 	}
 	slot, exact := spec.Guest.MemorySlotSize.AsInt64()
 	slots := spec.Guest.MemorySlots

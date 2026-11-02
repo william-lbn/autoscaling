@@ -1,0 +1,23 @@
+{
+  "scope": "Runner original validated trusted-controller-v1 fixed512MiB selection only; legacy256 unchanged",
+  "head": "9d46c1e600125a665b44abb31f4989288d3fa343",
+  "owned3": [
+    "neonvm-runner/cmd/dsga_initial_boot.go",
+    "neonvm-runner/cmd/dsga_runtime_boot.go",
+    "neonvm-runner/cmd/dsga_trusted_initial_boot_test.go"
+  ],
+  "baseline": {
+    "neonvm-runner/cmd/dsga_initial_boot.go": "ebac54dd19d84a497b879e2acada03951829a09c752df7c6b13f4a97b463fa4c",
+    "neonvm-runner/cmd/dsga_runtime_boot.go": "25d5b0a16cd42656446de6778808c64f16bd41e87cce0093b14901a3eb82024d"
+  },
+  "tests": "new3 roots plus directly affected original InitialBase3; no QEMU/native/normal acceptance claim",
+  "resources": "Go3CPU3GiB; no PG18 heavy or data-plane service changes",
+  "preserved": [
+    "original raw SHA and complete policies",
+    "original BootUpper",
+    "amd64/sysfs managed source",
+    "business min/max and8MiBgeometry",
+    "default unmanaged/legacy paths",
+    "PG17 lock/AS25/shared protocol"
+  ]
+}

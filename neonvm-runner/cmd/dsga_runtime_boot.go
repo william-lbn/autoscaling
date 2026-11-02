@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
@@ -24,10 +25,14 @@ func configureRuntimeBootRequirements(cfg *Config, assets map[string][]byte) err
 		return err
 	}
 	if plan.Enabled() {
-		if plan.BootMemoryUpperBoundBytes() < managedInitialBaseBytes {
+		base, err := initialBaseForRuntime(assets[resourceguard.RuntimeResourceAssetName])
+		if err != nil {
+			return err
+		}
+		if plan.BootMemoryUpperBoundBytes() < base {
 			return fmt.Errorf("fixed initial base exceeds original boot upper")
 		}
-		cfg.initialBootstrap = &vmguard.InitialBootstrapConfig{RuntimeJSON: append([]byte(nil), assets[resourceguard.RuntimeResourceAssetName]...), OriginalBaseBytes: managedInitialBaseBytes}
+		cfg.initialBootstrap = &vmguard.InitialBootstrapConfig{RuntimeJSON: append([]byte(nil), assets[resourceguard.RuntimeResourceAssetName]...), OriginalBaseBytes: base}
 	}
 	cfg.runtimeBoot = &plan
 	return nil
@@ -55,4 +60,22 @@ func checkedRuntimeKernelCmdline(cfg *Config, logger *zap.Logger, spec *vmv1.Vir
 		}
 	}
 	return cmdline, nil
+}
+
+// 调用方已派生完整原资产计划；最终QEMU入口还先核原raw SHA。这里复用
+// RuntimeDocument.Source严格校验，只选择受支持部署模型的两个固定常量，
+// 不新增用户可配base，不把计划值或模型字符串签成实际QMP出生事实。
+func initialBaseForRuntime(raw []byte) (uint64, error) {
+	var document resourceguard.RuntimeDocument
+	if err := json.Unmarshal(raw, &document); err != nil {
+		return 0, err
+	}
+	source, err := document.Source()
+	if err != nil {
+		return 0, err
+	}
+	if source.Config.ExecutionModel == resourceguard.TrustedControllerExecutionModel {
+		return trustedControllerInitialBaseBytes, nil
+	}
+	return managedInitialBaseBytes, nil
 }
