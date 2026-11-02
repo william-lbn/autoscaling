@@ -291,8 +291,9 @@ func (e *Executor) advanceSelected(ctx context.Context, replay *control.Key, exp
 				return pgexec.AwaitingFact, envelopeErr
 			}
 			var response resourceguard.NormalQuotaEvidence
-			// 精确原信封由Root判断持久partial/complete；显式Replay可交付未开始
-			// cap的原信封，普通Advance仅Observe而不重发。
+			// 精确原信封由Root在同一原锁内选择：缺记录且本命令尚无效应才
+			// 首次交付；entry-only/partial/complete仍核原持久事实再重放。
+			// 不依据legacy Original或HTTP Unknown猜测；普通Advance只Observe。
 			response, err = e.resources.ReplayNormalQuota(ctx, envelope)
 			evidence = response.Actual
 		} else if view.Original != nil && reflect.DeepEqual(*view.Original, command) {

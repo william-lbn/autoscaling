@@ -75,7 +75,7 @@ func (g *Guard) normalQuota(ctx context.Context, v NormalQuotaEnvelope, mode str
 			}
 			fromBudget = entry.FromBudgetCommitmentID
 		}
-		if !exists && mode != "apply" {
+		if !exists && mode != "apply" && mode != "replay" {
 			return normalQuotaFailure(1079, errors.Join(ErrUnknown, fmt.Errorf("normal quota original envelope absent")))
 		}
 		top, err := g.normalSplitLocked(ctx, inputs, normalSplitObserve, s)
@@ -88,6 +88,15 @@ func (g *Guard) normalQuota(ctx context.Context, v NormalQuotaEnvelope, mode str
 		}
 		if exists && mode == "apply" && (count != 4 || !r.Applied || r.Original == nil || !reflect.DeepEqual(*r.Original, v.Command)) {
 			return normalQuotaFailure(1090, errors.Join(ErrUnknown, fmt.Errorf("normal quota retained envelope requires explicit replay")))
+		}
+		effective := mode
+		if mode == "replay" {
+			// 仅显式恢复由Root原锁内事实选择首次交付或同原意图重放。
+			// 普通Observe不据缺记录或HTTP Unknown推导任何写动作。
+			effective, err = normalQuotaReplayModeLocked(r, v.Command, exists, count)
+			if err != nil {
+				return normalQuotaFailure(1092, err)
+			}
 		}
 		if count == 0 {
 			original.Original = top.Current
@@ -112,10 +121,6 @@ func (g *Guard) normalQuota(ctx context.Context, v NormalQuotaEnvelope, mode str
 			if err = s.syncPhysicalFile(normalQuotaEnvelopeName(v.Command)); err != nil {
 				return normalQuotaFailure(1113, errors.Join(ErrUnknown, err))
 			}
-		}
-		effective := mode
-		if mode == "replay" && count == 0 && (r.Original == nil || !reflect.DeepEqual(*r.Original, v.Command)) {
-			effective = "apply"
 		}
 		actual, err := g.normalQuotaHandoffLocked(ctx, s, r, auth, effective, normalQuotaHandoffDiskIO())
 		if err != nil {

@@ -1,0 +1,26 @@
+{
+  "build_exit": 0,
+  "unit_exit": 0,
+  "passed_roots": [
+    "TestNormalQuotaExplicitReplayRootSelection",
+    "TestNormalQuotaExplicitReplayRetainsOriginalHandoff"
+  ],
+  "subtests": 18,
+  "failed": 0,
+  "skipped": 0,
+  "race": true,
+  "wall_seconds": 46.214289794967044,
+  "HTTP_tested": false,
+  "real_PG_or_cgroup_tested": false,
+  "normal_qualification_passed": false,
+  "scope": "explicit normal Replay selector and existing handoff model unit tests",
+  "run": "pg17-normal-explicit-replay-go-20261102T143609Z-5c8662",
+  "source_files": {
+    "pkg/dsga/resourceexec/executor.go": "a1be00f3af9d9cf2a29caa571202bdcb46b14d7dd3629ad18f834e65c3888c5a",
+    "pkg/dsga/resourceguard/normal_quota_consumer_linux.go": "ec547b730bd906d1db0f655d827f521590113a8b692b6111716da8791c7c1896",
+    "pkg/dsga/resourceguard/normal_quota_replay_linux.go": "a988bc5d3ea8f0640a62d17c79b1948fd7061d8b45087cf65da63e89cf51a104",
+    "pkg/dsga/resourceguard/normal_quota_replay_linux_test.go": "3229de8bd37f13de30d208b6e84d8083acbf6b193d5e45210a9c73d496583622"
+  },
+  "E": 0,
+  "K8s": 0
+}
