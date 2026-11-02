@@ -339,7 +339,7 @@ func (s *arrayNativeServices) populateLocked(ctx context.Context, state *lockedS
 		one := base
 		one.Files[q.Array].Offset = control.Uint64(offset)
 		one.Files[q.Array].Length = control.Uint64(length)
-		result, e := runNativeArrayPopulate(ctx, state, one, o.current.files, nil)
+		result, e := runNativeArrayPopulateForSource(ctx, state, one, o.current.files, nil, &s.source)
 		if e != nil || !result.Completed || !result.ExitObserved || result.NormalAuthorized {
 			return errors.Join(ErrUnknown, e, fmt.Errorf("original array helper did not durably finish"))
 		}

@@ -12,6 +12,7 @@ import (
 	"os/user"
 	"strconv"
 	"sync"
+	"syscall"
 	"time"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
@@ -166,7 +167,16 @@ func (s *arrayNativeServices) serve(ctx context.Context, listener *net.UnixListe
 		if birth {
 			_ = s.handleBirth(call, conn)
 		} else {
-			_ = s.handleArrays(call, conn)
+			if e := s.handleArrays(call, conn); e != nil {
+				var stage *arrayPopulateStageError
+				var errno syscall.Errno
+				code := uint32(0)
+				if errors.As(e, &stage) {
+					code = stage.stage
+				}
+				_ = errors.As(e, &errno)
+				fmt.Fprintf(os.Stderr, "DSGA_ARRAY_RPC_FAILURE stage=%d errno=%d\n", code, uint32(errno))
+			}
 		}
 		cancel()
 		_ = conn.Close()

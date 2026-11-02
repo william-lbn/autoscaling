@@ -11,6 +11,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
@@ -322,7 +323,45 @@ func arrayPopulateAppendWithDurability(s *lockedState, nonce, phase string, v an
 	return b, nil
 }
 
-func arrayPopulateKernelIdentity(c arrayPopulateContext) error {
+type arrayPopulateStageError struct {
+	stage uint32
+	err   error
+}
+
+func (e *arrayPopulateStageError) Error() string { return e.err.Error() }
+func (e *arrayPopulateStageError) Unwrap() error { return e.err }
+
+// 只消费调用点已核ISO/封存副本的原runtime；请求和helper wire均不能选择profile。
+// 可信控制器精确沿原metadata2启动合同，旧模式仍只认旧369构建。
+func arrayPopulateKernelBuild(c arrayPopulateContext, source SourceConfig, raw []byte) (PhysicalKernelBuildReference, error) {
+	var zero PhysicalKernelBuildReference
+	var d RuntimeDocument
+	if e := json.Unmarshal(raw, &d); e != nil {
+		return zero, e
+	}
+	actual, e := d.Source()
+	if e != nil || !reflect.DeepEqual(actual, source) || source.Config.VMUID != c.Original.Identity.VMUID || source.Config.ComputeInstanceID != c.Original.Identity.ComputeInstanceID {
+		return zero, errors.Join(ErrUnknown, fmt.Errorf("array helper original VM/compute source differs"), e)
+	}
+	if source.Config.ExecutionModel == "" {
+		return LookupPhysicalKernelBuild(NormalSplitV1PhysicalKernelProfileID)
+	}
+	if source.Config.ExecutionModel != TrustedControllerExecutionModel {
+		return zero, ErrUnknown
+	}
+	assets, e := RenderRuntimePolicyAssets(raw)
+	if e != nil {
+		return zero, e
+	}
+	assets[RuntimeResourceAssetName] = raw
+	plan, e := DeriveRuntimeBootRequirements(raw, assets)
+	if e != nil || plan.ProfileID() != NormalSplitMetadataV1PhysicalKernelProfileID || plan.MemoryOriginProtocolVersion() != 2 || plan.KernelPreparationProtocolVersion() != 2 || !plan.KernelBuildReference().ControlMetadataGuard() {
+		return zero, errors.Join(ErrUnknown, fmt.Errorf("array helper original metadata boot source differs"), e)
+	}
+	return plan.KernelBuildReference(), nil
+}
+
+func arrayPopulateKernelIdentity(c arrayPopulateContext, original *nativeBirthSource) error {
 	if runtime.GOARCH != "amd64" || os.Getpagesize() != 4096 || os.Getuid() != 0 || os.Geteuid() != 0 {
 		return fmt.Errorf("array helper requires supported real Root")
 	}
@@ -330,13 +369,27 @@ func arrayPopulateKernelIdentity(c arrayPopulateContext) error {
 	if e != nil {
 		return e
 	}
+	if original != nil {
+		sealed, e := sealedRuntimeSource()
+		if e != nil {
+			return e
+		}
+		source, raw, e := runtimeSource()
+		if e != nil || !reflect.DeepEqual(source, sealed) || !reflect.DeepEqual(source, original.resource) {
+			return errors.Join(ErrUnknown, fmt.Errorf("array helper original sealed runtime differs"), e)
+		}
+		ref, e = arrayPopulateKernelBuild(c, source, raw)
+		if e != nil {
+			return e
+		}
+	}
 	release, e := kernelText("/proc/sys/kernel/osrelease")
 	if e != nil || release != ref.KernelRelease {
-		return fmt.Errorf("array helper exact369 kernel differs")
+		return fmt.Errorf("array helper original kernel differs")
 	}
 	notes, e := physicalKernelNotes()
 	if e != nil || physicalDigest(notes) != ref.KernelNotesSHA256 {
-		return fmt.Errorf("array helper exact369 notes differ")
+		return fmt.Errorf("array helper original notes differ")
 	}
 	boot, e := kernelText("/proc/sys/kernel/random/boot_id")
 	if e != nil || boot != c.Original.Identity.GuestBootID {
@@ -677,6 +730,17 @@ func arrayPopulateAbortWait(cmd *exec.Cmd, pidfd int) (bool, error) {
 // cap writer接同一个pending门禁。本组件目前无生产handler/launcher接线。
 // 原UID/进程/PG boot/FD来源仍由外层真实producer给出，绝不拿本结果发normal许可。
 func runNativeArrayPopulate(ctx context.Context, s *lockedState, c arrayPopulateContext, files [4]*os.File, observe arrayPopulateProgressObserver) (result arrayPopulateResult, err error) {
+	return runNativeArrayPopulateForSource(ctx, s, c, files, observe, nil)
+}
+
+// 生产caller传已持有的原native来源；standalone旧入口保持固定369与原前置。
+func runNativeArrayPopulateForSource(ctx context.Context, s *lockedState, c arrayPopulateContext, files [4]*os.File, observe arrayPopulateProgressObserver, original *nativeBirthSource) (result arrayPopulateResult, err error) {
+	stage := uint32(1)
+	defer func() {
+		if err != nil {
+			err = &arrayPopulateStageError{stage: stage, err: err}
+		}
+	}()
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
 	if ctx == nil || ctx.Err() != nil {
@@ -686,43 +750,54 @@ func runNativeArrayPopulate(ctx context.Context, s *lockedState, c arrayPopulate
 	if !bounded || !deadline.After(time.Now()) || deadline.After(time.Now().Add(30*time.Second)) {
 		return result, fmt.Errorf("bounded original helper context required before birth")
 	}
+	stage = 2
 	if e := c.validate(); e != nil {
 		return result, e
 	}
-	if e := arrayPopulateKernelIdentity(c); e != nil {
+	stage = 3
+	if e := arrayPopulateKernelIdentity(c, original); e != nil {
 		return result, e
 	}
+	stage = 4
 	if e := arrayPopulateVerifyFDs(c, files); e != nil {
 		return result, e
 	}
+	stage = 5
 	if e := arrayPopulateGroups(c, 0); e != nil {
 		return result, e
 	}
+	stage = 6
 	if e := rejectOutstandingArrayPopulateLocked(s); e != nil {
 		return result, e
 	}
+	stage = 7
 	helper, e := nativeBirthOpenRO(arrayPopulateHelperPath)
 	if e != nil {
 		return result, e
 	}
 	defer helper.Close()
+	stage = 8
 	h, e := nativeBirthFileHash(helper)
 	if e != nil || h != c.HelperSHA256 {
 		return result, fmt.Errorf("original fixed helper ELF differs")
 	}
+	stage = 9
 	image, imageBytes, e := arrayPopulateLockedImage(helper)
 	if e != nil || imageBytes > uint64(c.MemlockUpperBytes) {
 		return result, fmt.Errorf("helper original static LOAD image exceeds lock bound: %v", e)
 	}
+	stage = 10
 	helperInfo, e := helper.Stat()
 	if e != nil {
 		return result, e
 	}
+	stage = 11
 	fileUpper := (uint64(helperInfo.Size()) + 4095) &^ uint64(4095)
 	// 这是A预算的保守重复预留，不声称ELF既有cache已从System/K迁费到A。
 	if uint64(c.HelperReserveBytes) < uint64(c.AddressSpaceMaxBytes)+fileUpper {
 		return result, fmt.Errorf("original helper A reserve lacks AS plus full ELF file upper")
 	}
+	stage = 12
 	cgroupFD, e := unix.Open(arrayPopulateCgroup, unix.O_RDONLY|unix.O_DIRECTORY|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0)
 	if e != nil {
 		return result, e
@@ -733,6 +808,7 @@ func runNativeArrayPopulate(ctx context.Context, s *lockedState, c arrayPopulate
 	if unix.Fstat(cgroupFD, &groupStat) != nil || unix.Fstatfs(cgroupFD, &groupFS) != nil || groupFS.Type != unix.CGROUP2_SUPER_MAGIC || groupStat.Dev != uint64(c.ArraysDevice) || groupStat.Ino != uint64(c.ArraysInode) {
 		return result, fmt.Errorf("original pinned arrays birth domain differs")
 	}
+	stage = 13
 	var st, lock unix.Stat_t
 	if e = unix.Fstat(int(s.dir.Fd()), &st); e != nil {
 		return result, e
@@ -740,27 +816,33 @@ func runNativeArrayPopulate(ctx context.Context, s *lockedState, c arrayPopulate
 	if e = unix.Fstat(int(s.lock.Fd()), &lock); e != nil {
 		return result, e
 	}
+	stage = 14
 	if privateRegular(int(s.dir.Fd()), unix.S_IFDIR) != nil || privateRegular(int(s.lock.Fd()), unix.S_IFREG) != nil {
 		return result, fmt.Errorf("original private resource state missing")
 	}
+	stage = 15
 	fdinfo, e := os.ReadFile("/proc/self/fdinfo/" + strconv.Itoa(int(s.lock.Fd())))
 	if e != nil || !strings.Contains(string(fdinfo), "FLOCK  ADVISORY  WRITE") {
 		return result, fmt.Errorf("original resource OFD flock not observed")
 	}
+	stage = 16
 	parent, e := nativeBirthCurrentConsumerIdentity()
 	if e != nil {
 		return result, e
 	}
+	stage = 17
 	nonce, e := newNativeBirthNonce()
 	if e != nil {
 		return result, e
 	}
 	result.Nonce = nonce
 	pending := arrayPopulatePending{ProtocolVersion: 1, Scope: arrayPopulateScope, Nonce: nonce, Parent: parent, Context: c, ParentGuestBootID: c.Original.Identity.GuestBootID, StateDevice: control.Uint64(st.Dev), StateInode: control.Uint64(st.Ino), LockDevice: control.Uint64(lock.Dev), LockInode: control.Uint64(lock.Ino)}
+	stage = 18
 	rawPending, e := arrayPopulateAppend(s, nonce, "pending", pending)
 	if e != nil {
 		return result, e
 	}
+	stage = 19
 	wire, e := pending.wire()
 	if e != nil {
 		return result, errors.Join(ErrUnknown, e)

@@ -1,0 +1,36 @@
+{
+  "source": {
+    "head": "d74e02db0da6cca1a21d824959ca133b8a0821fe",
+    "owned": {
+      "pkg/dsga/resourceguard/native_array_populate_linux.go": "9c12eb58775f30a18a3187f8e75275466b12f8a02cdd9980a3ca213af6173694",
+      "pkg/dsga/resourceguard/array_service_socket_linux.go": "c20935e0c1792ccbee755fb0ea92a6469c966018a0f24cf762fa271fb032543f",
+      "pkg/dsga/resourceguard/native_array_populate_profile_linux_test.go": "2578dcffb16c8163cfd59444be81fb0d9a8be353020258f25f62b2e08cccace5",
+      "pkg/dsga/resourceguard/array_service_populate_linux.go": "178df3726b4ebefd79bffa4c9e2648c57e8fcbfc5f65aa1b4b9639f35499d93a"
+    }
+  },
+  "review": "Root complete source diff, explicit production native source vs standalone wrapper, immutable source/profile and unchanged release/notes/hard limit gates; diagnostic error unwrap retained",
+  "roots": [
+    "TestArrayPopulateOriginalKernelProfile",
+    "TestArrayPopulateStagePreservesOriginalError",
+    "TestNativeArrayPopulateOriginalPlanWire",
+    "TestNativeArrayPopulatePreparedResponse"
+  ],
+  "subtests": 35,
+  "all_three_phases": {
+    "build_exit": 0,
+    "phases": {
+      "u.exitcode": 0,
+      "cli.exitcode": 0,
+      "guest.exitcode": 0
+    },
+    "seconds": 56.17294267300167,
+    "Source": false,
+    "normal": false,
+    "E": 0
+  },
+  "first_failure_retained": true,
+  "native_normal_accepted": false,
+  "Source": false,
+  "E": 0,
+  "K8s": false
+}

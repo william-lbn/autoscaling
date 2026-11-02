@@ -1,0 +1,22 @@
+[
+  "docker",
+  "buildx",
+  "build",
+  "--builder",
+  "neon-data",
+  "--resource",
+  "memory=3g",
+  "--resource",
+  "memory-swap=3g",
+  "--resource",
+  "cpu-quota=300000",
+  "--network",
+  "none",
+  "--progress",
+  "plain",
+  "--output",
+  "type=local,dest=/data/neon-build/validation/pg17-array-populate-profile-go-20261102T054021Z-48b3c9/export",
+  "-f",
+  "/data/neon-build/validation/pg17-array-populate-profile-go-20261102T054021Z-48b3c9/Dockerfile",
+  "/data/neon-build/validation/pg17-array-populate-profile-go-20261102T054021Z-48b3c9/source"
+]
