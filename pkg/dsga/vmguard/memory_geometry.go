@@ -3,7 +3,6 @@ package vmguard
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 )
@@ -37,18 +36,52 @@ type memoryGeometryInputs struct {
 // 容量及base逐个互证。QEMU8.1.5真实query-memdev包括自动pc.ram，不能误认成额外设备。
 // 整数不经float64；缺字段/null/第二个设备/未知backend都拒绝。原始QMP帧已由
 // qmpConnection验证重复键和大小，这里仍对独立调用逐份验证，避免测试/未来调用绕过。
+// 仅保存原拒绝决定的阶段和同次固定只读QMP响应，不能用作预算或完成凭证。
+// 输入只在失败后有界复制；畸形/超界帧只记长度，避免错误归档再次解析任意内容。
+type originalMemoryGeometryFailure struct {
+	Stage        string               `json:"stage"`
+	FrameIndex   int                  `json:"frame_index"`
+	Identity     Identity             `json:"identity"`
+	ExpectedBase control.Uint64       `json:"expected_base"`
+	ExpectedUUID string               `json:"expected_uuid"`
+	FrameLengths [6]int               `json:"frame_lengths"`
+	Inputs       memoryGeometryInputs `json:"inputs"`
+}
+
+func (e *originalMemoryGeometryFailure) Error() string {
+	return "original QEMU maximum memory geometry differs"
+}
+
+func retainOriginalGeometryFailure(stage string, frame int, id Identity, base control.Uint64, in memoryGeometryInputs) error {
+	out := &originalMemoryGeometryFailure{Stage: stage, FrameIndex: frame, Identity: id, ExpectedBase: base}
+	out.ExpectedUUID, _ = id.QEMUUUID()
+	inputs := []json.RawMessage{in.Version, in.Machine, in.Devices, in.Summary, in.Backends, in.BackendSize}
+	targets := []*json.RawMessage{&out.Inputs.Version, &out.Inputs.Machine, &out.Inputs.Devices, &out.Inputs.Summary, &out.Inputs.Backends, &out.Inputs.BackendSize}
+	for i, raw := range inputs {
+		out.FrameLengths[i] = len(raw)
+		if control.ValidateJSON(raw, qmpFrameLimit, 4096) == nil {
+			*targets[i] = append(json.RawMessage(nil), raw...)
+		}
+	}
+	return out
+}
+
 func decodeOriginalMemoryGeometry(id Identity, expectedBase control.Uint64, in memoryGeometryInputs) (originalMemoryGeometry, error) {
+	stage, frameIndex := "identity", -1
 	fail := func() (originalMemoryGeometry, error) {
-		return originalMemoryGeometry{}, fmt.Errorf("original QEMU maximum memory geometry differs")
+		return originalMemoryGeometry{}, retainOriginalGeometryFailure(stage, frameIndex, id, expectedBase, in)
 	}
 	if id.Validate() != nil || id.BlockBytes != VirtioBlockBytes || expectedBase == 0 || expectedBase > id.MinimumBytes || expectedBase%id.BlockBytes != 0 || (id.MinimumBytes-expectedBase)%id.BlockBytes != 0 || (id.MaximumBytes-expectedBase)%id.BlockBytes != 0 || id.MaximumBytes == expectedBase {
 		return fail()
 	}
-	for _, raw := range []json.RawMessage{in.Version, in.Machine, in.Devices, in.Summary, in.Backends, in.BackendSize} {
+	stage = "json-frame"
+	for i, raw := range []json.RawMessage{in.Version, in.Machine, in.Devices, in.Summary, in.Backends, in.BackendSize} {
+		frameIndex = i
 		if control.ValidateJSON(raw, qmpFrameLimit, 4096) != nil {
 			return fail()
 		}
 	}
+	stage, frameIndex = "version", -1
 	var version struct {
 		QEMU *struct {
 			Major *uint32 `json:"major"`
@@ -59,6 +92,7 @@ func decodeOriginalMemoryGeometry(id Identity, expectedBase control.Uint64, in m
 	if json.Unmarshal(in.Version, &version) != nil || version.QEMU == nil || version.QEMU.Major == nil || version.QEMU.Minor == nil || version.QEMU.Micro == nil || *version.QEMU.Major != 8 || *version.QEMU.Minor != 1 || *version.QEMU.Micro != 5 {
 		return fail()
 	}
+	stage, frameIndex = "machine", -1
 	var machine struct {
 		Size    *uint64 `json:"size"`
 		Maximum *uint64 `json:"max-size"`
@@ -67,6 +101,7 @@ func decodeOriginalMemoryGeometry(id Identity, expectedBase control.Uint64, in m
 	if json.Unmarshal(in.Machine, &machine) != nil || machine.Size == nil || machine.Maximum == nil || machine.Slots == nil || *machine.Size != uint64(expectedBase) || *machine.Maximum != uint64(id.MaximumBytes) || *machine.Slots != 1 {
 		return fail()
 	}
+	stage, frameIndex = "devices-shape", -1
 	var devices []struct {
 		Type string `json:"type"`
 		Data *struct {
@@ -83,11 +118,13 @@ func decodeOriginalMemoryGeometry(id Identity, expectedBase control.Uint64, in m
 	if json.Unmarshal(in.Devices, &devices) != nil || len(devices) != 1 || devices[0].Type != "virtio-mem" || devices[0].Data == nil {
 		return fail()
 	}
+	stage, frameIndex = "device-geometry", -1
 	d := devices[0].Data
 	backend := uint64(id.MaximumBytes - expectedBase)
 	if d.ID != "vm0" || d.Memdev != "/objects/vmem0" || d.Requested == nil || d.Size == nil || d.Maximum == nil || d.Block == nil || d.Node == nil || d.Address == nil || *d.Maximum != backend || *d.Block != uint64(id.BlockBytes) || *d.Node != 0 || *d.Address < uint64(expectedBase) || *d.Address%uint64(id.BlockBytes) != 0 || *d.Address > ^uint64(0)-backend || *d.Requested > backend || *d.Size > backend || *d.Requested%uint64(id.BlockBytes) != 0 || *d.Size%uint64(id.BlockBytes) != 0 {
 		return fail()
 	}
+	stage, frameIndex = "summary", -1
 	var summary struct {
 		Base    *uint64 `json:"base-memory"`
 		Plugged *uint64 `json:"plugged-memory"`
@@ -95,6 +132,7 @@ func decodeOriginalMemoryGeometry(id Identity, expectedBase control.Uint64, in m
 	if json.Unmarshal(in.Summary, &summary) != nil || summary.Base == nil || summary.Plugged == nil || *summary.Base != uint64(expectedBase) || *summary.Plugged != *d.Size {
 		return fail()
 	}
+	stage, frameIndex = "backends-shape", -1
 	var backends []struct {
 		ID     string    `json:"id"`
 		Size   *uint64   `json:"size"`
@@ -104,6 +142,7 @@ func decodeOriginalMemoryGeometry(id Identity, expectedBase control.Uint64, in m
 	if json.Unmarshal(in.Backends, &backends) != nil || len(backends) != 2 {
 		return fail()
 	}
+	stage, frameIndex = "backend-properties", -1
 	seen := map[string]bool{}
 	for _, b := range backends {
 		want := backend
@@ -117,6 +156,7 @@ func decodeOriginalMemoryGeometry(id Identity, expectedBase control.Uint64, in m
 		}
 		seen[b.ID] = true
 	}
+	stage, frameIndex = "backend-size", -1
 	var size *uint64
 	if json.Unmarshal(in.BackendSize, &size) != nil || size == nil || *size != backend {
 		return fail()

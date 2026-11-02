@@ -1,0 +1,18 @@
+{
+  "scope": "保留原QMP拒绝的有界同次诊断；不改变授权/预算/完成判定",
+  "sources": {
+    "pkg/dsga/vmguard/memory_geometry.go": "b61c9ceb92e3c26ae36eb7a83f909ddc4369330a5847e2f6886614e95f810ebd",
+    "pkg/dsga/vmguard/memory_geometry_failure_test.go": "86088171fd61d94bc2020d156c1b7aae2e6e41ce4f30587344bd4922a65b0949"
+  },
+  "original_test_dir": "/data/neon-build/validation/pg17-geometry-failure-diagnostic-go-20261102T125141Z-3bbd18",
+  "source_lock_sha256": "8c7a05720654d39c10c761f23e10100ea8773f979c351d32aa2ccc48fcf252b0",
+  "required_unique_test_roots_passed": [
+    "TestOriginalGeometryFailureBoundsInvalidFrames",
+    "TestOriginalGeometryFailureSameFrames"
+  ],
+  "compiled_Host_seed_exit_reported": 0,
+  "Source": false,
+  "E": 0,
+  "K8s": false,
+  "no_Go_tests_repeated_in_this_archive": true
+}
