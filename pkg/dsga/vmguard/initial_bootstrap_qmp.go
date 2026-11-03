@@ -233,12 +233,13 @@ func (b *initialBaseQMP) inspect(ctx context.Context) (originalMemoryGeometry, e
 	if e != nil {
 		return originalMemoryGeometry{}, e
 	}
-	v, e := decodeOriginalMemoryGeometry(b.source.Identity, b.source.OriginalBase, in)
-	if e != nil {
-		return originalMemoryGeometry{}, e
-	}
+	v, decodeErr := decodeOriginalMemoryGeometry(b.source.Identity, b.source.OriginalBase, in)
+	// 包括可等待帧也要复核同原进程/peer；进程漂移不能降级为采样暂态。
 	if e = b.process.checkPeer(c, b.source); e != nil {
 		return originalMemoryGeometry{}, e
+	}
+	if decodeErr != nil {
+		return originalMemoryGeometry{}, decodeErr
 	}
 	return v, nil
 }

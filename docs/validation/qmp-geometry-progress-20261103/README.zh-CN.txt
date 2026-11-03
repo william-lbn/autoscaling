@@ -1,0 +1,4 @@
+修复原初始Grow观察中的QMP顺序采样竞态。Devices和Summary在真实virtio-mem增长期间可不同；原六帧静态身份/几何/边界全部校验后，只将向原requested目标单向推进的差异标为私有可等待错误。
+只有持原target的初始soleGrow循环可等待，意外Shrink、目标变化、反向、越界、已settled却不一致、peer漂移均拒绝；最终必须完整新帧actual=requested=原target，不重写setter、不延原ctx。
+Root与P2独审无阻断。原29fe真实六帧复现及定向9根92子race通过，实际3CPU/3GiB且OOM0；原失败保留。
+重跑根名与原命令/资源/结果见receipt和Linux原nonce0056c9。不是K8s验收，也未新增故障注入。

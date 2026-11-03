@@ -275,10 +275,12 @@ func (l *linuxInitialLifecycle) drive(ctx context.Context) error {
 		var actual originalMemoryGeometry
 		for {
 			actual, e = probe.inspect(ctx)
-			if e != nil {
+			if e != nil && !awaitsOriginalMemoryGeometryTarget(e, source.Identity, source.OriginalBase, target, true) {
 				return e
 			}
-			if actual.RequestedBytes == target && actual.ActualBytes == target {
+			// 此处原意图仅 Grow；不接受意外 Shrink 在途。不一致帧只等待下一份完整观察，绝不记完成、不重发 setter；
+			// 原 ctx/Pause 的截止不变，requested 漂移不获重试资格。
+			if e == nil && actual.RequestedBytes == target && actual.ActualBytes == target {
 				break
 			}
 			if e = initialBootPause(ctx); e != nil {

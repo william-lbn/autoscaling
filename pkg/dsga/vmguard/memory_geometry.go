@@ -3,6 +3,7 @@ package vmguard
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 )
@@ -46,13 +47,27 @@ type originalMemoryGeometryFailure struct {
 	ExpectedUUID string               `json:"expected_uuid"`
 	FrameLengths [6]int               `json:"frame_lengths"`
 	Inputs       memoryGeometryInputs `json:"inputs"`
+	// 仅完整严格 decoder 可设置；失败帧不构成容量事实，不进入公开协议。
+	progress *originalMemoryGeometryProgress
+}
+
+type originalMemoryGeometryProgress struct {
+	requested control.Uint64
+	growing   bool
+}
+
+// 只有持有原目标的观察循环可等待。不能从当前 QMP requested 改绑旧目标，
+// 也不能把归档 JSON 反序列化出的失败当作本次完整解码的可等待结果。
+func awaitsOriginalMemoryGeometryTarget(err error, id Identity, base, target control.Uint64, growing bool) bool {
+	var failed *originalMemoryGeometryFailure
+	return errors.As(err, &failed) && failed != nil && failed.progress != nil && failed.Identity == id && failed.ExpectedBase == base && failed.progress.requested == target && failed.progress.growing == growing
 }
 
 func (e *originalMemoryGeometryFailure) Error() string {
 	return "original QEMU maximum memory geometry differs"
 }
 
-func retainOriginalGeometryFailure(stage string, frame int, id Identity, base control.Uint64, in memoryGeometryInputs) error {
+func retainOriginalGeometryFailure(stage string, frame int, id Identity, base control.Uint64, in memoryGeometryInputs) *originalMemoryGeometryFailure {
 	out := &originalMemoryGeometryFailure{Stage: stage, FrameIndex: frame, Identity: id, ExpectedBase: base}
 	out.ExpectedUUID, _ = id.QEMUUUID()
 	inputs := []json.RawMessage{in.Version, in.Machine, in.Devices, in.Summary, in.Backends, in.BackendSize}
@@ -129,7 +144,7 @@ func decodeOriginalMemoryGeometry(id Identity, expectedBase control.Uint64, in m
 		Base    *uint64 `json:"base-memory"`
 		Plugged *uint64 `json:"plugged-memory"`
 	}
-	if json.Unmarshal(in.Summary, &summary) != nil || summary.Base == nil || summary.Plugged == nil || *summary.Base != uint64(expectedBase) || *summary.Plugged != *d.Size {
+	if json.Unmarshal(in.Summary, &summary) != nil || summary.Base == nil || summary.Plugged == nil || *summary.Base != uint64(expectedBase) || *summary.Plugged > backend || *summary.Plugged%uint64(id.BlockBytes) != 0 {
 		return fail()
 	}
 	stage, frameIndex = "backends-shape", -1
@@ -160,6 +175,17 @@ func decodeOriginalMemoryGeometry(id Identity, expectedBase control.Uint64, in m
 	var size *uint64
 	if json.Unmarshal(in.BackendSize, &size) != nil || size == nil || *size != backend {
 		return fail()
+	}
+	if *summary.Plugged != *d.Size {
+		failed := retainOriginalGeometryFailure("summary", -1, id, expectedBase, in)
+		// Devices 早于 Summary 采样。静态六帧已全部校验，仅朝同一 requested
+		// 单向推进且不越过目标的差值可等待；settled、反向或越界仍是致命错误。
+		grow := *d.Size < *d.Requested && *summary.Plugged > *d.Size && *summary.Plugged <= *d.Requested
+		shrink := *d.Size > *d.Requested && *summary.Plugged < *d.Size && *summary.Plugged >= *d.Requested
+		if grow || shrink {
+			failed.progress = &originalMemoryGeometryProgress{requested: expectedBase + control.Uint64(*d.Requested), growing: grow}
+		}
+		return originalMemoryGeometry{}, failed
 	}
 	return originalMemoryGeometry{Identity: id, BaseBytes: expectedBase, BackendBytes: control.Uint64(backend), MaximumBytes: id.MaximumBytes, RequestedBytes: expectedBase + control.Uint64(*d.Requested), ActualBytes: expectedBase + control.Uint64(*d.Size), DeviceAddress: control.Uint64(*d.Address), QEMUVersion: [3]uint32{8, 1, 5}}, nil
 }
