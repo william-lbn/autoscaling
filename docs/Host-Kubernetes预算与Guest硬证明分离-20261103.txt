@@ -1,0 +1,25 @@
+Host Kubernetes 预算与 Guest 硬证明分离（2026-11-03）
+
+按所有者最新确认，首版不要求整台 Host 未计费内核开销的绝对物理硬上界。
+这里采用明确的 Kubernetes 容量预算：固定 Node UID、Capacity、Allocatable、
+Host Profile 摘要，以及 Allocatable 内另留的系统预算。所有普通 Pod（包括系统
+Pod）仍按 app/init 完整硬 limit 入账；VM 仍按批准/实际/目标峰值及固定开销入账。
+不使用 requests、RSS、idle 或 namespace 豁免替代硬限额。
+
+Capacity-Allocatable 是 Kubernetes 已扣除的系统保留，不能再重复计费。
+SystemReservationBytes 是尚未扣除、位于 Allocatable 内的额外系统余量，写入
+既有 OutsideBytes 字段。于是原账本继续检查：额外保留 + Pod/VM 完整持有及
+开销 <= 当前 Allocatable。现有账本协议、峰值持有、UID/RV CAS、未知保持、
+选主与结清合同不变。Node 实际 UID/容量/Profile 任一漂移时新资格/调度拒绝。
+
+启用必须显式配置 hostscheduler NodeConfig.kubernetes_budget，并使用私有
+issuer Report protocol_version=2、scope=neon-dsga-linux-guest-kubernetes-budget-report-v2
+和同一 host_kubernetes_budget。原 protocol_version=1 不接受此策略，原无策略
+配置不被默默改义。公开 PlatformQualification 仍 v1；原 Linux/持续强制 artifact、
+Root 原出生、原 Runtime Secret、Runner、Lease、完整 Pod inventory 检查全部保留。
+此预算不是 Host 内核物理认证，不能声称保留 4Gi 即内核永不超过 4Gi。
+
+Guest 内 PG 实际工作域 N、固定/可回收 A、真实数组释放、持续硬约束、恢复与
+失败关闭证明仍必须通过。此改动不放宽上述门，不改 PG17/PG18 公共接口，
+不新增宿主机内核/启动布局改造。单机直接相关门槛通过后进入117/118/119真实
+自有 Helm 回归；本单元/协议 peer 验证本身不代表真实平台或 K8s 端到端通过。

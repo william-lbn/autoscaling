@@ -58,6 +58,10 @@ func New(coreClient coreclient.CoreV1Interface, coord coordclient.CoordinationV1
 	}
 	s := &Service{core: coreClient, coord: coord, vm: vm, holder: "host-" + hex.EncodeToString(nonce[:]), domains: make(map[string]domain), started: atomic.Bool{}}
 	for _, n := range slices.Clone(c.Nodes) {
+		if n.KubernetesBudget != nil {
+			policy := *n.KubernetesBudget
+			n.KubernetesBudget = &policy
+		}
 		store, err := hostguard.NewStore(coreClient, coord, n.Binding, s.holder)
 		if err != nil {
 			return nil, err
@@ -73,6 +77,11 @@ func (s *Service) HasNode(name string) bool {
 }
 
 func checkProfile(snapshot *hostguard.Snapshot, n NodeConfig) error {
+	if n.KubernetesBudget != nil {
+		if err := n.KubernetesBudget.Inspect(snapshot.Node(), n.Profile, n.SystemBytes); err != nil {
+			return err
+		}
+	}
 	m := snapshot.State()
 	if m.ProtocolVersion < 3 || m.Profile == nil || *m.Profile != n.Profile || m.OutsideBytes != n.SystemBytes || m.Binding != n.Binding {
 		return fmt.Errorf("original complete Host domain differs from fixed startup configuration")
@@ -223,6 +232,19 @@ func (s *Service) reconcile(ctx context.Context, d domain) error {
 	if errors.Is(err, hostguard.ErrUninitialized) {
 		if d.config.InitializeAtResourceVersion == "" {
 			return fmt.Errorf("explicit original Node bootstrap resourceVersion is required")
+		}
+		// 策略读取与随后初始化使用同一原 RV；期间 Node 变化由原 CAS 拒绝。
+		if d.config.KubernetesBudget != nil {
+			node, readErr := s.core.Nodes().Get(ctx, d.config.Binding.NodeName, metav1.GetOptions{})
+			if readErr != nil {
+				return readErr
+			}
+			if node.ResourceVersion != d.config.InitializeAtResourceVersion {
+				return fmt.Errorf("original Kubernetes budget bootstrap Node version changed")
+			}
+			if err := d.config.KubernetesBudget.Inspect(node, d.config.Profile, d.config.SystemBytes); err != nil {
+				return err
+			}
 		}
 		pods, listErr := s.bootstrapAssigned(ctx, d.config.Binding.NodeName)
 		if listErr != nil {

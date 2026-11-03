@@ -131,11 +131,16 @@ func (i *Issuer) capture(ctx context.Context, r Report) (string, error) {
 	}
 	node, ledger := held.Node(), held.State()
 	if string(node.UID) != i.config.NodeUID || node.DeletionTimestamp != nil || ledger.Profile == nil || ledger.OutsideBytes != r.HostSystemBytes {
-		return "", fmt.Errorf("original Host profile or enforced System budget changed")
+		return "", fmt.Errorf("original Host profile or System budget changed")
 	}
 	profileRaw, err := json.Marshal(ledger.Profile)
 	if err != nil || SHA256(profileRaw) != r.HostProfileSHA256 || hostguard.InspectInitialVM(node, b, q.RunnerPodName, q.RunnerPodUID, pub.Actual.ActualBytes) != nil {
 		return "", fmt.Errorf("original Host placement or profile unconfirmed")
+	}
+	if r.HostKubernetesBudget != nil {
+		if err := r.HostKubernetesBudget.Inspect(node, *ledger.Profile, ledger.OutsideBytes); err != nil {
+			return "", err
+		}
 	}
 	capacity, exact := node.Status.Allocatable.Memory().AsInt64()
 	used, err := ledger.UsedBytes()

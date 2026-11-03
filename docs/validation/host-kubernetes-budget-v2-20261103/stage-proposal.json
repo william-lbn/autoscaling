@@ -1,0 +1,76 @@
+{
+  "base_head": "f14c23ebbe4a474203d8562d00ac550ba7eafd6b",
+  "owned_files": {
+    "pkg/dsga/hostguard/budget_policy.go": "2a58c6ecfccb1ed60a382edb09245a96cb9477ab6112dc5dcf3c89dd1ef60953",
+    "pkg/dsga/hostguard/budget_policy_test.go": "10a27f818e03c10240a4b68b4692ca07ed4f0158ee4b3c2be19eeeb84d4de17b",
+    "pkg/dsga/hostscheduler/config.go": "836fb93608906fbaaaf67f4aa4eee10b37e1a37dc7fb7ce265803a265d3a0180",
+    "pkg/dsga/hostscheduler/service.go": "ae5144871b6f572f5f68d7d1dc02cf342cf361df90fd183c1ea2056c1edf5780",
+    "pkg/dsga/hostscheduler/budget_policy_test.go": "ccfed360e29865ea8c53c0c2df825b0313320211b2a41bd88283318cc2c7c34a",
+    "pkg/dsga/qualificationissuer/report.go": "47a7dab3d735e637de55c9e4f312594f0fceb5a5975822eb73b80af05d59d5d6",
+    "pkg/dsga/qualificationissuer/inspect.go": "3208f9be50ffd335f08e245e258895c1886977ca2d4bd174c9afc0b840f0c1e9",
+    "pkg/dsga/qualificationissuer/issuer_test.go": "a598ac839ae65084d2a1dc282c8fca555dd26cff18e111581fb75d07ada038a4",
+    "docs/Host-Kubernetes预算与Guest硬证明分离-20261103.txt": "d1cbecbfb2145da434fc50f98fa2af9ccd3add5da9e565c5c67cdae4b4739f84"
+  },
+  "source_frozen": true,
+  "stage_allowed_only_after_root_review": true,
+  "tests": {
+    "evidence_dir": "/data/neon-build/validation/host-kubernetes-budget-policy-go-20261103T010317Z-df0fa8",
+    "tests_exit": 0,
+    "unique_roots": 19,
+    "unique_subtests": 63,
+    "root_names": [
+      "github.com/neondatabase/autoscaling/pkg/dsga/hostguard:TestKubernetesBudgetUsesAllocatableReservationOnce",
+      "github.com/neondatabase/autoscaling/pkg/dsga/hostguard:TestKubernetesBudgetRejectsOriginalSourceDrift",
+      "github.com/neondatabase/autoscaling/pkg/dsga/hostguard:TestKubernetesBudgetRejectsMalformedPolicy",
+      "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler:TestSchedulerKubernetesBudgetAccountingAndRestart",
+      "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler:TestSchedulerKubernetesBudgetRejectsDriftBeforeBootstrapAndGrant",
+      "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler:TestSchedulerKubernetesBudgetRejectsMismatchedStartupPolicy",
+      "github.com/neondatabase/autoscaling/pkg/dsga/qualificationissuer:TestIssuerPublishesOnlyProtectedOriginalAndConsumerReads",
+      "github.com/neondatabase/autoscaling/pkg/dsga/qualificationissuer:TestIssuerMissingOrChangedCertificationNeverWrites",
+      "github.com/neondatabase/autoscaling/pkg/dsga/qualificationissuer:TestIssuerIdentityDriftPreservesUnconfirmedObject",
+      "github.com/neondatabase/autoscaling/pkg/dsga/qualificationissuer:TestIssuerLostCreateReplyRequiresExplicitOriginalUID",
+      "github.com/neondatabase/autoscaling/pkg/dsga/qualificationissuer:TestIssuerRootClientUsesOnlyExistingReadAction",
+      "github.com/neondatabase/autoscaling/pkg/dsga/qualificationissuer:TestIssuerTrustedFilesRejectWritableAndSymlinkInputs",
+      "github.com/neondatabase/autoscaling/pkg/dsga/qualificationissuer:TestIssuerLiveCaptureRejectsMissingAndRecreatedVM",
+      "github.com/neondatabase/autoscaling/pkg/dsga/qualificationissuer:TestIssuerRootSocketAndInputAncestorsRemainOriginal",
+      "github.com/neondatabase/autoscaling/pkg/dsga/qualificationissuer:TestIssuerCapturePublishesThroughActualReaders",
+      "github.com/neondatabase/autoscaling/pkg/dsga/qualificationissuer:TestIssuerCaptureRejectsOriginalNodeReplacementBeforeCreate",
+      "github.com/neondatabase/autoscaling/pkg/dsga/qualificationissuer:TestIssuerKubernetesBudgetV2CaptureAndDrift",
+      "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler:TestSchedulerRestoresAllWorkloadsAndCanonicalVMBeforeFirstGrant",
+      "github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler:TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads"
+    ],
+    "tests_sha256": "e9790d26061bcd6786b610c241ce1c02bc598a0a9d7fb2f1b32bdfcecca01196",
+    "wrapper_exit": 1,
+    "wrapper_failure": "ENV_CLI_BUILD_PATH_NOT_FOUND_NOT_SOURCE_OR_TEST_FAILURE",
+    "race": true,
+    "oom_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\n",
+    "result_sha256": "bd48772ab3ea5ecc29980a4e27594d556dfd2d6efbb092da4196873e31e24f64",
+    "unit_terminal": true
+  },
+  "cli_build": {
+    "evidence_dir": "/data/neon-build/validation/host-kubernetes-budget-qualifier-go-20261103T010606Z-64cfb9",
+    "result": {
+      "build_exit": 0,
+      "phases": {
+        "qualifier-build": 0,
+        "qualifier-help": 0
+      },
+      "seconds": 20.161873269011267,
+      "scope": "TARGETED_PRIVATE_KUBERNETES_HOST_BUDGET_MODEL_NOT_PLATFORM_CERTIFICATION",
+      "Source": false,
+      "K8s": false,
+      "end_utc": "2026-11-03T01:06:28.973230+00:00"
+    },
+    "unit_terminal": true,
+    "main_pid": 0,
+    "elf_sha256": "62a2db4df9112a4b26a1e1ae0c064086e5a6e03f64200ba8c4f6860ce8c18af2",
+    "result_sha256": "5f45f67853f2865b9897f0a59ea75f73f2b1136b0cb382a1ecf4407c8aa20980"
+  },
+  "source": false,
+  "k8s": false,
+  "whole_host_absolute_kernel_bound_claim": false,
+  "public_guest_qualification_dto_changed": false,
+  "root_or_normal_safety_gates_changed": false,
+  "stage_ready": true,
+  "end_utc": "2026-11-03T01:07:25.905531+00:00"
+}

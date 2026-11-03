@@ -16,12 +16,13 @@ import (
 )
 
 const (
-	ReportScope          = "neon-dsga-linux-platform-report-v1"
-	MaxReportBytes       = 64 * 1024
-	MaxArtifactBytes     = 1024 * 1024
-	ReportAnnotation     = "internal.autoscaling.neon.tech/qualification-report-sha256"
-	LinuxAnnotation      = "internal.autoscaling.neon.tech/qualification-linux-sha256"
-	ContinuousAnnotation = "internal.autoscaling.neon.tech/qualification-continuous-sha256"
+	ReportScope                 = "neon-dsga-linux-platform-report-v1"
+	KubernetesBudgetReportScope = "neon-dsga-linux-guest-kubernetes-budget-report-v2"
+	MaxReportBytes              = 64 * 1024
+	MaxArtifactBytes            = 1024 * 1024
+	ReportAnnotation            = "internal.autoscaling.neon.tech/qualification-report-sha256"
+	LinuxAnnotation             = "internal.autoscaling.neon.tech/qualification-linux-sha256"
+	ContinuousAnnotation        = "internal.autoscaling.neon.tech/qualification-continuous-sha256"
 )
 
 // Config 只能来自独立 issuer 的 root 保护启动配置，不能取自租户请求或普通 VM 注解。
@@ -78,11 +79,26 @@ type Report struct {
 	HostBinding              hostguard.Binding            `json:"host_binding"`
 	HostProfileSHA256        string                       `json:"host_profile_sha256"`
 	HostSystemBytes          control.Uint64               `json:"host_system_bytes"`
+	// v2 将 Host 容量预算与 Guest 物理证明分离；公开资格 DTO 仍为原 v1。
+	HostKubernetesBudget *hostguard.KubernetesBudgetPolicy `json:"host_kubernetes_budget,omitempty"`
 }
 
 func (r Report) Validate() error {
-	if r.ProtocolVersion != 1 || r.Scope != ReportScope || r.Qualification.Validate() != nil || control.ValidateID(r.ConfigSecretUID, "original config Secret UID") != nil || !validSHA(r.ResourceSourceSHA256) || !validSHA(r.LinuxArtifactSHA256) || !validSHA(r.ContinuousArtifactSHA256) || r.HostBinding.Validate() != nil || !validSHA(r.HostProfileSHA256) || r.HostSystemBytes == 0 || r.HostBinding.NodeName != r.Qualification.NodeName || string(r.HostBinding.NodeUID) != r.Qualification.NodeUID {
+	if r.Qualification.Validate() != nil || control.ValidateID(r.ConfigSecretUID, "original config Secret UID") != nil || !validSHA(r.ResourceSourceSHA256) || !validSHA(r.LinuxArtifactSHA256) || !validSHA(r.ContinuousArtifactSHA256) || r.HostBinding.Validate() != nil || !validSHA(r.HostProfileSHA256) || r.HostSystemBytes == 0 || r.HostBinding.NodeName != r.Qualification.NodeName || string(r.HostBinding.NodeUID) != r.Qualification.NodeUID {
 		return fmt.Errorf("complete independent Linux report and persistent constraint sources required")
+	}
+	switch r.ProtocolVersion {
+	case 1:
+		if r.Scope != ReportScope || r.HostKubernetesBudget != nil {
+			return fmt.Errorf("legacy report cannot change Host proof semantics")
+		}
+	case 2:
+		p := r.HostKubernetesBudget
+		if r.Scope != KubernetesBudgetReportScope || p == nil || p.Validate() != nil || p.NodeName != r.HostBinding.NodeName || p.NodeUID != string(r.HostBinding.NodeUID) || p.ProfileSHA256 != r.HostProfileSHA256 || p.SystemReservationBytes != r.HostSystemBytes {
+			return fmt.Errorf("v2 requires explicit original Kubernetes budget policy; Guest proof remains mandatory")
+		}
+	default:
+		return fmt.Errorf("unsupported private platform report version")
 	}
 	return nil
 }

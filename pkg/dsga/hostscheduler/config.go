@@ -12,9 +12,10 @@ import (
 type NodeConfig struct {
 	Binding hostguard.Binding `json:"binding"`
 	Profile hostguard.Profile `json:"profile"`
-	// SystemBytes只包含平台已认证、持续硬约束的固定系统域。普通Pod/VM
-	// 全部另行记账，不能把Node.allocatable剩余值或瞬时RSS当作此上界。
-	SystemBytes control.Uint64 `json:"system_bytes"`
+	// 旧模式为原持续硬约束系统域；显式 KubernetesBudget 模式下仅为
+	// Allocatable 内额外系统预算，不声称整台 Host 内核绝对硬上界。
+	SystemBytes      control.Uint64                    `json:"system_bytes"`
+	KubernetesBudget *hostguard.KubernetesBudgetPolicy `json:"kubernetes_budget,omitempty"`
 	// 仅首次引导使用固定原RV，重试不能改成当前RV。已初始化后只读恢复。
 	InitializeAtResourceVersion string `json:"initialize_at_resource_version,omitempty"`
 }
@@ -30,6 +31,13 @@ func (c Config) Validate(schedulerName string) error {
 	for i, n := range c.Nodes {
 		if n.Binding.Validate() != nil || n.Profile.Validate() != nil || n.Profile.SchedulerName != schedulerName || n.SystemBytes == 0 {
 			return fmt.Errorf("invalid original Node domain/profile/system upper bound")
+		}
+		if n.KubernetesBudget != nil {
+			policy := *n.KubernetesBudget
+			digest, err := hostguard.ProfileSHA256(n.Profile)
+			if policy.Validate() != nil || err != nil || policy.ProfileSHA256 != digest || policy.NodeName != n.Binding.NodeName || policy.NodeUID != string(n.Binding.NodeUID) || policy.SystemReservationBytes != n.SystemBytes {
+				return fmt.Errorf("Kubernetes budget differs from original Node/profile/system reservation")
+			}
 		}
 		for _, old := range c.Nodes[:i] {
 			if old.Binding.NodeName == n.Binding.NodeName || old.Binding.NodeUID == n.Binding.NodeUID || old.Binding.Namespace == n.Binding.Namespace && old.Binding.LeaseName == n.Binding.LeaseName {

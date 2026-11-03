@@ -503,3 +503,60 @@ func TestIssuerCaptureRejectsOriginalNodeReplacementBeforeCreate(t *testing.T) {
 		require.NotEqual(t, "create", action.GetVerb(), "身份漂移必须早于资格 CREATE")
 	}
 }
+
+// v2 只改变私有 Host 预算语义。仍完整经过原 Root/Guest、Runner、Lease、Pod
+// inventory 真实读者；以下 protocol peer 明确不是实际平台认证。
+func TestIssuerKubernetesBudgetV2CaptureAndDrift(t *testing.T) {
+	for _, mode := range []string{"valid", "capacity", "allocatable", "profile", "reservation", "missing-guest-artifact", "invalid-guest-target", "legacy-with-policy", "v2-without-policy"} {
+		t.Run(mode, func(t *testing.T) {
+			issuer, client, config, bundle, requests := issuerCaptureFixture(t, false)
+			var report Report
+			require.NoError(t, json.Unmarshal(bundle.Report, &report))
+			node, err := client.CoreV1().Nodes().Get(context.Background(), config.NodeName, metav1.GetOptions{})
+			require.NoError(t, err)
+			capacity, exact := node.Status.Allocatable.Memory().AsInt64()
+			require.True(t, exact)
+			node.Status.Capacity = core.ResourceList{core.ResourceMemory: *resource.NewQuantity(capacity+(4<<30), resource.BinarySI)}
+			require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("nodes"), node, ""))
+			report.ProtocolVersion, report.Scope = 2, KubernetesBudgetReportScope
+			report.HostKubernetesBudget = &hostguard.KubernetesBudgetPolicy{ProtocolVersion: 1, Scope: hostguard.KubernetesBudgetScope, NodeName: config.NodeName, NodeUID: config.NodeUID, CapacityBytes: control.Uint64(capacity + (4 << 30)), AllocatableBytes: control.Uint64(capacity), SystemReservationBytes: report.HostSystemBytes, ProfileSHA256: report.HostProfileSHA256}
+			switch mode {
+			case "capacity":
+				node.Status.Capacity[core.ResourceMemory] = *resource.NewQuantity(capacity+(5<<30), resource.BinarySI)
+			case "allocatable":
+				node.Status.Allocatable[core.ResourceMemory] = *resource.NewQuantity(capacity+(1<<30), resource.BinarySI)
+			case "profile":
+				report.HostKubernetesBudget.ProfileSHA256 = strings.Repeat("a", 64)
+			case "reservation":
+				report.HostKubernetesBudget.SystemReservationBytes++
+			case "missing-guest-artifact":
+				bundle.ContinuousArtifact = nil
+			case "invalid-guest-target":
+				report.Qualification.Targets[0].GuestUsableMemoryBytes = 1
+			case "legacy-with-policy":
+				report.ProtocolVersion, report.Scope = 1, ReportScope
+			case "v2-without-policy":
+				report.HostKubernetesBudget = nil
+			}
+			require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("nodes"), node, ""))
+			bundle.Report, err = json.Marshal(report)
+			require.NoError(t, err)
+			issuer.config.ReportSHA256 = SHA256(bundle.Report)
+			result, err := issuer.Publish(context.Background(), bundle)
+			if mode == "valid" {
+				require.NoError(t, err)
+				require.EqualValues(t, 3, requests.Load())
+				reader, readErr := budgetclaims.New(client.CoreV1(), config.Binding)
+				require.NoError(t, readErr)
+				q, readErr := reader.Qualification(context.Background(), result.Source)
+				require.NoError(t, readErr)
+				require.Equal(t, report.Qualification, q, "公开 Guest 资格合同未改变")
+				return
+			}
+			require.Error(t, err)
+			for _, action := range client.Actions() {
+				require.NotEqual(t, "create", action.GetVerb(), "预算或Guest证明失配必须早于CREATE")
+			}
+		})
+	}
+}
