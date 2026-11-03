@@ -239,6 +239,34 @@ func (h *resourceHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if _, ok := h.guard.(normalQuotaBackend); ok && h.source.Config.ExecutionModel == TrustedControllerExecutionModel && h.arrayProtocolVersion == 1 {
 			state.NormalQuotaProtocolVersion = 1
 		}
+		// 沿原认证GET state携带可选只读能力，无新路由/令牌/执行动作。
+		// 不可用不能伪装成资格成功，也不能破坏旧state本身的有效观察。
+		if err == nil && h.source.Config.ExecutionModel == TrustedControllerExecutionModel {
+			observe, ok := h.guard.(interface {
+				InspectGuestQualificationArtifact(context.Context) (GuestQualificationArtifact, error)
+			})
+			reason := "backend_unsupported"
+			if ok {
+				artifact, artifactErr := observe.InspectGuestQualificationArtifact(r.Context())
+				reason = "original_source_unconfirmed"
+				if artifactErr == nil {
+					reason = "source_changed_during_collection"
+					if artifact.MatchView(state) == nil {
+						state.GuestQualification = &artifact
+						raw, sizeErr := json.Marshal(state)
+						if sizeErr != nil || len(raw) > 32*1024 {
+							state.GuestQualification = nil
+							reason = "response_size_limit"
+						} else {
+							reason = ""
+						}
+					}
+				}
+			}
+			if reason != "" {
+				state.GuestQualificationUnavailable = &GuestQualificationUnavailable{ProtocolVersion: 1, Reason: reason}
+			}
+		}
 		result = state
 	} else {
 		if r.Method != http.MethodPost {

@@ -10,6 +10,37 @@ import (
 // GuestQualificationArtifact只是原Root的只读物理来源投影，不是资格对象、降限许可或CM。
 // 发布者还须独立核真实Runner/Host/原Secret以及完整预算；缺字段绝不能以0补齐。
 const GuestQualificationArtifactScope = "neon-dsga-original-guest-qualification-artifact-v1"
+const MaxGuestQualificationArtifactBytes = 24 * 1024
+
+// 明确区分旧Guest没有该能力与新Guest的原来源暂不可确认，不升级为任何许可。
+type GuestQualificationUnavailable struct {
+	ProtocolVersion uint32 `json:"protocol_version"`
+	Reason          string `json:"reason"`
+}
+
+func (u GuestQualificationUnavailable) Validate() error {
+	if u.ProtocolVersion != 1 {
+		return fmt.Errorf("unsupported Guest qualification availability version")
+	}
+	switch u.Reason {
+	case "original_source_unconfirmed", "source_changed_during_collection", "response_size_limit", "backend_unsupported":
+		return nil
+	}
+	return fmt.Errorf("unknown Guest qualification unavailability reason")
+}
+func (u *GuestQualificationUnavailable) UnmarshalJSON(raw []byte) error {
+	type plain GuestQualificationUnavailable
+	var p plain
+	if e := control.UnmarshalObject(raw, &p); e != nil {
+		return e
+	}
+	n := GuestQualificationUnavailable(p)
+	if e := n.Validate(); e != nil {
+		return e
+	}
+	*u = n
+	return nil
+}
 
 type GuestQualificationOutside struct {
 	SystemBytes                control.Uint64 `json:"system_bytes"`
@@ -80,6 +111,11 @@ func qualificationOutside(system uint64, p normalInflightPlanningResult, t norma
 }
 
 func (a GuestQualificationArtifact) Validate() error {
+	rawSize, marshalErr := json.Marshal(a)
+	if marshalErr != nil || len(rawSize) > MaxGuestQualificationArtifactBytes {
+		return fmt.Errorf("Guest qualification artifact exceeds existing response envelope")
+	}
+
 	if a.ProtocolVersion != 1 || a.Scope != GuestQualificationArtifactScope || a.VMShrinkPermit || a.Identity.Validate() != nil || a.Identity.SystemCgroupInode == 0 || control.ValidateIncarnation(a.Incarnation) != nil || control.ValidateID(a.ConfigSecretUID, "artifact Config Secret") != nil || a.CurrentLimits.Validate() != nil || a.MaximumVCPUs == 0 || a.MaximumVCPUs > 64 || a.MinimumVMBytes == 0 || a.MaximumVMBytes < a.MinimumVMBytes || a.BlockBytes != 8<<20 || a.MinimumVMBytes%a.BlockBytes != 0 || a.MaximumVMBytes%a.BlockBytes != 0 || a.ObservedGuestMemTotalBytes == 0 || a.ObservedGuestMemTotalBytes > a.MaximumVMBytes || a.PrivateMemoryMaxBytes == 0 || a.ArraysMemoryMaxBytes == 0 {
 		return fmt.Errorf("incomplete original Guest qualification artifact")
 	}

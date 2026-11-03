@@ -27,9 +27,21 @@ type View struct {
 	Cancelled                     *Command         `json:"cancelled,omitempty"`
 	Birth                         *ProcessIdentity `json:"birth"`
 	Actual                        Evidence         `json:"actual"`
+	// 可选只读能力v1；旧Guest保持省略，新发布者缺项或unavailable必须failclosed。
+	GuestQualification            *GuestQualificationArtifact    `json:"guest_qualification,omitempty"`
+	GuestQualificationUnavailable *GuestQualificationUnavailable `json:"guest_qualification_unavailable,omitempty"`
 }
 
 func (v View) Validate() error {
+	if v.GuestQualification != nil && v.GuestQualificationUnavailable != nil {
+		return fmt.Errorf("Guest qualification response has conflicting availability")
+	}
+	if v.GuestQualification != nil && (v.GuestQualification.Validate() != nil || v.GuestQualification.Identity != v.Identity) {
+		return fmt.Errorf("Guest qualification observation changed identity")
+	}
+	if v.GuestQualificationUnavailable != nil && v.GuestQualificationUnavailable.Validate() != nil {
+		return fmt.Errorf("invalid Guest qualification availability")
+	}
 	if v.NormalQuotaProtocolVersion > 1 || v.ArrayAuthorityProtocolVersion > 1 || v.ProtocolVersion != 1 || v.VMShrinkPermit || v.Actual.ProtocolVersion != 1 || v.Actual.VMShrinkPermit || v.Actual.Identity != v.Identity {
 		return fmt.Errorf("invalid resource journal observation")
 	}

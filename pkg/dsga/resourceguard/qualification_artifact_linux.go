@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"reflect"
 )
 
 // InspectGuestQualificationArtifact只消费ServeGuest已准备的原来源；不prepare、不fsync、
@@ -91,13 +92,14 @@ func (g *Guard) InspectGuestQualificationArtifact(ctx context.Context) (GuestQua
 		if e = out.Validate(); e != nil {
 			return e
 		}
-		// 输出前再次核原kernel/硬域/WAL；不以第一次读取的稳定性代替持续原来源。
-		again, _, _, e := source.freshLocked(ctx, s, r)
+		// 输出前再次核原kernel/硬域/WAL；facts只含稳定硬界/拓扑/配置，不含RSS/free/current。
+		// MOVABLE拓扑或CPU/terms并发漂移有意Unknown；不丢弃第二次CPU/分项返回值。
+		again, againTerms, againCPU, e := source.freshLocked(ctx, s, r)
 		if e != nil {
 			return e
 		}
 		b, e := json.Marshal(again)
-		if e != nil || string(b) != string(factRaw) {
+		if e != nil || string(b) != string(factRaw) || !reflect.DeepEqual(againTerms, terms) || againCPU != cpu {
 			return errors.Join(ErrUnknown, fmt.Errorf("qualification source changed across read"))
 		}
 		return nil
