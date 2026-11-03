@@ -128,6 +128,11 @@ func (e *AutoscaleEnforcer) Filter(
 		return status
 	}
 
+	// 网络只读预检位于本地mu之前；完整Host硬预算不足或来源未知均不放行。
+	if err := e.state.checkHost(ctx, pod, nodeName); err != nil {
+		return framework.NewStatus(framework.Unschedulable, "original Host capacity not confirmed: "+err.Error())
+	}
+
 	podState, err := state.PodStateFromK8sObj(pod)
 	if err != nil {
 		msg := "Error extracting local information for Pod"

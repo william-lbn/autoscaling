@@ -441,19 +441,7 @@ func (s *Store) holdPlacementFor(ctx context.Context, snapshot *Snapshot, p Plac
 			}
 		}
 	}
-	first, err := s.leaseActor(ctx, false)
-	if err != nil {
-		return nil, none, err
-	}
-	n, err := s.node(ctx)
-	if err != nil {
-		return nil, none, err
-	}
-	last, err := s.leaseActor(ctx, false)
-	if err != nil || first != last || n.ResourceVersion != snapshot.ResourceVersion() || n.DeletionTimestamp != nil || last.Epoch < snapshot.model.LeaseFloor.Epoch || last.Epoch == snapshot.model.LeaseFloor.Epoch && last != snapshot.model.LeaseFloor {
-		return nil, none, fmt.Errorf("original allocation Node/Lease changed or floor is stale")
-	}
-	total, err := capacity(n)
+	n, total, err := s.placementNode(ctx, snapshot)
 	if err != nil {
 		return nil, none, err
 	}
@@ -469,6 +457,63 @@ func (s *Store) holdPlacementFor(ctx context.Context, snapshot *Snapshot, p Plac
 	}
 	held, err := snapshot.model.Placement(p.PodUID)
 	return snapshot, held, err
+}
+
+// CheckPlacement只读试算完整候选，不保护Pod、不抬floor、不写任何对象。
+// 通过仅代表本次原来源可容纳；Reserve仍须重读并执行唯一Node UID/RV CAS。
+func (s *Store) CheckPlacement(ctx context.Context, snapshot *Snapshot, p Placement, key *control.Key) error {
+	if snapshot == nil || snapshot.model.Binding != s.binding || snapshot.model.ProtocolVersion < 3 {
+		return fmt.Errorf("pod allocation requires original initialized v3 Node snapshot")
+	}
+	pod, err := s.core.Pods(p.Namespace).Get(ctx, p.PodName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	if string(pod.UID) != p.PodUID || pod.ResourceVersion == "" || pod.DeletionTimestamp != nil || pod.Status.Phase == core.PodSucceeded || pod.Status.Phase == core.PodFailed || pod.Spec.NodeName != "" && pod.Spec.NodeName != s.binding.NodeName {
+		return fmt.Errorf("original candidate Pod is closed, replaced or moved")
+	}
+	if p.VMUID != "" {
+		o := metav1.GetControllerOf(pod)
+		if len(pod.OwnerReferences) != 1 || o == nil || o.APIVersion != "vm.neon.tech/v1" || o.Kind != "VirtualMachine" || o.Name != p.VMName || string(o.UID) != p.VMUID {
+			return fmt.Errorf("original candidate VM controller changed")
+		}
+	}
+	if p.PodMemoryLimitBytes != 0 {
+		actual, err := PodMemoryLimit(pod)
+		if err != nil || actual != p.PodMemoryLimitBytes {
+			return fmt.Errorf("candidate Pod hardlimit differs from original UID")
+		}
+	}
+	_, total, err := s.placementNode(ctx, snapshot)
+	if err != nil {
+		return err
+	}
+	_, err = snapshot.model.reservePlacementFor(p, key, total)
+	return err
+}
+
+// 容量试算与最终写入共享原Lease→Node→Lease门；不使用FreeBytes近似计算。
+func (s *Store) placementNode(ctx context.Context, snapshot *Snapshot) (*core.Node, control.Uint64, error) {
+	if snapshot == nil || snapshot.model.Binding != s.binding || snapshot.model.ProtocolVersion < 3 {
+		return nil, 0, fmt.Errorf("pod allocation requires original initialized v3 Node snapshot")
+	}
+	first, err := s.leaseActor(ctx, false)
+	if err != nil {
+		return nil, 0, err
+	}
+	n, err := s.node(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+	last, err := s.leaseActor(ctx, false)
+	if err != nil || first != last || n.ResourceVersion != snapshot.ResourceVersion() || n.DeletionTimestamp != nil || last.Epoch < snapshot.model.LeaseFloor.Epoch || last.Epoch == snapshot.model.LeaseFloor.Epoch && last != snapshot.model.LeaseFloor {
+		return nil, 0, fmt.Errorf("original allocation Node/Lease changed or floor is stale")
+	}
+	total, err := capacity(n)
+	if err != nil {
+		return nil, 0, err
+	}
+	return n, total, nil
 }
 
 // Settle是明确的节点owner结清CAS，不由超时/删除事件/Lease过期触发。生产者

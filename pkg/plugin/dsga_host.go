@@ -49,3 +49,18 @@ func (s *PluginState) reserveHost(ctx context.Context, pod *core.Pod, node strin
 	}
 	return canonical, &held, nil
 }
+
+// checkHost只读过滤明确Host域，nil/域外继续旧路径。它不修改评分或放置规则，
+// 每次失败交调度器正常重试；Reserve仍是真正授予的唯一CAS入口。
+func (s *PluginState) checkHost(ctx context.Context, pod *core.Pod, node string) error {
+	if s.host == nil || !s.host.HasNode(node) {
+		return nil
+	}
+	timeout := time.Duration(s.config.K8sCRUDTimeoutSeconds) * time.Second
+	if timeout <= 0 {
+		timeout = 15 * time.Second
+	}
+	bounded, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	return s.host.CheckPlacement(bounded, node, pod, control.Uint64(0))
+}

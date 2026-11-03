@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "scope_zh": "完整Pod硬限的只读Filter预检；正式Reserve最终CAS保持",
+  "base_head": "513e1cfd69533edadb38cf11e0325b767aac22c7",
+  "source_files": {
+    "pkg/dsga/hostguard/store.go": "569b61c7b14f71696e5d7f02d9ae9acd494c8175b68d7eff0a2bef053241ccf1",
+    "pkg/dsga/hostscheduler/service.go": "696945dc19aa3227e80f6e0029ab21074bd93c5e90ae59ee51224d7a55aae764",
+    "pkg/plugin/dsga_host.go": "80ca446179e4eb4de42dd2d35bd5683020d69c03a5e76cefba3fbccaa6a27152",
+    "pkg/plugin/framework_methods.go": "9ea14dd745d85fe1b0037eacbda9db41ef06b55c1d8ed27e0aed5196b199021a",
+    "pkg/dsga/hostscheduler/preflight_test.go": "b2897b0663441a9a2f9da13bda5fbc7c77236e499443e965b11905a404c4ec3b",
+    "pkg/plugin/dsga_host_filter_test.go": "028cccde916116ccba7c9213cd07d35ddb107b66f405e5034d6f305f0ac86fe1"
+  },
+  "evidence_dir": "/data/neon-build/validation/scheduler-host-filter-focused-20261103T192037Z-790e0e",
+  "result_sha256": "989accb7365db5da86f21c90cc699344ee521d92296f7a743b43201370bc5cff",
+  "independent_review_sha256": "ceb86bece948518c71de311d94a67bddabe53f833178275d8f28bb895a1bca8b",
+  "source_check_count": 11673,
+  "roots": 7,
+  "pass_events": 30,
+  "race": 0,
+  "skip": 0,
+  "oom": 0,
+  "seconds": 81.50410125899361,
+  "artifact": {
+    "target": "./autoscale-scheduler/cmd",
+    "artifact": "autoscale-scheduler",
+    "path": "/data/neon-build/validation/scheduler-host-filter-focused-20261103T192037Z-790e0e/export/autoscale-scheduler",
+    "sha256": "4a63df4d3d4152b8c3c8e5dfb6308c27c52f3f744d52d891df44787a03d9579a",
+    "bytes": 68526264,
+    "ELF64_amd64_static": true
+  },
+  "cluster_deployed": false,
+  "pg17_memory_e2e_passed": false
+}

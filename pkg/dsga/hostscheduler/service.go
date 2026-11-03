@@ -19,6 +19,7 @@ import (
 	coreclient "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/leaderelection"
 
+	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	vmclient "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostexec"
@@ -111,6 +112,57 @@ func checkProfile(snapshot *hostguard.Snapshot, n NodeConfig) error {
 	return nil
 }
 
+// CheckPlacement在Filter只读重核原Pod/VM、完整Node账本/profile和新鲜Lease。
+// 不调用protectPod或任何CAS；不能以此结果替代最终Reserve。
+func (s *Service) CheckPlacement(ctx context.Context, node string, pod *core.Pod, target control.Uint64) error {
+	d, ok := s.domains[node]
+	if !ok {
+		return fmt.Errorf("node is not an explicitly configured Host domain")
+	}
+	_, p, vm, err := s.allocation(ctx, d.config, pod, target)
+	if err != nil {
+		return err
+	}
+	snapshot, err := d.store.Load(ctx)
+	if err != nil {
+		return err
+	}
+	if err := checkProfile(snapshot, d.config); err != nil {
+		return err
+	}
+	key, err := s.placementKey(ctx, p, vm)
+	if err != nil {
+		return err
+	}
+	return d.store.CheckPlacement(ctx, snapshot, p, key)
+}
+
+// Key只来自再次读取且UID/RV未变的原VM Active。试算与最终Reserve共用，
+// 普通Pod/关闭请求不能伪造Key；读回未知依旧拒绝，不清任何持有。
+func (s *Service) placementKey(ctx context.Context, p hostguard.Placement, vm *vmv1.VirtualMachine) (*control.Key, error) {
+	if !p.Managed || vm == nil {
+		return nil, nil
+	}
+	latest, err := s.vm.NeonvmV1().VirtualMachines(p.Namespace).Get(ctx, p.VMName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	if latest.UID != vm.UID || latest.ResourceVersion != vm.ResourceVersion {
+		return nil, fmt.Errorf("managed placement original VM changed before Node CAS")
+	}
+	b := journal.Binding{Namespace: p.Namespace, Name: p.VMName, VMUID: latest.UID, Incarnation: p.Incarnation}
+	current, err := journal.Inspect(latest, b)
+	if err != nil {
+		return nil, err
+	}
+	m := current.State()
+	if m.Active != nil && m.ServiceClosure == nil && !m.Active.AbortRequested && m.Active.Origin == m.Owner && m.Active.Request.Key.IssuerEpoch == m.Owner.Epoch {
+		key := m.Active.Request.Key
+		return &key, nil
+	}
+	return nil, nil
+}
+
 // Reserve是Framework.Reserve、事件恢复、旧VM批准写共同使用的唯一容量入口。
 // 并发冲突/丢回复交回队列重试，重试重新GET完整原对象；不在这里盲重放写入。
 func (s *Service) Reserve(ctx context.Context, node string, pod *core.Pod, target control.Uint64) (*core.Pod, hostguard.Placement, error) {
@@ -136,28 +188,13 @@ func (s *Service) Reserve(ctx context.Context, node string, pod *core.Pod, targe
 	if err != nil {
 		return nil, none, err
 	}
+	key, err := s.placementKey(ctx, p, vm)
+	if err != nil {
+		return nil, none, err
+	}
 	var held hostguard.Placement
-	if p.Managed && vm != nil {
-		// Key只来自原VM Active；普通Pod/关闭中的原请求绝不伪造新Key。
-		// 保护Pod与读取Node之后复核原VM RV，旧事件变化交回队列重读。
-		latest, readErr := s.vm.NeonvmV1().VirtualMachines(p.Namespace).Get(ctx, p.VMName, metav1.GetOptions{})
-		if readErr != nil {
-			return nil, none, readErr
-		}
-		if latest.UID != vm.UID || latest.ResourceVersion != vm.ResourceVersion {
-			return nil, none, fmt.Errorf("managed placement original VM changed before Node CAS")
-		}
-		b := journal.Binding{Namespace: p.Namespace, Name: p.VMName, VMUID: latest.UID, Incarnation: p.Incarnation}
-		current, readErr := journal.Inspect(latest, b)
-		if readErr != nil {
-			return nil, none, readErr
-		}
-		m := current.State()
-		if m.Active != nil && m.ServiceClosure == nil && !m.Active.AbortRequested && m.Active.Origin == m.Owner && m.Active.Request.Key.IssuerEpoch == m.Owner.Epoch {
-			_, held, err = d.store.HoldPlacementFor(ctx, snapshot, p, m.Active.Request.Key)
-		} else {
-			_, held, err = d.store.HoldPlacement(ctx, snapshot, p)
-		}
+	if key != nil {
+		_, held, err = d.store.HoldPlacementFor(ctx, snapshot, p, *key)
 	} else {
 		_, held, err = d.store.HoldPlacement(ctx, snapshot, p)
 	}
