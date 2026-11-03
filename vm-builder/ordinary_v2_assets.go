@@ -50,7 +50,7 @@ func normalOrdinaryV2BuildAssets(controlsVersion uint32) ([]ordinaryV2FixedAsset
 // 不连接Docker、不生成System/Native、不提供任何运行期来源或启动许可。
 // prepareOnly必须在新base构建之前显式调用；随后原Collector只验真实文件，
 // 绝不把DEV字符串的哈希签成生产配置。旧模式和controls1不隐式改义。
-// 写入前一次核完三个目标的父目录/对象，拒绝alias、FIFO及硬链接；失败可留下
+// 写入前一次核完配置、resolver和DHCP hook目标的父目录/对象，拒绝alias、FIFO及硬链接；失败可留下
 // 未发布的部分构建输入，调用者必须停止base/库存发布，不能把失败当成完成票。
 func normalProductionConfigurationPhase(root, mode string, controlsVersion uint32, prepareOnly bool, baseSHA string) error {
 	selected := mode == normalSplitV3BuildMode && controlsVersion == 2
@@ -72,7 +72,7 @@ func normalProductionConfigurationPhase(root, mode string, controlsVersion uint3
 	if e != nil || !st.IsDir() || st.Mode()&os.ModeSymlink != 0 {
 		return fmt.Errorf("configuration image root is not an original directory")
 	}
-	for _, logical := range []string{"/etc", "/neonvm", "/neonvm/config"} {
+	for _, logical := range []string{"/etc", "/neonvm", "/neonvm/config", "/neonvm/bin"} {
 		canonical, e := normalImageCanonical(root, logical)
 		if e != nil || canonical != logical {
 			return fmt.Errorf("configuration parent alias differs: %s", logical)
@@ -98,15 +98,18 @@ func normalProductionConfigurationPhase(root, mode string, controlsVersion uint3
 	}
 	// 只读取固定声明配置和原resolver孔，不扫描/etc或读取Host resolver。
 	inputs := map[string][]byte{}
-	for _, logical := range []string{"/neonvm/config/vector.yaml", "/neonvm/config/chrony.conf", "/etc/resolv.conf"} {
+	for _, logical := range []string{"/neonvm/config/vector.yaml", "/neonvm/config/chrony.conf", "/etc/resolv.conf", "/neonvm/bin/udhcpc.script"} {
 		path := filepath.Join(root, logical)
 		st, e := os.Lstat(path)
-		if os.IsNotExist(e) && prepareOnly {
+		if os.IsNotExist(e) && prepareOnly && logical != "/neonvm/bin/udhcpc.script" {
 			inputs[logical] = nil
 			continue
 		}
 		if e != nil || !st.Mode().IsRegular() || st.Mode()&os.ModeSymlink != 0 {
 			return fmt.Errorf("configuration input is not a regular original file: %s", logical)
+		}
+		if logical == "/neonvm/bin/udhcpc.script" && !prepareOnly && st.Mode().Perm() != 0755 {
+			return fmt.Errorf("prepared DHCP hook mode differs from 0755")
 		}
 		stat, ok := st.Sys().(*syscall.Stat_t)
 		if !ok || stat.Nlink != 1 {
@@ -117,6 +120,10 @@ func normalProductionConfigurationPhase(root, mode string, controlsVersion uint3
 			return e
 		}
 		inputs[logical] = f.raw
+	}
+	dhcp, e := normalProductionDHCPHook(inputs["/neonvm/bin/udhcpc.script"], prepareOnly)
+	if e != nil {
+		return e
 	}
 	resolver := inputs["/etc/resolv.conf"]
 	if bytes.Contains(resolver, []byte("TEST_ONLY")) {
@@ -146,6 +153,9 @@ func normalProductionConfigurationPhase(root, mode string, controlsVersion uint3
 		}
 	}
 	if e := normalStockAssetWrite(root, "/etc/resolv.conf", resolver, true); e != nil {
+		return e
+	}
+	if e := normalProductionDHCPHookWrite(root, dhcp); e != nil {
 		return e
 	}
 	return normalProductionConfigurationPhase(root, mode, controlsVersion, false, "")

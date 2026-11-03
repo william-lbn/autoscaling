@@ -93,7 +93,7 @@ func TestExportOrdinaryV2FixedAssets(t *testing.T) {
 func normalProductionConfigurationFixture(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
-	for _, logical := range []string{"/etc", "/neonvm/config"} {
+	for _, logical := range []string{"/etc", "/neonvm/config", "/neonvm/bin"} {
 		if e := os.MkdirAll(filepath.Join(root, logical), 0755); e != nil {
 			t.Fatal(e)
 		}
@@ -106,6 +106,13 @@ func normalProductionConfigurationFixture(t *testing.T) string {
 		if e := os.WriteFile(filepath.Join(root, path), raw, 0644); e != nil {
 			t.Fatal(e)
 		}
+	}
+	hook, e := os.ReadFile("testdata/udhcpc-alpine-default.script")
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = os.WriteFile(filepath.Join(root, "/neonvm/bin/udhcpc.script"), hook, 0755); e != nil {
+		t.Fatal(e)
 	}
 	return root
 }

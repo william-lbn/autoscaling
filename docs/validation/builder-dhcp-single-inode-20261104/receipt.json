@@ -1,0 +1,82 @@
+{
+  "scope": "修复normal-split-v3 controls2实际DHCP hook与只读根/单RW resolver孔不兼容；不是Host网络修改",
+  "base_feature_head": "9fec36e6b7e0553448cc7747dde62219042f59d1",
+  "job": "/data/neon-build/validation/builder-dhcp-prebase-exact-head-20261103T222018Z-167bbb",
+  "original_result_status": "FAILED_PRESERVE_EVIDENCE",
+  "original_result_preserved": true,
+  "source_freeze_sha256": "851d122b26b7bf654f66599e2ea4751871985127e7722b70071e938c937b6636",
+  "actual_source_manifest_sha256": "ad1b5384bd869f133aa28497adab684d713ba15f4f26731db4fe180905a7e6ba",
+  "source_archive_sha256": "0babbe7ec90ef0fae0e0d7069a1b747edaa0c97cd1206f7056abc2d8944a2b90",
+  "formatted_source_sha256": {
+    "vm-builder/normal_dhcp_assets.go": "18cf5fd3434baf0b65c161a824854fcb76a688ff25e4f8bcca09cba6e410133f",
+    "vm-builder/normal_dhcp_assets_test.go": "36b11eee24f201f9e23384cb97ebedd9091bb5991d57a5d939693c7cf3f6d324",
+    "vm-builder/ordinary_v2_assets.go": "a50cab6918db32703019d371c946fc640c4dce991df9e38a60659464cebe8260",
+    "vm-builder/ordinary_v2_assets_test.go": "aea30ab16da0fab35b0e640548a604493276433a96f66c929d9f39cc9754152a",
+    "vm-builder/testdata/udhcpc-alpine-default.script": "181f37e20fe2894d003cb120c6479e8a22060d993b15bfbc6165b7ecbdf1414a"
+  },
+  "counts": {
+    "dhcp-prebase": {
+      "fail": 0,
+      "pass_events": 8,
+      "race": 0,
+      "roots": 3,
+      "skip": 0
+    },
+    "fixed-assets": {
+      "fail": 0,
+      "pass_events": 1,
+      "race": 0,
+      "roots": 1,
+      "skip": 0
+    },
+    "production-configs": {
+      "fail": 0,
+      "pass_events": 10,
+      "race": 0,
+      "roots": 3,
+      "skip": 0
+    }
+  },
+  "Builder": {
+    "bytes": 37200056,
+    "formal_six_X_ldflags": "-s -w -X main.AlpineImageTag=3.19.7 -X main.AlpineImageShaAmd64=@sha256:06793e3dc83d9a0733c70010283ed1735ff75fc0d40e3eac330aaef41a2f5049 -X main.AlpineImageShaArm64=@sha256:b77521a60a51daad2b199da6efdd78956f79739d36379c2d13165f18ae1c4bee -X main.BusyboxImageTag=1.35.0-musl -X main.BusyboxImageShaAmd64=@sha256:e0b2a0f0bbb24966adb038db1fba7f45d25804602b53d901474b21122399962d -X main.BusyboxImageShaArm64=@sha256:86e3969e2c5b1a006da06016224b1579a52b1e770e8c2779ba45ac9d600c9418",
+    "help_exit": 0,
+    "path": "/data/neon-build/validation/builder-dhcp-prebase-exact-head-20261103T222018Z-167bbb/export/vm-builder",
+    "sha256": "c971a2ad52177a13ddb5d04949f8c08ac086d74e5d4ea6f77c819ee7098f939c",
+    "static_ELF64_amd64": true
+  },
+  "embedded_vminit_sha256": "2b5c4a22faac00438665a55f402568cc245cad9661d50cfb76197101c261215b",
+  "actual_cli_proof_sha256": "76f657803121078744dd2c9e083ead5a9d39b13811f17c158f44c01b1dea6af1",
+  "whole_job_failure": "隔离bound夹具漏拷动态BusyBox原Guest musl loader；在执行hook前chroot/sh ENOENT。只补同Guest闭包另新nonce验证，不重编已过Builder。",
+  "new_native_proof": {
+    "path": "/data/neon-build/validation/builder-dhcp-single-inode-native-20261103T222550Z-5666e9",
+    "result_sha256": "05702aafef41e64788e907489d24d2b10fcf8f869a6044cbe106809d980b3ab1",
+    "recipe_sha256": "4299472f81d1b4ab7230974d4f0de88eb26522f2fe64b8ccce1568537ea8c439",
+    "status": "PASS_ACTUAL_RO_ETC_SINGLE_RW_BIND_BOUND",
+    "seconds": 0.0371427729842253,
+    "old_hook_reproduced_RO_failure": true,
+    "new_bound_exit": 0,
+    "same_resolver_device_inode": true,
+    "document_DHCP_values_only": true,
+    "actual_runtime_DNS_lookup_proved": false,
+    "old_167_result_preserved_FAILED": true
+  },
+  "independent_review": {
+    "path": "/data/neon-build/validation/builder-dhcp-single-inode-hardlimits-20261103T222916Z-334b75/independent-final-DHCP-Builder-review-P2.json",
+    "sha256": "bb90b986c3979b9ebd808c429af48bd8f5caec104d61a423254047b264ba3736",
+    "scoped_components_passed": true,
+    "runtime_DNS_or_memory_E2E_passed": false
+  },
+  "production_image_built": false,
+  "SQL_or_memory_E2E_accepted": false,
+  "bounded_native_proof": {
+    "path": "/data/neon-build/validation/builder-dhcp-single-inode-hardlimits-20261103T222916Z-334b75",
+    "result_sha256": "7208d4ab55e7a24a64094152cb80115ae6999a0d71b1f780d357ded6ff92cb0e",
+    "scoped_validation_sha256": "717bd2a87341042222f687ad327259d09ce45997ce9dedd7758f1d606f40bc24",
+    "actual_memory_max": 3221225472,
+    "actual_swap_max": 0,
+    "actual_cpu_max": "200000 100000",
+    "peak_bytes": 19787776,
+    "oom": 0
+  }
+}
