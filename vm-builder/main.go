@@ -96,6 +96,7 @@ var (
 	normalNativePGMajor       = flag.Uint("normal-native-pg-major", 17, "Private image PG major selection: 17 default | 18 explicit; not collector ABI")
 	normalNativePostgresSHA   = flag.String("normal-native-postgres-sha256", "", "Original PostgreSQL ELF SHA256 from trusted build input; required for explicit PG18")
 	normalManifestRoot        = flag.String("normal-manifest-root", "", "Build-container-only final root inventory command")
+	normalPrepareConfigsOnly  = flag.Bool("normal-prepare-configs-only", false, "Private pre-base preparation of canonical controls2 configurations only; emits no System/Native inventory")
 	normalBaseDigest          = flag.String("normal-base-image-sha", "", "Original base image declaration for final inventory; not final image self hash")
 	normalOrdinaryControls    = flag.Uint("normal-ordinary-controls-version", 1, "Explicit fixed ordinary controls version: 1 or 2; version 2 requires normal-split-v3 and original package lock")
 	normalOrdinaryPackageLock = flag.String("normal-ordinary-package-lock", "", "Original Linux source/package build lock for explicit ordinary controls version 2")
@@ -185,6 +186,9 @@ type inittabCommand struct {
 
 func main() {
 	flag.Parse()
+	if *normalPrepareConfigsOnly && *normalManifestRoot == "" {
+		log.Fatal("configuration preparation requires explicit image root")
+	}
 	if e := validateNormalNativePGSelection(*systemModeFlag, *targetArch, *normalOrdinaryControls, *normalNativeBirthVersion, *normalNativePGMajor, *normalNativePostgresSHA); e != nil {
 		log.Fatal(e)
 	}
@@ -201,6 +205,14 @@ func main() {
 		packageLock, e := readNormalOrdinaryV2BuildLock(*systemModeFlag, *normalOrdinaryControls, *normalOrdinaryPackageLock)
 		if e != nil {
 			log.Fatal(e)
+		}
+		// 同一正式Builder既可在base构建前仅物化配置，也在Collector写任何库存前
+		// 严格核真实配置字节。prepare-only不写旧System/Native，不连接Docker/网络。
+		if e := normalProductionConfigurationPhase(*normalManifestRoot, *systemModeFlag, uint32(*normalOrdinaryControls), *normalPrepareConfigsOnly, *normalBaseDigest); e != nil {
+			log.Fatal(e)
+		}
+		if *normalPrepareConfigsOnly {
+			return
 		}
 		version := uint32(2)
 		if *systemModeFlag == normalSplitV3BuildMode {

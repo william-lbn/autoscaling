@@ -1,0 +1,13 @@
+# 正式镜像配置在base构建前物化与Collector拒绝开发占位
+
+实际PG17镜像继承原生测试夹具，Vector及chrony配置是25字节DEV文本，resolver是TEST_ONLY离线占位。旧Collector仅收录其哈希，不能证明配置可运行。本次在原正式Builder增加显式`--normal-prepare-configs-only`阶段，仅允许normal-split-v3、controls2及准确私有root，且禁止带已存在的base摘要；该阶段不生成System/Native、不连接Docker或网络。
+
+先用同一Builder及原参数（去掉`--normal-base-image-sha`）准备配置，再实际构建新base；随后原Collector带新base摘要核真实配置字节，失败时不得继续发布。Vector和chrony复用原版本化固定配置；仅清除已知TEST_ONLY resolver占位，保留真实显式resolver。空resolver不是DNS通过，运行期仍须原DHCP hook发布并真实解析服务名称，不能复制Host配置或编造DNS地址。
+
+写前拒绝父目录alias、文件alias、FIFO、硬链接及未知TEST_ONLY resolver；只使用原原子文件/fsync实现。旧模式与controls1保持原合同，prepare-only不隐式选择模式，也不签Source。失败留下的私有构建输入不能发布。
+
+Linux实际任务30200e在3CPU/3Gi内执行：4测试根、11个通过事件、失败/跳过/竞态均0；正式Builder原6个版本链接参数构建及help退出0。真实e879生产root独立副本的原Collector先拒DEV，晚于base准备同样拒绝且都不改文件；pre-base准备及再次准备均退出0，只变更Vector、chrony和resolver三路径，原System/Native字节不变，未构建镜像。首次81ab5b工具预检失败已原样保留，未算通过。准确源码、命令、产物和日志见receipt及/data原任务。
+
+当前边界：本提交完成构建输入修复及针对性验证；新生产镜像、Guest DHCP/DNS、真实SQL、安全normal降限及三节点内存端到端均须后续实际验收。不得把本次Builder通过当成Guest运行资格或生产认证。
+
+独立审查发现30200e沿旧9ce源码包覆盖本次三文件，因此74f7产物内嵌vminit仍为旧版本。配置分支不重写vminit，本次实际pre-base/Collector组件证据有效；该产物不得用于最终通用镜像构建。提交后须从准确新HEAD重新编译正式Builder并核当前clean-env vminit，避免旧内嵌资源回退。302原源码/结果不改写。

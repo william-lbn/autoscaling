@@ -1,0 +1,46 @@
+{
+  "scope": "PG17/PG18共用normal-split-v3 controls2镜像配置构建阶段；不是运行期安全资格",
+  "base_feature_head": "13d41fb8bed26afd9783815c5659ae164a08b2ab",
+  "job": "/data/neon-build/validation/builder-production-config-actual-go-20261103T215919Z-30200e",
+  "result_sha256": "355c2d3ae9bdb1b94da26f5da8cce08e25e7eb71247ce8a55651400fa996ad3a",
+  "source_freeze_sha256": "17b1d312eeabcd262a1e0b84d873056f07b71f8d4b3f8e9801e646e4158819a8",
+  "actual_source_manifest_sha256": "ed3ffccf9382f862efba4bdc0f65ec85afd4cefd291edf789890fc9061e4636f",
+  "source_archive_sha256": "dd35a493297b75aab078d6aba1970545749f56507098b0ee5324524f23d662ab",
+  "formatted_source_sha256": {
+    "vm-builder/main.go": "5cce8ec0169861ddbb8423705d7d1ec09348ce4365f9a1425d7510561d009de4",
+    "vm-builder/ordinary_v2_assets.go": "5009863fac1f745b0edeebc43be8629ed3c4ea996d30758628d908c6cdc9936e",
+    "vm-builder/ordinary_v2_assets_test.go": "d367ca825f5f4bec3180f29093d5a753875d147f0cc395652bc0740e209fb400"
+  },
+  "Builder": {
+    "bytes": 37195960,
+    "formal_six_X_ldflags": "-s -w -X main.AlpineImageTag=3.19.7 -X main.AlpineImageShaAmd64=@sha256:06793e3dc83d9a0733c70010283ed1735ff75fc0d40e3eac330aaef41a2f5049 -X main.AlpineImageShaArm64=@sha256:b77521a60a51daad2b199da6efdd78956f79739d36379c2d13165f18ae1c4bee -X main.BusyboxImageTag=1.35.0-musl -X main.BusyboxImageShaAmd64=@sha256:e0b2a0f0bbb24966adb038db1fba7f45d25804602b53d901474b21122399962d -X main.BusyboxImageShaArm64=@sha256:86e3969e2c5b1a006da06016224b1579a52b1e770e8c2779ba45ac9d600c9418",
+    "help_exit": 0,
+    "path": "/data/neon-build/validation/builder-production-config-actual-go-20261103T215919Z-30200e/export/vm-builder",
+    "sha256": "74f7fdb3fba3e2cc8449fcd45275ae7da9fb7715894a769f1f45a761499e1181",
+    "static_ELF64_amd64": true
+  },
+  "counts": {
+    "fixed-assets": {
+      "fail": 0,
+      "pass_events": 1,
+      "race": 0,
+      "roots": 1,
+      "skip": 0
+    },
+    "production-configs": {
+      "fail": 0,
+      "pass_events": 10,
+      "race": 0,
+      "roots": 3,
+      "skip": 0
+    }
+  },
+  "actual_cli_proof_sha256": "dce136f269f023f01471db7bb285930e021c40b97bcfe2cddf420258d3a97bad",
+  "seconds": 83.06351804704173,
+  "original_failure": "81ab5b仅工具预检假设SDK有python3失败127；未运行测试，原日志保留",
+  "production_image_built": false,
+  "Guest_DNS_runtime_verified": false,
+  "SQL_or_memory_E2E_accepted": false,
+  "Builder_reuse_boundary": "30200e原9ce archive+三文件测试配置分支；其旧内嵌vminit不代表465/current完整Builder。限定Collector/pre-base组件证据；最终生产Builder必须从提交后准确HEAD重编并核vminit2b5。",
+  "Builder_is_current_full_source_image_builder": false
+}
