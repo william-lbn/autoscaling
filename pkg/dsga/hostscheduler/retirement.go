@@ -12,6 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
+	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
@@ -210,7 +211,11 @@ func (s *Service) retirePod(ctx context.Context, d domain, expected *core.Pod) e
 	if err != nil {
 		return err
 	}
-	if pod.UID != expected.UID || pod.Spec.NodeName != d.config.Binding.NodeName || pod.Spec.SchedulerName != d.config.Profile.SchedulerName {
+	_, hasVMOwner := vmv1.VirtualMachineOwnerForPod(pod)
+	// 与allocation保持同一原分类：已绑定普通Pod可由默认调度器创建，
+	// VM/未绑定Pod仍须属于原调度域；重读时原scheduler不得漂移。
+	foreignScheduler := pod.Spec.SchedulerName != d.config.Profile.SchedulerName && (pod.Spec.NodeName == "" || hasVMOwner)
+	if pod.UID != expected.UID || pod.Spec.NodeName != d.config.Binding.NodeName || pod.Spec.SchedulerName != expected.Spec.SchedulerName || foreignScheduler {
 		return fmt.Errorf("original terminal Pod placement changed")
 	}
 	hash, err := hostguard.TerminalPodDigest(pod)

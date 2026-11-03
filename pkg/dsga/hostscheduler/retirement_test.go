@@ -373,6 +373,8 @@ func TestSchedulerWholePodRetirementRejectsIncompleteProofs(t *testing.T) {
 func TestSchedulerOrdinaryPodRetirementKeepsOtherAllocations(t *testing.T) {
 	s, f, n := schedulerFixture(t)
 	pod, other := boundedPod("done", n.Binding.NodeName, "1Gi"), boundedPod("other", n.Binding.NodeName, "2Gi")
+	// 覆盖真实DaemonSet旧Agent：已按原默认调度器计费，终态仍须可结清。
+	pod.Spec.SchedulerName = core.DefaultSchedulerName
 	f.Mutate(func(f *dsgatest.SchedulerAPI) { f.Pods["testing/done"], f.Pods["testing/other"] = pod, other })
 	ctx := context.Background()
 	require.NoError(t, s.reconcile(ctx, s.domains[n.Binding.NodeName]))
@@ -391,10 +393,53 @@ func TestSchedulerOrdinaryPodRetirementKeepsOtherAllocations(t *testing.T) {
 	require.NoError(t, err)
 	var restored hostguard.Model
 	require.NoError(t, json.Unmarshal(raw, &restored))
-	// v8已支持原初始容量来源，不能继续将它当未知版本。下一版仍须
-	// 拒绝，避免读者忽略新合同；具体v8来源不变量由Host领域测试覆盖。
-	restored.ProtocolVersion = 9
+	// 当前Model.Validate允许v1至v9；用明确超出支持范围的版本
+	// 核验未知合同仍被拒绝，合法版本新增不应使此退休正例误报失败。
+	restored.ProtocolVersion = ^uint32(0)
 	raw, err = json.Marshal(restored)
 	require.NoError(t, err)
 	require.Error(t, json.Unmarshal(raw, &restored))
+}
+
+// 默认调度器的既有普通Pod只能按同一原scheduler退休；不能借普通Pod分支
+// 接纳重读时的调度器漂移，也不能把其他调度域的VM owner降格为普通Pod。
+func TestSchedulerOrdinaryRetirementRejectsSchedulerOrVMDrift(t *testing.T) {
+	for _, scenario := range []string{"original_scheduler_changed", "foreign_vm_owner"} {
+		t.Run(scenario, func(t *testing.T) {
+			s, f, n := schedulerFixture(t)
+			pod := boundedPod("default-done", n.Binding.NodeName, "1Gi")
+			pod.Spec.SchedulerName = core.DefaultSchedulerName
+			f.Mutate(func(f *dsgatest.SchedulerAPI) { f.Pods["testing/default-done"] = pod })
+			ctx := context.Background()
+			require.NoError(t, s.reconcile(ctx, s.domains[n.Binding.NodeName]))
+			f.Mutate(func(f *dsgatest.SchedulerAPI) {
+				p := f.Pods["testing/default-done"]
+				p.Status.Phase = core.PodSucceeded
+				now := metav1.Now()
+				p.Status.ContainerStatuses = []core.ContainerStatus{{Name: "app", ContainerID: "containerd://default-done", State: core.ContainerState{Terminated: &core.ContainerStateTerminated{ContainerID: "containerd://default-done", StartedAt: now, FinishedAt: now}}}}
+			})
+			expected, err := f.Core.CoreV1().Pods(pod.Namespace).Get(ctx, pod.Name, metav1.GetOptions{})
+			require.NoError(t, err)
+			before, err := s.domains[n.Binding.NodeName].store.Load(ctx)
+			require.NoError(t, err)
+			f.Mutate(func(f *dsgatest.SchedulerAPI) {
+				p := f.Pods["testing/default-done"]
+				if scenario == "original_scheduler_changed" {
+					p.Spec.SchedulerName = n.Profile.SchedulerName
+				} else {
+					controller := true
+					p.OwnerReferences = []metav1.OwnerReference{{APIVersion: "vm.neon.tech/v1", Kind: "VirtualMachine", Name: "foreign-vm", UID: "foreign-vm-uid", Controller: &controller}}
+				}
+			})
+			err = s.retirePod(ctx, s.domains[n.Binding.NodeName], expected)
+			require.ErrorContains(t, err, "original terminal Pod placement changed")
+			after, err := s.domains[n.Binding.NodeName].store.Load(ctx)
+			require.NoError(t, err)
+			require.Equal(t, before.State().Placements, after.State().Placements)
+			actual, err := f.Core.CoreV1().Pods(pod.Namespace).Get(ctx, pod.Name, metav1.GetOptions{})
+			require.NoError(t, err)
+			require.Contains(t, actual.Finalizers, hostguard.PodProtectionFinalizer)
+			require.Empty(t, actual.Annotations[hostguard.RetirementAnnotation])
+		})
+	}
 }
