@@ -88,7 +88,7 @@ func normalFixtureRoot(t *testing.T) string {
 			t.Fatal(e)
 		}
 	}
-	for _, p := range []string{"/neonvm/bin/sh", "/neonvm/bin/cat", "/neonvm/bin/touch", "/neonvm/bin/udhcpc"} {
+	for _, p := range []string{"/neonvm/bin/init", "/neonvm/bin/sh", "/neonvm/bin/cat", "/neonvm/bin/touch", "/neonvm/bin/udhcpc"} {
 		os.Remove(filepath.Join(root, p))
 		if e := os.Symlink("/neonvm/bin/busybox", filepath.Join(root, p)); e != nil {
 			t.Fatal(e)

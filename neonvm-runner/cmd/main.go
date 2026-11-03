@@ -574,7 +574,8 @@ func runQEMU(
 
 	var cgroupPath string
 
-	if !cfg.skipCgroupManagement {
+	// 受管内存QEMU必须继承原Runner/Pod共同硬限，不能经旧CPU组逃出统一memcg。
+	if cfg.usesLegacyQEMUCgroup() {
 		var err error
 		cgroupPath, err = setupQEMUCgroup(logger, selfPodName, vmSpec.Guest.CPUs.Use)
 		if err != nil {
@@ -705,9 +706,14 @@ func runQEMU(
 // qemuProcessCommand保留原cgroup执行入口，只在包装前固定PATH选出的真实QEMU路径。
 // cgexec不会替os/exec解析它后面的程序；安全初始启动必须在Start前核同一绝对ELF。
 // 缺失/不安全的PATH选择继续失败，不能改用skip-cgroup或放宽原启动来源校验。
+// usesLegacyQEMUCgroup只为普通VM保留原CPU子组；DSGA不创建或使用外部组。
+func (cfg *Config) usesLegacyQEMUCgroup() bool {
+	return cfg.managedMemory == nil && !cfg.skipCgroupManagement
+}
+
 func qemuProcessCommand(cfg *Config, cgroupPath string, qemuArgs []string) (string, []string, error) {
 	qemuBin := getQemuBinaryName(cfg.architecture)
-	if cfg.skipCgroupManagement {
+	if cfg.managedMemory == nil && cfg.skipCgroupManagement {
 		return qemuBin, qemuArgs, nil
 	}
 	resolved, err := exec.LookPath(qemuBin)
@@ -719,6 +725,10 @@ func qemuProcessCommand(cfg *Config, cgroupPath string, qemuArgs []string) (stri
 		if err != nil {
 			return "", nil, fmt.Errorf("resolve absolute original QEMU executable: %w", err)
 		}
+	}
+	if !cfg.usesLegacyQEMUCgroup() {
+		// 仅改变是否包装cgexec；原绝对ELF、-runas、QMP和身份冻结参数完整保留。
+		return resolved, qemuArgs, nil
 	}
 	return "cgexec", append([]string{"-g", fmt.Sprintf("cpu:%s", cgroupPath), resolved}, qemuArgs...), nil
 }

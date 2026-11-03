@@ -212,6 +212,21 @@ func generateNormalSystemManifest(root string, plan normalBuildPlan, baseSHA str
 	return generateNormalSystemManifestForVersion(root, plan, baseSHA, 2)
 }
 
+// normalValidateKernelInitAlias 在最终映像的根中解析内核固定入口，不能使用宿主机
+// EvalSymlinks。内核先以 BusyBox init 成为 PID1，再由既有 inittab 执行 vminit；
+// 直接把 init 指向 vminit 会绕开该监督链。实际 BusyBox ELF、解释器及原 inittab
+// 仍由同一份既有 System 库存与完整闭包校验处理，不扩展清单/运行期协议。
+func normalValidateKernelInitAlias(root string) error {
+	canonical, err := normalImageCanonical(root, "/neonvm/bin/init")
+	if err != nil {
+		return fmt.Errorf("normal kernel init entry unavailable: %w", err)
+	}
+	if canonical != "/neonvm/bin/busybox" {
+		return fmt.Errorf("normal kernel init entry must resolve to original BusyBox")
+	}
+	return nil
+}
+
 func generateNormalSystemManifestForVersion(root string, plan normalBuildPlan, baseSHA string, version uint32) ([]byte, error) {
 	if version != 2 && version != 3 {
 		return nil, fmt.Errorf("unsupported final System inventory version")
@@ -222,6 +237,9 @@ func generateNormalSystemManifestForVersion(root string, plan normalBuildPlan, b
 	b, e := hex.DecodeString(baseSHA)
 	if e != nil || hex.EncodeToString(b) != baseSHA {
 		return nil, fmt.Errorf("base image digest not canonical")
+	}
+	if e := normalValidateKernelInitAlias(root); e != nil {
+		return nil, e
 	}
 	ref, e := resourceguard.LookupPhysicalKernelBuild(resourceguard.NormalSplitV1PhysicalKernelProfileID)
 	if e != nil {
