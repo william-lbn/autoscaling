@@ -1,0 +1,4 @@
+PG17受管Runner Pod明确硬限
+所有非nil DSGABootstrap输入必须同时有CPU/内存硬限，非空ExtraInitContainers首版明确拒绝；legacy不变。两个内置复制init沿同CPU/内存预算且不复制设备资源，Runner资源独立深拷贝。
+实际原3根race测试13项通过，38.698秒，无失败/跳过/OOM；实际3CPU/3GiB。Helm的9项渲染+lint及原12兼容验证通过。原源码/命令/日志与实际资源终态位于stage-receipt记录路径。
+此提交仅证明入口和Pod构造边界，不表示真实VM cgroup读回、Source资格或K8s端到端通过；必须重编Controller并实际部署。

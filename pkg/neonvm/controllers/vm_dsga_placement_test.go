@@ -6,6 +6,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/component-helpers/scheduling/corev1/nodeaffinity"
 
@@ -92,6 +93,8 @@ func TestPG17DSGARunnerPodKeepsPlacementWithoutMutatingVM(t *testing.T) {
 	t.Setenv("VM_RUNNER_IMAGE", "test-runner")
 	vm := dsgaPlacementVM()
 	vm.Spec.Affinity = &core.Affinity{NodeAffinity: &core.NodeAffinity{RequiredDuringSchedulingIgnoredDuringExecution: &core.NodeSelector{NodeSelectorTerms: []core.NodeSelectorTerm{{MatchExpressions: []core.NodeSelectorRequirement{{Key: "kubernetes.io/hostname", Operator: core.NodeSelectorOpIn, Values: []string{"worker-117", "worker-118", "worker-119"}}}}}}}, PodAntiAffinity: &core.PodAntiAffinity{}}
+	// 正式DSGA Pod构造必须显式带硬限；保留本测试原放置/不修改输入判据。
+	vm.Spec.PodResources = core.ResourceRequirements{Limits: core.ResourceList{core.ResourceCPU: resource.MustParse("4"), core.ResourceMemory: resource.MustParse("10Gi")}}
 	before := vm.DeepCopy()
 	pod, err := podSpec(vm, nil, &ReconcilerConfig{})
 	require.NoError(t, err)

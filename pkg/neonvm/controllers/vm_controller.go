@@ -1313,11 +1313,44 @@ func imageForVmRunner() (string, error) {
 	return image, nil
 }
 
+// dsgaInitResources让显式受限DSGA Runner的两个内置复制阶段保持同一CPU/内存预算。
+// 每次返回独立资源对象；KVM/GPU等设备只属于Runner，不向顺序init复制。
+// 只有真正legacy保持原行为；所有DSGA输入都必须声明完整硬限，typed API不能绕过Helm。
+func dsgaInitResources(vm *vmv1.VirtualMachine) (corev1.ResourceRequirements, error) {
+	out := corev1.ResourceRequirements{}
+	if vm.Spec.DSGABootstrap == nil {
+		return out, nil
+	}
+	// 首版只支持原固定root/kernel复制阶段；额外init不能绕开同一Pod预算。
+	if len(vm.Spec.ExtraInitContainers) != 0 {
+		return out, fmt.Errorf("DSGA extra init containers are unsupported by the fixed Pod budget")
+	}
+	memory, exact := vm.Spec.PodResources.Limits.Memory().AsInt64()
+	if !exact || memory <= 0 || vm.Spec.PodResources.Limits.Cpu().Sign() <= 0 {
+		return out, fmt.Errorf("explicit DSGA Pod resources require positive hard CPU and exact memory limits")
+	}
+	out.Limits = corev1.ResourceList{}
+	for _, name := range []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory} {
+		out.Limits[name] = vm.Spec.PodResources.Limits[name].DeepCopy()
+		if value, ok := vm.Spec.PodResources.Requests[name]; ok {
+			if out.Requests == nil {
+				out.Requests = corev1.ResourceList{}
+			}
+			out.Requests[name] = value.DeepCopy()
+		}
+	}
+	return out, nil
+}
+
 func podSpec(
 	vm *vmv1.VirtualMachine,
 	sshSecret *corev1.Secret,
 	config *ReconcilerConfig,
 ) (*corev1.Pod, error) {
+	initResources, err := dsgaInitResources(vm)
+	if err != nil {
+		return nil, err
+	}
 	labels := labelsForVirtualMachine(vm)
 	annotations := annotationsForVirtualMachine(vm)
 	affinity := affinityForVirtualMachine(vm)
@@ -1379,6 +1412,7 @@ func podSpec(
 					Image:           vm.Spec.Guest.RootDisk.Image,
 					Name:            "init",
 					ImagePullPolicy: vm.Spec.Guest.RootDisk.ImagePullPolicy,
+					Resources:       *initResources.DeepCopy(),
 					VolumeMounts: []corev1.VolumeMount{{
 						Name:      "virtualmachineimages",
 						MountPath: "/vm/images",
@@ -1491,7 +1525,7 @@ func podSpec(
 							return []corev1.VolumeMount{images, cgroups}
 						}
 					}(),
-					Resources: vm.Spec.PodResources,
+					Resources: *vm.Spec.PodResources.DeepCopy(),
 					ReadinessProbe: &corev1.Probe{
 						ProbeHandler: corev1.ProbeHandler{
 							HTTPGet: &corev1.HTTPGetAction{
@@ -1590,6 +1624,7 @@ func podSpec(
 			Image:           *vm.Spec.Guest.KernelImage,
 			Name:            "init-kernel",
 			ImagePullPolicy: vm.Spec.Guest.RootDisk.ImagePullPolicy,
+			Resources:       *initResources.DeepCopy(),
 			Args:            []string{"cp", "/vmlinuz", "/vm/images/vmlinuz"},
 			VolumeMounts: []corev1.VolumeMount{{
 				Name:      "virtualmachineimages",

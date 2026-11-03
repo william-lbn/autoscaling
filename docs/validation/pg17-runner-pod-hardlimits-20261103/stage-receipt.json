@@ -1,0 +1,100 @@
+{
+  "status": "PASS_FINAL_DSGA_POD_HARD_LIMITS_ALL_KNOWN_INIT_ENTRY_GATES_READY_FOR_ROOT_COMMIT",
+  "frozen_utc": "2026-11-03T04:33:08.429137+00:00",
+  "AS_compile_base_HEAD": "c7001e8e1000eba384b8d54ad3f888e7878d55af",
+  "Helm_base_HEAD": "552f6b8e33997f424e87573391b3f1892d68771a",
+  "owned_files": {
+    "autoscaling": [
+      {
+        "path": "pkg/neonvm/controllers/vm_controller.go",
+        "sha256": "553d55e7cef210e4876a47732706455a3b0e5b46b6fbd17e64b6b575b532eef2"
+      },
+      {
+        "path": "pkg/neonvm/controllers/vm_dsga_resources_test.go",
+        "sha256": "1794b518de35e129b6b42ad43b396b06b371a64a9963c434794ce35c9429d6fd"
+      },
+      {
+        "path": "pkg/neonvm/controllers/vm_dsga_placement_test.go",
+        "sha256": "28a1e0d32799d72fc1b920ef786e4ab4e05965ea50ef42cc9980209c8f229941"
+      }
+    ],
+    "neon-helm": [
+      {
+        "path": "charts/neon-compute/templates/vm.yaml",
+        "sha256": "3162a0727ebfa512d5286c24b6290de43cfe2e4dd8a5eecb5dcc23c3a0fb0db1"
+      },
+      {
+        "path": "charts/neon-compute/values.yaml",
+        "sha256": "a4985d7e4b55bfa19380eaa06771cbbd9f49b0ec287b448e165694ff3b2163ff"
+      },
+      {
+        "path": "charts/neon-compute/values.schema.json",
+        "sha256": "d31e1e98bb6af514c007bbf0e9c334e4b69ebc39cf8d827d2c0556f797f80225"
+      },
+      {
+        "path": "charts/neon-compute/README.md",
+        "sha256": "3bfc6b008626720f6855a2c2e9bba45b935e235898526fbf95243d2e660e22e4"
+      },
+      {
+        "path": "charts/neon-compute/tests/pod-resources.py",
+        "sha256": "de8c119ab685546ea95706c2b64dbfb055e6bfdd3be7393a44f50500b92fbcbd"
+      },
+      {
+        "path": "docs/validation/pg17-primary-only-network-20261103/focused-render.py",
+        "sha256": "af5fe625b23c3e267b184c6b19cfac3878ece0a56630ff49cde97ec9e00ec90c"
+      }
+    ]
+  },
+  "source_lock_sha256": "ce52f4147a9b34071f34b2d9c05ca244a65461772876698838d49c0396c3c872",
+  "go_result": {
+    "build_exit": 0,
+    "tests_exit": 0,
+    "seconds": 38.69838997902116,
+    "scope": "PG17_DSGA_RUNNER_POD_HARD_LIMITS_AND_BUILTIN_INIT_PEAK_TARGETED_RACE",
+    "Source": false,
+    "K8s": false,
+    "end_utc": "2026-11-03T04:32:10.763524+00:00"
+  },
+  "go_unique_roots": [
+    "TestPG17DSGAExplicitPodResourcesBoundBuiltinInitPeak",
+    "TestPG17DSGAInitResourcesPreserveLegacyAndRejectPartialLimits",
+    "TestPG17DSGARunnerPodKeepsPlacementWithoutMutatingVM"
+  ],
+  "go_pass_events": 13,
+  "go_fail_events": 0,
+  "go_skip_events": 0,
+  "go_race_enabled": true,
+  "actual_cpu_max": "300000 100000",
+  "actual_memory_max": "3221225472",
+  "actual_memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\n",
+  "render_result": {
+    "path": "/data/neon-build/validation/pg17-runner-pod-hardlimits-strict-render-20261103T042527Z-a65e99/result.json",
+    "sha256": "58fa062d4aaeebf35d6d42032d7bc447a7af9987c436871f5c313a5d27125c17",
+    "cases": 9,
+    "lint_exit": 0
+  },
+  "existing_primary_compatibility": {
+    "path": "/data/neon-build/validation/pg17-primary-only-strict-resources-compat-20261103T042527Z-a65e99/result.json",
+    "sha256": "9a1a7a8194d301b7814b30cf6df293c6e84bb9e342676fe1950823dce426d8fd",
+    "cases": 12,
+    "only_fixture_change": "显式podResources CPU4/memory10Gi，原判据保留"
+  },
+  "runtimeprepare_source_facts": {
+    "main.go:187": "完整原VM Spec Semantic.DeepEqual包含PodResources，未放松",
+    "main.go:124-128": "固定CPU2/min7/use7/max8",
+    "render.go:109-159": "固定镜像/buildSHA与mount，允许原typedVM字段，无需改tool"
+  },
+  "production_scope": "所有非nil DSGABootstrap必须有完整CPU/memory硬限；空/部分/requests-only生成前拒绝。managed非空ExtraInitContainers明确拒绝，只有真正legacy保原资源与extra-init行为。内置root/kernel init仅CPU/memory独立copy；Runner完整资源独立copy。",
+  "recompile_required": [
+    "neonvm-controller"
+  ],
+  "runner_ELF_recompile_required": false,
+  "real_Runner_memory_max_confirmed": false,
+  "real_VM_created": false,
+  "Git_or_index_changed": false,
+  "whole_host_kernel_proof_claimed": false,
+  "supersedes_prior_gate": "/data/neon-build/validation/pg17-runner-pod-hardlimits-strict-go-20261103T042527Z-a65e99/stage-proposal.json",
+  "additional_affected_fixture": "vm_dsga_placement_test.go仅直接managed podSpec夹具显式合法cap，原放置/不可变判据保留",
+  "arbitrary_extra_init_scope": "managed ExtraInitContainers非空生成Pod前明确拒绝；新增1个case同时证实legacy原extra-init保留。",
+  "render_reused_without_rerun_reason": "最后只改Controller同一gate/针对性Go判据及中文README；chart模板/schema/values/两个render脚本字节未改，复用a65e99实际9+12通过票，不扩测试。"
+}
