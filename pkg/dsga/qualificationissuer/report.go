@@ -81,9 +81,15 @@ type Report struct {
 	HostSystemBytes          control.Uint64               `json:"host_system_bytes"`
 	// v2 将 Host 容量预算与 Guest 物理证明分离；公开资格 DTO 仍为原 v1。
 	HostKubernetesBudget *hostguard.KubernetesBudgetPolicy `json:"host_kubernetes_budget,omitempty"`
+	// 新collector显式绑定完整原Guest投影；省略仍为既有独立外部报告合同。
+	// 不改变公开Qualification DTO，已选该能力的报告不能退回缺投影发布。
+	GuestArtifactSHA256 string `json:"guest_artifact_sha256,omitempty"`
 }
 
 func (r Report) Validate() error {
+	if r.GuestArtifactSHA256 != "" && (r.ProtocolVersion != 2 || r.Scope != KubernetesBudgetReportScope || !validSHA(r.GuestArtifactSHA256)) {
+		return fmt.Errorf("original Guest artifact requires versioned Kubernetes budget report")
+	}
 	if r.Qualification.Validate() != nil || control.ValidateID(r.ConfigSecretUID, "original config Secret UID") != nil || !validSHA(r.ResourceSourceSHA256) || !validSHA(r.LinuxArtifactSHA256) || !validSHA(r.ContinuousArtifactSHA256) || r.HostBinding.Validate() != nil || !validSHA(r.HostProfileSHA256) || r.HostSystemBytes == 0 || r.HostBinding.NodeName != r.Qualification.NodeName || string(r.HostBinding.NodeUID) != r.Qualification.NodeUID {
 		return fmt.Errorf("complete independent Linux report and persistent constraint sources required")
 	}

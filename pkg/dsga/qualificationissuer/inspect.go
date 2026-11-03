@@ -51,6 +51,17 @@ func (i *Issuer) capture(ctx context.Context, r Report) (string, error) {
 	if discovered.Instance.ComputeInstanceID != q.Identity.ComputeInstanceID || discovered.OwnerEpoch != m.Owner.Epoch || view.Identity != q.Identity || view.IssuerFloorEpoch != m.Owner.Epoch || view.NormalQuotaProtocolVersion != 1 || view.ArrayAuthorityProtocolVersion != 1 || view.Birth == nil {
 		return "", fmt.Errorf("Root identity, original birth or current owner changed")
 	}
+	// collector产生的报告在每次写前/写后capture都重新核完整投影；旧SHA不含子cap，不能单用。
+	if r.GuestArtifactSHA256 != "" {
+		artifact := view.GuestQualification
+		if artifact == nil || view.GuestQualificationUnavailable != nil || artifact.MatchView(view) != nil || artifact.ConfigSecretUID != r.ConfigSecretUID || artifact.ResourceSourceSHA256 != r.ResourceSourceSHA256 {
+			return "", fmt.Errorf("original complete Guest artifact unavailable during qualification capture")
+		}
+		sha, e := canonicalGuestArtifactSHA(*artifact)
+		if e != nil || sha != r.GuestArtifactSHA256 {
+			return "", fmt.Errorf("original complete Guest artifact changed during qualification capture")
+		}
+	}
 	if m.PGInstance != nil && (m.PGInstance.ComputeInstanceID != discovered.Instance.ComputeInstanceID || discovered.Instance.PGBootID != 0 && discovered.Instance.PGBootID != m.PGInstance.PGBootID) {
 		return "", fmt.Errorf("Agent PG discovery differs from original journal")
 	}

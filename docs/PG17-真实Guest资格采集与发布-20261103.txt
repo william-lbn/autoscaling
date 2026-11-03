@@ -1,0 +1,30 @@
+PG17真实Guest平台资格采集与发布（2026-11-03）
+
+本入口只聚焦内存自动伸缩所需的平台资格。公开PlatformQualification仍为v1，私有Report使用v2的Kubernetes节点容量预算scope；不要求整台宿主机未计费内核的绝对上界。Guest内核、System/P/A硬域和在途/allocator完整来源仍须真实核验。
+
+一、与原生产链的关系
+Root在原出生路径准备normalQuotaBudgetSource；collector只消费该同一Root actor、原初始WAL文件身份和当前strict observer，不prepare、不fsync旧WAL、不修改cap或创造出生。原HTTP GET /dsg/v1/resource/state附带可选版本1 guest_qualification；当前来源不可用时明确guest_qualification_unavailable。旧Guest没有字段即不具备采集能力；普通state成功不能替代完整资格。原签名、UID/incarnation/ConfigSecretUID/Runtime和资源SHA校验、32KiB全响应上限不变。
+Agent沿原共享View/Owner串行读链传递该响应。采集可使用现有只读resource.sock（GET Owner + POST resource_state），不需要完整Begin管理socket，不新增控制动作/网络端口。新Agent读者应先于新Guest启用；旧严格读者遇新字段拒绝，不默默忽略。
+
+二、首次资格不需要旧CM
+部署者在原Runner实际最小规格（本轮7Gi）稳定时运行采集。collector同时核实际VMStatus、原Runner QMP publication和Root实际GuestMemTotal，取真实7Gi已观测值作为保守usable floor。首次7Gi上的7/未来8两个确切目标可使用同一保守floor，不按比例或加1Gi外推。若当前已在8Gi真实观测，8Gi目标应使用本次actual8 floor，不能仍强塞7Gi floor导致额外容量永远不可用于Normal；7Gi较小目标仍须原已发布的exact7 floor。此处依赖原initial completion、固定non-MOVABLE来源、只允许MOVABLE增减且不低于原minimum的实际几何/metadata强制；后继每次Root/VM执行仍核实际GuestMemTotal不低于floor。
+若当前已为8Gi，不能从8Gi反推7Gi；须由操作者明确给previous_qualification的原name/UID/SHA，再由原budgetclaims.Reader认证同Guest/Root bootstrap/Runner birth的已发布7Gi floor。没有则拒绝。本分支不是首次bootstrap前置条件，不接受Linux Host_API_model资格。
+
+三、预算不够必须拒绝
+Outside是创建时保留，不是证明。collector从原来源复算System、2K、所有已知条件在途、compaction free reserve、CPU stock、PCP和MOVABLE水位分项，先要求创建Outside覆盖完整实际总和，才分组装配SystemOutside/Transition/Safety。额外保留仅作为明确margin，不替代任何实际分项。System包含在Outside中，不重复再加。每个目标N+Outside还必须不超过上述真实最小Guest usable floor。
+固定PID硬界512、原SMP最大槽和kernel build参与原公式，不能随意按当前进程/CPU采样缩小编译硬界。例如compaction项512*(512+1024-1)*4096=3219128320B，本轮旧System1Gi+Outside3Gi配置单此项已超出，必须真实改为可行创建配置后验证，不能把3Gi写入资格当作已证明。
+
+四、实际命令与文件
+1. 在持有该VM原Owner的worker上，部署者预建本次唯一输出目录root:root 0700，准备root保护的collector配置和独立issuer的kubeconfig。复用现issuer RBAC；不得用Agent身份发布资格，不打印SA token/SQL密码/TLS私钥。
+2. 可把117原只读socket经SSH StreamLocal转发到118本次新root0600 UDS，在118保留原issuer kubeconfig及/data归档；不复制kubeconfig、不监听TCP、不改宿主网络，仍保原SO_PEERCRED/readonly门和所有来源绑定。
+collector配置字段为protocol_version=1、binding{namespace,name,vm_uid,incarnation}、node_name/node_uid、control_socket_path（本轮/run/neon-dsga-pg17-resource/resource.sock）、timeout_seconds<=120、output_directory、targets[{vm_memory_bytes,normal_memory_max_bytes可省略}]。所有UID从本次实际对象取得，不复制样例/模型身份。targets必须显式递增并落在原Runner确切几何内。
+3. 仅采集与本地归档：
+   dsga-platform-qualifier --collect-config /绝对路径/collector.private.json --kubeconfig /绝对路径/issuer.private.kubeconfig
+   本命令只GET/LIST和原UDS只读调用；复用现production capture两次核完整Root/Runner/Host/Pod硬限清单，无Kube CREATE/PATCH/DELETE、PG/QMP/Root写。输出只含摘要和路径，不打印证据正文。
+4. 成功后输出目录产生report.json、linux-artifact.json、continuous-artifact.json、issuer-config.proposed.json，全部O_EXCL 0600、fsync，不覆盖旧nonce结果。核对本轮真实身份、镜像/Source及算术小票后，才显式运行原发布入口：
+   dsga-platform-qualifier --config /绝对路径/issuer-config.proposed.json --kubeconfig /绝对路径/issuer.private.kubeconfig
+   新collector报告固定guest_artifact_sha256；最终采集读回及原publisher每次capture均比较完整canonical artifact（含P/A、geometry、limits、facts/terms），不只比较两个不完整旧SHA。ReportID由完整artifact、所有targets及Host绑定/profile内容寻址，CM名称仍取完整ReportSHA。原publisher仍做两次写前capture、immutable受保护CM CREATE、原UID读回和写后capture，返回真实claim{name,uid}+sha。Unconfirmed保留原对象及输入，不删除或按同名新UID自动收养。
+5. 将实际结果和命令/原日志SHA归档到118的/data/neon-k8s-pg17/cases/component-api，并由原Helm值选择真实qualification ref，再运行原Begin/automaticMemory链。采集/发布成功本身不是Grow/Shrink/Regrow或故障恢复通过。
+
+五、聚焦验证
+unit目录中的first-qualification测试只验证首次无prior-CM和禁止规格外推的分支，private-file测试只验证digest/权限/O_EXCL边界；不冒真实Guest证明。resourceguard测试覆盖原签名HTTP→HTTPS SDK、旧Guest省略、缺源显式不可用、匿名/坏字段/超限拒绝及真实分项复算。真实Guest数据核验与K8s循环另存实际nonce，未执行时必须NOT_RUN。
