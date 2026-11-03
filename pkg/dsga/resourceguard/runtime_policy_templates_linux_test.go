@@ -105,7 +105,7 @@ func TestRuntimePolicyTemplatesRenderFullPrefixWithoutUIDCycle(t *testing.T) {
 	}
 }
 func TestRuntimePolicyTemplatesTypedPolicyRejectsUnsupportedOrOverBudget(t *testing.T) {
-	for _, name := range []string{"pg18_unsupported", "native_unknown", "build_hash", "kernel_controls", "kernel_profile", "physical_build", "pre_system_profile", "pre_system_version", "split_memory", "split_pids", "zero_as", "missing_static_budget", "physical_only"} {
+	for _, name := range []string{"pg19_unsupported", "pg16_unsupported", "native_unknown", "build_hash", "kernel_controls", "kernel_profile", "physical_build", "pre_system_profile", "pre_system_version", "split_memory", "split_pids", "zero_as", "missing_static_budget", "physical_only"} {
 		t.Run(name, func(t *testing.T) {
 			d := runtimeTemplatesFullFixture(t)
 			ts, _ := parseRuntimePolicyTemplates(d.PolicyTemplatesJSON)
@@ -123,8 +123,10 @@ func TestRuntimePolicyTemplatesTypedPolicyRejectsUnsupportedOrOverBudget(t *test
 			var p map[string]any
 			_ = json.Unmarshal(ts.Templates[index].Policy, &p)
 			switch name {
-			case "pg18_unsupported":
-				p["pg_major"] = 18
+			case "pg19_unsupported":
+				p["pg_major"] = 19
+			case "pg16_unsupported":
+				p["pg_major"] = 16
 			case "native_unknown":
 				p["extra"] = true
 			case "build_hash":
@@ -168,5 +170,43 @@ func TestRuntimePolicyTemplatesTypedPolicyRejectsUnsupportedOrOverBudget(t *test
 				t.Fatal("invalid effective typed policy accepted")
 			}
 		})
+	}
+}
+
+// PG18-U-TEMPLATE-001：本层只有静态build SHA意图，没有真实Manifest/ELF。
+// 支持18不能冒充来源认证；真实major不匹配仍由decodeNativeBirthSource拒绝，
+// 对应TestNativeBirthPG18BindsExactOriginalSource的17/18双向替换负例。
+func TestRuntimePolicyTemplatesPG18IsStaticIntentOnly(t *testing.T) {
+	d := runtimeTemplatesFullFixture(t)
+	before, _ := json.Marshal(d)
+	templates, err := parseRuntimePolicyTemplates(d.PolicyTemplatesJSON)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var policy map[string]any
+	if err := json.Unmarshal(templates.Templates[4].Policy, &policy); err != nil {
+		t.Fatal(err)
+	}
+	policy["pg_major"] = 18
+	// OFFLINE fixture摘要，未读取真实构建清单，不是PG18 ELF证明。
+	buildSHA := strings.Repeat("ef", 32)
+	policy["build_manifest_sha256"] = buildSHA
+	templates.Templates[4].Policy, _ = json.Marshal(policy)
+	next := runtimeTemplatesSetBlob(d, runtimeTemplatesEnvelope(templates.Templates))
+	raw, _ := json.Marshal(next)
+	assets, err := RenderRuntimePolicyAssets(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var effective nativeBirthPolicy
+	if err := json.Unmarshal(assets["dsga-native-birth.json"], &effective); err != nil {
+		t.Fatal(err)
+	}
+	if effective.PGmajor != 18 || effective.BuildManifestSHA256 != buildSHA || effective.RuntimeDocumentSHA256 != runtimePolicyDigest(raw) || effective.ResourceSourceSHA256 != next.SourceSHA256 {
+		t.Fatal("PG18 static intent lost exact original binding")
+	}
+	after, _ := json.Marshal(d)
+	if !bytes.Equal(before, after) {
+		t.Fatal("renderer mutated original input")
 	}
 }

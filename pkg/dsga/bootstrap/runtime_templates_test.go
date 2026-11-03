@@ -121,7 +121,7 @@ func TestRuntimeTemplatesProducerOriginalUIDNoCycleAndAssets(t *testing.T) {
 	}
 }
 func TestRuntimeTemplatesProducerRejectsUntrustedOrPartialInputs(t *testing.T) {
-	for _, name := range []string{"mutable", "owner", "secret_uid", "empty", "oversize", "partial", "scope", "dynamic", "missing_parent", "pg18"} {
+	for _, name := range []string{"mutable", "owner", "secret_uid", "empty", "oversize", "partial", "scope", "dynamic", "missing_parent", "pg19_unsupported", "pg16_unsupported"} {
 		t.Run(name, func(t *testing.T) {
 			vm, s := runtimeTemplatesProducerFixture(t, "original-secret")
 			blob := s.Data[resourceguard.PolicyTemplatesSecretKey]
@@ -143,8 +143,10 @@ func TestRuntimeTemplatesProducerRejectsUntrustedOrPartialInputs(t *testing.T) {
 				blob = bytes.Replace(blob, []byte("neon-dsga-policy-templates-v1"), []byte("other-scope"), 1)
 			case "dynamic":
 				blob = bytes.Replace(blob, []byte(`"pg_major":17`), []byte(`"runtime_document_sha256":"","pg_major":17`), 1)
-			case "pg18":
-				blob = bytes.Replace(blob, []byte(`"pg_major":17`), []byte(`"pg_major":18`), 1)
+			case "pg19_unsupported":
+				blob = bytes.Replace(blob, []byte(`"pg_major":17`), []byte(`"pg_major":19`), 1)
+			case "pg16_unsupported":
+				blob = bytes.Replace(blob, []byte(`"pg_major":17`), []byte(`"pg_major":16`), 1)
 			case "missing_parent":
 				var envelope map[string]any
 				_ = json.Unmarshal(blob, &envelope)
@@ -226,5 +228,45 @@ func TestRuntimeTemplatesV1ProducerRemainsByteCompatible(t *testing.T) {
 	spec.DSGABootstrap = nil
 	if assets, err := DecodeRuntimeAssets(spec, ""); err != nil || assets != nil {
 		t.Fatal("unmanaged legacy behavior changed", assets, err)
+	}
+}
+
+// PG18-U-TEMPLATE-002：原UID/Secret门可携带18的静态模板；Fake API与摘要
+// fixture不含真实Manifest/ELF，不发PG出生、Source、normal或VM伸缩资格。
+func TestRuntimeTemplatesProducerPG18KeepsOriginalIdentity(t *testing.T) {
+	vm, secret := runtimeTemplatesProducerFixture(t, "original-secret")
+	originalResource := append([]byte(nil), secret.Data[resourceguard.ResourceSecretKey]...)
+	var envelope map[string]any
+	if err := json.Unmarshal(secret.Data[resourceguard.PolicyTemplatesSecretKey], &envelope); err != nil {
+		t.Fatal(err)
+	}
+	entry := envelope["templates"].([]any)[4].(map[string]any)
+	policy := entry["policy"].(map[string]any)
+	policy["pg_major"] = 18
+	buildSHA := strings.Repeat("ef", 32) // OFFLINE静态意图；未读取或认证真实PG18构建。
+	policy["build_manifest_sha256"] = buildSHA
+	templates, _ := json.Marshal(envelope)
+	secret.Data[resourceguard.PolicyTemplatesSecretKey] = templates
+	d, err := Runtime(vm, secret)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d.ProtocolVersion != 2 || d.ConfigSecretUID != string(secret.UID) || !bytes.Equal(d.SourceJSON, originalResource) || !bytes.Equal(d.PolicyTemplatesJSON, templates) {
+		t.Fatal("PG18 intent changed original identity or raw inputs")
+	}
+	raw, _ := json.Marshal(d)
+	assets, err := DecodeRuntimeAssets(&vm.Spec, gzip64.Encode(raw))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var effective map[string]any
+	if err := json.Unmarshal(assets["dsga-native-birth.json"], &effective); err != nil {
+		t.Fatal(err)
+	}
+	if effective["pg_major"] != float64(18) || effective["build_manifest_sha256"] != buildSHA || effective["runtime_document_sha256"] != runtimeTemplateSHA(raw) || effective["resource_source_sha256"] != d.SourceSHA256 {
+		t.Fatal("PG18 producer lost exact template binding")
+	}
+	if !bytes.Equal(secret.Data[resourceguard.ResourceSecretKey], originalResource) || !bytes.Equal(secret.Data[resourceguard.PolicyTemplatesSecretKey], templates) {
+		t.Fatal("producer mutated immutable original inputs")
 	}
 }
