@@ -1,0 +1,28 @@
+{
+  "status": "FROZEN_RUNNER_COMMAND_FIX_READY_FOR_ROOT_COMMIT",
+  "base_commit": "f5580da4f4885cc162f26f66b2bc9825c1c89200",
+  "owned_files_sha256": {
+    "neonvm-runner/cmd/main.go": "60c05e5da55afb6f4627a933fb574bea67afbc9b3f6377a1ee96eabed887c1f8",
+    "neonvm-runner/cmd/qemu_command_test.go": "bf04168aeeec68a9555b963feed29bd696a30a792f812155498a77019987f604",
+    "neonvm-runner/cmd/dsga_initial_boot.go": "44894b1b810bc10d4a894a6c600ae02511a6e60becab5476b5a6574f5871bf9e",
+    "neonvm-runner/cmd/dsga_initial_boot_test.go": "591be943a8bb1555aa22eb82ccb9f1166786112b7e5cefe5ecf81472934f4a23",
+    "neonvm-runner/cmd/dsga_trusted_initial_boot_test.go": "87d18ddc622d403976a815daf56d9eff3e5ad0e205f4b1adb3dee40939fe9af0"
+  },
+  "receipts_sha256": {
+    "/data/neon-build/validation/runner-qemu-absolute-mib-command-go-20261103T071232Z-9d036b/source-lock.json": "dd04aaab966db51ca2eeff4a40b4ab049526da291b31e6a286c5a633e339874b",
+    "/data/neon-build/validation/runner-qemu-absolute-mib-command-go-20261103T071232Z-9d036b/result.json": "bd821d8f9181e5cb5ef190102babc1a4a8f9be415a6b3a2d760483f250480bfd",
+    "/data/neon-build/validation/runner-qemu-absolute-mib-command-go-20261103T071232Z-9d036b/export/tests.jsonl": "15a52d18f5b2571851904676c65a63751077a72178a2fef87799f5260de3495b",
+    "/data/neon-build/validation/runner-qemu-absolute-mib-command-go-20261103T071232Z-9d036b/export/actual-command.jsonl": "29fa4515d32f79824d98cbf0138c2ece59e482125828ad072753e16281fac66c",
+    "/data/neon-k8s-pg17/runs/runner-prestart-qemu-contract-20261103T070017Z-210bc8/readonly-contract-receipt.json": "b20a35c1891153765fc7c53f6dec241bb19c3fb0539f59a13c9401874c2dfcd0"
+  },
+  "tests": {
+    "runner_race_roots": 14,
+    "actual_original_birth_and_VM_strict_validator": "PASS",
+    "process_start_or_object_creation": false,
+    "actual_input_limit": "Only geometry/SMP/boot-channel arguments consumed by validateInitialBootLaunch rebuilt from the real first Birth/VM. buildQEMUCmd network/disk side effects intentionally not executed. Not full Guest/K8s acceptance."
+  },
+  "strict_validator_or_protocol_changed": false,
+  "exact_MiB_no_rounding": true,
+  "Git_index_commit_or_live_VM_written": false,
+  "next": "Root commit then immutable source Runner-only build; preserve Guest/Kernel/Controller pins"
+}

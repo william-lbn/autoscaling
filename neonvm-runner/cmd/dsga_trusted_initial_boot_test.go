@@ -126,7 +126,7 @@ func TestRunnerTrustedInitialBaseUsesValidatedOriginalSource(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := []string{"-m", "size=536870912b,slots=1,maxmem=8589934592b", "-object", "memory-backend-ram,id=vmem0,size=8053063680b", "-device", "virtio-mem-pci,id=vm0,memdev=vmem0,node=0,block-size=8M,requested-size=0"}
+	want := []string{"-m", "size=512M,slots=1,maxmem=8192M", "-object", "memory-backend-ram,id=vmem0,size=7680M", "-device", "virtio-mem-pci,id=vm0,memdev=vmem0,node=0,block-size=8M,requested-size=0"}
 	if strings.Join(args, " ") != strings.Join(want, " ") {
 		t.Fatalf("trusted8GiB geometry differs: %q", args)
 	}
@@ -157,7 +157,7 @@ func TestRunnerTrustedInitialBaseKeepsLegacySelection(t *testing.T) {
 	spec.Guest.MemorySlotSize = resource.MustParse("512Mi")
 	spec.Guest.MemorySlots = vmv1.MemorySlots{Min: 2, Use: 2, Max: 16}
 	args, err := initialBootMemoryArguments(cfg, spec)
-	if err != nil || !strings.Contains(strings.Join(args, " "), "memory-backend-ram,id=vmem0,size=8321499136b") {
+	if err != nil || !strings.Contains(strings.Join(args, " "), "memory-backend-ram,id=vmem0,size=7936M") {
 		t.Fatal("legacy256MiB geometry changed", err, args)
 	}
 }

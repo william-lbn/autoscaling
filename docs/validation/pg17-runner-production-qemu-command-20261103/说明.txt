@@ -1,0 +1,5 @@
+PG17真实Runner启动命令修复
+首个真实K8s Runner出生及state已落盘，但QEMU在Start前被严格来源验证拒绝。两个生产generator与validator不一致：cgexec内层QEMU为裸名称，原门要求绝对ELF；原合法QEMU byte后缀b不在既有严格parser支持集。
+仅在包装cgexec前LookPath固定实际QEMU绝对路径，保ErrDot/缺失程序失败；内存几何沿原8MiB block整除，以精确MiB M表达base/max/backend，显式整除，不四舍五入。原严格门/协议/其他argv保持。
+实际14根直接Runner race通过，另用原真实Birth/VM重建validator消费的几何/SMP/bootchannel离线验证：旧裸路径拒、新绝对路径及精确M过、额外monitor拒；不启动QEMU、不造UID、不把离线门当K8s通过。37.507秒正式仅Runner ELF已构建，原Guest/Kernel/Controller可保持；下一实例需原退役与新物理身份，不修改旧birth记录。
+原失败、环境前置错误与首次path-only后继base错误都保/data，不覆盖。后续必须实际Guest启动、cgroup读回与内存端到端才验收生产候选。

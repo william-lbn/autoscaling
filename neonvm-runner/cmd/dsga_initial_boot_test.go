@@ -29,12 +29,12 @@ func TestRunnerInitialBaseUsesOriginalRuntimeAndSeparateBusinessMinimum(t *testi
 		t.Fatal(e)
 	}
 	joined := strings.Join(args, " ")
-	for _, want := range []string{"size=268435456b,slots=1,maxmem=4294967296b", "memory-backend-ram,id=vmem0,size=4026531840b", "virtio-mem-pci,id=vm0,memdev=vmem0,node=0,block-size=8M,requested-size=0"} {
+	for _, want := range []string{"size=256M,slots=1,maxmem=4096M", "memory-backend-ram,id=vmem0,size=3840M", "virtio-mem-pci,id=vm0,memdev=vmem0,node=0,block-size=8M,requested-size=0"} {
 		if !strings.Contains(joined, want) {
 			t.Fatalf("initial geometry missing %q: %s", want, joined)
 		}
 	}
-	if strings.Contains(joined, "size=1073741824b,") {
+	if strings.Contains(joined, "size=1024M,") {
 		t.Fatal("business Min became original base")
 	}
 	raw := append([]byte(nil), c.initialBootstrap.RuntimeJSON...)

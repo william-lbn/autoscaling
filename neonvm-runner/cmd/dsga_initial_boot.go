@@ -49,5 +49,11 @@ func initialBootMemoryArguments(cfg *Config, spec *vmv1.VirtualMachineSpec) ([]s
 	if minimum < base || maximum <= base || base%vmguard.VirtioBlockBytes != 0 || (minimum-base)%vmguard.VirtioBlockBytes != 0 || (maximum-base)%vmguard.VirtioBlockBytes != 0 {
 		return nil, fmt.Errorf("initial base or target is outside original block geometry")
 	}
-	return []string{"-m", fmt.Sprintf("size=%db,slots=1,maxmem=%db", base, maximum), "-object", fmt.Sprintf("memory-backend-ram,id=vmem0,size=%db", maximum-base), "-device", "virtio-mem-pci,id=vm0,memdev=vmem0,node=0,block-size=8M,requested-size=0"}, nil
+	// 原8MiB block校验已保证三项均整MiB；显式M同时满足QEMU和严格启动来源parser，
+	// 不能以未标单位的-m数值冒充bytes，也不能靠四舍五入改变原几何。
+	const mib = uint64(1 << 20)
+	if base%mib != 0 || maximum%mib != 0 || (maximum-base)%mib != 0 {
+		return nil, fmt.Errorf("initial memory is not an exact MiB geometry")
+	}
+	return []string{"-m", fmt.Sprintf("size=%dM,slots=1,maxmem=%dM", base/mib, maximum/mib), "-object", fmt.Sprintf("memory-backend-ram,id=vmem0,size=%dM", (maximum-base)/mib), "-device", "virtio-mem-pci,id=vm0,memdev=vmem0,node=0,block-size=8M,requested-size=0"}, nil
 }

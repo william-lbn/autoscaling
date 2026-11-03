@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -672,19 +673,12 @@ func runQEMU(
 	wg.Add(1)
 	go monitorFiles(ctx, logger, &wg, vmSpec)
 
-	qemuBin := getQemuBinaryName(cfg.architecture)
-	var bin string
-	var cmd []string
-	if !cfg.skipCgroupManagement {
-		bin = "cgexec"
-		cmd = append([]string{"-g", fmt.Sprintf("cpu:%s", cgroupPath), qemuBin}, qemuCmd...)
-	} else {
-		bin = qemuBin
-		cmd = qemuCmd
+	bin, cmd, err := qemuProcessCommand(cfg, cgroupPath, qemuCmd)
+	if err != nil {
+		return err
 	}
 
 	logger.Info(fmt.Sprintf("calling %s", bin), zap.Strings("args", cmd))
-	var err error
 	if cfg.managedMemory != nil {
 		// 受管启动必须由同一Runner持有原子进程Start/Wait；退出事实先
 		// 关闭原内存WAL再发布，不凭QMP断线或VM.Status推断容量归还。
@@ -706,6 +700,27 @@ func runQEMU(
 	wg.Wait()
 
 	return err
+}
+
+// qemuProcessCommand保留原cgroup执行入口，只在包装前固定PATH选出的真实QEMU路径。
+// cgexec不会替os/exec解析它后面的程序；安全初始启动必须在Start前核同一绝对ELF。
+// 缺失/不安全的PATH选择继续失败，不能改用skip-cgroup或放宽原启动来源校验。
+func qemuProcessCommand(cfg *Config, cgroupPath string, qemuArgs []string) (string, []string, error) {
+	qemuBin := getQemuBinaryName(cfg.architecture)
+	if cfg.skipCgroupManagement {
+		return qemuBin, qemuArgs, nil
+	}
+	resolved, err := exec.LookPath(qemuBin)
+	if err != nil {
+		return "", nil, fmt.Errorf("resolve original QEMU executable: %w", err)
+	}
+	if !filepath.IsAbs(resolved) {
+		resolved, err = filepath.Abs(resolved)
+		if err != nil {
+			return "", nil, fmt.Errorf("resolve absolute original QEMU executable: %w", err)
+		}
+	}
+	return "cgexec", append([]string{"-g", fmt.Sprintf("cpu:%s", cgroupPath), resolved}, qemuArgs...), nil
 }
 
 func getQemuBinaryName(architecture string) string {
