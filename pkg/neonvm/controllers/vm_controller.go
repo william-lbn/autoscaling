@@ -1540,6 +1540,11 @@ func podSpec(
 					},
 				}
 
+				if vm.Spec.DSGABootstrap != nil {
+					// DSGA核对-runAs qemu后的原pidfd/procFD/exe；只补跨UID读取所需能力。
+					// 普通VM仍用原三项caps，privileged保持false。
+					runner.SecurityContext.Capabilities.Add = append(runner.SecurityContext.Capabilities.Add, "SYS_PTRACE")
+				}
 				return []corev1.Container{runner}
 			}(),
 			Volumes: func() []corev1.Volume {
