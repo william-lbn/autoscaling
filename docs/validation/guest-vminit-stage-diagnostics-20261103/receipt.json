@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "scope_zh": "仅Guest vminit固定阶段失败诊断与直接脚本测试；当前未定位ENOENT根因，不冒功能修复",
+  "base_head": "bd45eae91afa550811e3ae207b39fb3dec1ceeb6",
+  "owned_files": {
+    "vm-builder/files/normal-split/vminit": "f1f8a232352acc200e457c8e1363ba7d9f2e2eb1069193106c9b3cf8ae40cdd6",
+    "vm-builder/normal_split_test.go": "79c3c4290708b72f5c93281eccc52c9b165bda84c2bea1d86aa3f624a9ee0c3e"
+  },
+  "result": {
+    "path": "/data/neon-build/validation/pg17-vminit-stage-diagnostics-repaired-20261103T194325Z-816ba3/result.json",
+    "sha256": "a816478860d4c093cc8f59995a561044434aec6d9fee873261bc7db198bde2e6",
+    "seconds": 40.13825933798216,
+    "roots": 1,
+    "subcases": 8,
+    "PASS_events": 9,
+    "race": 0,
+    "skip": 0
+  },
+  "compiled_source_check_OK": 11675,
+  "formal_Builder": {
+    "target": "./vm-builder",
+    "artifact": "vm-builder",
+    "path": "/data/neon-build/validation/pg17-vminit-stage-diagnostics-repaired-20261103T194325Z-816ba3/export/vm-builder",
+    "sha256": "80d101c26a016bc169eb5c0d6e68c131734d2ebb75673e1df4262393f1c6249a",
+    "bytes": 37187768,
+    "ELF64_amd64_static": true,
+    "foundation_flags": "-s -w -X main.AlpineImageTag=3.19.7 -X main.AlpineImageShaAmd64=@sha256:06793e3dc83d9a0733c70010283ed1735ff75fc0d40e3eac330aaef41a2f5049 -X main.AlpineImageShaArm64=@sha256:b77521a60a51daad2b199da6efdd78956f79739d36379c2d13165f18ae1c4bee -X main.BusyboxImageTag=1.35.0-musl -X main.BusyboxImageShaAmd64=@sha256:e0b2a0f0bbb24966adb038db1fba7f45d25804602b53d901474b21122399962d -X main.BusyboxImageShaArm64=@sha256:86e3969e2c5b1a006da06016224b1579a52b1e770e8c2779ba45ac9d600c9418",
+    "original_recipe": "/data/neon-build/validation/pg17-same-source-runner-builder-images-20261103T154132Z-9e34a7/Dockerfile",
+    "six_X_flags_exact_command_preserved": true,
+    "Dockerfile_SHA256": "aa5b88c574f1524f0bf922840d3dbbf21674cad7d56c1b82f7d3acc6fc90d4e6",
+    "Go_build_metadata_SHA256": "5f37c9a0ae6a7e6c14adca46d675336e4512f72ddca6c8cf7eb3d9554800131a",
+    "Go_metadata_boundary": "实际go version -m未列ldflags；6-X来自成功执行的固定Dockerfile命令，不冒metadata显示该字段。",
+    "help_exit": 0
+  },
+  "independent_review_SHA256": "13a8f8be6c81d4b517cfa2656115836654b495ca98fdca829d84c4b601590fdc",
+  "first_failure_repaired": false,
+  "real_Guest_initialization_passed": false,
+  "PG17_memory_e2e_passed": false
+}

@@ -4,37 +4,67 @@
 set -eu
 export PATH=/neonvm/bin
 bb=/neonvm/bin/busybox
+# 仅打印固定阶段标签与原退出码；不展开Runtime/Source、ISO内容或环境凭据。
+# 初始准备失败仍关闭所有角色；此诊断不是完成Provision或放行的凭证。
+stage=mount-proc
+report_init_failure() {
+ printf 'DSGA sysinit failed: stage=%s code=%s\n' "$stage" "$1" >&2 || :
+}
+report_init_exit() {
+ rc=$?
+ trap - 0
+ [ "$rc" -eq 0 ] || report_init_failure "$rc"
+ exit "$rc"
+}
+trap report_init_exit 0
 $bb mountpoint -q /proc || $bb mount -t proc proc /proc
+stage=mount-sys
 $bb mountpoint -q /sys || $bb mount -t sysfs sysfs /sys
 # 原LSM reader在KernelPrep/运行期均实读securityfs；新布局固定只读挂载，
 # 不能用缺失文件或临时卸载伪造旧16mount图。既有未知覆盖拒绝，不收养。
+stage=securityfs-guard
 $bb mkdir -p /sys/kernel/security
 if $bb mountpoint -q /sys/kernel/security; then exit 1; fi
+stage=mount-securityfs
 $bb mount -t securityfs -o ro,nosuid,nodev,noexec securityfs /sys/kernel/security
+stage=mount-dev
 $bb mountpoint -q /dev || $bb mount -t devtmpfs devtmpfs /dev
+stage=runtime-layout
 $bb mkdir -p /sys/fs/cgroup /dev/pts /dev/shm /run /tmp /neonvm/runtime
+stage=mount-cgroup
 $bb mountpoint -q /sys/fs/cgroup || $bb mount -t cgroup2 cgroup2 /sys/fs/cgroup
+stage=mount-devpts
 $bb mountpoint -q /dev/pts || $bb mount -t devpts -o noexec,nosuid devpts /dev/pts
+stage=mount-run
 $bb mountpoint -q /run || $bb mount -t tmpfs -o noexec,nosuid,nodev,mode=0755 run /run
+stage=mount-tmp
 $bb mountpoint -q /tmp || $bb mount -t tmpfs -o noexec,nosuid,nodev,mode=1777 tmp /tmp
+stage=mount-shm
 $bb mountpoint -q /dev/shm || $bb mount -t tmpfs -o noexec,nosuid,nodev,mode=1777 shm /dev/shm
+stage=mount-runtime-iso
 $bb mount -t iso9660 -o ro,mode=0644 /dev/vdb /neonvm/runtime
 # 所有旧执行/调优覆盖连symlink也拒，且不先执行任何一项。
+stage=runtime-assets-guard
 for n in mounts.sh sysctl.conf env.sh command.sh args.sh resize-swap-internal.sh; do
  [ ! -e "/neonvm/runtime/$n" ] && [ ! -L "/neonvm/runtime/$n" ] || exit 1
 done
+stage=cgroup-write-protection
 $bb chmod go-w /sys/fs/cgroup/cgroup.procs /sys/fs/cgroup/cgroup.threads
 # 只克隆原同一个ext4作短暂准备视图，不改变PGDATA/Root WAL持久语义。
 # 各孔为原固定目录；不把PGDATA本身挂载，保remove/create及.warmup兄弟目录。
 # 临时全RW别名必须在initial-boot之前消失，不能留给后续服务绕过RO祖先。
 # 整体验证先于全RW别名创建；readlink核完整父链，不能只拒末端symlink。
+stage=canonical-rw-layout
 for p in /etc/neon-dsga /var/lib/neon-dsga /var/db/postgres /var/log /var/lib/chrony; do
  [ -d "$p" ] && [ ! -L "$p" ] || exit 1
  [ "$( $bb readlink -f "$p" )" = "$p" ] || exit 1
 done
+stage=canonical-resolver
 [ -f /etc/resolv.conf ] && [ ! -L /etc/resolv.conf ] || exit 1
 [ "$( $bb readlink -f /etc/resolv.conf )" = /etc/resolv.conf ] || exit 1
+stage=private-root-propagation
 $bb mount --make-rprivate /
+stage=root-view-preflight
 $bb mkdir -p /run/neon-dsga
 [ "$( $bb readlink -f /run/neon-dsga )" = /run/neon-dsga ] || exit 1
 view=/run/neon-dsga/root-writable
@@ -51,21 +81,31 @@ cleanup_root_view() {
  fi
  $bb rmdir "$view" 2>/dev/null || :
  [ "$rc" -ne 0 ] || rc=1
+ report_init_failure "$rc"
  exit "$rc"
 }
 trap cleanup_root_view 0
 trap 'exit 129' 1
 trap 'exit 130' 2
 trap 'exit 143' 15
+stage=root-view-bind
 $bb mount --bind / "$view"
+stage=canonical-rw-bind
 for p in /etc/neon-dsga /var/lib/neon-dsga /var/db/postgres /var/log /var/lib/chrony; do
  $bb mount --bind "$view$p" "$p"
 done
+stage=resolver-bind
 $bb mount --bind "$view/etc/resolv.conf" /etc/resolv.conf
+stage=root-read-only
 $bb mount -o remount,bind,ro /
+stage=root-view-unmount
 $bb umount "$view"
+stage=root-view-remove
 $bb rmdir "$view"
 trap - 0 1 2 15
+trap report_init_exit 0
+stage=initial-boot
+printf 'DSGA sysinit: stage=initial-boot-enter code=0\n' >&2 || :
 # 不以ACK/ready文件放行：CLI必须实际完成Provision→Split→CheckGuest。
 # 动态extension与静态/usr/local的RO闭包仍须原policy真实核验；此脚本不豁免。
 exec /neonvm/bin/dsga-resource-guard initial-boot

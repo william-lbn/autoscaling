@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 	"io"
 	"os"
@@ -302,10 +303,14 @@ func TestNormalSplitVmInitPrevalidatesAndCleansRootView(t *testing.T) {
 		name        string
 		code        int
 		viewCreated bool
+		stage       string
 	}{
-		{"success-diagnostic-exit", 42, true}, {"pg-parent-alias", 1, false},
-		{"pg-ancestor-alias", 1, false}, {"resolv-alias", 1, false},
-		{"bind-failure", 23, true},
+		{"success-diagnostic-exit", 42, true, ""}, {"pg-parent-alias", 1, false, "canonical-rw-layout"},
+		{"pg-ancestor-alias", 1, false, "canonical-rw-layout"}, {"resolv-alias", 1, false, "canonical-resolver"},
+		{"bind-failure", 23, true, "canonical-rw-bind"},
+		{"securityfs-already-mounted", 1, false, "securityfs-guard"},
+		{"runtime-mount-failure", 22, false, "mount-runtime-iso"},
+		{"legacy-runtime-script", 1, false, "runtime-assets-guard"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r := t.TempDir()
@@ -320,6 +325,10 @@ func TestNormalSplitVmInitPrevalidatesAndCleansRootView(t *testing.T) {
 				}
 			}
 			switch tc.name {
+			case "legacy-runtime-script":
+				if e := os.WriteFile(filepath.Join(r, "/neonvm/runtime/mounts.sh"), []byte("offline forbidden asset\n"), 0644); e != nil {
+					t.Fatal(e)
+				}
 			case "pg-parent-alias":
 				p := filepath.Join(r, "/var/db/postgres")
 				os.Remove(p)
@@ -340,11 +349,12 @@ op=$1; shift
 case "$op" in
  mountpoint)
   for last do :; done
-  case "$last" in */root-writable) [ -f "$ROOT/view-mounted" ];; */sys/kernel/security) exit 1;; *) exit 0;; esac;;
+  case "$last" in */root-writable) [ -f "$ROOT/view-mounted" ];; */sys/kernel/security) [ "$CASE" = securityfs-already-mounted ];; *) exit 0;; esac;;
  mount)
   for last do :; done
   case "$last" in */root-writable) /bin/touch "$ROOT/view-mounted"; printf 'view\n' >>"$ROOT/trace";;
-  */var/log) [ "$CASE" != bind-failure ] || exit 23;; esac;;
+  */var/log) [ "$CASE" != bind-failure ] || exit 23;;
+  */neonvm/runtime) [ "$CASE" != runtime-mount-failure ] || exit 22;; esac;;
  umount) /bin/rm -f "$ROOT/view-mounted"; printf 'cleanup\n' >>"$ROOT/trace";;
  mkdir) exec /bin/mkdir "$@";;
  rmdir) exec /bin/rmdir "$@";;
@@ -355,7 +365,8 @@ esac
 `
 			os.WriteFile(filepath.Join(r, "/neonvm/bin/busybox"), []byte(bb), 0755)
 			os.WriteFile(filepath.Join(r, "/neonvm/bin/dsga-resource-guard"), []byte("#!/bin/sh\nprintf 'guard\\n' >>\"$ROOT/trace\"\nexit 42\n"), 0755)
-			pairs := []string{}
+			// 最长运行盘路径先匹配，避免/run前缀把/runtime再次拼接进夹具根。
+			pairs := []string{"/neonvm/runtime", filepath.Join(r, "/neonvm/runtime")}
 			for _, p := range []string{"/neonvm", "/sys", "/proc", "/dev", "/run", "/tmp", "/etc", "/var"} {
 				pairs = append(pairs, p, filepath.Join(r, p))
 			}
@@ -368,6 +379,14 @@ esac
 			ee, ok := e.(*exec.ExitError)
 			if !ok || ee.ExitCode() != tc.code {
 				t.Fatalf("exit=%v want=%d output=%s", e, tc.code, b)
+			}
+			if tc.stage != "" {
+				want := fmt.Sprintf("DSGA sysinit failed: stage=%s code=%d", tc.stage, tc.code)
+				if !strings.Contains(string(b), want) || strings.Contains(string(b), "initial-boot-enter") {
+					t.Fatalf("fixed failed-stage diagnostic missing or guard stage reached: output=%s", b)
+				}
+			} else if !strings.Contains(string(b), "DSGA sysinit: stage=initial-boot-enter code=0") || strings.Contains(string(b), "DSGA sysinit failed:") {
+				t.Fatalf("original guard entry diagnostic differs: output=%s", b)
 			}
 			tr, _ := os.ReadFile(filepath.Join(r, "trace"))
 			trace := string(tr)
