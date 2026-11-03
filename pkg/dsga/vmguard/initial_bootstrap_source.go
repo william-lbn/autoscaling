@@ -119,7 +119,7 @@ func (r *Runner) readInitialBootReservation(ctx context.Context) (initialBootRes
 	if e != nil {
 		return out, e
 	}
-	if string(l.UID) != a.LeaseUID || *l.Spec.HolderIdentity != m.Owner.HolderID || control.Uint64(uint64(*l.Spec.LeaseTransitions)+1) != m.Owner.Epoch {
+	if string(l.UID) != a.LeaseUID || *l.Spec.HolderIdentity != m.Owner.HolderID {
 		return out, fmt.Errorf("initial source original owner epoch changed")
 	}
 	slot, exact := vm.Spec.Guest.MemorySlotSize.AsInt64()
@@ -156,11 +156,13 @@ func (r *Runner) readInitialBootReservation(ctx context.Context) (initialBootRes
 	if owner.APIVersion != "v1" || owner.Kind != "Node" || owner.Name != host.Binding.NodeName || owner.UID != host.Binding.NodeUID || owner.Controller == nil || !*owner.Controller {
 		return out, fmt.Errorf("original Host Lease owner changed")
 	}
-	lastLease, e := r.readLease(ctx)
+	// Host读取后重新走Lease/journal/Lease，逐字核同一journal Owner，
+	// 不把LeaseTransitions当VM epoch，也不漏掉同holder更高journal代次。
+	last, e := r.authorize(ctx)
 	if e != nil {
 		return out, e
 	}
-	if lastLease.UID != l.UID || *lastLease.Spec.HolderIdentity != m.Owner.HolderID || control.Uint64(uint64(*lastLease.Spec.LeaseTransitions)+1) != m.Owner.Epoch {
+	if last.LeaseUID != string(l.UID) || last.Owner != m.Owner {
 		return out, fmt.Errorf("original VM owner changed across Host source reads")
 	}
 	// 预留不会因Host租约过期被释放；这里只固定原UID来源，不把新holder当本VM执行许可。

@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -24,7 +25,9 @@ import (
 	coordination "k8s.io/api/coordination/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	kt "k8s.io/client-go/testing"
 )
 
 // 合法policy值取自已冻结跨包producer夹具，全部API、预算/文件是明确模型；
@@ -191,10 +194,10 @@ func TestInitialBootstrapV2RejectsSourceReplacementAndMissingClosure(t *testing.
 				node.Annotations[hostguard.LedgerAnnotation] = string(initialBootCanonical(h))
 				require.NoError(t, f.core.Tracker().Update(corev1.SchemeGroupVersion.WithResource("nodes"), node, ""))
 			case "owner_epoch":
-				l, e := f.core.CoordinationV1().Leases(f.store.Binding().Namespace).Get(ctx, journal.LeaseName(f.store.Binding()), metav1.GetOptions{})
-				require.NoError(t, e)
-				*l.Spec.LeaseTransitions++
-				_, e = f.core.CoordinationV1().Leases(l.Namespace).Update(ctx, l, metav1.UpdateOptions{})
+				// VM epoch来自journal CAS，不能再靠改LeaseTransitions伪造epoch漂移。
+				snapshot, loadErr := f.store.Load(ctx)
+				require.NoError(t, loadErr)
+				_, e = f.store.Takeover(ctx, snapshot, snapshot.State().Owner, "replacement-original-owner")
 				require.NoError(t, e)
 			case "secret_uid", "mutable_secret", "raw_template_drift", "raw_resource_drift":
 				s, e := f.core.CoreV1().Secrets(f.store.Binding().Namespace).Get(ctx, "vm-config", metav1.GetOptions{})
@@ -235,6 +238,66 @@ func TestInitialBootstrapV2RejectsSourceReplacementAndMissingClosure(t *testing.
 			require.Error(t, e)
 			_, e = os.Stat(filepath.Join(f.config.StateDir, initialBootFile(0)))
 			require.True(t, os.IsNotExist(e), "Source拒绝不能创建初始日志")
+		})
+	}
+}
+
+// PG17-U-INITIAL-OWNER-FENCE-003：Host读取期间的真实来源漂移必须在本次
+// reservation返回前拒绝，不能用LeaseTransitions等式替代journal Owner重读。
+func TestInitialBootstrapVMOwnerDriftAcrossHostReadsFailsClosed(t *testing.T) {
+	for _, scenario := range []string{"same_holder_higher_journal_epoch", "lease_uid_replaced", "lease_holder_changed"} {
+		t.Run(scenario, func(t *testing.T) {
+			f, _, _ := initialBootSourceFixture(t)
+			ctx := context.Background()
+			node, err := f.core.CoreV1().Nodes().Get(ctx, f.config.NodeName, metav1.GetOptions{})
+			require.NoError(t, err)
+			var host hostguard.Model
+			require.NoError(t, json.Unmarshal([]byte(node.Annotations[hostguard.LedgerAnnotation]), &host))
+			original, err := f.store.Load(ctx)
+			require.NoError(t, err)
+			var once sync.Once
+			injected := false
+			f.core.PrependReactor("get", "leases", func(a kt.Action) (bool, runtime.Object, error) {
+				if a.GetNamespace() != host.Binding.Namespace || a.(kt.GetAction).GetName() != host.Binding.LeaseName {
+					return false, nil, nil
+				}
+				var changeErr error
+				once.Do(func() {
+					injected = true
+					if scenario == "same_holder_higher_journal_epoch" {
+						next, e := f.store.Takeover(ctx, original, original.State().Owner, "intervening-original-owner")
+						if e != nil {
+							changeErr = e
+							return
+						}
+						_, changeErr = f.store.Takeover(ctx, next, next.State().Owner, original.State().Owner.HolderID)
+					} else {
+						obj, e := f.core.Tracker().Get(coordination.SchemeGroupVersion.WithResource("leases"), f.store.Binding().Namespace, journal.LeaseName(f.store.Binding()))
+						if e != nil {
+							changeErr = e
+							return
+						}
+						lease := obj.(*coordination.Lease).DeepCopy()
+						if scenario == "lease_uid_replaced" {
+							lease.UID = "replacement-original-lease"
+						} else {
+							holder := "changed-original-holder"
+							lease.Spec.HolderIdentity = &holder
+						}
+						changeErr = f.core.Tracker().Update(coordination.SchemeGroupVersion.WithResource("leases"), lease, lease.Namespace)
+					}
+				})
+				if changeErr != nil {
+					return true, nil, changeErr
+				}
+				return false, nil, nil
+			})
+			_, err = f.runner.readInitialBootReservation(ctx)
+			require.True(t, injected)
+			require.Error(t, err)
+			if scenario == "same_holder_higher_journal_epoch" {
+				require.ErrorContains(t, err, "original VM owner changed across Host source reads")
+			}
 		})
 	}
 }

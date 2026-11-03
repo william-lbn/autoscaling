@@ -27,6 +27,12 @@ import (
 func initialOwnerBootstrapFixture(t *testing.T, withLaunch bool) (*runnerFixture, *coordination.Lease) {
 	t.Helper()
 	f, _, _ := initialBootFixture(t, withLaunch)
+	return f, initialOwnerResetToCLIHold(t, f)
+}
+
+// 复用CLI hold main.go249的真实Store.Initialize输入；不手写journal模型。
+func initialOwnerResetToCLIHold(t *testing.T, f *runnerFixture) *coordination.Lease {
+	t.Helper()
 	ctx := context.Background()
 	binding := f.store.Binding()
 	lease, err := f.core.CoordinationV1().Leases(binding.Namespace).Get(ctx, journal.LeaseName(binding), metav1.GetOptions{})
@@ -55,7 +61,7 @@ func initialOwnerBootstrapFixture(t *testing.T, withLaunch bool) (*runnerFixture
 	f.store, f.runner.store, f.actor = store, store, snapshot.State().Owner
 	require.Equal(t, "bootstrap-"+binding.Incarnation, f.actor.HolderID)
 	require.EqualValues(t, 1, f.actor.Epoch)
-	return f, lease
+	return lease
 }
 
 func initialOwnerAssertNoLaunch(t *testing.T, f *runnerFixture) {
@@ -94,7 +100,7 @@ func TestInitialOwnerWaitMissingLeaseConvergesOnlyAfterOriginalTakeover(t *testi
 	case <-ctx.Done():
 		t.Fatal("初始404尚未被原等待器读取", ctx.Err())
 	}
-	holder, transitions := "new-original-initial-owner", int32(1)
+	holder, transitions := "new-original-initial-owner", int32(0)
 	lease.Spec.HolderIdentity, lease.Spec.LeaseTransitions = &holder, &transitions
 	stamp := metav1.NewMicroTime(time.Now())
 	lease.Spec.AcquireTime, lease.Spec.RenewTime = &stamp, &stamp

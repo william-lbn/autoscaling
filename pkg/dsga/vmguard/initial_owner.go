@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -83,9 +82,17 @@ func (r *Runner) initialOwnerPoll(ctx context.Context, fixedLeaseUID string) (bo
 	if fixedLeaseUID != "" && uid != fixedLeaseUID {
 		return false, "", fmt.Errorf("initial owner wait original Lease UID changed")
 	}
-	if *lease.Spec.HolderIdentity == m.Owner.HolderID && control.Uint64(uint64(*lease.Spec.LeaseTransitions)+1) == m.Owner.Epoch {
-		_, err := r.authorize(ctx) // 原完整Lease/journal/Lease及Birth/Pod/Node门仍为唯一许可。
-		return err == nil, uid, err
+	// VM epoch只来自原journal CAS；client-go首次Lease transitions为0，
+	// 真实Elector从bootstrap epoch1接管后journal已经是2，二者不能相加推导。
+	if !bootstrap && *lease.Spec.HolderIdentity == m.Owner.HolderID {
+		a, err := r.authorize(ctx) // 原完整Lease/journal/Lease及Birth/Pod/Node门仍为唯一许可。
+		if err != nil {
+			return false, "", err
+		}
+		if a.Owner != m.Owner || a.LeaseUID != uid {
+			return false, "", fmt.Errorf("initial owner wait owner changed across original reads")
+		}
+		return true, uid, nil
 	}
 	if bootstrap {
 		return false, uid, nil

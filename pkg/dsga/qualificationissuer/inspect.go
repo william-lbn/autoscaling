@@ -41,7 +41,10 @@ func (i *Issuer) capture(ctx context.Context, r Report) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if journal.ValidateLease(lease, b, journal.LeaseName(b), "") != nil || lease.Spec.HolderIdentity == nil || *lease.Spec.HolderIdentity != m.Owner.HolderID || lease.Spec.LeaseTransitions == nil || control.Uint64(uint64(*lease.Spec.LeaseTransitions)+1) != m.Owner.Epoch || !freshLease(lease.Spec.RenewTime, lease.Spec.LeaseDurationSeconds) {
+	// VM Owner.Epoch只由原journal CAS Takeover产生；首Lease CREATE的Transitions=0
+	// 可以对应Owner.Epoch=2。Transitions由ValidateLease独立核形状，绝不据它造epoch。
+	// 下方仍交叉核Root owner/floor、原LeaseUID及Runner publication，Host协议不变。
+	if journal.ValidateLease(lease, b, journal.LeaseName(b), "") != nil || lease.Spec.HolderIdentity == nil || *lease.Spec.HolderIdentity != m.Owner.HolderID || !freshLease(lease.Spec.RenewTime, lease.Spec.LeaseDurationSeconds) {
 		return "", fmt.Errorf("original VM owner Lease unconfirmed")
 	}
 	discovered, view, err := i.root.Read(ctx, b)

@@ -336,7 +336,7 @@ func TestIssuerRootSocketAndInputAncestorsRemainOriginal(t *testing.T) {
 
 // 此夹具不替换 Issuer.inspect：VM/Lease/Secret/Runner/Host 均经真实生产读者
 // 和既有 UDS 协议读取；Kubernetes 与 Root 是显式 protocol peer，非真实平台认证。
-func issuerCaptureFixture(t *testing.T, replaceNode bool) (*Issuer, *kubefake.Clientset, Config, Bundle, *atomic.Int32) {
+func issuerCaptureFixture(t *testing.T, replaceNode bool, freshOwner ...bool) (*Issuer, *kubefake.Clientset, Config, Bundle, *atomic.Int32) {
 	t.Helper()
 	_, _, config, bundle, report := issuerFixture(t)
 	raw, err := os.ReadFile("../journal/testdata/initial-domain.json")
@@ -357,6 +357,36 @@ func issuerCaptureFixture(t *testing.T, replaceNode bool) (*Issuer, *kubefake.Cl
 	require.NoError(t, err)
 	snapshot, err = store.ReleaseBootstrap(context.Background(), snapshot.ResourceVersion(), types.UID(report.ConfigSecretUID))
 	require.NoError(t, err)
+	// 首Lease确由production Elector/client-go CREATE，而Owner2来自同journal真实CAS。
+	// API仍是明确typed peer；此分支不手填Owner2/Transitions来迎合被测判断。
+	var electedLease *coordination.Lease
+	if len(freshOwner) > 0 && freshOwner[0] {
+		electionCore := kubefake.NewSimpleClientset()
+		electionCore.PrependReactor("create", "leases", func(action kt.Action) (bool, runtime.Object, error) {
+			lease := action.(kt.CreateAction).GetObject().(*coordination.Lease)
+			lease.UID, lease.ResourceVersion = "issuer-owner-lease", "1"
+			return false, nil, nil
+		})
+		elector, createErr := owner.New(electionCore.CoordinationV1(), store, owner.DefaultOptions())
+		require.NoError(t, createErr)
+		require.NoError(t, elector.Run(context.Background(), func(ctx context.Context, session *owner.Session) error {
+			if checkErr := session.Check(ctx); checkErr != nil {
+				return checkErr
+			}
+			if session.Actor().Epoch != 2 {
+				return errors.New("fresh Elector must take journal Owner2")
+			}
+			return nil
+		}))
+		electedLease, err = electionCore.CoordinationV1().Leases(b.Namespace).Get(context.Background(), journal.LeaseName(b), metav1.GetOptions{})
+		require.NoError(t, err)
+		require.NotNil(t, electedLease.Spec.LeaseTransitions)
+		require.Zero(t, *electedLease.Spec.LeaseTransitions, "fresh CREATE0不可被改成OwnerEpoch-1掩盖bug")
+		snapshot, err = store.Load(context.Background())
+		require.NoError(t, err)
+		require.EqualValues(t, 2, snapshot.State().Owner.Epoch)
+		require.Equal(t, snapshot.State().Owner.HolderID, *electedLease.Spec.HolderIdentity)
+	}
 	vm = snapshot.VirtualMachine()
 	vm.Status.Phase = vmv1.VmRunning
 	vm.Status.PodName = initial.RunnerPodName
@@ -386,6 +416,9 @@ func issuerCaptureFixture(t *testing.T, replaceNode bool) (*Issuer, *kubefake.Cl
 	duration, transitions := int32(60), int32(0)
 	now := metav1.NewMicroTime(time.Now())
 	vmLease := &coordination.Lease{ObjectMeta: metav1.ObjectMeta{Namespace: b.Namespace, Name: journal.LeaseName(b), UID: "issuer-owner-lease", ResourceVersion: "1", OwnerReferences: ownerRef, Annotations: map[string]string{journal.LeaseBindingAnnotation: journal.LeaseMarker(b)}}, Spec: coordination.LeaseSpec{HolderIdentity: &actor.HolderID, LeaseDurationSeconds: &duration, LeaseTransitions: &transitions, AcquireTime: &now, RenewTime: &now}}
+	if electedLease != nil {
+		vmLease = electedLease.DeepCopy()
+	}
 	hostLease := &coordination.Lease{ObjectMeta: metav1.ObjectMeta{Namespace: ledger.Binding.Namespace, Name: ledger.Binding.LeaseName, UID: ledger.Binding.LeaseUID, ResourceVersion: "1", OwnerReferences: []metav1.OwnerReference{{APIVersion: "v1", Kind: "Node", Name: node.Name, UID: node.UID, Controller: &yes}}, Annotations: map[string]string{hostguard.LeaseAnnotation: hostguard.LeaseMarker(ledger.Binding)}}, Spec: coordination.LeaseSpec{HolderIdentity: &ledger.LeaseFloor.HolderID, LeaseDurationSeconds: &duration, LeaseTransitions: &transitions, AcquireTime: &now, RenewTime: &now}}
 	source := resourceguard.SourceConfig{ProtocolVersion: 1, Config: resourceguard.Config{VMUID: initial.Instance.VMUID, ComputeInstanceID: initial.Instance.ComputeInstanceID, StateDir: resourceguard.FixedStateDir, SystemCgroup: true, ExecutionModel: resourceguard.TrustedControllerExecutionModel}, IssuerEpoch: initial.PGAggregate.Bootstrap.IssuerEpoch, BudgetCommitmentID: initial.PGAggregate.Bootstrap.BudgetCommitmentID, Limits: initial.PGAggregate.Bootstrap.Limits, ControlPublicKey: base64.RawURLEncoding.EncodeToString(bytes.Repeat([]byte{1}, 32))}
 	require.NoError(t, source.Validate())
@@ -556,6 +589,55 @@ func TestIssuerKubernetesBudgetV2CaptureAndDrift(t *testing.T) {
 			require.Error(t, err)
 			for _, action := range client.Actions() {
 				require.NotEqual(t, "create", action.GetVerb(), "预算或Guest证明失配必须早于CREATE")
+			}
+		})
+	}
+}
+
+// 真Elector首Lease0→journalOwner2完整capture。负例继续核Owner、原LeaseUID/holder/
+// ownerRef和新鲜性；不改变HostLease独立计数协议，也不代表真实平台认证。
+func TestIssuerFreshElectorJournalOwnerTwoCapture(t *testing.T) {
+	for _, mode := range []string{"valid-create0-owner2", "owner-takeover", "lease-holder", "lease-uid", "lease-ownerref", "lease-expired"} {
+		t.Run(mode, func(t *testing.T) {
+			issuer, client, config, bundle, requests := issuerCaptureFixture(t, false, true)
+			var report Report
+			require.NoError(t, json.Unmarshal(bundle.Report, &report))
+			lease, err := client.CoordinationV1().Leases(config.Binding.Namespace).Get(context.Background(), journal.LeaseName(config.Binding), metav1.GetOptions{})
+			require.NoError(t, err)
+			require.Zero(t, *lease.Spec.LeaseTransitions)
+			switch mode {
+			case "owner-takeover":
+				store, e := journal.NewStore(issuer.vm.NeonvmV1().VirtualMachines(config.Binding.Namespace), config.Binding)
+				require.NoError(t, e)
+				snapshot, e := store.Load(context.Background())
+				require.NoError(t, e)
+				_, e = store.Takeover(context.Background(), snapshot, snapshot.State().Owner, "different-real-CAS-holder")
+				require.NoError(t, e)
+			case "lease-holder":
+				other := "different-lease-holder"
+				lease.Spec.HolderIdentity = &other
+			case "lease-uid":
+				lease.UID = "replacement-lease-uid"
+			case "lease-ownerref":
+				lease.OwnerReferences[0].UID = "replacement-VM-uid"
+			case "lease-expired":
+				past := metav1.NewMicroTime(time.Now().Add(-2 * time.Minute))
+				lease.Spec.RenewTime = &past
+			}
+			if strings.HasPrefix(mode, "lease-") {
+				require.NoError(t, client.Tracker().Update(coordination.SchemeGroupVersion.WithResource("leases"), lease, config.Binding.Namespace))
+			}
+			snapshotSHA, err := issuer.capture(context.Background(), report)
+			if mode == "valid-create0-owner2" {
+				require.NoError(t, err)
+				require.NotEmpty(t, snapshotSHA)
+				require.EqualValues(t, 1, requests.Load(), "完整capture必须真正经过Root UDS与Runner/Host读者")
+			} else {
+				require.Error(t, err)
+				require.Empty(t, snapshotSHA)
+			}
+			for _, action := range client.Actions() {
+				require.NotContains(t, []string{"create", "update", "patch", "delete"}, action.GetVerb(), "capture只读；未创建资格")
 			}
 		})
 	}
