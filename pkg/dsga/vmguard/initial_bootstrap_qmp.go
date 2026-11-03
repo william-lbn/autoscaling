@@ -190,7 +190,7 @@ func (p *initialBootProcess) checkPeer(c *qmpConnection, source initialBootSourc
 	}
 	fd, e := unix.Openat(int(p.proc.Fd()), "exe", unix.O_RDONLY|unix.O_CLOEXEC, 0)
 	if e != nil {
-		return e
+		return fmt.Errorf("initial QMP original proc executable open: %w", e)
 	}
 	f := os.NewFile(uintptr(fd), "original-qemu-exe")
 	defer f.Close()
