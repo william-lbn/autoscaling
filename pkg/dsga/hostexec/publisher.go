@@ -131,7 +131,15 @@ func (p *Publisher) before(ctx context.Context, s *journal.Snapshot, prepared bu
 	if pod.UID != types.UID(id.RunnerPodUID) || pod.ResourceVersion == "" || pod.DeletionTimestamp != nil || pod.Spec.NodeName != b.NodeName || pod.Status.Phase != core.PodRunning || pod.Status.PodIP != vm.Status.PodIP || owner == nil || owner.APIVersion != "vm.neon.tech/v1" || owner.Kind != "VirtualMachine" || owner.Name != vm.Name || owner.UID != vm.UID {
 		return none, fmt.Errorf("original live Runner Pod changed before Host reservation")
 	}
-	return hostguard.Plan{Namespace: vm.Namespace, VMName: vm.Name, Incarnation: p.vm.Binding().Incarnation, RunnerPodUID: id.RunnerPodUID, Request: prepared.Request, BeforeBytes: prepared.VMBeforeMemoryBytes, HostOverheadBytes: p.overhead}, nil
+	floorNode, readErr := p.node.Load(ctx)
+	if readErr != nil {
+		return none, readErr
+	}
+	podFloor, readErr := hostguard.PodMemoryFloor(floorNode.Node(), pod)
+	if readErr != nil {
+		return none, readErr
+	}
+	return hostguard.Plan{Namespace: vm.Namespace, VMName: vm.Name, Incarnation: p.vm.Binding().Incarnation, RunnerPodUID: id.RunnerPodUID, Request: prepared.Request, BeforeBytes: prepared.VMBeforeMemoryBytes, HostOverheadBytes: p.overhead, PodMemoryLimitBytes: podFloor}, nil
 }
 
 func validClaim(cm *core.ConfigMap, binding journal.Binding, expected budget.HostReservation) bool {

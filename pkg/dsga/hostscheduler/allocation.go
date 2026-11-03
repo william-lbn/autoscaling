@@ -97,6 +97,14 @@ func (s *Service) allocation(ctx context.Context, n NodeConfig, expected *core.P
 	currentManaged := false
 	if vm.Spec.DSGABootstrap != nil {
 		p.Managed, p.Incarnation = true, vm.Spec.DSGABootstrap.Incarnation
+		p.PodMemoryLimitBytes, err = hostguard.PodMemoryLimit(pod)
+		if err != nil {
+			return nil, none, nil, err
+		}
+		maximum := control.Uint64(uint64(slot) * uint64(slots.Max))
+		if p.HostOverheadBytes > control.Uint64(math.MaxUint64)-maximum || p.PodMemoryLimitBytes < maximum+p.HostOverheadBytes {
+			return nil, none, nil, fmt.Errorf("managed Pod hardlimit must cover maximum VM plus fixed Host overhead")
+		}
 		if target != 0 {
 			return nil, none, nil, fmt.Errorf("managed VM never uses legacy resource approval")
 		}

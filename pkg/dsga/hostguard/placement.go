@@ -7,6 +7,8 @@ import (
 	"slices"
 
 	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kuberesource "k8s.io/kubernetes/pkg/api/v1/resource"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
@@ -55,6 +57,8 @@ type Placement struct {
 	Managed           bool           `json:"managed"`
 	MemoryBytes       control.Uint64 `json:"memory_bytes"`
 	HostOverheadBytes control.Uint64 `json:"host_overhead_bytes"`
+	// 与真实VM值分开：只表示完整原Pod硬限的保守计费floor。
+	PodMemoryLimitBytes control.Uint64 `json:"pod_memory_limit_bytes,omitempty"`
 	// 仅v4原owner结清时设置；普通容量写者不可构造或清除它。
 	Settled *Settlement `json:"settled,omitempty"`
 	// Barrier由Node原owner封存。普通容量写者不得构造、替换或清空；
@@ -83,7 +87,10 @@ func (p Placement) Bytes() (control.Uint64, error) {
 	if p.Barrier != nil && (!p.Managed || p.Barrier.Validate() != nil || p.Barrier.Namespace != p.Namespace || p.Barrier.VMName != p.VMName || p.Barrier.RunnerPodUID != p.PodUID || p.Barrier.Request.Key.Instance.VMUID != p.VMUID || p.Barrier.Incarnation != p.Incarnation || p.Barrier.HostOverheadBytes != p.HostOverheadBytes) {
 		return 0, fmt.Errorf("pod placement changed original prepared barrier domain")
 	}
-	return p.MemoryBytes + p.HostOverheadBytes, nil
+	if p.PodMemoryLimitBytes != 0 && !p.Managed {
+		return 0, fmt.Errorf("Pod floor is only defined for original managed VM")
+	}
+	return max(p.MemoryBytes+p.HostOverheadBytes, p.PodMemoryLimitBytes), nil
 }
 
 func (p *Placement) UnmarshalJSON(raw []byte) error {
@@ -105,6 +112,22 @@ func (p Placement) sameOriginal(q Placement) bool {
 }
 
 func (m Model) validatePlacements() error {
+	if m.Placements != nil {
+		for _, p := range *m.Placements {
+			if m.ProtocolVersion < 10 && p.PodMemoryLimitBytes != 0 || m.ProtocolVersion >= 10 && p.Managed && p.PodMemoryLimitBytes == 0 {
+				return fmt.Errorf("managed Pod hardlimit floor/version differs")
+			}
+		}
+	}
+	if m.ProtocolVersion >= 10 {
+		for _, h := range m.Holds {
+			p, err := m.Placement(h.Plan.RunnerPodUID)
+			if err != nil || !p.Managed || h.Plan.PodMemoryLimitBytes != p.PodMemoryLimitBytes {
+				return fmt.Errorf("Host hold changed original Pod hardlimit floor")
+			}
+		}
+	}
+
 	if m.ProtocolVersion < 3 {
 		if m.Profile != nil || m.Placements != nil {
 			return fmt.Errorf("legacy Host ledger cannot project new allocation domains")
@@ -225,6 +248,17 @@ func (m Model) reservePlacementFor(p Placement, key *control.Key, capacity contr
 		return m, fmt.Errorf("existing Host allocations exceed current Node capacity")
 	}
 	next := m.Clone()
+	if p.PodMemoryLimitBytes != 0 && m.ProtocolVersion < 10 {
+		if len(m.Holds) != 0 {
+			return m, fmt.Errorf("v10 floor migration requires no retained Host holds")
+		}
+		for _, old := range *m.Placements {
+			if old.Managed {
+				return m, fmt.Errorf("v10 floor migration requires no old managed placements")
+			}
+		}
+		next.ProtocolVersion = 10
+	}
 	found := false
 	for i, old := range *next.Placements {
 		if old.PodUID != p.PodUID {
@@ -307,4 +341,66 @@ func InspectInitialVM(node *core.Node, vm journal.Binding, podName, podUID strin
 		return fmt.Errorf("initial Runner Host domain exceeds current Node capacity")
 	}
 	return nil
+}
+
+// PodMemoryLimit读取完整真实Pod硬limit，包含init/native sidecar峰值及Pod overhead。
+// 它不创建资格，不把requests或调用方给定数值当成实际硬限。
+func PodMemoryLimit(pod *core.Pod) (control.Uint64, error) {
+	if pod == nil || len(pod.Spec.Containers) == 0 || len(pod.Spec.EphemeralContainers) != 0 {
+		return 0, fmt.Errorf("complete bounded Pod containers are required")
+	}
+	for _, containers := range [][]core.Container{pod.Spec.Containers, pod.Spec.InitContainers} {
+		for _, c := range containers {
+			n, exact := c.Resources.Limits.Memory().AsInt64()
+			if !exact || n <= 0 {
+				return 0, fmt.Errorf("all Pod containers require exact positive memory hardlimits")
+			}
+		}
+	}
+	limits := kuberesource.PodLimits(pod, kuberesource.PodResourcesOptions{Reuse: nil, InPlacePodVerticalScalingEnabled: false, ExcludeOverhead: false, ContainerFn: nil, NonMissingContainerRequests: nil})
+	n, exact := limits.Memory().AsInt64()
+	if !exact || n <= 0 {
+		return 0, fmt.Errorf("complete Pod memory hardlimit is invalid or overflows")
+	}
+	return control.Uint64(n), nil
+}
+
+// PodMemoryFloor从原Node/Pod重新核固定floor；旧1–9零floor保留原语义。
+func PodMemoryFloor(node *core.Node, pod *core.Pod) (control.Uint64, error) {
+	if node == nil || pod == nil || pod.UID == "" || pod.ResourceVersion == "" {
+		return 0, fmt.Errorf("original Node/Pod identity required for hardlimit floor")
+	}
+	var m Model
+	if err := json.Unmarshal([]byte(node.Annotations[LedgerAnnotation]), &m); err != nil {
+		return 0, err
+	}
+	if _, err := inspect(node, m.Binding); err != nil {
+		return 0, err
+	}
+	// 旧v1–2没有Placements，1–9均保持原调用者的旧准入/持有语义。
+	if m.ProtocolVersion < 10 {
+		return 0, nil
+	}
+	p, err := m.Placement(string(pod.UID))
+	if err != nil {
+		return 0, err
+	}
+	if p.Namespace != pod.Namespace || p.PodName != pod.Name || pod.Spec.NodeName != "" && pod.Spec.NodeName != m.Binding.NodeName {
+		return 0, fmt.Errorf("Pod floor changed original UID/name/Node")
+	}
+	if p.PodMemoryLimitBytes == 0 {
+		return 0, nil
+	}
+	owner := metav1.GetControllerOf(pod)
+	if m.ProtocolVersion < 10 || !p.Managed || owner == nil || len(pod.OwnerReferences) != 1 || owner.APIVersion != "vm.neon.tech/v1" || owner.Kind != "VirtualMachine" || owner.Name != p.VMName || string(owner.UID) != p.VMUID {
+		return 0, fmt.Errorf("Pod floor changed original managed VM owner")
+	}
+	actual, err := PodMemoryLimit(pod)
+	if err != nil {
+		return 0, err
+	}
+	if actual != p.PodMemoryLimitBytes {
+		return 0, fmt.Errorf("original Pod hardlimit differs from durable floor")
+	}
+	return actual, nil
 }

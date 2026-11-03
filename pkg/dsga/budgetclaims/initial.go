@@ -27,6 +27,14 @@ type InitialSources struct {
 	node              *core.Node
 }
 
+// PodMemoryFloor只导出这份已认证私有Pod/Node观察的数值，不创建新来源。
+func (s *InitialSources) PodMemoryFloor() (control.Uint64, error) {
+	if s == nil {
+		return 0, fmt.Errorf("original initial source observation missing")
+	}
+	return hostguard.PodMemoryFloor(s.node, s.pod)
+}
+
 // ReadInitialPlacement不相信Pod传播注解或调用者自报的Host额度。vmBytes须由
 // 调用者认证同Runner的原生实际容量；本函数核原Node持有覆盖它，不发QMP，也
 // 不把这一个维度的成功提升为完整首次服务许可。
@@ -62,6 +70,9 @@ func (r *Reader) ReadInitialPlacement(ctx context.Context, s *journal.Snapshot, 
 	}
 	if node == nil || node.Name != q.NodeName || string(node.UID) != q.NodeUID || node.ResourceVersion == "" || node.DeletionTimestamp != nil {
 		return nil, fmt.Errorf("initial original Host Node changed")
+	}
+	if _, err := hostguard.PodMemoryFloor(node, pod); err != nil {
+		return nil, err
 	}
 	if err := hostguard.InspectInitialVM(node, r.binding, q.RunnerPodName, q.RunnerPodUID, vmBytes); err != nil {
 		return nil, err

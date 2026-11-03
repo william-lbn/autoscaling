@@ -54,13 +54,14 @@ func (b *Binding) UnmarshalJSON(raw []byte) error {
 // Plan保存完整原请求与容量维度，不能由同目标数值替换另一原Key。账本不认证
 // 输入的PG/Root预算，真实生产调用方仍须从原VM UID/RV WAL及Pod/Node独立取得。
 type Plan struct {
-	Namespace         string          `json:"namespace"`
-	VMName            string          `json:"vm_name"`
-	Incarnation       string          `json:"incarnation"`
-	RunnerPodUID      string          `json:"runner_pod_uid"`
-	Request           control.Request `json:"request"`
-	BeforeBytes       control.Uint64  `json:"before_bytes"`
-	HostOverheadBytes control.Uint64  `json:"host_overhead_bytes"`
+	Namespace           string          `json:"namespace"`
+	VMName              string          `json:"vm_name"`
+	Incarnation         string          `json:"incarnation"`
+	RunnerPodUID        string          `json:"runner_pod_uid"`
+	Request             control.Request `json:"request"`
+	BeforeBytes         control.Uint64  `json:"before_bytes"`
+	HostOverheadBytes   control.Uint64  `json:"host_overhead_bytes"`
+	PodMemoryLimitBytes control.Uint64  `json:"pod_memory_limit_bytes,omitempty"`
 }
 
 func (p Plan) Bytes() (control.Uint64, error) {
@@ -77,7 +78,7 @@ func (p Plan) Bytes() (control.Uint64, error) {
 	if p.HostOverheadBytes > control.Uint64(math.MaxUint64)-beforeAndAfter {
 		return 0, fmt.Errorf("host reservation plus overhead overflows")
 	}
-	return beforeAndAfter + p.HostOverheadBytes, nil
+	return max(beforeAndAfter+p.HostOverheadBytes, p.PodMemoryLimitBytes), nil
 }
 
 func (p *Plan) UnmarshalJSON(raw []byte) error {
@@ -132,8 +133,16 @@ func SourceID(origin string, p Plan) string {
 }
 
 func (m Model) Validate() error {
-	if (m.ProtocolVersion < 1 || m.ProtocolVersion > 9) || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
+	if (m.ProtocolVersion < 1 || m.ProtocolVersion > 10) || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
 		return fmt.Errorf("invalid durable Host allocation model")
+	}
+	// v10明确理解独立Pod硬限floor；旧版本新字段必须拒绝，不能静默漏计。
+	if m.ProtocolVersion < 10 {
+		for _, h := range m.Holds {
+			if h.Plan.PodMemoryLimitBytes != 0 {
+				return fmt.Errorf("Pod hardlimit floor requires Host model v10")
+			}
+		}
 	}
 	for i, h := range m.Holds {
 		if _, err := h.Plan.Bytes(); err != nil || h.SourceID != SourceID(m.Origin, h.Plan) {
@@ -251,6 +260,12 @@ func (m Model) reserve(actor journal.Owner, p Plan, capacity control.Uint64) (Mo
 	}
 	if _, err := p.Bytes(); err != nil {
 		return m, none, err
+	}
+	if p.PodMemoryLimitBytes != 0 {
+		row, err := m.Placement(p.RunnerPodUID)
+		if err != nil || m.ProtocolVersion < 10 || !row.Managed || row.PodMemoryLimitBytes != p.PodMemoryLimitBytes {
+			return m, none, fmt.Errorf("Host plan changed original Pod hardlimit floor")
+		}
 	}
 	// 屏障先于已有Hold的幂等返回，防止封存后重新取得旧执行资格。
 	if err := m.checkPreparedBarrier(p); err != nil {

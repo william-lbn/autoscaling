@@ -149,6 +149,10 @@ func (r *Reader) readCurrent(ctx context.Context, s *journal.Snapshot, purpose c
 	if plan == nil {
 		return nil, fmt.Errorf("current original Host plan is not retained")
 	}
+	podFloor, floorErr := hostguard.PodMemoryFloor(node, pod)
+	if floorErr != nil || plan.PodMemoryLimitBytes != podFloor {
+		return nil, fmt.Errorf("current original Pod hardlimit floor changed")
+	}
 	bytes, err := plan.Bytes()
 	if err != nil || bytes != host.ReservedMemoryBytes {
 		return nil, fmt.Errorf("original Host peak declaration changed")

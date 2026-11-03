@@ -87,7 +87,11 @@ func (r *Reader) readReconciledSources(ctx context.Context, s *journal.Snapshot,
 	if node == nil || node.Name != h.NodeName || string(node.UID) != h.NodeUID || node.ResourceVersion == "" || node.DeletionTimestamp != nil {
 		return nil, fmt.Errorf("reconciled original Host Node changed")
 	}
-	plan := hostguard.Plan{Namespace: r.binding.Namespace, VMName: r.binding.Name, Incarnation: r.binding.Incarnation, RunnerPodUID: h.RunnerPodUID, Request: c.Request, BeforeBytes: c.VMBeforeMemoryBytes, HostOverheadBytes: h.HostOverheadBytes}
+	podFloor, floorErr := hostguard.PodMemoryFloor(node, pod)
+	if floorErr != nil {
+		return nil, floorErr
+	}
+	plan := hostguard.Plan{Namespace: r.binding.Namespace, VMName: r.binding.Name, Incarnation: r.binding.Incarnation, RunnerPodUID: h.RunnerPodUID, Request: c.Request, BeforeBytes: c.VMBeforeMemoryBytes, HostOverheadBytes: h.HostOverheadBytes, PodMemoryLimitBytes: podFloor}
 	peak, err := plan.Bytes()
 	if err != nil || peak != h.ReservedMemoryBytes {
 		return nil, fmt.Errorf("reconciled original Host peak no longer covers actual VM")

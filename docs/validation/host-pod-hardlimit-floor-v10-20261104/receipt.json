@@ -1,0 +1,81 @@
+{
+  "scope": "Host内部账本显式计入完整受管Pod硬限；PG/Guest真实normal和VM伸缩合同不变",
+  "base_commit": "bc7095f0f4584c68eaa7bcc9b9e744817ff50185",
+  "source_files_SHA256": {
+    "pkg/dsga/hostguard/model.go": "9d1026224f52af50c148d4352aaa3e232767e44ad302c3e3549b4f476564ac7d",
+    "pkg/dsga/hostguard/placement.go": "c6cf5d1e8867b980f162bf7741799d766f57c6eb697b67d02631ce4d075275a1",
+    "pkg/dsga/hostguard/store.go": "09f78b7105d3b9e4ed61d31919a9e338306fa6c9c31ab448e7fa2ac8d27fa99f",
+    "pkg/dsga/hostguard/prepared_barrier.go": "5f14c2dfe9d269cec29cf8fc9a57ac91a6c296cb93af7a3376fb5898000cd4b5",
+    "pkg/dsga/hostscheduler/allocation.go": "bc23cb9c04e82bd4037d0733660ec6111dea4cc9d48569d30b303ed25e367181",
+    "pkg/dsga/hostexec/publisher.go": "d863ffbdf0f73fa5d485b46e9caca8f97f957e5cd83c0795635b910c29db91ee",
+    "pkg/dsga/hostexec/prepared_barrier.go": "254fe0ad154b92f00aa1394e8ce62fce9770d16676b7d366a903f7ac5da272b6",
+    "pkg/dsga/budgetclaims/reader.go": "2ae9afdcd79434f8b08469096aaf31f859b4585fb54ada9dcac7e25c403f6ff6",
+    "pkg/dsga/budgetclaims/current.go": "b323f9fdc8afe61a93d7f461116b19f99f6b50e96c869cb4f75fc0219aa11b0e",
+    "pkg/dsga/budgetclaims/reconciled.go": "9e3f44e1c73c0ee5e73e1fe81c73138cd078b3039d9f97bb4dfdb95062450783",
+    "pkg/dsga/budgetclaims/prepared_barrier.go": "505f28c27cef11583dbf3573fdc49fd52d8d171b2a355656ef30143213f45f37",
+    "pkg/dsga/budgetclaims/initial.go": "f00f1b5186fa54985ca6e4df1f8e559436d578500051d078eb0a79103975e0ff",
+    "pkg/dsga/qualificationissuer/inspect.go": "6d4f1c466cafeea4a49c17f13aded813d48d0922e5ad8c32257283a6e5dc66ff",
+    "pkg/dsga/vmguard/runner.go": "1660f5085618f7643941ef8079d8cdace3da07509481317ddbd3fcd7b9e47488",
+    "pkg/dsga/vmguard/initial_bootstrap_source.go": "fbdebdfcad53cd2504b77de43881d021ff5e9c480235a846d86b3d6adea0289f",
+    "pkg/dsga/hostexec/source_gc.go": "c8d8c29c2c03ae84afe3e03d61ae55350d130d37d7dc6941fe463600e91f798d",
+    "pkg/dsga/owner/pod_floor_source_test.go": "e793f0a2aed214b401980d287fb560e5bc4ac4104295e5df7048092ed4958790",
+    "pkg/dsga/hostguard/pod_floor_barrier_test.go": "0ab7fa969eed093904f7d0b6242ea1e7530883f748761904ec7b7b1370170682",
+    "pkg/dsga/hostscheduler/pod_floor_test.go": "ee445eedd9a6a9c3912149b973ce061d121c43f8851f9a14bf618aa73983ff67",
+    "pkg/dsga/qualificationissuer/pod_floor_test.go": "f9b1f295027954c4fa56177c9318f31d88bc333416d41efe953822504c7f3752",
+    "pkg/dsga/hostguard/pod_floor_test.go": "de909cbc9b4108feb75fe7bd5097a0e9788983e9c9f1e8a34b1d62c7c1c2a29a"
+  },
+  "final_proposal": "/data/neon-build/validation/host-v10-owner-source-focused-20261103T171510Z-181634/final-host-v10-frozen-proposal.json",
+  "final_proposal_SHA256": "8047c6dc23c5577816e8261f3e464a0f53a4b5237904208370caf140fa068062",
+  "allowlist_SHA256": "f18efbf4a7cc901965ca845736f39ded0d223f80db8396eae6a6c999e51be717",
+  "independent_review_SHA256": "d73cd902309f4b4e120466f73b1f19bb648fb46dcba6e7fe398dae93ced817c4",
+  "accounting": "max(actual VM bytes + qualified VM overhead, original complete Pod hardlimit)",
+  "internal_model_version": 10,
+  "public_PG_or_HostReservation_Barrier_DTO_changed": false,
+  "legacy_1_to_9_zero_floor_JSON_SourceID_preserved": true,
+  "fresh_positive_floor_initial_model": 10,
+  "fresh_zero_floor_initial_model": 3,
+  "existing_ledger_upgrade": "original UID/RV CAS only when no managed placements or retained holds; preserve ordinary rows/origin/owner/sequence",
+  "test_evidence": {
+    "core6": {
+      "run": "/data/neon-build/validation/host-v10-model-reader-focused-20261103T165817Z-40c93c",
+      "successful_subset": "6 hostguard roots; other fixture failures retained",
+      "boundary": "prior Store initializer; new initializer branch and legacy zero path covered by next targeted subset"
+    },
+    "scheduler_issuer_barrier6": {
+      "run": "/data/neon-build/validation/host-v10-new-roots-runtime-combined-20261103T170848Z-9f7061",
+      "result_SHA256": "ddaff3310468a516db5c9be01a91c52cc5de05b156145b467bdb8b81e5d7afc7",
+      "roots": 6,
+      "pass_events": 12,
+      "whole_batch_pass": false,
+      "retained_failure": "Owner new fixture used Mac-only temporary directory; next test-only portability fix"
+    },
+    "runtime_reader14": {
+      "same_run": "9f7061",
+      "roots": 14,
+      "pass_events": 67,
+      "u_cli_help_exit": [
+        0,
+        0,
+        0
+      ],
+      "tool_SHA256": "cd627079d4d396be5df775380ff86f1517551de9b2212fbc605787936595d80d",
+      "Helm_production4Go_unchanged": true
+    },
+    "publisher_claims": {
+      "run": "/data/neon-build/validation/host-v10-owner-source-focused-20261103T171510Z-181634",
+      "result_SHA256": "58d6f1b0c20bcceb3fbf2de02091ad681252dacece61662a1db4b9f551fe9360",
+      "roots": 1,
+      "subcases": 6,
+      "pass_events": 7,
+      "seconds": 27.603661440021824,
+      "whole_batch_pass": true
+    }
+  },
+  "unique_Host_roots": 13,
+  "new_Host_model_actual_cluster_write": false,
+  "new_VM_booted": false,
+  "QEMU_Pod_common_11Gi_hardlimit_readback": "NOT_RUN",
+  "normal_N_must_really_shrink": true,
+  "Neon_memory_E2E_accepted": false,
+  "production_certification": false
+}

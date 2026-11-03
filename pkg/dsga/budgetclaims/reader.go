@@ -177,7 +177,15 @@ func (r *Reader) Read(ctx context.Context, s *journal.Snapshot, p budget.Prepare
 	}
 	// 来源CM先创建、Node容量后发布；只有原Node账本中固定的完整计划及
 	// 真实CM UID吻合才可消费。标签/immutable/同数值CM不能替代该发布。
-	plan := hostguard.Plan{Namespace: r.binding.Namespace, VMName: r.binding.Name, Incarnation: r.binding.Incarnation, RunnerPodUID: h.RunnerPodUID, Request: p.Request, BeforeBytes: p.VMBeforeMemoryBytes, HostOverheadBytes: h.HostOverheadBytes}
+	podFloor, floorErr := hostguard.PodMemoryFloor(node, pod)
+	if floorErr != nil {
+		return nil, floorErr
+	}
+	plan := hostguard.Plan{Namespace: r.binding.Namespace, VMName: r.binding.Name, Incarnation: r.binding.Incarnation, RunnerPodUID: h.RunnerPodUID, Request: p.Request, BeforeBytes: p.VMBeforeMemoryBytes, HostOverheadBytes: h.HostOverheadBytes, PodMemoryLimitBytes: podFloor}
+	required, requiredErr := plan.Bytes()
+	if requiredErr != nil || required != h.ReservedMemoryBytes {
+		return nil, fmt.Errorf("original Host reservation changed complete Pod floor charge")
+	}
 	if h.ProtocolVersion != 2 {
 		return nil, fmt.Errorf("original Host source has no matching published Node capacity hold")
 	}

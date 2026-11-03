@@ -134,6 +134,13 @@ func (r *Runner) readInitialBootReservation(ctx context.Context) (initialBootRes
 	if string(node.UID) != r.birth.Identity.NodeUID {
 		return out, fmt.Errorf("original initial Host Node replaced")
 	}
+	originalPod, podErr := r.core.Pods(vm.Namespace).Get(ctx, r.pod, metav1.GetOptions{})
+	if podErr != nil {
+		return out, podErr
+	}
+	if _, podErr = hostguard.PodMemoryFloor(node, originalPod); podErr != nil {
+		return out, podErr
+	}
 	if e = hostguard.InspectInitialVM(node, r.store.Binding(), r.pod, r.birth.Identity.RunnerPodUID, control.Uint64(uint64(slot)*uint64(slots.Use))); e != nil {
 		return out, e
 	}

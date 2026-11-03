@@ -8,6 +8,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"reflect"
 
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
@@ -94,7 +95,11 @@ func (p *Publisher) retireInitialSealedHolds(ctx context.Context, s *journal.Sna
 	if _, _, _, err := p.initialCollectionSources(ctx, s); err != nil {
 		return false, err
 	}
-	plan := hostguard.Plan{Namespace: b.Namespace, VMName: b.VMName, Incarnation: b.Incarnation, RunnerPodUID: b.RunnerPodUID, Request: b.Request, BeforeBytes: b.BeforeMemoryBytes, HostOverheadBytes: b.HostOverheadBytes}
+	floorPlacement, floorErr := n.State().Placement(b.RunnerPodUID)
+	if floorErr != nil {
+		return false, floorErr
+	}
+	plan := hostguard.Plan{Namespace: b.Namespace, VMName: b.VMName, Incarnation: b.Incarnation, RunnerPodUID: b.RunnerPodUID, Request: b.Request, BeforeBytes: b.BeforeMemoryBytes, HostOverheadBytes: b.HostOverheadBytes, PodMemoryLimitBytes: floorPlacement.PodMemoryLimitBytes}
 	original, err := n.PreparedBarrier(plan)
 	if err != nil || !reflect.DeepEqual(original, b) {
 		return false, fmt.Errorf("Initial retirement lost latest exact original Node barrier")
@@ -123,7 +128,7 @@ func (p *Publisher) retireInitialSealedHolds(ctx context.Context, s *journal.Sna
 // 的VM/Guest/Runner值没有被封存改变，故可重建每份旧请求的准确原Plan与
 // SourceID；同位置换ID、别Node/Pod/boot、原文/UID引用或当前slot仍引用者
 // 一律不删。Runner receipt与首次资格/Birth/State永不进入此Host分支。
-func (p *Publisher) oldInitialSealedHost(cm *core.ConfigMap, m journal.Model, b budget.HostReservationBarrier, keep sourceReferences) (string, bool) {
+func (p *Publisher) oldInitialSealedHost(cm *core.ConfigMap, m journal.Model, b budget.HostReservationBarrier, keep sourceReferences, podFloor control.Uint64) (string, bool) {
 	if cm == nil || cm.UID == "" || cm.ResourceVersion == "" || cm.Immutable == nil || !*cm.Immutable || len(cm.OwnerReferences) != 1 || len(cm.Data) != 1 || len(cm.BinaryData) != 0 || cm.Labels[budgetclaims.ClaimLabel] != budgetclaims.HostKind || cm.Labels[vmguard.ClaimLabel] != "" || m.InitialHeld == nil || m.ResourceIdentity == nil {
 		return "", false
 	}
@@ -144,7 +149,7 @@ func (p *Publisher) oldInitialSealedHost(cm *core.ConfigMap, m journal.Model, b 
 	if json.Unmarshal(m.InitialHeld.Budget, &initial) != nil || initial.Validate() != nil || h.RunnerPodName != initial.RunnerPodName || initial.VMMemoryBytes != b.BeforeMemoryBytes {
 		return "", false
 	}
-	plan := hostguard.Plan{Namespace: binding.Namespace, VMName: binding.Name, Incarnation: binding.Incarnation, RunnerPodUID: b.RunnerPodUID, Request: h.Request, BeforeBytes: initial.VMMemoryBytes, HostOverheadBytes: b.HostOverheadBytes}
+	plan := hostguard.Plan{Namespace: binding.Namespace, VMName: binding.Name, Incarnation: binding.Incarnation, RunnerPodUID: b.RunnerPodUID, Request: h.Request, BeforeBytes: initial.VMMemoryBytes, HostOverheadBytes: b.HostOverheadBytes, PodMemoryLimitBytes: podFloor}
 	size, err := plan.Bytes()
 	name, nameErr := budgetclaims.HostClaimName(binding, h.Request)
 	if err != nil || nameErr != nil || name != cm.Name || size != h.ReservedMemoryBytes || h.SourceID != hostguard.SourceID(b.NodeOrigin, plan) {

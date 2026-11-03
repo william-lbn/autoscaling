@@ -388,6 +388,15 @@ func (s *Store) initialize(ctx context.Context, expectedVersion string, outside 
 	m := Model{ProtocolVersion: 1, Binding: s.binding, Origin: hex.EncodeToString(nonce[:]), LeaseFloor: actor, Sequence: 1, OutsideBytes: outside, Holds: []Hold{}, Profile: nil, Placements: nil}
 	if profile != nil {
 		m.ProtocolVersion, m.Profile, m.Placements = 3, profile, placements
+		// 首次明确的完整分配已含floor时，直接写原新域v10；不是重置旧账本。
+		if placements != nil {
+			for _, p := range *placements {
+				if p.PodMemoryLimitBytes != 0 {
+					m.ProtocolVersion = 10
+					break
+				}
+			}
+		}
 	}
 	used, err := m.UsedBytes()
 	if m.Validate() != nil || err != nil || used > total {
@@ -414,7 +423,7 @@ func (s *Store) holdPlacementFor(ctx context.Context, snapshot *Snapshot, p Plac
 	if snapshot == nil || snapshot.model.Binding != s.binding || snapshot.model.ProtocolVersion < 3 {
 		return nil, none, fmt.Errorf("pod allocation requires original initialized v3 Node snapshot")
 	}
-	if snapshot.model.ProtocolVersion >= 5 {
+	if snapshot.model.ProtocolVersion >= 5 || p.PodMemoryLimitBytes != 0 {
 		// v5允许已停止Pod的行收敛；所有容量写者必须重读不可复用的
 		// 原Pod UID/终态，不能把旧队列项在释放后重新加回。旧v4读者
 		// 不接受v5账本，不能依赖其尚未实现的关闭语义。
@@ -424,6 +433,12 @@ func (s *Store) holdPlacementFor(ctx context.Context, snapshot *Snapshot, p Plac
 		}
 		if string(pod.UID) != p.PodUID || pod.ResourceVersion == "" || pod.DeletionTimestamp != nil || pod.Status.Phase == core.PodSucceeded || pod.Status.Phase == core.PodFailed || pod.Spec.NodeName != "" && pod.Spec.NodeName != s.binding.NodeName || !slices.Contains(pod.Finalizers, PodProtectionFinalizer) {
 			return nil, none, fmt.Errorf("original Pod is closed, replaced or lacks allocation protection")
+		}
+		if p.PodMemoryLimitBytes != 0 {
+			actual, err := PodMemoryLimit(pod)
+			if err != nil || actual != p.PodMemoryLimitBytes {
+				return nil, none, fmt.Errorf("placement Pod hardlimit differs from original UID")
+			}
 		}
 	}
 	first, err := s.leaseActor(ctx, false)

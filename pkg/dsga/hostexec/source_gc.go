@@ -571,12 +571,28 @@ func (p *Publisher) collectRetainedInitialSources(ctx context.Context, s *journa
 	}
 	progress.prepareInitial(p.vm.Binding(), watermark)
 	barrier := m.RetainedCoverage.Record.ServiceCoverage.RetainedRecovery.PreparedHostBarrier
+	// floor只取已核原资格和真实Pod/Node；旧Claim自报Reserved不能充当该来源。
+	var podFloor control.Uint64
+	if barrier != nil {
+		initial, err := m.InitialBudgetFor()
+		if err != nil {
+			return err
+		}
+		observed, err := p.claims.ReadInitialBudget(ctx, s, initial)
+		if err != nil {
+			return err
+		}
+		podFloor, err = observed.PodMemoryFloor()
+		if err != nil {
+			return err
+		}
+	}
 	eligible := func(cm *core.ConfigMap) (string, bool) {
 		if finalizer, ok := p.oldSourceThrough(cm, m, birth, ref, watermark.ThroughKey, watermark.ClosedSequence, keep, false); ok {
 			return finalizer, true
 		}
 		if barrier != nil {
-			return p.oldInitialSealedHost(cm, m, *barrier, keep)
+			return p.oldInitialSealedHost(cm, m, *barrier, keep, podFloor)
 		}
 		return "", false
 	}

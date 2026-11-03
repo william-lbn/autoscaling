@@ -32,6 +32,22 @@ func barrierPlan(b budget.HostReservationBarrier) Plan {
 		HostOverheadBytes: b.HostOverheadBytes}
 }
 
+// floor只从同一原Pod持久placement取得，不由屏障/CM自报数字推导。
+func barrierPlanForPlacement(b budget.HostReservationBarrier, p Placement) Plan {
+	plan := barrierPlan(b)
+	plan.PodMemoryLimitBytes = p.PodMemoryLimitBytes
+	return plan
+}
+
+func samePreparedClosureForPlacement(b budget.HostReservationBarrier, in PreparedClosure, p Placement) bool {
+	if in.Plan.PodMemoryLimitBytes != p.PodMemoryLimitBytes {
+		return false
+	}
+	legacy := in
+	legacy.Plan.PodMemoryLimitBytes = 0
+	return samePreparedClosure(b, legacy)
+}
+
 func samePreparedClosure(b budget.HostReservationBarrier, in PreparedClosure) bool {
 	return barrierPlan(b) == in.Plan && b.PreparedSHA256 == in.PreparedSHA256 &&
 		b.OperationSHA256 == in.OperationSHA256 &&
@@ -58,7 +74,7 @@ func (m Model) validatePreparedBarrier(p Placement) error {
 	if _, err := p.Bytes(); err != nil {
 		return err
 	}
-	plan := barrierPlan(*b)
+	plan := barrierPlanForPlacement(*b, p)
 	if _, err := plan.Bytes(); err != nil || b.Held != nil && b.Held.SourceID != SourceID(m.Origin, plan) {
 		return fmt.Errorf("prepared barrier changed complete original hold source")
 	}
@@ -91,7 +107,7 @@ func (m Model) checkPreparedBarrier(plan Plan) error {
 	}
 	b := p.Barrier
 	if plan.Namespace != p.Namespace || plan.VMName != p.VMName || plan.Incarnation != p.Incarnation ||
-		plan.HostOverheadBytes != p.HostOverheadBytes || plan.Request.Key.Instance != b.Request.Key.Instance {
+		plan.HostOverheadBytes != p.HostOverheadBytes || plan.PodMemoryLimitBytes != p.PodMemoryLimitBytes || plan.Request.Key.Instance != b.Request.Key.Instance {
 		return fmt.Errorf("Host execution changed sealed original VM/Pod/PG domain")
 	}
 	if compare(plan.Request.Key, b.Request.Key) <= 0 {
@@ -128,7 +144,7 @@ func (n *Snapshot) PreparedBarrier(plan Plan) (budget.HostReservationBarrier, er
 		return empty, fmt.Errorf("original Node barrier snapshot unavailable")
 	}
 	p, err := n.model.Placement(plan.RunnerPodUID)
-	if err != nil || p.Barrier == nil || barrierPlan(*p.Barrier) != plan {
+	if err != nil || p.Barrier == nil || barrierPlanForPlacement(*p.Barrier, p) != plan {
 		return empty, fmt.Errorf("exact original prepared barrier not found")
 	}
 	return p.Barrier.Clone(), nil
@@ -149,7 +165,7 @@ func (s *Store) SealPrepared(ctx context.Context, n *Snapshot, in PreparedClosur
 	p, err := n.model.Placement(in.Plan.RunnerPodUID)
 	if err != nil || !p.Managed || p.Namespace != in.Plan.Namespace || p.VMName != in.Plan.VMName ||
 		p.VMUID != in.Plan.Request.Key.Instance.VMUID || p.Incarnation != in.Plan.Incarnation ||
-		p.HostOverheadBytes != in.Plan.HostOverheadBytes {
+		p.HostOverheadBytes != in.Plan.HostOverheadBytes || p.PodMemoryLimitBytes != in.Plan.PodMemoryLimitBytes {
 		return nil, empty, fmt.Errorf("prepared seal changed original managed placement")
 	}
 	if p.Barrier != nil {
@@ -158,7 +174,7 @@ func (s *Store) SealPrepared(ctx context.Context, n *Snapshot, in PreparedClosur
 			return nil, empty, fmt.Errorf("prepared seal cannot regress or change PG instance")
 		}
 		if order == 0 {
-			if !samePreparedClosure(*p.Barrier, in) {
+			if !samePreparedClosureForPlacement(*p.Barrier, in, p) {
 				return nil, empty, fmt.Errorf("same sealed key changed original closure/operation")
 			}
 			return n, p.Barrier.Clone(), nil
@@ -254,7 +270,7 @@ func (s *Store) RetireSealedHolds(ctx context.Context, n *Snapshot, b budget.Hos
 			return nil, nil, fmt.Errorf("sealed retirement changed original prefix source")
 		}
 		order := compare(h.Plan.Request.Key, b.Request.Key)
-		if order == 0 && h.Plan != barrierPlan(b) {
+		if order == 0 && h.Plan != barrierPlanForPlacement(b, p) {
 			return nil, nil, fmt.Errorf("sealed retirement changed original sealed key")
 		}
 		if order <= 0 {

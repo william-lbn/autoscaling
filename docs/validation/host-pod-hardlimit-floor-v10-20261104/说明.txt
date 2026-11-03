@@ -1,0 +1,9 @@
+完整Pod硬预算与PG真实内存伸缩：内部Host v10阶段收口
+
+问题：受管QEMU改为继承Runner/Pod内存域后，原Host只按VM当前7Gi+3Gi开销计账，不能遗漏实际Pod硬限。现采用覆盖最大8Gi VM及3Gi开销的11Gi完整Pod预留。
+实现：Plan/Placement独立保存从真实同UID Pod读取的pod_memory_limit_bytes；Bytes及UsedBytes取实际VM+开销与该floor的最大值。VM MemoryBytes仍记录真实7/8，结清Shrink不抹floor。先更新六读者，再由原Node UID/RV CAS从无受管残留的旧域升级；普通行、origin、owner与水位保留。新建正floor域用v10、零floor仍v3。
+来源与恢复：Publisher、各claims读者、Runner初启、PreparedBarrier与旧Claim GC从同一原Pod/Node恢复完整Plan，不从Reserved反推floor；SourceID精确绑定。Unknown、丢回复、错UID、硬限漂移和金额伪造均保留写前拒绝或原身份只读恢复，不能清账冒通过。
+兼容：仅内部Host账本版本升级；旧1–9零floor的JSON与SourceID不变，旧程序拒读v10。PG公共DTO、HostReservation v2、Barrier wire以及PG17/PG18上层合同均不改。
+边界：本版PG normal硬降限及四数组释放、VM实际7↔8Gi仍必须真实验收；Host在Pod存活期间保留完整峰值预算，不能在VM收缩后出售这1Gi预留。整个Pod按原退出证明正式结清才释放。未引入pods/resize或K8s平台功能门。
+验证：13个Host独立根按源码变动影响分阶段通过；Helm Runtime14根67事件及CLI/help通过。首次漏import、夹具初态及临时路径失败均保留；receipt逐项列成功子阶段，绝不把混合失败整轮改成PASS。P2最终21file独审通过。
+未验收：真实三节点v10首次CAS迁移、新QEMU共同11Gi祖先硬限、Guest/SQL以及Grow/安全normal Shrink/Regrow/自动策略。本阶段提交不是生产认证或完整Neon端到端完成。

@@ -65,7 +65,11 @@ func (r *Reader) ReadPreparedBarrier(ctx context.Context, s *journal.Snapshot) (
 	if json.Unmarshal([]byte(node.Annotations[hostguard.LedgerAnnotation]), &ledger) != nil || ledger.Binding.NodeName != node.Name || ledger.Binding.NodeUID != node.UID || ledger.Profile == nil {
 		return empty, fmt.Errorf("prepared barrier original Node ledger binding unavailable")
 	}
-	plan := hostguard.Plan{Namespace: r.binding.Namespace, VMName: r.binding.Name, Incarnation: r.binding.Incarnation, RunnerPodUID: string(pod.UID), Request: prepared.Request, BeforeBytes: prepared.VMBeforeMemoryBytes, HostOverheadBytes: ledger.Profile.VMOverheadBytes}
+	podFloor, floorErr := hostguard.PodMemoryFloor(node, pod)
+	if floorErr != nil {
+		return empty, floorErr
+	}
+	plan := hostguard.Plan{Namespace: r.binding.Namespace, VMName: r.binding.Name, Incarnation: r.binding.Incarnation, RunnerPodUID: string(pod.UID), Request: prepared.Request, BeforeBytes: prepared.VMBeforeMemoryBytes, HostOverheadBytes: ledger.Profile.VMOverheadBytes, PodMemoryLimitBytes: podFloor}
 	store, err := hostguard.NewStore(r.core, r.coord, ledger.Binding, "read-only-prepared-barrier")
 	if err != nil {
 		return empty, err

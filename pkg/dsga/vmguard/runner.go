@@ -173,6 +173,9 @@ func Initialize(ctx context.Context, store *journal.Store, coreClient coreclient
 	if use < minSlots || use > maxSlots {
 		return nil, fmt.Errorf("initial Runner use is outside original VM geometry")
 	}
+	if _, err := hostguard.PodMemoryFloor(node, pod); err != nil {
+		return nil, err
+	}
 	if err := hostguard.InspectInitialVM(node, store.Binding(), c.PodName, c.PodUID, control.Uint64(use*uint64(slot))); err != nil {
 		return nil, err
 	}
