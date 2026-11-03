@@ -120,7 +120,11 @@ func NewAutoscaleEnforcerPlugin(
 
 	pluginState = NewPluginState(*config, vmClient, pluginMetrics, podStore, nodeStore)
 	if config.DSGAHost != nil {
-		host, err := hostscheduler.New(handle.ClientSet().CoreV1(), handle.ClientSet().CoordinationV1(), vmClient, *config.DSGAHost, config.SchedulerName)
+		workClient, electionClient, err := newDSGAHostClients(handle.KubeConfig(), len(config.DSGAHost.Nodes))
+		if err != nil {
+			return nil, fmt.Errorf("could not configure bounded Host clients: %w", err)
+		}
+		host, err := hostscheduler.NewWithElectionClient(workClient.CoreV1(), workClient.CoordinationV1(), electionClient, vmClient, *config.DSGAHost, config.SchedulerName)
 		if err != nil {
 			return nil, fmt.Errorf("could not configure original Host allocation domains: %w", err)
 		}

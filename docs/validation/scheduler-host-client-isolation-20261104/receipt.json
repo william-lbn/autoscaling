@@ -1,0 +1,55 @@
+{
+  "scope": "直接修复Neon内存预算Scheduler初始化请求拥塞",
+  "source_base_commit": "403eb25b6821536c26bb1d0dbb91c7afce3ec311",
+  "source_SHA256": {
+    "pkg/plugin/entrypoint.go": "8766f115078910015fb8f059e351dbdebca8b6699c5e744130e675089a6faedf",
+    "pkg/plugin/dsga_host_clients.go": "f6e8c74b0fab3c80f62ab924a9c219fe0c22f021c5815b5038ed90cc4e4c612b",
+    "pkg/dsga/hostscheduler/service.go": "00feb11651e437d68ec0d4c96361da18b4eec49660efaaac1a0c50f2ffeabb26",
+    "pkg/plugin/dsga_host_clients_test.go": "402ff17fb3d198d56e078e3fd180d1faa86d4ab2a5dbedba9b776df8c1c62fc0",
+    "pkg/dsga/hostscheduler/election_client_test.go": "cd8f6d41265bf930216941c058badeb158cfdb5a3892836322fe2c1c78e7c152"
+  },
+  "run": "/data/neon-build/validation/scheduler-host-client-isolation-repaired-20261103T183500Z-48441c",
+  "result_SHA256": "396d92e69b2a8906c8f12d49429044c5d38576917263b17bb945a670567a6ca6",
+  "independent_review_SHA256": "d8449ae5726f12c1df00af58198ceeaa7f57f22d21321337990a9f71da44fd7b",
+  "diagnosis": "/data/neon-k8s-pg17/runs/scheduler-initialization-client-readonly-20261103T182735Z-4307f4/readonly-diagnosis.json",
+  "work_QPS_Burst": [
+    200,
+    400
+  ],
+  "election_QPS": "max(10,2*NodeCount), bounded by existing128-node input limit",
+  "election_Burst": "2*election_QPS",
+  "framework_watch_original_client_unchanged": true,
+  "TLS_auth_transport_timeout_original_config_preserved": true,
+  "CRUD_seconds": 1,
+  "original_initial_event_seconds": 35,
+  "UID_RV_fence_Unknown_gates_unchanged": true,
+  "actual_new_roots": 4,
+  "actual_previous_related_roots_reused": 2,
+  "counts": {
+    "plugin-client-isolation": {
+      "exit": 0,
+      "roots": 3,
+      "pass_events": 3,
+      "fail_events": 0,
+      "skip": 0,
+      "race": 0
+    },
+    "host-election-isolation": {
+      "exit": 0,
+      "roots": 1,
+      "pass_events": 1,
+      "fail_events": 0,
+      "skip": 0,
+      "race": 0
+    }
+  },
+  "seconds": 50.78157894697506,
+  "source_check_OK_lines": 11651,
+  "proposal_snapshot_count": 11669,
+  "snapshot_count_not_claimed_as_hash_lines": true,
+  "original_ddea5f_failed_batch_preserved": true,
+  "cluster_fix_deployed": false,
+  "real_Scheduler_ready": false,
+  "new_VM_created": false,
+  "Neon_memory_E2E": false
+}

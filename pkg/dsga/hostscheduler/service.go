@@ -51,16 +51,24 @@ type domain struct {
 // 副本均可增加容量持有，只有节点Lease holder可fence/发布。没有本地“可用
 // 内存”缓存可绕过Node CAS，响应未知不得返回调度成功或在Unreserve中清账。
 type Service struct {
-	core    coreclient.CoreV1Interface
-	coord   coordclient.CoordinationV1Interface
-	vm      vmclient.Interface
-	holder  string
-	domains map[string]domain
-	started atomic.Bool
+	core     coreclient.CoreV1Interface
+	coord    coordclient.CoordinationV1Interface
+	election coordclient.CoordinationV1Interface
+	vm       vmclient.Interface
+	holder   string
+	domains  map[string]domain
+	started  atomic.Bool
 }
 
+// New保留既有嵌入调用合同；正式Scheduler使用NewWithElectionClient隔离续租。
 func New(coreClient coreclient.CoreV1Interface, coord coordclient.CoordinationV1Interface, vm vmclient.Interface, c Config, schedulerName string) (*Service, error) {
-	if coreClient == nil || coord == nil || vm == nil {
+	return NewWithElectionClient(coreClient, coord, coord, vm, c, schedulerName)
+}
+
+// NewWithElectionClient固定工作与选主客户端。Store里的普通Lease校验仍走coord，
+// 只有client-go选主/续租走election，避免大量Pod对账占满续租限流桶。
+func NewWithElectionClient(coreClient coreclient.CoreV1Interface, coord, election coordclient.CoordinationV1Interface, vm vmclient.Interface, c Config, schedulerName string) (*Service, error) {
+	if coreClient == nil || coord == nil || election == nil || vm == nil {
 		return nil, fmt.Errorf("host scheduler requires fixed Kubernetes clients")
 	}
 	if err := c.Validate(schedulerName); err != nil {
@@ -70,7 +78,7 @@ func New(coreClient coreclient.CoreV1Interface, coord coordclient.CoordinationV1
 	if _, err := rand.Read(nonce[:]); err != nil {
 		return nil, err
 	}
-	s := &Service{core: coreClient, coord: coord, vm: vm, holder: "host-" + hex.EncodeToString(nonce[:]), domains: make(map[string]domain), started: atomic.Bool{}}
+	s := &Service{core: coreClient, coord: coord, election: election, vm: vm, holder: "host-" + hex.EncodeToString(nonce[:]), domains: make(map[string]domain), started: atomic.Bool{}}
 	for _, n := range slices.Clone(c.Nodes) {
 		if n.KubernetesBudget != nil {
 			policy := *n.KubernetesBudget
@@ -174,7 +182,7 @@ func (s *Service) Run(ctx context.Context, logger *zap.Logger) error {
 
 func (s *Service) elect(ctx context.Context, logger *zap.Logger, d domain) {
 	for ctx.Err() == nil {
-		lock, err := hostguard.NewLeaseLock(s.coord, d.config.Binding, s.holder)
+		lock, err := hostguard.NewLeaseLock(s.election, d.config.Binding, s.holder)
 		if err != nil {
 			logger.Error("Host election configuration rejected", zap.Error(err))
 			return

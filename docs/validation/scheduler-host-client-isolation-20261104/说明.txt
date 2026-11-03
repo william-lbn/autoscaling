@@ -1,0 +1,6 @@
+Scheduler初始化请求与续租隔离
+
+现场AS403新Scheduler在35秒初始事件预算内仍有15个Pod未完成。三Host租约相对启动约16秒先后成功获取；普通41个Pod同步记账与每2秒各16个Pod的owner对账，同框架watch/选主续租共用50QPS/Burst100客户端，出现133次本地Wait期限拒绝。不能将所有末端context canceled都误判为选主失败，也不调探针或扩大35秒来掩盖。
+仅DSGA路径复制原rest.Config建立独立、有限的Host工作client（200/400）和独立选主续租client（3节点10/20，按原最多128节点边界有限扩展）。普通租约读取仍属于工作桶，真正LeaseLock/renew独占续租桶，原framework/watch与非DSGA不变；保留TLS/auth/transport/timeout及原config本身。旧Service.New为明确兼容包装。
+原1秒CRUD、15/10/2选主期限、35秒初始化、UID/RV/floor/Unknown安全门保持。新测试使用真实TLS SDK和LeaseLock：工作桶耗尽仍能GET+UPDATE原租约，错UID及取消仍拒绝；字段复制和legacy兼容均验证。四个新根通过，两个相同生产源码的相关成功根复用；ddea原失败票不改。
+P2五文件独审通过。实际source-check为11651条，快照/proposal计数11669不是同一计数，receipt明确区分。此阶段没有真实新SchedulerReady或Compute/SQL/内存端到端通过。下一仅构建与预载Scheduler镜像，通过自有Helm只改其image，三Agent及Controller不重新部署。
