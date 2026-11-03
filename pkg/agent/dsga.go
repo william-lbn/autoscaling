@@ -108,21 +108,32 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		return true, err
 	}
 	r.dsgaState(ctx, DSGARunnerState{Phase: "electing", IssuerEpoch: 0, Instance: control.Instance{VMUID: string(r.vmUID), ComputeInstanceID: "", PGBootID: 0}})
-	err = elector.Run(ctx, func(ownerCtx context.Context, session *owner.Session) error {
+	err = elector.Run(ctx, func(ownerCtx context.Context, session *owner.Session) (callbackErr error) {
+		// 只记录固定阶段/类型码。Owner外层错误有意隐藏cause正文，但不能因此
+		// 丢失首个生产失败位置；这里不记录URL、请求体、令牌或任意Error文本。
+		stage := "initial_binding"
+		defer func() {
+			if callbackErr != nil {
+				logDSGAOwnerCallbackFailure(logger, stage, callbackErr)
+			}
+		}()
 		if err := r.awaitInitialDSGABinding(ownerCtx, session, originalPodUID, dsgaInitialStartupTimeout, time.Duration(config.PollIntervalSeconds)*time.Second); err != nil {
 			return err
 		}
+		stage = "credentials_new"
 		credentials, err := credential.New(session, credential.Config{BaseURL: config.GatewayURL, CAFile: config.ManagementCAFile, TokenFile: config.ProjectedTokenFile, Timeout: time.Duration(config.RequestTimeoutSeconds) * time.Second})
 		if err != nil {
 			return err
 		}
 		defer credentials.CloseIdleConnections()
+		stage = "credentials_identity"
 		identity, err := credentials.Identity(ownerCtx)
 		if err != nil {
 			return err
 		}
 		// 资源身份先于PG客户端恢复，Root floor不随SQL断连/PG boot变化清空。
 		// 必须同一已确认Session，缺root来源/未知旧Guest时失败关闭，不走legacy。
+		stage = "resource_recovery_new"
 		resources, err := session.NewResourceRecoveryWorker(ownerCtx, resourceguard.ClientConfig{Context: nil, BaseURL: config.GatewayURL, Identity: resourceguard.Identity{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID, GuestBootID: "", CgroupDevice: 0, CgroupInode: 0, SystemCgroupDevice: 0, SystemCgroupInode: 0}, IssuerEpoch: 0, Timeout: time.Duration(config.ComputeTimeoutSeconds) * time.Second, Transport: credentials.ManagementTransport(), Token: credentials.Token, ArrayAuthorityToken: credentials.ArrayAuthorityToken, Pending: nil})
 		if err != nil {
 			return err
@@ -132,6 +143,7 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		// 入口。首次约束漂移只读轮询，不发PG业务或自动修复/开放；已有
 		// 完整原PG/GuestReady未知则交正式恢复入口处理原重放/取消，避免
 		// Root未收到时无限等Observe。0 boot端点不与正式端点并存。
+		stage = "resource_recovery_wait"
 		if err := r.awaitDSGAResources(ownerCtx, config, resources); err != nil {
 			return err
 		}
@@ -139,12 +151,14 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		if source, ok := config.PrepareQualifications[string(r.vmUID)]; ok {
 			qualifications = append(qualifications, source)
 		}
+		stage = "pg_worker_new"
 		worker, err := session.NewProductionPGWorker(ownerCtx, compute.Config{BaseURL: config.GatewayURL, Instance: control.Instance{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID, PGBootID: 0}, IssuerEpoch: session.Actor().Epoch, Timeout: time.Duration(config.ComputeTimeoutSeconds) * time.Second, Transport: credentials.ManagementTransport(), Token: credentials.Token, Pending: nil, AdmissionPending: nil, AdmissionClose: nil}, resources, r.global.kubeClient.CoreV1(), qualifications...)
 		if err != nil {
 			return err
 		}
 		defer worker.CloseIdleConnections()
 		if automatic, ok := config.AutomaticMemory[string(r.vmUID)]; ok {
+			stage = "automatic_policy"
 			if err := worker.ConfigureAutomaticMemory(automatic, r.global.kubeClient.CoreV1()); err != nil {
 				return err
 			}
@@ -154,6 +168,7 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		logger.Info("DSGA owner PG reconciliation started")
 		var endpoint *owner.ControlEndpoint
 		if config.ControlSocketPath != "" || config.ResourceReadSocketPath != "" {
+			stage = "control_register"
 			endpoint = worker.NewControlEndpoint()
 			unregister, err := r.global.dsgaControls.Register(endpoint)
 			if err != nil {
@@ -165,6 +180,7 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		// 丢回复后只读对账。预算生产者/Guest/VM尚未确认的步骤仍保持ExternalStep；
 		// 显式配置自动策略时仅空闲轮次生成持久Begin；不伪造外部回执或
 		// 重发未知PG/Root/VM POST，也不另开legacy执行器绕过领域。
+		stage = "pg_run"
 		return worker.Run(ownerCtx, owner.PGLoopOptions{PollInterval: time.Duration(config.PollIntervalSeconds) * time.Second, Control: endpoint, Wake: updated.Recv(), Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, Observe: func(tick owner.Tick) {
 			if tick.Err == nil {
 				r.status.update(r.global, func(stat podStatus) podStatus { now := time.Now(); stat.dsgaLastSuccessfulCheck = &now; return stat })
@@ -192,4 +208,70 @@ func (r *Runner) awaitDSGAResources(ctx context.Context, config *DSGAConfig, res
 		defer unregister()
 	}
 	return endpoint.RunResourceRecovery(ctx, time.Duration(config.PollIntervalSeconds)*time.Second)
+}
+
+// logDSGAOwnerCallbackFailure不改变错误/重试/选主语义；仅本地诊断允许固定码。
+func logDSGAOwnerCallbackFailure(logger *zap.Logger, stage string, err error) {
+	switch stage {
+	case "initial_binding", "credentials_new", "credentials_identity", "resource_recovery_new", "resource_recovery_wait", "pg_worker_new", "automatic_policy", "control_register", "pg_run":
+	default:
+		stage = "unclassified"
+	}
+	code := dsgaOwnerFailureCode(err)
+	logger.Warn("DSGA owner callback stopped", zap.String("stage", stage), zap.String("code", code))
+}
+
+func dsgaOwnerFailureCode(err error) string {
+	// 有界解包避免任意错误链的循环；不把外部Error正文拼进可记录值。
+	queue := []error{err}
+	for remaining := 16; remaining > 0 && len(queue) != 0; remaining-- {
+		e := queue[0]
+		queue = queue[1:]
+		switch e {
+		case nil:
+			continue
+		case context.Canceled:
+			return "context_canceled"
+		case context.DeadlineExceeded:
+			return "context_deadline"
+		case owner.ErrLeadershipLost:
+			return "leadership_lost"
+		case resourceguard.ErrUnknown:
+			return "resource_unknown"
+		}
+		switch typed := e.(type) {
+		case *credential.Error:
+			if typed == nil {
+				return "credential_other"
+			}
+			switch typed.Code {
+			case "invalid_configuration", "owner_unavailable", "owner_unconfirmed", "issuer_unavailable", "issuer_response_rejected", "invalid_grant", "invalid_projected_token", "owner_binding_changed", "compute_instance_changed", "guest_tls_identity_rejected":
+				return "credential_" + typed.Code
+			default:
+				return "credential_other"
+			}
+		case *resourceguard.ClientError:
+			if typed == nil {
+				return "resource_other"
+			}
+			switch typed.Code {
+			case "invalid_configuration", "credential_unavailable", "owner_unavailable", "context_cancelled", "transport_unconfirmed", "response_unconfirmed", "guest_discovery_unconfirmed", "resource_state_unconfirmed", "guest_identity_changed", "postmaster_birth_unconfirmed", "fence_unconfirmed":
+				return "resource_" + typed.Code
+			default:
+				return "resource_other"
+			}
+		}
+		switch wrapped := e.(type) {
+		case interface{ Unwrap() []error }:
+			for _, inner := range wrapped.Unwrap() {
+				if len(queue) == 16 {
+					break
+				}
+				queue = append(queue, inner)
+			}
+		case interface{ Unwrap() error }:
+			queue = append(queue, wrapped.Unwrap())
+		}
+	}
+	return "unclassified"
 }

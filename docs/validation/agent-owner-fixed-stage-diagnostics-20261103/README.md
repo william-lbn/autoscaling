@@ -1,0 +1,9 @@
+# Owner回调固定阶段诊断
+
+真实1e60 Compute已运行，但同一Agent零重启时Owner会话每32–35秒退出，Lease会话/epoch持续推进。原workerFailure错误封装隐藏真实叶因，现有日志不能确定是凭据获取、资源发现还是后续PG阶段，不能据此吞掉412或修改Unknown/重试。
+
+本批只在原Elector回调返回原错误前记录固定stage与白名单typed code。最多16次有界解包；不调用任意Error正文，不输出URL、JWT、Secret或请求体。原callback返回值、Lease寿命、续租、超时、重试、Source门及公共协议全部保持。
+
+2个针对性race测试通过，实际91.585秒，race/skip/OOM均为0，峰值900579328B；包含真实Elector与有限TLS凭据超时及未知/JWT错误不泄漏验证。仅正式Agent编译成功，ELF34711c51b11d0b5945d758b440ca81caea54a272d9d6847cfd512e4599491c3d，11680输入实际hash核对；独审688f2b42确认源码与编译、日志白名单一致。
+
+证据目录：/data/neon-build/validation/agent-owner-stage-diagnostics-20261103T211513Z-68b4bf。部署后必须依据实际stage/code定位真实原因，再决定是否修正已证暂态等待。当前没有证明Owner抖动已修，也没有声明PG17内存端到端通过。

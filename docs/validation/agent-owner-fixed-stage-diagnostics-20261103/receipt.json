@@ -1,0 +1,26 @@
+{
+  "base_head": "465bd39773b261bed1f065b6aeccca0921c265eb",
+  "owned_source_files": {
+    "pkg/agent/dsga.go": "fc8d4b3db299cff8a523c918de7852e6c1f1fa097319ba948fba854fbc71f195",
+    "pkg/agent/dsga_failure_test.go": "0f331cd7bff777bf4063a505c968416de44b1916376244df7c4cd936a7d313ae"
+  },
+  "result_SHA256": "d5d119d87f709bcccf2db45e8cdc58117458ccd3d9800e202e755708f2dae68f",
+  "roots": 2,
+  "pass_events": 2,
+  "race": 0,
+  "skip": 0,
+  "independent_review_SHA256": "688f2b4268331e04bd9b6acb5f2edeeba523351a334b890f5763d0b4b1f4fed1",
+  "Agent_ELF_SHA256": "34711c51b11d0b5945d758b440ca81caea54a272d9d6847cfd512e4599491c3d",
+  "semantics_unchanged": [
+    "callback errors",
+    "owner lifetime",
+    "Lease renewal",
+    "resource retry",
+    "Source checks",
+    "Unknown",
+    "public wire"
+  ],
+  "production_deployed": false,
+  "Owner_churn_resolved": false,
+  "PG17_E2E_passed": false
+}
