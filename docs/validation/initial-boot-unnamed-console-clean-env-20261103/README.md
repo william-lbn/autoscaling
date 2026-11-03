@@ -1,0 +1,13 @@
+# 修复未命名控制台阻断初次Guest握手
+
+正式Runner创建普通virtconsole、日志口和固定初次启动口。旧Root枚举每个端口时都先读取name；未命名控制台没有此属性，导致Root在找到固定启动口前退出ENOENT。真实隔离Linux使用同Kernel和原三设备集合复现：sysinit已到initial-boot，vport0p0无name，日志口及固定启动口均存在，随后旧Root报文件不存在。该证据证明机制；原11b未保留逐syscall历史，不能冒充原现场的完整追踪。
+
+修复仅在首轮筛选时将缺少name的口视为未选中，返回前关闭FD。非sysfs、符号链接及其他读取错误仍拒绝；固定目标必须保留原名称、设备号、字符设备身份、重复目标和第二次dev/name核验。没有新增许可，没有删除Unknown安全门。
+
+同时将既有生产磁盘的清环境合同补入canonical vminit：使用固定BusyBox env -i，仅传固定PATH进入Root。此前Git canonical与旧实际磁盘存在该差异，本批显式补齐，原诊断镜像31ce继续HOLD。stage、挂载拒绝、临时视图清理及退出码不变。
+
+定向验证实际3个测试根、16个PASS事件，race/skip/OOM均为0，耗时124.011秒；测试包含原设备别名门、真实openat/FD关闭、普通文件伪目标及symlink拒绝、父环境不泄漏和原8个vminit场景。源码实际校验11677文件。原Root/Builder配方分别使用标准flags及原六个-X基础镜像参数；正式Root与Builder均已成功编译，Builder help退出0。原历史二进制和失败证据保留。
+
+证据：/data/neon-build/validation/initial-port-clean-env-merged-go-UNBOUND-20261103T200609Z-e930f8。新Root为df587cea0b17646455be0bc3e09c76adde7d951da98b6d07a660019853073030；新Builder为e14d0eb4bf977685721c2a495d2634da7a67db77f2eec5082753273317885c2a。A独审端口、P2独审环境，Root复核两组，最终完整绑定独审0b2c6126。
+
+下一步必须以新nonce重建Root/vminit/broker/System/Native五项闭包并读实际磁盘，再经118构建、SSH三节点预载和自有Helm原流程恢复新VM。当前只通过修复的定向验证与构建，尚无新Guest、SQL、资格或内存四动作真实通过，不声明生产端到端验收。

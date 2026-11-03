@@ -356,6 +356,12 @@ case "$op" in
   */var/log) [ "$CASE" != bind-failure ] || exit 23;;
   */neonvm/runtime) [ "$CASE" != runtime-mount-failure ] || exit 22;; esac;;
  umount) /bin/rm -f "$ROOT/view-mounted"; printf 'cleanup\n' >>"$ROOT/trace";;
+ env)
+  # 真native env链避免shell解释器自动补PWD，直接观察传给Root的唯一PATH。
+  [ "$#" -eq 4 ] && [ "$1" = -i ] && [ "$2" = "PATH=$ROOT/neonvm/bin" ] && [ "$3" = "$ROOT/neonvm/bin/dsga-resource-guard" ] && [ "$4" = initial-boot ] || exit 92
+  /usr/bin/env "$@" >"$ROOT/guard-env" || exit 93
+  printf 'guard\n' >>"$ROOT/trace"
+  exit 42;;
  mkdir) exec /bin/mkdir "$@";;
  rmdir) exec /bin/rmdir "$@";;
  chmod) exec /bin/chmod "$@";;
@@ -364,7 +370,13 @@ case "$op" in
 esac
 `
 			os.WriteFile(filepath.Join(r, "/neonvm/bin/busybox"), []byte(bb), 0755)
-			os.WriteFile(filepath.Join(r, "/neonvm/bin/dsga-resource-guard"), []byte("#!/bin/sh\nprintf 'guard\\n' >>\"$ROOT/trace\"\nexit 42\n"), 0755)
+			// Root替身为native env，initial-boot再指向无参数native env；没有shell补环境。
+			if err := os.Symlink("/usr/bin/env", filepath.Join(r, "/neonvm/bin/dsga-resource-guard")); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.Symlink("/usr/bin/env", filepath.Join(r, "/neonvm/bin/initial-boot")); err != nil {
+				t.Fatal(err)
+			}
 			// 最长运行盘路径先匹配，避免/run前缀把/runtime再次拼接进夹具根。
 			pairs := []string{"/neonvm/runtime", filepath.Join(r, "/neonvm/runtime")}
 			for _, p := range []string{"/neonvm", "/sys", "/proc", "/dev", "/run", "/tmp", "/etc", "/var"} {
@@ -374,7 +386,7 @@ esac
 			file := filepath.Join(r, "init")
 			os.WriteFile(file, []byte(script), 0755)
 			cmd := exec.Command("/bin/sh", file)
-			cmd.Env = []string{"ROOT=" + r, "CASE=" + tc.name}
+			cmd.Env = []string{"ROOT=" + r, "CASE=" + tc.name, "UNTRUSTED_PARENT_MARKER=OFFLINE-PARENT-ONLY", "HOME=/OFFLINE-PARENT-HOME"}
 			b, e := cmd.CombinedOutput()
 			ee, ok := e.(*exec.ExitError)
 			if !ok || ee.ExitCode() != tc.code {
@@ -387,6 +399,16 @@ esac
 				}
 			} else if !strings.Contains(string(b), "DSGA sysinit: stage=initial-boot-enter code=0") || strings.Contains(string(b), "DSGA sysinit failed:") {
 				t.Fatalf("original guard entry diagnostic differs: output=%s", b)
+			}
+			if tc.stage == "" {
+				env, err := os.ReadFile(filepath.Join(r, "guard-env"))
+				if err != nil {
+					t.Fatal(err)
+				}
+				want := "PATH=" + filepath.Join(r, "/neonvm/bin") + "\n"
+				if string(env) != want {
+					t.Fatalf("Root environment must contain only fixed PATH; got=%q", env)
+				}
 			}
 			tr, _ := os.ReadFile(filepath.Join(r, "trace"))
 			trace := string(tr)

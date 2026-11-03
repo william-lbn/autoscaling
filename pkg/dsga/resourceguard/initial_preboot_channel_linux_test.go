@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"io"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -99,6 +101,44 @@ func TestInitialGuestChannelOnlyRetriesMissingMovablePages(t *testing.T) {
 			_, err := initialPrebootMovablePages(c, before, current)
 			require.Error(t, err)
 			require.Equal(t, mode == "pending", errors.Is(err, errInitialPrebootMovablePending))
+		})
+	}
+}
+
+// 使用真实openat/FD验证枚举边界；普通临时文件绝不能冒充sysfs目标。
+func TestInitialGuestChannelNameSelectionClosesUnselectedAndKeepsStrictLeaf(t *testing.T) {
+	for _, mode := range []string{"unnamed-console", "target-on-ordinary-fs", "unrelated-on-ordinary-fs", "name-symlink", "closed-dir-fd"} {
+		t.Run(mode, func(t *testing.T) {
+			dir := t.TempDir()
+			switch mode {
+			case "target-on-ordinary-fs":
+				require.NoError(t, os.WriteFile(filepath.Join(dir, "name"), []byte(initialGuestPortName+"\n"), 0644))
+			case "unrelated-on-ordinary-fs":
+				require.NoError(t, os.WriteFile(filepath.Join(dir, "name"), []byte("tech.neon.log.0\n"), 0644))
+			case "name-symlink":
+				require.NoError(t, os.WriteFile(filepath.Join(dir, "other"), []byte(initialGuestPortName+"\n"), 0644))
+				require.NoError(t, os.Symlink("other", filepath.Join(dir, "name")))
+			}
+			fd, err := unix.Open(dir, unix.O_RDONLY|unix.O_DIRECTORY|unix.O_CLOEXEC, 0)
+			require.NoError(t, err)
+			if mode == "closed-dir-fd" {
+				require.NoError(t, unix.Close(fd))
+			}
+			selected, err := initialGuestSelectPortName(fd)
+			require.False(t, selected)
+			if mode == "unnamed-console" {
+				require.NoError(t, err, "只有首枚举无name是合法未选口")
+			} else {
+				require.Error(t, err, "其它读取失败和非sysfs目标仍须拒绝")
+				if mode == "name-symlink" {
+					require.ErrorIs(t, err, unix.ELOOP)
+				}
+				if mode == "closed-dir-fd" {
+					require.ErrorIs(t, err, unix.EBADF)
+				}
+			}
+			var st unix.Stat_t
+			require.ErrorIs(t, unix.Fstat(fd, &st), unix.EBADF, "跳过或拒绝前必须关闭该port FD")
 		})
 	}
 }

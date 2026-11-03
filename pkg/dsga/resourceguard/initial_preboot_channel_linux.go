@@ -202,6 +202,26 @@ func initialGuestReadSys(fd int, name string, limit int) (string, error) {
 	}
 	return strings.TrimSuffix(string(raw), "\n"), nil
 }
+
+// 首次枚举允许内核未收到PORT_NAME的普通virtconsole没有name属性。
+// 这只跳过不相关口，不选设备/不发许可；所有未选中FD在返回前关闭。
+// 已选目标的dev/name二次复核仍直接使用原strict reader，不能借此忽略漂移。
+func initialGuestSelectPortName(port int) (bool, error) {
+	name, err := initialGuestReadSys(port, "name", 128)
+	if err != nil {
+		unix.Close(port)
+		if errors.Is(err, unix.ENOENT) {
+			return false, nil
+		}
+		return false, err
+	}
+	if name != initialGuestPortName {
+		unix.Close(port)
+		return false, nil
+	}
+	return true, nil
+}
+
 func openInitialGuestPort(ctx context.Context) (*initialGuestStream, error) {
 	fd, e := unix.Open("/sys/class/virtio-ports", unix.O_RDONLY|unix.O_DIRECTORY|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0)
 	if e == unix.ENOENT {
@@ -239,13 +259,11 @@ func openInitialGuestPort(ctx context.Context) (*initialGuestStream, error) {
 		if err != nil {
 			return nil, err
 		}
-		name, err := initialGuestReadSys(port, "name", 128)
+		matches, err := initialGuestSelectPortName(port)
 		if err != nil {
-			unix.Close(port)
 			return nil, err
 		}
-		if name != initialGuestPortName {
-			unix.Close(port)
+		if !matches {
 			continue
 		}
 		if selected >= 0 {

@@ -108,4 +108,6 @@ stage=initial-boot
 printf 'DSGA sysinit: stage=initial-boot-enter code=0\n' >&2 || :
 # 不以ACK/ready文件放行：CLI必须实际完成Provision→Split→CheckGuest。
 # 动态extension与静态/usr/local的RO闭包仍须原policy真实核验；此脚本不豁免。
-exec /neonvm/bin/dsga-resource-guard initial-boot
+# 与既有生产磁盘保持同一清理环境合同：Root只收到唯一固定PATH。
+# 不能继承PID1/sysinit环境，也不把Runtime/Source/凭据转成环境变量。
+exec "$bb" env -i PATH=/neonvm/bin /neonvm/bin/dsga-resource-guard initial-boot

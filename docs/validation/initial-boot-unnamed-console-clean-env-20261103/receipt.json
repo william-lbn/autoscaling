@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "base_head": "9ce7cd0d113b59ed45bfe7a14d2ed448b8919aa6",
+  "owned_files": {
+    "vm-builder/files/normal-split/vminit": "2b5c4a22faac00438665a55f402568cc245cad9661d50cfb76197101c261215b",
+    "vm-builder/normal_split_test.go": "a58417ceecfd5f86b2044cd843b665b9198a95d51a848ca5ce0499a02d5f2663",
+    "pkg/dsga/resourceguard/initial_preboot_channel_linux.go": "1ec20bb9dd3e03d6721e2baa6c845af6d5afb9883f0e46cb6daa9ca8a45b39ea",
+    "pkg/dsga/resourceguard/initial_preboot_channel_linux_test.go": "ee78331fd186a2d7ee8389ab5dc2d2efae84ea7f945ed3c3c5e2a5418f5ef6e2"
+  },
+  "counts": {
+    "vminit-clean-env": {
+      "exit": 0,
+      "roots": 1,
+      "pass_events": 9,
+      "fail_events": 0,
+      "skip": 0,
+      "race": 0
+    },
+    "initial-port": {
+      "exit": 0,
+      "roots": 2,
+      "pass_events": 7,
+      "fail_events": 0,
+      "skip": 0,
+      "race": 0
+    }
+  },
+  "seconds": 124.01057247800054,
+  "source_files": 11677,
+  "result_SHA256": "ab6646cce550de232e3c2940afbc279f7b41405a1920dd236eeec5f9bc4805bc",
+  "source_review_SHA256": "13eef9732939c1796f9feaf15753b25f5d76bc9d25c509a9e95de21557c87aeb",
+  "final_binding_review_SHA256": "0b2c6126685c1e92662dc7e04454a298669135f261afbabace814dbe88b2a56e",
+  "artifacts": [
+    {
+      "target": "./neonvm-daemon/cmd/resource-guard",
+      "artifact": "resource-guard",
+      "ldflags": "-s -w",
+      "recipe": "/data/neon-build/validation/pg17-final-four-go-batch-retry-20261103T094548Z-24876a/Dockerfile",
+      "path": "/data/neon-build/validation/initial-port-clean-env-merged-go-UNBOUND-20261103T200609Z-e930f8/export/resource-guard",
+      "sha256": "df587cea0b17646455be0bc3e09c76adde7d951da98b6d07a660019853073030",
+      "bytes": 41189560,
+      "ELF64_amd64_static": true
+    },
+    {
+      "target": "./vm-builder",
+      "artifact": "vm-builder",
+      "ldflags": "-s -w -X main.AlpineImageTag=3.19.7 -X main.AlpineImageShaAmd64=@sha256:06793e3dc83d9a0733c70010283ed1735ff75fc0d40e3eac330aaef41a2f5049 -X main.AlpineImageShaArm64=@sha256:b77521a60a51daad2b199da6efdd78956f79739d36379c2d13165f18ae1c4bee -X main.BusyboxImageTag=1.35.0-musl -X main.BusyboxImageShaAmd64=@sha256:e0b2a0f0bbb24966adb038db1fba7f45d25804602b53d901474b21122399962d -X main.BusyboxImageShaArm64=@sha256:86e3969e2c5b1a006da06016224b1579a52b1e770e8c2779ba45ac9d600c9418",
+      "recipe": "/data/neon-build/validation/pg17-same-source-runner-builder-images-20261103T154132Z-9e34a7/Dockerfile",
+      "path": "/data/neon-build/validation/initial-port-clean-env-merged-go-UNBOUND-20261103T200609Z-e930f8/export/vm-builder",
+      "sha256": "e14d0eb4bf977685721c2a495d2634da7a67db77f2eec5082753273317885c2a",
+      "bytes": 37187768,
+      "ELF64_amd64_static": true
+    }
+  ],
+  "isolated_mechanism_receipt_SHA256": "5710b7ae24e5a42164ad070061dd24bcbd2b0b6f33a9585d0a4e862edfdff555",
+  "original_11b_syscall_trace_available": false,
+  "new_Guest_boot_verified": false,
+  "PG17_memory_e2e_passed": false
+}
