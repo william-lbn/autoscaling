@@ -92,9 +92,11 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 	if config == nil || r.global.envArgs.K8sPodUID == "" {
 		return true, fmt.Errorf("DSGA requires explicit trusted configuration and Agent Pod UID")
 	}
-	if vm.Status.Node != r.global.envArgs.K8sNodeName || vm.Status.PodName != r.podName.Name || vm.Status.PodIP != r.podIP {
-		return true, fmt.Errorf("DSGA VM runner or node binding changed")
+	pod, err := r.initialDSGAPod(ctx, vm, r.dsgaPodUID)
+	if err != nil {
+		return true, err
 	}
+	originalPodUID := string(pod.UID)
 	store, err := journal.NewStore(r.global.vmClient.NeonvmV1().VirtualMachines(r.vmName.Namespace), journal.Binding{Namespace: r.vmName.Namespace, Name: r.vmName.Name, VMUID: r.vmUID, Incarnation: vm.Annotations[control.ModeAnnotation][2:]})
 	if err != nil {
 		return true, err
@@ -107,6 +109,9 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 	}
 	r.dsgaState(ctx, DSGARunnerState{Phase: "electing", IssuerEpoch: 0, Instance: control.Instance{VMUID: string(r.vmUID), ComputeInstanceID: "", PGBootID: 0}})
 	err = elector.Run(ctx, func(ownerCtx context.Context, session *owner.Session) error {
+		if err := r.awaitInitialDSGABinding(ownerCtx, session, originalPodUID, dsgaInitialStartupTimeout, time.Duration(config.PollIntervalSeconds)*time.Second); err != nil {
+			return err
+		}
 		credentials, err := credential.New(session, credential.Config{BaseURL: config.GatewayURL, CAFile: config.ManagementCAFile, TokenFile: config.ProjectedTokenFile, Timeout: time.Duration(config.RequestTimeoutSeconds) * time.Second})
 		if err != nil {
 			return err

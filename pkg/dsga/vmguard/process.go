@@ -223,6 +223,10 @@ func (r *Runner) RunQEMU(ctx context.Context, cmd *exec.Cmd) error {
 	if err != nil {
 		return err
 	}
+	var initialWaitErr error
+	if r.initial != nil {
+		initialWaitErr = r.awaitInitialOwner(ctx, 30*time.Second, 100*time.Millisecond)
+	}
 	nonce, err := randomProcessNonce()
 	if err != nil {
 		return err
@@ -232,9 +236,34 @@ func (r *Runner) RunQEMU(ctx context.Context, cmd *exec.Cmd) error {
 	if err != nil {
 		return err
 	}
-	err = r.engine.withRecord(ctx, func(_ *record, s *lockedState) error { return s.writeOnce("process-launch.json", raw) })
+	launchCtx := ctx
+	if r.initial != nil {
+		// 此调用尚未Start；取消/初启读失败也须耐久记录NoStart，不能遗留永久持有。
+		// 独立上下文只用于原写一次启动/关闭事实，不用于QEMU/资源动作重试。
+		var cancel context.CancelFunc
+		launchCtx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+	}
+	err = r.engine.withRecord(launchCtx, func(rec *record, s *lockedState) error {
+		if r.initial != nil {
+			if rec.Sequence != 1 || rec.Pending != nil || rec.Last != nil || rec.HighWater != nil || rec.LastPublished != nil {
+				return fmt.Errorf("initial launch has nonpristine original history")
+			}
+			previous, err := s.readProcessFile("process-launch.json")
+			if err != nil {
+				return err
+			}
+			if previous != nil {
+				return fmt.Errorf("initial launch cannot adopt an existing launch")
+			}
+		}
+		return s.writeOnce("process-launch.json", raw)
+	})
 	if err != nil {
-		return err
+		return errors.Join(initialWaitErr, err)
+	}
+	if initialWaitErr != nil {
+		return r.finishProcess(launch, 2, 0, 0, 0, initialWaitErr)
 	}
 	if r.initial != nil {
 		if err := r.initial.freeze(ctx, cmd); err != nil {

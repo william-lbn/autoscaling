@@ -114,6 +114,9 @@ func (r MainRunner) Run(logger *zap.Logger, ctx context.Context) error {
 	}
 
 	tg := taskgroup.NewGroup(logger, taskgroup.WithParentContext(ctx))
+	if r.Config.DSGA != nil {
+		tg.Go("dsga-initial-owner", func(logger *zap.Logger) error { return globalState.runInitialDSGA(tg.Ctx(), logger, vmWatchStore) })
+	}
 	if controlServer != nil {
 		tg.Go("dsga-local-control", func(_ *zap.Logger) error { return controlServer.Run(tg.Ctx()) })
 	}

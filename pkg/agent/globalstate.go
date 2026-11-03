@@ -37,8 +37,8 @@ type agentState struct {
 
 	podIP        string
 	config       *Config
-	kubeClient   *kubernetes.Clientset
-	vmClient     *vmclient.Clientset
+	kubeClient   kubernetes.Interface
+	vmClient     vmclient.Interface
 	envArgs      EnvArgs
 	schedTracker *schedwatch.SchedulerTracker
 	metrics      GlobalMetrics
@@ -114,8 +114,13 @@ func (s *agentState) handleEvent(ctx context.Context, logger *zap.Logger, event 
 		logger.Error("Received event for pod that isn't present", zap.Object("pod", podName))
 		return
 	} else if event.kind == vmEventAdded && hasPod {
-		logger.Error("Received add event for pod that's already present", zap.Object("pod", podName))
-		return
+		if state.runner.dsgaPodUID != "" && state.runner.vmUID == event.vmInfo.UID && state.runner.podIP == event.podIP {
+			// 原pre-Ready Runner已持租；正式Ready事件只更新同一Runner。
+			event.kind = vmEventUpdated
+		} else {
+			logger.Error("Received add event for pod that's already present", zap.Object("pod", podName))
+			return
+		}
 	}
 
 	switch event.kind {
@@ -179,6 +184,7 @@ func (s *agentState) handleVMEventAdded(
 	status.update(s, func(s podStatus) podStatus { return s })
 
 	runner := s.newRunner(event.vmInfo, podName, event.podIP)
+	runner.dsgaPodUID = event.podUID
 	runner.status = status
 
 	txVMUpdate, rxVMUpdate := util.NewCondChannelPair()

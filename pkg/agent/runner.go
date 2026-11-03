@@ -68,6 +68,8 @@ type Runner struct {
 	vmUID   ktypes.UID
 	podName util.NamespacedName
 	podIP   string
+	// 创建时固定，正常Ready事件不得替换首次选择的物理Pod。
+	dsgaPodUID string
 
 	memSlotSize api.Bytes
 

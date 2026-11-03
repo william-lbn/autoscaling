@@ -28,6 +28,8 @@ type vmEvent struct {
 	vmInfo  api.VmInfo
 	podName string
 	podIP   string
+	// 原调度Pod UID仅供首次DSGA选择；legacy事件保持空值。
+	podUID string
 	// if present, the ID of the endpoint associated with the VM. May be empty.
 	endpointID string
 }
