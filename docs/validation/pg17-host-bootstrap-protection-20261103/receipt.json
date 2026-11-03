@@ -1,0 +1,90 @@
+{
+  "status": "FROZEN_HOST_BOOTSTRAP_PROTECTION_ORDER_AND_MINIMAL_RBAC_RECREATE_READY_FOR_ROOT_COMMIT",
+  "frozen_utc": "2026-11-03T05:07:12.819759+00:00",
+  "source_base": {
+    "AS": "e8c6c8b09387a1971eaa30f6613cdbe640f93ff2",
+    "Helm": "62544f48df70a6ae263af5862570d656004d16fb"
+  },
+  "owned_files": {
+    "autoscaling": [
+      {
+        "path": "pkg/dsga/hostscheduler/service.go",
+        "sha256": "9f9681a3a2822910e5c044eedc858576a960db6d8f5e86282cb3a4a8f1e072c2"
+      },
+      {
+        "path": "pkg/dsga/hostscheduler/bootstrap_protection_test.go",
+        "sha256": "32cf54932983d816040e2bd773466afe43946d871217c3dd07697f7df4e02748"
+      }
+    ],
+    "neon-helm": [
+      {
+        "path": "charts/neon-autoscaler/templates/dsga-rbac.yaml",
+        "sha256": "eed538bf575160d9388f0f4573ae46bd82545d7a1f2cc5dfc6bbe0f40eefbd09"
+      },
+      {
+        "path": "charts/neon-autoscaler/templates/autoscale-scheduler.yaml",
+        "sha256": "d18bfafa87266c48dac0025bf0686ec5487a10a2f8b4b47d57a0ab472f004255"
+      },
+      {
+        "path": "charts/neon-autoscaler/values.yaml",
+        "sha256": "52712db6d6e3d6fa01ccd44704888ac5ef170496e4d20309b1234eaac2c97a82"
+      },
+      {
+        "path": "charts/neon-autoscaler/values.schema.json",
+        "sha256": "e1c9b53bcd38a84f992a106c122b0dba88d56cde6873bfacfcdc63a29988b50e"
+      },
+      {
+        "path": "charts/neon-autoscaler/README.md",
+        "sha256": "3b8bd31911e2e2284c5d82cbd5c909b66b188a41a2de5392510489a4ed07f8b2"
+      },
+      {
+        "path": "charts/neon-autoscaler/tests/pod-protection-rbac.py",
+        "sha256": "bc4d2d088d420d3e8517178df6b3aef591c1d71a49580d38f0a5a270b06caa52"
+      }
+    ]
+  },
+  "actual_go_result": {
+    "build_exit": 0,
+    "tests_exit": 0,
+    "seconds": 40.87443151202751,
+    "scope": "PG17_HOST_BOOTSTRAP_LOAD_BEFORE_ANY_POD_PROTECTION_TARGETED_RACE",
+    "Source": false,
+    "K8s": false,
+    "end_utc": "2026-11-03T05:05:32.425591+00:00"
+  },
+  "actual_go_roots": [
+    "TestSchedulerRejectsChangedSourcesAndUnboundedWorkloads",
+    "TestSchedulerRestoresAllWorkloadsAndCanonicalVMBeforeFirstGrant",
+    "TestSchedulerUninitializedHostDoesNotProtectPod"
+  ],
+  "actual_go_pass_test_events": 14,
+  "actual_go_subcase_count": 11,
+  "actual_go_fail_events": 0,
+  "actual_go_skip_events": 0,
+  "actual_go_race_enabled": true,
+  "actual_cpu_max": "300000 100000",
+  "actual_memory_max": "3221225472",
+  "actual_memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\n",
+  "source_lock_sha256": "050eca442837c1c47a3b30bd8fc523c8007cc1887ffadbd877f4909ab37cc2c8",
+  "render": {
+    "path": "/data/neon-build/validation/pg17-host-bootstrap-rbac-strategy-render-20261103T045956Z-d71855/result.json",
+    "sha256": "400338dfed55b21c94761bb68d7e976874321b89187c9ed358616662e3b2396b",
+    "cases": 6,
+    "exit": 0,
+    "default_legacy_no_RBAC_or_strategy_change": true
+  },
+  "live_RBAC_preceding_stage": {
+    "values": "/data/neon-k8s-pg17/runs/agent-scheduler-preledger-20261103T044252Z-be3a01/values.rbac-preledger.private.json",
+    "SAR_positive_negative": "/data/neon-k8s-pg17/runs/agent-scheduler-preledger-20261103T044252Z-be3a01/SAR-after-rbac.json",
+    "SAR_cases": 12,
+    "excluded116_nine_original_pods_unchanged": true
+  },
+  "semantic_change": "Reserve先Load/checkProfile，未初始化时零Pod保护HTTP写；DSGA单例Scheduler用Recreate，3namespace额外pods get/patch，无全局新增Pod写。",
+  "rebuild_only": [
+    "autoscale-scheduler"
+  ],
+  "Node_ledger_initialization_by_this_patch_run": false,
+  "Root_controls_orphan_recovery_and_initial_original_RV": true,
+  "Git_or_index_mutated_by_agent": false,
+  "prior_test_compile_failure_preserved": "/data/neon-build/validation/pg17-host-bootstrap-protection-go-20261103T045956Z-d71855"
+}

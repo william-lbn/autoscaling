@@ -101,15 +101,17 @@ func (s *Service) Reserve(ctx context.Context, node string, pod *core.Pod, targe
 	if err != nil {
 		return nil, none, err
 	}
-	canonical, err = s.protectPod(ctx, canonical)
-	if err != nil {
-		return nil, none, err
-	}
+	// 未初始化/不匹配的分配域不得先给Pod加保护；否则首次启动失败会留下
+	// 无账本可退休的孤立finalizer，包括Scheduler自己的Pod。
 	snapshot, err := d.store.Load(ctx)
 	if err != nil {
 		return nil, none, err
 	}
 	if err := checkProfile(snapshot, d.config); err != nil {
+		return nil, none, err
+	}
+	canonical, err = s.protectPod(ctx, canonical)
+	if err != nil {
 		return nil, none, err
 	}
 	var held hostguard.Placement

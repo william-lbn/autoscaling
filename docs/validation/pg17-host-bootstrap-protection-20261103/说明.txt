@@ -1,0 +1,4 @@
+首次Host预算初始化的Pod保护顺序修复
+真实K8s首次启动发现：Reserve在账本Load前写Pod保护，会留下无法从未存在账本退休的保护finalizer。本次先Load并核Profile再写保护；未建账时应仅GET，HTTP层和原Pod/Node/VM写计数全部零。
+实际3根race/11子case共14通过、40.874秒、3CPU/3GiB、无失败/跳过/OOM；初版测试夹具编译失败完整保留。Helm仅DSGA采用Recreate，legacy不变；3namespace只pods get/patch权限，12实际正负SAR通过，116九原Pod未变。
+这是本轮首次预算启动必要修复，不代表后续所有单Scheduler维护均安全；已有账本升级/Pod退休仍须原合同。真实孤立保护处理、Node原RV初始化和VM首次启动由同一原UID执行计划单独归档。
