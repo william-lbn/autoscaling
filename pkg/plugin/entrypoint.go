@@ -154,7 +154,7 @@ func NewAutoscaleEnforcerPlugin(
 	}
 
 	// The reconciles are ongoing -- we need to wait until they're finished.
-	timeout := time.Second * time.Duration(config.StartupEventHandlingTimeoutSeconds)
+	timeout := initialEventHandlingTimeout(config)
 	start := time.Now()
 	select {
 	case <-ctx.Done():
@@ -191,4 +191,14 @@ func NewAutoscaleEnforcerPlugin(
 		state:   pluginState,
 		metrics: &pluginState.metrics.Framework,
 	}, nil
+}
+
+// initialEventHandlingTimeout只给DSGA叠加真实Host Lease观察/重试预算。
+// 保留原初始事件处理预算，legacy及每个Kubernetes请求的deadline均不变。
+func initialEventHandlingTimeout(config *Config) time.Duration {
+	budget := time.Second * time.Duration(config.StartupEventHandlingTimeoutSeconds)
+	if config.DSGAHost != nil {
+		budget += hostscheduler.InitialOwnerObservationBudget()
+	}
+	return budget
 }

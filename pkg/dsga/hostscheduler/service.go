@@ -27,6 +27,20 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
 
+const (
+	hostLeaseDuration = 15 * time.Second
+	hostRenewDeadline = 10 * time.Second
+	hostRetryPeriod   = 2 * time.Second
+)
+
+// InitialOwnerObservationBudget覆盖client-go首次观察旧Lease的完整窗口及一次
+// 最大jitter重试，向上取整到秒。只供DSGA首次启动预算叠加，不改变后续选主语义。
+func InitialOwnerObservationBudget() time.Duration {
+	maximumRetry := hostRetryPeriod + time.Duration(float64(hostRetryPeriod)*leaderelection.JitterFactor)
+	budget := hostLeaseDuration + maximumRetry
+	return (budget + time.Second - 1) / time.Second * time.Second
+}
+
 type domain struct {
 	config NodeConfig
 	store  *hostguard.Store
@@ -166,7 +180,7 @@ func (s *Service) elect(ctx context.Context, logger *zap.Logger, d domain) {
 			return
 		}
 		elector, err := leaderelection.NewLeaderElector(leaderelection.LeaderElectionConfig{
-			Lock: lock, LeaseDuration: 15 * time.Second, RenewDeadline: 10 * time.Second, RetryPeriod: 2 * time.Second,
+			Lock: lock, LeaseDuration: hostLeaseDuration, RenewDeadline: hostRenewDeadline, RetryPeriod: hostRetryPeriod,
 			Callbacks: leaderelection.LeaderCallbacks{
 				OnStartedLeading: func(owned context.Context) { s.ownedLoop(owned, logger, d) },
 				OnStoppedLeading: func() { logger.Info("Host node owner stopped; durable holds retained") },

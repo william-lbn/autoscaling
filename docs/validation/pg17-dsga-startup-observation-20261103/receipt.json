@@ -1,0 +1,71 @@
+{
+  "status": "FROZEN_DSGA_ONLY_INITIAL_OBSERVATION_BUDGET_READY_FOR_ROOT_COMMIT",
+  "frozen_utc": "2026-11-03T05:58:46.062330+00:00",
+  "source_base_commit": "56652e5efe0e2f0e6af4962257f562fd708dccc2",
+  "owned_files": [
+    {
+      "path": "pkg/dsga/hostscheduler/service.go",
+      "sha256": "5db3b84f284ba40cbba5122b38766933ede7b9c426b842d4293afce14a7445b4"
+    },
+    {
+      "path": "pkg/plugin/entrypoint.go",
+      "sha256": "8cc5d8605632c5c9f9b2474dc7e6e992bafcc2d074208cc432e790892b1e1852"
+    },
+    {
+      "path": "pkg/plugin/dsga_startup_budget_test.go",
+      "sha256": "ae9283b3302bd7a1726f5f4740a04ab656837f99c6b248a319bc992b89bc17f4"
+    }
+  ],
+  "actual_result": {
+    "build_exit": 0,
+    "tests_exit": 0,
+    "seconds": 49.277818934002426,
+    "scope": "PG17_DSGA_STARTUP_OBSERVATION_BUDGET_LEGACY_UNCHANGED_TARGETED_RACE",
+    "Source": false,
+    "K8s": false,
+    "end_utc": "2026-11-03T05:56:12.561230+00:00"
+  },
+  "actual_roots": [
+    "TestDSGAStartupBudgetIncludesHostObservationWithoutChangingLegacy"
+  ],
+  "root_pass_count": 1,
+  "subcases": 0,
+  "race": true,
+  "fail": 0,
+  "skip": 0,
+  "actual_cpu_max": "300000 100000",
+  "actual_memory_max": "3221225472",
+  "actual_memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\n",
+  "exact_dependency": {
+    "version": "k8s.io/client-go v0.31.7",
+    "source_path": "/data/neon-build/validation/pg17-dsga-startup-observation-budget-go-20261103T055521Z-392461/export/client-go-v0.31.7-leaderelection.go",
+    "sha256": "9c1c998a08f5c164913df327c687a2299a8da96da6749159b3289571cce232a6",
+    "JitterFactor_line": 72,
+    "full_old_record_observation_comment_lines": [
+      124,
+      127
+    ],
+    "expiry_uses_observedTime_lines": [
+      360,
+      507
+    ]
+  },
+  "semantics": {
+    "actual_Host_lease_seconds": 15,
+    "actual_renew_deadline_seconds": 10,
+    "actual_retry_seconds": 2,
+    "maximum_retry_jitter_upper_seconds": 4.4,
+    "observation_budget_ceil_seconds": 20,
+    "legacy_startup_seconds_unchanged": 15,
+    "DSGA_startup_seconds": 35,
+    "original_per_request_timeout_unchanged": true,
+    "Lease_after_startup_semantics_unchanged": true,
+    "client_go_unchanged": true
+  },
+  "f2_failed_original_intent_preserved": true,
+  "new_Node_RV_intent_not_selected": true,
+  "Git_index_or_commit_changed_by_agent": false,
+  "rebuild_only": [
+    "autoscale-scheduler"
+  ]
+}
