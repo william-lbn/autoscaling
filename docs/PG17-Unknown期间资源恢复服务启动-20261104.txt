@@ -1,0 +1,5 @@
+问题：普通PG/normal额度Unknown时，resource服务本身若先要求ConfirmedLimits便无法重启，Observe/Recover API也因此不可达。原Serve已有刻意区分：未知预算不签资格，正常请求逐次保持Unknown，而恢复listener可以在已证明的System边界启动。
+变化：仅固定resource角色分流原同flock/bootstrap来源与System-only实际读取；复用原inode/root-controlled/memory.max/swap0/memory.high核验及systemPlacementMatches，不实例化owner，不移动进程，不写WAL。其它System角色继续原完整额度门；PG空域、normal请求/资格、未知原意图与额度门全部保持。
+验证：GREEN4roots28PASS/0fail/skip/race、77.113s，真实旧WAL pending/lost-held和本地UDS观察，覆盖正常业务仍Unknown、System来源/硬限/身份失败与零check写。早期18a/b809用错误fixture预算ID，在Unknown机制前即被source门正确拒绝，不能当机制RED；均FAIL留档。修正仅test按真实Bootstrap预算ID+来源先验2行，两prod不变。随后独立正确fixture旧135b RED35.691s，先验通过后才因额度Unknown拒。未再重复GREEN或Root，最终票合成两端准确证据。
+产物：Root68cfcc13db17cf0790ec953f51288bb71d42e7b82587be9979dd27e0ce486858/41201848B，原完整CGO0命令；SDK实际3CPU/3Gi/swap0。final-three-source-resource-recovery-acceptance.json SHA4f22addeb2dccade75006fcc1213855a38f8219356ac1cce801ecc125a80a6e7，归档/data/neon-build/validation/resource-System-recovery-fixture-bound-GREEN-20261104T183533Z-67c59c/。
+边界：准确135b archive+这3源，不包含并行闭合rearm续接模块。本提交仍未打Guest/部署、未证明现场System服务恢复或PG17内存4动作通过；后续以统一新Root/Builder/canonical服务/实际盘读回与端到端验证，不把API可达当预算授权。

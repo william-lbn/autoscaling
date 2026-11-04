@@ -134,16 +134,39 @@ func (o *trustedControllerOwner) verifySystemLocked(r *record) error {
 	if r == nil || r.Identity != o.identity || r.systemLimit() == 0 {
 		return ErrUnknown
 	}
-	dev, ino, e := systemCgroupIdentity(uint64(r.Identity.CgroupDevice))
-	if e != nil || dev != uint64(r.Identity.SystemCgroupDevice) || ino != uint64(r.Identity.SystemCgroupInode) {
+	return verifyTrustedControllerSystemBounds(r.Identity, r.systemLimit())
+}
+
+// 原owner与resource启动共用此零写System-only核验；不创建owner、写WAL或迁移进程。
+func verifyTrustedControllerSystemBounds(id Identity, cap control.Uint64) error {
+	if cap == 0 {
+		return ErrUnknown
+	}
+	dev, ino, e := systemCgroupIdentity(uint64(id.CgroupDevice))
+	if e != nil || dev != uint64(id.SystemCgroupDevice) || ino != uint64(id.SystemCgroupInode) {
 		return ErrUnknown
 	}
 	node, e := splitReadNode(systemCgroup)
-	if e != nil || !node.RootControlled || node.MemoryMaxBytes != r.systemLimit() || node.SwapMaxBytes != 0 || !node.MemoryHighUnlimited {
+	if e != nil || !node.RootControlled || node.MemoryMaxBytes != cap || node.SwapMaxBytes != 0 || !node.MemoryHighUnlimited {
 		return ErrUnknown
 	}
 	return nil
 }
+
+type resourceServiceSystemReader interface {
+	readResourceServiceSystem(Identity, Limits) (*SystemEvidence, error)
+}
+
+func (k *linuxKernel) readResourceServiceSystem(id Identity, limits Limits) (*SystemEvidence, error) {
+	if k == nil || k.config.ExecutionModel != TrustedControllerExecutionModel || !k.config.SystemCgroup {
+		return nil, ErrUnknown
+	}
+	if err := verifyTrustedControllerSystemBounds(id, limits.SystemMemoryMaxBytes); err != nil {
+		return nil, err
+	}
+	return k.readSystemBound()
+}
+
 func (o *trustedControllerOwner) verifyLocked(ctx context.Context, s *lockedState, r *record) error {
 	if o == nil || ctx == nil || ctx.Err() != nil || s == nil || r == nil {
 		return ErrUnknown

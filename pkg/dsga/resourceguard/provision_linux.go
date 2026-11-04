@@ -292,11 +292,45 @@ func CheckSystemService(ctx context.Context, role string) error {
 	if err != nil {
 		return err
 	}
+	if role == "resource" {
+		return g.checkResourceServiceSystem(ctx, source)
+	}
 	view, err := g.InspectState(ctx)
 	if err != nil {
 		return err
 	}
 	return checkSystemServiceState(role, source, view)
+}
+
+// resource是承载Observe/Recover的传输服务；启动只核原System硬边界。
+// PG/normal额度Unknown不被清除，所有业务请求仍走原逐次权限与耐久门。
+func (g *Guard) checkResourceServiceSystem(ctx context.Context, source SourceConfig) error {
+	if ctx == nil || ctx.Err() != nil {
+		if ctx != nil {
+			return ctx.Err()
+		}
+		return ErrUnknown
+	}
+	if source.Validate() != nil || source.Config.ExecutionModel != TrustedControllerExecutionModel || !source.Config.SystemCgroup || source.Limits.SystemMemoryMaxBytes == 0 || g.config.ExecutionModel != source.Config.ExecutionModel || g.config.SystemCgroup != source.Config.SystemCgroup {
+		return ErrUnknown
+	}
+	return g.withRecord(ctx, func(r *record, _ *lockedState) error {
+		if r.Bootstrap == nil || !r.Bootstrap.Applied || !r.Bootstrap.SystemPlacementObserved || sameBootstrapSource(source, r.Bootstrap.Original) != nil {
+			return ErrUnknown
+		}
+		reader, ok := g.kernel.(resourceServiceSystemReader)
+		if !ok {
+			return ErrUnknown
+		}
+		system, err := reader.readResourceServiceSystem(r.Identity, r.Bootstrap.Original.Limits)
+		if err != nil {
+			return err
+		}
+		if err = (Evidence{Identity: r.Identity, System: system}).systemPlacementMatches(r.systemLimit()); err != nil {
+			return err
+		}
+		return ctx.Err()
+	})
 }
 
 func fixedRuntimeSystemRole(role string) bool {
