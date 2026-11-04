@@ -1,0 +1,49 @@
+{
+  "scope": "仅新增/修改的PG工作域normal扩容预算与真实数组域收缩保护，不是K8s端到端验收",
+  "base_AS_HEAD": "9f961f5a83b2ee3c18b4356a56db4bb8e2d45dca",
+  "owned_source_sha256": {
+    "pkg/dsga/resourceguard/normal_quota_consumer_linux.go": "fac5dbfac800cc69a5e89c9ed459566ad79308ba69b428bebfdc79a99d9899fe",
+    "pkg/dsga/resourceguard/normal_quota_pregrow_cap_linux_test.go": "8e190cc967412581629ac14dc9713130c4336a6c0b75ea85ba13f170703e9094",
+    "pkg/dsga/resourceguard/normal_split_quota_linux.go": "1d263d2172b72ea30cd56b6c37da14cc35ebb8342f30e0d211d2bc02b923e5e3"
+  },
+  "original_RED_directory": "/data/neon-build/validation/normal-pregrow-canonical-SDK-RED-GREEN-20261104T094835Z-9751f9",
+  "original_RED_really_executed_and_failed_correct_root": true,
+  "original_first_GREEN_fixture_panic_preserved": true,
+  "fixture_panic_happened_before_production_call": true,
+  "corrected_GREEN_directory": "/data/neon-build/validation/normal-pregrow-fixture-fixed-canonical-SDK-20261104T095422Z-bf9067",
+  "corrected_GREEN_result_sha256": "bd7f456c8e55dc7ed77c04ad1c109de01a8b92728565a40725334515d317d0b0",
+  "exact_GREEN_roots": [
+    "TestNormalQuotaPreGrowRetainsOriginalArrayCap",
+    "TestNormalSplitQuotaGrowRetainsBootstrapArrayCap",
+    "TestNormalQuotaShrinkStillRequiresFourArrayRelease"
+  ],
+  "skip": 0,
+  "race": 0,
+  "SDK_actual": {
+    "cpu.max": "300000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+    "memory.max": "3221225472",
+    "memory.peak": "979177472",
+    "memory.swap.max": "0"
+  },
+  "static_executables": {
+    "dsga-resource-guard": {
+      "bytes": 41189560,
+      "path": "/data/neon-build/validation/normal-pregrow-fixture-fixed-canonical-SDK-20261104T095422Z-bf9067/export/dsga-resource-guard",
+      "sha256": "8153d22cac323570416594829ce8e341fe52b93068d05e0320da6468b76d65e8",
+      "static_ELF64_amd64": true
+    },
+    "vm-builder": {
+      "bytes": 37200056,
+      "path": "/data/neon-build/validation/normal-pregrow-fixture-fixed-canonical-SDK-20261104T095422Z-bf9067/export/vm-builder",
+      "sha256": "4e42098675b8533b06c70b57a0abed2e3acb996bcd28c7e58839deeab370e758",
+      "static_ELF64_amd64": true
+    }
+  },
+  "elapsed_seconds": 83.053,
+  "original_worker_Wait_and_unit_terminal_exit": 0,
+  "normal_shrink_still_requires_four_array_release": true,
+  "PG_Guest_live_memory_Begin_sent": false,
+  "K8s_memory_actions_accepted": 0,
+  "production_acceptance": false
+}

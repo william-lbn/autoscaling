@@ -150,7 +150,7 @@ func (g *Guard) normalQuotaAuthorizeLocked(ctx context.Context, s *lockedState, 
 	if e := g.rejectArrayPendingLocked(s, r); e != nil {
 		return fail(2146, e)
 	}
-	arrays, generation, e := g.normalQuotaArraysLocked(ctx, s, r, v)
+	arrays, generation, e := g.normalQuotaArraysLocked(ctx, s, r, v, before)
 	if e != nil {
 		return fail(2150, e)
 	}
@@ -185,7 +185,7 @@ func (g *Guard) normalQuotaAuthorizeLocked(ctx context.Context, s *lockedState, 
 		if e := g.rejectArrayPendingLocked(state, record); e != nil {
 			return normalQuotaFailure(2581, e)
 		}
-		a, gen, e := g.normalQuotaArraysLocked(checkCtx, state, record, v)
+		a, gen, e := g.normalQuotaArraysLocked(checkCtx, state, record, v, before)
 		if e != nil || a != arrays || gen != generation {
 			return normalQuotaFailure(2585, errors.Join(ErrUnknown, e))
 		}
@@ -200,7 +200,10 @@ func (g *Guard) normalQuotaAuthorizeLocked(ctx context.Context, s *lockedState, 
 
 // 原resource flock→registry.mu；helper RPC同一resource锁串行。持续A硬cap与固定
 // reserve覆盖未来合法helper；原helper未唯一退出/旧代未知时不允许本交易。
-func (g *Guard) normalQuotaArraysLocked(ctx context.Context, state *lockedState, r *record, v NormalQuotaEnvelope) (control.Uint64, control.Uint64, error) {
+func (g *Guard) normalQuotaArraysLocked(ctx context.Context, state *lockedState, r *record, v NormalQuotaEnvelope, before NormalSplitTopologySnapshot) (control.Uint64, control.Uint64, error) {
+	if before.Arrays == nil {
+		return 0, 0, normalQuotaFailure(3200, ErrUnknown)
+	}
 	value, ok := arrayGuardBindings.Load(g)
 	if !ok {
 		return 0, 0, normalQuotaFailure(3201, ErrUnknown)
@@ -234,28 +237,37 @@ func (g *Guard) normalQuotaArraysLocked(ctx context.Context, state *lockedState,
 	if ids != current.identities {
 		return 0, 0, normalQuotaFailure(3230, ErrUnknown)
 	}
+	policy := o.pending.Source.Policy
+	if validateNativeArrayHelperPolicy(policy, true) != nil {
+		return 0, 0, normalQuotaFailure(3240, ErrUnknown)
+	}
+	target, err := normalQuotaArrayTarget(v, current.request, policy.ArrayHelperReserveBytes, before.Arrays.MemoryMaxBytes)
+	return target, control.Uint64(current.request.MappingGeneration), err
+}
+
+// 只在原锁内校验过同一 PG pin、数组映射和 policy 后计算；没有独立授权入口。
+func normalQuotaArrayTarget(v NormalQuotaEnvelope, request arrayRegistryWireRequest, reserve control.Uint64, originalArrays control.Uint64) (control.Uint64, error) {
+	if originalArrays == 0 || (v.Phase != "pre-grow" && v.Phase != "released-shrink") {
+		return 0, normalQuotaFailure(3241, ErrUnknown)
+	}
 	snapshot := v.PGFence.Observed
 	if v.PGResponse != nil {
 		snapshot = v.PGResponse.Observed
 	} else if v.PGShared != nil {
 		snapshot = v.PGShared.Observed
 	}
-	policy := o.pending.Source.Policy
-	if validateNativeArrayHelperPolicy(policy, true) != nil {
-		return 0, 0, normalQuotaFailure(3240, ErrUnknown)
-	}
-	total := uint64(policy.ArrayHelperReserveBytes)
+	total := uint64(reserve)
 	for i, a := range snapshot.Arrays {
-		span := current.request.Ranges[i]
+		span := request.Ranges[i]
 		n := uint64(v.PGRequest.TargetBuffers)
 		if n > math.MaxUint64/span.Element {
-			return 0, 0, normalQuotaFailure(3247, ErrUnknown)
+			return 0, normalQuotaFailure(3247, ErrUnknown)
 		}
 		upper := (n*span.Element + span.Page - 1) &^ (span.Page - 1)
 		if v.Phase == "released-shrink" {
 			actualUpper, err := normalQuotaReleasedArrayUpper(a, span, n)
 			if err != nil {
-				return 0, 0, normalQuotaFailure(3253, err)
+				return 0, normalQuotaFailure(3253, err)
 			}
 			upper = actualUpper
 		}
@@ -263,13 +275,18 @@ func (g *Guard) normalQuotaArraysLocked(ctx context.Context, state *lockedState,
 			upper = uint64(a.CommittedUpperBytes)
 		}
 		if upper > span.Mapped || total > math.MaxUint64-upper {
-			return 0, 0, normalQuotaFailure(3261, ErrUnknown)
+			return 0, normalQuotaFailure(3261, ErrUnknown)
 		}
 		total += upper
 	}
 	if total > math.MaxInt64-(64<<10-1) {
-		return 0, 0, normalQuotaFailure(3266, ErrUnknown)
+		return 0, normalQuotaFailure(3266, ErrUnknown)
 	}
 	target := (total + (64 << 10) - 1) &^ uint64((64<<10)-1)
-	return control.Uint64(target), control.Uint64(current.request.MappingGeneration), nil
+	// 扩容前只保留或增加同原数组域的硬限；bootstrap 的保守 cap 不等于实际数组占用。
+	// released-shrink 仍使用完整四数组释放证明计算出的更低目标，不走此保留分支。
+	if v.Phase == "pre-grow" && target < uint64(originalArrays) {
+		target = uint64(originalArrays)
+	}
+	return control.Uint64(target), nil
 }
