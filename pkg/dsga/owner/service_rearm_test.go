@@ -65,7 +65,7 @@ func (p *initialServicePG) serveRearmFixture(t *testing.T, w http.ResponseWriter
 			require.Equal(t, q, r.Request, "再关闭恢复必须先确认完整写前WAL")
 			require.Equal(t, journal.Unconfirmed, r.Phase)
 		} else {
-			r := c.Rearm
+			r := c.LatestRearm()
 			require.NotNil(t, r, "真实写前WAL必须先于rearm")
 			require.Equal(t, q, r.Request)
 			require.Equal(t, journal.Unconfirmed, r.Phase)

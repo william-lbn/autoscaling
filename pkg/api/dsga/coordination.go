@@ -76,9 +76,11 @@ const CoordinationContinueServiceClosure CoordinationAction = "continue_service_
 // 原生rearm独立于业务重新开放。新选择只引用最近关闭摘要；查询/重放只
 // 引用已持久rearm摘要，调用方不能提供deadline/epoch/新原生命令。
 const (
-	CoordinationRearmService        CoordinationAction = "rearm_service_lease"
-	CoordinationObserveServiceRearm CoordinationAction = "observe_service_rearm"
-	CoordinationReplayServiceRearm  CoordinationAction = "replay_service_rearm"
+	CoordinationRearmService CoordinationAction = "rearm_service_lease"
+	// 只续接仍关闭且最近原恢复已确认、随后再次过期的服务。
+	CoordinationContinueServiceRearm CoordinationAction = "continue_service_rearm"
+	CoordinationObserveServiceRearm  CoordinationAction = "observe_service_rearm"
+	CoordinationReplayServiceRearm   CoordinationAction = "replay_service_rearm"
 )
 
 // 受控新开放与原生期限恢复分开选择。管理端只指定完整原摘要，不能
@@ -129,7 +131,7 @@ func (c CoordinationCommand) Validate() error {
 		if c.Request == nil || c.Request.Validate() != nil || c.Request.Key.Instance != Instance(c.Instance) || c.Request.Key.IssuerEpoch > c.ExpectedOwnerEpoch || c.Key != nil || c.Selector != "" {
 			return fmt.Errorf("begin requires one complete request for the selected owner")
 		}
-	case CoordinationReplayInitial, CoordinationRepairHeld, CoordinationObserveHeld, CoordinationReplayServiceClosure, CoordinationContinueServiceClosure, CoordinationRearmService, CoordinationObserveServiceRearm, CoordinationReplayServiceRearm,
+	case CoordinationReplayInitial, CoordinationRepairHeld, CoordinationObserveHeld, CoordinationReplayServiceClosure, CoordinationContinueServiceClosure, CoordinationRearmService, CoordinationContinueServiceRearm, CoordinationObserveServiceRearm, CoordinationReplayServiceRearm,
 		CoordinationReopenService, CoordinationObserveServiceReopen, CoordinationReplayServiceReopen, CoordinationCloseServiceReopen, CoordinationReplayServiceReopenClosure, CoordinationContinueServiceReopenClosure, CoordinationCompleteServiceReopen, CoordinationRetryServiceReopen, CoordinationRearmServiceReopen, CoordinationObserveServiceReopenRearm, CoordinationReplayServiceReopenRearm:
 		decoded, err := hex.DecodeString(c.Selector)
 		if err != nil || len(decoded) != 32 || hex.EncodeToString(decoded) != c.Selector || c.Request != nil || c.Key != nil {

@@ -92,7 +92,7 @@ func (f *businessOwnerTransfer) takeoverClosure(t *testing.T, ctx context.Contex
 	c := before.State().ServiceClosure
 	require.NotNil(t, c)
 	_, pendingFinalization := before.State().PendingFinalizationGenerationForClosure()
-	require.True(t, c.Pending() || c.Reopen != nil || c.ResourceRecovery != nil || c.PGRecovery != nil || c.VMRecovery != nil || c.Reason == "active_pg_source_unconfirmed" || c.Reason == "finalize_source_unconfirmed" && pendingFinalization == nil, "接管前必须存在原关闭或独立恢复WAL")
+	require.True(t, c.Pending() || c.Rearm != nil || c.Reopen != nil || c.ResourceRecovery != nil || c.PGRecovery != nil || c.VMRecovery != nil || c.Reason == "active_pg_source_unconfirmed" || c.Reason == "finalize_source_unconfirmed" && pendingFinalization == nil, "接管前必须存在原关闭或独立恢复WAL")
 	nextRun := f.start(ctx)
 	select {
 	case <-nextRun.ready:
@@ -284,6 +284,12 @@ func verifyServiceClosureContinuation(t *testing.T, ctx context.Context, mode st
 		// 本组合此前只运行关闭协调器。恢复期限前必须让真实Runner轮次
 		// 确认新owner floor并发布来源，不能手改publication冒充已确认。
 		require.NoError(t, runner.Tick(ctx))
-		verifyServiceRearm(t, ctx, strings.TrimPrefix(mode, "closure-transfer-rearm-"), transfer.api, transfer.store, session, resources, worker, config, core, source, pg, root)
+		rearmMode := strings.TrimPrefix(mode, "closure-transfer-rearm-")
+		if strings.HasPrefix(rearmMode, "closed-only-") {
+			verifyServiceRearm(t, ctx, "normal", transfer.api, transfer.store, session, resources, worker, config, core, source, pg, root)
+			verifyClosedRearmContinuation(t, ctx, strings.TrimPrefix(rearmMode, "closed-only-"), transfer, session, resources, worker, config, core, source, pg, root, runner)
+		} else {
+			verifyServiceRearm(t, ctx, strings.TrimPrefix(mode, "closure-transfer-rearm-"), transfer.api, transfer.store, session, resources, worker, config, core, source, pg, root)
+		}
 	}
 }

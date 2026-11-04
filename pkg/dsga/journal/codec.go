@@ -54,7 +54,7 @@ func encode(model Model, budget int) (Model, string, error) {
 		default:
 			budget -= 4096
 		}
-	} else if model.ServiceClosure != nil && model.ServiceClosure.Rearm != nil && model.ServiceClosure.Rearm.Phase == Unconfirmed {
+	} else if model.ServiceClosure != nil && model.ServiceClosure.Rearm != nil && model.ServiceClosure.LatestRearm().Phase == Unconfirmed {
 		// rearm回执同时携带历史应用和独立当前快照，不能只给已持有的
 		// 原关闭增加4KiB。按完整HTTP观察上限另留空间，保证写前票据不会
 		// 消耗原回执/接管所需容量；不裁原预算、关闭或期限未知。

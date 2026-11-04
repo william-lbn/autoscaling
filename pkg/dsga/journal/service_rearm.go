@@ -35,6 +35,7 @@ func cloneLeaseResponse(original control.AdmissionLeaseResponse) control.Admissi
 
 func serviceClosureDigest(c ServiceClosure) (string, error) {
 	c.Rearm = nil
+	c.RearmContinuation = nil
 	// 后继开放不属于更早 rearm 选择时的关闭摘要，不能因此改写原摘要。
 	c.Reopen = nil
 	c.FormatVersion = 0
@@ -59,6 +60,9 @@ func serviceRearmHeldDigest(m Model) (string, error) {
 func (m Model) validateServiceRearm() error {
 	c := m.ServiceClosure
 	if c.Rearm == nil {
+		if c.RearmContinuation != nil {
+			return fmt.Errorf("closed rearm continuation lost original recovery")
+		}
 		if m.ClosureFormatVersion() == 19 {
 			return fmt.Errorf("rearm journal lost original recovery selection")
 		}
@@ -94,7 +98,7 @@ func (m Model) validateServiceRearm() error {
 	default:
 		return fmt.Errorf("invalid service rearm phase")
 	}
-	return nil
+	return m.validateServiceRearmContinuation()
 }
 
 func (m Model) StartServiceRearm(actor Owner, selector string, before control.AdmissionLeaseResponse) (Model, error) {
@@ -140,10 +144,10 @@ func (m Model) RecordServiceRearm(actor Owner, fact control.AdmissionRearmStatus
 	if err != nil {
 		return m, err
 	}
-	if next.ServiceClosure == nil || next.ServiceClosure.Rearm == nil || next.ServiceClosure.Rearm.Phase != Unconfirmed {
+	if next.ServiceClosure == nil || next.ServiceClosure.Rearm == nil || next.ServiceClosure.LatestRearm().Phase != Unconfirmed {
 		return m, fmt.Errorf("service rearm is not original unknown")
 	}
-	r := next.ServiceClosure.Rearm
+	r := next.ServiceClosure.LatestRearm()
 	fact.Current = cloneLeaseResponse(fact.Current)
 	r.Phase, r.RecordedSequence, r.Receipt = Settled, next.Sequence, &fact
 	return next, next.Validate()

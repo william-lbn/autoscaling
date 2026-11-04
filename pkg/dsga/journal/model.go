@@ -594,6 +594,7 @@ func (model Model) Clone() Model {
 		closure.VMRecovery = cloneServiceVMRecovery(closure.VMRecovery)
 		closure.ActualRecovery = cloneServiceActualRecovery(closure.ActualRecovery)
 		closure.RetainedRecovery = cloneServiceRetainedRecovery(closure.RetainedRecovery)
+		closure.RearmContinuation = cloneServiceRearmContinuation(closure.RearmContinuation)
 		if closure.Reopen != nil {
 			reopen := *closure.Reopen
 			if reopen.PriorClose != nil {

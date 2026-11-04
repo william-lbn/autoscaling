@@ -80,7 +80,7 @@ func (w *PGWorker) advanceServiceRearm(ctx context.Context, selector string, rep
 	if m.Owner != w.session.Actor() || m.ServiceClosure == nil || m.ServiceClosure.Rearm == nil {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
-	r := m.ServiceClosure.Rearm
+	r := m.ServiceClosure.LatestRearm()
 	if r.CommandSHA256 != selector || replay && r.Origin != m.Owner {
 		return pgexec.AwaitingFact, fmt.Errorf("rearm recovery differs from original owner or command")
 	}

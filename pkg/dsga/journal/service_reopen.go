@@ -98,13 +98,13 @@ func (m Model) validateServiceReopenRecord(archived bool) error {
 		closedAt = c.Continuation.RecordedSequence
 	}
 	if c.Rearm != nil {
-		closedAt = max(closedAt, c.Rearm.RecordedSequence)
+		closedAt = max(closedAt, c.LatestRearm().RecordedSequence)
 	}
 	if r.Attempt != 0 {
 		closedAt = r.PriorClosedAt
 	}
 	version := r.ClosureVersion
-	if m.ClosureFormatVersion() != 20 || !serviceReopenVersionAllowed(version) || (version == 19) != (c.Rearm != nil) || m.stableServiceRecovery() != nil || c.Pending() || c.Rearm != nil && c.Rearm.Phase != Settled || closureErr != nil || heldErr != nil || commandErr != nil || r.ClosureSHA256 != closureHash || r.HeldSHA256 != heldHash || r.CommandSHA256 != digest || r.Origin.Validate() != nil || r.Origin.Epoch > m.Owner.Epoch || r.Origin.Epoch == m.Owner.Epoch && r.Origin != m.Owner || r.StartedSequence <= closedAt || r.StartedSequence > m.Sequence {
+	if m.ClosureFormatVersion() != 20 || !serviceReopenVersionAllowed(version) || (version == 19) != (c.Rearm != nil) || m.stableServiceRecovery() != nil || c.Pending() || c.Rearm != nil && c.LatestRearm().Phase != Settled || closureErr != nil || heldErr != nil || commandErr != nil || r.ClosureSHA256 != closureHash || r.HeldSHA256 != heldHash || r.CommandSHA256 != digest || r.Origin.Validate() != nil || r.Origin.Epoch > m.Owner.Epoch || r.Origin.Epoch == m.Owner.Epoch && r.Origin != m.Owner || r.StartedSequence <= closedAt || r.StartedSequence > m.Sequence {
 		return fmt.Errorf("service reopen changed original stable closure, budget or owner")
 	}
 	b, q := r.Before, r.Request
@@ -118,7 +118,7 @@ func (m Model) validateServiceReopenRecord(archived bool) error {
 	if m.PGInstance == nil || b.ValidateFor(b.Request, *m.PGInstance) != nil || b.Request.Action != "observe" || !b.Armed || b.Expired || b.Observed.AdmissionOpen || b.LeaseEpoch > r.Origin.Epoch || b.Observed.IssuerFloorEpoch != r.Origin.Epoch || b.Request.IssuerEpoch != r.Origin.Epoch || b.Observed.CapacityGeneration != capacity || b.Observed.AdmissionRevision != closed.Revision || b.Observed.AdmissionRevision == control.Uint64(math.MaxUint64) || !q.Open || q.Instance != *m.PGInstance || q.IssuerEpoch != r.Origin.Epoch || q.Revision != b.Observed.AdmissionRevision+1 || q.ExpectedCapacityGeneration != b.Observed.CapacityGeneration || budgetErr != nil || q.BudgetCommitmentID != budgetID {
 		return fmt.Errorf("service reopen lacks exact live native lease and next admission context")
 	}
-	if c.Rearm != nil && (b.DeadlineNS < c.Rearm.Receipt.AppliedDeadlineNS || b.LeaseEpoch < c.Rearm.Origin.Epoch) {
+	if c.Rearm != nil && (b.DeadlineNS < c.LatestRearm().Receipt.AppliedDeadlineNS || b.LeaseEpoch < c.LatestRearm().Origin.Epoch) {
 		return fmt.Errorf("service reopen predates confirmed original rearm")
 	}
 	switch r.Phase {

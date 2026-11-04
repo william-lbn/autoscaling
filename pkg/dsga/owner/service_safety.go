@@ -181,8 +181,8 @@ func (w *PGWorker) advanceServiceSafetySelected(ctx context.Context, replay stri
 			progress, err := w.advanceServiceReopen(ctx)
 			return true, progress, err
 		}
-		if c.Rearm != nil && c.Rearm.Phase == journal.Unconfirmed && replay == "" {
-			progress, err := w.advanceServiceRearm(ctx, c.Rearm.CommandSHA256, false)
+		if c.Rearm != nil && c.LatestRearm().Phase == journal.Unconfirmed && replay == "" {
+			progress, err := w.advanceServiceRearm(ctx, c.LatestRearm().CommandSHA256, false)
 			return true, progress, err
 		}
 		origin, _, _, digest := c.Selection()

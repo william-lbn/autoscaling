@@ -46,6 +46,8 @@ type ServiceClosure struct {
 	OperationSHA256 string `json:"operation_sha256,omitempty"`
 	// 原生期限恢复与业务重开分域；该记录不能撤销本关闭或改变旧开放未知。
 	Rearm *ServiceRearm `json:"rearm,omitempty"`
+	// 原恢复完整保留；闭合期间再次过期只产生明确版本的新后继。
+	RearmContinuation *ServiceRearmContinuation `json:"rearm_continuation,omitempty"`
 	// 新开放有独立写前/回执，不改旧关闭或任何原开放未知；完成该原生
 	// 事实仍须后继来源复核及生命周期归档，本字段本身不解除关闭。
 	Reopen *ServiceReopen `json:"reopen,omitempty"`
