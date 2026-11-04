@@ -90,25 +90,26 @@ var (
 	AlpineImageShaAmd64 string
 	AlpineImageShaArm64 string
 
-	systemModeFlag            = flag.String("system-mode", "legacy", "Fixed System build selector: legacy | normal-split-v1 | normal-split-v3 (not runtime authorization)")
-	normalPlanFlag            = flag.String("normal-build-plan", "", "Explicit versioned fixed compute build plan; values are not logged")
-	normalNativeBirthVersion  = flag.Uint("normal-native-birth-version", 0, "Explicit build-only NativeBirth collector: 0 old behavior | 1 fixed GNU image")
-	normalNativePGMajor       = flag.Uint("normal-native-pg-major", 17, "Private image PG major selection: 17 default | 18 explicit; not collector ABI")
-	normalNativePostgresSHA   = flag.String("normal-native-postgres-sha256", "", "Original PostgreSQL ELF SHA256 from trusted build input; required for explicit PG18")
-	normalManifestRoot        = flag.String("normal-manifest-root", "", "Build-container-only final root inventory command")
-	normalPrepareConfigsOnly  = flag.Bool("normal-prepare-configs-only", false, "Private pre-base preparation of canonical controls2 configurations only; emits no System/Native inventory")
-	normalBaseDigest          = flag.String("normal-base-image-sha", "", "Original base image declaration for final inventory; not final image self hash")
-	normalOrdinaryControls    = flag.Uint("normal-ordinary-controls-version", 1, "Explicit fixed ordinary controls version: 1 or 2; version 2 requires normal-split-v3 and original package lock")
-	normalOrdinaryPackageLock = flag.String("normal-ordinary-package-lock", "", "Original Linux source/package build lock for explicit ordinary controls version 2")
-	srcImage                  = flag.String("src", "", `Docker image used as source for virtual machine disk image: --src=alpine:3.19`)
-	dstImage                  = flag.String("dst", "", `Docker image with resulting disk image: --dst=vm-alpine:3.19`)
-	size                      = flag.String("size", "1G", `Size for disk image: --size=1G`)
-	outFile                   = flag.String("file", "", `Save disk image as file: --file=vm-alpine.qcow2`)
-	buildArgs                 = MultiStringFlag("build-arg", "Docker build-args to use during the build (multiple allowed)")
-	specFile                  = flag.String("spec", "", `File containing additional customization: --spec=spec.yaml`)
-	quiet                     = flag.Bool("quiet", false, `Show less output from the docker build process`)
-	forcePull                 = flag.Bool("pull", false, `Pull src image even if already present locally`)
-	version                   = flag.Bool("version", false, `Print vm-builder version`)
+	systemModeFlag                  = flag.String("system-mode", "legacy", "Fixed System build selector: legacy | normal-split-v1 | normal-split-v3 (not runtime authorization)")
+	normalPlanFlag                  = flag.String("normal-build-plan", "", "Explicit versioned fixed compute build plan; values are not logged")
+	normalNativeBirthVersion        = flag.Uint("normal-native-birth-version", 0, "Explicit build-only NativeBirth collector: 0 old behavior | 1 fixed GNU image")
+	normalNativePGMajor             = flag.Uint("normal-native-pg-major", 17, "Private image PG major selection: 17 default | 18 explicit; not collector ABI")
+	normalNativePostgresSHA         = flag.String("normal-native-postgres-sha256", "", "Original PostgreSQL ELF SHA256 from trusted build input; required for explicit PG18")
+	normalManifestRoot              = flag.String("normal-manifest-root", "", "Build-container-only final root inventory command")
+	normalPrepareConfigsOnly        = flag.Bool("normal-prepare-configs-only", false, "Private pre-base preparation of canonical controls2 configurations only; emits no System/Native inventory")
+	normalPrepareTrustedComputeOnly = flag.Bool("normal-prepare-trusted-compute-only", false, "Explicit pre-base trusted-controller-v1 launcher refresh from the fixed build plan; no inventory or runtime authorization")
+	normalBaseDigest                = flag.String("normal-base-image-sha", "", "Original base image declaration for final inventory; not final image self hash")
+	normalOrdinaryControls          = flag.Uint("normal-ordinary-controls-version", 1, "Explicit fixed ordinary controls version: 1 or 2; version 2 requires normal-split-v3 and original package lock")
+	normalOrdinaryPackageLock       = flag.String("normal-ordinary-package-lock", "", "Original Linux source/package build lock for explicit ordinary controls version 2")
+	srcImage                        = flag.String("src", "", `Docker image used as source for virtual machine disk image: --src=alpine:3.19`)
+	dstImage                        = flag.String("dst", "", `Docker image with resulting disk image: --dst=vm-alpine:3.19`)
+	size                            = flag.String("size", "1G", `Size for disk image: --size=1G`)
+	outFile                         = flag.String("file", "", `Save disk image as file: --file=vm-alpine.qcow2`)
+	buildArgs                       = MultiStringFlag("build-arg", "Docker build-args to use during the build (multiple allowed)")
+	specFile                        = flag.String("spec", "", `File containing additional customization: --spec=spec.yaml`)
+	quiet                           = flag.Bool("quiet", false, `Show less output from the docker build process`)
+	forcePull                       = flag.Bool("pull", false, `Pull src image even if already present locally`)
+	version                         = flag.Bool("version", false, `Print vm-builder version`)
 
 	daemonImageFlag  = flag.String("daemon-image", "", `Specify the neonvm-daemon image: --daemon-image=neonvm-daemon:dev`)
 	alpineImageFlag  = flag.String("alpine-image", "alpine", `Specify the alpine image: --alpine-image=docker.io/library/alpine`)
@@ -186,6 +187,9 @@ type inittabCommand struct {
 
 func main() {
 	flag.Parse()
+	if *normalPrepareTrustedComputeOnly && (*normalManifestRoot == "" || *normalPrepareConfigsOnly) {
+		log.Fatal("trusted Compute preparation requires an explicit root and a separate action")
+	}
 	if *normalPrepareConfigsOnly && *normalManifestRoot == "" {
 		log.Fatal("configuration preparation requires explicit image root")
 	}
@@ -201,6 +205,15 @@ func main() {
 		plan, e := decodeNormalBuildPlan(raw)
 		if e != nil {
 			log.Fatal(e)
+		}
+		if *normalPrepareTrustedComputeOnly {
+			if *normalOrdinaryControls != 2 {
+				log.Fatal("trusted Compute preparation requires exact ordinary controls version 2")
+			}
+			if e := normalPrepareTrustedComputeLauncher(*normalManifestRoot, *systemModeFlag, uint32(*normalOrdinaryControls), plan, *normalBaseDigest); e != nil {
+				log.Fatal(e)
+			}
+			return
 		}
 		packageLock, e := readNormalOrdinaryV2BuildLock(*systemModeFlag, *normalOrdinaryControls, *normalOrdinaryPackageLock)
 		if e != nil {

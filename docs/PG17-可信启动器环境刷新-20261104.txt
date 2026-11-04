@@ -1,0 +1,5 @@
+问题：当前trusted-controller-v1 Guest的plan已含OTEL_SDK_DISABLED=true，但prepare-configs-only明确不改vmstart。生产compute_ctl经静态vmstart的env -i启动，故仅更新plan/System不能证明环境进入进程；当前f146运行仍有OTEL导出连接拒绝。
+修改：增加独立且显式的--normal-prepare-trusted-compute-only，仅在pre-base、normal-split-v3、精确controls=2和trusted-controller-v1下，复用原生成器原子刷新单个root-owned/0755/单链接vmstart。保原configs-only、ordinary、ELF、Root、PG、Kernel行为与安全门。写前完整原计划解码；拒绝错mode/base/不安全目标；精确uint检查在cast前，避免4294967298截断为2。
+实测：701ed6原三根12PASS/race；独审发现uint截断，真实旧CLI已复现RED。2bc771追加真实CLI五例（2/birth0或1成功，1及4294967298拒绝且原文件不变），11710项原源码检查通过、2CPU/3Gi/swap0；组合小票6f36e44780346ba13b452da96fe905d5fce454a2260b4e16cf283de2525954b6，独审a4e0794890e3b4ac1857af2855274c03d2d335a0923232fc2ce43db8aa023793。未重复未改三根。最终Builder bbd28d0f938a81036e497e4ce75257c530c2fc70e86a4f693e971c39a2e051a1。
+边界：当前f146未重包/部署，运行效果尚未验收；未来以f146增量只允许vmstart/System/Native三FS变化，plan/broker/所有ELF及其余文件身份保持，需增加盘内vmstart实际读回。此提交不代表Grow/normal降限/PG18/端到端通过，不变PG17/PG18 gitlink或发行锁。
+日志与产物：/data/neon-build/validation/trusted-launcher-exact-controls-followup-20261104T161539Z-2bc771/；大包/私日志不入库。
