@@ -1,0 +1,5 @@
+问题：原Agent PG循环Observe只在tick.Err为空时更新时间，真实数组授权/资源等错误未记录，生产动作可能长期unconfirmed却无固定错误提示。
+修改：仅原串行Observe附加固定码/固定progress日志，连续同码同progress只记一次，nil错误恢复时清状态并记恢复。复用有界固定码解包分类器，补数组SDK已存在错误码；不格式化任意Error/URL/body/token，未知progress映射unclassified，不触碰原tick.Err/错误链/MayHaveExecuted、WAL、预算、期限、重试、取消或选主语义。
+验证：原两根callback测试+新两根tick诊断，共4roots真实PASS/race，无skip；验证未知保留、重复抑制、恢复后再报、恶意Error不被格式化/任意progress不入日志。cd166准确archive仅2源覆盖，11711项source检查；SDK先完整检查原输入再gofmt，实际测试/ELF与export/formatted字节相同，Root已同步这两源。
+首次ceb任务测试层已运行，正式build误用非main目录./autoscaler-agent失败并完整保留。edd任务修为原生产./autoscaler-agent/cmd与CGO_ENABLED=0，复用未改测试cache层并实际解析4PASS，未声称重测；44.041s，实际3CPU/3Gi/swap0。
+收据：/data/neon-build/validation/Agent-fixed-tick-mainpath-corrected-20261104T170055Z-edd052/result.json SHA17d65b39e679abca8003a7f76ee2b6b014f048be0b4291897c74ab2ceda7c1e1；Agent ELF49b0c1d64214df3b68502104548feaea55525e2ab9bdb125a12f1b8cdea8fbce。当前生产Agent001未更新，此提交不代表Gateway已部署、PG17内存动作通过或生产认证。大日志/产物留/data，后续按准确digest构图、预载并以实际日志验证。

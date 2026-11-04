@@ -15,6 +15,8 @@ import (
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/api"
 	"github.com/neondatabase/autoscaling/pkg/dsga/credential"
+	"github.com/neondatabase/autoscaling/pkg/dsga/owner"
+	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 	"github.com/neondatabase/autoscaling/pkg/util"
 )
@@ -86,4 +88,32 @@ func TestDSGAOwnerCallbackDiagnosticIsBoundedAndRedacted(t *testing.T) {
 	}
 	require.Equal(t, "issuer_response_rejected", credentialErr.Code)
 	require.True(t, resourceErr.MayHaveExecuted, "diagnostics cannot erase execution uncertainty")
+}
+
+func TestDSGATickDiagnosticReportsUnknownWithoutChangingIt(t *testing.T) {
+	core, observed := observer.New(zap.InfoLevel)
+	logger := zap.New(core)
+	var d dsgaTickDiagnostic
+	original := &resourceguard.ClientError{Code: "array_response_unconfirmed", MayHaveExecuted: true}
+	tick := owner.Tick{Progress: pgexec.AwaitingFact, Err: original}
+	d.observe(logger, tick)
+	d.observe(logger, tick)
+	require.Len(t, observed.All(), 1)
+	require.Equal(t, map[string]interface{}{"stage": "pg_reconcile", "progress": "awaiting_fact", "code": "resource_array_response_unconfirmed"}, observed.All()[0].ContextMap())
+	require.Same(t, original, tick.Err)
+	require.True(t, original.MayHaveExecuted)
+	d.observe(logger, owner.Tick{Progress: pgexec.Recorded})
+	require.Len(t, observed.All(), 2)
+	require.Equal(t, "DSGA reconciliation observation recovered", observed.All()[1].Message)
+	d.observe(logger, tick)
+	require.Len(t, observed.All(), 3)
+	require.True(t, original.MayHaveExecuted)
+}
+func TestDSGATickDiagnosticNeverFormatsArbitraryFields(t *testing.T) {
+	core, observed := observer.New(zap.WarnLevel)
+	var d dsgaTickDiagnostic
+	require.NotPanics(t, func() {
+		d.observe(zap.New(core), owner.Tick{Progress: pgexec.Progress("Bearer private"), Err: &dsgaCyclicFailure{}})
+	})
+	require.Equal(t, map[string]interface{}{"stage": "pg_reconcile", "progress": "unclassified", "code": "unclassified"}, observed.All()[0].ContextMap())
 }

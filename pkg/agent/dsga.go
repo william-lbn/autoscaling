@@ -181,7 +181,9 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		// 显式配置自动策略时仅空闲轮次生成持久Begin；不伪造外部回执或
 		// 重发未知PG/Root/VM POST，也不另开legacy执行器绕过领域。
 		stage = "pg_run"
+		var diagnostic dsgaTickDiagnostic
 		return worker.Run(ownerCtx, owner.PGLoopOptions{PollInterval: time.Duration(config.PollIntervalSeconds) * time.Second, Control: endpoint, Wake: updated.Recv(), Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, Observe: func(tick owner.Tick) {
+			diagnostic.observe(logger, tick)
 			if tick.Err == nil {
 				r.status.update(r.global, func(stat podStatus) podStatus { now := time.Now(); stat.dsgaLastSuccessfulCheck = &now; return stat })
 			}
@@ -255,7 +257,7 @@ func dsgaOwnerFailureCode(err error) string {
 				return "resource_other"
 			}
 			switch typed.Code {
-			case "invalid_configuration", "credential_unavailable", "owner_unavailable", "context_cancelled", "transport_unconfirmed", "response_unconfirmed", "guest_discovery_unconfirmed", "resource_state_unconfirmed", "guest_identity_changed", "postmaster_birth_unconfirmed", "fence_unconfirmed":
+			case "invalid_configuration", "credential_unavailable", "owner_unavailable", "context_cancelled", "transport_unconfirmed", "response_unconfirmed", "guest_discovery_unconfirmed", "resource_state_unconfirmed", "guest_identity_changed", "postmaster_birth_unconfirmed", "fence_unconfirmed", "array_original_binding_changed", "array_binding_unavailable", "array_action_unavailable", "original_pending", "invalid_array_body", "array_credential_unavailable", "array_transport_unconfirmed", "array_response_unconfirmed":
 				return "resource_" + typed.Code
 			default:
 				return "resource_other"
@@ -274,4 +276,30 @@ func dsgaOwnerFailureCode(err error) string {
 		}
 	}
 	return "unclassified"
+}
+
+// dsgaTickDiagnostic只观察原Run串行回调，不改变错误、进度、WAL或重放。
+// 同一固定码/进度连续出现只记一次，恢复后重新计；不格式化外部Error正文。
+type dsgaTickDiagnostic struct{ code, progress string }
+
+func (d *dsgaTickDiagnostic) observe(logger *zap.Logger, tick owner.Tick) {
+	if tick.Err == nil {
+		if d.code != "" {
+			logger.Info("DSGA reconciliation observation recovered", zap.String("previous_code", d.code))
+		}
+		d.code, d.progress = "", ""
+		return
+	}
+	code := dsgaOwnerFailureCode(tick.Err)
+	progress := string(tick.Progress)
+	switch progress {
+	case "idle", "external_step", "awaiting_fact", "recorded", "replayed", "reconciled":
+	default:
+		progress = "unclassified"
+	}
+	if d.code == code && d.progress == progress {
+		return
+	}
+	logger.Warn("DSGA reconciliation awaiting confirmed facts", zap.String("stage", "pg_reconcile"), zap.String("progress", progress), zap.String("code", code))
+	d.code, d.progress = code, progress
 }
