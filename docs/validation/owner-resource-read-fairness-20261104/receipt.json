@@ -1,0 +1,30 @@
+{
+  "scope": "只修复正式PG Owner的resource_state只读管理请求排队，不代表PG内存端到端通过",
+  "base_AS_HEAD": "0264c09d78e4338de95a101e6fe872614d709c44",
+  "owned_GREEN_SHA256": {
+    "pkg/dsga/owner/control.go": "54a20609fc5b7e3e5a3861267fef67bed3b8f6f8b93de195f2a9473520e366b0",
+    "pkg/dsga/owner/pg.go": "f2491e236ef04c6b29b7064a9984dc94b0c21f8e30a9a78cb738f137df7d2738",
+    "pkg/dsga/owner/resource_read_fairness_test.go": "6793dd9e80a56776df173e9b7769c46b942eedf1a7f6875ef60b6fab4b78a41a"
+  },
+  "actual_test_directory": "/data/neon-build/validation/owner-resource-read-fairness-no-frontend-20261104T101841Z-031986",
+  "actual_result_SHA256": "fc21698720b706c5a7e1fafd51659da66990d8bd88235f74c7922783982474af",
+  "RED_definition": "original scheduling order plus equivalent read lane/private nil test barrier; not the unmodified old ELF",
+  "RED_expected_failure": true,
+  "GREEN_unique_roots": 4,
+  "GREEN_PASS_events": 7,
+  "GREEN_skip": 0,
+  "GREEN_race": 0,
+  "original_wait_and_unit_terminal_exit": 0,
+  "Agent_ELF": {
+    "path": "/data/neon-build/validation/owner-resource-read-fairness-no-frontend-20261104T101841Z-031986/export/agent",
+    "SHA256": "3541af47bb389f71d90c5e89da6a139a0ad1f209251af0ff8c0ab666a702938b",
+    "bytes": 60141752
+  },
+  "elapsed_seconds": 108.63909709401196,
+  "independent_source_review_SHA256": "0f4380b86013dcae058c7706ebdb21f644a7947986d47bbb7c6290ceeafff98e",
+  "real_queue_evidence_SHA256": "58e0735afb60c65037b089a1524060a6089486232753b7bb2bb7667fbb4edcd1",
+  "first_tool_frontend_timeout_preserved": true,
+  "image_or_deploy": false,
+  "memory_Begin_sent": false,
+  "memory_core_accepted": 0
+}

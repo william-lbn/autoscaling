@@ -644,6 +644,8 @@ type PGLoopOptions struct {
 	CapacityAdmissionRecovery <-chan control.Key
 	// Observe供状态/指标使用，必须有界返回，不打印凭据或误把Recorded当VM完成。
 	Observe func(Tick)
+	// 仅同包直接测试的同步屏障；生产为nil，不能提供事实、许可或替换SDK。
+	beforePeriodicAdvance func(context.Context)
 }
 
 // Run实际执行持久PG协调循环，长期保留同一Client。网络/写前或写后结果未知时
@@ -664,6 +666,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		defer worker.resourceOwner.running.Store(false)
 	}
 	var controls <-chan controlCall
+	var resourceReads <-chan controlCall
 	if options.Control != nil {
 		if options.Control.worker != worker {
 			return fmt.Errorf("control endpoint belongs to another PG worker")
@@ -672,6 +675,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			return fmt.Errorf("control endpoint cannot be reused")
 		}
 		controls = options.Control.calls
+		resourceReads = options.Control.readCalls
 		defer close(options.Control.done)
 	}
 	callCtx, cancel := worker.session.coupledContext(ctx)
@@ -730,6 +734,8 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	var unchangedAdmission *control.Key
 	var capacityAdmission *control.Key
 	var pendingControl *controlCall
+	// 一次完整成功周期至多交付一个纯读credit；不累积，写调用后也须重新审计。
+	readCredit := false
 	wake, replays, admissionReplays, resourceReplays := options.Wake, options.Replay, options.AdmissionReplay, options.ResourceReplay
 	vmReplays := options.VMReplay
 	prepareReplays := options.PrepareReplay
@@ -802,7 +808,22 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			cancelControl()
 			pendingControl.result <- controlReply{value: value, err: controlErr}
 			pendingControl = nil
+			readCredit = false
 			continue
+		}
+		if readCredit && options.beforePeriodicAdvance != nil {
+			options.beforePeriodicAdvance(callCtx)
+		}
+		// 原完整周期成功后只优先交付一个纯资源读。消费后下一轮仍须Advance及到期续租，
+		// 不从管理读取推导业务资格，也不把Begin/写动作移到此分支。
+		if readCredit {
+			select {
+			case call := <-resourceReads:
+				pendingControl = &call
+				readCredit = false
+				continue
+			default:
+			}
 		}
 		var progress pgexec.Progress
 		var err error
@@ -909,9 +930,12 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 				return err
 			}
 		}
+		readCredit = err == nil
 		select {
 		case <-callCtx.Done():
 			return callCtx.Err()
+		case call := <-resourceReads:
+			pendingControl = &call
 		case call := <-controls:
 			pendingControl = &call
 		case <-ticker.C:

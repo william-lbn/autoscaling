@@ -44,25 +44,27 @@ type controlReply struct {
 	err   error
 }
 
-// ControlEndpoint是当前PG或启动Root恢复唯一串行循环的入口。请求通道无缓冲，不另建
-// 后台执行队列；HTTP结束只取消该次调用，已持久的原意图/未知效果继续由WAL保存。
+// ControlEndpoint是当前PG或启动Root恢复唯一串行循环的入口。写请求仍无缓冲；
+// 正式PG的纯resource_state只有一个私有待处理槽，不另建执行者。HTTP结束只取消
+// 该次调用，已持久的原意图/未知效果继续由WAL保存。
 // 端点不跨Session复用，旧owner退出后其Done关闭，旧注册不可投递到新owner。
 type ControlEndpoint struct {
 	worker *PGWorker
 	// 启动恢复没有PG客户端；完整VM/Compute及0 boot是独立的只Root绑定。
 	// 两种端点共用投递/取消边界，但从不同时运行或复用一次端点跨阶段。
-	resource *ResourceWorker
-	session  *Session
-	instance control.Instance
-	epoch    control.Uint64
-	calls    chan controlCall
-	done     chan struct{}
-	started  atomic.Bool
+	resource  *ResourceWorker
+	session   *Session
+	instance  control.Instance
+	epoch     control.Uint64
+	calls     chan controlCall
+	readCalls chan controlCall
+	done      chan struct{}
+	started   atomic.Bool
 }
 
 func (worker *PGWorker) NewControlEndpoint() *ControlEndpoint {
 	instance, epoch := worker.Binding()
-	return &ControlEndpoint{worker: worker, resource: nil, session: worker.session, instance: instance, epoch: epoch, calls: make(chan controlCall), done: make(chan struct{}), started: atomic.Bool{}}
+	return &ControlEndpoint{worker: worker, resource: nil, session: worker.session, instance: instance, epoch: epoch, calls: make(chan controlCall), readCalls: make(chan controlCall, 1), done: make(chan struct{}), started: atomic.Bool{}}
 }
 
 func (e *ControlEndpoint) Binding() (control.Instance, control.Uint64) { return e.instance, e.epoch }
@@ -81,6 +83,11 @@ func (e *ControlEndpoint) Submit(ctx context.Context, command control.Coordinati
 		return empty, err
 	}
 	call := controlCall{ctx: ctx, command: command.Clone(), result: make(chan controlReply, 1)}
+	calls := e.calls
+	// 只分离纯观察。启动恢复、Begin和所有可能写入的选择沿原无缓冲入口。
+	if e.worker != nil && command.Action == control.CoordinationResourceState {
+		calls = e.readCalls
+	}
 	select {
 	case <-ctx.Done():
 		return empty, ctx.Err()
@@ -88,7 +95,7 @@ func (e *ControlEndpoint) Submit(ctx context.Context, command control.Coordinati
 		return empty, ErrControlUnavailable
 	case <-e.session.Context().Done():
 		return empty, ErrLeadershipLost
-	case e.calls <- call:
+	case calls <- call:
 	}
 	select {
 	case reply := <-call.result:
