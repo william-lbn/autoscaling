@@ -64,7 +64,13 @@ func (s *Service) ObserveRetiredOrdinary(ctx context.Context, node string, expec
 	if err := checkProfile(snapshot, d.config); err != nil {
 		return nil, err
 	}
-	if err := d.store.ObserveRetiredOrdinary(ctx, snapshot, pod); err != nil {
+	retired, intentErr := hostguard.InspectRetirement(pod)
+	if intentErr == nil && retired.ProtocolVersion == 2 {
+		err = d.store.ObserveRetiredOrdinaryWithSource(ctx, snapshot, pod)
+	} else {
+		err = d.store.ObserveRetiredOrdinary(ctx, snapshot, pod)
+	}
+	if err != nil {
 		return nil, err
 	}
 	return pod.DeepCopy(), nil

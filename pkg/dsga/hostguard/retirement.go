@@ -27,15 +27,16 @@ const (
 // 原Pod终态不可回到可运行态，v5旧读者拒绝，所有v5容量写者重新GET原Pod；
 // 因此结清后可删除行而无需永久增长Node墓碑。Pod404本身从不触发本结清。
 type Retirement struct {
-	ProtocolVersion uint32            `json:"protocol_version"`
-	Binding         Binding           `json:"binding"`
-	Origin          string            `json:"origin"`
-	BeforeSequence  control.Uint64    `json:"before_sequence"`
-	Placement       Placement         `json:"placement"`
-	TerminalSHA256  string            `json:"terminal_sha256"`
-	RunnerBirth     *budget.ObjectRef `json:"runner_birth"`
-	RunnerExit      *budget.ObjectRef `json:"runner_exit"`
-	RunnerExitSHA   string            `json:"runner_exit_sha256"`
+	ProtocolVersion    uint32                 `json:"protocol_version"`
+	Binding            Binding                `json:"binding"`
+	Origin             string                 `json:"origin"`
+	BeforeSequence     control.Uint64         `json:"before_sequence"`
+	Placement          Placement              `json:"placement"`
+	TerminalSHA256     string                 `json:"terminal_sha256"`
+	RunnerBirth        *budget.ObjectRef      `json:"runner_birth"`
+	RunnerExit         *budget.ObjectRef      `json:"runner_exit"`
+	RunnerExitSHA      string                 `json:"runner_exit_sha256"`
+	OrdinaryStopSource *OrdinaryStopReference `json:"ordinary_stop_source,omitempty"`
 }
 
 func retirementDigest(s string) bool {
@@ -44,11 +45,20 @@ func retirementDigest(s string) bool {
 }
 
 func (r Retirement) Validate() error {
-	if r.ProtocolVersion != 1 || r.Binding.Validate() != nil || control.ValidateIncarnation(r.Origin) != nil || r.BeforeSequence == 0 || !retirementDigest(r.TerminalSHA256) {
+	if (r.ProtocolVersion != 1 && r.ProtocolVersion != 2) || r.Binding.Validate() != nil || control.ValidateIncarnation(r.Origin) != nil || r.BeforeSequence == 0 || !retirementDigest(r.TerminalSHA256) {
 		return fmt.Errorf("invalid original Pod retirement")
 	}
 	if _, err := r.Placement.Bytes(); err != nil {
 		return err
+	}
+	if r.ProtocolVersion == 2 {
+		if !ordinaryPlacement(r.Placement) || r.RunnerBirth != nil || r.RunnerExit != nil || r.RunnerExitSHA != "" || r.OrdinaryStopSource == nil || r.OrdinaryStopSource.Validate() != nil || r.OrdinaryStopSource.Claim.Name != OrdinaryStopClaimName(r.Placement.PodUID) || r.TerminalSHA256 != r.OrdinaryStopSource.SHA256 {
+			return fmt.Errorf("ordinary retirement requires original immutable Node stop source")
+		}
+		return nil
+	}
+	if r.OrdinaryStopSource != nil {
+		return fmt.Errorf("v1 retirement cannot adopt ordinary stop source")
 	}
 	if r.Placement.Managed {
 		if r.RunnerBirth == nil || r.RunnerBirth.Validate() != nil || r.RunnerExit == nil || r.RunnerExit.Validate() != nil || !retirementDigest(r.RunnerExitSHA) {
@@ -133,9 +143,17 @@ func retirementPod(pod *core.Pod, r Retirement) error {
 	if r.Validate() != nil || pod == nil || pod.Name != p.PodName || pod.Namespace != p.Namespace || string(pod.UID) != p.PodUID || pod.Spec.NodeName != r.Binding.NodeName {
 		return fmt.Errorf("original retiring Pod identity differs")
 	}
-	hash, err := TerminalPodDigest(pod)
-	if err != nil || hash != r.TerminalSHA256 {
-		return fmt.Errorf("original Pod terminal proof changed")
+	if r.ProtocolVersion == 2 {
+		ref, err := OrdinaryStopReferenceForPod(pod)
+		spec, specErr := OrdinaryPodSpecSHA(pod)
+		if !ordinaryPod(pod) || err != nil || ref != *r.OrdinaryStopSource || specErr != nil || spec != ref.SpecSHA256 {
+			return fmt.Errorf("ordinary original terminal Pod/source intent changed")
+		}
+	} else {
+		hash, err := TerminalPodDigest(pod)
+		if err != nil || hash != r.TerminalSHA256 {
+			return fmt.Errorf("original Pod terminal proof changed")
+		}
 	}
 	if p.VMUID != "" {
 		owner := metav1.GetControllerOf(pod)
@@ -175,6 +193,11 @@ func (s *Store) Retire(ctx context.Context, snapshot *Snapshot, r Retirement) (*
 	if err != nil || string(got) != string(wanted) || !slices.Contains(pod.Finalizers, PodProtectionFinalizer) {
 		return nil, fmt.Errorf("original protected Pod retirement intent changed")
 	}
+	if r.ProtocolVersion == 2 {
+		if _, err := s.ReadOrdinaryStop(ctx, snapshot, pod, r.Placement, r.OrdinaryStopSource); err != nil {
+			return nil, err
+		}
+	}
 	row, err := snapshot.model.Placement(r.Placement.PodUID)
 	if err != nil {
 		if snapshot.model.ProtocolVersion < 5 || snapshot.model.Sequence <= r.BeforeSequence {
@@ -206,6 +229,12 @@ func InspectRetiredPod(node *core.Node, pod *core.Pod) error {
 // 该锚点在移除Pod保护前持久，解决Pod GC先于Controller重读的恢复窗口；
 // 不能从远程请求或任意annotation自报构造释放许可。
 func InspectRetirementCompletion(node *core.Node, r Retirement) error {
+	if r.ProtocolVersion == 2 {
+		return fmt.Errorf("ordinary retirement completion requires original immutable source reread")
+	}
+	return inspectRetirementCompletion(node, r)
+}
+func inspectRetirementCompletion(node *core.Node, r Retirement) error {
 	if r.Validate() != nil {
 		return fmt.Errorf("original retirement completion is malformed")
 	}

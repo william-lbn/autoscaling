@@ -218,10 +218,7 @@ func (s *Service) retirePod(ctx context.Context, d domain, expected *core.Pod) e
 	if pod.UID != expected.UID || pod.Spec.NodeName != d.config.Binding.NodeName || pod.Spec.SchedulerName != expected.Spec.SchedulerName || foreignScheduler {
 		return fmt.Errorf("original terminal Pod placement changed")
 	}
-	hash, err := hostguard.TerminalPodDigest(pod)
-	if err != nil {
-		return err
-	}
+	hash, terminalErr := hostguard.TerminalPodDigest(pod)
 	r, err := hostguard.InspectRetirement(pod)
 	if pod.Annotations[hostguard.RetirementAnnotation] == "" {
 		p, loadErr := n.State().Placement(string(pod.UID))
@@ -229,6 +226,14 @@ func (s *Service) retirePod(ctx context.Context, d domain, expected *core.Pod) e
 			return loadErr
 		}
 		r = hostguard.Retirement{ProtocolVersion: 1, Binding: d.config.Binding, Origin: n.State().Origin, BeforeSequence: n.State().Sequence, Placement: p, TerminalSHA256: hash, RunnerBirth: nil, RunnerExit: nil, RunnerExitSHA: ""}
+		if terminalErr != nil {
+			// 只有普通Pod可选择受信Node停止来源；缺来源仍完整保留Unknown占账。
+			ref, sourceErr := d.store.ReadOrdinaryStop(ctx, n, pod, p, nil)
+			if sourceErr != nil {
+				return sourceErr
+			}
+			r.ProtocolVersion, r.TerminalSHA256, r.OrdinaryStopSource = 2, ref.SHA256, &ref
+		}
 		if p.Managed {
 			birth, exit, digest, sourceErr := s.terminalRunner(ctx, d, pod, p, nil)
 			if sourceErr != nil {
@@ -250,7 +255,7 @@ func (s *Service) retirePod(ctx context.Context, d domain, expected *core.Pod) e
 		return fmt.Errorf("retirement belongs to another original Node domain")
 	}
 	if !slices.Contains(pod.Finalizers, hostguard.PodProtectionFinalizer) {
-		return hostguard.InspectRetiredPod(n.Node(), pod)
+		return d.store.InspectRetiredPodWithSource(ctx, n, pod)
 	}
 	if r.Placement.Managed {
 		if _, _, _, err := s.terminalRunner(ctx, d, pod, r.Placement, &r); err != nil {
@@ -274,7 +279,7 @@ func (s *Service) retirePod(ctx context.Context, d domain, expected *core.Pod) e
 	if err != nil {
 		return err
 	}
-	if err := hostguard.InspectRetiredPod(confirmed.Node(), pod); err != nil {
+	if err := d.store.InspectRetiredPodWithSource(ctx, confirmed, pod); err != nil {
 		return err
 	}
 	if r.Placement.Managed {

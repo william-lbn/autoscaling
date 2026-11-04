@@ -131,7 +131,7 @@ func (s *Service) reconcileWork(ctx context.Context, d domain, snapshot *hostgua
 		attempted++
 		var err error
 		if pod.Status.Phase == core.PodSucceeded || pod.Status.Phase == core.PodFailed {
-			if _, terminalErr := hostguard.TerminalPodDigest(&pod); terminalErr != nil {
+			if _, terminalErr := hostguard.TerminalPodDigest(&pod); terminalErr != nil && pod.Annotations[hostguard.OrdinaryStopSourceAnnotation] == "" {
 				// 缺退出证明只保留/补全完整ordinary计费，不写退休或释放。
 				_, _, err = s.observeRetainedOrdinary(ctx, d, &pod)
 			} else {

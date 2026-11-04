@@ -78,6 +78,10 @@ func retiredRunnerExitFixture(t *testing.T, exitMode string) (*Service, *dsgates
 		vm.Spec.CpuScalingMode, vm.Spec.ServiceAccountName = &mode, "original-runner"
 		vm.Status = *new(vmv1.VirtualMachineStatus)
 		pod = f.Pods["testing/runner"]
+		// 原fixture也须覆盖既有完整VM上限+固定Host开销，不能用16Mi伪小floor。
+		hardLimit := vm.Spec.Guest.MemorySlotSize.DeepCopy()
+		hardLimit.Set(vm.Spec.Guest.MemorySlotSize.Value()*int64(vm.Spec.Guest.MemorySlots.Max) + int64(n.Profile.VMOverheadBytes))
+		pod.Spec.Containers[0].Resources.Limits[core.ResourceMemory] = hardLimit
 		pod.Spec.RestartPolicy, pod.Spec.ServiceAccountName, pod.Spec.AutomountServiceAccountToken = core.RestartPolicyNever, "original-runner", &mount
 		pod.Spec.Containers[0].Name = "neonvm-runner"
 		pod.Status.Phase = core.PodRunning
@@ -242,18 +246,18 @@ func verifyNeverStartedRunnerRetirement(t *testing.T, s *Service, f *dsgatest.Sc
 }
 
 func TestSchedulerWholePodRetirementRecoversOriginalUnknownWrites(t *testing.T) {
-	for _, what := range []string{"complete", "node-reply", "pod-intent-reply", "vm-anchor-reply", "node-v6"} {
+	for _, what := range []string{"complete", "node-reply", "pod-intent-reply", "vm-anchor-reply", "current-version-barrier"} {
 		t.Run(what, func(t *testing.T) {
 			s, f, n, _, pod := retiredRunnerFixture(t)
 			ctx := context.Background()
 			d := s.domains[n.Binding.NodeName]
-			if what == "node-v6" {
+			if what == "current-version-barrier" {
 				// 已使用关闭Through语义的Node不能在另一个Pod退出时被降级。
 				// 这是既有Node版本输入夹具；真正的Through生产由owner组合覆盖。
 				f.Mutate(func(f *dsgatest.SchedulerAPI) {
 					var model hostguard.Model
 					require.NoError(t, json.Unmarshal([]byte(f.Node.Annotations[hostguard.LedgerAnnotation]), &model))
-					model.ProtocolVersion = 6
+					model.ProtocolVersion = max(model.ProtocolVersion, 6)
 					raw, err := json.Marshal(model)
 					require.NoError(t, err)
 					f.Node.Annotations[hostguard.LedgerAnnotation] = string(raw)
@@ -267,7 +271,7 @@ func TestSchedulerWholePodRetirementRecoversOriginalUnknownWrites(t *testing.T) 
 			// 原Guest即使只启动1GiB，3GiB在途峰值仍可保留；停止后统一
 			// 结清本Pod所有峰值，不能要求未知旧resize先被伪造成成功。
 			request := control.Request{ProtocolVersion: 1, Key: control.Key{Instance: control.Instance{VMUID: original.VMUID, ComputeInstanceID: "compute-instance", PGBootID: 1}, IssuerEpoch: 1, Revision: 1, OperationID: control.OperationID{High: 1, Low: 1}}, Kind: control.Grow, ExpectedCapacityGeneration: 1, TargetBuffers: 128, TargetVMMemoryBytes: 3 << 30, BudgetCommitmentID: "original-budget", DeadlineUnixMillis: control.Uint64(time.Now().Add(time.Minute).UnixMilli())}
-			_, _, err = d.store.Reserve(ctx, before, hostguard.Plan{Namespace: original.Namespace, VMName: original.VMName, Incarnation: original.Incarnation, RunnerPodUID: original.PodUID, Request: request, BeforeBytes: 1 << 30, HostOverheadBytes: original.HostOverheadBytes})
+			_, _, err = d.store.Reserve(ctx, before, hostguard.Plan{Namespace: original.Namespace, VMName: original.VMName, Incarnation: original.Incarnation, RunnerPodUID: original.PodUID, Request: request, BeforeBytes: 1 << 30, HostOverheadBytes: original.HostOverheadBytes, PodMemoryLimitBytes: original.PodMemoryLimitBytes})
 			require.NoError(t, err)
 			f.Mutate(func(f *dsgatest.SchedulerAPI) {
 				f.LoseNodeReply = what == "node-reply"
@@ -288,11 +292,7 @@ func TestSchedulerWholePodRetirementRecoversOriginalUnknownWrites(t *testing.T) 
 			}
 			after, err := d.store.Load(ctx)
 			require.NoError(t, err)
-			if what == "node-v6" {
-				require.EqualValues(t, 6, after.State().ProtocolVersion)
-			} else {
-				require.EqualValues(t, 5, after.State().ProtocolVersion)
-			}
+			require.EqualValues(t, max(before.State().ProtocolVersion, 5), after.State().ProtocolVersion, "退休不得把原真实高版本降回旧版本")
 			require.Empty(t, *after.State().Placements)
 			require.Empty(t, after.State().Holds)
 			used, err := after.State().UsedBytes()
