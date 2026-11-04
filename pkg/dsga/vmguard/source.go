@@ -36,20 +36,29 @@ func (r *Runner) readLease(ctx context.Context) (*coordination.Lease, error) {
 	return lease, nil
 }
 
-func (r *Runner) authorize(ctx context.Context) (authorization, error) {
+func (r *Runner) authorizeOnce(ctx context.Context, scope *initialAuthorityReadScope) (authorization, error) {
 	var a authorization
 	first, err := r.readLease(ctx)
 	if err != nil {
 		return a, err
+	}
+	if scope != nil && (string(first.UID) != scope.leaseUID || *first.Spec.HolderIdentity != scope.owner.HolderID) {
+		return a, fmt.Errorf("initial authority read original Lease changed")
 	}
 	s, err := r.store.Load(ctx)
 	if err != nil {
 		return a, err
 	}
 	model := s.State()
+	if scope != nil && model.Owner != scope.owner {
+		return a, fmt.Errorf("initial authority read original journal owner changed")
+	}
 	last, err := r.readLease(ctx)
 	if err != nil {
 		return a, err
+	}
+	if scope != nil && (string(last.UID) != scope.leaseUID || *last.Spec.HolderIdentity != scope.owner.HolderID) {
+		return a, fmt.Errorf("initial authority read original Lease changed")
 	}
 	if first.UID != last.UID || *first.Spec.HolderIdentity != model.Owner.HolderID || *last.Spec.HolderIdentity != model.Owner.HolderID {
 		return a, fmt.Errorf("Runner owner changed across Lease/journal/Lease reads")
@@ -62,7 +71,7 @@ func (r *Runner) authorize(ctx context.Context) (authorization, error) {
 	if json.Unmarshal([]byte(cm.Data[ClaimKey]), &birth) != nil || !sameBirth(birth, r.birth) {
 		return a, fmt.Errorf("Runner original Birth changed")
 	}
-	stateCM, err := readClaim(ctx, r.core, r.store.Binding(), r.birth.StateClaim, stateKind, false)
+	stateCM, err := r.readAuthorizationStateClaim(ctx, scope)
 	if err != nil {
 		return a, err
 	}

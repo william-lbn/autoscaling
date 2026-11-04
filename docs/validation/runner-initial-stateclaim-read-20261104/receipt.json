@@ -1,0 +1,96 @@
+{
+  "status": "PASS_SCOPED_FROZEN_SOURCE_TESTS_AND_FORMAL_RUNNER_BUILD",
+  "base_feature_head": "ec3c4432b4889f5d9951a45e7f751410226a167d",
+  "owned_source_sha256": {
+    "pkg/dsga/vmguard/initial_authority_read_wait.go": "62b9cf416ab84c55c107e5a684dabcf4b193f34fcebc762cb7955544bfa35c52",
+    "pkg/dsga/vmguard/initial_authority_read_wait_test.go": "2c66295adca5068723e6866439bc1c69d8c4e7391abd12f007a781ca111afec7",
+    "pkg/dsga/vmguard/initial_bootstrap_lifecycle_linux.go": "7fb8f2515e879de6bccb295a5f147036e9423c3c4e50eb3d54748f37938ca194",
+    "pkg/dsga/vmguard/source.go": "c01c1d6e26eaaef174239135588b8e0ae1b2a117729b6c7c41842403160d39d7"
+  },
+  "actual_incident_VM_UID": "f0eb7a4c-a5ae-4daa-acce-e2c528ddea2b",
+  "incident_receipt_sha256": "7c82e42e944adf863d45ef8e975105a2b3c2e902085bec4814c989a41d39f2ff",
+  "original_callsite_review_sha256": "4d2589236b5597a5497d1e4bf272cc88711e719cb4bd45fcf767ec341752478a",
+  "actual_tests": {
+    "prior_actual_job": "/data/neon-build/validation/runner-initial-StateClaim-read-focused-toolenv-20261103T235756Z-5b53f9",
+    "prior_original_whole_status": "FAIL",
+    "prior_result_sha256": "31973ed697c6160e1a1ef24dd5e7ee0ec4f731775b2f369f32297b5231e0fac9",
+    "prior_green_roots_only": [
+      "TestInitialAuthorityStateReadRetriesOnlyFreshOriginalReads",
+      "TestInitialAuthorityStateReadFiniteAttemptsAndOriginalDeadline",
+      "TestInitialAuthorityStateReadDoesNotChangeOrdinaryOrUnmarkedCalls",
+      "TestInitialAuthorityStateReadTypedScopeCannotAuthorizeOtherRef"
+    ],
+    "latest_actual_job": "/data/neon-build/validation/runner-initial-StateClaim-read-epoch-fixture-20261104T000100Z-56183e",
+    "latest_result_sha256": "40f66253aef8f0b7749ba42b3608eed96fbae7bce15c11c43a6a0e911e1190b2",
+    "latest_roots": [
+      "TestInitialAuthorityStateReadRejectsDefinitiveDrift",
+      "TestInitialBootstrapV2ActualReadersBindOriginalSources",
+      "TestInitialOwnerWaitRunQEMURecordsNoStartWithoutOverwritingLaunch"
+    ],
+    "latest_pass_events": 14,
+    "latest_fail_skip_race": 0,
+    "same_three_production_files_across_both_runs": true,
+    "only_epoch_fixture_changed": "original Store CAS A->B->A: same holder/higher epoch,2 fixture effects isolated",
+    "original_tool_failures_preserved": true
+  },
+  "Runner_artifact": {
+    "bytes": 44220600,
+    "path": "/data/neon-build/validation/runner-initial-StateClaim-read-epoch-fixture-20261104T000100Z-56183e/export/runner",
+    "role": "runner",
+    "sha256": "9389fd50c9156c5fc122b4d907f5405eb7fb93d782b488db52e837038acfb8b2"
+  },
+  "independent_source_review": {
+    "path": "/data/neon-build/validation/runner-initial-StateClaim-read-epoch-fixture-20261104T000100Z-56183e/independent-final-four-source-StateClaim-review-P2.json",
+    "sha256": "2731ce38f04b2ef81726a8e0e11cb70c2c71210f91a1d20feed2a95d0061bc04"
+  },
+  "actual_new_Runner_deployed": false,
+  "Guest_DNS_SQL_Source_or_memory_E2E_passed": false,
+  "actual_limits": {
+    "memory_max": "3221225472",
+    "cpu_max": "300000 100000",
+    "swap_max": "0",
+    "memory_peak": "594608128",
+    "OOM": 0
+  },
+  "frozen_proposal": {
+    "path": "/data/neon-build/validation/runner-initial-StateClaim-read-epoch-fixture-20261104T000100Z-56183e/frozen-four-file-proposal.json",
+    "sha256": "1dc9a21bbfd9705380dbe370372f471bd18b9b8e2eb4502185a4cd996210d400"
+  },
+  "unique_validation": {
+    "combined_unique_pass_events": 30,
+    "combined_unique_roots": 7,
+    "command_new": "CGO_ENABLED=1 go test -timeout=220s -p=2 -race -count=1 -json ./pkg/dsga/vmguard -run '^Test(InitialAuthorityStateReadRejectsDefinitiveDrift|InitialOwnerWaitRunQEMURecordsNoStartWithoutOverwritingLaunch|InitialBootstrapV2ActualReadersBindOriginalSources)$'",
+    "fail": 0,
+    "new_561_pass_events_unique": 14,
+    "new_561_roots": [
+      "TestInitialAuthorityStateReadRejectsDefinitiveDrift",
+      "TestInitialBootstrapV2ActualReadersBindOriginalSources",
+      "TestInitialOwnerWaitRunQEMURecordsNoStartWithoutOverwritingLaunch"
+    ],
+    "original_0cd_tool_status": "FAIL_before_Go_NOT_RUN_preserved",
+    "original_5b_overall_status": "FAIL_epoch_fixture_sameholder_noop_preserved",
+    "race": false,
+    "reused_5b_four_roots": [
+      "TestInitialAuthorityStateReadRetriesOnlyFreshOriginalReads",
+      "TestInitialAuthorityStateReadFiniteAttemptsAndOriginalDeadline",
+      "TestInitialAuthorityStateReadDoesNotChangeOrdinaryOrUnmarkedCalls",
+      "TestInitialAuthorityStateReadTypedScopeCannotAuthorizeOtherRef"
+    ],
+    "reused_5b_pass_events_unique": 16,
+    "reused_roots_function_bytes_unchanged": {
+      "TestInitialAuthorityStateReadDoesNotChangeOrdinaryOrUnmarkedCalls": true,
+      "TestInitialAuthorityStateReadFiniteAttemptsAndOriginalDeadline": true,
+      "TestInitialAuthorityStateReadRetriesOnlyFreshOriginalReads": true,
+      "TestInitialAuthorityStateReadTypedScopeCannotAuthorizeOtherRef": true
+    },
+    "skip": 0
+  },
+  "source_binding": {
+    "actual_inside_container_source_check_OK": 11673,
+    "additional18_existing_document_inventory_files_SHA": "89ef4c21b992f97f26550161969aeeec64982561fcacf3b4178ebb8232ce6fd1",
+    "additional_count": 18,
+    "complete_final_composite_manifest_sha256": "afc4dcb1282526ab197b97664738eddf8e73954059b0ae336efd8a313692b697",
+    "note": "Result actual_hashed_source_files11691 inherited complete-tree count; actual new compiled check11673 + independent exact18 docs manifest bytes =11691. No Go or embedded runtime asset excluded.",
+    "same_complete_source_tree_files": 11691
+  }
+}

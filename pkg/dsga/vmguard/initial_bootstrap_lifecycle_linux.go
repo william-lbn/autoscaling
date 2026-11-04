@@ -107,6 +107,8 @@ func (l *linuxInitialLifecycle) started(ctx context.Context, cmd *exec.Cmd) (ini
 	l.process = process
 	l.mu.Unlock()
 	runCtx, cancel := context.WithTimeout(ctx, 3*time.Minute)
+	// 只有本次Start句柄已捕获后的原drive可等待StateClaim纯读取；截止仍为原3分钟。
+	runCtx = withInitialAuthorityReadWait(runCtx, l.r, source.Owner, source.LeaseUID)
 	done := make(chan error, 1)
 	run := &linuxInitialRun{lifecycle: l, cancel: cancel, done: done}
 	go func() {
