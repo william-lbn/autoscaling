@@ -297,13 +297,17 @@ func (r *Runner) QMPArguments() []string {
 // Tick没有通用外部命令入口，仅拉取固定原VM账本。派发失败仍尽力发布已保留的
 // 原结果和当前实际值；所有网络/私有QMP调用在有期限ctx内，取消不清WAL/预算。
 func (r *Runner) Tick(ctx context.Context) error {
-	callCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
+	// advance包含完整双authority及原QMP；原命令deadline/父ctx仍各自先行拒绝。
+	callCtx, cancel := context.WithTimeout(ctx, runnerAdvanceTimeout)
 	err := r.engine.advance(callCtx)
+	cancel()
 	if errors.Is(err, ErrStopped) {
 		return err
 	}
-	return errors.Join(err, r.publish(callCtx))
+	// 发布有自己的有限窗口，不借它重新派发；父ctx取消仍立即传播。
+	publishCtx, publishCancel := context.WithTimeout(ctx, runnerPublicationTimeout)
+	defer publishCancel()
+	return errors.Join(err, r.publish(publishCtx))
 }
 
 func (r *Runner) Run(ctx context.Context, report func(error)) {

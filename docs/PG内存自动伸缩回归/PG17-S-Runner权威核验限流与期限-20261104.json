@@ -1,0 +1,21 @@
+{
+  "case_id": "PG17-S-RunnerRateAndTickBudget-20261104",
+  "status": "PASS_COMPONENT_ONLY",
+  "K8s_E2E": false,
+  "source_base": "04327b5ed50ec9a6e34525dfd0e24cbe15db9099",
+  "owned_files_sha256": {
+    "neonvm-runner/cmd/dsga_memory.go": "1af3933b34bccdd83e8f80d670ecc7888aecfffd4c4ac6c06f664f88096bdba7",
+    "pkg/dsga/vmguard/client.go": "44038c563322339e76bb67ca84a7ef002889722b273b0612fbb44e1a99506fb6",
+    "pkg/dsga/vmguard/runner.go": "26e540337c4641b064a2b774bcd240002500a851349db5a76fa89acf5afa54e2",
+    "pkg/dsga/vmguard/runner_tick_budget_test.go": "e4e3a3bf245e6a3c089b7d368507e7e84bd75e41058d3603fb1d8a0fd481a34a"
+  },
+  "roots": 12,
+  "pass_events": 49,
+  "fail": 0,
+  "skip": 0,
+  "race": true,
+  "Runner_ELF_sha256": "f80189126fbf4d1c96ba1ee7072ee4759a557a7ddaf8e2f5c8833ab36efc8058",
+  "receipt_sha256": "b105472a10584f9567f9087b5be34818258fe158ced87177c4a09ea3a6bcff72",
+  "original_first_Grow_run": "/data/neon-k8s-pg17/runs/0b9b-component-first-Grow8-ONCE-20261104T132350Z",
+  "runtime_recovery_not_accepted": true
+}

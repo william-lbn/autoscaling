@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
@@ -31,8 +30,7 @@ func initializeManagedMemory(spec *vmv1.VirtualMachineSpec, initial *vmguard.Ini
 	if err != nil {
 		return nil, err
 	}
-	config.Timeout = 5 * time.Second
-	config.UserAgent = "neonvm-runner-dsga-memory"
+	config = vmguard.RunnerClientConfig(config)
 	core, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, err

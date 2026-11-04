@@ -1,0 +1,11 @@
+PG17-S：Runner首次内存派发的限流与期限预算修复
+
+真实触发：2026-11-04三节点Helm当前Compute t9lxw，原Owner31/revision1唯一Grow请求已受理，prepare_budget及reserve_host结清。Runner持久准备后第二轮authority复核报client rate limiter Wait context deadline exceeded，未进入QMP MAY阶段。真实WAL为not_sent/prepared，VM仍7Gi、PG normal N1077411840及A268435456未变。安全拒绝是正确行为，不能删除Unknown门或因not_sent直接释放Host预留。
+
+根因与修复：原Runner Tick用一个5秒ctx覆盖两轮完整权威核验及结果发布。原client-go配置QPS0时，各typed API组使用默认5QPS/10burst；资格完整时每轮含18次core、2次coord及1次VM调用，双轮仅core耗尽burst后就约7.2秒。新Runner专用Config复制原认证配置，core/coord/VM明确共享一个有限50QPS/100burst bucket；单HTTP请求仍限5秒。完整advance限15秒，结果发布独立限5秒，父ctx取消继续生效。QMP原2秒、持久prepared/MAY、第二轮完整核验、原请求绝对期限、Unknown及显式replay均未更改。不自动重发QMP，不延期原Key。
+
+定向验证：20261104T134104Z-aa65d4。RED使用原5秒Tick和真实client-go共享5QPS耗尽bucket、原typed REST/Runner/engine/WAL/完整资格夹具，精确复现准备后第二核验失败且QMP写次数0。它是组件反例，非逐字旧每API组工厂或真实K8s认证。GREEN 12 roots（4新增、8直接相关原根）、49 PASS事件，0fail/skip、race通过；真实有限bucket持续速率下首次派发和发布成功，取消/过期/准备后过期均不发送，未知效果第二Tick仍不重发。夹具native写计数不等于真实QEMU物理动作。
+
+准确编译：AS04327b5ed50ec9a6e34525dfd0e24cbe15db9099精确快照+本次4文件，不纳入其他历史WIP；同一任务仅编译正式Runner。ELF f80189126fbf4d1c96ba1ee7072ee4759a557a7ddaf8e2f5c8833ab36efc8058，44228792字节。总125.230秒；原unit dead/exit0且resource reconcile完成。最终票b105472a10584f9567f9087b5be34818258fe158ced87177c4a09ea3a6bcff72，Root独审票060b9c24b56917a801a2c53e8d901966680e51157fa62f0b1b8f5a509e51357d。大文件在/data/neon-build/validation/runner-authority-rate-budget-20261104T134104Z-aa65d4/。
+
+当前原Grow已过期，不能replay或更改期限。原Key cancel一次HTTP503；实际state abort=false且独立service_closure已settled，reason=active_source_unconfirmed。原可信恢复必须选择原closure selector，经Runner未发送/Guest实际/完整预算重新证明后才可开放，不能把HTTP错误当未发送或强清旧账本。本提交不宣称该恢复、镜像部署或PG17四核心E2E通过。
