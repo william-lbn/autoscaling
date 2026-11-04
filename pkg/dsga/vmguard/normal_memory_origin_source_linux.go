@@ -135,7 +135,7 @@ func captureNormalMemoryHostOriginLocked(ctx context.Context, s *lockedState, l 
 	if e = p.checkPeer(c, source); e != nil {
 		return nil, e
 	}
-	first, e := initialBootGeometryRead(c)
+	first, e := initialBootGeometryReadContext(ctx, l.q, c)
 	if e != nil {
 		return nil, e
 	}
@@ -146,7 +146,7 @@ func captureNormalMemoryHostOriginLocked(ctx context.Context, s *lockedState, l 
 	if base.Geometry.Identity != source.Identity || base.Geometry.BaseBytes != one.BaseBytes || base.Geometry.BackendBytes != one.BackendBytes || base.Geometry.MaximumBytes != one.MaximumBytes || base.Geometry.DeviceAddress != one.DeviceAddress || base.Geometry.QEMUVersion != one.QEMUVersion {
 		return nil, fmt.Errorf("memory capture changed original base-stage maximum geometry")
 	}
-	second, e := initialBootGeometryRead(c)
+	second, e := initialBootGeometryReadContext(ctx, l.q, c)
 	if e != nil {
 		return nil, e
 	}
@@ -377,7 +377,7 @@ func (o *normalMemoryHostOriginSource) recheckOriginalLocked(ctx context.Context
 	if e = p.checkPeer(c, source); e != nil {
 		return e
 	}
-	in, e := initialBootGeometryRead(c)
+	in, e := initialBootGeometryReadContext(ctx, l.q, c)
 	if e != nil {
 		return e
 	}

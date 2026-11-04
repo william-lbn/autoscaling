@@ -109,6 +109,8 @@ func (l *linuxInitialLifecycle) started(ctx context.Context, cmd *exec.Cmd) (ini
 	runCtx, cancel := context.WithTimeout(ctx, 3*time.Minute)
 	// 只有本次Start句柄已捕获后的原drive可等待StateClaim纯读取；截止仍为原3分钟。
 	runCtx = withInitialAuthorityReadWait(runCtx, l.r, source.Owner, source.LeaseUID)
+	// 仅本次实际Start初启链继承此标记，不保存到ready或跨请求对象。
+	runCtx = withInitialQMPIO(runCtx, l.q)
 	done := make(chan error, 1)
 	run := &linuxInitialRun{lifecycle: l, cancel: cancel, done: done}
 	go func() {
@@ -240,7 +242,7 @@ func (l *linuxInitialLifecycle) drive(ctx context.Context) error {
 			if e := process.checkPeer(c, source); e != nil {
 				return e
 			}
-			in, e := initialBootGeometryRead(c)
+			in, e := initialBootGeometryReadContext(ctx, l.q, c)
 			if e != nil {
 				return e
 			}
@@ -264,7 +266,7 @@ func (l *linuxInitialLifecycle) drive(ctx context.Context) error {
 			if target == source.OriginalBase {
 				return nil
 			} // 明确无写，仍不合成Resize回执。
-			_, e = c.execute("qom-set", struct {
+			_, e = initialQMPCommand(ctx, l.q, c, "qom-set", struct {
 				Path     string `json:"path"`
 				Property string `json:"property"`
 				Value    uint64 `json:"value"`

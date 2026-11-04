@@ -229,7 +229,7 @@ func (b *initialBaseQMP) inspect(ctx context.Context) (originalMemoryGeometry, e
 	if e = b.process.checkPeer(c, b.source); e != nil {
 		return originalMemoryGeometry{}, e
 	}
-	in, e := initialBootGeometryRead(c)
+	in, e := initialBootGeometryReadContext(ctx, b.q, c)
 	if e != nil {
 		return originalMemoryGeometry{}, e
 	}
@@ -327,4 +327,38 @@ func (p *initialBootProcess) currentCredentials() error {
 		return fmt.Errorf("original QEMU credentials absent")
 	}
 	return p.alive()
+}
+
+// 无初启私有ctx时逐字走原共享geometry函数，保留post-ready/normal期限。
+func initialBootGeometryReadContext(ctx context.Context, q *nativeQMP, c *qmpConnection) (memoryGeometryInputs, error) {
+	if !initialQMPIOEnabled(ctx, q) {
+		return initialBootGeometryRead(c)
+	}
+	var in memoryGeometryInputs
+	calls := []struct {
+		name string
+		args any
+		dest *json.RawMessage
+	}{
+		{"query-version", nil, &in.Version},
+		{"qom-get", struct {
+			Path     string `json:"path"`
+			Property string `json:"property"`
+		}{"/machine", "memory"}, &in.Machine},
+		{"query-memory-devices", nil, &in.Devices},
+		{"query-memory-size-summary", nil, &in.Summary},
+		{"query-memdev", nil, &in.Backends},
+		{"qom-get", struct {
+			Path     string `json:"path"`
+			Property string `json:"property"`
+		}{"/objects/vmem0", "size"}, &in.BackendSize},
+	}
+	for _, call := range calls {
+		raw, e := initialQMPCommand(ctx, q, c, call.name, call.args)
+		if e != nil {
+			return in, e
+		}
+		*call.dest = raw
+	}
+	return in, nil
 }

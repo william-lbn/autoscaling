@@ -138,7 +138,7 @@ func readInitialBootHardware(ctx context.Context, q *nativeQMP, p *initialBootPr
 	if e = p.checkPeer(c, source); e != nil {
 		return out, e
 	}
-	cpu, e := c.execute("query-hotpluggable-cpus", nil)
+	cpu, e := initialQMPCommand(ctx, q, c, "query-hotpluggable-cpus", nil)
 	if e != nil {
 		return out, e
 	}
@@ -180,7 +180,7 @@ func readInitialBootHardware(ctx context.Context, q *nativeQMP, p *initialBootPr
 		return out, fmt.Errorf("QMP hardware maximum differs from original -smp")
 	}
 	inventory := func(path string) (string, error) {
-		raw, e := c.execute("qom-list", struct {
+		raw, e := initialQMPCommand(ctx, q, c, "qom-list", struct {
 			Path string `json:"path"`
 		}{path})
 		if e != nil {

@@ -1,0 +1,80 @@
+{
+  "protocol_version": 1,
+  "status": "FROZEN_INITIAL_ONLY_QMP_IO_REPAIR_COMPONENT_PASS",
+  "base_head": "aafcc8a985fb3edf6a18f3d696e1515662a89bbe",
+  "source": "/data/neon-build/validation/initial-QMP-command-IO-GREEN-repaired-20261104T052118Z-0ecefd/source",
+  "owned_files": [
+    "pkg/dsga/vmguard/initial_bootstrap_qmp_io.go",
+    "pkg/dsga/vmguard/initial_bootstrap_qmp.go",
+    "pkg/dsga/vmguard/initial_bootstrap_lifecycle_linux.go",
+    "pkg/dsga/vmguard/initial_bootstrap_lifecycle_hardware_linux.go",
+    "pkg/dsga/vmguard/normal_memory_origin_source_linux.go",
+    "pkg/dsga/vmguard/initial_qmp_io_deadline_test.go",
+    "pkg/dsga/vmguard/initial_qmp_io_boundary_test.go",
+    "pkg/dsga/vmguard/qmp_test.go"
+  ],
+  "owned_sha256": {
+    "pkg/dsga/vmguard/initial_bootstrap_qmp_io.go": "318b7b7202835a43fd3563acbad6bc1f6afcad4f2a0ea2300a905ae3de59baf5",
+    "pkg/dsga/vmguard/initial_bootstrap_qmp.go": "a3a1d4f9c4af64b585f7dbaa4dbef58783aa71824856cdb005237d0aded2bf3e",
+    "pkg/dsga/vmguard/initial_bootstrap_lifecycle_linux.go": "bfe310430ada3664e71adc7b3a557794769a2e094b30659ff30731fb30026d91",
+    "pkg/dsga/vmguard/initial_bootstrap_lifecycle_hardware_linux.go": "0c7fe329e26353f27ec002e3fd693d9662d7a09c10626b2d45bbd9ae4fadfcda",
+    "pkg/dsga/vmguard/normal_memory_origin_source_linux.go": "1063c8379ca9f00a3dc1801fb1ca5db41905e879b002d04a0e2b8f926bd809bc",
+    "pkg/dsga/vmguard/initial_qmp_io_deadline_test.go": "9fb898f23f148be352b6fb2e44febbc748343c7e863de32e074d8d76a065fd83",
+    "pkg/dsga/vmguard/initial_qmp_io_boundary_test.go": "812bb4cdb5957c977ff7aa8fa53deb36de6eec43f94e5c87be10c934cc57b31e",
+    "pkg/dsga/vmguard/qmp_test.go": "cd93d83231951e8ea59ef8985d26dbf72059eda3c26b28b701fc75e5e5bb12a5"
+  },
+  "production_count": 5,
+  "test_count": 3,
+  "normal_qmp_go_unchanged_sha256": "70472c353df596eb58f1213d59a618e6ffbcb968f1d6c6456e470d3f71e818f9",
+  "compiled_manifest_sha256": "3157e23aa8e2b1af017a654af0a98357e19b32006fd59f86ec8416887b116a1f",
+  "compiled_manifest_entries": 11696,
+  "result": "/data/neon-build/validation/initial-QMP-command-IO-GREEN-repaired-20261104T052118Z-0ecefd/result.json",
+  "result_sha256": "30a668abb0fdb296e313708354a14caad1755b4cf3cd9e1f799ae5f5ad2a290a",
+  "Runner_artifact": {
+    "path": "/data/neon-build/validation/initial-QMP-command-IO-GREEN-repaired-20261104T052118Z-0ecefd/export/runner",
+    "sha256": "1e02773b552832c899b35c3137a668fc9a5b8a6e44f930bd116af50fabe7dd8c",
+    "bytes": 44220600
+  },
+  "actual_roots": 6,
+  "actual_pass_events": 33,
+  "actual_fail_skip_events": 0,
+  "same_tests_and_source_two_targets": true,
+  "tests_executed_once": true,
+  "elapsed_seconds": 117.62996218301123,
+  "actual_metrics": {
+    "tests": {
+      "memory.max": "3221225472",
+      "cpu.max": "300000 100000",
+      "memory.swap.max": "0",
+      "memory.peak": "1105133568",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+    },
+    "Runner_build": {
+      "memory.max": "3221225472",
+      "cpu.max": "300000 100000",
+      "memory.swap.max": "0",
+      "memory.peak": "403021824",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+    }
+  },
+  "terminal": {
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "ActiveState": "inactive",
+    "SubState": "dead"
+  },
+  "budget_reconcile_exit": 0,
+  "RED_result_sha256": "2fed902f576fc74e529939a33f33c687637a68a90b7fd1c4ca97d26ee9383a85",
+  "RED_mechanism_projection_sha256": "d93760244bf1c5ced8aabd26088e35aafc36edd9d0eed608b4a74fa4fde43b78",
+  "first_GREEN_compile_and_tool_failure_preserved_sha256": "c6e149c96b147319889859666485187e0b6ede549e628a5cbdd0d137ea4ecca5",
+  "only_initial_captured_Start_ctx_marked": true,
+  "original_3minute_ctx_and_2second_QMP_config_unchanged": true,
+  "one_deadline_per_command_Write_and_full_reply": true,
+  "no_frame_event_partial_write_rearm_or_mutation_retry": true,
+  "authority_peer_UUID_geometry_WAL_order_kept": true,
+  "default_unmarked_and_post_ready_paths_unchanged": true,
+  "no_publicDTO_or_Guest_or_API_writes": true,
+  "actual_7410_failure_unique_cause_claimed": false,
+  "actual_KVM_normal_E_acceptance": false,
+  "image_or_deployment_done": false
+}

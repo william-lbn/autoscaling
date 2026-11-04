@@ -35,7 +35,9 @@ type qmpFixture struct {
 func startQMPFixture(t *testing.T, f *qmpFixture) string {
 	t.Helper()
 	// Darwin sockaddr_un长度较短，系统t.TempDir的长路径不适合作socket地址。
-	dir, err := os.MkdirTemp("/private/tmp", "dsga-qmp-")
+	qmpCanonicalTmp, err := filepath.EvalSymlinks("/tmp")
+	require.NoError(t, err)
+	dir, err := os.MkdirTemp(qmpCanonicalTmp, "dsga-qmp-")
 	require.NoError(t, err)
 	require.NoError(t, os.Chmod(dir, 0o700))
 	path := filepath.Join(dir, "qmp.sock")
