@@ -271,6 +271,55 @@ func CheckGuest(ctx context.Context) error {
 	return g.launchWithSource(ctx, &source, func() error { return nil })
 }
 
+// CheckSystemService只复核固定可信System角色的当前约束，不授权PG出生。
+// PG存在时普通System服务仍可恢复；未知写/来源/限额漂移仍由原只读合同拒绝。
+// CheckGuest与launch的原空域门完全独立保留。
+func CheckSystemService(ctx context.Context, role string) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if !fixedRuntimeSystemRole(role) {
+		return fmt.Errorf("unsupported fixed System service role")
+	}
+	if os.Getuid() != 0 || os.Geteuid() != 0 {
+		return fmt.Errorf("System service check requires real root")
+	}
+	source, err := sealedRuntimeSource()
+	if err != nil {
+		return err
+	}
+	g, err := Open(source.Config)
+	if err != nil {
+		return err
+	}
+	view, err := g.InspectState(ctx)
+	if err != nil {
+		return err
+	}
+	return checkSystemServiceState(role, source, view)
+}
+
+func fixedRuntimeSystemRole(role string) bool {
+	switch role {
+	case "kernel-version", "network", "udev", "udev-init", "acpi", "logs", "clock", "daemon", "resource":
+		return true
+	default:
+		return false
+	}
+}
+
+// 纯检查只接受由原sealed source与同一Guard只读获得的View；不写WAL、移动进程或exec。
+func checkSystemServiceState(role string, source SourceConfig, view View) error {
+	if !fixedRuntimeSystemRole(role) || source.Validate() != nil || source.Config.ExecutionModel != TrustedControllerExecutionModel || !source.Config.SystemCgroup || source.Limits.SystemMemoryMaxBytes == 0 {
+		return fmt.Errorf("fixed trusted System service source differs")
+	}
+	if err := sameBootstrapSource(source, view.Bootstrap); err != nil {
+		return err
+	}
+	_, err := view.ConfirmedLimits()
+	return err
+}
+
 // 唯一保留的旧TLS供给目录也必须由root控制，不能经可被postgres替换的目录或
 // 符号链接间接写入封存输入/系统权限文件。真实目录由官方TLS挂载流程先建立。
 func CheckManagementTLSDirectory() error {

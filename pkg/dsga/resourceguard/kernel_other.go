@@ -25,6 +25,10 @@ func CheckGuest(context.Context) error {
 	return fmt.Errorf("Guest resource check requires Linux Guest/root")
 }
 
+func CheckSystemService(context.Context, string) error {
+	return fmt.Errorf("System service check requires Linux Guest/root")
+}
+
 func CheckManagementTLSDirectory() error {
 	return fmt.Errorf("management TLS directory requires Linux Guest/root")
 }

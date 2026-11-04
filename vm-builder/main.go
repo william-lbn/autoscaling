@@ -53,6 +53,8 @@ var (
 	scriptNormalVmInit string
 	//go:embed files/normal-split/dsga-resource-service
 	scriptNormalResourceService string
+	//go:embed files/normal-split/trusted-controller-resource-service
+	scriptTrustedControllerResourceService string
 	//go:embed files/normal-split/vmshutdown
 	scriptNormalShutdown string
 	//go:embed files/normal-split/udev-init.sh
@@ -612,6 +614,8 @@ func main() {
 		}
 		if normalPlan.ExecutionModel == resourceguard.TrustedControllerExecutionModel {
 			replacements["vmstart"] = normalTrustedComputeScript(normalPlan)
+			// 可信System服务只读复核当前Held；PG/Compute出生继续使用原空域门。
+			replacements["dsga-resource-service"] = scriptTrustedControllerResourceService
 		}
 		for i := range files {
 			if v, ok := replacements[files[i].filename]; ok {

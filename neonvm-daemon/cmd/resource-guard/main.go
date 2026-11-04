@@ -72,6 +72,9 @@ func run() error {
 	if len(os.Args) == 2 && os.Args[1] == "check-guest" {
 		return resourceguard.CheckGuest(context.Background())
 	}
+	if len(os.Args) == 3 && os.Args[1] == "check-system-service" {
+		return resourceguard.CheckSystemService(context.Background(), os.Args[2])
+	}
 	configPath := flag.String("config", resourceguard.FixedConfigPath, "root-owned immutable VM resource configuration")
 	flag.Parse()
 	args := flag.Args()
