@@ -171,6 +171,10 @@ func (s *Service) Reserve(ctx context.Context, node string, pod *core.Pod, targe
 	if !ok {
 		return nil, none, fmt.Errorf("node is not an explicitly configured Host domain")
 	}
+	// 已绑定普通Pod未知终态只保留/补全完整占账，不发新调度许可或释放。
+	if target == 0 && closedAssignedPod(pod) {
+		return s.observeRetainedOrdinary(ctx, d, pod)
+	}
 	canonical, p, vm, err := s.allocation(ctx, d.config, pod, target)
 	if err != nil {
 		return nil, none, err

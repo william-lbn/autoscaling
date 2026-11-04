@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"context"
+	"slices"
 	"time"
 
 	core "k8s.io/api/core/v1"
@@ -42,6 +43,13 @@ func applyHostAllocation(p *state.Pod, allocation hostguard.Placement) {
 func (s *PluginState) reserveHost(ctx context.Context, pod *core.Pod, node string) (*core.Pod, *hostguard.Placement, error) {
 	if s.host == nil || !s.host.HasNode(node) {
 		return pod, nil, nil
+	}
+	// 已正式退休的普通终态事件不重新授予。只有完整关闭证明且无原保护时
+	// 才走只读确认；nil allocation避免把伪零Placement写入本地计费视图。
+	// 本地普通requests视图可保守多计，原Delete事件仍按既有流程清理。
+	if (pod.Status.Phase == core.PodSucceeded || pod.Status.Phase == core.PodFailed) && pod.Annotations[hostguard.RetirementAnnotation] != "" && !slices.Contains(pod.Finalizers, hostguard.PodProtectionFinalizer) {
+		canonical, err := s.host.ObserveRetiredOrdinary(ctx, node, pod)
+		return canonical, nil, err
 	}
 	canonical, held, err := s.host.Reserve(ctx, node, pod, control.Uint64(0))
 	if err != nil {

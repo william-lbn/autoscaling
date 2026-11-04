@@ -131,7 +131,12 @@ func (s *Service) reconcileWork(ctx context.Context, d domain, snapshot *hostgua
 		attempted++
 		var err error
 		if pod.Status.Phase == core.PodSucceeded || pod.Status.Phase == core.PodFailed {
-			err = s.retirePod(ctx, d, &pod)
+			if _, terminalErr := hostguard.TerminalPodDigest(&pod); terminalErr != nil {
+				// 缺退出证明只保留/补全完整ordinary计费，不写退休或释放。
+				_, _, err = s.observeRetainedOrdinary(ctx, d, &pod)
+			} else {
+				err = s.retirePod(ctx, d, &pod)
+			}
 		} else {
 			// 已有永久水位的managed行若错过Active阶段，真实新预算可能
 			// 已完成而placement仍是旧额度。Node owner先走完整当前预算
