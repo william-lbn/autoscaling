@@ -1,0 +1,15 @@
+PG17 Host预留完整事务期限复用（2026-11-05）
+
+问题与证据
+真实三节点Neon链路中，autoscale-scheduler对同一Compute Pod更新报client-side rate limiter Wait deadline。原plugin将单次Kubernetes CRUD配置1秒用作整笔Host.Reserve/CheckPlacement事务的总期限；事务需依次读取原Pod、VM、Node，核验Session/Lease与protect，再读VM及Node CAS。它并非一次CRUD。
+本次修复复用hostscheduler.ownedLoop原有10秒有限操作预算，抽为同一HostOperationTimeout；事件与Filter共用。原单次create/patch/delete的CRUD配置不变，调用方更早取消/期限仍优先。不改QPS、Host Lease、原Unknown、Scheduler单一预算权威或重试策略；外部Host网络调用原来已在Plugin状态mu之前，无锁重构。
+
+定向验证（不是PG内存端到端验收）
+原nonce 20261105T074452Z-be4067；/data/neon-build/validation/Scheduler-Host-operation-budget-RED-GREEN-20261105T074452Z-be4067。
+旧代码RED：同一HandlePodEvent经真实REST每次200ms，5次请求后1.000531秒因期限失败，Node CAS=0；目标根FAIL，不是编译错误。
+新代码GREEN：同一事件8次请求，1.798470秒完成，Node CAS=1；4个准确测试根、8个PASS事件、0失败、0跳过，启用race。
+取消、父期限、失租、CAS回复丢失均继续拒绝；原Framework未知与有限client配置回归根通过。SDK峰值RED约766MB/GREEN约537MB，OOM=0；Go3实际3CPU/3Gi/无swap。
+正式CGO0 Scheduler二进制正在相同冻结源下构建；本提交不冒称镜像、部署或PG17四内存动作已通过。最终ELF/镜像digest、实际三节点部署和Host回读证据另在/data原nonce归档，验收后更新发行锁。
+
+范围
+只修改hostscheduler已有事务期限常量及plugin接线，新增直接事务定向用例。Agent恢复续租是另一份独立变更；PG/Guest协议、PG17/PG18上层合同、预算持有和数据不变。

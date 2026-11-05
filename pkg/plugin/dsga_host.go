@@ -3,7 +3,6 @@ package plugin
 import (
 	"context"
 	"slices"
-	"time"
 
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -11,6 +10,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/api"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler"
 	"github.com/neondatabase/autoscaling/pkg/plugin/state"
 )
 
@@ -19,10 +19,9 @@ func (s *PluginState) hostCallContext() (context.Context, context.CancelFunc) {
 	if base == nil {
 		base = context.Background()
 	}
-	timeout := time.Duration(s.config.K8sCRUDTimeoutSeconds) * time.Second
-	if timeout <= 0 {
-		timeout = 15 * time.Second
-	}
+	// 完整Host事务包含多个原对象GET/Lease核验及Node CAS；单CRUD期限
+	// 仍由原调用方维护，不把它误当整个事务的总期限。
+	timeout := hostscheduler.HostOperationTimeout
 	return context.WithTimeout(base, timeout)
 }
 
@@ -64,10 +63,9 @@ func (s *PluginState) checkHost(ctx context.Context, pod *core.Pod, node string)
 	if s.host == nil || !s.host.HasNode(node) {
 		return nil
 	}
-	timeout := time.Duration(s.config.K8sCRUDTimeoutSeconds) * time.Second
-	if timeout <= 0 {
-		timeout = 15 * time.Second
-	}
+	// 完整Host事务包含多个原对象GET/Lease核验及Node CAS；单CRUD期限
+	// 仍由原调用方维护，不把它误当整个事务的总期限。
+	timeout := hostscheduler.HostOperationTimeout
 	bounded, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	return s.host.CheckPlacement(bounded, node, pod, control.Uint64(0))

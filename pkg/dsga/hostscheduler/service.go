@@ -32,6 +32,10 @@ const (
 	hostLeaseDuration = 15 * time.Second
 	hostRenewDeadline = 10 * time.Second
 	hostRetryPeriod   = 2 * time.Second
+
+	// HostOperationTimeout是原节点owner一次完整多RPC事务的有限预算。
+	// 事件/Filter共用此界限，不能误用单个Kubernetes CRUD的1秒配置。
+	HostOperationTimeout = 10 * time.Second
 )
 
 // InitialOwnerObservationBudget覆盖client-go首次观察旧Lease的完整窗口及一次
@@ -253,7 +257,7 @@ func (s *Service) ownedLoop(ctx context.Context, logger *zap.Logger, d domain) {
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 	for ctx.Err() == nil {
-		callCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+		callCtx, cancel := context.WithTimeout(ctx, HostOperationTimeout)
 		err := s.reconcile(callCtx, d)
 		cancel()
 		if err != nil && ctx.Err() == nil {
