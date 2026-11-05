@@ -114,8 +114,14 @@ func (w *PGWorker) renewAdmissionLease(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if before.ResourceVersion() != after.ResourceVersion() || before.State().Owner != w.session.Actor() || !after.Dispatchable() {
-		return fmt.Errorf("admission lease lost original audited VM revision")
+	if before.State().Owner != w.session.Actor() || after.State().Owner != w.session.Actor() || !after.Dispatchable() {
+		return fmt.Errorf("admission lease lost original audited VM authority")
+	}
+	if before.ResourceVersion() != after.ResourceVersion() {
+		// 同UID、同Owner且仍可派发的状态更新使本轮来源快照失效。保留
+		// 零续租拒绝，由原Run下一轮完整重审；不能因此退出Owner、换代次，
+		// 也不能重放旧动作或跳过任何原始身份/期限核验。
+		return fmt.Errorf("%w: admission lease lost original audited VM revision", ErrServiceSafety)
 	}
 	request := fact.Request
 	request.Action = "renew"

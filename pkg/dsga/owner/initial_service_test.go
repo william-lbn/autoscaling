@@ -60,8 +60,11 @@ type initialServicePG struct {
 	leaseReject    bool
 	leaseExpired   bool
 	leaseTimeoutMS int
-	rearmFixture   *serviceRearmPG
-	reopenFixture  *serviceReopenPG
+	// 仅续租竞态测试在真实Native observe到达后、peer锁外改变来源。
+	leaseAuditSharedReads int
+	beforeLeaseObserve    func()
+	rearmFixture          *serviceRearmPG
+	reopenFixture         *serviceReopenPG
 }
 
 func (p *initialServicePG) shared() control.SharedCostResponse {
@@ -108,6 +111,9 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 	case "/dsg/v1/admission/lease":
 		var request control.AdmissionLeaseRequest
 		require.NoError(t, json.NewDecoder(r.Body).Decode(&request))
+		if request.Action == "observe" && p.beforeLeaseObserve != nil {
+			p.beforeLeaseObserve()
+		}
 		p.mu.Lock()
 		defer p.mu.Unlock()
 		if p.leaseReject {
@@ -130,6 +136,9 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 		pgReply(w, control.AdmissionLeaseResponse{ProtocolVersion: 1, VMShrinkPermit: false, Expired: p.leaseExpired, Request: request, Armed: true, Renewed: renewed, DeadlineNS: p.leaseDeadline, LeaseEpoch: s.IssuerFloorEpoch, TimeoutMS: timeout, Observed: s})
 		return
 	case "/dsg/v1/budget/shared":
+		p.mu.Lock()
+		p.leaseAuditSharedReads++
+		p.mu.Unlock()
 		pgReply(w, p.shared())
 		return
 	case "/dsg/v1/admission/continue-close", "/dsg/v1/admission/continue-close/status":
@@ -683,6 +692,15 @@ func productionInitialService(t *testing.T, mode string) {
 				require.Equal(t, pgexec.Recorded, progress)
 			}
 			verifyNormalQuotaControlGates(t, ctx, mode, store, worker, pg, root, qmp)
+			return nil
+		}
+		if strings.HasPrefix(mode, "admission-revision-") {
+			for range 2 {
+				progress, err := worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress)
+			}
+			verifyAdmissionRevisionRace(t, ctx, strings.TrimPrefix(mode, "admission-revision-"), api, store, worker, pg)
 			return nil
 		}
 		if strings.HasPrefix(mode, "native-lease-") {

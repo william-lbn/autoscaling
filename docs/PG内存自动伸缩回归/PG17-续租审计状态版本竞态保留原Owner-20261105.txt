@@ -1,0 +1,24 @@
+PG17 续租审计遇到状态版本更新时保留原 Owner：阶段组件验收
+
+问题与统一恢复边界
+renewAdmissionLease 在完整服务来源审计前后读取同一 VM。Controller 合法更新 status 会改变整个对象的 resourceVersion，即使 VM UID、Owner 与可派发状态均未变化。本轮审计已经失效，必须拒绝续租；旧实现返回普通错误，原 PGWorker.Run 将它视为致命错误，停止协调回调，继而停止原领导租约续约。
+
+本次只拆开这两种情况：UID/Owner/不可派发或原 Session 检查失败仍按原拒绝与失租语义；在同 UID、同 Owner、仍可派发之后，只有 RV 变化包装既有 ErrServiceSafety。该轮绝不发 Native renew，不改本地下一续租时刻。原 Run 保留同 Session，下一轮完整审计后才可续租。没有修改 pg.Run 的错误白名单、Native 30 秒期限、原始 WAL、公共协议、分配器、PG major 选择或任何显式重放入口。旧动作、Unknown、过期与关闭恢复均不获自动重发或开门许可。
+
+真实生产历史证据的限制
+当前 93bad 原 Grow 后，04:37:03.398Z Agent 首报 pg_reconcile/progress=recorded/code=unclassified，随后原 callback stopped。该固定日志与此错误路径一致，但日志没有保存具体错误叶，不能据此断言它就是该次历史事件的唯一原因。本次通过明确同步竞态复现产品缺口，不用历史推断代替测试。
+
+精准验证按原票分组
+1. 89c429：614cc595 + 当时三个 owned 文件，5 个根 / 52 个 PASS 事件，0 fail/skip，启用 race detector；同 UID status/RV 正例、VM UID/Lease UID/holder/不可派发/坏 WAL/取消六个负例，以及原 Native 租约、过期限制管理、缺失/损坏 WAL 回归。该批 test SHA 为 116d37dd。其 RED 在 Observe 内先断言错误分类，只证明分类缺口，不称自然 Run 退出证明。
+2. 04f252：只更新同一个新增测试的首 Tick 观察方式；首 Tick 只记录错误和事实，不调用 FailNow。旧生产 Run 真正自行返回普通错误，ticks=1、非 ErrServiceSafety、非取消；修复后同一次 Run 经过完整下一轮审计、真实 Native renew，然后测试取消，ticks=2。该单根 RED/GREEN 均实际执行，GREEN 1 PASS，0 skip，启用 race detector，最终 test SHA 为 9512aa37。它与上一组存在同名根，不能相加为六个唯一根或冒称同次最终测试文件跑了 52 事件。
+3. 两批每阶段均核 11738 条源码清单；SDK 3 CPU / 3 GiB / swap 0，OOM 为 0。e5a18b 的首 whole FAIL 完整保留：夹具首次只读 observe 把 deadline 0 初始化为 1e9，原测试误当作续租变化。89 只通过真实只读观察建立基线，未改生产安全门。
+
+产物与后续边界
+89 产出的 CGO0 Agent 8a3275bd962769d1e930fa7db53f2ee6dbe574bcedf6d124041daa479248ad4c 是当批 interim ELF，实际编译 614cc595 + 当批三文件；不能冒称包含后继客户端限流修复或最终整 HEAD。Root 将分别提交当前三个源码与本说明，再与另一独立模块准确合冻构建最终 Agent。
+
+本阶段仅组件与原 API/TLS/Native peer 验证。没有执行生产续租、Owner 接管、重放、内存动作、SQL 或 Helm；不代表当前 Grow 或四项 K8s 内存核心验收通过。生产镜像、部署、实际恢复与端到端结果由 Root 单独执行归档。
+
+票据
+/data/neon-build/validation/admission-renewal-RV-baseline-followup-20261105T050354Z-89c429/result.json
+/data/neon-build/validation/admission-renewal-RV-real-Run-causality-20261105T050739Z-04f252/result.json
+/data/neon-build/validation/admission-renewal-RV-real-Run-causality-20261105T050739Z-04f252/final-three-source-admission-renewal-component-acceptance.json
