@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os/signal"
 	"syscall"
 	"time"
@@ -11,7 +12,9 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 	scheme "k8s.io/client-go/kubernetes/scheme"
+	coordclient "k8s.io/client-go/kubernetes/typed/coordination/v1"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/util/flowcontrol"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	vmclient "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned"
@@ -42,7 +45,11 @@ func main() {
 	if err != nil {
 		logger.Panic("Failed to get in-cluster K8s config", zap.Error(err))
 	}
-	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
+	workConfig, electionConfig, err := agentClientConfigs(kubeConfig, config.DSGA != nil)
+	if err != nil {
+		logger.Panic("Failed to configure bounded DSGA clients", zap.Error(err))
+	}
+	kubeClient, err := kubernetes.NewForConfig(workConfig)
 	if err != nil {
 		logger.Panic("Failed to make K8S client", zap.Error(err))
 	}
@@ -50,16 +57,25 @@ func main() {
 		logger.Panic("Failed to add NeonVM scheme", zap.Error(err))
 	}
 
-	vmClient, err := vmclient.NewForConfig(kubeConfig)
+	vmClient, err := vmclient.NewForConfig(workConfig)
 	if err != nil {
 		logger.Panic("Failed to make VM client", zap.Error(err))
 	}
 
+	var electionClient coordclient.CoordinationV1Interface
+	if electionConfig != nil {
+		electionClient, err = coordclient.NewForConfig(electionConfig)
+		if err != nil {
+			logger.Panic("Failed to make isolated DSGA election client", zap.Error(err))
+		}
+	}
+
 	runner := agent.MainRunner{
-		EnvArgs:    envArgs,
-		Config:     config,
-		KubeClient: kubeClient,
-		VMClient:   vmClient,
+		EnvArgs:            envArgs,
+		Config:             config,
+		KubeClient:         kubeClient,
+		VMClient:           vmClient,
+		DSGAElectionClient: electionClient,
 	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM)
@@ -82,4 +98,23 @@ func main() {
 	if err = runner.Run(logger, ctx); err != nil {
 		logger.Panic("Main loop failed", zap.Error(err))
 	}
+}
+
+// agentClientConfigs只为显式DSGA配置划分两个进程级有限桶。业务Kube和VM
+// 使用同一个显式RateLimiter，不能因多个typed client而隐含放大总配额。
+// CopyConfig保留既有RateLimiter，因此启用时必须替换；普通Agent保留原默认。
+func agentClientConfigs(base *rest.Config, dsga bool) (*rest.Config, *rest.Config, error) {
+	if base == nil {
+		return nil, nil, fmt.Errorf("Agent clients require original Kubernetes config")
+	}
+	work := rest.CopyConfig(base)
+	if !dsga {
+		return work, nil, nil
+	}
+	work.QPS, work.Burst = 20, 40
+	work.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(work.QPS, work.Burst)
+	election := rest.CopyConfig(base)
+	election.QPS, election.Burst = 10, 20
+	election.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(election.QPS, election.Burst)
+	return work, election, nil
 }

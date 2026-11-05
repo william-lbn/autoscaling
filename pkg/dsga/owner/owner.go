@@ -42,18 +42,25 @@ func DefaultOptions() Options {
 // Elector每次New生成随机进程身份，不能将Pod名或调用方自报holder当领导权。
 // Run是一次性生命周期；失去租约/返回后必须新建实例，不复用旧Session或epoch。
 type Elector struct {
-	coord   coordclient.CoordinationV1Interface
-	client  coordclient.LeaseInterface
-	store   *journal.Store
-	binding journal.Binding
-	options Options
-	holder  string
-	mu      sync.Mutex
-	used    bool
+	coord          coordclient.CoordinationV1Interface
+	client         coordclient.LeaseInterface
+	electionClient coordclient.LeaseInterface
+	store          *journal.Store
+	binding        journal.Binding
+	options        Options
+	holder         string
+	mu             sync.Mutex
+	used           bool
 }
 
 func New(client coordclient.CoordinationV1Interface, store *journal.Store, options Options) (*Elector, error) {
-	if client == nil || store == nil || options.LeaseDuration < time.Second || options.LeaseDuration > 24*time.Hour ||
+	return NewWithElectionClient(client, client, store, options)
+}
+
+// NewWithElectionClient仅分离API吞吐，不改变领导权、Lease期限或原journal CAS。
+// Session.Check/资格审计保留业务client，只有boundLease循环使用election。
+func NewWithElectionClient(client, election coordclient.CoordinationV1Interface, store *journal.Store, options Options) (*Elector, error) {
+	if client == nil || election == nil || store == nil || options.LeaseDuration < time.Second || options.LeaseDuration > 24*time.Hour ||
 		options.LeaseDuration%time.Second != 0 || options.RenewDeadline <= 0 || options.RetryPeriod <= 0 ||
 		options.LeaseDuration <= options.RenewDeadline || options.RetryPeriod >= options.RenewDeadline || options.RenewDeadline <= time.Duration(leaderelection.JitterFactor*float64(options.RetryPeriod)) {
 		return nil, fmt.Errorf("invalid DSGA owner clients or lease timings")
@@ -70,7 +77,7 @@ func New(client coordclient.CoordinationV1Interface, store *journal.Store, optio
 	if options.PodUID != "" {
 		holder += "." + string(options.PodUID)
 	}
-	return &Elector{coord: client, client: client.Leases(binding.Namespace), store: store, binding: binding, options: options, holder: holder, mu: sync.Mutex{}, used: false}, nil
+	return &Elector{coord: client, client: client.Leases(binding.Namespace), electionClient: election.Leases(binding.Namespace), store: store, binding: binding, options: options, holder: holder, mu: sync.Mutex{}, used: false}, nil
 }
 
 // Session只能由选主成功且journal接管已确认后创建。Actor只是值副本，不是
@@ -186,7 +193,7 @@ func (elector *Elector) Run(ctx context.Context, worker func(context.Context, *S
 	elector.mu.Unlock()
 	loopCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	lock := &boundLease{client: elector.client, binding: elector.binding, holder: elector.holder, name: LeaseName(elector.binding), lease: nil, mu: sync.Mutex{}, uid: ""}
+	lock := &boundLease{client: elector.electionClient, binding: elector.binding, holder: elector.holder, name: LeaseName(elector.binding), lease: nil, mu: sync.Mutex{}, uid: ""}
 	var registration sync.Mutex
 	var workers sync.WaitGroup
 	stopped := false

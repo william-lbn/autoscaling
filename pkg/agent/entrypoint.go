@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 
 	"k8s.io/client-go/kubernetes"
+	coordclient "k8s.io/client-go/kubernetes/typed/coordination/v1"
 
 	vmclient "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned"
 	"github.com/neondatabase/autoscaling/pkg/agent/billing"
@@ -24,11 +25,16 @@ type MainRunner struct {
 	Config     *Config
 	KubeClient *kubernetes.Clientset
 	VMClient   *vmclient.Clientset
+	// 仅选主GET/CREATE/UPDATE使用独立桶；Session与资格审计仍走业务客户端。
+	DSGAElectionClient coordclient.CoordinationV1Interface
 }
 
 func (r MainRunner) Run(logger *zap.Logger, ctx context.Context) error {
 	if r.Config.DSGA != nil && r.EnvArgs.K8sPodUID == "" {
 		return fmt.Errorf("DSGA requires K8S_POD_UID from Downward API")
+	}
+	if r.Config.DSGA != nil && r.DSGAElectionClient == nil {
+		return fmt.Errorf("DSGA requires isolated bounded election client")
 	}
 	vmEventQueue := pubsub.NewUnlimitedQueue[vmEvent]()
 	defer vmEventQueue.Close()

@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 
 	"k8s.io/client-go/kubernetes"
+	coordclient "k8s.io/client-go/kubernetes/typed/coordination/v1"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	vmclient "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned"
@@ -35,14 +36,15 @@ type agentState struct {
 	// running the risk of leaking keys.
 	baseLogger *zap.Logger
 
-	podIP        string
-	config       *Config
-	kubeClient   kubernetes.Interface
-	vmClient     vmclient.Interface
-	envArgs      EnvArgs
-	schedTracker *schedwatch.SchedulerTracker
-	metrics      GlobalMetrics
-	vmMetrics    *PerVMMetrics
+	podIP              string
+	config             *Config
+	kubeClient         kubernetes.Interface
+	vmClient           vmclient.Interface
+	dsgaElectionClient coordclient.CoordinationV1Interface
+	envArgs            EnvArgs
+	schedTracker       *schedwatch.SchedulerTracker
+	metrics            GlobalMetrics
+	vmMetrics          *PerVMMetrics
 
 	scalingReporter *scalingevents.Reporter
 	// 端点注册使用独立小锁；不依赖全局pods锁/Runner锁，不跨网络持锁。
@@ -58,17 +60,18 @@ func (r MainRunner) newAgentState(
 	perVMMetrics *PerVMMetrics,
 ) *agentState {
 	return &agentState{
-		lock:         util.NewChanMutex(),
-		pods:         make(map[util.NamespacedName]*podState),
-		baseLogger:   baseLogger,
-		config:       r.Config,
-		kubeClient:   r.KubeClient,
-		vmClient:     r.VMClient,
-		envArgs:      r.EnvArgs,
-		podIP:        podIP,
-		schedTracker: schedTracker,
-		metrics:      globalMetrics,
-		vmMetrics:    perVMMetrics,
+		lock:               util.NewChanMutex(),
+		pods:               make(map[util.NamespacedName]*podState),
+		baseLogger:         baseLogger,
+		config:             r.Config,
+		kubeClient:         r.KubeClient,
+		vmClient:           r.VMClient,
+		dsgaElectionClient: r.DSGAElectionClient,
+		envArgs:            r.EnvArgs,
+		podIP:              podIP,
+		schedTracker:       schedTracker,
+		metrics:            globalMetrics,
+		vmMetrics:          perVMMetrics,
 
 		scalingReporter: scalingReporter,
 		dsgaControls:    localcontrol.NewRegistry(),

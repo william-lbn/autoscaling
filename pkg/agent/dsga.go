@@ -103,7 +103,14 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 	}
 	options := owner.DefaultOptions()
 	options.PodUID = r.global.envArgs.K8sPodUID
-	elector, err := owner.New(r.global.kubeClient.CoordinationV1(), store, options)
+	// 直接嵌入旧Runner的调用保持原New语义；正式MainRunner在启动前强制
+	// 注入独立选主客户端，不能把业务资格审计的限流等待传到续租循环。
+	var elector *owner.Elector
+	if r.global.dsgaElectionClient == nil {
+		elector, err = owner.New(r.global.kubeClient.CoordinationV1(), store, options)
+	} else {
+		elector, err = owner.NewWithElectionClient(r.global.kubeClient.CoordinationV1(), r.global.dsgaElectionClient, store, options)
+	}
 	if err != nil {
 		return true, err
 	}
