@@ -280,9 +280,19 @@ func dsgaOwnerFailureCode(err error) string {
 
 // dsgaTickDiagnostic只观察原Run串行回调，不改变错误、进度、WAL或重放。
 // 同一固定码/进度连续出现只记一次，恢复后重新计；不格式化外部Error正文。
-type dsgaTickDiagnostic struct{ code, progress string }
+type dsgaTickDiagnostic struct{ code, progress, idleStage, idleType string }
 
 func (d *dsgaTickDiagnostic) observe(logger *zap.Logger, tick owner.Tick) {
+	// 固定叶与最终Err独立：原关闭WAL成功的Recorded/nil同样必须保留触发首因。
+	if tick.IdleService != nil {
+		stage, kind := tick.IdleService.Stage(), tick.IdleService.Type()
+		if stage != d.idleStage || kind != d.idleType {
+			logger.Warn("DSGA idle service source audit failed", zap.String("stage", "idle_service"), zap.String("source_stage", stage), zap.String("source_type", kind))
+		}
+		d.idleStage, d.idleType = stage, kind
+	} else {
+		d.idleStage, d.idleType = "", ""
+	}
 	if tick.Err == nil {
 		if d.code != "" {
 			logger.Info("DSGA reconciliation observation recovered", zap.String("previous_code", d.code))

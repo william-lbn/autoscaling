@@ -27,29 +27,41 @@ type serviceSafety struct {
 // inspectIdleService不写任何领域。Root原日志/硬约束、出生、资格和Runner
 // 的任一读失败都不再视为“只停止建议仍服务”。只在无在途动作的永久预算
 // 边界使用；不能把伸缩过程中的合法中间态误判为异常，或清旧SDK未知。
-func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) error {
+func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) (err error) {
+	stage := "resource_binding"
+	defer func() {
+		if err != nil {
+			w.recordIdleServiceDiagnostic(stage, err)
+		}
+	}()
 	m := s.State()
 	if w.resourceOwner == nil || m.ResourceIdentity == nil || !s.Dispatchable() {
 		return fmt.Errorf("idle service lost original resource or VM binding")
 	}
+	stage = "root_state_read"
 	view, err := w.resourceOwner.client.InspectState(ctx)
 	if err != nil {
 		return err
 	}
+	stage = "root_limits"
 	if _, err := view.ConfirmedLimits(); err != nil {
 		return err
 	}
+	stage = "root_process_read"
 	process, err := w.resourceOwner.client.InspectProcess(ctx)
 	if err != nil {
 		return err
 	}
+	stage = "root_identity_floor"
 	if view.Identity != *m.ResourceIdentity || view.Birth == nil || process != *view.Birth || view.IssuerFloorEpoch != w.session.Actor().Epoch {
 		return fmt.Errorf("idle service changed original Root birth or floor")
 	}
+	stage = "root_aggregate"
 	root, err := budget.RootAggregateFromView(view)
 	if err != nil {
 		return err
 	}
+	stage = "retained_root_bound"
 	expected, guestMinimum, err := idleServiceBound(m)
 	if err != nil || expected != root.Bound || view.Actual.GuestMemTotalBytes < guestMinimum {
 		// Root自身“已确认”不表示仍被外层原预算覆盖。SourceID摘要
@@ -60,6 +72,7 @@ func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) 
 	if w.qualification != nil {
 		source = w.qualification
 	} else if m.InitialHeld != nil {
+		stage = "initial_budget_model"
 		i, err := m.InitialBudgetFor()
 		if err != nil {
 			return err
@@ -67,37 +80,47 @@ func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) 
 		source = &i.Qualification
 	}
 	if m.InitialHeld != nil {
+		stage = "initial_budget_model"
 		i, err := m.InitialBudgetFor()
 		if err != nil {
 			return err
 		}
+		stage = "initial_budget_read"
 		if _, err := w.safety.claims.ReadInitialBudget(ctx, s, i); err != nil {
 			return err
 		}
-	} else if _, err := w.safety.claims.ReadCurrent(ctx, s); err != nil {
-		return err
+	} else {
+		stage = "current_budget_read"
+		if _, err := w.safety.claims.ReadCurrent(ctx, s); err != nil {
+			return err
+		}
 	}
 	// 没有可信资格的旧领域读者不补造资格；Root闭环仍有效，新的自动
 	// 策略/预算也继续要求自己的完整来源。生产已配置资格则不得降级。
 	if source == nil {
 		return nil
 	}
+	stage = "qualification_read"
 	q, err := w.safety.claims.Qualification(ctx, *source)
 	if err != nil {
 		return err
 	}
+	stage = "bootstrap_encode"
 	raw, err := json.Marshal(view.Bootstrap)
 	if err != nil {
 		return err
 	}
 	vm := s.VirtualMachine()
+	stage = "qualified_root_runner"
 	if q.Identity != view.Identity || vmguard.SourceDigest(raw) != q.RootBootstrapSHA256 || q.RunnerPodName != vm.Status.PodName || q.RunnerRestartCount != vm.Status.RestartCount || q.NodeName != vm.Status.Node {
 		return fmt.Errorf("idle service qualification changed original Root or Runner")
 	}
+	stage = "runner_publication_read"
 	birth, ref, published, err := w.safety.runner.Inspect(ctx, &q.RunnerBirth, w.session.Actor())
 	if err != nil {
 		return err
 	}
+	stage = "runner_identity_capacity"
 	raw, err = json.Marshal(birth.Identity)
 	if err != nil {
 		return err
@@ -105,6 +128,7 @@ func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) 
 	if ref != q.RunnerBirth || vmguard.SourceDigest(raw) != q.RunnerIdentitySHA256 || birth.Identity.RunnerPodUID != q.RunnerPodUID || birth.Identity.NodeUID != q.NodeUID || published.State.Pending != nil || published.Actual.ActualBytes != published.Actual.RequestedBytes || vm.Status.MemorySize == nil {
 		return fmt.Errorf("idle service lacks original settled Runner capacity")
 	}
+	stage = "vm_capacity"
 	actual, exact := vm.Status.MemorySize.AsInt64()
 	if !exact || actual <= 0 || control.Uint64(actual) != published.Actual.ActualBytes {
 		return fmt.Errorf("idle service VM status differs from original Runner actual")
@@ -113,19 +137,24 @@ func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) 
 		if last := published.State.Last; last != nil {
 			// Initial可在原未发送取消后继续持有，但同数值或Last文字
 			// 不是屏障。认证原不可变回执；未发送/在途仍保持关闭。
+			stage = "runner_original_receipt"
 			proof, err := w.safety.runner.ObserveAbortOriginal(ctx, last.Intent.Command, last.Intent.JournalSHA256, m.Owner)
 			if err != nil {
 				return err
 			}
+			stage = "runner_original_terminal"
 			if !proof.Receipt.Complete() && !proof.Receipt.CancelledBeforeSend() {
 				return vmguard.ErrUnknown
 			}
 		}
-	} else if _, err := w.safety.runner.CheckCurrentBudget(ctx, m); err != nil {
-		// 早期恢复完成后旧预算保持，不能只认证Birth/当前数值而漏掉
-		// 原完成回执或原取消尾UID。当前永久Through仍由Model严格核验，
-		// 不将本次只读成功提升为Host释放或旧资源重放许可。
-		return err
+	} else {
+		stage = "runner_current_budget"
+		if _, err := w.safety.runner.CheckCurrentBudget(ctx, m); err != nil {
+			// 早期恢复完成后旧预算保持，不能只认证Birth/当前数值而漏掉
+			// 原完成回执或原取消尾UID。当前永久Through仍由Model严格核验，
+			// 不将本次只读成功提升为Host释放或旧资源重放许可。
+			return err
+		}
 	}
 	return nil
 }

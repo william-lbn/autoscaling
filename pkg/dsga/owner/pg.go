@@ -45,10 +45,11 @@ type PGWorker struct {
 	initial   *initialexec.Executor
 	// 管理恢复复用创建本worker时的原资源owner/SDK，不另建空客户端以
 	// 绕过GuestReady或修复未知。生命周期仍由Agent同一Session持有。
-	resourceOwner *ResourceWorker
-	automatic     *automaticMemory
-	qualification *budget.QualificationSource
-	safety        *serviceSafety
+	resourceOwner         *ResourceWorker
+	automatic             *automaticMemory
+	qualification         *budget.QualificationSource
+	safety                *serviceSafety
+	idleServiceDiagnostic *IdleServiceDiagnostic
 	// Run期间独占SDK/控制入口，避免重复启动两个轮询goroutine竞争Pending。
 	// Run返回后可由旧的测试/嵌入调用重新进入；ControlEndpoint本身不可复用。
 	running atomic.Bool
@@ -609,6 +610,8 @@ func (worker *PGWorker) RecoverCapacityAdmission(ctx context.Context, key contro
 type Tick struct {
 	Progress pgexec.Progress
 	Err      error
+	// IdleService只携带同周期首个固定来源叶，不改变Err/Progress或持久协议。
+	IdleService *IdleServiceDiagnostic
 }
 
 type PGLoopOptions struct {
@@ -681,6 +684,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	callCtx, cancel := worker.session.coupledContext(ctx)
 	defer cancel()
 	defer worker.CloseIdleConnections()
+	worker.idleServiceDiagnostic = nil
 	leaseReady := false
 	leaseExpired := false
 	var expiredThrough control.Uint64
@@ -909,8 +913,9 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 				expiryKnown = false
 			}
 		}
+		tick := worker.diagnosticTick(progress, err)
 		if options.Observe != nil {
-			options.Observe(Tick{Progress: progress, Err: err})
+			options.Observe(tick)
 		}
 		if callCtx.Err() != nil {
 			return callCtx.Err()

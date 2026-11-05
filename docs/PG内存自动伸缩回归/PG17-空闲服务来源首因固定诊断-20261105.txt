@@ -1,0 +1,30 @@
+PG17 空闲服务来源首因固定诊断（2026-11-05）
+本阶段只补生产可观测性，不修改资源安全判定、错误返回、WAL格式、原Owner/Lease/准入恢复合同。不能据此签PG17四项核心内存动作通过。
+
+问题与实际边界
+93bad 本轮真实WAL在seq26→27保存 idle_source_unconfirmed 关闭；当前Root View/ConfirmedLimits/原RootAggregate与InitialBudget相等，实际Agent SA的ReadInitialBudget、Qualification、Runner发布纯函数也鲜读通过。这些当前事实不能倒推首次关闭没有暂态。原inspectIdleService的错误在关闭选择时丢弃，且关闭成功后Tick.Err可以为nil，旧日志无法留下触发首因。
+
+改动
+inspectIdleService只增加固定阶段赋值和defer记录；原错误仍逐字返回，不包装/隐藏Unknown。进程内IdleServiceDiagnostic只保存本周期首个白名单stage/type，不进入JSON/WAL或持久恢复选择。PGLoop在同一Tick携带该值，关闭成功也可记录；交付后清除，下一周期不沿用旧叶。Agent沿原dsgaTickDiagnostic去重，不格式化Error正文、URL、token、外部类型名；私有字段和访问器再次白名单化。没有增加后台心跳、自动replay、资源写或新的权限。
+
+验证状态
+精准组件验证已通过：8个唯一根、14个PASS事件、0skip，race未启用，跨两个真实批次复用，不称单轮8根通过；不以此签K8s部署成功。原首次a86f68整批FAIL保留：旧生产RED先验证真实关闭已settled，再因Tick缺首因而失败。首次GREEN唯一新断言错误是测试将ConfirmedLimits原ErrUnknown误期为validation；实际type为resource_unknown，生产代码未改，仅修这一条fixture预期。后继cd92b0只复验该一根、四Agent根及Agent正式ELF，其他三Owner绿以精确函数和生产SHA复用。
+
+源码清单
+pkg/dsga/owner/service_safety.go
+pkg/dsga/owner/pg.go
+pkg/dsga/owner/service_safety_diagnostic.go
+pkg/dsga/owner/service_safety_diagnostic_test.go
+pkg/dsga/owner/initial_service_test.go
+pkg/agent/dsga.go
+pkg/agent/dsga_failure_test.go
+
+固定边界
+本诊断不认定01:45:30历史失败的真实叶，不把来源恢复等同自动重新开放。原关闭、lease-expired、原Key/selector、Unknown和显式服务恢复仍由既有生产合同控制。测试中的Kube API、Root和Native为显式协议peer，原Session/TLS/WAL真实执行，但不能冒充Linux硬限、PG四数组回收或117/118/119端到端动作。
+
+最终实际结果与收据
+a86f68：正确因果RED保留；Owner四根中三根9个PASS事件可复用，整体仍FAIL。
+cd92b0：一Owner根和四Agent根5个PASS事件；Agent正式CGO0 ELF c676ff854133dcd7d8cf16cd0ef681f21715db53b1d73e059f4568129c58eed7，60182712字节。任务74.650秒、三阶段实际3CPU/3Gi/Swap0，OOM0，unit inactive/dead/exit0且原budget reconcile terminal0。
+SDK实际清单逐项核验11715行。后继脚本错误按basename过滤compiled-source.sha256，连树内18个同名历史manifest也未列入；完整context保有11733文件，并未丢COPY文件。已另按完整目录逐SHA核，除该唯一fixture预期修正外与原冻结context逐字相同，18份历史manifest均原SHA；不冒称SDK逐项检查过11733行。
+准确编译树：AS4559019d9911d13791d82014cd5090c5b406b860的git archive加七个owned文件，不混工作树其他未提交native WIP。中文阶段说明不属于已编译源码输入。
+最终票：/data/neon-build/validation/idle-service-diagnostic-type-fixture-followup-20261105T023437Z-cd92b0/final-seven-source-eight-root-Agent-acceptance.json。

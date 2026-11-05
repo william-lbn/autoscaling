@@ -117,3 +117,22 @@ func TestDSGATickDiagnosticNeverFormatsArbitraryFields(t *testing.T) {
 	})
 	require.Equal(t, map[string]interface{}{"stage": "pg_reconcile", "progress": "unclassified", "code": "unclassified"}, observed.All()[0].ContextMap())
 }
+
+// 即使本Tick原关闭已成功且Err=nil，也要输出来源首因；下一无诊断周期清去重状态。
+func TestDSGATickDiagnosticReportsClosureCauseWithNilError(t *testing.T) {
+	core, observed := observer.New(zap.InfoLevel)
+	logger := zap.New(core)
+	var d dsgaTickDiagnostic
+	diagnostic := &owner.IdleServiceDiagnostic{}
+	tick := owner.Tick{Progress: pgexec.Recorded, IdleService: diagnostic}
+	d.observe(logger, tick)
+	d.observe(logger, tick)
+	entries := observed.FilterMessage("DSGA idle service source audit failed").All()
+	require.Len(t, entries, 1)
+	require.Equal(t, map[string]interface{}{"stage": "idle_service", "source_stage": "unclassified", "source_type": "unclassified"}, entries[0].ContextMap())
+	require.Nil(t, tick.Err)
+	require.Equal(t, pgexec.Recorded, tick.Progress)
+	d.observe(logger, owner.Tick{Progress: pgexec.Idle})
+	d.observe(logger, tick)
+	require.Len(t, observed.FilterMessage("DSGA idle service source audit failed").All(), 2)
+}

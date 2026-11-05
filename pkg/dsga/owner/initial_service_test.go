@@ -711,6 +711,15 @@ func productionInitialService(t *testing.T, mode string) {
 			verifyServiceClosureContinuation(t, ctx, mode, transfer, client, session, resources, worker, config, source, pg, root, runner)
 			return nil
 		}
+		if strings.HasPrefix(mode, "service-diagnostic-") {
+			for range 2 {
+				progress, err := worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress)
+			}
+			verifyIdleServiceDiagnostic(t, ctx, store, worker, pg, root)
+			return nil
+		}
 		if strings.HasPrefix(mode, "service-safety-") {
 			for range 2 {
 				progress, err := worker.Advance(ctx)
