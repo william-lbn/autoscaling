@@ -28,6 +28,10 @@ func encode(model Model, budget int) (Model, string, error) {
 	if budget < 1 || budget > MaxEncodedBytes {
 		return model, "", fmt.Errorf("invalid journal byte budget")
 	}
+	model = model.Clone()
+	if err := model.Validate(); err != nil {
+		return model, "", err
+	}
 	// 服务关闭有独立WAL，即使无Resize Active，也必须为原生关闭回执及
 	// owner接管保留既有4KiB余量。不能先发出关闭、再发现注解只能保存
 	// 写前命令而无法落账；淘汰规则仍只处理历史，不裁掉未知或原预算。
@@ -36,21 +40,24 @@ func encode(model Model, budget int) (Model, string, error) {
 		// 独立再关闭的完整空间。关闭也须保留原命令和未知，不能为了
 		// 落账压掉旧预算/关闭。已确认开放仍保留紧急关闭窗口。
 		r := model.ServiceClosure.Reopen
-		window := MaxObservationBytes + 4096
+		windows, err := serviceReceiptWindows(model)
+		if err != nil {
+			return model, "", err
+		}
 		switch {
 		case r.Rearm != nil && r.Rearm.Phase == Unconfirmed:
 			// 再关闭后的期限恢复仍需完整原生历史/当前回执；不能沿用
 			// 已完成关闭仅4KiB的默认余量，先发送再发现无法保存事实。
-			budget -= window
+			budget -= windows.rearm
 		case r.Closing == nil && r.Phase == Unconfirmed:
 			// 原开放回执 + 再关闭观察 + 更高 owner 接续观察 + 最后回执。
-			budget -= 4 * window
+			budget -= windows.open + 2*windows.before + windows.close
 		case r.Closing == nil:
-			budget -= 3 * window
+			budget -= 2*windows.before + windows.close
 		case r.Closing.Close == nil || r.Closing.Close.Pending() && r.Closing.LatestBefore == nil:
-			budget -= 2 * window
+			budget -= windows.before + windows.close
 		case r.Closing.Close.Pending():
-			budget -= window
+			budget -= windows.close
 		default:
 			budget -= 4096
 		}
@@ -61,10 +68,6 @@ func encode(model Model, budget int) (Model, string, error) {
 		budget -= MaxObservationBytes + 4096
 	} else if model.Active != nil || model.ServiceClosure != nil && model.ServiceClosure.Pending() {
 		budget -= 4096
-	}
-	model = model.Clone()
-	if err := model.Validate(); err != nil {
-		return model, "", err
 	}
 	for {
 		raw, err := json.Marshal(model)

@@ -1,0 +1,27 @@
+PG17 原生日志四槽类型预留与真实 Store 回归（组件阶段）
+
+问题与真实定位
+ef57c0 的 idle CapacityHeld v3 恢复已确认 Rearm，但 Reopen 尚未写入。原完整 VM 的 Model.Validate 与 StartServiceReopen 纯模型均通过；真正 Store.apply 在 API Patch 前因编码预留拒绝，固定错误为 latest terminal result exceeds journal byte budget。不是据 HTTP503 或错误类型猜 Native/Proxy/VM 状态，也不据此认定现场所有历史错误同因。
+
+旧 encode 为开放回执、首次关闭观察、更高 Owner 接续观察、最后关闭回执各扣 MaxObservationBytes+4096，总计147456字节，使192KiB总门仅剩49152字节；当前完整注解约67KiB已被拒。完整 Model 原文253954字节，远未达到1MiB raw门。不能裁掉原未知、当前预算、完整历史或把旧请求写成未发生。
+
+统一修复
+只改 journal codec 与私有 reserve helper，不改 Native DTO、协议、日志格式或执行器。先按原 Model.Validate 认证实例和 effective budget，再构造当前合法字段的类型长度支配形状。Snapshot 包含四数组、每个 ReleaseKey 与可共存 Operation；键的 Instance 由 Native.Validate 绑定同实例。所有 admission/closing/continuation 的预算由原 journal 强门绑定同一个有效预算，不接受调用方另造短身份。数字使用最大宽度；布尔 false 比 true 长；摘要按完整64位hex；最长已知枚举、optional 字段和重复 Request 不省略。
+
+四个槽继续分别预留 AdmissionResponse、两份 AdmissionLeaseResponse，以及 max(AdmissionClosure, AdmissionContinuationResponse)；再关闭 Rearm 槽覆盖完整 AdmissionRearmStatus（含外层 Request 与 Current 内层 Request/Observed）。原外层 Rearm 36KiB预留不缩小。每槽加入原4096字节元数据余量，再考虑独立zlib流膨胀和base64成本，不把raw字节直接当编码注解字节。当前DTO字段结构有直接测试锁，改变DTO/枚举/约束仍须复核长度形状；不宣称未来任意改动自动安全。
+
+必须保留的界限
+该上界是完整类型的保守预留策略，不是整模型重新压缩的绝对数学完成保证。重压缩会改变字典匹配。每个阶段仍真实 encode 整个 Model，原192KiB encoded与1MiB raw总门不变；过大合法上下文仍可失败关闭，不能声称任意32KiB opaque正文都必可落账。预算拒绝不返回可派发票据，不能跳过 Native 原关闭、清 Unknown、释放预算或改变TTL。失败/丢CAS回复仍保原 Unknown；恢复/重试仍须原明确选择与权威Owner。
+
+实际验证
+冻结源码基于8dd50a806febb40c96445c51bb3dfdfd2fc40e92，仅叠加 codec.go、service_receipt_reserve.go、service_receipt_reserve_test.go；历史 Native WIP 没有进入快照。
+Go1.24.3，离线热缓存，3CPU/3Gi/Swap0。9个直接journal测试根、37个PASS事件，race detector开启、0skip、OOM0。测试含完整DTO字段形状/128字节HTML转义身份、最大合法可共存四数组与Operation、原开放至更高Owner关闭接续的每阶段整模型 encode/decode、总预算边界拒绝、原Store CAS丢回复/UID与RV漂移不返回票据。原Unknown/完整预算保留仍按原模型验证与原Store直接根验证。
+
+同一真实完整VM输入（仅私有受保护档）：
+Model SHA c64ad549987cac57a0b0078ac012645f47a3af46792ec1e9c649e646ae46bcf6。
+旧Store：Load成功，Start编码拒绝，GET1/Patch0。
+新Store：Load及Start成功，GET1/Patch1（纯内存fake API），序号68至69，next.Validate真，完整新模型257305字节。原 retained Rearm 只用于离线复现，绝不伪称fresh Native来源或用于生产派发。Patch1不是实际API/webhook/原生开放通过。
+正式Agent只按同冻结源构建，CGO0；独立生产发布、真实恢复与PG17四动作仍由Root执行，本票不冒端到端验收。
+
+归档
+/data/neon-build/validation/service-receipt-canonical-reserve-RED-GREEN-20261105T113355Z-38e159
