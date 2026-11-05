@@ -740,6 +740,8 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	var pendingControl *controlCall
 	// 一次完整成功周期至多交付一个纯读credit；不累积，写调用后也须重新审计。
 	readCredit := false
+	controlCredit := false
+	preferControl := false
 	wake, replays, admissionReplays, resourceReplays := options.Wake, options.Replay, options.AdmissionReplay, options.ResourceReplay
 	vmReplays := options.VMReplay
 	prepareReplays := options.PrepareReplay
@@ -747,6 +749,35 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	abortReplays := options.AbortReplay
 	unchangedAdmissions := options.UnchangedAdmissionRecovery
 	capacityAdmissions := options.CapacityAdmissionRecovery
+	takeCreditedCall := func() bool {
+		if !readCredit && !controlCredit {
+			return false
+		}
+		{
+			poll := func(lane <-chan controlCall, enabled bool) {
+				if !enabled || pendingControl != nil {
+					return
+				}
+				select {
+				case call := <-lane:
+					pendingControl = &call
+				default:
+				}
+			}
+			if preferControl {
+				poll(controls, controlCredit)
+				poll(resourceReads, readCredit)
+			} else {
+				poll(resourceReads, readCredit)
+				poll(controls, controlCredit)
+			}
+			if pendingControl != nil {
+				readCredit, controlCredit = false, false
+				return true
+			}
+		}
+		return false
+	}
 	for {
 		if callCtx.Err() != nil {
 			return callCtx.Err()
@@ -811,23 +842,17 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			stopCaller()
 			cancelControl()
 			pendingControl.result <- controlReply{value: value, err: controlErr}
+			preferControl = pendingControl.command.Action == control.CoordinationResourceState
 			pendingControl = nil
-			readCredit = false
+			readCredit, controlCredit = false, false
 			continue
 		}
-		if readCredit && options.beforePeriodicAdvance != nil {
+		if (readCredit || controlCredit) && options.beforePeriodicAdvance != nil {
 			options.beforePeriodicAdvance(callCtx)
 		}
-		// 原完整周期成功后只优先交付一个纯资源读。消费后下一轮仍须Advance及到期续租，
-		// 不从管理读取推导业务资格，也不把Begin/写动作移到此分支。
-		if readCredit {
-			select {
-			case call := <-resourceReads:
-				pendingControl = &call
-				readCredit = false
-				continue
-			default:
-			}
+		// 唯一接收点也用于周期末尾：任何credit最多消费一次，消费后必须原审计。
+		if takeCreditedCall() {
+			continue
 		}
 		var progress pgexec.Progress
 		var err error
@@ -936,6 +961,12 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			}
 		}
 		readCredit = err == nil
+		// 非致命安全等待仍可接原管理恢复；消费后必须再走原audit/renew。
+		controlCredit = true
+		// 先交付已等待lane，再与ticker/Wake阻塞等待；不能让bottom select绕过交替。
+		if takeCreditedCall() {
+			continue
+		}
 		select {
 		case <-callCtx.Done():
 			return callCtx.Err()

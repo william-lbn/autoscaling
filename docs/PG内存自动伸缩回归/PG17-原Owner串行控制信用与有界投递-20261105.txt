@@ -1,0 +1,23 @@
+PG17 原Owner串行控制信用与有界投递
+
+本阶段修复统一PGWorker.Run调度层，不新增执行器、Owner、allocator或公开协议。
+真实2d64f5原Begin客户端60秒超时，已发送MAY、无response；历史现场没有enqueue/dispatch日志，因此不能把本次超时唯一归因于饥饿，更不能从后继WAL空闲推NoEffect。原Key/原MAY保留，Root按正式下一Owner+VM UID/RV claim屏障再读原WAL；本阶段不新增FenceUnacceptedBegin API、不重发旧Begin或换Key碰运气。
+
+源码证实的风险与最小修复
+ControlEndpoint.calls生产仍为无缓冲；旧Run周期末普通select让已等待管理调用与常ready ticker/Wake竞争，缺少每轮有界交付保证。Registry锁在Submit前已释放，Begin自身仅原Session/Store检查和CAS，没有新增完整Root预算重审。
+现在每次完整非致命周期只发一份control信用，成功周期的readCredit仍按原err==nil发放。共用takeCreditedCall在周期两端使用，避免bottom select绕开优先交付；两条lane各自获得原有服务资格且同时等待时，交替优先。消费任何一次调用后两份credit清零，下轮必须原完整audit/到期renew，不能积累或并行派发。
+此有界公平合同不扩大错误态资源读取资格。closed/error中的control仍必须通过原Session、调用方/Run取消、真实Native期限、持久关闭和Unknown守门。Begin/Cancel/所有恢复仍在同一原executeControl，生产写队列未缓冲，原低层方法未改。
+Native 30秒租约不变。Root未来外部HTTP客户端145秒仅对齐既有UDS130秒服务调用/135秒写期限，不作为领域许可或续期。
+
+定向验证与保留失败
+复用原Elector、UID/RV Store、TLS Native和Run fixture。仅测试用容量1表示已等待sender，以同步屏障保证ready条件；生产calls容量0另由原真实Submit接线根验证，不以sleep或select随机运气构造RED。
+旧源码真实RED在下一audit前未交付已等待control；新版覆盖单调用、洪流仍audit/renew、双ready lane有界交替，以及取消/失租/真实Expired后合法Begin拒绝、零Begin落账。失租后先验证Run拒绝和join，再结束测试外层Elector；过期只在peer实际置Expired之后要求原ErrServiceSafety，健康首周期仍nil。
+原e62 unused import前置失败、dbf fixture等待、b288/3734错误尾断言均完整保留，不冒生产安全漏或成功。本次后继只修guard专属测试分支；生产pg.go436289bdd8a3550563e485608dd588159350189598d0079fcda233dabf15dd6d始终不变。
+
+实际组件结果
+STATUS=PASS_COMPONENT_ONLY
+10个唯一根、18个PASS事件，跨b288三正根与67fc一守门根/六原caller根，不是一轮10。所有测试-race、0skip/race报告；正式Agent CGO0，实际SDK源码11753项核齐。原caller覆盖真实Begin/Cancel/接受丢回复、串行取消及原resource读取路由/公平守门。
+最终Agent SHA256=72214f71fb6f0f534381ccb4ad9b3d096d2558ea6bb6b98969223aec9cba9a30，60244152字节。
+实际编译树为cf153c1f7a90abd314ce2a25e57b7809b6787192+冻结3源，Native WIP未纳入。原任务original-unit-terminal/process_exit0、reconcile0；此前各wholeFAIL及部分PASS分别存档。
+最终接受票：/data/neon-build/validation/PG-control-credit-real-expiry-phase-followup-20261105T094929Z-67fc0c/final-three-source-control-credit-and-Agent-acceptance.json
+此票仅为组件验收；真实部署、新Owner屏障、旧MAY对账及PG17 Grow/安全normal Shrink/Regrow/自动策略四项仍由Root按实际证据验收。
