@@ -109,7 +109,7 @@ func (w *PGWorker) renewAuditedRecoveryLease(ctx context.Context, snapshot *jour
 			result = "stopped"
 			scope.stopped = true
 		}
-		klog.InfoS("DSGA audited recovery lease", "stage", stage, "elapsed_ms", time.Since(start).Milliseconds(), "result", result, "error_type", fmt.Sprintf("%T", err))
+		klog.InfoS("DSGA audited recovery lease", "stage", stage, "elapsed_ms", time.Since(start).Milliseconds(), "result", result, "error_type", fmt.Sprintf("%T", err), "error_leaf", serviceReopenErrorLeaf(err))
 	}()
 	instance, _ := w.Binding()
 	if scope.actor != w.session.Actor() || scope.instance != instance || m.Owner != scope.actor || !snapshot.Dispatchable() {

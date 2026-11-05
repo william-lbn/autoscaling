@@ -1,0 +1,19 @@
+PG17 原服务重开逐叶诊断与编码预算实证
+
+本次是统一Owner恢复层诊断，不修改模型、原WAL、预算、权限、30秒Native期限或恢复选择，也未发送现场重试。
+service_reopen_dispatch在load/selection/finalization/stable_model/source_audit/native_observe/snapshot_check/store_start/send记录固定stage；inspectServiceRecovery区分完整来源读失败与其defer有限续租；现有audited lease日志补固定leaf。原error对象/链仍按原路径返回。stable模型检查原先丢弃的错误只供诊断，原返回链保持不变。
+复用现有有界类型分类，Native和标准校验错误只匹配静态白名单；不输出Error正文、token、URL或请求。Owner与Native过期sentinel在有界队列内比较，不用递归errors.Is绕过16节点界。opaque自环Unwrap不调用Error且有限结束。stage为静态白名单，elapsed_ms是入口以来累计耗时，不能冒称单个叶自身耗时。
+
+实际组件验证
+3个直接测试根/10个PASS事件，-race、0fail/skip/race报告，SDK3CPU/3Gi/swap0、OOM0；原单选择完整恢复Run正链及原codec合同根均通过。正式CGO0 Agent SHA256=5a050fc7fc566e1cc0133f991d2631e8a7dda84c53b1c03b698773928b00d13d。准确编译树为758e35ee1e848ef35cd1491bfb5e807affd397b1+本阶段4owned及不入库的私有fakeStore main，实际11757项校验；Node/Native WIP未纳入。此组件通过不证明生产重开已经修复。
+
+真实WAL68离线分层结果
+原WAL模型253954B，SHA c64ad549987cac57a0b0078ac012645f47a3af46792ec1e9c649e646ae46bcf6；Owner27、CapacityHeld协议3，Rearm已settled，原Reopen仍nil。
+pure Model.Decode/Validate/CheckStableServiceRecovery/StartServiceReopen/next.Validate均通过。用于隔离模型的Before只由原rearm retained Current转换为生产observe envelope，明确不是fresh Native来源，不可用作现场许可。
+后继使用10:28:14完整实际VM注解，生产journal.NewStore.Load→StartServiceReopen，只有内存fake Get/Patch、无网络：Get1、Patch0、Load成功，Start失败固定叶为latest terminal result exceeds journal byte budget，2.235s。这覆盖了模型之后的encode，失败在Patch/Webhook之前。
+MaxEncodedBytes=196608，MaxObservationBytes=32768，window=36864。新的Unconfirmed Reopen统一预留4*window=147456，剩49152；当前原journal注解已67649B（全部annotations67941B）。不能把raw253954误称接近1MiB总raw上限，也不能据两条10:02 Controller ERROR判10:05 webhook拒绝。
+最初pure worker复用中遗留Owner24输入指针，其原运行不作为WAL68证明；当前模型结果另以实际c64输入执行并独立归档。首次fakeStore调用因工具自动审批审核超时未执行，按工具允许重试一次后得到上述实证，未发生真实API Patch。
+
+未完成项
+编码预算的具体安全修复尚未实施。不得抬总门、减少预留而无类型证明、丢弃原Unknown/完整预算或借已有回执冒新许可。Root保留ef57原HTTP503/MAY/WAL68，不重发已过期rearm；后继修复/部署/真实恢复与PG17四动作另行验收。
+最终组件接受票：/data/neon-build/validation/service-reopen-fixed-stage-diagnostic-20261105T103311Z-abfed6/final-reopen-fixed-stage-diagnostic-and-Agent-acceptance.json

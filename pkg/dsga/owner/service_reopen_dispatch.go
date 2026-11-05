@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
@@ -15,11 +16,14 @@ import (
 // 先审 Root/出生/完整预算/资格/Runner，再固定当前有效原生期限；取得
 // UID/RV 写前确认后必须再次审计，不能把第一次通过当成发送时的许可。
 // 本入口只完成新原生开放，业务解锁仍须独立后继完成及生命周期归档。
-func (w *PGWorker) reopenService(ctx context.Context, selector string) (pgexec.Progress, error) {
+func (w *PGWorker) reopenService(ctx context.Context, selector string) (progress pgexec.Progress, resultErr error) {
+	stage, started := "load", time.Now()
+	defer func() { recordServiceReopenCheck(stage, started, resultErr) }()
 	s, err := w.session.store.Load(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
+	stage = "selection"
 	m := s.State()
 	c := m.ServiceClosure
 	if m.Owner != w.session.Actor() || c == nil || c.Reopen != nil || c.Pending() || !w.reopenSourcesAvailable() {
@@ -29,27 +33,39 @@ func (w *PGWorker) reopenService(ctx context.Context, selector string) (pgexec.P
 	if selector != selected {
 		return pgexec.AwaitingFact, fmt.Errorf("reopen requires latest complete closure selector")
 	}
+	stage = "finalization"
 	s, err = w.ensureServiceFinalization(ctx, s, selector)
-	if err != nil || s.State().CheckStableServiceRecovery() != nil {
+	if err != nil {
+		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+	}
+	stage = "stable_model"
+	if stableErr := s.State().CheckStableServiceRecovery(); stableErr != nil {
+		recordServiceReopenCheck(stage, started, stableErr)
+		// 原返回链保持不变；这里只补此前被丢弃的静态模型失败叶。
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
 	m = s.State()
+	stage = "source_audit"
 	if err := w.inspectServiceRecovery(ctx, s); err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
+	stage = "native_observe"
 	before, err := w.observeAdmissionLease(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
+	stage = "snapshot_check"
 	if err := w.checkReopenSnapshot(ctx, s); err != nil {
 		return pgexec.AwaitingFact, err
 	}
+	stage = "store_start"
 	s, _, err = w.session.store.StartServiceReopen(ctx, s, m.Owner, selector, before)
 	if err != nil {
 		// 即使服务端已写入而回复丢失，这里也没有派发票据。原 WAL
 		// 只能查询，或由原 owner 持完整摘要显式重放；不重选 revision。
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
+	stage = "send"
 	return w.sendServiceReopen(ctx, s)
 }
 
@@ -62,10 +78,14 @@ func (w *PGWorker) reopenSourcesAvailable() bool {
 // 不修改原Unknown；15先保存独立结算，18先复核三类原取消预算。16/17
 // 资源在途仍不得借当前容量绕过原账本；18也不能复写原Cleanup。
 func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapshot) (err error) {
+	started := time.Now()
 	defer func() {
-		if err == nil {
-			err = w.renewAuditedRecoveryLease(ctx, s)
+		if err != nil {
+			recordServiceReopenCheck("audit_source", started, err)
+			return
 		}
+		err = w.renewAuditedRecoveryLease(ctx, s)
+		recordServiceReopenCheck("audit_renew", started, err)
 	}()
 	m := s.State()
 	if m.ServiceClosure != nil && m.ServiceClosure.RetainedRecovery != nil {
