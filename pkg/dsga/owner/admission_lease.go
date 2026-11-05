@@ -20,7 +20,7 @@ func expiredAdmissionControlAllowed(action control.CoordinationAction) bool {
 	case control.CoordinationConfirmNormalQuotaDurability:
 		// 仅独立Root确认原count4耐久性；不继续PG/VM/CAS，不清expired latch。
 		return true
-	case control.CoordinationState, control.CoordinationReplayServiceClosure, control.CoordinationContinueServiceClosure,
+	case control.CoordinationRecoverServiceLifecycle, control.CoordinationState, control.CoordinationReplayServiceClosure, control.CoordinationContinueServiceClosure,
 		control.CoordinationRearmService, control.CoordinationContinueServiceRearm, control.CoordinationObserveServiceRearm, control.CoordinationReplayServiceRearm,
 		control.CoordinationReopenService, control.CoordinationObserveServiceReopen, control.CoordinationReplayServiceReopen,
 		control.CoordinationCloseServiceReopen, control.CoordinationReplayServiceReopenClosure, control.CoordinationContinueServiceReopenClosure, control.CoordinationCompleteServiceReopen, control.CoordinationRetryServiceReopen,

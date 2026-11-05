@@ -193,6 +193,8 @@ func (worker *PGWorker) executeControl(ctx context.Context, command control.Coor
 		_, result.Progress, err = worker.advanceServiceSafety(callCtx, command.Selector)
 	case control.CoordinationContinueServiceClosure:
 		result.Progress, err = worker.continueServiceClosure(callCtx, command.Selector)
+	case control.CoordinationRecoverServiceLifecycle:
+		result.Progress, err = worker.recoverServiceLifecycle(callCtx, command.Selector)
 	case control.CoordinationRearmService:
 		result.Progress, err = worker.rearmServiceLease(callCtx, command.Selector)
 	case control.CoordinationContinueServiceRearm:

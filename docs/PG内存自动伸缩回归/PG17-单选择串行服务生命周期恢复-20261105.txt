@@ -1,0 +1,28 @@
+PG17 单选择串行服务生命周期恢复：组件阶段记录
+
+问题与范围
+原 Run 在每个 control 回复后 continue，处理后继 control 前可能先做完整周期来源审计。把期限恢复、重开、完成分成三个独立 UDS 请求，会在有限原生期限内额外插入周期审计。当前实际曾出现 continue 约59.58秒、随后 reopen 约58.84秒后返回503且无 Reopen WAL。纯 Model.Validate/CheckStableServiceRecovery、当前 Root、Native 与实际 Agent SA 的 InitialBudget/Qualification/Runner 读取均通过；这些事实不能倒推该历史503的唯一叶，也不证明所有实际预算校验都已成功。
+
+此次增加 recover_service_lifecycle。它只接受当前 ServiceClosure.Selection() 的完整关闭摘要，Request/Key均为空，PG boot与ExpectedOwnerEpoch仍必填且严格绑定。不要把低层 continue_service_rearm 的 latestRearm.commandSHA 当作这个关闭摘要。调用方不提供Native期限、Owner、预算、回执或目标事实。
+
+统一执行边界
+新动作只在既有 executeControl/Run 单 goroutine 内组合原方法，不改 pg.go 调度、模型/WAL、原低层方法、Native期限、PG major选择或任何分配器。先 fresh Session.Check/Load 认证同Actor/Instance/可派发和原关闭选择；没有rearm时调用原 rearm；已有最近settled rearm时只观察真实期限。再次过期必须真实更高Owner才选择原 continue(latest摘要)，同Owner不得再延长；仍live只能是当前Owner/floor/leaseEpoch。随后每步fresh Load，仅Settled才调用原reopen，最后只从实际settled Reopen.CommandSHA调用原complete。完成后再次读取同Actor且serving的完整Lifecycle冻结上下文，核原关闭与原开放摘要。
+
+已有任何Reopen/Closing、Unconfirmed、Unknown、丢回复、取消、失租或身份漂移立即停止。本入口不自动Observe/Replay旧未知；复杂已开放恢复继续使用原显式低层入口。原complete方法的安全再关闭逻辑保留。没有手动清Run的leaseExpired latch，只有原完成证据与后继审计可以恢复普通循环。整个RPC丢回复时，管理端保留原MAY并先读原WAL，不能盲重发复合命令。
+
+固定阶段诊断只记录枚举stage、elapsed_ms、confirmed/stopped及错误类型%T，不记录Error正文、selector、HTTP正文或凭据。并行测试的klog输出可能交错，不能据混行强行归某个case的耗时。复合入口仅消除三次管理请求之间的额外周期审计；如果单个原方法自身超过30秒，仍会按原期限安全拒绝。本次不声称组件peer耗时代表生产性能，也不延长TTL。
+
+精准组件证据按原任务分组
+fc03df：旧生产+新字面值合同测试可实际编译并进入原Elector/Run，然后拒绝不支持的新动作，构成行为RED而非编译失败。该票只证明旧复合入口缺失，不冒称历史三请求排队的运行复现。GREEN的七个否例与selector-only协议两根共9个PASS事件。两个真实Run正例均先完成三步并形成serving，同Actor/原状态断言通过，最后因测试误用只在cancel模式触发的cancelAfterOpen hook导致openTick=-1而失败。原whole FAILED完整保留。
+025a12：只修两测试文件，在新fixture模式的真实open setter handler返回前，锁外once调用原afterOpen hook；client完成RPC前必先记录openTick。四生产文件逐字不变。只复验两个实际Run正例，均PASS，真实Native rearm/open之间Tick计数相同；高Owner正例使用原Elector接管并保完整原Rearm。另实际运行三个直接旧调用根：rearm正常、closed-only continuation正常、完整完成后才清expired latch。此组2+3根共7个PASS事件。
+两票选择的结果合计7个唯一根、16个PASS事件，不能冒称同一次全7根。两批启用race detector，0 skip/OOM；后继所有阶段核11744条源码清单。SDK实际3 CPU/3 GiB/swap0，原预算终态exit0并reconcile。没有缩短生产租约或测试中的原30秒真实选主等待。
+
+正式产物
+025a12按59a442824f988ef232042ae1d5d9336963919e3b + 精确六owned编译CGO0 Agent：58f8d9c27676df202536c579eb0e69696c42085e52cd15e0ab479597a372c244，60207288字节。源码与测试冻结；发布commit是后续Root提交，不能冒称本次编译完整后续HEAD。六owned为四生产文件与两个直接测试文件，未吸收Native测试WIP。
+
+本阶段不含生产恢复、SQL、内存动作、镜像/Helm上线或四项K8s核心验收。Root后续唯一构图部署，并以真实新Owner、当前关闭选择和有限期限执行一次复合恢复，记录每阶段实际结果。
+
+原票
+/data/neon-build/validation/single-control-service-lifecycle-RED-GREEN-20261105T061747Z-fc03df/result.json
+/data/neon-build/validation/single-control-service-lifecycle-hook-followup-20261105T062656Z-025a12/result.json
+/data/neon-build/validation/single-control-service-lifecycle-hook-followup-20261105T062656Z-025a12/final-six-source-selector-only-lifecycle-Agent-acceptance.json

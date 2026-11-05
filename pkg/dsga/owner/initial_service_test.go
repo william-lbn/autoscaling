@@ -382,7 +382,7 @@ func productionInitialService(t *testing.T, mode string) {
 	retainedFinalized := strings.HasPrefix(mode, "retained-safety-finalized-")
 	actualLatePG := actualRecovery && strings.Contains(mode, "pg-late-commit")
 	pgRecoveryTransfer := pgRecovery && (strings.Contains(mode, "unreceived") || strings.Contains(mode, "expired") || strings.Contains(mode, "takeover"))
-	closureTransfer := strings.HasPrefix(mode, "recovery-fence-") || (retainedCapacity || actualRecovery || vmRecovery) && strings.HasSuffix(mode, "takeover") || pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
+	closureTransfer := strings.HasPrefix(mode, "lifecycle-sequence-") || strings.HasPrefix(mode, "recovery-fence-") || (retainedCapacity || actualRecovery || vmRecovery) && strings.HasSuffix(mode, "takeover") || pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
 	pgSafety := actualLatePG || strings.HasPrefix(mode, "active-safety-pg-") || pgRecovery
 	guestRecovery := strings.HasPrefix(mode, "guest-safety-recover-")
 	guestRecoveryUnreceived := guestRecovery && strings.Contains(mode, "unreceived")
@@ -604,6 +604,18 @@ func productionInitialService(t *testing.T, mode string) {
 				return
 			}
 			pg.serve(t, w, r)
+			// 只在新序列组合观察真实open setter返回前的Tick；原peer字段默认nil。
+			if strings.HasPrefix(mode, "lifecycle-sequence-") && r.URL.Path == "/dsg/v1/admission" {
+				pg.mu.Lock()
+				var hook func()
+				if pg.gate != nil && pg.gate.Open {
+					hook, pg.afterOpen = pg.afterOpen, nil
+				}
+				pg.mu.Unlock()
+				if hook != nil {
+					hook()
+				}
+			}
 		}, nativeFence, func() control.Snapshot { return pg.shared().Observed })
 		worker, err := session.NewProductionPGWorker(ctx, config, resources, client.CoreV1())
 		require.NoError(t, err)
@@ -727,6 +739,15 @@ func productionInitialService(t *testing.T, mode string) {
 				require.Equal(t, pgexec.Recorded, progress)
 			}
 			verifyServiceClosureContinuation(t, ctx, mode, transfer, client, session, resources, worker, config, source, pg, root, runner)
+			return nil
+		}
+		if strings.HasPrefix(mode, "lifecycle-sequence-") {
+			for range 2 {
+				progress, err := worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress)
+			}
+			verifyServiceLifecycleSequence(t, ctx, strings.TrimPrefix(mode, "lifecycle-sequence-"), transfer, session, resources, worker, config, client, source, pg, root, runner)
 			return nil
 		}
 		if strings.HasPrefix(mode, "recovery-fence-") {
