@@ -817,7 +817,7 @@ func productionInitialService(t *testing.T, mode string) {
 		var successorHost *hostexec.Publisher
 		if lifecycleMode {
 			// 已由完整生产恢复链完成首次服务；继续原预算Grow，无重复初开。
-		} else if retainedService || hostServiceClosure || actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
+		} else if strings.HasPrefix(mode, "completion-audit-") || strings.HasPrefix(mode, "vm-audit-") || retainedService || hostServiceClosure || actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
 			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -902,7 +902,7 @@ func productionInitialService(t *testing.T, mode string) {
 			// 完整结案/自动Grow→Shrink会经过多次正式来源预审，race运行
 			// 可能超过静态夹具Lease的60秒寿命。用原UID/holder的真实
 			// 选主续租维持Host，不放宽生产过期校验，也不重建同名来源。
-			if retainedService || actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || finalizationCancel || strings.HasPrefix(mode, "cleanup-safety-") {
+			if strings.HasPrefix(mode, "completion-audit-") || strings.HasPrefix(mode, "vm-audit-") || retainedService || actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || finalizationCancel || strings.HasPrefix(mode, "cleanup-safety-") {
 				stopHost := keepPGTakeoverHostOwner(t, ctx, client)
 				if strings.Contains(mode, "completed-bound") {
 					api.mu.Lock()
@@ -912,6 +912,10 @@ func productionInitialService(t *testing.T, mode string) {
 			}
 		}
 		for _, action := range []journal.Action{journal.ReserveHost, journal.ResizeVM} {
+			if action == journal.ResizeVM && strings.HasPrefix(mode, "vm-audit-") {
+				verifyVMExecAuditCheckpoint(t, ctx, mode, api, store, client, session, worker, pg, root, runner, qmp)
+				return nil
+			}
 			if retainedCapacity && action == journal.ResizeVM {
 				// 先由正式完整实际恢复生成v3永久头，保留真正InitialVM；
 				// 本轮再验证其后继早期关闭，不手填Header或资源Completed。
@@ -960,6 +964,10 @@ func productionInitialService(t *testing.T, mode string) {
 		require.NoError(t, err)
 		require.Equal(t, pgexec.Recorded, progress)
 		for _, action := range []journal.Action{journal.GuestReady, journal.ResizePG, journal.FinalizeBudget, journal.ResumeAdmission} {
+			if strings.HasPrefix(mode, "completion-audit-") && (action == journal.ResumeAdmission || action == journal.FinalizeBudget && strings.Contains(mode, "before-finalize")) {
+				verifyCompletedServiceAuditLease(t, ctx, mode, api, store, client, session, worker, pg, root)
+				return nil
+			}
 			if action == journal.ResizePG && strings.HasPrefix(mode, "active-safety-guest-complete-") {
 				verifyActiveServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
 				return nil

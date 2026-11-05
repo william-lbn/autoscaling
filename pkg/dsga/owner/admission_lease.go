@@ -291,3 +291,110 @@ func (w *PGWorker) renewPrepareLease(ctx context.Context, s *journal.Snapshot, s
 	}
 	return w.renewAuditedAdmissionLease(ctx, s, fact, &shared.Observed)
 }
+
+// 正常完成阶段只在原完整audit成功的同一调用内接续；恢复有自己的显式
+// scope/WAL，过期latch、Unknown或旧owner动作不得借本出口恢复期限。
+func (w *PGWorker) checkBeforeFinalizationLeaseAudit(ctx context.Context, s *journal.Snapshot, expired bool) error {
+	if expired || w.qualification == nil || ctx.Value(recoveryLeaseScopeKey{}) != nil {
+		return w.finalize.CheckBeforeFinalization(ctx, s)
+	}
+	return w.finalize.CheckBeforeFinalizationWithAudit(ctx, s, w.renewCompletedServiceAudit)
+}
+
+func (w *PGWorker) checkRetainedServiceLeaseAudit(ctx context.Context, s *journal.Snapshot, expired bool) error {
+	if expired || w.qualification == nil || ctx.Value(recoveryLeaseScopeKey{}) != nil {
+		return w.admission.CheckRetainedService(ctx, s)
+	}
+	return w.admission.CheckRetainedServiceWithAudit(ctx, s, w.renewCompletedServiceAudit)
+}
+
+// Shared本身不是完整来源证明：此函数只能由刚完成全部Root/PG/Host/
+// Outside/Runner及sameSnapshot核验的两个原auditor回调。随后仍fresh Observe、
+// 原Session和同VM UID/RV精确CAS；不沿用物理动作之前的audit，不开放门禁。
+func (w *PGWorker) renewCompletedServiceAudit(ctx context.Context, s *journal.Snapshot, shared control.SharedCostResponse) error {
+	if s == nil {
+		return ErrServiceSafety
+	}
+	m := s.State()
+	if ctx.Value(recoveryLeaseScopeKey{}) != nil || m.ServiceClosure != nil || m.Active == nil || m.Active.Origin != w.session.Actor() || m.Active.AbortRequested || m.Active.Cleanup != nil {
+		return nil
+	}
+	for _, step := range m.Active.Steps {
+		if step.Phase == journal.Unconfirmed {
+			return nil
+		}
+	}
+	if w.client.Pending() != nil || w.resourceOwner == nil || w.resourceOwner.client.Pending() != nil {
+		return nil
+	}
+	pending, closing := w.client.PendingAdmission()
+	if pending != nil || closing != nil {
+		return nil
+	}
+	return w.renewCurrentServiceAudit(ctx, s, shared)
+}
+
+// 只消费执行器刚完成的同快照完整审计，不能由Shared单独构造许可。
+func (w *PGWorker) renewCurrentServiceAudit(ctx context.Context, s *journal.Snapshot, shared control.SharedCostResponse) error {
+	m := s.State()
+	instance, epoch := w.Binding()
+	if m.Owner != w.session.Actor() || !s.Dispatchable() || shared.ValidateFor(instance) != nil || shared.Observed.IssuerFloorEpoch != epoch {
+		return ErrServiceSafety
+	}
+	pg := shared.Observed
+	if pg.Operation != nil && pg.Operation.Phase == control.Preparing {
+		return ErrServiceSafety
+	}
+	for _, array := range pg.Arrays {
+		if array.AllocationUnknown {
+			return ErrServiceSafety
+		}
+	}
+	fact, err := w.observeAdmissionLease(ctx)
+	if err != nil {
+		return err
+	}
+	if fact.Expired {
+		return errNativeAdmissionExpired
+	}
+	if !reflect.DeepEqual(fact.Observed, shared.Observed) {
+		return ErrServiceSafety
+	}
+	return w.renewAuditedAdmissionLease(ctx, s, fact, &shared.Observed)
+}
+
+// ResizeVM只有本轮完整来源/原Runner实际完成审计成功才调用。该步骤在
+// Record之前仍可能Unconfirmed；原Observe未知绝不进入这里，其他未知均拒。
+func (w *PGWorker) renewVMServiceAudit(ctx context.Context, s *journal.Snapshot, shared control.SharedCostResponse) error {
+	if s == nil {
+		return ErrServiceSafety
+	}
+	m := s.State()
+	actor := w.session.Actor()
+	if w.qualification == nil || ctx.Value(recoveryLeaseScopeKey{}) != nil || m.ServiceClosure != nil || m.Active == nil || m.Active.Origin != actor || m.Active.AbortRequested || m.Active.Cleanup != nil || m.Active.Request.Kind != control.Grow {
+		return nil
+	}
+	found := false
+	for _, step := range m.Active.Steps {
+		if step.Action == journal.ResizeVM {
+			if found || step.Phase != journal.Planned && step.Phase != journal.Unconfirmed || step.Phase == journal.Unconfirmed && (step.DispatchedBy == nil || *step.DispatchedBy != actor) {
+				return nil
+			}
+			found = true
+		} else if !found {
+			if step.Phase != journal.Settled || step.Observation == nil || step.Observation.Result != journal.Completed {
+				return nil
+			}
+		} else if step.Phase != journal.Planned {
+			return nil
+		}
+	}
+	if !found || w.client.Pending() != nil || w.resourceOwner == nil || w.resourceOwner.client.Pending() != nil {
+		return nil
+	}
+	pending, closing := w.client.PendingAdmission()
+	if pending != nil || closing != nil {
+		return nil
+	}
+	return w.renewCurrentServiceAudit(ctx, s, shared)
+}

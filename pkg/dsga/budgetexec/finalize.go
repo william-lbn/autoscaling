@@ -81,6 +81,19 @@ func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) {
 // 不Start/Record、不替换永久预算。用于最终结算前异常关闭；已持久的Finalize
 // 未知仍逐字核验。原生fence是唯一允许的PG写，不能据此推导目标预算已完成。
 func (e *Executor) CheckBeforeFinalization(ctx context.Context, s *journal.Snapshot) error {
+	return e.checkBeforeFinalization(ctx, s, nil)
+}
+
+// CheckBeforeFinalizationWithAudit仅在本次完整同快照审计成功后交还真实Shared。
+// 回调不是预算/派发许可，不缓存到Executor；旧只读及恢复API一律不接此回调。
+func (e *Executor) CheckBeforeFinalizationWithAudit(ctx context.Context, s *journal.Snapshot, after func(context.Context, *journal.Snapshot, control.SharedCostResponse) error) error {
+	if after == nil {
+		return fmt.Errorf("normal finalization audit requires explicit completion callback")
+	}
+	return e.checkBeforeFinalization(ctx, s, after)
+}
+
+func (e *Executor) checkBeforeFinalization(ctx context.Context, s *journal.Snapshot, after func(context.Context, *journal.Snapshot, control.SharedCostResponse) error) error {
 	if s == nil {
 		return fmt.Errorf("pending finalization check requires original snapshot")
 	}
@@ -90,7 +103,16 @@ func (e *Executor) CheckBeforeFinalization(ctx context.Context, s *journal.Snaps
 	if err := e.sameSnapshot(ctx, s); err != nil {
 		return err
 	}
-	progress, err := e.advance(ctx, false, true, nil)
+	var completed []func(context.Context, *journal.Snapshot, control.SharedCostResponse) error
+	if after != nil {
+		completed = append(completed, func(ctx context.Context, audited *journal.Snapshot, shared control.SharedCostResponse) error {
+			if audited.ResourceVersion() != s.ResourceVersion() {
+				return fmt.Errorf("normal finalization audit snapshot changed before callback")
+			}
+			return after(ctx, audited, shared)
+		})
+	}
+	progress, err := e.advance(ctx, false, true, nil, completed...)
 	if err == nil && progress != pgexec.Idle {
 		err = fmt.Errorf("pending finalization check did not verify original resource boundary")
 	}
@@ -134,7 +156,10 @@ func (e *Executor) CheckServiceFinalization(ctx context.Context, s *journal.Snap
 	return err
 }
 
-func (e *Executor) advance(ctx context.Context, retain, inspect bool, recoverySnapshot *journal.Snapshot) (pgexec.Progress, error) {
+func (e *Executor) advance(ctx context.Context, retain, inspect bool, recoverySnapshot *journal.Snapshot, afterAudit ...func(context.Context, *journal.Snapshot, control.SharedCostResponse) error) (pgexec.Progress, error) {
+	if len(afterAudit) > 1 || len(afterAudit) == 1 && (afterAudit[0] == nil || !inspect || recoverySnapshot != nil || retain) {
+		return pgexec.AwaitingFact, fmt.Errorf("audit callback only belongs to one normal read-only finalization check")
+	}
 	snapshot, err := e.store.Load(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, err
@@ -296,6 +321,19 @@ func (e *Executor) advance(ctx context.Context, retain, inspect bool, recoverySn
 		return pgexec.AwaitingFact, err
 	}
 	if inspect {
+		if len(afterAudit) == 1 {
+			// Unknown仍可按原只读API核对，但不得触发额外续租检查点。
+			known := state.ServiceClosure == nil && !op.AbortRequested && op.Cleanup == nil && op.Origin == e.actor
+			for _, prior := range op.Steps {
+				if prior.Phase == journal.Unconfirmed {
+					known = false
+				}
+			}
+			pending, closing := e.pg.PendingAdmission()
+			if known && e.pg.Pending() == nil && pending == nil && closing == nil && e.root.Pending() == nil {
+				return pgexec.Idle, afterAudit[0](ctx, snapshot, shared)
+			}
+		}
 		return pgexec.Idle, nil
 	}
 	if step.Phase == journal.Planned && !recoverService {

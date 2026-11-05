@@ -350,17 +350,17 @@ func (w *PGWorker) advanceServiceSafetySelected(ctx context.Context, replay stri
 					}
 					return w.closeActiveService(ctx, s)
 				}
-				if err := w.finalize.CheckBeforeFinalization(ctx, s); err == nil && !nativeExpired {
+				if err := w.checkBeforeFinalizationLeaseAudit(ctx, s, nativeExpired); err == nil && !nativeExpired {
 					return false, pgexec.Idle, nil
 				}
 				return w.closePlannedResumeService(ctx, s, generation)
 			}
-			if err := w.admission.CheckRetainedService(ctx, s); err == nil && !nativeExpired {
+			if err := w.checkRetainedServiceLeaseAudit(ctx, s, nativeExpired); err == nil && !nativeExpired {
 				return false, pgexec.Idle, nil
 			}
 			return w.closePlannedResumeService(ctx, s, f.Shared.Observed.CapacityGeneration)
 		}
-		if err := w.admission.CheckRetainedService(ctx, s); err == nil && !nativeExpired {
+		if err := w.checkRetainedServiceLeaseAudit(ctx, s, nativeExpired); err == nil && !nativeExpired {
 			return false, pgexec.Idle, nil
 		}
 		return w.closeOriginalService(ctx, s, original, true)

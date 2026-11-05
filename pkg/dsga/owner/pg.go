@@ -425,7 +425,13 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 		progress, err = worker.resources.Advance(callCtx)
 	}
 	if err == nil && progress == pgexec.ExternalStep && worker.vm != nil {
-		progress, err = worker.vm.Advance(callCtx)
+		// 只有配置原完整资格的正常生产链接额外续租出口；旧单步
+		// 领域调用保持原API，正式Run的强制原生期限门不变。
+		if worker.qualification == nil {
+			progress, err = worker.vm.Advance(callCtx)
+		} else {
+			progress, err = worker.vm.AdvanceWithAudit(callCtx, worker.renewVMServiceAudit)
+		}
 	}
 	if err == nil && progress == pgexec.ExternalStep && worker.finalize != nil {
 		progress, err = worker.finalize.Advance(callCtx)

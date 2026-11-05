@@ -1,0 +1,53 @@
+PG17/PG18：复用完整审计出口续接有限 Native 租约（组件已验，真实 E 待验）
+
+一、问题及实际边界
+PG18 私有真实内核链的新请求窗口修正后，第一 Grow 的七个领域步骤均完成，但
+最后一次续租后，完整安全审计11.200秒、Resume10.437秒、普通续租再审10.008秒
+合计31.645秒，超过原30秒期限。不能用延长 Native 期限或删除 Unknown 解决。
+PG17 三节点本轮 Grow29 已被原 Begin 接受；Prepare/Host completed，Runner 原
+回执也已实际发布 completed/8Gi，外层仍 Unknown 并关闭准入，PG保持256/cap1。
+Compute 原日志另有33.276秒 lease URI无响应窗口；迟后 expired 和通用关闭 reason
+不能唯一证明本轮首因，不能把组件修复描述成真实 PG17 已验收。
+
+二、最小实现与统一架构
+仍由原 Scheduler 管唯一 Host 预算、同一 Owner 串行协调、原 Runner/Root/PG
+执行；没有新分配器、来源权威、Model 或 PG 大版本分支。
+在原 Finalize/RetainedService 严格完整审计成功且 sameSnapshot 不变的出口，
+以及 Grow VM 执行器原完整前审/完成回执后审的出口，同步续接原 Native 租约。
+回调只消费本次审计，不缓存许可，不跨任何物理动作复用。随后仍 fresh Native
+observe、完整 gate/容量/floor/期限相等、原 Session 及 VM UID/RV exact CAS。
+VM 新出口还严格绑定原 PrepareCommand 和当前 RootAggregate 摘要，不能因
+Root 身份看似相同而忽略硬限/Bootstrap/Birth/Held 漂移。摘要不含动态
+GuestMemTotal/VM内存/RV，合法 VM7→8 不会被当成旧 Guest 值。
+Unknown 不升级为完成；回调失败不 Start/Record；已过期不重置、不 rearm；
+原恢复范围和旧无回调领域 API 保持。未配置资格的旧单步调用沿原 API；正式
+Run 的原 Native 协议和 open Active 缺资格拒续门保持，不能视为生产降级许可。
+Native30秒、单 PG 等待60秒、请求幂等键、预算保留与释放门均不变。
+
+三、实际验证（不得混成一张全量绿票）
+最终 de1c67 同图：9个完整直接根/22个PASS事件，legacy父根仅5个指定children/
+6个PASS事件，race开启、fail=0、skip=0、OOM=0。另 b37 原3个来源关闭根的
+21个PASS事件按原快照保留；不冒13个完整根或同批49项全系统认证。
+Root强门 RED 使用已有回调API但缺该门的版本，合法但不同 Root 来源反例
+实际 callback=1（应0），其余6子例通过；不是编译或 missing API 冒行为失败。
+覆盖完整审计之间总耗时超过30秒仍正确续接、已过期零续、Native/floor/RV/
+SDK未知/回复丢失等拒绝边界、Runner实际QMP及Guest容量变化、原单步兼容。
+原 f0 打包 ignore 遗漏、b37 的 peer 静止时钟和旧夹具误接等失败均留原件，
+不算通过。只修测试 peer 单调时间和与实际一致的阶段耗时，不放宽生产期限。
+
+四、源码与产物
+编译来源：AS基线13ebf30c5376ca7b5b96e23b93796b1da4203a0b叠加锁内9个源码。
+锁SHA：0279fddb2e28f84235c63d166b063aea41a469facbe198b1b343a792977481c8。
+实际冻结11767文件，各阶段完整SHA通过；SDK3CPU/3GiB/swap0，正式Agent CGO=0。
+Agent SHA：bd5de1fac1abac0497083d5bd1b8fb8c19d3634e3ba96ffef135001c37377756，
+60297400字节。文档不参与二进制编译；合入时逐文件核锁，不纳入历史 Native WIP。
+原票：/data/neon-build/validation/normal-completion-VM-original-Root-and-lease-GREEN-20261105T145849Z-de1c67/
+终票SHA：2eeb7161ad4a879babf9c5f1ff94863b108b658555f4525a6638d98f8ddfabb4。
+
+五、真实验收与回滚
+本批不是PG17/PG18 normal或K8s端到端通过。PG17四核心仍0/4，PG18私有链
+当前N仍固定，没有真实N下降验收。下一步仅本Agent增量镜像、三节点SSH预载/
+准确CRI digest PIN、自有Helm单镜像更新，保同VM/PG数据身份和原Unknown，
+正式恢复后用全新Key验证Grow/真实normal Shrink/Regrow/自动策略及同会话数据。
+不得延长已接受的旧请求或假签NoEffect；不移动PG17 gitlink/发行锁。
+前一Agent ee69/8b18及全部历史镜像、缓存、数据和失败原件均保留作回滚依据。

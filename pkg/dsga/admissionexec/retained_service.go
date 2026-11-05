@@ -15,6 +15,22 @@ import (
 // Runner完整核验，不发开放、不Record/Finish，也不清SDK的原开放未知。
 // 网络不持本地锁；RV复核和真正关闭的后续写前CAS各自独立，未声称跨域原子。
 func (e *Executor) CheckRetainedService(ctx context.Context, s *journal.Snapshot) error {
+	return e.checkRetainedService(ctx, s, nil)
+}
+
+// CheckRetainedServiceWithAudit只为本次正常服务完整审计返回瞬时后继检查点。
+// 保留旧只读/恢复API，无回调字段、缓存许可或跨物理写的快照复用。
+func (e *Executor) CheckRetainedServiceWithAudit(ctx context.Context, s *journal.Snapshot, after func(context.Context, *journal.Snapshot, control.SharedCostResponse) error) error {
+	if after == nil {
+		return fmt.Errorf("normal retained service audit requires explicit completion callback")
+	}
+	return e.checkRetainedService(ctx, s, after)
+}
+
+func (e *Executor) checkRetainedService(ctx context.Context, s *journal.Snapshot, after func(context.Context, *journal.Snapshot, control.SharedCostResponse) error) error {
+	if s == nil {
+		return fmt.Errorf("retained admission check requires original snapshot")
+	}
 	m := s.State()
 	if e.claims == nil || e.runner == nil || !s.Dispatchable() || m.Owner != e.actor || m.Active == nil || m.ServiceClosure != nil {
 		return fmt.Errorf("retained admission check requires original live production domains")
@@ -63,5 +79,20 @@ func (e *Executor) CheckRetainedService(ctx context.Context, s *journal.Snapshot
 	if _, _, err := e.checkClaims(ctx, s, f, aggregate); err != nil {
 		return err
 	}
-	return e.sameSnapshot(ctx, s)
+	if err := e.sameSnapshot(ctx, s); err != nil {
+		return err
+	}
+	if after != nil {
+		known := !m.Active.AbortRequested && m.Active.Cleanup == nil && m.Active.Origin == e.actor
+		for _, step := range m.Active.Steps {
+			if step.Phase == journal.Unconfirmed {
+				known = false
+			}
+		}
+		pending, closing := e.client.PendingAdmission()
+		if known && e.client.Pending() == nil && pending == nil && closing == nil && e.resources != nil && e.resources.Pending() == nil {
+			return after(ctx, s, shared)
+		}
+	}
+	return nil
 }

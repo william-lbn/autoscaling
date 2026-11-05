@@ -84,6 +84,12 @@ func (e *Executor) prepared(op *journal.Operation, prior map[journal.Action]*jou
 // 未来PG grow，Shrink须原Provider释放、原Guest限额、原关闭门禁仍有效。root
 // 出生与PG实例都固定；任何partial/未知或较新资源命令均保留外层未知。
 func (e *Executor) native(ctx context.Context, p budget.Prepared, prior map[journal.Action]*journal.Step, afterVM bool) (budget.RootAggregate, error) {
+	return e.nativeWithShared(ctx, p, prior, afterVM, nil)
+}
+
+// nativeWithShared只在本次完整原生/Root/Process审计成功后交付同轮Shared，
+// 不缓存许可、不以观察值替换已持久的Prepared或原Runner命令。
+func (e *Executor) nativeWithShared(ctx context.Context, p budget.Prepared, prior map[journal.Action]*journal.Step, afterVM bool, audited *control.SharedCostResponse) (budget.RootAggregate, error) {
 	var aggregate budget.RootAggregate
 	fence, err := e.pg.Fence(ctx, control.FenceRequest{ProtocolVersion: 1, Instance: e.instance, IssuerEpoch: e.actor.Epoch})
 	if err != nil {
@@ -125,6 +131,9 @@ func (e *Executor) native(ctx context.Context, p budget.Prepared, prior map[jour
 		return aggregate, err
 	}
 	if p.Request.Kind == control.Grow {
+		if audited != nil {
+			*audited = shared
+		}
 		return aggregate, nil
 	}
 	s := prior[journal.GuestReady]
@@ -150,6 +159,9 @@ func (e *Executor) native(ctx context.Context, p budget.Prepared, prior map[jour
 	if !c.Enabled || !c.PrivateManagementReady || !c.Acknowledged || !c.PublicConnectionsBlocked || !work.ObserverExcluded || !work.ForegroundIdle || current.AdmissionOpen || current.AdmissionRevision != quiesced.Close.Revision || current.IssuerFloorEpoch != e.actor.Epoch || current.CapacityGeneration != shared.Observed.CapacityGeneration || p.ValidateCurrent(control.SharedCostResponse{ProtocolVersion: shared.ProtocolVersion, VMShrinkPermit: false, StartupMainUpperBytes: shared.StartupMainUpperBytes, StartupArraysUpperBytes: shared.StartupArraysUpperBytes, CurrentMainAndArraysUpperBytes: shared.CurrentMainAndArraysUpperBytes, Observed: current}, e.actor.Epoch) != nil {
 		return aggregate, fmt.Errorf("VM shrink native public gate/foreground is no longer quiescent")
 	}
+	if audited != nil {
+		*audited = shared
+	}
 	return aggregate, nil
 }
 
@@ -174,6 +186,20 @@ func hostHeld(h budget.HostReservation, c vmguard.Command) bool {
 }
 
 func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) {
+	return e.advance(ctx, nil)
+}
+
+// AdvanceWithAudit保留原Advance；仅在本轮完整Prepared/Host/PG/Root/Process/
+// Runner及同快照复核成功后同步回调。回调失败不Start/Record、不派发或重放；
+// Runner异步未知仍沿原路径返回，绝不以续租回调补造Completed。
+func (e *Executor) AdvanceWithAudit(ctx context.Context, after func(context.Context, *journal.Snapshot, control.SharedCostResponse) error) (pgexec.Progress, error) {
+	if after == nil {
+		return pgexec.AwaitingFact, fmt.Errorf("VM audit requires explicit completion callback")
+	}
+	return e.advance(ctx, after)
+}
+
+func (e *Executor) advance(ctx context.Context, after func(context.Context, *journal.Snapshot, control.SharedCostResponse) error) (pgexec.Progress, error) {
 	s, err := e.store.Load(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, err
@@ -235,7 +261,9 @@ func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) {
 				return pgexec.AwaitingFact, fmt.Errorf("VM grow lacks completed original Host reservation")
 			}
 		}
-		if _, err := e.native(ctx, p, prior, false); err != nil {
+		var shared control.SharedCostResponse
+		aggregate, err := e.nativeWithShared(ctx, p, prior, false, &shared)
+		if err != nil {
 			return pgexec.AwaitingFact, err
 		}
 		if err := e.claims.Recheck(ctx, s, p, hostRef, observed); err != nil {
@@ -249,6 +277,14 @@ func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) {
 		}
 		if err := e.sameSnapshot(ctx, s); err != nil {
 			return pgexec.AwaitingFact, err
+		}
+		if after != nil && p.Request.Kind == control.Grow {
+			if err := samePreparedRoot(p, prior, aggregate); err != nil {
+				return pgexec.AwaitingFact, err
+			}
+			if err := after(ctx, s, shared); err != nil {
+				return pgexec.AwaitingFact, err
+			}
 		}
 		raw, err := json.Marshal(c)
 		if err != nil {
@@ -280,7 +316,8 @@ func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) {
 	if err != nil || expected != c || !hostHeld(observed.Host, c) {
 		return pgexec.AwaitingFact, fmt.Errorf("runner original sources differ from complete current Host/Prepare/Guest")
 	}
-	aggregate, err := e.native(ctx, p, prior, true)
+	var shared control.SharedCostResponse
+	aggregate, err := e.nativeWithShared(ctx, p, prior, true, &shared)
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
@@ -299,6 +336,14 @@ func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) {
 	}
 	if err := e.sameSnapshot(ctx, s); err != nil {
 		return pgexec.AwaitingFact, err
+	}
+	if after != nil && p.Request.Kind == control.Grow {
+		if err := samePreparedRoot(p, prior, aggregate); err != nil {
+			return pgexec.AwaitingFact, err
+		}
+		if err := after(ctx, s, shared); err != nil {
+			return pgexec.AwaitingFact, err
+		}
 	}
 	raw, err := json.Marshal(fact)
 	if err != nil {
@@ -371,4 +416,26 @@ func (e *Executor) observe(ctx context.Context, s *journal.Snapshot, p budget.Pr
 		return pgexec.AwaitingFact, err
 	}
 	return pgexec.Recorded, nil
+}
+
+// Grow的GuestReady尚未派发，仍在服务PG的Root必须是原Prepare完整绑定。
+// 摘要只含身份、Bootstrap/Birth/Held和硬限Bound，不含GuestMemTotal、VM内存、
+// RSS或RV；VM真实增大不会伪装旧Guest容量，也不能借换Root来源延长服务。
+// 原Advance无回调保持原领域行为；此门只保护新增的有限续租检查点。
+func samePreparedRoot(p budget.Prepared, prior map[journal.Action]*journal.Step, aggregate budget.RootAggregate) error {
+	step := prior[journal.PrepareBudget]
+	var original budget.PrepareCommand
+	if step == nil || json.Unmarshal(step.Command, &original) != nil || original.Validate() != nil {
+		return fmt.Errorf("VM audit lacks original complete Prepare Root binding")
+	}
+	expected := p
+	expected.OutsideClaim = nil // 原Prepare完成只增加正式创建的Outside对象引用。
+	if !reflect.DeepEqual(original.Prepared, expected) {
+		return fmt.Errorf("VM audit original Prepared differs from completed source")
+	}
+	digest, err := budget.RootDigest(aggregate)
+	if err != nil || digest != original.RootSHA256 {
+		return fmt.Errorf("VM audit current Root differs from original Prepare source")
+	}
+	return nil
 }
