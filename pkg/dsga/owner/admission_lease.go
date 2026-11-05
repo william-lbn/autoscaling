@@ -2,9 +2,12 @@ package owner
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"reflect"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
 
@@ -107,6 +110,18 @@ func (w *PGWorker) renewAdmissionLease(ctx context.Context) error {
 	if !fact.Armed {
 		return nil
 	}
+	return w.renewAuditedAdmissionLease(ctx, before, fact, nil)
+}
+
+// 完整来源审计后的最后线性化检查；任何UID/RV、代次或原生期限变化都不续。
+// 只续原来的30秒窗口，不rearm、不改变准入状态，不写业务/预算WAL。
+func (w *PGWorker) renewAuditedAdmissionLease(ctx context.Context, before *journal.Snapshot, fact control.AdmissionLeaseResponse, exact *control.Snapshot) error {
+	if exact != nil && (!fact.Armed || fact.Expired || fact.LeaseEpoch != w.session.Actor().Epoch || fact.Observed.IssuerFloorEpoch != w.session.Actor().Epoch) {
+		if fact.Expired {
+			return errNativeAdmissionExpired
+		}
+		return ErrServiceSafety
+	}
 	if err := w.session.Check(ctx); err != nil {
 		return err
 	}
@@ -132,11 +147,147 @@ func (w *PGWorker) renewAdmissionLease(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if !renewed.Renewed {
+	if !renewed.Renewed || exact != nil && (renewed.Expired || !renewed.Armed || renewed.LeaseEpoch != fact.LeaseEpoch || renewed.DeadlineNS <= fact.DeadlineNS || !reflect.DeepEqual(renewed.Observed, *exact)) {
 		if renewed.Expired {
 			return errNativeAdmissionExpired
 		}
 		return ErrServiceSafety
 	}
 	return nil
+}
+
+// 仅Prepare原步骤尚无PG/Guest/VM派发时可接续有限服务。Unconfirmed只保留
+// 原Outside创建未知；不能将其当完成、重发Create或覆盖任何旧命令。
+func prepareLeaseEligible(m journal.Model, actor journal.Owner) bool {
+	if m.Owner != actor || m.ServiceClosure != nil || m.Active == nil || m.Active.Origin != actor || m.Active.AbortRequested || m.Active.Cleanup != nil || len(m.Active.Steps) == 0 {
+		return false
+	}
+	for n, step := range m.Active.Steps {
+		if n == 0 {
+			if step.Action != journal.PrepareBudget || step.Phase != journal.Planned && step.Phase != journal.Unconfirmed || step.Phase == journal.Unconfirmed && (step.DispatchedBy == nil || *step.DispatchedBy != actor) {
+				return false
+			}
+		} else if step.Phase != journal.Planned {
+			return false
+		}
+	}
+	return true
+}
+
+func (w *PGWorker) renewPreparedAdmissionLease(ctx context.Context, s *journal.Snapshot, c budget.PrepareCommand, root budget.RootAggregate, guestUsable control.Uint64) error {
+	if !prepareLeaseEligible(s.State(), w.session.Actor()) {
+		return nil
+	}
+	if c.Validate() != nil || c.Prepared.Request != s.State().Active.Request {
+		return ErrServiceSafety
+	}
+	return w.renewPrepareLease(ctx, s, c.Prepared.Shared, root, guestUsable, false)
+}
+
+// 新资格只证明新目标，不能替代仍在服务的原永久承诺。每次回调认证原
+// Initial/Finalized/Capacity完整来源和Runner终态；旧成本匹配沿原生产函数。
+// current Shared来自真实本轮读取，最终observe仅作同一原生gate的精确CAS，
+// 不以observe拼造Shared或从新的target填当前Guest容量。
+func (w *PGWorker) renewPrepareLease(ctx context.Context, s *journal.Snapshot, shared control.SharedCostResponse, root budget.RootAggregate, guestUsable control.Uint64, sourcesAudited bool) error {
+	m, vm := s.State(), s.VirtualMachine()
+	if !prepareLeaseEligible(m, w.session.Actor()) {
+		return nil
+	}
+	instance, epoch := w.Binding()
+	if w.safety == nil || w.resourceOwner == nil || !s.Dispatchable() || m.PGInstance == nil || *m.PGInstance != instance || m.ResourceIdentity == nil || *m.ResourceIdentity != root.Identity || w.client.Pending() != nil || w.resourceOwner.client.Pending() != nil || shared.ValidateFor(instance) != nil || shared.Observed.IssuerFloorEpoch != epoch || vm.Status.MemorySize == nil {
+		return ErrServiceSafety
+	}
+	pending, closing := w.client.PendingAdmission()
+	if pending != nil || closing != nil {
+		return ErrServiceSafety
+	}
+	pg := shared.Observed
+	if pg.Operation != nil && pg.Operation.Phase != control.Committed && pg.Operation.Phase != control.Denied {
+		return ErrServiceSafety
+	}
+	for _, a := range pg.Arrays {
+		if a.AllocationUnknown {
+			return ErrServiceSafety
+		}
+	}
+	memory, exact := vm.Status.MemorySize.AsInt64()
+	expected, minimum, err := idleServiceBound(m)
+	if !exact || memory <= 0 || err != nil || root.Validate() != nil || root.Bound != expected || guestUsable < minimum {
+		return ErrServiceSafety
+	}
+	if m.InitialHeld != nil {
+		i, err := m.InitialBudgetFor()
+		if err != nil {
+			return err
+		}
+		if !sourcesAudited {
+			if _, err := w.safety.claims.ReadInitialBudget(ctx, s, i); err != nil {
+				return err
+			}
+		}
+		if err := i.MatchCurrent(shared, root, epoch, control.Uint64(memory), guestUsable); err != nil {
+			return err
+		}
+		_, _, published, err := w.safety.runner.Inspect(ctx, &i.RunnerBirth, m.Owner)
+		if err != nil {
+			return err
+		}
+		if published.State == nil || published.Actual == nil || published.State.Pending != nil || published.Actual.RequestedBytes != control.Uint64(memory) || published.Actual.ActualBytes != control.Uint64(memory) {
+			return ErrServiceSafety
+		}
+		if last := published.State.Last; last != nil {
+			proof, err := w.safety.runner.ObserveAbortOriginal(ctx, last.Intent.Command, last.Intent.JournalSHA256, m.Owner)
+			if err != nil {
+				return err
+			}
+			if !proof.Receipt.Complete() && !proof.Receipt.CancelledBeforeSend() {
+				return ErrServiceSafety
+			}
+		} else if _, err := w.safety.runner.InitialCapacityFor(ctx, i, m.Owner); err != nil {
+			return err
+		}
+	} else {
+		if !sourcesAudited {
+			if _, err := w.safety.claims.ReadActiveHeld(ctx, s); err != nil {
+				return err
+			}
+		}
+		if _, err := w.safety.runner.CheckActiveHeldBudget(ctx, m); err != nil {
+			return err
+		}
+		if m.CapacityHeld != nil {
+			c, err := m.CurrentCapacity()
+			if err != nil {
+				return err
+			}
+			digest, err := budget.RootDigest(root)
+			if err != nil || digest != c.RootSHA256 || root.Bound != c.PGAggregate {
+				return ErrServiceSafety
+			}
+			if err := c.ValidateCurrent(shared, epoch, control.Uint64(memory)); err != nil {
+				return err
+			}
+		} else if m.BudgetHeld != nil && m.BudgetHeld.Finalization.Observation != nil {
+			var f budget.Finalized
+			if json.Unmarshal(m.BudgetHeld.Finalization.Observation.Data, &f) != nil || f.Aggregate == nil || *f.Aggregate != root.Bound {
+				return ErrServiceSafety
+			}
+			if err := f.ValidateFor(f.Request, shared, epoch, vm.Status.PodName, vm.Status.RestartCount, uint64(memory)); err != nil {
+				return err
+			}
+		} else {
+			return ErrServiceSafety
+		}
+	}
+	fact, err := w.observeAdmissionLease(ctx)
+	if err != nil {
+		return err
+	}
+	if fact.Expired {
+		return errNativeAdmissionExpired
+	}
+	if !reflect.DeepEqual(fact.Observed, shared.Observed) {
+		return ErrServiceSafety
+	}
+	return w.renewAuditedAdmissionLease(ctx, s, fact, &shared.Observed)
 }

@@ -345,7 +345,7 @@ func (session *Session) NewProductionPGWorker(ctx context.Context, config comput
 		worker.admission, err = admissionexec.NewWithRunner(session.store, worker.client, session.actor, claims, resources.client, runner)
 	}
 	if err == nil && len(qualification) == 1 {
-		worker.prepare, err = prepareexec.New(session.store, worker.client, resources.client, claims, runner, core, session.actor, qualification[0])
+		worker.prepare, err = prepareexec.New(session.store, worker.client, resources.client, claims, runner, core, session.actor, qualification[0], worker.renewPreparedAdmissionLease)
 		if err == nil {
 			// 固定创建Prepare时的原资格；自动策略不能传入另一份来源，
 			// 避免建议集合和真正生产预算使用不同认证规格。

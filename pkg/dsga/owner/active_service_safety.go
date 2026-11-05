@@ -75,6 +75,7 @@ func (w *PGWorker) inspectActiveService(ctx context.Context, s *journal.Snapshot
 		return fmt.Errorf("active original qualification binding changed")
 	}
 	birth, ref, publication, err := w.safety.runner.Inspect(ctx, &q.RunnerBirth, m.Owner)
+	runnerErr := err
 	// 接管时Runner floor尚未追上不等于丢来源；只容许具有完整原publication的
 	// 这一暂态。没有State/Actual、Lease替换或坏来源均不能借ErrUnknown降级。
 	if err != nil && (!errors.Is(err, vmguard.ErrUnknown) || publication.State == nil || publication.Actual == nil) {
@@ -135,6 +136,24 @@ func (w *PGWorker) inspectActiveService(ctx context.Context, s *journal.Snapshot
 				}
 			}
 		}
+	}
+	if prepareLeaseEligible(m, w.session.Actor()) {
+		// 一般Active允许合法中间态；Prepare续租必须额外达到原严格静止门。
+		if runnerErr != nil || aggregateErr != nil || view.IssuerFloorEpoch != m.Owner.Epoch || publication.State == nil || publication.Actual == nil || publication.State.Pending != nil || publication.Actual.RequestedBytes != publication.Actual.ActualBytes || vm.Status.MemorySize == nil {
+			return ErrServiceSafety
+		}
+		if _, err := view.ConfirmedLimits(); err != nil {
+			return err
+		}
+		actual, exact := vm.Status.MemorySize.AsInt64()
+		if !exact || actual <= 0 || control.Uint64(actual) != publication.Actual.ActualBytes {
+			return ErrServiceSafety
+		}
+		shared, err := w.client.SharedCost(ctx)
+		if err != nil {
+			return err
+		}
+		return w.renewPrepareLease(ctx, s, shared, aggregate, view.Actual.GuestMemTotalBytes, true)
 	}
 	return nil
 }

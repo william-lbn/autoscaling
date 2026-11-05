@@ -720,6 +720,16 @@ func productionInitialService(t *testing.T, mode string) {
 			verifyAdmissionRevisionRace(t, ctx, strings.TrimPrefix(mode, "admission-revision-"), api, store, worker, pg)
 			return nil
 		}
+		if strings.HasPrefix(mode, "prepare-audited-") {
+			for range 2 {
+				progress, err := worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress)
+			}
+			verifyPrepareAuditedLease(t, ctx, strings.TrimPrefix(mode, "prepare-audited-"), api, store, client, session, worker, pg, root)
+			return nil
+		}
+
 		if strings.HasPrefix(mode, "native-lease-") {
 			for range 2 {
 				progress, err := worker.Advance(ctx)

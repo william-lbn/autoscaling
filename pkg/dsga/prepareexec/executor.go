@@ -25,22 +25,27 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
 
+// AuditCheckpoint只由Owner在完整来源审计成功后接续原有限租约；不授予预算或派发。
+// Root和Guest容量均来自同次真实Inspect，不拿新目标反推原服务成本。
+type AuditCheckpoint func(context.Context, *journal.Snapshot, budget.PrepareCommand, budget.RootAggregate, control.Uint64) error
+
 type Executor struct {
-	store     *journal.Store
-	pg        *compute.Client
-	resources *resourceguard.Client
-	claims    *budgetclaims.Reader
-	runner    *vmguard.Reader
-	core      coreclient.CoreV1Interface
-	actor     journal.Owner
-	source    budget.QualificationSource
+	store      *journal.Store
+	pg         *compute.Client
+	resources  *resourceguard.Client
+	claims     *budgetclaims.Reader
+	runner     *vmguard.Reader
+	core       coreclient.CoreV1Interface
+	actor      journal.Owner
+	source     budget.QualificationSource
+	checkpoint AuditCheckpoint
 }
 
 // 资格选择来自可信Agent配置；旧构造路径不默认补它。此域需要创建Outside的
 // 单独授权，仍无Node/Host来源/资格创建、修改或释放权限。真实RBAC/准入规则
 // 必须将资格签发、Outside生产、Host分配与普通请求者分开。
-func New(store *journal.Store, pg *compute.Client, resources *resourceguard.Client, claims *budgetclaims.Reader, runner *vmguard.Reader, client coreclient.CoreV1Interface, actor journal.Owner, source budget.QualificationSource) (*Executor, error) {
-	if store == nil || pg == nil || resources == nil || claims == nil || runner == nil || client == nil || actor.Validate() != nil || source.Validate() != nil {
+func New(store *journal.Store, pg *compute.Client, resources *resourceguard.Client, claims *budgetclaims.Reader, runner *vmguard.Reader, client coreclient.CoreV1Interface, actor journal.Owner, source budget.QualificationSource, checkpoint ...AuditCheckpoint) (*Executor, error) {
+	if len(checkpoint) > 1 || len(checkpoint) == 1 && checkpoint[0] == nil || store == nil || pg == nil || resources == nil || claims == nil || runner == nil || client == nil || actor.Validate() != nil || source.Validate() != nil {
 		return nil, fmt.Errorf("prepare producer requires trusted original domains and qualification")
 	}
 	instance, epoch := pg.Binding()
@@ -48,7 +53,11 @@ func New(store *journal.Store, pg *compute.Client, resources *resourceguard.Clie
 	if epoch != actor.Epoch || resourceEpoch != epoch || instance.VMUID != string(store.Binding().VMUID) || id.VMUID != instance.VMUID || id.ComputeInstanceID != instance.ComputeInstanceID {
 		return nil, fmt.Errorf("prepare producer domains differ")
 	}
-	return &Executor{store: store, pg: pg, resources: resources, claims: claims, runner: runner, core: client, actor: actor, source: source}, nil
+	var audit AuditCheckpoint
+	if len(checkpoint) == 1 {
+		audit = checkpoint[0]
+	}
+	return &Executor{store: store, pg: pg, resources: resources, claims: claims, runner: runner, core: client, actor: actor, source: source, checkpoint: audit}, nil
 }
 
 // command先持久完整原承诺、资格UID/摘要及当时Root来源，后才创建Outside。
@@ -274,6 +283,17 @@ func (e *Executor) inspect(ctx context.Context, s *journal.Snapshot) (c command,
 		err = budget.PrepareCommand(c).Validate()
 	}
 	diagnosticStage = 195
+	if err == nil && e.checkpoint != nil {
+		// 已有WAL时先逐字核原命令；来源漂移不能先续活再等外层比较拒绝。
+		step := m.Active.Steps[0]
+		if step.Phase != journal.Planned {
+			original, decodeErr := decodeOriginalPrepareCommand(step.Command)
+			if decodeErr != nil || !reflect.DeepEqual(original, c) || step.TargetID != request.Key.Instance.ComputeInstanceID {
+				return c, fmt.Errorf("original prepare source or current facts changed before lease checkpoint")
+			}
+		}
+		err = e.checkpoint(ctx, s, budget.PrepareCommand(c), root, view.Actual.GuestMemTotalBytes)
+	}
 	return c, err
 }
 
