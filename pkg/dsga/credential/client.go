@@ -139,7 +139,15 @@ func (client *Client) check(ctx context.Context) error {
 	if ctx.Err() != nil || client.root.Err() != nil || client.authority.Ownership() != client.proof {
 		return failure("owner_binding_changed")
 	}
-	if err := client.authority.Check(ctx); err != nil {
+	// 只有原Authority自己可消费同调用的私有单次scope。普通provider仍完整
+	// Check；缓存miss后的fetch末检查及刷新等待后的下一轮也不会复用已消费项。
+	check := client.authority.Check
+	if scoped, ok := client.authority.(interface {
+		CheckCredentialCall(context.Context) error
+	}); ok {
+		check = scoped.CheckCredentialCall
+	}
+	if err := check(ctx); err != nil {
 		return failure("owner_unconfirmed")
 	}
 	if ctx.Err() != nil || client.root.Err() != nil || client.authority.Ownership() != client.proof {

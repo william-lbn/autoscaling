@@ -13,11 +13,21 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
+	"k8s.io/klog/v2"
 )
 
 // ErrServiceSafety表示保持原owner、预算和关闭WAL的安全等待。它不是排空、
 // VM回收或NoEffect证明；源恢复也不能让Run自行重开门禁。
 var ErrServiceSafety = errors.New("service safety retains original closed admission boundary")
+
+// 仅固定阶段及既有安全叶；不打印原Error、请求、凭据或证明内容。
+// 正常审计与尾部续租共用原分类，不包装、不替换调用方返回的错误。
+func recordServiceSourceAuditError(stage string, err error) {
+	if err == nil {
+		return
+	}
+	klog.InfoS("DSGA service source audit stopped", "stage", stage, "error_type", fmt.Sprintf("%T", err), "error_leaf", serviceReopenErrorLeaf(err))
+}
 
 type serviceSafety struct {
 	claims *budgetclaims.Reader
@@ -32,6 +42,7 @@ func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) 
 	defer func() {
 		if err == nil && ctx.Value(recoveryLeaseScopeKey{}) == nil {
 			err = w.renewAuditedRecoveryLease(ctx, s)
+			recordServiceSourceAuditError("idle_audit_renew", err)
 		}
 	}()
 	stage := "resource_binding"
@@ -352,6 +363,8 @@ func (w *PGWorker) advanceServiceSafetySelected(ctx context.Context, replay stri
 				}
 				if err := w.checkBeforeFinalizationLeaseAudit(ctx, s, nativeExpired); err == nil && !nativeExpired {
 					return false, pgexec.Idle, nil
+				} else {
+					recordServiceSourceAuditError("before_finalization", err)
 				}
 				return w.closePlannedResumeService(ctx, s, generation)
 			}

@@ -1,0 +1,23 @@
+本次问题与行为
+同一条Native HTTP请求在PGWorker取token包装器与credential.Client内重复执行完全相同的所有权检查；每轮都是Lease→VM→Lease。命中token缓存也执行两轮，共6个真实generated-client GET。新逻辑仍每条请求真实执行一轮完整检查，再把私有、同Session/actor/创建context、仅能消费一次的调用内scope交给紧邻的credential调用，返回前撤销。没有TTL或跨HTTP的授权缓存。
+Native自身由6 GET降为3；单HTTP expired recovery早退路径由9降6；正常双HTTP recovery helper保留独立Check和最后Store.Load，真实由19降13。不能把这些路径混为整段只剩3 GET。
+
+安全和架构边界
+不改变原Scheduler单一容量权威、Model/Source合同、Gateway独立鉴权、Native epoch fence、30秒服务期限、真实normal硬限、Source Unknown/旧MAY和恢复账本。
+静态/普通token provider仍由外层fresh Check保护；同context第二次消费、跨Session/actor、已撤销/取消、刷新或并发等待之后均重新Check。scope同时保存出生context，不能用WithoutCancel脱离其取消。最终审计两个helper原Check→独立Store.Load次序逐字保留，不能用较早VM快照掩盖末Lease GET期间的VM RV变化。
+该机制位于共用管理层，没有PG17/PG18版本分支。Gateway只做认证/路由，不新增分配器。
+
+实际错误观测
+service_safety仅在原before_finalization返回错误或idle审计尾部续租错误时记录固定stage、错误类型和既有safe error_leaf；不打印原Error正文、请求、凭据或证明内容，不改变返回、调用顺序和安全判断。
+
+验证与范围
+原Native性能根实际RED：原实现预期3/实际6，不是缺API编译失败。修前两个候选安全问题也真实RED：最后L2期间VM RV改变仍renew、出生context取消后WithoutCancel零GET复用。候选问题在发布前独审修正，不冒称现场运行版本有这些漏洞。
+联合最终GREEN：owner22个顶层根、49个pass事件；credential全包11根、38个pass事件。均race，0skip/0failure；这些是有真实generated client与HTTP peer的组件验证，不是现场apiserver、RBAC、Native内核或K8s端到端验收。
+终票 /data/neon-build/validation/PG17-native-scope-and-safe-leaf-GREEN-20261105T201727Z-08fb4f/result.json，SHA256 34dcd17d3f72196a4182c3aff0d91a5133d044f4264e2d0c66eca3c36403da28。
+最终补丁SHA256 c5c4b4d232368a83a5159bca7acdb12487c93d8134e384b43c9a80c5c3dade13。独审SHA256 c8995995259bdd030f644a33d907219bb4197e6f452e3891c361e9f7454d1019。3CPU/3Gi/swap0，GREEN峰771129344B/OOM0，原unit退出0且额度归还。
+
+现场状态与未完成项
+PG17 Grow32实际前五阶段已完成，原生PG256→8192页/cap1→2 committed；Root实际normal memory.max从旧1077411840B升至1127743488B，同Guest/PG身份。Finalize/Resume仍未完成，已关闭准入，四项最终内存E仍0/4。原请求deadline不得延长或重放。
+本补丁没有证明同步PG长操作与服务续接的长期稳定性。原生Resize同SQL执行最多等待60秒，而服务lease30秒；须继续用真实新鲜全来源审计和原操作ID/状态/单writer机制验证，不能以CPU提升、TTL放宽、partial proof或后台旧快照心跳冒通过。
+TEMP原512行载荷为16384B总量，只证明同会话数据；Root一次控制文件漏protocol_version导致测试helper失败，原证保留，不能归因PG/冒连续性通过。后续控制文件严格只有protocol_version(int1)、nonce、stage三键。
+后续先完成PG17真实normal降限及Grow/Shrink/Regrow/自动策略全链，再按最终计划取届时最新自有控制面。PG18私有历史接线通过不等于normal/生产Source/E通过。

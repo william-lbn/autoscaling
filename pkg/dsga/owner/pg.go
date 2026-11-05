@@ -253,10 +253,15 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 		// 和凭据服务的等待；凭据提供器必须遵守ctx，失败不输出其私密错误。
 		tokenCtx, cancel := context.WithTimeout(ctx, credentialWait)
 		defer cancel()
-		if err := session.Check(tokenCtx); err != nil {
+		// 先按原规则真实核Lease→VM→Lease，再只把本次私有scope交给
+		// 紧邻的credential调用。provider返回前撤销；不会进入下一条HTTP。
+		// 静态provider不消费scope也保留这轮fresh Check，刷新末仍再核。
+		credentialCtx, _, finishCheck, err := session.checkedCredentialCall(tokenCtx)
+		if err != nil {
 			return "", err
 		}
-		return token(tokenCtx)
+		defer finishCheck()
+		return token(credentialCtx)
 	}
 	var client *compute.Client
 	if initial {

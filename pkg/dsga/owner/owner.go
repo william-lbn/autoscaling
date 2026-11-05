@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -102,25 +103,67 @@ func (session *Session) Context() context.Context { return session.ctx }
 // 两对象不能原子读取，返回后也可能换主；因此这只限制当前协调循环，不能替代
 // PG/Runner串行fence。取消立即阻止新调用，已派发动作仍须持久对账。
 func (session *Session) Check(ctx context.Context) error {
+	_, err := session.checkSnapshot(ctx)
+	return err
+}
+
+// checkSnapshot保留原Lease→VM→Lease完整读取，导出同次已验证的VM，避免最终
+// Native调用前再单独GET一份VM。返回值不跨调用授权，仍由原UID/RV及领域fence裁决。
+func (session *Session) checkSnapshot(ctx context.Context) (*journal.Snapshot, error) {
 	if session == nil || session.ctx == nil || session.ctx.Err() != nil {
-		return ErrLeadershipLost
+		return nil, ErrLeadershipLost
 	}
-	// VM读可能单独卡住而Lease仍健康续约。检查必须有自己的期限，不能只等
-	// 失租取消，更不能让取凭据回调无限挂在HTTP Client.Do之前。
 	callCtx, cancel := context.WithTimeout(ctx, session.apiTimeout)
 	stop := context.AfterFunc(session.ctx, cancel)
 	defer stop()
 	defer cancel()
 	if session.ctx.Err() != nil {
-		return ErrLeadershipLost
+		return nil, ErrLeadershipLost
 	}
-	if _, _, err := verifyCurrent(callCtx, session.client, session.store, session.Ownership()); err != nil {
-		return err
+	snapshot, _, err := verifyCurrent(callCtx, session.client, session.store, session.Ownership())
+	if err != nil {
+		return nil, err
 	}
 	if session.ctx.Err() != nil {
-		return ErrLeadershipLost
+		return nil, ErrLeadershipLost
 	}
-	return nil
+	return snapshot, nil
+}
+
+type credentialCallScopeKey struct{}
+
+// 私有scope只承接同一同步Native调用刚完成的Check；没有TTL、全局缓存或可传输
+// 凭据。scope不能导出给调用者构造，撤销及消费分别原子化，跨goroutine也最多
+// 消费一次。它不承接来源审计，不能复用Root/Host/Runner的历史成功作为许可。
+type credentialCallScope struct {
+	session *Session
+	actor   journal.Owner
+	// 消费者即使用WithoutCancel剥离取消，创建本scope的调用已结束也不可复用。
+	birth context.Context
+	// 0=可消费，1=已消费，2=已撤销；单原子状态封闭撤销/消费竞态。
+	state atomic.Uint32
+}
+
+func (session *Session) checkedCredentialCall(ctx context.Context) (context.Context, *journal.Snapshot, func(), error) {
+	snapshot, err := session.checkSnapshot(ctx)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	scope := &credentialCallScope{session: session, actor: session.actor, birth: ctx}
+	return context.WithValue(ctx, credentialCallScopeKey{}, scope), snapshot, func() { scope.state.Store(2) }, nil
+}
+
+// CheckCredentialCall供原credential.Client可选复用紧邻的同Session检查。没有本包
+// 私有scope、已撤销/已消费、换Session/actor或取消时，一律退回原fresh Check。
+// Token刷新或等待后再进入该接口必须真正重读；不能借同context延长检查寿命。
+func (session *Session) CheckCredentialCall(ctx context.Context) error {
+	scope, _ := ctx.Value(credentialCallScopeKey{}).(*credentialCallScope)
+	if session != nil && session.ctx != nil && session.ctx.Err() == nil && ctx.Err() == nil &&
+		scope != nil && scope.session == session && scope.actor == session.actor &&
+		scope.birth != nil && scope.birth.Err() == nil && scope.state.CompareAndSwap(0, 1) {
+		return nil
+	}
+	return session.Check(ctx)
 }
 
 // claim不初始化空日志，也不从LeaseTransitions构造epoch。持久单调epoch的

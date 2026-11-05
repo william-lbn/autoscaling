@@ -736,7 +736,11 @@ func productionInitialService(t *testing.T, mode string) {
 				require.NoError(t, err)
 				require.Equal(t, pgexec.Recorded, progress)
 			}
-			verifyNativeAdmissionLease(t, ctx, mode, api, store, worker, pg)
+			if strings.HasPrefix(mode, "native-lease-call-scope") {
+				verifyNativeCallScopeCachedToken(t, ctx, mode == "native-lease-call-scope-static", api, session, resources, worker, config, client, source, pg)
+			} else {
+				verifyNativeAdmissionLease(t, ctx, mode, api, store, worker, pg)
+			}
 			return nil
 		}
 		if strings.HasPrefix(mode, "initial-safety-") {
@@ -762,7 +766,9 @@ func productionInitialService(t *testing.T, mode string) {
 				require.NoError(t, err)
 				require.Equal(t, pgexec.Recorded, progress)
 			}
-			if strings.HasPrefix(mode, "lifecycle-lease-guard-") {
+			if mode == "lifecycle-lease-native-call-scope" {
+				verifyNativeCallScopeLifecycle(t, ctx, transfer, session, resources, worker, config, client, source, pg, root, runner)
+			} else if strings.HasPrefix(mode, "lifecycle-lease-guard-") {
 				verifyAuditedLeaseGuard(t, ctx, strings.TrimPrefix(mode, "lifecycle-lease-guard-"), transfer, session, resources, worker, config, client, source, pg, root, runner)
 			} else {
 				verifyAuditedLeaseSequence(t, ctx, strings.TrimPrefix(mode, "lifecycle-lease-"), transfer, session, resources, worker, config, client, source, pg, root, runner)
