@@ -109,7 +109,7 @@ func (s *Service) allocation(ctx context.Context, n NodeConfig, expected *core.P
 			return nil, none, nil, fmt.Errorf("managed VM never uses legacy resource approval")
 		}
 		binding := journal.Binding{Namespace: vm.Namespace, Name: vm.Name, VMUID: vm.UID, Incarnation: p.Incarnation}
-		snapshot, err := journal.Inspect(vm, binding)
+		snapshot, err := s.models.Inspect(vm, binding)
 		if err != nil {
 			return nil, none, nil, err
 		}

@@ -36,34 +36,55 @@ type Store struct {
 	cache   validatedModelCache
 }
 
-// 只复用同一Store中逐字相同账本的确定性解码结果；绝不缓存GET、VM元数据、
+// 只复用固定Binding且逐字相同账本的确定性解码结果；绝不缓存GET、VM元数据、
 // Lease、来源或派发许可。完整生命周期原文变大后，每次取凭据重复解压/严格
 // 校验同一份历史会占满串行轮次，使有限的新鲜采样窗口无法累计。
 // 缓存只有一项，空间仍受原编码/模型界限约束。锁仅保护本地查找及深拷贝，
 // 网络和解码都在锁外；并发旧解码后完成最多替换性能缓存，不能推进任何水位。
 type validatedModelCache struct {
+	binding Binding
 	mu      sync.Mutex
 	encoded string
 	model   Model
 }
 
-func (store *Store) decodeModel(data string) (Model, error) {
-	store.cache.mu.Lock()
-	if data != "" && data == store.cache.encoded {
-		model := store.cache.model.Clone()
-		store.cache.mu.Unlock()
+func (cache *validatedModelCache) decodeModel(data string, binding Binding) (Model, error) {
+	cache.mu.Lock()
+	if data != "" && binding == cache.binding && data == cache.encoded {
+		model := cache.model.Clone()
+		cache.mu.Unlock()
 		return model, nil
 	}
-	store.cache.mu.Unlock()
-	model, err := decode(data, string(store.binding.VMUID), store.binding.Incarnation)
+	cache.mu.Unlock()
+	model, err := decode(data, string(binding.VMUID), binding.Incarnation)
 	if err != nil {
 		// 不缓存错误，也不把已通过的旧模型用于不同/缺失/损坏的原文。
 		return Model{}, err
 	}
-	store.cache.mu.Lock()
-	store.cache.encoded, store.cache.model = data, model.Clone()
-	store.cache.mu.Unlock()
+	cache.mu.Lock()
+	cache.binding, cache.encoded, cache.model = binding, data, model.Clone()
+	cache.mu.Unlock()
 	return model, nil
+}
+
+func (store *Store) decodeModel(data string) (Model, error) {
+	return store.cache.decodeModel(data, store.binding)
+}
+
+// ModelInspector只复用一个已严格解码的Model，不持有客户端、Snapshot或许可。
+// 固定Binding和完整原文同时相等才命中；更换实例只替换性能缓存。每次仍由
+// inspectVM重核本次fresh GET的UID/RV、Spec、生命周期及Compute绑定。锁不跨
+// 网络或严格解码，返回深拷贝；坏原文不缓存，失效不会复活任何旧授权。
+// 零值可用，数量固定为一，空间沿原encoded/raw/model硬界限。
+type ModelInspector struct{ cache validatedModelCache }
+
+func (inspector *ModelInspector) Inspect(vm *vmv1.VirtualMachine, binding Binding) (*Snapshot, error) {
+	if inspector == nil {
+		return nil, fmt.Errorf("nil journal ModelInspector")
+	}
+	return inspectVM(vm, binding, func(data string) (Model, error) {
+		return inspector.cache.decodeModel(data, binding)
+	})
 }
 
 // Binding返回固定值副本，供选主/凭据适配器核对同一VM incarnation；它不是

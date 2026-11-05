@@ -1,0 +1,14 @@
+Scheduler复用原严格模型解析缓存
+
+相关问题与实际边界
+PG17真实Compute原Pod预算保护出现10秒事务超时。现场Scheduler只有1CPU限额，采样约0.983核使用且绝大多数周期节流，主机仍有余量；Core/Lease客户端实际200/400，不能误说默认5QPS。窄只读计时用原真实VM74，stateless严格Inspect冷/热均约175至185ms、每次约44MB分配与118万次malloc；原Store按exact-encoded复用模型后相同原文约0.04至0.06ms。该热点实证不等于所有10秒超时的唯一因果。
+
+最小复用
+从原Store.decodeModel抽出同一缓存方法，增加完整固定Binding作为键。ModelInspector零值可用，仅保存一条严格解析成功的Model；完整Binding与encoded原文同时逐字相同才命中，返回Clone，坏数据不存，换实例只替换性能缓存。原encoded/raw/model界限不变，锁不跨网络和严格解码。
+HostService只在三个原stateless Inspect点复用此Inspector。每次VM仍真实GET并完整进入原inspectVM，包含新的UID/RV、mode/bootstrap/Compute校验与fresh Snapshot；Node/Lease/生命周期、原CAS和Unknown门均保留，不缓存Snapshot、分配或授权许可，不新增GET、分配器、QPS/timeout/CPU设置。publish中原新Store.Load仍有冷解析，不宣称全部消除。
+
+验证
+同API脚手架退回原strict decode后RED分配数cached/strict=442/442，准确失败；新实现7/442通过，无墙钟阈值。9个直接根、25个PASS、race/0fail/skip，三个phase11765源码逐SHA通过；cold/warm每轮VM GET均2次，坏原文、错UID/inc、fresh RV/生命周期、失租和Node-RV CAS拒绝均保持。
+正式Scheduler CGO0 ELF SHAf39bfae33208db0a3b278eb5bc6d732ca746998cb424e602a197179c8fe8034f，68620472字节。接受票SHA0e5d431b098b12ddb9d3d4d36e6efc0d6149fa3db6a2ad638186b06622cf80b7，独审8b1e4d14347d336be3fd267b770eb364487efb8cad1f614b92fe467e96a8995d。
+私有计时两次准备错误分别是漏DOCKER_CONFIG导致buildx不可见、named context继承ignore丢CI源文件，均在真实编译/测量之前被拒，原FAIL保留，未当功能或性能结果。
+本阶段只组件通过，真实三节点部署后Host准入耗时和内存端到端另验；不得据缓存命中冒新预算/权限证明。

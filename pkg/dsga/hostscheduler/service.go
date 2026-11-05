@@ -63,6 +63,8 @@ type Service struct {
 	holder   string
 	domains  map[string]domain
 	started  atomic.Bool
+	// 只缓存一条纯Model解析；所有Kubernetes读取和原授权/CAS仍每次新鲜执行。
+	models journal.ModelInspector
 }
 
 // New保留既有嵌入调用合同；正式Scheduler使用NewWithElectionClient隔离续租。
@@ -155,7 +157,7 @@ func (s *Service) placementKey(ctx context.Context, p hostguard.Placement, vm *v
 		return nil, fmt.Errorf("managed placement original VM changed before Node CAS")
 	}
 	b := journal.Binding{Namespace: p.Namespace, Name: p.VMName, VMUID: latest.UID, Incarnation: p.Incarnation}
-	current, err := journal.Inspect(latest, b)
+	current, err := s.models.Inspect(latest, b)
 	if err != nil {
 		return nil, err
 	}
@@ -432,7 +434,7 @@ func (s *Service) settleBeforeRetainedPlacement(ctx context.Context, d domain, p
 		return err
 	}
 	binding := journal.Binding{Namespace: row.Namespace, Name: row.VMName, VMUID: types.UID(row.VMUID), Incarnation: row.Incarnation}
-	current, err := journal.Inspect(vm, binding)
+	current, err := s.models.Inspect(vm, binding)
 	if err != nil {
 		return err
 	}
