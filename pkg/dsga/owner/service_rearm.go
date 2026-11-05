@@ -34,7 +34,7 @@ func (w *PGWorker) rearmServiceLease(ctx context.Context, selector string) (pgex
 	if err := w.inspectServiceRecovery(ctx, s); err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
-	before, err := w.observeAdmissionLease(ctx)
+	before, err := w.observeServiceRecoveryLease(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}

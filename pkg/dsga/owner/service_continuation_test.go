@@ -92,7 +92,7 @@ func (f *businessOwnerTransfer) takeoverClosure(t *testing.T, ctx context.Contex
 	c := before.State().ServiceClosure
 	require.NotNil(t, c)
 	_, pendingFinalization := before.State().PendingFinalizationGenerationForClosure()
-	require.True(t, c.Pending() || c.Rearm != nil || c.Reopen != nil || c.ResourceRecovery != nil || c.PGRecovery != nil || c.VMRecovery != nil || c.Reason == "active_pg_source_unconfirmed" || c.Reason == "finalize_source_unconfirmed" && pendingFinalization == nil, "接管前必须存在原关闭或独立恢复WAL")
+	require.True(t, c.Reason == "idle_source_unconfirmed" && c.Phase == journal.Settled || c.Pending() || c.Rearm != nil || c.Reopen != nil || c.ResourceRecovery != nil || c.PGRecovery != nil || c.VMRecovery != nil || c.Reason == "active_pg_source_unconfirmed" || c.Reason == "finalize_source_unconfirmed" && pendingFinalization == nil, "接管前必须存在原关闭或独立恢复WAL")
 	nextRun := f.start(ctx)
 	select {
 	case <-nextRun.ready:

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 )
@@ -36,12 +35,7 @@ func (w *PGWorker) rearmServiceReopen(ctx context.Context, selector string) (pge
 	if err := w.inspectServiceRecovery(ctx, s); err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
-	instance, epoch := w.Binding()
-	fence, err := w.client.Fence(ctx, control.FenceRequest{ProtocolVersion: 1, Instance: instance, IssuerEpoch: epoch})
-	if err != nil || fence.Disposition != control.Fenced {
-		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
-	}
-	before, err := w.observeAdmissionLease(ctx)
+	before, err := w.observeServiceRecoveryLease(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}

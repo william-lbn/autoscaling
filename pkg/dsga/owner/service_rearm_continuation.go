@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
-
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 )
@@ -34,12 +32,7 @@ func (w *PGWorker) continueServiceRearm(ctx context.Context, selector string) (p
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
 	// 与既有再关闭恢复相同：正式 Fence 只提高 floor，不恢复期限。
-	instance, epoch := w.Binding()
-	fence, err := w.client.Fence(ctx, control.FenceRequest{ProtocolVersion: 1, Instance: instance, IssuerEpoch: epoch})
-	if err != nil || fence.Disposition != control.Fenced {
-		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
-	}
-	before, err := w.observeAdmissionLease(ctx)
+	before, err := w.observeServiceRecoveryLease(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}

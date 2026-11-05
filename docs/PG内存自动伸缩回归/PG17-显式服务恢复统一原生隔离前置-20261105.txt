@@ -1,0 +1,29 @@
+显式服务恢复统一原生隔离前置（2026-11-05；精准组件通过）
+
+实际问题
+新Agent正式选主后，Kubernetes Session已为新Owner，Root/Runner也能确认该Owner，但Native的单调floor可能仍是旧Owner。此次93实例实测Owner21、Nativefloor20、过期限期与closed admission保持原20；原rearm503且WAL没有Rearm选择。原continue_service_closure只用于Pending关闭，不能把已settled的原关闭假装成Pending来补fence。
+
+架构位置与统一抽象
+此缺口属于共享Owner服务恢复层的跨领域隔离顺序，不属于Proxy认证，也不靠控制面或Proxy识别PG版本修补。三个显式恢复入口统一调用observeServiceRecoveryLease：先沿原生产函数完成全部来源审计，真实Session查租，观察原Native期限。Nativefloor等于Session时保留原路径；只有floor更低且原生armed、expired、admission closed时，再查真实Session并调用原client.Fence。必须得到真实Fenced，之后再次观察Native，要求相同当前Owner/floor且仍armed、expired、closed，才把实际deadline/revision/capacity交给原Start...CAS。
+
+没有并行分配器或旁路事实。Helper使用统一Instance、真实Session和既有Native协议，不硬编码Owner21/20，不增加PGmajor分支。没有增加TTL、Lease续租、Native rearm/open、新SDK wire或WAL/VMModel字段。原Native恢复setter仍由后继已持久原选择触发，旧Unknown、原请求、预算和恢复合同不清除。Fence回复未知或鲜读失败时立即返回，不能把“可能抬了floor”当作已选新Rearm，也不在Helper里自动重试。
+
+范围
+生产：service_rearm.go、service_rearm_continuation.go、service_reopen_rearm.go以及新service_recovery_fence.go。
+直接测试：新service_recovery_fence_test.go；既有initial_service_test.go只增加新模式和原完整首次服务夹具分派；既有service_continuation_test.go只允许已settled idle闭包进入原真实Elector接管测试。其余Native WIP、发行锁、公共DTO与版本合同均未改。
+
+真实验证边界
+RED在原2be6生产代码上，执行完整首次预算/关闭→真实Elector换Owner，Native仍保持旧floor，原rearm在CAS前拒绝。它不是编译失败。GREEN的有状态FakeNative由实际HTTP Fence推进floor，不能在fixture里预抬floor；覆盖共享助手原观察、同floor、较高floor、未过期、开放、未armed、未知Fence/鲜读错误/LeaseUID漂移，以及三个真实恢复调用点的直接正常组合。
+原首批f79b16整体FAIL保留：正确RED通过后，GREEN在新测试对compute.New漏传原ctx的纯编译错误处停止、零GREEN根。只修该测试签名，四个生产文件字节不变，后继f986c1按原3CPU/3Gi有界SDK验证。后继精准组件实际通过，见下列准确边界。所有Kube API、Root和Native均为明确协议peer，真实执行的是Session/Elector、TLS、SDK、UID/RV WAL；不冒充真实PG内存或117/118/119端到端恢复验收。
+
+最终准确验证
+f79b16：原2be6生产+同测试前驱的RED实际失败；随后GREEN因测试漏传原compute.New(ctx,config)的ctx而编译失败，整体FAIL不改。
+f986c1：3新根14PASS事件（含原settled闭包真接管/HTTP Fence以及11个共享助手边界）；3个既有恢复caller各仅normal子例，共3根6PASS事件；合计6唯一根20PASS事件、0skip、race未启用。没有把旧每caller全部crash-window矩阵冒称重新通过。
+三个阶段均完整11736源码项逐SHA通过；实际3CPU/3Gi/Swap0、OOM0。任务232.375秒，正式Agent CGO0 ELF b8bf6ae7fbb2a514d6a02d15561a1e4c889986b1cc864cc043b4e7efd8ca7e37，60182712字节，原unit inactive/dead/MainPID0/exit0、budget reconcile terminal0。
+准确编译树是AS2be6a4a7d167d60736d410d513452a20bf97d90e的git archive+七个owned（四生产/三直接测试），未混工作树Native WIP，未修改go.mod/go.sum或发行锁。只需要Agent重新打包；没有Model/SDK wire变化要求其余运行读者改格式。
+Root原通用资源接管已有owner/resource.go的持久原Guest绑定之后resource client.Fence（当前原实现33及131–133附近）；本次补齐Native closed recovery对应隔离责任，属于同一Owner恢复抽象。不能用旧View的floor代替新Root鲜读，Root当前floor独立事实由实际读票负责。
+最终收据：/data/neon-build/validation/service-recovery-fence-ctx-fixture-followup-20261105T035344Z-f986c1/final-seven-source-shared-recovery-fence-six-root-Agent-acceptance.json。
+本阶段没有执行任何线上Fence/rearm/恢复/SQL或内存动作；最终真实K8s服务恢复和四项内存动作仍须Root按原正式入口实测。
+
+本轮实际跨层补证
+03:58:54同Agent57956306-714f-4416-b963-540880ec7c75/Owner21的resource_state实际200（1.68秒）：Root.IssuerFloorEpoch为21，原SDK ConfirmedLimits通过、RootAggregate与Initial相等，Birth PID435/start59483不变。票：/data/neon-k8s-pg17/runs/93bad-Owner21-Root-resource-state-readonly-20261105T035834Z-a980eb/current-Owner21-Root-floor-flags-confirmed-limits.json，SHA256 836278ec4fca4648635cb0059378c6dce0370ba1656d55bd6723430800bfe6aa。Native03:29:48实际GET仍floor20/closed/rev2。两者说明Root已有通用接管fence而Native已settled闭包恢复漏接，并非需要额外PGmajor分支或另造Host/Root分配器。此证据本身没有执行Fence写。
