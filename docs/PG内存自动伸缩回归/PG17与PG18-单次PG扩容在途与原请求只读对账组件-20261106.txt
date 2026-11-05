@@ -1,0 +1,24 @@
+PG17/PG18共用：单次PG扩容在途与原请求只读对账（组件阶段）
+
+一、解决的问题和本次范围
+原PG扩容通过一次同步HTTP/SQL等待结束。它可能长于服务安全租约的剩余时间，串行协调循环因此不能及时完成新的完整来源审计。此阶段只实现原PG执行器的单个在途调用和原请求只读对账能力。默认关闭，未接通Owner完整审计前不得生产启用；本提交不表示三节点内存端到端通过。
+
+二、职责和不变量
+1. 原writer负责写前Start、完整请求/command摘要、数组授权和最终Store.Record；网络goroutine只执行同一个Client.Resize，不写账本、不创建Owner、预算或第二队列。
+2. 当前仅Grow可以显式启用异步；Shrink继续原同步流程。Run父上下文、原请求绝对期限及原HTTP客户端限制共同约束任务，不延长服务租约。
+3. 同一不可变派发最多一个Resize。Status观察中的NotFound不能成为NoEffect或自动重发依据。原WAL MAY及SDK Pending原样保留。
+4. 丢回复、请求child期限耗尽不等于没有执行。窄ObserveDispatchedInFlight只允许原同Key查询或由原writer消费原回复；不经过普通Advance，不发送Start/Resize/Replay/Fence/Cancel，也不推进后继Finalize/Resume。
+5. 任务结果与服务许可分开。MatchInFlight只证明同一活任务，不能替代当前Root/Guest硬限、原Held和新目标预算、Host/Outside、Runner、资格、PG最坏费用及末次Native CAS。Owner完整producer作为下一阶段独立收口。
+6. 原Actor、VM UID、PG boot、派发origin、完整命令字节和摘要、ordinal/target以及末次Store UID/RV均继续核对。失主或Run结束不授予新的控制/服务权限；未知回复不解释成成功。
+
+三、已执行的针对性组件验证
+真实RED保留：原同步网络调用阻塞writer；原completion-only分支在消费HTTP错误后不能继续Status查询。非编译失败或夹具失败，不将环境错误计为语义RED。
+正式隔离组件记录：/data/neon-build/validation/PG17-inflight-result-parent-context-REDGREEN-20261105T220409Z-09ad8c。
+最终补丁SHA25bbfc821dba74d7ae0007414159b6ec0f4ee67382f091b96ba6915db2b975cb；源码锁SHA46d95b42c1e6ff4c47af29af3fc2a975b3bf44ebdda76a4ecd3dd4220f0c95ac。
+该源完整pgexec包32个根用例、90个PASS事件，0 skip，race检查通过。覆盖单POST、Status NotFound、Status先记录、丢回复、原期限、父上下文/Actor改变、晚回、旧RV、取消、默认关闭、Shrink同步及uint64期限边界。
+实际运行3CPU/3Gi/swap0，内存峰505741312字节，OOM0；原unit真实终态success/exit0，预算已按原终态归还；unit后来collect，不用not-found默认字段冒原退出。原始结果result.json SHAee1e35224a988ff548a435f0e9a57be2633236ab5d12e8348418f7581ceede6f；组件票component-reviewable-result.json SHAe92f432672f2e4af0780376defe996703b9b310c2c8e3da254a0ec8edb02f803。
+最终增补真实RED：在Store PATCH网络中途取消原父上下文，旧Advance(Background)仍落账；新recordCtx同时受原父上下文约束，保留原Unconfirmed。这里只能取消尚未被服务端接受的请求，不能承诺撤销已经接受的CAS。最终GREEN150.477秒、全流程182.817秒。
+此前c4eb主体的独立静态审票：/data/reports/PG17-PG18-single-inflight-retained-readonly-independent-security-review-20261105T220112Z-421524/independent-review.json，SHAeafe550923d1de03d0e9940d42a8966d661b9a251eb16588ab29fb1ab0c82354。
+
+四、尚未验收的边界
+这是执行器组件阶段，不包含Owner联合运行、Guest长步骤续约或现网镜像启用。三节点实际normal硬限曾从1127743488降至1077411840字节，但该次完整Shrink在VM前安全关闭且数据会话校验失败，因此四项最终内存端到端仍为0/4。保持原30秒期限、Unknown门和单一Scheduler预算权威，后续联合测试通过后再明确启用、构建镜像及部署。

@@ -39,6 +39,7 @@ type Executor struct {
 	actor     journal.Owner
 	instance  control.Instance
 	resources *resourceguard.Client
+	flight    resizeFlightController
 }
 
 type executionAudit struct {
@@ -52,6 +53,9 @@ type executionAudit struct {
 // 同boot下已经记录的完整原命令，利用PG完整Key/context幂等协议；新owner、取消、
 // 尚未Start或VM正在删除均拒绝。它不会重放VM/QMP动作，也不清外层预算/准入状态。
 func (executor *Executor) ReplayOriginal(ctx context.Context) (Progress, error) {
+	if executor.hasResizeFlight() {
+		return AwaitingFact, nil
+	}
 	snapshot, err := executor.store.Load(ctx)
 	if err != nil {
 		return AwaitingFact, err
@@ -174,7 +178,11 @@ func (executor *Executor) Advance(ctx context.Context) (Progress, error) {
 	}
 	state := snapshot.State()
 	if state.Owner != executor.actor || state.VMUID != executor.instance.VMUID {
+		executor.cancelResizeFlight()
 		return AwaitingFact, fmt.Errorf("PG executor journal owner or VM changed")
+	}
+	if handled, progress, err := executor.advanceResizeFlight(ctx, snapshot); handled {
+		return progress, err
 	}
 	if state.Active == nil {
 		return Idle, nil
@@ -264,6 +272,9 @@ func (executor *Executor) Advance(ctx context.Context) (Progress, error) {
 				if _, err := executor.resources.AuthorizeArrayRequest(ctx, intent); err != nil {
 					return AwaitingFact, err
 				}
+			}
+			if started, err := executor.startResizeFlight(intent, *step, fence); started {
+				return AwaitingFact, err
 			}
 			fact, err := executor.client.Resize(ctx, intent)
 			if err != nil {
