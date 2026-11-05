@@ -49,9 +49,11 @@ func (w *PGWorker) rearmServiceReopen(ctx context.Context, selector string) (pge
 	if err := w.checkRearmDispatch(ctx, s); err != nil {
 		return pgexec.AwaitingFact, err
 	}
-	if _, err := w.client.AdmissionLease(ctx, dispatch.Request); err != nil {
-		return pgexec.AwaitingFact, err
+	fact, sendErr := w.client.AdmissionLease(ctx, dispatch.Request)
+	if sendErr != nil {
+		return pgexec.AwaitingFact, sendErr
 	}
+	noteRecoveryRearmReply(ctx, fact)
 	if err := w.checkRearmDispatch(ctx, s); err != nil {
 		// 已恢复期限也仍关闭；来源写后失效保留原Unknown，后继只读
 		// 原应用回执。不能以setter成功跳过来源复核并开放业务。

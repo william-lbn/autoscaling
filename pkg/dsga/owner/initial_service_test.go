@@ -61,6 +61,8 @@ type initialServicePG struct {
 	leaseExpired   bool
 	leaseTimeoutMS int
 	// 仅续租竞态测试在真实Native observe到达后、peer锁外改变来源。
+	leaseClock            func() control.Uint64
+	leaseWindow           control.Uint64
 	leaseAuditSharedReads int
 	beforeLeaseObserve    func()
 	rearmFixture          *serviceRearmPG
@@ -74,6 +76,9 @@ func (p *initialServicePG) shared() control.SharedCostResponse {
 }
 
 func (p *initialServicePG) current() control.SharedCostResponse {
+	if p.leaseClock != nil && p.leaseDeadline != 0 && p.leaseClock() >= p.leaseDeadline {
+		p.leaseExpired = true
+	}
 	s := p.before
 	if p.resized {
 		s = p.after
@@ -382,7 +387,7 @@ func productionInitialService(t *testing.T, mode string) {
 	retainedFinalized := strings.HasPrefix(mode, "retained-safety-finalized-")
 	actualLatePG := actualRecovery && strings.Contains(mode, "pg-late-commit")
 	pgRecoveryTransfer := pgRecovery && (strings.Contains(mode, "unreceived") || strings.Contains(mode, "expired") || strings.Contains(mode, "takeover"))
-	closureTransfer := strings.HasPrefix(mode, "lifecycle-sequence-") || strings.HasPrefix(mode, "recovery-fence-") || (retainedCapacity || actualRecovery || vmRecovery) && strings.HasSuffix(mode, "takeover") || pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
+	closureTransfer := strings.HasPrefix(mode, "lifecycle-lease-") || strings.HasPrefix(mode, "lifecycle-sequence-") || strings.HasPrefix(mode, "recovery-fence-") || (retainedCapacity || actualRecovery || vmRecovery) && strings.HasSuffix(mode, "takeover") || pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
 	pgSafety := actualLatePG || strings.HasPrefix(mode, "active-safety-pg-") || pgRecovery
 	guestRecovery := strings.HasPrefix(mode, "guest-safety-recover-")
 	guestRecoveryUnreceived := guestRecovery && strings.Contains(mode, "unreceived")
@@ -739,6 +744,19 @@ func productionInitialService(t *testing.T, mode string) {
 				require.Equal(t, pgexec.Recorded, progress)
 			}
 			verifyServiceClosureContinuation(t, ctx, mode, transfer, client, session, resources, worker, config, source, pg, root, runner)
+			return nil
+		}
+		if strings.HasPrefix(mode, "lifecycle-lease-") {
+			for range 2 {
+				progress, err := worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress)
+			}
+			if strings.HasPrefix(mode, "lifecycle-lease-guard-") {
+				verifyAuditedLeaseGuard(t, ctx, strings.TrimPrefix(mode, "lifecycle-lease-guard-"), transfer, session, resources, worker, config, client, source, pg, root, runner)
+			} else {
+				verifyAuditedLeaseSequence(t, ctx, strings.TrimPrefix(mode, "lifecycle-lease-"), transfer, session, resources, worker, config, client, source, pg, root, runner)
+			}
 			return nil
 		}
 		if strings.HasPrefix(mode, "lifecycle-sequence-") {

@@ -28,6 +28,12 @@ type serviceSafety struct {
 // 的任一读失败都不再视为“只停止建议仍服务”。只在无在途动作的永久预算
 // 边界使用；不能把伸缩过程中的合法中间态误判为异常，或清旧SDK未知。
 func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) (err error) {
+	// 后注册的原诊断先执行；续租自身记录固定stage，不误标为资源来源失败。
+	defer func() {
+		if err == nil && ctx.Value(recoveryLeaseScopeKey{}) == nil {
+			err = w.renewAuditedRecoveryLease(ctx, s)
+		}
+	}()
 	stage := "resource_binding"
 	defer func() {
 		if err != nil {

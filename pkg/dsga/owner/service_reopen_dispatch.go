@@ -61,7 +61,12 @@ func (w *PGWorker) reopenSourcesAvailable() bool {
 // 当前owner隔离并只读核验原终态，最后由调用方检查相同UID/RV。这个顺序
 // 不修改原Unknown；15先保存独立结算，18先复核三类原取消预算。16/17
 // 资源在途仍不得借当前容量绕过原账本；18也不能复写原Cleanup。
-func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapshot) error {
+func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapshot) (err error) {
+	defer func() {
+		if err == nil {
+			err = w.renewAuditedRecoveryLease(ctx, s)
+		}
+	}()
 	m := s.State()
 	if m.ServiceClosure != nil && m.ServiceClosure.RetainedRecovery != nil {
 		if w.admission == nil {
@@ -278,6 +283,7 @@ func (w *PGWorker) sendServiceReopen(ctx context.Context, s *journal.Snapshot) (
 		return pgexec.AwaitingFact, err
 	}
 	fact, sendErr := w.client.SetAdmission(ctx, r.Request)
+	noteRecoveryOpenReply(ctx, fact, sendErr)
 	// 发送失败也可能已执行。来源复核必须发生在错误分支之前；若原
 	// 来源已坏，则先写独立关闭再派发，保留原开放 Phase/回执及所有
 	// 旧未知，不将网络错误改成失败终态。取消/失租时不能另起脱离

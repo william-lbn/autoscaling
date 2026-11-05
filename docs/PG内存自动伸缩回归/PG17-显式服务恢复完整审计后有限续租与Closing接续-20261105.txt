@@ -1,0 +1,46 @@
+PG17 显式服务恢复：完整审计后的有限续租与已关闭开放意图接续
+
+范围与当前状态
+本阶段修复统一Owner恢复层，不区分PG17/18，不增加分配器、Owner或租约种类。
+生产接口、Model/WAL字节合同和Native 30秒期限不变；只复用原AdmissionLease exact-CAS renew。
+当前为组件验证阶段，最终结果以本说明末尾实际验收票为准。组件通过不能代表PG17四项内存动作或真实恢复已经通过。
+
+真实触发问题
+同一PG boot的显式恢复日志中，continue_rearm完整审计累计40.292秒，随后reopen用28.828秒后停止。
+旧调用链在rearm应用后、reopen发送前后、complete及Run接棒均要求完整来源审计。每一段可以小于30秒，而串行总量超过同一有限窗口。
+现场原开放bf5请求已持久为Unconfirmed，不能据AdmissionStatus not_found补NoEffect或重发。Root用原close_service_reopen产生独立settled Closing，保留前驱Unknown；本实现不代发任何现场恢复命令。
+
+统一恢复层的最小行为
+recover_service_lifecycle创建仅存在于当前executeControl子context的私有scope；不挂到长驻worker、不启动后台心跳。
+每个原完整inspectServiceRecovery成功出口才考虑有限续租；成功rearm或open只能来自本次真实SDK回复或严格已settled WAL。
+每次续租重新核同Session/Actor/PG instance、当前可派发VM快照、当前Native floor与leaseEpoch、准确capacity/revision/open和期限，以及同VM UID/RV。最后调用原expected-deadline CAS renew。
+闭门只接受原选择的关闭边界；开放只接受当前选中Reopen的准确request，不能收养任意open。
+旧Unconfirmed不能从当前数值被改成成功；丢回复立即停止本次复合调用，不自动Observe、Replay、rearm、清SDK Unknown或退休旧工作。
+rearm的原AppliedDeadline与回执永久保存。后继renew只能前进当前期限，原协议允许AppliedDeadline小于或等于Current，不改写历史事实。
+尚未rearm的原expired前置保留给原更高Owner恢复路径；一旦已建立新期限后再次expired，本轮拒绝续活。单段完整审计超过30秒也不能获续租。
+
+已有Closing的接续
+复合入口可显式选择已独立settled的Closing token。它按原rearmServiceReopen、retryServiceReopen、completeServiceReopen顺序运行。
+每步重读同Actor/instance/选择摘要和实际phase；已有未知rearm或未完成Closing拒绝。真实高Owner由原Elector/Lease取得，不能由调用方填数字。
+原bf5 Unconfirmed完整保留在前驱/Retired lineage；只有新开放自己的真实settled回执才推进完成。
+完成后原Run的latch仍由原auditCompletedService独立完整重审解除。持久serving上下文仅在Native leaseEpoch与floor都等于当前Actor时允许完整idle审计后的有限续租；历史Lifecycle本身不授权跨Owner。
+
+定向验证方法
+测试复用原完整K8s/Lease/Elector、Runner、Root与Native协议peer，不新建测试框架。Native期限仍30秒。
+私有单调clock使每次完整Root审计推进10秒，累计超过30秒；另有单次31秒反例，证明过期仍拒绝。每次peer时钟读取另推进1纳秒，模拟真实紧邻RPC之间单调时钟前进。
+原4ed3生产RED实际旧恢复链失败；原4ed3与e378的GREEN两正例完成后等待健康Tick失败，原FAIL全部保留。
+后继9b3的fixture RED精确记录HTTP200、invalid_admission_lease_fact且renew ExpectedDeadline等于ReturnedDeadline。静止测试clock错误地产生Renewed=true而deadline不增长，原SDK正确拒绝。因此只修测试clock，生产校验不变，强nil Tick/服务开放/持续有限期限断言保留。
+5条否定根覆盖Unknown回复/首发丢回复、失租与VM RV漂移、准确Native gate和到期不可复活；最终共享peer增加的只读元数据也必须以同锁再验证，不能用旧fixture结果冒新fixture全绿。
+原直接caller回归只选rearm、closed continuation、Run durable completion三根。正式Agent以同一冻结编译树CGO_ENABLED=0构建，外部Host事务预算两源单列来源，不冒本阶段Owner测试验收。
+
+验收边界
+STATUS=PASS_COMPONENT_ONLY
+全部实际结果、源码SHA、CGO0 ELF、资源与原Wait/reconcile状态由最终小票绑定；此阶段不执行生产恢复、SQL、内存Begin或镜像/Helm部署。
+
+实际组件收口
+10个唯一测试根、16个PASS事件，来自9b3两正根与三原caller根，以及977同最终共享fixture的五否根；这是跨票合成，不是一轮10根。全部-race，0fail/skip/race报告，OOM0。
+原4ed3/e378 wholeFAIL与9b3旧clock fixture RED完整保留。c25仅修正auditCompletedService旧注释后缓存构建，没有重跑或冒称业务测试。
+最终13owned=9production（其中service_lifecycle.go仅注释）+4test；SDK完整源码11750项均核验。外部Host2源准确冻结且单列，不能称Owner测试覆盖它的Host行为。
+正式Agent CGO0 SHA256=139137f1c5ce959bfe50fe5235ab4e801361bc16eb6a1ae29d4610e794dbc5b1，60244152字节。原3个成功任务均original-unit-terminal/process_exit0/reconcile0。
+最终接受票：/data/neon-build/validation/audited-service-lease-comment-exact-final-Agent-20261105T082109Z-c25af5/final-thirteen-source-audited-recovery-lease-and-Agent-acceptance.json
+阶段通过仅证明组件/协议序列；真实三节点镜像/Helm、现场恢复、Grow/安全normal Shrink/Regrow/自动策略四项仍由Root按真实证据独立验收。

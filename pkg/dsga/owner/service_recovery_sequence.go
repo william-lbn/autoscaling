@@ -35,6 +35,9 @@ func (w *PGWorker) recoverServiceLifecycle(ctx context.Context, selector string)
 	if err := load(lifecyclePreflight); err != nil {
 		return pgexec.AwaitingFact, err
 	}
+	if c := s.State().ServiceClosure; c != nil && c.Reopen != nil {
+		return w.recoverClosedReopenLifecycle(ctx, selector)
+	}
 	if err := selectedLifecycleClosure(s, selector); err != nil {
 		return pgexec.AwaitingFact, err
 	}
@@ -184,3 +187,122 @@ func serviceLifecycleTimed(stage serviceLifecycleStage, run func() error) error 
 	klog.InfoS("DSGA explicit service lifecycle stage", "stage", string(stage), "elapsed_ms", time.Since(start).Milliseconds(), "result", result, "error_type", fmt.Sprintf("%T", err))
 	return err
 }
+
+// 已有原开放Unknown只有独立settled Closing才能进入；原Retry负责完整前驱退休，
+// 此处不改原Unknown、不自动观察/重放旧setter，也不构造任何新原生请求。
+func (w *PGWorker) recoverClosedReopenLifecycle(ctx context.Context, selector string) (progress pgexec.Progress, err error) {
+	stage, stageStart := lifecycleClosedPreflight, time.Now()
+	defer func() {
+		if err != nil {
+			klog.InfoS("DSGA explicit service lifecycle stopped", "stage", string(stage), "elapsed_ms", time.Since(stageStart).Milliseconds(), "result", "stopped", "error_type", fmt.Sprintf("%T", err))
+		}
+	}()
+	timed := func(next serviceLifecycleStage, run func() error) error {
+		stage, stageStart = next, time.Now()
+		return serviceLifecycleTimed(next, run)
+	}
+	var s *journal.Snapshot
+	load := func(next serviceLifecycleStage) error {
+		return timed(next, func() error { var e error; s, e = w.loadServiceLifecycleSequence(ctx); return e })
+	}
+	if err := load(lifecycleClosedPreflight); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	c := s.State().ServiceClosure
+	if c == nil || c.Reopen == nil || c.Reopen.Closing == nil || c.Reopen.Closing.Close.Pending() {
+		return pgexec.AwaitingFact, ErrServiceSafety
+	}
+	original := c.Reopen
+	_, _, closed, selected := original.Closing.Close.Selection()
+	if selected != selector {
+		return pgexec.AwaitingFact, ErrServiceSafety
+	}
+	rearmSelector := selector
+	needRearm := original.Rearm == nil
+	if original.Rearm != nil {
+		if original.Rearm.Phase != journal.Settled {
+			return pgexec.AwaitingFact, ErrServiceSafety
+		}
+		if err := timed(lifecycleObserveLease, func() error {
+			fact, e := w.observeAdmissionLease(ctx)
+			if e != nil {
+				return e
+			}
+			if !fact.Armed || fact.Observed.AdmissionOpen {
+				return ErrServiceSafety
+			}
+			needRearm = fact.Expired
+			if needRearm {
+				if w.session.Actor().Epoch <= original.Rearm.Origin.Epoch {
+					return ErrServiceSafety
+				}
+				rearmSelector = original.Rearm.CommandSHA256
+			} else if fact.LeaseEpoch != w.session.Actor().Epoch || fact.Observed.IssuerFloorEpoch != w.session.Actor().Epoch {
+				return ErrServiceSafety
+			}
+			return nil
+		}); err != nil {
+			return pgexec.AwaitingFact, err
+		}
+	}
+	if needRearm {
+		if err := timed(lifecycleRearmReopen, func() error { _, e := w.rearmServiceReopen(ctx, rearmSelector); return e }); err != nil {
+			return pgexec.AwaitingFact, err
+		}
+	}
+	if err := load(lifecycleAfterRearm); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	c = s.State().ServiceClosure
+	if c == nil || c.Reopen == nil || c.Reopen.CommandSHA256 != original.CommandSHA256 || c.Reopen.Closing == nil || c.Reopen.Closing.Close.Pending() || c.Reopen.Rearm == nil || c.Reopen.Rearm.Phase != journal.Settled || c.Reopen.Rearm.Origin != w.session.Actor() {
+		return pgexec.AwaitingFact, ErrServiceSafety
+	}
+	_, _, sameClosed, sameSelector := c.Reopen.Closing.Close.Selection()
+	if sameSelector != selector || sameClosed != closed {
+		return pgexec.AwaitingFact, ErrServiceSafety
+	}
+	if err := timed(lifecycleRetryReopen, func() error { _, e := w.retryServiceReopen(ctx, selector); return e }); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	if err := load(lifecycleAfterReopen); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	m := s.State()
+	c = m.ServiceClosure
+	if c == nil || c.Reopen == nil {
+		return pgexec.AwaitingFact, ErrServiceSafety
+	}
+	fresh := c.Reopen
+	if fresh.CommandSHA256 == original.CommandSHA256 || fresh.Phase != journal.Settled || fresh.Closing != nil || fresh.Rearm != nil || fresh.Origin != w.session.Actor() || fresh.Retired == nil || fresh.PriorClose == nil || *fresh.PriorClose != closed || fresh.Attempt <= original.Attempt {
+		return pgexec.AwaitingFact, ErrServiceSafety
+	}
+	reopenSHA, beforeSequence := fresh.CommandSHA256, m.Sequence
+	if err := timed(lifecycleComplete, func() error { _, e := w.completeServiceReopen(ctx, reopenSHA); return e }); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	if err := load(lifecycleAfterComplete); err != nil {
+		return pgexec.AwaitingFact, err
+	}
+	m = s.State()
+	l := m.ServiceLifecycle
+	if m.ServiceClosure != nil || l == nil || l.SafetyStage != "serving" || l.Origin != w.session.Actor() || l.RecordedSequence <= beforeSequence {
+		return pgexec.AwaitingFact, ErrServiceSafety
+	}
+	var frozen struct {
+		ServiceClosure *journal.ServiceClosure `json:"service_closure"`
+	}
+	if json.Unmarshal(l.Context, &frozen) != nil || frozen.ServiceClosure == nil || frozen.ServiceClosure.Reopen == nil {
+		return pgexec.AwaitingFact, ErrServiceSafety
+	}
+	kept := frozen.ServiceClosure.Reopen
+	if kept.CommandSHA256 != reopenSHA || kept.Retired == nil || kept.PriorClose == nil || *kept.PriorClose != closed {
+		return pgexec.AwaitingFact, ErrServiceSafety
+	}
+	return pgexec.Recorded, nil
+}
+
+const (
+	lifecycleClosedPreflight serviceLifecycleStage = "closed_preflight"
+	lifecycleRearmReopen     serviceLifecycleStage = "rearm_reopen"
+	lifecycleRetryReopen     serviceLifecycleStage = "retry_reopen"
+)

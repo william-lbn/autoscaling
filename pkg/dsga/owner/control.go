@@ -138,6 +138,7 @@ func (worker *PGWorker) executeControl(ctx context.Context, command control.Coor
 	if safetySnapshot.State().ServiceClosure != nil && !expiredAdmissionControlAllowed(command.Action) {
 		return result, ErrServiceSafety
 	}
+	callCtx = worker.scopeServiceRecoveryLease(callCtx, command, safetySnapshot)
 	var err error
 	switch command.Action {
 	case control.CoordinationState:

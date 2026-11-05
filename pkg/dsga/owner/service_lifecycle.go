@@ -43,10 +43,11 @@ func (w *PGWorker) completeServiceReopen(ctx context.Context, selector string) (
 	return pgexec.Recorded, err
 }
 
-// auditCompletedService仅认证最新持久完成后的当前服务，不更改任何WAL或
-// 原生期限。Run解除本地过期等待前同样调用它；旧完成、只恢复rearm或观察
-// 当前open均不够。上下文严格完整解码已由Model.Validate执行，此处只取原
-// 新开放身份；不从当前数值制造原命令，更不恢复已退休的SDK pending。
+// auditCompletedService认证最新持久完成后的当前服务，不改WAL或原生开放。
+// 完整来源审计成功后，共用恢复层可对已认证的serving边界作原期限CAS续租，
+// 承接Run解除本地过期等待；不rearm、不改固定TTL，也不自行清除过期latch。
+// 旧完成、只恢复rearm或观察当前open均不够。上下文已由Model.Validate完整
+// 严格解码，此处只取原新开放身份，不制造原命令、不恢复已退休的SDK pending。
 func (w *PGWorker) auditCompletedService(ctx context.Context, s *journal.Snapshot, selector string) (control.AdmissionLeaseResponse, error) {
 	m := s.State()
 	l := m.ServiceLifecycle

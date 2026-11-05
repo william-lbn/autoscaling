@@ -46,9 +46,11 @@ func (w *PGWorker) continueServiceRearm(ctx context.Context, selector string) (p
 	if err := w.checkRearmDispatch(ctx, s); err != nil {
 		return pgexec.AwaitingFact, err
 	}
-	if _, err := w.client.AdmissionLease(ctx, dispatch.Request); err != nil {
-		return pgexec.AwaitingFact, err
+	fact, sendErr := w.client.AdmissionLease(ctx, dispatch.Request)
+	if sendErr != nil {
+		return pgexec.AwaitingFact, sendErr
 	}
+	noteRecoveryRearmReply(ctx, fact)
 	if err := w.checkRearmDispatch(ctx, s); err != nil {
 		return pgexec.AwaitingFact, err
 	}

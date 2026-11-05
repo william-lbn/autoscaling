@@ -28,17 +28,21 @@ func TestProductionServiceRearmPreservesClosedBusinessAcrossCrashWindows(t *test
 }
 
 type serviceRearmPG struct {
-	epoch        control.Uint64
-	original     *control.AdmissionLeaseRequest
-	applied      control.Uint64
-	posts        int
-	queries      int
-	loseBefore   bool
-	loseAfter    bool
-	loseRecord   bool
-	api          *ownerAPI
-	afterObserve func()
-	afterApply   func()
+	lastRenewExpected control.Uint64
+	lastRenewReturned control.Uint64
+	lastRenewHTTP     int
+	epoch             control.Uint64
+	original          *control.AdmissionLeaseRequest
+	applied           control.Uint64
+	posts             int
+	queries           int
+	loseBefore        bool
+	loseAfter         bool
+	loseRenewReply    bool
+	loseRecord        bool
+	api               *ownerAPI
+	afterObserve      func()
+	afterApply        func()
 }
 
 func (p *initialServicePG) serveRearmFixture(t *testing.T, w http.ResponseWriter, request *http.Request) bool {
@@ -83,7 +87,11 @@ func (p *initialServicePG) serveRearmFixture(t *testing.T, w http.ResponseWriter
 		original := q
 		f.original, f.epoch = &original, q.IssuerEpoch
 		p.leaseExpired = false
-		p.leaseDeadline++
+		if p.leaseClock != nil {
+			p.leaseDeadline = p.leaseClock() + p.leaseWindow
+		} else {
+			p.leaseDeadline++
+		}
 		f.applied = p.leaseDeadline
 		if f.afterApply != nil {
 			hook := f.afterApply
@@ -98,8 +106,17 @@ func (p *initialServicePG) serveRearmFixture(t *testing.T, w http.ResponseWriter
 	}
 	leaseRenewed := !query && q.Action == "renew" && !p.leaseExpired && q.ExpectedDeadlineNS == p.leaseDeadline && q.ExpectedCapacityGeneration == current.CapacityGeneration && q.ExpectedAdmissionRevision == current.AdmissionRevision && q.IssuerEpoch == current.IssuerFloorEpoch
 	if leaseRenewed {
-		p.leaseDeadline++
+		if p.leaseClock != nil {
+			p.leaseDeadline = p.leaseClock() + p.leaseWindow
+		} else {
+			p.leaseDeadline++
+		}
 		p.leaseRenewals++
+		if f.loseRenewReply {
+			f.loseRenewReply = false
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return true
+		}
 	}
 	fact := control.AdmissionLeaseResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: q, Renewed: renewed || leaseRenewed, Armed: true, Expired: p.leaseExpired, DeadlineNS: p.leaseDeadline, LeaseEpoch: f.epoch, TimeoutMS: 30000, Observed: p.current().Observed}
 	if !query && q.Action == "observe" && f.afterObserve != nil {
@@ -121,6 +138,9 @@ func (p *initialServicePG) serveRearmFixture(t *testing.T, w http.ResponseWriter
 		}
 		pgReply(w, control.AdmissionRearmStatus{ProtocolVersion: 1, VMShrinkPermit: false, Request: q, Retained: retained, AppliedDeadlineNS: applied, Current: fact})
 	} else {
+		if q.Action == "renew" {
+			f.lastRenewExpected, f.lastRenewReturned, f.lastRenewHTTP = q.ExpectedDeadlineNS, fact.DeadlineNS, http.StatusOK
+		}
 		pgReply(w, fact)
 	}
 	return true
