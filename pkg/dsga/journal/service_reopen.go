@@ -184,6 +184,12 @@ func (m Model) StartServiceReopen(actor Owner, selector string, before control.A
 	}
 	next.setClosureFormatVersion(20)
 	next.ServiceClosure.Reopen = &ServiceReopen{ClosureVersion: m.ClosureFormatVersion(), Origin: actor, StartedSequence: next.Sequence, ClosureSHA256: closureHash, HeldSHA256: heldHash, Before: cloneLeaseResponse(before), Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, SafetyStage: "opening", Closing: nil, Attempt: 0, PriorClose: nil, PriorClosedAt: 0, Retired: nil}
+	return m.planReopenCompletion(next)
+}
+
+// planReopenCompletion 仅在各入口已经深拷贝并绑定原actor/命令后规划缓存容量。
+// 任意失败都返回接收者原m；不改原容量上限、Unknown或来源证据。
+func (m Model) planReopenCompletion(next Model) (Model, error) {
 	// 先验证准确原选择/来源；无效观察不能借淘汰缓存变为可派发。
 	if err := next.Validate(); err != nil {
 		return m, err

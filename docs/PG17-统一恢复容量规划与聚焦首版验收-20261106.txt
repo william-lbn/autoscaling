@@ -1,0 +1,11 @@
+PG17 内存伸缩：统一恢复容量规划
+
+当前线上 W157 的实际问题已在原 599621 模型精确重现：RetryServiceReopen 为完整恢复记录预留的原始 JSON 与 base64 空间共 1071114 字节，超过原 1048576 字节上限。这是恢复记录存储容量，不是 PG 可用内存不足。已有一条 71386 字节的旧终态结果可依原规则过期，但首次开放、重试开放和重新授权没有共用同一规划。
+
+修复只涉及三个 journal 生产文件。把首次入口原有逻辑抽为私有 planReopenCompletion，由 StartServiceReopen、RetryServiceReopen 和 StartReopenLeaseRecovery 共用。先校验准确来源，仅两种原有容量错误可触发最少 FIFO 过期，每次再次校验；无 Active 时保留最后一条结果。任何错误返回原模型；Active、Unknown、三类已持有预算、ActualRecovery、关闭凭据、来源、HWM、协议、大小上限和租约均不变。没有增加资源分配器或 PG 版本分支，PG17/PG18 复用此层。
+
+验证按改动范围增量进行。170321 的 14 个相关根实际通过，包含真实 W157 驱动的更高 Owner 接管、重新授权、重试、开放、完成与编码解码整链，以及原 W148 和直接负控。其原总体 FAIL 与退出 1 保留：唯一新 idle 夹具本来有足够空间，却错误期待容量拒绝。21ed80 只修正文件末尾该函数的预期；实际 frozen227276/future264140 小于原 524288，单根 race 通过并确认 FIFO0、History1、Expired 和原输入不变。其余全部源码与测试辅助函数逐字一致。联合门为 14+1，不冒称最终源码重跑 15 根；0 skip/race/OOM。
+
+上游对照：原 Neon 已有 Agent 决策、Scheduler 唯一资源准入、VM Monitor 缩容检查及 LFC 调整、NeonVM 执行。当前新增共享缓冲区动态调整与 normal 真硬降限需要 PG/Compute 适配，近期管理期限及恢复记录问题属于自研协调层集成问题。参考 https://github.com/neondatabase/autoscaling/blob/main/ARCHITECTURE.md 和 https://github.com/neondatabase/neon/blob/main/libs/vm_monitor/src/filecache.rs 。
+
+本轮仅验证内存自动伸缩新增/修改逻辑和直接受影响接口。既有组件作为真实端到端依赖运行，不单独扩测未修改的上游功能。模型门不是线上验收；部署后仍须恢复当前同一 Compute，实际验证 Grow、安全 normal Shrink、Regrow、真实自动策略及 SQL 数据与资源回读。当前四最终动作仍 0/4，不能宣称生产认证。

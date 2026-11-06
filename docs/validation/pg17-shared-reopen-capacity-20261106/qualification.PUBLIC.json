@@ -1,0 +1,42 @@
+{
+  "status": "QUALIFIED_FOCUSED_SHARED_CAPACITY_14_PLUS_1",
+  "base_commit": "599621ed3f775c6d41e1ade1ed1dac05fce641a7",
+  "final_source_manifest_SHA256": "dcf57885693ff1b4f97088540bd9c3ae21f3260aa635b4796d15cf77b35296ab",
+  "owned_source_SHA256": {
+    "pkg/dsga/journal/service_reopen.go": "88c6397df9438a8db4c91ac1dbbf67aad8b170888a5767d05106b7d78064b100",
+    "pkg/dsga/journal/service_reopen_retry.go": "e0c8e373a55b3245c68c107d8c1bb6492c2e4a8bc7a3e711d24f2e602ef7a51a",
+    "pkg/dsga/journal/service_reopen_rearm.go": "2da830d3e48b8569066c49cc1cdaa578bb56bfeebc399454a7198a401f3224a5",
+    "pkg/dsga/journal/service_reopen_shared_capacity_test.go": "e4ef51d5184063234d90bd902d0e798dca26e6a0904097168bf9a590b7b5f95c"
+  },
+  "original_result": "/data/neon-build/validation/PG17-W157-shared-reopen-capacity-FINAL-ROOTCWD-REDGREEN-20261106T033229Z-170321/result.json",
+  "original_result_SHA256": "2a1370e32cbcc4bb6b0c1d748dd71c533894079c3ae47320a2032c3efea4ccf0",
+  "original_overall_status_preserved": "FAIL",
+  "original_Go_exit_preserved": 1,
+  "inherited_actual_pass_roots": {
+    "TestReopenLeaseRecoveryPreservesUnknownAndRequiresExactConfirmedLease": "pass",
+    "TestReopenLeaseRecoveryRejectsProjectedHistoryAndWrongNativeSelection": "pass",
+    "TestServiceReopenRetryPreservesCompleteUnknownAndAllowsCompletion": "pass",
+    "TestServiceReopenRetryRejectsStaleSelectionAndProjectedEvidence": "pass",
+    "TestServiceReopenRetryRepeatedUnknownClosuresRemainBounded": "pass",
+    "TestW157RetryReopenMinimalHistoryCapacityActualRecovery": "pass",
+    "TestW157NextOwnerRearmRetryCapacityActualRecovery": "pass",
+    "TestW157SharedReopenCapacityRejectsInvalidAndCounterOverflow": "pass",
+    "TestCommittedServiceRecoveryReservesRawAtomicCompletionBeforeDispatch": "pass",
+    "TestServiceLifecycleReopenReservesRawCompletionContext": "pass",
+    "TestW148ReopenHistoryCapacityActualRecovery": "pass",
+    "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals": "pass",
+    "TestServiceReopenCannotAdoptCurrentOpenOrExpiredOriginal": "pass",
+    "TestServiceReopenRejectsUnsettledBoundariesAndOverflow": "pass"
+  },
+  "corrected_single_result": "/data/neon-build/validation/PG17-shared-idle-already-fits-SUPPLEMENT-20261106T034607Z-21ed80/result.json",
+  "corrected_single_result_SHA256": "33db0f9f2da7ab1cee91b154f11ee630cf818b5f836a45e23a7bb5c235d4897f",
+  "corrected_single_roots": {
+    "TestSharedReopenCapacityKeepsIdleLastHistoryWhenAlreadyFits": "pass"
+  },
+  "unchanged_source_except_last_test_function": true,
+  "new_full_source_15_root_run_claim": false,
+  "total_qualified_roots": 15,
+  "skip_race_OOM": 0,
+  "PG17_real_E_accepted": 0,
+  "PG17_real_E_total": 4
+}

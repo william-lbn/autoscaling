@@ -170,10 +170,7 @@ func (m Model) StartReopenLeaseRecovery(actor Owner, selector string, before con
 	}
 	next.ServiceClosure.Reopen.Rearm = &ReopenLeaseRecovery{Origin: actor, StartedSequence: next.Sequence, ClosingSHA256: rawDigest(closing), HeldSHA256: held, Before: cloneLeaseResponse(before), Request: q, CommandSHA256: rawDigest(raw), Phase: Unconfirmed, RecordedSequence: 0, Receipt: nil, Cycle: cycle, Retired: retired}
 	next.ServiceClosure.Reopen.SafetyStage = "rearming"
-	if err := next.reopenCompletionCapacity(); err != nil {
-		return m, err
-	}
-	return next, next.Validate()
+	return m.planReopenCompletion(next)
 }
 
 func (m Model) RecordReopenLeaseRecovery(actor Owner, fact control.AdmissionRearmStatus) (Model, error) {

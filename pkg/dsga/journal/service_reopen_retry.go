@@ -141,10 +141,7 @@ func (m Model) RetryServiceReopen(actor Owner, selector string, before control.A
 		closedAt = n.RecordedSequence
 	}
 	next.ServiceClosure.Reopen = &ServiceReopen{ClosureVersion: r.ClosureVersion, Origin: actor, StartedSequence: next.Sequence, ClosureSHA256: r.ClosureSHA256, HeldSHA256: r.HeldSHA256, Before: cloneLeaseResponse(before), Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, SafetyStage: "opening", Closing: nil, Attempt: r.Attempt + 1, PriorClose: &closed, PriorClosedAt: closedAt, Retired: retired}
-	if err := next.reopenCompletionCapacity(); err != nil {
-		return m, err
-	}
-	return next, next.Validate()
+	return m.planReopenCompletion(next)
 }
 
 // Store写前CAS只在同一running VM返回确认票据。丢回复不发送；重建后
