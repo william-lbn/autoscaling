@@ -3,6 +3,7 @@ package hostexec
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -86,6 +87,10 @@ func (c *Consumer) Advance(ctx context.Context) (pgexec.Progress, error) {
 		}
 		cmd.Claim, err = c.claims.HostReference(ctx, op.Request)
 		if err != nil {
+			// 首次尚未发布不授予Host/VM派发；继续原Run完整来源审计与有限Native续租。
+			if errors.Is(err, budgetclaims.ErrHostNotPublished) {
+				return pgexec.AwaitingFact, nil
+			}
 			if apierrors.IsNotFound(err) {
 				return pgexec.AwaitingFact, fmt.Errorf("%w: original Host source is not yet published", resourceguard.ErrUnknown)
 			}

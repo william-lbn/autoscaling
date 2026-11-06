@@ -27,6 +27,9 @@ import (
 
 const ClaimKey = "reservation.json"
 
+// ErrHostNotPublished只标记原确定名称的首次GET缺席；已固定UID后的丢失不是正常发布等待。
+var ErrHostNotPublished = errors.New("original Host source is not yet published")
+
 // ProtectionFinalizer阻止VM删除/GC在旧QMP/预算未结清时清掉持有对象。
 // 只有对应领域核验完整关闭后才能显式移除，普通Agent只读，不能代为清理。
 const ProtectionFinalizer = "autoscaling.neon.tech/dsga-reservation-protection"
@@ -73,7 +76,7 @@ func (r *Reader) HostReference(ctx context.Context, request control.Request) (bu
 	cm, err := r.core.ConfigMaps(r.binding.Namespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			return budget.ObjectRef{}, fmt.Errorf("%w: original Host source is not yet published", resourceguard.ErrUnknown)
+			return budget.ObjectRef{}, fmt.Errorf("%w: %w", resourceguard.ErrUnknown, ErrHostNotPublished)
 		}
 		return budget.ObjectRef{}, err
 	}

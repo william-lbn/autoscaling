@@ -373,6 +373,7 @@ func productionInitialService(t *testing.T, mode string) {
 func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureHook initialServiceFixtureHook) {
 	t.Helper()
 	guestFixtureMode := fixtureHook != nil && (mode == "guest-service-audit-grow" || mode == "guest-service-audit-shrink")
+	hostPublicationWaitMode := fixtureHook != nil && mode == "host-publication-wait"
 	// 同一完整自动组合显式追加AS来源；不改变旧夹具事实或以peer冒充Linux硬限。
 	pgInflightMode := strings.HasPrefix(mode, "pg-inflight-audit-")
 	finiteAddressSpace := mode == "automatic-policy-as"
@@ -860,7 +861,7 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 		var successorHost *hostexec.Publisher
 		if lifecycleMode {
 			// 已由完整生产恢复链完成首次服务；继续原预算Grow，无重复初开。
-		} else if guestFixtureMode || pgInflightMode || strings.HasPrefix(mode, "completion-audit-") || strings.HasPrefix(mode, "vm-audit-") || retainedService || hostServiceClosure || actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
+		} else if hostPublicationWaitMode || guestFixtureMode || pgInflightMode || strings.HasPrefix(mode, "completion-audit-") || strings.HasPrefix(mode, "vm-audit-") || retainedService || hostServiceClosure || actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
 			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -929,6 +930,11 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 		}
 		var prepared budget.Prepared
 		require.NoError(t, json.Unmarshal(budgetStep(t, store, journal.PrepareBudget).Observation.Data, &prepared))
+		if hostPublicationWaitMode {
+			if fixtureHook(t, ctx, api, store, client, coord, session, resources, worker, config, source, pg, root, runner, qmp, request) {
+				return nil
+			}
+		}
 		if hostServiceClosure {
 			// 原Initial及首次开放、Prepare均由正式生产者完成；在本请求
 			// 尚未发布Host之前独立验证关闭门禁，不借领域夹具补永久头。

@@ -1,0 +1,28 @@
+{
+  "protocol_version": 1,
+  "status": "PASS_DIRECT_HOST_WAIT_GATES_WITH_EXISTING_SCHEDULER_FIXTURE_FAILURE_RETAINED",
+  "production_files": [
+    "pkg/dsga/budgetclaims/reader.go",
+    "pkg/dsga/hostexec/consumer.go"
+  ],
+  "original_RED_GREEN_reference": "/data/neon-build/validation/PG17-host-publication-wait-REDGREEN-20261106T055132Z-25a387",
+  "source_manifest_SHA256": "89dac5d0405671eb90a43a708c0843ec112bac1f8aedf63a6bb7c79779dc2f15",
+  "owned_patch_SHA256": "83cf4de7226a35a2dc1757cf39a5f679fe5a883a17c71ef95503e6b9453fa2dc",
+  "exact_direct_roots": {
+    "TestHostNotPublishedMarksOnlyInitialGetAbsence": "pass",
+    "TestProductionHostPublicationWaitRunsFreshLeaseAudit": "pass"
+  },
+  "direct_PASS_events": 10,
+  "direct_result_SHA256": "584665129a6a5370d513829fe2f87c841e2f0c94f3a4ef81e2b3b1ef9463e7a8",
+  "related_regression_reference": "/data/neon-build/validation/PG17-host-publication-wait-related-regression-20261106T055705Z-db25a6",
+  "related_result_SHA256": "13733b7e0b74e6aafae75332e3c1308a2c1154df6a7a8bf095d772948b022ab0",
+  "existing_scheduler_fixture_old_production_reference": "/data/neon-build/validation/PG17-existing-scheduler-loop-exact-old-production-check-20261106T060026Z-ea3009",
+  "old_production_result_SHA256": "24d04b9fb4b2f87018a46a822b94bb5b495fd3e406ee2231d7fc7cfd07eb15b5",
+  "all_related_roots_green": false,
+  "no_K8s_memory_action_acceptance_claim": true,
+  "PG17_core_accepted": 0,
+  "PG17_core_total": 4,
+  "Native30s_Unknown_Fence_source_safety_unchanged": true,
+  "multi_agent_work_stopped_by_user": true,
+  "credentials_in_ticket": false
+}
