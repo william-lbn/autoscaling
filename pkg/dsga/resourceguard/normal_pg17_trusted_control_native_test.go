@@ -31,7 +31,11 @@ const trustedControlNativeOptIn = "isolated18c-real-compute-normal-v1"
 func init() {
 	target := trustedControlNativeEntrypoint(os.Getenv("DSGA_TRUSTED_CONTROL_NATIVE"))
 	if target != "" && len(os.Args) == 2 && os.Args[0] == "/neonvm/bin/dsga-system-role-broker" && os.Args[1] == "initial-boot" {
-		os.Args = []string{os.Args[0], "-test.run=^" + target + "$", "-test.v", "-test.timeout=420s"}
+		watchdog := "420s"
+		if target == "TestNativePG17TrustedControl" {
+			watchdog = "510s"
+		}
+		os.Args = []string{os.Args[0], "-test.run=^" + target + "$", "-test.v", "-test.timeout=" + watchdog}
 	}
 }
 

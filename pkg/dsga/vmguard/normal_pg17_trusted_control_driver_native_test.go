@@ -630,11 +630,9 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 				kind = control.Shrink
 				size = 7 << 30
 			}
-			// 新故障意图出生时采用有限120秒；绝不延长旧Key、原生TTL或Runner门。
-			requestWindow := time.Minute
-			if faultMode != "" {
-				requestWindow = 2 * time.Minute
-			}
+			// 这是新端到端意图的总时限，包含 Host 预留和 Guest 启用。
+			// PG 单次执行仍取剩余时间且最多 60 秒；旧请求的期限从原账本读取。
+			const requestWindow = 2 * time.Minute
 			request := control.Request{ProtocolVersion: 1, Key: control.Key{Instance: instance, IssuerEpoch: session.Actor().Epoch, Revision: control.Uint64(index + 1 + historyOffset), OperationID: control.OperationID{Low: control.Uint64(index + 1 + historyOffset)}}, Kind: kind, ExpectedCapacityGeneration: current.Observed.CapacityGeneration, TargetBuffers: target, TargetVMMemoryBytes: size, BudgetCommitmentID: fmt.Sprintf("trusted-owner-budget-%d", index+1), DeadlineUnixMillis: control.Uint64(time.Now().Add(requestWindow).UnixMilli())}
 			if e = session.Check(controlCtx); e != nil {
 				return e
@@ -701,6 +699,23 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 						loopDone <- worker.Run(pgLoopCtx, owner.PGLoopOptions{PollInterval: 100 * time.Millisecond, Control: pgControl})
 					}()
 					continue
+				}
+				// 成功主链收到已结算的拒绝时，保存原始领域回执并及时退出。
+				// 故障恢复用例仍沿自己的接管/取消路径继续。
+				if faultMode == "" && m.Active != nil {
+					for _, step := range m.Active.Steps {
+						if step.Observation == nil || step.Observation.Result != journal.Rejected {
+							continue
+						}
+						record := map[string]any{
+							"request": m.Active.Request, "action": step.Action, "sequence": m.Sequence,
+							"read_unix_ms": time.Now().UnixMilli(), "observation": step.Observation,
+						}
+						if err := trustedDriverSave(fmt.Sprintf("original-rejection-%d", index+1), record); err != nil {
+							return err
+						}
+						return fmt.Errorf("original %s was rejected at journal sequence %d", step.Action, m.Sequence)
+					}
 				}
 				if m.Active == nil {
 					if len(m.History) != index+1+historyOffset || m.History[index+historyOffset].Outcome != journal.Succeeded || m.History[index+historyOffset].Operation.Request != request {

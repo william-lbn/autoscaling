@@ -1,0 +1,102 @@
+{
+  "case": "/data/neon-build/validation/PG17-硬预算Linux实际PG与KVM回归-20261106T114332Z-3a004f",
+  "head": "677c0a9389c8f68f57c6c5c5a04561b74296054a",
+  "test_source_sha256": {
+    "pkg/dsga/vmguard/normal_pg17_trusted_control_driver_native_test.go": "a59badaecce74ca528024a3b44f1367c2f7174c67a01b8db25ce07a6d75990ff",
+    "pkg/dsga/resourceguard/normal_pg17_trusted_control_native_test.go": "c57ab73b833a2bdd63bf6bd8199148402f97a5391664980bd00c144af11844c9"
+  },
+  "native_exit": 0,
+  "native_seconds": 450.8123984669801,
+  "Host_API_is_model": true,
+  "observations": [
+    {
+      "phase": "baseline",
+      "low_buffers": 256,
+      "high_buffers": 256,
+      "capacity_generation": "1",
+      "guest_mem_total_bytes": 7413813248,
+      "normal_memory_max_bytes": "1077411840",
+      "arrays_memory_max_bytes": "268435456",
+      "private_memory_max_bytes": "268435456",
+      "sql_rows_and_checksum": "512|5c90588b02abc346ade8cd51af75c9c8",
+      "physical_release_arrays": []
+    },
+    {
+      "phase": "grow-8",
+      "low_buffers": 1024,
+      "high_buffers": 1024,
+      "capacity_generation": "2",
+      "guest_mem_total_bytes": 8487555072,
+      "normal_memory_max_bytes": "1077411840",
+      "arrays_memory_max_bytes": "268435456",
+      "private_memory_max_bytes": "268435456",
+      "sql_rows_and_checksum": "512|5c90588b02abc346ade8cd51af75c9c8",
+      "physical_release_arrays": []
+    },
+    {
+      "phase": "shrink-7",
+      "low_buffers": 256,
+      "high_buffers": 256,
+      "capacity_generation": "3",
+      "guest_mem_total_bytes": 7413813248,
+      "normal_memory_max_bytes": "1006632960",
+      "arrays_memory_max_bytes": "70320128",
+      "private_memory_max_bytes": "268435456",
+      "sql_rows_and_checksum": "512|5c90588b02abc346ade8cd51af75c9c8",
+      "physical_release_arrays": [
+        "descriptors",
+        "blocks",
+        "iocv",
+        "checkpoint"
+      ]
+    },
+    {
+      "phase": "regrow-8",
+      "low_buffers": 2048,
+      "high_buffers": 2048,
+      "capacity_generation": "4",
+      "guest_mem_total_bytes": 8487555072,
+      "normal_memory_max_bytes": "1077411840",
+      "arrays_memory_max_bytes": "85196800",
+      "private_memory_max_bytes": "268435456",
+      "sql_rows_and_checksum": "512|5c90588b02abc346ade8cd51af75c9c8",
+      "physical_release_arrays": [
+        "descriptors",
+        "blocks",
+        "iocv",
+        "checkpoint"
+      ]
+    }
+  ],
+  "settled": [
+    {
+      "kind": "grow",
+      "request_target_buffers": 1024,
+      "vm_target_bytes": "8589934592",
+      "outcome": "succeeded",
+      "closed_sequence": "23",
+      "model_host_claim_settled": true,
+      "original_sha256": "8600d869f80e9eedda2d1b8173c207231c135d59fd837469c3141d85d7c2eed1"
+    },
+    {
+      "kind": "shrink",
+      "request_target_buffers": 256,
+      "vm_target_bytes": "7516192768",
+      "outcome": "succeeded",
+      "closed_sequence": "43",
+      "model_host_claim_settled": true,
+      "original_sha256": "e0e97271f48c4741756497913f6767c38d29371c935c89421b672425f8610d60"
+    },
+    {
+      "kind": "grow",
+      "request_target_buffers": 2048,
+      "vm_target_bytes": "8589934592",
+      "outcome": "succeeded",
+      "closed_sequence": "59",
+      "model_host_claim_settled": true,
+      "original_sha256": "ab230163653f70a86a436e332c5ea06897ce04a69ca193c3e7bfb6589bb5ca0c"
+    }
+  ],
+  "automatic_policy_exercised": false,
+  "cluster_actions_accepted": 0
+}
