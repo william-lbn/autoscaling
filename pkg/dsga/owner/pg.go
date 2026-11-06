@@ -1014,7 +1014,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			// 原预算无容量变化的取消，可能仍在等待可信策略确认是否恢复
 			// 服务。保持owner并等待独立通道，不把拒绝自动开放当作致命
 			// 错误退出，也不根据此等待状态自行生成恢复选择。
-			if !errors.As(err, &call) && !errors.As(err, &resourceCall) && !errors.As(err, &unknown) && !errors.Is(err, resourceguard.ErrUnknown) && !errors.Is(err, vmguard.ErrUnknown) && !errors.Is(err, vmguard.ErrNotSent) && !errors.Is(err, admissionexec.ErrRecoverySelectionRequired) && !errors.Is(err, ErrPolicyObservation) && !errors.Is(err, ErrServiceSafety) {
+			if !errors.As(err, &call) && !errors.As(err, &resourceCall) && !errors.As(err, &unknown) && !errors.Is(err, resourceguard.ErrUnknown) && !errors.Is(err, vmguard.ErrUnknown) && !errors.Is(err, vmguard.ErrNotSent) && !errors.Is(err, vmexec.ErrSnapshotChanged) && !errors.Is(err, admissionexec.ErrRecoverySelectionRequired) && !errors.Is(err, ErrPolicyObservation) && !errors.Is(err, ErrServiceSafety) {
 				return err
 			}
 		}

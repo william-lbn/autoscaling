@@ -10,6 +10,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/vmexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 	"github.com/stretchr/testify/require"
 	kubefake "k8s.io/client-go/kubernetes/fake"
@@ -81,7 +82,7 @@ func verifyVMExecAuditCheckpoint(t *testing.T, ctx context.Context, _ string, ap
 		defer func() { root.mu.Lock(); root.afterProcess = nil; root.mu.Unlock() }()
 		called := 0
 		progress, err := audited.AdvanceWithAudit(ctx, func(context.Context, *journal.Snapshot, control.SharedCostResponse) error { called++; return nil })
-		require.Error(t, err)
+		require.ErrorIs(t, err, vmexec.ErrSnapshotChanged)
 		require.Equal(t, pgexec.AwaitingFact, progress)
 		require.Zero(t, called)
 		sameWAL(before.State())
@@ -164,6 +165,27 @@ func verifyVMExecAuditCheckpoint(t *testing.T, ctx context.Context, _ string, ap
 	qmp.mu.Lock()
 	require.Equal(t, initialWrites+1, qmp.writes)
 	qmp.mu.Unlock()
+	t.Run("status-published-during-original-QMP-readback", func(t *testing.T) {
+		root.mu.Lock()
+		root.afterProcess = func() {
+			api.mu.Lock()
+			api.vmVersion++
+			api.vm.ResourceVersion = fmt.Sprintf("vm-status-after-qmp-%d", api.vmVersion)
+			api.mu.Unlock()
+		}
+		root.mu.Unlock()
+		defer func() { root.mu.Lock(); root.afterProcess = nil; root.mu.Unlock() }()
+		progress, err := audited.AdvanceWithAudit(ctx, func(context.Context, *journal.Snapshot, control.SharedCostResponse) error {
+			t.Fatal("旧快照不能确认已送达的 QMP 操作")
+			return nil
+		})
+		require.ErrorIs(t, err, vmexec.ErrSnapshotChanged)
+		require.Equal(t, pgexec.AwaitingFact, progress)
+		sameWAL(started.State())
+		qmp.mu.Lock()
+		require.Equal(t, initialWrites+1, qmp.writes)
+		qmp.mu.Unlock()
+	})
 	t.Run("complete-result-rejection-does-not-record", func(t *testing.T) {
 		progress, err := audited.AdvanceWithAudit(ctx, func(c context.Context, s *journal.Snapshot, shared control.SharedCostResponse) error {
 			require.NoError(t, check(c, s, shared))

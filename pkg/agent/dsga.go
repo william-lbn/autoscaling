@@ -17,6 +17,8 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/owner"
 	"github.com/neondatabase/autoscaling/pkg/dsga/policy"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+	"github.com/neondatabase/autoscaling/pkg/dsga/vmexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 	"github.com/neondatabase/autoscaling/pkg/util"
 )
 
@@ -251,6 +253,10 @@ func dsgaOwnerFailureCode(err error) string {
 			return "leadership_lost"
 		case resourceguard.ErrUnknown:
 			return "resource_unknown"
+		case vmexec.ErrSnapshotChanged:
+			return "vm_snapshot_changed"
+		case vmguard.ErrUnknown:
+			return "vm_unknown"
 		}
 		switch typed := e.(type) {
 		case *credential.Error:

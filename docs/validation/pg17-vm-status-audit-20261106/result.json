@@ -1,0 +1,54 @@
+{
+  "说明": "PG17 三节点 Grow 已验收。Shrink 在同一 VM 完成 PG 与 Guest 降限、QMP 降至 7 GiB 后，Controller 发布容量状态与原请求的写后审计重叠。原调用返回通用错误、Owner 换代。此次只将同操作和同执行身份的版本变化分类为重新读取；原 CAS、未知请求与身份保护仍由原执行链核验。",
+  "现场": "原请求按实际容量完成取消对账，Scheduler 结清 7 GiB，PG 原生准入及经 Proxy 新建的真实 SQL 连接成功。原三动作同会话探针达时限，正常 Shrink、Regrow 和自动策略仍须端到端验收。",
+  "上一阶段证据SHA256": "50e8b328fca9a2ada4bc8c765f8704d90e505b96b6a50401b7e60731ca4cd050",
+  "变更文件SHA256": {
+    "pkg/dsga/vmexec/executor.go": "d799f5f513cfe9c94b110909204e3e7d9304353f1bf364c80ae4ea67a0cf62fd",
+    "pkg/dsga/owner/pg.go": "24122f8eabb8e2cc9cbfe09ede73fdfc4218e87fe92c53dc861aa94c9f5de405",
+    "pkg/dsga/owner/vmexec_audit_checkpoint_test.go": "3d40682eb4dc26db9a5226954a00de6ebab23e21abeecf8f1a26e2399a245d25",
+    "pkg/agent/dsga.go": "0e3fa3aeb147413c2b86040586e9cc135af6828264b44c924d9db167299dc7a8"
+  },
+  "定向race": {
+    "退出": 0,
+    "通过": [
+      "TestDSGATickDiagnosticReportsUnknownWithoutChangingIt",
+      "TestDSGATickDiagnosticNeverFormatsArbitraryFields",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/complete",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/resize-pre-reject",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/resize-post-reject",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/observe-pre-reject",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/observe-post-reject",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/runner-unknown",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/gate-reopened",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/root-drift",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/resize-pre-rv",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/resize-post-rv",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/observe-pre-rv",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/observe-post-rv",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/resize-pre-actor",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/resize-post-actor",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/resize-pre-cancel",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/resize-post-cancel",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect/legacy-nil",
+      "TestVMShrinkAndObserveAuditCheckpointsDirect",
+      "TestProductionVMCompleteAuditCheckpointPreservesUnknownAndCAS/nil-callback-does-not-start",
+      "TestProductionVMCompleteAuditCheckpointPreservesUnknownAndCAS/source-rv-drift-has-no-callback",
+      "TestProductionVMCompleteAuditCheckpointPreservesUnknownAndCAS/valid-but-different-root-source-has-no-callback",
+      "TestProductionVMCompleteAuditCheckpointPreservesUnknownAndCAS/pre-audit-rejection-does-not-start",
+      "TestProductionVMCompleteAuditCheckpointPreservesUnknownAndCAS/original-advance-keeps-unknown-without-callback",
+      "TestProductionVMCompleteAuditCheckpointPreservesUnknownAndCAS/runner-unknown-has-no-callback-or-replay",
+      "TestProductionVMCompleteAuditCheckpointPreservesUnknownAndCAS/status-published-during-original-QMP-readback",
+      "TestProductionVMCompleteAuditCheckpointPreservesUnknownAndCAS/complete-result-rejection-does-not-record",
+      "TestProductionVMCompleteAuditCheckpointPreservesUnknownAndCAS"
+    ],
+    "时长秒": 93.07901030406356,
+    "跳过": []
+  },
+  "正式ELF": {
+    "sha256": "3470560d4620a518ef4169b6c9e9c34966e0ba445cd591f82428c619bd19917d",
+    "bytes": 86839035
+  },
+  "编译退出": 0,
+  "OOM": 0,
+  "生产验收": false
+}

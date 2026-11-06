@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"reflect"
@@ -21,6 +22,10 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
+
+// ErrSnapshotChanged 表示同一 VM、Runner、原账本和 Owner 的 Kubernetes 版本已更新。
+// 本轮事实作废，下一轮须从原请求重新读取所有域。
+var ErrSnapshotChanged = errors.New("original VM revision changed during observation")
 
 type Executor struct {
 	store    *journal.Store
@@ -65,10 +70,21 @@ func (e *Executor) sameSnapshot(ctx context.Context, s *journal.Snapshot) error 
 	if err != nil {
 		return err
 	}
-	if !latest.Dispatchable() || latest.ResourceVersion() != s.ResourceVersion() || latest.State().Owner != e.actor {
+	if !latest.Dispatchable() || latest.State().Owner != e.actor {
 		return fmt.Errorf("VM original journal/Runner/owner changed during verification")
 	}
-	return nil
+	if latest.ResourceVersion() == s.ResourceVersion() {
+		return nil
+	}
+	// Controller 会把 QMP 已实现的容量写回 status，此更新可与 Agent 的写后审计重叠。
+	// 只有原操作、规格和 Runner 身份仍一致才留下 Owner 重读；本轮绝不写回执或再发 QMP。
+	before, after := s.VirtualMachine(), latest.VirtualMachine()
+	if before.Generation != after.Generation || before.Annotations[control.JournalAnnotation] != after.Annotations[control.JournalAnnotation] ||
+		before.Status.PodName != after.Status.PodName || before.Status.PodIP != after.Status.PodIP ||
+		before.Status.Node != after.Status.Node || before.Status.RestartCount != after.Status.RestartCount {
+		return fmt.Errorf("VM original operation, specification or Runner changed during verification")
+	}
+	return ErrSnapshotChanged
 }
 
 func (e *Executor) prepared(op *journal.Operation, prior map[journal.Action]*journal.Step) (budget.Prepared, error) {
