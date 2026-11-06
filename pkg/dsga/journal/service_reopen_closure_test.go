@@ -36,7 +36,7 @@ func reopenClosureFact(t *testing.T, m Model) control.AdmissionClosure {
 	c := a.Close
 	digest, err := c.Request.ContextSHA256()
 	require.NoError(t, err)
-	response := control.AdmissionResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: c.Request, Disposition: control.AdmissionApplied, ContextSHA256: digest, Observed: a.Before.Observed}
+	response := control.AdmissionResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: c.Request, Disposition: control.AdmissionApplied, ContextSHA256: digest, Observed: a.Before.Snapshot()}
 	response.Observed.AdmissionOpen, response.Observed.AdmissionRevision = false, c.Request.Revision
 	fact := control.AdmissionClosure{ProtocolVersion: 1, VMShrinkPermit: false, Original: *c.Original, ClosedBy: response, PriorMayHaveApplied: true}
 	require.NoError(t, fact.ValidateFor(control.AdmissionCloseRequest{ProtocolVersion: 1, Original: *c.Original, Close: c.Request}, *m.PGInstance, false))
@@ -49,7 +49,7 @@ func reopenContinuationFact(t *testing.T, m Model) control.AdmissionContinuation
 	n := a.Close.Continuation
 	digest, err := n.Request.Close.ContextSHA256()
 	require.NoError(t, err)
-	response := control.AdmissionResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: n.Request.Close, Disposition: control.AdmissionApplied, ContextSHA256: digest, Observed: a.LatestBefore.Observed}
+	response := control.AdmissionResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: n.Request.Close, Disposition: control.AdmissionApplied, ContextSHA256: digest, Observed: a.LatestBefore.Snapshot()}
 	response.Observed.AdmissionOpen, response.Observed.AdmissionRevision = false, n.Request.Close.Revision
 	fact := control.AdmissionContinuationResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: n.Request, ContextSHA256: n.CommandSHA256, ClosedBy: response, PriorMayHaveApplied: true}
 	require.NoError(t, fact.ValidateFor(n.Request, *m.PGInstance, false))
@@ -92,7 +92,7 @@ func TestServiceReopenClosureRetainsUnknownAndCompletionSpace(t *testing.T) {
 			require.Equal(t, Unconfirmed, loaded.InitialHeld.Admission.Phase, "首次旧未知不被新开放/再关闭覆盖")
 			require.False(t, loaded.ServiceClosure.Reopen.Closing.Close.Pending())
 			cloned := loaded.Clone()
-			cloned.ServiceClosure.Reopen.Closing.Before.Observed.Arrays[0].CommittedUpperBytes++
+			cloned.ServiceClosure.Reopen.Closing.Before.Timed.Observed.Arrays[0].CommittedUpperBytes++
 			cloned.ServiceClosure.Reopen.Closing.Close.ClosureReceipt.ClosedBy.Observed.Arrays[0].CommittedUpperBytes++
 			require.NotEqual(t, loaded, cloned)
 		})
@@ -143,7 +143,7 @@ func TestServiceReopenClosureRepeatedTakeoverPreservesOriginalAndPredecessor(t *
 	require.NoError(t, err)
 	require.Equal(t, completed, loaded)
 	cloned := loaded.Clone()
-	cloned.ServiceClosure.Reopen.Closing.LatestBefore.Observed.Arrays[0].CommittedUpperBytes++
+	cloned.ServiceClosure.Reopen.Closing.LatestBefore.Timed.Observed.Arrays[0].CommittedUpperBytes++
 	require.NotEqual(t, loaded, cloned)
 }
 

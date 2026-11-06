@@ -27,14 +27,14 @@ func (w *PGWorker) retryServiceReopen(ctx context.Context, selector string) (pge
 	if err := w.inspectServiceRecovery(ctx, s); err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
-	before, err := w.observeAdmissionLease(ctx)
+	before, err := w.observeServiceAdmission(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
 	if err := w.checkReopenSnapshot(ctx, s); err != nil {
 		return pgexec.AwaitingFact, err
 	}
-	s, _, err = w.session.store.RetryServiceReopen(ctx, s, m.Owner, selector, before)
+	s, _, err = w.session.store.RetryServiceReopenObserved(ctx, s, m.Owner, selector, before)
 	if err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}

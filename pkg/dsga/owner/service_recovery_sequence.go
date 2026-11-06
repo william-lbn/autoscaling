@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"k8s.io/klog/v2"
@@ -41,40 +42,52 @@ func (w *PGWorker) recoverServiceLifecycle(ctx context.Context, selector string)
 	if err := selectedLifecycleClosure(s, selector); err != nil {
 		return pgexec.AwaitingFact, err
 	}
-	latest := s.State().ServiceClosure.LatestRearm()
-	if latest == nil {
-		if err := timed(lifecycleRearm, func() error { _, err := w.rearmServiceLease(ctx, selector); return err }); err != nil {
+	enforced := w.client.AdmissionPolicy() == control.AdmissionPolicyEnforcedBudget
+	if enforced {
+		c := s.State().ServiceClosure
+		if c.LatestRearm() != nil {
+			return pgexec.AwaitingFact, ErrServiceSafety
+		}
+		_, _, closed, _ := c.Selection()
+		if err := w.fenceClosedBudget(ctx, s, closed); err != nil {
 			return pgexec.AwaitingFact, err
 		}
 	} else {
-		if latest.Phase != journal.Settled {
-			return pgexec.AwaitingFact, ErrServiceSafety
-		}
-		// 这里只观察真实期限以选择原方法；不从墙钟、历史回执或调用方推断过期。
-		var expired bool
-		if err := timed(lifecycleObserveLease, func() error {
-			fact, err := w.observeAdmissionLease(ctx)
-			if err != nil {
-				return err
+		latest := s.State().ServiceClosure.LatestRearm()
+		if latest == nil {
+			if err := timed(lifecycleRearm, func() error { _, err := w.rearmServiceLease(ctx, selector); return err }); err != nil {
+				return pgexec.AwaitingFact, err
 			}
-			if !fact.Armed || fact.Observed.AdmissionOpen || fact.Observed.IssuerFloorEpoch > w.session.Actor().Epoch {
-				return ErrServiceSafety
-			}
-			expired = fact.Expired
-			if !expired && (fact.LeaseEpoch != w.session.Actor().Epoch || fact.Observed.IssuerFloorEpoch != w.session.Actor().Epoch) {
-				return ErrServiceSafety
-			}
-			return nil
-		}); err != nil {
-			return pgexec.AwaitingFact, err
-		}
-		if expired {
-			if w.session.Actor().Epoch <= latest.Origin.Epoch {
+		} else {
+			if latest.Phase != journal.Settled {
 				return pgexec.AwaitingFact, ErrServiceSafety
 			}
-			selected := latest.CommandSHA256
-			if err := timed(lifecycleContinueRearm, func() error { _, err := w.continueServiceRearm(ctx, selected); return err }); err != nil {
+			// 这里只观察真实期限以选择原方法；不从墙钟、历史回执或调用方推断过期。
+			var expired bool
+			if err := timed(lifecycleObserveLease, func() error {
+				fact, err := w.observeAdmissionLease(ctx)
+				if err != nil {
+					return err
+				}
+				if !fact.Armed || fact.Observed.AdmissionOpen || fact.Observed.IssuerFloorEpoch > w.session.Actor().Epoch {
+					return ErrServiceSafety
+				}
+				expired = fact.Expired
+				if !expired && (fact.LeaseEpoch != w.session.Actor().Epoch || fact.Observed.IssuerFloorEpoch != w.session.Actor().Epoch) {
+					return ErrServiceSafety
+				}
+				return nil
+			}); err != nil {
 				return pgexec.AwaitingFact, err
+			}
+			if expired {
+				if w.session.Actor().Epoch <= latest.Origin.Epoch {
+					return pgexec.AwaitingFact, ErrServiceSafety
+				}
+				selected := latest.CommandSHA256
+				if err := timed(lifecycleContinueRearm, func() error { _, err := w.continueServiceRearm(ctx, selected); return err }); err != nil {
+					return pgexec.AwaitingFact, err
+				}
 			}
 		}
 	}
@@ -84,11 +97,17 @@ func (w *PGWorker) recoverServiceLifecycle(ctx context.Context, selector string)
 	if err := selectedLifecycleClosure(s, selector); err != nil {
 		return pgexec.AwaitingFact, err
 	}
-	latest = s.State().ServiceClosure.LatestRearm()
-	if latest == nil || latest.Phase != journal.Settled || latest.Origin != w.session.Actor() {
+	var rearmSHA string
+	latest := s.State().ServiceClosure.LatestRearm()
+	if enforced && latest != nil {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
-	rearmSHA := latest.CommandSHA256
+	if !enforced {
+		if latest == nil || latest.Phase != journal.Settled || latest.Origin != w.session.Actor() {
+			return pgexec.AwaitingFact, ErrServiceSafety
+		}
+		rearmSHA = latest.CommandSHA256
+	}
 	if err := timed(lifecycleReopen, func() error { _, err := w.reopenService(ctx, selector); return err }); err != nil {
 		return pgexec.AwaitingFact, err
 	}
@@ -97,7 +116,8 @@ func (w *PGWorker) recoverServiceLifecycle(ctx context.Context, selector string)
 	}
 	m := s.State()
 	c := m.ServiceClosure
-	if c == nil || c.Pending() || c.Reopen == nil || c.Reopen.Phase != journal.Settled || c.Reopen.Closing != nil || c.Reopen.Rearm != nil || c.Reopen.Origin != w.session.Actor() || c.LatestRearm() == nil || c.LatestRearm().CommandSHA256 != rearmSHA {
+	if c == nil || c.Pending() || c.Reopen == nil || c.Reopen.Phase != journal.Settled || c.Reopen.Closing != nil || c.Reopen.Rearm != nil || c.Reopen.Origin != w.session.Actor() || c.Reopen.Before.BudgetBound() != enforced ||
+		enforced && c.LatestRearm() != nil || !enforced && (c.LatestRearm() == nil || c.LatestRearm().CommandSHA256 != rearmSHA) {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
 	_, _, _, currentSelector := c.Selection()
@@ -218,7 +238,16 @@ func (w *PGWorker) recoverClosedReopenLifecycle(ctx context.Context, selector st
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
 	rearmSelector := selector
-	needRearm := original.Rearm == nil
+	enforced := w.client.AdmissionPolicy() == control.AdmissionPolicyEnforcedBudget
+	if original.Before.BudgetBound() != enforced || enforced && original.Rearm != nil {
+		return pgexec.AwaitingFact, ErrServiceSafety
+	}
+	if enforced {
+		if err := w.fenceClosedBudget(ctx, s, closed); err != nil {
+			return pgexec.AwaitingFact, err
+		}
+	}
+	needRearm := !enforced && original.Rearm == nil
 	if original.Rearm != nil {
 		if original.Rearm.Phase != journal.Settled {
 			return pgexec.AwaitingFact, ErrServiceSafety
@@ -254,7 +283,8 @@ func (w *PGWorker) recoverClosedReopenLifecycle(ctx context.Context, selector st
 		return pgexec.AwaitingFact, err
 	}
 	c = s.State().ServiceClosure
-	if c == nil || c.Reopen == nil || c.Reopen.CommandSHA256 != original.CommandSHA256 || c.Reopen.Closing == nil || c.Reopen.Closing.Close.Pending() || c.Reopen.Rearm == nil || c.Reopen.Rearm.Phase != journal.Settled || c.Reopen.Rearm.Origin != w.session.Actor() {
+	if c == nil || c.Reopen == nil || c.Reopen.CommandSHA256 != original.CommandSHA256 || c.Reopen.Closing == nil || c.Reopen.Closing.Close.Pending() || c.Reopen.Before.BudgetBound() != enforced ||
+		enforced && c.Reopen.Rearm != nil || !enforced && (c.Reopen.Rearm == nil || c.Reopen.Rearm.Phase != journal.Settled || c.Reopen.Rearm.Origin != w.session.Actor()) {
 		return pgexec.AwaitingFact, ErrServiceSafety
 	}
 	_, _, sameClosed, sameSelector := c.Reopen.Closing.Close.Selection()

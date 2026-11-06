@@ -107,10 +107,10 @@ func TestServiceReopenSDKRestoresLatestUnknownAndOnlyQueries(t *testing.T) {
 				require.NoError(t, err)
 				require.Greater(t, session.Actor().Epoch, original.State().Owner.Epoch)
 				r := s.State().ServiceClosure.Reopen
-				observed := r.Before.Observed
+				observed := r.Before.Snapshot()
 				observed.IssuerFloorEpoch = session.Actor().Epoch
 				if strings.HasPrefix(mode, "continuation-") {
-					before := r.Before
+					before := *r.Before.Timed
 					before.Request.IssuerEpoch, before.Observed.IssuerFloorEpoch = session.Actor().Epoch, session.Actor().Epoch
 					before.Observed.AdmissionRevision = r.Closing.Close.Request.Revision
 					s, _, err = store.ContinueServiceReopenClosure(ctx, s, session.Actor(), r.Closing.Close.CommandSHA256, before)
@@ -262,7 +262,7 @@ func TestExpiredRunReadsReopenWALWithoutRenewOrSetter(t *testing.T) {
 		before, err := store.Load(ctx)
 		require.NoError(t, err)
 		r := before.State().ServiceClosure.Reopen
-		observed := r.Before.Observed
+		observed := r.Before.Snapshot()
 		observed.IssuerFloorEpoch = session.Actor().Epoch
 		root, resourceConfig := guestRoot(t, store)
 		qualifiedRootFixture(root)

@@ -66,7 +66,7 @@ func TestServiceReopenClosureDispatchAfterRealElectorTakeover(t *testing.T) {
 				pg := new(initialServicePG)
 				pg.request, pg.store, pg.before, pg.after = request, store, initial.Shared, initial.Shared
 				opened := r.Request
-				pg.gate, pg.leaseDeadline = &opened, r.Before.DeadlineNS
+				pg.gate, pg.leaseDeadline = &opened, r.Before.Timed.DeadlineNS
 				if mode == "opening" {
 					// 原开放未执行但仍可能迟到；只读 Run 必须保持未知，
 					// 后继关闭仍要封住这个完整原意图，不能依赖未找到。

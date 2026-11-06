@@ -33,6 +33,37 @@ func cloneLeaseResponse(original control.AdmissionLeaseResponse) control.Admissi
 	return original
 }
 
+// 预算读回和租约读回均随模型深拷贝，覆盖四个数组、操作以及能力里的原生身份。
+func cloneServiceAdmission(f control.ServiceAdmission) control.ServiceAdmission {
+	if f.Timed != nil {
+		timed := cloneLeaseResponse(*f.Timed)
+		f.Timed = &timed
+	}
+	if f.Budget != nil {
+		b := *f.Budget
+		b.Memory.Observed = cloneAdmissionResponse(&control.AdmissionResponse{Observed: b.Memory.Observed}).Observed
+		c := &b.Capabilities
+		if c.Instance != nil {
+			id := *c.Instance
+			if id.PGBootID != nil {
+				boot := *id.PGBootID
+				id.PGBootID = &boot
+			}
+			c.Instance = &id
+		}
+		if c.HistoryCapacity != nil {
+			h := *c.HistoryCapacity
+			c.HistoryCapacity = &h
+		}
+		if c.ProviderCanRelease != nil {
+			release := *c.ProviderCanRelease
+			c.ProviderCanRelease = &release
+		}
+		f.Budget = &b
+	}
+	return f
+}
+
 func serviceClosureDigest(c ServiceClosure) (string, error) {
 	c.Rearm = nil
 	c.RearmContinuation = nil

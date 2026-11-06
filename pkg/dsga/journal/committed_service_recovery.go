@@ -17,12 +17,12 @@ import (
 // 开放，不改其epoch重发。它不是VM/Host释放许可，可信来源仍单独认证。
 // Outcome与本字段互相约束，删证据不能把原Unknown投影成普通成功。
 type CommittedServiceCoverage struct {
-	Origin             Owner                          `json:"origin"`
-	FinalizationSHA256 string                         `json:"finalization_sha256"`
-	Request            control.AdmissionRequest       `json:"request"`
-	Receipt            control.AdmissionResponse      `json:"receipt"`
-	Query              bool                           `json:"query"`
-	Current            control.AdmissionLeaseResponse `json:"current"`
+	Origin             Owner                     `json:"origin"`
+	FinalizationSHA256 string                    `json:"finalization_sha256"`
+	Request            control.AdmissionRequest  `json:"request"`
+	Receipt            control.AdmissionResponse `json:"receipt"`
+	Query              bool                      `json:"query"`
+	Current            control.ServiceAdmission  `json:"current"`
 	// 仅类别15：独立结算不回写原Finalize未知，完整证据随终态保存。
 	Finalization *ServiceFinalization `json:"finalization,omitempty"`
 	// 取消的独立服务覆盖与目标成功分开，不把原Cleanup未知改成Completed。
@@ -96,7 +96,7 @@ func cloneCommittedCoverage(p *CommittedServiceCoverage) *CommittedServiceCovera
 	}
 	n := *p
 	n.Receipt = *cloneAdmissionResponse(&p.Receipt)
-	n.Current = cloneLeaseResponse(p.Current)
+	n.Current = cloneServiceAdmission(p.Current)
 	n.Finalization = cloneServiceFinalization(p.Finalization)
 	n.CleanupRecovery = cloneServiceCleanupRecovery(p.CleanupRecovery)
 	n.ActualRecovery = cloneServiceActualRecovery(p.ActualRecovery)
@@ -148,7 +148,7 @@ func (record Record) closingOutcome() (Outcome, error) {
 // completionRecord只从已确认的新开放及刚重审的有效期限派生独立结案。
 // 调用者随后在同CAS保存完整Lifecycle上下文和永久预算关闭水位；原Active
 // 在此之前始终被冻结。没有重放原Resume，没有补造该步骤的领域回执。
-func (m Model) committedCompletionRecord(actor Owner, current control.AdmissionLeaseResponse, sequence control.Uint64) (*Record, error) {
+func (m Model) committedCompletionRecord(actor Owner, current control.ServiceAdmission, sequence control.Uint64) (*Record, error) {
 	if m.Active == nil {
 		return nil, nil
 	}
@@ -169,7 +169,7 @@ func (m Model) committedCompletionRecord(actor Owner, current control.AdmissionL
 		return nil, fmt.Errorf("committed service completion requires confirmed independent reopen")
 	}
 	op := cloneOperation(*m.Active)
-	p := &CommittedServiceCoverage{Origin: actor, FinalizationSHA256: op.Steps[len(op.Steps)-2].CommandSHA256, Request: r.Request, Receipt: *cloneAdmissionResponse(r.Receipt), Query: r.Query, Current: cloneLeaseResponse(current)}
+	p := &CommittedServiceCoverage{Origin: actor, FinalizationSHA256: op.Steps[len(op.Steps)-2].CommandSHA256, Request: r.Request, Receipt: *cloneAdmissionResponse(r.Receipt), Query: r.Query, Current: cloneServiceAdmission(current)}
 	if f := m.ServiceClosure.Finalization; f != nil {
 		step, err := f.recoveredStep(op)
 		if err != nil {

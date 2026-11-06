@@ -576,10 +576,10 @@ func (model Model) Clone() Model {
 	if model.ServiceLifecycle != nil {
 		lifecycle := *model.ServiceLifecycle
 		lifecycle.Context = append([]byte(nil), lifecycle.Context...)
-		lifecycle.Current = cloneLeaseResponse(lifecycle.Current)
+		lifecycle.Current = cloneServiceAdmission(lifecycle.Current)
 		if lifecycle.Previous != nil {
 			previous := *lifecycle.Previous
-			previous.Current = cloneLeaseResponse(previous.Current)
+			previous.Current = cloneServiceAdmission(previous.Current)
 			lifecycle.Previous = &previous
 		}
 		model.ServiceLifecycle = &lifecycle
@@ -606,7 +606,7 @@ func (model Model) Clone() Model {
 				retired.Context = append([]byte(nil), retired.Context...)
 				reopen.Retired = &retired
 			}
-			reopen.Before = cloneLeaseResponse(reopen.Before)
+			reopen.Before = cloneServiceAdmission(reopen.Before)
 			if reopen.Receipt != nil {
 				reopen.Receipt = cloneAdmissionResponse(reopen.Receipt)
 			}

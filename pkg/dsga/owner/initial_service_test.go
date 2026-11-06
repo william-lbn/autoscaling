@@ -378,6 +378,10 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 		policy = control.AdmissionPolicyEnforcedBudget
 		mode = "host-publication-wait"
 	}
+	enforcedRecovery := strings.HasPrefix(mode, "enforced-budget-recovery-")
+	if enforcedRecovery {
+		policy = control.AdmissionPolicyEnforcedBudget
+	}
 	guestFixtureMode := fixtureHook != nil && (mode == "guest-service-audit-grow" || mode == "guest-service-audit-shrink")
 	hostPublicationWaitMode := fixtureHook != nil && mode == "host-publication-wait"
 	// 同一完整自动组合显式追加AS来源；不改变旧夹具事实或以peer冒充Linux硬限。
@@ -406,7 +410,7 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 	retainedFinalized := strings.HasPrefix(mode, "retained-safety-finalized-")
 	actualLatePG := actualRecovery && strings.Contains(mode, "pg-late-commit")
 	pgRecoveryTransfer := pgRecovery && (strings.Contains(mode, "unreceived") || strings.Contains(mode, "expired") || strings.Contains(mode, "takeover"))
-	closureTransfer := strings.HasPrefix(mode, "lifecycle-lease-") || strings.HasPrefix(mode, "lifecycle-sequence-") || strings.HasPrefix(mode, "recovery-fence-") || (retainedCapacity || actualRecovery || vmRecovery) && strings.HasSuffix(mode, "takeover") || pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
+	closureTransfer := enforcedRecovery || strings.HasPrefix(mode, "lifecycle-lease-") || strings.HasPrefix(mode, "lifecycle-sequence-") || strings.HasPrefix(mode, "recovery-fence-") || (retainedCapacity || actualRecovery || vmRecovery) && strings.HasSuffix(mode, "takeover") || pgRecoveryTransfer || strings.HasPrefix(mode, "guest-safety-recover-") && strings.HasSuffix(mode, "takeover") || mode == "cleanup-safety-recover-complete-takeover" || finalizationTransfer || committedExpiry || committedCompletionTransfer || strings.HasPrefix(mode, "closure-transfer-") || mode == "initial-safety-transfer" || mode == "resume-safety-transfer" || mode == "resume-safety-planned-transfer" || mode == "finalize-safety-transfer" || mode == "active-safety-vm-unknown-transfer" || mode == "active-safety-pg-transfer" || mode == "cleanup-safety-transfer"
 	pgSafety := actualLatePG || strings.HasPrefix(mode, "active-safety-pg-") || pgRecovery
 	guestRecovery := strings.HasPrefix(mode, "guest-safety-recover-")
 	guestRecoveryUnreceived := guestRecovery && strings.Contains(mode, "unreceived")
@@ -593,7 +597,7 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 					pg.mu.Unlock()
 					pgReply(w, control.MemoryResponse{ProtocolVersion: 1, Observed: observed})
 					return
-				case "/dsg/v1/admission/lease":
+				case "/dsg/v1/admission/lease", "/dsg/v1/admission/lease/rearm/status":
 					t.Errorf("硬预算 boot 不接受有限租期 RPC")
 					w.WriteHeader(http.StatusBadRequest)
 					return
@@ -832,6 +836,16 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 			} else {
 				verifyAuditedLeaseSequence(t, ctx, strings.TrimPrefix(mode, "lifecycle-lease-"), transfer, session, resources, worker, config, client, source, pg, root, runner)
 			}
+			return nil
+		}
+		if enforcedRecovery {
+			for range 2 {
+				progress, err := worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress)
+			}
+			verifyEnforcedBudgetRecovery(t, ctx, strings.TrimPrefix(mode, "enforced-budget-recovery-"), transfer,
+				session, resources, worker, config, client, source, pg, root, runner)
 			return nil
 		}
 		if strings.HasPrefix(mode, "lifecycle-sequence-") {

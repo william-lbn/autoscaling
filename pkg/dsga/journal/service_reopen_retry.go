@@ -59,7 +59,7 @@ func (m Model) validateServiceReopenRetirement(archived bool) error {
 		return err
 	}
 	previous := ServiceReopen(decoded)
-	if previous.Retired != nil || previous.Attempt == control.Uint64(math.MaxUint64) || previous.Attempt+1 != r.Attempt || previous.Closing == nil || previous.Closing.Close == nil || previous.Closing.Close.Pending() || previous.Origin.Epoch > r.Origin.Epoch || previous.Origin.Epoch == r.Origin.Epoch && previous.Origin != r.Origin || previous.Before.DeadlineNS > r.Before.DeadlineNS || previous.Before.LeaseEpoch > r.Before.LeaseEpoch {
+	if previous.Retired != nil || previous.Attempt == control.Uint64(math.MaxUint64) || previous.Attempt+1 != r.Attempt || previous.Closing == nil || previous.Closing.Close == nil || previous.Closing.Close.Pending() || previous.Origin.Epoch > r.Origin.Epoch || previous.Origin.Epoch == r.Origin.Epoch && previous.Origin != r.Origin || !r.Before.AtLeast(previous.Before) {
 		return fmt.Errorf("reopen retry predecessor is not exact completed closure")
 	}
 	// 不递归调用Model.Validate，避免重复读取生命周期上下文。只替换
@@ -85,8 +85,8 @@ func (m Model) validateServiceReopenRetirement(archived bool) error {
 
 // 新业务重试须严格晚于最近原生恢复的完整确认。有效布尔不能代替准确
 // 应用回执；期限/epoch不可回退，原恢复未知也不能被后继开放隐式抹掉。
-func liveAfterReopenRearm(rearm *ReopenLeaseRecovery, b control.AdmissionLeaseResponse, sequence control.Uint64) error {
-	if rearm != nil && (rearm.Phase != Settled || rearm.Receipt == nil || b.DeadlineNS < rearm.Receipt.AppliedDeadlineNS || b.LeaseEpoch < rearm.Origin.Epoch || sequence <= rearm.RecordedSequence) {
+func liveAfterReopenRearm(rearm *ReopenLeaseRecovery, b control.ServiceAdmission, sequence control.Uint64) error {
+	if rearm != nil && (rearm.Phase != Settled || rearm.Receipt == nil || b.Timed == nil || b.Timed.DeadlineNS < rearm.Receipt.AppliedDeadlineNS || b.Timed.LeaseEpoch < rearm.Origin.Epoch || sequence <= rearm.RecordedSequence) {
 		return fmt.Errorf("reopen retry predates exact confirmed latest rearm")
 	}
 	return nil
@@ -98,6 +98,10 @@ func liveAfterReopenRearm(rearm *ReopenLeaseRecovery, b control.AdmissionLeaseRe
 // 调用方必须前后审计来源，不能用新开放替代16～18的资源/取消结算。
 // next先深拷贝，失败保持原模型，永久预算/首次未知/HWM全部不改。
 func (m Model) RetryServiceReopen(actor Owner, selector string, before control.AdmissionLeaseResponse) (Model, error) {
+	return m.RetryServiceReopenObserved(actor, selector, before.ForServiceAdmission())
+}
+
+func (m Model) RetryServiceReopenObserved(actor Owner, selector string, before control.ServiceAdmission) (Model, error) {
 	if err := m.Validate(); err != nil {
 		return m, err
 	}
@@ -140,20 +144,24 @@ func (m Model) RetryServiceReopen(actor Owner, selector string, before control.A
 	if n := r.Closing.Close.Continuation; n != nil {
 		closedAt = n.RecordedSequence
 	}
-	next.ServiceClosure.Reopen = &ServiceReopen{ClosureVersion: r.ClosureVersion, Origin: actor, StartedSequence: next.Sequence, ClosureSHA256: r.ClosureSHA256, HeldSHA256: r.HeldSHA256, Before: cloneLeaseResponse(before), Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, SafetyStage: "opening", Closing: nil, Attempt: r.Attempt + 1, PriorClose: &closed, PriorClosedAt: closedAt, Retired: retired}
+	next.ServiceClosure.Reopen = &ServiceReopen{ClosureVersion: r.ClosureVersion, Origin: actor, StartedSequence: next.Sequence, ClosureSHA256: r.ClosureSHA256, HeldSHA256: r.HeldSHA256, Before: cloneServiceAdmission(before), Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, SafetyStage: "opening", Closing: nil, Attempt: r.Attempt + 1, PriorClose: &closed, PriorClosedAt: closedAt, Retired: retired}
 	return m.planReopenCompletion(next)
 }
 
 // Store写前CAS只在同一running VM返回确认票据。丢回复不发送；重建后
 // 只查询当前新选择，或原owner持原摘要明确重放。退役证据不授予执行权。
 func (store *Store) RetryServiceReopen(ctx context.Context, s *Snapshot, actor Owner, selector string, before control.AdmissionLeaseResponse) (*Snapshot, *ServiceReopen, error) {
+	return store.RetryServiceReopenObserved(ctx, s, actor, selector, before.ForServiceAdmission())
+}
+
+func (store *Store) RetryServiceReopenObserved(ctx context.Context, s *Snapshot, actor Owner, selector string, before control.ServiceAdmission) (*Snapshot, *ServiceReopen, error) {
 	if err := store.checked(s); err != nil {
 		return nil, nil, err
 	}
 	if !s.Dispatchable() {
 		return nil, nil, fmt.Errorf("reopen retry requires original running VM")
 	}
-	next, err := s.model.RetryServiceReopen(actor, selector, before)
+	next, err := s.model.RetryServiceReopenObserved(actor, selector, before)
 	if err != nil {
 		return nil, nil, err
 	}

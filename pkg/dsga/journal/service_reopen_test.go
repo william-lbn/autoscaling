@@ -57,7 +57,7 @@ func reopenFact(t *testing.T, m Model) control.AdmissionResponse {
 	r := m.ServiceClosure.Reopen
 	digest, err := r.Request.ContextSHA256()
 	require.NoError(t, err)
-	fact := control.AdmissionResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: r.Request, Disposition: control.AdmissionApplied, ContextSHA256: digest, Observed: r.Before.Observed}
+	fact := control.AdmissionResponse{ProtocolVersion: 1, VMShrinkPermit: false, Request: r.Request, Disposition: control.AdmissionApplied, ContextSHA256: digest, Observed: r.Before.Snapshot()}
 	fact.Observed.AdmissionOpen, fact.Observed.AdmissionRevision = true, r.Request.Revision
 	require.NoError(t, fact.ValidateFor(r.Request, *m.PGInstance, false))
 	return fact
@@ -109,7 +109,7 @@ func TestServiceReopenRetainsOriginalClosureBudgetAndUnknown(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, Busy, disposition)
 			cloned := completed.Clone()
-			cloned.ServiceClosure.Reopen.Before.Observed.Arrays[0].CommittedUpperBytes++
+			cloned.ServiceClosure.Reopen.Before.Timed.Observed.Arrays[0].CommittedUpperBytes++
 			cloned.ServiceClosure.Reopen.Receipt.Observed.Arrays[0].CommittedUpperBytes++
 			require.NotEqual(t, completed, cloned, "快照内层必须隔离")
 			_, err = completed.StartServiceReopen(completed.Owner, selector, before)

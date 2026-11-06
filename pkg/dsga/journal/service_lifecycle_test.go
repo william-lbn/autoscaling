@@ -64,7 +64,7 @@ func TestServiceLifecycleCompletionPreservesUnknownAndAllowsNextOperation(t *tes
 			require.Equal(t, done.ServiceLifecycle, finished.ServiceLifecycle)
 			cloned := done.Clone()
 			cloned.ServiceLifecycle.Context[0] ^= 1
-			cloned.ServiceLifecycle.Current.Observed.Arrays[0].CommittedUpperBytes++
+			cloned.ServiceLifecycle.Current.Timed.Observed.Arrays[0].CommittedUpperBytes++
 			require.NotEqual(t, done, cloned)
 		})
 	}
@@ -96,7 +96,7 @@ func TestServiceLifecycleRejectsProjectedOrStaleCompletion(t *testing.T) {
 		"context-erased": func(m *Model) { m.ServiceLifecycle.Context = nil },
 		"counter":        func(m *Model) { m.ServiceLifecycle.Cycle++ },
 		"stage-erased":   func(m *Model) { m.ServiceLifecycle.SafetyStage = "" },
-		"current-newer":  func(m *Model) { m.ServiceLifecycle.Current.Observed.AdmissionRevision++ },
+		"current-newer":  func(m *Model) { m.ServiceLifecycle.Current.Timed.Observed.AdmissionRevision++ },
 		"coverage-old":   func(m *Model) { m.InitialHeld.Covered.Request.Revision = 1 },
 		"coverage-lost":  func(m *Model) { m.InitialHeld.Covered = nil },
 		"false-original": func(m *Model) { m.InitialHeld.Admission.Phase = Settled },

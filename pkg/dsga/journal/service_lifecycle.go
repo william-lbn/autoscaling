@@ -34,22 +34,22 @@ var (
 type ServiceLifecycle struct {
 	// 必填门禁阶段独立于可选当前关闭，防止删除新关闭字段后投影为
 	// 上一周期已经恢复服务。只有新关闭写前或完整完成CAS可以改变。
-	SafetyStage           string                         `json:"safety_stage"`
-	Cycle                 control.Uint64                 `json:"cycle"`
-	Origin                Owner                          `json:"origin"`
-	RecordedSequence      control.Uint64                 `json:"recorded_sequence"`
-	Context               []byte                         `json:"context"`
-	ContextSHA256         string                         `json:"context_sha256"`
-	Current               control.AdmissionLeaseResponse `json:"current"`
-	Previous              *ServiceRetirement             `json:"previous"`
-	ContextRetainedSHA256 string                         `json:"context_retained_sha256,omitempty"`
+	SafetyStage           string                   `json:"safety_stage"`
+	Cycle                 control.Uint64           `json:"cycle"`
+	Origin                Owner                    `json:"origin"`
+	RecordedSequence      control.Uint64           `json:"recorded_sequence"`
+	Context               []byte                   `json:"context"`
+	ContextSHA256         string                   `json:"context_sha256"`
+	Current               control.ServiceAdmission `json:"current"`
+	Previous              *ServiceRetirement       `json:"previous"`
+	ContextRetainedSHA256 string                   `json:"context_retained_sha256,omitempty"`
 }
 
 type ServiceRetirement struct {
-	Cycle            control.Uint64                 `json:"cycle"`
-	RecordedSequence control.Uint64                 `json:"recorded_sequence"`
-	EvidenceSHA256   string                         `json:"evidence_sha256"`
-	Current          control.AdmissionLeaseResponse `json:"current"`
+	Cycle            control.Uint64           `json:"cycle"`
+	RecordedSequence control.Uint64           `json:"recorded_sequence"`
+	EvidenceSHA256   string                   `json:"evidence_sha256"`
+	Current          control.ServiceAdmission `json:"current"`
 }
 
 // InitialCoverage与原InitialAdmission分开，原Phase/命令/回执永不回写。
@@ -184,10 +184,23 @@ func (m Model) reopenCompletionCapacity() error {
 	return nil
 }
 
-func validLiveReopen(b control.AdmissionLeaseResponse, q control.AdmissionRequest, actor Owner) bool {
-	return b.ValidateFor(b.Request, q.Instance) == nil && b.Request.Action == "observe" && b.Request.IssuerEpoch == actor.Epoch &&
-		b.Armed && !b.Expired && b.Observed.Instance == q.Instance && b.Observed.IssuerFloorEpoch == actor.Epoch &&
-		b.LeaseEpoch <= actor.Epoch && b.Observed.AdmissionOpen && b.Observed.AdmissionRevision == q.Revision && b.Observed.CapacityGeneration == q.ExpectedCapacityGeneration
+func validLiveReopen(b control.ServiceAdmission, q control.AdmissionRequest, actor Owner) bool {
+	pg := b.Snapshot()
+	return b.ValidRead(q.Instance, actor.Epoch, false) && pg.AdmissionOpen &&
+		pg.AdmissionRevision == q.Revision && pg.CapacityGeneration == q.ExpectedCapacityGeneration
+}
+
+func validPriorOpen(read control.ServiceAdmission, instance control.Instance, ceiling control.Uint64) bool {
+	pg := read.Snapshot()
+	if !pg.AdmissionOpen || pg.IssuerFloorEpoch > ceiling {
+		return false
+	}
+	if read.BudgetBound() {
+		return read.ValidRead(instance, pg.IssuerFloorEpoch, false)
+	}
+	l := read.Timed
+	return l != nil && read.Budget == nil && l.ValidateFor(l.Request, instance) == nil &&
+		l.Request.Action == "observe" && l.Armed && !l.Expired && l.Request.IssuerEpoch <= ceiling
 }
 
 func (m Model) validateServiceLifecycle() error {
@@ -230,7 +243,7 @@ func (m Model) validateServiceLifecycle() error {
 	if err := m.validateContextRetained(l); err != nil {
 		return err
 	}
-	if l.Cycle == 0 || l.Origin.Validate() != nil || l.Origin != c.Owner || l.Origin.Epoch > m.Owner.Epoch || l.Origin.Epoch == m.Owner.Epoch && l.Origin != m.Owner || l.RecordedSequence <= c.Sequence || l.RecordedSequence > m.Sequence || l.ContextSHA256 != rawDigest(l.Context) || c.VMUID != m.VMUID || c.Incarnation != m.Incarnation || c.PGInstance == nil || m.PGInstance == nil || *c.PGInstance != *m.PGInstance || !reflect.DeepEqual(c.ResourceIdentity, m.ResourceIdentity) || c.stableServiceRecovery() != nil || r == nil || r.Phase != Settled || r.Closing != nil || !validLiveReopen(l.Current, r.Request, l.Origin) || l.Current.DeadlineNS < r.Before.DeadlineNS || l.Current.LeaseEpoch < r.Before.LeaseEpoch {
+	if l.Cycle == 0 || l.Origin.Validate() != nil || l.Origin != c.Owner || l.Origin.Epoch > m.Owner.Epoch || l.Origin.Epoch == m.Owner.Epoch && l.Origin != m.Owner || l.RecordedSequence <= c.Sequence || l.RecordedSequence > m.Sequence || l.ContextSHA256 != rawDigest(l.Context) || c.VMUID != m.VMUID || c.Incarnation != m.Incarnation || c.PGInstance == nil || m.PGInstance == nil || *c.PGInstance != *m.PGInstance || !reflect.DeepEqual(c.ResourceIdentity, m.ResourceIdentity) || c.stableServiceRecovery() != nil || r == nil || r.Phase != Settled || r.Closing != nil || !validLiveReopen(l.Current, r.Request, l.Origin) || !l.Current.AtLeast(r.Before) {
 		return fmt.Errorf("service lifecycle lacks exact audited original completion")
 	}
 	if err := m.validateCommittedLifecycle(c, l); err != nil {
@@ -239,14 +252,14 @@ func (m Model) validateServiceLifecycle() error {
 	if p := l.Previous; p != nil {
 		// 完整旧原生边界与累积摘要保留，较新成功关闭/开放才可退休旧
 		// 准入选择。同PG容量只能前进，不能退到另一boot或较旧revision。
-		if p.Cycle == 0 || p.Cycle == control.Uint64(math.MaxUint64) || l.Cycle != p.Cycle+1 || p.RecordedSequence == 0 || p.RecordedSequence >= c.ServiceClosure.StartedSequence || !lifecycleDigest(p.EvidenceSHA256) || p.Current.ValidateFor(p.Current.Request, *m.PGInstance) != nil || p.Current.Request.Action != "observe" || !p.Current.Armed || p.Current.Expired || !p.Current.Observed.AdmissionOpen || p.Current.Request.IssuerEpoch > l.Origin.Epoch || p.Current.Observed.IssuerFloorEpoch > l.Origin.Epoch || p.Current.Observed.AdmissionRevision >= c.ServiceClosure.Request.Revision || p.Current.Observed.CapacityGeneration > c.ServiceClosure.Request.ExpectedCapacityGeneration {
+		if p.Cycle == 0 || p.Cycle == control.Uint64(math.MaxUint64) || l.Cycle != p.Cycle+1 || p.RecordedSequence == 0 || p.RecordedSequence >= c.ServiceClosure.StartedSequence || !lifecycleDigest(p.EvidenceSHA256) || !validPriorOpen(p.Current, *m.PGInstance, l.Origin.Epoch) || p.Current.BudgetBound() != l.Current.BudgetBound() || p.Current.Snapshot().AdmissionRevision >= c.ServiceClosure.Request.Revision || p.Current.Snapshot().CapacityGeneration > c.ServiceClosure.Request.ExpectedCapacityGeneration {
 			return fmt.Errorf("service retirement regressed original native boundary")
 		}
 	} else if l.Cycle != 1 {
 		return fmt.Errorf("service lifecycle lost required retirement watermark")
 	}
 	if m.ServiceClosure != nil {
-		if m.ServiceClosure.FormatVersion < 10 || m.ServiceClosure.FormatVersion > 20 || m.ServiceClosure.StartedSequence <= l.RecordedSequence || m.ServiceClosure.Request.Revision <= l.Current.Observed.AdmissionRevision || m.ServiceClosure.Request.ExpectedCapacityGeneration < l.Current.Observed.CapacityGeneration {
+		if m.ServiceClosure.FormatVersion < 10 || m.ServiceClosure.FormatVersion > 20 || m.ServiceClosure.StartedSequence <= l.RecordedSequence || m.ServiceClosure.Request.Revision <= l.Current.Snapshot().AdmissionRevision || m.ServiceClosure.Request.ExpectedCapacityGeneration < l.Current.Snapshot().CapacityGeneration {
 			return fmt.Errorf("current closure predates completed service lifecycle")
 		}
 	}
@@ -342,6 +355,10 @@ func (m Model) InitialAdmissionReady() bool {
 // 原子保存完整证据、独立覆盖/预算水位并撤销关闭。失败原输入不变。
 // 只读查询不会调用本入口，完成写丢回复只能重读，不能再次开放或续租。
 func (m Model) CompleteServiceReopen(actor Owner, selector string, current control.AdmissionLeaseResponse) (Model, error) {
+	return m.CompleteServiceReopenObserved(actor, selector, current.ForServiceAdmission())
+}
+
+func (m Model) CompleteServiceReopenObserved(actor Owner, selector string, current control.ServiceAdmission) (Model, error) {
 	if err := m.Validate(); err != nil {
 		return m, err
 	}
@@ -369,7 +386,7 @@ func (m Model) CompleteServiceReopen(actor Owner, selector string, current contr
 	if err != nil {
 		return m, err
 	}
-	l := &ServiceLifecycle{SafetyStage: "serving", Cycle: 1, Origin: actor, RecordedSequence: next.Sequence, Context: raw, ContextSHA256: rawDigest(raw), Current: cloneLeaseResponse(current), Previous: nil}
+	l := &ServiceLifecycle{SafetyStage: "serving", Cycle: 1, Origin: actor, RecordedSequence: next.Sequence, Context: raw, ContextSHA256: rawDigest(raw), Current: cloneServiceAdmission(current), Previous: nil}
 	if old := m.ServiceLifecycle; old != nil {
 		if old.Cycle == control.Uint64(math.MaxUint64) {
 			return m, fmt.Errorf("service lifecycle counter exhausted")
@@ -379,7 +396,7 @@ func (m Model) CompleteServiceReopen(actor Owner, selector string, current contr
 			return m, err
 		}
 		l.Cycle = old.Cycle + 1
-		l.Previous = &ServiceRetirement{Cycle: old.Cycle, RecordedSequence: old.RecordedSequence, EvidenceSHA256: rawDigest(prior), Current: cloneLeaseResponse(old.Current)}
+		l.Previous = &ServiceRetirement{Cycle: old.Cycle, RecordedSequence: old.RecordedSequence, EvidenceSHA256: rawDigest(prior), Current: cloneServiceAdmission(old.Current)}
 	}
 	if m.RetainedCoverage != nil {
 		priorRaw, err := json.Marshal(m.RetainedCoverage)
@@ -455,13 +472,17 @@ func (m Model) CompleteServiceReopen(actor Owner, selector string, current contr
 }
 
 func (store *Store) CompleteServiceReopen(ctx context.Context, s *Snapshot, actor Owner, selector string, current control.AdmissionLeaseResponse) (*Snapshot, error) {
+	return store.CompleteServiceReopenObserved(ctx, s, actor, selector, current.ForServiceAdmission())
+}
+
+func (store *Store) CompleteServiceReopenObserved(ctx context.Context, s *Snapshot, actor Owner, selector string, current control.ServiceAdmission) (*Snapshot, error) {
 	if err := store.checked(s); err != nil {
 		return nil, err
 	}
 	if !s.Dispatchable() {
 		return nil, fmt.Errorf("service completion requires original running VM")
 	}
-	next, err := s.model.CompleteServiceReopen(actor, selector, current)
+	next, err := s.model.CompleteServiceReopenObserved(actor, selector, current)
 	if err != nil {
 		return nil, err
 	}

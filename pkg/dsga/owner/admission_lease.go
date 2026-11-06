@@ -258,9 +258,6 @@ func (w *PGWorker) renewPrepareLease(ctx context.Context, s *journal.Snapshot, s
 				return err
 			}
 		}
-		if err := i.MatchCurrent(shared, root, epoch, control.Uint64(memory), guestUsable); err != nil {
-			return err
-		}
 		_, _, published, err := w.safety.runner.Inspect(ctx, &i.RunnerBirth, m.Owner)
 		if err != nil {
 			return err
@@ -288,31 +285,49 @@ func (w *PGWorker) renewPrepareLease(ctx context.Context, s *journal.Snapshot, s
 		if _, err := w.safety.runner.CheckActiveHeldBudget(ctx, m); err != nil {
 			return err
 		}
-		if m.CapacityHeld != nil {
-			c, err := m.CurrentCapacity()
-			if err != nil {
-				return err
-			}
-			digest, err := budget.RootDigest(root)
-			if err != nil || digest != c.RootSHA256 || root.Bound != c.PGAggregate {
-				return ErrServiceSafety
-			}
-			if err := c.ValidateCurrent(shared, epoch, control.Uint64(memory)); err != nil {
-				return err
-			}
-		} else if m.BudgetHeld != nil && m.BudgetHeld.Finalization.Observation != nil {
-			var f budget.Finalized
-			if json.Unmarshal(m.BudgetHeld.Finalization.Observation.Data, &f) != nil || f.Aggregate == nil || *f.Aggregate != root.Bound {
-				return ErrServiceSafety
-			}
-			if err := f.ValidateFor(f.Request, shared, epoch, vm.Status.PodName, vm.Status.RestartCount, uint64(memory)); err != nil {
-				return err
-			}
-		} else {
-			return ErrServiceSafety
-		}
+
+	}
+	if err := matchRetainedPGMemory(s, shared, root, epoch, control.Uint64(memory), guestUsable); err != nil {
+		return err
 	}
 	return w.finishServiceBudgetAudit(ctx, s, shared.Observed)
+}
+
+// 正常服务和正式重开共用永久预算的 PG 容量、来源与实际硬边界校验。
+// 此处只比较刚取得的数据，不读取远端，不分配预算。
+func matchRetainedPGMemory(s *journal.Snapshot, shared control.SharedCostResponse, root budget.RootAggregate, epoch, memory, guestUsable control.Uint64) error {
+	m := s.State()
+	if m.InitialHeld != nil {
+		i, err := m.InitialBudgetFor()
+		if err != nil {
+			return err
+		}
+		return i.MatchCurrent(shared, root, epoch, memory, guestUsable)
+	}
+	if m.CapacityHeld != nil {
+		c, err := m.CurrentCapacity()
+		if err != nil {
+			return err
+		}
+		digest, err := budget.RootDigest(root)
+		if err != nil || digest != c.RootSHA256 || root.Bound != c.PGAggregate {
+			return ErrServiceSafety
+		}
+		if err := c.ValidateCurrent(shared, epoch, memory); err != nil {
+			return err
+		}
+	} else if m.BudgetHeld != nil && m.BudgetHeld.Finalization.Observation != nil {
+		var f budget.Finalized
+		if json.Unmarshal(m.BudgetHeld.Finalization.Observation.Data, &f) != nil || f.Aggregate == nil || *f.Aggregate != root.Bound {
+			return ErrServiceSafety
+		}
+		if err := f.ValidateFor(f.Request, shared, epoch, s.VirtualMachine().Status.PodName, s.VirtualMachine().Status.RestartCount, uint64(memory)); err != nil {
+			return err
+		}
+	} else {
+		return ErrServiceSafety
+	}
+	return nil
 }
 
 // 正常完成阶段只在原完整audit成功的同一调用内接续；恢复有自己的显式

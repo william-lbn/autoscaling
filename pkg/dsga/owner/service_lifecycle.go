@@ -39,7 +39,7 @@ func (w *PGWorker) completeServiceReopen(ctx context.Context, selector string) (
 		progress, closeErr := w.closeServiceReopen(ctx, selector, false)
 		return progress, errors.Join(ErrServiceSafety, err, closeErr)
 	}
-	_, err = w.session.store.CompleteServiceReopen(ctx, s, m.Owner, selector, current)
+	_, err = w.session.store.CompleteServiceReopenObserved(ctx, s, m.Owner, selector, current)
 	return pgexec.Recorded, err
 }
 
@@ -48,31 +48,31 @@ func (w *PGWorker) completeServiceReopen(ctx context.Context, selector string) (
 // 承接Run解除本地过期等待；不rearm、不改固定TTL，也不自行清除过期latch。
 // 旧完成、只恢复rearm或观察当前open均不够。上下文已由Model.Validate完整
 // 严格解码，此处只取原新开放身份，不制造原命令、不恢复已退休的SDK pending。
-func (w *PGWorker) auditCompletedService(ctx context.Context, s *journal.Snapshot, selector string) (control.AdmissionLeaseResponse, error) {
+func (w *PGWorker) auditCompletedService(ctx context.Context, s *journal.Snapshot, selector string) (control.ServiceAdmission, error) {
 	m := s.State()
 	l := m.ServiceLifecycle
 	if m.Owner != w.session.Actor() || m.ServiceClosure != nil || m.Active != nil || l == nil || !w.reopenSourcesAvailable() {
-		return control.AdmissionLeaseResponse{}, ErrServiceSafety
+		return control.ServiceAdmission{}, ErrServiceSafety
 	}
 	var frozen struct {
 		ServiceClosure *journal.ServiceClosure `json:"service_closure"`
 	}
 	if json.Unmarshal(l.Context, &frozen) != nil || frozen.ServiceClosure == nil || frozen.ServiceClosure.Reopen == nil {
-		return control.AdmissionLeaseResponse{}, ErrServiceSafety
+		return control.ServiceAdmission{}, ErrServiceSafety
 	}
 	r := frozen.ServiceClosure.Reopen
 	if selector != "" && r.CommandSHA256 != selector {
-		return control.AdmissionLeaseResponse{}, ErrServiceSafety
+		return control.ServiceAdmission{}, ErrServiceSafety
 	}
 	if err := w.inspectIdleService(ctx, s); err != nil {
-		return control.AdmissionLeaseResponse{}, errors.Join(ErrServiceSafety, err)
+		return control.ServiceAdmission{}, errors.Join(ErrServiceSafety, err)
 	}
-	current, err := w.observeAdmissionLease(ctx)
+	current, err := w.observeServiceAdmission(ctx)
 	if err != nil {
 		return current, err
 	}
-	pg := current.Observed
-	if !current.Armed || current.Expired || current.DeadlineNS < l.Current.DeadlineNS || current.LeaseEpoch < l.Current.LeaseEpoch || !pg.AdmissionOpen || pg.AdmissionRevision != r.Request.Revision || pg.CapacityGeneration != r.Request.ExpectedCapacityGeneration || pg.IssuerFloorEpoch != m.Owner.Epoch {
+	pg := current.Snapshot()
+	if !current.ValidRead(r.Request.Instance, m.Owner.Epoch, false) || !current.AtLeast(l.Current) || !pg.AdmissionOpen || pg.AdmissionRevision != r.Request.Revision || pg.CapacityGeneration != r.Request.ExpectedCapacityGeneration || pg.IssuerFloorEpoch != m.Owner.Epoch {
 		return current, ErrServiceSafety
 	}
 	return current, w.checkReopenSnapshot(ctx, s)

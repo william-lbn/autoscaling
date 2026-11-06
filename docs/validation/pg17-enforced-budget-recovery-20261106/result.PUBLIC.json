@@ -1,0 +1,23 @@
+{
+  "范围": "Agent 及原恢复账本的定向组件验证",
+  "base": "8c9ae2660898c52519ca2d210b8be9340d4e10b8",
+  "branch": "codex/dsga-autoscaling-20261019",
+  "source_lock_sha256": "c3dc536b729ea1e072f0c814185108c9e4c433a5ed927620691886bf015db968",
+  "go_json_sha256": "8dd869c3586349aef00b742642d1a6d1296770b0838240aa01b70e28d70d3fec",
+  "roots": [
+    "TestProductionEnforcedBudgetFormalRecovery",
+    "TestProductionEnforcedBudgetWaitsForHost",
+    "TestEnforcedBudgetRecoveryUsesOriginalClosureAndBoundPG",
+    "TestLifecycleSequenceCommandOnlySelectsOriginalClosure",
+    "TestServiceReopenRetainsOriginalClosureBudgetAndUnknown",
+    "TestProductionSingleControlRecoversServiceLifecycleWithoutPeriodicGap",
+    "TestProductionSingleControlLifecycleRetainsUnknownAndRefusesDrift",
+    "TestServiceLifecycleRepeatedCyclesRetireOnlySupersededAdmission",
+    "TestServiceLifecycleStoreCompletionIsAtomicAndUnknownReplyReadOnly"
+  ],
+  "passes_including_subtests": 38,
+  "skipped": [],
+  "seconds": 243.19531216600444,
+  "GoRace": true,
+  "三节点内存动作验收": false
+}

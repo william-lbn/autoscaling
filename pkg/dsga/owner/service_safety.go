@@ -126,6 +126,9 @@ func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) 
 	// 没有可信资格的旧领域读者不补造资格；Root闭环仍有效，新的自动
 	// 策略/预算也继续要求自己的完整来源。生产已配置资格则不得降级。
 	if source == nil {
+		if w.client.AdmissionPolicy() == control.AdmissionPolicyEnforcedBudget {
+			return fmt.Errorf("enforced idle budget lacks its original qualification")
+		}
 		return nil
 	}
 	stage = "qualification_read"
@@ -183,6 +186,17 @@ func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) 
 			// 不将本次只读成功提升为Host释放或旧资源重放许可。
 			return err
 		}
+	}
+	if w.client.AdmissionPolicy() == control.AdmissionPolicyEnforcedBudget {
+		stage = "idle_pg_budget"
+		shared, err := w.client.SharedCost(ctx)
+		if err != nil {
+			return err
+		}
+		if err := matchRetainedPGMemory(s, shared, root, m.Owner.Epoch, control.Uint64(actual), view.Actual.GuestMemTotalBytes); err != nil {
+			return err
+		}
+		return w.checkEnforcedObservation(ctx, s, shared.Observed)
 	}
 	return nil
 }

@@ -118,20 +118,20 @@ func (r Record) cancelledClosingOutcome() (Outcome, error) {
 	if p == nil || c.Finalization != nil || r.Outcome != RecoveredAfterCancellation || p.validate(r.Operation) != nil || p.RecordedSequence >= r.ClosedSequence || c.Origin.Validate() != nil || p.Origin.Epoch > c.Origin.Epoch || p.Origin.Epoch == c.Origin.Epoch && p.Origin != c.Origin || q.Validate() != nil || !q.Open || q.Instance != r.Operation.Request.Key.Instance || q.IssuerEpoch < p.Origin.Epoch || q.IssuerEpoch > c.Origin.Epoch || q.ExpectedCapacityGeneration != p.Closed.ExpectedCapacityGeneration || q.BudgetCommitmentID != p.Closed.BudgetCommitmentID || q.Revision <= p.Closed.Revision || c.FinalizationSHA256 != p.retainedHash(r.Operation) || !c.Receipt.Confirms() || c.Receipt.ValidateFor(q, q.Instance, c.Query) != nil || !validLiveReopen(c.Current, q, c.Origin) || c.Receipt.Observed.IssuerFloorEpoch > c.Origin.Epoch || c.Receipt.Observed.CapacityGeneration != q.ExpectedCapacityGeneration {
 		return "", fmt.Errorf("cancelled completion lacks independent exact live budget coverage")
 	}
-	if err := p.validateCoveredCurrent(r.Operation, c.Current.Observed, c.Origin.Epoch); err != nil {
+	if err := p.validateCoveredCurrent(r.Operation, c.Current.Snapshot(), c.Origin.Epoch); err != nil {
 		return "", err
 	}
 	return RecoveredAfterCancellation, nil
 }
 
-func (m Model) cancelledCompletionRecord(actor Owner, current control.AdmissionLeaseResponse, sequence control.Uint64) (*Record, error) {
+func (m Model) cancelledCompletionRecord(actor Owner, current control.ServiceAdmission, sequence control.Uint64) (*Record, error) {
 	c := m.ServiceClosure
 	if c == nil || c.CleanupRecovery == nil || c.Reopen == nil || c.Reopen.Phase != Settled || c.Reopen.Receipt == nil || c.Reopen.Closing != nil || m.Active == nil {
 		return nil, fmt.Errorf("cancelled completion requires original confirmed independent reopen")
 	}
 	p, opening := c.CleanupRecovery, c.Reopen
 	op := cloneOperation(*m.Active)
-	coverage := &CommittedServiceCoverage{Origin: actor, FinalizationSHA256: p.retainedHash(op), Request: opening.Request, Receipt: *cloneAdmissionResponse(opening.Receipt), Query: opening.Query, Current: cloneLeaseResponse(current), Finalization: nil, CleanupRecovery: cloneServiceCleanupRecovery(p)}
+	coverage := &CommittedServiceCoverage{Origin: actor, FinalizationSHA256: p.retainedHash(op), Request: opening.Request, Receipt: *cloneAdmissionResponse(opening.Receipt), Query: opening.Query, Current: cloneServiceAdmission(current), Finalization: nil, CleanupRecovery: cloneServiceCleanupRecovery(p)}
 	r := &Record{Operation: op, Outcome: RecoveredAfterCancellation, ClosedSequence: sequence, ServiceCoverage: coverage}
 	_, err := r.closingOutcome()
 	return r, err

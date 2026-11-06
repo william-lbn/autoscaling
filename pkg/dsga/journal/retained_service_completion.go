@@ -51,20 +51,20 @@ func (r Record) retainedClosingOutcome() (Outcome, error) {
 	if err != nil || q.Validate() != nil || !q.Open || q.Instance != facts.instance || q.IssuerEpoch < p.Origin.Epoch || q.IssuerEpoch > c.Origin.Epoch || q.BudgetCommitmentID != facts.budgetID || q.ExpectedCapacityGeneration != facts.generation || q.Revision <= p.Closed.Revision || c.FinalizationSHA256 != p.Source.SourceSHA256 || !c.Receipt.Confirms() || c.Receipt.ValidateFor(q, q.Instance, c.Query) != nil || !validLiveReopen(c.Current, q, c.Origin) || c.Receipt.Observed.IssuerFloorEpoch > c.Origin.Epoch {
 		return "", fmt.Errorf("retained completion lacks exact live old-budget reopen")
 	}
-	shared, err := sharedFromCoveredSnapshot(p.Current, c.Current.Observed)
+	shared, err := sharedFromCoveredSnapshot(p.Current, c.Current.Snapshot())
 	if err != nil || p.ValidateCurrent(shared, p.Root, c.Origin, facts.memory, facts.usable) != nil {
 		return "", fmt.Errorf("retained completion current resources exceed original permanent budget")
 	}
 	return RecoveredWithRetainedBudget, nil
 }
 
-func (m Model) retainedCompletionRecord(actor Owner, current control.AdmissionLeaseResponse, sequence control.Uint64) (*Record, error) {
+func (m Model) retainedCompletionRecord(actor Owner, current control.ServiceAdmission, sequence control.Uint64) (*Record, error) {
 	c := m.ServiceClosure
 	if c == nil || c.RetainedRecovery == nil || c.Reopen == nil || c.Reopen.Phase != Settled || c.Reopen.Receipt == nil || c.Reopen.Closing != nil || m.Active == nil {
 		return nil, fmt.Errorf("retained completion requires confirmed original reopen")
 	}
 	p, r := c.RetainedRecovery, c.Reopen
-	covered := &CommittedServiceCoverage{Origin: actor, FinalizationSHA256: p.Source.SourceSHA256, Request: r.Request, Receipt: *cloneAdmissionResponse(r.Receipt), Query: r.Query, Current: cloneLeaseResponse(current), Finalization: nil, CleanupRecovery: nil, ActualRecovery: nil, RetainedRecovery: cloneServiceRetainedRecovery(p)}
+	covered := &CommittedServiceCoverage{Origin: actor, FinalizationSHA256: p.Source.SourceSHA256, Request: r.Request, Receipt: *cloneAdmissionResponse(r.Receipt), Query: r.Query, Current: cloneServiceAdmission(current), Finalization: nil, CleanupRecovery: nil, ActualRecovery: nil, RetainedRecovery: cloneServiceRetainedRecovery(p)}
 	out := &Record{Operation: cloneOperation(*m.Active), Outcome: RecoveredWithRetainedBudget, ClosedSequence: sequence, ServiceCoverage: covered}
 	_, err := out.closingOutcome()
 	return out, err

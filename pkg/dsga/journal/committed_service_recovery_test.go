@@ -115,8 +115,8 @@ func TestCommittedServiceRecoveryRejectsCoverageProjection(t *testing.T) {
 			m.History[len(m.History)-1].ServiceCoverage.FinalizationSHA256 = strings.Repeat("a", 64)
 		},
 		"future-owner":         func(m *Model) { m.History[len(m.History)-1].ServiceCoverage.Origin.Epoch++ },
-		"expired":              func(m *Model) { m.History[len(m.History)-1].ServiceCoverage.Current.Expired = true },
-		"newer-open":           func(m *Model) { m.History[len(m.History)-1].ServiceCoverage.Current.Observed.AdmissionRevision++ },
+		"expired":              func(m *Model) { m.History[len(m.History)-1].ServiceCoverage.Current.Timed.Expired = true },
+		"newer-open":           func(m *Model) { m.History[len(m.History)-1].ServiceCoverage.Current.Timed.Observed.AdmissionRevision++ },
 		"lost-lifecycle":       func(m *Model) { m.ServiceLifecycle = nil },
 		"lost-budget-boundary": func(m *Model) { m.BudgetBoundary = nil },
 	} {
@@ -128,7 +128,7 @@ func TestCommittedServiceRecoveryRejectsCoverageProjection(t *testing.T) {
 	}
 	clone := done.Clone()
 	clone.History[len(clone.History)-1].ServiceCoverage.Receipt.Observed.Arrays[0].CommittedUpperBytes++
-	clone.History[len(clone.History)-1].ServiceCoverage.Current.Observed.Arrays[0].CommittedUpperBytes++
+	clone.History[len(clone.History)-1].ServiceCoverage.Current.Timed.Observed.Arrays[0].CommittedUpperBytes++
 	require.NotEqual(t, clone, done)
 }
 
@@ -293,7 +293,7 @@ func TestStoreCommittedServiceRecoveryCoverageCacheIsolation(t *testing.T) {
 			}
 			p := loaded.History[len(loaded.History)-1].ServiceCoverage
 			p.Receipt.Observed.Arrays[0].CommittedUpperBytes++
-			p.Current.Observed.Arrays[0].CommittedUpperBytes++
+			p.Current.Timed.Observed.Arrays[0].CommittedUpperBytes++
 			loaded.ServiceLifecycle.Context[0] ^= 1
 		}()
 	}

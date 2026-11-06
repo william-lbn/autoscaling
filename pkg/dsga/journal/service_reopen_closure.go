@@ -14,9 +14,9 @@ import (
 // Before 固定首次选择，LatestBefore 仅固定最近更高 owner 接续观察。
 // 原开放无论 Unconfirmed/Settled 都逐字保留，关门不等于排空或预算释放。
 type ServiceReopenClosure struct {
-	Before       control.AdmissionLeaseResponse  `json:"before"`
-	Close        *ServiceClosure                 `json:"close"`
-	LatestBefore *control.AdmissionLeaseResponse `json:"latest_before"`
+	Before       control.ServiceAdmission  `json:"before"`
+	Close        *ServiceClosure           `json:"close"`
+	LatestBefore *control.ServiceAdmission `json:"latest_before"`
 }
 
 func cloneServiceReopenClosure(original *ServiceReopenClosure) *ServiceReopenClosure {
@@ -24,9 +24,9 @@ func cloneServiceReopenClosure(original *ServiceReopenClosure) *ServiceReopenClo
 		return nil
 	}
 	cloned := *original
-	cloned.Before = cloneLeaseResponse(original.Before)
+	cloned.Before = cloneServiceAdmission(original.Before)
 	if original.LatestBefore != nil {
-		before := cloneLeaseResponse(*original.LatestBefore)
+		before := cloneServiceAdmission(*original.LatestBefore)
 		cloned.LatestBefore = &before
 	}
 	if original.Close != nil {
@@ -40,8 +40,8 @@ func cloneServiceReopenClosure(original *ServiceReopenClosure) *ServiceReopenClo
 	return &cloned
 }
 
-func reopenCloseBefore(b control.AdmissionLeaseResponse, owner Owner, original control.AdmissionRequest) error {
-	if b.ValidateFor(b.Request, original.Instance) != nil || b.Request.Action != "observe" || !b.Armed || b.Request.IssuerEpoch != owner.Epoch || b.Observed.IssuerFloorEpoch != owner.Epoch || b.LeaseEpoch > owner.Epoch || b.Observed.CapacityGeneration != original.ExpectedCapacityGeneration || max(b.Observed.AdmissionRevision, original.Revision) == control.Uint64(math.MaxUint64) {
+func reopenCloseBefore(b control.ServiceAdmission, owner Owner, original control.AdmissionRequest) error {
+	if !b.ValidRead(original.Instance, owner.Epoch, true) || b.Snapshot().CapacityGeneration != original.ExpectedCapacityGeneration || max(b.Snapshot().AdmissionRevision, original.Revision) == control.Uint64(math.MaxUint64) {
 		return fmt.Errorf("reopen closure lacks original native boot, floor or capacity")
 	}
 	return nil
@@ -72,7 +72,7 @@ func (m Model) validateServiceReopenClosure() error {
 		return fmt.Errorf("reopen closure changed original opening or stable service boundary")
 	}
 	digest, err := c.Request.ContextSHA256()
-	if err != nil || digest != c.CommandSHA256 || reopenCloseBefore(a.Before, c.Origin, r.Request) != nil || c.Request.Revision != max(a.Before.Observed.AdmissionRevision, r.Request.Revision)+1 {
+	if err != nil || digest != c.CommandSHA256 || reopenCloseBefore(a.Before, c.Origin, r.Request) != nil || a.Before.BudgetBound() != r.Before.BudgetBound() || c.Request.Revision != max(a.Before.Snapshot().AdmissionRevision, r.Request.Revision)+1 {
 		return fmt.Errorf("reopen closure changed original close selection")
 	}
 	switch c.Phase {
@@ -95,7 +95,7 @@ func (m Model) validateServiceReopenClosure() error {
 		return nil
 	}
 	n := c.Continuation
-	if stage != "continuing" || a.LatestBefore == nil || reopenCloseBefore(*a.LatestBefore, n.Origin, r.Request) != nil || max(a.LatestBefore.Observed.AdmissionRevision, n.Request.PreviousClose.Revision) == control.Uint64(math.MaxUint64) || n.Request.Close.Revision != max(a.LatestBefore.Observed.AdmissionRevision, n.Request.PreviousClose.Revision)+1 || n.Receipt != nil && n.Receipt.ClosedBy.Observed.CapacityGeneration != r.Request.ExpectedCapacityGeneration {
+	if stage != "continuing" || a.LatestBefore == nil || reopenCloseBefore(*a.LatestBefore, n.Origin, r.Request) != nil || a.LatestBefore.BudgetBound() != a.Before.BudgetBound() || max(a.LatestBefore.Snapshot().AdmissionRevision, n.Request.PreviousClose.Revision) == control.Uint64(math.MaxUint64) || n.Request.Close.Revision != max(a.LatestBefore.Snapshot().AdmissionRevision, n.Request.PreviousClose.Revision)+1 || n.Receipt != nil && n.Receipt.ClosedBy.Observed.CapacityGeneration != r.Request.ExpectedCapacityGeneration {
 		return fmt.Errorf("reopen closure continuation lost original native selection")
 	}
 	// 只复用独立接续校验器：它认证原意图、完整直接前驱、严格更高
@@ -107,6 +107,10 @@ func (m Model) validateServiceReopenClosure() error {
 }
 
 func (m Model) StartServiceReopenClosure(actor Owner, selector string, before control.AdmissionLeaseResponse) (Model, error) {
+	return m.StartServiceReopenClosureObserved(actor, selector, before.ForServiceAdmission())
+}
+
+func (m Model) StartServiceReopenClosureObserved(actor Owner, selector string, before control.ServiceAdmission) (Model, error) {
 	if err := m.Validate(); err != nil {
 		return m, err
 	}
@@ -123,13 +127,13 @@ func (m Model) StartServiceReopenClosure(actor Owner, selector string, before co
 	}
 	original := r.Request
 	request := original
-	request.Open, request.IssuerEpoch, request.Revision = false, actor.Epoch, max(before.Observed.AdmissionRevision, original.Revision)+1
+	request.Open, request.IssuerEpoch, request.Revision = false, actor.Epoch, max(before.Snapshot().AdmissionRevision, original.Revision)+1
 	digest, err := request.ContextSHA256()
 	if err != nil {
 		return m, err
 	}
 	closing := &ServiceClosure{Origin: actor, StartedSequence: next.Sequence, Reason: "reopen_source_unconfirmed", Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, Continuation: nil, Original: &original, ClosureReceipt: nil, OperationSHA256: "", Rearm: nil, Reopen: nil}
-	next.ServiceClosure.Reopen.Closing = &ServiceReopenClosure{Before: cloneLeaseResponse(before), Close: closing, LatestBefore: nil}
+	next.ServiceClosure.Reopen.Closing = &ServiceReopenClosure{Before: cloneServiceAdmission(before), Close: closing, LatestBefore: nil}
 	next.ServiceClosure.Reopen.SafetyStage = "closing"
 	return next, next.Validate()
 }
@@ -156,6 +160,10 @@ func (m Model) RecordServiceReopenClosure(actor Owner, fact control.AdmissionClo
 // 最近/直接前驱保持有界。普通重试不能换 revision，须读回或原 owner
 // 显式原重放；这里仍只返回模型，Store 确认之前没有发送许可。
 func (m Model) ContinueServiceReopenClosure(actor Owner, selector string, before control.AdmissionLeaseResponse) (Model, error) {
+	return m.ContinueServiceReopenClosureObserved(actor, selector, before.ForServiceAdmission())
+}
+
+func (m Model) ContinueServiceReopenClosureObserved(actor Owner, selector string, before control.ServiceAdmission) (Model, error) {
 	if err := m.Validate(); err != nil {
 		return m, err
 	}
@@ -165,7 +173,7 @@ func (m Model) ContinueServiceReopenClosure(actor Owner, selector string, before
 	r, a := m.ServiceClosure.Reopen, m.ServiceClosure.Reopen.Closing
 	c := a.Close
 	origin, sequence, previous, selected := c.Selection()
-	if !c.Pending() || actor.Epoch <= origin.Epoch || selector != selected || reopenCloseBefore(before, actor, r.Request) != nil || max(before.Observed.AdmissionRevision, previous.Revision) == control.Uint64(math.MaxUint64) {
+	if !c.Pending() || actor.Epoch <= origin.Epoch || selector != selected || reopenCloseBefore(before, actor, r.Request) != nil || max(before.Snapshot().AdmissionRevision, previous.Revision) == control.Uint64(math.MaxUint64) {
 		return m, fmt.Errorf("reopen closure continuation requires exact higher-owner native selection")
 	}
 	next, err := m.next(actor)
@@ -173,13 +181,13 @@ func (m Model) ContinueServiceReopenClosure(actor Owner, selector string, before
 		return m, err
 	}
 	closeRequest := previous
-	closeRequest.IssuerEpoch, closeRequest.Revision = actor.Epoch, max(before.Observed.AdmissionRevision, previous.Revision)+1
+	closeRequest.IssuerEpoch, closeRequest.Revision = actor.Epoch, max(before.Snapshot().AdmissionRevision, previous.Revision)+1
 	request := control.AdmissionContinuationRequest{ProtocolVersion: 1, Original: r.Request, PreviousClose: previous, Close: closeRequest}
 	digest, err := request.ContextSHA256()
 	if err != nil {
 		return m, err
 	}
-	latest := cloneLeaseResponse(before)
+	latest := cloneServiceAdmission(before)
 	a = next.ServiceClosure.Reopen.Closing
 	a.LatestBefore = &latest
 	a.Close.Continuation = &ServiceClosureContinuation{Origin: actor, StartedSequence: next.Sequence, PreviousOrigin: origin, PreviousSequence: sequence, Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil}
@@ -216,16 +224,24 @@ func (c *ServiceReopenClosure) UnmarshalJSON(raw []byte) error {
 }
 
 func (store *Store) StartServiceReopenClosure(ctx context.Context, s *Snapshot, actor Owner, selector string, before control.AdmissionLeaseResponse) (*Snapshot, *ServiceReopenClosure, error) {
+	return store.StartServiceReopenClosureObserved(ctx, s, actor, selector, before.ForServiceAdmission())
+}
+
+func (store *Store) StartServiceReopenClosureObserved(ctx context.Context, s *Snapshot, actor Owner, selector string, before control.ServiceAdmission) (*Snapshot, *ServiceReopenClosure, error) {
 	return store.selectServiceReopenClosure(ctx, s, actor, selector, before, false)
 }
 
 func (store *Store) ContinueServiceReopenClosure(ctx context.Context, s *Snapshot, actor Owner, selector string, before control.AdmissionLeaseResponse) (*Snapshot, *ServiceReopenClosure, error) {
+	return store.ContinueServiceReopenClosureObserved(ctx, s, actor, selector, before.ForServiceAdmission())
+}
+
+func (store *Store) ContinueServiceReopenClosureObserved(ctx context.Context, s *Snapshot, actor Owner, selector string, before control.ServiceAdmission) (*Snapshot, *ServiceReopenClosure, error) {
 	return store.selectServiceReopenClosure(ctx, s, actor, selector, before, true)
 }
 
 // 关闭即使来源已坏也不能绕过原 VM UID/RV 和当前 owner。与新开放不同，
 // 它不要求原生期限仍有效：已过期也要封住可能迟到的旧开放命令。
-func (store *Store) selectServiceReopenClosure(ctx context.Context, s *Snapshot, actor Owner, selector string, before control.AdmissionLeaseResponse, continuation bool) (*Snapshot, *ServiceReopenClosure, error) {
+func (store *Store) selectServiceReopenClosure(ctx context.Context, s *Snapshot, actor Owner, selector string, before control.ServiceAdmission, continuation bool) (*Snapshot, *ServiceReopenClosure, error) {
 	if err := store.checked(s); err != nil {
 		return nil, nil, err
 	}
@@ -235,9 +251,9 @@ func (store *Store) selectServiceReopenClosure(ctx context.Context, s *Snapshot,
 	var next Model
 	var err error
 	if continuation {
-		next, err = s.model.ContinueServiceReopenClosure(actor, selector, before)
+		next, err = s.model.ContinueServiceReopenClosureObserved(actor, selector, before)
 	} else {
-		next, err = s.model.StartServiceReopenClosure(actor, selector, before)
+		next, err = s.model.StartServiceReopenClosureObserved(actor, selector, before)
 	}
 	if err != nil {
 		return nil, nil, err

@@ -240,7 +240,7 @@ func TestServiceCleanupRecoveryCompletesWithoutRewritingOriginalCancellation(t *
 						case "outcome":
 							r.Outcome = Succeeded
 						case "current":
-							r.ServiceCoverage.Current.Expired = true
+							r.ServiceCoverage.Current.Timed.Expired = true
 						}
 						require.Error(t, n.Validate())
 					})

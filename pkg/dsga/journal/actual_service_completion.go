@@ -79,20 +79,20 @@ func (r Record) actualClosingOutcome() (Outcome, error) {
 	if p == nil || c.Finalization != nil || c.CleanupRecovery != nil || r.Outcome != RecoveredWithActualBudget || p.validate(r.Operation) != nil || p.RecordedSequence >= r.ClosedSequence || !recoveryOwnerAt(c.Origin, p.Origin, c.Origin) || q.Validate() != nil || !q.Open || q.Instance != r.Operation.Request.Key.Instance || q.IssuerEpoch < p.Origin.Epoch || q.IssuerEpoch > c.Origin.Epoch || q.ExpectedCapacityGeneration != p.Capacity.CapacityGeneration || q.BudgetCommitmentID != r.Operation.Request.BudgetCommitmentID || q.Revision <= p.Closed.Revision || c.FinalizationSHA256 != p.CapacitySHA256 || !c.Receipt.Confirms() || c.Receipt.ValidateFor(q, q.Instance, c.Query) != nil || !validLiveReopen(c.Current, q, c.Origin) || c.Receipt.Observed.IssuerFloorEpoch > c.Origin.Epoch || c.Receipt.Observed.CapacityGeneration != q.ExpectedCapacityGeneration {
 		return "", fmt.Errorf("actual resource recovery lacks exact independent live admission coverage")
 	}
-	shared, err := sharedFromCoveredSnapshot(p.Current, c.Current.Observed)
+	shared, err := sharedFromCoveredSnapshot(p.Current, c.Current.Snapshot())
 	if err != nil || p.Capacity.ValidateCurrent(shared, c.Origin.Epoch, p.Capacity.VMMemoryBytes) != nil {
 		return "", fmt.Errorf("actual resource completion exceeds retained native budget")
 	}
 	return RecoveredWithActualBudget, nil
 }
 
-func (m Model) actualCompletionRecord(actor Owner, current control.AdmissionLeaseResponse, sequence control.Uint64) (*Record, error) {
+func (m Model) actualCompletionRecord(actor Owner, current control.ServiceAdmission, sequence control.Uint64) (*Record, error) {
 	c := m.ServiceClosure
 	if c == nil || c.ActualRecovery == nil || c.Reopen == nil || c.Reopen.Phase != Settled || c.Reopen.Receipt == nil || c.Reopen.Closing != nil || m.Active == nil {
 		return nil, fmt.Errorf("actual completion requires original confirmed independent reopen")
 	}
 	p, q := c.ActualRecovery, c.Reopen
-	coverage := &CommittedServiceCoverage{Origin: actor, FinalizationSHA256: p.CapacitySHA256, Request: q.Request, Receipt: *cloneAdmissionResponse(q.Receipt), Query: q.Query, Current: cloneLeaseResponse(current), Finalization: nil, CleanupRecovery: nil, ActualRecovery: cloneServiceActualRecovery(p)}
+	coverage := &CommittedServiceCoverage{Origin: actor, FinalizationSHA256: p.CapacitySHA256, Request: q.Request, Receipt: *cloneAdmissionResponse(q.Receipt), Query: q.Query, Current: cloneServiceAdmission(current), Finalization: nil, CleanupRecovery: nil, ActualRecovery: cloneServiceActualRecovery(p)}
 	r := &Record{Operation: cloneOperation(*m.Active), Outcome: RecoveredWithActualBudget, ClosedSequence: sequence, ServiceCoverage: coverage}
 	_, err := r.closingOutcome()
 	return r, err

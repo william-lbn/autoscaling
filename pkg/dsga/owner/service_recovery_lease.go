@@ -157,24 +157,32 @@ func (w *PGWorker) renewAuditedRecoveryLease(ctx context.Context, snapshot *jour
 		}
 	}
 	stage = "observe"
-	current, e := w.observeAdmissionLease(ctx)
+	read, e := w.observeServiceAdmission(ctx)
 	if e != nil {
 		return e
 	}
-	if !current.Armed {
-		return ErrServiceSafety
-	}
-	if current.Expired {
-		// 原过期前置仍可由原higher-owner rearm恢复；已恢复后再次过期绝不复活。
-		if !scope.established {
-			return nil
+	pg := read.Snapshot()
+	current := read.Timed
+	if current != nil {
+		if !current.Armed {
+			return ErrServiceSafety
 		}
-		return errNativeAdmissionExpired
-	}
-	if current.LeaseEpoch != scope.actor.Epoch || current.Observed.IssuerFloorEpoch != scope.actor.Epoch {
+		if current.Expired {
+			// 首次旧模式恢复可以在后续明确 rearm；已经恢复的期限不能被复活。
+			if !scope.established {
+				return nil
+			}
+			return errNativeAdmissionExpired
+		}
+		if current.LeaseEpoch != scope.actor.Epoch {
+			return ErrServiceSafety
+		}
+	} else if !read.BudgetBound() || c.LatestRearm() != nil || c.Reopen != nil && (!c.Reopen.Before.BudgetBound() || c.Reopen.Rearm != nil) {
 		return ErrServiceSafety
 	}
-	pg := current.Observed
+	if pg.IssuerFloorEpoch != scope.actor.Epoch {
+		return ErrServiceSafety
+	}
 	if pg.Operation != nil && pg.Operation.Phase == control.Preparing {
 		return ErrServiceSafety
 	}
@@ -209,7 +217,7 @@ func (w *PGWorker) renewAuditedRecoveryLease(ctx context.Context, snapshot *jour
 			if reopen.Phase == journal.Unconfirmed && (reopen.Origin != scope.actor || reopen.StartedSequence <= scope.initialSequence) {
 				return ErrServiceSafety
 			}
-			gate = control.AdmissionRequest{Instance: instance, Revision: reopen.Before.Observed.AdmissionRevision, ExpectedCapacityGeneration: reopen.Request.ExpectedCapacityGeneration, Open: false}
+			gate = control.AdmissionRequest{Instance: instance, Revision: reopen.Before.Snapshot().AdmissionRevision, ExpectedCapacityGeneration: reopen.Request.ExpectedCapacityGeneration, Open: false}
 		}
 	}
 	if pg.Instance != instance || pg.AdmissionRevision != gate.Revision || pg.CapacityGeneration != gate.ExpectedCapacityGeneration || pg.AdmissionOpen != gate.Open {
@@ -225,6 +233,10 @@ func (w *PGWorker) renewAuditedRecoveryLease(ctx context.Context, snapshot *jour
 	}
 	if after.ResourceVersion() != snapshot.ResourceVersion() || after.State().Owner != scope.actor || !after.Dispatchable() {
 		return ErrServiceSafety
+	}
+	if read.BudgetBound() {
+		// 完整预算、同 boot 门禁、同写者和同一 VM 快照已读回。没有期限动作。
+		return nil
 	}
 	stage = "renew"
 	q := current.Request

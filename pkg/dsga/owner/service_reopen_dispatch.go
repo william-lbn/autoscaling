@@ -41,8 +41,8 @@ func (w *PGWorker) reopenService(ctx context.Context, selector string) (progress
 	stage = "stable_model"
 	if stableErr := s.State().CheckStableServiceRecovery(); stableErr != nil {
 		recordServiceReopenCheck(stage, started, stableErr)
-		// 原返回链保持不变；这里只补此前被丢弃的静态模型失败叶。
-		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+		// 保留稳定预算验证的实际原因。
+		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, stableErr)
 	}
 	m = s.State()
 	stage = "source_audit"
@@ -50,7 +50,7 @@ func (w *PGWorker) reopenService(ctx context.Context, selector string) (progress
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
 	stage = "native_observe"
-	before, err := w.observeAdmissionLease(ctx)
+	before, err := w.observeServiceAdmission(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
@@ -59,7 +59,7 @@ func (w *PGWorker) reopenService(ctx context.Context, selector string) (progress
 		return pgexec.AwaitingFact, err
 	}
 	stage = "store_start"
-	s, _, err = w.session.store.StartServiceReopen(ctx, s, m.Owner, selector, before)
+	s, _, err = w.session.store.StartServiceReopenObserved(ctx, s, m.Owner, selector, before)
 	if err != nil {
 		// 即使服务端已写入而回复丢失，这里也没有派发票据。原 WAL
 		// 只能查询，或由原 owner 持完整摘要显式重放；不重选 revision。
@@ -272,27 +272,27 @@ func (w *PGWorker) auditServiceReopen(ctx context.Context, s *journal.Snapshot, 
 	return err
 }
 
-func (w *PGWorker) auditServiceReopenCurrent(ctx context.Context, s *journal.Snapshot, requireOpen bool) (control.AdmissionLeaseResponse, error) {
+func (w *PGWorker) auditServiceReopenCurrent(ctx context.Context, s *journal.Snapshot, requireOpen bool) (control.ServiceAdmission, error) {
 	m := s.State()
 	if m.Owner != w.session.Actor() || m.ServiceClosure == nil || m.ServiceClosure.Reopen == nil || !w.reopenSourcesAvailable() {
-		return control.AdmissionLeaseResponse{}, ErrServiceSafety
+		return control.ServiceAdmission{}, ErrServiceSafety
 	}
 	r := m.ServiceClosure.Reopen
 	if r.Closing != nil || m.CheckStableServiceRecovery() != nil {
-		return control.AdmissionLeaseResponse{}, ErrServiceSafety
+		return control.ServiceAdmission{}, ErrServiceSafety
 	}
 	if err := w.inspectServiceRecovery(ctx, s); err != nil {
-		return control.AdmissionLeaseResponse{}, errors.Join(ErrServiceSafety, err)
+		return control.ServiceAdmission{}, errors.Join(ErrServiceSafety, err)
 	}
-	b, err := w.observeAdmissionLease(ctx)
+	b, err := w.observeServiceAdmission(ctx)
 	if err != nil {
-		return control.AdmissionLeaseResponse{}, errors.Join(ErrServiceSafety, err)
+		return control.ServiceAdmission{}, errors.Join(ErrServiceSafety, err)
 	}
-	q, pg := r.Request, b.Observed
+	q, pg := r.Request, b.Snapshot()
 	opened := pg.AdmissionOpen && pg.AdmissionRevision == q.Revision
-	closed := !pg.AdmissionOpen && pg.AdmissionRevision == r.Before.Observed.AdmissionRevision
-	if !b.Armed || b.Expired || b.DeadlineNS < r.Before.DeadlineNS || b.LeaseEpoch < r.Before.LeaseEpoch || pg.IssuerFloorEpoch != m.Owner.Epoch || pg.CapacityGeneration != q.ExpectedCapacityGeneration || !opened && (!closed || requireOpen) {
-		return control.AdmissionLeaseResponse{}, ErrServiceSafety
+	closed := !pg.AdmissionOpen && pg.AdmissionRevision == r.Before.Snapshot().AdmissionRevision
+	if !b.ValidRead(q.Instance, m.Owner.Epoch, false) || !b.AtLeast(r.Before) || pg.CapacityGeneration != q.ExpectedCapacityGeneration || !opened && (!closed || requireOpen) {
+		return control.ServiceAdmission{}, ErrServiceSafety
 	}
 	return b, w.checkReopenSnapshot(ctx, s)
 }
@@ -387,7 +387,7 @@ func (w *PGWorker) closeServiceReopen(ctx context.Context, selector string, cont
 	if err != nil || fence.Disposition != control.Fenced {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
-	before, err := w.observeAdmissionLease(ctx)
+	before, err := w.observeServiceAdmission(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
@@ -395,9 +395,9 @@ func (w *PGWorker) closeServiceReopen(ctx context.Context, selector string, cont
 		return pgexec.AwaitingFact, err
 	}
 	if continuation {
-		s, _, err = w.session.store.ContinueServiceReopenClosure(ctx, s, m.Owner, selector, before)
+		s, _, err = w.session.store.ContinueServiceReopenClosureObserved(ctx, s, m.Owner, selector, before)
 	} else {
-		s, _, err = w.session.store.StartServiceReopenClosure(ctx, s, m.Owner, selector, before)
+		s, _, err = w.session.store.StartServiceReopenClosureObserved(ctx, s, m.Owner, selector, before)
 	}
 	if err != nil {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)

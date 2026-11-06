@@ -20,18 +20,18 @@ import (
 // 接受13/14完整结算、15独立结算，或18独立取消预算证明；16/17资源
 // 仍在途时不可借当前数值开放，18原Cleanup相位也不会被改写。
 type ServiceReopen struct {
-	ClosureVersion   uint32                         `json:"closure_version"`
-	Origin           Owner                          `json:"origin"`
-	StartedSequence  control.Uint64                 `json:"started_sequence"`
-	ClosureSHA256    string                         `json:"closure_sha256"`
-	HeldSHA256       string                         `json:"held_sha256"`
-	Before           control.AdmissionLeaseResponse `json:"before"`
-	Request          control.AdmissionRequest       `json:"request"`
-	CommandSHA256    string                         `json:"command_sha256"`
-	Phase            Phase                          `json:"phase"`
-	RecordedSequence control.Uint64                 `json:"recorded_sequence"`
-	Query            bool                           `json:"query"`
-	Receipt          *control.AdmissionResponse     `json:"receipt"`
+	ClosureVersion   uint32                     `json:"closure_version"`
+	Origin           Owner                      `json:"origin"`
+	StartedSequence  control.Uint64             `json:"started_sequence"`
+	ClosureSHA256    string                     `json:"closure_sha256"`
+	HeldSHA256       string                     `json:"held_sha256"`
+	Before           control.ServiceAdmission   `json:"before"`
+	Request          control.AdmissionRequest   `json:"request"`
+	CommandSHA256    string                     `json:"command_sha256"`
+	Phase            Phase                      `json:"phase"`
+	RecordedSequence control.Uint64             `json:"recorded_sequence"`
+	Query            bool                       `json:"query"`
+	Receipt          *control.AdmissionResponse `json:"receipt"`
 	// 必填判别符防止删除 Closing/Continuation 后把再关闭投影回开放。
 	// 它只描述新恢复的安全阶段，不改原开放 Phase 或伪造其执行结果。
 	SafetyStage string `json:"safety_stage"`
@@ -109,6 +109,12 @@ func (m Model) validateServiceReopenRecord(archived bool) error {
 		return fmt.Errorf("service reopen changed original stable closure, budget or owner")
 	}
 	b, q := r.Before, r.Request
+	pg := b.Snapshot()
+	// 同一 boot 如果已有完成的服务周期，新开放在写前必须沿用原生策略。
+	// 拒绝混用发生在持久授权与 PG 写入之前，旧实例也走同一校验。
+	if m.ServiceLifecycle != nil && b.BudgetBound() != m.ServiceLifecycle.Current.BudgetBound() {
+		return fmt.Errorf("service reopen changed the admission policy of the bound boot")
+	}
 	if r.Attempt != 0 && r.PriorClose != nil {
 		closed = *r.PriorClose
 	}
@@ -116,10 +122,10 @@ func (m Model) validateServiceReopenRecord(archived bool) error {
 	// 后续再关闭/重试自己的容量仍须等于该永久资源边界。
 	capacity := m.effectiveServiceCapacity()
 	budgetID, budgetErr := m.effectiveServiceBudgetID()
-	if m.PGInstance == nil || b.ValidateFor(b.Request, *m.PGInstance) != nil || b.Request.Action != "observe" || !b.Armed || b.Expired || b.Observed.AdmissionOpen || b.LeaseEpoch > r.Origin.Epoch || b.Observed.IssuerFloorEpoch != r.Origin.Epoch || b.Request.IssuerEpoch != r.Origin.Epoch || b.Observed.CapacityGeneration != capacity || b.Observed.AdmissionRevision != closed.Revision || b.Observed.AdmissionRevision == control.Uint64(math.MaxUint64) || !q.Open || q.Instance != *m.PGInstance || q.IssuerEpoch != r.Origin.Epoch || q.Revision != b.Observed.AdmissionRevision+1 || q.ExpectedCapacityGeneration != b.Observed.CapacityGeneration || budgetErr != nil || q.BudgetCommitmentID != budgetID {
-		return fmt.Errorf("service reopen lacks exact live native lease and next admission context")
+	if m.PGInstance == nil || !b.ValidRead(*m.PGInstance, r.Origin.Epoch, false) || pg.AdmissionOpen || pg.CapacityGeneration != capacity || pg.AdmissionRevision != closed.Revision || pg.AdmissionRevision == control.Uint64(math.MaxUint64) || !q.Open || q.Instance != *m.PGInstance || q.IssuerEpoch != r.Origin.Epoch || q.Revision != pg.AdmissionRevision+1 || q.ExpectedCapacityGeneration != pg.CapacityGeneration || budgetErr != nil || q.BudgetCommitmentID != budgetID {
+		return fmt.Errorf("service reopen lacks exact native observation and next admission context")
 	}
-	if c.Rearm != nil && (b.DeadlineNS < c.LatestRearm().Receipt.AppliedDeadlineNS || b.LeaseEpoch < c.LatestRearm().Origin.Epoch) {
+	if c.Rearm != nil && (b.Timed == nil || b.Timed.DeadlineNS < c.LatestRearm().Receipt.AppliedDeadlineNS || b.Timed.LeaseEpoch < c.LatestRearm().Origin.Epoch) {
 		return fmt.Errorf("service reopen predates confirmed original rearm")
 	}
 	switch r.Phase {
@@ -150,6 +156,10 @@ func (m Model) validateServiceReopenRecord(archived bool) error {
 // observe 和原预算唯一派生；调用方不能提交另一预算/revision。next 深拷贝
 // 并核 actor/Sequence 溢出；任何失败保留原输入，不能将临时对象当派发票据。
 func (m Model) StartServiceReopen(actor Owner, selector string, before control.AdmissionLeaseResponse) (Model, error) {
+	return m.StartServiceReopenObserved(actor, selector, before.ForServiceAdmission())
+}
+
+func (m Model) StartServiceReopenObserved(actor Owner, selector string, before control.ServiceAdmission) (Model, error) {
 	if err := m.Validate(); err != nil {
 		return m, err
 	}
@@ -169,7 +179,7 @@ func (m Model) StartServiceReopen(actor Owner, selector string, before control.A
 	if err != nil {
 		return m, err
 	}
-	request := control.AdmissionRequest{ProtocolVersion: 1, Instance: closed.Instance, IssuerEpoch: actor.Epoch, Revision: before.Observed.AdmissionRevision + 1, ExpectedCapacityGeneration: before.Observed.CapacityGeneration, Open: true, BudgetCommitmentID: budgetID}
+	request := control.AdmissionRequest{ProtocolVersion: 1, Instance: closed.Instance, IssuerEpoch: actor.Epoch, Revision: before.Snapshot().AdmissionRevision + 1, ExpectedCapacityGeneration: before.Snapshot().CapacityGeneration, Open: true, BudgetCommitmentID: budgetID}
 	closureHash, err := serviceReopenClosureDigest(*c)
 	if err != nil {
 		return m, err
@@ -183,7 +193,7 @@ func (m Model) StartServiceReopen(actor Owner, selector string, before control.A
 		return m, err
 	}
 	next.setClosureFormatVersion(20)
-	next.ServiceClosure.Reopen = &ServiceReopen{ClosureVersion: m.ClosureFormatVersion(), Origin: actor, StartedSequence: next.Sequence, ClosureSHA256: closureHash, HeldSHA256: heldHash, Before: cloneLeaseResponse(before), Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, SafetyStage: "opening", Closing: nil, Attempt: 0, PriorClose: nil, PriorClosedAt: 0, Retired: nil}
+	next.ServiceClosure.Reopen = &ServiceReopen{ClosureVersion: m.ClosureFormatVersion(), Origin: actor, StartedSequence: next.Sequence, ClosureSHA256: closureHash, HeldSHA256: heldHash, Before: cloneServiceAdmission(before), Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, SafetyStage: "opening", Closing: nil, Attempt: 0, PriorClose: nil, PriorClosedAt: 0, Retired: nil}
 	return m.planReopenCompletion(next)
 }
 
@@ -230,13 +240,17 @@ func (m Model) RecordServiceReopen(actor Owner, fact control.AdmissionResponse, 
 // 丢回复、重建、旧 RV 都不能返回可执行对象；后继只能读原 WAL 并查询。
 // 这里不持本地互斥锁跨网络，串行性由已认证 Session/Store CAS 共同保证。
 func (store *Store) StartServiceReopen(ctx context.Context, s *Snapshot, actor Owner, selector string, before control.AdmissionLeaseResponse) (*Snapshot, *ServiceReopen, error) {
+	return store.StartServiceReopenObserved(ctx, s, actor, selector, before.ForServiceAdmission())
+}
+
+func (store *Store) StartServiceReopenObserved(ctx context.Context, s *Snapshot, actor Owner, selector string, before control.ServiceAdmission) (*Snapshot, *ServiceReopen, error) {
 	if err := store.checked(s); err != nil {
 		return nil, nil, err
 	}
 	if !s.Dispatchable() {
 		return nil, nil, fmt.Errorf("service reopen requires original running VM")
 	}
-	next, err := s.model.StartServiceReopen(actor, selector, before)
+	next, err := s.model.StartServiceReopenObserved(actor, selector, before)
 	if err != nil {
 		return nil, nil, err
 	}

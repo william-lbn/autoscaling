@@ -75,10 +75,10 @@ func (m Model) validateReopenLeaseRecovery(r *ReopenLeaseRecovery, archived bool
 	}
 	// 同boot原生期限和lease epoch均不回退；原开放与最近关闭的观察
 	// 都必须保留。不能用更早的expired快照绕过关闭期间的真实续租。
-	if b.DeadlineNS < latestClose.DeadlineNS || b.LeaseEpoch < latestClose.LeaseEpoch {
+	if !b.ForServiceAdmission().AtLeast(latestClose) {
 		return fmt.Errorf("reopen rearm predates latest closed native lease")
 	}
-	if b.ValidateFor(b.Request, *m.PGInstance) != nil || b.Request.Action != "observe" || !b.Armed || !b.Expired || b.Observed.AdmissionOpen || b.Request.IssuerEpoch != r.Origin.Epoch || b.Observed.IssuerFloorEpoch != r.Origin.Epoch || b.LeaseEpoch >= r.Origin.Epoch || b.DeadlineNS < a.Before.DeadlineNS || b.LeaseEpoch < a.Before.LeaseEpoch || b.Observed.AdmissionRevision != closed.Revision || b.Observed.CapacityGeneration != closed.ExpectedCapacityGeneration || q.Validate() != nil || q.Action != "rearm" || q.Instance != *m.PGInstance || q.IssuerEpoch != r.Origin.Epoch || q.ExpectedCapacityGeneration != b.Observed.CapacityGeneration || q.ExpectedAdmissionRevision != b.Observed.AdmissionRevision || q.ExpectedDeadlineNS != b.DeadlineNS {
+	if b.ValidateFor(b.Request, *m.PGInstance) != nil || b.Request.Action != "observe" || !b.Armed || !b.Expired || b.Observed.AdmissionOpen || b.Request.IssuerEpoch != r.Origin.Epoch || b.Observed.IssuerFloorEpoch != r.Origin.Epoch || b.LeaseEpoch >= r.Origin.Epoch || !b.ForServiceAdmission().AtLeast(a.Before) || b.Observed.AdmissionRevision != closed.Revision || b.Observed.CapacityGeneration != closed.ExpectedCapacityGeneration || q.Validate() != nil || q.Action != "rearm" || q.Instance != *m.PGInstance || q.IssuerEpoch != r.Origin.Epoch || q.ExpectedCapacityGeneration != b.Observed.CapacityGeneration || q.ExpectedAdmissionRevision != b.Observed.AdmissionRevision || q.ExpectedDeadlineNS != b.DeadlineNS {
 		return fmt.Errorf("reopen lease recovery lacks exact expired native CAS")
 	}
 	switch r.Phase {

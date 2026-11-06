@@ -921,11 +921,14 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 				// 只有本次过期之后明确完成的新生命周期才可能解除latch。
 				// 即使完成CAS丢回复，也要重新审来源/准确当前open/有限期限和
 				// 同RV；此处零setter、零rearm。失败保留latch，PG期限独立关闭。
-				var current control.AdmissionLeaseResponse
+				var current control.ServiceAdmission
 				current, err = worker.auditCompletedService(callCtx, snapshot, "")
+				if err == nil && current.Timed == nil {
+					err = ErrServiceSafety
+				}
 				if err == nil {
 					leaseExpired, expiryKnown = false, false
-					leaseRenewInterval = time.Duration(current.TimeoutMS) * time.Millisecond / 3
+					leaseRenewInterval = time.Duration(current.Timed.TimeoutMS) * time.Millisecond / 3
 					nextLeaseRenew = time.Time{}
 					progress = pgexec.Recorded
 				} else {

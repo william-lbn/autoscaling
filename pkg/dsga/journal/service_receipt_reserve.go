@@ -33,6 +33,21 @@ func serviceReceiptWindows(m Model) (serviceReceiptReserve, error) {
 	if err != nil {
 		return serviceReceiptReserve{}, err
 	}
+	// 硬预算配置保存已经验证的能力与 Memory 两个原始响应，其 JSON 大小
+	// 不借用有限租约的估算。实例固定，数字用允许的最大宽度，仍按原槽预留。
+	if c := m.ServiceClosure; c != nil && c.Reopen != nil && c.Reopen.Before.BudgetBound() {
+		caps := c.Reopen.Before.Budget.Capabilities
+		history, release := uint32(math.MaxUint32), false
+		caps.HistoryCapacity, caps.ProviderCanRelease = &history, &release
+		caps.ProductionReady = false
+		maximum := control.ServiceAdmission{Budget: &control.BudgetAdmissionRead{
+			Capabilities: caps, Memory: control.MemoryResponse{ProtocolVersion: 1, Observed: lease.Observed},
+		}}
+		b, err = serviceReceiptWindow(maximum)
+		if err != nil {
+			return serviceReceiptReserve{}, err
+		}
+	}
 	c, err := serviceReceiptWindow(close)
 	if err != nil {
 		return serviceReceiptReserve{}, err
