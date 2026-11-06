@@ -20,9 +20,43 @@ type NormalQuotaEnvelope struct {
 	PGShared        *control.SharedCostResponse `json:"pg_shared,omitempty"`
 }
 
+// 在线缩容沿用原 A→N 物理写入顺序。两份原生快照必须属于连续开放的同一代服务，
+// 这项核验只接受 PG 尾部已物理释放的事实，Root 仍需按固定私有域、真实映射和原预算单独授权。
+func (v NormalQuotaEnvelope) releasedShrink() bool {
+	return (v.ProtocolVersion == 1 && v.Phase == "released-shrink") ||
+		(v.ProtocolVersion == 2 && v.Phase == "online-released-shrink")
+}
+
+func (v NormalQuotaEnvelope) validateShrinkAdmission(s control.Snapshot) error {
+	if v.ProtocolVersion == 1 {
+		if s.AdmissionOpen {
+			return fmt.Errorf("legacy normal quota requires closed admission")
+		}
+		return nil
+	}
+	before := v.PGFence.Observed
+	result := v.PGResponse.Receipt.Result
+	req := v.PGRequest
+	if !before.AdmissionOpen || before.AdmissionRevision == 0 || !s.AdmissionOpen || !result.AdmissionOpen ||
+		before.AdmissionRevision != s.AdmissionRevision || result.AdmissionRevision != s.AdmissionRevision ||
+		before.IssuerFloorEpoch != req.Key.IssuerEpoch || before.CapacityGeneration != req.ExpectedCapacityGeneration ||
+		before.LowBuffers != before.HighBuffers || before.HighBuffers <= req.TargetBuffers ||
+		before.MaximumBuffers != s.MaximumBuffers || s.CapacityGeneration <= before.CapacityGeneration ||
+		s.CapacityGeneration-before.CapacityGeneration != 1 ||
+		(before.Operation != nil && before.Operation.Phase == control.Preparing) {
+		return fmt.Errorf("online shrink lacks same open admission, original capacity and confirmed next generation")
+	}
+	for _, array := range before.Arrays {
+		if array.AllocationUnknown {
+			return fmt.Errorf("online shrink original array allocation is unknown")
+		}
+	}
+	return nil
+}
+
 func (v NormalQuotaEnvelope) Validate() error {
 	c, q, f := v.Command, v.PGRequest, v.PGFence
-	if v.ProtocolVersion != 1 || c.Validate() != nil || q.Validate() != nil ||
+	if (v.ProtocolVersion != 1 && !(v.ProtocolVersion == 2 && v.releasedShrink())) || c.Validate() != nil || q.Validate() != nil ||
 		c.Identity.VMUID != q.Key.Instance.VMUID || c.Identity.ComputeInstanceID != q.Key.Instance.ComputeInstanceID ||
 		c.IssuerEpoch != q.Key.IssuerEpoch || c.BudgetCommitmentID != q.BudgetCommitmentID ||
 		f.ValidateFor(control.FenceRequest{ProtocolVersion: 1, Instance: q.Key.Instance, IssuerEpoch: q.Key.IssuerEpoch}, q.Key.Instance) != nil || f.Disposition != control.Fenced {
@@ -43,7 +77,7 @@ func (v NormalQuotaEnvelope) Validate() error {
 		}
 		return nil
 	}
-	if v.Phase != "released-shrink" || q.Kind != control.Shrink || v.PGShared != nil || v.PGResponse == nil {
+	if !v.releasedShrink() || q.Kind != control.Shrink || v.PGShared != nil || v.PGResponse == nil {
 		return fmt.Errorf("normal quota phase must select one original PG fact")
 	}
 	r := *v.PGResponse
@@ -56,8 +90,11 @@ func (v NormalQuotaEnvelope) Validate() error {
 		s.Operation.Phase != control.Committed || s.Operation.ContextSHA256 != hash ||
 		s.Operation.ExpectedCapacityGeneration != q.ExpectedCapacityGeneration || s.HighBuffers != q.TargetBuffers ||
 		s.LowBuffers != s.HighBuffers || s.CapacityGeneration != r.Receipt.Result.CapacityGeneration ||
-		s.IssuerFloorEpoch != q.Key.IssuerEpoch || s.CapacityGeneration < f.Observed.CapacityGeneration || s.AdmissionOpen {
-		return fmt.Errorf("normal quota PG completion is stale, open or changed")
+		s.IssuerFloorEpoch != q.Key.IssuerEpoch || s.CapacityGeneration < f.Observed.CapacityGeneration {
+		return fmt.Errorf("normal quota PG completion is stale or changed")
+	}
+	if err := v.validateShrinkAdmission(s); err != nil {
+		return err
 	}
 	for _, a := range s.Arrays {
 		x := a.Provider

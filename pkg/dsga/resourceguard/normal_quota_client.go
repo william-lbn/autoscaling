@@ -64,7 +64,7 @@ func (c *Client) normalQuotaCall(ctx context.Context, v NormalQuotaEnvelope, act
 	}
 	v = cloneNormalQuota(v)
 	c.mu.Lock()
-	if c.normalProtocolVersion != 1 || !observer && (c.busy || c.arrayPending != nil || c.repair != nil || c.pending != nil && !reflect.DeepEqual(*c.pending, v.Command) || c.normalPending != nil && (!explicit || !reflect.DeepEqual(*c.normalPending, v))) || observer && c.normalPending != nil && !reflect.DeepEqual(*c.normalPending, v) {
+	if c.normalProtocolVersion != 1 || (v.ProtocolVersion == 2 && c.onlineShrinkVersion != 1) || !observer && (c.busy || c.arrayPending != nil || c.repair != nil || c.pending != nil && !reflect.DeepEqual(*c.pending, v.Command) || c.normalPending != nil && (!explicit || !reflect.DeepEqual(*c.normalPending, v))) || observer && c.normalPending != nil && !reflect.DeepEqual(*c.normalPending, v) {
 		c.mu.Unlock()
 		return out, &ClientError{Code: "normal_original_pending_or_unavailable"}
 	}

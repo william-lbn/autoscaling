@@ -1,6 +1,7 @@
 package budget
 
 import (
+	"encoding/json"
 	"testing"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
@@ -103,4 +104,61 @@ func TestQuiesceReadinessReadyRetainsAllOtherCosts(t *testing.T) {
 	require.Positive(t, q.DSM.Prepared.PreparedSlots)
 	require.Positive(t, q.DSM.Prepared.Connections.Work.BackgroundProcesses)
 	require.False(t, q.VMShrinkPermit)
+}
+
+// 前台事务与后台状态继续按原硬域计费。在线分支不能用“空闲”取得硬预算，
+// 也不得把旧关闭意图或不同 revision 解释成一次成功的开放观察。
+func TestOnlineShrinkKeepsOriginalServingRevisionWithAnActiveWriter(t *testing.T) {
+	p, _, q := normalQuiesceLowerPrepared(t)
+	p.OnlineShrinkProtocolVersion = 1
+	p.Shared.Observed.AdmissionOpen = true
+	p.NormalQuotaFence.Observed = p.Shared.Observed
+	q.ProtocolVersion = 2
+	q.ServingRevision = p.Shared.Observed.AdmissionRevision
+	q.DSM.Prepared.RuntimePreparesBlocked = false
+	q.Close = control.AdmissionRequest{}
+	connection := &q.DSM.Prepared.Connections
+	connection.RequestedOpen, connection.AppliedOpen, connection.PublicConnectionsBlocked = true, true, false
+	work := &connection.Work
+	work.Observed = p.Shared.Observed
+	work.ClientProcesses, work.FrontendExecutes, work.ForegroundIdle = 1, 1, false
+	require.NoError(t, q.DSM.ValidateFor(p.Request.Key.Instance))
+	require.NoError(t, q.ValidateFor(p, p.Request.Key.IssuerEpoch))
+	// Store 写前命令和完成回执会各自再次解码。在线没有 Close 字段，
+	// v1 仍须携带真实原关闭请求，跨版本不能借零值伪造它。
+	raw, err := json.Marshal(q.OriginalCommand())
+	require.NoError(t, err)
+	var command QuiesceCommand
+	require.NoError(t, json.Unmarshal(raw, &command))
+	require.Equal(t, q.OriginalCommand(), command)
+	raw, err = json.Marshal(q)
+	require.NoError(t, err)
+	var retained Quiesced
+	require.NoError(t, json.Unmarshal(raw, &retained))
+	require.NoError(t, retained.ValidateFor(p, p.Request.Key.IssuerEpoch))
+	legacyCommand := command
+	legacyCommand.ProtocolVersion, legacyCommand.ServingRevision = 1, 0
+	raw, err = json.Marshal(legacyCommand)
+	require.NoError(t, err)
+	require.Error(t, json.Unmarshal(raw, &command))
+	require.True(t, q.MatchesAdmission(work.Observed))
+	closed := work.Observed
+	closed.AdmissionOpen = false
+	require.False(t, q.MatchesAdmission(closed))
+	changedBoot := work.Observed
+	changedBoot.Instance.PGBootID++
+	require.False(t, q.MatchesAdmission(changedBoot))
+
+	changed := q
+	changed.ServingRevision++
+	require.Error(t, changed.ValidateFor(p, p.Request.Key.IssuerEpoch))
+	changed = q
+	changed.Close.Revision = 1
+	require.Error(t, changed.ValidateFor(p, p.Request.Key.IssuerEpoch))
+	require.Error(t, q.ValidateFor(p, p.Request.Key.IssuerEpoch+1))
+	legacy := p
+	legacy.OnlineShrinkProtocolVersion = 0
+	require.Error(t, q.ValidateFor(legacy, p.Request.Key.IssuerEpoch))
+	p.NormalQuotaProtocolVersion, p.NormalQuotaFence = 0, nil
+	require.Error(t, q.ValidateFor(p, p.Request.Key.IssuerEpoch))
 }

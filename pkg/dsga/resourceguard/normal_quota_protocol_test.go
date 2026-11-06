@@ -187,3 +187,57 @@ func TestNormalQuotaHTTPAndSDKRetainOriginalAfterLostReply(t *testing.T) {
 	require.Equal(t, 2, backend.calls)
 	require.Zero(t, resourceHTTPKernelWrites(k), "HTTP夹具没有写真实内核")
 }
+
+// 新在线模式须同时绑定写前 PG fence 和原 ReleasePG。旧 1 版仍要求关闭。
+// 此用例只核验协议，真实 A/N 写入继续由持锁 Root 和原生来源授权。
+func TestOnlineNormalQuotaBindsEnforcedAdmissionAndReleasedTail(t *testing.T) {
+	_, _, command := fixtureGuard(t)
+	proof := cloneNormalQuota(normalQuotaProtocolFixture(t, command))
+	proof.ProtocolVersion = 2
+	proof.Phase = "online-released-shrink"
+	before := &proof.PGFence.Observed
+	before.Operation = nil
+	before.AdmissionOpen = true
+	before.AdmissionRevision = 17
+	before.CapacityGeneration = proof.PGRequest.ExpectedCapacityGeneration
+	before.HighBuffers = proof.PGRequest.TargetBuffers + 1
+	before.LowBuffers = before.HighBuffers
+	// 写前快照不能携带未来代次的 Release 回执。
+	for i := range before.Arrays {
+		before.Arrays[i].ReleaseKey = nil
+		before.Arrays[i].ReleaseCapacityGeneration = 0
+		before.Arrays[i].ReleaseState = control.ReleaseNone
+		before.Arrays[i].Provider = control.ProviderFact{Status: control.ProviderUnknown}
+	}
+	require.NoError(t, before.Validate())
+	for _, after := range []*control.Snapshot{proof.PGResponse.Receipt.Result, &proof.PGResponse.Observed} {
+		after.AdmissionOpen = true
+		after.AdmissionRevision = 17
+	}
+	require.NoError(t, proof.Validate())
+
+	for name, change := range map[string]func(*NormalQuotaEnvelope){
+		"legacy-open": func(v *NormalQuotaEnvelope) {
+			v.ProtocolVersion = 1
+			v.Phase = "released-shrink"
+		},
+		"old-writer":          func(v *NormalQuotaEnvelope) { v.PGFence.Observed.IssuerFloorEpoch++ },
+		"before-not-serving":  func(v *NormalQuotaEnvelope) { v.PGFence.Observed.AdmissionOpen = false },
+		"intervening-closure": func(v *NormalQuotaEnvelope) { v.PGResponse.Observed.AdmissionRevision++ },
+		"no-start-generation": func(v *NormalQuotaEnvelope) { v.PGFence.Observed.CapacityGeneration++ },
+		"no-physical-change": func(v *NormalQuotaEnvelope) {
+			v.PGFence.Observed.HighBuffers = v.PGRequest.TargetBuffers
+			v.PGFence.Observed.LowBuffers = v.PGRequest.TargetBuffers
+		},
+		"partial-allocation":       func(v *NormalQuotaEnvelope) { v.PGFence.Observed.Arrays[0].AllocationUnknown = true },
+		"pending-release":          func(v *NormalQuotaEnvelope) { v.PGResponse.Observed.Arrays[0].Provider.ReleaseMayBePartial = true },
+		"old-release":              func(v *NormalQuotaEnvelope) { v.PGResponse.Observed.Arrays[0].ReleaseCapacityGeneration++ },
+		"missing-physical-release": func(v *NormalQuotaEnvelope) { v.PGResponse.Observed.Arrays[0].Provider.PhysicalReleaseVerified = false },
+	} {
+		t.Run(name, func(t *testing.T) {
+			copy := cloneNormalQuota(proof)
+			change(&copy)
+			require.Error(t, copy.Validate())
+		})
+	}
+}

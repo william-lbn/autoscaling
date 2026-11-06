@@ -247,7 +247,7 @@ func (g *Guard) normalQuotaArraysLocked(ctx context.Context, state *lockedState,
 
 // 只在原锁内校验过同一 PG pin、数组映射和 policy 后计算；没有独立授权入口。
 func normalQuotaArrayTarget(v NormalQuotaEnvelope, request arrayRegistryWireRequest, reserve control.Uint64, originalArrays control.Uint64) (control.Uint64, error) {
-	if originalArrays == 0 || (v.Phase != "pre-grow" && v.Phase != "released-shrink") {
+	if originalArrays == 0 || (v.Phase != "pre-grow" && !v.releasedShrink()) {
 		return 0, normalQuotaFailure(3241, ErrUnknown)
 	}
 	snapshot := v.PGFence.Observed
@@ -264,7 +264,7 @@ func normalQuotaArrayTarget(v NormalQuotaEnvelope, request arrayRegistryWireRequ
 			return 0, normalQuotaFailure(3247, ErrUnknown)
 		}
 		upper := (n*span.Element + span.Page - 1) &^ (span.Page - 1)
-		if v.Phase == "released-shrink" {
+		if v.releasedShrink() {
 			actualUpper, err := normalQuotaReleasedArrayUpper(a, span, n)
 			if err != nil {
 				return 0, normalQuotaFailure(3253, err)

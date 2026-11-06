@@ -14,22 +14,23 @@ import (
 // 寿命；本结构只核验完整绑定、去重和算术，不能认证自报的kind/SourceID。
 // GuestReady只消费原Completed步骤，不接受HTTP调用者临时传入另一份预算。
 type Prepared struct {
-	NormalQuotaProtocolVersion uint32                     `json:"normal_quota_protocol_version,omitempty"`
-	NormalQuotaFence           *control.FenceResponse     `json:"normal_quota_fence,omitempty"`
-	ProtocolVersion            uint32                     `json:"protocol_version"`
-	VMShrinkPermit             bool                       `json:"vm_shrink_permit"`
-	Request                    control.Request            `json:"request"`
-	Identity                   resourceguard.Identity     `json:"identity"`
-	RunnerPodName              string                     `json:"runner_pod_name"`
-	RunnerRestartCount         int32                      `json:"runner_restart_count"`
-	VMBeforeMemoryBytes        control.Uint64             `json:"vm_before_memory_bytes"`
-	GuestUsableMemoryBytes     control.Uint64             `json:"guest_usable_memory_bytes"`
-	Shared                     control.SharedCostResponse `json:"shared"`
-	TargetSharedUpperBytes     control.Uint64             `json:"target_shared_upper_bytes"`
-	Limits                     resourceguard.Limits       `json:"limits"`
-	SystemOutsidePG            Bound                      `json:"system_outside_pg"`
-	Transition                 Bound                      `json:"transition"`
-	Safety                     Bound                      `json:"safety"`
+	OnlineShrinkProtocolVersion uint32                     `json:"online_shrink_protocol_version,omitempty"`
+	NormalQuotaProtocolVersion  uint32                     `json:"normal_quota_protocol_version,omitempty"`
+	NormalQuotaFence            *control.FenceResponse     `json:"normal_quota_fence,omitempty"`
+	ProtocolVersion             uint32                     `json:"protocol_version"`
+	VMShrinkPermit              bool                       `json:"vm_shrink_permit"`
+	Request                     control.Request            `json:"request"`
+	Identity                    resourceguard.Identity     `json:"identity"`
+	RunnerPodName               string                     `json:"runner_pod_name"`
+	RunnerRestartCount          int32                      `json:"runner_restart_count"`
+	VMBeforeMemoryBytes         control.Uint64             `json:"vm_before_memory_bytes"`
+	GuestUsableMemoryBytes      control.Uint64             `json:"guest_usable_memory_bytes"`
+	Shared                      control.SharedCostResponse `json:"shared"`
+	TargetSharedUpperBytes      control.Uint64             `json:"target_shared_upper_bytes"`
+	Limits                      resourceguard.Limits       `json:"limits"`
+	SystemOutsidePG             Bound                      `json:"system_outside_pg"`
+	Transition                  Bound                      `json:"transition"`
+	Safety                      Bound                      `json:"safety"`
 	// 新生产结算必须读取原可信持久对象；旧无引用格式仅保留历史读取，不能补造。
 	OutsideClaim *ObjectRef `json:"outside_claim,omitempty"`
 }
@@ -70,6 +71,9 @@ func (p Prepared) ValidateFor(request control.Request, id resourceguard.Identity
 		return fmt.Errorf("prepared normal quota original fence missing or changed")
 	}
 	s := p.Shared.Observed
+	if p.OnlineShrinkProtocolVersion > 1 || (p.OnlineShrinkProtocolVersion == 1 && (request.Kind != control.Shrink || p.NormalQuotaProtocolVersion != 1 || !s.AdmissionOpen || s.AdmissionRevision == 0)) {
+		return fmt.Errorf("online shrink preparation lacks an original open PG and enforced normal quota")
+	}
 	if p.NormalQuotaProtocolVersion > 1 || p.ProtocolVersion != 1 || p.VMShrinkPermit || p.Request != request || p.Identity != id || id.VMUID != request.Key.Instance.VMUID || id.ComputeInstanceID != request.Key.Instance.ComputeInstanceID || p.RunnerRestartCount < 0 || control.ValidateID(p.RunnerPodName, "Runner") != nil || p.VMBeforeMemoryBytes == 0 || p.GuestUsableMemoryBytes == 0 || p.GuestUsableMemoryBytes > request.TargetVMMemoryBytes || s.IssuerFloorEpoch != request.Key.IssuerEpoch || s.CapacityGeneration != request.ExpectedCapacityGeneration || s.LowBuffers != s.HighBuffers || (s.Operation != nil && s.Operation.Phase == control.Preparing) {
 		return fmt.Errorf("prepared budget differs from original operation/Guest/Runner")
 	}

@@ -172,7 +172,16 @@ func (e *Executor) nativeWithShared(ctx context.Context, p budget.Prepared, prio
 	c := dsm.Prepared.Connections
 	work := c.Work
 	current := work.Observed
-	if !c.Enabled || !c.PrivateManagementReady || !c.Acknowledged || !c.PublicConnectionsBlocked || !work.ObserverExcluded || !work.ForegroundIdle || current.AdmissionOpen || current.AdmissionRevision != quiesced.Close.Revision || current.IssuerFloorEpoch != e.actor.Epoch || current.CapacityGeneration != shared.Observed.CapacityGeneration || p.ValidateCurrent(control.SharedCostResponse{ProtocolVersion: shared.ProtocolVersion, VMShrinkPermit: false, StartupMainUpperBytes: shared.StartupMainUpperBytes, StartupArraysUpperBytes: shared.StartupArraysUpperBytes, CurrentMainAndArraysUpperBytes: shared.CurrentMainAndArraysUpperBytes, Observed: current}, e.actor.Epoch) != nil {
+	// 两个模式共用原 PG 四数组、Guest 已付来源、当前真实硬限与 QMP 的检查。
+	// 在线模式只承认同一开放 revision，已有工作仍由固定私有域和在途上界计费。
+	if p.OnlineShrinkProtocolVersion == 1 {
+		if view.OnlineShrinkProtocolVersion != 1 || e.pg.AdmissionPolicy() != control.AdmissionPolicyEnforcedBudget || !c.RequestedOpen || c.PublicConnectionsBlocked || !quiesced.MatchesAdmission(current) {
+			return aggregate, fmt.Errorf("online VM shrink lost original serving or hard-budget evidence")
+		}
+	} else if !c.PublicConnectionsBlocked || !work.ForegroundIdle || !quiesced.MatchesAdmission(current) {
+		return aggregate, fmt.Errorf("VM shrink native public gate/foreground is no longer quiescent")
+	}
+	if !c.Enabled || !c.PrivateManagementReady || !c.Acknowledged || !work.ObserverExcluded || current.IssuerFloorEpoch != e.actor.Epoch || current.CapacityGeneration != shared.Observed.CapacityGeneration || p.ValidateCurrent(control.SharedCostResponse{ProtocolVersion: shared.ProtocolVersion, VMShrinkPermit: false, StartupMainUpperBytes: shared.StartupMainUpperBytes, StartupArraysUpperBytes: shared.StartupArraysUpperBytes, CurrentMainAndArraysUpperBytes: shared.CurrentMainAndArraysUpperBytes, Observed: current}, e.actor.Epoch) != nil {
 		return aggregate, fmt.Errorf("VM shrink native public gate/foreground is no longer quiescent")
 	}
 	if audited != nil {

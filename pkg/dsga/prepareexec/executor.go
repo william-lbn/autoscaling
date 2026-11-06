@@ -264,6 +264,9 @@ func (e *Executor) inspect(ctx context.Context, s *journal.Snapshot) (c command,
 		p.NormalQuotaProtocolVersion = 1
 		originalFence := fence
 		p.NormalQuotaFence = &originalFence
+		if request.Kind == control.Shrink && view.OnlineShrinkProtocolVersion == 1 && e.pg.AdmissionPolicy() == control.AdmissionPolicyEnforcedBudget && shared.Observed.AdmissionOpen {
+			p.OnlineShrinkProtocolVersion = 1
+		}
 	}
 	diagnosticStage = 186
 	if err := p.ValidateFor(request, id); err != nil {

@@ -9,6 +9,36 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 )
 
+// OnlineQuiesce 仅识别写前账本中确认为只读的在线检查。它没有原生准入写入，
+// 接管时保留原 Unknown 及命令摘要，但不能凭空恢复一个关闭请求。
+// 历史关闭协议仍由原来的独立准入恢复流程处理。
+func (op *Operation) OnlineQuiesce(step Step) (bool, error) {
+	var header struct {
+		ProtocolVersion uint32 `json:"protocol_version"`
+	}
+	if err := json.Unmarshal(step.Command, &header); err != nil {
+		return false, err
+	}
+	if header.ProtocolVersion != 2 {
+		return false, nil
+	}
+	var command budget.QuiesceCommand
+	if json.Unmarshal(step.Command, &command) != nil || op == nil || step.Action != Quiesce || step.Phase != Unconfirmed || command.Request != op.Request || step.DispatchedBy == nil || *step.DispatchedBy != op.Origin || op.Origin.Epoch != op.Request.Key.IssuerEpoch || step.TargetID != op.Request.Key.Instance.ComputeInstanceID {
+		return false, fmt.Errorf("online quiesce observation differs from original dispatch")
+	}
+	for _, previous := range op.Steps {
+		if previous.Action != PrepareBudget || previous.Ordinal >= step.Ordinal {
+			continue
+		}
+		var p budget.Prepared
+		if previous.Phase != Settled || previous.TargetID != step.TargetID || previous.Observation == nil || previous.Observation.Result != Completed || json.Unmarshal(previous.Observation.Data, &p) != nil || command.ValidateFor(p, op.Origin.Epoch) != nil {
+			break
+		}
+		return true, nil
+	}
+	return false, fmt.Errorf("online quiesce lacks matching durable preparation")
+}
+
 // activeClosureBoundary只选择尚未进入最终开放的原操作，不将合法中间态
 // 投影成已完成预算。完整Active（包括取消标记及全部未知）由关闭摘要固定。
 // Cleanup可能另有开放，须由其独立恢复合同处理，此处明确拒绝而非丢弃。
@@ -36,6 +66,13 @@ func (model Model) activeClosureBoundary() (*control.AdmissionRequest, error) {
 			}
 		case Quiesce:
 			if step.Phase == Unconfirmed {
+				online, err := op.OnlineQuiesce(step)
+				if err != nil {
+					return nil, err
+				}
+				if online {
+					continue
+				}
 				var command budget.QuiesceCommand
 				if json.Unmarshal(step.Command, &command) != nil || command.Request != op.Request || command.Close.Open || command.Close.Instance != op.Request.Key.Instance || step.DispatchedBy == nil || command.Close.IssuerEpoch != step.DispatchedBy.Epoch {
 					return nil, fmt.Errorf("active closure lost original quiesce unknown")

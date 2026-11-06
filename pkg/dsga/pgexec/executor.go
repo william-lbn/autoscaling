@@ -326,13 +326,16 @@ func (executor *Executor) checkQuiesce(ctx context.Context, op *journal.Operatio
 			return fmt.Errorf("shrink budget/quiesce source is incomplete")
 		}
 	}
-	expected := budget.QuiesceCommand{ProtocolVersion: quiesced.ProtocolVersion, VMShrinkPermit: quiesced.VMShrinkPermit, Request: quiesced.Request, Close: quiesced.Close, PGAggregate: quiesced.PGAggregate}
+	expected := quiesced.OriginalCommand()
 	if quiesced.Request != op.Request || quiesced.ValidateFor(prepared, executor.actor.Epoch) != nil || original.ValidateFor(prepared, executor.actor.Epoch) != nil || !reflect.DeepEqual(original, expected) {
 		return fmt.Errorf("shrink quiesce differs from retained original budget")
 	}
 	view, err := executor.resources.InspectState(ctx)
 	if err != nil {
 		return err
+	}
+	if prepared.OnlineShrinkProtocolVersion == 1 && (view.OnlineShrinkProtocolVersion != 1 || executor.client.AdmissionPolicy() != control.AdmissionPolicyEnforcedBudget) {
+		return fmt.Errorf("online PG shrink lost its original hard-budget capability")
 	}
 	if err := quiesced.PGAggregate.Match(view); err != nil {
 		return err

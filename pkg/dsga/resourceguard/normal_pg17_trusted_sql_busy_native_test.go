@@ -3,6 +3,7 @@
 package resourceguard
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
@@ -16,8 +17,85 @@ import (
 	"testing"
 	"time"
 
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/stretchr/testify/require"
 )
+
+// 同一 psql 会话按普通角色提交独立事务。每笔提交再做一次协议往返，
+// 持续到 Guest 实际退回低档；角色不是超级用户，能真实触达 PG 前台准入门。
+func trustedControlNativeOnlineWriter(t *testing.T, ctx context.Context) func() {
+	t.Helper()
+	id := strconv.FormatInt(time.Now().UnixNano(), 16)
+	role, table := "online_writer_"+id, "public.online_commits_"+id
+	trustedControlNativeSQL(t, ctx, fmt.Sprintf("CREATE ROLE %s NOSUPERUSER NOLOGIN; CREATE TABLE %s (n int PRIMARY KEY); GRANT INSERT,SELECT ON %s TO %s", role, table, table, role))
+
+	clientCtx, cancel := context.WithTimeout(ctx, 160*time.Second)
+	cmd := exec.CommandContext(clientCtx, "/usr/local/bin/psql", "-XqAt", "-v", "ON_ERROR_STOP=1", "-v", "VERBOSITY=sqlstate", "-h", "/var/db/postgres/compute/dsg_socket", "-p", "55432", "-U", "cloud_admin", "-d", "postgres")
+	cmd.Env = trustedControlNativeManagementEnv()
+	cmd.SysProcAttr = &syscall.SysProcAttr{Credential: &syscall.Credential{Uid: 1000, Gid: 1000, Groups: []uint32{1000}}}
+	in, err := cmd.StdinPipe()
+	require.NoError(t, err)
+	out, err := cmd.StdoutPipe()
+	require.NoError(t, err)
+	cmd.Stderr = os.Stderr
+	require.NoError(t, cmd.Start())
+	joined := false
+	t.Cleanup(func() {
+		cancel()
+		_ = in.Close()
+		if !joined {
+			_ = cmd.Wait()
+		}
+	})
+	_, err = fmt.Fprintf(in, "SET synchronous_commit=on;\nSET SESSION AUTHORIZATION %s;\n", role)
+	require.NoError(t, err)
+	lines := bufio.NewScanner(out)
+	pid, commits := 0, 0
+	var lastLSN string
+	write := func() {
+		t.Helper()
+		commits++
+		_, err := fmt.Fprintf(in, "INSERT INTO %s VALUES (%d);\nSELECT count(*),pg_backend_pid(),current_user,current_setting('is_superuser'),pg_current_wal_insert_lsn() FROM %s;\n", table, commits, table)
+		require.NoError(t, err)
+		require.True(t, lines.Scan(), "普通写入未收到提交后回执，序号 %d", commits)
+		fields := strings.Split(lines.Text(), "|")
+		require.Len(t, fields, 5)
+		require.Equal(t, strconv.Itoa(commits), fields[0])
+		n, err := strconv.Atoi(fields[1])
+		require.NoError(t, err)
+		require.Greater(t, n, 1)
+		if commits == 1 {
+			pid = n
+		}
+		require.Equal(t, pid, n)
+		require.Equal(t, role, fields[2])
+		require.Equal(t, "off", fields[3])
+		require.Contains(t, fields[4], "/")
+		require.NotEqual(t, lastLSN, fields[4])
+		lastLSN = fields[4]
+	}
+	// 此笔成功后才允许 Host 已有同步点开始下一条 Shrink。
+	write()
+	return func() {
+		for {
+			write()
+			memory, err := trustedControlNativeMemTotal()
+			require.NoError(t, err)
+			if memory < uint64(15)<<29 {
+				break
+			}
+			time.Sleep(120 * time.Millisecond)
+		}
+		write()
+		require.NoError(t, in.Close())
+		err := cmd.Wait()
+		joined = true
+		require.NoError(t, err)
+		check := trustedControlNativeSQL(t, ctx, fmt.Sprintf("SELECT count(*),min(n),max(n) FROM %s", table))
+		require.Equal(t, fmt.Sprintf("%d|1|%d", commits, commits), check)
+		fmt.Printf("TRUSTED_ONLINE_SHRINK_WRITES pid=%d commits=%d last_lsn=%s\n", pid, commits, lastLSN)
+	}
+}
 
 // 仅启动真实 PG 前台工作；Host latch 只安排取消时点，不提供准入或降限许可。
 func trustedControlNativeSQLBusy(t *testing.T, ctx context.Context, h *resourceHTTP, client *Client, g *Guard, grown trustedControlNativeObservation) func() {
@@ -33,6 +111,13 @@ func trustedControlNativeSQLBusy(t *testing.T, ctx context.Context, h *resourceH
 	require.LessOrEqual(t, len(raw), 64)
 	mode := string(raw)
 	require.Contains(t, []string{"", "busy-cancel", "normal-reply-loss", "sql-busy-drain"}, mode)
+	if mode == "" && grown.RootView.OnlineShrinkProtocolVersion == 1 {
+		var capabilities control.Capabilities
+		require.NoError(t, trustedControlNativeReadHTTP(ctx, t, h, "/dsg/v1/capabilities", &capabilities))
+		if capabilities.AdmissionPolicy == control.AdmissionPolicyEnforcedBudget {
+			return trustedControlNativeOnlineWriter(t, ctx)
+		}
+	}
 	if mode != "sql-busy-drain" {
 		return nil
 	}

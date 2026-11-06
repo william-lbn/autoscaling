@@ -100,10 +100,37 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	if json.Unmarshal(preparedStep.Observation.Data, &prepared) != nil || prepared.ValidateFor(op.Request, e.id) != nil {
 		return pgexec.AwaitingFact, fmt.Errorf("quiesce prepared budget is incomplete")
 	}
+	online := prepared.OnlineShrinkProtocolVersion == 1
+	if online && !planned && replay == nil && (op.AbortRequested || op.Origin != e.actor) {
+		readonly, err := op.OnlineQuiesce(*step)
+		if err != nil || !readonly {
+			return pgexec.AwaitingFact, fmt.Errorf("online quiesce recovery lacks original read-only checkpoint")
+		}
+		if !op.AbortRequested {
+			return pgexec.ExternalStep, nil
+		}
+		// 原命令从未调用准入 setter，当前 Owner 对精确命令 CAS 填入观察取消。
+		// NoEffect 只覆盖这次只读观察，不收养原 PG、Root 或 VM 的其它未知动作。
+		_, err = e.store.Record(ctx, snapshot, e.actor, op.Request.Key, journal.Observation{
+			Key: op.Request.Key, RequestSHA256: op.RequestSHA256, CommandSHA256: step.CommandSHA256,
+			Ordinal: step.Ordinal, Action: step.Action, Result: journal.NoEffect, SourceID: step.TargetID,
+			Data: []byte(`{"protocol_version":2,"online_observation_cancelled":true}`),
+		})
+		if err != nil {
+			return pgexec.AwaitingFact, err
+		}
+		return pgexec.Recorded, nil
+	}
+	if online && (op.Request.Key.IssuerEpoch != e.actor.Epoch || e.pg.AdmissionPolicy() != control.AdmissionPolicyEnforcedBudget) {
+		return pgexec.AwaitingFact, fmt.Errorf("online shrink writer or enforced PG policy changed")
+	}
 	var closeIntent control.AdmissionRequest
 	var original budget.QuiesceCommand
 	if !planned {
 		if json.Unmarshal(step.Command, &original) != nil {
+			if online {
+				return pgexec.AwaitingFact, fmt.Errorf("original online shrink checkpoint is incomplete")
+			}
 			var legacy control.AdmissionRequest
 			if json.Unmarshal(step.Command, &legacy) != nil || legacy.Open || legacy.Instance != e.instance || legacy.BudgetCommitmentID != op.Request.BudgetCommitmentID || legacy.ExpectedCapacityGeneration != op.Request.ExpectedCapacityGeneration || step.DispatchedBy == nil || legacy.IssuerEpoch != step.DispatchedBy.Epoch || legacy.IssuerEpoch > e.actor.Epoch || step.TargetID != e.instance.ComputeInstanceID {
 				return pgexec.AwaitingFact, fmt.Errorf("original quiesce closing command differs")
@@ -117,7 +144,11 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 			}
 			return pgexec.AwaitingFact, fmt.Errorf("legacy quiesce lacks durable aggregate source; controlled recovery required")
 		}
-		if original.ValidateFor(prepared, e.actor.Epoch) != nil || step.DispatchedBy == nil || original.Close.IssuerEpoch != step.DispatchedBy.Epoch || step.TargetID != e.instance.ComputeInstanceID {
+		issuer := original.Close.IssuerEpoch
+		if online {
+			issuer = original.Request.Key.IssuerEpoch
+		}
+		if original.ValidateFor(prepared, e.actor.Epoch) != nil || step.DispatchedBy == nil || issuer != step.DispatchedBy.Epoch || step.TargetID != e.instance.ComputeInstanceID {
 			return pgexec.AwaitingFact, fmt.Errorf("original quiesce closing command differs")
 		}
 		closeIntent = original.Close
@@ -125,7 +156,7 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	// 只读原命令查询先于资源证明；资源暂不可达不能使已经发送的关闭变成
 	// NoEffect。SDK只解除同一准入Pending，外层Unconfirmed仍等待全部事实。
 	var fact control.AdmissionResponse
-	query := !planned && replay == nil
+	query := !online && !planned && replay == nil
 	if query {
 		fact, err = e.pg.AdmissionStatus(ctx, closeIntent)
 		if err != nil || !fact.Confirms() {
@@ -135,6 +166,9 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	view, aggregate, err := e.aggregate(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, err
+	}
+	if online && view.OnlineShrinkProtocolVersion != 1 {
+		return pgexec.AwaitingFact, fmt.Errorf("original online Root hard-budget capability is unavailable")
 	}
 	if !planned {
 		// 原完整来源在写前命令中持久保留。恢复只能Match该来源，不能把当前
@@ -156,12 +190,18 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 		if pending != nil || closing != nil || e.pg.Pending() != nil || e.resources.Pending() != nil {
 			return pgexec.AwaitingFact, fmt.Errorf("quiesce cannot bypass another unknown intent")
 		}
-		if fence.Observed.AdmissionRevision == control.Uint64(math.MaxUint64) {
-			return pgexec.AwaitingFact, fmt.Errorf("closing revision exhausted")
+		if online {
+			if !fence.Observed.AdmissionOpen || fence.Observed.AdmissionRevision != prepared.Shared.Observed.AdmissionRevision {
+				return pgexec.AwaitingFact, fmt.Errorf("original serving gate changed before online shrink")
+			}
+			original = budget.QuiesceCommand{ProtocolVersion: 2, Request: op.Request, ServingRevision: fence.Observed.AdmissionRevision, PGAggregate: aggregate}
+		} else {
+			if fence.Observed.AdmissionRevision == control.Uint64(math.MaxUint64) {
+				return pgexec.AwaitingFact, fmt.Errorf("closing revision exhausted")
+			}
+			closeIntent = control.AdmissionRequest{ProtocolVersion: 1, Instance: e.instance, IssuerEpoch: e.actor.Epoch, Revision: fence.Observed.AdmissionRevision + 1, ExpectedCapacityGeneration: op.Request.ExpectedCapacityGeneration, Open: false, BudgetCommitmentID: op.Request.BudgetCommitmentID}
+			original = budget.QuiesceCommand{ProtocolVersion: 1, Request: op.Request, Close: closeIntent, PGAggregate: aggregate}
 		}
-		closeIntent = control.AdmissionRequest{ProtocolVersion: 1, Instance: e.instance, IssuerEpoch: e.actor.Epoch, Revision: fence.Observed.AdmissionRevision + 1, ExpectedCapacityGeneration: op.Request.ExpectedCapacityGeneration, Open: false, BudgetCommitmentID: op.Request.BudgetCommitmentID}
-		// PG关闭与当时原root来源必须一起写前持久，不能在丢回复后临时补源。
-		original = budget.QuiesceCommand{ProtocolVersion: 1, Request: op.Request, Close: closeIntent, PGAggregate: aggregate}
 		if err := original.ValidateFor(prepared, e.actor.Epoch); err != nil {
 			return pgexec.AwaitingFact, err
 		}
@@ -175,11 +215,13 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 			return pgexec.AwaitingFact, err
 		}
 		step = &dispatch.Step
-		fact, err = e.pg.SetAdmission(ctx, closeIntent)
-	} else if replay != nil {
+		if !online {
+			fact, err = e.pg.SetAdmission(ctx, closeIntent)
+		}
+	} else if replay != nil && !online {
 		fact, err = e.pg.SetAdmission(ctx, closeIntent)
 	}
-	if err != nil || !fact.Confirms() {
+	if err != nil || (!online && !fact.Confirms()) {
 		return pgexec.AwaitingFact, err
 	}
 	// Setter成功不等于Postmaster已ack或前台排空。DSM正式成员内嵌同点的
@@ -188,7 +230,7 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
-	result := budget.Quiesced{ProtocolVersion: 1, Request: op.Request, Close: closeIntent, DSM: dsm, PGAggregate: aggregate}
+	result := budget.Quiesced{ProtocolVersion: original.ProtocolVersion, Request: op.Request, Close: closeIntent, ServingRevision: original.ServingRevision, DSM: dsm, PGAggregate: aggregate}
 	ready, err := result.ReadyFor(prepared, e.actor.Epoch)
 	if err != nil {
 		return pgexec.AwaitingFact, err

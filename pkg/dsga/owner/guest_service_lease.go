@@ -60,11 +60,11 @@ func (w *PGWorker) renewGuestServiceAudit(ctx context.Context, s *journal.Snapsh
 		return ErrServiceSafety
 	}
 	if p.Request.Kind == control.Shrink {
-		// 原关闭与PG/Release须真正完成；当前数组仍由ValidateCurrent逐项核原Key、
+		// 先核原准备模式、对应准入 revision 和已完成的 PG 释放。ValidateCurrent 逐项核原 Key、
 		// 下一容量代及物理释放回执，绝不把阶段名或低buffers单独当成释放证明。
 		q := prior[journal.Quiesce]
-		var closed budget.Quiesced
-		if q == nil || prior[journal.ResizePG] == nil || prior[journal.ReleasePG] == nil || json.Unmarshal(q.Observation.Data, &closed) != nil || closed.ValidateFor(p, actor.Epoch) != nil || shared.Observed.AdmissionOpen || shared.Observed.AdmissionRevision != closed.Close.Revision {
+		var original budget.Quiesced
+		if q == nil || prior[journal.ResizePG] == nil || prior[journal.ReleasePG] == nil || json.Unmarshal(q.Observation.Data, &original) != nil || original.ValidateFor(p, actor.Epoch) != nil || !original.MatchesAdmission(shared.Observed) || (p.OnlineShrinkProtocolVersion == 1 && w.client.AdmissionPolicy() != control.AdmissionPolicyEnforcedBudget) {
 			return ErrServiceSafety
 		}
 	}
@@ -135,7 +135,7 @@ func (w *PGWorker) renewGuestServiceAudit(ctx context.Context, s *journal.Snapsh
 	if err != nil {
 		return err
 	}
-	if view.Identity != *m.ResourceIdentity || view.IssuerFloorEpoch != actor.Epoch || view.Birth == nil || process != *view.Birth || q.Identity != view.Identity {
+	if (p.OnlineShrinkProtocolVersion == 1 && view.OnlineShrinkProtocolVersion != 1) || view.Identity != *m.ResourceIdentity || view.IssuerFloorEpoch != actor.Epoch || view.Birth == nil || process != *view.Birth || q.Identity != view.Identity {
 		return ErrServiceSafety
 	}
 	raw, err := json.Marshal(view.Bootstrap)

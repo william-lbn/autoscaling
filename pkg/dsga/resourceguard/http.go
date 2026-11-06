@@ -238,6 +238,7 @@ func (h *resourceHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		state.ArrayAuthorityProtocolVersion = h.arrayProtocolVersion
 		if _, ok := h.guard.(normalQuotaBackend); ok && h.source.Config.ExecutionModel == TrustedControllerExecutionModel && h.arrayProtocolVersion == 1 {
 			state.NormalQuotaProtocolVersion = 1
+			state.OnlineShrinkProtocolVersion = 1
 		}
 		// 沿原认证GET state携带可选只读能力，无新路由/令牌/执行动作。
 		// 不可用不能伪装成资格成功，也不能破坏旧state本身的有效观察。

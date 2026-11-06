@@ -601,6 +601,10 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 		loopDone := make(chan error, 1)
 		pgControl := worker.NewControlEndpoint()
 		loopStarted := false
+		// 正常在线缩容走部署使用的生产审计路径。故障夹具仍按原入口编排。
+		loopOptions := func() owner.PGLoopOptions {
+			return owner.PGLoopOptions{PollInterval: 100 * time.Millisecond, Control: pgControl, EnableInFlightGrow: faultMode == "" && view.OnlineShrinkProtocolVersion == 1}
+		}
 		defer func() {
 			stop()
 			if loopStarted {
@@ -610,7 +614,7 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 		if continuation {
 			loopStarted = true
 			go func() {
-				loopDone <- worker.Run(pgLoopCtx, owner.PGLoopOptions{PollInterval: 100 * time.Millisecond, Control: pgControl})
+				loopDone <- worker.Run(pgLoopCtx, loopOptions())
 			}()
 			if e = trustedPG17AwaitControllerAdmission(controlCtx, f, session, pg, pgControl); e != nil {
 				return e
@@ -647,7 +651,7 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 			if !loopStarted {
 				loopStarted = true
 				go func() {
-					loopDone <- worker.Run(pgLoopCtx, owner.PGLoopOptions{PollInterval: 100 * time.Millisecond, Control: pgControl})
+					loopDone <- worker.Run(pgLoopCtx, loopOptions())
 				}()
 			}
 			for controlCtx.Err() == nil {
@@ -696,7 +700,7 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 					pgLoopCtx, stopPGLoop = context.WithCancel(controlCtx)
 					loopStarted = true
 					go func() {
-						loopDone <- worker.Run(pgLoopCtx, owner.PGLoopOptions{PollInterval: 100 * time.Millisecond, Control: pgControl})
+						loopDone <- worker.Run(pgLoopCtx, loopOptions())
 					}()
 					continue
 				}

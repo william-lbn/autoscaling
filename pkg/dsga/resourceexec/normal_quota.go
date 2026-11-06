@@ -44,6 +44,11 @@ func normalQuotaEnvelope(op *journal.Operation, c resourceguard.Command, p budge
 			return zero, fmt.Errorf("normal quota PG release differs from retained original")
 		}
 		v := resourceguard.NormalQuotaEnvelope{ProtocolVersion: 1, Phase: "released-shrink", Command: c, PGRequest: op.Request, PGFence: a.Fence, PGResponse: &a.Response}
+		if p.OnlineShrinkProtocolVersion == 1 {
+			v.ProtocolVersion = 2
+			v.Phase = "online-released-shrink"
+			v.PGFence = *p.NormalQuotaFence
+		}
 		if e := v.Validate(); e != nil {
 			return zero, e
 		}

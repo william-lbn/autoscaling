@@ -13,6 +13,8 @@ import (
 type View struct {
 	ProtocolVersion uint32 `json:"protocol_version"`
 	// 原只读创建profile所需内部协议，不是授权/normal许可；旧v1精确省略。
+	// 在线降限只用于仍持有原硬预算的 PG；零值表示没有协商该版本。
+	OnlineShrinkProtocolVersion   uint32           `json:"online_shrink_protocol_version,omitempty"`
 	NormalQuotaProtocolVersion    uint32           `json:"normal_quota_protocol_version,omitempty"`
 	ArrayAuthorityProtocolVersion uint32           `json:"array_authority_protocol_version,omitempty"`
 	VMShrinkPermit                bool             `json:"vm_shrink_permit"`
@@ -41,6 +43,9 @@ func (v View) Validate() error {
 	}
 	if v.GuestQualificationUnavailable != nil && v.GuestQualificationUnavailable.Validate() != nil {
 		return fmt.Errorf("invalid Guest qualification availability")
+	}
+	if v.OnlineShrinkProtocolVersion > 1 || (v.OnlineShrinkProtocolVersion == 1 && (v.NormalQuotaProtocolVersion != 1 || v.ArrayAuthorityProtocolVersion != 1)) {
+		return fmt.Errorf("online shrink requires original normal quota and array authority")
 	}
 	if v.NormalQuotaProtocolVersion > 1 || v.ArrayAuthorityProtocolVersion > 1 || v.ProtocolVersion != 1 || v.VMShrinkPermit || v.Actual.ProtocolVersion != 1 || v.Actual.VMShrinkPermit || v.Actual.Identity != v.Identity {
 		return fmt.Errorf("invalid resource journal observation")

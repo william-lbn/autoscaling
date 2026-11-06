@@ -152,7 +152,7 @@ func (w *PGWorker) sampleAutomatic(ctx context.Context, s *journal.Snapshot) (po
 	}
 	return policy.Sample{At: started, Instance: instance, CapacityGeneration: pg.CapacityGeneration, Current: policy.Target{VMMemoryBytes: control.Uint64(vmBytes), Buffers: pg.HighBuffers}, NormalCurrent: view.Actual.MemoryCurrentBytes, NormalMax: limits.MemoryMaxBytes, ClientProcesses: work.ClientProcesses,
 		IdleClients: work.IdleClients, RetainedTransactions: work.RetainedTransactions,
-		SupportsOnlineShrink: w.client.AdmissionPolicy() == control.AdmissionPolicyEnforcedBudget && rootClient.NormalQuotaEnabled(),
+		SupportsOnlineShrink: w.client.AdmissionPolicy() == control.AdmissionPolicyEnforcedBudget && view.OnlineShrinkProtocolVersion == 1,
 		AdmissionOpen:        pg.AdmissionOpen, Eligible: eligible}, nil
 }
 

@@ -49,6 +49,7 @@ type Client struct {
 	arrayPending          *ArrayAuthorityCommand
 	arrayProtocolVersion  uint32
 	normalProtocolVersion uint32
+	onlineShrinkVersion   uint32
 	normalPending         *NormalQuotaEnvelope
 }
 
@@ -132,9 +133,14 @@ func (c *Client) InspectState(ctx context.Context) (View, error) {
 		c.mu.Unlock()
 		return View{}, &ClientError{Code: "normal_original_profile_downgraded"}
 	}
+	if c.onlineShrinkVersion == 1 && v.OnlineShrinkProtocolVersion != 1 {
+		c.mu.Unlock()
+		return View{}, &ClientError{Code: "online_shrink_profile_downgraded"}
+	}
 	if v.NormalQuotaProtocolVersion == 1 {
 		c.normalProtocolVersion = 1
 	}
+	c.onlineShrinkVersion = v.OnlineShrinkProtocolVersion
 	c.mu.Unlock()
 	return v, nil
 }

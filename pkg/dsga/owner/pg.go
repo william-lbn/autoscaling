@@ -155,6 +155,14 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 				wantOpen := step.Action == journal.ResumeAdmission
 				var decodeErr error
 				if step.Action == journal.Quiesce {
+					online, err := active.OnlineQuiesce(step)
+					if err != nil {
+						return nil, err
+					}
+					if online {
+						// 此步骤只观察，保留外层 WAL，不制造 SDK 的待关门写入。
+						continue
+					}
 					var saved budget.QuiesceCommand
 					decodeErr = json.Unmarshal(step.Command, &saved)
 					if decodeErr != nil {
