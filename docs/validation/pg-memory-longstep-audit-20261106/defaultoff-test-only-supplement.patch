@@ -1,0 +1,103 @@
+--- a/pkg/dsga/owner/initial_service_test.go
++++ b/pkg/dsga/owner/initial_service_test.go
+@@ -956,6 +956,10 @@
+ 		}
+ 		for _, action := range []journal.Action{journal.ReserveHost, journal.ResizeVM} {
+ 			if action == journal.ResizeVM && strings.HasPrefix(mode, "vm-audit-") {
++				// 纯test原完整VM前驱桥；默认nil不改变旧mode，不授生产许可。
++				if fixtureHook != nil && fixtureHook(t, ctx, api, store, client, coord, session, resources, worker, config, source, pg, root, runner, qmp, request) {
++					return nil
++				}
+ 				verifyVMExecAuditCheckpoint(t, ctx, mode, api, store, client, session, worker, pg, root, runner, qmp)
+ 				return nil
+ 			}
+--- a/pkg/dsga/owner/vm_service_lease_test.go
++++ b/pkg/dsga/owner/vm_service_lease_test.go
+@@ -8,12 +8,16 @@
+ 
+ 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+ 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
++	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
+ 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
+ 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
++	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
+ 	"github.com/stretchr/testify/require"
+ 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+ 	"k8s.io/apimachinery/pkg/runtime/schema"
+ 	"k8s.io/apimachinery/pkg/types"
++	kubefake "k8s.io/client-go/kubernetes/fake"
++	coordclient "k8s.io/client-go/kubernetes/typed/coordination/v1"
+ )
+ 
+ func enableVMServiceAuditTest(t *testing.T, f *guestAuditFixture) {
+@@ -156,3 +160,70 @@
+ 		})
+ 	}
+ }
++
++// defaultoff实际到原Grow/ResizeVM pre/post出口。原完整前驱/永久头保持；
++// 只撤下Owner新增的可选HeldReader配置，证明旧合同不会被新capture误启。
++// 原VM执行器仍完整读取Prepared/Outside/Host/Runner/Root/PG，未伪造无预算WAL。
++func TestProductionVMServiceLeaseDefaultOffKeepsOriginalGrowCheckpoint(t *testing.T) {
++	productionInitialServiceWithFixtureHook(t, "vm-audit-defaultoff-owner-checkpoint", func(t *testing.T, ctx context.Context, _ *ownerAPI, store *journal.Store, _ *kubefake.Clientset, _ coordclient.CoordinationV1Interface, session *Session, _ *ResourceWorker, worker *PGWorker, _ compute.Config, _ budget.QualificationSource, pg *initialServicePG, _ *guestRootFixture, runner *vmguard.Runner, qmp *vmQMPPeer, _ control.Request) bool {
++		require.False(t, worker.executor.InFlightEnabled())
++		require.NotNil(t, worker.qualification)
++		before, err := store.Load(ctx)
++		require.NoError(t, err)
++		require.NoError(t, before.State().Validate())
++		require.Equal(t, journal.Planned, budgetStep(t, store, journal.ResizeVM).Phase)
++		held := before.State().InitialHeld
++		require.NotNil(t, held, "保留原真实永久预算，不造无Held WAL")
++		savedSafety := worker.safety
++		worker.safety = nil
++		defer func() { worker.safety = savedSafety }()
++		pg.mu.Lock()
++		renewBefore := pg.leaseRenewals
++		pg.mu.Unlock()
++		qmp.mu.Lock()
++		writesBefore := qmp.writes
++		qmp.mu.Unlock()
++		phases := []journal.Phase{}
++		audit := func(callCtx context.Context, snapshot *journal.Snapshot, shared control.SharedCostResponse) error {
++			require.False(t, worker.executor.InFlightEnabled())
++			require.Nil(t, worker.safety, "off分支不得要求新增Owner HeldReader")
++			require.Equal(t, session.Actor(), snapshot.State().Owner)
++			phases = append(phases, budgetStep(t, store, journal.ResizeVM).Phase)
++			pg.mu.Lock()
++			old := pg.leaseRenewals
++			pg.mu.Unlock()
++			err := worker.renewVMServiceAudit(callCtx, snapshot, shared)
++			require.NoError(t, err)
++			pg.mu.Lock()
++			delta := pg.leaseRenewals - old
++			pg.mu.Unlock()
++			require.Equal(t, 1, delta, "defaultoff仍沿原完整VM审计后精确Native CAS")
++			return err
++		}
++		progress, err := worker.vm.AdvanceWithAudit(ctx, audit)
++		require.NoError(t, err)
++		require.Equal(t, pgexec.Recorded, progress)
++		require.Equal(t, journal.Unconfirmed, budgetStep(t, store, journal.ResizeVM).Phase)
++		require.NoError(t, runner.Tick(ctx))
++		progress, err = worker.vm.AdvanceWithAudit(ctx, audit)
++		require.NoError(t, err)
++		require.Equal(t, pgexec.Recorded, progress)
++		require.Equal(t, journal.Settled, budgetStep(t, store, journal.ResizeVM).Phase)
++		require.Equal(t, []journal.Phase{journal.Planned, journal.Unconfirmed}, phases)
++		pg.mu.Lock()
++		renewAfter := pg.leaseRenewals
++		pg.mu.Unlock()
++		require.Equal(t, 2, renewAfter-renewBefore)
++		qmp.mu.Lock()
++		writesAfter := qmp.writes
++		qmp.mu.Unlock()
++		require.Equal(t, 1, writesAfter-writesBefore)
++		after, err := store.Load(ctx)
++		require.NoError(t, err)
++		require.NoError(t, after.State().Validate())
++		require.Equal(t, before.State().Active.Request, after.State().Active.Request)
++		require.Equal(t, held, after.State().InitialHeld)
++		require.Equal(t, journal.Planned, budgetStep(t, store, journal.GuestReady).Phase)
++		return true
++	})
++}

@@ -18,6 +18,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	kubefake "k8s.io/client-go/kubernetes/fake"
+	coordclient "k8s.io/client-go/kubernetes/typed/coordination/v1"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
@@ -360,9 +361,20 @@ func TestProductionInitialOwnerTransferCancelsUnreceivedGuestAndSettlesActualBud
 	productionInitialService(t, "owner-transfer-before-guest-delivery")
 }
 
+// 仅同包串行test桥：句柄来自原完整生产前驱，不提供事实或生产许可。
+// hook只在GuestReady前或原Grow已逐步完成后调用；B测试通过原C
+// AdvanceWithAudit取得真正pre Planned/post Unconfirmed回调，不手填WAL。
+// 参数局部传递，不使用全局hook，旧mode/调用保持nil行为。
+type initialServiceFixtureHook func(*testing.T, context.Context, *ownerAPI, *journal.Store, *kubefake.Clientset, coordclient.CoordinationV1Interface, *Session, *ResourceWorker, *PGWorker, compute.Config, budget.QualificationSource, *initialServicePG, *guestRootFixture, *vmguard.Runner, *vmQMPPeer, control.Request) bool
+
 func productionInitialService(t *testing.T, mode string) {
+	productionInitialServiceWithFixtureHook(t, mode, nil)
+}
+func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureHook initialServiceFixtureHook) {
 	t.Helper()
+	guestFixtureMode := fixtureHook != nil && (mode == "guest-service-audit-grow" || mode == "guest-service-audit-shrink")
 	// 同一完整自动组合显式追加AS来源；不改变旧夹具事实或以peer冒充Linux硬限。
+	pgInflightMode := strings.HasPrefix(mode, "pg-inflight-audit-")
 	finiteAddressSpace := mode == "automatic-policy-as"
 	if finiteAddressSpace {
 		mode = "automatic-policy"
@@ -379,7 +391,7 @@ func productionInitialService(t *testing.T, mode string) {
 	pgRecovery := strings.HasPrefix(mode, "pg-safety-recover-")
 	vmRecovery := strings.HasPrefix(mode, "vm-safety-recover-")
 	actualRecovery := strings.HasPrefix(mode, "actual-safety-recover-")
-	actualShrinkRecovery := mode == "actual-shrink-recover"
+	actualShrinkRecovery := mode == "actual-shrink-recover" || guestFixtureMode && mode == "guest-service-audit-shrink"
 	hostServiceClosure := strings.HasPrefix(mode, "host-service-closure")
 	retainedService := strings.HasPrefix(mode, "retained-safety-")
 	retainedInitial := strings.HasPrefix(mode, "retained-safety-initial-")
@@ -498,6 +510,12 @@ func productionInitialService(t *testing.T, mode string) {
 		// 每阶段30秒诊断期限保持不变，不用no-op减掉真实后继。
 		deadline = 8 * time.Minute
 	}
+	if guestFixtureMode {
+		deadline = 10 * time.Minute
+	}
+	if pgInflightMode {
+		deadline = 9 * time.Minute
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), deadline)
 	defer cancel()
 	run := elector.Run
@@ -517,6 +535,12 @@ func productionInitialService(t *testing.T, mode string) {
 		require.NoError(t, err)
 		defer resources.CloseIdleConnections()
 		request := pgRequest(t, session.Actor())
+		if pgInflightMode {
+			request.DeadlineUnixMillis = control.Uint64(time.Now().Add(8 * time.Minute).UnixMilli())
+			if strings.HasSuffix(mode, "-deadline") {
+				request.DeadlineUnixMillis = control.Uint64(time.Now().Add(90 * time.Second).UnixMilli())
+			}
+		}
 		if automaticMode || actualShrinkRecovery {
 			request.TargetVMMemoryBytes = 2 << 30
 		}
@@ -538,7 +562,14 @@ func productionInitialService(t *testing.T, mode string) {
 			after.CurrentMainAndArraysUpperBytes += a.CommittedUpperBytes
 		}
 		pg := &initialServicePG{mu: sync.Mutex{}, request: request, before: before, after: after, resized: false, gate: nil, posts: 0, queries: 0, resizePosts: 0, loseBefore: false, loseAfter: false, store: store, loseResize: false, resizeReceipt: nil, resizeQueries: 0, afterOpen: nil, beforeClose: nil, leaseDeadline: 0, leaseRenewals: 0, leaseReject: false, leaseExpired: false, leaseTimeoutMS: 0, rearmFixture: nil, reopenFixture: nil}
+		var inflightPeer *pgInflightServicePeer
+		if pgInflightMode {
+			inflightPeer = newPGInflightServicePeer(pg)
+		}
 		var nativeFence http.HandlerFunc
+		if inflightPeer != nil && strings.HasSuffix(mode, "-upstream-expired") {
+			nativeFence = inflightPeer.expiryFence(t)
+		}
 		if transfer != nil {
 			nativeFence = pg.ownerFence(t)
 			if mode == "closure-transfer-native-expiry-fence-unknown" {
@@ -546,6 +577,9 @@ func productionInitialService(t *testing.T, mode string) {
 			}
 		}
 		config := pgConfigWithFence(t, request, func(w http.ResponseWriter, r *http.Request) {
+			if inflightPeer != nil && inflightPeer.serve(t, w, r) {
+				return
+			}
 			if actualLatePG && r.URL.Path == "/dsg/v1/resize" {
 				// 原POST已经到达但返回未知，原执行的效果稍后才在关闭
 				// 确认后提交。只模拟明确协议peer中的原执行，不补外层
@@ -622,6 +656,9 @@ func productionInitialService(t *testing.T, mode string) {
 				}
 			}
 		}, nativeFence, func() control.Snapshot { return pg.shared().Observed })
+		if pgInflightMode {
+			config.Timeout = 2 * time.Minute
+		}
 		worker, err := session.NewProductionPGWorker(ctx, config, resources, client.CoreV1())
 		require.NoError(t, err)
 		defer worker.CloseIdleConnections()
@@ -823,7 +860,7 @@ func productionInitialService(t *testing.T, mode string) {
 		var successorHost *hostexec.Publisher
 		if lifecycleMode {
 			// 已由完整生产恢复链完成首次服务；继续原预算Grow，无重复初开。
-		} else if strings.HasPrefix(mode, "completion-audit-") || strings.HasPrefix(mode, "vm-audit-") || retainedService || hostServiceClosure || actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
+		} else if guestFixtureMode || pgInflightMode || strings.HasPrefix(mode, "completion-audit-") || strings.HasPrefix(mode, "vm-audit-") || retainedService || hostServiceClosure || actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || strings.HasPrefix(mode, "resume-safety-") || strings.HasPrefix(mode, "finalize-safety-") || strings.HasPrefix(mode, "active-safety-") || strings.HasPrefix(mode, "cleanup-safety-") {
 			// 新窗口只复用必要的首次成功前驱，不重复既有首次丢回复矩阵。
 			for range 2 {
 				progress, err := worker.Advance(ctx)
@@ -908,7 +945,7 @@ func productionInitialService(t *testing.T, mode string) {
 			// 完整结案/自动Grow→Shrink会经过多次正式来源预审，race运行
 			// 可能超过静态夹具Lease的60秒寿命。用原UID/holder的真实
 			// 选主续租维持Host，不放宽生产过期校验，也不重建同名来源。
-			if strings.HasPrefix(mode, "completion-audit-") || strings.HasPrefix(mode, "vm-audit-") || retainedService || actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || finalizationCancel || strings.HasPrefix(mode, "cleanup-safety-") {
+			if guestFixtureMode || pgInflightMode || strings.HasPrefix(mode, "completion-audit-") || strings.HasPrefix(mode, "vm-audit-") || retainedService || actualShrinkRecovery || actualRecovery || vmRecovery || pgTakeover || guestTakeover || mode == "auto-finish" || automaticMode || pgSafety || committedExpiry || committedCompletionTransfer || finalizationCancel || strings.HasPrefix(mode, "cleanup-safety-") {
 				stopHost := keepPGTakeoverHostOwner(t, ctx, client)
 				if strings.Contains(mode, "completed-bound") {
 					api.mu.Lock()
@@ -970,6 +1007,16 @@ func productionInitialService(t *testing.T, mode string) {
 		require.NoError(t, err)
 		require.Equal(t, pgexec.Recorded, progress)
 		for _, action := range []journal.Action{journal.GuestReady, journal.ResizePG, journal.FinalizeBudget, journal.ResumeAdmission} {
+			if guestFixtureMode && mode == "guest-service-audit-grow" && action == journal.GuestReady {
+				require.Equal(t, journal.Planned, budgetStep(t, store, journal.GuestReady).Phase)
+				if fixtureHook(t, ctx, api, store, client, coord, session, resources, worker, config, source, pg, root, runner, qmp, request) {
+					return nil
+				}
+			}
+			if pgInflightMode && action == journal.ResizePG {
+				verifyPGInflightServiceAudit(t, ctx, mode, api, store, client, session, worker, source, pg, root, inflightPeer)
+				return nil
+			}
 			if strings.HasPrefix(mode, "completion-audit-") && (action == journal.ResumeAdmission || action == journal.FinalizeBudget && strings.Contains(mode, "before-finalize")) {
 				verifyCompletedServiceAuditLease(t, ctx, mode, api, store, client, session, worker, pg, root)
 				return nil
@@ -1176,6 +1223,11 @@ func productionInitialService(t *testing.T, mode string) {
 		qmp.mu.Lock()
 		require.Equal(t, 1, qmp.writes)
 		qmp.mu.Unlock()
+		if guestFixtureMode && mode == "guest-service-audit-shrink" {
+			if fixtureHook(t, ctx, api, store, client, coord, session, resources, worker, config, source, pg, root, runner, qmp, request) {
+				return nil
+			}
+		}
 		if actualShrinkRecovery {
 			verifyProductionShrinkActualRecovery(t, ctx, api, client, coord, store, session, resources, worker, source, pg, root, runner, qmp)
 			return nil

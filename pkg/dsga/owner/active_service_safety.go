@@ -20,32 +20,42 @@ import (
 // 永久预算的容量/Root字节要求合法扩缩中间态；只接受原Held，或本Active已
 // 写前登记的完整Guest命令。来源读失败/替换、硬约束漂移必须关已有准入。
 // 网络不持本地锁；串行调用前Session已认证，真正关闭仍须独立UID/RV写前CAS。
-func (w *PGWorker) inspectActiveService(ctx context.Context, s *journal.Snapshot) error {
+func (w *PGWorker) inspectActiveService(ctx context.Context, s *journal.Snapshot) (auditErr error) {
+	// stage只能取本函数的静态literal；defer看真实返回值，不包装/输出原错误，
+	// 不改变来源认证、Unknown、续租或关闭时序。nil继续由既有logger安静跳过。
+	stage := "active_domains"
+	defer func() { recordServiceSourceAuditError(stage, auditErr) }()
 	m := s.State()
 	if w.resourceOwner == nil || m.ResourceIdentity == nil || w.qualification == nil || !s.Dispatchable() {
 		return fmt.Errorf("active service lacks fixed original domains")
 	}
+	stage = "active_qualification"
 	q, err := w.safety.claims.Qualification(ctx, *w.qualification)
 	if err != nil {
 		return err
 	}
+	stage = "active_root_state"
 	view, err := w.resourceOwner.client.InspectState(ctx)
 	if err != nil {
 		return err
 	}
+	stage = "active_root_identity"
 	if view.Identity != *m.ResourceIdentity || q.Identity != view.Identity || view.IssuerFloorEpoch > m.Owner.Epoch || view.Birth == nil {
 		return fmt.Errorf("active service changed Root identity or floor")
 	}
 	aggregate, aggregateErr := budget.RootAggregateFromView(view)
+	stage = "active_root_process"
 	process, err := w.resourceOwner.client.InspectProcess(ctx)
 	if err != nil {
 		return err
 	}
+	stage = "active_postmaster_birth"
 	if process != *view.Birth {
 		return fmt.Errorf("active service lost original Postmaster birth")
 	}
 	expected, _, err := idleServiceBound(m)
 	held := err == nil && aggregateErr == nil && aggregate.Bound == expected
+	stage = "active_guest_command"
 	for _, step := range m.Active.Steps {
 		if step.Action == journal.GuestReady && step.Phase != journal.Planned {
 			var command resourceguard.Command
@@ -63,9 +73,11 @@ func (w *PGWorker) inspectActiveService(ctx context.Context, s *journal.Snapshot
 			}
 		}
 	}
+	stage = "active_root_bound"
 	if !held {
 		return fmt.Errorf("active Root bound belongs to neither original budget nor original Guest command")
 	}
+	stage = "active_qualification_binding"
 	raw, err := json.Marshal(view.Bootstrap)
 	if err != nil {
 		return err
@@ -74,6 +86,7 @@ func (w *PGWorker) inspectActiveService(ctx context.Context, s *journal.Snapshot
 	if q.RootBootstrapSHA256 != vmguard.SourceDigest(raw) || q.RunnerPodName != vm.Status.PodName || q.NodeName != vm.Status.Node || q.RunnerRestartCount != vm.Status.RestartCount {
 		return fmt.Errorf("active original qualification binding changed")
 	}
+	stage = "active_runner_read"
 	birth, ref, publication, err := w.safety.runner.Inspect(ctx, &q.RunnerBirth, m.Owner)
 	runnerErr := err
 	// 接管时Runner floor尚未追上不等于丢来源；只容许具有完整原publication的
@@ -81,6 +94,7 @@ func (w *PGWorker) inspectActiveService(ctx context.Context, s *journal.Snapshot
 	if err != nil && (!errors.Is(err, vmguard.ErrUnknown) || publication.State == nil || publication.Actual == nil) {
 		return err
 	}
+	stage = "active_runner_binding"
 	raw, err = json.Marshal(birth.Identity)
 	if err != nil {
 		return err
@@ -91,6 +105,7 @@ func (w *PGWorker) inspectActiveService(ctx context.Context, s *journal.Snapshot
 	// 即使新Prepare/Host尚未产生，也必须继续认证原永久头的来源和
 	// 原Pod/Node成本。这里只读原持有，不要求实际容量等于旧预算，故
 	// 正常扩缩过渡不会被错判；不能只看新目标而遗漏仍在服务的旧承诺。
+	stage = "active_held_source"
 	if m.InitialHeld != nil {
 		initial, err := m.InitialBudgetFor()
 		if err != nil {
@@ -104,6 +119,7 @@ func (w *PGWorker) inspectActiveService(ctx context.Context, s *journal.Snapshot
 	}
 	// 原VM动作允许requested/actual暂不相等；那是仍占峰值的未知效果，不能
 	// 按空闲规则判成已释放。这里只认证已经固定的来源，完整动作审计由原执行器做。
+	stage = "active_prepare"
 	var prepared *budget.Prepared
 	for _, step := range m.Active.Steps {
 		if step.Action == journal.PrepareBudget && step.Phase == journal.Settled && step.Observation != nil && step.Observation.Result == journal.Completed {
@@ -111,12 +127,14 @@ func (w *PGWorker) inspectActiveService(ctx context.Context, s *journal.Snapshot
 			if json.Unmarshal(step.Observation.Data, &p) != nil || p.ValidateFor(m.Active.Request, *m.ResourceIdentity) != nil {
 				return fmt.Errorf("active original Prepare changed")
 			}
+			stage = "active_outside_source"
 			if err := w.safety.claims.CheckOutside(ctx, p); err != nil {
 				return err
 			}
 			prepared = &p
 		}
 	}
+	stage = "active_host_source"
 	if prepared != nil {
 		for _, step := range m.Active.Steps {
 			if step.Action == journal.ReserveHost && step.Phase != journal.Planned {
@@ -137,6 +155,7 @@ func (w *PGWorker) inspectActiveService(ctx context.Context, s *journal.Snapshot
 			}
 		}
 	}
+	stage = "active_prepare_lease_gate"
 	if prepareLeaseEligible(m, w.session.Actor()) {
 		// 一般Active允许合法中间态；Prepare续租必须额外达到原严格静止门。
 		if runnerErr != nil || aggregateErr != nil || view.IssuerFloorEpoch != m.Owner.Epoch || publication.State == nil || publication.Actual == nil || publication.State.Pending != nil || publication.Actual.RequestedBytes != publication.Actual.ActualBytes || vm.Status.MemorySize == nil {
@@ -149,10 +168,12 @@ func (w *PGWorker) inspectActiveService(ctx context.Context, s *journal.Snapshot
 		if !exact || actual <= 0 || control.Uint64(actual) != publication.Actual.ActualBytes {
 			return ErrServiceSafety
 		}
+		stage = "active_prepare_shared"
 		shared, err := w.client.SharedCost(ctx)
 		if err != nil {
 			return err
 		}
+		stage = "active_prepare_renew"
 		return w.renewPrepareLease(ctx, s, shared, aggregate, view.Actual.GuestMemTotalBytes, true)
 	}
 	return nil

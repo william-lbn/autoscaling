@@ -189,7 +189,7 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		// 重发未知PG/Root/VM POST，也不另开legacy执行器绕过领域。
 		stage = "pg_run"
 		var diagnostic dsgaTickDiagnostic
-		return worker.Run(ownerCtx, owner.PGLoopOptions{PollInterval: time.Duration(config.PollIntervalSeconds) * time.Second, Control: endpoint, Wake: updated.Recv(), Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, Observe: func(tick owner.Tick) {
+		return worker.Run(ownerCtx, owner.PGLoopOptions{EnableInFlightGrow: true, PollInterval: time.Duration(config.PollIntervalSeconds) * time.Second, Control: endpoint, Wake: updated.Recv(), Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, Observe: func(tick owner.Tick) {
 			diagnostic.observe(logger, tick)
 			if tick.Err == nil {
 				r.status.update(r.global, func(stat podStatus) podStatus { now := time.Now(); stat.dsgaLastSuccessfulCheck = &now; return stat })

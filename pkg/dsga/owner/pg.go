@@ -427,7 +427,13 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 		progress, err = worker.quiesce.Advance(callCtx)
 	}
 	if err == nil && progress == pgexec.ExternalStep && worker.resources != nil {
-		progress, err = worker.resources.Advance(callCtx)
+		// 新审计链只由同Session Run显式启用；旧单域/默认调用保持原入口。
+		// InFlightEnabled仅表示模式已绑定，不是当前任务或续租许可。
+		if worker.qualification != nil && worker.executor != nil && worker.executor.InFlightEnabled() {
+			progress, err = worker.resources.AdvanceWithAudit(callCtx, worker.renewGuestServiceAudit)
+		} else {
+			progress, err = worker.resources.Advance(callCtx)
+		}
 	}
 	if err == nil && progress == pgexec.ExternalStep && worker.vm != nil {
 		// 只有配置原完整资格的正常生产链接额外续租出口；旧单步
@@ -627,6 +633,9 @@ type Tick struct {
 
 type PGLoopOptions struct {
 	PollInterval time.Duration
+	// 内部可信Run接线开关；零值保原同步/可重入行为，不暴露Env/Helm/API。
+	// 显式true须完整生产来源，且每个executor仅绑定一个同Session Run生命周期。
+	EnableInFlightGrow bool
 	// Control只接受当前worker的受信管理选择，执行仍在本Run串行goroutine。
 	// 与旧领域通道并存，普通轮询不会生成管理命令或自动重放。
 	Control *ControlEndpoint
@@ -694,6 +703,18 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	}
 	callCtx, cancel := worker.session.coupledContext(ctx)
 	defer cancel()
+	if options.EnableInFlightGrow {
+		if worker.executor == nil || worker.safety == nil || worker.qualification == nil || worker.resourceOwner == nil {
+			return fmt.Errorf("in-flight Grow Run requires complete original production sources")
+		}
+		// 父ctx只来自同Session长驻Run，不能传每次Advance的defercancel ctx。
+		// 退出/失主取消保留原MAY和SDK Unknown，不reset控制器来重新启用。
+		stopInFlight, err := worker.executor.EnableInFlight(callCtx)
+		if err != nil {
+			return err
+		}
+		defer stopInFlight()
+	}
 	defer worker.CloseIdleConnections()
 	worker.idleServiceDiagnostic = nil
 	leaseReady := false

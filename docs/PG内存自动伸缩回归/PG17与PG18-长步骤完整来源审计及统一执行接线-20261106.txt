@@ -1,0 +1,36 @@
+PG17/PG18 内存自动伸缩：长步骤完整来源审计与统一执行接线
+日期：2026-11-06。仓库：william-lbn/autoscaling（既定功能分支 codex/dsga-autoscaling-20261019）。
+基线：90559c699327b0beb1a857ace5ce27b434102ff0；现网旧 Agent 仍为 f424/c5e，提交不等于发布。
+
+一、问题与边界
+真实三节点部署中的旧 Grow 已发生 PG256→8192，旧 Shrink 已发生 PG8192→256、四数组物理尾部释放和 normal memory.max 1127743488→1077411840（降低48MiB）。但旧事务未完成 Finalize/Resume；不能把内核局部动作或恢复后的实际状态称为完整成功。
+Shrink33 的实际日志显示，相邻 lease RPC 之间有30.542075秒没有租约通信，超过30秒服务安全期限。Root硬限写入及多次来源回读占据了原单 writer；旧 Guest 无完整审计续约出口，VM出口只接Grow。旧日志未记录闭合判定两支的原叶，因而这条空窗是实证缺口，不宣称它已被证明为唯一首次原因，也不归咎Mac断连或上游Neon。
+修复仅覆盖内存改造直接链路，不添加K8s平台测试、新预算分配器或整台宿主机内核绝对上界。PG/Guest硬限、原Unknown/MAY、已过期限不可复活等要求均保留。30秒内部安全租约不是产品Scale-to-Zero或SQL空闲期限。
+
+二、完整调用链与职责
+控制/策略仍提交原版本化Request；Scheduler仍是Host资源准入与预留的单一权威。Agent沿原选主Session运行原Owner；Owner负责认证来源、按原WAL顺序执行和原Native精确CAS续约。Runner执行原QMP；Guest/PG保持真正硬限与实际物理释放。最终由原对象UID、WAL和实际资源/SQL数据回读确认。
+1. 单次PG Grow：复用905已提交的单任务在途组件。仅Client.Resize在一个有界任务内等待，原writer仍负责Start、完整授权与Record；原Key/实例/Actor/Run生命周期绑定，失主取消不自动重发Unknown。结果不明只允许对同一原命令做窄只读Status对账，不会因此进入后继动作。
+2. 在途续约：同时认证旧永久预算头、当前Prepare/Host/Outside、资格、原Runner回执、Guest真实Root及PG四数组已付最坏范围；同次审计末重读来源并保留末Session.Check及独立Store.Load/RV。原Grow允许合法Preparing→Committed进展，不删除AllocationUnknown，不把正在写页当完成证明。
+3. Guest：在原执行器完整写前检查后、Start/Apply前，以及实际Root/PG/VM/原Unconfirmed回读后、Record前，分别调用同一个完整来源审计。旧Held与本次Shrink Host只是同一Scheduler权威的两份来源，不相加计费。未知Apply不走写后成功出口、不自动重放。
+4. VM：复用原AdvanceWithAudit，补齐合法Shrink的ResizeVM及ObserveVM；完整审计仍由原执行器负责，Owner额外认证旧Held来源并走原Native CAS。Grow原samePreparedRoot约束保留；Shrink已完成Guest限额后认证新的实际Root。ObserveVM只核原Resize回执，不再发QMP。
+5. 默认兼容：PGLoopOptions.EnableInFlightGrow零值false，旧direct/default路径保留。只有Agent唯一生产Run入口显式true，并要求完整生产来源；模式绑定一旦成立，缺来源/任务结束/父ctx取消不能退回旧部分许可。无新增用户Env/Helm/API开关，无PG17/PG18分支。
+6. 诊断：新增固定阶段和source_error/native_expired两项实际布尔值；成功日志仅在真实Native返回Renewed且精确快照全核过后输出。禁止记录任意Error正文、资格证明、凭据或Observed完整结构。
+
+三、修改文件及复用关系
+生产：pkg/agent/dsga.go；pkg/dsga/owner/{pg.go,service_safety.go,active_service_safety.go,admission_lease.go,guest_service_lease.go,pg_inflight_service_audit.go}；pkg/dsga/{resourceexec,vmexec}/executor.go。
+测试：同目录新审计/在途/VM/真实worker分派用例及原initial_service_test.go的测试桥；历史cap3物理释放DTO明确只用于回归夹具，不能签发新的生产资格。原四个Native未提交WIP逐SHA保留，不混入本次提交。
+统一上层Request/能力/期望实际状态/恢复合同不变；PG18复用本轮Agent/Owner/Guest/Runner接线。PG18自身normal资格、真实Source和部署端到端仍须实际验收，不能由PG17或组件PASS替代。
+
+四、验证与证据
+最终冻结源：/var/lib/neon-validation-sources/Root-final-memory-dispatch-20261105T233853Z-8db960/source。
+11768个明确文件，manifest e4c695df8a692c95fa0153fb9829744bd60984d92de76732be509ee2279d060c；source-lock 246bd34d51993f477828e1c6efa4a09351afa664ce73daf2ed4d1e72798647fb。
+最终组合（相同冻结源）：组1完整来源及实际worker16根103PASS，712.10秒；组2权限/取消/默认合同主11根24PASS，另legacy原FAIL保留、unit1；组3 Agent15根21PASS及实际入口编译0，74.83秒。合计42个不同测试根、148个含根与子项PASS事件，不把148当用例根或端到端完成率。各主门零skip/失败/race/OOM，原unit/预算终态分别0/1/0已核。
+每组原systemd任务、BuildKit RUN真实3CPU/3GiB/swap0，Go1.24.3、race、零skip；复用Cargo/Go/BuildKit等既有缓存，记录原unit终态和预算归还，进程退出码不代替测试结果。
+先前组件定向：pgexec32根90PASS；resourceexec11根36PASS；Guest完整审计6根30PASS；PG/Run完整来源17根83PASS；VM执行器3根32PASS；Owner VM开启模式2根8PASS；默认关闭实际Grow补充1根1PASS。各自是对应准确快照的组件证明，不相加成端到端完成百分比。
+旧legacy exact用例在新源和原Git905源码均于trusted_prepare_test.go:93/Prepare checkpoint前门同样FAIL，尚未到Store.Start或VM helper。失败原日志保留，不称旧全链兼容PASS，也不据此扩大生产Prepare修复。额外default-off单root使用完整真实前驱、原VM auditor及两次实际Native CAS，独审5e4e6b64；test-only补充patch作为归档而非发布源码热改。
+大日志、原UID/资源、原始失败、原Wait与终态留/data/neon-build/validation及/data/neon-k8s-pg17；小的复现索引/结果汇总随本次中文阶段提交归档。测试仅覆盖本修改及直接影响路径。
+
+五、发布后必须验收
+用精确同Git业务字节构建正式Agent ELF与薄镜像，保普通docker images可见tag；从118经SSH预载117/118/119实际containerd k8s.io，准确digest/config回读后用自有Helm更新Agent。
+新Owner沿原正式实际预算恢复，保同PG实例、PG256、已降低normal硬限和VM8Gi及tenant/timeline数据；不放大normal来凑旧状态、不延旧请求期限、不重置账本或消除Unknown。
+随后以新请求完成Grow→安全normal Shrink→Regrow及自动策略，每次立即做同会话数据与真实PG/Guest/VM硬限回读。当前四项正式验收仍0/4，本提交不能称生产认证。PG17真实端到端通过后才获取届时最新自有控制面并推进已约定完整产品目标。

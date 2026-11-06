@@ -68,6 +68,16 @@ func New(store *journal.Store, pg *compute.Client, resources *resourceguard.Clie
 
 func (e *Executor) Advance(ctx context.Context) (pgexec.Progress, error) { return e.advance(ctx, nil) }
 
+// AdvanceWithAudit仅给原单writer增加两个同步完整来源出口，不授予预算/续租许可。
+// Shared只是同轮原PG输入；Owner须另读原Held/Outside/Host/Runner/Root及同RV/Native CAS。
+// nil回调拒绝；原Advance/显式Replay/完整quota恢复均保持原nil路径与Unknown语义。
+func (e *Executor) AdvanceWithAudit(ctx context.Context, after func(context.Context, *journal.Snapshot, control.SharedCostResponse) error) (pgexec.Progress, error) {
+	if after == nil {
+		return pgexec.AwaitingFact, fmt.Errorf("Guest audit requires explicit complete-source callback")
+	}
+	return e.advanceSelectedWithAudit(ctx, nil, nil, after)
+}
+
 // 显式重放独立于PG/准入重放。Key只作选择提示，发送值始终取自原WAL；新owner
 // 只能Observe旧epoch，不能借重放修改epoch/PID/限额。不存在定时自动重放入口。
 func (e *Executor) ReplayOriginal(ctx context.Context, key control.Key) (pgexec.Progress, error) {
@@ -106,6 +116,10 @@ func (e *Executor) advance(ctx context.Context, replay *control.Key) (pgexec.Pro
 // expected只由显式完整quota恢复携入；强制同一原Request/Unconfirmed Command，
 // 不允许恢复网络返回后重新选择新Planned GuestReady或触发副作用重放。
 func (e *Executor) advanceSelected(ctx context.Context, replay *control.Key, expected *resourceguard.NormalQuotaEnvelope) (pgexec.Progress, error) {
+	return e.advanceSelectedWithAudit(ctx, replay, expected, nil)
+}
+
+func (e *Executor) advanceSelectedWithAudit(ctx context.Context, replay *control.Key, expected *resourceguard.NormalQuotaEnvelope, after func(context.Context, *journal.Snapshot, control.SharedCostResponse) error) (pgexec.Progress, error) {
 	snapshot, err := e.store.Load(ctx)
 	if err != nil {
 		return pgexec.AwaitingFact, err
@@ -261,6 +275,12 @@ func (e *Executor) advanceSelected(ctx context.Context, replay *control.Key, exp
 		// 在本分支遮蔽外层err，使真实发送失败被零值Evidence掩盖为预算
 		// 不符。未知仍须保留原WAL/SDK Pending，并把准确ClientError交给
 		// 协调器决定只读恢复，不能因此将本次动作落成成功或自动重发。
+		// 原domain写前检查与完整命令已成功，先同步重审Owner完整来源；拒绝则零Start/Apply。
+		if after != nil {
+			if auditErr := after(ctx, snapshot, shared); auditErr != nil {
+				return pgexec.AwaitingFact, auditErr
+			}
+		}
 		var dispatch *journal.Dispatch
 		snapshot, dispatch, err = e.store.Start(ctx, snapshot, e.actor, op.Request.Key, journal.GuestReady, e.instance.ComputeInstanceID, body)
 		if err != nil {
@@ -348,6 +368,13 @@ func (e *Executor) advanceSelected(ctx context.Context, replay *control.Key, exp
 	aggregate, err := budget.RootAggregateFromView(view)
 	if err != nil {
 		return pgexec.AwaitingFact, err
+	}
+	// Apply/Observe、PG/Root/VM、原Unconfirmed和聚合实读全过后才给第二出口。
+	// Unknown或写后核验失败绝不到此；回调错误保原WAL/额度，不自动重放。
+	if after != nil {
+		if auditErr := after(ctx, snapshot, shared); auditErr != nil {
+			return pgexec.AwaitingFact, auditErr
+		}
 	}
 	data, err := json.Marshal(audit{ProtocolVersion: 2, Query: query, Command: command, Evidence: view.Actual, Fence: fence, Shared: shared, PGAggregate: aggregate, RunnerPodName: prepared.RunnerPodName, RunnerRestarts: prepared.RunnerRestartCount, VMMemoryBytes: control.Uint64(vmBytes)})
 	if err != nil {

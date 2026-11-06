@@ -29,6 +29,14 @@ func recordServiceSourceAuditError(stage string, err error) {
 	klog.InfoS("DSGA service source audit stopped", "stage", stage, "error_type", fmt.Sprintf("%T", err), "error_leaf", serviceReopenErrorLeaf(err))
 }
 
+// 只记录原OR判定两项的实际布尔值；过期不冒认来源错误，Error正文不渲染。
+func recordActiveSourceClosureAudit(sourceErr error, nativeExpired bool) {
+	if sourceErr == nil && !nativeExpired {
+		return
+	}
+	klog.InfoS("DSGA active service closure audit", "stage", "active_source", "source_error", sourceErr != nil, "native_expired", nativeExpired, "error_type", fmt.Sprintf("%T", sourceErr), "error_leaf", serviceReopenErrorLeaf(sourceErr))
+}
+
 type serviceSafety struct {
 	claims *budgetclaims.Reader
 	runner *vmguard.Reader
@@ -326,6 +334,21 @@ func (w *PGWorker) advanceServiceSafetySelected(ctx context.Context, replay stri
 	if replay != "" {
 		return true, pgexec.AwaitingFact, fmt.Errorf("service closure WAL is absent")
 	}
+	// 专用在途审计先于通用partial来源检查；缺配置/原永久头也不得降级。
+	// 保留MAY/Unknown并停止续租，沿原Native hard expiry等待关闭/恢复。
+	if w.pgInflightAuditSelected(s) && !nativeExpired {
+		if err := w.inspectPGInflightService(ctx, s); err != nil {
+			// 拒绝续租不撤销原PG同Key的只读结果消费；该窄入口不能Start/
+			// POST/后继动作。本轮保持ErrSafety，Run不走通用第二次续租。
+			latest, loadErr := w.session.store.Load(ctx)
+			if loadErr != nil {
+				return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err, loadErr)
+			}
+			progress, observeErr := w.executor.ObserveDispatchedInFlight(ctx, latest)
+			return true, progress, errors.Join(ErrServiceSafety, err, observeErr)
+		}
+		return false, pgexec.Idle, nil
+	}
 	// 原实际容量Cleanup在首次完整预算之前也可能已写前持久；不能因没有
 	// 永久头跳过其来源检查。边界从原Cleanup取，绝不补造Initial/Finalized。
 	if w.safety == nil || m.InitialHeld == nil && m.BudgetHeld == nil && m.CapacityHeld == nil && (m.Active == nil || m.Active.Cleanup == nil) {
@@ -356,9 +379,11 @@ func (w *PGWorker) advanceServiceSafetySelected(ctx context.Context, replay stri
 					if _, boundaryErr := m.ActiveAdmissionForClosure(); boundaryErr != nil {
 						return false, pgexec.Idle, nil
 					}
-					if err := w.inspectActiveService(ctx, s); err == nil && !nativeExpired {
+					sourceErr := w.inspectActiveService(ctx, s)
+					if sourceErr == nil && !nativeExpired {
 						return false, pgexec.Idle, nil
 					}
+					recordActiveSourceClosureAudit(sourceErr, nativeExpired)
 					return w.closeActiveService(ctx, s)
 				}
 				if err := w.checkBeforeFinalizationLeaseAudit(ctx, s, nativeExpired); err == nil && !nativeExpired {

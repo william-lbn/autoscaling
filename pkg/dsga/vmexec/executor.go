@@ -232,7 +232,7 @@ func (e *Executor) advance(ctx context.Context, after func(context.Context, *jou
 		return pgexec.AwaitingFact, err
 	}
 	if step.Action == journal.ObserveVM {
-		return e.observe(ctx, s, p, prior, step)
+		return e.observeWithAudit(ctx, s, p, prior, step, after)
 	}
 	if step.Phase == journal.Planned {
 		birth, ref, pub, err := e.runner.Inspect(ctx, nil, e.actor)
@@ -278,9 +278,12 @@ func (e *Executor) advance(ctx context.Context, after func(context.Context, *jou
 		if err := e.sameSnapshot(ctx, s); err != nil {
 			return pgexec.AwaitingFact, err
 		}
-		if after != nil && p.Request.Kind == control.Grow {
-			if err := samePreparedRoot(p, prior, aggregate); err != nil {
-				return pgexec.AwaitingFact, err
+		if after != nil {
+			// Grow尚未GuestReady，保原Prepare Root；Shrink已由nativeWithShared核新Guest Root。
+			if p.Request.Kind == control.Grow {
+				if err := samePreparedRoot(p, prior, aggregate); err != nil {
+					return pgexec.AwaitingFact, err
+				}
 			}
 			if err := after(ctx, s, shared); err != nil {
 				return pgexec.AwaitingFact, err
@@ -337,9 +340,11 @@ func (e *Executor) advance(ctx context.Context, after func(context.Context, *jou
 	if err := e.sameSnapshot(ctx, s); err != nil {
 		return pgexec.AwaitingFact, err
 	}
-	if after != nil && p.Request.Kind == control.Grow {
-		if err := samePreparedRoot(p, prior, aggregate); err != nil {
-			return pgexec.AwaitingFact, err
+	if after != nil {
+		if p.Request.Kind == control.Grow {
+			if err := samePreparedRoot(p, prior, aggregate); err != nil {
+				return pgexec.AwaitingFact, err
+			}
 		}
 		if err := after(ctx, s, shared); err != nil {
 			return pgexec.AwaitingFact, err
@@ -359,6 +364,11 @@ func (e *Executor) advance(ctx context.Context, after func(context.Context, *jou
 // ObserveVM是同一原ResizeVM回执的再次当前验证，不制造另一个Runner写命令。
 // 数据逐字节保留，预算域可核对两步同一结论；新的外部事实只用于拒绝/等待。
 func (e *Executor) observe(ctx context.Context, s *journal.Snapshot, p budget.Prepared, prior map[journal.Action]*journal.Step, step *journal.Step) (pgexec.Progress, error) {
+	return e.observeWithAudit(ctx, s, p, prior, step, nil)
+}
+
+// ObserveVM只复核原已完成ResizeVM，不派发QMP；nil保原恢复/观察入口。
+func (e *Executor) observeWithAudit(ctx context.Context, s *journal.Snapshot, p budget.Prepared, prior map[journal.Action]*journal.Step, step *journal.Step, after func(context.Context, *journal.Snapshot, control.SharedCostResponse) error) (pgexec.Progress, error) {
 	resize := prior[journal.ResizeVM]
 	if resize == nil || resize.Observation == nil {
 		return pgexec.AwaitingFact, fmt.Errorf("original ResizeVM result missing")
@@ -382,7 +392,8 @@ func (e *Executor) observe(ctx context.Context, s *journal.Snapshot, p budget.Pr
 	if observed.Host != fact.Host {
 		return pgexec.AwaitingFact, fmt.Errorf("original ObserveVM Host changed")
 	}
-	aggregate, err := e.native(ctx, p, prior, true)
+	var shared control.SharedCostResponse
+	aggregate, err := e.nativeWithShared(ctx, p, prior, true, &shared)
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
@@ -396,6 +407,16 @@ func (e *Executor) observe(ctx context.Context, s *journal.Snapshot, p budget.Pr
 		return pgexec.AwaitingFact, err
 	}
 	if step.Phase == journal.Planned {
+		if after != nil {
+			if p.Request.Kind == control.Grow {
+				if err := samePreparedRoot(p, prior, aggregate); err != nil {
+					return pgexec.AwaitingFact, err
+				}
+			}
+			if err := after(ctx, s, shared); err != nil {
+				return pgexec.AwaitingFact, err
+			}
+		}
 		var dispatch *journal.Dispatch
 		s, dispatch, err = e.store.Start(ctx, s, e.actor, p.Request.Key, journal.ObserveVM, resize.TargetID, resize.Command)
 		if err != nil {
@@ -410,6 +431,16 @@ func (e *Executor) observe(ctx context.Context, s *journal.Snapshot, p budget.Pr
 	}
 	if err := e.sameSnapshot(ctx, s); err != nil {
 		return pgexec.AwaitingFact, err
+	}
+	if after != nil {
+		if p.Request.Kind == control.Grow {
+			if err := samePreparedRoot(p, prior, aggregate); err != nil {
+				return pgexec.AwaitingFact, err
+			}
+		}
+		if err := after(ctx, s, shared); err != nil {
+			return pgexec.AwaitingFact, err
+		}
 	}
 	_, err = e.store.Record(ctx, s, e.actor, p.Request.Key, journal.Observation{Key: p.Request.Key, RequestSHA256: s.State().Active.RequestSHA256, CommandSHA256: step.CommandSHA256, Ordinal: step.Ordinal, Action: step.Action, Result: journal.Completed, SourceID: step.TargetID, Data: append([]byte(nil), resize.Observation.Data...)})
 	if err != nil {

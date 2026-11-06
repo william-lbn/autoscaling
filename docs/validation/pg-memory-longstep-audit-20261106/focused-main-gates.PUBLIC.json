@@ -1,0 +1,122 @@
+{
+  "status": "FOCUSED_MAIN_GATES_PASS_INHERITED_LEGACY_FAILURE_RETAINED",
+  "at": "2026-11-06T00:06:51.776685+00:00",
+  "source_manifest_SHA256": "e4c695df8a692c95fa0153fb9829744bd60984d92de76732be509ee2279d060c",
+  "source_lock_SHA256": "246bd34d51993f477828e1c6efa4a09351afa664ce73daf2ed4d1e72798647fb",
+  "source_count": 11768,
+  "main_roots_total": 42,
+  "pass_events_including_roots_and_children": 148,
+  "groups": [
+    {
+      "group": 1,
+      "result_path": "/data/neon-build/validation/Root-final-memory-Go-group1-DISABLED-20261105T235211Z-68a9f9/result.json",
+      "result_SHA256": "57e5608317375e3f085e8214ed6093aa6cc8dc0dd18d46d8e10ce09b3a3aff96",
+      "main_roots": 16,
+      "main_pass_events_including_roots_and_children": 103,
+      "main_skip": 0,
+      "main_fail": 0,
+      "seconds": 712.1016327150865,
+      "actual_cgroup": {
+        "memory.max": "3221225472",
+        "memory.swap.max": "0",
+        "cpu.max": "300000 100000",
+        "memory.peak": "764338176",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "original_terminal": {
+        "cpu": 3,
+        "kind": "go",
+        "last_observation": "original-unit-terminal",
+        "memory": 3221225472,
+        "nonce": "20261105T235211Z-68a9f9",
+        "process_exit_code": 0,
+        "queue_reason": "",
+        "spec_sha256": "9ea5228a6a0ed444dd5196eb16cff10ac849706c7ae9dd46752cfba9cc01b06f",
+        "state": "terminal",
+        "test_verdict": "NOT_INTERPRETED",
+        "unit": "neon-final-memory-go-group1-20261105t235211z-68a9f9.service",
+        "unit_result": "success",
+        "worker_sha256": "aaf6a3d01151e85df66f0ed5e840db5c3870d4f47274d8cc10688e4ec94faba6"
+      },
+      "all_requested_phases_pass": true
+    },
+    {
+      "group": 2,
+      "result_path": "/data/neon-build/validation/Root-final-memory-Go-group2-DISABLED-20261105T235211Z-d7fb8a/result.json",
+      "result_SHA256": "11895ee42cd71d0c3697779efbbdf11c5d9645be99309cf52810faab7b29ed99",
+      "main_roots": 11,
+      "main_pass_events_including_roots_and_children": 24,
+      "main_skip": 0,
+      "main_fail": 0,
+      "seconds": 93.01133663009387,
+      "actual_cgroup": {
+        "memory.max": "3221225472",
+        "memory.swap.max": "0",
+        "cpu.max": "300000 100000",
+        "memory.peak": "538447872",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "original_terminal": {
+        "cpu": 3,
+        "kind": "go",
+        "last_observation": "original-unit-terminal",
+        "memory": 3221225472,
+        "nonce": "20261105T235211Z-d7fb8a",
+        "process_exit_code": 1,
+        "queue_reason": "",
+        "spec_sha256": "c5df27d78fd03ec77bc7eca2e273d6489c5e80d5ee2c7190d5e58111741addd4",
+        "state": "terminal",
+        "test_verdict": "NOT_INTERPRETED",
+        "unit": "neon-final-memory-go-group2-20261105t235211z-d7fb8a.service",
+        "unit_result": "exit-code",
+        "worker_sha256": "aaf6a3d01151e85df66f0ed5e840db5c3870d4f47274d8cc10688e4ec94faba6"
+      },
+      "all_requested_phases_pass": false
+    },
+    {
+      "group": 3,
+      "result_path": "/data/neon-build/validation/Root-final-memory-Go-group3-DISABLED-20261105T235211Z-acb82a/result.json",
+      "result_SHA256": "7965d3357145e269bfddba7491c7da2402d5d7438a7fa51736d25179df43cfd6",
+      "main_roots": 15,
+      "main_pass_events_including_roots_and_children": 21,
+      "main_skip": 0,
+      "main_fail": 0,
+      "seconds": 74.832021713024,
+      "actual_cgroup": {
+        "memory.max": "3221225472",
+        "memory.swap.max": "0",
+        "cpu.max": "300000 100000",
+        "memory.peak": "1454325760",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "original_terminal": {
+        "cpu": 3,
+        "kind": "go",
+        "last_observation": "original-unit-terminal",
+        "memory": 3221225472,
+        "nonce": "20261105T235211Z-acb82a",
+        "process_exit_code": 0,
+        "queue_reason": "",
+        "spec_sha256": "d7cf81596ab7657ac4c63b819ccd251ef17056cffbfe815171b35d200a9d0492",
+        "state": "terminal",
+        "test_verdict": "NOT_INTERPRETED",
+        "unit": "neon-final-memory-go-group3-20261105t235211z-acb82a.service",
+        "unit_result": "success",
+        "worker_sha256": "aaf6a3d01151e85df66f0ed5e840db5c3870d4f47274d8cc10688e4ec94faba6"
+      },
+      "all_requested_phases_pass": true
+    }
+  ],
+  "legacy_baseline_classification": "Original905 and candidate both fail at trusted_prepare_test93/Prepare checkpoint beforeStoreStart/VM helper; exactoldlogsretained, notnewhelperregression andnotlegacywholePASS. IndependentrealdefaultoffGrow1root1PASS supplementarytest-only patch archived.",
+  "legacy_independent_review": "/data/neon-k8s-pg17/reports/defaultoff-helper-independent-static-review-20261105T235837Z-C/independent-review.PUBLIC.json",
+  "legacy_independent_review_SHA256": "5e4e6b648f7bc880cdb46bd64b9627419f3bf2c84c7978e99f1d11d2f59aa11b",
+  "K8s_core_accepted": 0,
+  "K8s_core_total": 4,
+  "formal_ELF_or_deploy_done": false,
+  "existing_native_WIP_preserved": {
+    "pkg/dsga/resourceguard/normal_pg17_trusted_control_native_test.go": "b07b820b339fd4d0d276503952a38db7c9e025c44cb44ee30ae83cff20d4b5f0",
+    "pkg/dsga/resourceguard/normal_zz_stock_real_roles_native_test.go": "7fce3e318a6b72b376f5be36e68aedac82c98eed9d3996e2751c6f4c4853d14e",
+    "pkg/dsga/vmguard/normal_pg17_trusted_control_driver_native_test.go": "b0e584848251cc55ddd971bd32ef023d905a24101ab9f66253a62939d5c8606c",
+    "pkg/dsga/vmguard/normal_pg17_trusted_faults_native_test.go": "2f578d71e1d65b0c297eaa61d90487f9bc9185d46b8216170c0bf898e2df4671"
+  }
+}

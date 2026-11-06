@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"k8s.io/klog/v2"
 	"reflect"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
@@ -86,6 +87,11 @@ func (w *PGWorker) renewAdmissionLease(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	// 同一在途PG命令仅走完整专用审计及exact Native CAS；不得在其后
+	// 落回通用exact=nil再续一次，也不能让无live任务的MAY降级成partial。
+	if w.pgInflightAuditSelected(before) {
+		return w.inspectPGInflightService(ctx, before)
+	}
 	if handled, _, safetyErr := w.advanceServiceSafety(ctx, ""); handled {
 		if safetyErr != nil {
 			return safetyErr
@@ -153,6 +159,8 @@ func (w *PGWorker) renewAuditedAdmissionLease(ctx context.Context, before *journ
 		}
 		return ErrServiceSafety
 	}
+	// 只在真实Native renew及全部原校验成功后记固定数值，不输出Observed或证明。
+	klog.InfoS("DSGA audited native admission lease renewed", "lease_epoch", renewed.LeaseEpoch, "capacity_generation", renewed.Observed.CapacityGeneration, "admission_revision", renewed.Observed.AdmissionRevision, "deadline_ns", renewed.DeadlineNS, "exact_snapshot", exact != nil)
 	return nil
 }
 
@@ -363,38 +371,86 @@ func (w *PGWorker) renewCurrentServiceAudit(ctx context.Context, s *journal.Snap
 	return w.renewAuditedAdmissionLease(ctx, s, fact, &shared.Observed)
 }
 
-// ResizeVM只有本轮完整来源/原Runner实际完成审计成功才调用。该步骤在
-// Record之前仍可能Unconfirmed；原Observe未知绝不进入这里，其他未知均拒。
+// VM执行器只在本轮原完整来源审计后同步调用。Grow/Shrink及ObserveVM
+// 共用精确当前游标；本函数不把Shared升级成许可，也不重算资源分配。
+// 当前VM可仍MAY，其他未知拒绝；旧Held只核原来源，不要求Shrink post仍old实际值。
 func (w *PGWorker) renewVMServiceAudit(ctx context.Context, s *journal.Snapshot, shared control.SharedCostResponse) error {
-	if s == nil {
+	if s == nil || ctx == nil || w.session == nil {
 		return ErrServiceSafety
+	}
+	if err := ctx.Err(); err != nil {
+		return err
 	}
 	m := s.State()
 	actor := w.session.Actor()
-	if w.qualification == nil || ctx.Value(recoveryLeaseScopeKey{}) != nil || m.ServiceClosure != nil || m.Active == nil || m.Active.Origin != actor || m.Active.AbortRequested || m.Active.Cleanup != nil || m.Active.Request.Kind != control.Grow {
+	auditedMode := w.executor != nil && w.executor.InFlightEnabled()
+	if !auditedMode {
+		// 零值false/direct旧合同：仅原Grow/ResizeVM出口，不要求新增Held来源。
+		if w.qualification == nil || ctx.Value(recoveryLeaseScopeKey{}) != nil || m.ServiceClosure != nil || m.Active == nil || m.Active.Origin != actor || m.Active.AbortRequested || m.Active.Cleanup != nil || m.Active.Request.Kind != control.Grow {
+			return nil
+		}
+		found := false
+		for _, step := range m.Active.Steps {
+			if step.Action == journal.ResizeVM {
+				if found || step.Phase != journal.Planned && step.Phase != journal.Unconfirmed || step.Phase == journal.Unconfirmed && (step.DispatchedBy == nil || *step.DispatchedBy != actor) {
+					return nil
+				}
+				found = true
+			} else if !found {
+				if step.Phase != journal.Settled || step.Observation == nil || step.Observation.Result != journal.Completed {
+					return nil
+				}
+			} else if step.Phase != journal.Planned {
+				return nil
+			}
+		}
+		if !found || w.client.Pending() != nil || w.resourceOwner == nil || w.resourceOwner.client.Pending() != nil {
+			return nil
+		}
+		pending, closing := w.client.PendingAdmission()
+		if pending != nil || closing != nil {
+			return nil
+		}
+		return w.renewCurrentServiceAudit(ctx, s, shared)
+	}
+	// 显式同Session Run opt-in后只用完整新谓词；缺来源不能回退legacy。
+	if w.qualification == nil || ctx.Value(recoveryLeaseScopeKey{}) != nil || m.ServiceClosure != nil || m.Active == nil || m.Active.Origin != actor || m.Active.AbortRequested || m.Active.Cleanup != nil {
+		return nil
+	}
+
+	instance, epoch := w.Binding()
+	if m.Validate() != nil || !s.Dispatchable() || m.Owner != actor || actor.Epoch != epoch || m.PGInstance == nil || *m.PGInstance != instance || m.Active.Request.Key.Instance != instance || m.Active.Request.Key.IssuerEpoch != epoch || (m.Active.Request.Kind != control.Grow && m.Active.Request.Kind != control.Shrink) {
 		return nil
 	}
 	found := false
 	for _, step := range m.Active.Steps {
-		if step.Action == journal.ResizeVM {
-			if found || step.Phase != journal.Planned && step.Phase != journal.Unconfirmed || step.Phase == journal.Unconfirmed && (step.DispatchedBy == nil || *step.DispatchedBy != actor) {
+		if !found {
+			if step.Phase == journal.Settled && step.Observation != nil && step.Observation.Result == journal.Completed {
+				continue
+			}
+			if (step.Action != journal.ResizeVM && step.Action != journal.ObserveVM) || (step.Phase != journal.Planned && step.Phase != journal.Unconfirmed) || step.Phase == journal.Unconfirmed && (step.DispatchedBy == nil || *step.DispatchedBy != actor) {
 				return nil
 			}
 			found = true
-		} else if !found {
-			if step.Phase != journal.Settled || step.Observation == nil || step.Observation.Result != journal.Completed {
-				return nil
-			}
 		} else if step.Phase != journal.Planned {
 			return nil
 		}
 	}
-	if !found || w.client.Pending() != nil || w.resourceOwner == nil || w.resourceOwner.client.Pending() != nil {
+	if !found || w.client.Pending() != nil || w.resourceOwner == nil || w.resourceOwner.client.Pending() != nil || w.resourceOwner.client.ArrayAuthorityPending() != nil {
 		return nil
 	}
 	pending, closing := w.client.PendingAdmission()
 	if pending != nil || closing != nil {
 		return nil
+	}
+	// 原VM auditor已核新Prepared/Outside/Host/Runner/Root/PG全部当前来源。
+	// 此处补同一原Reader的旧永久头首尾持有；没有新预算/TTL或跨VM数值推断。
+	recheckHeld, err := w.captureActiveHeldSources(ctx, s)
+	if err != nil {
+		return err
+	}
+	if err = recheckHeld(ctx); err != nil {
+		return err
 	}
 	return w.renewCurrentServiceAudit(ctx, s, shared)
 }
