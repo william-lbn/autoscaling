@@ -5,6 +5,7 @@ import (
 	"errors"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
+	"reflect"
 )
 
 // observeServiceRecoveryLease只供三个显式期限恢复入口在完整来源审计后调用。
@@ -111,4 +112,41 @@ func (w *PGWorker) fenceClosedBudget(ctx context.Context, s *journal.Snapshot, c
 		return ErrServiceSafety
 	}
 	return w.checkReopenSnapshot(ctx, s)
+}
+
+// 包含完整旧快照的内部结果只能由空闲预算全链审计产生。普通只读和显式
+// 关闭恢复保留原语义，只有串行 Owner 循环可通过原生 Fence 提高写者代次。
+type idlePGFenceNeeded struct {
+	observed control.Snapshot
+}
+
+func (*idlePGFenceNeeded) Error() string { return "idle PG budget awaits original owner fence" }
+
+func (w *PGWorker) fenceIdlePG(ctx context.Context, s *journal.Snapshot, before control.Snapshot) error {
+	instance, epoch := w.Binding()
+	if before.Instance != instance || before.IssuerFloorEpoch >= epoch || !before.AdmissionOpen {
+		return ErrServiceSafety
+	}
+	memory, err := w.client.Memory(ctx)
+	if err != nil {
+		return err
+	}
+	if !reflect.DeepEqual(memory.Observed, before) {
+		return ErrServiceSafety
+	}
+	if err := w.checkAuditedAuthority(ctx, s); err != nil {
+		return err
+	}
+	fence, err := w.client.Fence(ctx, control.FenceRequest{ProtocolVersion: 1, Instance: instance, IssuerEpoch: epoch})
+	if err != nil {
+		return err
+	}
+	// 本地副本仅用于逐字段比较。真正的 floor 来自原生签发的 Fence 回执；
+	// Pending、过期写者、准入或容量变化均不能让下一步获得派发权。
+	expected := before
+	expected.IssuerFloorEpoch = epoch
+	if fence.Disposition != control.Fenced || !reflect.DeepEqual(fence.Observed, expected) {
+		return ErrServiceSafety
+	}
+	return w.checkAuditedAuthority(ctx, s)
 }

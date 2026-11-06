@@ -15,7 +15,7 @@ type IdleServiceDiagnostic struct{ stage, kind string }
 
 func (d IdleServiceDiagnostic) Stage() string {
 	switch d.stage {
-	case "resource_binding", "root_state_read", "root_limits", "root_process_read", "root_identity_floor", "root_aggregate", "retained_root_bound", "initial_budget_model", "initial_budget_read", "current_budget_read", "qualification_read", "bootstrap_encode", "qualified_root_runner", "runner_publication_read", "runner_identity_capacity", "vm_capacity", "runner_original_receipt", "runner_original_terminal", "runner_current_budget":
+	case "resource_binding", "root_state_read", "root_limits", "root_process_read", "root_identity_floor", "root_aggregate", "retained_root_bound", "initial_budget_model", "initial_budget_read", "current_budget_read", "qualification_read", "bootstrap_encode", "qualified_root_runner", "runner_publication_read", "runner_identity_capacity", "vm_capacity", "runner_original_receipt", "runner_original_terminal", "runner_current_budget", "idle_pg_budget":
 		return d.stage
 	default:
 		return "unclassified"

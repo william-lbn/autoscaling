@@ -58,7 +58,7 @@ func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) 
 	}()
 	stage := "resource_binding"
 	defer func() {
-		if err != nil {
+		if _, lag := err.(*idlePGFenceNeeded); err != nil && !lag {
 			w.recordIdleServiceDiagnostic(stage, err)
 		}
 	}()
@@ -192,6 +192,17 @@ func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) 
 		shared, err := w.client.SharedCost(ctx)
 		if err != nil {
 			return err
+		}
+		// 已核实的空闲预算允许新 Owner 只接管写者身份。旧 floor 仅用于
+		// 对照原持有的事实，绝不作为新 Begin 或容量变更的授权。
+		pg := shared.Observed
+		if pg.IssuerFloorEpoch < m.Owner.Epoch && pg.AdmissionOpen && m.Active == nil && m.ServiceClosure == nil &&
+			(m.InitialAdmissionReady() || m.BudgetBoundary != nil && m.HighWater != nil && m.BudgetBoundary.ThroughKey == *m.HighWater) &&
+			(pg.Operation == nil || pg.Operation.Phase != control.Preparing) && w.resourceOwner.client.Pending() == nil {
+			if err := matchRetainedPGMemory(s, shared, root, pg.IssuerFloorEpoch, control.Uint64(actual), view.Actual.GuestMemTotalBytes); err != nil {
+				return err
+			}
+			return &idlePGFenceNeeded{observed: pg}
 		}
 		if err := matchRetainedPGMemory(s, shared, root, m.Owner.Epoch, control.Uint64(actual), view.Actual.GuestMemTotalBytes); err != nil {
 			return err
@@ -473,6 +484,13 @@ func (w *PGWorker) advanceServiceSafetySelected(ctx context.Context, replay stri
 		return true, pgexec.AwaitingFact, ErrServiceSafety
 	}
 	if err := w.inspectIdleService(ctx, s); !nativeExpired {
+		if lag, ok := err.(*idlePGFenceNeeded); ok {
+			if fenceErr := w.fenceIdlePG(ctx, s, lag.observed); fenceErr != nil {
+				return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, fenceErr)
+			}
+			// 再读完整 Guest/Runner/Host/PG 来源。Fence 本身从不发放预算。
+			err = w.inspectIdleService(ctx, s)
+		}
 		if err == nil {
 			return false, pgexec.Idle, nil
 		}

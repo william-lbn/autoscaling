@@ -16,7 +16,7 @@ import (
 )
 
 func TestProductionEnforcedBudgetFormalRecovery(t *testing.T) {
-	for _, mode := range []string{"restored", "takeover", "source-drift", "wrong-selector"} {
+	for _, mode := range []string{"restored", "takeover", "source-drift", "wrong-selector", "open-takeover", "open-takeover-source-drift"} {
 		t.Run(mode, func(t *testing.T) {
 			productionInitialService(t, "enforced-budget-recovery-"+mode)
 		})
@@ -28,6 +28,10 @@ func verifyEnforcedBudgetRecovery(t *testing.T, ctx context.Context, mode string
 	source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture, runner *vmguard.Runner) {
 	t.Helper()
 	require.True(t, pg.shared().Observed.AdmissionOpen)
+	if mode == "open-takeover" || mode == "open-takeover-source-drift" {
+		verifyOpenBudgetTakeover(t, ctx, mode == "open-takeover-source-drift", f, session, config, core, source, pg, root, runner)
+		return
+	}
 	// 在原运行入口观察到实际 Guest 硬限漂移，先完成保护关闭。
 	root.mu.Lock()
 	root.view.Actual.MemoryMaxBytes++
@@ -99,4 +103,56 @@ func verifyEnforcedBudgetRecovery(t *testing.T, ctx context.Context, mode string
 	count := pg.reopenFixture.posts
 	pg.mu.Unlock()
 	require.Equal(t, opens, count)
+}
+
+func verifyOpenBudgetTakeover(t *testing.T, ctx context.Context, drift bool, f *businessOwnerTransfer,
+	old *Session, config compute.Config, core *kubefake.Clientset, source budget.QualificationSource,
+	pg *initialServicePG, root *guestRootFixture, runner *vmguard.Runner) {
+	t.Helper()
+	before := pg.shared().Observed
+	require.True(t, before.AdmissionOpen)
+	posts, _, resizes := pg.counts()
+	// 两个真实选主会话使用同一 VM、PG peer、预算和 Runner。原 Owner 已退出。
+	f.stop(f.active)
+	f.active = f.start(ctx)
+	next := f.await(ctx, f.active)
+	require.Greater(t, next.Actor().Epoch, old.Actor().Epoch)
+	resources, err := next.NewResourceWorker(ctx, f.resourceConfig)
+	require.NoError(t, err)
+	t.Cleanup(resources.CloseIdleConnections)
+	worker, err := next.NewProductionPGWorker(ctx, config, resources, core.CoreV1(), source)
+	require.NoError(t, err)
+	t.Cleanup(worker.CloseIdleConnections)
+	require.NoError(t, runner.Tick(ctx))
+	s, err := f.store.Load(ctx)
+	require.NoError(t, err)
+	require.NoError(t, next.Check(ctx))
+	require.Equal(t, before, pg.shared().Observed)
+	var lag *idlePGFenceNeeded
+	require.ErrorAs(t, worker.inspectIdleService(ctx, s), &lag)
+	require.Equal(t, before, pg.shared().Observed, "只读核验不能提高写者水位")
+	if drift {
+		root.mu.Lock()
+		root.view.Actual.MemoryMaxBytes++
+		root.mu.Unlock()
+		handled, _, err := worker.advanceServiceSafety(ctx, "")
+		require.True(t, handled)
+		require.Error(t, err)
+		require.Equal(t, before, pg.shared().Observed, "硬限漂移时不可沿用旧预算接管")
+		root.mu.Lock()
+		root.view.Actual.MemoryMaxBytes--
+		root.mu.Unlock()
+	}
+	handled, _, err := worker.advanceServiceSafety(ctx, "")
+	require.NoError(t, err)
+	require.False(t, handled, "本轮接管完成后应允许正常协调继续")
+	before.IssuerFloorEpoch = next.Actor().Epoch
+	require.Equal(t, before, pg.shared().Observed)
+	after, err := f.store.Load(ctx)
+	require.NoError(t, err)
+	require.Equal(t, s.State(), after.State(), "接管不能改写操作、预算或服务历史")
+	require.NoError(t, worker.inspectIdleService(ctx, after))
+	gatePosts, _, resizePosts := pg.counts()
+	require.Equal(t, posts, gatePosts)
+	require.Equal(t, resizes, resizePosts)
 }
