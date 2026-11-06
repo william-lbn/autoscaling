@@ -218,6 +218,17 @@ const (
 	AdmissionPolicyEnforcedBudget AdmissionPolicy = "enforced_budget_v1"
 )
 
+// NativeBootstrap 只选择受信任的 Compute 启动语义。实际伸缩仍以同一 PG
+// boot 报告的能力和资源为准；这里不签发预算或写入权限。
+const (
+	NativeBootstrapLeaseVersion  uint32 = 2
+	NativeBootstrapBudgetVersion uint32 = 3
+)
+
+func SupportedNativeBootstrapVersion(version uint32) bool {
+	return version == NativeBootstrapLeaseVersion || version == NativeBootstrapBudgetVersion
+}
+
 func (p *AdmissionPolicy) UnmarshalJSON(data []byte) error {
 	var name string
 	if err := json.Unmarshal(data, &name); err != nil {

@@ -8,12 +8,13 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
 
 // CheckReady复用唯一完整journal解码，调用方必须使用自己的可信、有限期API
 // reader取得同namespace Secret。Secret UID/VM ownerref不能以同名/普通label
-// 替代；配置只检查与屏障相同的原生v2身份。全部安全启动预算由生产Compute
+// 替代；配置只检查与屏障相同的原生启动身份和受支持协议。全部安全启动预算由生产Compute
 // 原生规范校验，不在这里假造R02已完成或把身份ready当成允许物理缩容。
 func CheckReady(vm *vmv1.VirtualMachine, secret *corev1.Secret, initial bool) error {
 	held, err := vm.DSGABootstrapHeld()
@@ -58,7 +59,7 @@ func CheckReady(vm *vmv1.VirtualMachine, secret *corev1.Secret, initial bool) er
 		} `json:"spec"`
 	}
 	raw := secret.Data["config.json"]
-	if len(raw) == 0 || len(raw) > 1<<20 || json.Unmarshal(raw, &config) != nil || config.Spec.Dynamic == nil || config.Spec.Dynamic.ProtocolVersion != 2 || config.Spec.Dynamic.VMUID != string(vm.UID) || config.Spec.Dynamic.ComputeInstanceID != b.ComputeInstanceID {
+	if len(raw) == 0 || len(raw) > 1<<20 || json.Unmarshal(raw, &config) != nil || config.Spec.Dynamic == nil || !control.SupportedNativeBootstrapVersion(config.Spec.Dynamic.ProtocolVersion) || config.Spec.Dynamic.VMUID != string(vm.UID) || config.Spec.Dynamic.ComputeInstanceID != b.ComputeInstanceID {
 		return fmt.Errorf("DSGA bootstrap native config identity differs")
 	}
 	return nil

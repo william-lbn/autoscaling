@@ -29,6 +29,34 @@ func TestRuntimeSourceRequiresOriginalImmutableNativeAndResourceInputs(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
+	// 同一份原始预算、UID、公钥、资源源只替换出生协议。验证正式
+	// Runtime 以及 Runner 的原解码入口；未知协议在密封前拒绝。
+	for _, version := range []uint32{3, 1, 4} {
+		on := secret.DeepCopy()
+		config["spec"].(map[string]any)["dynamic_shared_buffers"].(map[string]any)["protocol_version"] = version
+		on.Data["config.json"], err = json.Marshal(config)
+		if err != nil {
+			t.Fatal(err)
+		}
+		candidate, readErr := Runtime(vm, on)
+		if version != 3 {
+			if readErr == nil {
+				t.Fatalf("unsupported PG bootstrap version %d accepted", version)
+			}
+			continue
+		}
+		if readErr != nil {
+			t.Fatal(readErr)
+		}
+		encoded, encodeErr := json.Marshal(candidate)
+		if encodeErr != nil {
+			t.Fatal(encodeErr)
+		}
+		unsealed, decodeErr := DecodeRuntime(&vm.Spec, gzip64.Encode(encoded))
+		if decodeErr != nil || !bytes.Equal(unsealed, encoded) || !bytes.Equal(candidate.SourceJSON, d.SourceJSON) {
+			t.Fatal("budget bootstrap changed original sealed resource identity", decodeErr)
+		}
+	}
 	if !bytes.Equal(d.SourceJSON, secret.Data[resourceguard.ResourceSecretKey]) {
 		t.Fatal("original source bytes were normalized away")
 	}
