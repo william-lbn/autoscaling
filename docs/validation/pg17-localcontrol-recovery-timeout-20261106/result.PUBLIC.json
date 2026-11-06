@@ -1,0 +1,28 @@
+{
+  "scope": "PG17/PG18 unified localcontrol management recovery deadline only",
+  "base_commit": "a317806ee9fa0eef6f814f1d92631f06194ccfbe",
+  "patch_SHA256": "f43a23375a20fdc3aa7679f2cee2474e0f4902ea4b762b024e1f6523124a9a71",
+  "source_lock_SHA256": "9a3af1af4ccf7d483518d4f09b994fd34715565c3e46a209d6da4fd9e91dcbd7",
+  "result_SHA256": "816ef2309d521ec443d1df081e3b05a2aebc14732e059de6521f09d84660b034",
+  "owned_source_SHA256": {
+    "pkg/dsga/localcontrol/server.go": "24bc4d4f33025858503ff96477e2fae0fab6b526f80dea60516c570655d2a491",
+    "pkg/dsga/localcontrol/recovery_timeout_test.go": "75cb14a546cc42d8690120a00181db670aa22a0b3e5083aa8552d53cf96cb485"
+  },
+  "red": true,
+  "green_roots": {
+    "TestLocalControlLifecycleRecoveryHasDedicatedBoundedContext": "pass",
+    "TestLocalControlRecoveryKeepsCallerDeadlineAndCancellation": "pass",
+    "TestLocalControlRecoveryStillRejectsInvalidActionsBeforeSubmit": "pass",
+    "TestLocalControlWriteDeadlineCoversRecoveryAndKeepsBounds": "pass",
+    "TestLocalControlResourceReaderUDSRefusesOtherActionsBeforeDispatch": "pass",
+    "TestLocalControlStrictRoutingAndBoundedBody": "pass",
+    "TestLocalControlAdmissionIsBoundedAndCancellationReleasesWaiters": "pass",
+    "TestPrivateUnixSocketLifecycleAndFilesystemBoundary": "pass"
+  },
+  "pass_events": 31,
+  "skip_events": 0,
+  "race_and_OOM": 0,
+  "PG17_K8s_final_memory_actions_passed": 0,
+  "PG17_K8s_final_memory_actions_total": 4,
+  "deployed_by_this_receipt": false
+}

@@ -1,0 +1,15 @@
+PG17 内存自动扩缩容：复合恢复管理请求期限修复
+
+问题与证据
+实际测试 VM 的原始请求从 MAY 到 UNKNOWN 相隔 130.006354 秒，命中本地管理 HTTP 的 130 秒总期限。该期限包含无缓冲端点排队和原正式复合恢复的全部阶段；父 context 取消随后中止 Native 调用。此证据不能推导为凭据过期，也不能把 Unknown 改成无效果。
+
+最小修复与架构边界
+仅在严格 JSON 与命令校验完成后，为既有 recover_service_lifecycle 选择 300 秒有界管理 context，HTTP WriteTimeout 为 315 秒。其他操作仍为 130 秒；保留原请求取消、Session 取消、并发 16、请求体 16KiB、原有 Native 30 秒安全租约及单次领域 RPC 限制。不增加资源分配器、后台重放、协议字段或 PG 版本判断。PG17 与后续 PG18 共用此管理及恢复合同。
+
+定向验证
+冻结 a317 源码与本补丁：旧行为实际语义 RED（复合恢复为 130 秒，期望 300）；新 localcontrol 整包 race 检查通过，8 个根测试、31 个根和子测试 PASS 事件、0 skip、0 race、0 OOM。覆盖管理预算选择、较短父期限及取消传播、非法命令在 Submit 前拒绝、真实监听器限制，以及原并发、路由和 UDS 用例。没有等待 300 秒来伪造测试。仅此包生产文件发生变化，其余生产字节继承 a317 已归档验证，不重复运行无关矩阵。
+
+验收状态
+本测试是组件门，不是集群内存端到端通过。当前 PG17 四个最终动作仍为 0/4；须更新 Agent 后，使用实际新 Owner 与原账本执行一次正式恢复，随后验证 Grow、安全 normal Shrink、Regrow、真实自动策略，并回读 SQL 数据、PG 工作域硬限及 VM 资源。保留原 Unknown 及失败证据。
+
+冻结测试归档：/data/neon-build/validation/PG17-localcontrol-lifecycle-300s-REDGREEN-20261106T024209Z-9d4c75

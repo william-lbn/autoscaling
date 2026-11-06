@@ -24,11 +24,12 @@ import (
 )
 
 const (
-	CommandPath = "/dsga/v1/command"
-	OwnerPath   = "/dsga/v1/owner"
-	maxBody     = 16 * 1024
-	maxInFlight = 16
-	callTimeout = 130 * time.Second
+	CommandPath         = "/dsga/v1/command"
+	OwnerPath           = "/dsga/v1/owner"
+	maxBody             = 16 * 1024
+	maxInFlight         = 16
+	callTimeout         = 130 * time.Second
+	recoveryCallTimeout = 300 * time.Second
 )
 
 // Registry仅保护当前Session端点映射；锁内不等队列、不取凭据、不读Kube。
@@ -160,7 +161,7 @@ func listen(path string, registry *Registry, resourceReadOnly bool) (*Server, er
 	}
 	server := &http.Server{
 		Handler: newHandlerMode(registry, resourceReadOnly), ReadHeaderTimeout: 5 * time.Second,
-		ReadTimeout: 10 * time.Second, WriteTimeout: callTimeout + 5*time.Second,
+		ReadTimeout: 10 * time.Second, WriteTimeout: recoveryCallTimeout + 15*time.Second,
 		IdleTimeout: 15 * time.Second, MaxHeaderBytes: 8 * 1024,
 	}
 	return &Server{http: server, listener: listener}, nil
@@ -281,7 +282,13 @@ func newHandlerMode(registry *Registry, resourceReadOnly bool) http.Handler {
 			writeError(w, http.StatusConflict, "owner_unavailable")
 			return
 		}
-		ctx, cancel := context.WithTimeout(r.Context(), callTimeout)
+		timeout := callTimeout
+		// 显式完整生命周期恢复包含排队与多阶段原审计；仅延长本地管理请求，
+		// 原Session取消、Native租约和各领域单次调用期限仍独立生效。
+		if command.Action == control.CoordinationRecoverServiceLifecycle {
+			timeout = recoveryCallTimeout
+		}
+		ctx, cancel := context.WithTimeout(r.Context(), timeout)
 		defer cancel()
 		result, err := endpoint.Submit(ctx, command)
 		if err != nil {
