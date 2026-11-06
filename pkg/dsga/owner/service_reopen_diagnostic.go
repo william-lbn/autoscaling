@@ -60,6 +60,56 @@ func serviceReopenErrorLeaf(err error) string {
 				return "native_rearm_predecessor"
 			case "service recovery requires original stable finalized closure":
 				return "stable_service_model"
+			case "service actual check lacks independent retained budget":
+				return "actual_budget_missing"
+			case "service actual recovery requires complete original closed production domains":
+				return "actual_domains_not_ready"
+			case "service actual lacks retained proof for original PG pending":
+				return "actual_pg_pending_proof"
+			case "service actual PG serialized fence remains pending":
+				return "actual_pg_fence_pending"
+			case "service actual PG changed stable original closed boundary":
+				return "actual_pg_gate_changed"
+			case "service actual Guest remains independently unknown":
+				return "actual_guest_unknown"
+			case "service actual Root changed independent original Guest source":
+				return "actual_guest_source_changed"
+			case "service actual Root changed original completed Guest source":
+				return "actual_guest_completed_changed"
+			case "service actual original Guest effect is not authenticated":
+				return "actual_guest_not_authenticated"
+			case "service actual Root is not held by original permanent budget":
+				return "actual_root_not_held"
+			case "service actual VM remains independently unknown":
+				return "actual_vm_unknown"
+			case "service actual current Root or original native VM source changed":
+				return "actual_root_vm_source_changed"
+			case "service actual current PG or VM differs from retained budget":
+				return "actual_pg_vm_budget_changed"
+			case "service actual original Runner and Host domains differ":
+				return "actual_runner_host_changed"
+			case "service actual PG changed during source verification":
+				return "actual_pg_tail_changed"
+			case "service actual Root changed during source verification":
+				return "actual_root_tail_changed"
+			case "service actual native capacity changed during source verification":
+				return "actual_vm_tail_changed"
+			case "service actual PG source read failed during verification":
+				return "actual_pg_tail_read_failed"
+			case "service actual Root source read failed during verification":
+				return "actual_root_tail_read_failed"
+			case "service actual native capacity source read failed during verification":
+				return "actual_vm_tail_read_failed"
+			case "PG service recovery requires exact committed resource closure":
+				return "actual_pg_closure_not_ready"
+			case "actual service PG source differs from original dispatch or SDK slot":
+				return "actual_pg_slot_changed"
+			case "actual service PG original VM UID/RV changed before reconciliation":
+				return "actual_pg_snapshot_changed"
+			case "cleanup qualification changed original Root or Runner":
+				return "actual_qualification_changed"
+			case "cleanup qualification lost original settled Runner":
+				return "actual_qualification_unsettled"
 			}
 		}
 		switch wrapped := e.(type) {
@@ -78,7 +128,7 @@ func serviceReopenErrorLeaf(err error) string {
 }
 func serviceReopenDiagnosticStage(stage string) string {
 	switch stage {
-	case "load", "selection", "finalization", "stable_model", "source_audit", "native_observe", "snapshot_check", "store_start", "send", "audit_source", "audit_renew":
+	case "load", "selection", "finalization", "stable_model", "source_audit", "native_observe", "snapshot_check", "store_start", "send", "audit_source", "audit_renew", "actual_pg_reconcile", "actual_budget", "actual_qualification":
 		return stage
 	default:
 		return "unclassified"

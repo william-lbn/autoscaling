@@ -105,13 +105,16 @@ func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapsh
 		}
 		// SDK重建先用独立完整预算对账原PG，原缓存淘汰不能再把恢复
 		// 卡回原Unknown；随后仍重新认证所有当前资源及准确WAL门禁。
-		if err := w.executor.ReconcileServiceRecovery(ctx); err != nil {
+		checkStarted := time.Now()
+		if err := recordServiceReopenCheck("actual_pg_reconcile", checkStarted, w.executor.ReconcileServiceRecovery(ctx)); err != nil {
 			return err
 		}
-		if err := w.admission.CheckServiceActual(ctx, s); err != nil {
+		checkStarted = time.Now()
+		if err := recordServiceReopenCheck("actual_budget", checkStarted, w.admission.CheckServiceActual(ctx, s)); err != nil {
 			return err
 		}
-		return w.inspectCleanupQualification(ctx, s)
+		checkStarted = time.Now()
+		return recordServiceReopenCheck("actual_qualification", checkStarted, w.inspectCleanupQualification(ctx, s))
 	}
 	if m.ServiceClosure != nil && m.ServiceClosure.CleanupRecovery != nil {
 		if w.admission == nil {

@@ -3,6 +3,7 @@ package admissionexec
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -12,6 +13,17 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
+
+var (
+	errServiceActualPGSourceRead   = errors.New("service actual PG source read failed during verification")
+	errServiceActualRootSourceRead = errors.New("service actual Root source read failed during verification")
+	errServiceActualVMSourceRead   = errors.New("service actual native capacity source read failed during verification")
+)
+
+// 只补充固定读取阶段并保留原cause；任何读取失败仍由原调用点拒绝。
+func serviceActualReadFailure(marker, cause error) error {
+	return errors.Join(marker, cause)
+}
 
 // RecoverServiceActual只在显式管理中固定完整独立实际预算。原Active/Unknown、
 // Abort和旧永久预算不改；没有任何PG/Root/QMP反向动作，也不在这里开放或
@@ -304,15 +316,24 @@ func (e *Executor) checkServiceActual(ctx context.Context, s *journal.Snapshot, 
 	// 二次PG/Root/Runner认证包围来源读取，不跨RPC持mutex。成本可真实
 	// 下降但不能超过已保存上界；容量、Root摘要或原生来源变化一律等待。
 	latest, err := e.client.SharedCost(ctx)
-	if err != nil || capacity.ValidateCurrent(latest, e.actor.Epoch, memory) != nil || latest.Observed.AdmissionOpen != shared.Observed.AdmissionOpen || latest.Observed.AdmissionRevision != shared.Observed.AdmissionRevision {
+	if err != nil {
+		return capacity, shared, root, serviceActualReadFailure(errServiceActualPGSourceRead, err)
+	}
+	if capacity.ValidateCurrent(latest, e.actor.Epoch, memory) != nil || latest.Observed.AdmissionOpen != shared.Observed.AdmissionOpen || latest.Observed.AdmissionRevision != shared.Observed.AdmissionRevision {
 		return capacity, shared, root, fmt.Errorf("service actual PG changed during source verification")
 	}
 	againRoot, againUsable, err := e.reconciledRoot(ctx, s)
-	if err != nil || !reflect.DeepEqual(againRoot, root) || againUsable < capacity.GuestUsableMemoryBytes {
+	if err != nil {
+		return capacity, shared, root, serviceActualReadFailure(errServiceActualRootSourceRead, err)
+	}
+	if !reflect.DeepEqual(againRoot, root) || againUsable < capacity.GuestUsableMemoryBytes {
 		return capacity, shared, root, fmt.Errorf("service actual Root changed during source verification")
 	}
 	againVM, againInitial, _, err := e.serviceActualVM(ctx, m)
-	if err != nil || againVM != native || !reflect.DeepEqual(againInitial, initialVM) {
+	if err != nil {
+		return capacity, shared, root, serviceActualReadFailure(errServiceActualVMSourceRead, err)
+	}
+	if againVM != native || !reflect.DeepEqual(againInitial, initialVM) {
 		return capacity, shared, root, fmt.Errorf("service actual native capacity changed during source verification")
 	}
 	if err := e.claims.RecheckServiceActual(ctx, s, capacity, claims); err != nil {
