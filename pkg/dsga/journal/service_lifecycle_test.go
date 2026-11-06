@@ -278,8 +278,8 @@ func TestServiceLifecyclePreservesRetiredRequestIdentityAndExpirationWatermark(t
 }
 
 // 原始JSON界限独立于压缩比。八条完整取消的已结清结果仍在缓存中，
-// 每条保存真实上限内的完整领域body；原注解压缩可存，但新开放必须在
-// 写前就拒绝无法另存完整恢复上下文的选择，不能发送后才发现落账无空间。
+// 每条保存真实上限内的完整领域body；原注解压缩可存，新开放须在
+// 写前按原FIFO策略仅淘汰最少终态，保完整来源和未来恢复上下文容量。
 func TestServiceLifecycleReopenReservesRawCompletionContext(t *testing.T) {
 	m, _, _ := serviceClosureModel(t)
 	for revision := uint64(1); revision <= 8; revision++ {
@@ -314,7 +314,22 @@ func TestServiceLifecycleReopenReservesRawCompletionContext(t *testing.T) {
 	_, before := reopenModel(t, "idle")
 	before.Request.IssuerEpoch, before.Observed.IssuerFloorEpoch, before.LeaseEpoch = m.Owner.Epoch, m.Owner.Epoch, m.Owner.Epoch
 	original := m.Clone()
-	_, err = m.StartServiceReopen(m.Owner, m.ServiceClosure.CommandSHA256, before)
-	require.ErrorContains(t, err, "complete bounded lifecycle evidence")
+	started, err := m.StartServiceReopen(m.Owner, m.ServiceClosure.CommandSHA256, before)
+	require.NoError(t, err, "写前仅原FIFO终态缓存可按需过期，当前来源保持完整")
 	require.Equal(t, original, m)
+	dropped := len(original.History) - len(started.History)
+	require.Greater(t, dropped, 0)
+	require.Equal(t, original.History[dropped:], started.History)
+	require.Equal(t, original.ExpiredResults+control.Uint64(dropped), started.ExpiredResults)
+	require.Equal(t, original.Active, started.Active)
+	require.Equal(t, original.InitialHeld, started.InitialHeld)
+	require.Equal(t, original.BudgetHeld, started.BudgetHeld)
+	require.Equal(t, original.CapacityHeld, started.CapacityHeld)
+	require.NoError(t, started.Validate())
+	// 恢复被淘汰前缀的最后一项仍超原容量门，证明没有多淘汰终态。
+	prior := started.Clone()
+	prior.History = append([]Record{}, original.History[dropped-1:]...)
+	prior.ExpiredResults = original.ExpiredResults + control.Uint64(dropped-1)
+	require.NoError(t, prior.Validate())
+	require.ErrorContains(t, prior.reopenCompletionCapacity(), "complete bounded lifecycle evidence")
 }

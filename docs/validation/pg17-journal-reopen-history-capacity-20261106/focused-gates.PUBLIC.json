@@ -1,0 +1,55 @@
+{
+  "status": "PASS_FOCUSED_JOURNAL_CAPACITY_REAL_W148_MODEL_RED_GREEN_NOT_K8S_E",
+  "at": "2026-11-06T01:42:50.496347+00:00",
+  "base_commit": "b624b976dc362fb110286088888bae9e11baa620",
+  "source_lock": "/data/neon-build/validation/PG17-journal-W148-minimal-history-FINAL-REDGREEN-20261106T013934Z-0c1349/source-lock.json",
+  "source_lock_SHA256": "42090de09ee4f5b5f00ada14837bc05b1fd3bfdd01fc8a143658ab82d582b9cc",
+  "result": "/data/neon-build/validation/PG17-journal-W148-minimal-history-FINAL-REDGREEN-20261106T013934Z-0c1349/result.json",
+  "result_SHA256": "1c01071b4f806f3dcd1120dcea0aeb0b78a924f30acf5709b66239d3824b866d",
+  "tested_context": {
+    "path": "/var/lib/neon-validation-sources/20261106T013934Z-0c1349/green-source",
+    "file_count": 11773,
+    "manifest_SHA256": "ba4844c39b36d7ff9e2ff9e69f8c94c21e34614c84b6075844df86db85ac032c"
+  },
+  "owned_files": {
+    "pkg/dsga/journal/service_reopen.go": "92917cbbca4397488e3cb6c8ddf66d3dcf244b6fcbd02e9eff2f9c3d4ab156bd",
+    "pkg/dsga/journal/service_lifecycle.go": "049245a8639911ba10a7e67463b00bc7b6f04fc9b8429df813cd436d3bca5108",
+    "pkg/dsga/journal/service_reopen_history_capacity_test.go": "618c59c12c4c4e8faaa739846541edd6b490bd857dc1fee36dcf4a4e4356870b",
+    "pkg/dsga/journal/service_lifecycle_test.go": "7b96aee474edbb01edaa4c54ce18cb090123b6be0e02cd47c04f126b4e04011c",
+    "pkg/dsga/journal/committed_service_recovery_test.go": "06fe0d592bf404d89b5b8ef3d9956925440542bb9af4a8192c2a920db691b36c"
+  },
+  "red_exact_capacity_rejection": true,
+  "green_roots": {
+    "TestCommittedServiceRecoveryReservesRawAtomicCompletionBeforeDispatch": "pass",
+    "TestServiceLifecycleReopenReservesRawCompletionContext": "pass",
+    "TestW148ReopenHistoryCapacityActualRecovery": "pass",
+    "TestServiceReopenRejectsInvalidLeaseAndChangedOriginals": "pass",
+    "TestServiceReopenCannotAdoptCurrentOpenOrExpiredOriginal": "pass",
+    "TestServiceReopenRejectsUnsettledBoundariesAndOverflow": "pass"
+  },
+  "green_root_count": 6,
+  "green_pass_events_including_roots_and_children": 34,
+  "skip": 0,
+  "race_warnings": 0,
+  "OOM": 0,
+  "original_terminal": {
+    "cpu": 3,
+    "kind": "go",
+    "last_observation": "original-unit-terminal",
+    "memory": 3221225472,
+    "nonce": "20261106T013934Z-0c1349",
+    "process_exit_code": 0,
+    "queue_reason": "",
+    "spec_sha256": "1d41ab7b3b6a89d952ba56942ad3c341e25d650b9ea533d9acb09adf2b654700",
+    "state": "terminal",
+    "test_verdict": "NOT_INTERPRETED",
+    "unit": "neon-journal-w148-final-20261106t013934z-0c1349.service",
+    "unit_result": "success",
+    "worker_sha256": "195fbf1525674014b14a0dc65330be8cbd20d999dbc51f1a50c151f6b12f5da4"
+  },
+  "private_WAL_fixture_SHA256": "78a4f3cb8a8a736cc8c8ea735093f29daa61f0a24655ed0c8a7adb9048a65e26",
+  "private_proof_committed_or_exported": false,
+  "inherited_unchanged_nonjournal_modules": "b624 parent e4 selected42roots148PASS, byte-equal modules only; newjournal notexecutedbyoldrun",
+  "K8s_core_accepted": 0,
+  "K8s_core_total": 4
+}

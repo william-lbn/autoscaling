@@ -338,9 +338,24 @@ func TestCommittedServiceRecoveryReservesRawAtomicCompletionBeforeDispatch(t *te
 	raw, err := json.Marshal(m)
 	require.NoError(t, err)
 	require.Less(t, len(raw)+MaxObservationBytes+4096, MaxRawBytes/2, "旧单上下文预留会放行本例")
-	_, err = m.StartServiceReopen(m.Owner, m.ServiceClosure.CommandSHA256, before)
-	require.ErrorContains(t, err, "atomic operation coverage")
+	started, err := m.StartServiceReopen(m.Owner, m.ServiceClosure.CommandSHA256, before)
+	require.NoError(t, err, "写前仅原FIFO终态缓存可按需过期，当前来源保持完整")
 	require.Equal(t, original, m)
+	dropped := len(original.History) - len(started.History)
+	require.Greater(t, dropped, 0)
+	require.Equal(t, original.History[dropped:], started.History)
+	require.Equal(t, original.ExpiredResults+control.Uint64(dropped), started.ExpiredResults)
+	require.Equal(t, original.Active, started.Active)
+	require.Equal(t, original.InitialHeld, started.InitialHeld)
+	require.Equal(t, original.BudgetHeld, started.BudgetHeld)
+	require.Equal(t, original.CapacityHeld, started.CapacityHeld)
+	require.NoError(t, started.Validate())
+	// 恢复被淘汰前缀的最后一项仍超原容量门，证明没有多淘汰终态。
+	prior := started.Clone()
+	prior.History = append([]Record{}, original.History[dropped-1:]...)
+	prior.ExpiredResults = original.ExpiredResults + control.Uint64(dropped-1)
+	require.NoError(t, prior.Validate())
+	require.ErrorContains(t, prior.reopenCompletionCapacity(), "atomic operation coverage")
 }
 
 func TestCommittedServiceRecoveryCompletionCASIsAtomic(t *testing.T) {

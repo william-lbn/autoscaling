@@ -5,12 +5,19 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"reflect"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
+)
+
+// 两个容量拒因保留原错误正文；只有它们允许写前规划淘汰旧终态缓存。
+var (
+	errReopenLifecycleEvidenceCapacity = errors.New("service reopen cannot retain complete bounded lifecycle evidence")
+	errReopenAtomicCoverageCapacity    = errors.New("committed service cannot retain atomic operation coverage")
 )
 
 // ServiceLifecycle是一次业务重开的完整完成证据，不是当前活性租约。Context
@@ -116,7 +123,7 @@ func (m Model) reopenCompletionCapacity() error {
 		return err
 	}
 	if len(raw)+MaxObservationBytes+4096 > MaxRawBytes/2 {
-		return fmt.Errorf("service reopen cannot retain complete bounded lifecycle evidence")
+		return errReopenLifecycleEvidenceCapacity
 	}
 	if m.Active != nil {
 		// 13～15完成CAS同时保留完整冻结上下文、原Operation终态和
@@ -171,7 +178,7 @@ func (m Model) reopenCompletionCapacity() error {
 			extra += len(original) + 2*len(proof)
 		}
 		if future+base64.StdEncoding.EncodedLen(future)+extra > MaxRawBytes {
-			return fmt.Errorf("committed service cannot retain atomic operation coverage")
+			return errReopenAtomicCoverageCapacity
 		}
 	}
 	return nil

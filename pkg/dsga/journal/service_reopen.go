@@ -3,6 +3,7 @@ package journal
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 
@@ -183,10 +184,27 @@ func (m Model) StartServiceReopen(actor Owner, selector string, before control.A
 	}
 	next.setClosureFormatVersion(20)
 	next.ServiceClosure.Reopen = &ServiceReopen{ClosureVersion: m.ClosureFormatVersion(), Origin: actor, StartedSequence: next.Sequence, ClosureSHA256: closureHash, HeldSHA256: heldHash, Before: cloneLeaseResponse(before), Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, SafetyStage: "opening", Closing: nil, Attempt: 0, PriorClose: nil, PriorClosedAt: 0, Retired: nil}
-	if err := next.reopenCompletionCapacity(); err != nil {
+	// 先验证准确原选择/来源；无效观察不能借淘汰缓存变为可派发。
+	if err := next.Validate(); err != nil {
 		return m, err
 	}
-	return next, next.Validate()
+	for {
+		err := next.reopenCompletionCapacity()
+		if err == nil {
+			return next, nil
+		}
+		if !errors.Is(err, errReopenLifecycleEvidenceCapacity) && !errors.Is(err, errReopenAtomicCoverageCapacity) || len(next.History) == 0 || next.Active == nil && len(next.History) <= 1 {
+			return m, err
+		}
+		// 复用codec原FIFO/ExpiredResults策略，仅在next淘汰最少旧终态；
+		// Active/Unknown/三Held/Closure/Source与原生命周期证据逐字保留。
+		if expireErr := next.expireOldest(); expireErr != nil {
+			return m, errors.Join(err, expireErr)
+		}
+		if err := next.Validate(); err != nil {
+			return m, err
+		}
+	}
 }
 
 func (m Model) RecordServiceReopen(actor Owner, fact control.AdmissionResponse, query bool) (Model, error) {

@@ -1,0 +1,15 @@
+PG17/PG18：恢复开放前按原规则收敛终态历史
+日期：2026-11-06；原功能分支 codex/dsga-autoscaling-20261019，父版 b624b976。
+
+真实问题：PG17旧Shrink33已经完成PG8192→256及normal硬限真降48MiB，VM仍8Gi。Owner34的正式恢复已记录原PG终态、v4实际预算及Native rearm；Source审计通过，但在reopen写前规划拒绝。W148 raw669693B、encoded147685B；完整生命周期未来原文/base64/原操作与独立预算预留总量至少1171318B，超原MaxRaw1048576B。三条旧终态历史161356B被一同带入估算；这不是PG内核未释放、Source缺失或当前Native续约失败的证据。
+
+最小公共修复：只改journal/service_reopen.go与service_lifecycle.go。先在原Model.next深克隆的候选上完整Validate；仅两个已有容量拒因允许复用原codec FIFO expireOldest，每删一条ExpiredResults自增并再次完整Validate，第一次容量足够即停止。原idle最后一条终态保留规则不变；无可用历史、计数溢出、非法观察、引用不允许过期及其他错误均返回原输入。没有提高Raw/Encoded/Observation上限，没有新账本/分配器，也没有删除Active、Unknown、三类Held、Closure、Source、生命周期Context或修改HighWater来凑通过。
+
+职责：这只是原单writer的写前容量规划。仍需原完整实际来源审计、同UID/RV CAS写前确认与原Native精确开放；它不会授予内存预算或运行许可，不绕过Unknown。终态缓存合法过期后旧Key仍受HighWater与ResultExpired约束，不能重执行；完整原证据继续在118 /data归档。共同Model不按PG主版本分支，PG18复用同一上层恢复合同。
+
+验证：精确W148私有原始快照SHA78a4f3cb8a8a736cc8c8ea735093f29daa61f0a24655ed0c8a7adb9048a65e26，仅压缩RAM memfd→临时BuildKit secret读取，不进源码/缓存/镜像/日志。模型中的合法live observe是复用原Observed/cap3/rev19等字段构造的离线输入，不能当作新实际Native许可。原b624真RED命中完整atomic coverage容量拒绝；新最少FIFO2/ExpiredResults+2，Start→encode/decode→Reopen→Complete→最终encode通过，原Active历史原文及三Held、身份、HWM、Owner、旧Closure、生命周期hash均保。
+最终0c1349同冻结源6根34个含根子项PASS/0skip/race/OOM，旧RED22.52s、新GREEN60.81s，原unit0/预算终态已核。另覆盖两直接受影响容量预留旧断言、invalid lease/changed originals、当前open/expired、未结算边界和overflow。668先前观察测试漏填必填cap的FAIL保留，不计semantic RED；c119修正后的单root模型真REDGREEN亦保留。未变Owner/Agent/执行器模块逐SHA继承父版42根证据，不冒新源已重跑。
+
+新私有快照用例service_reopen_history_capacity_test.go在无DSGA_W148_FIXTURE时明确Skip，以免普通开发依赖现场私密文件；本次选中实际门ENV有效且0skip。两旧capacity断言按新最少过期语义更新，不降低原容量门；小结果与测试随本提交，原私密快照只留/data，后续控制面回归目录按同规范接续。
+
+发布后门槛：增量构建Agent并从118经SSH预载117/118/119，精确digest/PIN后用自有Helm仅更新Agent。新Owner实际确认旧Native租约过期后沿原统一recover_service_lifecycle续接已有actual/rearm，不重放Shrink33、不延旧deadline、不抬normal、不重置账本。恢复PG256/Nlow/VM8后，用新请求完成Grow、安全normal Shrink、Regrow和真实自动策略，逐步及时核数据和资源。当前K8s四核心动作仍0/4，本提交是已验证修复而非最终生产认证。
