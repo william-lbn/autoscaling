@@ -1,0 +1,19 @@
+{
+  "范围": "新 PG boot 的首次资格采集；仍由同一个所有者串行处理，历史预算丢失或错误写者拒绝。",
+  "验证": {
+    "passed": true,
+    "build_exit": 0,
+    "test_exit": 0,
+    "seconds": 93.92178614402656,
+    "tests_passed": [
+      "TestPGInflightGrowInitialQualificationReadsWithoutWrites",
+      "TestPGInflightGrowRunDefaultFalseKeepsOriginalReentry",
+      "TestPGInflightGrowRunExplicitLifecycleCancelsAndRejectsRebind"
+    ],
+    "skipped": [],
+    "e2e_accepted": false
+  },
+  "证据目录": "/data/neon-build/validation/PG17-首次资格生产端点定向回归-20261106T131701Z-0c5650",
+  "测试来源": "da55f6e8583d092e51178fa7b246757f523b000afd31562d519e8dd15f39b46e",
+  "三节点四动作已验收": 0
+}

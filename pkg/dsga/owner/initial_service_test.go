@@ -695,6 +695,9 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 		require.NoError(t, err)
 		defer worker.CloseIdleConnections()
 		require.NoError(t, runner.Tick(ctx))
+		if mode == "initial-qualification-read" {
+			verifyInitialQualificationRead(t, ctx, worker, store, request, pg, qmp)
+		}
 		var extra []budget.QualifiedTarget
 		if automaticMode || actualShrinkRecovery {
 			extra = []budget.QualifiedTarget{{VMMemoryBytes: 1 << 30, GuestUsableMemoryBytes: 768 << 20, Limits: p.Limits, SystemOutsidePGBytes: 24 << 20, TransitionBytes: 4 << 20, SafetyBytes: 4 << 20}}
@@ -718,6 +721,19 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 			return next
 		}
 		worker = rebuild()
+		if mode == "initial-qualification-read" {
+			// 真实签发来源已经装载，复用原首次开户流程，随后模拟该来源从配置丢失。
+			progress, err := worker.Advance(ctx)
+			require.NoError(t, err)
+			require.Equal(t, pgexec.Recorded, progress)
+			unqualified, err := session.NewProductionPGWorker(ctx, config, resources, client.CoreV1())
+			require.NoError(t, err)
+			defer unqualified.CloseIdleConnections()
+			endpoint := unqualified.NewControlEndpoint()
+			err = unqualified.Run(ctx, PGLoopOptions{PollInterval: time.Second, Control: endpoint, EnableInFlightGrow: true})
+			require.ErrorIs(t, err, ErrServiceSafety)
+			return nil
+		}
 		retryMode := strings.HasPrefix(mode, "service-retry-")
 		lifecycleMode := strings.HasPrefix(mode, "service-lifecycle-") || retryMode
 		lifecyclePosts := 0

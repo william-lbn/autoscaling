@@ -8,9 +8,61 @@ import (
 	"testing"
 	"time"
 
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/stretchr/testify/require"
 )
+
+func TestPGInflightGrowInitialQualificationReadsWithoutWrites(t *testing.T) {
+	productionInitialService(t, "initial-qualification-read")
+}
+
+func verifyInitialQualificationRead(t *testing.T, ctx context.Context, worker *PGWorker, store *journal.Store, request control.Request, pg *initialServicePG, qmp *vmQMPPeer) {
+	t.Helper()
+	before, err := store.Load(ctx)
+	require.NoError(t, err)
+	endpoint := worker.NewControlEndpoint()
+	instance, epoch := endpoint.Binding()
+	require.NotZero(t, instance.PGBootID)
+	runCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	done := make(chan error, 1)
+	go func() {
+		done <- worker.Run(runCtx, PGLoopOptions{PollInterval: time.Millisecond, Control: endpoint, EnableInFlightGrow: true})
+	}()
+	requestCtx, stop := context.WithTimeout(ctx, 10*time.Second)
+	defer stop()
+	cmd := control.CoordinationCommand{ProtocolVersion: 1, Instance: control.CoordinationBinding(instance), ExpectedOwnerEpoch: epoch, Action: control.CoordinationResourceState}
+	view, err := endpoint.Submit(requestCtx, cmd)
+	require.NoError(t, err)
+	require.NotNil(t, view.ResourceState)
+	require.Equal(t, cmd.Instance, view.Instance)
+	require.Equal(t, before.State(), *view.State)
+	stale := cmd
+	stale.ExpectedOwnerEpoch++
+	_, err = endpoint.Submit(requestCtx, stale)
+	require.ErrorIs(t, err, ErrControlUnavailable)
+	cmd.Action, cmd.Request = control.CoordinationBegin, &request
+	_, err = endpoint.Submit(requestCtx, cmd)
+	require.ErrorIs(t, err, ErrControlUnavailable)
+	cancel()
+	require.ErrorIs(t, <-done, context.Canceled)
+	_, err = endpoint.Submit(ctx, cmd)
+	require.ErrorIs(t, err, ErrControlUnavailable)
+	after, err := store.Load(ctx)
+	require.NoError(t, err)
+	require.Equal(t, before.State(), after.State())
+	require.False(t, worker.executor.InFlightEnabled())
+	pg.mu.Lock()
+	posts, resizes := pg.posts, pg.resizePosts
+	pg.mu.Unlock()
+	qmp.mu.Lock()
+	writes := qmp.writes
+	qmp.mu.Unlock()
+	require.Zero(t, posts)
+	require.Zero(t, resizes)
+	require.Zero(t, writes)
+}
 
 func TestPGInflightGrowRunDefaultFalseKeepsOriginalReentry(t *testing.T) {
 	productionInitialService(t, "pg-inflight-audit-run-default")

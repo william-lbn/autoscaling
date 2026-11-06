@@ -704,8 +704,14 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	callCtx, cancel := worker.session.coupledContext(ctx)
 	defer cancel()
 	if options.EnableInFlightGrow {
-		if worker.executor == nil || worker.safety == nil || worker.qualification == nil || worker.resourceOwner == nil {
+		if worker.executor == nil || worker.safety == nil || worker.resourceOwner == nil {
 			return fmt.Errorf("in-flight Grow Run requires complete original production sources")
+		}
+		if worker.qualification == nil {
+			if options.Control == nil {
+				return fmt.Errorf("initial qualification requires the original control endpoint")
+			}
+			return worker.awaitInitialQualification(callCtx, options.Control)
 		}
 		// 父ctx只来自同Session长驻Run，不能传每次Advance的defercancel ctx。
 		// 退出/失主取消保留原MAY和SDK Unknown，不reset控制器来重新启用。
@@ -843,11 +849,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			// 管理调用同时受Run、Session和HTTP调用者约束。不能只采用
 			// HTTP ctx：Agent循环先停止而调用者仍在线时，旧管理读/写也必须
 			// 被取消并join，不能一直执行到HTTP期限后才归还owner。
-			controlCtx, cancelControl := context.WithCancel(callCtx)
-			stopCaller := context.AfterFunc(pendingControl.ctx, cancelControl)
-			if pendingControl.ctx.Err() != nil {
-				cancelControl()
-			}
+			controlCtx, cancelControl := pendingControl.context(callCtx)
 			var value CoordinationResult
 			var controlErr error
 			allowedClosed := expiredAdmissionControlAllowed(pendingControl.command.Action)
@@ -893,7 +895,6 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 					value, controlErr = worker.executeControl(controlCtx, pendingControl.command)
 				}
 			}
-			stopCaller()
 			cancelControl()
 			pendingControl.result <- controlReply{value: value, err: controlErr}
 			preferControl = pendingControl.command.Action == control.CoordinationResourceState

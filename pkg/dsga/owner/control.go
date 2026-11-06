@@ -39,6 +39,16 @@ type controlCall struct {
 	result  chan controlReply
 }
 
+// 管理读取和正式伸缩共用同一取消边界，HTTP 调用者或 Owner 任一退出即停止。
+func (call controlCall) context(ownerCtx context.Context) (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(ownerCtx)
+	stopCaller := context.AfterFunc(call.ctx, cancel)
+	if call.ctx.Err() != nil {
+		cancel()
+	}
+	return ctx, func() { stopCaller(); cancel() }
+}
+
 type controlReply struct {
 	value CoordinationResult
 	err   error
@@ -106,6 +116,41 @@ func (e *ControlEndpoint) Submit(ctx context.Context, command control.Coordinati
 		return empty, ErrControlUnavailable
 	case <-e.session.Context().Done():
 		return empty, ErrLeadershipLost
+	}
+}
+
+// 首次签发需要在同一 PG boot 下读取真实 Guest。此时只服务原管理端点的
+// 查询，不启动自动策略或伸缩执行器。已有业务历史的实例不能回到首次签发阶段。
+func (worker *PGWorker) awaitInitialQualification(ctx context.Context, endpoint *ControlEndpoint) error {
+	snapshot, err := worker.session.store.Load(ctx)
+	if err != nil {
+		return err
+	}
+	state := snapshot.State()
+	instance, _ := worker.Binding()
+	if state.Owner != worker.session.Actor() || state.PGInstance == nil || *state.PGInstance != instance {
+		return ErrControlUnavailable
+	}
+	if state.HighWater != nil || state.InitialHeld != nil || state.BudgetHeld != nil || state.CapacityHeld != nil || state.ServiceClosure != nil {
+		return fmt.Errorf("%w: qualification source missing for an existing service", ErrServiceSafety)
+	}
+	for {
+		var call controlCall
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case call = <-endpoint.readCalls:
+		case call = <-endpoint.calls:
+		}
+		switch call.command.Action {
+		case control.CoordinationResourceState, control.CoordinationState:
+			readCtx, cancel := call.context(ctx)
+			value, err := worker.executeControl(readCtx, call.command)
+			cancel()
+			call.result <- controlReply{value: value, err: err}
+		default:
+			call.result <- controlReply{err: ErrControlUnavailable}
+		}
 	}
 }
 

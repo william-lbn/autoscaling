@@ -171,8 +171,12 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 			}
 		}
 		instance, epoch := worker.Binding()
-		r.dsgaState(ownerCtx, DSGARunnerState{Phase: "running", IssuerEpoch: epoch, Instance: instance})
-		logger.Info("DSGA owner PG reconciliation started")
+		phase := "running"
+		if len(qualifications) == 0 {
+			phase = "awaiting-qualification"
+		}
+		r.dsgaState(ownerCtx, DSGARunnerState{Phase: phase, IssuerEpoch: epoch, Instance: instance})
+		logger.Info("DSGA owner PG reconciliation started", zap.String("phase", phase))
 		var endpoint *owner.ControlEndpoint
 		if config.ControlSocketPath != "" || config.ResourceReadSocketPath != "" {
 			stage = "control_register"
