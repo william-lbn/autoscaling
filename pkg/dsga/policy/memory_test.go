@@ -219,3 +219,53 @@ func TestMemoryPolicySelectsNearestEligibleAndRestartsAfterNeutralLoad(t *testin
 	s.At = s.At.Add(2 * time.Second)
 	evaluate(t, e, s, c.Targets[1], true)
 }
+
+func TestMemoryPolicyOnlineShrinkRequiresIdleClientsAndNoRetainedTransaction(t *testing.T) {
+	c := testConfig()
+	for _, tc := range []struct {
+		name                    string
+		online                  bool
+		clients, idle, retained uint32
+		suggest                 bool
+	}{
+		{"idle", true, 2, 2, 0, true},
+		{"active", true, 2, 1, 0, false},
+		{"idle-in-transaction", true, 2, 2, 1, false},
+		{"legacy", false, 2, 2, 0, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			e, err := New(c)
+			require.NoError(t, err)
+			s := testSample(c)
+			s.NormalCurrent = 100
+			s.SupportsOnlineShrink, s.ClientProcesses, s.IdleClients, s.RetainedTransactions = tc.online, tc.clients, tc.idle, tc.retained
+			evaluate(t, e, s, Target{}, false)
+			s.At = s.At.Add(time.Duration(c.ShrinkWindowSeconds) * time.Second)
+			if tc.suggest {
+				evaluate(t, e, s, c.Targets[0], true)
+			} else {
+				evaluate(t, e, s, Target{}, false)
+			}
+		})
+	}
+	e, err := New(c)
+	require.NoError(t, err)
+	s := testSample(c)
+	s.NormalCurrent = 100
+	s.SupportsOnlineShrink = true
+	s.ClientProcesses = 2
+	s.IdleClients = 2
+	evaluate(t, e, s, Target{}, false)
+	s.At = s.At.Add(3 * time.Second)
+	s.RetainedTransactions = 1
+	evaluate(t, e, s, Target{}, false)
+	s.At = s.At.Add(time.Second)
+	s.RetainedTransactions = 0
+	evaluate(t, e, s, Target{}, false)
+	s.At = s.At.Add(time.Duration(c.ShrinkWindowSeconds) * time.Second)
+	evaluate(t, e, s, c.Targets[0], true)
+	s.At = s.At.Add(time.Second)
+	s.IdleClients = 3
+	_, _, err = e.Evaluate(s.At, s)
+	require.Error(t, err)
+}

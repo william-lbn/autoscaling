@@ -106,6 +106,36 @@ func (p *initialServicePG) counts() (int, int, int) {
 	return p.posts, p.queries, p.resizePosts
 }
 
+// 同一 PG boot 的有限租约跨多次调容保留期限；核对当次容量和门禁代次。
+func (p *initialServicePG) serveLease(t *testing.T, w http.ResponseWriter, r *http.Request, current func() control.SharedCostResponse) {
+	t.Helper()
+	var request control.AdmissionLeaseRequest
+	require.NoError(t, json.NewDecoder(r.Body).Decode(&request))
+	if request.Action == "observe" && p.beforeLeaseObserve != nil {
+		p.beforeLeaseObserve()
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.leaseReject {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
+	}
+	if p.leaseDeadline == 0 {
+		p.leaseDeadline = 1000000000
+	}
+	s := current().Observed
+	renewed := !p.leaseExpired && request.Action == "renew" && request.ExpectedDeadlineNS == p.leaseDeadline && request.ExpectedCapacityGeneration == s.CapacityGeneration && request.ExpectedAdmissionRevision == s.AdmissionRevision && request.IssuerEpoch == s.IssuerFloorEpoch
+	if renewed {
+		p.leaseDeadline++
+		p.leaseRenewals++
+	}
+	timeout := p.leaseTimeoutMS
+	if timeout == 0 {
+		timeout = 30000
+	}
+	pgReply(w, control.AdmissionLeaseResponse{ProtocolVersion: 1, VMShrinkPermit: false, Expired: p.leaseExpired, Request: request, Armed: true, Renewed: renewed, DeadlineNS: p.leaseDeadline, LeaseEpoch: s.IssuerFloorEpoch, TimeoutMS: timeout, Observed: s})
+}
+
 func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Request) {
 	t.Helper()
 	if p.serveRearmFixture(t, w, r) {
@@ -116,31 +146,7 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 	}
 	switch r.URL.Path {
 	case "/dsg/v1/admission/lease":
-		var request control.AdmissionLeaseRequest
-		require.NoError(t, json.NewDecoder(r.Body).Decode(&request))
-		if request.Action == "observe" && p.beforeLeaseObserve != nil {
-			p.beforeLeaseObserve()
-		}
-		p.mu.Lock()
-		defer p.mu.Unlock()
-		if p.leaseReject {
-			w.WriteHeader(http.StatusServiceUnavailable)
-			return
-		}
-		if p.leaseDeadline == 0 {
-			p.leaseDeadline = 1000000000
-		}
-		s := p.current().Observed
-		renewed := !p.leaseExpired && request.Action == "renew" && request.ExpectedDeadlineNS == p.leaseDeadline && request.ExpectedCapacityGeneration == s.CapacityGeneration && request.ExpectedAdmissionRevision == s.AdmissionRevision && request.IssuerEpoch == s.IssuerFloorEpoch
-		if renewed {
-			p.leaseDeadline++
-			p.leaseRenewals++
-		}
-		timeout := p.leaseTimeoutMS
-		if timeout == 0 {
-			timeout = 30000
-		}
-		pgReply(w, control.AdmissionLeaseResponse{ProtocolVersion: 1, VMShrinkPermit: false, Expired: p.leaseExpired, Request: request, Armed: true, Renewed: renewed, DeadlineNS: p.leaseDeadline, LeaseEpoch: s.IssuerFloorEpoch, TimeoutMS: timeout, Observed: s})
+		p.serveLease(t, w, r, p.current)
 		return
 	case "/dsg/v1/budget/shared":
 		p.mu.Lock()

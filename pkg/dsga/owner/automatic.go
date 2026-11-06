@@ -150,7 +150,10 @@ func (w *PGWorker) sampleAutomatic(ctx context.Context, s *journal.Snapshot) (po
 	if latest.ResourceVersion() != s.ResourceVersion() || latest.State().Owner != m.Owner || !latest.Dispatchable() {
 		return result, fmt.Errorf("automatic VM or original journal changed during observation")
 	}
-	return policy.Sample{At: started, Instance: instance, CapacityGeneration: pg.CapacityGeneration, Current: policy.Target{VMMemoryBytes: control.Uint64(vmBytes), Buffers: pg.HighBuffers}, NormalCurrent: view.Actual.MemoryCurrentBytes, NormalMax: limits.MemoryMaxBytes, ClientProcesses: work.ClientProcesses, AdmissionOpen: pg.AdmissionOpen, Eligible: eligible}, nil
+	return policy.Sample{At: started, Instance: instance, CapacityGeneration: pg.CapacityGeneration, Current: policy.Target{VMMemoryBytes: control.Uint64(vmBytes), Buffers: pg.HighBuffers}, NormalCurrent: view.Actual.MemoryCurrentBytes, NormalMax: limits.MemoryMaxBytes, ClientProcesses: work.ClientProcesses,
+		IdleClients: work.IdleClients, RetainedTransactions: work.RetainedTransactions,
+		SupportsOnlineShrink: w.client.AdmissionPolicy() == control.AdmissionPolicyEnforcedBudget && rootClient.NormalQuotaEnabled(),
+		AdmissionOpen:        pg.AdmissionOpen, Eligible: eligible}, nil
 }
 
 // advanceAutomatic仅由Run在普通Advance空闲时调用。唯一自动写入是原Begin

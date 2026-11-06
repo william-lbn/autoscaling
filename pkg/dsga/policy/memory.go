@@ -54,17 +54,21 @@ func (c Config) Validate() error {
 // Sample由正式只读生产者提供，At为采样开始时间，调用者另给完成时刻。
 // Eligible是当前原资格/能力支持的确切目标，不是VM许可；例如安全降normal
 // 尚未实现时不得推荐它制造永久Pending。未来补齐能力后同一目标才可启用。
-// ClientProcesses必须包含启动和idle会话；仅前台快照Idle不足以触发自动缩容。
+// 客户端计数来自同一次原生 WorkState。新 PG 硬预算与 Guest 在线降限均已协商时，
+// 可在低负载窗口内为普通空闲连接提出目标；原执行链独立核验每次真实释放与降限。
 type Sample struct {
-	At                 time.Time
-	Instance           control.Instance
-	CapacityGeneration control.Uint64
-	Current            Target
-	NormalCurrent      control.Uint64
-	NormalMax          control.Uint64
-	ClientProcesses    uint32
-	AdmissionOpen      bool
-	Eligible           []bool
+	At                   time.Time
+	Instance             control.Instance
+	CapacityGeneration   control.Uint64
+	Current              Target
+	NormalCurrent        control.Uint64
+	NormalMax            control.Uint64
+	ClientProcesses      uint32
+	IdleClients          uint32
+	RetainedTransactions uint32
+	SupportsOnlineShrink bool
+	AdmissionOpen        bool
+	Eligible             []bool
 }
 
 // Engine只由同一owner串行循环持有，不另开goroutine或锁跨网络。重建策略
@@ -111,7 +115,7 @@ func (e *Engine) Evaluate(now time.Time, s Sample) (Target, bool, error) {
 			index = i
 		}
 	}
-	if now.IsZero() || s.At.IsZero() || s.At.After(now) || now.Sub(s.At) > time.Duration(e.config.MaximumSampleGapSeconds)*time.Second || s.Instance.Validate() != nil || s.CapacityGeneration == 0 || s.NormalMax == 0 || s.NormalCurrent > s.NormalMax || index < 0 || len(s.Eligible) != len(e.config.Targets) || !s.Eligible[index] {
+	if now.IsZero() || s.At.IsZero() || s.At.After(now) || now.Sub(s.At) > time.Duration(e.config.MaximumSampleGapSeconds)*time.Second || s.Instance.Validate() != nil || s.CapacityGeneration == 0 || s.NormalMax == 0 || s.NormalCurrent > s.NormalMax || s.IdleClients > s.ClientProcesses || s.RetainedTransactions > s.ClientProcesses || index < 0 || len(s.Eligible) != len(e.config.Targets) || !s.Eligible[index] {
 		e.Reset()
 		return none, false, fmt.Errorf("memory policy sample lacks fresh exact current facts")
 	}
@@ -126,15 +130,19 @@ func (e *Engine) Evaluate(now time.Time, s Sample) (Target, bool, error) {
 		e.Reset()
 		return none, false, nil
 	}
-	continuous := e.last != nil && s.At.After(e.last.At) && s.At.Sub(e.last.At) <= time.Duration(e.config.MaximumSampleGapSeconds)*time.Second && e.last.Instance == s.Instance && e.last.CapacityGeneration == s.CapacityGeneration && e.last.Current == s.Current && e.last.NormalMax == s.NormalMax && slices.Equal(e.last.Eligible, s.Eligible)
+	continuous := e.last != nil && s.At.After(e.last.At) && s.At.Sub(e.last.At) <= time.Duration(e.config.MaximumSampleGapSeconds)*time.Second && e.last.Instance == s.Instance && e.last.CapacityGeneration == s.CapacityGeneration && e.last.Current == s.Current && e.last.NormalMax == s.NormalMax && e.last.SupportsOnlineShrink == s.SupportsOnlineShrink && slices.Equal(e.last.Eligible, s.Eligible)
 	if !continuous {
 		e.Reset()
 	}
+	// 老 boot 沿用零连接条件。新 boot 也只有全部普通连接空闲且无保留事务
+	// 才累计低负载时间；连接刚建立、读取输入或执行语句期间均须重新累计。
+	workIdle := s.ClientProcesses == 0 || s.SupportsOnlineShrink &&
+		s.ClientProcesses == s.IdleClients && s.RetainedTransactions == 0
 	kind := control.Kind("")
 	emergency := s.NormalCurrent >= threshold(s.NormalMax, e.config.EmergencyThresholdPermille, true)
 	if s.NormalCurrent >= threshold(s.NormalMax, e.config.GrowThresholdPermille, true) {
 		kind = control.Grow
-	} else if s.ClientProcesses == 0 && s.NormalCurrent <= threshold(s.NormalMax, e.config.ShrinkThresholdPermille, false) {
+	} else if workIdle && s.NormalCurrent <= threshold(s.NormalMax, e.config.ShrinkThresholdPermille, false) {
 		kind = control.Shrink
 	}
 	if kind != e.kind || e.since.IsZero() {

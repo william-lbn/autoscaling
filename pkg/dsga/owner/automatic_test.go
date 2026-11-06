@@ -30,7 +30,7 @@ func automaticConfig(targets ...policy.Target) policy.Config {
 }
 
 // Work2由当前有状态PG peer返回；它只模拟原生计数，绝不是实际PG内核。
-// 自动缩容要求ClientProcesses=0而非仅ForegroundIdle，闭门实例不自动开放。
+// 此有限租约夹具报告零客户端；新硬预算策略另覆盖带空闲客户端的观测。
 func serveAutomaticWork(w http.ResponseWriter, pg *initialServicePG) {
 	s := pg.shared().Observed
 	pgReply(w, control.WorkResponse{ProtocolVersion: 1, WorkAPIVersion: 2, VMShrinkPermit: false, ClientProcesses: 0, StartupClients: 0, IdleClients: 0, FrontendReads: 0, FrontendExecutes: 0, BoundedInputs: 0, RetainedTransactions: 0, BackgroundProcesses: 1, AuxiliaryProcesses: 1, ObserverExcluded: true, ForegroundIdle: !s.AdmissionOpen, Observed: s})
@@ -262,6 +262,10 @@ func verifyProductionAutomaticSuccessor(t *testing.T, ctx context.Context, clien
 	shrinkPG.admission = opening
 	shrinkPG.configure(t, prepared)
 	shrinkConfig := pgConfig(t, r, func(w http.ResponseWriter, req *http.Request) {
+		if req.URL.Path == "/dsg/v1/admission/lease" {
+			pg.serveLease(t, w, req, shrinkPG.shared)
+			return
+		}
 		shrinkPG.serve(t, w, req)
 	}, func() control.Snapshot { return shrinkPG.shared().Observed })
 	worker.CloseIdleConnections()
