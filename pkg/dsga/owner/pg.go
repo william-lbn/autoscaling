@@ -717,6 +717,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	}
 	defer worker.CloseIdleConnections()
 	worker.idleServiceDiagnostic = nil
+	enforcedBudget := worker.client.AdmissionPolicy() == control.AdmissionPolicyEnforcedBudget
 	leaseReady := false
 	leaseExpired := false
 	var expiredThrough control.Uint64
@@ -737,7 +738,16 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		if allowLocalAbort && nativeLeaseLocalAbort(m) {
 			return nil
 		}
-		// 正式长驻服务必须协商内核失联关闭；测试用的单步领域调用不能
+		if enforcedBudget {
+			// 同一真实 PG boot 的启动策略固定。这里只建立协议绑定，
+			// 初次开户与每次伸缩仍由原持久预算及完整来源检查控制。
+			if _, err := worker.client.Capabilities(callCtx); err != nil {
+				return err
+			}
+			leaseReady = true
+			return nil
+		}
+		// 有限租期配置的长驻服务必须协商内核失联关闭；测试用的单步领域调用不能
 		// 代替此运行门槛。旧网关/扩展明确拒绝，没有legacy心跳兜底。
 		fact, err := worker.observeAdmissionLease(callCtx)
 		if err != nil {
@@ -846,7 +856,19 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 				// 写前就离开此特例，不能先接受再让下一轮协商失败。
 				controlErr = ensureLease(false)
 			}
-			if controlErr == nil && worker.safety != nil && leaseReady && !leaseExpired && !allowedClosed {
+			if controlErr == nil && worker.safety != nil && leaseReady && !leaseExpired && !allowedClosed && enforcedBudget {
+				// 管理排队期间实例可能换代；重新核实 boot 和策略后才准进入原控制入口。
+				_, controlErr = worker.client.Capabilities(controlCtx)
+				if controlErr == nil && pendingControl.command.Action == control.CoordinationBegin {
+					handled, _, auditErr := worker.advanceServiceSafety(controlCtx, "")
+					if auditErr != nil {
+						controlErr = auditErr
+					} else if handled {
+						controlErr = ErrServiceSafety
+					}
+				}
+			}
+			if controlErr == nil && worker.safety != nil && leaseReady && !leaseExpired && !allowedClosed && !enforcedBudget {
 				// 管理队列可能跨过最后一次期限观察。业务选择在写任何
 				// 外层WAL前再读原生期限；坏回复/网络未知不能继续派发。
 				// 精确零派发本地取消尚未协商lease，不为它额外触碰PG；
@@ -961,7 +983,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		// 每轮已有领域来源审计，期限还充足时不重复完整网络审计；否则
 		// 限流会扩大策略采样间隔、反复重置缩容窗口。首次及每个期限的
 		// 三分之一执行独立完整续租，失败不更新next，更不发盲心跳。
-		if err == nil && leaseReady && !leaseExpired && !time.Now().Before(nextLeaseRenew) {
+		if err == nil && leaseReady && !enforcedBudget && !leaseExpired && !time.Now().Before(nextLeaseRenew) {
 			err = worker.renewAdmissionLease(callCtx)
 			if err == nil {
 				nextLeaseRenew = time.Now().Add(leaseRenewInterval)

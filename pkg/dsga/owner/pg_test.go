@@ -87,6 +87,11 @@ func pgConfig(t *testing.T, request control.Request, handler http.HandlerFunc, v
 // 原响应语义，不为了新组合让所有静态peer自动接受任意epoch。
 func pgConfigWithFence(t *testing.T, request control.Request, handler, fence http.HandlerFunc, views ...func() control.Snapshot) compute.Config {
 	t.Helper()
+	return pgConfigWithPolicy(t, request, control.AdmissionPolicyLease, handler, fence, views...)
+}
+
+func pgConfigWithPolicy(t *testing.T, request control.Request, policy control.AdmissionPolicy, handler, fence http.HandlerFunc, views ...func() control.Snapshot) compute.Config {
+	t.Helper()
 	require.LessOrEqual(t, len(views), 1)
 	var leaseMu sync.Mutex
 	leaseDeadline := control.Uint64(1000000000)
@@ -114,7 +119,7 @@ func pgConfigWithFence(t *testing.T, request control.Request, handler, fence htt
 			history := uint32(16)
 			provider := false
 			boot := request.Key.Instance.PGBootID
-			pgReply(w, control.Capabilities{ProtocolVersion: 1, ProductionReady: false, VMShrinkPermit: false, Supported: true, BufferAPIVersion: 6, Enabled: true, InstanceBound: true, HistoryCapacity: &history, ProviderCanRelease: &provider, Instance: &control.DiscoveryIdentity{VMUID: request.Key.Instance.VMUID, ComputeInstanceID: request.Key.Instance.ComputeInstanceID, PGBootID: &boot}})
+			pgReply(w, control.Capabilities{AdmissionPolicy: policy, ProtocolVersion: 1, ProductionReady: false, VMShrinkPermit: false, Supported: true, BufferAPIVersion: 6, Enabled: true, InstanceBound: true, HistoryCapacity: &history, ProviderCanRelease: &provider, Instance: &control.DiscoveryIdentity{VMUID: request.Key.Instance.VMUID, ComputeInstanceID: request.Key.Instance.ComputeInstanceID, PGBootID: &boot}})
 		case "/dsg/v1/issuer/fence":
 			if fence != nil {
 				fence(w, r)

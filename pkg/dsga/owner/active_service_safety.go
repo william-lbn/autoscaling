@@ -156,7 +156,7 @@ func (w *PGWorker) inspectActiveService(ctx context.Context, s *journal.Snapshot
 		}
 	}
 	stage = "active_prepare_lease_gate"
-	if prepareLeaseEligible(m, w.session.Actor()) {
+	if w.beforeResourceDispatch(m) {
 		// 一般Active允许合法中间态；Prepare续租必须额外达到原严格静止门。
 		if runnerErr != nil || aggregateErr != nil || view.IssuerFloorEpoch != m.Owner.Epoch || publication.State == nil || publication.Actual == nil || publication.State.Pending != nil || publication.Actual.RequestedBytes != publication.Actual.ActualBytes || vm.Status.MemorySize == nil {
 			return ErrServiceSafety

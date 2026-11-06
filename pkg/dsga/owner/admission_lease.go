@@ -128,21 +128,8 @@ func (w *PGWorker) renewAuditedAdmissionLease(ctx context.Context, before *journ
 		}
 		return ErrServiceSafety
 	}
-	if err := w.session.Check(ctx); err != nil {
+	if err := w.checkAuditedAuthority(ctx, before); err != nil {
 		return err
-	}
-	after, err := w.session.store.Load(ctx)
-	if err != nil {
-		return err
-	}
-	if before.State().Owner != w.session.Actor() || after.State().Owner != w.session.Actor() || !after.Dispatchable() {
-		return fmt.Errorf("admission lease lost original audited VM authority")
-	}
-	if before.ResourceVersion() != after.ResourceVersion() {
-		// 同UID、同Owner且仍可派发的状态更新使本轮来源快照失效。保留
-		// 零续租拒绝，由原Run下一轮完整重审；不能因此退出Owner、换代次，
-		// 也不能重放旧动作或跳过任何原始身份/期限核验。
-		return fmt.Errorf("%w: admission lease lost original audited VM revision", ErrServiceSafety)
 	}
 	request := fact.Request
 	request.Action = "renew"
@@ -164,15 +151,53 @@ func (w *PGWorker) renewAuditedAdmissionLease(ctx context.Context, before *journ
 	return nil
 }
 
+// 两种准入策略共用最后的写者和 VM 版本校验。读取 PG 的前后若发生并发
+// 变更，本轮完整预算审计失效；重新读取来源，不重放原命令。
+func (w *PGWorker) checkAuditedAuthority(ctx context.Context, before *journal.Snapshot) error {
+	if err := w.session.Check(ctx); err != nil {
+		return err
+	}
+	after, err := w.session.store.Load(ctx)
+	if err != nil {
+		return err
+	}
+	if before.State().Owner != w.session.Actor() || after.State().Owner != w.session.Actor() || !after.Dispatchable() {
+		return fmt.Errorf("admission lease lost original audited VM authority")
+	}
+	if before.ResourceVersion() != after.ResourceVersion() {
+		// 同UID、同Owner且仍可派发的状态更新使本轮来源快照失效。保留
+		// 零续租拒绝，由原Run下一轮完整重审；不能因此退出Owner、换代次，
+		// 也不能重放旧动作或跳过任何原始身份/期限核验。
+		return fmt.Errorf("%w: admission lease lost original audited VM revision", ErrServiceSafety)
+	}
+	return nil
+}
+
+// 仅在当前执行路径已完成 Host、Runner、Guest 和 PG 预算核验后调用。
+// 硬预算模式只读取同一 boot 的真实快照，不生成期限回执，也不打开 SQL。
+func (w *PGWorker) checkEnforcedObservation(ctx context.Context, s *journal.Snapshot, expected control.Snapshot) error {
+	memory, err := w.client.Memory(ctx)
+	if err != nil {
+		return err
+	}
+	if expected.IssuerFloorEpoch != w.session.Actor().Epoch || !reflect.DeepEqual(memory.Observed, expected) {
+		return ErrServiceSafety
+	}
+	return w.checkAuditedAuthority(ctx, s)
+}
+
 // 仅Prepare原步骤尚无PG/Guest/VM派发时可接续有限服务。Unconfirmed只保留
 // 原Outside创建未知；不能将其当完成、重发Create或覆盖任何旧命令。
-func prepareLeaseEligible(m journal.Model, actor journal.Owner) bool {
+func (w *PGWorker) beforeResourceDispatch(m journal.Model) bool {
+	actor := w.session.Actor()
 	if m.Owner != actor || m.ServiceClosure != nil || m.Active == nil || m.Active.Origin != actor || m.Active.AbortRequested || m.Active.Cleanup != nil || len(m.Active.Steps) == 0 {
 		return false
 	}
 	for n, step := range m.Active.Steps {
 		if n == 0 {
-			if step.Action != journal.PrepareBudget || step.Phase != journal.Planned && step.Phase != journal.Unconfirmed || step.Phase == journal.Unconfirmed && (step.DispatchedBy == nil || *step.DispatchedBy != actor) {
+			// 原 Prepare 已结算、所有后继仍 Planned 时，Guest/VM/PG 仍由旧预算覆盖。
+			prepared := w.client.AdmissionPolicy() == control.AdmissionPolicyEnforcedBudget && step.Phase == journal.Settled && step.Observation != nil && step.Observation.Result == journal.Completed
+			if step.Action != journal.PrepareBudget || step.Phase != journal.Planned && step.Phase != journal.Unconfirmed && !prepared || step.Phase == journal.Unconfirmed && (step.DispatchedBy == nil || *step.DispatchedBy != actor) {
 				return false
 			}
 		} else if step.Phase != journal.Planned {
@@ -183,7 +208,7 @@ func prepareLeaseEligible(m journal.Model, actor journal.Owner) bool {
 }
 
 func (w *PGWorker) renewPreparedAdmissionLease(ctx context.Context, s *journal.Snapshot, c budget.PrepareCommand, root budget.RootAggregate, guestUsable control.Uint64) error {
-	if !prepareLeaseEligible(s.State(), w.session.Actor()) {
+	if !w.beforeResourceDispatch(s.State()) {
 		return nil
 	}
 	if c.Validate() != nil || c.Prepared.Request != s.State().Active.Request {
@@ -198,7 +223,7 @@ func (w *PGWorker) renewPreparedAdmissionLease(ctx context.Context, s *journal.S
 // 不以observe拼造Shared或从新的target填当前Guest容量。
 func (w *PGWorker) renewPrepareLease(ctx context.Context, s *journal.Snapshot, shared control.SharedCostResponse, root budget.RootAggregate, guestUsable control.Uint64, sourcesAudited bool) error {
 	m, vm := s.State(), s.VirtualMachine()
-	if !prepareLeaseEligible(m, w.session.Actor()) {
+	if !w.beforeResourceDispatch(m) {
 		return nil
 	}
 	instance, epoch := w.Binding()
@@ -287,17 +312,7 @@ func (w *PGWorker) renewPrepareLease(ctx context.Context, s *journal.Snapshot, s
 			return ErrServiceSafety
 		}
 	}
-	fact, err := w.observeAdmissionLease(ctx)
-	if err != nil {
-		return err
-	}
-	if fact.Expired {
-		return errNativeAdmissionExpired
-	}
-	if !reflect.DeepEqual(fact.Observed, shared.Observed) {
-		return ErrServiceSafety
-	}
-	return w.renewAuditedAdmissionLease(ctx, s, fact, &shared.Observed)
+	return w.finishServiceBudgetAudit(ctx, s, shared.Observed)
 }
 
 // 正常完成阶段只在原完整audit成功的同一调用内接续；恢复有自己的显式
@@ -358,6 +373,14 @@ func (w *PGWorker) renewCurrentServiceAudit(ctx context.Context, s *journal.Snap
 			return ErrServiceSafety
 		}
 	}
+	return w.finishServiceBudgetAudit(ctx, s, shared.Observed)
+}
+
+// 预算审计已完成后，按这个 PG boot 的真实策略核实同一点的 PG 状态。
+func (w *PGWorker) finishServiceBudgetAudit(ctx context.Context, s *journal.Snapshot, expected control.Snapshot) error {
+	if w.client.AdmissionPolicy() == control.AdmissionPolicyEnforcedBudget {
+		return w.checkEnforcedObservation(ctx, s, expected)
+	}
 	fact, err := w.observeAdmissionLease(ctx)
 	if err != nil {
 		return err
@@ -365,10 +388,10 @@ func (w *PGWorker) renewCurrentServiceAudit(ctx context.Context, s *journal.Snap
 	if fact.Expired {
 		return errNativeAdmissionExpired
 	}
-	if !reflect.DeepEqual(fact.Observed, shared.Observed) {
+	if !reflect.DeepEqual(fact.Observed, expected) {
 		return ErrServiceSafety
 	}
-	return w.renewAuditedAdmissionLease(ctx, s, fact, &shared.Observed)
+	return w.renewAuditedAdmissionLease(ctx, s, fact, &expected)
 }
 
 // VM执行器只在本轮原完整来源审计后同步调用。Grow/Shrink及ObserveVM

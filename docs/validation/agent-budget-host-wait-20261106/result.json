@@ -1,0 +1,28 @@
+{
+  "阶段": "PG17 硬预算配置下，Agent 通过原生产运行循环检查稳定服务预算及 Host 发布等待",
+  "源码基线": "4678a67fb719fa17d4b7a7ab6d5d927a1645529f",
+  "Linux验证目录": "/data/neon-build/validation/PG17-Agent-硬预算与Host等待-20261106T083403Z-71ae3b",
+  "Linux首次验证": {
+    "目录": "/data/neon-build/validation/PG17-Agent-硬预算与Host等待-20261106T082856Z-869946",
+    "实际结果": "新模式识别 Outside 来源真实丢失并写闭门记录。最初的用例只接受 Tick 错误，未接受闭门事务结清返回 Recorded。修订断言逐项检查 WAL Settled、实际关闭、唯一一次 setter 和同一保留预算。原失败票保留。"
+  },
+  "源码固定清单SHA256": "9374d9e863adfdbb2bf1bbd43078780d53bbf5488ed09bd096a78e4d3e519d58",
+  "最终结果SHA256": "5e8b5aec648c981a650a97c8b569df313e9fe3ed88903afcd71abfa63f5a1993",
+  "测试": [
+    "TestProductionHostPublicationWaitRunsFreshLeaseAudit/healthy",
+    "TestProductionHostPublicationWaitRunsFreshLeaseAudit/outside-missing",
+    "TestProductionHostPublicationWaitRunsFreshLeaseAudit/other-host-unknown",
+    "TestProductionHostPublicationWaitRunsFreshLeaseAudit",
+    "TestProductionEnforcedBudgetWaitsForHost/healthy",
+    "TestProductionEnforcedBudgetWaitsForHost/outside-timeout",
+    "TestProductionEnforcedBudgetWaitsForHost/outside-missing",
+    "TestProductionEnforcedBudgetWaitsForHost/other-host-unknown",
+    "TestProductionEnforcedBudgetWaitsForHost",
+    "TestProductionCompletionAuditsPreserveLeaseBeforeFinalize"
+  ],
+  "集群验收": {
+    "通过": 0,
+    "总项": 4
+  },
+  "限制": "这是生产 Agent 的组件验证，Kube、Guest 与 PG 接口使用原 TLS 测试夹具。真实 SQL 的独立验证见前一阶段。硬预算模式的完整恢复和集群版本切换仍待验证。"
+}

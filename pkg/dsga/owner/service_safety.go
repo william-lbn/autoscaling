@@ -10,9 +10,12 @@ import (
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims"
+	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/klog/v2"
 )
 
@@ -206,6 +209,44 @@ func idleServiceBound(m journal.Model) (budget.Bound, control.Uint64, error) {
 	return budget.Bound{}, 0, fmt.Errorf("idle service has no exact retained Root aggregate")
 }
 
+// 只有仍由原永久预算覆盖且无物理变更在途时，管理读超时才只暂停伸缩。
+// 来源丢失、权限/协议变化、硬限漂移及不确定写入仍由原安全路径处理。
+func (w *PGWorker) waitForBudgetRead(s *journal.Snapshot, err error) bool {
+	if err == nil || w.client.AdmissionPolicy() != control.AdmissionPolicyEnforcedBudget {
+		return false
+	}
+	m := s.State()
+	if !s.Dispatchable() || m.Owner != w.session.Actor() || m.ServiceClosure != nil || m.PGInstance == nil || m.ResourceIdentity == nil || w.resourceOwner == nil || w.client.Pending() != nil || w.resourceOwner.client.Pending() != nil {
+		return false
+	}
+	if _, _, heldErr := idleServiceBound(m); heldErr != nil {
+		return false
+	}
+	open, closing := w.client.PendingAdmission()
+	if open != nil || closing != nil || m.Active != nil && !w.beforeResourceDispatch(m) {
+		return false
+	}
+	// 复合错误可能同时携带来源漂移；只接受单一、能识别的读失败。
+	for err != nil {
+		if _, joined := err.(interface{ Unwrap() []error }); joined {
+			return false
+		}
+		switch e := err.(type) {
+		case *compute.CallError:
+			return e.Code == "transport_unconfirmed" || e.Code == "context_cancelled"
+		case *resourceguard.ClientError:
+			return e.Code == "transport_unconfirmed" || e.Code == "context_cancelled"
+		case *apierrors.StatusError:
+			return apierrors.IsTimeout(e) || apierrors.IsServerTimeout(e) || apierrors.IsServiceUnavailable(e) || apierrors.IsTooManyRequests(e)
+		}
+		if err == context.DeadlineExceeded || err == context.Canceled {
+			return true
+		}
+		err = errors.Unwrap(err)
+	}
+	return false
+}
+
 // 本入口总在Run/Advance原串行goroutine内，并已执行Session.Check。网络不
 // 持本地锁；首次命令必须由UID/RV写前CAS确认，随后发送同一SDK的关闭。
 // 重建或丢回复只查询原命令。明确重放还须原派发owner与完整摘要均匹配，
@@ -383,6 +424,9 @@ func (w *PGWorker) advanceServiceSafetySelected(ctx context.Context, replay stri
 					if sourceErr == nil && !nativeExpired {
 						return false, pgexec.Idle, nil
 					}
+					if !nativeExpired && w.waitForBudgetRead(s, sourceErr) {
+						return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, sourceErr)
+					}
 					recordActiveSourceClosureAudit(sourceErr, nativeExpired)
 					return w.closeActiveService(ctx, s)
 				}
@@ -414,8 +458,13 @@ func (w *PGWorker) advanceServiceSafetySelected(ctx context.Context, replay stri
 	if pending, closing := w.client.PendingAdmission(); pending != nil || closing != nil || w.client.Pending() != nil {
 		return true, pgexec.AwaitingFact, ErrServiceSafety
 	}
-	if err := w.inspectIdleService(ctx, s); err == nil && !nativeExpired {
-		return false, pgexec.Idle, nil
+	if err := w.inspectIdleService(ctx, s); !nativeExpired {
+		if err == nil {
+			return false, pgexec.Idle, nil
+		}
+		if w.waitForBudgetRead(s, err) {
+			return true, pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
+		}
 	}
 	// 来源不可用时仍能独立认证PG的同boot、floor和当前准入代次。只从
 	// 永久预算取ID，不重新承诺/释放；代次耗尽或PG不可达保留安全等待，

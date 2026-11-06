@@ -410,6 +410,16 @@ func (w *PGWorker) inspectPGInflightService(ctx context.Context, s *journal.Snap
 	if pending := w.client.Pending(); pending == nil && latest.Observed.Operation.Phase != control.Committed || pending != nil && *pending != r {
 		return ErrServiceSafety
 	}
+	if w.client.AdmissionPolicy() == control.AdmissionPolicyEnforcedBudget {
+		if err := w.checkEnforcedObservation(ctx, s, latest.Observed); err != nil {
+			return err
+		}
+		// 同一个在途执行器和业务命令期限仍是必要条件，管理续租不参与。
+		if ctx.Err() != nil || !w.executor.MatchInFlight(s, r) || uint64(r.DeadlineUnixMillis) <= uint64(time.Now().UnixMilli()) {
+			return ErrServiceSafety
+		}
+		return nil
+	}
 	fact, err := w.observeAdmissionLease(ctx)
 	if err != nil {
 		return err

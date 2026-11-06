@@ -64,6 +64,7 @@ type initialServicePG struct {
 	// 仅续租竞态测试在真实Native observe到达后、peer锁外改变来源。
 	leaseClock            func() control.Uint64
 	leaseWindow           control.Uint64
+	budgetMemoryReads     int
 	leaseAuditSharedReads int
 	beforeLeaseObserve    func()
 	rearmFixture          *serviceRearmPG
@@ -372,6 +373,11 @@ func productionInitialService(t *testing.T, mode string) {
 }
 func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureHook initialServiceFixtureHook) {
 	t.Helper()
+	policy := control.AdmissionPolicyLease
+	if mode == "enforced-budget-host-publication" {
+		policy = control.AdmissionPolicyEnforcedBudget
+		mode = "host-publication-wait"
+	}
 	guestFixtureMode := fixtureHook != nil && (mode == "guest-service-audit-grow" || mode == "guest-service-audit-shrink")
 	hostPublicationWaitMode := fixtureHook != nil && mode == "host-publication-wait"
 	// 同一完整自动组合显式追加AS来源；不改变旧夹具事实或以peer冒充Linux硬限。
@@ -577,7 +583,22 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 				nativeFence = nativeExpiryFenceFailures(t, pg, nativeFence)
 			}
 		}
-		config := pgConfigWithFence(t, request, func(w http.ResponseWriter, r *http.Request) {
+		config := pgConfigWithPolicy(t, request, policy, func(w http.ResponseWriter, r *http.Request) {
+			if policy == control.AdmissionPolicyEnforcedBudget {
+				switch r.URL.Path {
+				case "/dsg/v1/memory":
+					pg.mu.Lock()
+					pg.budgetMemoryReads++
+					observed := pg.current().Observed
+					pg.mu.Unlock()
+					pgReply(w, control.MemoryResponse{ProtocolVersion: 1, Observed: observed})
+					return
+				case "/dsg/v1/admission/lease":
+					t.Errorf("硬预算 boot 不接受有限租期 RPC")
+					w.WriteHeader(http.StatusBadRequest)
+					return
+				}
+			}
 			if inflightPeer != nil && inflightPeer.serve(t, w, r) {
 				return
 			}
