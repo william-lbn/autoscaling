@@ -1,6 +1,7 @@
 package dsga
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 )
@@ -208,8 +209,34 @@ type DiscoveryIdentity struct {
 	PGBootID          *Uint64 `json:"pg_boot_id"`
 }
 
+// AdmissionPolicy 属于一个已绑定的 PG boot。旧内核缺少字段时继续走原生期限协商；
+// 新值仅描述失联时的行为，不能代替预算、物理读回、fencing 或 VM 许可。
+type AdmissionPolicy string
+
+const (
+	AdmissionPolicyLease          AdmissionPolicy = ""
+	AdmissionPolicyEnforcedBudget AdmissionPolicy = "enforced_budget_v1"
+)
+
+func (p *AdmissionPolicy) UnmarshalJSON(data []byte) error {
+	var name string
+	if err := json.Unmarshal(data, &name); err != nil {
+		return err
+	}
+	switch name {
+	case "lease_v1":
+		*p = AdmissionPolicyLease
+	case string(AdmissionPolicyEnforcedBudget):
+		*p = AdmissionPolicyEnforcedBudget
+	default:
+		return fmt.Errorf("unsupported DSGA admission policy")
+	}
+	return nil
+}
+
 // 不支持/禁用响应可缺少末三个能力字段，不能因此给它补出合法boot/Provider能力。
 type Capabilities struct {
+	AdmissionPolicy    AdmissionPolicy    `json:"admission_policy,omitempty"`
 	ProtocolVersion    uint32             `json:"protocol_version"`
 	ProductionReady    bool               `json:"production_ready"`
 	VMShrinkPermit     bool               `json:"vm_shrink_permit"`
@@ -236,6 +263,9 @@ func (capabilities Capabilities) Bind(vmUID, computeID string) (Instance, error)
 	if !capabilities.Supported || capabilities.BufferAPIVersion != 6 || !capabilities.Enabled || !capabilities.InstanceBound ||
 		capabilities.HistoryCapacity == nil || *capabilities.HistoryCapacity == 0 || capabilities.ProviderCanRelease == nil || capabilities.Instance == nil || capabilities.Instance.PGBootID == nil {
 		return Instance{}, fmt.Errorf("DSGA ABI6 bound capabilities are unavailable")
+	}
+	if capabilities.AdmissionPolicy != AdmissionPolicyLease && capabilities.AdmissionPolicy != AdmissionPolicyEnforcedBudget {
+		return Instance{}, fmt.Errorf("unsupported DSGA admission policy")
 	}
 	identity := capabilities.Instance
 	instance := Instance{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID, PGBootID: *identity.PGBootID}

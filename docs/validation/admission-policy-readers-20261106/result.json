@@ -1,0 +1,40 @@
+{
+  "范围": "PG boot 级准入策略协商与 HTTP 读取入口兼容性",
+  "旧启动语义": "缺字段继续使用有限期限，空值或未知值明确拒绝",
+  "源码": {
+    "pkg/api/dsga/response.go": "53701c15acb263e6e3e2aded7d2e178c6d5bfe6ec4985c65bda9150aa8ba2a81",
+    "pkg/api/dsga/response_test.go": "d42aa2594ba2396501d7f6a8e3d953fb7d788df3680cb41f0a49b8e9380e3874",
+    "pkg/dsga/compute/client.go": "b57a3a9b9762e8b4cb4dbe06951ea09e74744a94af91fade1f86b08471d61e19",
+    "pkg/dsga/compute/client_test.go": "a68e9218c9446642bdeaf980973943492fc6b4eed95015486c884b1c9732a44a"
+  },
+  "Linux运行目录": "/data/neon-build/validation/PG17-budget-policy-Go-readers-20261106T075735Z-bdc38c",
+  "实际结果": {
+    "passed": true,
+    "build_exit": 0,
+    "test_exit": 0,
+    "seconds": 33.8965651729377,
+    "tests_passed": [
+      "TestAdmissionPolicyDiscoveryIsExplicitAndBootBound/omitted",
+      "TestAdmissionPolicyDiscoveryIsExplicitAndBootBound/legacy",
+      "TestAdmissionPolicyDiscoveryIsExplicitAndBootBound/enforced",
+      "TestAdmissionPolicyDiscoveryIsExplicitAndBootBound/unknown",
+      "TestAdmissionPolicyDiscoveryIsExplicitAndBootBound/empty",
+      "TestAdmissionPolicyDiscoveryIsExplicitAndBootBound/null",
+      "TestAdmissionPolicyDiscoveryIsExplicitAndBootBound",
+      "TestBoundAdmissionPolicyCannotChangeWithinBoot",
+      "TestInitialDiscoveryFixesBootBeforePublicationAndRejectsHistory"
+    ],
+    "skipped": [],
+    "e2e_accepted": false
+  },
+  "运行原件SHA256": "6c33b81d6b3889f3adf883bbf46d98eded92732a7cf636aa35a4848da9b5cf44",
+  "内存事件": [
+    "low 0",
+    "high 0",
+    "max 0",
+    "oom 0",
+    "oom_kill 0",
+    "oom_group_kill 0"
+  ],
+  "三节点内存动作验收": false
+}

@@ -166,3 +166,46 @@ func TestIssuerFenceKeepsPendingDistinctAndRejectsInvalidProof(t *testing.T) {
 		require.Error(t, json.Unmarshal([]byte(raw), &decoded))
 	}
 }
+
+func TestAdmissionPolicyDiscoveryIsExplicitAndBootBound(t *testing.T) {
+	wire := map[string]any{
+		"protocol_version": 1, "production_ready": false, "vm_shrink_permit": false,
+		"supported": true, "buffer_api_version": 6, "enabled": true, "instance_bound": true,
+		"history_capacity": 16, "provider_can_release": true,
+		"instance": map[string]string{"vm_uid": "test-vm", "compute_instance_id": "test-compute", "pg_boot_id": "19"},
+	}
+	for _, tc := range []struct {
+		name  string
+		value any
+		want  AdmissionPolicy
+		valid bool
+	}{
+		{"omitted", nil, AdmissionPolicyLease, true},
+		{"legacy", "lease_v1", AdmissionPolicyLease, true},
+		{"enforced", "enforced_budget_v1", AdmissionPolicyEnforcedBudget, true},
+		{"unknown", "future_policy", "", false},
+		{"empty", "", "", false},
+		{"null", nil, "", false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.name != "omitted" {
+				wire["admission_policy"] = tc.value
+			}
+			raw, err := json.Marshal(wire)
+			require.NoError(t, err)
+			var fact Capabilities
+			err = json.Unmarshal(raw, &fact)
+			if !tc.valid {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.want, fact.AdmissionPolicy)
+			bound, err := fact.Bind("test-vm", "test-compute")
+			require.NoError(t, err)
+			require.EqualValues(t, 19, bound.PGBootID)
+			_, err = fact.Bind("other", "test-compute")
+			require.Error(t, err)
+		})
+	}
+}

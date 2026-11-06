@@ -68,6 +68,34 @@ func newTLSClient(t *testing.T, handler http.HandlerFunc) (*Client, Config) {
 	return client, config
 }
 
+func TestBoundAdmissionPolicyCannotChangeWithinBoot(t *testing.T) {
+	ctx := context.Background()
+	legacy, cfg := newTLSClient(t, nil)
+	require.Equal(t, control.AdmissionPolicyLease, legacy.AdmissionPolicy())
+	original, err := legacy.Capabilities(ctx)
+	require.NoError(t, err)
+
+	var reads atomic.Int64
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		capability := original
+		if reads.Add(1) <= 2 {
+			capability.AdmissionPolicy = control.AdmissionPolicyEnforcedBudget
+		}
+		reply(w, capability)
+	}))
+	t.Cleanup(server.Close)
+	cfg.BaseURL, cfg.Transport = server.URL, server.Client().Transport.(*http.Transport)
+	client, err := New(ctx, cfg)
+	require.NoError(t, err)
+	t.Cleanup(client.CloseIdleConnections)
+	require.Equal(t, control.AdmissionPolicyEnforcedBudget, client.AdmissionPolicy())
+	_, err = client.Capabilities(ctx)
+	require.NoError(t, err)
+	_, err = client.Capabilities(ctx)
+	require.Error(t, err)
+	require.Equal(t, control.AdmissionPolicyEnforcedBudget, client.AdmissionPolicy())
+}
+
 func TestInitialDiscoveryFixesBootBeforePublicationAndRejectsHistory(t *testing.T) {
 	_, config := newTLSClient(t, func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(500) })
 	expected := config.Instance

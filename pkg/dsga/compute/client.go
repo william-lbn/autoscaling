@@ -55,6 +55,7 @@ func (err *CallError) Error() string {
 }
 
 type Client struct {
+	admissionPolicy       control.AdmissionPolicy
 	base                  string
 	instance              control.Instance
 	epoch                 control.Uint64
@@ -173,6 +174,7 @@ func newClient(ctx context.Context, config Config, initial bool) (*Client, error
 		return nil, &CallError{MayHaveExecuted: true, Code: "capability_binding_changed"}
 	}
 	client.instance = bound
+	client.admissionPolicy = capability.AdmissionPolicy
 	return client, nil
 }
 
@@ -186,6 +188,12 @@ func (client *Client) CloseIdleConnections() {
 // 不能据此更改实例、刷新epoch或把能力发现当作新的领导权证明。
 func (client *Client) Binding() (control.Instance, control.Uint64) {
 	return client.instance, client.epoch
+}
+
+// AdmissionPolicy 返回发现时与 boot 一同核实的只读策略。每个变更的资源
+// 审计、原命令及 fencing 仍由相应执行器验证，不能用这份启动能力作许可。
+func (client *Client) AdmissionPolicy() control.AdmissionPolicy {
+	return client.admissionPolicy
 }
 
 // Pending只返回副本，关闭空闲连接/普通查询成功都不会清除此栅栏。它不替代跨
@@ -271,7 +279,7 @@ func (client *Client) Capabilities(ctx context.Context) (control.Capabilities, e
 		return control.Capabilities{}, err
 	}
 	bound, err := fact.Bind(client.instance.VMUID, client.instance.ComputeInstanceID)
-	if err != nil || bound != client.instance {
+	if err != nil || bound != client.instance || fact.AdmissionPolicy != client.admissionPolicy {
 		return control.Capabilities{}, &CallError{MayHaveExecuted: true, Code: "capability_binding_changed"}
 	}
 	return fact, nil
