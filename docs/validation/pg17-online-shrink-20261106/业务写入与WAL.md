@@ -24,3 +24,9 @@ Neon 仓库原分支提交 `ecb12557200406d94f34df202351f4792ca3321e` 包含真 
 28 个定向根用例、含子项 173 个通过，0 跳过，`go test -race` 退出 0。覆盖原 W28、跨 Owner 和硬限交接、四数组释放、丢回执和 Unknown。编译产出原生 Host/Guest、正式 Root、Agent 和资格读取器，来源各有 SHA。118 的原索引为 `/data/neon-k8s-pg17/reports/PG17-持久SQL与真实缩容准入拒绝-20261106T215553Z/W28原回执与生产审计单测.PUBLIC.json`，SHA256 为 `fc78e2d1e40fefcf5a6cd3efd88e79b6a9ec9dd18c30aa23832be31865287dec`。
 
 截至本阶段提交，三节点原四项物理动作已通过。修复后的三节点应用持续提交、重连和三个 Safekeeper 的 WAL 仍待真实验证。隔离 KVM 的 Host API 使用模型。PG18 按相同合同排在 PG17 产品验收之后。
+
+## 同一普通会话的原生 KVM 缩容与三节点镜像
+
+正式代码 `538b8240e4c74091f892ad416caabc99b7e71098` 在 worker-118 实际完成 PG17 扩容、在线安全 normal 缩容和再次扩容。业务后端 PID 222 在 8 GiB 降到 7 GiB 期间无重试提交 501 笔事务，末笔 WAL 为 `0/1C97AC0`。开放准入版本始终为 2。原始内存回执含四个数组的释放及真实 normal 硬限写后读回，测试用时 461.08 秒。此项使用独立真实 KVM，宿主预算 API 在单机用例中建模。
+
+已从同一份正式源码生成 Agent 与 PG17 Guest，并分别在三台指定 worker 的 CRI 读回两份实际清单摘要。合包 639632896 字节，SHA256 为 `fc8091a768f95cc89d6035442ec7ad5557951bee86db441e8c33b65ae1abfc2a`。118 的公开结果 `/data/neon-k8s-pg17/reports/PG17-在线真实缩容原生与三节点镜像-538b8240/result.PUBLIC.json`，SHA256 为 `0f0ec84ad7f97b5c151983435a51a1ddd6811ae6f5ace24c9dfb123d6792885f`。三节点原有四个内存动作已通过，修复版在正式 Proxy 的业务持续写入、三副本 WAL 与重连复验单独记录。
