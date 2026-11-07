@@ -1,0 +1,250 @@
+{
+  "at": "2026-11-07T05:23:12.378130+00:00",
+  "role": "app_owner",
+  "writer_pid": 469,
+  "postmaster": "2026-11-07T03:55:47.499584+00:00",
+  "pg_boot": "11819242963075885759",
+  "actions": [
+    {
+      "key": {
+        "instance": {
+          "vm_uid": "606f31df-553d-428d-ba04-24f1fbb611b3",
+          "compute_instance_id": "cp-d8d85ed796068ab5",
+          "pg_boot_id": "11819242963075885759"
+        },
+        "issuer_epoch": "7",
+        "revision": "3",
+        "operation_id": {
+          "high": "17962351013463628038",
+          "low": "14177347778715587946"
+        }
+      },
+      "kind": "grow",
+      "generation": 6,
+      "PG_buffers": 2048,
+      "normal_memory_max": 1127743488,
+      "QMP_bytes": 8589934592,
+      "budget": "automatic-f947171400609906c4c00eb09f84156a",
+      "node": "worker-117",
+      "released_arrays": 0,
+      "host_finalization_sha256": "2ca93484405a163f14d35caa404be2d8c28c7d6304aae56b65d960e7f7f1d708",
+      "at": "2026-11-07T05:11:25.627348+00:00",
+      "label": "first_grow",
+      "seconds": 177.28,
+      "writes_while_in_flight": 34,
+      "before_commit": 2,
+      "after_commit": 44,
+      "reconnect": {
+        "data": {
+          "pid": 491,
+          "boot": "2026-11-07T03:55:47.499584+00:00",
+          "rows": 512,
+          "checksum": "9669938ab6a4da98e554a52242bcfe48",
+          "marks": 44,
+          "last_mark": 44,
+          "mark_ids": "850264fa804b20cf19058fc633ac1b96",
+          "persistence": "p",
+          "flush": "0/27B4998",
+          "after_commit": "0/27B6980"
+        },
+        "role": "app_owner",
+        "exit": 0
+      }
+    },
+    {
+      "key": {
+        "instance": {
+          "vm_uid": "606f31df-553d-428d-ba04-24f1fbb611b3",
+          "compute_instance_id": "cp-d8d85ed796068ab5",
+          "pg_boot_id": "11819242963075885759"
+        },
+        "issuer_epoch": "7",
+        "revision": "4",
+        "operation_id": {
+          "high": "566517935937230381",
+          "low": "3844402365160212869"
+        }
+      },
+      "kind": "shrink",
+      "generation": 7,
+      "PG_buffers": 256,
+      "normal_memory_max": 1077411840,
+      "QMP_bytes": 7516192768,
+      "budget": "automatic-07dcad0faa6d162d355a0f95250bc985",
+      "node": "worker-117",
+      "released_arrays": 4,
+      "host_finalization_sha256": "934286e51ab007eb1df5680564094d9addf1a7fc51c58296e9885da095d3093e",
+      "at": "2026-11-07T05:15:29.309629+00:00",
+      "label": "normal_shrink",
+      "seconds": 243.68,
+      "writes_while_in_flight": 41,
+      "before_commit": 45,
+      "after_commit": 102,
+      "reconnect": {
+        "data": {
+          "pid": 305,
+          "boot": "2026-11-07T03:55:47.499584+00:00",
+          "rows": 512,
+          "checksum": "9669938ab6a4da98e554a52242bcfe48",
+          "marks": 102,
+          "last_mark": 102,
+          "mark_ids": "df7fb327f47d5e668e33a0584a483514",
+          "persistence": "p",
+          "flush": "0/27BC580",
+          "after_commit": "0/27BC580"
+        },
+        "role": "app_owner",
+        "exit": 0
+      }
+    },
+    {
+      "key": {
+        "instance": {
+          "vm_uid": "606f31df-553d-428d-ba04-24f1fbb611b3",
+          "compute_instance_id": "cp-d8d85ed796068ab5",
+          "pg_boot_id": "11819242963075885759"
+        },
+        "issuer_epoch": "7",
+        "revision": "5",
+        "operation_id": {
+          "high": "7612611495565608935",
+          "low": "16771357698281563497"
+        }
+      },
+      "kind": "grow",
+      "generation": 8,
+      "PG_buffers": 2048,
+      "normal_memory_max": 1127743488,
+      "QMP_bytes": 8589934592,
+      "budget": "automatic-69a56dd2663e47e7e8bfd4f7d715e569",
+      "node": "worker-117",
+      "released_arrays": 0,
+      "host_finalization_sha256": "83f8b2a5f64825785aa1dce285ec4bcad7020ddaba33af7f1318eacdb9f7e56e",
+      "at": "2026-11-07T05:18:54.704935+00:00",
+      "label": "regrow",
+      "seconds": 205.39,
+      "writes_while_in_flight": 39,
+      "before_commit": 103,
+      "after_commit": 151,
+      "reconnect": {
+        "data": {
+          "pid": 364,
+          "boot": "2026-11-07T03:55:47.499584+00:00",
+          "rows": 512,
+          "checksum": "9669938ab6a4da98e554a52242bcfe48",
+          "marks": 151,
+          "last_mark": 151,
+          "mark_ids": "4e9b91c6e0462994bbf701bcd6c1aa0e",
+          "persistence": "p",
+          "flush": "0/27C3940",
+          "after_commit": "0/27C3940"
+        },
+        "role": "app_owner",
+        "exit": 0
+      }
+    },
+    {
+      "key": {
+        "instance": {
+          "vm_uid": "606f31df-553d-428d-ba04-24f1fbb611b3",
+          "compute_instance_id": "cp-d8d85ed796068ab5",
+          "pg_boot_id": "11819242963075885759"
+        },
+        "issuer_epoch": "7",
+        "revision": "6",
+        "operation_id": {
+          "high": "4121187473460412916",
+          "low": "7323868557942085394"
+        }
+      },
+      "kind": "shrink",
+      "generation": 9,
+      "PG_buffers": 256,
+      "normal_memory_max": 1077411840,
+      "QMP_bytes": 7516192768,
+      "budget": "automatic-3931662c1065c1f465a39ba661ca5712",
+      "node": "worker-117",
+      "released_arrays": 4,
+      "host_finalization_sha256": "a63ec609d870f9b426cda52898574140fb29d3f0d5eeb7fc85618bea8ea464fe",
+      "at": "2026-11-07T05:23:11.568430+00:00",
+      "label": "return_idle",
+      "seconds": 256.86,
+      "writes_while_in_flight": 43,
+      "before_commit": 152,
+      "after_commit": 212,
+      "reconnect": {
+        "data": {
+          "pid": 352,
+          "boot": "2026-11-07T03:55:47.499584+00:00",
+          "rows": 512,
+          "checksum": "9669938ab6a4da98e554a52242bcfe48",
+          "marks": 212,
+          "last_mark": 212,
+          "mark_ids": "e5d941ec79786359ce0d3189f1fe1063",
+          "persistence": "p",
+          "flush": "0/27CB0A8",
+          "after_commit": "0/27CD090"
+        },
+        "role": "app_owner",
+        "exit": 0
+      }
+    }
+  ],
+  "total_commits": 213,
+  "last": {
+    "at": "2026-11-07T05:23:11.675985+00:00",
+    "n": 213,
+    "phase": "complete",
+    "SQL": {
+      "pid": 469,
+      "boot": "2026-11-07T03:55:47.499584+00:00",
+      "rows": 512,
+      "checksum": "9669938ab6a4da98e554a52242bcfe48",
+      "marks": 213,
+      "last_mark": 213,
+      "mark_ids": "ade713e534dd86bd01c57bcfa59fe4e0",
+      "persistence": "p",
+      "flush": "0/27CD148",
+      "after_commit": "0/27CD148"
+    },
+    "safekeepers": [
+      {
+        "peer": "safekeeper1",
+        "flush_lsn": "0/27CD148",
+        "commit_lsn": "0/27CD148",
+        "durable": true
+      },
+      {
+        "peer": "safekeeper2",
+        "flush_lsn": "0/27CD148",
+        "commit_lsn": "0/27CD148",
+        "durable": true
+      },
+      {
+        "peer": "safekeeper3",
+        "flush_lsn": "0/27CD148",
+        "commit_lsn": "0/27CD148",
+        "durable": true
+      }
+    ]
+  },
+  "final_reconnect": {
+    "data": {
+      "pid": 363,
+      "boot": "2026-11-07T03:55:47.499584+00:00",
+      "rows": 512,
+      "checksum": "9669938ab6a4da98e554a52242bcfe48",
+      "marks": 213,
+      "last_mark": 213,
+      "mark_ids": "ade713e534dd86bd01c57bcfa59fe4e0",
+      "persistence": "p",
+      "flush": "0/27CD148",
+      "after_commit": "0/27CD148"
+    },
+    "role": "app_owner",
+    "exit": 0
+  },
+  "writer_exit": 0,
+  "load_exit": 0,
+  "table": "dsga_pg17_wal_gate_contract_606f.payload"
+}
