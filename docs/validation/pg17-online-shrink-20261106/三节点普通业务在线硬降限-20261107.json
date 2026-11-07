@@ -1,0 +1,131 @@
+{
+  "状态": "阶段通过，完整四动作复验待完成",
+  "VMUID": "24f4433d-bc2e-4628-b662-5611fc669212",
+  "source": "f97329300a3a96f0c0098e7e80deec201afa2dd5",
+  "实际动作": {
+    "first_grow": {
+      "key": {
+        "instance": {
+          "vm_uid": "24f4433d-bc2e-4628-b662-5611fc669212",
+          "compute_instance_id": "cp-d8d85ed796068ab5",
+          "pg_boot_id": "6398638364768193886"
+        },
+        "issuer_epoch": "5",
+        "revision": "1",
+        "operation_id": {
+          "high": "935121386544462577",
+          "low": "11060897747656678380"
+        }
+      },
+      "kind": "grow",
+      "generation": 2,
+      "PG_buffers": 2048,
+      "normal_memory_max": 1127743488,
+      "QMP_bytes": 8589934592,
+      "budget": "automatic-0cfa37f252da7af1998033e5f9fe9bec",
+      "node": "worker-117",
+      "released_arrays": 0,
+      "host_finalization_sha256": "08d73d24e2842ef8caeb39d5d1131d31a2625e73859ff0d1805361ef501575c7",
+      "at": "2026-11-07T02:47:26.492798+00:00",
+      "label": "first_grow",
+      "seconds": 133.55,
+      "writes_while_in_flight": 22,
+      "before_commit": 2,
+      "after_commit": 33,
+      "reconnect": {
+        "data": {
+          "pid": 329,
+          "boot": "2026-11-07T02:32:35.246008+00:00",
+          "rows": 512,
+          "checksum": "9669938ab6a4da98e554a52242bcfe48",
+          "marks": 33,
+          "last_mark": 33,
+          "mark_ids": "545b62d4b36fe19efd50614761cd45c5",
+          "persistence": "p",
+          "flush": "0/265D870",
+          "after_commit": "0/265D870"
+        },
+        "role": "app_owner",
+        "exit": 0
+      }
+    },
+    "normal_shrink": {
+      "key": {
+        "instance": {
+          "vm_uid": "24f4433d-bc2e-4628-b662-5611fc669212",
+          "compute_instance_id": "cp-d8d85ed796068ab5",
+          "pg_boot_id": "6398638364768193886"
+        },
+        "issuer_epoch": "5",
+        "revision": "2",
+        "operation_id": {
+          "high": "8921981911867822472",
+          "low": "16917701173430063473"
+        }
+      },
+      "kind": "shrink",
+      "generation": 3,
+      "PG_buffers": 256,
+      "normal_memory_max": 1077411840,
+      "QMP_bytes": 7516192768,
+      "budget": "automatic-7bd13f4735579188eac7bf955a821171",
+      "node": "worker-117",
+      "released_arrays": 4,
+      "host_finalization_sha256": "7863c5ee31cdb2ff4013b51c8d299c18170655342ae763f08ec1b13fba728149",
+      "at": "2026-11-07T02:50:07.237229+00:00",
+      "label": "normal_shrink",
+      "seconds": 160.73,
+      "writes_while_in_flight": 20,
+      "before_commit": 34,
+      "after_commit": 69,
+      "reconnect": {
+        "data": {
+          "pid": 300,
+          "boot": "2026-11-07T02:32:35.246008+00:00",
+          "rows": 512,
+          "checksum": "9669938ab6a4da98e554a52242bcfe48",
+          "marks": 69,
+          "last_mark": 69,
+          "mark_ids": "8813e3f32f9bad4591a47c606d0f1f4d",
+          "persistence": "p",
+          "flush": "0/266E470",
+          "after_commit": "0/26704C0"
+        },
+        "role": "app_owner",
+        "exit": 0
+      }
+    }
+  },
+  "首次后续失败": {
+    "步骤": "Regrow压力构造",
+    "原因": "同时保留两个work_mem=128MB排序游标，加上PG后台与会话内存，超出本发行明确的256MiB私有工作域",
+    "原始证据": "/data/neon-k8s-pg17/runs/PG17-在线缩容后Regrow连接退出原始取证-24f4433d",
+    "已提交业务笔数": 70,
+    "最后提交WAL": "0/2670580",
+    "保数据恢复归档": {
+      "passed": true,
+      "old_retired_uid": "24f4433d-bc2e-4628-b662-5611fc669212",
+      "old_archive_sha256": "5ec76dca63183fb0a7f6ae5676fbf26939e6aa6b17a0559329cd26a782a60b64",
+      "new_held_uid": "fa61c358-37c8-4c30-9484-259ec95dbb6e",
+      "new_incarnation": "d7f5a0b94d4743208e10bdf28285761f",
+      "business_rechecked": true,
+      "cluster_accepted": 0
+    }
+  },
+  "待复验调整": {
+    "私有硬限字节": 268435456,
+    "每个压力游标work_mem": "64MB",
+    "每游标行数": 400000,
+    "压力游标数": 2,
+    "测试策略growThresholdPermille": 100,
+    "测试策略shrinkThresholdPermille": 80,
+    "说明": "缩小测试压力并在同一合法策略接口设置测试阈值，保留真实硬限、四数组释放、旧写者和Unknown门。普通应用持续写入仍必验。"
+  },
+  "PG18": {
+    "原生SQL": "2/2",
+    "正式Guest回读": "/data/neon-build/validation/PG18-正式Guest镜像内容回读-940b25fb",
+    "镜像三节点CRI均已核验": true,
+    "K8s内存动作已验收": 0
+  },
+  "Linux证据目录": "/data/neon-k8s-pg17/runs/PG17-同源全链普通业务四次自动策略-24f4433d"
+}
