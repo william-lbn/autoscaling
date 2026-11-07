@@ -24,6 +24,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/quiesceexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+	"github.com/neondatabase/autoscaling/pkg/dsga/runtimeselection"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
@@ -48,6 +49,10 @@ type PGWorker struct {
 	resourceOwner         *ResourceWorker
 	automatic             *automaticMemory
 	qualification         *budget.QualificationSource
+	productionCore        coreclient.CoreV1Interface
+	runtimeReader         RuntimeSelectionReader
+	runtimeStatus         *runtimeselection.Status
+	runtimeNext           time.Time
 	safety                *serviceSafety
 	idleServiceDiagnostic *IdleServiceDiagnostic
 	// Run期间独占SDK/控制入口，避免重复启动两个轮询goroutine竞争Pending。
@@ -378,6 +383,7 @@ func (session *Session) NewProductionPGWorker(ctx context.Context, config comput
 		return nil, err
 	}
 	worker.safety = &serviceSafety{claims: claims, runner: runner}
+	worker.productionCore = core
 	return worker, nil
 }
 
@@ -633,6 +639,8 @@ func (worker *PGWorker) RecoverCapacityAdmission(ctx context.Context, key contro
 }
 
 type Tick struct {
+	RuntimeSelection *runtimeselection.Status
+
 	Progress pgexec.Progress
 	Err      error
 	// IdleService只携带同周期首个固定来源叶，不改变Err/Progress或持久协议。
@@ -640,7 +648,9 @@ type Tick struct {
 }
 
 type PGLoopOptions struct {
-	PollInterval time.Duration
+	// 原串行循环重读可信平台选择；nil 保留既有静态配置。
+	RuntimeSelection RuntimeSelectionReader
+	PollInterval     time.Duration
 	// 内部可信Run接线开关；零值保原同步/可重入行为，不暴露Env/Helm/API。
 	// 显式true须完整生产来源，且每个executor仅绑定一个同Session Run生命周期。
 	EnableInFlightGrow bool
@@ -711,6 +721,10 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 	}
 	callCtx, cancel := worker.session.coupledContext(ctx)
 	defer cancel()
+	if err := worker.initializeRuntimeSelection(options.RuntimeSelection); err != nil {
+		return err
+	}
+	worker.refreshRuntimeSelection(callCtx)
 	if options.EnableInFlightGrow {
 		if worker.executor == nil || worker.safety == nil || worker.resourceOwner == nil {
 			return fmt.Errorf("in-flight Grow Run requires complete original production sources")
@@ -719,7 +733,9 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			if options.Control == nil {
 				return fmt.Errorf("initial qualification requires the original control endpoint")
 			}
-			return worker.awaitInitialQualification(callCtx, options.Control)
+			if err := worker.awaitInitialQualification(callCtx, options.Control, options.Observe); err != nil {
+				return err
+			}
 		}
 		// 父ctx只来自同Session长驻Run，不能传每次Advance的defercancel ctx。
 		// 退出/失主取消保留原MAY和SDK Unknown，不reset控制器来重新启用。
@@ -838,6 +854,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		if callCtx.Err() != nil {
 			return callCtx.Err()
 		}
+		automaticReady := worker.refreshRuntimeSelection(callCtx)
 		if err := ensureLease(true); err != nil {
 			return err
 		}
@@ -988,7 +1005,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			} else {
 				progress, err = worker.Advance(callCtx)
 			}
-			if err == nil && progress == pgexec.Idle && worker.automatic != nil {
+			if err == nil && progress == pgexec.Idle && worker.automatic != nil && automaticReady {
 				progress, err = worker.advanceAutomatic(callCtx)
 			}
 		}
@@ -1005,6 +1022,10 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			}
 		}
 		tick := worker.diagnosticTick(progress, err)
+		if worker.runtimeStatus != nil {
+			copy := *worker.runtimeStatus
+			tick.RuntimeSelection = &copy
+		}
 		if options.Observe != nil {
 			options.Observe(tick)
 		}

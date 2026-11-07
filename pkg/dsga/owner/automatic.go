@@ -40,21 +40,33 @@ func (w *PGWorker) ConfigureAutomaticMemory(c policy.Config, core coreclient.Cor
 	if w.running.Load() || w.automatic != nil || w.prepare == nil || w.resourceOwner == nil || w.vm == nil || w.finalize == nil || core == nil || w.qualification == nil || w.qualification.Validate() != nil {
 		return fmt.Errorf("automatic memory policy requires unstarted complete production worker")
 	}
-	engine, err := policy.New(c)
+	automatic, err := w.newAutomaticMemory(c, core)
 	if err != nil {
 		return err
+	}
+	w.automatic = automatic
+	return nil
+}
+
+// 原配置和在线配置共用同一个构造函数；调用方负责 Run 串行与待决操作边界。
+func (w *PGWorker) newAutomaticMemory(c policy.Config, core coreclient.CoreV1Interface) (*automaticMemory, error) {
+	if core == nil || w.qualification == nil || w.prepare == nil {
+		return nil, fmt.Errorf("automatic memory requires original production qualification")
+	}
+	engine, err := policy.New(c)
+	if err != nil {
+		return nil, err
 	}
 	claims, err := budgetclaims.New(core, w.session.binding)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	runner, err := vmguard.NewReader(core, w.session.binding, string(w.session.leaseUID))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	c.Targets = append([]policy.Target(nil), c.Targets...)
-	w.automatic = &automaticMemory{config: c, engine: engine, claims: claims, runner: runner, source: *w.qualification, next: time.Time{}, pending: nil, pendingRV: ""}
-	return nil
+	return &automaticMemory{config: c, engine: engine, claims: claims, runner: runner, source: *w.qualification}, nil
 }
 
 // sampleAutomatic读取的是策略输入，绝不将瞬时占用升级为未来硬上界。完整原

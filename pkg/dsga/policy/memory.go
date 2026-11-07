@@ -21,6 +21,11 @@ type Target struct {
 // 采样间断/实例或容量变化重新累计；nil配置保留默认关闭。阈值为千分比整数，
 // 避免浮点NaN/Inf、舍入及乘法溢出影响边界。Linux验收须校准实际阈值与规格。
 type Config struct {
+	// 产品软边界只筛选既有认证规格；保留范围外的当前规格用于真实采样与安全收敛。
+	// 两者为零保持历史完整目录；min=max 表示固定目标，仍须走原伸缩安全链。
+	MinimumVMMemoryBytes control.Uint64 `json:"minimumVMMemoryBytes,omitempty"`
+	MaximumVMMemoryBytes control.Uint64 `json:"maximumVMMemoryBytes,omitempty"`
+
 	Targets                    []Target `json:"targets"`
 	SampleIntervalSeconds      uint     `json:"sampleIntervalSeconds"`
 	MaximumSampleGapSeconds    uint     `json:"maximumSampleGapSeconds"`
@@ -48,7 +53,23 @@ func (c Config) Validate() error {
 			}
 		}
 	}
+	if c.MinimumVMMemoryBytes != 0 || c.MaximumVMMemoryBytes != 0 {
+		if c.MinimumVMMemoryBytes == 0 || c.MaximumVMMemoryBytes < c.MinimumVMMemoryBytes || c.MinimumVMMemoryBytes < c.Targets[0].VMMemoryBytes || c.MaximumVMMemoryBytes > c.Targets[len(c.Targets)-1].VMMemoryBytes {
+			return fmt.Errorf("memory policy range exceeds the original target catalog")
+		}
+		eligible := false
+		for _, target := range c.Targets {
+			eligible = eligible || c.Allows(target)
+		}
+		if !eligible {
+			return fmt.Errorf("memory policy range has no exact target")
+		}
+	}
 	return nil
+}
+
+func (c Config) Allows(target Target) bool {
+	return c.MinimumVMMemoryBytes == 0 && c.MaximumVMMemoryBytes == 0 || target.VMMemoryBytes >= c.MinimumVMMemoryBytes && target.VMMemoryBytes <= c.MaximumVMMemoryBytes
 }
 
 // Sample由正式只读生产者提供，At为采样开始时间，调用者另给完成时刻。
@@ -140,7 +161,7 @@ func (e *Engine) Evaluate(now time.Time, s Sample) (Target, bool, error) {
 		s.ClientProcesses == s.IdleClients && s.RetainedTransactions == 0
 	kind := control.Kind("")
 	emergency := s.NormalCurrent >= threshold(s.NormalMax, e.config.EmergencyThresholdPermille, true)
-	if s.NormalCurrent >= threshold(s.NormalMax, e.config.GrowThresholdPermille, true) {
+	if (e.config.MinimumVMMemoryBytes > 0 && s.Current.VMMemoryBytes < e.config.MinimumVMMemoryBytes) || s.NormalCurrent >= threshold(s.NormalMax, e.config.GrowThresholdPermille, true) {
 		kind = control.Grow
 	} else if workIdle && s.NormalCurrent <= threshold(s.NormalMax, e.config.ShrinkThresholdPermille, false) {
 		kind = control.Shrink
@@ -167,7 +188,7 @@ func (e *Engine) Evaluate(now time.Time, s Sample) (Target, bool, error) {
 		delta = -1
 	}
 	for next := index + delta; next >= 0 && next < len(e.config.Targets); next += delta {
-		if s.Eligible[next] {
+		if s.Eligible[next] && e.config.Allows(e.config.Targets[next]) {
 			return e.config.Targets[next], true, nil
 		}
 	}

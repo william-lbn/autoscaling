@@ -269,3 +269,40 @@ func TestMemoryPolicyOnlineShrinkRequiresIdleClientsAndNoRetainedTransaction(t *
 	_, _, err = e.Evaluate(s.At, s)
 	require.Error(t, err)
 }
+
+// 用户收窄边界时，当前真实值仍可采样；绝不能删除当前规格造成永久 Unknown，
+// 或为满足新上限直接写硬限。这里只选择原目录，后续原链仍独立核验释放。
+func TestMemoryPolicyOnlineRangeConvergesThroughOriginalTargets(t *testing.T) {
+	c := testConfig()
+	c.MinimumVMMemoryBytes = c.Targets[2].VMMemoryBytes
+	c.MaximumVMMemoryBytes = c.MinimumVMMemoryBytes
+	e, err := New(c)
+	require.NoError(t, err)
+	s := testSample(c)
+	s.NormalCurrent = 100
+	evaluate(t, e, s, Target{}, false)
+	s.At = s.At.Add(2 * time.Second)
+	evaluate(t, e, s, c.Targets[2], true)
+	e.Accepted(s.At)
+	s.Current = c.Targets[2]
+	s.CapacityGeneration++
+	s.At = s.At.Add(time.Second)
+	evaluate(t, e, s, Target{}, false)
+	s.At = s.At.Add(4 * time.Second)
+	evaluate(t, e, s, Target{}, false)
+	c.MinimumVMMemoryBytes = c.Targets[0].VMMemoryBytes
+	c.MaximumVMMemoryBytes = c.Targets[1].VMMemoryBytes
+	e, err = New(c)
+	require.NoError(t, err)
+	evaluate(t, e, s, Target{}, false)
+	s.At = s.At.Add(4 * time.Second)
+	evaluate(t, e, s, c.Targets[1], true)
+	s.NormalCurrent = 990
+	s.At = s.At.Add(time.Second)
+	evaluate(t, e, s, Target{}, false)
+	for _, bounds := range [][2]control.Uint64{{0, 1 << 30}, {1 << 30, 0}, {256 << 20, 1 << 30}, {512 << 20, 4 << 30}, {600 << 20, 700 << 20}} {
+		bad := testConfig()
+		bad.MinimumVMMemoryBytes, bad.MaximumVMMemoryBytes = bounds[0], bounds[1]
+		require.Error(t, bad.Validate())
+	}
+}

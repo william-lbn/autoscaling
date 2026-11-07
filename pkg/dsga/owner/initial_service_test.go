@@ -670,7 +670,7 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 				pgReply(w, control.ControlResponse{ProtocolVersion: 1, VMShrinkPermit: false, Receipt: control.Receipt{Key: query.Key, Disposition: disposition, HasResult: false, Result: nil}, Observed: current})
 				return
 			}
-			if automaticMode && r.URL.Path == "/dsg/v1/work/state" {
+			if (automaticMode || mode == "runtime-selection") && r.URL.Path == "/dsg/v1/work/state" {
 				serveAutomaticWork(w, pg)
 				return
 			}
@@ -721,6 +721,9 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 			return next
 		}
 		worker = rebuild()
+		if mode == "runtime-selection" && fixtureHook != nil && fixtureHook(t, ctx, api, store, client, coord, session, resources, worker, config, source, pg, root, runner, qmp, request) {
+			return nil
+		}
 		if mode == "initial-qualification-read" {
 			// 真实签发来源已经装载，复用原首次开户流程，随后模拟该来源从配置丢失。
 			progress, err := worker.Advance(ctx)

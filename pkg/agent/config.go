@@ -177,6 +177,7 @@ func (c *Config) validate() error {
 		erc.Whenf(ec, !filepath.IsAbs(c.DSGA.ManagementCAFile) || !filepath.IsAbs(c.DSGA.ProjectedTokenFile), "DSGA requires absolute trusted file paths")
 		erc.Whenf(ec, c.DSGA.RequestTimeoutSeconds == 0 || c.DSGA.RequestTimeoutSeconds > 30 || c.DSGA.PollIntervalSeconds == 0 || c.DSGA.PollIntervalSeconds > 60, "invalid DSGA bounded timeouts")
 		erc.Whenf(ec, c.DSGA.ComputeTimeoutSeconds < 90 || c.DSGA.ComputeTimeoutSeconds > 120, "DSGA Compute timeout must cover the 60-second PG wait and bounded gateway checks")
+		erc.Whenf(ec, c.DSGA.RuntimeSelectionNamespace != "" && (control.ValidateID(c.DSGA.RuntimeSelectionNamespace, "runtime selection namespace") != nil || c.DSGA.ResourceReadSocketPath == ""), "dynamic DSGA runtime selection requires explicit namespace and independent resource observation socket")
 		for vmUID, source := range c.DSGA.PrepareQualifications {
 			erc.Whenf(ec, control.ValidateID(vmUID, "qualified VM UID") != nil || source.Validate() != nil, "invalid trusted DSGA platform qualification selection")
 		}

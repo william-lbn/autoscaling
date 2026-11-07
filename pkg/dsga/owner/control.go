@@ -11,6 +11,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+	"github.com/neondatabase/autoscaling/pkg/dsga/runtimeselection"
 )
 
 var ErrControlUnavailable = errors.New("coordination owner or loop unavailable; inspect original journal")
@@ -19,12 +20,13 @@ var ErrControlUnavailable = errors.New("coordination owner or loop unavailable; 
 // State取调用后的原VM持久日志；没有PG/Guest/VM/Host回执时不补造终态。
 // 客户端丢回复必须先读此日志，尤其不能因HTTP错误重新生成Begin身份。
 type CoordinationResult struct {
-	ProtocolVersion uint32                      `json:"protocol_version"`
-	Instance        control.CoordinationBinding `json:"instance"`
-	OwnerEpoch      control.Uint64              `json:"owner_epoch"`
-	Progress        pgexec.Progress             `json:"progress"`
-	Disposition     journal.Disposition         `json:"disposition,omitempty"`
-	State           *journal.Model              `json:"state,omitempty"`
+	RuntimeSelection *runtimeselection.Status    `json:"runtime_selection,omitempty"`
+	ProtocolVersion  uint32                      `json:"protocol_version"`
+	Instance         control.CoordinationBinding `json:"instance"`
+	OwnerEpoch       control.Uint64              `json:"owner_epoch"`
+	Progress         pgexec.Progress             `json:"progress"`
+	Disposition      journal.Disposition         `json:"disposition,omitempty"`
+	State            *journal.Model              `json:"state,omitempty"`
 	// 资源状态/来源摘要只用于选择原Root持有；实际修复仍由Root在
 	// 文件锁内重新认证floor/出生/原日志和逐维单调条件。Evidence不证明
 	// GuestReady、完整预算、VM或Host完成，不改变外层业务步骤。
@@ -121,7 +123,7 @@ func (e *ControlEndpoint) Submit(ctx context.Context, command control.Coordinati
 
 // 首次签发需要在同一 PG boot 下读取真实 Guest。此时只服务原管理端点的
 // 查询，不启动自动策略或伸缩执行器。已有业务历史的实例不能回到首次签发阶段。
-func (worker *PGWorker) awaitInitialQualification(ctx context.Context, endpoint *ControlEndpoint) error {
+func (worker *PGWorker) awaitInitialQualification(ctx context.Context, endpoint *ControlEndpoint, observe func(Tick)) error {
 	snapshot, err := worker.session.store.Load(ctx)
 	if err != nil {
 		return err
@@ -134,11 +136,23 @@ func (worker *PGWorker) awaitInitialQualification(ctx context.Context, endpoint 
 	if state.HighWater != nil || state.InitialHeld != nil || state.BudgetHeld != nil || state.CapacityHeld != nil || state.ServiceClosure != nil {
 		return fmt.Errorf("%w: qualification source missing for an existing service", ErrServiceSafety)
 	}
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
 	for {
+		worker.refreshRuntimeSelection(ctx)
+		if observe != nil && worker.runtimeStatus != nil {
+			copy := *worker.runtimeStatus
+			observe(Tick{Progress: pgexec.AwaitingFact, RuntimeSelection: &copy})
+		}
+		if worker.qualification != nil {
+			return nil
+		}
 		var call controlCall
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
+		case <-ticker.C:
+			continue
 		case call = <-endpoint.readCalls:
 		case call = <-endpoint.calls:
 		}
@@ -188,6 +202,10 @@ func (worker *PGWorker) executeControl(ctx context.Context, command control.Coor
 	switch command.Action {
 	case control.CoordinationState:
 		result.Progress = pgexec.Idle
+		if worker.runtimeStatus != nil {
+			copy := *worker.runtimeStatus
+			result.RuntimeSelection = &copy
+		}
 	case control.CoordinationResourceState, control.CoordinationRepairHeld, control.CoordinationObserveHeld:
 		if worker.resourceOwner == nil {
 			return result, fmt.Errorf("original resource owner is unavailable")

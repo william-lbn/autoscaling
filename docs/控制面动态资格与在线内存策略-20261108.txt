@@ -1,0 +1,30 @@
+控制面动态资格与在线内存策略（组件通过，公开创建尚未验收）
+
+架构边界
+1. 原独立 Collector/Issuer 负责真实资格；控制面只能选择其原 UID/完整摘要。
+2. 期望选择存于独立 neon-control-* 平台命名空间。Agent 在此空间只有 get；
+   不借用其 VM 命名空间的 Outside/Runner ConfigMap CREATE 能力写策略。
+   跨 namespace 不设置无效 VM ownerReference，文档绑定 namespace/name/VM UID/
+   incarnation/computeInstanceID/PG boot。Reader 首读固定选择对象 UID，同名替换拒绝。
+3. 原 Owner 串行循环在同一 Session/原 PG 与 Root SDK 内首次装载资格。
+   不重启 Agent，不创建第二执行者，不重建 SDK 以清除未知状态。
+4. 策略代次只前进；同代改内容、旧代、错 PG boot、资格变更均冻结新自动建议。
+   已接受或结果未知的 Begin 仍由原 WAL 对账；旧动作未结束时新代保持等待。
+5. Runtime 读取失败只暂停新自动建议，原安全预算/SQL 由原审计继续维护。
+   不恢复旧 30 秒 SQL 生存租约，不放松 normal 真硬降限/Unknown/旧写者 fencing。
+6. 产品上下限只从原明确目录选择目标，保留范围外的当前真实规格用于采样。
+   提高下限通过原 Grow 收敛；降低上限仍等待原安全缩容条件，不直接写硬限。
+7. 原管理 state/Agent state 同时返回 desired/applied 代次与摘要、固定等待码。
+   applied 仅表示 Owner 已采用策略，绝不等于 PG/normal/VM 实际内存已改变。
+
+验证与剩余
+- Linux 有界增量、离线缓存验证 11 主用例 / 43 子用例，跳过 0；vet、Agent/
+  Qualifier ELF 构建通过，峰值约 0.84 GiB，OOM=0。
+- 原首次失败因新协议夹具未提供 work/state；只补同夹具的既有工作状态响应，
+  未据此修改产品采样或删除安全检查。失败目录 runtime-selection-2e5c7153 保留。
+- 后继 0caddeab/bcf63aee/f0ff262d 是分阶段通过，有重叠，不累加用例。
+- 最终权威归档：/data/neon-control-plane/runs/20261107-控制面重新启动/
+  runtime-selection-5f1b2190/validation.PUBLIC.json，源 SHA/退出码/原始日志均在同目录。
+- 此时尚未发布新 Agent/Qualifier 镜像或启用动态选择；新项目资格 Job、公开策略
+  API 与当前117/118/119真实创建→SQL→策略→实际读回仍须完成。已有核心
+  PG17/PG18 各 4/4 不能替代本次控制面端到端。

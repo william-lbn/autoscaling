@@ -17,6 +17,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/owner"
 	"github.com/neondatabase/autoscaling/pkg/dsga/policy"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+	"github.com/neondatabase/autoscaling/pkg/dsga/runtimeselection"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 	"github.com/neondatabase/autoscaling/pkg/util"
@@ -25,10 +26,12 @@ import (
 // DSGAConfig是受信Agent配置，不从VM普通注解/HTTP请求接受URL、CA或token路径。
 // nil保留原官方静态流程；看到受管标记后即使缺配置也只能失败，不能回落legacy。
 type DSGAConfig struct {
-	GatewayURL            string `json:"gatewayURL"`
-	ManagementCAFile      string `json:"managementCAFile"`
-	ProjectedTokenFile    string `json:"projectedTokenFile"`
-	RequestTimeoutSeconds uint   `json:"requestTimeoutSeconds"`
+	// 可信平台专用命名空间内逐 VM UID 选择，须先安装独立写入准入保护。
+	RuntimeSelectionNamespace string `json:"runtimeSelectionNamespace,omitempty"`
+	GatewayURL                string `json:"gatewayURL"`
+	ManagementCAFile          string `json:"managementCAFile"`
+	ProjectedTokenFile        string `json:"projectedTokenFile"`
+	RequestTimeoutSeconds     uint   `json:"requestTimeoutSeconds"`
 	// 凭据/授权等待与PG执行有不同期限：PG协议允许等待60秒，不能把凭据
 	// 的30秒上限复用于执行而固定制造未知结果。90..120秒覆盖网关总期限。
 	ComputeTimeoutSeconds uint `json:"computeTimeoutSeconds"`
@@ -49,9 +52,11 @@ type DSGAConfig struct {
 }
 
 type DSGARunnerState struct {
-	Phase       string           `json:"phase"`
-	IssuerEpoch control.Uint64   `json:"issuerEpoch"`
-	Instance    control.Instance `json:"instance"`
+	RuntimeSelection *runtimeselection.Status `json:"runtimeSelection,omitempty"`
+	ObservedAt       time.Time                `json:"observedAt,omitzero"`
+	Phase            string                   `json:"phase"`
+	IssuerEpoch      control.Uint64           `json:"issuerEpoch"`
+	Instance         control.Instance         `json:"instance"`
 }
 
 func (r *Runner) dsgaState(ctx context.Context, state DSGARunnerState) {
@@ -160,12 +165,38 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		if source, ok := config.PrepareQualifications[string(r.vmUID)]; ok {
 			qualifications = append(qualifications, source)
 		}
+		var runtimeRead owner.RuntimeSelectionReader
+		var runtimeInitial *runtimeselection.Selection
+		if len(qualifications) == 0 && config.RuntimeSelectionNamespace != "" {
+			stage = "runtime_selection"
+			reader, readErr := runtimeselection.NewReader(r.global.kubeClient.CoreV1(), store.Binding(), config.RuntimeSelectionNamespace)
+			if readErr != nil {
+				return readErr
+			}
+			selected, readErr := reader.Read(ownerCtx)
+			if readErr != nil {
+				return readErr
+			}
+			if selected != nil {
+				runtimeInitial = selected
+				qualifications = append(qualifications, selected.Qualification)
+			}
+			runtimeRead = reader.Read
+		}
 		stage = "pg_worker_new"
 		worker, err := session.NewProductionPGWorker(ownerCtx, compute.Config{BaseURL: config.GatewayURL, Instance: control.Instance{VMUID: identity.VMUID, ComputeInstanceID: identity.ComputeInstanceID, PGBootID: 0}, IssuerEpoch: session.Actor().Epoch, Timeout: time.Duration(config.ComputeTimeoutSeconds) * time.Second, Transport: credentials.ManagementTransport(), Token: credentials.Token, Pending: nil, AdmissionPending: nil, AdmissionClose: nil}, resources, r.global.kubeClient.CoreV1(), qualifications...)
 		if err != nil {
 			return err
 		}
 		defer worker.CloseIdleConnections()
+		// 构造后已取得真实 PG boot；冷启动/换 Owner 也必须核这一完整身份，
+		// 不能仅凭相同 VM/资格引用让另一个 PG boot 沿用旧选择。
+		if runtimeInitial != nil {
+			instance, _ := worker.Binding()
+			if runtimeInitial.Instance != instance {
+				return fmt.Errorf("runtime selection belongs to another original PG instance")
+			}
+		}
 		if automatic, ok := config.AutomaticMemory[string(r.vmUID)]; ok {
 			stage = "automatic_policy"
 			if err := worker.ConfigureAutomaticMemory(automatic, r.global.kubeClient.CoreV1()); err != nil {
@@ -195,8 +226,14 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		// 重发未知PG/Root/VM POST，也不另开legacy执行器绕过领域。
 		stage = "pg_run"
 		var diagnostic dsgaTickDiagnostic
-		return worker.Run(ownerCtx, owner.PGLoopOptions{EnableInFlightGrow: true, PollInterval: time.Duration(config.PollIntervalSeconds) * time.Second, Control: endpoint, Wake: updated.Recv(), Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, Observe: func(tick owner.Tick) {
+		return worker.Run(ownerCtx, owner.PGLoopOptions{RuntimeSelection: runtimeRead, EnableInFlightGrow: true, PollInterval: time.Duration(config.PollIntervalSeconds) * time.Second, Control: endpoint, Wake: updated.Recv(), Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, Observe: func(tick owner.Tick) {
 			diagnostic.observe(logger, tick)
+			if tick.RuntimeSelection != nil {
+				if tick.RuntimeSelection.AppliedGeneration > 0 {
+					phase = "running"
+				}
+				r.dsgaState(ownerCtx, DSGARunnerState{Phase: phase, IssuerEpoch: epoch, Instance: instance, RuntimeSelection: tick.RuntimeSelection, ObservedAt: time.Now().UTC()})
+			}
 			if tick.Err == nil {
 				r.status.update(r.global, func(stat podStatus) podStatus { now := time.Now(); stat.dsgaLastSuccessfulCheck = &now; return stat })
 			}
