@@ -126,7 +126,7 @@ func validateRuntimeTemplateDocument(d RuntimeDocument) error {
 		}
 		return nil
 	}
-	if d.ProtocolVersion != 2 || d.PolicyTemplatesSHA256 != runtimePolicyDigest(d.PolicyTemplatesJSON) {
+	if (d.ProtocolVersion != 2 && d.ProtocolVersion != 3) || d.PolicyTemplatesSHA256 != runtimePolicyDigest(d.PolicyTemplatesJSON) {
 		return fmt.Errorf("runtime v2 original template bytes differ")
 	}
 	_, err := parseRuntimePolicyTemplates(d.PolicyTemplatesJSON)
@@ -149,6 +149,11 @@ func RenderRuntimePolicyAssets(runtimeRaw []byte) (map[string][]byte, error) {
 		return nil, err
 	}
 	assets := map[string][]byte{}
+	if public, err := runtimeComputePublicConfig(d, source); err != nil {
+		return nil, err
+	} else if public != nil {
+		assets[RuntimeComputePublicAssetName] = public
+	}
 	if d.ProtocolVersion == 1 {
 		return assets, nil
 	}

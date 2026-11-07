@@ -56,6 +56,14 @@ func run() error {
 	if len(os.Args) == 2 && os.Args[1] == "recover-initial-boot" {
 		return resourceguard.RecoverInitialBootGuest(context.Background())
 	}
+	if len(os.Args) == 2 && os.Args[1] == "runtime-compute-id" {
+		name, err := resourceguard.RuntimeComputeWorkload()
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintln(os.Stdout, name)
+		return err
+	}
 	if len(os.Args) == 2 && os.Args[1] == "wait-controller-ready" {
 		return resourceguard.WaitTrustedControllerReady(context.Background())
 	}

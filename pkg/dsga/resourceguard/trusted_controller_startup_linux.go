@@ -5,6 +5,7 @@ package resourceguard
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
@@ -146,16 +147,33 @@ func trustedControllerImageContract() error {
 		return ErrUnknown
 	}
 	var plan struct {
-		ProtocolVersion uint32   `json:"protocol_version"`
-		ExecutionModel  string   `json:"execution_model,omitempty"`
-		ComputeUID      uint32   `json:"compute_uid"`
-		ComputeGID      uint32   `json:"compute_gid"`
-		ComputeArgv     []string `json:"compute_argv"`
-		ComputeEnv      []string `json:"compute_env"`
-		LoaderPaths     []string `json:"loader_paths"`
+		ProtocolVersion       uint32   `json:"protocol_version"`
+		ExecutionModel        string   `json:"execution_model,omitempty"`
+		ComputeIdentitySource string   `json:"compute_identity_source,omitempty"`
+		ComputeUID            uint32   `json:"compute_uid"`
+		ComputeGID            uint32   `json:"compute_gid"`
+		ComputeArgv           []string `json:"compute_argv"`
+		ComputeEnv            []string `json:"compute_env"`
+		LoaderPaths           []string `json:"loader_paths"`
 	}
 	if e = control.UnmarshalObject(raw, &plan); e != nil || plan.ProtocolVersion != 1 || plan.ExecutionModel != TrustedControllerExecutionModel || plan.ComputeUID == 0 || plan.ComputeGID == 0 || len(plan.ComputeArgv) == 0 || plan.ComputeArgv[0] != trustedControllerComputePath {
 		return ErrUnknown
+	}
+	if e = ValidateComputeIdentityTemplate(plan.ComputeIdentitySource, plan.ExecutionModel, plan.ComputeArgv, plan.ComputeEnv); e != nil {
+		return errors.Join(ErrUnknown, e)
+	}
+	// 新公钥/名称来源必须与镜像选择一致；新二进制不能把旧固定镜像
+	// 当通用发行，反向也不能因旧Runtime缺字段退回镜像内测试身份。
+	_, runtimeRaw, err := runtimeSource()
+	if err != nil {
+		return err
+	}
+	var runtime RuntimeDocument
+	if err = json.Unmarshal(runtimeRaw, &runtime); err != nil {
+		return err
+	}
+	if (plan.ComputeIdentitySource == RuntimeComputeIdentitySource) != (runtime.ProtocolVersion == 3 && runtime.ComputeStartup != nil) {
+		return fmt.Errorf("image and original runtime Compute startup contract differ")
 	}
 	f, e = rootFile("/etc/inittab", false)
 	if e != nil {
@@ -167,4 +185,34 @@ func trustedControllerImageContract() error {
 		return errors.Join(ErrUnknown, fmt.Errorf("trusted-controller fixed init contract differs"), e)
 	}
 	return nil
+}
+
+// RuntimeComputeWorkload只输出已封存原来源中的非秘密DNS名称。启动脚本仍执行
+// CheckGuest和原Root ready；不能从命令参数/环境/VM command覆盖身份。
+func RuntimeComputeWorkload() (string, error) {
+	if os.Getuid() != 0 || os.Geteuid() != 0 {
+		return "", ErrUnknown
+	}
+	source, raw, err := runtimeSource()
+	if err != nil {
+		return "", err
+	}
+	if err = matchSealedFile(FixedSealedRuntimePath, raw); err != nil {
+		return "", err
+	}
+	var d RuntimeDocument
+	if err = json.Unmarshal(raw, &d); err != nil || d.ProtocolVersion != 3 || d.ComputeStartup == nil {
+		return "", ErrUnknown
+	}
+	if err = validateRuntimeComputeStartup(d, source); err != nil {
+		return "", err
+	}
+	public, err := runtimeComputePublicConfig(d, source)
+	if err != nil {
+		return "", err
+	}
+	if err = matchSealedFile(RuntimeComputePublicPath, public); err != nil {
+		return "", err
+	}
+	return d.ComputeStartup.WorkloadName, nil
 }

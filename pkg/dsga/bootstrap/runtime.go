@@ -52,8 +52,10 @@ func Runtime(vm *vmv1.VirtualMachine, secret *corev1.Secret) (resourceguard.Runt
 			} `json:"dynamic_shared_buffers"`
 		} `json:"spec"`
 		Control struct {
+			TLS  json.RawMessage `json:"tls"`
 			JWKS struct {
 				Keys []struct {
+					KeyID     string   `json:"kid"`
 					Use       string   `json:"use"`
 					Ops       []string `json:"key_ops"`
 					Algorithm string   `json:"alg"`
@@ -79,9 +81,28 @@ func Runtime(vm *vmv1.VirtualMachine, secret *corev1.Secret) (resourceguard.Runt
 	if len(keys) != 1 || keys[0].Use != "sig" || len(keys[0].Ops) != 1 || keys[0].Ops[0] != "verify" || keys[0].Algorithm != "EdDSA" || keys[0].Type != "OKP" || keys[0].Curve != "Ed25519" || keys[0].X != source.ControlPublicKey {
 		return d, fmt.Errorf("resource source control key differs from original Compute key")
 	}
+	// 仅新发行显式选择通用启动。逻辑名称来自原VM metadata，不能把物理
+	// ComputeInstanceID当作名称；完整配置仍走原认证configure，不进入ISO/argv。
+	if selection, present := secret.Data[resourceguard.ComputeStartupSecretKey]; present {
+		// 当前通用发行采用已验收Gateway/Proxy TLS边界，Guest只启动原生
+		// JWT管理口。拒绝与实际未挂载Guest证书不一致的配置，不能悄悄忽略。
+		if len(native.Control.TLS) != 0 && !bytes.Equal(bytes.TrimSpace(native.Control.TLS), []byte("null")) {
+			return d, fmt.Errorf("generic Compute runtime does not mount Guest TLS material")
+		}
+		var selected resourceguard.ComputeStartupSelection
+		if len(selection) > 1024 || json.Unmarshal(selection, &selected) != nil || selected.Validate() != nil || d.ProtocolVersion != 2 {
+			return d, fmt.Errorf("invalid original generic Compute selection")
+		}
+		sum := sha256.Sum256(config)
+		d.ProtocolVersion = 3
+		d.ComputeStartup = &resourceguard.RuntimeComputeStartup{ProtocolVersion: 1, WorkloadName: vm.Name, NativeConfigSHA256: hex.EncodeToString(sum[:]), ControlKeyID: keys[0].KeyID}
+		if _, err := d.Source(); err != nil {
+			return d, err
+		}
+	}
 	// 原Secret身份与原预算先核完，再以已分配UID的canonical文档渲染。
 	// 有效policy不回填文档/Secret，避免Runtime SHA与Secret UID自引用。
-	if d.ProtocolVersion == 2 {
+	if d.ProtocolVersion >= 2 {
 		canonical, err := json.Marshal(d)
 		if err != nil {
 			return d, err

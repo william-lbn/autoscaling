@@ -73,13 +73,14 @@ type SourceConfig struct {
 // 重序列化/只比较几个字段后丢弃来源。该包验证结构与字节绑定，不认证自报Secret
 // UID；实际生产者必须先核对原VM/journal/ownerref/Secret UID和所有启动输入。
 type RuntimeDocument struct {
-	ProtocolVersion       uint32 `json:"protocol_version"`
-	Incarnation           string `json:"incarnation"`
-	ConfigSecretUID       string `json:"config_secret_uid"`
-	SourceSHA256          string `json:"source_sha256"`
-	SourceJSON            []byte `json:"source_json"`
-	PolicyTemplatesJSON   []byte `json:"policy_templates_json,omitempty"`
-	PolicyTemplatesSHA256 string `json:"policy_templates_sha256,omitempty"`
+	ProtocolVersion       uint32                 `json:"protocol_version"`
+	Incarnation           string                 `json:"incarnation"`
+	ConfigSecretUID       string                 `json:"config_secret_uid"`
+	SourceSHA256          string                 `json:"source_sha256"`
+	SourceJSON            []byte                 `json:"source_json"`
+	PolicyTemplatesJSON   []byte                 `json:"policy_templates_json,omitempty"`
+	PolicyTemplatesSHA256 string                 `json:"policy_templates_sha256,omitempty"`
+	ComputeStartup        *RuntimeComputeStartup `json:"compute_startup,omitempty"`
 }
 
 func (s SourceConfig) Validate() error {
@@ -115,7 +116,7 @@ func (s SourceConfig) Validate() error {
 
 func (d RuntimeDocument) Source() (SourceConfig, error) {
 	var s SourceConfig
-	if (d.ProtocolVersion != 1 && d.ProtocolVersion != 2) || control.ValidateIncarnation(d.Incarnation) != nil || control.ValidateID(d.ConfigSecretUID, "config Secret UID") != nil || len(d.SourceJSON) == 0 || len(d.SourceJSON) > 16*1024 {
+	if (d.ProtocolVersion != 1 && d.ProtocolVersion != 2 && d.ProtocolVersion != 3) || control.ValidateIncarnation(d.Incarnation) != nil || control.ValidateID(d.ConfigSecretUID, "config Secret UID") != nil || len(d.SourceJSON) == 0 || len(d.SourceJSON) > 16*1024 {
 		return s, fmt.Errorf("invalid resource runtime source binding")
 	}
 	if err := validateRuntimeTemplateDocument(d); err != nil {
@@ -128,7 +129,10 @@ func (d RuntimeDocument) Source() (SourceConfig, error) {
 	if err := json.Unmarshal(d.SourceJSON, &s); err != nil {
 		return s, err
 	}
-	return s, s.Validate()
+	if err := s.Validate(); err != nil {
+		return s, err
+	}
+	return s, validateRuntimeComputeStartup(d, s)
 }
 
 // TotalUpperBytes供生产者在任何资源写/Secret创建之前校验整份显式额度；只做
@@ -154,6 +158,16 @@ func (v *RuntimeDocument) UnmarshalJSON(data []byte) error {
 	var next plain
 	if err := control.UnmarshalObject(data, &next); err != nil {
 		return err
+	}
+	// 旧版本按字段出现拒绝，null/空值也不能偷偷扩展原协议。
+	if next.ProtocolVersion != 3 {
+		var fields map[string]json.RawMessage
+		if err := json.Unmarshal(data, &fields); err != nil {
+			return err
+		}
+		if _, ok := fields["compute_startup"]; ok {
+			return fmt.Errorf("Compute startup field requires runtime v3")
+		}
 	}
 	// v1按字段出现拒绝，null/空值也不能偷偷扩展原协议。
 	if next.ProtocolVersion == 1 {

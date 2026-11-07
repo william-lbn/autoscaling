@@ -49,7 +49,7 @@ func initialPrebootBindInputs(c bootprotocol.InitialPrebootChallenge, raw []byte
 		return zero, err
 	}
 	_, familyErr := normalInitialWALFamilyForRequirements(req)
-	if d.ProtocolVersion != 2 || !req.Enabled() || familyErr != nil || source.Config != config || c.Identity.VMUID != config.VMUID || c.Identity.Incarnation != d.Incarnation || c.RuntimeSHA256 != req.RuntimeDocumentSHA256() || c.ResourceSHA256 != req.ResourceSourceSHA256() || c.ConfigSecretUID != req.ConfigSecretUID() || c.KernelBuildSHA256 != req.KernelBuildReference().KernelArtifactSHA256 || uint64(c.OriginalBase) > req.BootMemoryUpperBoundBytes() {
+	if (d.ProtocolVersion != 2 && d.ProtocolVersion != 3) || !req.Enabled() || familyErr != nil || source.Config != config || c.Identity.VMUID != config.VMUID || c.Identity.Incarnation != d.Incarnation || c.RuntimeSHA256 != req.RuntimeDocumentSHA256() || c.ResourceSHA256 != req.ResourceSourceSHA256() || c.ConfigSecretUID != req.ConfigSecretUID() || c.KernelBuildSHA256 != req.KernelBuildReference().KernelArtifactSHA256 || uint64(c.OriginalBase) > req.BootMemoryUpperBoundBytes() {
 		return zero, fmt.Errorf("initial Guest challenge differs from fixed full original runtime source")
 	}
 	upper, err := source.Limits.totalUpper()

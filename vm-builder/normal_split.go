@@ -30,13 +30,14 @@ const normalPlanPath = "/neonvm/config/dsga-normal-build-plan.json"
 // 这是构建输入，不是Guest授权协议。原ISO/镜像来源、固定角色和ELF依赖闭包
 // 仍须独立封存；不因用户给了合格JSON就发normal许可。Env不打印到构建日志。
 type normalBuildPlan struct {
-	ProtocolVersion uint32   `json:"protocol_version"`
-	ExecutionModel  string   `json:"execution_model,omitempty"`
-	ComputeUID      uint32   `json:"compute_uid"`
-	ComputeGID      uint32   `json:"compute_gid"`
-	ComputeArgv     []string `json:"compute_argv"`
-	ComputeEnv      []string `json:"compute_env"`
-	LoaderPaths     []string `json:"loader_paths"`
+	ProtocolVersion       uint32   `json:"protocol_version"`
+	ExecutionModel        string   `json:"execution_model,omitempty"`
+	ComputeIdentitySource string   `json:"compute_identity_source,omitempty"`
+	ComputeUID            uint32   `json:"compute_uid"`
+	ComputeGID            uint32   `json:"compute_gid"`
+	ComputeArgv           []string `json:"compute_argv"`
+	ComputeEnv            []string `json:"compute_env"`
+	LoaderPaths           []string `json:"loader_paths"`
 }
 
 var normalEnvName = regexp.MustCompile(`^[A-Z_][A-Z0-9_]*$`)
@@ -93,6 +94,9 @@ func decodeNormalBuildPlan(raw []byte) (normalBuildPlan, error) {
 		}
 		prev = v
 	}
+	if e := resourceguard.ValidateComputeIdentityTemplate(p.ComputeIdentitySource, p.ExecutionModel, p.ComputeArgv, p.ComputeEnv); e != nil {
+		return p, e
+	}
 	return p, nil
 }
 func normalLoaderPath(p string) bool {
@@ -130,12 +134,19 @@ func normalComputeScript(p normalBuildPlan) string {
 	quoted := make([]string, len(args))
 	for i, a := range args {
 		quoted[i] = shellescape.Quote(a)
+		if p.ComputeIdentitySource == resourceguard.RuntimeComputeIdentitySource && a == resourceguard.RuntimeComputeIdentityPlaceholder {
+			quoted[i] = "\"$compute_identity\""
+		}
 	}
 	// 不生成可变vmstarter.sh，不读runtime command/env，不使用eval或二次shell引用。
 	return "#!/neonvm/bin/sh\nset -eu\n/neonvm/bin/dsga-resource-guard check-guest >/dev/null || exit 1\n[ -f /run/neon-dsga/vmstart.allowed ] || exit 1\nexec /neonvm/bin/busybox flock -x /run/neon-dsga/vmstart.lock " + strings.Join(quoted, " ") + "\n"
 }
 func normalTrustedComputeScript(p normalBuildPlan) string {
-	return strings.Replace(normalComputeScript(p), "[ -f /run/neon-dsga/vmstart.allowed ] || exit 1", "/neonvm/bin/dsga-resource-guard wait-controller-ready || exit 1", 1)
+	script := strings.Replace(normalComputeScript(p), "[ -f /run/neon-dsga/vmstart.allowed ] || exit 1", "/neonvm/bin/dsga-resource-guard wait-controller-ready || exit 1", 1)
+	if p.ComputeIdentitySource == resourceguard.RuntimeComputeIdentitySource {
+		script = strings.Replace(script, "exec /neonvm/bin/busybox flock", "compute_identity=\"$(/neonvm/bin/dsga-resource-guard runtime-compute-id)\" || exit 1\nexec /neonvm/bin/busybox flock", 1)
+	}
+	return script
 }
 func normalBuilderExecutable() ([]byte, error) {
 	if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
