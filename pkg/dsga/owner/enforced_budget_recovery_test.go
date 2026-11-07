@@ -23,6 +23,11 @@ func TestProductionEnforcedBudgetFormalRecovery(t *testing.T) {
 	}
 }
 
+// 使用同一正式恢复前驱；PG gate 是协议 peer，真实 K8s 后继伸缩另行验收。
+func TestProductionEnforcedBudgetRecoveryHistoryAllowsNewGate(t *testing.T) {
+	productionInitialService(t, "enforced-budget-recovery-new-gate")
+}
+
 func verifyEnforcedBudgetRecovery(t *testing.T, ctx context.Context, mode string, f *businessOwnerTransfer,
 	session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, core *kubefake.Clientset,
 	source budget.QualificationSource, pg *initialServicePG, root *guestRootFixture, runner *vmguard.Runner) {
@@ -103,6 +108,36 @@ func verifyEnforcedBudgetRecovery(t *testing.T, ctx context.Context, mode string
 	count := pg.reopenFixture.posts
 	pg.mu.Unlock()
 	require.Equal(t, opens, count)
+	if mode == "new-gate" {
+		// 原恢复已完成；后继合法门禁代次只改变当前 peer，历史完成证据保留。
+		// 当前容量、Root/Host/Runner 和原始预算均由完整生产读者重新核验。
+		pg.mu.Lock()
+		pg.reopenFixture = nil // 原恢复 peer 已完成，后继关闭使用正常准入处理器。
+		pg.gate.Revision++
+		pg.mu.Unlock()
+		require.NotEqual(t, life.Current.Snapshot().AdmissionRevision, pg.shared().Observed.AdmissionRevision)
+		require.NoError(t, worker.inspectIdleService(ctx, after))
+		unchanged, err := f.store.Load(ctx)
+		require.NoError(t, err)
+		require.Equal(t, after.State(), unchanged.State(), "闲置审计不能重写恢复历史")
+		pg.mu.Lock()
+		renewals = pg.leaseRenewals
+		pg.mu.Unlock()
+		require.Zero(t, renewals)
+
+		// 历史记录不参与当前续租，当前真实硬限漂移仍由原来源审计关闭服务。
+		root.mu.Lock()
+		root.view.Actual.MemoryMaxBytes++
+		root.mu.Unlock()
+		progress, err = worker.Advance(ctx)
+		require.NoError(t, err)
+		require.Equal(t, pgexec.Recorded, progress)
+		closedAgain, err := f.store.Load(ctx)
+		require.NoError(t, err)
+		require.NotNil(t, closedAgain.State().ServiceClosure)
+		require.Equal(t, after.State().InitialHeld, closedAgain.State().InitialHeld)
+		require.False(t, pg.shared().Observed.AdmissionOpen)
+	}
 }
 
 func verifyOpenBudgetTakeover(t *testing.T, ctx context.Context, drift bool, f *businessOwnerTransfer,

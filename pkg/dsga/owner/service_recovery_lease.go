@@ -83,6 +83,12 @@ func noteRecoveryOpenReply(ctx context.Context, fact control.AdmissionResponse, 
 // 原Run latch审计，避免显式调用结束后再串联数轮审计耗尽同一个30秒窗口。
 func (w *PGWorker) renewAuditedRecoveryLease(ctx context.Context, snapshot *journal.Snapshot) (err error) {
 	scope, _ := ctx.Value(recoveryLeaseScopeKey{}).(*recoveryLeaseScope)
+	if scope == nil && w.client.AdmissionPolicy() == control.AdmissionPolicyEnforcedBudget {
+		// 持续硬预算的当前容量与门禁已由调用方完整审计，无时间租约需要续期。
+		// ServiceLifecycle 是历史恢复证据，后继伸缩可以合法改变代次；
+		// 不能以旧恢复 gate 再约束当前服务。显式恢复 scope 仍走下方原校验。
+		return nil
+	}
 	m := snapshot.State()
 	var completed *journal.ServiceClosure
 	if scope == nil {
