@@ -364,7 +364,7 @@ func (s *Service) publish(ctx context.Context, d domain, pod *core.Pod, p hostgu
 		}
 		sealing = true
 	}
-	if m.Active == nil && m.BudgetHeld == nil && m.CapacityHeld == nil && m.InitialHeld == nil || m.Active != nil && m.Active.AbortRequested && !sealing {
+	if m.Active == nil && m.BudgetHeld == nil && m.CapacityHeld == nil && m.InitialHeld == nil || m.Active != nil && m.Active.AbortRequested && !sealing && !hostexec.CancelledShrinkNeedsAccounting(m) {
 		return nil
 	}
 	// 等Prepare真实完成后再请求发布，不制造替代预算。Runner已发布的原
@@ -419,6 +419,10 @@ func (s *Service) publish(ctx context.Context, d domain, pod *core.Pod, p hostgu
 				d.work.rememberSettledScan(p, closed, time.Now())
 			}
 		}
+		return err
+	}
+	if m.Active.AbortRequested {
+		_, err = publisher.AccountCancelledShrink(ctx)
 		return err
 	}
 	_, err = publisher.Reconcile(ctx)

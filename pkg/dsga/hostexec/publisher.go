@@ -70,7 +70,7 @@ func (p *Publisher) currentOwner(ctx context.Context, s *journal.Snapshot) error
 // prepared只取真实原VM同一次GET中的完整Completed前驱，不使用Pod传播注解。
 // 只要原Prepare已完成即可为Grow/Shrink持有Host；Shrink无独立ReserveHost步骤，
 // 也必须在最终VM动作之前发布。取消/新owner不从旧意图生成新的容量写入。
-func (p *Publisher) prepared(s *journal.Snapshot) (budget.Prepared, error) {
+func (p *Publisher) prepared(s *journal.Snapshot, cancelled bool) (budget.Prepared, error) {
 	var out budget.Prepared
 	m := s.State()
 	if m.ServiceClosure != nil {
@@ -79,7 +79,14 @@ func (p *Publisher) prepared(s *journal.Snapshot) (budget.Prepared, error) {
 		// 已在途持有继续保留；其结清/回收仍走各自完整水位核验。
 		return out, fmt.Errorf("host publisher blocked by retained service closure")
 	}
-	if !s.Dispatchable() || m.Active == nil || m.Active.AbortRequested || m.ResourceIdentity == nil || m.PGInstance == nil || *m.PGInstance != m.Active.Request.Key.Instance || m.Owner != m.Active.Origin || m.Active.Request.Key.IssuerEpoch != m.Owner.Epoch {
+	if !s.Dispatchable() || m.Active == nil || m.ResourceIdentity == nil || m.PGInstance == nil || *m.PGInstance != m.Active.Request.Key.Instance {
+		return out, fmt.Errorf("host publisher lacks current original dispatchable operation")
+	}
+	if cancelled {
+		if !CancelledShrinkNeedsAccounting(m) {
+			return out, fmt.Errorf("cancelled shrink has no verified accounting-only path")
+		}
+	} else if m.Active.AbortRequested || m.Owner != m.Active.Origin || m.Active.Request.Key.IssuerEpoch != m.Owner.Epoch {
 		return out, fmt.Errorf("host publisher lacks current original dispatchable operation")
 	}
 	for _, step := range m.Active.Steps {
@@ -158,12 +165,22 @@ func validClaim(cm *core.ConfigMap, binding journal.Binding, expected budget.Hos
 // 所有消费者均拒绝，因此只允许恢复尚未发布的同一完整CM；发布后缺原UID绝不
 // 创建替代。任一步未知都保留容量，下次从实际原Node/VM重读，绝不自动释放。
 func (p *Publisher) Reconcile(ctx context.Context) (budget.ObjectRef, error) {
+	return p.reconcile(ctx, false)
+}
+
+// AccountCancelledShrink 供原 Scheduler 在取消已经持久化后核实旧峰值，只用于实际容量结算。
+// 它从 VM、Runner、Node 读回相同实例和原水位，不发 PG/Guest/QMP 命令。
+func (p *Publisher) AccountCancelledShrink(ctx context.Context) (budget.ObjectRef, error) {
+	return p.reconcile(ctx, true)
+}
+
+func (p *Publisher) reconcile(ctx context.Context, cancelled bool) (budget.ObjectRef, error) {
 	var none budget.ObjectRef
 	s, err := p.vm.Load(ctx)
 	if err != nil {
 		return none, err
 	}
-	prepared, err := p.prepared(s)
+	prepared, err := p.prepared(s, cancelled)
 	if err != nil {
 		return none, err
 	}
@@ -187,7 +204,7 @@ func (p *Publisher) Reconcile(ctx context.Context) (budget.ObjectRef, error) {
 			return *h.Claim, nil
 		}
 	}
-	if prepared.Request.DeadlineUnixMillis <= control.Uint64(time.Now().UnixMilli()) {
+	if !cancelled && prepared.Request.DeadlineUnixMillis <= control.Uint64(time.Now().UnixMilli()) {
 		return none, fmt.Errorf("original Host request deadline expired before new publication")
 	}
 	plan, err := p.before(ctx, s, prepared)
@@ -200,6 +217,12 @@ func (p *Publisher) Reconcile(ctx context.Context) (budget.ObjectRef, error) {
 	n, err = p.node.Fence(ctx, n)
 	if err != nil {
 		return none, err
+	}
+	// 正常预留仍受原请求期限约束。取消后的结算只能引用已经付费且峰值完全相同的原 Node 行。
+	if cancelled {
+		if err := checkPaidShrink(s.State(), n.State(), plan); err != nil {
+			return none, err
+		}
 	}
 	n, held, err := p.node.Reserve(ctx, n, plan)
 	if err != nil {
