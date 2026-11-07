@@ -266,7 +266,12 @@ func (c *Collector) gather(ctx context.Context) (Report, Bundle, error) {
 	if json.Unmarshal(secret.Data[resourceguard.ResourceSecretKey], &source) != nil || source.Validate() != nil || source.Config.ExecutionModel != resourceguard.TrustedControllerExecutionModel {
 		return report, bundle, fmt.Errorf("original supported source required")
 	}
-	runtime := resourceguard.RuntimeDocument{ProtocolVersion: 2, Incarnation: b.Incarnation, ConfigSecretUID: string(secret.UID), SourceJSON: secret.Data[resourceguard.ResourceSecretKey], SourceSHA256: a.ResourceSourceSHA256, PolicyTemplatesJSON: secret.Data[resourceguard.PolicyTemplatesSecretKey], PolicyTemplatesSHA256: SHA256(secret.Data[resourceguard.PolicyTemplatesSecretKey])}
+	// 不能自行拼固定v2：通用Guest的v3包含原生配置摘要及逻辑Compute身份。
+	// 使用唯一启动投影，随后仍与实际Root报告摘要逐字节核对。
+	runtime, e := bootstrap.RuntimeForObservation(vm, secret)
+	if e != nil {
+		return report, bundle, e
+	}
 	runtimeRaw, e := json.Marshal(runtime)
 	if e != nil || SHA256(runtimeRaw) != a.RuntimeDocumentSHA256 {
 		return report, bundle, fmt.Errorf("artifact original Runtime bytes changed")

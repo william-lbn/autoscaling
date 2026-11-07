@@ -4,7 +4,10 @@ package bootstrap
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	vmfake "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned/fake"
+	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"testing"
 
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
@@ -78,5 +81,60 @@ func TestRuntimeGenericComputeUsesOriginalIdentityAndPublicConfig(t *testing.T) 
 	old, err := Runtime(vm, secret)
 	if err != nil || old.ProtocolVersion != 2 || old.ComputeStartup != nil {
 		t.Fatal("old startup silently upgraded", err)
+	}
+}
+
+// 共用投影可重读已选主的原实例，但首次启动门仍拒绝已运行日志。
+func TestRuntimeObservationSharesGenericProjectionWithoutRelaxingStartup(t *testing.T) {
+	for _, generic := range []bool{false, true} {
+		vm, secret := runtimeTemplatesProducerFixture(t, "original-observed-secret")
+		var source resourceguard.SourceConfig
+		if err := json.Unmarshal(secret.Data[resourceguard.ResourceSecretKey], &source); err != nil {
+			t.Fatal(err)
+		}
+		source.Config.ExecutionModel = resourceguard.TrustedControllerExecutionModel
+		secret.Data[resourceguard.ResourceSecretKey], _ = json.Marshal(source)
+		if generic {
+			var native map[string]any
+			json.Unmarshal(secret.Data["config.json"], &native)
+			native["compute_ctl_config"].(map[string]any)["jwks"].(map[string]any)["keys"].([]any)[0].(map[string]any)["kid"] = "original-control-key"
+			secret.Data["config.json"], _ = json.Marshal(native)
+			secret.Data[resourceguard.ComputeStartupSecretKey] = []byte(`{"protocol_version":1,"identity_source":"runtime-v1"}`)
+		}
+		initial, err := Runtime(vm, secret)
+		if err != nil {
+			t.Fatal(err)
+		}
+		clients := vmfake.NewSimpleClientset(vm)
+		store, err := journal.NewStore(clients.NeonvmV1().VirtualMachines(vm.Namespace), journal.Binding{Namespace: vm.Namespace, Name: vm.Name, VMUID: vm.UID, Incarnation: vm.Spec.DSGABootstrap.Incarnation})
+		if err != nil {
+			t.Fatal(err)
+		}
+		snap, err := store.Load(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
+		snap, err = store.Takeover(context.Background(), snap, snap.State().Owner, "actual-running-owner")
+		if err != nil {
+			t.Fatal(err)
+		}
+		running := snap.VirtualMachine()
+		if _, err = Runtime(running, secret); err == nil {
+			t.Fatal("observation relaxed original first-start gate")
+		}
+		observed, err := RuntimeForObservation(running, secret)
+		if err != nil {
+			t.Fatal(err)
+		}
+		before, _ := json.Marshal(initial)
+		after, _ := json.Marshal(observed)
+		if !bytes.Equal(before, after) {
+			t.Fatal("running observation changed original startup bytes")
+		}
+		changed := secret.DeepCopy()
+		changed.UID = "foreign-secret"
+		if _, err = RuntimeForObservation(running, changed); err == nil {
+			t.Fatal("observation accepted replacement Secret")
+		}
 	}
 }

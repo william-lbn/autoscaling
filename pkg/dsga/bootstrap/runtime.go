@@ -20,8 +20,19 @@ import (
 // 只处理真正pristine的首次创建；已有owner/history不能装成新Guest。运行后重启/
 // 迁移须另走保留旧资源/VM不确定性的受控恢复，不以此包重新初始化epoch1。
 func Runtime(vm *vmv1.VirtualMachine, secret *corev1.Secret) (resourceguard.RuntimeDocument, error) {
+	return boundRuntime(vm, secret, true)
+}
+
+// RuntimeForObservation只复算原immutable启动来源，供资格采集核对实际Guest摘要。
+// 与首次启动复用同一v1/v2/v3投影，允许已选主的原日志；不赋予重新启动、
+// 清账本或发布资格的权限。调用方仍需比对实际Root/Runner的原Runtime摘要。
+func RuntimeForObservation(vm *vmv1.VirtualMachine, secret *corev1.Secret) (resourceguard.RuntimeDocument, error) {
+	return boundRuntime(vm, secret, false)
+}
+
+func boundRuntime(vm *vmv1.VirtualMachine, secret *corev1.Secret, initial bool) (resourceguard.RuntimeDocument, error) {
 	var d resourceguard.RuntimeDocument
-	if err := CheckReady(vm, secret, true); err != nil {
+	if err := CheckReady(vm, secret, initial); err != nil {
 		return d, err
 	}
 	raw := secret.Data[resourceguard.ResourceSecretKey]
