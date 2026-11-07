@@ -71,6 +71,11 @@ func run(ctx context.Context, configPath, kubeconfigPath string) error {
 
 // runCollect只读API/UDS并归档本地证据；不会调用Issuer.Publish或修改任何Kube对象。
 func runCollect(ctx context.Context, configPath, kubeconfigPath string) error {
+	return runCollectMode(ctx, configPath, kubeconfigPath, false)
+}
+
+// 自动供应只串联原采集与原签发，不增加重试。发布不确定时原对象必须保留。
+func runCollectMode(ctx context.Context, configPath, kubeconfigPath string, publish bool) error {
 	config, err := qualificationissuer.LoadCollectorConfig(configPath)
 	if err != nil {
 		return err
@@ -111,8 +116,17 @@ func runCollect(ctx context.Context, configPath, kubeconfigPath string) error {
 	if err != nil {
 		return err
 	}
+	// Job使用私有emptyDir下的新目录；已有输出一律拒绝，不覆盖原证据。
+	if publish {
+		if err = os.Mkdir(config.OutputDirectory, 0o700); err != nil {
+			return fmt.Errorf("fresh private collection directory required")
+		}
+	}
 	if err = qualificationissuer.WriteCollection(collection); err != nil {
 		return err
+	}
+	if publish {
+		return run(ctx, config.OutputDirectory+"/issuer-config.proposed.json", kubeconfigPath)
 	}
 	return json.NewEncoder(os.Stdout).Encode(map[string]any{"collected": true, "published": false, "report_sha256": collection.ProposedIssuerConfig.ReportSHA256, "snapshot_sha256": collection.SnapshotSHA256, "proposed_issuer_config": config.OutputDirectory + "/issuer-config.proposed.json"})
 }
@@ -120,16 +134,19 @@ func runCollect(ctx context.Context, configPath, kubeconfigPath string) error {
 func main() {
 	config := flag.String("config", "", "root protected issuer startup configuration")
 	collectConfig := flag.String("collect-config", "", "root protected read-only collector configuration; never publishes")
+	collectPublishConfig := flag.String("collect-publish-config", "", "collect original evidence then publish once; never retry an unconfirmed publication")
 	kubeconfig := flag.String("kubeconfig", "", "root protected kubeconfig; otherwise fixed in-cluster credentials")
 	flag.Parse()
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
-	if (*config == "") == (*collectConfig == "") || flag.NArg() != 0 {
-		fmt.Fprintln(os.Stderr, "exactly one fixed --config or --collect-config required")
+	if !oneMode(*config, *collectConfig, *collectPublishConfig) || flag.NArg() != 0 {
+		fmt.Fprintln(os.Stderr, "exactly one fixed --config, --collect-config or --collect-publish-config required")
 		os.Exit(2)
 	}
 	var err error
-	if *collectConfig != "" {
+	if *collectPublishConfig != "" {
+		err = runCollectMode(ctx, *collectPublishConfig, *kubeconfig, true)
+	} else if *collectConfig != "" {
 		err = runCollect(ctx, *collectConfig, *kubeconfig)
 	} else {
 		err = run(ctx, *config, *kubeconfig)
@@ -138,4 +155,14 @@ func main() {
 		fmt.Fprintln(os.Stderr, "qualification not issued; preserve original input and any unconfirmed protected object")
 		os.Exit(1)
 	}
+}
+
+func oneMode(paths ...string) bool {
+	count := 0
+	for _, p := range paths {
+		if p != "" {
+			count++
+		}
+	}
+	return count == 1
 }

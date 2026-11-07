@@ -28,3 +28,7 @@
 - 此时尚未发布新 Agent/Qualifier 镜像或启用动态选择；新项目资格 Job、公开策略
   API 与当前117/118/119真实创建→SQL→策略→实际读回仍须完成。已有核心
   PG17/PG18 各 4/4 不能替代本次控制面端到端。
+
+【新项目一次性资格Job入口】
+新增 --collect-publish-config，仅依次调用已有Collector、WriteCollection、Issuer。保留 --collect-config 只读语义；三种模式必须互斥。Job使用新0700目录保留采集输入，不覆盖旧证据，不重试Unknown发布。镜像不含shell，直接执行正式二进制。
+定向CLI模式/缺原输入1根通过；vet及Linux静态二进制构建通过，归档 qualifier-cli-final-a893adfb。该结果不代表新项目公开端到端已通过。
