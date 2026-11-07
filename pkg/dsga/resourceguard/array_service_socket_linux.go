@@ -165,7 +165,13 @@ func (s *arrayNativeServices) serve(ctx context.Context, listener *net.UnixListe
 			}
 		}
 		if birth {
-			_ = s.handleBirth(call, conn)
+			if e := s.handleBirth(call, conn); e != nil {
+				// 原生首次握手失败会令 PG 退出。保留原错误及 errno 供整链定位，
+				// 不吞掉失败，也不重发 ACK 或改变来源、进程及持久状态校验。
+				var errno syscall.Errno
+				_ = errors.As(e, &errno)
+				fmt.Fprintf(os.Stderr, "DSGA_BIRTH_RPC_FAILURE errno=%d error=%q\n", uint32(errno), e.Error())
+			}
 		} else {
 			if e := s.handleArrays(call, conn); e != nil {
 				var stage *arrayPopulateStageError
