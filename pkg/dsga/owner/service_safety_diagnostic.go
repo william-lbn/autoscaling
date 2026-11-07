@@ -23,7 +23,7 @@ func (d IdleServiceDiagnostic) Stage() string {
 }
 func (d IdleServiceDiagnostic) Type() string {
 	switch d.kind {
-	case "validation", "context_canceled", "context_deadline", "k8s_forbidden", "k8s_not_found", "k8s_conflict", "k8s_unavailable", "resource_unknown", "runner_unknown", "resource_client", "unclassified":
+	case "validation", "context_canceled", "context_deadline", "k8s_forbidden", "k8s_not_found", "k8s_conflict", "k8s_unavailable", "resource_unknown", "runner_unknown", "resource_client", "resource_credential_unavailable", "resource_owner_unavailable", "resource_context_cancelled", "resource_transport_unconfirmed", "resource_response_unconfirmed", "resource_postmaster_birth_unconfirmed", "resource_guest_identity_changed", "unclassified":
 		return d.kind
 	default:
 		return "unclassified"
@@ -64,6 +64,14 @@ func idleServiceFailureType(err error) string {
 				return "k8s_unavailable"
 			}
 		case *resourceguard.ClientError:
+			// 生产首因必须区分管理读取、凭据与原进程身份。仅允许SDK的
+			// 固定码，保留原错误与Unknown，外部正文和凭据绝不进入日志。
+			if typed != nil {
+				switch typed.Code {
+				case "credential_unavailable", "owner_unavailable", "context_cancelled", "transport_unconfirmed", "response_unconfirmed", "postmaster_birth_unconfirmed", "guest_identity_changed":
+					return "resource_" + typed.Code
+				}
+			}
 			return "resource_client"
 		}
 		switch wrapped := e.(type) {

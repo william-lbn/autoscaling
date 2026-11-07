@@ -83,6 +83,9 @@ func TestIdleServiceDiagnosticIsBoundedAndRedacted(t *testing.T) {
 		{apierrors.NewNotFound(schema.GroupResource{Resource: "configmaps"}, "private-name"), "k8s_not_found"},
 		{resourceguard.ErrUnknown, "resource_unknown"}, {vmguard.ErrUnknown, "runner_unknown"},
 		{&resourceguard.ClientError{Code: "private-token", MayHaveExecuted: true}, "resource_client"},
+		{&resourceguard.ClientError{Code: "credential_unavailable"}, "resource_credential_unavailable"},
+		{&resourceguard.ClientError{Code: "postmaster_birth_unconfirmed"}, "resource_postmaster_birth_unconfirmed"},
+		{&resourceguard.ClientError{Code: "transport_unconfirmed"}, "resource_transport_unconfirmed"},
 		{&idleCyclicDiagnosticError{}, "validation"},
 	} {
 		require.NotPanics(t, func() { require.Equal(t, tc.want, idleServiceFailureType(tc.err)) })
@@ -99,12 +102,12 @@ func TestIdleServiceDiagnosticKeepsFirstFailureAndOriginalError(t *testing.T) {
 	require.Nil(t, tick.Err)
 	require.Equal(t, pgexec.Recorded, tick.Progress)
 	require.Equal(t, "root_state_read", tick.IdleService.Stage())
-	require.Equal(t, "resource_client", tick.IdleService.Type())
+	require.Equal(t, "resource_response_unconfirmed", tick.IdleService.Type())
 	require.Nil(t, w.diagnosticTick(pgexec.Idle, nil).IdleService, "next Tick cannot inherit an old failure")
 	w.recordIdleServiceDiagnostic("runner_original_receipt", original)
 	failed := w.diagnosticTick(pgexec.AwaitingFact, original)
 	require.Same(t, original, failed.Err)
 	require.True(t, original.MayHaveExecuted)
-	require.NotContains(t, fmt.Sprint(failed.IdleService), "response_unconfirmed")
+	require.Equal(t, "resource_response_unconfirmed", failed.IdleService.Type())
 	require.True(t, strings.HasPrefix(failed.IdleService.Stage(), "runner_"))
 }
