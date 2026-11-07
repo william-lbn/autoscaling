@@ -1,0 +1,47 @@
+{
+  "all_24_containers_collected": true,
+  "PG18_memory_actions": 4,
+  "transient_memory_observations": {
+    "Agent": {
+      "vm_unknown": 2,
+      "vm_snapshot_changed": 1
+    },
+    "Runner": {
+      "QMP_pending_original_readback": 2
+    },
+    "final": {
+      "all_operations_succeeded": true,
+      "Runner_pending": null,
+      "SQL_open": true
+    }
+  },
+  "existing_log_signals": {
+    "Scheduler": {
+      "lines": 261,
+      "ordinary_terminal_Pod_protection": 260,
+      "VM_Node_CAS_race": 1,
+      "four_Host_finalizations_confirmed": true
+    },
+    "Pageserver": {
+      "literal_error_matches": 51,
+      "severity": "INFO",
+      "message": "EOF during handshake",
+      "readiness_probe": {
+        "tcpSocket_port": 6400,
+        "periodSeconds": 10
+      },
+      "attribution": "10秒规律与实际TCP readiness probe一致，来源IP归属未额外证明"
+    },
+    "Proxy": {
+      "warnings": 7,
+      "message": "cancellation handler is not available",
+      "source": "proxy/src/cancellation.rs:481-484",
+      "effect": "原实现等待取消处理器，SQL会话继续服务",
+      "query_cancellation_validation": "本轮未纳入"
+    }
+  },
+  "limitations": [
+    "历史终态Pod保护告警仍存在",
+    "现有Proxy取消处理器配置告警仍存在"
+  ]
+}

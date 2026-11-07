@@ -1,0 +1,46 @@
+{
+  "passed": true,
+  "at": "2026-11-07T06:25:17.764748+00:00",
+  "PG_major": 18,
+  "UID": "02679a05-092f-4a50-b4f2-391fae7ac63e",
+  "PG_boot": "15917482883749979035",
+  "owner_epoch": "21",
+  "data": {
+    "pid": 336,
+    "boot": "2026-11-07T05:46:32.895554+00:00",
+    "rows": 512,
+    "checksum": "f3cfc7cfbdbc0fe5d836d4aa46397172",
+    "marks": 126,
+    "last_mark": 126,
+    "mark_ids": "539399097926390a3838c56c4a971088",
+    "persistence": "p",
+    "flush": "0/22AED20",
+    "after_commit": "0/22AED20"
+  },
+  "safekeepers": [
+    {
+      "peer": "safekeeper1",
+      "flush_lsn": "0/22AED20",
+      "commit_lsn": "0/22AED20",
+      "durable": true
+    },
+    {
+      "peer": "safekeeper2",
+      "flush_lsn": "0/22AED20",
+      "commit_lsn": "0/22AED20",
+      "durable": true
+    },
+    {
+      "peer": "safekeeper3",
+      "flush_lsn": "0/22AED20",
+      "commit_lsn": "0/22AED20",
+      "durable": true
+    }
+  ],
+  "runner_pending": null,
+  "runner_actual": {
+    "requested_bytes": "7516192768",
+    "actual_bytes": "7516192768"
+  },
+  "source_accepted_sha256": "a2d8bfd954ee44bac9bf21fba0e520b3a59fa47cb19b768e22c4038942451f96"
+}

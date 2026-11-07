@@ -1,0 +1,46 @@
+{
+  "key": {
+    "instance": {
+      "vm_uid": "02679a05-092f-4a50-b4f2-391fae7ac63e",
+      "compute_instance_id": "cp-24c41e23bb104ead",
+      "pg_boot_id": "15917482883749979035"
+    },
+    "issuer_epoch": "21",
+    "revision": "4",
+    "operation_id": {
+      "high": "17879690861358575984",
+      "low": "1789682292750277415"
+    }
+  },
+  "kind": "shrink",
+  "generation": 5,
+  "PG_buffers": 256,
+  "normal_memory_max": 1077411840,
+  "QMP_bytes": 7516192768,
+  "budget": "automatic-f8216c1b9513717018d63a90282fdb27",
+  "node": "worker-117",
+  "released_arrays": 4,
+  "host_finalization_sha256": "59b7607e995fc552ab14a342100c112d027787b9974ff88e32100a48a6f3ccd4",
+  "at": "2026-11-07T06:22:55.051189+00:00",
+  "label": "return_idle",
+  "seconds": 139.5,
+  "writes_while_in_flight": 20,
+  "before_commit": 91,
+  "after_commit": 125,
+  "reconnect": {
+    "data": {
+      "pid": 440,
+      "boot": "2026-11-07T05:46:32.895554+00:00",
+      "rows": 512,
+      "checksum": "f3cfc7cfbdbc0fe5d836d4aa46397172",
+      "marks": 125,
+      "last_mark": 125,
+      "mark_ids": "a3763bce578c26bcb451702c6f8baaaa",
+      "persistence": "p",
+      "flush": "0/22ACC10",
+      "after_commit": "0/22AEC30"
+    },
+    "role": "app_owner",
+    "exit": 0
+  }
+}

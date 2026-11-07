@@ -1,0 +1,25 @@
+{
+  "scope": "production static root -> original Builder Collector -> ext4/qcow2 -> Docker-visible Guest; no DEV Finalizer/runtime identity",
+  "Source": false,
+  "normal": false,
+  "E": false,
+  "K8s": false,
+  "source_base_digest": "sha256:460000d905b1a3ad63518d2ea02152131ac0aafda66e923f104dc66e5c1f8f1b",
+  "guest_digest": "sha256:9f6e552236f06615666fe28184f4e26bae59304ba12ab16f119f5801b9407abe",
+  "Docker_visible": true,
+  "guest_image_id": "sha256:e8fa72b210e46dede365bfb45891b66696f242cb66a53fde606303631bd39a95",
+  "guest_reference": "127.0.0.1:5001/neon-candidate/pg18-guest:launcher-940b25fb",
+  "guest_pin": "127.0.0.1:5001/neon-candidate/pg18-guest@sha256:9f6e552236f06615666fe28184f4e26bae59304ba12ab16f119f5801b9407abe",
+  "disk_qcow2_sha256": "b26d7418f4e10fc87016edfc56f6fff3bf44fa8824857b92c85e78d035ede172",
+  "production_guest_candidate_built": true,
+  "phases": {
+    "prepare-canonical-config-DHCP-before-base": 0,
+    "base": 0,
+    "collector": 0,
+    "mkfs": 0,
+    "qcow": 0,
+    "guest": 0,
+    "pull": 0
+  },
+  "seconds": 82.13003445207141
+}
