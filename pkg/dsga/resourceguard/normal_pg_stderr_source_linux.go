@@ -421,7 +421,11 @@ func (p *normalPgStderrPin) retirable() bool {
 	}
 	exited := []unix.PollFd{{Fd: int32(p.pidfd), Events: unix.POLLIN}}
 	n, e := unix.Poll(exited, 0)
-	if e != nil || n != 1 || exited[0].Revents != unix.POLLIN {
+	// 原 task 被 wait 回收后，Linux 会在 POLLIN 之外同时返回 POLLHUP。
+	// 复用严格退出解析：仍须 POLLIN，拒绝 HUP-only、ERR/NVAL 及未知位；
+	// 该退出事实还必须与下方原 pipe 的 EOF、零排队字节同时成立才能退役。
+	exitObserved, exitErr := normalSystemRoleLeaseExitPollResult(n, exited[0].Revents, e)
+	if exitErr != nil || !exitObserved {
 		return false
 	}
 	poll := []unix.PollFd{{Fd: int32(p.read.Fd()), Events: unix.POLLHUP}}

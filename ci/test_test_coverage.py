@@ -17,6 +17,8 @@ OWNER = coverage.MODULE + "/pkg/dsga/owner"
 JOURNAL = coverage.MODULE + "/pkg/dsga/journal"
 ORDINARY = coverage.MODULE + "/pkg/example"
 EMPTY = coverage.MODULE + "/pkg/no_tests"
+REPORTING = coverage.MODULE + "/pkg/reporting"
+FUNCTESTS = coverage.MODULE + "/pkg/neonvm/controllers/functests"
 
 
 class CoverageContractTest(unittest.TestCase):
@@ -33,6 +35,8 @@ class CoverageContractTest(unittest.TestCase):
             JOURNAL: sorted([*(f"TestJournal{i}" for i in range(24)), "FuzzJournal", "TestPrivateFixture"]),
             ORDINARY: ["Example", "TestPlain", "TestSub"],
             EMPTY: [],
+            REPORTING: ["TestAzureClient_send", "TestBytesForBilling"],
+            FUNCTESTS: ["TestAPIs"],
         }
         self.write_all()
 
@@ -45,7 +49,10 @@ class CoverageContractTest(unittest.TestCase):
     def selection(self, index):
         selected = {}
         for package, names in self.inventory.items():
-            if package not in (OWNER, JOURNAL):
+            if package in (REPORTING, FUNCTESTS):
+                if index == 8:
+                    selected[package] = names
+            elif package not in (OWNER, JOURNAL):
                 if index == 0:
                     selected[package] = names
             else:
@@ -103,14 +110,17 @@ class CoverageContractTest(unittest.TestCase):
         return [json.loads(line) for line in (self.directory(index) / name).read_text().splitlines()]
 
     def write_all(self):
-        for index in range(8):
+        for index in range(9):
             directory = self.directory(index)
             directory.mkdir(exist_ok=True)
             selected = self.selection(index)
             report = {
-                "schema_version": 1, "source_repository": "william-lbn/autoscaling",
+                "schema_version": 2, "source_repository": "william-lbn/autoscaling",
                 "source_commit": self.source, "architecture": "amd64", "execution": self.execution,
-                "shard_count": 8, "shard_index": index, "test_command": dict(coverage.TEST_COMMAND),
+                "shard_count": 9, "root_shard_count": 8, "shard_index": index,
+                "execution_environment": "host-integration" if index == 8 else "root-readonly",
+                "execution_user": {"uid": 1001, "gid": 1001} if index == 8 else {"uid": 0, "gid": 0},
+                "test_command": dict(coverage.TEST_COMMAND),
                 "inventory": self.inventory, "selection": selected,
                 "commands": self.commands(selected), "exit_code": 0,
             }
@@ -130,9 +140,9 @@ class CoverageContractTest(unittest.TestCase):
     def test_complete_default_suite_counts_pass_skip_and_fuzz_separately(self):
         result = self.collect()
         self.assertEqual(result["status"], "passed")
-        self.assertEqual(result["inventory"]["top_level_tests"], 53)
-        self.assertEqual(result["inventory"]["kinds"], {"Test": 51, "Fuzz": 1, "Example": 1})
-        self.assertEqual(result["actual"]["top_level_pass"], 52)
+        self.assertEqual(result["inventory"]["top_level_tests"], 56)
+        self.assertEqual(result["inventory"]["kinds"], {"Test": 54, "Fuzz": 1, "Example": 1})
+        self.assertEqual(result["actual"]["top_level_pass"], 55)
         self.assertEqual(result["actual"]["top_level_skip"], 1)
         self.assertEqual(result["actual"]["subtest_skip"], 1)
         self.assertEqual(result["actual"]["package_skip"], 1)
@@ -140,20 +150,20 @@ class CoverageContractTest(unittest.TestCase):
         self.assertTrue(all(item["reason"] for item in result["skipped"]))
         self.assertIs(result["normal_qualification"], False)
         self.assertIs(result["physical_memory_release_qualified"], False)
-        self.assertEqual([item["shard_index"] for item in result["shards"]], list(range(8)))
+        self.assertEqual([item["shard_index"] for item in result["shards"]], list(range(9)))
 
     def test_unicode_go_identifier_is_not_omitted(self):
         self.inventory[OWNER] = sorted(self.inventory[OWNER] + ["Test内存回收"])
         self.write_all()
-        self.assertEqual(self.collect()["inventory"]["top_level_tests"], 54)
+        self.assertEqual(self.collect()["inventory"]["top_level_tests"], 57)
 
     def test_missing_and_extra_artifact_are_rejected(self):
         shutil.rmtree(self.directory(7))
-        with self.assertRaisesRegex(coverage.CoverageError, "exactly 8"):
+        with self.assertRaisesRegex(coverage.CoverageError, "exactly 9"):
             self.collect()
         self.write_all()
         shutil.copytree(self.directory(7), self.input / "extra")
-        with self.assertRaisesRegex(coverage.CoverageError, "exactly 8"):
+        with self.assertRaisesRegex(coverage.CoverageError, "exactly 9"):
             self.collect()
 
     def test_duplicate_shard_is_rejected(self):
@@ -162,6 +172,63 @@ class CoverageContractTest(unittest.TestCase):
         self.save_report(7, report)
         with self.assertRaisesRegex(coverage.CoverageError, "duplicate shard"):
             self.collect()
+
+    def test_missing_host_integration_receipt_is_rejected(self):
+        shutil.rmtree(self.directory(8))
+        with self.assertRaisesRegex(coverage.CoverageError, "exactly 9"):
+            self.collect()
+
+    def test_integration_packages_are_complete_and_exclusive_to_host(self):
+        report = self.read_report(8)
+        self.assertEqual(report["selection"], {package: self.inventory[package] for package in (REPORTING, FUNCTESTS)})
+        self.assertEqual(report["commands"], [{"packages": sorted((REPORTING, FUNCTESTS)), "run_pattern": "", "exit_code": 0}])
+        for index in range(8):
+            self.assertFalse({REPORTING, FUNCTESTS} & self.read_report(index)["selection"].keys())
+        for index, package in ((0, REPORTING), (8, ORDINARY), (8, OWNER)):
+            with self.subTest(index=index, package=package):
+                self.write_all()
+                report = self.read_report(index)
+                report["selection"][package] = self.inventory[package]
+                report["commands"] = coverage.expected_commands(report["selection"])
+                self.save_report(index, report)
+                with self.assertRaisesRegex(coverage.CoverageError, "stable shard selection"):
+                    self.collect()
+
+    def test_lane_metadata_and_actual_user_cannot_be_forged(self):
+        for index, field, value in (
+            (8, "execution_environment", "root-readonly"),
+            (0, "execution_environment", "host-integration"),
+            (8, "execution_user", {"uid": 0, "gid": 0}),
+            (0, "execution_user", {"uid": 1001, "gid": 1001}),
+            (8, "execution_user", {"uid": True, "gid": 1001}),
+        ):
+            with self.subTest(index=index, field=field, value=value):
+                self.write_all()
+                report = self.read_report(index)
+                report[field] = value
+                self.save_report(index, report)
+                with self.assertRaisesRegex(coverage.CoverageError, "environment"):
+                    self.collect()
+
+    def test_host_cannot_omit_filter_or_fail_an_integration_test(self):
+        for mode in ("omit", "filter", "fail"):
+            with self.subTest(mode=mode):
+                self.write_all()
+                if mode == "filter":
+                    report = self.read_report(8)
+                    report["commands"][0]["run_pattern"] = "^TestBytesForBilling$"
+                    self.save_report(8, report)
+                else:
+                    records = self.read_events(8)
+                    if mode == "omit":
+                        records = [event for event in records if event.get("Test") != "TestAzureClient_send"]
+                    else:
+                        for event in records:
+                            if event.get("Test") == "TestAzureClient_send" and event["Action"] == "pass":
+                                event["Action"] = "fail"
+                    self.write_jsonl(self.directory(8) / "go-events.jsonl", records)
+                with self.assertRaises(coverage.CoverageError):
+                    self.collect()
 
     def test_source_architecture_caller_run_and_attempt_must_match(self):
         original = self.read_report(3)
@@ -182,8 +249,8 @@ class CoverageContractTest(unittest.TestCase):
 
     def test_invalid_schema_index_count_and_nonzero_exit_are_rejected(self):
         original = self.read_report(2)
-        for key, value in (("schema_version", True), ("schema_version", 2), ("shard_count", 7),
-                           ("shard_index", True), ("shard_index", 8), ("exit_code", 1), ("exit_code", False)):
+        for key, value in (("schema_version", True), ("schema_version", 1), ("shard_count", 8), ("root_shard_count", 7),
+                           ("shard_index", True), ("shard_index", 9), ("exit_code", 1), ("exit_code", False)):
             with self.subTest(field=key, value=value):
                 self.save_report(2, dict(original, **{key: value}))
                 with self.assertRaises(coverage.CoverageError):
@@ -201,7 +268,7 @@ class CoverageContractTest(unittest.TestCase):
         for package, name in ((JOURNAL, "FuzzJournal"), (ORDINARY, "Example")):
             with self.subTest(name=name):
                 self.write_all()
-                for index in range(8):
+                for index in range(9):
                     report = self.read_report(index)
                     report["inventory"][package].remove(name)
                     report["selection"] = coverage.select_tests(report["inventory"], index)
@@ -375,7 +442,7 @@ class CoverageContractTest(unittest.TestCase):
         original = self.read_events(0)
         event = {"Action": "build-output", "ImportPath": "example.org/dependency", "Output": "compiler diagnostic\n"}
         self.write_jsonl(self.directory(0) / "go-events.jsonl", [event] + original)
-        self.assertEqual(self.collect()["actual"]["top_level_pass"], 52)
+        self.assertEqual(self.collect()["actual"]["top_level_pass"], 55)
         event["Action"] = "build-fail"
         self.write_jsonl(self.directory(0) / "go-events.jsonl", [event] + original)
         with self.assertRaisesRegex(coverage.CoverageError, "failed event"):
@@ -406,7 +473,7 @@ class CoverageContractTest(unittest.TestCase):
         report["passed_tests"] = 999999
         report["failed_tests"] = 0
         self.save_report(0, report)
-        self.assertEqual(self.collect()["actual"]["top_level_pass"], 52)
+        self.assertEqual(self.collect()["actual"]["top_level_pass"], 55)
 
     def test_cli_writes_success_and_replaces_stale_success_on_failure(self):
         output = self.root / "coverage.json"

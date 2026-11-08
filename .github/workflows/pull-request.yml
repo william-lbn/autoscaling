@@ -19,6 +19,11 @@ jobs:
       - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
         with:
           go-version-file: go.mod
+          cache: false
+      - id: go-cache
+        uses: ./.github/actions/go-test-cache
+        with:
+          environment: root-readonly
       - run: python3 -m unittest discover -s ci -p 'test_*.py' -v
       - run: bash ci/test.sh
       - name: Preserve complete Linux test logs and status
@@ -29,8 +34,46 @@ jobs:
           path: output/tests/shard-${{ matrix.shard }}/
           retention-days: 30
           if-no-files-found: warn
+      - name: Save compiler and module caches even after test failure
+        if: always() && steps.go-cache.outcome == 'success' && steps.go-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ${{ steps.go-cache.outputs.paths }}
+          key: ${{ steps.go-cache.outputs.key }}
+  integration-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      CI_TEST_SHARD_INDEX: '8'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - id: go-cache
+        uses: ./.github/actions/go-test-cache
+        with:
+          environment: host-integration
+      - run: bash ci/test-integration.sh
+      - name: Preserve complete Docker and envtest integration evidence
+        if: always()
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: autoscaling-tests-amd64-shard8-attempt${{ github.run_attempt }}
+          path: output/tests/shard-8/
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Save compiler and module caches even after integration failure
+        if: always() && steps.go-cache.outcome == 'success' && steps.go-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ${{ steps.go-cache.outputs.paths }}
+          key: ${{ steps.go-cache.outputs.key }}
   test-coverage:
-    needs: test
+    needs: [test, integration-test]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:

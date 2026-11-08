@@ -133,6 +133,19 @@ func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapsh
 		if err := w.finalize.CheckServiceFinalization(ctx, s); err != nil {
 			return err
 		}
+	} else if m.Active != nil {
+		// 13/14 的资源与 Finalize 已完成，但原 Resume 仍保留在 Active。
+		// 此时没有空闲关闭水位，不能走 ReadCurrent/CheckCurrentBudget；
+		// 专用完整原步骤审计仍严格拒绝资源未知、取消或其他关闭类别。
+		if w.admission == nil {
+			return ErrServiceSafety
+		}
+		if err := w.admission.CheckCommittedServiceRecovery(ctx, s); err != nil {
+			return err
+		}
+		if err := w.inspectCleanupQualification(ctx, s); err != nil {
+			return err
+		}
 	} else if err := w.inspectIdleService(ctx, s); err != nil {
 		return err
 	}

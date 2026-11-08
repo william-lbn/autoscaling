@@ -291,7 +291,11 @@ func (e *Executor) advance(ctx context.Context, retain, inspect bool, recoverySn
 		return pgexec.AwaitingFact, fmt.Errorf("final VM status differs from verified QMP settlement")
 	}
 	final := budget.Finalized{ProtocolVersion: 1, Request: op.Request, IssuerEpoch: op.Request.Key.IssuerEpoch, RunnerPodName: p.RunnerPodName, RunnerRestartCount: p.RunnerRestartCount, HostReservationID: vmFact.Host.SourceID, GuestUsableMemoryBytes: p.GuestUsableMemoryBytes, Shared: shared, SystemOutsidePG: p.SystemOutsidePG, Aggregate: &guest.PGAggregate.Bound, Transition: p.Transition, Safety: p.Safety, Sources: &budget.SettlementSources{OutsideClaim: *p.OutsideClaim, HostClaim: vmFact.HostClaim, VMReceiptSHA256: digest(vmStep.Observation.Data), Runner: vmFact.Runner}, VMShrinkPermit: false, PrivateAndDSM: nil, LFCOutsideShared: nil, HugePoolOutsideShared: nil}
-	if recoverService && step.Phase == journal.Planned {
+	// 跨 owner 的纯审计使用当前真实 Shared/floor；原请求 issuer 仍保持不变。
+	// 尚未 Start 的临时预算须注明观察代次，否则健康的旧操作会被误判为来源
+	// 漂移。inspect 在任何 Start/Record 前返回，不把此临时值写入原 WAL；
+	// 已有 Unconfirmed 命令仍逐字读取，只有显式恢复另存独立结算证明。
+	if step.Phase == journal.Planned && (recoverService || inspect && e.actor.Epoch > op.Request.Key.IssuerEpoch) {
 		final.SettlementEpoch = e.actor.Epoch
 	}
 	if step.Phase == journal.Planned && final.ValidateFor(op.Request, shared, e.actor.Epoch, vm.Status.PodName, vm.Status.RestartCount, uint64(memory)) != nil {

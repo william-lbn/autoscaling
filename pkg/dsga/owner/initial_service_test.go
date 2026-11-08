@@ -426,6 +426,11 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 	cancelled := mode == "cancel" || mode == "cancel-before-vm" || ownerTransfer && !pgTakeover && !guestTakeover
 	api, store, coord := newAPI(t)
 	client := vmCore(t)
+	switch mode {
+	case "host", "host-service-closure-seal", "actual-safety-recover-vm-planned", "retained-safety-capacity-planned-takeover", "retained-safety-finalized-completed-bound-scheduler":
+		// 当前 Scheduler 必须从出生前就持有精确 Pod floor；不在恢复中迁移旧 managed 账本。
+		initializeOwnerSchedulerPodFloor(t, client)
+	}
 	api.mu.Lock()
 	api.hostCoord = client.CoordinationV1()
 	cpuMode := vmv1.CpuScalingModeSysfs
@@ -523,8 +528,8 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 	}
 	if strings.Contains(mode, "completed-bound") {
 		// Linux race实测本根含普通成功前驱、独立恢复和完整2048后继，
-		// 每次完整来源审计19～27秒；只扩整根上限，单RPC/Lease及
-		// 每阶段30秒诊断期限保持不变，不用no-op减掉真实后继。
+		// 每次完整来源审计19～27秒；单RPC/Lease保持不变。后继组合动作
+		// 另有有界测试预算，始终受本总期限约束，不用no-op减掉真实后继。
 		deadline = 8 * time.Minute
 	}
 	if guestFixtureMode {
@@ -934,7 +939,7 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 				require.NoError(t, err)
 				require.Equal(t, pgexec.Recorded, progress)
 			}
-			worker, request, successorHost, session, resources = verifyInitialCancelledGrow(t, ctx, api, client, coord, store, session, worker, resources, config, source, runner, qmp, request, mode == "cancel-before-vm", transfer)
+			worker, request, successorHost, session, resources = verifyInitialCancelledGrow(t, ctx, api, client, coord, store, session, worker, resources, config, source, runner, qmp, request, mode == "cancel-before-vm", transfer, pg, root)
 			pg.mu.Lock()
 			pg.request = request
 			pg.after.Observed = pgResponse(t, request).Observed

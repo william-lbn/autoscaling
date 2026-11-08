@@ -201,6 +201,11 @@ func verifyProductionAutomaticSuccessor(t *testing.T, ctx context.Context, clien
 	require.NoError(t, err)
 	defer worker.CloseIdleConnections()
 	c := automaticConfig(policy.Target{VMMemoryBytes: 1 << 30, Buffers: 512}, policy.Target{VMMemoryBytes: 2 << 30, Buffers: 1024})
+	// 本组合保留恢复历史并逐域重审完整 WAL；云端 -race/2CPU 实测在
+	// 新请求生成后约130秒才到 Runner 原派发检查，120秒测试策略已合法过期。
+	// 仅为本完整后继组合配置有界300秒请求，不改生产默认值或过期拒绝测试，
+	// 更不在命令落账后延长原 deadline 或让 Runner 忽略它。
+	c.RequestDeadlineSeconds = 300
 	require.NoError(t, worker.ConfigureAutomaticMemory(c, client.CoreV1()))
 	s, err = store.Load(ctx)
 	require.NoError(t, err)
@@ -282,6 +287,7 @@ func verifyProductionAutomaticSuccessor(t *testing.T, ctx context.Context, clien
 	require.NoError(t, err)
 	require.Equal(t, pgexec.Recorded, progress)
 	require.Equal(t, journal.Unconfirmed, budgetStep(t, store, journal.ResizeVM).Phase)
+	require.Greater(t, int64(r.DeadlineUnixMillis), time.Now().UnixMilli(), "完整原后继必须仍在原请求期限内，不能重放过期命令")
 	require.NoError(t, runner.Tick(ctx))
 	for _, action := range []journal.Action{journal.ResizeVM, journal.ObserveVM, journal.FinalizeBudget, journal.ResumeAdmission} {
 		advancePartialStep(t, ctx, store, worker, action, journal.Settled)

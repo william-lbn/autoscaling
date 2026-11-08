@@ -15,7 +15,14 @@ import (
 // Runner完整核验，不发开放、不Record/Finish，也不清SDK的原开放未知。
 // 网络不持本地锁；RV复核和真正关闭的后续写前CAS各自独立，未声称跨域原子。
 func (e *Executor) CheckRetainedService(ctx context.Context, s *journal.Snapshot) error {
-	return e.checkRetainedService(ctx, s, nil)
+	return e.checkRetainedService(ctx, s, nil, false)
+}
+
+// CheckCommittedServiceRecovery 只审计 13/14 已完整结算、最终准入待恢复的原
+// Active。它仍使用原步骤/持有的 Host 与 Runner 来源，不把 Active 投影为空闲
+// 已结清预算；不开放、Finish、释放 Host，也不回写原 Resume 的未知结果。
+func (e *Executor) CheckCommittedServiceRecovery(ctx context.Context, s *journal.Snapshot) error {
+	return e.checkRetainedService(ctx, s, nil, true)
 }
 
 // CheckRetainedServiceWithAudit只为本次正常服务完整审计返回瞬时后继检查点。
@@ -24,15 +31,23 @@ func (e *Executor) CheckRetainedServiceWithAudit(ctx context.Context, s *journal
 	if after == nil {
 		return fmt.Errorf("normal retained service audit requires explicit completion callback")
 	}
-	return e.checkRetainedService(ctx, s, after)
+	return e.checkRetainedService(ctx, s, after, false)
 }
 
-func (e *Executor) checkRetainedService(ctx context.Context, s *journal.Snapshot, after func(context.Context, *journal.Snapshot, control.SharedCostResponse) error) error {
+func (e *Executor) checkRetainedService(ctx context.Context, s *journal.Snapshot, after func(context.Context, *journal.Snapshot, control.SharedCostResponse) error, recovering bool) error {
 	if s == nil {
 		return fmt.Errorf("retained admission check requires original snapshot")
 	}
 	m := s.State()
-	if e.claims == nil || e.runner == nil || !s.Dispatchable() || m.Owner != e.actor || m.Active == nil || m.ServiceClosure != nil {
+	if e.claims == nil || e.runner == nil || !s.Dispatchable() || m.Owner != e.actor || m.Active == nil {
+		return fmt.Errorf("retained admission check requires original live production domains")
+	}
+	if recovering {
+		version := m.ClosureFormatVersion()
+		if m.ServiceClosure == nil || m.ServiceClosure.Pending() || version != 13 && version != 14 || m.CheckStableServiceRecovery() != nil {
+			return fmt.Errorf("committed service audit requires original complete 13/14 budget closure")
+		}
+	} else if m.ServiceClosure != nil {
 		return fmt.Errorf("retained admission check requires original live production domains")
 	}
 	if _, err := m.ResumeAdmissionForClosure(); err != nil {
@@ -51,6 +66,9 @@ func (e *Executor) checkRetainedService(ctx context.Context, s *journal.Snapshot
 	shared, err := e.client.SharedCost(ctx)
 	if err != nil {
 		return err
+	}
+	if recovering && !serviceActualGate(m.ServiceClosure, shared.Observed) {
+		return fmt.Errorf("committed service audit changed its original native gate")
 	}
 	vm := s.VirtualMachine()
 	if vm.Status.MemorySize == nil {

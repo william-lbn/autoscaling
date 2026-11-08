@@ -485,12 +485,16 @@ func verifyRetainedNormalSuccessor(t *testing.T, ctx context.Context, api *owner
 	worker, err = session.NewProductionPGWorker(ctx, config, resources, core.CoreV1(), qualification)
 	require.NoError(t, err)
 	defer worker.CloseIdleConnections()
+	// 云端 -race/2CPU 的完整后继 Prepare 在最终 Record 才耗尽旧 30s 外层预算：
+	// 两例为 31.857s/30.354s，分别已记录 111/112 次 VM+Lease HTTP 调用。
+	// 这里覆盖完整来源复核/写前记录/终态记录的组合调度成本，不放宽单 RPC、
+	// 生产 Request deadline、Lease 或整根 6/8min 上限，也不删减原 WAL 审计。
+	const actionBudget = 90 * time.Second
+	t.Logf("正式后继每个外层动作的测试预算=%s，仍受整根原 context 限制", actionBudget)
 	for _, action := range []journal.Action{journal.PrepareBudget, journal.ReserveHost, journal.ResizeVM, journal.ObserveVM, journal.GuestReady, journal.ResizePG, journal.FinalizeBudget, journal.ResumeAdmission} {
 		finished := retainedStage(t, api, core, "正式后继 "+string(action))
-		// 仅本新case的诊断门槛：每个完整外层动作最多30秒，保留
-		// 原生产单RPC期限/QPS及全根总期限，避免无阶段输出等满6分钟。
 		progress, err := func() (pgexec.Progress, error) {
-			actionCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+			actionCtx, cancel := context.WithTimeout(ctx, actionBudget)
 			defer cancel()
 			if action == journal.ReserveHost {
 				if _, err := publisher.Reconcile(actionCtx); err != nil {

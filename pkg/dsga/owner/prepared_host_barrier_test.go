@@ -245,6 +245,9 @@ func prepareHostBusiness(t *testing.T, ctx context.Context, mode string, api *ow
 	h := &preparedHostBusiness{api: api, nodeCore: wrapped, vmCoord: coord, stopHost: stopHost, mode: mode, core: client, publisher: publisher, allocator: allocator, peer: peer,
 		plan:   hostguard.Plan{Namespace: store.Binding().Namespace, VMName: store.Binding().Name, Incarnation: store.Binding().Incarnation, RunnerPodUID: "runner-uid", Request: s.State().Active.Request, BeforeBytes: prepared.VMBeforeMemoryBytes, HostOverheadBytes: 64 << 20},
 		before: original, blocked: make(chan struct{}), release: make(chan struct{}), result: make(chan error, 1), lateDone: make(chan error, 1)}
+	placement, err := original.State().Placement(h.plan.RunnerPodUID)
+	require.NoError(t, err)
+	h.plan.PodMemoryLimitBytes = placement.PodMemoryLimitBytes
 	t.Cleanup(h.unblock)
 	if strings.Contains(mode, "seal-first") {
 		peer.mu.Lock()
@@ -407,7 +410,8 @@ func (h *preparedHostBusiness) checkRetired(t *testing.T, ctx context.Context, m
 	require.Equal(t, h.barrier, b)
 	_, err = n.Hold(h.plan)
 	require.Error(t, err, "完整恢复完成后才由可信适配退休原封存Hold")
-	require.EqualValues(t, 9, n.State().ProtocolVersion)
+	// 封存为旧 fixture 增加 v9 语义；从 v10 出生的 floor 账本必须保持 v10。
+	require.Equal(t, max(h.before.State().ProtocolVersion, 9), n.State().ProtocolVersion)
 	require.Equal(t, &h.barrier, m.RetainedCoverage.Record.ServiceCoverage.RetainedRecovery.PreparedHostBarrier)
 	if h.late != nil {
 		_, err = h.core.CoreV1().ConfigMaps(h.late.Namespace).Get(ctx, h.late.Name, metav1.GetOptions{})

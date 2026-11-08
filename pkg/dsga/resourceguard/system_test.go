@@ -105,6 +105,35 @@ func TestSystemPlacementPartialAndPersistenceFailureKeepOriginalIntent(t *testin
 		t.Run(mode, func(t *testing.T) {
 			g, k, b, _ := systemFixture(t)
 			ctx := context.Background()
+			statePath := filepath.Join(g.config.StateDir, "state.json")
+			backupPath := filepath.Join(g.config.StateDir, "state-before-placement.json")
+			backupMoved := false
+			restore := func() error {
+				if !backupMoved {
+					return nil
+				}
+				if info, e := os.Lstat(statePath); e == nil {
+					if !info.IsDir() {
+						return fmt.Errorf("unexpected replacement of placement failure directory")
+					}
+					if e = os.Remove(statePath); e != nil {
+						return e
+					}
+				} else if !os.IsNotExist(e) {
+					return e
+				}
+				if e := os.Rename(backupPath, statePath); e != nil {
+					return e
+				}
+				backupMoved = false
+				return nil
+			}
+			// 即使注入或断言中途失败，也在 TempDir 清理前恢复原持久意图。
+			t.Cleanup(func() {
+				if e := restore(); e != nil {
+					t.Errorf("restore original placement state: %v", e)
+				}
+			})
 			if _, err := g.Bootstrap(ctx, b); err != nil {
 				t.Fatal(err)
 			}
@@ -118,20 +147,30 @@ func TestSystemPlacementPartialAndPersistenceFailureKeepOriginalIntent(t *testin
 				}
 				k.e.System.RootUserspaceCount = 0
 				if mode == "persistence" {
-					return os.Chmod(g.config.StateDir, 0500)
+					// root 可越过 chmod 的 DAC 限制；原记录已读入后制造真实 rename
+					// 文件→目录冲突，保证原观察的持久化失败，而不是 move 回调伪造错误。
+					if e := os.Rename(statePath, backupPath); e != nil {
+						return e
+					}
+					backupMoved = true
+					return os.Mkdir(statePath, 0700)
 				}
 				k.e.System.SwapCurrentBytes = 1
 				return nil
 			})
 			if mode == "persistence" {
-				if e := os.Chmod(g.config.StateDir, 0700); e != nil {
+				if e := restore(); e != nil {
 					t.Fatal(e)
 				}
+				if err == nil || !strings.Contains(err.Error(), "system placement persistence") {
+					t.Fatal("expected actual placement persistence failure", err)
+				}
+				t.Logf("actual placement persistence failure: %v", err)
 			}
 			if !errors.Is(err, ErrUnknown) || calls != 1 {
 				t.Fatal("partial placement not unknown", err)
 			}
-			raw, e := os.ReadFile(filepath.Join(g.config.StateDir, "state.json"))
+			raw, e := os.ReadFile(statePath)
 			if e != nil {
 				t.Fatal(e)
 			}

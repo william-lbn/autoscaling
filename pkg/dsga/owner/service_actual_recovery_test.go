@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	kubev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubefake "k8s.io/client-go/kubernetes/fake"
 	coordclient "k8s.io/client-go/kubernetes/typed/coordination/v1"
@@ -319,10 +320,34 @@ func verifyProductionServiceActualRecovery(t *testing.T, ctx context.Context, mo
 		pod, err := core.CoreV1().Pods(store.Binding().Namespace).Get(ctx, "runner", metav1.GetOptions{})
 		require.NoError(t, err)
 		pod.Spec.SchedulerName = ledger.Profile.SchedulerName
+		// 缺容器或仅覆盖 2GiB VM、未含 64MiB Host 开销都必须拒绝，且不能改原账本。
+		// 负例只替换当前 Pod fixture；恢复最初 2112Mi 硬限后才验证真实 Reserve/floor。
+		for _, missing := range []bool{true, false} {
+			bad := pod.DeepCopy()
+			expected := "managed Pod hardlimit must cover maximum VM plus fixed Host overhead"
+			if missing {
+				bad.Spec.Containers = nil
+				expected = "complete bounded Pod containers are required"
+			} else {
+				bad.Spec.Containers[0].Resources.Limits[kubev1.ResourceMemory] = resource.MustParse("2Gi")
+			}
+			require.NoError(t, core.Tracker().Update(kubev1.SchemeGroupVersion.WithResource("pods"), bad, bad.Namespace))
+			_, _, err = scheduler.Reserve(ctx, ledger.Binding.NodeName, bad, 0)
+			require.ErrorContains(t, err, expected)
+			unchanged, err := allocator.Load(ctx)
+			require.NoError(t, err)
+			require.Equal(t, settled.State(), unchanged.State())
+		}
 		require.NoError(t, core.Tracker().Update(kubev1.SchemeGroupVersion.WithResource("pods"), pod, pod.Namespace))
 		_, allocated, err := scheduler.Reserve(ctx, ledger.Binding.NodeName, pod, 0)
 		require.NoError(t, err)
 		require.Equal(t, actual.Capacity.VMMemoryBytes, allocated.MemoryBytes)
+		require.EqualValues(t, 2112<<20, allocated.PodMemoryLimitBytes)
+		persisted, err := allocator.Load(ctx)
+		require.NoError(t, err)
+		placement, err := persisted.State().Placement(string(pod.UID))
+		require.NoError(t, err)
+		require.Equal(t, allocated.PodMemoryLimitBytes, placement.PodMemoryLimitBytes)
 		require.NotNil(t, allocated.Settled)
 		require.Equal(t, *actual.Capacity.InitialVM, allocated.Settled.InitialVM)
 		var noRunner budget.RunnerSources

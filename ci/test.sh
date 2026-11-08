@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-# 完整 Linux suite 包含真实 root-owned/WAL/pidfd/只读来源检查。宿主 runner 的
+# Linux root 分片包含真实 root-owned/WAL/pidfd/只读来源检查。宿主 runner 的
 # UID1001 或可写根都不满足合同；在一次性隔离容器内提供真实条件，不改生产准入。
 [[ $(uname -s) == Linux ]] || { echo 'CI requires native Linux and Docker' >&2; exit 1; }
 [[ ${CI_TEST_SHARD_INDEX:-} =~ ^[0-7]$ ]] || { echo 'Set CI_TEST_SHARD_INDEX to 0..7; all eight shards are required' >&2; exit 1; }
@@ -23,8 +23,8 @@ mkdir -p "$gocache" "$modcache" "$work/context" "$work/tmp"
 container="autoscaling-tests-$(basename "$work")"
 image_id=''
 
-# root 只写这两个 Go 专用缓存。无论测试成功或失败，都恢复宿主归属，使 setup-go
-# post cache save 和下一次安装/编译可读写；不 chmod 模块源码，也不改 runner 其他目录。
+# root 只写这两个 Go 专用缓存。无论测试成功或失败，都恢复宿主归属，使显式
+# always cache/save 和下一次安装/编译可读写；不 chmod 模块源码，也不改 runner 其他目录。
 finish() {
     status=$?
     trap - EXIT
@@ -52,7 +52,9 @@ with open(sys.argv[1], 'w', encoding='utf-8') as output:
         'run_attempt': os.environ.get('GITHUB_RUN_ATTEMPT'),
         'scope': 'default-linux-go-suite-shard',
         'shard_index': int(os.environ['CI_TEST_SHARD_INDEX']),
-        'shard_count': 8,
+        'shard_count': 9,
+        'root_shard_count': 8,
+        'execution_environment': 'root-readonly',
         'normal_qualification': False,
         'physical_memory_release_qualified': False,
     }, output, indent=2)

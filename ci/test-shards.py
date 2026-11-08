@@ -10,10 +10,16 @@ import re
 import subprocess
 import sys
 
-SHARD_COUNT = 8
+ROOT_SHARD_COUNT = 8
+HOST_SHARD_INDEX = ROOT_SHARD_COUNT
+SHARD_COUNT = ROOT_SHARD_COUNT + 1
 HEAVY_PACKAGES = {
     "github.com/neondatabase/autoscaling/pkg/dsga/journal",
     "github.com/neondatabase/autoscaling/pkg/dsga/owner",
+}
+HOST_INTEGRATION_PACKAGES = {
+    "github.com/neondatabase/autoscaling/pkg/reporting",
+    "github.com/neondatabase/autoscaling/pkg/neonvm/controllers/functests",
 }
 GO_TEST = ["go", "test", "-json", "-mod=readonly", "-race", "-count=1", "-p", "2", "-timeout=30m"]
 
@@ -45,7 +51,7 @@ def run_go(command: list[str], log: Path, stderr_log: Path, *, echo: bool) -> in
 def actual_inventory(directory: Path) -> dict[str, list[str]]:
     # go list 使用当前平台的真实 build constraints；不扫描文件名猜测可运行测试。
     packages = subprocess.check_output(["go", "list", "-mod=readonly", "./..."], text=True).splitlines()
-    if not packages or len(set(packages)) != len(packages) or not HEAVY_PACKAGES.issubset(packages):
+    if not packages or len(set(packages)) != len(packages) or not (HEAVY_PACKAGES | HOST_INTEGRATION_PACKAGES).issubset(packages):
         raise ValueError("incomplete or duplicate actual package inventory")
     inventory = {package: [] for package in sorted(packages)}
     log = directory / "list-events.jsonl"
@@ -82,37 +88,50 @@ def actual_inventory(directory: Path) -> dict[str, list[str]]:
         raise ValueError("Go enumeration omitted a package terminal status")
     for package in inventory:
         inventory[package].sort()
-    if any(not inventory[package] for package in HEAVY_PACKAGES):
-        raise ValueError("heavy package returned no runnable tests")
+    if any(not inventory[package] for package in HEAVY_PACKAGES | HOST_INTEGRATION_PACKAGES):
+        raise ValueError("required heavy or integration package returned no runnable tests")
     return inventory
 
 
 def select_tests(inventory: dict[str, list[str]], index: int) -> dict[str, list[str]]:
     selected = {}
     for package, names in inventory.items():
+        # Docker/Azure 和 envtest 使用独立普通宿主任务；两个整包仍必须各执行一次。
+        # 不给 root/只读来源测试容器挂宿主 Docker socket，也不以 -short 跳过集成。
+        if package in HOST_INTEGRATION_PACKAGES:
+            if index == HOST_SHARD_INDEX:
+                selected[package] = names
+            continue
         if package not in HEAVY_PACKAGES:
             if index == 0:
                 selected[package] = names
             continue
         # 顶层函数整体分片，原子场景/子测试/fuzz seed 全部随父执行；不切内部循环。
-        chosen = [name for name in names if int.from_bytes(hashlib.sha256(f"{package}/{name}".encode()).digest(), "big") % SHARD_COUNT == index]
+        chosen = [name for name in names if int.from_bytes(hashlib.sha256(f"{package}/{name}".encode()).digest(), "big") % ROOT_SHARD_COUNT == index]
         if chosen:
             selected[package] = chosen
     return selected
 
 
 def main() -> int:
-    directory = Path("/test-results")
+    directory = Path(os.environ["CI_TEST_OUTPUT_DIR"])
     index = int(os.environ["CI_TEST_SHARD_INDEX"])
     if not 0 <= index < SHARD_COUNT:
         raise ValueError("invalid shard index")
+    environment = "host-integration" if index == HOST_SHARD_INDEX else "root-readonly"
+    if os.environ.get("CI_EXECUTION_ENVIRONMENT") != environment:
+        raise ValueError("test shard ran in the wrong execution environment")
+    if (os.geteuid() == 0) != (environment == "root-readonly"):
+        raise ValueError("test shard effective user does not match its execution environment")
+    if subprocess.check_output(["go", "env", "GOOS"], text=True).strip() != "linux":
+        raise ValueError("default suite requires native Linux")
     source = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
     if source != os.environ["CI_SOURCE_COMMIT"] or not re.fullmatch(r"[0-9a-f]{40}", source):
         raise ValueError("source commit changed before tests")
     # HEAD 相同仍不允许编译被工具改写的 tracked 源码；未跟踪的本次日志不在此检查内。
     subprocess.run(["git", "diff", "--quiet", "HEAD", "--"], check=True)
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         "source_repository": "william-lbn/autoscaling",
         "source_commit": source,
         "architecture": subprocess.check_output(["go", "env", "GOARCH"], text=True).strip(),
@@ -122,7 +141,10 @@ def main() -> int:
             "run_attempt": os.environ["CI_EXECUTION_RUN_ATTEMPT"],
         },
         "shard_count": SHARD_COUNT,
+        "root_shard_count": ROOT_SHARD_COUNT,
         "shard_index": index,
+        "execution_environment": environment,
+        "execution_user": {"uid": os.geteuid(), "gid": os.getegid()},
         "test_command": {"race": True, "count": 1, "timeout": "30m", "package_parallelism": 2},
         "inventory": {},
         "selection": {},

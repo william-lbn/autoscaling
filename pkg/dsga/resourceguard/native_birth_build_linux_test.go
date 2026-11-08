@@ -87,10 +87,27 @@ func TestNativeBirthBuildCollectorExactBytes(t *testing.T) {
 	again, e := BuildNativeBirthManifestJSON(seed, system, canonicalWithEtc, open, lstat)
 	require.NoError(t, e)
 	require.Equal(t, raw, again)
+
+	t.Run("PG18", func(t *testing.T) {
+		// collector 的 seed 只声明已实现的 ABI，不是 PG17 policy；PG18 应走同一
+		// 原文件/controls2/System3 收集链。最小 ELF 仅验证构建声明，不证明真实 PG18。
+		var next nativeBirthBuildManifest
+		require.NoError(t, json.Unmarshal(seed, &next))
+		next.PGmajor = 18
+		seed18, err := json.Marshal(next)
+		require.NoError(t, err)
+		raw18, err := BuildNativeBirthManifestJSON(seed18, system, canonicalWithEtc, open, lstat)
+		require.NoError(t, err)
+		var got18 nativeBirthBuildManifest
+		require.NoError(t, json.Unmarshal(raw18, &got18))
+		require.Equal(t, uint32(18), got18.PGmajor)
+		got18.PGmajor = got.PGmajor
+		require.Equal(t, got, got18, "PG18 collection must preserve the same exact original files and System3 digest")
+	})
 }
 
 func TestNativeBirthBuildCollectorRejectsOriginalInputChanges(t *testing.T) {
-	for _, name := range []string{"PG18", "nonregular", "tooLarge", "changedOFD", "foreignPath", "cache", "preload", "system2", "controls1", "helperMismatch"} {
+	for _, name := range []string{"unsupportedPG19", "nonregular", "tooLarge", "changedOFD", "foreignPath", "cache", "preload", "system2", "controls1", "helperMismatch"} {
 		t.Run(name, func(t *testing.T) {
 			seed, system, file, canonical, open, lstat := nativeBuildCollectorFixture(t)
 			baseCanonical := canonical
@@ -101,8 +118,10 @@ func TestNativeBirthBuildCollectorRejectsOriginalInputChanges(t *testing.T) {
 				return baseCanonical(path)
 			}
 			switch name {
-			case "PG18":
-				seed = []byte(strings.Replace(string(seed), `"pg_major":17`, `"pg_major":18`, 1))
+			case "unsupportedPG19":
+				// 17/18 已有显式 ABI，负例保留为未实现的 19；不能把合法 PG18 当拒绝条件。
+				// policy 与 build 的 17/18 双向错配仍由原来源绑定测试独立拒绝。
+				seed = []byte(strings.Replace(string(seed), `"pg_major":17`, `"pg_major":19`, 1))
 			case "nonregular":
 				open = func(string) (*os.File, error) { return os.Open(filepath.Dir(file)) }
 			case "tooLarge":
@@ -159,6 +178,9 @@ func TestNativeBirthBuildCollectorRejectsOriginalInputChanges(t *testing.T) {
 			}
 			raw, e := BuildNativeBirthManifestJSON(seed, system, canonical, open, lstat)
 			require.Error(t, e)
+			if name == "unsupportedPG19" {
+				require.ErrorContains(t, e, "unsupported native pre-main build manifest", "must reach the ABI rejection rather than an unrelated fixture failure")
+			}
 			require.Nil(t, raw)
 		})
 	}

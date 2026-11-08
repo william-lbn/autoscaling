@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -31,6 +30,7 @@ import (
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budgetclaims"
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
@@ -131,6 +131,11 @@ func vmCore(t *testing.T) *kubefake.Clientset {
 	t.Helper()
 	controller, mount := true, true
 	pod := &core.Pod{ObjectMeta: metav1.ObjectMeta{Name: "runner", Namespace: binding().Namespace, UID: "runner-uid", ResourceVersion: "pod-rv-1", OwnerReferences: []metav1.OwnerReference{{APIVersion: "vm.neon.tech/v1", Kind: "VirtualMachine", Name: binding().Name, UID: binding().VMUID, Controller: &controller, BlockOwnerDeletion: nil}}}, Spec: core.PodSpec{NodeName: "node-one", ServiceAccountName: "dsga-runner-test", AutomountServiceAccountToken: &mount}, Status: core.PodStatus{Phase: core.PodRunning, PodIP: "127.0.0.1"}}
+	// 原 Pod 从创建时即声明完整硬限：本组 VM 最大 2GiB，加固定 Host 开销 64MiB。
+	// Scheduler 必须读取实际容器限额；空 Pod 不能作为已准入 managed Runner 的正例。
+	pod.Spec.Containers = []core.Container{{Name: "runner", Resources: core.ResourceRequirements{Limits: core.ResourceList{
+		core.ResourceCPU: resource.MustParse("2"), core.ResourceMemory: resource.MustParse("2112Mi"),
+	}}}}
 	node := dsgatest.InitialNode(&core.Node{ObjectMeta: metav1.ObjectMeta{Name: "node-one", UID: "node-uid", ResourceVersion: "node-rv-1"}}, binding(), "runner", "runner-uid", 2<<30)
 	client := kubefake.NewSimpleClientset(pod, node)
 	var sequence atomic.Int64
@@ -163,6 +168,38 @@ func vmCore(t *testing.T) *kubefake.Clientset {
 	return client
 }
 
+// 只在明确使用当前 Scheduler 的测试启动时选择原始 v10 fixture；不得在已经
+// 持有 managed placement/Host 来源后伪造升级。其余 legacy 测试继续使用原 v3 字节。
+func initializeOwnerSchedulerPodFloor(t *testing.T, client *kubefake.Clientset) {
+	t.Helper()
+	ctx := context.Background()
+	node, err := client.CoreV1().Nodes().Get(ctx, "node-one", metav1.GetOptions{})
+	require.NoError(t, err)
+	pod, err := client.CoreV1().Pods(binding().Namespace).Get(ctx, "runner", metav1.GetOptions{})
+	require.NoError(t, err)
+	limit, err := hostguard.PodMemoryLimit(pod)
+	require.NoError(t, err)
+	var model hostguard.Model
+	require.NoError(t, json.Unmarshal([]byte(node.Annotations[hostguard.LedgerAnnotation]), &model))
+	require.EqualValues(t, 3, model.ProtocolVersion)
+	require.EqualValues(t, 1, model.Sequence)
+	require.Empty(t, model.Holds)
+	require.NotNil(t, model.Placements)
+	require.Len(t, *model.Placements, 1)
+	placement := &(*model.Placements)[0]
+	require.True(t, placement.Managed)
+	require.Zero(t, placement.PodMemoryLimitBytes)
+	require.Equal(t, string(pod.UID), placement.PodUID)
+	require.Equal(t, placement.MemoryBytes+placement.HostOverheadBytes, limit)
+	placement.PodMemoryLimitBytes = limit
+	model.ProtocolVersion = 10
+	require.NoError(t, model.Validate())
+	raw, err := json.Marshal(model)
+	require.NoError(t, err)
+	node.Annotations[hostguard.LedgerAnnotation] = string(raw)
+	require.NoError(t, client.Tracker().Update(core.SchemeGroupVersion.WithResource("nodes"), node, ""))
+}
+
 func vmReservation(t *testing.T, client *kubefake.Clientset, name, kind string, body any) budget.ObjectRef {
 	t.Helper()
 	raw, err := json.Marshal(body)
@@ -192,9 +229,7 @@ func TestProductionAgentRunnerGrowClosesBudgetAndAdmissionOnOriginalWAL(t *testi
 			api.vm.Status.MemorySize = resource.NewQuantity(512<<20, resource.BinarySI)
 			api.mu.Unlock()
 			// 短绝对路径满足Darwin sockaddr_un上限，WAL与QMP使用真实0700目录。
-			dir, err := os.MkdirTemp("/private/tmp", "dsga-agent-")
-			require.NoError(t, err)
-			t.Cleanup(func() { _ = os.RemoveAll(dir) })
+			dir := ownerSocketTempDir(t, "dsga-agent-")
 			runner, err := vmguard.Initialize(context.Background(), store, client.CoreV1(), coord, vmguard.Config{StateDir: dir, PodName: "runner", PodUID: "runner-uid", NodeName: "node-one", MinimumBytes: 512 << 20, MaximumBytes: 2 << 30})
 			require.NoError(t, err)
 			root, resourceConfig := guestRoot(t, store)
@@ -675,9 +710,7 @@ func TestProductionAgentRunnerShrinkRechecksGateAndOriginalObserve(t *testing.T)
 			api.vm.Status.Node = "node-one"
 			api.vm.Status.MemorySize = resource.NewQuantity(2<<30, resource.BinarySI)
 			api.mu.Unlock()
-			dir, err := os.MkdirTemp("/private/tmp", "dsga-shrink-")
-			require.NoError(t, err)
-			t.Cleanup(func() { _ = os.RemoveAll(dir) })
+			dir := ownerSocketTempDir(t, "dsga-shrink-")
 			runner, err := vmguard.Initialize(context.Background(), store, client.CoreV1(), coord, vmguard.Config{StateDir: dir, PodName: "runner", PodUID: "runner-uid", NodeName: "node-one", MinimumBytes: 512 << 20, MaximumBytes: 2 << 30})
 			require.NoError(t, err)
 			root, resourceConfig := guestRoot(t, store)

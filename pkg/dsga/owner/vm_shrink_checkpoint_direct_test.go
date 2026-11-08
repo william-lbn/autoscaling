@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -46,9 +45,7 @@ func runVMShrinkCheckpoint(t *testing.T, mode string) {
 	api.vm.Status.Node = "node-one"
 	api.vm.Status.MemorySize = resource.NewQuantity(2<<30, resource.BinarySI)
 	api.mu.Unlock()
-	dir, err := os.MkdirTemp("/private/tmp", "dsga-vm-checkpoint-")
-	require.NoError(t, err)
-	t.Cleanup(func() { _ = os.RemoveAll(dir) })
+	dir := ownerSocketTempDir(t, "dsga-vm-checkpoint-")
 	runner, err := vmguard.Initialize(context.Background(), store, client.CoreV1(), coord, vmguard.Config{StateDir: dir, PodName: "runner", PodUID: "runner-uid", NodeName: "node-one", MinimumBytes: 512 << 20, MaximumBytes: 2 << 30})
 	require.NoError(t, err)
 	root, resourceConfig := guestRoot(t, store)

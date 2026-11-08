@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"path/filepath"
 	"sync"
 	"testing"
@@ -132,9 +131,7 @@ func TestHostPublisherOriginalSourcesAndLostWrites(t *testing.T) {
 			api.vm.Status.Node = "node-one"
 			api.vm.Status.MemorySize = resource.NewQuantity(512<<20, resource.BinarySI)
 			api.mu.Unlock()
-			dir, err := os.MkdirTemp("/private/tmp", "dsga-host-")
-			require.NoError(t, err)
-			t.Cleanup(func() { _ = os.RemoveAll(dir) })
+			dir := ownerSocketTempDir(t, "dsga-host-")
 			runner, err := vmguard.Initialize(context.Background(), store, client.CoreV1(), vmCoord, vmguard.Config{StateDir: dir, PodName: "runner", PodUID: "runner-uid", NodeName: "node-one", MinimumBytes: 512 << 20, MaximumBytes: 2 << 30})
 			require.NoError(t, err)
 			peer := &vmQMPPeer{mu: sync.Mutex{}, uuid: runner.QMPArguments()[1], minimum: 512 << 20, maximum: 2 << 30, actual: 512 << 20, writes: 0, lose: false, onResize: func(uint64) { t.Error("Host publisher must never issue QMP set") }}
@@ -383,6 +380,9 @@ func verifyHostPublisherServiceClosure(t *testing.T, ctx context.Context, client
 	peer.mu.Unlock()
 	if len(sealing) == 1 && sealing[0] {
 		plan := hostguard.Plan{Namespace: store.Binding().Namespace, VMName: store.Binding().Name, Incarnation: store.Binding().Incarnation, RunnerPodUID: "runner-uid", Request: p.Request, BeforeBytes: p.VMBeforeMemoryBytes, HostOverheadBytes: 64 << 20}
+		placement, err := nodeBefore.State().Placement(plan.RunnerPodUID)
+		require.NoError(t, err)
+		plan.PodMemoryLimitBytes = placement.PodMemoryLimitBytes
 		barrier := schedulerSealsPreparedHost(t, ctx, api, client, vmCoord, allocator, plan)
 		require.Nil(t, barrier.Held)
 		reader, err := budgetclaims.NewWithCoord(client.CoreV1(), vmCoord, store.Binding())
@@ -392,7 +392,7 @@ func verifyHostPublisherServiceClosure(t *testing.T, ctx context.Context, client
 		require.Equal(t, barrier, observed, "固定Agent读者只读认证原完整封存")
 		sealed, err := allocator.Load(ctx)
 		require.NoError(t, err)
-		require.EqualValues(t, 9, sealed.State().ProtocolVersion)
+		require.Equal(t, max(nodeBefore.State().ProtocolVersion, 9), sealed.State().ProtocolVersion)
 		require.Empty(t, sealed.State().Holds)
 		require.Equal(t, (*nodeBefore.State().Placements)[0].MemoryBytes, (*sealed.State().Placements)[0].MemoryBytes)
 		current, err := store.Load(ctx)

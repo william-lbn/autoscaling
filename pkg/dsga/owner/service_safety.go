@@ -49,9 +49,10 @@ type serviceSafety struct {
 // 的任一读失败都不再视为“只停止建议仍服务”。只在无在途动作的永久预算
 // 边界使用；不能把伸缩过程中的合法中间态误判为异常，或清旧SDK未知。
 func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) (err error) {
+	currentLeaseAudited := false
 	// 后注册的原诊断先执行；续租自身记录固定stage，不误标为资源来源失败。
 	defer func() {
-		if err == nil && ctx.Value(recoveryLeaseScopeKey{}) == nil {
+		if err == nil && !currentLeaseAudited && ctx.Value(recoveryLeaseScopeKey{}) == nil {
 			err = w.renewAuditedRecoveryLease(ctx, s)
 			recordServiceSourceAuditError("idle_audit_renew", err)
 		}
@@ -187,7 +188,13 @@ func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) 
 			return err
 		}
 	}
-	if w.client.AdmissionPolicy() == control.AdmissionPolicyEnforcedBudget {
+	enforced := w.client.AdmissionPolicy() == control.AdmissionPolicyEnforcedBudget
+	// 已完成的恢复是历史证据，后继成功伸缩可以合法改变 PG 容量和门禁代次。
+	// 有限租约也必须使用刚完整核验的当前永久预算和 fresh Shared，而不能把
+	// 旧 ServiceLifecycle 的 reopen 请求当作当前 gate。显式恢复、在途动作及
+	// 当前关闭仍走原 recovery scope，不借空闲审计 rearm、开放或清除未知。
+	timedServing := !enforced && ctx.Value(recoveryLeaseScopeKey{}) == nil && m.Active == nil && m.ServiceClosure == nil && m.ServiceLifecycle != nil && m.ServiceLifecycle.SafetyStage == "serving"
+	if enforced || timedServing {
 		stage = "idle_pg_budget"
 		shared, err := w.client.SharedCost(ctx)
 		if err != nil {
@@ -196,7 +203,7 @@ func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) 
 		// 已核实的空闲预算允许新 Owner 只接管写者身份。旧 floor 仅用于
 		// 对照原持有的事实，绝不作为新 Begin 或容量变更的授权。
 		pg := shared.Observed
-		if pg.IssuerFloorEpoch < m.Owner.Epoch && pg.AdmissionOpen && m.Active == nil && m.ServiceClosure == nil &&
+		if enforced && pg.IssuerFloorEpoch < m.Owner.Epoch && pg.AdmissionOpen && m.Active == nil && m.ServiceClosure == nil &&
 			(m.InitialAdmissionReady() || m.BudgetBoundary != nil && m.HighWater != nil && m.BudgetBoundary.ThroughKey == *m.HighWater) &&
 			(pg.Operation == nil || pg.Operation.Phase != control.Preparing) && w.resourceOwner.client.Pending() == nil {
 			if err := matchRetainedPGMemory(s, shared, root, pg.IssuerFloorEpoch, control.Uint64(actual), view.Actual.GuestMemTotalBytes); err != nil {
@@ -207,7 +214,14 @@ func (w *PGWorker) inspectIdleService(ctx context.Context, s *journal.Snapshot) 
 		if err := matchRetainedPGMemory(s, shared, root, m.Owner.Epoch, control.Uint64(actual), view.Actual.GuestMemTotalBytes); err != nil {
 			return err
 		}
-		return w.checkEnforcedObservation(ctx, s, shared.Observed)
+		if enforced {
+			return w.checkEnforcedObservation(ctx, s, shared.Observed)
+		}
+		stage = "idle_current_lease"
+		currentLeaseAudited = true
+		// 原有限期限必须仍 armed、未过期，Owner/VM RV 和 fresh PG 完整快照
+		// 都须相同才可 CAS renew；不因历史恢复成功而复活过期租约。
+		return w.renewCurrentServiceAudit(ctx, s, shared)
 	}
 	return nil
 }

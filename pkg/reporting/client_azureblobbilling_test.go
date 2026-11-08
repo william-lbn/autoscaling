@@ -22,13 +22,17 @@ type container struct {
 	Host string
 }
 
+// 固定 3.30.0 的公开多架构清单；本次 Linux CI 同时使用 amd64/arm64 原始镜像。
+const azuriteTestVersion = "3.30.0@sha256:01233a6593e2f2cb3e515731f83ca720454018b80e08207f18fa691b71bd054d"
+
 // Azurite is an emulator for azure blob, queue storage, table storage.
 // https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite
 func startAzuriteContainer(version string) (*container, error) {
 	p := azurite.Preset(
 		azurite.WithVersion(version),
 	)
-	c, err := gnomock.Start(p, gnomock.WithHealthCheck(func(ctx context.Context, c *gnomock.Container) error {
+	// 每个子测试自己 Stop；禁止库隐式拉取无版本 cleaner 并挂载 Docker socket。
+	c, err := gnomock.Start(p, gnomock.WithDisableAutoCleanup(), gnomock.WithHealthCheck(func(ctx context.Context, c *gnomock.Container) error {
 		_, err := net.Dial("tcp", fmt.Sprintf("%s:%d", realHostname(c.Host), c.Ports["blob"].Port))
 		return err
 	}), gnomock.WithTimeout(time.Minute))
@@ -111,8 +115,9 @@ func TestAzureClient_send(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 			defer cancel()
-			azureBlobStorage, err := startAzuriteContainer("3.30.0")
+			azureBlobStorage, err := startAzuriteContainer(azuriteTestVersion)
 			require.NoError(t, err)
+			t.Cleanup(func() { require.NoError(t, gnomock.Stop(azureBlobStorage.c)) })
 
 			endpoint := fmt.Sprintf("http://%s:%d/devstoreaccount1", azureBlobStorage.Host, azureBlobStorage.c.Ports["blob"].Port)
 

@@ -71,6 +71,19 @@ func verifyLostPGTakeoverSettlement(t *testing.T, ctx context.Context, api *owne
 	require.Equal(t, journal.Completed, settled.Observation.Result, "TooLate不是NoEffect；原PG Grow确已提交")
 	require.Equal(t, original.CommandSHA256, settled.CommandSHA256)
 	require.Equal(t, original.Command, settled.Command)
+	// 新 owner 只读核当前完整资源，不得因真实 floor 已提高而误关健康服务，
+	// 也不能把临时观察代次写成原 Finalize 已派发/结算。原 PG Record 丢回复
+	// 仍按上方 UnconfirmedWrite 暴露，随后只对账原终态与实际取消预算。
+	auditBefore, err := store.Load(ctx)
+	require.NoError(t, err)
+	require.Nil(t, auditBefore.State().ServiceClosure)
+	require.NotNil(t, auditBefore.State().InitialHeld)
+	require.Nil(t, auditBefore.State().BudgetHeld)
+	require.Equal(t, journal.Planned, budgetStep(t, store, journal.FinalizeBudget).Phase)
+	require.NoError(t, worker.finalize.CheckBeforeFinalization(ctx, auditBefore))
+	auditAfter, err := store.Load(ctx)
+	require.NoError(t, err)
+	require.Equal(t, auditBefore.State(), auditAfter.State(), "跨 owner 临时预算审计不得写入任何 WAL")
 	for range 8 {
 		snapshot, err = store.Load(ctx)
 		require.NoError(t, err)

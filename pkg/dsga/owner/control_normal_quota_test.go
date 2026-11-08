@@ -130,6 +130,27 @@ func verifyNormalQuotaControlGates(t *testing.T, ctx context.Context, mode strin
 		pg.mu.Lock()
 		pg.leaseExpired = true
 		pg.mu.Unlock()
+		// 过期会由 Run 首轮生成合法关闭；先验证并完成该前驱，再测量
+		// 被拒的管理动作。不能把独立关闭的 CAS 算成恢复动作修改 WAL。
+		beforeExpiry, err := store.Load(ctx)
+		require.NoError(t, err)
+		expiryCtx, finishExpiry := context.WithCancel(ctx)
+		defer finishExpiry()
+		var expiryTick *Tick
+		err = worker.Run(expiryCtx, PGLoopOptions{PollInterval: 50 * time.Millisecond, Observe: func(tick Tick) {
+			expiryTick = &tick
+			finishExpiry()
+		}})
+		finishExpiry()
+		require.ErrorIs(t, err, context.Canceled)
+		require.NotNil(t, expiryTick)
+		require.ErrorIs(t, expiryTick.Err, ErrServiceSafety)
+		closed, err := store.Load(ctx)
+		require.NoError(t, err)
+		require.NotNil(t, closed.State().ServiceClosure)
+		require.Equal(t, journal.Settled, closed.State().ServiceClosure.Phase)
+		assertNativeExpiryRetainsOriginal(t, beforeExpiry.State(), closed.State())
+		require.False(t, pg.shared().Observed.AdmissionOpen)
 	}
 	before, err := store.Load(ctx)
 	require.NoError(t, err)

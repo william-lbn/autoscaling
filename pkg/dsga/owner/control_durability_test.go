@@ -46,21 +46,20 @@ func verifyRootOnlyDurabilityAction(t *testing.T, mode string) {
 		Command budget.InitialAdmissionCommand `json:"command"`
 		Receipt budget.InitialAdmissionReceipt `json:"receipt"`
 	}
-	if mode == "closed" {
-		raw, e := os.ReadFile("../journal/testdata/initial-domain.json")
-		require.NoError(t, e)
-		require.NoError(t, json.Unmarshal(raw, &initialFixture))
-	}
+	// 原生期限过期后，Run 会先 Fence 并持久关闭；该合法前驱由
+	// admission_expiry_test 单独验证。本例从已确认关闭开始计量管理动作，
+	// 不把前驱的 PG 写误计为 Root-only 副作用，也不禁用生产关闭路径。
+	raw, e := os.ReadFile("../journal/testdata/initial-domain.json")
+	require.NoError(t, e)
+	require.NoError(t, json.Unmarshal(raw, &initialFixture))
 	root, rootConfig := guestRoot(t, store)
 	qualifiedRootFixture(root)
 	root.mu.Lock()
 	root.view.NormalQuotaProtocolVersion = 1
-	if mode == "closed" {
-		root.view.Bootstrap = initialFixture.Initial.PGAggregate.Bootstrap
-		root.view.Birth = &initialFixture.Initial.PGAggregate.Birth
-		root.view.Actual.MemoryMaxBytes = root.view.Bootstrap.Limits.MemoryMaxBytes
-		root.view.Actual.HugePools = append([]resourceguard.HugePool(nil), root.view.Bootstrap.Limits.HugePools...)
-	}
+	root.view.Bootstrap = initialFixture.Initial.PGAggregate.Bootstrap
+	root.view.Birth = &initialFixture.Initial.PGAggregate.Birth
+	root.view.Actual.MemoryMaxBytes = root.view.Bootstrap.Limits.MemoryMaxBytes
+	root.view.Actual.HugePools = append([]resourceguard.HugePool(nil), root.view.Bootstrap.Limits.HugePools...)
 	root.view.Actual.GuestMemTotalBytes = 2 << 30
 	root.mu.Unlock()
 	originalURL, err := url.Parse(rootConfig.BaseURL)
@@ -124,50 +123,21 @@ func verifyRootOnlyDurabilityAction(t *testing.T, mode string) {
 		require.NoError(t, e)
 		defer resources.CloseIdleConnections()
 		q := pgRequest(t, session.Actor())
-		if mode == "closed" {
-			q.Key.Instance = initialFixture.Initial.Instance
-			q.TargetVMMemoryBytes = initialFixture.Initial.VMMemoryBytes * 2
-		}
-		s := pgResponse(t, q).Observed
-		s.Operation = nil
-		s.CapacityGeneration = 1
-		s.AdmissionOpen = false
-		s.AdmissionRevision = 0
-		s.HighBuffers = 512
-		s.LowBuffers = 512
-		s.StartupSharedUpperBytes = 16 << 20
-		for i := range s.Arrays {
-			a := &s.Arrays[i]
-			a.CommittedUpperBytes = 2 << 20
-			a.AllocationUnknown = false
-			a.ReleaseKey = nil
-			a.ReleaseState = control.ReleaseNone
-			a.ReleaseCapacityGeneration = 0
-			a.Provider = control.ProviderFact{Status: control.ProviderUnknown}
-		}
-		if mode == "closed" {
-			s = initialFixture.Initial.Shared.Observed
-			s.IssuerFloorEpoch = session.Actor().Epoch
-			s.AdmissionOpen = true
-			s.AdmissionRevision = initialFixture.Command.Request.Revision
-		}
+		q.Key.Instance = initialFixture.Initial.Instance
+		q.TargetVMMemoryBytes = initialFixture.Initial.VMMemoryBytes * 2
+		s := initialFixture.Initial.Shared.Observed
+		s.IssuerFloorEpoch = session.Actor().Epoch
+		s.AdmissionOpen = true
+		s.AdmissionRevision = initialFixture.Command.Request.Revision
 		root.mu.Lock()
 		id, limits, birth := root.view.Identity, root.view.Bootstrap.Limits, *root.view.Birth
 		root.mu.Unlock()
-		shared := control.SharedCostResponse{ProtocolVersion: 1, StartupMainUpperBytes: 8 << 20, StartupArraysUpperBytes: 8 << 20, CurrentMainAndArraysUpperBytes: 16 << 20, Observed: s}
-		if mode == "closed" {
-			shared = initialFixture.Initial.Shared
-			shared.Observed = s
-		}
+		shared := initialFixture.Initial.Shared
+		shared.Observed = s
 		fence := control.FenceResponse{ProtocolVersion: 1, RequestedInstance: q.Key.Instance, RequestedEpoch: q.Key.IssuerEpoch, Disposition: control.Fenced, Observed: s}
 		upper, e := budget.GrowSharedUpper(shared, q.TargetBuffers)
 		require.NoError(t, e)
-		p := budget.Prepared{ProtocolVersion: 1, NormalQuotaProtocolVersion: 1, NormalQuotaFence: &fence, Request: q, Identity: id, RunnerPodName: "runner", VMBeforeMemoryBytes: func() control.Uint64 {
-			if mode == "closed" {
-				return initialFixture.Initial.VMMemoryBytes
-			}
-			return 512 << 20
-		}(), GuestUsableMemoryBytes: q.TargetVMMemoryBytes, Shared: shared, TargetSharedUpperBytes: upper, Limits: limits, SystemOutsidePG: budget.Bound{Kind: budget.CommittedUpper, UpperBytes: 24 << 20, SourceID: "system"}, Transition: budget.Bound{Kind: budget.CommittedUpper, UpperBytes: 4 << 20, SourceID: "transition"}, Safety: budget.Bound{Kind: budget.CommittedUpper, UpperBytes: 4 << 20, SourceID: "safety"}}
+		p := budget.Prepared{ProtocolVersion: 1, NormalQuotaProtocolVersion: 1, NormalQuotaFence: &fence, Request: q, Identity: id, RunnerPodName: "runner", VMBeforeMemoryBytes: initialFixture.Initial.VMMemoryBytes, GuestUsableMemoryBytes: q.TargetVMMemoryBytes, Shared: shared, TargetSharedUpperBytes: upper, Limits: limits, SystemOutsidePG: budget.Bound{Kind: budget.CommittedUpper, UpperBytes: 24 << 20, SourceID: "system"}, Transition: budget.Bound{Kind: budget.CommittedUpper, UpperBytes: 4 << 20, SourceID: "transition"}, Safety: budget.Bound{Kind: budget.CommittedUpper, UpperBytes: 4 << 20, SourceID: "safety"}}
 		require.NoError(t, p.ValidateFor(q, id))
 		c := resourceguard.Command{ProtocolVersion: 1, Identity: id, IssuerEpoch: q.Key.IssuerEpoch, Revision: 1, BudgetCommitmentID: q.BudgetCommitmentID, PostmasterPID: birth.PostmasterPID, PostmasterStartTicks: birth.PostmasterStartTicks, MemoryMaxBytes: limits.MemoryMaxBytes, PidsMaxTasks: limits.PidsMaxTasks, SystemMemoryMaxBytes: limits.SystemMemoryMaxBytes, AddressSpaceMaxBytes: limits.AddressSpaceMaxBytes, OutsideUpperBytes: limits.OutsideUpperBytes, HugePools: limits.HugePools}
 		expired := mode != "closed"
@@ -197,7 +167,7 @@ func verifyRootOnlyDurabilityAction(t *testing.T, mode string) {
 		defer worker.CloseIdleConnections()
 		snapshot, e := store.Load(ctx)
 		require.NoError(t, e)
-		if mode == "closed" {
+		{
 			i, command, receipt := initialFixture.Initial, initialFixture.Command, initialFixture.Receipt
 			i.IssuerEpoch = session.Actor().Epoch
 			i.Shared.Observed.IssuerFloorEpoch = session.Actor().Epoch
@@ -253,7 +223,12 @@ func verifyRootOnlyDurabilityAction(t *testing.T, mode string) {
 		root.view.Birth = &resourceguard.ProcessIdentity{ProtocolVersion: 1, Identity: id, PostmasterPID: c.PostmasterPID, PostmasterStartTicks: c.PostmasterStartTicks}
 		root.view.Actual.GuestMemTotalBytes = q.TargetVMMemoryBytes
 		root.mu.Unlock()
-		if mode == "closed" {
+		if mode == "cancelled" {
+			// 关闭摘要必须固定已经取消的原操作，不能在关闭后改写 Active。
+			snapshot, e = store.RequestAbort(ctx, snapshot, session.Actor(), q.Key)
+			require.NoError(t, e)
+		}
+		{
 			close := control.AdmissionRequest{ProtocolVersion: 1, Instance: q.Key.Instance, IssuerEpoch: q.Key.IssuerEpoch, Revision: 2, ExpectedCapacityGeneration: 1, Open: false, BudgetCommitmentID: q.BudgetCommitmentID}
 			snapshot, _, e = store.StartActiveServiceClosure(ctx, snapshot, session.Actor(), close)
 			require.NoError(t, e)
@@ -266,10 +241,6 @@ func verifyRootOnlyDurabilityAction(t *testing.T, mode string) {
 			snapshot, e = store.RecordServiceClosure(ctx, snapshot, session.Actor(), fact, false)
 			require.NoError(t, e)
 			require.Equal(t, journal.Settled, snapshot.State().ServiceClosure.Phase)
-		}
-		if mode == "cancelled" {
-			snapshot, e = store.RequestAbort(ctx, snapshot, session.Actor(), q.Key)
-			require.NoError(t, e)
 		}
 		before := snapshot.State()
 		api.mu.Lock()

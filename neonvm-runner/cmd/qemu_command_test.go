@@ -44,6 +44,8 @@ func TestQEMUProcessCommandMissingQEMURefuses(t *testing.T) {
 
 func TestQEMUProcessCommandRelativePATHRefusesDot(t *testing.T) {
 	// Go的ErrDot门不得被Abs变换绕过；仅LookPath真正成功才规范化路径。
+	// 源码目录可以只读；独立 cwd 仍提供真实相对 PATH，不能改成绝对路径绕过拒绝门。
+	t.Chdir(t.TempDir())
 	dir, err := os.MkdirTemp(".", ".qemu-command-unit-")
 	if err != nil {
 		t.Fatal(err)
@@ -97,6 +99,8 @@ func TestQEMUProcessCommandDSGAInheritsOriginalPodCgroup(t *testing.T) {
 }
 
 func TestQEMUProcessCommandDSGAStillRefusesUnresolvedExecutable(t *testing.T) {
+	// 两种 managed 分支都在私有临时 cwd 中验证相对 PATH，保留原 ErrDot 语义。
+	t.Chdir(t.TempDir())
 	for _, skip := range []bool{false, true} {
 		cfg := &Config{architecture: architectureAmd64, skipCgroupManagement: skip, managedMemory: new(vmguard.Runner)}
 		t.Setenv("PATH", t.TempDir())

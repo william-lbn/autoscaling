@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""核对八片真实 Go 事件的唯一覆盖；默认 Linux suite 不构成物理内存资格。"""
+"""核对八个 root 分片与一个宿主集成任务的唯一覆盖；不签物理内存资格。"""
 from __future__ import annotations
 
 import argparse
@@ -12,10 +12,14 @@ import sys
 import tempfile
 
 
-SHARD_COUNT = 8
+ROOT_SHARD_COUNT = 8
+HOST_SHARD_INDEX = ROOT_SHARD_COUNT
+SHARD_COUNT = ROOT_SHARD_COUNT + 1
 SOURCE_REPOSITORY = "william-lbn/autoscaling"
 MODULE = "github.com/neondatabase/autoscaling"
 HEAVY_PACKAGES = {f"{MODULE}/pkg/dsga/{name}" for name in ("owner", "journal")}
+HOST_INTEGRATION_PACKAGES = {f"{MODULE}/{name}" for name in
+                             ("pkg/reporting", "pkg/neonvm/controllers/functests")}
 TEST_COMMAND = {"race": True, "count": 1, "timeout": "30m", "package_parallelism": 2}
 
 
@@ -72,13 +76,16 @@ def select_tests(inventory: dict[str, list[str]], index: int) -> dict[str, list[
     # 独立重算 driver 的稳定分片，不能信任 report 中自报的 selection 或总数。
     selected = {}
     for package, names in inventory.items():
-        if package not in HEAVY_PACKAGES:
+        if package in HOST_INTEGRATION_PACKAGES:
+            if index == HOST_SHARD_INDEX:
+                selected[package] = names
+        elif package not in HEAVY_PACKAGES:
             if index == 0:
                 selected[package] = names
         else:
             chosen = [name for name in names if int.from_bytes(
                 hashlib.sha256(f"{package}/{name}".encode("utf-8")).digest(), "big"
-            ) % SHARD_COUNT == index]
+            ) % ROOT_SHARD_COUNT == index]
             if chosen:
                 selected[package] = chosen
     return selected
@@ -256,7 +263,7 @@ def collect(input_dir: Path, source_commit: str, arch: str, execution: dict) -> 
             require(item.is_file() and not item.is_symlink() and item.resolve().is_relative_to(root),
                     f"missing or unsafe evidence file: {item}")
         report = decode_json(path.read_text(encoding="utf-8"), str(path))
-        require(type(report.get("schema_version")) is int and report["schema_version"] == 1,
+        require(type(report.get("schema_version")) is int and report["schema_version"] == 2,
                 f"{path}: unsupported report schema")
         require(report.get("source_repository") == SOURCE_REPOSITORY and
                 report.get("source_commit") == source_commit and
@@ -264,10 +271,21 @@ def collect(input_dir: Path, source_commit: str, arch: str, execution: dict) -> 
                 f"{path}: source, architecture or execution identity mismatch")
         require(type(report.get("shard_count")) is int and report["shard_count"] == SHARD_COUNT,
                 f"{path}: invalid shard count")
+        require(type(report.get("root_shard_count")) is int and report["root_shard_count"] == ROOT_SHARD_COUNT,
+                f"{path}: root shard count changed")
         index = report.get("shard_index")
         require(type(index) is int and 0 <= index < SHARD_COUNT, f"{path}: invalid shard index")
         require(index not in by_index, f"duplicate shard index: {index}")
         by_index[index] = path
+        environment = "host-integration" if index == HOST_SHARD_INDEX else "root-readonly"
+        require(report.get("execution_environment") == environment,
+                f"{path}: execution environment does not match shard lane")
+        user = report.get("execution_user")
+        require(isinstance(user, dict) and set(user) == {"uid", "gid"} and
+                all(type(user[key]) is int and user[key] >= 0 for key in user) and
+                (user["uid"] == 0) == (environment == "root-readonly") and
+                (environment != "root-readonly" or user["gid"] == 0),
+                f"{path}: effective user does not match execution environment")
         command = report.get("test_command")
         require(isinstance(command, dict) and command == TEST_COMMAND and
                 all(type(command[key]) is type(value) for key, value in TEST_COMMAND.items()),
@@ -275,9 +293,10 @@ def collect(input_dir: Path, source_commit: str, arch: str, execution: dict) -> 
         require(type(report.get("exit_code")) is int and report["exit_code"] == 0,
                 f"{path}: shard did not exit zero")
         current_inventory = validate_names(report.get("inventory"), "inventory")
-        require(HEAVY_PACKAGES.issubset(current_inventory) and
-                all(current_inventory[package] for package in HEAVY_PACKAGES),
-                f"{path}: missing heavy package inventory")
+        required_packages = HEAVY_PACKAGES | HOST_INTEGRATION_PACKAGES
+        require(required_packages.issubset(current_inventory) and
+                all(current_inventory[package] for package in required_packages),
+                f"{path}: missing heavy or host integration package inventory")
         if inventory is None:
             inventory = current_inventory
         require(current_inventory == inventory, f"{path}: shard inventory mismatch")
@@ -290,6 +309,8 @@ def collect(input_dir: Path, source_commit: str, arch: str, execution: dict) -> 
         skipped.extend({"shard_index": index, **item} for item in actual["skipped"])
         summaries.append({
             "shard_index": index,
+            "execution_environment": environment,
+            "execution_user": user,
             "selected_packages": len(selection),
             "selected_top_level_tests": sum(map(len, selection.values())),
             "actual": actual["counts"],
@@ -306,13 +327,15 @@ def collect(input_dir: Path, source_commit: str, arch: str, execution: dict) -> 
         for name in names:
             kinds[next(prefix for prefix in ("Test", "Example", "Fuzz") if name.startswith(prefix))] += 1
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "passed",
         "source_repository": SOURCE_REPOSITORY,
         "source_commit": source_commit,
         "architecture": arch,
         "execution": execution,
         "shard_count": SHARD_COUNT,
+        "root_shard_count": ROOT_SHARD_COUNT,
+        "host_integration_packages": sorted(HOST_INTEGRATION_PACKAGES),
         "scope": "complete-default-linux-go-suite",
         "test_command": TEST_COMMAND,
         "inventory": {
@@ -355,7 +378,7 @@ def main() -> int:
         result = collect(args.input_dir, args.source_commit, args.arch, execution)
     except (CoverageError, OSError, UnicodeError) as error:
         # 失败也覆盖本次专用输出，避免重跑时遗留的成功收据被误读为当前结果。
-        write_result(args.output, {"schema_version": 1, "status": "failed", "error": str(error),
+        write_result(args.output, {"schema_version": 2, "status": "failed", "error": str(error),
                                    "source_commit": args.source_commit, "architecture": args.arch,
                                    "execution": execution})
         print(f"Test coverage rejected: {error}", file=sys.stderr)

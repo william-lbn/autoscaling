@@ -45,6 +45,9 @@ func verifyProductionReopenLeaseRecovery(t *testing.T, ctx context.Context, mode
 	root.view.Actual.MemoryMaxBytes--
 	root.mu.Unlock()
 	pg.mu.Lock()
+	// 前驱正常伸缩可已有完整审计后的续租；本阶段只禁止在关闭/恢复期限
+	// 时增加普通 renew，不把前驱合法动作算成本管理选择的副作用。
+	priorRenewals := pg.leaseRenewals
 	pg.reopenFixture = nil
 	pg.leaseExpired = true
 	pg.rearmFixture = &serviceRearmPG{epoch: session.Actor().Epoch, original: nil, applied: 0, posts: 0, queries: 0, loseBefore: mode == "setter-before", loseAfter: mode == "setter-after", loseRecord: mode == "lost-record", api: transfer.api, afterObserve: nil, afterApply: nil}
@@ -141,7 +144,7 @@ func verifyProductionReopenLeaseRecovery(t *testing.T, ctx context.Context, mode
 		require.False(t, pg.shared().Observed.AdmissionOpen)
 		pg.mu.Lock()
 		require.Equal(t, posts, pg.rearmFixture.posts)
-		require.Zero(t, pg.leaseRenewals)
+		require.Equal(t, priorRenewals, pg.leaseRenewals, "期限恢复不得新增普通续租")
 		pg.mu.Unlock()
 		if cycle < cycles {
 			selector = r.CommandSHA256
