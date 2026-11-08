@@ -178,6 +178,9 @@ func TestSchedulerManagedFirstPlacementAndLegacyBypassExclusion(t *testing.T) {
 	s, f, n := schedulerFixture(t)
 	pod := legacyVM(t, f)
 	f.Mutate(func(f *dsgatest.SchedulerAPI) {
+		// 转为受管 VM 后，真实 Pod 硬限必须覆盖原最大 Guest 4Gi 与固定 Host 64Mi；
+		// 只修本例的完整正向夹具，保留共享 legacyVM 的旧资源与独立短限拒绝测试。
+		f.Pods["testing/runner"].Spec.Containers[0].Resources.Limits[core.ResourceMemory] = resource.MustParse("4160Mi")
 		vm := f.VMs["testing/vm"]
 		vm.Spec.DSGABootstrap = &vmv1.DSGABootstrap{ProtocolVersion: 1, Incarnation: strings.Repeat("a", 32), ComputeInstanceID: "compute", VMUID: "", ConfigSecretUID: "", Ready: false}
 		vm.Status.MemorySize = nil
@@ -194,6 +197,7 @@ func TestSchedulerManagedFirstPlacementAndLegacyBypassExclusion(t *testing.T) {
 	canonical, held, err := s.Reserve(ctx, n.Binding.NodeName, pod, 0)
 	require.NoError(t, err)
 	require.True(t, held.Managed)
+	require.EqualValues(t, 4160<<20, held.PodMemoryLimitBytes)
 	require.False(t, api.HasAutoscalingEnabled(canonical))
 	require.False(t, api.HasAutoMigrationEnabled(canonical))
 	f.Mutate(func(f *dsgatest.SchedulerAPI) {

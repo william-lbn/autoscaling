@@ -167,6 +167,13 @@ func (q *Quiesced) UnmarshalJSON(data []byte) error {
 	if err := control.UnmarshalObject(data, &next); err != nil {
 		return err
 	}
-	*q = Quiesced(next)
+	value := Quiesced(next)
+	// Close 仅在线 v2 协议可缺省；结构标签需要兼容它，不能因此让旧 v1
+	// 丢失原关闭身份后静默解码为零值。这里核完整原命令而不核 ACK/空闲，
+	// 使合法等待仍可读取，但缺失关闭、跨版本门状态和 VM 许可必须先拒绝。
+	if err := value.OriginalCommand().Validate(); err != nil {
+		return err
+	}
+	*q = value
 	return nil
 }

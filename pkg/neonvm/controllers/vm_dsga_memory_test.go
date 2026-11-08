@@ -12,6 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
@@ -141,6 +142,9 @@ func TestManagedRunnerPodBuildsOriginalPrivateMemoryEnvironment(t *testing.T) {
 			_, vm, secret := controllerBootstrapInputs(t)
 			mode := vmv1.CpuScalingModeSysfs
 			vm.Spec.CpuScalingMode, vm.Spec.ServiceAccountName = &mode, "original-dsga-runner"
+			// 正例仍使用原 VM 的 32Gi 最大几何；显式补齐 Runner/init 共用的硬限，
+			// 使本例继续核验私有环境，而不是停在已有的缺失资源拒绝门禁。
+			vm.Spec.PodResources = core.ResourceRequirements{Limits: core.ResourceList{core.ResourceCPU: resource.MustParse("4"), core.ResourceMemory: resource.MustParse("34Gi")}}
 			switch what {
 			case "empty-service-account":
 				vm.Spec.ServiceAccountName = ""

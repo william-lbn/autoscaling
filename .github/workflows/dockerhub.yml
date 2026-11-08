@@ -70,8 +70,14 @@ jobs:
           echo "source=$sha" >> "$GITHUB_OUTPUT"
   tests:
     needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
     runs-on: ${{ inputs.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     timeout-minutes: 90
+    env:
+      CI_TEST_SHARD_INDEX: ${{ matrix.shard }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -87,8 +93,45 @@ jobs:
           go-version-file: go.mod
       - run: python3 -m unittest discover -s ci -p 'test_*.py' -v
       - run: bash ci/test.sh
-  go-base:
+      - name: Preserve complete Linux test logs and status
+        if: always()
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: autoscaling-tests-${{ env.ARCH }}-shard${{ matrix.shard }}-attempt${{ github.run_attempt }}
+          path: output/tests/shard-${{ matrix.shard }}/
+          retention-days: 30
+          if-no-files-found: warn
+  test-coverage:
     needs: [prepare, tests]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.prepare.outputs.source }}
+          repository: william-lbn/autoscaling
+          persist-credentials: false
+      - uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
+        with:
+          pattern: autoscaling-tests-${{ env.ARCH }}-shard*-attempt${{ github.run_attempt }}
+          path: test-results
+      - name: Require complete, disjoint, actually executed default Linux coverage
+        env:
+          SOURCE_COMMIT: ${{ needs.prepare.outputs.source }}
+        run: |
+          python3 ci/check_test_coverage.py --input-dir test-results \
+            --source-commit "$SOURCE_COMMIT" --arch "$ARCH" \
+            --repository "$GITHUB_REPOSITORY" --run-id "$GITHUB_RUN_ID" \
+            --run-attempt "$GITHUB_RUN_ATTEMPT" --output output/test-coverage.json
+      - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        if: always()
+        with:
+          name: autoscaling-test-coverage-${{ env.ARCH }}-attempt${{ github.run_attempt }}
+          path: output/test-coverage.json
+          retention-days: 30
+          if-no-files-found: error
+  go-base:
+    needs: [prepare, test-coverage]
     runs-on: ${{ inputs.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     timeout-minutes: 90
     outputs:
@@ -143,7 +186,7 @@ jobs:
           retention-days: 90
           if-no-files-found: error
   kernel:
-    needs: [prepare, tests]
+    needs: [prepare, test-coverage]
     runs-on: ${{ inputs.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     timeout-minutes: 150
     outputs:
