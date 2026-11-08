@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "registry": "docker.io/williamluckyli",
+  "source_repository": "william-lbn/autoscaling",
+  "release_channel": "candidate",
+  "kernel_build_profile": "default-source-build",
+  "vm_builder_default_system_mode": "legacy",
+  "audited_kernel_profile": "neonvm-kernel/profiles/normal-split-metadata-v1/config-source.json",
+  "images": {
+    "autoscaling-go-base": [],
+    "vm-kernel": [],
+    "neonvm-daemon": ["autoscaling-go-base"],
+    "neonvm-controller": ["autoscaling-go-base"],
+    "neonvm-vxlan-controller": ["autoscaling-go-base"],
+    "neonvm-runner": ["autoscaling-go-base", "vm-kernel"],
+    "autoscale-scheduler": ["autoscaling-go-base"],
+    "autoscaler-agent": ["autoscaling-go-base"],
+    "cluster-autoscaler-neonvm": [],
+    "vm-builder": ["autoscaling-go-base", "neonvm-daemon"],
+    "dsga-platform-qualifier": ["autoscaling-go-base"]
+  }
+}

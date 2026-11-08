@@ -70,6 +70,11 @@ ADD ${AMD64_KERNEL_CONFIG} linux-${KERNEL_VERSION}/.config
 ARG VERSION_SUFFIX
 RUN cd linux-${KERNEL_VERSION} \
 	&& make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION="$VERSION_SUFFIX" -j `nproc`
+# 导出实际编译收据，不能用输入 config 或历史18c身份代替本次输出。
+RUN set -eu; cd linux-${KERNEL_VERSION}; mkdir /kernel-receipt; \
+    cp .config /kernel-receipt/kernel.config; \
+    cp include/config/kernel.release /kernel-receipt/kernel.release; \
+    x86_64-linux-gnu-objcopy --dump-section .notes=/kernel-receipt/kernel-notes.bin vmlinux
 
 # Copy the kernel image to a separate step
 # Use alpine so that `cp` is available when loading custom kernels for the runner pod.
@@ -77,6 +82,7 @@ RUN cd linux-${KERNEL_VERSION} \
 FROM --platform=linux/amd64 alpine:$ALPINE_IMG_TAG$ALPINE_IMG_SHA_AMD64 AS kernel_amd64
 ARG KERNEL_VERSION
 COPY --from=build_amd64 /build/linux-${KERNEL_VERSION}/arch/x86/boot/bzImage /vmlinuz
+COPY --from=build_amd64 /kernel-receipt /kernel-receipt
 
 # Build the kernel on arm64
 FROM build-deps AS build_arm64
@@ -85,6 +91,10 @@ ARG VERSION_SUFFIX
 ADD linux-config-aarch64-${KERNEL_VERSION} linux-${KERNEL_VERSION}/.config
 RUN cd linux-${KERNEL_VERSION} \
 	&& make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- EXTRAVERSION="$VERSION_SUFFIX" -j `nproc`
+RUN set -eu; cd linux-${KERNEL_VERSION}; mkdir /kernel-receipt; \
+    cp .config /kernel-receipt/kernel.config; \
+    cp include/config/kernel.release /kernel-receipt/kernel.release; \
+    aarch64-linux-gnu-objcopy --dump-section .notes=/kernel-receipt/kernel-notes.bin vmlinux
 
 # Copy the kernel image to a separate step
 # Use alpine so that `cp` is available when loading custom kernels for the runner pod.
@@ -92,6 +102,7 @@ RUN cd linux-${KERNEL_VERSION} \
 FROM --platform=linux/arm64 alpine:$ALPINE_IMG_TAG$ALPINE_IMG_SHA_ARM64 AS kernel_arm64
 ARG KERNEL_VERSION
 COPY --from=build_arm64 /build/linux-${KERNEL_VERSION}/arch/arm64/boot/Image /vmlinuz
+COPY --from=build_arm64 /kernel-receipt /kernel-receipt
 
 # Dummy default target without target architecture
 FROM ubuntu:$UBUNTU_IMG_TAG$UBUNTU_IMG_SHA

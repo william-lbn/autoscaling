@@ -1,7 +1,7 @@
 name: Docker Hub Autoscaling distribution
 on:
   push:
-    branches: [main]
+    branches: [main, codex/dsga-autoscaling-20261019]
   workflow_dispatch:
     inputs:
       arch:
@@ -27,19 +27,26 @@ on:
         required: true
 permissions:
   contents: read
+concurrency:
+  group: autoscaling-distribution-${{ github.repository }}-${{ inputs.tag || github.ref }}-${{ inputs.arch || 'amd64' }}
+  cancel-in-progress: false
 env:
   REGISTRY: docker.io/williamluckyli
   ARCH: ${{ inputs.arch || 'amd64' }}
+  RELEASE_SOURCE: ${{ inputs.source_ref || github.sha }}
 defaults:
   run:
     shell: bash
 jobs:
   prepare:
+    if: github.repository == 'william-lbn/autoscaling' || github.repository == 'william-lbn/neon'
     runs-on: ubuntu-24.04
     outputs:
       tag: ${{ steps.meta.outputs.tag }}
       source: ${{ steps.meta.outputs.source }}
     steps:
+      - name: Require an immutable source SHA before checkout
+        run: '[[ "$RELEASE_SOURCE" =~ ^[a-f0-9]{40}$ ]]'
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ inputs.source_ref || github.sha }}
@@ -51,24 +58,34 @@ jobs:
         run: |
           set -euo pipefail
           sha=$(git rev-parse HEAD)
-          tag=${INPUT_TAG:-$(date -u +%Y.%m.%d-%H%M%S)-${sha:0:12}-r${GITHUB_RUN_ID}-a${GITHUB_RUN_ATTEMPT}}
-          [[ "$tag" =~ ^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$ ]]
-          [[ "$ARCH" = amd64 || "$ARCH" = arm64 ]]
+          if [[ -n "$INPUT_TAG" ]]; then
+            tag="$INPUT_TAG"
+          elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
+            tag="$(date -u +%Y.%m.%d-%H%M%S)-${sha:0:12}-r${GITHUB_RUN_ID}-a${GITHUB_RUN_ATTEMPT}"
+          else
+            tag="0.2.0-dsga.${GITHUB_RUN_ID}.${GITHUB_RUN_ATTEMPT}.${ARCH}"
+          fi
+          python3 ci/distribution.py verify --source-commit "$RELEASE_SOURCE" --version "$tag" --arch "$ARCH"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "source=$sha" >> "$GITHUB_OUTPUT"
   tests:
     needs: prepare
     runs-on: ${{ inputs.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ needs.prepare.outputs.source }}
           repository: william-lbn/autoscaling
           persist-credentials: false
+      - name: Verify source and release attempt before building
+        env:
+          RELEASE_VERSION: ${{ needs.prepare.outputs.tag }}
+        run: python3 ci/distribution.py verify --source-commit "$RELEASE_SOURCE" --version "$RELEASE_VERSION" --arch "$ARCH"
       - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
         with:
           go-version-file: go.mod
+      - run: python3 -m unittest discover -s ci -p 'test_*.py' -v
       - run: bash ci/test.sh
   go-base:
     needs: [prepare, tests]
@@ -82,6 +99,10 @@ jobs:
           ref: ${{ needs.prepare.outputs.source }}
           repository: william-lbn/autoscaling
           persist-credentials: false
+      - name: Verify source and release attempt before building
+        env:
+          RELEASE_VERSION: ${{ needs.prepare.outputs.tag }}
+        run: python3 ci/distribution.py verify --source-commit "$RELEASE_SOURCE" --version "$RELEASE_VERSION" --arch "$ARCH"
       - uses: ./.github/actions/deps-versions
         with:
           arch: ${{ env.ARCH }}
@@ -100,6 +121,10 @@ jobs:
           build-args: |
             GOLANG_IMG_TAG=${{ env.GOLANG_IMG_TAG }}
             GOLANG_IMG_SHA=${{ env.GOLANG_IMG_SHA }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/william-lbn/autoscaling
+            org.opencontainers.image.revision=${{ needs.prepare.outputs.source }}
+            org.opencontainers.image.version=${{ needs.prepare.outputs.tag }}
           cache-from: type=gha,scope=autoscaling-go-${{ env.ARCH }}
           cache-to: type=gha,scope=autoscaling-go-${{ env.ARCH }},mode=min
           provenance: mode=max
@@ -113,12 +138,12 @@ jobs:
           python3 ci/record.py --name autoscaling-go-base --image "$image" --digest "$DIGEST" --output output/autoscaling-go-base.json
       - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
-          name: images-autoscaling-go-base
+          name: images-autoscaling-go-base-attempt${{ github.run_attempt }}
           path: output/*.json
           retention-days: 90
           if-no-files-found: error
   kernel:
-    needs: prepare
+    needs: [prepare, tests]
     runs-on: ${{ inputs.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     timeout-minutes: 150
     outputs:
@@ -129,6 +154,10 @@ jobs:
           ref: ${{ needs.prepare.outputs.source }}
           repository: william-lbn/autoscaling
           persist-credentials: false
+      - name: Verify source and release attempt before building
+        env:
+          RELEASE_VERSION: ${{ needs.prepare.outputs.tag }}
+        run: python3 ci/distribution.py verify --source-commit "$RELEASE_SOURCE" --version "$RELEASE_VERSION" --arch "$ARCH"
       - uses: ./.github/actions/deps-versions
         with:
           arch: ${{ env.ARCH }}
@@ -157,6 +186,10 @@ jobs:
             ALPINE_IMG_TAG=${{ env.ALPINE_IMG_TAG }}
             ALPINE_IMG_SHA_AMD64=${{ env.ALPINE_IMG_SHA }}
             ALPINE_IMG_SHA_ARM64=${{ env.ALPINE_IMG_SHA }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/william-lbn/autoscaling
+            org.opencontainers.image.revision=${{ needs.prepare.outputs.source }}
+            org.opencontainers.image.version=${{ needs.prepare.outputs.tag }}
           cache-from: type=gha,scope=kernel-${{ env.ARCH }}
           cache-to: type=gha,scope=kernel-${{ env.ARCH }},mode=min
           provenance: mode=max
@@ -170,12 +203,84 @@ jobs:
           python3 ci/record.py --name vm-kernel --image "$image" --digest "$DIGEST" --output output/vm-kernel.json
       - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
-          name: images-autoscaling-kernel
+          name: images-autoscaling-kernel-attempt${{ github.run_attempt }}
+          path: output/*.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Read the actual kernel from its immutable image
+        env:
+          TAG: ${{ needs.prepare.outputs.tag }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          docker pull "$REGISTRY/vm-kernel:$TAG@$DIGEST"
+          id=$(docker create "$REGISTRY/vm-kernel:$TAG@$DIGEST" true)
+          trap 'docker rm "$id" >/dev/null' EXIT
+          mkdir -p output/kernel
+          docker cp "$id:/vmlinuz" output/kernel/vmlinuz
+          docker cp "$id:/kernel-receipt/." output/kernel/
+          python3 ci/distribution.py inspect-kernel --source-commit "$RELEASE_SOURCE" \
+            --version "$TAG" --arch "$ARCH" --directory output/kernel --digest "$DIGEST" \
+            --output output/kernel/binding.json
+      - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: autoscaling-kernel-receipt-attempt${{ github.run_attempt }}
+          path: output/kernel/
+          retention-days: 90
+          if-no-files-found: error
+  daemon:
+    needs: [prepare, go-base]
+    runs-on: ${{ inputs.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+    timeout-minutes: 90
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.prepare.outputs.source }}
+          repository: william-lbn/autoscaling
+          persist-credentials: false
+      - name: Verify source and release attempt before building
+        env:
+          RELEASE_VERSION: ${{ needs.prepare.outputs.tag }}
+        run: python3 ci/distribution.py verify --source-commit "$RELEASE_SOURCE" --version "$RELEASE_VERSION" --arch "$ARCH"
+      - uses: ./.github/actions/dockerhub-setup
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          token: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
+        id: build
+        with:
+          context: .
+          file: neonvm-daemon/Dockerfile
+          platforms: linux/${{ env.ARCH }}
+          push: true
+          tags: ${{ env.REGISTRY }}/neonvm-daemon:${{ needs.prepare.outputs.tag }}
+          build-args: |
+            GO_BASE_IMG=${{ env.REGISTRY }}/autoscaling-go-base:${{ needs.prepare.outputs.tag }}@${{ needs.go-base.outputs.digest }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/william-lbn/autoscaling
+            org.opencontainers.image.revision=${{ needs.prepare.outputs.source }}
+            org.opencontainers.image.version=${{ needs.prepare.outputs.tag }}
+          cache-from: type=gha,scope=autoscaling-neonvm-daemon-${{ env.ARCH }}
+          cache-to: type=gha,scope=autoscaling-neonvm-daemon-${{ env.ARCH }},mode=min
+          provenance: mode=max
+          sbom: true
+      - env:
+          TAG: ${{ needs.prepare.outputs.tag }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+          GO_DIGEST: ${{ needs.go-base.outputs.digest }}
+        run: |
+          python3 ci/record.py --name neonvm-daemon --image "$REGISTRY/neonvm-daemon:$TAG" \
+            --digest "$DIGEST" --dependency "autoscaling-go-base=$GO_DIGEST" --output output/neonvm-daemon.json
+      - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: images-autoscaling-neonvm-daemon-attempt${{ github.run_attempt }}
           path: output/*.json
           retention-days: 90
           if-no-files-found: error
   components:
-    needs: [prepare, go-base, kernel]
+    needs: [prepare, go-base, kernel, daemon]
     runs-on: ${{ inputs.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     timeout-minutes: 120
     strategy:
@@ -192,8 +297,8 @@ jobs:
           - name: neonvm-runner
             file: neonvm-runner/Dockerfile
             context: .
-          - name: neonvm-daemon
-            file: neonvm-daemon/Dockerfile
+          - name: dsga-platform-qualifier
+            file: dsga-platform-qualifier/Dockerfile
             context: .
           - name: autoscale-scheduler
             file: autoscale-scheduler/Dockerfile
@@ -213,6 +318,10 @@ jobs:
           ref: ${{ needs.prepare.outputs.source }}
           repository: william-lbn/autoscaling
           persist-credentials: false
+      - name: Verify source and release attempt before building
+        env:
+          RELEASE_VERSION: ${{ needs.prepare.outputs.tag }}
+        run: python3 ci/distribution.py verify --source-commit "$RELEASE_SOURCE" --version "$RELEASE_VERSION" --arch "$ARCH"
       - uses: ./.github/actions/deps-versions
         with:
           arch: ${{ env.ARCH }}
@@ -245,7 +354,7 @@ jobs:
             FIRMWARE_ARCH=${{ env.ARCH }}
             FIRMWARE_OS=linux
             VERSION=${{ needs.prepare.outputs.source }}
-            DAEMON_IMAGE=${{ env.REGISTRY }}/neonvm-daemon:${{ needs.prepare.outputs.tag }}
+            DAEMON_IMAGE=${{ env.REGISTRY }}/neonvm-daemon:${{ needs.prepare.outputs.tag }}@${{ needs.daemon.outputs.digest }}
             ALPINE_IMG_TAG=${{ env.ALPINE_IMG_TAG }}
             ALPINE_IMG_SHA=${{ env.ALPINE_IMG_SHA }}
             DISTROLESS_IMG_TAG=${{ env.DISTROLESS_IMG_TAG }}
@@ -262,10 +371,63 @@ jobs:
           NAME: ${{ matrix.name }}
           TAG: ${{ needs.prepare.outputs.tag }}
           DIGEST: ${{ steps.build.outputs.digest }}
-        run: python3 ci/record.py --name "$NAME" --image "$REGISTRY/$NAME:$TAG" --digest "$DIGEST" --output "output/$NAME.json"
+          GO_DIGEST: ${{ needs.go-base.outputs.digest }}
+          KERNEL_DIGEST: ${{ needs.kernel.outputs.digest }}
+          DAEMON_DIGEST: ${{ needs.daemon.outputs.digest }}
+        run: |
+          set -euo pipefail
+          dependencies=()
+          if [[ "$NAME" != cluster-autoscaler-neonvm ]]; then
+            dependencies+=(--dependency "autoscaling-go-base=$GO_DIGEST")
+          fi
+          if [[ "$NAME" == neonvm-runner ]]; then
+            dependencies+=(--dependency "vm-kernel=$KERNEL_DIGEST")
+          elif [[ "$NAME" == vm-builder ]]; then
+            dependencies+=(--dependency "neonvm-daemon=$DAEMON_DIGEST")
+          fi
+          python3 ci/record.py --name "$NAME" --image "$REGISTRY/$NAME:$TAG" --digest "$DIGEST" \
+            --output "output/$NAME.json" "${dependencies[@]}"
       - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
-          name: images-autoscaling-${{ matrix.name }}
+          name: images-autoscaling-${{ matrix.name }}-attempt${{ github.run_attempt }}
           path: output/*.json
+          retention-days: 90
+          if-no-files-found: error
+  verify-distribution:
+    needs: [prepare, tests, go-base, kernel, daemon, components]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.prepare.outputs.source }}
+          repository: william-lbn/autoscaling
+          persist-credentials: false
+      - uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
+        with:
+          pattern: images-autoscaling-*-attempt${{ github.run_attempt }}
+          path: artifacts/images
+      - uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
+        with:
+          name: autoscaling-kernel-receipt-attempt${{ github.run_attempt }}
+          path: artifacts/kernel
+      - name: Verify complete image graph and declare candidate capabilities
+        env:
+          TAG: ${{ needs.prepare.outputs.tag }}
+        run: |
+          python3 ci/distribution.py collect --directory artifacts/images --kernel-directory artifacts/kernel \
+            --source-commit "$RELEASE_SOURCE" --version "$TAG" --arch "$ARCH" \
+            --output output/autoscaling-capabilities.json
+          cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
+          ## Autoscaling candidate distribution
+          The image graph is complete and pinned to one source commit, architecture and run attempt.
+          The Guest kernel is the default source build; the VM builder default is legacy.
+          `normal_qualification=false`, `production_ready=false`, `latest_eligible=false`.
+          This artifact records packaging and source identity; physical normal-mode acceptance remains separate.
+          SUMMARY
+      - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: autoscaling-capabilities-attempt${{ github.run_attempt }}
+          path: output/autoscaling-capabilities.json
           retention-days: 90
           if-no-files-found: error
