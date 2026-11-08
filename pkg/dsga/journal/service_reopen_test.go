@@ -63,6 +63,49 @@ func reopenFact(t *testing.T, m Model) control.AdmissionResponse {
 	return fact
 }
 
+// ServiceClosureVersion 必须返回真正的原关闭类别，而不是当前恢复包装的
+// 外层格式。该区别直接决定跨包 committed-recovery 审计能否在写入 Reopen
+// 后继续认证原 v13/v14 等稳定关闭；若误读 v20/v19，会在 setter 发送前把
+// 已经通过来源核验的合法恢复状态拒绝。这里同时覆盖 v20 包 v19 的双层情况。
+func TestServiceClosureVersionUnwrapsReopenAndRearmEnvelopes(t *testing.T) {
+	for _, mode := range []string{"idle", "initial-unknown", "continuation", "rearm"} {
+		t.Run(mode, func(t *testing.T) {
+			m, before := reopenModel(t, mode)
+			original := m.ServiceClosureVersion()
+			if mode == "rearm" {
+				require.EqualValues(t, 19, m.ClosureFormatVersion())
+				require.NotEqual(t, m.ClosureFormatVersion(), original,
+					"Rearm 夹具进入 Reopen 前已经存在 v19 外层包装")
+			} else {
+				require.Equal(t, m.ClosureFormatVersion(), original)
+			}
+
+			_, _, _, selector := m.ServiceClosure.Selection()
+			started, err := m.StartServiceReopen(m.Owner, selector, before)
+			require.NoError(t, err)
+			require.EqualValues(t, 20, started.ClosureFormatVersion())
+			require.Equal(t, original, started.ServiceClosureVersion(),
+				"Reopen 外层 v20 不能改变原稳定关闭类别")
+
+			_, wire, err := encode(started, MaxEncodedBytes)
+			require.NoError(t, err)
+			loaded, err := decode(wire, started.VMUID, started.Incarnation)
+			require.NoError(t, err)
+			require.Equal(t, original, loaded.ServiceClosureVersion(),
+				"持久化/恢复后仍必须解包到同一原关闭类别")
+		})
+	}
+
+	m, before := rearmModel(t)
+	original := m.ServiceClosureVersion()
+	_, _, _, selector := m.ServiceClosure.Selection()
+	rearmed, err := m.StartServiceRearm(m.Owner, selector, before)
+	require.NoError(t, err)
+	require.EqualValues(t, 19, rearmed.ClosureFormatVersion())
+	require.Equal(t, original, rearmed.ServiceClosureVersion(),
+		"Rearm 外层 v19 不能改变原稳定关闭类别")
+}
+
 // 模型测试必须区分原事实与新开放回执。即便新回执已确认，原关闭仍
 // 保留、Begin 仍 Busy；后继生产来源审计/再关闭/归档不能省略。
 func TestServiceReopenRetainsOriginalClosureBudgetAndUnknown(t *testing.T) {

@@ -123,6 +123,13 @@ func TestHostPublisherOriginalSourcesAndLostWrites(t *testing.T) {
 			}
 			api, store, vmCoord := newAPI(t)
 			client := vmCore(t)
+			if mode == "actual-scheduler-loop" {
+				// 实际 Scheduler 不允许在已有 managed placement 上隐式迁移 v10
+				// Pod hard-limit floor；生产启动必须在出生前固定该 floor。这个组合
+				// 用例此前仍使用旧 v3 fixture，导致正确的生产拒绝被误判为循环失败。
+				// 这里只补齐生产前置事实，不放宽 Scheduler/Fence/Publisher 任一门禁。
+				initializeOwnerSchedulerPodFloor(t, client)
+			}
 			api.mu.Lock()
 			cpuMode := vmv1.CpuScalingModeSysfs
 			api.vm.Spec.CpuScalingMode, api.vm.Spec.ServiceAccountName = &cpuMode, "dsga-runner-test"

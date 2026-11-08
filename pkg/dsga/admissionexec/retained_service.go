@@ -43,7 +43,13 @@ func (e *Executor) checkRetainedService(ctx context.Context, s *journal.Snapshot
 		return fmt.Errorf("retained admission check requires original live production domains")
 	}
 	if recovering {
-		version := m.ClosureFormatVersion()
+		// Reopen/Rearm 是原关闭之上的恢复包装：选择业务重开后外层格式会变成
+		// v20，期限恢复后会变成 v19，但原 v13/v14 的完整资源结算语义必须保持。
+		// 这里必须检查解包后的原关闭类别；否则 StartServiceReopen 写前 CAS 一旦
+		// 成功，发送前的第二次来源审计就会把合法 v20 状态误判成“不再是 13/14”。
+		// 后面的 CheckStableServiceRecovery 仍逐项验证原 Active、预算、关闭摘要；
+		// 本改动只修正类别识别，不放宽任何 Root/Host/Runner 或准入安全门。
+		version := m.ServiceClosureVersion()
 		if m.ServiceClosure == nil || m.ServiceClosure.Pending() || version != 13 && version != 14 || m.CheckStableServiceRecovery() != nil {
 			return fmt.Errorf("committed service audit requires original complete 13/14 budget closure")
 		}

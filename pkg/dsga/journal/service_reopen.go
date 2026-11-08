@@ -75,6 +75,16 @@ func (m Model) serviceClosureVersion() uint32 {
 	return version
 }
 
+// ServiceClosureVersion 返回去除 rearm/reopen 恢复包装后的原始关闭类别。
+//
+// ClosureFormatVersion 用于描述当前持久模型的最外层格式：启动业务重开后会变为
+// v20，期限恢复时会变为 v19；但这些包装都必须继续绑定原来的 v13/v14/v15…
+// 关闭语义。跨包恢复审计如果需要判断“原关闭属于哪一类”，必须使用本方法，
+// 不能把合法的后继恢复选择误判成原关闭类别发生变化。
+func (m Model) ServiceClosureVersion() uint32 {
+	return m.serviceClosureVersion()
+}
+
 func (m Model) validateServiceReopen() error {
 	return m.validateServiceReopenRecord(false)
 }

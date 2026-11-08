@@ -1276,7 +1276,11 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 		require.Nil(t, s.State().InitialHeld)
 		require.Nil(t, s.State().CapacityHeld)
 		require.NotNil(t, s.State().BudgetHeld)
-		if lifecycleMode {
+		if lifecycleMode || cancelled {
+			// 取消/Owner 接管现在也通过正式 ReopenService -> CompleteServiceReopen
+			// 完成安全恢复。完成后 ServiceLifecycle 是永久恢复证据，顶层协议按
+			// service_lifecycle.go 的格式合同升级为 v21；原关闭类别继续保存在
+			// ServiceClosure.FormatVersion/冻结上下文中，不能再用旧 v9 顶层版本断言。
 			require.EqualValues(t, 21, s.State().ProtocolVersion)
 			require.NotNil(t, s.State().ServiceLifecycle)
 		} else {
@@ -1285,8 +1289,12 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 		posts, _, resizes := pg.counts()
 		if lifecycleMode {
 			require.Equal(t, lifecyclePosts+1, posts)
-		} else if actualShrinkRecovery || cancelled || mode == "auto-finish" || automaticMode {
-			require.Equal(t, 2, posts, "取消时已开放不新增setter，后继正常扩容只再开放一次")
+		} else if cancelled {
+			// 取消/接管恢复现在显式执行一次 ReopenService：原首次开放、恢复开放、
+			// 后继正常 Grow 各一次。完成重试仍不得重发，因此精确期望三次。
+			require.Equal(t, 3, posts, "显式取消恢复只新增一次恢复开放，后继正常扩容只再开放一次")
+		} else if actualShrinkRecovery || mode == "auto-finish" || automaticMode {
+			require.Equal(t, 2, posts)
 		} else {
 			require.Equal(t, 3, posts, "首次setter发送前/后各丢一次，正常后继只再开放一次")
 		}
