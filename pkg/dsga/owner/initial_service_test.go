@@ -495,10 +495,13 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 	require.NoError(t, err)
 	deadline := 2 * time.Minute
 	if cancelled {
-		// 本组合串联首次服务、取消回收、后继Grow和下一次Prepare，
-		// -race下已实测到最后Prepare才触及原两分钟总期限；扩大的是
-		// 整个测试的上限，各生产请求/租约/单轮deadline均保持原值。
-		deadline = 3 * time.Minute
+		// 本组合现在除首次服务、取消回收、后继Grow和下一次Prepare外，
+		// 还会通过正式 ReopenService -> CompleteServiceReopen 完成一次安全恢复。
+		// Linux CI 的 -race 分片已实测在 180.46 秒恰好耗尽原三分钟父上下文，
+		// 随后 Kube client rate limiter 仅因父 context 过期返回 deadline exceeded。
+		// 这里只把组合测试总上限扩到五分钟；生产请求 deadline、Kube 限流、
+		// Lease、单轮恢复期限以及 Root/Host/Runner 的安全门均保持原值。
+		deadline = 5 * time.Minute
 	}
 	if automaticMode || strings.HasPrefix(mode, "service-lifecycle-") || strings.HasPrefix(mode, "service-retry-") {
 		// 在途永久头/Prepare/Host的正式来源预审增加了受Kube客户端
