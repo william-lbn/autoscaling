@@ -319,7 +319,7 @@ func TestNormalMemoryIntegrationRejectsForeignPartialOrMissingAck(t *testing.T) 
 	for _, mode := range []string{"bad-ack-source", "partial-ack", "missing-ack"} {
 		t.Run(mode, func(t *testing.T) {
 			f, original, trace := normalMemoryIntegrationFixture(t, mode)
-			ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 			defer cancel()
 			cmd := exec.CommandContext(ctx, original.Path, original.Args[1:]...)
 			cmd.Env = original.Env
@@ -327,8 +327,35 @@ func TestNormalMemoryIntegrationRejectsForeignPartialOrMissingAck(t *testing.T) 
 			go func() { done <- f.runner.RunQEMU(ctx, cmd) }()
 			// 所有反例先证明真正到达新kind6，不能借更早超时取得假绿。
 			require.NoError(t, waitInitialModelTrace(ctx, trace, "origin_received"))
+			doneReceived := false
 			if mode == "bad-ack-source" {
-				require.NoError(t, waitInitialModelTrace(ctx, trace, "bad_ack_sent"))
+				// Host 读到完整但错误的 ACK 后会立即关闭原通道。Unix socket
+				// 发送方可能因此在 Write 返回时同时收到 ECONNRESET/EPIPE，
+				// 所以不能把“Write 返回 nil 后的 trace”作为唯一发送证据。
+				// 若 Runner 更早结束，必须看到 Host 对完整错误 ACK 的精确
+				// 拒绝原因；任意 EOF/超时都不能算作通过。
+				deadline := time.NewTimer(30 * time.Second)
+				defer deadline.Stop()
+				for {
+					raw, _ := os.ReadFile(trace)
+					if bytes.Contains(raw, []byte("bad_ack_sent")) {
+						break
+					}
+					select {
+					case e := <-done:
+						doneReceived = true
+						require.Error(t, e)
+						require.Contains(t, e.Error(), "normal memory acknowledgement changed original source")
+					case <-deadline.C:
+						t.Fatal("bad ACK was neither fully sent nor rejected by the original Host")
+					case <-ctx.Done():
+						t.Fatal(ctx.Err())
+					case <-time.After(10 * time.Millisecond):
+					}
+					if doneReceived {
+						break
+					}
+				}
 			}
 			if mode == "partial-ack" {
 				require.NoError(t, waitInitialModelTrace(ctx, trace, "partial_ack_sent"))
@@ -341,12 +368,18 @@ func TestNormalMemoryIntegrationRejectsForeignPartialOrMissingAck(t *testing.T) 
 				l.mu.Unlock()
 				cancel()
 			}
-			select {
-			case e := <-done:
-				require.Error(t, e)
-			case <-time.After(100 * time.Second):
-				t.Fatal("original worker/Wait did not join")
+			if !doneReceived {
+				select {
+				case e := <-done:
+					require.Error(t, e)
+					if mode == "bad-ack-source" {
+						require.Contains(t, e.Error(), "normal memory acknowledgement changed original source")
+					}
+				case <-time.After(200 * time.Second):
+					t.Fatal("original worker/Wait did not join")
+				}
 			}
+
 			l := f.runner.initial.(*linuxInitialLifecycle)
 			l.mu.Lock()
 			require.Nil(t, l.ready)

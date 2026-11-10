@@ -287,6 +287,7 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 	}
 	var sqlBusyRelease atomic.Bool
 	var completed atomic.Bool
+	var rootDeathBegin atomic.Bool
 	acknowledged := make(chan struct{}, 1)
 	listener, e := net.Listen("tcp4", "127.0.0.1:33381")
 	if e != nil {
@@ -302,6 +303,14 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 				guestWorkCase = ""
 			}
 			_, _ = w.Write([]byte(guestWorkCase))
+			return
+		}
+		if r.Method == http.MethodGet && r.URL.RawQuery == "" && r.URL.Path == "/pg17-root-death-begin" {
+			if faultCase == "root-death" && rootDeathBegin.Load() {
+				w.WriteHeader(http.StatusNoContent)
+			} else {
+				w.WriteHeader(http.StatusConflict)
+			}
 			return
 		}
 		if r.Method == http.MethodGet && r.URL.RawQuery == "" && r.URL.Path == "/pg17-sql-busy-release" {
@@ -675,6 +684,28 @@ func runTrustedPG17Production(ctx context.Context, f *vmguard.NativePG17TrustedH
 					}
 					if ready {
 						sqlBusyRelease.Store(true)
+					}
+				}
+				if faultMode == "root-death" && faultTransport.dropped.Load() {
+					stopPGLoop()
+					joined := <-loopDone
+					loopStarted = false
+					if joined != nil && !errors.Is(joined, context.Canceled) {
+						return joined
+					}
+					worker.CloseIdleConnections()
+					resources.CloseIdleConnections()
+					faultTransport.CloseIdleConnections()
+					rootDeathBegin.Store(true)
+					if e = trustedPG17RootDeathRecovery(controlCtx, f, session, rc, pc, qualification, faultTransport); e != nil {
+						return e
+					}
+					completed.Store(true)
+					select {
+					case <-acknowledged:
+						return nil
+					case <-controlCtx.Done():
+						return controlCtx.Err()
 					}
 				}
 				if faultMode == "normal-reply-loss" && faultTransport.dropped.Load() && !faultTransport.recovered.Load() {

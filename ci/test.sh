@@ -82,18 +82,31 @@ case "$(go env GOARCH)" in
     arm64) ubuntu_sha=$UBUNTU_IMG_SHA_ARM64 ;;
     *) echo 'Unsupported native test architecture' >&2; exit 1 ;;
 esac
-docker build --build-arg "UBUNTU_IMAGE=ubuntu:${UBUNTU_IMG_TAG}${ubuntu_sha}" \
+# Optional self-hosted runner egress: a local HTTP proxy on the host requires
+# host networking for this build step only. Proxy values use Docker's predefined
+# proxy build args (not persisted in image history); the test container remains --network=none.
+docker_build_args=()
+if [[ -n "${CI_TEST_DOCKER_BUILD_NETWORK:-}" ]]; then
+    docker_build_args+=(--network "$CI_TEST_DOCKER_BUILD_NETWORK")
+    for proxy in HTTP_PROXY HTTPS_PROXY NO_PROXY http_proxy https_proxy no_proxy; do
+        value="${!proxy:-}"
+        if [[ -n "$value" ]]; then docker_build_args+=(--build-arg "$proxy=$value"); fi
+    done
+fi
+docker build "${docker_build_args[@]}" --build-arg "UBUNTU_IMAGE=ubuntu:${UBUNTU_IMG_TAG}${ubuntu_sha}" \
     --iidfile "$work/image-id" --file ci/test.Dockerfile "$work/context" \
     2>&1 | tee "$output/image-build.log"
 image_id=$(cat "$work/image-id")
 
 # 根及静态 fixture 都来自只读镜像；只有临时文件和 Go 缓存可写。CHOWN 用于真实
 # owner 正/反例，DAC_OVERRIDE/FOWNER 用于对 0444/0555 fixture 注入损坏后检验拒绝。
-# 默认 suite 不需 SYS_ADMIN/SYS_PTRACE；不开放宿主 pid/ns、Docker socket 或 secrets。
+# resourceguard 使用真实 F_SETPIPE_SZ 将 PostgreSQL stderr pipe 设为 64 KiB；
+# 在宿主 pipe-user-pages 配额下需要 SYS_RESOURCE。仅额外授予这一项，不授 SYS_ADMIN/SYS_PTRACE，
+# 不开放宿主 pid/ns、Docker socket 或 secrets；容器仍只读根、无网络且受 CPU/内存/PID 上限约束。
 # 依赖已在宿主下载，容器仅保留 loopback 给 envtest/HTTP/UDS，不访问外网。
 set +e
 docker run --rm --name "$container" --network=none --read-only --user=0:0 \
-    --cap-drop=ALL --cap-add=CHOWN --cap-add=DAC_OVERRIDE --cap-add=FOWNER \
+    --cap-drop=ALL --cap-add=CHOWN --cap-add=DAC_OVERRIDE --cap-add=FOWNER --cap-add=SYS_RESOURCE \
     --security-opt=no-new-privileges --cpus=2 --memory=6g --memory-swap=6g --pids-limit=1024 \
     --tmpfs /root:rw,nodev,nosuid,mode=0700,size=16m \
     --mount "type=bind,src=$PWD,dst=/workspace,readonly" \

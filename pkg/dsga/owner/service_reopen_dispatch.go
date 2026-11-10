@@ -140,7 +140,8 @@ func (w *PGWorker) inspectServiceRecovery(ctx context.Context, s *journal.Snapsh
 		if w.admission == nil {
 			return ErrServiceSafety
 		}
-		if err := w.admission.CheckCommittedServiceRecovery(ctx, s); err != nil {
+		checkStarted := time.Now()
+		if err := recordServiceReopenCheck("committed_source", checkStarted, w.admission.CheckCommittedServiceRecovery(ctx, s)); err != nil {
 			return err
 		}
 		if err := w.inspectCleanupQualification(ctx, s); err != nil {

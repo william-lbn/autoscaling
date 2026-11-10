@@ -599,12 +599,12 @@ func runQEMU(
 	wg.Add(1)
 	go terminateQemuOnSigterm(ctx, logger, &wg)
 	var callbacks cpuServerCallbacks
-	// lastValue is used to store last fractional CPU request
-	// we need to store the value as is because we can't convert it back from MilliCPU
-	// and otherwise we would have infinite reconciliation loop
-	// this will eventually be dropped in favor of real fractional CPU scaling based on the cgroups
+	// Keep the logical request separately from the QEMU quota, which includes
+	// cpuLimitOvercommitFactor. Publish a new value only after any required
+	// kernel quota update succeeds. Serialize CPU changes to prevent stale commits.
 	lastValue := &atomic.Uint32{}
-	lastValue.Store(uint32(vmSpec.Guest.CPUs.Min))
+	lastValue.Store(uint32(vmSpec.Guest.CPUs.Use))
+	var cpuLimitMutex sync.Mutex
 
 	callbacks = cpuServerCallbacks{
 		get: func(logger *zap.Logger) (*vmv1.MilliCPU, int, error) {
@@ -629,6 +629,8 @@ func runQEMU(
 			}
 		},
 		set: func(logger *zap.Logger, cpu vmv1.MilliCPU) (int, error) {
+			cpuLimitMutex.Lock()
+			defer cpuLimitMutex.Unlock()
 			switch cfg.cpuScalingMode {
 			case vmv1.CpuScalingModeSysfs:
 				status, err := setNeonvmDaemonCPU(cpu)
@@ -636,12 +638,22 @@ func runQEMU(
 					logger.Error("setting CPU through NeonVM Daemon failed", zap.Any("cpu", cpu), zap.Error(err))
 					return status, err
 				}
-				lastValue.Store(uint32(cpu))
 			case vmv1.CpuScalingModeQMP:
-				lastValue.Store(uint32(cpu))
-				return 0, nil
+				// The VM controller performs CPU hotplug; commit the runner's
+				// logical budget only after the applicable host quota is updated.
 			default:
 				panic(fmt.Errorf("unknown CPU scaling mode %q", cfg.cpuScalingMode))
+			}
+			err := commitCPUBudget(cpu, lastValue, func(requested vmv1.MilliCPU) error {
+				// DSGA-managed QEMU deliberately stays in the original Runner
+				// cgroup; only the legacy isolated-QEMU path owns this child quota.
+				if !cfg.usesLegacyQEMUCgroup() {
+					return nil
+				}
+				return setCgroupLimit(logger, requested, cgroupPath)
+			})
+			if err != nil {
+				return http.StatusInternalServerError, fmt.Errorf("update QEMU CPU quota: %w", err)
 			}
 			return 0, nil
 		},

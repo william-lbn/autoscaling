@@ -1,5 +1,8 @@
 name: Autoscaling pull request checks
-on: [pull_request]
+on:
+  push:
+    branches: [autoscaling-dsga-v0.1]
+  pull_request:
 permissions:
   contents: read
 jobs:

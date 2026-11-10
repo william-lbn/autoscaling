@@ -35,7 +35,7 @@ import (
 func trustedPG17FaultMode() (string, error) {
 	mode := os.Getenv("DSGA_PG17_FAULT_CASE")
 	switch mode {
-	case "", "busy-cancel", "normal-reply-loss", "sql-busy-drain", trustedPG17ControllerTakeoverMode:
+	case "", "busy-cancel", "normal-reply-loss", "sql-busy-drain", "root-death", trustedPG17ControllerTakeoverMode:
 		return mode, nil
 	}
 	return "", errors.New("unknown fixed trusted PG17 fault case")
@@ -43,7 +43,7 @@ func trustedPG17FaultMode() (string, error) {
 
 // 最早入口保存实际进程读取的闭集mode，不从父配置自报替代现场。
 func trustedPG17WriteModeReceipt(dir, mode string) error {
-	if mode != "" && mode != "busy-cancel" && mode != "normal-reply-loss" && mode != "sql-busy-drain" && mode != trustedPG17ControllerTakeoverMode {
+	if mode != "" && mode != "busy-cancel" && mode != "normal-reply-loss" && mode != "sql-busy-drain" && mode != "root-death" && mode != trustedPG17ControllerTakeoverMode {
 		return errors.New("invalid fixed mode receipt")
 	}
 	if e := os.MkdirAll(dir, 0700); e != nil {
@@ -109,7 +109,7 @@ func (f *trustedPG17FaultTransport) CloseIdleConnections() { f.inner.CloseIdleCo
 // SDK会Clone具体Transport。使用可被Clone保留的原DialTLSContext进入本DEV中继，
 // 只负责交付/丢失实际HTTP响应；不更改鉴权头、命令、Root或PG来源。
 func (f *trustedPG17FaultTransport) transportForSDK() (*http.Transport, func(), error) {
-	if f.mode != "normal-reply-loss" {
+	if f.mode != "normal-reply-loss" && f.mode != "root-death" {
 		return f.inner, func() {}, nil
 	}
 	listener, err := net.Listen("tcp4", "127.0.0.1:0")
@@ -140,7 +140,7 @@ func (f *trustedPG17FaultTransport) transportForSDK() (*http.Transport, func(), 
 func (f *trustedPG17FaultTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	const apply = "/dsg/v1/resource/normal-apply"
 	const observe = "/dsg/v1/resource/normal-observe"
-	if f.mode == "normal-reply-loss" && f.dropped.Load() && f.holdObserve.Load() && r.URL.Path == observe {
+	if (f.mode == "normal-reply-loss" || f.mode == "root-death") && f.dropped.Load() && f.holdObserve.Load() && r.URL.Path == observe {
 		return nil, errors.New("DEV original normal observation temporarily unavailable")
 	}
 	response, err := f.inner.RoundTrip(r)
@@ -148,7 +148,11 @@ func (f *trustedPG17FaultTransport) RoundTrip(r *http.Request) (*http.Response, 
 		return response, err
 	}
 	call := f.applyCalls.Add(1)
-	if f.mode != "normal-reply-loss" || call != 2 || err != nil || response.StatusCode != http.StatusOK {
+	trap := uint32(2)
+	if f.mode == "root-death" {
+		trap = 1
+	}
+	if (f.mode != "normal-reply-loss" && f.mode != "root-death") || call != trap || err != nil || response.StatusCode != http.StatusOK {
 		return response, err
 	}
 	// 第二次正式normal Apply是released-shrink；必须真实成功收完响应才制造丢回复。

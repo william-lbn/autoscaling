@@ -727,6 +727,9 @@ func trustedControlNativeRun(t *testing.T, expectedMajor int) {
 	require.Less(t, baseline.GuestMemTotalBytes, uint64(15)<<29)
 	baseline.Checksum = checksum
 	trustedControlNativePublish(t, baseline)
+	if trustedRootDeathGuest(t, ctx, root, rootDone, rootFD, computeFD, h, client, g, checksumSQL, checksum) {
+		return
+	}
 	previous := baseline
 	for step, target := range []uint32{1024, 256, 2048} {
 		phase := []string{"grow-8", "shrink-7", "regrow-8"}[step]

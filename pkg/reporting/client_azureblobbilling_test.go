@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 
@@ -33,7 +34,7 @@ func startAzuriteContainer(version string) (*container, error) {
 	)
 	// 每个子测试自己 Stop；禁止库隐式拉取无版本 cleaner 并挂载 Docker socket。
 	c, err := gnomock.Start(p, gnomock.WithDisableAutoCleanup(), gnomock.WithHealthCheck(func(ctx context.Context, c *gnomock.Container) error {
-		_, err := net.Dial("tcp", fmt.Sprintf("%s:%d", realHostname(c.Host), c.Ports["blob"].Port))
+		_, err := net.Dial("tcp", azuriteHealthAddress(c.Host, c.Ports["blob"].Port))
 		return err
 	}), gnomock.WithTimeout(time.Minute))
 	if err != nil {
@@ -41,6 +42,17 @@ func startAzuriteContainer(version string) (*container, error) {
 	}
 	r := &container{c: c, Host: realHostname(c.Host)}
 	return r, err
+}
+
+// azuriteHealthAddress uses JoinHostPort so the health probe remains valid for
+// both IPv4 and IPv6 Docker/gnomock host addresses.
+func azuriteHealthAddress(host string, port int) string {
+	return net.JoinHostPort(realHostname(host), strconv.Itoa(port))
+}
+
+func TestAzuriteHealthAddressSupportsIPv6(t *testing.T) {
+	t.Setenv("GNOMOCK_ENV", "")
+	require.Equal(t, "[2001:db8::1]:10000", azuriteHealthAddress("2001:db8::1", 10000))
 }
 
 // realHostname changes host to host.docker.internal if ran inside docker (GNOMOCK_ENV=gnomockd)
