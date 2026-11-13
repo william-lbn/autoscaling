@@ -80,7 +80,7 @@ func deriveArrayAuthorityRuntimeProtocol(raw []byte, sealed SourceConfig) (uint3
 	if doc.ProtocolVersion == 1 {
 		return 0, nil
 	}
-	// 前缀尚未到native的Doc2不启用该阶段，但不得把已声明helper的坏组静默降级。
+	// 前缀尚未到native的Runtime不启用该阶段，但不得把已声明helper的坏组静默降级。
 	native, exists := assets["dsga-native-birth.json"]
 	if !exists {
 		return 0, nil
@@ -95,7 +95,13 @@ func deriveArrayAuthorityRuntimeProtocol(raw []byte, sealed SourceConfig) (uint3
 	if err = validateNativeArrayHelperPolicy(policy, true); err != nil {
 		return 0, err
 	}
-	if len(assets) != 5 || policy.ResourceSourceSHA256 != doc.SourceSHA256 || policy.RuntimeDocumentSHA256 != physicalDigest(raw) {
+	// v3还渲染public Compute配置。按策略名称核原前缀，public不计入数组能力来源。
+	for _, name := range runtimePolicyAssetOrder {
+		if len(assets[name]) == 0 {
+			return 0, fmt.Errorf("array capability original policy %q missing", name)
+		}
+	}
+	if policy.ResourceSourceSHA256 != doc.SourceSHA256 || policy.RuntimeDocumentSHA256 != physicalDigest(raw) {
 		return 0, fmt.Errorf("array capability full original topology/native binding incomplete")
 	}
 	var split NormalSplitTopologyPolicy

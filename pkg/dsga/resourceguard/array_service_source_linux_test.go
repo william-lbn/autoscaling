@@ -31,16 +31,31 @@ func arrayRuntimeDocumentFixture(t *testing.T) RuntimeDocument {
 
 // PG17-U-ARRAY-SOURCE-001：真实canonical renderer/原字节绑定，Source仅静态模型。
 func TestArrayAuthorityCapabilityDerivedFromOriginalRuntimeAndHelperABI(t *testing.T) {
-	for _, mode := range []string{"legacy-v1", "doc2-old-native", "doc2-new-helper"} {
+	for _, mode := range []string{"legacy-v1", "doc2-old-native", "doc2-new-helper", "doc3-new-helper"} {
 		t.Run(mode, func(t *testing.T) {
 			doc := runtimeTemplatesDocumentFixture(t)
 			want := uint32(0)
 			if mode == "doc2-old-native" {
 				doc = runtimeTemplatesFullFixture(t)
 			}
-			if mode == "doc2-new-helper" {
+			if mode == "doc2-new-helper" || mode == "doc3-new-helper" {
 				doc = arrayRuntimeDocumentFixture(t)
 				want = 1
+			}
+			if mode == "doc3-new-helper" {
+				var source SourceConfig
+				if err := json.Unmarshal(doc.SourceJSON, &source); err != nil {
+					t.Fatal(err)
+				}
+				source.Config.ExecutionModel = TrustedControllerExecutionModel
+				source.Config.SystemCgroup = true
+				if source.Limits.SystemMemoryMaxBytes == 0 {
+					source.Limits.SystemMemoryMaxBytes = 64 << 20
+				}
+				doc.SourceJSON, _ = json.Marshal(source)
+				doc.SourceSHA256 = runtimePolicyDigest(doc.SourceJSON)
+				doc.ProtocolVersion = 3
+				doc.ComputeStartup = &RuntimeComputeStartup{ProtocolVersion: 1, WorkloadName: "cp-original", NativeConfigSHA256: strings.Repeat("ab", 32), ControlKeyID: "original-key"}
 			}
 			raw, err := json.Marshal(doc)
 			if err != nil {
