@@ -18,6 +18,7 @@ import (
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
@@ -55,6 +56,9 @@ func NewSchedulerAPI(t *testing.T, holder string) (*SchedulerAPI, hostguard.Bind
 	t.Cleanup(server.Close)
 	c := new(rest.Config)
 	c.Host = server.URL
+	// 正式Host工作客户端显式采用200 QPS/400 Burst；协议fixture也显式配置，
+	// 避免默认5 QPS让有界关闭预算测到客户端默认节流而非生产事务。
+	c.QPS, c.Burst = 200, 400
 	var err error
 	f.Core, err = kubernetes.NewForConfig(c)
 	require.NoError(t, err)
@@ -93,8 +97,13 @@ func (f *SchedulerAPI) serve(w http.ResponseWriter, r *http.Request) {
 	}
 	if path == "/api/v1/pods" && r.Method == http.MethodGet {
 		list := &core.PodList{TypeMeta: metav1.TypeMeta{Kind: "PodList", APIVersion: "v1"}}
+		selector, err := fields.ParseSelector(r.URL.Query().Get("fieldSelector"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 		for _, pod := range f.Pods {
-			if pod.Spec.NodeName != "" {
+			if selector.Matches(fields.Set{"spec.nodeName": pod.Spec.NodeName}) {
 				list.Items = append(list.Items, *pod.DeepCopy())
 			}
 		}

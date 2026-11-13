@@ -37,6 +37,7 @@ type Retirement struct {
 	RunnerExit         *budget.ObjectRef      `json:"runner_exit"`
 	RunnerExitSHA      string                 `json:"runner_exit_sha256"`
 	OrdinaryStopSource *OrdinaryStopReference `json:"ordinary_stop_source,omitempty"`
+	PreBirth           *PreBirthStop          `json:"pre_birth,omitempty"`
 }
 
 func retirementDigest(s string) bool {
@@ -45,11 +46,20 @@ func retirementDigest(s string) bool {
 }
 
 func (r Retirement) Validate() error {
-	if (r.ProtocolVersion != 1 && r.ProtocolVersion != 2) || r.Binding.Validate() != nil || control.ValidateIncarnation(r.Origin) != nil || r.BeforeSequence == 0 || !retirementDigest(r.TerminalSHA256) {
+	if (r.ProtocolVersion != 1 && r.ProtocolVersion != 2 && r.ProtocolVersion != 3) || r.Binding.Validate() != nil || control.ValidateIncarnation(r.Origin) != nil || r.BeforeSequence == 0 || !retirementDigest(r.TerminalSHA256) {
 		return fmt.Errorf("invalid original Pod retirement")
 	}
 	if _, err := r.Placement.Bytes(); err != nil {
 		return err
+	}
+	if r.ProtocolVersion == 3 {
+		if !r.Placement.Managed || r.Placement.Settled != nil || r.Placement.Barrier != nil || r.RunnerBirth != nil || r.RunnerExit != nil || r.RunnerExitSHA != "" || r.OrdinaryStopSource != nil || r.PreBirth == nil || !retirementDigest(r.PreBirth.VMJournalSHA256) {
+			return fmt.Errorf("pre-birth retirement requires its own original terminal source")
+		}
+		return nil
+	}
+	if r.PreBirth != nil {
+		return fmt.Errorf("legacy retirement cannot adopt pre-birth source")
 	}
 	if r.ProtocolVersion == 2 {
 		if !ordinaryPlacement(r.Placement) || r.RunnerBirth != nil || r.RunnerExit != nil || r.RunnerExitSHA != "" || r.OrdinaryStopSource == nil || r.OrdinaryStopSource.Validate() != nil || r.OrdinaryStopSource.Claim.Name != OrdinaryStopClaimName(r.Placement.PodUID) || r.TerminalSHA256 != r.OrdinaryStopSource.SHA256 {
@@ -155,6 +165,11 @@ func retirementPod(pod *core.Pod, r Retirement) error {
 			return fmt.Errorf("original Pod terminal proof changed")
 		}
 	}
+	if r.ProtocolVersion == 3 {
+		if err := PreBirthTerminalPod(pod); err != nil {
+			return err
+		}
+	}
 	if p.VMUID != "" {
 		owner := metav1.GetControllerOf(pod)
 		if len(pod.OwnerReferences) != 1 || owner == nil || owner.APIVersion != "vm.neon.tech/v1" || owner.Kind != "VirtualMachine" || owner.Name != p.VMName || string(owner.UID) != p.VMUID {
@@ -198,12 +213,22 @@ func (s *Store) Retire(ctx context.Context, snapshot *Snapshot, r Retirement) (*
 			return nil, err
 		}
 	}
+	if r.ProtocolVersion == 3 {
+		for _, held := range snapshot.model.Holds {
+			if held.Plan.RunnerPodUID == r.Placement.PodUID || held.Plan.Request.Key.Instance.VMUID == r.Placement.VMUID {
+				return nil, fmt.Errorf("pre-birth retirement cannot release an operation hold")
+			}
+		}
+	}
 	row, err := snapshot.model.Placement(r.Placement.PodUID)
 	if err != nil {
 		if snapshot.model.ProtocolVersion < 5 || snapshot.model.Sequence <= r.BeforeSequence {
 			return nil, fmt.Errorf("host retirement has no original row/confirmed closure")
 		}
 		return snapshot, nil
+	}
+	if r.ProtocolVersion == 3 && row != r.Placement {
+		return nil, fmt.Errorf("pre-birth allocation changed from original unused placement")
 	}
 	if !row.sameOriginal(r.Placement) || snapshot.model.Sequence == control.Uint64(math.MaxUint64) {
 		return nil, fmt.Errorf("host retirement changed original allocation or sequence exhausted")

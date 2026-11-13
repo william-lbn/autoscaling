@@ -272,7 +272,14 @@ func TestOriginalProcessFileCannotOverwriteOrFollowLinks(t *testing.T) {
 			case "symlink":
 				require.NoError(t, os.Symlink("elsewhere", filepath.Join(dir, name)))
 			case "public":
-				require.NoError(t, os.WriteFile(filepath.Join(dir, name), raw, 0o644))
+				path := filepath.Join(dir, name)
+				require.NoError(t, os.WriteFile(path, raw, 0o644))
+				// CI可使用umask077；WriteFile的mode不是最终权限，必须显式
+				// 制造并核对0644输入，才能测试拒绝公开来源而非误测私有文件。
+				require.NoError(t, os.Chmod(path, 0o644))
+				info, err := os.Stat(path)
+				require.NoError(t, err)
+				require.Equal(t, os.FileMode(0o644), info.Mode().Perm())
 			case "oversize":
 				raw = []byte(strings.Repeat("a", processFileLimit+1))
 			case "path":

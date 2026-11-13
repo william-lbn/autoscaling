@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
@@ -57,6 +58,9 @@ func (s *Service) terminalRunner(ctx context.Context, d domain, pod *core.Pod, p
 		return none, none, "", fmt.Errorf("retiring Runner original VM changed")
 	}
 	birthCM, err := s.core.ConfigMaps(p.Namespace).Get(ctx, vmguard.BindingName(binding), metav1.GetOptions{})
+	if apierrors.IsNotFound(err) {
+		return none, none, "", fmt.Errorf("%w: %w", errRunnerBirthAbsent, err)
+	}
 	if err != nil {
 		return none, none, "", err
 	}
@@ -167,6 +171,9 @@ func (s *Service) recordVMRetirement(ctx context.Context, r hostguard.Retirement
 	if err != nil {
 		return err
 	}
+	if r.ProtocolVersion == 3 && (vm.DeletionTimestamp == nil || r.PreBirth == nil || vmguard.SourceDigest([]byte(vm.Annotations[control.JournalAnnotation])) != r.PreBirth.VMJournalSHA256) {
+		return fmt.Errorf("pre-birth original VM journal changed before closing anchor")
+	}
 	if prior := vm.Annotations[hostguard.VMRetirementAnnotation]; prior != "" {
 		if prior != string(raw) {
 			return fmt.Errorf("original VM retains another retirement; controlled recovery required")
@@ -236,10 +243,17 @@ func (s *Service) retirePod(ctx context.Context, d domain, expected *core.Pod) e
 		}
 		if p.Managed {
 			birth, exit, digest, sourceErr := s.terminalRunner(ctx, d, pod, p, nil)
-			if sourceErr != nil {
+			if errors.Is(sourceErr, errRunnerBirthAbsent) {
+				source, err := s.preBirthTerminal(ctx, pod, p, nil)
+				if err != nil {
+					return err
+				}
+				r.ProtocolVersion, r.PreBirth = 3, &source
+			} else if sourceErr != nil {
 				return sourceErr
+			} else {
+				r.RunnerBirth, r.RunnerExit, r.RunnerExitSHA = &birth, &exit, digest
 			}
-			r.RunnerBirth, r.RunnerExit, r.RunnerExitSHA = &birth, &exit, digest
 		}
 		if err := r.Validate(); err != nil {
 			return err
@@ -258,7 +272,7 @@ func (s *Service) retirePod(ctx context.Context, d domain, expected *core.Pod) e
 		return d.store.InspectRetiredPodWithSource(ctx, n, pod)
 	}
 	if r.Placement.Managed {
-		if _, _, _, err := s.terminalRunner(ctx, d, pod, r.Placement, &r); err != nil {
+		if err := s.verifyTerminalRunner(ctx, d, pod, r); err != nil {
 			return err
 		}
 	}
@@ -283,7 +297,7 @@ func (s *Service) retirePod(ctx context.Context, d domain, expected *core.Pod) e
 		return err
 	}
 	if r.Placement.Managed {
-		if _, _, _, err := s.terminalRunner(ctx, d, pod, r.Placement, &r); err != nil {
+		if err := s.verifyTerminalRunner(ctx, d, pod, r); err != nil {
 			return err
 		}
 		if err := s.recordVMRetirement(ctx, r); err != nil {

@@ -14,6 +14,7 @@ import (
 	core "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 	coreclient "k8s.io/client-go/kubernetes/typed/core/v1"
 
@@ -50,6 +51,14 @@ type workPods struct {
 }
 
 func (p *workPods) List(ctx context.Context, opts metav1.ListOptions) (*core.PodList, error) {
+	// 本夹具只替换已绑定分页；未绑定发现必须走底层真实selector，
+	// 不能复用assigned游标、返回assigned对象或重复消费其过期事件。
+	if opts.FieldSelector == fields.OneTermEqualSelector("spec.nodeName", "").String() {
+		return p.PodInterface.List(ctx, opts)
+	}
+	if opts.FieldSelector != fields.OneTermEqualSelector("spec.nodeName", "node-one").String() {
+		return nil, fmt.Errorf("unexpected original assigned selector %q", opts.FieldSelector)
+	}
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}

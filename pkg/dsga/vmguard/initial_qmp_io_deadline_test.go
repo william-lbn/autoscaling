@@ -23,7 +23,12 @@ func TestInitialQMPOperationBudgetExcludesAuthorityLocalWork(t *testing.T) {
 	f, original, trace := initialLifecycleFixture(t, "success")
 	lifecycle := f.runner.initial.(*linuxInitialLifecycle)
 	require.Equal(t, 2*time.Second, lifecycle.q.timeout, "生产原I/O窗口必须保持2秒")
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	// 此处是整套测试夹具的总期限，涵盖真实文件摘要、fsync、Start/pidfd、
+	// 多次身份读回与完整启动协议；不是被测QMP单次I/O窗口。受限race环境中
+	// 无注入的同一全链夹具已用24秒，原20秒会在协议尚未完成时误判。固定60秒
+	// 给夹具留足总预算，但上面的生产2秒断言、注入超过2秒的授权等待、后面的
+	// 原ctx截止不变/唯一qom-set/真实completion/原child回收断言全部保留。
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	originalDeadline, _ := ctx.Deadline()
 	var delayed atomic.Bool
@@ -86,7 +91,19 @@ func TestInitialQMPOperationBudgetExcludesAuthorityLocalWork(t *testing.T) {
 			require.NoError(t, ctx.Err())
 			break
 		}
-		require.NoError(t, initialBootPause(ctx))
+		if err := initialBootPause(ctx); err != nil {
+			// 失败保留到达的持久阶段与模型收发记录，区分前置本地工作慢、
+			// 未到注入边界、可能已发写和完成后未收口，不把总期限误称I/O超时。
+			stages := make([]int, 0, len(initialBootStages))
+			for i := range initialBootStages {
+				if fileExistsForInitialQMPTest(filepath.Join(f.config.StateDir, initialBootFile(i))) {
+					stages = append(stages, i)
+				}
+			}
+			traceBytes, _ := os.ReadFile(trace)
+			t.Logf("initial QMP fixture deadline: delayed=%t ready=%t durable_stages=%v qom_set_count=%d trace=%q", delayed.Load(), ready, stages, bytes.Count(traceBytes, []byte("qom_set:")), traceBytes)
+			require.NoError(t, err)
+		}
 	}
 	cancel()
 	require.Error(t, <-result)

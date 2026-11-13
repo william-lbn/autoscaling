@@ -41,10 +41,19 @@ func (r *VMReconciler) deleteManagedMemoryPod(ctx context.Context, vm *vmv1.Virt
 	if owner == nil || len(pod.OwnerReferences) != 1 || owner.UID != vm.UID || owner.Name != vm.Name || owner.Kind != "VirtualMachine" || owner.APIVersion != vmv1.SchemeGroupVersion.String() {
 		return fmt.Errorf("managed stop original Pod owner changed")
 	}
-	if !slices.Contains(pod.Finalizers, hostguard.PodProtectionFinalizer) {
+	if !slices.Contains(pod.Finalizers, hostguard.PodProtectionFinalizer) && pod.Annotations[hostguard.UnboundRetirementAnnotation] != "" {
+		if err := r.inspectUnboundClosure(ctx, vm, pod); err != nil {
+			return err
+		}
+	} else if !slices.Contains(pod.Finalizers, hostguard.PodProtectionFinalizer) {
 		retirement, err := hostguard.InspectRetirement(pod)
 		if err != nil {
 			return err
+		}
+		if retirement.ProtocolVersion == 3 {
+			if err := r.inspectPreBirthClosure(ctx, vm, retirement); err != nil {
+				return err
+			}
 		}
 		node := new(core.Node)
 		if err := r.APIReader.Get(ctx, client.ObjectKey{Name: retirement.Binding.NodeName, Namespace: ""}, node); err != nil {
@@ -106,6 +115,15 @@ func (r *VMReconciler) finalizeManagedMemory(ctx context.Context, vm *vmv1.Virtu
 			return err
 		}
 		if err := hostguard.InspectRetirementCompletion(node, closed); err != nil {
+			return err
+		}
+		if closed.ProtocolVersion == 3 {
+			if err := r.inspectPreBirthClosure(ctx, vm, closed); err != nil {
+				return err
+			}
+		}
+	} else if vm.Annotations[hostguard.UnboundRetirementAnnotation] != "" {
+		if err := r.inspectUnboundClosure(ctx, vm, nil); err != nil {
 			return err
 		}
 	} else {

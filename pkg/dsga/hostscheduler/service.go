@@ -341,7 +341,8 @@ func (s *Service) reconcile(ctx context.Context, d domain) error {
 	if err != nil {
 		return err
 	}
-	return s.reconcileWork(ctx, d, snapshot)
+	unboundErr := s.reconcileUnbound(ctx, d)
+	return errors.Join(unboundErr, s.reconcileWork(ctx, d, snapshot))
 }
 
 func (s *Service) publish(ctx context.Context, d domain, pod *core.Pod, p hostguard.Placement) error {

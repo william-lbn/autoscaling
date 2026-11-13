@@ -403,7 +403,7 @@ func (s *Store) InspectRetiredPodWithSource(ctx context.Context, snapshot *Snaps
 	if err != nil {
 		return err
 	}
-	if r.ProtocolVersion == 1 {
+	if r.ProtocolVersion != 2 {
 		return InspectRetiredPod(snapshot.node, pod)
 	}
 	if _, err := s.ReadOrdinaryStop(ctx, snapshot, pod, r.Placement, r.OrdinaryStopSource); err != nil {

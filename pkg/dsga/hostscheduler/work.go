@@ -37,12 +37,15 @@ type settledScan struct {
 // pending最多一页，单轮有界，已尝试项在调用前出队。即使一个请求耗尽ctx，
 // 未尝试的尾部仍留到下一轮，不从同一坏VM重新开始。失败项下一次发现再试。
 type domainWork struct {
-	running      atomic.Bool
-	continuation string
-	end          bool
-	pending      []core.Pod
-	gc           map[string]settledScan
-	collections  map[string]*hostexec.CollectionProgress
+	unboundContinuation string
+	unboundEnd          bool
+	unboundPending      []core.Pod
+	running             atomic.Bool
+	continuation        string
+	end                 bool
+	pending             []core.Pod
+	gc                  map[string]settledScan
+	collections         map[string]*hostexec.CollectionProgress
 }
 
 func newDomainWork() *domainWork {
