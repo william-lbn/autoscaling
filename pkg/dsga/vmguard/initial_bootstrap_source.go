@@ -177,7 +177,8 @@ func (r *Runner) readInitialBootReservation(ctx context.Context) (initialBootRes
 }
 
 // 仅供未来RunQEMU在写process-launch之后、Start之前同flock调用；当前无共享入口。
-// Runtime必须是Controller已冻结原字节，实际Secret在此独立GET，不重新生成Doc。
+// Runtime必须是Controller已冻结原字节；独立GET原Secret后只复算投影以核对，
+// 不用复算结果替换传入Runtime，也不因此授予重新初始化或任何容量许可。
 func (r *Runner) freezeInitialBootstrap(ctx context.Context, runtimeRaw []byte, cmd *exec.Cmd, base control.Uint64) (initialBootRef, error) {
 	var ref initialBootRef
 	if r == nil || r.engine == nil {
@@ -203,14 +204,18 @@ func (r *Runner) freezeInitialBootstrap(ctx context.Context, runtimeRaw []byte, 
 		if e != nil {
 			return e
 		}
-		if e = bootstrap.CheckReady(vm, secret, false); e != nil {
+		// 复用Controller的同源投影，完整核验原Secret UID/owner/immutable、
+		// 资源和模板准确字节；v3还绑定显式选择、原config.json摘要、工作负载名
+		// 和唯一控制公钥kid。只扩大版本判断会漏掉这些新增绑定。
+		doc, e := bootstrap.RuntimeForObservation(vm, secret)
+		if e != nil {
 			return e
 		}
-		var doc resourceguard.RuntimeDocument
-		if e = json.Unmarshal(runtimeRaw, &doc); e != nil {
+		originalRuntime, e := json.Marshal(doc)
+		if e != nil {
 			return e
 		}
-		if doc.ProtocolVersion != 2 || doc.ConfigSecretUID != string(secret.UID) || doc.Incarnation != r.store.Binding().Incarnation || !bytes.Equal(doc.SourceJSON, secret.Data[resourceguard.ResourceSecretKey]) || !bytes.Equal(doc.PolicyTemplatesJSON, secret.Data[resourceguard.PolicyTemplatesSecretKey]) {
+		if (doc.ProtocolVersion != 2 && doc.ProtocolVersion != 3) || doc.Incarnation != r.store.Binding().Incarnation || !bytes.Equal(runtimeRaw, originalRuntime) {
 			return fmt.Errorf("runtime no longer matches original immutable Secret")
 		}
 		logical, e := resourceguard.RenderRuntimePolicyAssets(runtimeRaw)

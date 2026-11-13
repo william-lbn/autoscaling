@@ -79,6 +79,11 @@ func initialBootSourceFixture(t *testing.T) (*runnerFixture, []byte, *exec.Cmd) 
 	return initialBootFixture(t, true)
 }
 func initialBootFixture(t *testing.T, withLaunch bool) (*runnerFixture, []byte, *exec.Cmd) {
+	return initialBootFixtureWithRuntime(t, withLaunch, initialBootFullRuntime)
+}
+
+// 在真实Initialize之前显式选择原配置版本；不能删除已出生来源再改造旧实例。
+func initialBootFixtureWithRuntime(t *testing.T, withLaunch bool, runtimeSource func(*testing.T, *runnerFixture) ([]byte, *corev1.Secret)) (*runnerFixture, []byte, *exec.Cmd) {
 	t.Helper()
 	f := runnerBirthFixture(t, false)
 	ctx := context.Background()
@@ -93,7 +98,7 @@ func initialBootFixture(t *testing.T, withLaunch bool) (*runnerFixture, []byte, 
 	hl := &coordination.Lease{ObjectMeta: metav1.ObjectMeta{Name: h.Binding.LeaseName, Namespace: h.Binding.Namespace, UID: h.Binding.LeaseUID, ResourceVersion: "1", Annotations: map[string]string{hostguard.LeaseAnnotation: hostguard.LeaseMarker(h.Binding)}, OwnerReferences: []metav1.OwnerReference{{APIVersion: "v1", Kind: "Node", Name: h.Binding.NodeName, UID: h.Binding.NodeUID, Controller: &yes}}}, Spec: coordination.LeaseSpec{HolderIdentity: &holder, LeaseTransitions: &transitions, LeaseDurationSeconds: &seconds, AcquireTime: &now, RenewTime: &now}}
 	_, e = f.core.CoordinationV1().Leases(h.Binding.Namespace).Create(ctx, hl, metav1.CreateOptions{})
 	require.NoError(t, e)
-	raw, secret := initialBootFullRuntime(t, f)
+	raw, secret := runtimeSource(t, f)
 	_, e = f.core.CoreV1().Secrets(secret.Namespace).Create(ctx, secret, metav1.CreateOptions{})
 	require.NoError(t, e)
 	shortState, e := os.MkdirTemp("/tmp", "initial-source-")
