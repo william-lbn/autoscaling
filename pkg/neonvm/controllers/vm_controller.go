@@ -54,6 +54,7 @@ import (
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/api"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/api/runnerdiagnostic"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/neonvm/controllers/reqchan"
 	"github.com/neondatabase/autoscaling/pkg/neonvm/ipam"
@@ -493,6 +494,9 @@ func (r *VMReconciler) doReconcile(ctx context.Context, vm *vmv1.VirtualMachine)
 					Message: fmt.Sprintf("Pod (%s) for VirtualMachine (%s) succeeded", vm.Status.PodName, vm.Name),
 				})
 		case runnerFailed:
+			if err := recordManagedRunnerFailure(vm, vmRunner); err != nil {
+				return err
+			}
 			vm.Status.Phase = vmv1.VmFailed
 			meta.SetStatusCondition(&vm.Status.Conditions,
 				metav1.Condition{
@@ -626,6 +630,9 @@ func (r *VMReconciler) doReconcile(ctx context.Context, vm *vmv1.VirtualMachine)
 					Message: fmt.Sprintf("Pod (%s) for VirtualMachine (%s) succeeded", vm.Status.PodName, vm.Name),
 				})
 		case runnerFailed:
+			if err := recordManagedRunnerFailure(vm, vmRunner); err != nil {
+				return err
+			}
 			vm.Status.Phase = vmv1.VmFailed
 			meta.SetStatusCondition(&vm.Status.Conditions,
 				metav1.Condition{
@@ -682,6 +689,9 @@ func (r *VMReconciler) doReconcile(ctx context.Context, vm *vmv1.VirtualMachine)
 				})
 			return nil
 		case runnerFailed:
+			if err := recordManagedRunnerFailure(vm, vmRunner); err != nil {
+				return err
+			}
 			vm.Status.Phase = vmv1.VmFailed
 			meta.SetStatusCondition(&vm.Status.Conditions,
 				metav1.Condition{
@@ -717,6 +727,9 @@ func (r *VMReconciler) doReconcile(ctx context.Context, vm *vmv1.VirtualMachine)
 		if vm.Spec.DSGABootstrap != nil {
 			// 受管停止保留原VM/PG/WAL身份。旧Cleanup+自动Restart会丢
 			// 原Pod关系并产生跨boot旁路；后续只能显式受控恢复。
+			if vm.Status.Phase == vmv1.VmFailed {
+				return r.stopFailedManagedRunner(ctx, vm)
+			}
 			return r.stopManagedMemoryPod(ctx, vm)
 		}
 		// Always delete runner pod. Otherwise, we could end up with one container succeeded/failed
@@ -1104,6 +1117,9 @@ func (r *VMReconciler) podForVirtualMachine(
 		found := false
 		for i := range pod.Spec.Containers {
 			if pod.Spec.Containers[i].Name == "neonvm-runner" {
+				// 仅消费专用终止文件，禁止FallbackToLogs把敏感启动日志写入状态。
+				pod.Spec.Containers[i].TerminationMessagePath = runnerdiagnostic.TerminationPath
+				pod.Spec.Containers[i].TerminationMessagePolicy = corev1.TerminationMessageReadFile
 				pod.Spec.Containers[i].Command = append(pod.Spec.Containers[i].Command, "-dsga-resource", gzip64.Encode(raw))
 				pod.Spec.Containers[i].VolumeMounts = append(pod.Spec.Containers[i].VolumeMounts, corev1.VolumeMount{Name: "dsga-runner-state", MountPath: "/vm/dsga-runner"})
 				for _, field := range []struct{ name, path string }{{"K8S_POD_UID", "metadata.uid"}, {"K8S_NAMESPACE", "metadata.namespace"}, {"K8S_NODE_NAME", "spec.nodeName"}} {

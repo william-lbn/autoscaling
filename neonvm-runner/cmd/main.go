@@ -33,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
+	"github.com/neondatabase/autoscaling/pkg/api/runnerdiagnostic"
 	"github.com/neondatabase/autoscaling/pkg/dsga/bootstrap"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
@@ -162,9 +163,11 @@ func newConfig(logger *zap.Logger) *Config {
 	flag.Parse()
 
 	if cfg.autoMovableRatio == "" {
+		writeRunnerFailure(runnerdiagnostic.At(runnerdiagnostic.StageConfig, errors.New("required flag missing")))
 		logger.Fatal("missing required flag '-memhp-auto-movable-ratio'")
 	}
 	if cfg.cpuScalingMode == "" {
+		writeRunnerFailure(runnerdiagnostic.At(runnerdiagnostic.StageConfig, errors.New("required flag missing")))
 		logger.Fatal("missing required flag '-cpu-scaling-mode'")
 	}
 
@@ -175,6 +178,7 @@ func main() {
 	logger := zap.Must(zap.NewProduction()).Named("neonvm-runner")
 
 	if err := run(logger); err != nil {
+		writeRunnerFailure(err)
 		logger.Fatal("Failed to run", zap.Error(err))
 	}
 }
@@ -184,24 +188,24 @@ func run(logger *zap.Logger) (runErr error) {
 
 	vmSpecJson, err := gzip64.Decode(cfg.vmSpecDump)
 	if err != nil {
-		return fmt.Errorf("failed to decode VirtualMachine Spec dump: %w", err)
+		return runnerdiagnostic.At(runnerdiagnostic.StageDecodeInput, fmt.Errorf("failed to decode VirtualMachine Spec dump: %w", err))
 	}
 	vmStatusJson, err := gzip64.Decode(cfg.vmStatusDump)
 	if err != nil {
-		return fmt.Errorf("failed to decode VirtualMachine Status dump: %w", err)
+		return runnerdiagnostic.At(runnerdiagnostic.StageDecodeInput, fmt.Errorf("failed to decode VirtualMachine Status dump: %w", err))
 	}
 
 	vmSpec := &vmv1.VirtualMachineSpec{}
 	if err := json.Unmarshal(vmSpecJson, vmSpec); err != nil {
-		return fmt.Errorf("failed to unmarshal VM spec: %w", err)
+		return runnerdiagnostic.At(runnerdiagnostic.StageDecodeInput, fmt.Errorf("failed to unmarshal VM spec: %w", err))
 	}
 	var vmStatus vmv1.VirtualMachineStatus
 	if err := json.Unmarshal(vmStatusJson, &vmStatus); err != nil {
-		return fmt.Errorf("failed to unmarshal VM Status: %w", err)
+		return runnerdiagnostic.At(runnerdiagnostic.StageDecodeInput, fmt.Errorf("failed to unmarshal VM Status: %w", err))
 	}
 	if vmSpec.DSGABootstrap != nil {
 		if vmSpec.CpuScalingMode == nil || cfg.cpuScalingMode != *vmSpec.CpuScalingMode || cfg.cpuScalingMode != vmv1.CpuScalingModeSysfs {
-			return fmt.Errorf("managed Runner CPU flags differ from original sysfs VM")
+			return runnerdiagnostic.At(runnerdiagnostic.StageRuntimeSpec, fmt.Errorf("managed Runner CPU flags differ from original sysfs VM"))
 		}
 		// 私有QMP/终止socket都只能由本容器的可信Runner/QEMU访问。启动任何
 		// QEMU前设置进程umask；不暴露未认证的TCP或manual第二写入口。
@@ -212,18 +216,18 @@ func run(logger *zap.Logger) (runErr error) {
 	// 已有launch只返回未关闭，不能借清理推断QEMU没有运行或代替真实Wait。
 	runtimeAssets, err := bootstrap.DecodeRuntimeAssets(vmSpec, cfg.resourceDump)
 	if err != nil {
-		return fmt.Errorf("original Guest resource source unavailable: %w", err)
+		return runnerdiagnostic.At(runnerdiagnostic.StageRuntimeAssets, fmt.Errorf("original Guest resource source unavailable: %w", err))
 	}
 
 	if err := configureRuntimeBootRequirements(cfg, runtimeAssets); err != nil {
-		return fmt.Errorf("original Guest boot requirements unavailable: %w", err)
+		return runnerdiagnostic.At(runnerdiagnostic.StageRuntimeBoot, fmt.Errorf("original Guest boot requirements unavailable: %w", err))
 	}
 	if err := validateFixedRuntimeVMSpec(cfg, vmSpec); err != nil {
-		return err
+		return runnerdiagnostic.At(runnerdiagnostic.StageRuntimeSpec, err)
 	}
 	cfg.managedMemory, err = initializeManagedMemory(vmSpec, cfg.initialBootstrap)
 	if err != nil {
-		return fmt.Errorf("original Runner memory birth unavailable: %w", err)
+		return runnerdiagnostic.At(runnerdiagnostic.StageRunnerBirth, fmt.Errorf("original Runner memory birth unavailable: %w", err))
 	}
 	if cfg.managedMemory != nil {
 		defer func() {
@@ -290,7 +294,7 @@ func run(logger *zap.Logger) (runErr error) {
 	// iptables rules, which we don't want to interleave with rules
 	// created by code in net.go
 	if err := runInitScript(logger, vmSpec.InitScript); err != nil {
-		return fmt.Errorf("failed to run init script: %w", err)
+		return runnerdiagnostic.At(runnerdiagnostic.StageInitScript, fmt.Errorf("failed to run init script: %w", err))
 	}
 
 	tg := taskgroup.NewGroup(logger)
@@ -316,7 +320,7 @@ func run(logger *zap.Logger) (runErr error) {
 			})
 		}
 
-		return createISO9660runtime(
+		err := createISO9660runtime(
 			runtimeDiskPath,
 			vmSpec.Guest.Command,
 			vmSpec.Guest.Args,
@@ -328,18 +332,19 @@ func run(logger *zap.Logger) (runErr error) {
 			shmSize,
 			runtimeAssets,
 		)
+		return runnerdiagnostic.At(runnerdiagnostic.StageRuntimeISO, err)
 	})
 
 	tg.Go("rootDisk", func(logger *zap.Logger) error {
 		// resize rootDisk image of size specified and new size more than current
-		return resizeRootDisk(logger, vmSpec)
+		return runnerdiagnostic.At(runnerdiagnostic.StageRootDisk, resizeRootDisk(logger, vmSpec))
 	})
 	var qemuCmd []string
 
 	tg.Go("qemu-cmd", func(logger *zap.Logger) error {
 		var err error
 		qemuCmd, err = buildQEMUCmd(cfg, logger, vmSpec, &vmStatus, enableSSH, swapSize, hostname)
-		return err
+		return runnerdiagnostic.At(runnerdiagnostic.StageCommandBuild, err)
 	})
 
 	if err := tg.Wait(); err != nil {
@@ -352,7 +357,7 @@ func run(logger *zap.Logger) (runErr error) {
 
 	err = runQEMU(cfg, logger, vmSpec, qemuCmd)
 	if err != nil {
-		return fmt.Errorf("failed to run QEMU: %w", err)
+		return runnerdiagnostic.At(runnerdiagnostic.StageQEMURun, fmt.Errorf("failed to run QEMU: %w", err))
 	}
 
 	return nil
@@ -415,6 +420,7 @@ func buildQEMUCmd(
 			qemuCmd = append(qemuCmd, "-serial", "stdio")
 		}
 	default:
+		writeRunnerFailure(runnerdiagnostic.At(runnerdiagnostic.StageCommandBuild, errors.New("unsupported architecture")))
 		logger.Fatal("unsupported architecture", zap.String("architecture", cfg.architecture))
 	}
 

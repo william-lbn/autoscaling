@@ -18,6 +18,7 @@ import (
 	coreclient "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/api/runnerdiagnostic"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 )
@@ -225,7 +226,7 @@ func (r *Runner) RunQEMU(ctx context.Context, cmd *exec.Cmd) error {
 	}
 	var initialWaitErr error
 	if r.initial != nil {
-		initialWaitErr = r.awaitInitialOwner(ctx, 30*time.Second, 100*time.Millisecond)
+		initialWaitErr = runnerdiagnostic.At(runnerdiagnostic.StageInitialOwnerWait, r.awaitInitialOwner(ctx, 30*time.Second, 100*time.Millisecond))
 	}
 	nonce, err := randomProcessNonce()
 	if err != nil {
@@ -267,22 +268,22 @@ func (r *Runner) RunQEMU(ctx context.Context, cmd *exec.Cmd) error {
 	}
 	if r.initial != nil {
 		if err := r.initial.freeze(ctx, cmd); err != nil {
-			return r.finishProcess(launch, 2, 0, 0, 0, err)
+			return r.finishProcess(launch, 2, 0, 0, 0, runnerdiagnostic.At(runnerdiagnostic.StageInitialFreeze, err))
 		}
 	}
 	if err := ctx.Err(); err != nil {
 		// 原启动意图已同步，但本调用明确还没进入Start。即使调用者已取消，
 		// 仍用独立有界上下文先保存关闭屏障；不能只退出并遗留永久容量持有。
-		return r.finishProcess(launch, 2, 0, 0, 0, err)
+		return r.finishProcess(launch, 2, 0, 0, 0, runnerdiagnostic.At(runnerdiagnostic.StageContextCanceled, err))
 	}
 	if err := cmd.Start(); err != nil {
 		// os/exec在Start成功时才返回Process；仍显式核两项防止以后封装或
 		// Go实现变化把“可能已启动”写成NoStart。绝不调用远程PID/CRI猜测。
 		// fork/exec失败由os.StartProcess同步处理，不留下可运行的QEMU。
 		if cmd.Process != nil || cmd.ProcessState != nil {
-			return errors.Join(err, fmt.Errorf("failed QEMU Start retained a process; controlled recovery required"))
+			return runnerdiagnostic.At(runnerdiagnostic.StageCommandStart, errors.Join(err, fmt.Errorf("failed QEMU Start retained a process; controlled recovery required")))
 		}
-		return r.finishProcess(launch, 2, 0, 0, 0, err)
+		return r.finishProcess(launch, 2, 0, 0, 0, runnerdiagnostic.At(runnerdiagnostic.StageCommandStart, err))
 	}
 	var initialRun initialLifecycleRun
 	var initialErr error
