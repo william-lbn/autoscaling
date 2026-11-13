@@ -117,7 +117,7 @@ func runCollectMode(ctx context.Context, configPath, kubeconfigPath string, publ
 	}
 	collection, err := collectQualification(ctx, collector.Collect, publish, time.Duration(config.TimeoutSeconds)*time.Second)
 	if err != nil {
-		return &qualificationFailure{"collection", err}
+		return &qualificationFailure{"collection_" + qualificationissuer.CollectionStage(err), err}
 	}
 	if publish {
 		if err = prepareAutomaticOutput(config.OutputDirectory); err != nil {
@@ -137,9 +137,9 @@ func runCollectMode(ctx context.Context, configPath, kubeconfigPath string, publ
 func collectQualification(ctx context.Context, collect func(context.Context) (qualificationissuer.Collection, error), automatic bool, timeout time.Duration) (qualificationissuer.Collection, error) {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	for attempt := 1; ; attempt++ {
+	for {
 		result, err := collect(ctx)
-		if err == nil || !automatic || attempt == 6 || ctx.Err() != nil || apierrors.IsForbidden(err) || apierrors.IsUnauthorized(err) {
+		if err == nil || !automatic || ctx.Err() != nil || apierrors.IsForbidden(err) || apierrors.IsUnauthorized(err) {
 			return result, err
 		}
 		timer := time.NewTimer(time.Second)

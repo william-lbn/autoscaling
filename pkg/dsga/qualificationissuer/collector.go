@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	vmclient "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
@@ -103,6 +104,23 @@ type Collection struct {
 	SnapshotSHA256       string
 }
 
+// CollectionStage reports the failing check without exposing the underlying input or API response.
+func CollectionStage(err error) string {
+	var failure *collectionFailure
+	if errors.As(err, &failure) {
+		return failure.stage
+	}
+	return "unknown"
+}
+
+type collectionFailure struct {
+	stage string
+	cause error
+}
+
+func (e *collectionFailure) Error() string { return e.cause.Error() }
+func (e *collectionFailure) Unwrap() error { return e.cause }
+
 func qualifiedTargets(a resourceguard.GuestQualificationArtifact, floors map[control.Uint64]control.Uint64, intents []QualifiedIntent) ([]budget.QualifiedTarget, error) {
 	if a.Validate() != nil {
 		return nil, fmt.Errorf("complete actual minimum-Guest source required")
@@ -197,7 +215,7 @@ func (c *Collector) Collect(ctx context.Context) (Collection, error) {
 	defer cancel()
 	report, bundle, e := c.gather(ctx)
 	if e != nil {
-		return zero, e
+		return zero, &collectionFailure{"gather", e}
 	}
 	proposed := Config{ProtocolVersion: 1, Binding: c.config.Binding, NodeName: c.config.NodeName, NodeUID: c.config.NodeUID, ReportSHA256: SHA256(bundle.Report), ControlSocketPath: c.config.ControlSocketPath, TimeoutSeconds: c.config.TimeoutSeconds, ReportPath: filepath.Join(c.config.OutputDirectory, "report.json"), LinuxArtifactPath: filepath.Join(c.config.OutputDirectory, "linux-artifact.json"), ContinuousArtifactPath: filepath.Join(c.config.OutputDirectory, "continuous-artifact.json")}
 	inspector, e := New(c.core, c.coord, c.vm, c.root, proposed)
@@ -206,21 +224,24 @@ func (c *Collector) Collect(ctx context.Context) (Collection, error) {
 	}
 	before, e := inspector.capture(ctx, report)
 	if e != nil {
-		return zero, e
+		return zero, &collectionFailure{"capture_first", e}
 	}
 	after, e := inspector.capture(ctx, report)
-	if e != nil || before != after {
-		return zero, fmt.Errorf("actual original sources changed during collection")
+	if e != nil {
+		return zero, &collectionFailure{"capture_second", e}
+	}
+	if before != after {
+		return zero, &collectionFailure{"capture_drift", fmt.Errorf("actual original sources changed during collection")}
 	}
 	_, final, e := c.root.Read(ctx, c.config.Binding)
 	if e != nil || final.GuestQualification == nil || final.GuestQualificationUnavailable != nil || final.GuestQualification.MatchView(final) != nil {
-		return zero, fmt.Errorf("final original Guest source unconfirmed")
+		return zero, &collectionFailure{"final_guest", fmt.Errorf("final original Guest source unconfirmed")}
 	}
 	var first struct {
 		Artifact resourceguard.GuestQualificationArtifact `json:"artifact"`
 	}
 	if json.Unmarshal(bundle.LinuxArtifact, &first) != nil || !sameGuestArtifact(first.Artifact, *final.GuestQualification) {
-		return zero, fmt.Errorf("original Guest artifact changed after complete capture")
+		return zero, &collectionFailure{"final_guest_drift", fmt.Errorf("original Guest artifact changed after complete capture")}
 	}
 	return Collection{Bundle: bundle, ProposedIssuerConfig: proposed, SnapshotSHA256: after}, nil
 }

@@ -45,6 +45,18 @@ func TestAutomaticQualificationRetriesOnlyReadOnlyCollection(t *testing.T) {
 	}
 }
 
+func TestAutomaticQualificationStopsAtFrozenDeadline(t *testing.T) {
+	reads := 0
+	transient := errors.New("original source not settled")
+	_, err := collectQualification(context.Background(), func(context.Context) (qualificationissuer.Collection, error) {
+		reads++
+		return qualificationissuer.Collection{}, transient
+	}, true, 20*time.Millisecond)
+	if !errors.Is(err, transient) || reads != 1 {
+		t.Fatalf("collector retried past the frozen deadline: reads=%d err=%v", reads, err)
+	}
+}
+
 func TestQualificationJobMakesOriginalEmptyDirPrivate(t *testing.T) {
 	if os.Geteuid() != 0 {
 		t.Skip("Kubernetes qualification Job runs as root")
