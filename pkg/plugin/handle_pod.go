@@ -31,7 +31,7 @@ func (s *PluginState) HandlePodEvent(
 		if s.host != nil && s.host.HasNode(pod.Spec.NodeName) && (kind == reconcile.EventKindAdded || kind == reconcile.EventKindModified) {
 			ctx, cancel := s.hostCallContext()
 			defer cancel()
-			_, _, err := s.reserveHost(ctx, pod, pod.Spec.NodeName)
+			_, _, err := s.observeHostEvent(ctx, pod)
 			return nil, err
 		}
 		// We intentionally don't include ignored pods in the namespace.
@@ -92,16 +92,22 @@ func (s *PluginState) updatePod(
 	// API读取/容量CAS必须在本地mu之前；watch到达先后不是容量权威。
 	ctx, cancel := s.hostCallContext()
 	defer cancel()
-	canonical, allocation, err := s.reserveHost(ctx, pod, pod.Spec.NodeName)
+	canonical, allocation, err := s.observeHostEvent(ctx, pod)
 	if err != nil {
 		return nil, err
 	}
 	pod = canonical
-	newPod, err := state.PodStateFromK8sObj(pod)
+	retainedManaged := allocation != nil && allocation.Managed && closedManagedEvent(pod)
+	var newPod state.Pod
+	if retainedManaged {
+		newPod, err = retainedManagedPodState(pod, *allocation)
+	} else {
+		newPod, err = state.PodStateFromK8sObj(pod)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("could not get state from Pod object: %w", err)
 	}
-	if allocation != nil {
+	if allocation != nil && !retainedManaged {
 		applyHostAllocation(&newPod, *allocation)
 	}
 
@@ -187,6 +193,11 @@ func (s *PluginState) updatePod(
 	})
 
 	// At this point, our local state has been updated according to the Pod object from k8s.
+	// 原关闭受管Pod只继续占用完整成本；不得因恢复初始视图进入旧批准或迁移。
+	if retainedManaged {
+		delete(ns.requestedMigrations, newPod.UID)
+		return nil, nil
+	}
 	//
 	// All that's left is to handle VMs that are the responsibility of *this* scheduler.
 	if lo.IsEmpty(newPod.VirtualMachine) || pod.Spec.SchedulerName != s.config.SchedulerName {
