@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -116,10 +117,9 @@ func runCollectMode(ctx context.Context, configPath, kubeconfigPath string, publ
 	if err != nil {
 		return err
 	}
-	// Job使用私有emptyDir下的新目录；已有输出一律拒绝，不覆盖原证据。
 	if publish {
-		if err = os.Mkdir(config.OutputDirectory, 0o700); err != nil {
-			return fmt.Errorf("fresh private collection directory required")
+		if err = prepareAutomaticOutput(config.OutputDirectory); err != nil {
+			return err
 		}
 	}
 	if err = qualificationissuer.WriteCollection(collection); err != nil {
@@ -129,6 +129,35 @@ func runCollectMode(ctx context.Context, configPath, kubeconfigPath string, publ
 		return run(ctx, config.OutputDirectory+"/issuer-config.proposed.json", kubeconfigPath)
 	}
 	return json.NewEncoder(os.Stdout).Encode(map[string]any{"collected": true, "published": false, "report_sha256": collection.ProposedIssuerConfig.ReportSHA256, "snapshot_sha256": collection.SnapshotSHA256, "proposed_issuer_config": config.OutputDirectory + "/issuer-config.proposed.json"})
+}
+
+const automaticJobOutput = "/out/evidence"
+
+func prepareAutomaticOutput(path string) error {
+	// Kubernetes 创建 emptyDir 时使用 0777。只收紧 Job 专用的固定卷，
+	// 其他部署者路径继续由原私有目录校验负责。
+	if path == automaticJobOutput {
+		if err := restrictJobOutputVolume(filepath.Dir(path)); err != nil {
+			return err
+		}
+	}
+	if err := os.Mkdir(path, 0o700); err != nil {
+		return fmt.Errorf("fresh private collection directory required")
+	}
+	return nil
+}
+
+func restrictJobOutputVolume(path string) error {
+	fd, err := syscall.Open(path, syscall.O_RDONLY|syscall.O_NOFOLLOW|syscall.O_DIRECTORY|syscall.O_CLOEXEC, 0)
+	if err != nil {
+		return fmt.Errorf("original qualification output volume unavailable")
+	}
+	defer syscall.Close(fd)
+	var stat syscall.Stat_t
+	if syscall.Fstat(fd, &stat) != nil || stat.Uid != 0 || syscall.Fchmod(fd, 0o700) != nil {
+		return fmt.Errorf("root must protect the original qualification output volume")
+	}
+	return nil
 }
 
 func main() {
