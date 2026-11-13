@@ -22,7 +22,7 @@ func validatedRuntimeISOAssets(assets map[string][]byte) ([]runtimeISOAsset, err
 	if len(assets) == 0 {
 		return nil, nil
 	}
-	if len(assets) > 6 {
+	if len(assets) > 7 {
 		return nil, fmt.Errorf("too many runtime policy assets")
 	}
 	raw, ok := assets[runtimeResourceAsset]
@@ -39,6 +39,7 @@ func validatedRuntimeISOAssets(assets map[string][]byte) ([]runtimeISOAsset, err
 	}
 	names := [...]string{
 		runtimeResourceAsset,
+		resourceguard.RuntimeComputePublicAssetName,
 		"dsga-physical-kernel.json",
 		"dsga-kernel-bootstrap.json",
 		"dsga-prebootstrap-system.json",

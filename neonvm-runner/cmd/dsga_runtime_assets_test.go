@@ -33,7 +33,23 @@ func runtimeISOFixture(t *testing.T, version uint32) map[string][]byte {
 	source = append([]byte(" \n"), source...)
 	sum := sha256.Sum256(source)
 	d := resourceguard.RuntimeDocument{ProtocolVersion: version, Incarnation: "1234567890abcdef1234567890abcdef", ConfigSecretUID: "model-secret", SourceSHA256: hex.EncodeToString(sum[:]), SourceJSON: source}
-	if version == 2 {
+	if version == 2 || version == 3 {
+		if version == 3 {
+			s.Config.ExecutionModel = resourceguard.TrustedControllerExecutionModel
+			s.Config.SystemCgroup = true
+			if s.Limits.SystemMemoryMaxBytes == 0 {
+				s.Limits.SystemMemoryMaxBytes = 64 << 20
+			}
+			source, err = json.Marshal(s)
+			if err != nil {
+				t.Fatal(err)
+			}
+			sum = sha256.Sum256(source)
+			d.ProtocolVersion = 3
+			d.ComputeStartup = &resourceguard.RuntimeComputeStartup{ProtocolVersion: 1, WorkloadName: "cp-original", NativeConfigSHA256: strings.Repeat("ab", 32), ControlKeyID: "original-key"}
+			d.SourceJSON = append([]byte(nil), source...)
+			d.SourceSHA256 = hex.EncodeToString(sum[:])
+		}
 		policies := []map[string]any{
 			{
 				"protocol_version": 1, "profile_id": resourceguard.NormalSplitV1PhysicalKernelProfileID,
@@ -83,10 +99,12 @@ func cloneRuntimeISOFixture(m map[string][]byte) map[string][]byte {
 }
 
 func TestRunnerRuntimeISOAssetsPreserveOriginalBytes(t *testing.T) {
-	for _, version := range []uint32{1, 2} {
+	for _, version := range []uint32{1, 2, 3} {
 		name := "v1"
 		if version == 2 {
 			name = "v2"
+		} else if version == 3 {
+			name = "v3"
 		}
 		t.Run(name, func(t *testing.T) {
 			assets := runtimeISOFixture(t, version)
@@ -96,7 +114,10 @@ func TestRunnerRuntimeISOAssetsPreserveOriginalBytes(t *testing.T) {
 				t.Fatal(err)
 			}
 			wantNames := []string{runtimeResourceAsset}
-			if version == 2 {
+			if version == 2 || version == 3 {
+				if version == 3 {
+					wantNames = append(wantNames, resourceguard.RuntimeComputePublicAssetName)
+				}
 				wantNames = append(wantNames, "dsga-physical-kernel.json", "dsga-kernel-bootstrap.json", "dsga-prebootstrap-system.json", "dsga-normal-split.json", "dsga-native-birth.json")
 			}
 			if len(ordered) != len(wantNames) {
@@ -183,8 +204,8 @@ func TestRunnerRuntimeISOAssetsRejectBeforeOutput(t *testing.T) {
 }
 
 func TestRunnerRuntimeISOAssetsActualRoundTrip(t *testing.T) {
-	for _, version := range []uint32{0, 1, 2} {
-		name := []string{"unmanaged", "v1", "v2"}[version]
+	for _, version := range []uint32{0, 1, 2, 3} {
+		name := []string{"unmanaged", "v1", "v2", "v3"}[version]
 		t.Run(name, func(t *testing.T) {
 			var assets map[string][]byte
 			if version != 0 {
@@ -193,7 +214,7 @@ func TestRunnerRuntimeISOAssetsActualRoundTrip(t *testing.T) {
 			dir := t.TempDir()
 			output := filepath.Join(dir, "runtime.iso")
 			command := []string{"/usr/local/bin/postgres"}
-			if version == 2 {
+			if version >= 2 {
 				command = nil
 			}
 			if err := createISO9660runtime(output, command, nil, nil, nil, nil, false, nil, nil, assets); err != nil {
@@ -232,13 +253,13 @@ func TestRunnerRuntimeISOAssetsActualRoundTrip(t *testing.T) {
 				t.Fatal(err)
 			}
 			wantCount := len(assets) + 2
-			if version == 2 {
+			if version >= 2 {
 				wantCount = len(assets)
 			}
 			if len(entries) != wantCount {
 				t.Fatalf("actual ISO extra/missing files: %v", entries)
 			}
-			if version == 2 {
+			if version >= 2 {
 				for _, name := range []string{"command.sh", "args.sh", "env.sh", "mounts.sh", "sysctl.conf", "resize-swap-internal.sh"} {
 					if _, err := os.Lstat(filepath.Join(extracted, name)); !os.IsNotExist(err) {
 						t.Fatalf("fixed ISO contains legacy file %s", name)

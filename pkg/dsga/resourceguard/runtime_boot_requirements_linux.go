@@ -9,10 +9,21 @@ import (
 	"strings"
 )
 
-func deriveRuntimeBootRequirementsPlatform(next RuntimeBootRequirements, _ RuntimeDocument, source SourceConfig, assets map[string][]byte) (RuntimeBootRequirements, error) {
+func deriveRuntimeBootRequirementsPlatform(next RuntimeBootRequirements, document RuntimeDocument, source SourceConfig, assets map[string][]byte) (RuntimeBootRequirements, error) {
 	var zero RuntimeBootRequirements
-	if len(assets) != 6 {
-		return zero, fmt.Errorf("runtime v2 boot requires the complete five-policy prefix")
+	// v2 carries the resource document plus five original policy assets. v3
+	// additionally carries the public-only Compute startup config; it is part
+	// of the same immutable source and must reach the Guest ISO unchanged.
+	wantAssets := 1 + len(runtimePolicyAssetOrder)
+	if document.ComputeStartup != nil {
+		wantAssets++
+	}
+	if len(assets) != wantAssets {
+		return zero, fmt.Errorf("runtime v%d boot requires the complete policy prefix and original public assets", document.ProtocolVersion)
+	}
+	_, hasPublic := assets[RuntimeComputePublicAssetName]
+	if hasPublic != (document.ComputeStartup != nil) {
+		return zero, fmt.Errorf("runtime Compute public asset differs from original startup selection")
 	}
 	var physical PhysicalKernelOriginPolicy
 	var kernel NormalV1KernelBootstrapPolicy

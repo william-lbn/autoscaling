@@ -48,7 +48,8 @@ func (r RuntimeBootRequirements) RequiredKernelArgs() []string {
 
 // DeriveRuntimeBootRequirements 只接受逻辑资产；resource也必须是同份原raw。
 // 重新渲染并逐字节核整组，避免内部调用者漏掉/替换某阶段后静默退旧模式。
-// v1保持旧启动选择，不发新profile参数；v2只支持准确369的完整五阶段前缀。
+// v1保持旧启动选择，不发新profile参数；v2要求完整五阶段前缀，v3在同一前缀上
+// 额外绑定唯一的public-only Compute启动资产。两者均不允许跳过原策略或退回旧模式。
 func DeriveRuntimeBootRequirements(raw []byte, assets map[string][]byte) (RuntimeBootRequirements, error) {
 	var zero RuntimeBootRequirements
 	if len(raw) == 0 || len(raw) > 64<<10 {

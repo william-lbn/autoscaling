@@ -2,10 +2,11 @@ package resourceguard
 
 import "testing"
 
-// PG17-U-ISO-ASSET-001：真实writer标识的长度边界及六键注入无碰撞。
+// PG17-U-ISO-ASSET-001：真实writer标识的长度边界及七键注入无碰撞。
 func TestRuntimeISOAssetNameExactAllowlist(t *testing.T) {
 	want := map[string]string{
 		"dsga-resource.json":            "dsga-resource.json",
+		RuntimeComputePublicAssetName:   RuntimeComputePublicAssetName,
 		"dsga-physical-kernel.json":     "dsga-physical-kernel.json",
 		"dsga-kernel-bootstrap.json":    "dsga-kernel-bootstrap.json",
 		"dsga-prebootstrap-system.json": "dsga-pre-system.json",
@@ -29,7 +30,7 @@ func TestRuntimeISOAssetNameExactAllowlist(t *testing.T) {
 			seen[got] = logical
 		})
 	}
-	if len(want) != 1+len(runtimePolicyAssetOrder) {
+	if len(want) != 2+len(runtimePolicyAssetOrder) {
 		t.Fatal("logical protocol changed without explicit ISO mapping review")
 	}
 	for _, logical := range runtimePolicyAssetOrder {

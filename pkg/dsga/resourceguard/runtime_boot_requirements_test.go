@@ -85,6 +85,82 @@ func TestRuntimeBootRequirementsV1NoNewMode(t *testing.T) {
 	}
 }
 
+// PG17-U-BOOT-006：Runtime v3 carries the exact public-only Compute startup
+// asset in addition to the original five-policy prefix; no policy is skipped.
+func TestRuntimeBootRequirementsGenericComputeV3IncludesPublicAsset(t *testing.T) {
+	d := runtimeTemplatesFullFixture(t)
+	var source SourceConfig
+	if err := json.Unmarshal(d.SourceJSON, &source); err != nil {
+		t.Fatal(err)
+	}
+	source.Config.ExecutionModel = TrustedControllerExecutionModel
+	source.Config.SystemCgroup = true
+	if source.Limits.SystemMemoryMaxBytes == 0 {
+		source.Limits.SystemMemoryMaxBytes = 64 << 20
+	}
+	d.SourceJSON, _ = json.Marshal(source)
+	d.SourceSHA256 = runtimePolicyDigest(d.SourceJSON)
+	d.ProtocolVersion = 3
+	d.ComputeStartup = &RuntimeComputeStartup{ProtocolVersion: 1, WorkloadName: "cp-original", NativeConfigSHA256: strings.Repeat("ab", 32), ControlKeyID: "original-key"}
+	raw, _ := json.Marshal(d)
+	assets, err := RenderRuntimePolicyAssets(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assets[RuntimeResourceAssetName] = raw
+	if len(assets) != 2+len(runtimePolicyAssetOrder) || len(assets[RuntimeComputePublicAssetName]) == 0 {
+		t.Fatalf("v3 source omitted public startup asset or policy prefix: %v", mapKeys(assets))
+	}
+	if _, err := DeriveRuntimeBootRequirements(raw, assets); err != nil {
+		t.Fatalf("complete v3 runtime source should derive original boot requirements: %v", err)
+	}
+	withoutPublic := make(map[string][]byte, len(assets)-1)
+	for name, value := range assets {
+		if name != RuntimeComputePublicAssetName {
+			withoutPublic[name] = value
+		}
+	}
+	if _, err := DeriveRuntimeBootRequirements(raw, withoutPublic); err == nil {
+		t.Fatal("v3 source without its original public Compute config was accepted")
+	}
+	v2 := d
+	v2.ProtocolVersion, v2.ComputeStartup = 2, nil
+	v2.SourceJSON = append([]byte(nil), sourceBytesForRuntimeV2(t, d.SourceJSON)...)
+	v2.SourceSHA256 = runtimePolicyDigest(v2.SourceJSON)
+	v2raw, _ := json.Marshal(v2)
+	v2assets, err := RenderRuntimePolicyAssets(v2raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	v2assets[RuntimeResourceAssetName] = v2raw
+	v2assets[RuntimeComputePublicAssetName] = assets[RuntimeComputePublicAssetName]
+	if _, err := DeriveRuntimeBootRequirements(v2raw, v2assets); err == nil {
+		t.Fatal("v2 source accepted an unbound v3 public startup asset")
+	}
+}
+
+func mapKeys(values map[string][]byte) []string {
+	keys := make([]string, 0, len(values))
+	for key := range values {
+		keys = append(keys, key)
+	}
+	return keys
+}
+
+func sourceBytesForRuntimeV2(t *testing.T, raw []byte) []byte {
+	t.Helper()
+	var source SourceConfig
+	if err := json.Unmarshal(raw, &source); err != nil {
+		t.Fatal(err)
+	}
+	source.Config.ExecutionModel = ""
+	result, err := json.Marshal(source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return result
+}
+
 // PG17-U-BOOT-003：部分v2、实际资产漏改/未知短名、原raw漂移均拒，绝不降级。
 func TestRuntimeBootRequirementsRejectsSourceAndAssets(t *testing.T) {
 	for _, name := range []string{"empty_raw", "oversized_raw", "raw_drift", "missing_resource", "missing_policy", "changed_policy", "unknown", "physical_name_as_key", "partial_v2"} {
