@@ -2,10 +2,48 @@ package main
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
+
+	"github.com/neondatabase/autoscaling/pkg/dsga/qualificationissuer"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 )
+
+func TestAutomaticQualificationRetriesOnlyReadOnlyCollection(t *testing.T) {
+	transient := errors.New("original sources changed during collection")
+	for _, test := range []struct {
+		name      string
+		automatic bool
+		first     error
+		calls     int
+	}{
+		{"automatic", true, transient, 2},
+		{"manual", false, transient, 1},
+		{"unauthorized", true, apierrors.NewUnauthorized("fixture"), 1},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			calls := 0
+			collect := func(ctx context.Context) (qualificationissuer.Collection, error) {
+				calls++
+				if _, ok := ctx.Deadline(); !ok {
+					t.Fatal("read has no bound")
+				}
+				if calls == 1 {
+					return qualificationissuer.Collection{}, test.first
+				}
+				return qualificationissuer.Collection{SnapshotSHA256: "fixture"}, nil
+			}
+			result, err := collectQualification(context.Background(), collect, test.automatic, 5*time.Second)
+			if calls != test.calls || test.calls == 2 && (err != nil || result.SnapshotSHA256 != "fixture") ||
+				test.calls == 1 && !errors.Is(err, test.first) {
+				t.Fatalf("collection outcome differs: calls=%d err=%v", calls, err)
+			}
+		})
+	}
+}
 
 func TestQualificationJobMakesOriginalEmptyDirPrivate(t *testing.T) {
 	if os.Geteuid() != 0 {

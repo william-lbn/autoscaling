@@ -16,6 +16,7 @@ import (
 
 	vmclient "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned"
 	"github.com/neondatabase/autoscaling/pkg/dsga/qualificationissuer"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -24,7 +25,7 @@ import (
 func run(ctx context.Context, configPath, kubeconfigPath string) error {
 	config, bundle, err := qualificationissuer.LoadInputs(configPath)
 	if err != nil {
-		return err
+		return &qualificationFailure{"issuer_input", err}
 	}
 	var connection *rest.Config
 	if kubeconfigPath == "" {
@@ -51,12 +52,12 @@ func run(ctx context.Context, configPath, kubeconfigPath string) error {
 	}
 	root, err := qualificationissuer.NewLocalRoot(config.ControlSocketPath, time.Duration(config.TimeoutSeconds)*time.Second)
 	if err != nil {
-		return err
+		return &qualificationFailure{"issuer_root", err}
 	}
 	defer root.Close()
 	issuer, err := qualificationissuer.New(core.CoreV1(), core.CoordinationV1(), vms, root, config)
 	if err != nil {
-		return err
+		return &qualificationFailure{"issuer_setup", err}
 	}
 	result, err := issuer.Publish(ctx, bundle)
 	if err != nil {
@@ -64,8 +65,9 @@ func run(ctx context.Context, configPath, kubeconfigPath string) error {
 		if errors.As(err, &unknown) {
 			// 仅输出原对象定位信息；不输出报告原文、Root 状态、Kube 错误正文或凭据。
 			_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"issued": false, "unconfirmed": true, "claim": unknown.Claim, "report_sha256": config.ReportSHA256})
+			return &qualificationFailure{"publication_unconfirmed", err}
 		}
-		return err
+		return &qualificationFailure{"publication", err}
 	}
 	return json.NewEncoder(os.Stdout).Encode(result)
 }
@@ -75,11 +77,11 @@ func runCollect(ctx context.Context, configPath, kubeconfigPath string) error {
 	return runCollectMode(ctx, configPath, kubeconfigPath, false)
 }
 
-// 自动供应只串联原采集与原签发，不增加重试。发布不确定时原对象必须保留。
+// 自动供应允许有界只读重采集。资格发布只执行一次，未知结果保留原对象。
 func runCollectMode(ctx context.Context, configPath, kubeconfigPath string, publish bool) error {
 	config, err := qualificationissuer.LoadCollectorConfig(configPath)
 	if err != nil {
-		return err
+		return &qualificationFailure{"collector_input", err}
 	}
 	var connection *rest.Config
 	if kubeconfigPath == "" {
@@ -106,30 +108,57 @@ func runCollectMode(ctx context.Context, configPath, kubeconfigPath string, publ
 	}
 	root, err := qualificationissuer.NewLocalRoot(config.ControlSocketPath, time.Duration(config.TimeoutSeconds)*time.Second)
 	if err != nil {
-		return err
+		return &qualificationFailure{"collector_root", err}
 	}
 	defer root.Close()
 	collector, err := qualificationissuer.NewCollector(core.CoreV1(), core.CoordinationV1(), vms, root, config)
 	if err != nil {
-		return err
+		return &qualificationFailure{"collector_setup", err}
 	}
-	collection, err := collector.Collect(ctx)
+	collection, err := collectQualification(ctx, collector.Collect, publish, time.Duration(config.TimeoutSeconds)*time.Second)
 	if err != nil {
-		return err
+		return &qualificationFailure{"collection", err}
 	}
 	if publish {
 		if err = prepareAutomaticOutput(config.OutputDirectory); err != nil {
-			return err
+			return &qualificationFailure{"output_volume", err}
 		}
 	}
 	if err = qualificationissuer.WriteCollection(collection); err != nil {
-		return err
+		return &qualificationFailure{"evidence_write", err}
 	}
 	if publish {
 		return run(ctx, config.OutputDirectory+"/issuer-config.proposed.json", kubeconfigPath)
 	}
 	return json.NewEncoder(os.Stdout).Encode(map[string]any{"collected": true, "published": false, "report_sha256": collection.ProposedIssuerConfig.ReportSHA256, "snapshot_sha256": collection.SnapshotSHA256, "proposed_issuer_config": config.OutputDirectory + "/issuer-config.proposed.json"})
 }
+
+// 只重读尚未签发的采集。统一使用冻结的采集期限，保留独立手动采集的单次语义。
+func collectQualification(ctx context.Context, collect func(context.Context) (qualificationissuer.Collection, error), automatic bool, timeout time.Duration) (qualificationissuer.Collection, error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	for attempt := 1; ; attempt++ {
+		result, err := collect(ctx)
+		if err == nil || !automatic || attempt == 6 || ctx.Err() != nil || apierrors.IsForbidden(err) || apierrors.IsUnauthorized(err) {
+			return result, err
+		}
+		timer := time.NewTimer(time.Second)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return qualificationissuer.Collection{}, err
+		case <-timer.C:
+		}
+	}
+}
+
+type qualificationFailure struct {
+	stage string
+	cause error
+}
+
+func (e *qualificationFailure) Error() string { return e.cause.Error() }
+func (e *qualificationFailure) Unwrap() error { return e.cause }
 
 const automaticJobOutput = "/out/evidence"
 
@@ -181,7 +210,25 @@ func main() {
 		err = run(ctx, *config, *kubeconfig)
 	}
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "qualification not issued; preserve original input and any unconfirmed protected object")
+		stage := "client_or_output"
+		var failed *qualificationFailure
+		if errors.As(err, &failed) {
+			stage = failed.stage
+		}
+		reason := "unconfirmed"
+		switch {
+		case errors.Is(err, context.DeadlineExceeded):
+			reason = "deadline"
+		case errors.Is(err, context.Canceled):
+			reason = "canceled"
+		case apierrors.IsForbidden(err):
+			reason = "forbidden"
+		case apierrors.IsUnauthorized(err):
+			reason = "unauthorized"
+		case apierrors.IsNotFound(err):
+			reason = "not_found"
+		}
+		fmt.Fprintf(os.Stderr, "qualification not issued stage=%s reason=%s; preserve original input and any unconfirmed protected object\n", stage, reason)
 		os.Exit(1)
 	}
 }
