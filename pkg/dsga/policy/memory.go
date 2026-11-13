@@ -96,13 +96,32 @@ type Sample struct {
 // 不丢任何原操作：所有已接受/未知请求由外层原WAL及SDK负责恢复。策略窗口
 // 是可丢的性能状态，重建必须重新等待缩容窗口，紧急增长仍可优先选择。
 type Engine struct {
-	config   Config
-	last     *Sample
-	since    time.Time
-	kind     control.Kind
-	accepted time.Time
-	lastAt   time.Time
+	config      Config
+	last        *Sample
+	since       time.Time
+	kind        control.Kind
+	accepted    time.Time
+	lastAt      time.Time
+	observation EvaluationObservation
 }
+
+// EvaluationObservation只复制本次真实Evaluate使用的窗口，不是执行许可。
+// 不接受外部setter，不镜像另一套计时器；Owner必须在Evaluate返回后立即读取。
+type EvaluationObservation struct {
+	SampleAt        time.Time    `json:"sample_at"`
+	EvaluatedAt     time.Time    `json:"evaluated_at"`
+	WindowStartedAt time.Time    `json:"window_started_at"`
+	LastAcceptedAt  time.Time    `json:"last_accepted_at"`
+	WindowSeconds   uint         `json:"window_seconds"`
+	CooldownSeconds uint         `json:"cooldown_seconds"`
+	Kind            control.Kind `json:"kind"`
+	Reason          string       `json:"reason"`
+	Selected        bool         `json:"selected"`
+	Emergency       bool         `json:"emergency"`
+	Valid           bool         `json:"valid"`
+}
+
+func (e *Engine) Observation() EvaluationObservation { return e.observation }
 
 func New(c Config) (*Engine, error) {
 	if err := c.Validate(); err != nil {
@@ -128,7 +147,13 @@ func threshold(total control.Uint64, permille uint16, ceil bool) control.Uint64 
 	return control.Uint64(q*uint64(permille) + r/1000)
 }
 
-func (e *Engine) Evaluate(now time.Time, s Sample) (Target, bool, error) {
+func (e *Engine) Evaluate(now time.Time, s Sample) (target Target, selected bool, err error) {
+	// 仅记录实际分支和实际状态；不改变原返回值、阈值、窗口或Accepted语义。
+	e.observation = EvaluationObservation{SampleAt: s.At, EvaluatedAt: now, CooldownSeconds: e.config.CooldownSeconds, Reason: "invalid_sample"}
+	defer func() {
+		e.observation.WindowStartedAt, e.observation.LastAcceptedAt = e.since, e.accepted
+		e.observation.Kind, e.observation.Selected, e.observation.Valid = e.kind, selected, err == nil
+	}()
 	var none Target
 	index := -1
 	for i, t := range e.config.Targets {
@@ -148,6 +173,7 @@ func (e *Engine) Evaluate(now time.Time, s Sample) (Target, bool, error) {
 	}
 	e.lastAt = s.At
 	if !s.AdmissionOpen {
+		e.observation.Reason = "admission_closed"
 		e.Reset()
 		return none, false, nil
 	}
@@ -161,10 +187,20 @@ func (e *Engine) Evaluate(now time.Time, s Sample) (Target, bool, error) {
 		s.ClientProcesses == s.IdleClients && s.RetainedTransactions == 0
 	kind := control.Kind("")
 	emergency := s.NormalCurrent >= threshold(s.NormalMax, e.config.EmergencyThresholdPermille, true)
+	e.observation.Emergency = emergency
+	e.observation.Reason = "no_trigger"
 	if (e.config.MinimumVMMemoryBytes > 0 && s.Current.VMMemoryBytes < e.config.MinimumVMMemoryBytes) || s.NormalCurrent >= threshold(s.NormalMax, e.config.GrowThresholdPermille, true) {
 		kind = control.Grow
+		e.observation.Reason = "high_normal_window"
+		if emergency {
+			e.observation.Reason = "emergency_normal"
+		}
+		if e.config.MinimumVMMemoryBytes > 0 && s.Current.VMMemoryBytes < e.config.MinimumVMMemoryBytes {
+			e.observation.Reason = "below_minimum_window"
+		}
 	} else if workIdle && s.NormalCurrent <= threshold(s.NormalMax, e.config.ShrinkThresholdPermille, false) {
 		kind = control.Shrink
+		e.observation.Reason = "low_normal_idle_window"
 	}
 	if kind != e.kind || e.since.IsZero() {
 		e.since = s.At
@@ -177,8 +213,10 @@ func (e *Engine) Evaluate(now time.Time, s Sample) (Target, bool, error) {
 		return none, false, nil
 	}
 	window := time.Duration(e.config.GrowWindowSeconds) * time.Second
+	e.observation.WindowSeconds = e.config.GrowWindowSeconds
 	if kind == control.Shrink {
 		window = time.Duration(e.config.ShrinkWindowSeconds) * time.Second
+		e.observation.WindowSeconds = e.config.ShrinkWindowSeconds
 	}
 	if !emergency && (s.At.Sub(e.since) < window || !e.accepted.IsZero() && now.Sub(e.accepted) < time.Duration(e.config.CooldownSeconds)*time.Second) {
 		return none, false, nil

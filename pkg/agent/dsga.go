@@ -52,11 +52,13 @@ type DSGAConfig struct {
 }
 
 type DSGARunnerState struct {
-	RuntimeSelection *runtimeselection.Status `json:"runtimeSelection,omitempty"`
-	ObservedAt       time.Time                `json:"observedAt,omitzero"`
-	Phase            string                   `json:"phase"`
-	IssuerEpoch      control.Uint64           `json:"issuerEpoch"`
-	Instance         control.Instance         `json:"instance"`
+	AutomaticObservationVersion uint32                    `json:"automaticObservationVersion,omitempty"`
+	RuntimeSelection            *runtimeselection.Status  `json:"runtimeSelection,omitempty"`
+	AutomaticDecisions          []owner.AutomaticDecision `json:"automaticDecisions,omitempty"`
+	ObservedAt                  time.Time                 `json:"observedAt,omitzero"`
+	Phase                       string                    `json:"phase"`
+	IssuerEpoch                 control.Uint64            `json:"issuerEpoch"`
+	Instance                    control.Instance          `json:"instance"`
 }
 
 func (r *Runner) dsgaState(ctx context.Context, state DSGARunnerState) {
@@ -228,11 +230,11 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		var diagnostic dsgaTickDiagnostic
 		return worker.Run(ownerCtx, owner.PGLoopOptions{RuntimeSelection: runtimeRead, EnableInFlightGrow: true, PollInterval: time.Duration(config.PollIntervalSeconds) * time.Second, Control: endpoint, Wake: updated.Recv(), Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, Observe: func(tick owner.Tick) {
 			diagnostic.observe(logger, tick)
-			if tick.RuntimeSelection != nil {
-				if tick.RuntimeSelection.AppliedGeneration > 0 {
+			if tick.RuntimeSelection != nil || len(tick.AutomaticDecisions) > 0 {
+				if tick.RuntimeSelection != nil && tick.RuntimeSelection.AppliedGeneration > 0 {
 					phase = "running"
 				}
-				r.dsgaState(ownerCtx, DSGARunnerState{Phase: phase, IssuerEpoch: epoch, Instance: instance, RuntimeSelection: tick.RuntimeSelection, ObservedAt: time.Now().UTC()})
+				r.dsgaState(ownerCtx, DSGARunnerState{AutomaticObservationVersion: 1, Phase: phase, IssuerEpoch: epoch, Instance: instance, RuntimeSelection: tick.RuntimeSelection, AutomaticDecisions: tick.AutomaticDecisions, ObservedAt: time.Now().UTC()})
 			}
 			if tick.Err == nil {
 				r.status.update(r.global, func(stat podStatus) podStatus { now := time.Now(); stat.dsgaLastSuccessfulCheck = &now; return stat })
@@ -334,9 +336,20 @@ func dsgaOwnerFailureCode(err error) string {
 
 // dsgaTickDiagnostic只观察原Run串行回调，不改变错误、进度、WAL或重放。
 // 同一固定码/进度连续出现只记一次，恢复后重新计；不格式化外部Error正文。
-type dsgaTickDiagnostic struct{ code, progress, idleStage, idleType string }
+type dsgaTickDiagnostic struct {
+	code, progress, idleStage, idleType string
+	automaticSequence                   uint64
+}
 
 func (d *dsgaTickDiagnostic) observe(logger *zap.Logger, tick owner.Tick) {
+	// 同原key的提交观测转移有新sequence；轮询重读不重复打日志。正文只有
+	// 固定来源身份、数值/时间/固定码，不含凭据、SQL或任意底层错误。
+	for _, decision := range tick.AutomaticDecisions {
+		if decision.Sequence > d.automaticSequence {
+			logger.Info("DSGA automatic memory decision", zap.Any("decision", decision))
+			d.automaticSequence = decision.Sequence
+		}
+	}
 	// 固定叶与最终Err独立：原关闭WAL成功的Recorded/nil同样必须保留触发首因。
 	if tick.IdleService != nil {
 		stage, kind := tick.IdleService.Stage(), tick.IdleService.Type()

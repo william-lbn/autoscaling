@@ -24,14 +24,15 @@ import (
 var ErrPolicyObservation = errors.New("automatic memory policy awaits original observation")
 
 type automaticMemory struct {
-	config    policy.Config
-	engine    *policy.Engine
-	claims    *budgetclaims.Reader
-	runner    *vmguard.Reader
-	source    budget.QualificationSource
-	next      time.Time
-	pending   *control.Request
-	pendingRV string
+	config          policy.Config
+	engine          *policy.Engine
+	claims          *budgetclaims.Reader
+	runner          *vmguard.Reader
+	source          budget.QualificationSource
+	next            time.Time
+	pending         *control.Request
+	pendingRV       string
+	pendingDecision *AutomaticDecision
 }
 
 // ConfigureAutomaticMemory仅在Run前由可信Agent配置调用。它不开放旧WS/LFC/
@@ -200,12 +201,14 @@ func (w *PGWorker) advanceAutomaticChecked(ctx context.Context) (pgexec.Progress
 	if d.pending != nil {
 		// 完整原日志已含此Key，或已由更高/冲突水位取代时，只解除本地
 		// Begin投递栅栏。原效果/终态继续由日志各域负责，不能宣称NoEffect。
-		if m.Lookup(*d.pending) != journal.Stale {
+		if disposition := m.Lookup(*d.pending); disposition != journal.Stale {
+			w.recordAutomaticOutcome("reconciled_" + string(disposition))
 			d.pending, d.pendingRV = nil, ""
 			d.engine.Accepted(now)
 			return pgexec.Reconciled, nil
 		}
 		if d.pendingRV != "" && s.ResourceVersion() != d.pendingRV {
+			w.recordAutomaticOutcome("not_accepted_rv_advanced")
 			// 最后一次发送固定旧RV；最新完整日志既未接收该Key，且RV已
 			// 前进，任何延迟旧CAS都必然失败。仅清本地投递意图，不改
 			// PG/Root/VM执行未知，也不发布NoEffect领域回执。
@@ -252,6 +255,7 @@ func (w *PGWorker) advanceAutomaticChecked(ctx context.Context) (pgexec.Progress
 		if err := request.Validate(); err != nil {
 			return pgexec.AwaitingFact, err
 		}
+		w.captureAutomaticDecision(request, sample)
 		d.pending = &request
 	}
 	// 过期并不证明旧Begin未发生。仅在原Key仍未接收时，用原RV做
@@ -264,8 +268,10 @@ func (w *PGWorker) advanceAutomaticChecked(ctx context.Context) (pgexec.Progress
 	if uint64(millis) >= uint64(d.pending.DeadlineUnixMillis) {
 		_, err := w.session.store.FenceUnacceptedBegin(ctx, s, w.session.Actor(), *d.pending, uint64(millis))
 		if err != nil {
+			w.recordAutomaticOutcome("expiry_fence_unconfirmed")
 			return pgexec.AwaitingFact, err
 		}
+		w.recordAutomaticOutcome("not_accepted_deadline_fenced")
 		d.pending, d.pendingRV = nil, ""
 		d.engine.Reset()
 		return pgexec.Reconciled, nil
@@ -273,8 +279,10 @@ func (w *PGWorker) advanceAutomaticChecked(ctx context.Context) (pgexec.Progress
 	d.pendingRV = s.ResourceVersion()
 	_, disposition, err := w.session.store.Begin(ctx, s, w.session.Actor(), *d.pending, uint64(millis))
 	if err != nil {
+		w.recordAutomaticOutcome("begin_unconfirmed")
 		return pgexec.AwaitingFact, err
 	}
+	w.recordAutomaticOutcome(string(disposition))
 	if disposition == journal.Accepted || disposition == journal.Replayed {
 		d.pending, d.pendingRV = nil, ""
 		d.engine.Accepted(time.Now())

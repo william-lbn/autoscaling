@@ -46,15 +46,17 @@ type PGWorker struct {
 	initial   *initialexec.Executor
 	// 管理恢复复用创建本worker时的原资源owner/SDK，不另建空客户端以
 	// 绕过GuestReady或修复未知。生命周期仍由Agent同一Session持有。
-	resourceOwner         *ResourceWorker
-	automatic             *automaticMemory
-	qualification         *budget.QualificationSource
-	productionCore        coreclient.CoreV1Interface
-	runtimeReader         RuntimeSelectionReader
-	runtimeStatus         *runtimeselection.Status
-	runtimeNext           time.Time
-	safety                *serviceSafety
-	idleServiceDiagnostic *IdleServiceDiagnostic
+	resourceOwner             *ResourceWorker
+	automatic                 *automaticMemory
+	qualification             *budget.QualificationSource
+	productionCore            coreclient.CoreV1Interface
+	runtimeReader             RuntimeSelectionReader
+	runtimeStatus             *runtimeselection.Status
+	runtimeNext               time.Time
+	safety                    *serviceSafety
+	idleServiceDiagnostic     *IdleServiceDiagnostic
+	automaticDecisions        []AutomaticDecision
+	automaticDecisionSequence uint64
 	// Run期间独占SDK/控制入口，避免重复启动两个轮询goroutine竞争Pending。
 	// Run返回后可由旧的测试/嵌入调用重新进入；ControlEndpoint本身不可复用。
 	running atomic.Bool
@@ -639,7 +641,8 @@ func (worker *PGWorker) RecoverCapacityAdmission(ctx context.Context, key contro
 }
 
 type Tick struct {
-	RuntimeSelection *runtimeselection.Status
+	RuntimeSelection   *runtimeselection.Status
+	AutomaticDecisions []AutomaticDecision
 
 	Progress pgexec.Progress
 	Err      error
@@ -1022,6 +1025,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			}
 		}
 		tick := worker.diagnosticTick(progress, err)
+		tick.AutomaticDecisions = worker.automaticDecisionSnapshot()
 		if worker.runtimeStatus != nil {
 			copy := *worker.runtimeStatus
 			tick.RuntimeSelection = &copy
