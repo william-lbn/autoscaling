@@ -23,9 +23,11 @@ func unusedPreBirthJournal(m journal.Model) bool {
 	return m.Validate() == nil && m.ProtocolVersion == 1 && m.HighWater == nil && m.Active == nil && len(m.History) == 0 && m.ExpiredResults == 0 && m.ResourceIdentity == nil && m.PGInstance == nil && m.BudgetHeld == nil && m.CapacityHeld == nil && m.InitialHeld == nil && m.BudgetBoundary == nil && m.ServiceClosure == nil && m.ServiceLifecycle == nil && m.RetainedCoverage == nil && m.RetainedContextSHA256 == ""
 }
 
-func (s *Service) preBirthTerminal(ctx context.Context, pod *core.Pod, p hostguard.Placement, expected *hostguard.PreBirthStop) (hostguard.PreBirthStop, error) {
+func (s *Service) preBirthTerminal(ctx context.Context, pod *core.Pod, p hostguard.Placement, expected *hostguard.PreBirthStop, nodeStop bool) (hostguard.PreBirthStop, error) {
 	var none hostguard.PreBirthStop
-	if !p.Managed || p.Settled != nil || p.Barrier != nil || hostguard.PreBirthTerminalPod(pod) != nil {
+	if !p.Managed || p.Settled != nil || p.Barrier != nil ||
+		(nodeStop && !hostguard.ManagedPreBirthEvictedPod(pod, p)) ||
+		(!nodeStop && hostguard.PreBirthTerminalPod(pod) != nil) {
 		return none, fmt.Errorf("pre-birth cleanup lacks original unused managed terminal Pod")
 	}
 	binding := journal.Binding{Namespace: p.Namespace, Name: p.VMName, VMUID: types.UID(p.VMUID), Incarnation: p.Incarnation}
@@ -60,8 +62,8 @@ func (s *Service) preBirthTerminal(ctx context.Context, pod *core.Pod, p hostgua
 }
 
 func (s *Service) verifyTerminalRunner(ctx context.Context, d domain, pod *core.Pod, r hostguard.Retirement) error {
-	if r.ProtocolVersion == 3 {
-		_, err := s.preBirthTerminal(ctx, pod, r.Placement, r.PreBirth)
+	if r.PreBirthOnly() {
+		_, err := s.preBirthTerminal(ctx, pod, r.Placement, r.PreBirth, r.ProtocolVersion == 4)
 		return err
 	}
 	_, _, _, err := s.terminalRunner(ctx, d, pod, r.Placement, &r)

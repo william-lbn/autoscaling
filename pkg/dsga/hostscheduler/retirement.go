@@ -171,7 +171,7 @@ func (s *Service) recordVMRetirement(ctx context.Context, r hostguard.Retirement
 	if err != nil {
 		return err
 	}
-	if r.ProtocolVersion == 3 && (vm.DeletionTimestamp == nil || r.PreBirth == nil || vmguard.SourceDigest([]byte(vm.Annotations[control.JournalAnnotation])) != r.PreBirth.VMJournalSHA256) {
+	if r.PreBirthOnly() && (vm.DeletionTimestamp == nil || r.PreBirth == nil || vmguard.SourceDigest([]byte(vm.Annotations[control.JournalAnnotation])) != r.PreBirth.VMJournalSHA256) {
 		return fmt.Errorf("pre-birth original VM journal changed before closing anchor")
 	}
 	if prior := vm.Annotations[hostguard.VMRetirementAnnotation]; prior != "" {
@@ -233,27 +233,36 @@ func (s *Service) retirePod(ctx context.Context, d domain, expected *core.Pod) e
 			return loadErr
 		}
 		r = hostguard.Retirement{ProtocolVersion: 1, Binding: d.config.Binding, Origin: n.State().Origin, BeforeSequence: n.State().Sequence, Placement: p, TerminalSHA256: hash, RunnerBirth: nil, RunnerExit: nil, RunnerExitSHA: ""}
-		if terminalErr != nil {
-			// 只有普通Pod可选择受信Node停止来源；缺来源仍完整保留Unknown占账。
+		if p.Managed {
+			birth, exit, digest, sourceErr := s.terminalRunner(ctx, d, pod, p, nil)
+			if errors.Is(sourceErr, errRunnerBirthAbsent) {
+				if terminalErr == nil {
+					r.ProtocolVersion = 3
+				} else {
+					ref, err := d.store.ReadManagedPreBirthStop(ctx, n, pod, p, nil)
+					if err != nil {
+						return err
+					}
+					r.ProtocolVersion, r.TerminalSHA256, r.ManagedPreBirthStopSource = 4, ref.SHA256, &ref
+				}
+				source, err := s.preBirthTerminal(ctx, pod, p, nil, r.ProtocolVersion == 4)
+				if err != nil {
+					return err
+				}
+				r.PreBirth = &source
+			} else if sourceErr != nil {
+				return sourceErr
+			} else if terminalErr != nil {
+				return terminalErr
+			} else {
+				r.RunnerBirth, r.RunnerExit, r.RunnerExitSHA = &birth, &exit, digest
+			}
+		} else if terminalErr != nil {
 			ref, sourceErr := d.store.ReadOrdinaryStop(ctx, n, pod, p, nil)
 			if sourceErr != nil {
 				return sourceErr
 			}
 			r.ProtocolVersion, r.TerminalSHA256, r.OrdinaryStopSource = 2, ref.SHA256, &ref
-		}
-		if p.Managed {
-			birth, exit, digest, sourceErr := s.terminalRunner(ctx, d, pod, p, nil)
-			if errors.Is(sourceErr, errRunnerBirthAbsent) {
-				source, err := s.preBirthTerminal(ctx, pod, p, nil)
-				if err != nil {
-					return err
-				}
-				r.ProtocolVersion, r.PreBirth = 3, &source
-			} else if sourceErr != nil {
-				return sourceErr
-			} else {
-				r.RunnerBirth, r.RunnerExit, r.RunnerExitSHA = &birth, &exit, digest
-			}
 		}
 		if err := r.Validate(); err != nil {
 			return err

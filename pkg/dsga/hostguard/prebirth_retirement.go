@@ -3,6 +3,7 @@ package hostguard
 import (
 	"fmt"
 	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // PreBirthStop把未发布出生来源的独立终态关闭绑定到原VM日志，不伪造Runner
@@ -40,4 +41,26 @@ func PreBirthTerminalPod(pod *core.Pod) error {
 		return fmt.Errorf("pre-birth cleanup lacks original Runner container")
 	}
 	return nil
+}
+
+// ManagedPreBirthEvictedPod verifies the immutable Pod identity for the
+// separate trusted Node stop source. The Node source proves physical absence.
+func ManagedPreBirthEvictedPod(pod *core.Pod, p Placement) bool {
+	if pod == nil || pod.ResourceVersion == "" || pod.DeletionTimestamp == nil ||
+		pod.Spec.RestartPolicy != core.RestartPolicyNever || pod.Status.Phase != core.PodFailed ||
+		pod.Status.Reason != "Evicted" || pod.Spec.NodeName == "" ||
+		len(pod.Spec.EphemeralContainers) != 0 || len(pod.Status.EphemeralContainerStatuses) != 0 ||
+		len(pod.Spec.Containers) != 1 || pod.Spec.Containers[0].Name != "neonvm-runner" ||
+		pod.Namespace != p.Namespace || pod.Name != p.PodName || string(pod.UID) != p.PodUID ||
+		len(pod.OwnerReferences) != 1 {
+		return false
+	}
+	owner := metav1.GetControllerOf(pod)
+	return owner != nil && owner.APIVersion == "vm.neon.tech/v1" && owner.Kind == "VirtualMachine" &&
+		owner.Name == p.VMName && string(owner.UID) == p.VMUID
+}
+
+func managedPreBirthPlacement(p Placement) bool {
+	_, err := p.Bytes()
+	return err == nil && p.Managed && p.PodMemoryLimitBytes != 0 && p.Settled == nil && p.Barrier == nil
 }

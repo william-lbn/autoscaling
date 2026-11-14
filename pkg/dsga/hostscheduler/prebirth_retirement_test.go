@@ -8,8 +8,10 @@ import (
 	"github.com/neondatabase/autoscaling/internal/dsgatest"
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
+	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 	"github.com/stretchr/testify/require"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -286,6 +288,88 @@ func TestSchedulerPreBirthRereadsVMIdentityAfterMissingBirth(t *testing.T) {
 				require.Contains(t, f.Pods["testing/runner"].Finalizers, hostguard.PodProtectionFinalizer)
 				require.Empty(t, f.VMs["testing/vm"].Annotations[hostguard.VMRetirementAnnotation])
 			})
+		})
+	}
+}
+
+func TestSchedulerEvictedPreBirthNeedsTrustedNodeStopAndUnusedVM(t *testing.T) {
+	for _, mode := range []string{"complete", "missing", "ordinary-scope", "state-present", "failed-vm-not-deleting"} {
+		t.Run(mode, func(t *testing.T) {
+			s, f, n, claims, p := preBirthRetirementFixture(t)
+			_, _, _, _, _, sourceExample := ordinaryTrustedStopFixture(t)
+			ctx := context.Background()
+			d := s.domains[n.Binding.NodeName]
+			before, err := d.store.Load(ctx)
+			require.NoError(t, err)
+			row, err := before.State().Placement(string(p.UID))
+			require.NoError(t, err)
+			f.Mutate(func(f *dsgatest.SchedulerAPI) {
+				p = f.Pods["testing/runner"]
+				p.Status.Reason = "Evicted"
+				p.Status.ContainerStatuses[0] = core.ContainerStatus{Name: "neonvm-runner", RestartCount: 1,
+					State: core.ContainerState{Terminated: &core.ContainerStateTerminated{Reason: "ContainerStatusUnknown", ExitCode: 137}}}
+				p = p.DeepCopy()
+				if mode == "failed-vm-not-deleting" {
+					f.VMs["testing/vm"].DeletionTimestamp = nil
+				}
+			})
+			var source hostguard.OrdinaryStopSource
+			require.NoError(t, json.Unmarshal([]byte(sourceExample.Data[hostguard.OrdinaryStopSourceKey]), &source))
+			source.Scope = hostguard.ManagedPreBirthStopScope
+			if mode == "ordinary-scope" {
+				source.Scope = hostguard.OrdinaryStopScope
+			}
+			source.Binding, source.Origin, source.Placement = n.Binding, before.State().Origin, row
+			source.ContainerNames = []string{"app/neonvm-runner"}
+			source.Before = hostguard.OrdinaryStopPodFacts{Namespace: p.Namespace, Name: p.Name, UID: string(p.UID),
+				NodeName: p.Spec.NodeName, Phase: p.Status.Phase, SpecSHA256: ordinaryTestCanonical(t, p.Spec), StatusSHA256: ordinaryTestCanonical(t, p.Status)}
+			source.After = source.Before
+			raw, err := json.Marshal(source)
+			require.NoError(t, err)
+			cm := sourceExample.DeepCopy()
+			cm.Name = hostguard.OrdinaryStopClaimName(string(p.UID))
+			cm.Annotations[hostguard.OrdinaryStopSourceMarker] = source.Scope
+			cm.Data[hostguard.OrdinaryStopSourceKey] = string(raw)
+			require.NoError(t, claims.Tracker().Create(core.SchemeGroupVersion.WithResource("configmaps"), cm, cm.Namespace))
+			if mode == "state-present" {
+				b := journal.Binding{Namespace: row.Namespace, Name: row.VMName, VMUID: types.UID(row.VMUID), Incarnation: row.Incarnation}
+				cm := &core.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: vmguard.BirthSourceNames(b)[1], Namespace: b.Namespace}}
+				require.NoError(t, claims.Tracker().Create(core.SchemeGroupVersion.WithResource("configmaps"), cm, cm.Namespace))
+			}
+			ref := hostguard.OrdinaryStopReference{Claim: budget.ObjectRef{Name: cm.Name, UID: string(cm.UID)},
+				SHA256: ordinaryTestHash(raw), SpecSHA256: source.After.SpecSHA256}
+			refRaw, err := json.Marshal(ref)
+			require.NoError(t, err)
+			f.Mutate(func(f *dsgatest.SchedulerAPI) {
+				p = f.Pods["testing/runner"]
+				if mode != "missing" {
+					p.Annotations[hostguard.OrdinaryStopSourceAnnotation] = string(refRaw)
+				}
+				p = p.DeepCopy()
+			})
+			d.store, err = hostguard.NewStore(s.core, f.Core.CoordinationV1(), n.Binding, s.holder)
+			require.NoError(t, err)
+			err = s.retirePod(ctx, d, p)
+			after, readErr := d.store.Load(ctx)
+			require.NoError(t, readErr)
+			if mode != "complete" {
+				require.Error(t, err)
+				original, err := after.State().Placement(string(p.UID))
+				require.NoError(t, err)
+				require.Equal(t, row, original)
+				return
+			}
+			require.NoError(t, err)
+			_, err = after.State().Placement(string(p.UID))
+			require.Error(t, err)
+			actual, err := s.core.Pods(p.Namespace).Get(ctx, p.Name, metav1.GetOptions{})
+			require.NoError(t, err)
+			intent, err := hostguard.InspectRetirement(actual)
+			require.NoError(t, err)
+			require.EqualValues(t, 4, intent.ProtocolVersion)
+			require.NotContains(t, actual.Finalizers, hostguard.PodProtectionFinalizer)
+			require.Equal(t, &ref, intent.ManagedPreBirthStopSource)
+			require.NoError(t, s.retirePod(ctx, d, p))
 		})
 	}
 }

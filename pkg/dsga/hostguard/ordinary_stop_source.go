@@ -21,6 +21,7 @@ import (
 
 const OrdinaryStopNamespace = "kube-system"
 const OrdinaryStopScope = "ordinary-pod-node-stop-v1"
+const ManagedPreBirthStopScope = "managed-pre-birth-node-stop-v1"
 const OrdinaryStopSourceKey = "ordinary-stop.json"
 const OrdinaryStopSourceAnnotation = "internal.autoscaling.neon.tech/dsga-ordinary-stop-source-v1"
 const OrdinaryStopSourceFinalizer = "autoscaling.neon.tech/dsga-ordinary-stop-source-protection"
@@ -224,7 +225,9 @@ func ordinaryUIDPath(p, uid string) bool {
 }
 func ordinaryID(id string) bool { return retirementDigest(id) }
 func (v OrdinaryStopSource) Validate() error {
-	if v.ProtocolVersion != 1 || v.Scope != OrdinaryStopScope || v.Binding.Validate() != nil || control.ValidateIncarnation(v.Origin) != nil || !ordinaryPlacement(v.Placement) {
+	validPlacement := v.Scope == OrdinaryStopScope && ordinaryPlacement(v.Placement) ||
+		v.Scope == ManagedPreBirthStopScope && managedPreBirthPlacement(v.Placement)
+	if v.ProtocolVersion != 1 || v.Binding.Validate() != nil || control.ValidateIncarnation(v.Origin) != nil || !validPlacement {
 		return fmt.Errorf("ordinary stop source changed original allocation domain")
 	}
 	b, a, p := v.Before, v.After, v.Probe
@@ -333,7 +336,9 @@ func (v OrdinaryStopSource) Validate() error {
 	return nil
 }
 func ordinaryFactsMatch(v OrdinaryStopSource, pod *core.Pod) error {
-	if !ordinaryPod(pod) || v.After.Namespace != pod.Namespace || v.After.Name != pod.Name || v.After.UID != string(pod.UID) || v.After.NodeName != pod.Spec.NodeName || v.After.Phase != pod.Status.Phase {
+	validPod := v.Scope == OrdinaryStopScope && ordinaryPod(pod) ||
+		v.Scope == ManagedPreBirthStopScope && ManagedPreBirthEvictedPod(pod, v.Placement)
+	if !validPod || v.After.Namespace != pod.Namespace || v.After.Name != pod.Name || v.After.UID != string(pod.UID) || v.After.NodeName != pod.Spec.NodeName || v.After.Phase != pod.Status.Phase {
 		return fmt.Errorf("ordinary stop original terminal Pod differs")
 	}
 	spec, err := OrdinaryPodSpecSHA(pod)
@@ -352,8 +357,9 @@ func ordinaryFactsMatch(v OrdinaryStopSource, pod *core.Pod) error {
 		return fmt.Errorf("ordinary stop original complete container set changed")
 	}
 	actual, err := PodMemoryLimit(pod)
-	if err != nil || actual > v.Placement.MemoryBytes {
-		return fmt.Errorf("ordinary stop original complete hard limit changed")
+	if err != nil || (v.Scope == OrdinaryStopScope && actual > v.Placement.MemoryBytes) ||
+		(v.Scope == ManagedPreBirthStopScope && actual != v.Placement.PodMemoryLimitBytes) {
+		return fmt.Errorf("Node stop original complete hard limit changed")
 	}
 	return nil
 }
@@ -361,9 +367,22 @@ func ordinaryFactsMatch(v OrdinaryStopSource, pod *core.Pod) error {
 // ReadOrdinaryStop只从固定受信namespace重新GET不可变原UID。无TTL：来源证明
 // 同UID不可再次启动的过去终态，节点后来重启不撤销它；当前NodeUID仍必须相同。
 func (s *Store) ReadOrdinaryStop(ctx context.Context, snapshot *Snapshot, pod *core.Pod, placement Placement, expected *OrdinaryStopReference) (OrdinaryStopReference, error) {
+	return s.readNodeStop(ctx, snapshot, pod, placement, expected, OrdinaryStopScope)
+}
+
+func (s *Store) ReadManagedPreBirthStop(ctx context.Context, snapshot *Snapshot, pod *core.Pod, placement Placement, expected *OrdinaryStopReference) (OrdinaryStopReference, error) {
+	return s.readNodeStop(ctx, snapshot, pod, placement, expected, ManagedPreBirthStopScope)
+}
+
+func (s *Store) readNodeStop(ctx context.Context, snapshot *Snapshot, pod *core.Pod, placement Placement, expected *OrdinaryStopReference, scope string) (OrdinaryStopReference, error) {
 	var none OrdinaryStopReference
-	if snapshot == nil || snapshot.model.Binding != s.binding || snapshot.model.Profile == nil || !ordinaryPlacement(placement) || placement.HostOverheadBytes != snapshot.model.Profile.PodOverheadBytes {
-		return none, fmt.Errorf("ordinary stop requires original configured ordinary allocation")
+	if snapshot == nil || snapshot.model.Binding != s.binding || snapshot.model.Profile == nil {
+		return none, fmt.Errorf("Node stop requires its original Host profile")
+	}
+	profile := snapshot.model.Profile
+	if scope == OrdinaryStopScope && (!ordinaryPlacement(placement) || placement.HostOverheadBytes != profile.PodOverheadBytes) ||
+		scope == ManagedPreBirthStopScope && (!managedPreBirthPlacement(placement) || placement.HostOverheadBytes != profile.VMOverheadBytes) {
+		return none, fmt.Errorf("Node stop scope differs from original Host allocation")
 	}
 	ref, err := OrdinaryStopReferenceForPod(pod)
 	if err != nil {
@@ -377,7 +396,7 @@ func (s *Store) ReadOrdinaryStop(ctx context.Context, snapshot *Snapshot, pod *c
 		return none, err
 	}
 	owner := metav1.GetControllerOf(cm)
-	if cm.Namespace != OrdinaryStopNamespace || cm.Name != ref.Claim.Name || string(cm.UID) != ref.Claim.UID || cm.ResourceVersion == "" || cm.DeletionTimestamp != nil || cm.Immutable == nil || !*cm.Immutable || len(cm.Data) != 1 || len(cm.BinaryData) != 0 || cm.Annotations[OrdinaryStopSourceMarker] != OrdinaryStopScope || !slices.Contains(cm.Finalizers, OrdinaryStopSourceFinalizer) || len(cm.OwnerReferences) != 1 || owner == nil || owner.APIVersion != "v1" || owner.Kind != "Node" || owner.Name != s.binding.NodeName || owner.UID != s.binding.NodeUID || owner.BlockOwnerDeletion == nil || !*owner.BlockOwnerDeletion {
+	if cm.Namespace != OrdinaryStopNamespace || cm.Name != ref.Claim.Name || string(cm.UID) != ref.Claim.UID || cm.ResourceVersion == "" || cm.DeletionTimestamp != nil || cm.Immutable == nil || !*cm.Immutable || len(cm.Data) != 1 || len(cm.BinaryData) != 0 || cm.Annotations[OrdinaryStopSourceMarker] != scope || !slices.Contains(cm.Finalizers, OrdinaryStopSourceFinalizer) || len(cm.OwnerReferences) != 1 || owner == nil || owner.APIVersion != "v1" || owner.Kind != "Node" || owner.Name != s.binding.NodeName || owner.UID != s.binding.NodeUID || owner.BlockOwnerDeletion == nil || !*owner.BlockOwnerDeletion {
 		return none, fmt.Errorf("ordinary stop immutable trusted namespace source protection/binding changed")
 	}
 	raw := []byte(cm.Data[OrdinaryStopSourceKey])
@@ -388,7 +407,9 @@ func (s *Store) ReadOrdinaryStop(ctx context.Context, snapshot *Snapshot, pod *c
 	if err := json.Unmarshal(raw, &source); err != nil {
 		return none, err
 	}
-	if source.Binding != s.binding || source.Origin != snapshot.model.Origin || !source.Placement.sameOriginal(placement) || source.After.SpecSHA256 != ref.SpecSHA256 {
+	if source.Scope != scope || source.Binding != s.binding || source.Origin != snapshot.model.Origin ||
+		!source.Placement.sameOriginal(placement) || source.After.SpecSHA256 != ref.SpecSHA256 ||
+		(scope == ManagedPreBirthStopScope && source.Placement != placement) {
 		return none, fmt.Errorf("ordinary stop source changed original Host allocation")
 	}
 	if err := ordinaryFactsMatch(source, pod); err != nil {
@@ -403,10 +424,15 @@ func (s *Store) InspectRetiredPodWithSource(ctx context.Context, snapshot *Snaps
 	if err != nil {
 		return err
 	}
-	if r.ProtocolVersion != 2 {
+	switch r.ProtocolVersion {
+	case 2:
+		_, err = s.ReadOrdinaryStop(ctx, snapshot, pod, r.Placement, r.OrdinaryStopSource)
+	case 4:
+		_, err = s.ReadManagedPreBirthStop(ctx, snapshot, pod, r.Placement, r.ManagedPreBirthStopSource)
+	default:
 		return InspectRetiredPod(snapshot.node, pod)
 	}
-	if _, err := s.ReadOrdinaryStop(ctx, snapshot, pod, r.Placement, r.OrdinaryStopSource); err != nil {
+	if err != nil {
 		return err
 	}
 	return inspectRetirementCompletion(snapshot.node, r)
