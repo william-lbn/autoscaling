@@ -143,9 +143,13 @@ func (w *PGWorker) observeSuspensionDrain(ctx context.Context, snapshot *journal
 		m.ServiceClosure.SuspensionOperation != operation || m.ServiceClosure.Pending() {
 		return nil, ErrServiceSafety
 	}
-	fact, err := w.client.PreparedState(ctx)
-	if err != nil {
+	if err := w.session.Check(ctx); err != nil {
 		return nil, err
+	}
+	_, _, closed, _ := m.ServiceClosure.Selection()
+	fact, err := w.client.SuspensionDrain(ctx, closed)
+	if err != nil {
+		return nil, errors.Join(ErrServiceSafety, err)
 	}
 	latest, err := w.session.store.Load(ctx)
 	if err != nil {

@@ -155,10 +155,17 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 		p.mu.Unlock()
 		pgReply(w, p.shared())
 		return
-	case "/dsg/v1/work/prepared":
+	case "/dsg/v1/suspension/drain":
+		require.Equal(t, http.MethodPost, r.Method)
+		var close control.AdmissionRequest
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&close))
+		require.False(t, close.Open)
 		p.mu.Lock()
 		current, clients := p.current().Observed, p.drainClients
 		p.mu.Unlock()
+		require.Equal(t, current.Instance, close.Instance)
+		require.Equal(t, current.AdmissionRevision, close.Revision)
+		require.Equal(t, current.CapacityGeneration, close.ExpectedCapacityGeneration)
 		closed := !current.AdmissionOpen
 		work := control.WorkResponse{ProtocolVersion: 1, WorkAPIVersion: 2, ClientProcesses: clients, IdleClients: clients,
 			ObserverExcluded: true, ForegroundIdle: closed, Observed: current}
