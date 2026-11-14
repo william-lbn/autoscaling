@@ -98,6 +98,36 @@ func TestNativeBirthStageWALOrderedAndNonAuthorizing(t *testing.T) {
 	_, err = createNativeBirthPendingLocked(s, r, source, p)
 	require.ErrorIs(t, err, ErrUnknown)
 }
+
+func TestNativeBirthContinuesOriginalLocalLaunchAfterResourceFence(t *testing.T) {
+	s, r, source, pending, transcript := nativeBirthWALFixture(t)
+	ref, err := createNativeBirthPendingLocked(s, r, source, pending)
+	require.NoError(t, err)
+	r.Birth = &pending.Original
+	// Simulate the persisted Owner fence between launcher Begin and PG proof.
+	r.Floor++
+	stage, err := openNativeBirthPendingLocked(s, r, source, ref)
+	require.NoError(t, err)
+	require.NoError(t, stage.persist(context.Background(), nativeFilterPMBase, transcript))
+	observed, err := observeNativeBirthStageLocked(s, ref)
+	require.NoError(t, err)
+	require.Equal(t, pending, observed.Pending)
+	require.Greater(t, r.Floor, observed.Pending.ResourceFloor)
+	_, err = openNativeBirthPendingLocked(s, r, source, ref)
+	require.ErrorIs(t, err, ErrUnknown)
+}
+
+func TestNativeBirthRejectsRegressedResourceFloor(t *testing.T) {
+	s, r, source, pending, _ := nativeBirthWALFixture(t)
+	r.Floor++
+	pending.ResourceFloor = r.Floor
+	ref, err := createNativeBirthPendingLocked(s, r, source, pending)
+	require.NoError(t, err)
+	r.Birth = &pending.Original
+	r.Floor--
+	_, err = openNativeBirthPendingLocked(s, r, source, ref)
+	require.ErrorContains(t, err, "resource floor regressed")
+}
 func TestNativeBirthStageWALRejectsOrphanPartialAndGap(t *testing.T) {
 	for _, fault := range []string{"partial-pending", "foreign-family", "unknown-phase", "gap-final", "changed-pending", "symlink-phase"} {
 		t.Run(fault, func(t *testing.T) {

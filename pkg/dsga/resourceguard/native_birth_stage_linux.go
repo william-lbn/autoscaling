@@ -48,7 +48,7 @@ func nativeBirthStageRecord(r *record, p nativeBirthPending, source nativeBirthS
 	if p.validate() != nil || source.resource.Validate() != nil || p.Source != source.binding || r == nil ||
 		r.validate(p.Original.Identity) != nil || r.Bootstrap == nil || !r.Bootstrap.Applied ||
 		r.Original != nil && !r.Applied || sameBootstrapSource(source.resource, r.Bootstrap.Original) != nil ||
-		r.Floor != p.ResourceFloor || p.Original.AddressSpaceMaxBytes != r.addressSpaceLimit() {
+		p.Original.AddressSpaceMaxBytes != r.addressSpaceLimit() {
 		return fmt.Errorf("native pending differs from retained resource source")
 	}
 	if r.Birth != nil && *r.Birth != p.Original {
@@ -118,6 +118,9 @@ func createNativeBirthPendingLocked(s *lockedState, r *record, source nativeBirt
 	var zero NativeBirthRef
 	if err := nativeBirthStageRecord(r, p, source); err != nil {
 		return zero, err
+	}
+	if r.Floor != p.ResourceFloor {
+		return zero, fmt.Errorf("native pending does not record the current resource floor")
 	}
 	if err := nativeBirthStageDirectory(s, p); err != nil {
 		return zero, err
@@ -219,6 +222,14 @@ func openNativeBirthPendingLocked(s *lockedState, r *record, source nativeBirthS
 	}
 	if err := nativeBirthStageRecord(r, snap.Pending, source); err != nil {
 		return nil, err
+	}
+	// The original local launcher and Root consumer own the one-shot Birth.
+	// A remote Owner fence can advance the floor between Begin and the native
+	// peer handshake. It must still fence old Owner commands, but cannot replace
+	// or invalidate this independently pinned local launch. Never accept a
+	// regressed floor, and keep the recorded Begin floor immutable.
+	if r.Floor < snap.Pending.ResourceFloor {
+		return nil, fmt.Errorf("native pending resource floor regressed")
 	}
 	if r.Birth == nil || *r.Birth != snap.Pending.Original {
 		return nil, fmt.Errorf("native original launch Birth not paired")
