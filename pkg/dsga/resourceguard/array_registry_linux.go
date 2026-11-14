@@ -112,9 +112,9 @@ func arrayRegistryPIDFDAliveObservation(fd int) (arrayRegistryPIDFDObservation, 
 	return out, nil
 }
 
-// 仅listener在持原peer.mu时调用；公共Alive及其余caller仍为原单次Poll。
-// 最多4次，同原fd且每次由原core重建pollfd；EINTR从不直接算alive。
-func arrayRegistryPIDFDAliveListenerRestart(fd int) (arrayRegistryPIDFDObservation, error) {
+// Retry only the read-only poll on the same pinned descriptor. An interrupted
+// read is never evidence that the original task is alive.
+func arrayRegistryPIDFDAliveBounded(fd int) (arrayRegistryPIDFDObservation, error) {
 	var out arrayRegistryPIDFDObservation
 	interruptions := 0
 	for attempt := 0; attempt < 4; attempt++ {
@@ -169,7 +169,7 @@ func runArrayRegistryBirthTraceSession(ctx context.Context, conn *net.UnixConn, 
 			return nativeBirthTraceTranscript{}, errors.Join(ErrUnknown, fmt.Errorf("native original pre-exec pin missing")), false
 		}
 		if e := arrayMatchPIDFD(launchPin.pidfd, driver.pidfd); e != nil {
-			return nativeBirthTraceTranscript{}, errors.Join(ErrUnknown, e), false
+			return nativeBirthTraceTranscript{}, errors.Join(ErrUnknown, fmt.Errorf("match native launch pidfds: %w", e)), false
 		}
 
 		// 固定生产hook：真正原生已被本线程ptrace停住且PMbase完整审计后，

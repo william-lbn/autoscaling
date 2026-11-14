@@ -398,13 +398,9 @@ func nativeTraceStatusValues(status, field string, count int) ([]uint64, error) 
 }
 
 func (k *nativeBirthTraceKernel) alive() error {
-	p := []unix.PollFd{{Fd: int32(k.pidfd), Events: unix.POLLIN}}
-	n, err := unix.Poll(p, 0)
+	_, err := arrayRegistryPIDFDAliveBounded(k.pidfd)
 	if err != nil {
-		return err
-	}
-	if n != 0 || p[0].Revents != 0 {
-		return fmt.Errorf("original peer pidfd is exited or unknown")
+		return fmt.Errorf("read original native birth pidfd: %w", err)
 	}
 	return nil
 }

@@ -23,13 +23,31 @@ func TestArrayPIDFDListenerRestartOriginalStates(t *testing.T) {
 	}
 	defer unix.Close(fd)
 	t.Run("live-original", func(t *testing.T) {
-		o, e := arrayRegistryPIDFDAliveListenerRestart(fd)
+		o, e := arrayRegistryPIDFDAliveBounded(fd)
 		if e != nil || o.N != 0 || o.Revents != 0 || o.Attempts < 1 || o.Attempts > 4 {
 			t.Fatalf("%+v %v", o, e)
 		}
 	})
+	t.Run("native birth original pin", func(t *testing.T) {
+		dup, err := arrayRegistryDup(fd)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer unix.Close(dup)
+		if err := arrayMatchPIDFD(fd, dup); err != nil {
+			t.Fatal(err)
+		}
+		k := nativeBirthTraceKernel{nativeTraceOriginalControl: nativeTraceOriginalControl{pidfd: dup}}
+		if err := k.alive(); err != nil {
+			t.Fatal(err)
+		}
+		k.pidfd = -1
+		if err := k.alive(); err == nil {
+			t.Fatal("native birth adopted an absent pin")
+		}
+	})
 	t.Run("missing-original", func(t *testing.T) {
-		o, e := arrayRegistryPIDFDAliveListenerRestart(-1)
+		o, e := arrayRegistryPIDFDAliveBounded(-1)
 		if e == nil || o.PollCalled || o.Attempts != 0 {
 			t.Fatalf("%+v %v", o, e)
 		}
@@ -40,7 +58,7 @@ func TestArrayPIDFDListenerRestartOriginalStates(t *testing.T) {
 			t.Fatal(e)
 		}
 		unix.Close(bad)
-		o, e := arrayRegistryPIDFDAliveListenerRestart(bad)
+		o, e := arrayRegistryPIDFDAliveBounded(bad)
 		if e == nil || o.Revents != unix.POLLNVAL || o.Attempts != 1 {
 			t.Fatalf("%+v %v", o, e)
 		}
@@ -66,7 +84,7 @@ func TestArrayPIDFDListenerRestartOriginalStates(t *testing.T) {
 		if e = cmd.Wait(); e != nil {
 			t.Fatal(e)
 		}
-		o, e := arrayRegistryPIDFDAliveListenerRestart(child)
+		o, e := arrayRegistryPIDFDAliveBounded(child)
 		if e == nil || o.Revents&unix.POLLIN == 0 || o.Attempts != 1 {
 			t.Fatalf("%+v %v", o, e)
 		}
@@ -118,7 +136,7 @@ func TestArrayPIDFDListenerRestartRealSignal(t *testing.T) {
 	observedSuccess := false
 	for calls < 2000000 && time.Now().Before(deadline) {
 		calls++
-		o, e := arrayRegistryPIDFDAliveListenerRestart(fd)
+		o, e := arrayRegistryPIDFDAliveBounded(fd)
 		if o.Attempts > 4 {
 			t.Fatalf("unbounded attempts %+v", o)
 		}

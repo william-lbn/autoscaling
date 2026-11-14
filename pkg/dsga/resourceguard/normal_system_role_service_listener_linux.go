@@ -280,7 +280,7 @@ func (v *normalSystemRoleService) handle(conn *net.UnixConn) error {
 			case <-ticker.C:
 				// 保原OR短路顺序；先确定原杀分支，原kill/Wait完毕后才记诊断。
 				peer.mu.Lock()
-				observation, aliveErr := arrayRegistryPIDFDAliveListenerRestart(peer.pidfd)
+				observation, aliveErr := arrayRegistryPIDFDAliveBounded(peer.pidfd)
 				peer.mu.Unlock()
 				if aliveErr != nil {
 					decision := normalSystemRoleDiagnosticDecision(v.ctx)

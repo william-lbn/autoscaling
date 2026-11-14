@@ -119,10 +119,10 @@ func arrayServicePeekMagic(conn *net.UnixConn, deadline time.Time) (string, erro
 	return string(data), nil
 }
 func arrayMatchPIDFD(a, b int) error {
-	if err := arrayRegistryPIDFDAlive(a); err != nil {
+	if _, err := arrayRegistryPIDFDAliveBounded(a); err != nil {
 		return err
 	}
-	if err := arrayRegistryPIDFDAlive(b); err != nil {
+	if _, err := arrayRegistryPIDFDAliveBounded(b); err != nil {
 		return err
 	}
 	var x, y unix.Stat_t
