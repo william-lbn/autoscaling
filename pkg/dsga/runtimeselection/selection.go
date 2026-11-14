@@ -34,11 +34,16 @@ type Selection struct {
 	Qualification   budget.QualificationSource `json:"qualification"`
 	// nil 明确关闭新自动建议，不取消已接受/未知动作，也不撤销现有安全预算。
 	Automatic *policy.Config `json:"automatic,omitempty"`
+	// SuspensionOperation is the Control Plane's durable Operation for this boot.
+	SuspensionOperation string `json:"suspension_operation,omitempty"`
 }
 
 func (s Selection) Validate() error {
 	if control.ValidateID(s.Namespace, "namespace") != nil || control.ValidateID(s.Name, "VM name") != nil || s.ProtocolVersion != 1 || s.Instance.Validate() != nil || control.ValidateIncarnation(s.Incarnation) != nil || s.Generation == 0 || s.Qualification.Validate() != nil || s.Automatic != nil && s.Automatic.Validate() != nil {
 		return fmt.Errorf("invalid trusted runtime selection")
+	}
+	if s.SuspensionOperation != "" && (control.ValidateID(s.SuspensionOperation, "suspension operation") != nil || s.Automatic != nil) {
+		return fmt.Errorf("suspension selection requires one operation and no new automatic policy")
 	}
 	return nil
 }

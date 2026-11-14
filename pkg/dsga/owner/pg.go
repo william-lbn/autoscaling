@@ -53,6 +53,8 @@ type PGWorker struct {
 	runtimeReader             RuntimeSelectionReader
 	runtimeStatus             *runtimeselection.Status
 	runtimeNext               time.Time
+	suspensionOperation       string
+	suspensionDrain           *control.PreparedResponse
 	safety                    *serviceSafety
 	idleServiceDiagnostic     *IdleServiceDiagnostic
 	automaticDecisions        []AutomaticDecision
@@ -401,6 +403,9 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 	}
 	callCtx, cancel := worker.session.coupledContext(ctx)
 	defer cancel()
+	if handled, progress, err := worker.advanceSelectedSuspension(callCtx); handled {
+		return progress, err
+	}
 	if handled, progress, err := worker.advanceServiceSafety(callCtx, ""); handled {
 		return progress, err
 	}
@@ -643,6 +648,7 @@ func (worker *PGWorker) RecoverCapacityAdmission(ctx context.Context, key contro
 type Tick struct {
 	RuntimeSelection   *runtimeselection.Status
 	AutomaticDecisions []AutomaticDecision
+	SuspensionDrain    *control.PreparedResponse
 
 	Progress pgexec.Progress
 	Err      error
@@ -1008,7 +1014,7 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			} else {
 				progress, err = worker.Advance(callCtx)
 			}
-			if err == nil && progress == pgexec.Idle && worker.automatic != nil && automaticReady {
+			if err == nil && progress == pgexec.Idle && worker.automatic != nil && automaticReady && worker.suspensionOperation == "" {
 				progress, err = worker.advanceAutomatic(callCtx)
 			}
 		}
@@ -1025,6 +1031,8 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 			}
 		}
 		tick := worker.diagnosticTick(progress, err)
+		tick.SuspensionDrain = worker.suspensionDrain
+		worker.suspensionDrain = nil
 		tick.AutomaticDecisions = worker.automaticDecisionSnapshot()
 		if worker.runtimeStatus != nil {
 			copy := *worker.runtimeStatus

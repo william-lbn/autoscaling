@@ -174,7 +174,7 @@ func (m Model) StartServiceReopenObserved(actor Owner, selector string, before c
 		return m, err
 	}
 	c := m.ServiceClosure
-	if c == nil || c.Reopen != nil || c.Pending() || m.stableServiceRecovery() != nil || !serviceReopenVersionAllowed(m.ClosureFormatVersion()) {
+	if c == nil || c.SuspensionOperation != "" || c.Reopen != nil || c.Pending() || m.stableServiceRecovery() != nil || !serviceReopenVersionAllowed(m.ClosureFormatVersion()) {
 		return m, fmt.Errorf("reopen requires original confirmed idle closure without another selection")
 	}
 	_, _, closed, selected := c.Selection()

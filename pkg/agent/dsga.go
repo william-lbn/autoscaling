@@ -55,6 +55,7 @@ type DSGARunnerState struct {
 	AutomaticObservationVersion uint32                    `json:"automaticObservationVersion,omitempty"`
 	RuntimeSelection            *runtimeselection.Status  `json:"runtimeSelection,omitempty"`
 	AutomaticDecisions          []owner.AutomaticDecision `json:"automaticDecisions,omitempty"`
+	SuspensionDrain             *control.PreparedResponse `json:"suspensionDrain,omitempty"`
 	ObservedAt                  time.Time                 `json:"observedAt,omitzero"`
 	Phase                       string                    `json:"phase"`
 	IssuerEpoch                 control.Uint64            `json:"issuerEpoch"`
@@ -230,11 +231,11 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		var diagnostic dsgaTickDiagnostic
 		return worker.Run(ownerCtx, owner.PGLoopOptions{RuntimeSelection: runtimeRead, EnableInFlightGrow: true, PollInterval: time.Duration(config.PollIntervalSeconds) * time.Second, Control: endpoint, Wake: updated.Recv(), Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, Observe: func(tick owner.Tick) {
 			diagnostic.observe(logger, tick)
-			if tick.RuntimeSelection != nil || len(tick.AutomaticDecisions) > 0 {
+			if tick.RuntimeSelection != nil || len(tick.AutomaticDecisions) > 0 || tick.SuspensionDrain != nil {
 				if tick.RuntimeSelection != nil && tick.RuntimeSelection.AppliedGeneration > 0 {
 					phase = "running"
 				}
-				r.dsgaState(ownerCtx, DSGARunnerState{AutomaticObservationVersion: 1, Phase: phase, IssuerEpoch: epoch, Instance: instance, RuntimeSelection: tick.RuntimeSelection, AutomaticDecisions: tick.AutomaticDecisions, ObservedAt: time.Now().UTC()})
+				r.dsgaState(ownerCtx, DSGARunnerState{AutomaticObservationVersion: 1, Phase: phase, IssuerEpoch: epoch, Instance: instance, RuntimeSelection: tick.RuntimeSelection, AutomaticDecisions: tick.AutomaticDecisions, SuspensionDrain: tick.SuspensionDrain, ObservedAt: time.Now().UTC()})
 			}
 			if tick.Err == nil {
 				r.status.update(r.global, func(stat podStatus) podStatus { now := time.Now(); stat.dsgaLastSuccessfulCheck = &now; return stat })

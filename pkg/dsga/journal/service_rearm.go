@@ -137,7 +137,7 @@ func (m Model) StartServiceRearm(actor Owner, selector string, before control.Ad
 		return m, err
 	}
 	c := m.ServiceClosure
-	if c == nil || c.Rearm != nil || c.Pending() || m.stableServiceRecovery() != nil || !stableClosureVersion(m.ClosureFormatVersion()) {
+	if c == nil || c.SuspensionOperation != "" || c.Rearm != nil || c.Pending() || m.stableServiceRecovery() != nil || !stableClosureVersion(m.ClosureFormatVersion()) {
 		return m, fmt.Errorf("rearm requires original confirmed stable closure without another selection")
 	}
 	_, _, _, selected := c.Selection()

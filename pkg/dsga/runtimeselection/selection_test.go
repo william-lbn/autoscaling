@@ -9,6 +9,7 @@ import (
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
+	"github.com/neondatabase/autoscaling/pkg/dsga/policy"
 	"github.com/stretchr/testify/require"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,6 +23,27 @@ func selectedFixture() (journal.Binding, *core.ConfigMap) {
 	raw, _ := json.Marshal(s)
 
 	return b, &core.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: Name(string(b.VMUID)), Namespace: "platform", UID: "original-selection", ResourceVersion: "1", Labels: map[string]string{LabelKey: LabelValue}, OwnerReferences: nil}, Data: map[string]string{DataKey: string(raw)}}
+}
+
+func TestRuntimeSelectionSuspensionRetainsQualifiedInstance(t *testing.T) {
+	b, cm := selectedFixture()
+	selected, err := Decode(cm, b, "platform")
+	require.NoError(t, err)
+	original := selected.Digest()
+	selected.Generation++
+	selected.SuspensionOperation = "op_suspend_accepted"
+	raw, err := json.Marshal(selected)
+	require.NoError(t, err)
+	cm.Data[DataKey] = string(raw)
+	reloaded, err := Decode(cm, b, "platform")
+	require.NoError(t, err)
+	require.Equal(t, selected, reloaded)
+	require.NotEqual(t, original, reloaded.Digest())
+	selected.Automatic = &policy.Config{}
+	require.Error(t, selected.Validate())
+	selected.Automatic = nil
+	selected.SuspensionOperation = "invalid selector"
+	require.Error(t, selected.Validate())
 }
 func TestRuntimeSelectionRejectsWrongIdentityAndReplacement(t *testing.T) {
 	b, cm := selectedFixture()

@@ -30,9 +30,10 @@ type CoordinationResult struct {
 	// 资源状态/来源摘要只用于选择原Root持有；实际修复仍由Root在
 	// 文件锁内重新认证floor/出生/原日志和逐维单调条件。Evidence不证明
 	// GuestReady、完整预算、VM或Host完成，不改变外层业务步骤。
-	ResourceState    *resourceguard.View     `json:"resource_state,omitempty"`
-	HeldSourceSHA256 string                  `json:"held_source_sha256,omitempty"`
-	ResourceEvidence *resourceguard.Evidence `json:"resource_evidence,omitempty"`
+	ResourceState    *resourceguard.View       `json:"resource_state,omitempty"`
+	HeldSourceSHA256 string                    `json:"held_source_sha256,omitempty"`
+	ResourceEvidence *resourceguard.Evidence   `json:"resource_evidence,omitempty"`
+	SuspensionDrain  *control.PreparedResponse `json:"suspension_drain,omitempty"`
 }
 
 type controlCall struct {
@@ -194,12 +195,21 @@ func (worker *PGWorker) executeControl(ctx context.Context, command control.Coor
 	if safetyErr != nil {
 		return result, safetyErr
 	}
-	if safetySnapshot.State().ServiceClosure != nil && !expiredAdmissionControlAllowed(command.Action) {
+	safetyState := safetySnapshot.State()
+	if safetyState.ServiceClosure != nil && !expiredAdmissionControlAllowed(command.Action) ||
+		worker.suspensionOperation != "" && command.Action == control.CoordinationBegin {
 		return result, ErrServiceSafety
 	}
 	callCtx = worker.scopeServiceRecoveryLease(callCtx, command, safetySnapshot)
 	var err error
 	switch command.Action {
+	case control.CoordinationSuspendCompute:
+		result.Progress, err = worker.suspendCompute(callCtx, safetySnapshot, command.Selector)
+	case control.CoordinationObserveSuspendedDrain:
+		result.SuspensionDrain, err = worker.observeSuspensionDrain(callCtx, safetySnapshot, command.Selector)
+		if err == nil {
+			result.Progress = pgexec.Reconciled
+		}
 	case control.CoordinationState:
 		result.Progress = pgexec.Idle
 		if worker.runtimeStatus != nil {

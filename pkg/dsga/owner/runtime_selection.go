@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/neondatabase/autoscaling/pkg/dsga/initialexec"
+	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/prepareexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/runtimeselection"
 )
@@ -36,6 +37,10 @@ func (w *PGWorker) refreshRuntimeSelection(ctx context.Context) bool {
 	// 代次只前进。同代改内容、旧代重现均暂停新建议，不能覆盖已应用状态。
 	if selected.Generation < w.runtimeStatus.DesiredGeneration || selected.Generation == w.runtimeStatus.DesiredGeneration && w.runtimeStatus.DesiredSHA256 != "" && w.runtimeStatus.DesiredSHA256 != digest {
 		w.runtimeStatus.State = "selection_generation_conflict"
+		return false
+	}
+	if w.suspensionOperation != "" && selected.SuspensionOperation != w.suspensionOperation {
+		w.runtimeStatus.State = "suspension_selection_changed"
 		return false
 	}
 	w.runtimeStatus.DesiredGeneration, w.runtimeStatus.DesiredSHA256 = selected.Generation, digest
@@ -83,6 +88,11 @@ func (w *PGWorker) refreshRuntimeSelection(ctx context.Context) bool {
 			}
 		}
 	}
+	if selected.SuspensionOperation != "" {
+		// Suppress new suggestions once the original qualification and journal
+		// are authenticated. Earlier resize steps remain on their existing path.
+		w.suspensionOperation = selected.SuspensionOperation
+	}
 	if w.qualification == nil {
 		// 仅尚未产生服务/伸缩意图的新实例可在原 Owner 内首次绑定资格。
 		// 已有服务须由 Agent 在构造时传回原来源，不能临时换来源恢复。
@@ -128,4 +138,25 @@ func (w *PGWorker) initializeRuntimeSelection(reader RuntimeSelectionReader) err
 	w.runtimeReader = reader
 	w.runtimeStatus = &runtimeselection.Status{State: "waiting_for_original_selection"}
 	return nil
+}
+
+func (w *PGWorker) advanceSelectedSuspension(ctx context.Context) (bool, pgexec.Progress, error) {
+	if w.suspensionOperation == "" {
+		return false, pgexec.Idle, nil
+	}
+	snapshot, err := w.session.store.Load(ctx)
+	if err != nil {
+		return true, pgexec.AwaitingFact, err
+	}
+	state := snapshot.State()
+	pendingAutomatic := w.automatic != nil && w.automatic.pending != nil
+	if state.Active != nil || pendingAutomatic {
+		return false, pgexec.Idle, nil
+	}
+	progress, err := w.suspendCompute(ctx, snapshot, w.suspensionOperation)
+	if err != nil {
+		return true, progress, err
+	}
+	// Suppress admission lease refresh and further actions on a closed boot.
+	return true, progress, ErrServiceSafety
 }

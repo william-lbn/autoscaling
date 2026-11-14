@@ -26,16 +26,17 @@ import (
 type ServiceClosure struct {
 	// 外层21以后独立保留当前关闭类别；旧账本此字段必须为零。它不会
 	// 随预算/历史变化推测，关闭与重开写前CAS只能按各自严格规则推进。
-	FormatVersion    uint32                     `json:"format_version,omitempty"`
-	Origin           Owner                      `json:"origin"`
-	StartedSequence  control.Uint64             `json:"started_sequence"`
-	Reason           string                     `json:"reason"`
-	Request          control.AdmissionRequest   `json:"request"`
-	CommandSHA256    string                     `json:"command_sha256"`
-	Phase            Phase                      `json:"phase"`
-	RecordedSequence control.Uint64             `json:"recorded_sequence"`
-	Query            bool                       `json:"query"`
-	Receipt          *control.AdmissionResponse `json:"receipt"`
+	FormatVersion       uint32                     `json:"format_version,omitempty"`
+	Origin              Owner                      `json:"origin"`
+	StartedSequence     control.Uint64             `json:"started_sequence"`
+	Reason              string                     `json:"reason"`
+	SuspensionOperation string                     `json:"suspension_operation,omitempty"`
+	Request             control.AdmissionRequest   `json:"request"`
+	CommandSHA256       string                     `json:"command_sha256"`
+	Phase               Phase                      `json:"phase"`
+	RecordedSequence    control.Uint64             `json:"recorded_sequence"`
+	Query               bool                       `json:"query"`
+	Receipt             *control.AdmissionResponse `json:"receipt"`
 	// v11只添加接续，不改写上面的原始意图/派发者/未知。旧v10读者必须
 	// 因版本或未知字段拒绝，不能把新关闭投影成原命令已成功或重新开放。
 	Continuation   *ServiceClosureContinuation `json:"continuation,omitempty"`
@@ -131,6 +132,10 @@ func (model Model) validateServiceClosure() error {
 	if version < 10 || version > 18 || version < 12 && ((version == 11) != (c.Continuation != nil)) || model.PGInstance == nil || err != nil || hashErr != nil || c.Request.Open || c.Request.Instance != *model.PGInstance || c.Request.BudgetCommitmentID != budgetID || c.CommandSHA256 != digest || c.Origin.Validate() != nil || c.Request.IssuerEpoch != c.Origin.Epoch || c.Origin.Epoch > model.Owner.Epoch || c.Origin.Epoch == model.Owner.Epoch && c.Origin != model.Owner || c.StartedSequence == 0 || c.StartedSequence > model.Sequence {
 		return fmt.Errorf("service closure differs from original retained PG, budget or owner")
 	}
+	if c.SuspensionOperation != "" && (version > 11 || c.Reason != "compute_suspension" ||
+		control.ValidateID(c.SuspensionOperation, "suspension operation") != nil || c.Rearm != nil || c.RearmContinuation != nil || c.Reopen != nil) {
+		return fmt.Errorf("suspension closure cannot change its original operation or reopen")
+	}
 	switch {
 	case version == 18:
 		if err := model.validateCleanupServiceClosure(); err != nil {
@@ -160,7 +165,11 @@ func (model Model) validateServiceClosure() error {
 			return err
 		}
 	case c.Original == nil && version < 12:
-		if model.Active != nil || c.OperationSHA256 != "" || c.Reason != "idle_source_unconfirmed" || c.ClosureReceipt != nil {
+		wantReason := "idle_source_unconfirmed"
+		if c.SuspensionOperation != "" {
+			wantReason = "compute_suspension"
+		}
+		if model.Active != nil || c.OperationSHA256 != "" || c.Reason != wantReason || c.ClosureReceipt != nil {
 			return fmt.Errorf("idle service closure changed reason or original proof")
 		}
 		if model.InitialHeld != nil && !model.InitialAdmissionReady() {
@@ -242,6 +251,17 @@ func (model Model) validateServiceClosure() error {
 }
 
 func (model Model) StartServiceClosure(actor Owner, request control.AdmissionRequest) (Model, error) {
+	return model.startServiceClosure(actor, request, "")
+}
+
+func (model Model) StartComputeSuspension(actor Owner, request control.AdmissionRequest, operation string) (Model, error) {
+	if model.Active != nil || control.ValidateID(operation, "suspension operation") != nil {
+		return model, fmt.Errorf("suspension requires an idle journal and original operation")
+	}
+	return model.startServiceClosure(actor, request, operation)
+}
+
+func (model Model) startServiceClosure(actor Owner, request control.AdmissionRequest, suspension string) (Model, error) {
 	if err := model.Validate(); err != nil {
 		return model, err
 	}
@@ -258,6 +278,9 @@ func (model Model) StartServiceClosure(actor Owner, request control.AdmissionReq
 	}
 	next.ProtocolVersion = 10
 	next.ServiceClosure = &ServiceClosure{Origin: actor, StartedSequence: next.Sequence, Reason: "idle_source_unconfirmed", Request: request, CommandSHA256: digest, Phase: Unconfirmed, RecordedSequence: 0, Query: false, Receipt: nil, Continuation: nil, Original: nil, ClosureReceipt: nil, OperationSHA256: ""}
+	if suspension != "" {
+		next.ServiceClosure.Reason, next.ServiceClosure.SuspensionOperation = "compute_suspension", suspension
+	}
 	if model.Active != nil {
 		// 完整Active不变地纳入摘要；普通Record/取消/Finish会因摘要或
 		// 稳定边界校验失败而拒绝。这里只生成模型，Store仍须写前CAS。
@@ -293,13 +316,27 @@ func (model Model) RecordServiceClosure(actor Owner, fact control.AdmissionRespo
 // 只有UID/RV写前CAS获得完整确认后返回命令票据。CAS丢回复不能向PG发送；
 // 下次只能读取原WAL查询，不把当前布尔门禁补成原命令已完成。
 func (store *Store) StartServiceClosure(ctx context.Context, s *Snapshot, actor Owner, request control.AdmissionRequest) (*Snapshot, *ServiceClosure, error) {
+	return store.startServiceClosure(ctx, s, actor, request, "")
+}
+
+func (store *Store) StartComputeSuspension(ctx context.Context, s *Snapshot, actor Owner, request control.AdmissionRequest, operation string) (*Snapshot, *ServiceClosure, error) {
+	if control.ValidateID(operation, "suspension operation") != nil {
+		return nil, nil, fmt.Errorf("invalid suspension operation")
+	}
+	return store.startServiceClosure(ctx, s, actor, request, operation)
+}
+
+func (store *Store) startServiceClosure(ctx context.Context, s *Snapshot, actor Owner, request control.AdmissionRequest, suspension string) (*Snapshot, *ServiceClosure, error) {
 	if err := store.checked(s); err != nil {
 		return nil, nil, err
 	}
 	if !s.Dispatchable() {
 		return nil, nil, fmt.Errorf("service closure requires original running VM")
 	}
-	next, err := s.model.StartServiceClosure(actor, request)
+	if suspension != "" && s.model.Active != nil {
+		return nil, nil, fmt.Errorf("suspension requires an idle journal")
+	}
+	next, err := s.model.startServiceClosure(actor, request, suspension)
 	if err != nil {
 		return nil, nil, err
 	}

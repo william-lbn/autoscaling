@@ -73,6 +73,11 @@ const CoordinationReplayServiceClosure CoordinationAction = "replay_service_clos
 // 的后继关闭，调用方不能提交revision或原生命令。普通轮询不隐式接续。
 const CoordinationContinueServiceClosure CoordinationAction = "continue_service_closure"
 
+const (
+	CoordinationSuspendCompute        CoordinationAction = "suspend_compute"
+	CoordinationObserveSuspendedDrain CoordinationAction = "observe_suspended_drain"
+)
+
 // 原生rearm独立于业务重新开放。新选择只引用最近关闭摘要；查询/重放只
 // 引用已持久rearm摘要，调用方不能提供deadline/epoch/新原生命令。
 const (
@@ -125,6 +130,10 @@ func (c CoordinationCommand) Validate() error {
 		return fmt.Errorf("invalid coordination binding")
 	}
 	switch c.Action {
+	case CoordinationSuspendCompute, CoordinationObserveSuspendedDrain:
+		if c.Request != nil || c.Key != nil || ValidateID(c.Selector, "suspension operation") != nil {
+			return fmt.Errorf("suspension requires the original operation identifier")
+		}
 	case CoordinationState, CoordinationResourceState:
 		if c.Request != nil || c.Key != nil || c.Selector != "" {
 			return fmt.Errorf("state command has execution parameters")

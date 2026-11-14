@@ -33,6 +33,45 @@ func serviceClosureModel(t *testing.T) (Model, control.AdmissionRequest, control
 	return m, closeRequest, fact
 }
 
+func TestComputeSuspensionBindsDrainAndPreservesOriginalBudget(t *testing.T) {
+	m, closeRequest, fact := serviceClosureModel(t)
+	const op = "op_suspend_original"
+	closing, err := m.StartComputeSuspension(m.Owner, closeRequest, op)
+	require.NoError(t, err)
+	require.Equal(t, m.InitialHeld, closing.InitialHeld)
+	require.Error(t, closing.CheckComputeSuspensionDrain(op, control.PreparedResponse{}))
+	closed, err := closing.RecordServiceClosure(closing.Owner, fact, false)
+	require.NoError(t, err)
+	_, encoded, err := encode(closed, MaxEncodedBytes)
+	require.NoError(t, err)
+	stored, err := decode(encoded, closed.VMUID, closed.Incarnation)
+	require.NoError(t, err)
+	require.Equal(t, closed, stored)
+	prepared := control.PreparedResponse{ProtocolVersion: 1, PreparedAPIVersion: 1, RuntimePreparesBlocked: true,
+		Connections: control.ConnectionResponse{ProtocolVersion: 1, ConnectionAPIVersion: 1, Enabled: true,
+			RequestedSerial: 2, AppliedSerial: 2, Acknowledged: true, PrivateManagementReady: true, PublicConnectionsBlocked: true,
+			Work: control.WorkResponse{ProtocolVersion: 1, WorkAPIVersion: 2, ForegroundIdle: true, ObserverExcluded: true, Observed: fact.Observed}}}
+	require.NoError(t, stored.CheckComputeSuspensionDrain(op, prepared))
+	require.Error(t, stored.CheckComputeSuspensionDrain("op_other", prepared))
+	_, err = stored.StartServiceReopen(stored.Owner, stored.ServiceClosure.CommandSHA256, control.AdmissionLeaseResponse{})
+	require.Error(t, err)
+	_, err = stored.StartServiceRearm(stored.Owner, stored.ServiceClosure.CommandSHA256, control.AdmissionLeaseResponse{})
+	require.Error(t, err)
+	for _, changed := range []func(*control.PreparedResponse){
+		func(p *control.PreparedResponse) { p.PreparedSlots, p.MaximumPreparedSlots = 1, 1 },
+		func(p *control.PreparedResponse) {
+			p.Connections.Work.ClientProcesses, p.Connections.Work.IdleClients = 1, 1
+		},
+		func(p *control.PreparedResponse) { p.Connections.Work.ObserverExcluded = false },
+		func(p *control.PreparedResponse) { p.Connections.Work.Observed.AdmissionRevision++ },
+		func(p *control.PreparedResponse) { p.Connections.Work.Observed.IssuerFloorEpoch++ },
+	} {
+		copy := prepared
+		changed(&copy)
+		require.Error(t, stored.CheckComputeSuspensionDrain(op, copy))
+	}
+}
+
 func TestServiceClosureKeepsNormalAndReconciledPermanentBudgets(t *testing.T) {
 	for _, mode := range []string{"normal", "actual-capacity"} {
 		t.Run(mode, func(t *testing.T) {
