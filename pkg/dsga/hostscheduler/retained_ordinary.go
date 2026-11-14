@@ -75,3 +75,18 @@ func (s *Service) ObserveRetiredOrdinary(ctx context.Context, node string, expec
 	}
 	return pod.DeepCopy(), nil
 }
+
+func (s *Service) ObserveUnchargedTerminalOrdinary(ctx context.Context, node string, pod *core.Pod) error {
+	d, ok := s.domains[node]
+	if !ok || pod == nil || pod.Spec.NodeName != node {
+		return fmt.Errorf("terminal observation requires the original configured Host")
+	}
+	snapshot, err := d.store.Load(ctx)
+	if err != nil {
+		return err
+	}
+	if err = checkProfile(snapshot, d.config); err != nil {
+		return err
+	}
+	return d.store.ObserveUnchargedTerminalOrdinary(ctx, snapshot, pod)
+}

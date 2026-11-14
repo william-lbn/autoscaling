@@ -33,6 +33,11 @@ func (s *PluginState) observeHostEvent(ctx context.Context, pod *core.Pod) (*cor
 		}
 		return canonical, &held, nil
 	}
+	if s.host != nil && s.host.HasNode(pod.Spec.NodeName) && pod.DeletionTimestamp != nil {
+		if _, err := hostguard.TerminalPodDigest(pod); err == nil && s.host.ObserveUnchargedTerminalOrdinary(ctx, pod.Spec.NodeName, pod) == nil {
+			return pod, nil, nil
+		}
+	}
 	return s.reserveHost(ctx, pod, pod.Spec.NodeName)
 }
 

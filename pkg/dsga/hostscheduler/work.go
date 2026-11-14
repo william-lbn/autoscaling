@@ -139,6 +139,9 @@ func (s *Service) reconcileWork(ctx context.Context, d domain, snapshot *hostgua
 				_, _, err = s.observeRetainedOrdinary(ctx, d, &pod)
 			} else {
 				err = s.retirePod(ctx, d, &pod)
+				if err != nil && s.ObserveUnchargedTerminalOrdinary(ctx, d.config.Binding.NodeName, &pod) == nil {
+					err = nil
+				}
 			}
 		} else {
 			// 已有永久水位的managed行若错过Active阶段，真实新预算可能

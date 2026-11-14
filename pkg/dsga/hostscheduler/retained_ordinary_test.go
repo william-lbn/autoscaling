@@ -41,6 +41,35 @@ func retainedOrdinaryFixture(t *testing.T) (*Service, *dsgatest.SchedulerAPI, No
 	return s, f, n, p
 }
 
+func TestSchedulerUnchargedOrdinaryRequiresCompleteTerminationWithoutWrites(t *testing.T) {
+	s, f, n := schedulerFixture(t)
+	ctx := context.Background()
+	require.NoError(t, s.reconcile(ctx, s.domains[n.Binding.NodeName]))
+	pod := boundedPod("unaccounted-terminal", n.Binding.NodeName, "2Gi")
+	pod.Spec.SchedulerName = core.DefaultSchedulerName
+	pod.Finalizers = []string{hostguard.PodProtectionFinalizer}
+	now := metav1.Now()
+	finished := metav1.NewTime(now.Add(time.Second))
+	pod.DeletionTimestamp = &finished
+	pod.Status.Phase = core.PodSucceeded
+	pod.Status.ContainerStatuses = []core.ContainerStatus{{Name: pod.Spec.Containers[0].Name, ContainerID: "containerd://terminal", State: core.ContainerState{
+		Terminated: &core.ContainerStateTerminated{ContainerID: "containerd://terminal", StartedAt: now, FinishedAt: finished},
+	}}}
+	f.Mutate(func(f *dsgatest.SchedulerAPI) { f.Pods["testing/"+pod.Name] = pod.DeepCopy() })
+	pod, err := f.Core.CoreV1().Pods(pod.Namespace).Get(ctx, pod.Name, metav1.GetOptions{})
+	require.NoError(t, err)
+	var writes [2]int
+	f.Mutate(func(f *dsgatest.SchedulerAPI) { writes = [2]int{f.NodeWrites, f.PodWrites} })
+	require.NoError(t, s.ObserveUnchargedTerminalOrdinary(ctx, n.Binding.NodeName, pod))
+	unknown := pod.DeepCopy()
+	unknown.Status.ContainerStatuses = nil
+	require.Error(t, s.ObserveUnchargedTerminalOrdinary(ctx, n.Binding.NodeName, unknown))
+	f.Mutate(func(f *dsgatest.SchedulerAPI) {
+		require.Equal(t, writes, [2]int{f.NodeWrites, f.PodWrites})
+		require.Equal(t, []string{hostguard.PodProtectionFinalizer}, f.Pods["testing/"+pod.Name].Finalizers)
+	})
+}
+
 func TestSchedulerUnknownOrdinaryRetainsOriginalAllocationAtStartup(t *testing.T) {
 	s, f, n, p := retainedOrdinaryFixture(t)
 	ctx := context.Background()

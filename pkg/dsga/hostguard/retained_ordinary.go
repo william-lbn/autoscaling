@@ -114,3 +114,52 @@ func (s *Store) ObserveRetiredOrdinary(ctx context.Context, snapshot *Snapshot, 
 	}
 	return InspectRetiredPod(snapshot.node, pod)
 }
+
+// Confirm that a protected ordinary Pod with complete termination evidence
+// has no charge to recover. This read leaves its protection and ledger intact.
+func (s *Store) ObserveUnchargedTerminalOrdinary(ctx context.Context, snapshot *Snapshot, pod *core.Pod) error {
+	if snapshot == nil || snapshot.model.Binding != s.binding || pod == nil || pod.Spec.NodeName != s.binding.NodeName || pod.DeletionTimestamp == nil ||
+		!slices.Contains(pod.Finalizers, PodProtectionFinalizer) || pod.Annotations[RetirementAnnotation] != "" ||
+		pod.Annotations[OrdinaryStopSourceAnnotation] != "" {
+		return fmt.Errorf("uncharged observation requires original terminating Pod without a retirement intent")
+	}
+	if _, vm := vmv1.VirtualMachineOwnerForPod(pod); vm {
+		return fmt.Errorf("VM Pod requires its original retirement path")
+	}
+	if _, _, migration := vmv1.MigrationOwnerForPod(pod); migration {
+		return fmt.Errorf("migration requires its original retirement path")
+	}
+	digest, err := TerminalPodDigest(pod)
+	if err != nil {
+		return err
+	}
+	if snapshot.model.Placements == nil {
+		return fmt.Errorf("original Host placements unavailable")
+	}
+	for _, row := range *snapshot.model.Placements {
+		if row.PodUID == string(pod.UID) {
+			return fmt.Errorf("terminal Pod retains an original placement")
+		}
+	}
+	for _, hold := range snapshot.model.Holds {
+		if hold.Plan.RunnerPodUID == string(pod.UID) {
+			return fmt.Errorf("terminal Pod retains an original hold")
+		}
+	}
+	if _, _, err = s.placementNode(ctx, snapshot); err != nil {
+		return err
+	}
+	live, err := s.core.Pods(pod.Namespace).Get(ctx, pod.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	actual, err := TerminalPodDigest(live)
+	if err != nil || actual != digest || live.UID != pod.UID || live.ResourceVersion != pod.ResourceVersion ||
+		live.Spec.NodeName != s.binding.NodeName || !reflect.DeepEqual(live.OwnerReferences, pod.OwnerReferences) ||
+		!reflect.DeepEqual(live.Spec, pod.Spec) || !reflect.DeepEqual(live.Finalizers, pod.Finalizers) ||
+		!reflect.DeepEqual(live.Annotations, pod.Annotations) || !reflect.DeepEqual(live.DeletionTimestamp, pod.DeletionTimestamp) {
+		return fmt.Errorf("original terminal ordinary Pod changed across Host observation")
+	}
+	_, _, err = s.placementNode(ctx, snapshot)
+	return err
+}
