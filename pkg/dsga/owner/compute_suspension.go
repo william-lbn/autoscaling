@@ -28,8 +28,32 @@ func (w *PGWorker) suspendCompute(ctx context.Context, snapshot *journal.Snapsho
 			if origin.Epoch < epoch {
 				return w.continueServiceClosure(ctx, selector)
 			}
-			_, progress, err := w.advanceServiceSafety(ctx, "")
-			return progress, err
+			if c.Continuation != nil {
+				_, progress, err := w.advanceServiceSafety(ctx, "")
+				return progress, err
+			}
+			fact, err := w.client.AdmissionStatus(ctx, c.Request)
+			if err != nil {
+				return pgexec.AwaitingFact, err
+			}
+			if fact.Confirms() {
+				_, err := w.session.store.RecordServiceClosure(ctx, snapshot, m.Owner, fact, true)
+				return pgexec.Recorded, err
+			}
+			// The authorized suspension still selects this exact close. Replay
+			// only after asking the original PG boot for the exact request and
+			// observing that its immediately preceding revision is still live.
+			if !mayReplayComputeSuspension(c.Request, instance, epoch, fact) {
+				return pgexec.AwaitingFact, ErrServiceSafety
+			}
+			latest, err := w.session.store.Load(ctx)
+			if err != nil {
+				return pgexec.AwaitingFact, err
+			}
+			if !latest.Dispatchable() || latest.State().Sequence != m.Sequence || latest.State().Owner != m.Owner {
+				return pgexec.AwaitingFact, ErrServiceSafety
+			}
+			return w.dispatchComputeSuspension(ctx, latest, c.Request)
 		}
 		// A settled native closure can survive leadership change. Rebind the
 		// observation floor to the current Owner before accepting its drain.
@@ -85,18 +109,31 @@ func (w *PGWorker) suspendCompute(ctx context.Context, snapshot *journal.Snapsho
 	}
 	request := control.AdmissionRequest{ProtocolVersion: 1, Instance: instance, IssuerEpoch: epoch,
 		Revision: pg.AdmissionRevision + 1, ExpectedCapacityGeneration: pg.CapacityGeneration, Open: false, BudgetCommitmentID: budget}
-	snapshot, dispatch, err := w.session.store.StartComputeSuspension(ctx, snapshot, m.Owner, request, operation)
+	_, _, err = w.session.store.StartComputeSuspension(ctx, snapshot, m.Owner, request, operation)
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
+	// Leave the native call for the next loop, with its own call deadline.
+	// Reconciliation follows the same status-first path after takeover.
+	return pgexec.Recorded, nil
+}
+
+func mayReplayComputeSuspension(request control.AdmissionRequest, instance control.Instance, epoch control.Uint64, fact control.AdmissionResponse) bool {
+	pg := fact.Observed
+	return !request.Open && request.IssuerEpoch == epoch && fact.Disposition == control.AdmissionNotFound &&
+		fact.ValidateFor(request, instance, true) == nil && pg.IssuerFloorEpoch == epoch &&
+		pg.CapacityGeneration == request.ExpectedCapacityGeneration && pg.AdmissionRevision == request.Revision-1
+}
+
+func (w *PGWorker) dispatchComputeSuspension(ctx context.Context, snapshot *journal.Snapshot, request control.AdmissionRequest) (pgexec.Progress, error) {
 	if err := w.session.Check(ctx); err != nil {
 		return pgexec.AwaitingFact, err
 	}
-	fact, err := w.client.SetAdmission(ctx, dispatch.Request)
+	fact, err := w.client.SetAdmission(ctx, request)
 	if err != nil || !fact.Confirms() {
 		return pgexec.AwaitingFact, errors.Join(ErrServiceSafety, err)
 	}
-	_, err = w.session.store.RecordServiceClosure(ctx, snapshot, m.Owner, fact, false)
+	_, err = w.session.store.RecordServiceClosure(ctx, snapshot, w.session.Actor(), fact, false)
 	return pgexec.Recorded, err
 }
 

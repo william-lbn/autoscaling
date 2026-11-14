@@ -908,6 +908,15 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 			verifyIdleServiceDiagnostic(t, ctx, store, worker, pg, root)
 			return nil
 		}
+		if strings.HasPrefix(mode, "compute-suspension-") {
+			for range 2 {
+				progress, err := worker.Advance(ctx)
+				require.NoError(t, err)
+				require.Equal(t, pgexec.Recorded, progress)
+			}
+			verifyComputeSuspensionRecovery(t, ctx, mode, store, worker, pg)
+			return nil
+		}
 		if strings.HasPrefix(mode, "service-safety-") {
 			for range 2 {
 				progress, err := worker.Advance(ctx)
