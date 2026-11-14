@@ -26,6 +26,25 @@ func completedReopenModel(t *testing.T, mode string) (Model, control.AdmissionLe
 	return m, current
 }
 
+func TestLifecycleContextReuseChecksDocumentAndCurrentIdentity(t *testing.T) {
+	m, current := completedReopenModel(t, "idle")
+	done, err := m.CompleteServiceReopen(m.Owner, m.ServiceClosure.Reopen.CommandSHA256, current)
+	require.NoError(t, err)
+	require.NoError(t, done.Validate())
+
+	badDigest := done.Clone()
+	badDigest.ServiceLifecycle.ContextSHA256 = strings.Repeat("0", 64)
+	require.ErrorContains(t, badDigest.Validate(), "context digest differs")
+	badDocument := done.Clone()
+	badDocument.ServiceLifecycle.Context = []byte(`{"protocol_version":20}`)
+	badDocument.ServiceLifecycle.ContextSHA256 = rawDigest(badDocument.ServiceLifecycle.Context)
+	require.Error(t, badDocument.Validate())
+	badOwner := done.Clone()
+	badOwner.Owner.HolderID = "other-holder-same-epoch"
+	require.Error(t, badOwner.Validate())
+	require.NoError(t, done.Validate())
+}
+
 func TestServiceLifecycleCompletionPreservesUnknownAndAllowsNextOperation(t *testing.T) {
 	for _, mode := range []string{"idle", "initial-unknown", "continuation", "rearm"} {
 		t.Run(mode, func(t *testing.T) {

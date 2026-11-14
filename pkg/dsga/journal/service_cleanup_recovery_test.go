@@ -367,6 +367,23 @@ func TestServiceCleanupRecoveryWireAndOriginalDigestAreStrict(t *testing.T) {
 	require.Error(t, changed.validate(*m.Active), "同时修改命令/回执仍不能沿用原预算Step摘要")
 }
 
+func TestActualCleanupCommandDecodeReusesOnlyExactValidBytes(t *testing.T) {
+	m, _, _, _ := cleanupRecoveryModel(t, "actual", true, false, true)
+	original := append([]byte(nil), m.Active.Cleanup.Command...)
+	command, err := decodeActualCleanupCommand(original)
+	require.NoError(t, err)
+	duplicate := append([]byte(`{"protocol_version":1,`), original[1:]...)
+	_, err = decodeActualCleanupCommand(duplicate)
+	require.Error(t, err)
+	// Mutating the input buffer cannot retarget the cached command.
+	original[0] = '['
+	_, err = decodeActualCleanupCommand(original)
+	require.Error(t, err)
+	again, err := decodeActualCleanupCommand(m.Active.Cleanup.Command)
+	require.NoError(t, err)
+	require.Equal(t, command, again)
+}
+
 func TestServiceCleanupRecoveryRearmAndCompletionTakeover(t *testing.T) {
 	for _, kind := range []string{"actual", "committed", "unchanged"} {
 		t.Run(kind, func(t *testing.T) {

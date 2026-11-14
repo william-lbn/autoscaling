@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 	"unicode/utf8"
 )
 
@@ -51,6 +52,46 @@ func UnmarshalObject(data []byte, into any) error {
 	return UnmarshalObjectBounded(data, into, 64*1024, 2048)
 }
 
+type objectField struct {
+	name     string
+	optional bool
+	nullable bool
+}
+
+type objectSchema struct {
+	fields []objectField
+	names  map[string]bool
+}
+
+// Schema metadata is immutable and keyed by the Go destination type. Every
+// document still passes through the original byte, shape and typed checks.
+var objectSchemas sync.Map
+
+func schemaForObject(destination reflect.Type) (*objectSchema, error) {
+	if cached, ok := objectSchemas.Load(destination); ok {
+		return cached.(*objectSchema), nil
+	}
+	schema := &objectSchema{names: make(map[string]bool)}
+	for i := 0; i < destination.NumField(); i++ {
+		field := destination.Field(i)
+		if !field.IsExported() {
+			continue
+		}
+		tag := strings.Split(field.Tag.Get("json"), ",")
+		if tag[0] == "" || tag[0] == "-" || schema.names[tag[0]] {
+			return nil, fmt.Errorf("DSGA schema requires unique explicit JSON field names")
+		}
+		f := objectField{name: tag[0], nullable: field.Type.Kind() == reflect.Pointer || field.Type.Kind() == reflect.Slice}
+		for _, flag := range tag[1:] {
+			f.optional = f.optional || flag == "omitempty"
+		}
+		schema.fields = append(schema.fields, f)
+		schema.names[f.name] = true
+	}
+	cached, _ := objectSchemas.LoadOrStore(destination, schema)
+	return cached.(*objectSchema), nil
+}
+
 // 持久账本有多条完整历史，显式扩大对象边界；请求入口仍使用原64KiB/2048默认值。
 // 上限封顶1MiB/65536个值，禁止以可配置的无限制解码破坏内存边界。
 func UnmarshalObjectBounded(data []byte, into any, maxBytes, maxValues int) error {
@@ -72,33 +113,23 @@ func UnmarshalObjectBounded(data []byte, into any, maxBytes, maxValues int) erro
 	if _, recursive := into.(json.Unmarshaler); recursive {
 		return fmt.Errorf("DSGA decoder requires a plain struct alias without UnmarshalJSON")
 	}
-	allowed := make(map[string]bool)
-	for i := 0; i < destinationType.Elem().NumField(); i++ {
-		field := destinationType.Elem().Field(i)
-		if !field.IsExported() {
-			continue
-		}
-		tag := strings.Split(field.Tag.Get("json"), ",")
-		if tag[0] == "" || tag[0] == "-" || allowed[tag[0]] {
-			return fmt.Errorf("DSGA schema requires unique explicit JSON field names")
-		}
-		optional := false
-		for _, flag := range tag[1:] {
-			optional = optional || flag == "omitempty"
-		}
-		allowed[tag[0]] = true
-		raw, present := fields[tag[0]]
-		if !present && !optional {
-			return fmt.Errorf("missing DSGA field %q", tag[0])
+	schema, err := schemaForObject(destinationType.Elem())
+	if err != nil {
+		return err
+	}
+	for _, field := range schema.fields {
+		raw, present := fields[field.name]
+		if !present && !field.optional {
+			return fmt.Errorf("missing DSGA field %q", field.name)
 		}
 		// encoding/json会把null布尔/整数静默变成零值，Rust/C则不接受。可为null
 		// 的协议字段必须显式使用指针；字节slice的null由各模型的Planned语义处理。
-		if present && bytes.Equal(bytes.TrimSpace(raw), []byte("null")) && field.Type.Kind() != reflect.Pointer && field.Type.Kind() != reflect.Slice {
-			return fmt.Errorf("nonnull DSGA field %q is null", tag[0])
+		if present && !field.nullable && bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
+			return fmt.Errorf("nonnull DSGA field %q is null", field.name)
 		}
 	}
 	for key := range fields {
-		if !allowed[key] {
+		if !schema.names[key] {
 			return fmt.Errorf("unknown DSGA field %q", key)
 		}
 	}

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"sync"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
@@ -101,6 +102,38 @@ func recoveryContext(raw []byte) (Model, error) {
 		return m, fmt.Errorf("recovery context must preserve one nonrecursive original reopen")
 	}
 	return m, m.validateCore()
+}
+
+// Frozen contexts are hashed over the exact byte sequence and contain no live
+// permissions. A one-entry cache avoids revalidating the same immutable history
+// through each successor CAS. Current owner, budget and lifecycle checks still
+// run against every model. The validation-only caller never mutates the result.
+var validatedRecoveryContext struct {
+	sync.Mutex
+	raw   string
+	model Model
+}
+
+func lifecycleRecoveryContext(l *ServiceLifecycle) (Model, error) {
+	if l.ContextSHA256 != rawDigest(l.Context) {
+		return Model{}, fmt.Errorf("service lifecycle context digest differs")
+	}
+	cache := &validatedRecoveryContext
+	cache.Lock()
+	if cache.raw != "" && cache.raw == string(l.Context) {
+		model := cache.model
+		cache.Unlock()
+		return model, nil
+	}
+	cache.Unlock()
+	model, err := recoveryContext(l.Context)
+	if err != nil {
+		return Model{}, err
+	}
+	cache.Lock()
+	cache.raw, cache.model = string(l.Context), model
+	cache.Unlock()
+	return model, nil
 }
 
 // reopenCompletionCapacity在派发票据产生前预留冻结上下文的原生回执空间。
@@ -229,7 +262,7 @@ func (m Model) validateServiceLifecycle() error {
 	if m.ServiceClosure == nil && l.SafetyStage != "serving" || m.ServiceClosure != nil && l.SafetyStage != "closing" {
 		return fmt.Errorf("service lifecycle lost required current safety stage")
 	}
-	c, err := recoveryContext(l.Context)
+	c, err := lifecycleRecoveryContext(l)
 	if err != nil {
 		return err
 	}
@@ -243,7 +276,7 @@ func (m Model) validateServiceLifecycle() error {
 	if err := m.validateContextRetained(l); err != nil {
 		return err
 	}
-	if l.Cycle == 0 || l.Origin.Validate() != nil || l.Origin != c.Owner || l.Origin.Epoch > m.Owner.Epoch || l.Origin.Epoch == m.Owner.Epoch && l.Origin != m.Owner || l.RecordedSequence <= c.Sequence || l.RecordedSequence > m.Sequence || l.ContextSHA256 != rawDigest(l.Context) || c.VMUID != m.VMUID || c.Incarnation != m.Incarnation || c.PGInstance == nil || m.PGInstance == nil || *c.PGInstance != *m.PGInstance || !reflect.DeepEqual(c.ResourceIdentity, m.ResourceIdentity) || c.stableServiceRecovery() != nil || r == nil || r.Phase != Settled || r.Closing != nil || !validLiveReopen(l.Current, r.Request, l.Origin) || !l.Current.AtLeast(r.Before) {
+	if l.Cycle == 0 || l.Origin.Validate() != nil || l.Origin != c.Owner || l.Origin.Epoch > m.Owner.Epoch || l.Origin.Epoch == m.Owner.Epoch && l.Origin != m.Owner || l.RecordedSequence <= c.Sequence || l.RecordedSequence > m.Sequence || c.VMUID != m.VMUID || c.Incarnation != m.Incarnation || c.PGInstance == nil || m.PGInstance == nil || *c.PGInstance != *m.PGInstance || !reflect.DeepEqual(c.ResourceIdentity, m.ResourceIdentity) || c.stableServiceRecovery() != nil || r == nil || r.Phase != Settled || r.Closing != nil || !validLiveReopen(l.Current, r.Request, l.Origin) || !l.Current.AtLeast(r.Before) {
 		return fmt.Errorf("service lifecycle lacks exact audited original completion")
 	}
 	if err := m.validateCommittedLifecycle(c, l); err != nil {

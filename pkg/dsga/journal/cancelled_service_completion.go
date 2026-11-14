@@ -63,9 +63,13 @@ func (m Model) validateRecoveredCapacity() error {
 			return err
 		}
 		if order > 0 {
-			var actual budget.ReconciledAbortCommand
-			if op.Cleanup != nil && successful(*op.Cleanup) && json.Unmarshal(op.Cleanup.Command, &actual) == nil || coverage != nil && coverage.CleanupRecovery != nil && coverage.CleanupRecovery.Kind == "actual" {
+			if coverage != nil && coverage.CleanupRecovery != nil && coverage.CleanupRecovery.Kind == "actual" {
 				return fmt.Errorf("new actual settlement has no atomic replacement of recovered budget")
+			}
+			if op.Cleanup != nil && successful(*op.Cleanup) {
+				if _, err := decodeActualCleanupCommand(op.Cleanup.Command); err == nil {
+					return fmt.Errorf("new actual settlement has no atomic replacement of recovered budget")
+				}
 			}
 		}
 		return nil
@@ -98,8 +102,11 @@ func (p ServiceCleanupRecovery) validateCoveredCurrent(op Operation, current con
 	}
 	shared.CurrentMainAndArraysUpperBytes = control.Uint64(total)
 	if p.Kind == "actual" {
-		var c budget.ReconciledAbortCommand
-		if op.Cleanup == nil || json.Unmarshal(op.Cleanup.Command, &c) != nil {
+		if op.Cleanup == nil {
+			return fmt.Errorf("cancelled completion lost original actual command")
+		}
+		c, err := decodeActualCleanupCommand(op.Cleanup.Command)
+		if err != nil {
 			return fmt.Errorf("cancelled completion lost original actual command")
 		}
 		return c.Capacity.ValidateCurrent(shared, epoch, c.Capacity.VMMemoryBytes)

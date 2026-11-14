@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sync"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
@@ -38,9 +39,38 @@ type RecoveredCapacityOrigin struct {
 	Proof    ServiceCleanupRecovery `json:"proof"`
 }
 
+// The active closure, terminal history and retained capacity can all carry the
+// same command. Reuse its strict decoding by exact bytes. Callers must treat the
+// returned command as immutable and still validate it against their own proof.
+var actualCleanupCommand struct {
+	sync.Mutex
+	raw     string
+	decoded budget.ReconciledAbortCommand
+}
+
+func decodeActualCleanupCommand(raw []byte) (budget.ReconciledAbortCommand, error) {
+	cache := &actualCleanupCommand
+	cache.Lock()
+	if cache.raw != "" && cache.raw == string(raw) {
+		decoded := cache.decoded
+		cache.Unlock()
+		return decoded, nil
+	}
+	cache.Unlock()
+
+	var decoded budget.ReconciledAbortCommand
+	if err := json.Unmarshal(raw, &decoded); err != nil {
+		return budget.ReconciledAbortCommand{}, err
+	}
+	cache.Lock()
+	cache.raw, cache.decoded = string(raw), decoded
+	cache.Unlock()
+	return decoded, nil
+}
+
 func decodeCleanupCommand(s Step) (string, budget.ReconciledAbortCommand) {
-	var actual budget.ReconciledAbortCommand
-	if json.Unmarshal(s.Command, &actual) == nil {
+	actual, err := decodeActualCleanupCommand(s.Command)
+	if err == nil {
 		return "actual", actual
 	}
 	var committed budget.CommittedAbortCommand
