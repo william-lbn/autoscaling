@@ -49,7 +49,7 @@ func (r *VMReconciler) inspectUnboundClosure(ctx context.Context, vm *vmv1.Virtu
 
 // Pod可能已经GC，关闭锚点也可能来自旧缓存；恢复读者必须重新核对当前原VM
 // 日志的冻结摘要及真正缺失的birth/state，不能把新来源当可收集的旧垃圾。
-func (r *VMReconciler) inspectPreBirthClosure(ctx context.Context, vm *vmv1.VirtualMachine, closed hostguard.Retirement) error {
+func (r *VMReconciler) inspectUnpublishedClosure(ctx context.Context, vm *vmv1.VirtualMachine, closed hostguard.Retirement) error {
 	actual, err := r.readOriginalUnbornVM(ctx, vm)
 	if err != nil {
 		return err
@@ -61,10 +61,49 @@ func (r *VMReconciler) inspectPreBirthClosure(ctx context.Context, vm *vmv1.Virt
 	if actual.Annotations[hostguard.VMRetirementAnnotation] != string(raw) || actual.Annotations[hostguard.UnboundRetirementAnnotation] != "" {
 		return fmt.Errorf("original pre-birth closing anchor changed on direct reread")
 	}
-	if closed.ProtocolVersion != 3 || closed.Validate() != nil || closed.PreBirth == nil || closed.Placement.Namespace != actual.Namespace || closed.Placement.VMName != actual.Name || closed.Placement.VMUID != string(actual.UID) || closed.Placement.Incarnation != actual.Spec.DSGABootstrap.Incarnation || vmguard.SourceDigest([]byte(actual.Annotations[control.JournalAnnotation])) != closed.PreBirth.VMJournalSHA256 {
+	if !closed.UnpublishedBootOnly() || closed.Validate() != nil || closed.Placement.Namespace != actual.Namespace || closed.Placement.VMName != actual.Name || closed.Placement.VMUID != string(actual.UID) || closed.Placement.Incarnation != actual.Spec.DSGABootstrap.Incarnation || vmguard.SourceDigest([]byte(actual.Annotations[control.JournalAnnotation])) != closed.UnpublishedJournalDigest() {
 		return fmt.Errorf("original pre-birth VM journal or identity changed on direct reread")
 	}
+	if closed.ProtocolVersion == 5 {
+		return r.inspectRegisteredRunnerCollection(ctx, actual, closed)
+	}
 	return r.inspectRunnerSourcesAbsent(ctx, actual)
+}
+
+func (r *VMReconciler) inspectRegisteredRunnerCollection(ctx context.Context, vm *vmv1.VirtualMachine, closed hostguard.Retirement) error {
+	binding := journal.Binding{Namespace: vm.Namespace, Name: vm.Name, VMUID: vm.UID, Incarnation: vm.Spec.DSGABootstrap.Incarnation}
+	names := vmguard.BirthSourceNames(binding)
+	state := closed.UnpublishedBoot
+	if closed.RunnerBirth.Name != names[0] || state.State.Name != names[1] {
+		return fmt.Errorf("closed Runner collection source names differ")
+	}
+	birth := new(core.ConfigMap)
+	if err := r.APIReader.Get(ctx, client.ObjectKey{Namespace: vm.Namespace, Name: names[0]}, birth); err == nil {
+		finalizer, err := memorySourceFinalizer(birth, vm)
+		var original vmguard.Birth
+		if err != nil || finalizer != vmguard.ProtectionFinalizer || string(birth.UID) != closed.RunnerBirth.UID ||
+			birth.Labels[vmguard.ClaimLabel] != "binding-v1" || birth.Immutable == nil || !*birth.Immutable ||
+			json.Unmarshal([]byte(birth.Data[vmguard.ClaimKey]), &original) != nil ||
+			original.Identity.VMUID != string(vm.UID) || original.Identity.Incarnation != binding.Incarnation ||
+			original.StateClaim != state.State || original.Identity.RunnerPodUID != closed.Placement.PodUID ||
+			original.Identity.NodeUID != string(closed.Binding.NodeUID) {
+			return fmt.Errorf("closed Runner birth differs during collection")
+		}
+	} else if !apierrors.IsNotFound(err) {
+		return err
+	}
+	current := new(core.ConfigMap)
+	if err := r.APIReader.Get(ctx, client.ObjectKey{Namespace: vm.Namespace, Name: names[1]}, current); err == nil {
+		finalizer, err := memorySourceFinalizer(current, vm)
+		if err != nil || finalizer != vmguard.ProtectionFinalizer || string(current.UID) != state.State.UID ||
+			current.Labels[vmguard.ClaimLabel] != "state-v1" ||
+			vmguard.SourceDigest([]byte(current.Data[vmguard.ClaimKey])) != state.StateSHA256 {
+			return fmt.Errorf("closed Runner empty state differs during collection")
+		}
+	} else if !apierrors.IsNotFound(err) {
+		return err
+	}
+	return nil
 }
 
 func (r *VMReconciler) readOriginalUnbornVM(ctx context.Context, expected *vmv1.VirtualMachine) (*vmv1.VirtualMachine, error) {

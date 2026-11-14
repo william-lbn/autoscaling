@@ -171,7 +171,7 @@ func (s *Service) recordVMRetirement(ctx context.Context, r hostguard.Retirement
 	if err != nil {
 		return err
 	}
-	if r.PreBirthOnly() && (vm.DeletionTimestamp == nil || r.PreBirth == nil || vmguard.SourceDigest([]byte(vm.Annotations[control.JournalAnnotation])) != r.PreBirth.VMJournalSHA256) {
+	if r.UnpublishedBootOnly() && (vm.DeletionTimestamp == nil || vmguard.SourceDigest([]byte(vm.Annotations[control.JournalAnnotation])) != r.UnpublishedJournalDigest()) {
 		return fmt.Errorf("pre-birth original VM journal changed before closing anchor")
 	}
 	if prior := vm.Annotations[hostguard.VMRetirementAnnotation]; prior != "" {
@@ -250,6 +250,16 @@ func (s *Service) retirePod(ctx context.Context, d domain, expected *core.Pod) e
 					return err
 				}
 				r.PreBirth = &source
+			} else if terminalErr != nil && pod.Annotations[hostguard.UnpublishedBootStopSourceAnnotation] != "" {
+				nodeStop, err := d.store.ReadUnpublishedBootStop(ctx, n, pod, p, nil)
+				if err != nil {
+					return err
+				}
+				birth, source, err := s.registeredUnpublishedTerminal(ctx, d, pod, p, nil, nodeStop)
+				if err != nil {
+					return err
+				}
+				r.ProtocolVersion, r.TerminalSHA256, r.RunnerBirth, r.UnpublishedBoot = 5, nodeStop.SHA256, &birth, &source
 			} else if sourceErr != nil {
 				return sourceErr
 			} else if terminalErr != nil {

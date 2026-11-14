@@ -293,7 +293,7 @@ func TestSchedulerPreBirthRereadsVMIdentityAfterMissingBirth(t *testing.T) {
 }
 
 func TestSchedulerEvictedPreBirthNeedsTrustedNodeStopAndUnusedVM(t *testing.T) {
-	for _, mode := range []string{"complete", "missing", "ordinary-scope", "state-present", "failed-vm-not-deleting"} {
+	for _, mode := range []string{"complete", "missing", "ordinary-scope", "state-present", "failed-vm-not-deleting", "registered", "registered-published-state"} {
 		t.Run(mode, func(t *testing.T) {
 			s, f, n, claims, p := preBirthRetirementFixture(t)
 			_, _, _, _, _, sourceExample := ordinaryTrustedStopFixture(t)
@@ -316,6 +316,10 @@ func TestSchedulerEvictedPreBirthNeedsTrustedNodeStopAndUnusedVM(t *testing.T) {
 			var source hostguard.OrdinaryStopSource
 			require.NoError(t, json.Unmarshal([]byte(sourceExample.Data[hostguard.OrdinaryStopSourceKey]), &source))
 			source.Scope = hostguard.ManagedPreBirthStopScope
+			registered := mode == "registered" || mode == "registered-published-state"
+			if registered {
+				source.Scope = hostguard.UnpublishedBootStopScope
+			}
 			if mode == "ordinary-scope" {
 				source.Scope = hostguard.OrdinaryStopScope
 			}
@@ -328,6 +332,10 @@ func TestSchedulerEvictedPreBirthNeedsTrustedNodeStopAndUnusedVM(t *testing.T) {
 			require.NoError(t, err)
 			cm := sourceExample.DeepCopy()
 			cm.Name = hostguard.OrdinaryStopClaimName(string(p.UID))
+			if registered {
+				cm.Name = hostguard.UnpublishedBootStopClaimName(string(p.UID))
+				retainedUnpublishedRunnerFixture(t, claims, row, n, mode == "registered-published-state")
+			}
 			cm.Annotations[hostguard.OrdinaryStopSourceMarker] = source.Scope
 			cm.Data[hostguard.OrdinaryStopSourceKey] = string(raw)
 			require.NoError(t, claims.Tracker().Create(core.SchemeGroupVersion.WithResource("configmaps"), cm, cm.Namespace))
@@ -343,7 +351,11 @@ func TestSchedulerEvictedPreBirthNeedsTrustedNodeStopAndUnusedVM(t *testing.T) {
 			f.Mutate(func(f *dsgatest.SchedulerAPI) {
 				p = f.Pods["testing/runner"]
 				if mode != "missing" {
-					p.Annotations[hostguard.OrdinaryStopSourceAnnotation] = string(refRaw)
+					key := hostguard.OrdinaryStopSourceAnnotation
+					if registered {
+						key = hostguard.UnpublishedBootStopSourceAnnotation
+					}
+					p.Annotations[key] = string(refRaw)
 				}
 				p = p.DeepCopy()
 			})
@@ -352,7 +364,7 @@ func TestSchedulerEvictedPreBirthNeedsTrustedNodeStopAndUnusedVM(t *testing.T) {
 			err = s.retirePod(ctx, d, p)
 			after, readErr := d.store.Load(ctx)
 			require.NoError(t, readErr)
-			if mode != "complete" {
+			if mode != "complete" && mode != "registered" {
 				require.Error(t, err)
 				original, err := after.State().Placement(string(p.UID))
 				require.NoError(t, err)
@@ -366,10 +378,47 @@ func TestSchedulerEvictedPreBirthNeedsTrustedNodeStopAndUnusedVM(t *testing.T) {
 			require.NoError(t, err)
 			intent, err := hostguard.InspectRetirement(actual)
 			require.NoError(t, err)
-			require.EqualValues(t, 4, intent.ProtocolVersion)
+			if registered {
+				require.EqualValues(t, 5, intent.ProtocolVersion)
+				require.Equal(t, ref, intent.UnpublishedBoot.NodeStop)
+				require.NotNil(t, intent.RunnerBirth)
+				require.Nil(t, intent.RunnerExit)
+			} else {
+				require.EqualValues(t, 4, intent.ProtocolVersion)
+				require.Equal(t, &ref, intent.ManagedPreBirthStopSource)
+			}
 			require.NotContains(t, actual.Finalizers, hostguard.PodProtectionFinalizer)
-			require.Equal(t, &ref, intent.ManagedPreBirthStopSource)
 			require.NoError(t, s.retirePod(ctx, d, p))
 		})
+	}
+}
+
+func retainedUnpublishedRunnerFixture(t *testing.T, claims *kubefake.Clientset, p hostguard.Placement, n NodeConfig, published bool) {
+	t.Helper()
+	binding := journal.Binding{Namespace: p.Namespace, Name: p.VMName, VMUID: types.UID(p.VMUID), Incarnation: p.Incarnation}
+	names := vmguard.BirthSourceNames(binding)
+	birthRef, stateRef := budget.ObjectRef{Name: names[0], UID: "original-birth"}, budget.ObjectRef{Name: names[1], UID: "original-state"}
+	identity := vmguard.Identity{VMUID: p.VMUID, Incarnation: p.Incarnation, RunnerPodUID: p.PodUID,
+		NodeUID: string(n.Binding.NodeUID), RunnerBootID: "0123456789abcdef0123456789abcdef",
+		MinimumBytes: 8 << 20, MaximumBytes: 16 << 20, BlockBytes: 8 << 20}
+	birth := vmguard.Birth{ProtocolVersion: 1, Identity: identity, StateClaim: stateRef}
+	state := vmguard.Publication{ProtocolVersion: 1, Identity: identity}
+	if published {
+		state.BindingClaim = &birthRef
+	}
+	controller := true
+	for i, ref := range []budget.ObjectRef{birthRef, stateRef} {
+		kind, immutable, value := "binding-v1", true, any(birth)
+		if i == 1 {
+			kind, immutable, value = "state-v1", false, state
+		}
+		raw, err := json.Marshal(value)
+		require.NoError(t, err)
+		cm := &core.ConfigMap{ObjectMeta: metav1.ObjectMeta{Namespace: binding.Namespace, Name: ref.Name, UID: types.UID(ref.UID), ResourceVersion: "1",
+			Labels: map[string]string{vmguard.ClaimLabel: kind}, Finalizers: []string{vmguard.ProtectionFinalizer},
+			OwnerReferences: []metav1.OwnerReference{{APIVersion: "vm.neon.tech/v1", Kind: "VirtualMachine", Name: binding.Name,
+				UID: binding.VMUID, Controller: &controller, BlockOwnerDeletion: &controller}}},
+			Immutable: &immutable, Data: map[string]string{vmguard.ClaimKey: string(raw)}}
+		require.NoError(t, claims.Tracker().Create(core.SchemeGroupVersion.WithResource("configmaps"), cm, cm.Namespace))
 	}
 }

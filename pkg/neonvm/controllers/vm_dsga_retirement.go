@@ -50,8 +50,8 @@ func (r *VMReconciler) deleteManagedMemoryPod(ctx context.Context, vm *vmv1.Virt
 		if err != nil {
 			return err
 		}
-		if retirement.ProtocolVersion == 3 {
-			if err := r.inspectPreBirthClosure(ctx, vm, retirement); err != nil {
+		if retirement.UnpublishedBootOnly() {
+			if err := r.inspectUnpublishedClosure(ctx, vm, retirement); err != nil {
 				return err
 			}
 		}
@@ -117,8 +117,8 @@ func (r *VMReconciler) finalizeManagedMemory(ctx context.Context, vm *vmv1.Virtu
 		if err := hostguard.InspectRetirementCompletion(node, closed); err != nil {
 			return err
 		}
-		if closed.ProtocolVersion == 3 {
-			if err := r.inspectPreBirthClosure(ctx, vm, closed); err != nil {
+		if closed.UnpublishedBootOnly() {
+			if err := r.inspectUnpublishedClosure(ctx, vm, closed); err != nil {
 				return err
 			}
 		}
