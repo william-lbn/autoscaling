@@ -38,16 +38,16 @@ type RecoveredCapacityOrigin struct {
 	Proof    ServiceCleanupRecovery `json:"proof"`
 }
 
-func cleanupKind(s Step) string {
+func decodeCleanupCommand(s Step) (string, budget.ReconciledAbortCommand) {
 	var actual budget.ReconciledAbortCommand
 	if json.Unmarshal(s.Command, &actual) == nil {
-		return "actual"
+		return "actual", actual
 	}
 	var committed budget.CommittedAbortCommand
 	if json.Unmarshal(s.Command, &committed) == nil {
-		return "committed"
+		return "committed", actual
 	}
-	return "unchanged"
+	return "unchanged", actual
 }
 
 // basis仅用于历史证明的结构核验，不是可派发Model，不调用Validate或网络。
@@ -68,14 +68,13 @@ func (p ServiceCleanupRecovery) basis(op Operation) Model {
 	return m
 }
 
-func (p ServiceCleanupRecovery) boundary(op Operation) (CleanupServiceBoundary, error) {
+func (p ServiceCleanupRecovery) boundary(op Operation, c budget.ReconciledAbortCommand) (CleanupServiceBoundary, error) {
 	m := p.basis(op)
 	if p.Kind != "actual" {
 		return m.cleanupServiceBoundary()
 	}
-	var c budget.ReconciledAbortCommand
 	s := op.Cleanup
-	if p.Finalization != nil || s == nil || s.DispatchedBy == nil || json.Unmarshal(s.Command, &c) != nil || c.ValidateFor(s.DispatchedBy.Epoch) != nil || m.reconciledResourcePattern(op, c) != nil {
+	if p.Finalization != nil || s == nil || s.DispatchedBy == nil || c.ValidateFor(s.DispatchedBy.Epoch) != nil || m.reconciledResourcePattern(op, c) != nil {
 		return CleanupServiceBoundary{}, fmt.Errorf("cleanup recovery lost original actual-capacity plan")
 	}
 	// InitialOutside已逐字位于原Cleanup命令中。保存Proof时还须与当时真实
@@ -96,7 +95,11 @@ func (p ServiceCleanupRecovery) boundary(op Operation) (CleanupServiceBoundary, 
 
 func (p ServiceCleanupRecovery) validate(op Operation) error {
 	digest, err := operationClosureDigest(&op)
-	if op.Validate() != nil || op.Cleanup == nil || op.Cleanup.DispatchedBy == nil || !op.AbortRequested || p.Origin.Validate() != nil || !validIncarnation(p.Incarnation) || p.RecordedSequence == 0 || p.Kind != cleanupKind(*op.Cleanup) || err != nil || p.OperationSHA256 != digest || p.basis(op).validateOwners(op) != nil || p.PGAggregate.Validate() != nil {
+	if op.Validate() != nil || op.Cleanup == nil || op.Cleanup.DispatchedBy == nil || !op.AbortRequested || p.Origin.Validate() != nil || !validIncarnation(p.Incarnation) || p.RecordedSequence == 0 || err != nil || p.OperationSHA256 != digest || p.basis(op).validateOwners(op) != nil || p.PGAggregate.Validate() != nil {
+		return fmt.Errorf("cleanup recovery changed original cancellation or authenticated resource binding")
+	}
+	kind, actual := decodeCleanupCommand(*op.Cleanup)
+	if p.Kind != kind {
 		return fmt.Errorf("cleanup recovery changed original cancellation or authenticated resource binding")
 	}
 	if _, err := op.OriginalPGRejection(); err == nil && p.PGRejection == nil {
@@ -105,7 +108,7 @@ func (p ServiceCleanupRecovery) validate(op Operation) error {
 	if p.PGRejection != nil && (p.PGRejection.validate(op) != nil || p.PGRejection.RecordedSequence >= p.RecordedSequence || p.PGRejection.Origin.Epoch > p.Origin.Epoch || p.PGRejection.Origin.Epoch == p.Origin.Epoch && p.PGRejection.Origin != p.Origin || p.PGRejection.Closed != p.Closed || p.PGRejection.ClosedSequence != p.ClosedSequence) {
 		return fmt.Errorf("cleanup recovery lost original independent PG rejection barrier")
 	}
-	b, err := p.boundary(op)
+	b, err := p.boundary(op, actual)
 	q, current := p.Closed, p.Current
 	if err != nil || q.Validate() != nil || q.Open || q.Instance != op.Request.Key.Instance || q.IssuerEpoch > p.Origin.Epoch || q.ExpectedCapacityGeneration != b.CapacityGeneration || q.BudgetCommitmentID != b.BudgetCommitmentID || p.ClosedSequence == 0 || p.ClosedSequence >= p.RecordedSequence || current.ValidateFor(q.Instance) != nil || current.Observed.AdmissionOpen || current.Observed.AdmissionRevision != q.Revision || current.Observed.CapacityGeneration != q.ExpectedCapacityGeneration || p.Fence.Disposition != control.Fenced || p.Fence.ValidateFor(control.FenceRequest{ProtocolVersion: 1, Instance: q.Instance, IssuerEpoch: p.Origin.Epoch}, q.Instance) != nil || current.Observed.CapacityGeneration < p.Fence.Observed.CapacityGeneration || p.PGAggregate.Identity.VMUID != q.Instance.VMUID || p.PGAggregate.Identity.ComputeInstanceID != q.Instance.ComputeInstanceID {
 		return fmt.Errorf("cleanup recovery lacks exact original closed budget and current owner fence")
@@ -114,12 +117,11 @@ func (p ServiceCleanupRecovery) validate(op Operation) error {
 		return fmt.Errorf("cleanup recovery does not fence late original admission")
 	}
 	if p.Kind == "actual" {
-		var c budget.ReconciledAbortCommand
-		if json.Unmarshal(op.Cleanup.Command, &c) != nil || c.Capacity.ValidateCurrent(current, p.Origin.Epoch, c.Capacity.VMMemoryBytes) != nil || c.Capacity.PGAggregate != p.PGAggregate.Bound {
+		if actual.Capacity.ValidateCurrent(current, p.Origin.Epoch, actual.Capacity.VMMemoryBytes) != nil || actual.Capacity.PGAggregate != p.PGAggregate.Bound {
 			return fmt.Errorf("cleanup recovery no longer covers exact original actual capacity")
 		}
 		hash, err := budget.RootDigest(p.PGAggregate)
-		if err != nil || hash != c.Capacity.RootSHA256 {
+		if err != nil || hash != actual.Capacity.RootSHA256 {
 			return fmt.Errorf("cleanup recovery replaced original actual root source")
 		}
 		return nil
@@ -211,7 +213,8 @@ func (m Model) RecordServiceCleanupRecovery(actor Owner, selector string, fence 
 	if c.Continuation != nil {
 		at = c.Continuation.RecordedSequence
 	}
-	p := &ServiceCleanupRecovery{Origin: actor, RecordedSequence: next.Sequence, Incarnation: m.Incarnation, OperationSHA256: c.OperationSHA256, Kind: cleanupKind(*m.Active.Cleanup), Closed: closed, ClosedSequence: at, Fence: fence, Current: current, PGAggregate: root, Finalization: nil, PGRejection: cloneServicePGRejection(c.PGRejection)}
+	kind, _ := decodeCleanupCommand(*m.Active.Cleanup)
+	p := &ServiceCleanupRecovery{Origin: actor, RecordedSequence: next.Sequence, Incarnation: m.Incarnation, OperationSHA256: c.OperationSHA256, Kind: kind, Closed: closed, ClosedSequence: at, Fence: fence, Current: current, PGAggregate: root, Finalization: nil, PGRejection: cloneServicePGRejection(c.PGRejection)}
 	if p.Kind != "actual" && m.BudgetHeld != nil {
 		s := cloneStep(m.BudgetHeld.Finalization)
 		p.Finalization = &s
