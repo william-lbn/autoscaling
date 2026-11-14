@@ -14,6 +14,7 @@ import (
 	"time"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"k8s.io/klog/v2"
 )
 
 const FixedSocketPath = "/run/neon-dsga/resource.sock"
@@ -235,6 +236,12 @@ func (h *resourceHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else if r.URL.Path == "/dsg/v1/resource/state" && r.Method == http.MethodGet {
 		var state View
 		state, err = h.guard.InspectState(r.Context())
+		if err != nil {
+			stage, reason := stateObservationDiagnostic(err)
+			// Retain the failing boundary in Guest logs without exposing the
+			// underlying error, request, process details, or credentials.
+			klog.InfoS("DSGA Root state observation unavailable", "stage", stage, "reason", reason)
+		}
 		state.ArrayAuthorityProtocolVersion = h.arrayProtocolVersion
 		if _, ok := h.guard.(normalQuotaBackend); ok && h.source.Config.ExecutionModel == TrustedControllerExecutionModel && h.arrayProtocolVersion == 1 {
 			state.NormalQuotaProtocolVersion = 1

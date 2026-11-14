@@ -9,17 +9,41 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"strings"
 	"sync/atomic"
+	"syscall"
 	"testing"
 	"time"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 )
+
+func TestRootStateObservationDiagnosticPreservesUnknown(t *testing.T) {
+	causes := []struct {
+		err  error
+		want string
+	}{
+		{errors.Join(ErrUnknown, errAddressSpaceChurn), "process_membership_changed"},
+		{fmt.Errorf("private source: %w", syscall.EINTR), "interrupted"},
+		{context.DeadlineExceeded, "request_ended"},
+		{errors.New("private source detail"), "source_rejected"},
+	}
+	for _, c := range causes {
+		err := &stateObservationError{"kernel_bounds", c.err}
+		if stage, reason := stateObservationDiagnostic(err); stage != "kernel_bounds" || reason != c.want || !errors.Is(err, c.err) {
+			t.Fatalf("state observation stage %q, reason %q, original error retained %t", stage, reason, errors.Is(err, c.err))
+		}
+	}
+	if stage, reason := stateObservationDiagnostic(ErrUnknown); stage != "open_original_record" || reason != "source_unconfirmed" {
+		t.Fatalf("early failure classification %q / %q", stage, reason)
+	}
+}
 
 // 实际Ed25519/HTTP/TLS/客户端及Mac文件锁和fsync；fixtureKernel明确不是真实
 // Linux cgroup/HugeTLB，也不是K8s/TokenReview/完整预算/物理回收端到端验收。

@@ -2,10 +2,46 @@ package resourceguard
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"os"
+	"syscall"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 )
+
+type stateObservationError struct {
+	stage string
+	err   error
+}
+
+func (e *stateObservationError) Error() string { return e.err.Error() }
+func (e *stateObservationError) Unwrap() error { return e.err }
+
+func stateObservationDiagnostic(err error) (stage, reason string) {
+	stage = "open_original_record"
+	var observation *stateObservationError
+	if errors.As(err, &observation) {
+		stage = observation.stage
+	}
+	switch {
+	case errors.Is(err, errAddressSpaceChurn):
+		reason = "process_membership_changed"
+	case errors.Is(err, syscall.EINTR):
+		reason = "interrupted"
+	case errors.Is(err, context.Canceled), errors.Is(err, context.DeadlineExceeded):
+		reason = "request_ended"
+	case errors.Is(err, os.ErrNotExist), errors.Is(err, syscall.ESRCH):
+		reason = "source_disappeared"
+	case errors.Is(err, os.ErrPermission):
+		reason = "source_permission"
+	case errors.Is(err, ErrUnknown):
+		reason = "source_unconfirmed"
+	default:
+		reason = "source_rejected"
+	}
+	return stage, reason
+}
 
 // View是同一资源锁内读取的原日志和当前限额。Original/Held属于独立于PG boot
 // 的资源域，不能从Native PG revision推导资源revision，也不能因外层历史淘汰
@@ -100,10 +136,10 @@ func (g *Guard) InspectState(ctx context.Context) (View, error) {
 	var v View
 	err := g.withRecord(ctx, func(r *record, s *lockedState) error {
 		if err := g.checkNormalQuotaObservationLocked(s, r); err != nil {
-			return err
+			return &stateObservationError{"quota_durability", err}
 		}
 		if r.Bootstrap == nil {
-			return fmt.Errorf("original resource bootstrap missing")
+			return &stateObservationError{"bootstrap_record", fmt.Errorf("original resource bootstrap missing")}
 		}
 		limits := r.Bootstrap.Original.Limits
 		if r.Held != nil {
@@ -111,10 +147,13 @@ func (g *Guard) InspectState(ctx context.Context) (View, error) {
 		}
 		actual, err := g.kernel.ReadBounds(r.Identity, limits)
 		if err != nil {
-			return err
+			return &stateObservationError{"kernel_bounds", err}
 		}
 		v = r.view(actual)
-		return v.Validate()
+		if err := v.Validate(); err != nil {
+			return &stateObservationError{"view_validation", err}
+		}
+		return nil
 	})
 	return v, err
 }
