@@ -159,7 +159,9 @@ func (w *PGWorker) observeSuspensionDrain(ctx context.Context, snapshot *journal
 		return nil, err
 	}
 	if err := m.CheckComputeSuspensionDrain(operation, fact); err != nil {
-		return nil, err
+		// A valid native response can still report existing sessions. Keep
+		// the same Owner and wait for them to drain without reopening admission.
+		return nil, errors.Join(ErrServiceSafety, err)
 	}
 	return &fact, nil
 }

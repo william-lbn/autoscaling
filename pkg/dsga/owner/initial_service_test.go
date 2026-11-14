@@ -56,6 +56,7 @@ type initialServicePG struct {
 	// 仅新容量竞态组合在原关闭WAL确认后、setter到达前提交原Resize。
 	// 由peer锁外调用；生产代码仍必须识别Stale并写独立接续WAL。
 	beforeClose    func()
+	drainClients   uint32
 	leaseDeadline  control.Uint64
 	leaseRenewals  int
 	leaseReject    bool
@@ -153,6 +154,18 @@ func (p *initialServicePG) serve(t *testing.T, w http.ResponseWriter, r *http.Re
 		p.leaseAuditSharedReads++
 		p.mu.Unlock()
 		pgReply(w, p.shared())
+		return
+	case "/dsg/v1/work/prepared":
+		p.mu.Lock()
+		current, clients := p.current().Observed, p.drainClients
+		p.mu.Unlock()
+		closed := !current.AdmissionOpen
+		work := control.WorkResponse{ProtocolVersion: 1, WorkAPIVersion: 2, ClientProcesses: clients, IdleClients: clients,
+			ObserverExcluded: true, ForegroundIdle: closed, Observed: current}
+		connections := control.ConnectionResponse{ProtocolVersion: 1, ConnectionAPIVersion: 1, Enabled: true,
+			RequestedSerial: 2, AppliedSerial: 2, RequestedOpen: !closed, AppliedOpen: !closed,
+			Acknowledged: true, PrivateManagementReady: true, PublicConnectionsBlocked: closed, Work: work}
+		pgReply(w, control.PreparedResponse{ProtocolVersion: 1, PreparedAPIVersion: 1, RuntimePreparesBlocked: closed, Connections: connections})
 		return
 	case "/dsg/v1/admission/continue-close", "/dsg/v1/admission/continue-close/status":
 		p.serveClosureContinuation(t, w, r)

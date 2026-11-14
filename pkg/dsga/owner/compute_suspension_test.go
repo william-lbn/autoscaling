@@ -70,4 +70,22 @@ func verifyComputeSuspensionRecovery(t *testing.T, ctx context.Context, mode str
 	require.True(t, mayReplayComputeSuspension(closing.Request, instance, epoch, confirmed))
 	confirmed.Observed.IssuerFloorEpoch++
 	require.False(t, mayReplayComputeSuspension(closing.Request, instance, epoch, confirmed))
+
+	pg.mu.Lock()
+	pg.drainClients = 1
+	pg.mu.Unlock()
+	progress, err = worker.suspendCompute(ctx, settled, operation)
+	require.ErrorIs(t, err, ErrServiceSafety)
+	require.Equal(t, pgexec.AwaitingFact, progress)
+	require.Nil(t, worker.suspensionDrain)
+	pg.mu.Lock()
+	pg.drainClients = 0
+	pg.mu.Unlock()
+	progress, err = worker.suspendCompute(ctx, settled, operation)
+	require.NoError(t, err)
+	require.Equal(t, pgexec.Reconciled, progress)
+	require.NotNil(t, worker.suspensionDrain)
+	actual, err := store.Load(ctx)
+	require.NoError(t, err)
+	require.Equal(t, settled.State(), actual.State(), "waiting for clients changed ownership or rewrote the close")
 }
