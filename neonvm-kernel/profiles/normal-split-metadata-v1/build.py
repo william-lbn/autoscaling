@@ -30,14 +30,36 @@ def pinned_source_dockerfile(context, archive, source):
     return BASE_DOCKERFILE[:start] + source_step + BASE_DOCKERFILE[end:]
 
 
+def audited_kbuild_flags(lock):
+    date = r'[A-Z][a-z]{2} [A-Z][a-z]{2} [ 0-9][0-9] [0-9]{2}:[0-9]{2}:[0-9]{2} UTC [0-9]{4}'
+    if any(re.fullmatch(date, lock[k]) is None for k in ('final_link_timestamp', 'initramfs_timestamp')):
+        raise ValueError('Invalid audited kernel build timestamps')
+    version = lock['build_version']
+    user, host = lock['build_user'], lock['build_host']
+    if type(version) is not int or version <= 0 or any(re.fullmatch(r'[a-z0-9_-]+', v) is None for v in (user, host)):
+        raise ValueError('Invalid audited kernel build identity')
+    # Setting KBUILD_BUILD_TIMESTAMP globally would also change version.o.
+    # The original compile used the blank tentative stamp until final linking.
+    return (
+        f' --eval="include/generated/utsversion.h: private KBUILD_BUILD_TIMESTAMP := {lock["final_link_timestamp"]}"'
+        f' --eval="include/generated/utsversion.h: private KBUILD_BUILD_VERSION := {version}"'
+        f' --eval="usr/initramfs_data.cpio: private KBUILD_BUILD_TIMESTAMP := {lock["initramfs_timestamp"]}"'
+        f' KBUILD_BUILD_USER={user} KBUILD_BUILD_HOST={host}'
+    )
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', required=True, type=Path)
     parser.add_argument('--source-archive', type=Path, help='Use the authorized Linux source archive by exact SHA256')
     parser.add_argument('--prepare-only', action='store_true', help='Prepare the pinned context without running Docker')
+    parser.add_argument('--reproduce-audited', action='store_true',
+                        help='Require the exact audited build outputs from the pinned Linux archive')
     args = parser.parse_args()
     if args.prepare_only and args.source_archive is None:
         parser.error('--prepare-only requires the reviewed --source-archive')
+    if args.reproduce_audited and args.source_archive is None:
+        parser.error('--reproduce-audited requires the reviewed --source-archive')
     out=args.output
     if not out.is_absolute() or out.exists():
         parser.error('--output must name a new absolute directory')
@@ -77,7 +99,10 @@ def main():
     extra+='COPY metadata-baseline.config /tmp/control-default-off.config\n'
     extra+='RUN --network=none set -eu; cd /build/linux-6.12.26; make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- KCONFIG_CONFIG=/tmp/control-default-off.config olddefconfig; grep -qx "# CONFIG_NEON_DSGA_CONTROL_METADATA_GUARD is not set" /tmp/control-default-off.config\n'
     extra+='COPY profiles/normal-split-metadata-v1/linux-config-amd64-6.12.26 /build/linux-6.12.26/.config\n'
-    extra+='ARG CONTROL_METADATA_VERSION_SUFFIX\nRUN --network=none cd /build/linux-6.12.26 && make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION="$CONTROL_METADATA_VERSION_SUFFIX" -j 4\n'
+    extra+='ARG CONTROL_METADATA_VERSION_SUFFIX\nRUN --network=none cd /build/linux-6.12.26 && make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION="$CONTROL_METADATA_VERSION_SUFFIX" -j 4'
+    if args.reproduce_audited:
+        extra+=audited_kbuild_flags(desc['reproducible_build'])
+    extra+='\n'
     extra+='FROM control_metadata_build AS control_metadata_receipt\n'
     extra+='RUN --network=none set -eu; cd /build/linux-6.12.26; mkdir /control-metadata-receipt; cp .config /control-metadata-receipt/kernel.config; cp /tmp/control-default-off.config /control-metadata-receipt/default-off.config; cp include/config/kernel.release /control-metadata-receipt/kernel.release; cp init/Kconfig /control-metadata-receipt/Kconfig.source; cp fs/kernfs/inode.c /control-metadata-receipt/kernfs-inode.source.c; objcopy --dump-section .notes=/control-metadata-receipt/kernel-notes.bin vmlinux; sha256sum /build/linux-6.12.26.tar.xz init/Kconfig fs/kernfs/inode.c mm/page_counter.c security/landlock/task.c include/uapi/linux/landlock.h /build/patches/*.patch .config arch/x86/boot/bzImage >/control-metadata-receipt/actual-source-SHA256SUMS; objdump -d --disassemble=kernfs_iop_setattr vmlinux >/control-metadata-receipt/kernfs-setattr.asm; objdump -d --disassemble=kernfs_vfs_xattr_set vmlinux >/control-metadata-receipt/kernfs-xattr.asm; objdump -d --disassemble=kernfs_vfs_user_xattr_set vmlinux >/control-metadata-receipt/kernfs-user-xattr.asm; cat /sys/fs/cgroup/memory.max >/control-metadata-receipt/memory.max; cat /sys/fs/cgroup/cpu.max >/control-metadata-receipt/cpu.max\n'
     extra+='FROM scratch AS control_metadata_export\nCOPY --from=control_metadata_receipt /build/linux-6.12.26/arch/x86/boot/bzImage /vmlinuz\nCOPY --from=control_metadata_receipt /control-metadata-receipt/ /\n'
@@ -93,11 +118,13 @@ def main():
     cmd+=['--metadata-file',str(out/'build-metadata.json'),'--output','type=local,dest='+str(out/'export'),str(context)]
     (out/'command.json').write_text(json.dumps(cmd,indent=2)+'\n')
     if args.prepare_only:
-        (out/'result.json').write_text(json.dumps({'prepared_only': True, 'build_exit': None, 'normal_authorized': False, 'E': 0}, indent=2)+'\n')
+        (out/'result.json').write_text(json.dumps({'prepared_only': True, 'build_exit': None,
+            'audited_reproduction_requested': args.reproduce_audited, 'normal_authorized': False, 'E': 0}, indent=2)+'\n')
         return
     start=time.monotonic()
     with(out/'build.log').open('wb')as log:run=subprocess.run(cmd,stdout=log,stderr=subprocess.STDOUT)
     result={'build_exit':run.returncode,'seconds':time.monotonic()-start,'normal_authorized':False,'E':0}
+    status=run.returncode
     if run.returncode==0:
         def values(raw):
             d={}
@@ -108,6 +135,13 @@ def main():
         original=values(basecfg);resolved=values((out/'export/kernel.config').read_bytes());default=values((out/'export/default-off.config').read_bytes());delta={k:[original.get(k,'n'),resolved.get(k,'n')]for k in set(original)|set(resolved)if original.get(k,'n')!=resolved.get(k,'n')};defaultdelta={k:[original.get(k,'n'),default.get(k,'n')]for k in set(original)|set(default)if original.get(k,'n')!=default.get(k,'n')}
         (out/'semantic-delta.json').write_text(json.dumps({'new':delta,'default_off':defaultdelta},indent=2)+'\n');assert delta=={'CONFIG_NEON_DSGA_CONTROL_METADATA_GUARD':['n','y']} and not defaultdelta
         result['tuple']={'release':(out/'export/kernel.release').read_text().strip(),'artifact_sha256':sha(out/'export/vmlinuz'),'config_sha256':sha(out/'export/kernel.config'),'notes_sha256':sha(out/'export/kernel-notes.bin')};result['semantic_delta']=delta
-    (out/'result.json').write_text(json.dumps(result,indent=2)+'\n');raise SystemExit(run.returncode)
+        if args.reproduce_audited:
+            receipt_sha = sha(out/'export/actual-source-SHA256SUMS')
+            result['audited_source_receipt_sha256'] = receipt_sha
+            result['audited_tuple_match'] = result['tuple'] == desc['compiled_tuple']
+            result['audited_source_receipt_match'] = receipt_sha == desc['actual_build_source_receipt_sha256']
+            if not (result['audited_tuple_match'] and result['audited_source_receipt_match']):
+                status = 2
+    (out/'result.json').write_text(json.dumps(result,indent=2)+'\n');raise SystemExit(status)
 
 if __name__=='__main__':main()

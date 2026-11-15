@@ -6,4 +6,4 @@
 
 `build.py --output /data/neon-build/validation/<独立nonce>`从仓库准确基线文件重建原369的6+split7缓存上下文，再新apply8和make-j4；内层4CPU/6GiB/无网新步骤。须先source既有env.sh，且外层systemd也设有界资源/超时。记录原失败与actual tuple；默认关闭配置和新resolved配置的语义diff必须只有该新symbol。实际58603b构建235.176s通过；原6+7 make全部CACHED，新phase4CPU/6GiB/j4。新resolved唯一语义差为该symbol，default-off与原369语义完全相同。真实304d4f KVM 3.565s/Guest0/QEMU0：独立C新建nonce空cgroup，UID0五cap集合0/NNP1/Seccomp0的16元数据请求全部EPERM且原对象属性/xattr不变，普通ext4/tmpfs 18正控成功、Root正控/清理成功。实际LSM为lockdown,capability,landlock,yama,apparmor。没有PG/生产Gate/九真实服务，不是完整normal认证；config-source仅记录准确实际tuple，旧369/Go表/发行锁保持原样。
 
-统一候选准备加上 `--source-archive /绝对路径/linux-6.12.26.tar.xz`。脚本按原审计摘要核对并复制归档，在构建步骤再次校验后离线解包。使用 `--prepare-only` 可先保存实际构建上下文、输入摘要与命令。正式候选仍需核对编译出的内核、配置和 notes 摘要并完成原 Kubernetes 资格验证。
+审计制品重建使用 `--source-archive /绝对路径/linux-6.12.26.tar.xz --reproduce-audited`。脚本按原审计摘要核对并复制归档，在构建步骤再次校验后离线解包。Kbuild 单独锁定最终链接和内置 initramfs 的原构建时间。完成编译后核对 release、内核、配置、notes 四元组及实际源码收据，任何差异均以失败退出。可追加 `--prepare-only` 保存输入摘要和命令。正式候选仍需经过 Kubernetes 资格验证。
