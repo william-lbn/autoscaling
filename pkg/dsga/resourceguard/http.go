@@ -240,7 +240,8 @@ func (h *resourceHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			stage, reason := stateObservationDiagnostic(err)
 			// Retain the failing boundary in Guest logs without exposing the
 			// underlying error, request, process details, or credentials.
-			klog.InfoS("DSGA Root state observation unavailable", "stage", stage, "reason", reason)
+			klog.InfoS("DSGA Root state observation unavailable", "stage", stage, "reason", reason,
+				"source_step", kernelBoundsSource(err))
 		}
 		state.ArrayAuthorityProtocolVersion = h.arrayProtocolVersion
 		if _, ok := h.guard.(normalQuotaBackend); ok && h.source.Config.ExecutionModel == TrustedControllerExecutionModel && h.arrayProtocolVersion == 1 {

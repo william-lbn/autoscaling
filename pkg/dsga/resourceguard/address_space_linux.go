@@ -39,10 +39,17 @@ func inspectProcessAddressSpace(pid int, ceiling control.Uint64, uid uint64) (pr
 	return inspectProcessAddressSpaceGroup(pid, ceiling, uid, "0::/neon-postgres\n")
 }
 
-func inspectProcessAddressSpaceGroup(pid int, ceiling control.Uint64, uid uint64, expectedGroup string) (processAddressSample, error) {
+func inspectProcessAddressSpaceGroup(pid int, ceiling control.Uint64, uid uint64, expectedGroup string) (_ processAddressSample, err error) {
+	step := "address_domain"
+	defer func() {
+		if err != nil {
+			err = &kernelBoundsSourceError{step: step, err: err}
+		}
+	}()
 	if !arrayAllowedAddressGroup(expectedGroup) {
 		return processAddressSample{}, fmt.Errorf("unsupported fixed process domain")
 	}
+	step = "address_initial_process_stat"
 	first, err := boundedProcessText(pid, "stat")
 	if err != nil {
 		return processAddressSample{}, err
@@ -51,6 +58,7 @@ func inspectProcessAddressSpaceGroup(pid int, ceiling control.Uint64, uid uint64
 	if err != nil {
 		return processAddressSample{}, err
 	}
+	step = "address_process_membership"
 	group, err := boundedProcessText(pid, "cgroup")
 	if err != nil {
 		return processAddressSample{}, err
@@ -58,6 +66,7 @@ func inspectProcessAddressSpaceGroup(pid int, ceiling control.Uint64, uid uint64
 	if group != expectedGroup {
 		return processAddressSample{}, fmt.Errorf("address space process left original cgroup")
 	}
+	step = "address_process_uid"
 	status, err := boundedProcessText(pid, "status")
 	if err != nil {
 		return processAddressSample{}, err
@@ -65,14 +74,17 @@ func inspectProcessAddressSpaceGroup(pid int, ceiling control.Uint64, uid uint64
 	if err := processUID(status, uid); err != nil {
 		return processAddressSample{}, err
 	}
+	step = "address_process_limits"
 	limits, err := boundedProcessText(pid, "limits")
 	if err != nil {
 		return processAddressSample{}, err
 	}
+	step = "address_process_limit_facts"
 	hard, virtual, err := processAddressSpace(limits, status, ceiling)
 	if err != nil {
 		return processAddressSample{}, err
 	}
+	step = "address_final_process_stat"
 	second, err := boundedProcessText(pid, "stat")
 	if err != nil {
 		return processAddressSample{}, err

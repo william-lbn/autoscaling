@@ -271,3 +271,14 @@ func resourceHTTPKernelWrites(k *fixtureKernel) int {
 	defer k.mu.Unlock()
 	return k.writes
 }
+func TestStateObservationPreservesKernelSourceWithoutReturningPrivateDetail(t *testing.T) {
+	inner := &kernelBoundsSourceError{step: "address_process_limits", err: syscall.EINTR}
+	err := &stateObservationError{stage: "kernel_bounds", err: inner}
+	stage, reason := stateObservationDiagnostic(err)
+	if stage != "kernel_bounds" || reason != "interrupted" || kernelBoundsSource(err) != "address_process_limits" || !errors.Is(err, syscall.EINTR) {
+		t.Fatalf("lost fixed kernel source or errno: %q, %q, %q", stage, reason, kernelBoundsSource(err))
+	}
+	if got := kernelBoundsSource(errors.New("private source detail")); got != "" {
+		t.Fatalf("unrecognized error became a source step: %q", got)
+	}
+}

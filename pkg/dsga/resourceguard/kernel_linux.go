@@ -343,11 +343,18 @@ func (k *linuxKernel) Read(c Command) (Evidence, error) {
 	return e, nil
 }
 
-func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (Evidence, error) {
-	e := Evidence{ProtocolVersion: 1}
+func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (e Evidence, err error) {
+	e = Evidence{ProtocolVersion: 1}
+	step := "bound_alignment"
+	defer func() {
+		if err != nil && kernelBoundsSource(err) == "" {
+			err = &kernelBoundsSourceError{step: step, err: err}
+		}
+	}()
 	if uint64(c.MemoryMaxBytes)%uint64(os.Getpagesize()) != 0 || uint64(c.SystemMemoryMaxBytes)%uint64(os.Getpagesize()) != 0 {
 		return e, fmt.Errorf("memory.max target must be an exact Guest base-page multiple")
 	}
+	step = "cgroup_identity"
 	id, err := k.Identity()
 	if err != nil {
 		return e, err
@@ -360,11 +367,13 @@ func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (Evidence, error) 
 	}
 	e.Identity = id
 	if c.SystemMemoryMaxBytes != 0 {
+		step = "system_bound"
 		e.System, err = k.readSystemBound()
 		if err != nil {
 			return e, err
 		}
 	}
+	step = "cgroup_memory_counters"
 	for _, entry := range []struct {
 		name      string
 		dest      *control.Uint64
@@ -377,6 +386,7 @@ func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (Evidence, error) 
 		*entry.dest = control.Uint64(n)
 	}
 	if c.PidsMaxTasks != 0 {
+		step = "task_limit_source"
 		// pid_max是当前目标内核的可用PID空间，不假定编译配置等于开发机。
 		// 允许启动前pids.max为max，只记录实际值；matchesTasks在写后严格确认。
 		// 任务控制器支持threaded子树，本文实现只接受完整domain。迁移入口与父组
@@ -397,6 +407,7 @@ func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (Evidence, error) 
 			return e, fmt.Errorf("requested task bound exceeds actual Guest PID range")
 		}
 	}
+	step = "guest_memtotal"
 	mem, err := kernelText("/proc/meminfo")
 	if err != nil {
 		return e, err
@@ -414,6 +425,7 @@ func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (Evidence, error) 
 	if e.GuestMemTotalBytes == 0 {
 		return e, fmt.Errorf("Guest MemTotal unavailable")
 	}
+	step = "hugetlb_pool"
 	pools, err := allPools()
 	if err != nil {
 		return e, err
@@ -452,9 +464,17 @@ func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (Evidence, error) 
 		p.Pages = control.Uint64(nr)
 		e.HugePools = append(e.HugePools, p)
 	}
-	readActivity := func() (processActivity, error) { return readProcessActivity(c.PidsMaxTasks != 0) }
+	step = "cgroup_task_activity"
+	readActivity := func() (processActivity, error) {
+		activity, err := readProcessActivity(c.PidsMaxTasks != 0)
+		if err != nil {
+			err = &kernelBoundsSourceError{step: "cgroup_task_activity", err: err}
+		}
+		return activity, err
+	}
 	var activity processActivity
 	if c.AddressSpaceMaxBytes != 0 {
+		step = "process_address_space"
 		activity, e.AddressSpace, err = readProcessBounds(readActivity, func() (*AddressSpaceEvidence, error) { return readAddressSpaces(c) })
 	} else {
 		activity, err = readActivity()

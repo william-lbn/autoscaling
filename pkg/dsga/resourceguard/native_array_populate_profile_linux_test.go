@@ -79,3 +79,11 @@ func TestArrayPopulateStagePreservesOriginalError(t *testing.T) {
 		t.Fatal("diagnostic changed original error")
 	}
 }
+
+func TestKernelBoundsReportsFixedPhaseForInvalidAlignment(t *testing.T) {
+	kernel := &linuxKernel{}
+	_, err := kernel.ReadBounds(Identity{}, Limits{MemoryMaxBytes: 1})
+	if err == nil || kernelBoundsSource(err) != "bound_alignment" {
+		t.Fatalf("kernel bound failure lost its fixed phase: %v", err)
+	}
+}

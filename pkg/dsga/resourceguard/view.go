@@ -18,6 +18,22 @@ type stateObservationError struct {
 func (e *stateObservationError) Error() string { return e.err.Error() }
 func (e *stateObservationError) Unwrap() error { return e.err }
 
+type kernelBoundsSourceError struct {
+	step string
+	err  error
+}
+
+func (e *kernelBoundsSourceError) Error() string { return e.err.Error() }
+func (e *kernelBoundsSourceError) Unwrap() error { return e.err }
+
+func kernelBoundsSource(err error) string {
+	var source *kernelBoundsSourceError
+	if errors.As(err, &source) {
+		return source.step
+	}
+	return ""
+}
+
 func stateObservationDiagnostic(err error) (stage, reason string) {
 	stage = "open_original_record"
 	var observation *stateObservationError
