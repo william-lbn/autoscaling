@@ -110,25 +110,29 @@ func (im *normalNativeImage) open(logical string) (*os.File, error) {
 	return os.OpenFile(filepath.Join(im.root, canonical), os.O_RDONLY|syscall.O_NONBLOCK|syscall.O_NOFOLLOW, 0)
 }
 func (im *normalNativeImage) seed() ([]byte, os.FileInfo, error) {
-	f, e := im.open(normalNativeBuildPath)
+	return im.readManifest(normalNativeBuildPath, 32<<10)
+}
+
+func (im *normalNativeImage) readManifest(path string, limit int64) ([]byte, os.FileInfo, error) {
+	f, e := im.open(path)
 	if e != nil {
 		return nil, nil, e
 	}
 	defer f.Close()
 	before, e := f.Stat()
-	if e != nil || !before.Mode().IsRegular() || before.Size() <= 0 || before.Size() > 32<<10 || before.Mode().Perm()&0022 != 0 {
-		return nil, nil, fmt.Errorf("native image seed is not bounded regular root input")
+	if e != nil || !before.Mode().IsRegular() || before.Size() <= 0 || before.Size() > limit || before.Mode().Perm()&0022 != 0 {
+		return nil, nil, fmt.Errorf("native image manifest is not a bounded regular root input: %s", path)
 	}
 	if st, ok := before.Sys().(*syscall.Stat_t); !ok || st.Uid != 0 {
-		return nil, nil, fmt.Errorf("native image seed is not root controlled")
+		return nil, nil, fmt.Errorf("native image manifest is not root controlled: %s", path)
 	}
-	raw, e := io.ReadAll(io.NewSectionReader(f, 0, 32<<10+1))
+	raw, e := io.ReadAll(io.NewSectionReader(f, 0, limit+1))
 	if e != nil || int64(len(raw)) != before.Size() {
-		return nil, nil, fmt.Errorf("native image seed changed during read")
+		return nil, nil, fmt.Errorf("native image manifest changed during read: %s", path)
 	}
 	after, e := f.Stat()
 	if e != nil || !resourceguard.NativeBirthBuildFileUnchanged(before, after) {
-		return nil, nil, fmt.Errorf("native image seed identity changed")
+		return nil, nil, fmt.Errorf("native image manifest identity changed: %s", path)
 	}
 	return raw, after, nil
 }

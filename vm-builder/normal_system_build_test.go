@@ -98,6 +98,54 @@ func TestNormalSystemBuildCompletePublicationUsesFull18cAndNativeBinding(t *test
 		t.Fatal("NativeBirth did not bind same final System bytes", e)
 	}
 }
+
+func TestNormalImageReadbackRequiresOriginalFinalClosure(t *testing.T) {
+	root, initial := normalSystemCompleteFixture(t)
+	base := strings.Repeat("ab", 32)
+	planRaw := normalTestJSON(normalTestPlan())
+	if err := publishCompleteNormalNativeBirthImage(root, initial); err != nil {
+		t.Fatal(err)
+	}
+	read := func(path string) []byte {
+		t.Helper()
+		raw, err := os.ReadFile(filepath.Join(root, path))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return raw
+	}
+	postgres := normalDigest(read("/usr/local/bin/postgres"))
+	system := read(resourceguard.NormalSystemSourceManifestPath)
+	native := read(normalNativeBuildPath)
+	got, err := readbackNormalImage(root, planRaw, base, 17, postgres)
+	if err != nil || got.SystemSHA256 != normalDigest(system) || got.NativeBirthSHA256 != normalDigest(native) ||
+		got.BuildPlanSHA256 != normalDigest(planRaw) || got.PostgreSQLMajor != 17 || got.PostgreSQLELFSHA256 != postgres {
+		t.Fatalf("unexpected final disk receipt %+v: %v", got, err)
+	}
+	if _, err := readbackNormalImage(root, append(bytes.Clone(planRaw), '\n'), base, 17, postgres); err == nil {
+		t.Fatal("a different original plan was accepted")
+	}
+	if _, err := readbackNormalImage(root, planRaw, strings.Repeat("aa", 32), 17, postgres); err == nil {
+		t.Fatal("a different base image was accepted")
+	}
+	if _, err := readbackNormalImage(root, planRaw, base, 18, postgres); err == nil {
+		t.Fatal("a different PostgreSQL major was accepted")
+	}
+	if _, err := readbackNormalImage(root, planRaw, base, 17, strings.Repeat("cd", 32)); err == nil {
+		t.Fatal("a different PostgreSQL ELF was accepted")
+	}
+	if err := os.WriteFile(filepath.Join(root, normalNativeBuildPath), append(bytes.Clone(native), '\n'), 0444); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := readbackNormalImage(root, planRaw, base, 17, postgres); err == nil {
+		t.Fatal("changed on-disk NativeBirth bytes were accepted")
+	}
+	if !bytes.Equal(read(resourceguard.NormalSystemSourceManifestPath), system) ||
+		!bytes.Equal(read(normalNativeBuildPath), append(bytes.Clone(native), '\n')) {
+		t.Fatal("readback modified the isolated Guest root")
+	}
+}
+
 func TestNormalSystemBuildCompletePublicationRejectsBadFirstHitAndUnused(t *testing.T) {
 	for _, name := range []string{"badFirstWithGoodLater", "unusedDeclaredLoader", "badScript"} {
 		t.Run(name, func(t *testing.T) {

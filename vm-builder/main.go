@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	_ "embed"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -98,6 +99,7 @@ var (
 	normalNativePGMajor             = flag.Uint("normal-native-pg-major", 17, "Private image PG major selection: 17 default | 18 explicit; not collector ABI")
 	normalNativePostgresSHA         = flag.String("normal-native-postgres-sha256", "", "Original PostgreSQL ELF SHA256 from trusted build input; required for explicit PG18")
 	normalManifestRoot              = flag.String("normal-manifest-root", "", "Build-container-only final root inventory command")
+	normalReadback                  = flag.Bool("normal-readback", false, "Read-only System3 and NativeBirth closure report from an isolated final Guest root")
 	normalPrepareConfigsOnly        = flag.Bool("normal-prepare-configs-only", false, "Private pre-base preparation of canonical controls2 configurations only; emits no System/Native inventory")
 	normalPrepareTrustedComputeOnly = flag.Bool("normal-prepare-trusted-compute-only", false, "Explicit pre-base trusted-controller-v1 launcher refresh from the fixed build plan; no inventory or runtime authorization")
 	normalBaseDigest                = flag.String("normal-base-image-sha", "", "Original base image declaration for final inventory; not final image self hash")
@@ -189,6 +191,10 @@ type inittabCommand struct {
 
 func main() {
 	flag.Parse()
+	if *normalReadback && (*normalManifestRoot == "" || *normalPrepareTrustedComputeOnly || *normalPrepareConfigsOnly ||
+		*normalNativeBirthVersion != 1 || !normalNativePGDigest(*normalNativePostgresSHA) || !normalNativePGDigest(*normalBaseDigest)) {
+		log.Fatal("normal readback requires an isolated final root, collector1, and original base and PostgreSQL digests")
+	}
 	if *normalPrepareTrustedComputeOnly && (*normalManifestRoot == "" || *normalPrepareConfigsOnly) {
 		log.Fatal("trusted Compute preparation requires an explicit root and a separate action")
 	}
@@ -203,6 +209,16 @@ func main() {
 		raw, e := os.ReadFile(*normalPlanFlag)
 		if e != nil {
 			log.Fatal("normal plan unavailable")
+		}
+		if *normalReadback {
+			receipt, e := readbackNormalImage(*normalManifestRoot, raw, *normalBaseDigest, uint32(*normalNativePGMajor), *normalNativePostgresSHA)
+			if e != nil {
+				log.Fatal(e)
+			}
+			if e = json.NewEncoder(os.Stdout).Encode(receipt); e != nil {
+				log.Fatal(e)
+			}
+			return
 		}
 		plan, e := decodeNormalBuildPlan(raw)
 		if e != nil {

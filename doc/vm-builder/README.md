@@ -1,5 +1,25 @@
 This README covers non-trivial implementation details of vm-builder.
 
+## Readback of a System3 Guest
+
+On Linux amd64, mount the final Guest filesystem read-only in an isolated mount
+namespace. Supply the original build plan, the base digest used by the builder,
+and the expected PostgreSQL ELF digest from the build inputs.
+
+```sh
+vm-builder --normal-readback --target-arch=linux/amd64 \
+  --system-mode=normal-split-v3 --normal-ordinary-controls-version=2 \
+  --normal-native-birth-version=1 --normal-native-pg-major=17 \
+  --normal-manifest-root=/mnt/guest --normal-build-plan=/inputs/plan.json \
+  --normal-base-image-sha="$base_sha256" \
+  --normal-native-postgres-sha256="$postgres_sha256"
+```
+
+The command reconstructs the System3 and NativeBirth inventories from the mounted
+bytes and compares them with the original manifests. Success emits one JSON record
+with the input and manifest digests. Use the record alongside the OCI disk and
+kernel receipt and the Kubernetes boot and runtime evidence.
+
 What `vm-builder` Does
 ======================
 
