@@ -90,3 +90,20 @@ docker build --build-arg KERNEL_VERSION=6.6.64 --platform linux/x86_64 --target 
 docker run --rm -v $PWD:/host --name kernel-build -it kernel-build-deps bash
 # inside that bash shell, do the menuconfig, then copy-out the config to /host
 ```
+
+## Guest HugeTLB regression probe
+
+Compile `validation/guest-hugetlb-probe.c` on Linux with
+`gcc -std=c17 -Wall -Wextra -Werror -Os -static -s`. Package the binary as
+`/init` and include a `/dev/console` device in a disposable initramfs. Boot
+the candidate kernel in an isolated QEMU Guest with `console=ttyS0 panic=1
+hugepagesz=2M hugepages=4 dsga_c6_guest_probe=1 rdinit=/init`. The probe
+requires PID 1 and the explicit boot marker before it changes the Guest pool.
+
+Read `DSGA_REMOVE` with the matching `DSGA_POOL` and `DSGA_ALIAS` samples.
+In the tested Linux 6.12.26 kernel, a 4 KiB operation zeroed bytes within a
+2 MiB huge page while the free-page count held steady. Removing an aligned
+2 MiB range increased the free-page count before a later access could fault
+the page again. Pool shrink was observed after releasing both mappings and
+the backing file. This probe measures the Guest kernel portion of provider
+qualification.
