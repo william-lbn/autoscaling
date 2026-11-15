@@ -5,6 +5,7 @@ from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import distribution
 
@@ -89,3 +90,54 @@ class GuestOCI(unittest.TestCase):
             self.inspect([("vmlinuz/a", KERNEL_FINAL)])
         with self.assertRaisesRegex(ValueError, "Ambiguous or non-regular"):
             self.inspect([("vmlinuz", b"")])
+
+    def test_normal_readback_uses_final_disk_and_independent_inputs(self):
+        expected = checksum(b"independent")
+        receipt = {"kind": "normal-guest-root-readback", "protocol_version": 1, "architecture": "linux/amd64",
+                   "build_plan_sha256": expected, "base_image_sha256": expected,
+                   "system_profile": "neon-dsga-normal-system-source-v3", "postgres_major": 18,
+                   "postgres_elf_sha256": expected, "system_manifest_sha256": expected,
+                   "native_birth_manifest_sha256": expected}
+
+        def read_disk(disk, scratch, builder, plan, base_sha, major, postgres_sha):
+            self.assertEqual(disk.read_bytes(), DISK)
+            self.assertEqual((base_sha, major, postgres_sha), (expected, 18, expected))
+            scratch_paths.append(scratch)
+            return receipt
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "guest.tar"
+            with tarfile.open(path, "w:") as archive:
+                image, _ = self.build(archive, [[("disk.qcow2", b"lower-disk"), ("vmlinuz", KERNEL_ORIGINAL)],
+                                                [("disk.qcow2", DISK), ("vmlinuz", KERNEL_FINAL)]])
+            builder = Path(directory) / "builder"
+            plan = Path(directory) / "plan"
+            for item in (builder, plan):
+                item.write_bytes(b"independent")
+            args = [path, image, checksum(DISK), checksum(KERNEL_FINAL), builder, expected,
+                    plan, expected, expected, 18, expected]
+            scratch_paths = []
+            with patch.object(distribution, "readback_guest_root", side_effect=read_disk) as readback:
+                result = distribution.verify_normal_guest_oci(*args)
+                self.assertEqual(result["root"], receipt)
+                self.assertEqual(result["oci"]["image_digest"], image)
+                self.assertFalse(scratch_paths[0].exists())
+                receipt["postgres_major"] = 17
+                with self.assertRaisesRegex(ValueError, "root receipt differs"):
+                    distribution.verify_normal_guest_oci(*args)
+                args[3] = checksum(KERNEL_ORIGINAL)
+                with self.assertRaisesRegex(ValueError, "Final Guest artifact.*vmlinuz"):
+                    distribution.verify_normal_guest_oci(*args)
+                self.assertEqual(readback.call_count, 2)
+                plan.write_bytes(b"changed")
+                with self.assertRaisesRegex(ValueError, "Builder or plan differs"):
+                    distribution.verify_normal_guest_oci(*args)
+
+    def test_qcow2_external_data_is_rejected_before_conversion(self):
+        info = {"format": "qcow2", "format-specific": {"data": {"data-file": "outside.raw"}}}
+        with patch.object(distribution.subprocess, "check_output", return_value=json.dumps(info).encode()):
+            with patch.object(distribution.subprocess, "run") as run:
+                with self.assertRaisesRegex(ValueError, "self-contained"):
+                    distribution.readback_guest_root(Path("disk"), Path("scratch"), Path("builder"),
+                                                     Path("plan"), checksum(DISK), 17, checksum(DISK))
+                run.assert_not_called()

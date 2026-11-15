@@ -9,6 +9,7 @@ import pathlib
 import re
 import subprocess
 import tarfile
+import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SHA = re.compile(r"[a-f0-9]{40}\Z")
@@ -246,7 +247,7 @@ def oci_json(stream):
     return json.loads(raw, object_pairs_hook=unique_object)
 
 
-def guest_layer(files, paths):
+def guest_layer(files, paths, disk_output=None):
     # whiteout 只隐藏较低层，层内新增文件与 whiteout 的 tar 顺序不影响最终字节。
     replacements, removed = {}, set()
     opaque = False
@@ -268,13 +269,20 @@ def guest_layer(files, paths):
             if name in replacements or not member.isfile() or member.size == 0:
                 raise ValueError(f"Ambiguous or non-regular Guest artifact: {name}")
             with files.extractfile(member) as content:
-                replacements[name] = {"sha256": hashlib.file_digest(content, "sha256").hexdigest(),
-                                      "size": member.size}
+                if name == "disk.qcow2" and disk_output is not None:
+                    digest = hashlib.sha256()
+                    with disk_output.open("wb") as output:
+                        for chunk in iter(lambda: content.read(1 << 20), b""):
+                            digest.update(chunk)
+                            output.write(chunk)
+                else:
+                    digest = hashlib.file_digest(content, "sha256")
+                replacements[name] = {"sha256": digest.hexdigest(), "size": member.size}
     return {name: replacements.get(name) for name in paths
             if name in replacements or name in removed or opaque}
 
 
-def inspect_guest_oci(archive_path, image_digest, arch, disk_sha256, kernel_sha256):
+def inspect_guest_oci(archive_path, image_digest, arch, disk_sha256, kernel_sha256, *, disk_output=None):
     """核对归档中平台真实可见的磁盘和内核，保留分别覆盖的层与摘要。"""
     validate_arch(arch)
     expected = {"disk.qcow2": disk_sha256, "vmlinuz": kernel_sha256}
@@ -317,7 +325,7 @@ def inspect_guest_oci(archive_path, image_digest, arch, disk_sha256, kernel_sha2
                 raise ValueError("Unsupported Guest OCI layer encoding")
             with oci_blob(archive, layer) as content:
                 with tarfile.open(fileobj=content, mode="r|gz" if compressed else "r|") as files:
-                    changes = guest_layer(files, expected)
+                    changes = guest_layer(files, expected, disk_output)
             for name, material in changes.items():
                 history[name].append({"layer_digest": layer["digest"], "material": material})
 
@@ -327,6 +335,59 @@ def inspect_guest_oci(archive_path, image_digest, arch, disk_sha256, kernel_sha2
             raise ValueError(f"Final Guest artifact does not match locked bytes: {name}")
     return {"image_digest": image_digest, "platform_manifest_digest": platform["digest"],
             "config_digest": config_digest, "architecture": "linux/" + arch, "assets": history}
+
+
+def readback_guest_root(disk, scratch, builder, plan, base_sha, major, postgres_sha):
+    info = json.loads(subprocess.check_output(["qemu-img", "info", "--output=json", "-f", "qcow2", disk]),
+                      object_pairs_hook=unique_object)
+    qcow = info["format-specific"]["data"]
+    if (info["format"] != "qcow2" or info.get("backing-filename") or info.get("encrypted")
+            or qcow.get("data-file") or qcow.get("data-file-raw") or qcow.get("corrupt")):
+        raise ValueError("Guest disk must be a self-contained, unencrypted qcow2 image")
+    raw = scratch / "root.raw"
+    root = scratch / "root"
+    root.mkdir()
+    subprocess.run(["qemu-img", "convert", "-f", "qcow2", "-O", "raw", "-S", "4k", disk, raw], check=True)
+    subprocess.run(["qemu-img", "compare", "-q", "-f", "raw", "-F", "qcow2", raw, disk], check=True)
+    output = subprocess.check_output([
+        "unshare", "--mount", "--net", "--propagation", "private", "bash", "-ceu", '''
+            mount -t ext4 -o loop,ro,noload,nodev,nosuid,noexec -- "$1" "$2"
+            trap 'umount -- "$2"' EXIT
+            "${@:3}"
+        ''', "readback-root", raw, root, builder, "--normal-readback", "--target-arch=linux/amd64",
+        "--system-mode=normal-split-v3", f"--normal-manifest-root={root}", f"--normal-build-plan={plan}",
+        f"--normal-base-image-sha={base_sha}", "--normal-ordinary-controls-version=2",
+        "--normal-native-birth-version=1", f"--normal-native-pg-major={major}",
+        f"--normal-native-postgres-sha256={postgres_sha}",
+    ])
+    return json.loads(output, object_pairs_hook=unique_object)
+
+
+def verify_normal_guest_oci(archive, image_digest, disk_sha, kernel_sha, builder, builder_sha,
+                            plan, plan_sha, base_sha, major, postgres_sha):
+    builder, plan = pathlib.Path(builder).resolve(strict=True), pathlib.Path(plan).resolve(strict=True)
+    if major not in (17, 18) or not all(HASH.fullmatch(d) for d in (builder_sha, plan_sha, base_sha, postgres_sha)):
+        raise ValueError("Normal Guest verification requires PG17 or PG18 and immutable build checksums")
+    if sha256(builder) != builder_sha or sha256(plan) != plan_sha:
+        raise ValueError("Builder or plan differs from the independent build input")
+    with tempfile.TemporaryDirectory(prefix="neon-guest-readback-") as directory:
+        scratch = pathlib.Path(directory)
+        disk = scratch / "disk.qcow2"
+        oci = inspect_guest_oci(archive, image_digest, "amd64", disk_sha, kernel_sha, disk_output=disk)
+        root = readback_guest_root(disk, scratch, builder, plan, base_sha, major, postgres_sha)
+    required = {"kind": "normal-guest-root-readback", "protocol_version": 1, "architecture": "linux/amd64",
+                "build_plan_sha256": plan_sha, "base_image_sha256": base_sha,
+                "system_profile": "neon-dsga-normal-system-source-v3",
+                "postgres_major": major, "postgres_elf_sha256": postgres_sha}
+    if (not isinstance(root, dict) or any(type(root.get(key)) is not type(value) or root[key] != value
+                                         for key, value in required.items()) or not all(
+            isinstance(root.get(key), str) and HASH.fullmatch(root[key])
+            for key in ("system_manifest_sha256", "native_birth_manifest_sha256"))):
+        raise ValueError("Final Guest root receipt differs from the independent build input")
+    if sha256(builder) != builder_sha or sha256(plan) != plan_sha:
+        raise ValueError("Builder or plan changed during Guest verification")
+    return {"kind": "normal-guest-oci-readback", "protocol_version": 1,
+            "builder_sha256": builder_sha, "oci": oci, "root": root}
 
 
 def write_json(path, value):
@@ -342,12 +403,14 @@ def main():
     inspect = sub.add_parser("inspect-kernel")
     aggregate = sub.add_parser("collect")
     guest = sub.add_parser("inspect-guest-oci", help="Verify the final disk and kernel in an archived OCI image")
-    guest.add_argument("--archive", required=True)
-    guest.add_argument("--image-digest", required=True)
+    normal = sub.add_parser("verify-normal-guest-oci", help="Read back a final trusted Guest from its locked OCI archive")
+    for command in (guest, normal):
+        for name in ("archive", "image-digest", "disk-sha256", "kernel-sha256", "output"):
+            command.add_argument("--" + name, required=True)
     guest.add_argument("--arch", required=True, choices=["amd64", "arm64"])
-    guest.add_argument("--disk-sha256", required=True)
-    guest.add_argument("--kernel-sha256", required=True)
-    guest.add_argument("--output", required=True)
+    for name in ("builder", "builder-sha256", "plan", "plan-sha256", "base-sha256", "postgres-sha256"):
+        normal.add_argument("--" + name, required=True)
+    normal.add_argument("--postgres-major", required=True, type=int, choices=[17, 18])
     for command in [verify, inspect, aggregate]:
         command.add_argument("--source-commit", required=True)
         command.add_argument("--version", required=True)
@@ -361,6 +424,12 @@ def main():
     args = parser.parse_args()
     if args.command == "inspect-guest-oci":
         value = inspect_guest_oci(args.archive, args.image_digest, args.arch, args.disk_sha256, args.kernel_sha256)
+        write_json(args.output, value)
+        return
+    if args.command == "verify-normal-guest-oci":
+        value = verify_normal_guest_oci(args.archive, args.image_digest, args.disk_sha256, args.kernel_sha256,
+                                        args.builder, args.builder_sha256, args.plan, args.plan_sha256,
+                                        args.base_sha256, args.postgres_major, args.postgres_sha256)
         write_json(args.output, value)
         return
     identity = execution_identity()
