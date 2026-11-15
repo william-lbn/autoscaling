@@ -78,18 +78,18 @@ func (c Config) Allows(target Target) bool {
 // 客户端计数来自同一次原生 WorkState。新 PG 硬预算与 Guest 在线降限均已协商时，
 // 可在低负载窗口内为普通空闲连接提出目标；原执行链独立核验每次真实释放与降限。
 type Sample struct {
-	At                   time.Time
-	Instance             control.Instance
-	CapacityGeneration   control.Uint64
-	Current              Target
-	NormalCurrent        control.Uint64
-	NormalMax            control.Uint64
-	ClientProcesses      uint32
-	IdleClients          uint32
-	RetainedTransactions uint32
-	SupportsOnlineShrink bool
-	AdmissionOpen        bool
-	Eligible             []bool
+	At                   time.Time        `json:"at"`
+	Instance             control.Instance `json:"instance"`
+	CapacityGeneration   control.Uint64   `json:"capacity_generation"`
+	Current              Target           `json:"current"`
+	NormalCurrent        control.Uint64   `json:"normal_current_bytes"`
+	NormalMax            control.Uint64   `json:"normal_max_bytes"`
+	ClientProcesses      uint32           `json:"client_processes"`
+	IdleClients          uint32           `json:"idle_clients"`
+	RetainedTransactions uint32           `json:"retained_transactions"`
+	SupportsOnlineShrink bool             `json:"supports_online_shrink"`
+	AdmissionOpen        bool             `json:"admission_open"`
+	Eligible             []bool           `json:"eligible"`
 }
 
 // Engine只由同一owner串行循环持有，不另开goroutine或锁跨网络。重建策略

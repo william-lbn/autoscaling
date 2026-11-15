@@ -36,20 +36,7 @@ type AutomaticPolicySource struct {
 	Qualification       budget.QualificationSource `json:"qualification"`
 }
 
-type AutomaticSample struct {
-	At                   time.Time        `json:"at"`
-	Instance             control.Instance `json:"instance"`
-	CapacityGeneration   control.Uint64   `json:"capacity_generation"`
-	Current              policy.Target    `json:"current"`
-	NormalCurrent        control.Uint64   `json:"normal_current_bytes"`
-	NormalMax            control.Uint64   `json:"normal_max_bytes"`
-	ClientProcesses      uint32           `json:"client_processes"`
-	IdleClients          uint32           `json:"idle_clients"`
-	RetainedTransactions uint32           `json:"retained_transactions"`
-	SupportsOnlineShrink bool             `json:"supports_online_shrink"`
-	AdmissionOpen        bool             `json:"admission_open"`
-	Eligible             []bool           `json:"eligible"`
-}
+type AutomaticSample = policy.Sample
 
 func (w *PGWorker) captureAutomaticDecision(request control.Request, sample policy.Sample) {
 	d := w.automatic
@@ -62,12 +49,9 @@ func (w *PGWorker) captureAutomaticDecision(request control.Request, sample poli
 		// 采用当时已应用的选择，不拿Desired冒充实际用于Evaluate的策略。
 		source.Kind, source.SelectionGeneration, source.SelectionSHA256 = "runtime_selection", w.runtimeStatus.AppliedGeneration, w.runtimeStatus.AppliedSHA256
 	}
+	sample.Eligible = append([]bool(nil), sample.Eligible...)
 	d.pendingDecision = &AutomaticDecision{ProtocolVersion: 1, Request: request, Source: source,
-		Sample: AutomaticSample{At: sample.At, Instance: sample.Instance, CapacityGeneration: sample.CapacityGeneration,
-			Current: sample.Current, NormalCurrent: sample.NormalCurrent, NormalMax: sample.NormalMax,
-			ClientProcesses: sample.ClientProcesses, IdleClients: sample.IdleClients, RetainedTransactions: sample.RetainedTransactions,
-			SupportsOnlineShrink: sample.SupportsOnlineShrink, AdmissionOpen: sample.AdmissionOpen, Eligible: append([]bool(nil), sample.Eligible...)},
-		Window: d.engine.Observation()}
+		Sample: sample, Window: d.engine.Observation()}
 	w.recordAutomaticOutcome("selected")
 }
 
