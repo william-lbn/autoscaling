@@ -8,6 +8,7 @@ import os
 import pathlib
 import re
 import subprocess
+import tarfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SHA = re.compile(r"[a-f0-9]{40}\Z")
@@ -224,6 +225,110 @@ def collect(directory, kernel_directory, source, version, arch, execution):
     }
 
 
+
+def oci_blob(archive, descriptor):
+    digest = descriptor["digest"]
+    if not DIGEST.fullmatch(digest):
+        raise ValueError("Invalid OCI descriptor digest")
+    member = archive.getmember("blobs/sha256/" + digest.split(":")[1])
+    if not member.isfile() or member.size != descriptor["size"]:
+        raise ValueError("OCI descriptor size or type differs from the archive member")
+    with archive.extractfile(member) as content:
+        if "sha256:" + hashlib.file_digest(content, "sha256").hexdigest() != digest:
+            raise ValueError(f"OCI blob does not match its digest: {digest}")
+    return archive.extractfile(member)
+
+
+def oci_json(stream):
+    raw = stream.read((1 << 20) + 1)
+    if len(raw) > 1 << 20:
+        raise ValueError("OCI metadata exceeds the readback limit")
+    return json.loads(raw, object_pairs_hook=unique_object)
+
+
+def guest_layer(files, paths):
+    # whiteout 只隐藏较低层，层内新增文件与 whiteout 的 tar 顺序不影响最终字节。
+    replacements, removed = {}, set()
+    opaque = False
+    for member in files:
+        path = pathlib.PurePosixPath(member.name)
+        if path.is_absolute() or ".." in path.parts:
+            raise ValueError(f"Guest layer contains an ambiguous path: {member.name}")
+        if len(path.parts) > 1 and path.parts[0] in paths:
+            raise ValueError(f"Guest layer treats an artifact as a directory: {member.name}")
+        name = path.as_posix()
+        if name == ".wh..wh..opq" or name.startswith(".wh.") and name[4:] in paths:
+            if not member.isfile() or member.size != 0:
+                raise ValueError(f"Invalid Guest OCI whiteout: {name}")
+            if name == ".wh..wh..opq":
+                opaque = True
+            else:
+                removed.add(name[4:])
+        elif name in paths:
+            if name in replacements or not member.isfile() or member.size == 0:
+                raise ValueError(f"Ambiguous or non-regular Guest artifact: {name}")
+            with files.extractfile(member) as content:
+                replacements[name] = {"sha256": hashlib.file_digest(content, "sha256").hexdigest(),
+                                      "size": member.size}
+    return {name: replacements.get(name) for name in paths
+            if name in replacements or name in removed or opaque}
+
+
+def inspect_guest_oci(archive_path, image_digest, arch, disk_sha256, kernel_sha256):
+    """核对归档中平台真实可见的磁盘和内核，保留分别覆盖的层与摘要。"""
+    validate_arch(arch)
+    expected = {"disk.qcow2": disk_sha256, "vmlinuz": kernel_sha256}
+    if not DIGEST.fullmatch(image_digest) or not all(HASH.fullmatch(value) for value in expected.values()):
+        raise ValueError("Immutable image digest and file checksums are required")
+    history = {name: [] for name in expected}
+    with tarfile.open(archive_path, "r:") as archive:
+        names = archive.getnames()
+        if len(set(names)) != len(names):
+            raise ValueError("Duplicate path in OCI archive")
+        index_member = archive.getmember("index.json")
+        if not index_member.isfile():
+            raise ValueError("OCI index must be a regular archive member")
+        with archive.extractfile(index_member) as index:
+            entries = [item for item in oci_json(index)["manifests"] if item["digest"] == image_digest]
+        if len(entries) != 1:
+            raise ValueError("OCI archive does not identify one immutable image")
+        platform = entries[0]
+        with oci_blob(archive, platform) as content:
+            manifest = oci_json(content)
+        if "manifests" in manifest:
+            platforms = [item for item in manifest["manifests"]
+                         if item.get("platform", {}).get("os") == "linux"
+                         and item["platform"].get("architecture") == arch]
+            if len(platforms) != 1:
+                raise ValueError("Image index does not identify one Linux platform")
+            platform = platforms[0]
+            with oci_blob(archive, platform) as content:
+                manifest = oci_json(content)
+        config_digest = manifest["config"]["digest"]
+        with oci_blob(archive, manifest["config"]) as content:
+            config = oci_json(content)
+        if config.get("os") != "linux" or config.get("architecture") != arch:
+            raise ValueError("Guest OCI config belongs to another operating system or architecture")
+
+        for layer in manifest["layers"]:
+            compressed = layer["mediaType"] in {"application/vnd.oci.image.layer.v1.tar+gzip",
+                                               "application/vnd.docker.image.rootfs.diff.tar.gzip"}
+            if not compressed and layer["mediaType"] != "application/vnd.oci.image.layer.v1.tar":
+                raise ValueError("Unsupported Guest OCI layer encoding")
+            with oci_blob(archive, layer) as content:
+                with tarfile.open(fileobj=content, mode="r|gz" if compressed else "r|") as files:
+                    changes = guest_layer(files, expected)
+            for name, material in changes.items():
+                history[name].append({"layer_digest": layer["digest"], "material": material})
+
+    for name, checksum in expected.items():
+        final = history[name][-1]["material"] if history[name] else None
+        if final is None or final["sha256"] != checksum:
+            raise ValueError(f"Final Guest artifact does not match locked bytes: {name}")
+    return {"image_digest": image_digest, "platform_manifest_digest": platform["digest"],
+            "config_digest": config_digest, "architecture": "linux/" + arch, "assets": history}
+
+
 def write_json(path, value):
     path = pathlib.Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -236,6 +341,13 @@ def main():
     verify = sub.add_parser("verify")
     inspect = sub.add_parser("inspect-kernel")
     aggregate = sub.add_parser("collect")
+    guest = sub.add_parser("inspect-guest-oci", help="Verify the final disk and kernel in an archived OCI image")
+    guest.add_argument("--archive", required=True)
+    guest.add_argument("--image-digest", required=True)
+    guest.add_argument("--arch", required=True, choices=["amd64", "arm64"])
+    guest.add_argument("--disk-sha256", required=True)
+    guest.add_argument("--kernel-sha256", required=True)
+    guest.add_argument("--output", required=True)
     for command in [verify, inspect, aggregate]:
         command.add_argument("--source-commit", required=True)
         command.add_argument("--version", required=True)
@@ -247,6 +359,10 @@ def main():
     aggregate.add_argument("--kernel-directory", required=True)
     aggregate.add_argument("--output", required=True)
     args = parser.parse_args()
+    if args.command == "inspect-guest-oci":
+        value = inspect_guest_oci(args.archive, args.image_digest, args.arch, args.disk_sha256, args.kernel_sha256)
+        write_json(args.output, value)
+        return
     identity = execution_identity()
     verify_source(args.source_commit)
     validate_attempt(args.version, args.arch, identity)
