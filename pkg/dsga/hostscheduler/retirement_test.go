@@ -383,6 +383,20 @@ func TestSchedulerOrdinaryPodRetirementKeepsOtherAllocations(t *testing.T) {
 		p.Status.Phase = core.PodFailed
 		now := metav1.Now()
 		p.Status.ContainerStatuses = []core.ContainerStatus{{Name: "app", ContainerID: "containerd://ordinary", State: core.ContainerState{Terminated: &core.ContainerStateTerminated{ContainerID: "containerd://ordinary", StartedAt: now, FinishedAt: now}}}}
+		f.DenyPodPatch = true
+	})
+	before, err := s.domains[n.Binding.NodeName].store.Load(ctx)
+	require.NoError(t, err)
+	err = s.reconcile(ctx, s.domains[n.Binding.NodeName])
+	require.ErrorContains(t, err, "original Pod retirement intent is unconfirmed")
+	require.True(t, apierrors.IsForbidden(err), "original Pod permission error should remain visible")
+	denied, err := s.domains[n.Binding.NodeName].store.Load(ctx)
+	require.NoError(t, err)
+	require.Equal(t, before.State(), denied.State())
+	f.Mutate(func(f *dsgatest.SchedulerAPI) {
+		require.Contains(t, f.Pods["testing/done"].Finalizers, hostguard.PodProtectionFinalizer)
+		require.Empty(t, f.Pods["testing/done"].Annotations[hostguard.RetirementAnnotation])
+		f.DenyPodPatch = false
 	})
 	require.NoError(t, s.reconcile(ctx, s.domains[n.Binding.NodeName]))
 	after, err := s.domains[n.Binding.NodeName].store.Load(ctx)

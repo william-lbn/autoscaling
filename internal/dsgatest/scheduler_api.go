@@ -38,6 +38,7 @@ type SchedulerAPI struct {
 	LoseNodeReply bool
 	LoseVMReply   bool
 	LosePodReply  bool
+	DenyPodPatch  bool
 	NodeWrites    int
 	VMWrites      int
 	PodWrites     int
@@ -51,7 +52,7 @@ func NewSchedulerAPI(t *testing.T, holder string) (*SchedulerAPI, hostguard.Bind
 	b := hostguard.Binding{NodeName: "node-one", NodeUID: "node-uid", Namespace: "system", LeaseName: "node-one-allocator", LeaseUID: "original-host-lease"}
 	controller, seconds, transitions := true, int32(60), int32(0)
 	stamp := metav1.NewMicroTime(time.Now())
-	f := &SchedulerAPI{mu: sync.Mutex{}, Node: core.Node{ObjectMeta: metav1.ObjectMeta{Name: b.NodeName, UID: b.NodeUID, ResourceVersion: "1"}, Status: core.NodeStatus{Allocatable: core.ResourceList{core.ResourceMemory: resource.MustParse("8Gi")}}}, Lease: coord.Lease{TypeMeta: metav1.TypeMeta{Kind: "Lease", APIVersion: "coordination.k8s.io/v1"}, ObjectMeta: metav1.ObjectMeta{Name: b.LeaseName, Namespace: b.Namespace, UID: b.LeaseUID, ResourceVersion: "1", Annotations: map[string]string{hostguard.LeaseAnnotation: hostguard.LeaseMarker(b)}, OwnerReferences: []metav1.OwnerReference{{APIVersion: "v1", Kind: "Node", Name: b.NodeName, UID: b.NodeUID, Controller: &controller, BlockOwnerDeletion: nil}}}, Spec: coord.LeaseSpec{HolderIdentity: &holder, LeaseDurationSeconds: &seconds, AcquireTime: &stamp, RenewTime: &stamp, LeaseTransitions: &transitions, Strategy: nil, PreferredHolder: nil}}, Pods: make(map[string]*core.Pod), VMs: make(map[string]*vmv1.VirtualMachine), LoseNodeReply: false, LoseVMReply: false, LosePodReply: false, NodeWrites: 0, VMWrites: 0, PodWrites: 0, version: 1, Core: nil, VM: nil}
+	f := &SchedulerAPI{mu: sync.Mutex{}, Node: core.Node{ObjectMeta: metav1.ObjectMeta{Name: b.NodeName, UID: b.NodeUID, ResourceVersion: "1"}, Status: core.NodeStatus{Allocatable: core.ResourceList{core.ResourceMemory: resource.MustParse("8Gi")}}}, Lease: coord.Lease{TypeMeta: metav1.TypeMeta{Kind: "Lease", APIVersion: "coordination.k8s.io/v1"}, ObjectMeta: metav1.ObjectMeta{Name: b.LeaseName, Namespace: b.Namespace, UID: b.LeaseUID, ResourceVersion: "1", Annotations: map[string]string{hostguard.LeaseAnnotation: hostguard.LeaseMarker(b)}, OwnerReferences: []metav1.OwnerReference{{APIVersion: "v1", Kind: "Node", Name: b.NodeName, UID: b.NodeUID, Controller: &controller, BlockOwnerDeletion: nil}}}, Spec: coord.LeaseSpec{HolderIdentity: &holder, LeaseDurationSeconds: &seconds, AcquireTime: &stamp, RenewTime: &stamp, LeaseTransitions: &transitions, Strategy: nil, PreferredHolder: nil}}, Pods: make(map[string]*core.Pod), VMs: make(map[string]*vmv1.VirtualMachine), LoseNodeReply: false, LoseVMReply: false, LosePodReply: false, DenyPodPatch: false, NodeWrites: 0, VMWrites: 0, PodWrites: 0, version: 1, Core: nil, VM: nil}
 	server := httptest.NewServer(http.HandlerFunc(f.serve))
 	t.Cleanup(server.Close)
 	c := new(rest.Config)
@@ -136,6 +137,10 @@ func (f *SchedulerAPI) serve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method == http.MethodPatch {
+		if podObject != nil && f.DenyPodPatch {
+			http.Error(w, "original Pod patch forbidden", http.StatusForbidden)
+			return
+		}
 		raw, err := io.ReadAll(r.Body)
 		if err != nil || r.Header.Get("Content-Type") != "application/json-patch+json" {
 			http.Error(w, "invalid RFC6902 body", http.StatusBadRequest)

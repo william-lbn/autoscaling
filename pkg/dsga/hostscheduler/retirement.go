@@ -150,6 +150,9 @@ func (s *Service) persistRetirement(ctx context.Context, pod *core.Pod, r hostgu
 		return nil, errors.Join(writeErr, err)
 	}
 	if actual.UID != pod.UID || actual.ResourceVersion == "" || actual.Annotations[hostguard.RetirementAnnotation] != string(raw) {
+		if writeErr != nil {
+			return nil, fmt.Errorf("original Pod retirement intent is unconfirmed: %w", writeErr)
+		}
 		return nil, fmt.Errorf("original Pod retirement intent is unconfirmed")
 	}
 	return actual, nil
