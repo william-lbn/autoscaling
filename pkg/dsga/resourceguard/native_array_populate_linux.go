@@ -577,6 +577,21 @@ func arrayPopulateProcess(c arrayPopulateContext, child arrayPopulateChild, want
 	return out, nil
 }
 
+// EINTR without a transferred byte leaves the same seqpacket pending. This
+// retries the syscall on the original socket, without replaying an RPC or
+// reissuing a token whose delivery may already have taken effect.
+func arrayPopulatePacketIO(ctx context.Context, transfer func() (int, error)) (int, error) {
+	for {
+		if err := ctx.Err(); err != nil {
+			return 0, err
+		}
+		n, err := transfer()
+		if err != unix.EINTR || n > 0 {
+			return n, err
+		}
+	}
+}
+
 func arrayPopulateRecv(ctx context.Context, fd int) ([]byte, error) {
 	b := make([]byte, arrayPopulateStatusBytes)
 	for {
@@ -594,7 +609,12 @@ func arrayPopulateRecv(ctx context.Context, fd int) ([]byte, error) {
 		if p[0].Revents == 0 {
 			continue
 		}
-		n, _, flags, _, e := unix.Recvmsg(fd, b, nil, unix.MSG_CMSG_CLOEXEC)
+		var flags int
+		n, e := arrayPopulatePacketIO(ctx, func() (int, error) {
+			read, _, receivedFlags, _, err := unix.Recvmsg(fd, b, nil, unix.MSG_CMSG_CLOEXEC)
+			flags = receivedFlags
+			return read, err
+		})
 		if e != nil {
 			return nil, e
 		}
@@ -604,8 +624,8 @@ func arrayPopulateRecv(ctx context.Context, fd int) ([]byte, error) {
 		return b, nil
 	}
 }
-func arrayPopulateSend(fd int, b []byte) error {
-	n, e := unix.Write(fd, b)
+func arrayPopulateSend(ctx context.Context, fd int, b []byte) error {
+	n, e := arrayPopulatePacketIO(ctx, func() (int, error) { return unix.Write(fd, b) })
 	if e != nil {
 		return e
 	}
@@ -847,6 +867,7 @@ func runNativeArrayPopulateForSource(ctx context.Context, s *lockedState, c arra
 	if e != nil {
 		return result, errors.Join(ErrUnknown, e)
 	}
+	stage = 20
 	pair, e := unix.Socketpair(unix.AF_UNIX, unix.SOCK_SEQPACKET|unix.SOCK_CLOEXEC, 0)
 	if e != nil {
 		return result, errors.Join(ErrUnknown, e)
@@ -866,6 +887,7 @@ func runNativeArrayPopulateForSource(ctx context.Context, s *lockedState, c arra
 	cmd.Env = []string{}
 	cmd.ExtraFiles = []*os.File{helper, s.lock, files[0], files[1], files[2], files[3], childSocket, parentFile}
 	cmd.SysProcAttr = &syscall.SysProcAttr{PidFD: &pidfd, Pdeathsig: syscall.SIGKILL, UseCgroupFD: true, CgroupFD: cgroupFD}
+	stage = 21
 	if e = cmd.Start(); e != nil {
 		return result, errors.Join(ErrUnknown, e)
 	}
@@ -894,6 +916,7 @@ func runNativeArrayPopulateForSource(ctx context.Context, s *lockedState, c arra
 			err = errors.Join(ErrUnknown, err)
 		}
 	}()
+	stage = 22
 	if pidfd < 0 {
 		return result, fmt.Errorf("atomic original child pidfd unavailable")
 	}
@@ -915,13 +938,16 @@ func runNativeArrayPopulateForSource(ctx context.Context, s *lockedState, c arra
 		return result, e
 	}
 	result.Child = arrayPopulateChild{ProtocolVersion: 1, PendingSHA256: physicalDigest(rawPending), PID: cmd.Process.Pid, StartTicks: control.Uint64(ticks), PIDFDDevice: control.Uint64(pfst.Dev), PIDFDInode: control.Uint64(pfst.Ino)}
+	stage = 23
 	rawChild, e := arrayPopulateAppend(s, nonce, "child", result.Child)
 	if e != nil {
 		return result, e
 	}
-	if e = arrayPopulateSend(pair[0], wire); e != nil {
+	stage = 24
+	if e = arrayPopulateSend(ctx, pair[0], wire); e != nil {
 		return result, e
 	}
+	stage = 25
 	rawReady, e := arrayPopulateRecv(ctx, pair[0])
 	if e != nil {
 		return result, e
@@ -938,6 +964,7 @@ func runNativeArrayPopulateForSource(ctx context.Context, s *lockedState, c arra
 	if len(program) != int(ready.FilterCount) {
 		return result, fmt.Errorf("helper deterministic filter source differs")
 	}
+	stage = 26
 	pidfdCopy, e := unix.FcntlInt(uintptr(pidfd), unix.F_DUPFD_CLOEXEC, 0)
 	if e != nil {
 		return result, e
@@ -961,6 +988,7 @@ func runNativeArrayPopulateForSource(ctx context.Context, s *lockedState, c arra
 	stoppedTarget = target
 	defer target.close()
 	var rawPrepared []byte
+	stage = 27
 	trace, e := nativeTraceWithOriginalStoppedTarget(ctx, target, func(ctx context.Context, original *nativeTraceOriginalStoppedTarget) error {
 		if e := arrayPopulateGroups(c, result.Child.PID); e != nil {
 			return e
@@ -996,15 +1024,18 @@ func runNativeArrayPopulateForSource(ctx context.Context, s *lockedState, c arra
 		if spec.Length == 0 {
 			continue
 		}
+		stage = 28
 		if e = ctx.Err(); e != nil {
 			return result, e
 		}
 		if _, e = arrayPopulateProcess(c, result.Child, arrayPopulateCgroup, ready, image, imageBytes, procfd); e != nil {
 			return result, e
 		}
-		if e = arrayPopulateSend(pair[0], []byte{byte(0xa0 + i)}); e != nil {
+		stage = 29
+		if e = arrayPopulateSend(ctx, pair[0], []byte{byte(0xa0 + i)}); e != nil {
 			return result, e
 		}
+		stage = 30
 		raw, e := arrayPopulateRecv(ctx, pair[0])
 		if e != nil {
 			return result, e
@@ -1018,15 +1049,17 @@ func runNativeArrayPopulateForSource(ctx context.Context, s *lockedState, c arra
 		}
 		result.Progress[i] = true
 		if observe != nil {
+			stage = 31
 			if e = observe(result, i, pidfd); e != nil {
 				return result, e
 			}
 		}
 	}
+	stage = 32
 	if e = ctx.Err(); e != nil {
 		return result, e
 	}
-	if e = arrayPopulateSend(pair[0], []byte{0xef}); e != nil {
+	if e = arrayPopulateSend(ctx, pair[0], []byte{0xef}); e != nil {
 		return result, e
 	}
 	status, e := arrayPopulateWaitOriginal(pidfd, cmd.Process.Pid)
@@ -1035,6 +1068,7 @@ func runNativeArrayPopulateForSource(ctx context.Context, s *lockedState, c arra
 		return result, fmt.Errorf("original helper successful P_PIDFD exit missing: %v", e)
 	}
 	result.ExitObserved = true
+	stage = 33
 	if e = arrayPopulateGroups(c, 0); e != nil {
 		return result, e
 	}

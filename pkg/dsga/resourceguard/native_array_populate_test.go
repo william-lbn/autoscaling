@@ -3,6 +3,7 @@
 package resourceguard
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
 	"errors"
@@ -10,10 +11,63 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"golang.org/x/sys/unix"
 )
+
+func TestArrayPopulatePacketRetainsOriginalSocketAfterEINTR(t *testing.T) {
+	pair, err := unix.Socketpair(unix.AF_UNIX, unix.SOCK_SEQPACKET|unix.SOCK_CLOEXEC|unix.SOCK_NONBLOCK, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer unix.Close(pair[0])
+	defer unix.Close(pair[1])
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	packet := bytes.Repeat([]byte{0x5a}, arrayPopulateStatusBytes)
+	calls := 0
+	written, err := arrayPopulatePacketIO(ctx, func() (int, error) {
+		calls++
+		if calls == 1 {
+			return -1, unix.EINTR
+		}
+		return unix.Write(pair[0], packet)
+	})
+	if err != nil || calls != 2 || written != len(packet) {
+		t.Fatalf("original packet send: bytes=%d, calls=%d, err=%v", written, calls, err)
+	}
+	got, err := arrayPopulateRecv(ctx, pair[1])
+	if err != nil || !bytes.Equal(got, packet) {
+		t.Fatalf("original packet receive: bytes=%d, err=%v", len(got), err)
+	}
+	if _, err := unix.Read(pair[1], make([]byte, len(packet))); err != unix.EAGAIN {
+		t.Fatalf("unexpected second delivery: %v", err)
+	}
+}
+
+func TestArrayPopulatePacketDoesNotReplayUncertainDelivery(t *testing.T) {
+	calls := 0
+	n, err := arrayPopulatePacketIO(context.Background(), func() (int, error) {
+		calls++
+		return 1, unix.EINTR
+	})
+	if n != 1 || err != unix.EINTR || calls != 1 {
+		t.Fatalf("uncertain byte count replayed: %d, %v, %d", n, err, calls)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	calls = 0
+	_, err = arrayPopulatePacketIO(ctx, func() (int, error) {
+		calls++
+		cancel()
+		return -1, unix.EINTR
+	})
+	if !errors.Is(err, context.Canceled) || calls != 1 {
+		t.Fatalf("interrupted transfer outlived its context: %v, calls=%d", err, calls)
+	}
+}
 
 // 原PG/Source/FD为明确模型，仅验私有跨C/Go数据合同；不冒充真实helper或收费S。
 func arrayPopulateFixture(t *testing.T) arrayPopulatePending {
