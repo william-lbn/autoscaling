@@ -365,24 +365,6 @@ func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (Evidence, error) 
 			return e, err
 		}
 	}
-	events, err := kernelText(filepath.Join(pgCgroup, "cgroup.events"))
-	if err != nil {
-		return e, err
-	}
-	populatedSeen := false
-	for _, line := range strings.Split(events, "\n") {
-		fields := strings.Fields(line)
-		if len(fields) == 2 && fields[0] == "populated" {
-			if populatedSeen || (fields[1] != "0" && fields[1] != "1") {
-				return e, fmt.Errorf("invalid cgroup populated state")
-			}
-			populatedSeen = true
-			e.CgroupPopulated = fields[1] == "1"
-		}
-	}
-	if !populatedSeen {
-		return e, fmt.Errorf("cgroup populated state unavailable")
-	}
 	for _, entry := range []struct {
 		name      string
 		dest      *control.Uint64
@@ -414,15 +396,6 @@ func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (Evidence, error) 
 		if err != nil || uint64(c.PidsMaxTasks) > pidMax {
 			return e, fmt.Errorf("requested task bound exceeds actual Guest PID range")
 		}
-		maximum, err := readNumber(filepath.Join(pgCgroup, "pids.max"), true)
-		if err != nil {
-			return e, err
-		}
-		current, err := readNumber(filepath.Join(pgCgroup, "pids.current"), false)
-		if err != nil {
-			return e, err
-		}
-		e.TaskLimit = &TaskLimitEvidence{MaxTasks: control.Uint64(maximum), CurrentTasks: control.Uint64(current)}
 	}
 	mem, err := kernelText("/proc/meminfo")
 	if err != nil {
@@ -479,13 +452,50 @@ func (k *linuxKernel) ReadBounds(expected Identity, c Limits) (Evidence, error) 
 		p.Pages = control.Uint64(nr)
 		e.HugePools = append(e.HugePools, p)
 	}
+	readActivity := func() (processActivity, error) { return readProcessActivity(c.PidsMaxTasks != 0) }
+	var activity processActivity
 	if c.AddressSpaceMaxBytes != 0 {
-		e.AddressSpace, err = readAddressSpaces(c)
-		if err != nil {
-			return e, err
+		activity, e.AddressSpace, err = readProcessBounds(readActivity, func() (*AddressSpaceEvidence, error) { return readAddressSpaces(c) })
+	} else {
+		activity, err = readActivity()
+	}
+	e.CgroupPopulated, e.TaskLimit = activity.populated, activity.tasks
+	return e, err
+}
+
+func readProcessActivity(finiteTasks bool) (processActivity, error) {
+	var activity processActivity
+	events, err := kernelText(filepath.Join(pgCgroup, "cgroup.events"))
+	if err != nil {
+		return activity, err
+	}
+	populatedSeen := false
+	for _, line := range strings.Split(events, "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 2 && fields[0] == "populated" {
+			if populatedSeen || (fields[1] != "0" && fields[1] != "1") {
+				return activity, fmt.Errorf("invalid cgroup populated state")
+			}
+			populatedSeen = true
+			activity.populated = fields[1] == "1"
 		}
 	}
-	return e, nil
+	if !populatedSeen {
+		return activity, fmt.Errorf("cgroup populated state unavailable")
+	}
+	if !finiteTasks {
+		return activity, nil
+	}
+	maximum, err := readNumber(filepath.Join(pgCgroup, "pids.max"), true)
+	if err != nil {
+		return activity, err
+	}
+	current, err := readNumber(filepath.Join(pgCgroup, "pids.current"), false)
+	if err != nil {
+		return activity, err
+	}
+	activity.tasks = &TaskLimitEvidence{MaxTasks: control.Uint64(maximum), CurrentTasks: control.Uint64(current)}
+	return activity, nil
 }
 
 func (k *linuxKernel) Apply(c Command) error {

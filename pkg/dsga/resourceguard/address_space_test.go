@@ -150,6 +150,58 @@ func TestAddressSpacePIDListsAndBoundedStableObservation(t *testing.T) {
 	}
 }
 
+func TestProcessBoundsResamplesWhenTaskCountPrecedesFork(t *testing.T) {
+	initial := processActivity{populated: true, tasks: &TaskLimitEvidence{MaxTasks: 128, CurrentTasks: 12}}
+	settled := processActivity{populated: true, tasks: &TaskLimitEvidence{MaxTasks: 128, CurrentTasks: 16}}
+	space := &AddressSpaceEvidence{Processes: 16, MaxHardBytes: finiteAS, MaxVirtualBytes: 64 << 20, Irreversible: true}
+	limits := Limits{PidsMaxTasks: 128, AddressSpaceMaxBytes: finiteAS}
+	stale := Evidence{CgroupPopulated: initial.populated, TaskLimit: initial.tasks, AddressSpace: space}
+	require.Error(t, stale.matchesAddressSpace(limits))
+	readCount := 0
+	activity, observed, err := readProcessBounds(func() (processActivity, error) {
+		readCount++
+		if readCount == 1 {
+			return initial, nil
+		}
+		return settled, nil
+	}, func() (*AddressSpaceEvidence, error) { return space, nil })
+	require.NoError(t, err)
+	require.Equal(t, 4, readCount)
+	require.Equal(t, settled, activity)
+	actual := Evidence{CgroupPopulated: activity.populated, TaskLimit: activity.tasks, AddressSpace: observed}
+	require.NoError(t, actual.matchesAddressSpace(limits))
+	require.NoError(t, actual.matchesTasks(limits.PidsMaxTasks))
+}
+
+func TestProcessBoundsRejectsUnconfirmedActivity(t *testing.T) {
+	for _, tc := range []struct {
+		name          string
+		before, after processActivity
+		wantReads     int
+	}{
+		{"persistent membership change", processActivity{false, &TaskLimitEvidence{128, 0}}, processActivity{true, &TaskLimitEvidence{128, 16}}, 6},
+		{"limit changed", processActivity{true, &TaskLimitEvidence{128, 16}}, processActivity{true, &TaskLimitEvidence{64, 16}}, 2},
+		{"limit exceeded", processActivity{true, &TaskLimitEvidence{128, 129}}, processActivity{true, &TaskLimitEvidence{128, 16}}, 2},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			readCount := 0
+			activity, observed, err := readProcessBounds(func() (processActivity, error) {
+				readCount++
+				if readCount%2 == 1 {
+					return tc.before, nil
+				}
+				return tc.after, nil
+			}, func() (*AddressSpaceEvidence, error) {
+				return &AddressSpaceEvidence{Processes: 16, MaxHardBytes: finiteAS, MaxVirtualBytes: 64 << 20, Irreversible: true}, nil
+			})
+			require.ErrorIs(t, err, ErrUnknown)
+			require.Empty(t, activity)
+			require.Nil(t, observed)
+			require.Equal(t, tc.wantReads, readCount)
+		})
+	}
+}
+
 func TestAddressSpaceOriginalSourceAndEnvironment(t *testing.T) {
 	_, _, b, _ := taskFixture(t)
 	for _, tc := range []struct {

@@ -56,7 +56,8 @@ func (e Evidence) matchesAddressSpace(l Limits) error {
 		}
 		return nil
 	}
-	if validateAddressSpaceLimit(l.AddressSpaceMaxBytes, l.PidsMaxTasks) != nil || a == nil || !a.Irreversible || a.Processes > l.PidsMaxTasks || a.MaxHardBytes > l.AddressSpaceMaxBytes || a.MaxVirtualBytes > a.MaxHardBytes || e.CgroupPopulated != (a.Processes != 0) || e.TaskLimit == nil || a.Processes > e.TaskLimit.CurrentTasks {
+	activity := processActivity{populated: e.CgroupPopulated, tasks: e.TaskLimit}
+	if validateAddressSpaceLimit(l.AddressSpaceMaxBytes, l.PidsMaxTasks) != nil || a == nil || !a.Irreversible || a.Processes > l.PidsMaxTasks || a.MaxHardBytes > l.AddressSpaceMaxBytes || a.MaxVirtualBytes > a.MaxHardBytes || !activity.covers(a) {
 		return fmt.Errorf("original process address space is missing, reversible or exceeded")
 	}
 	if a.Processes == 0 && (a.MaxHardBytes != 0 || a.MaxVirtualBytes != 0) || a.Processes != 0 && (a.MaxHardBytes == 0 || a.MaxVirtualBytes == 0) {
@@ -206,6 +207,41 @@ type processAddressSample struct {
 }
 
 var errAddressSpaceChurn = errors.New("process membership changed during address space inspection")
+
+type processActivity struct {
+	populated bool
+	tasks     *TaskLimitEvidence
+}
+
+func (p processActivity) covers(a *AddressSpaceEvidence) bool {
+	return p.tasks != nil && p.populated == (a.Processes != 0) && p.tasks.CurrentTasks >= a.Processes
+}
+
+// Bracket the potentially slow /proc scan. An earlier pids.current may describe
+// the previous process set, even when the address space scan itself is stable.
+func readProcessBounds(readActivity func() (processActivity, error), readSpaces func() (*AddressSpaceEvidence, error)) (processActivity, *AddressSpaceEvidence, error) {
+	for range 3 {
+		before, err := readActivity()
+		if err != nil {
+			return processActivity{}, nil, err
+		}
+		spaces, err := readSpaces()
+		if err != nil {
+			return processActivity{}, nil, err
+		}
+		after, err := readActivity()
+		if err != nil {
+			return processActivity{}, nil, err
+		}
+		if before.covers(spaces) && after.covers(spaces) {
+			if before.tasks.MaxTasks != after.tasks.MaxTasks || before.tasks.CurrentTasks > before.tasks.MaxTasks || after.tasks.CurrentTasks > after.tasks.MaxTasks {
+				return processActivity{}, nil, fmt.Errorf("%w: task bound changed or was exceeded during address space inspection", ErrUnknown)
+			}
+			return after, spaces, nil
+		}
+	}
+	return processActivity{}, nil, fmt.Errorf("%w: %w", ErrUnknown, errAddressSpaceChurn)
+}
 
 // 原资源锁不阻止PG fork/exit，cgroup.procs也不承诺顺序/无重复。每轮只接受
 // 两次完整枚举集合相同、逐PID两次starttime一致的观察；瞬态消失、重复或换代
