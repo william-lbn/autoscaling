@@ -48,7 +48,8 @@ type DSGAConfig struct {
 	PrepareQualifications map[string]budget.QualificationSource `json:"prepareQualifications,omitempty"`
 	// 明确按VM UID选择的自动策略；只读采样和新Begin进入原owner串行
 	// 循环。未配置维持手动入口，不由旧LFC/公共metrics猜测执行权。
-	AutomaticMemory map[string]policy.Config `json:"automaticMemory,omitempty"`
+	AutomaticMemory map[string]policy.Config         `json:"automaticMemory,omitempty"`
+	CacheShadow     map[string]DSGACacheShadowConfig `json:"cacheShadow,omitempty"`
 }
 
 type DSGARunnerState struct {
@@ -207,6 +208,14 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 			}
 		}
 		instance, epoch := worker.Binding()
+		if shadow, enabled := config.CacheShadow[string(r.vmUID)]; enabled {
+			if err := shadow.validate(); err != nil {
+				return err
+			}
+			stop := startDSGACacheShadow(ownerCtx, logger, instance, shadow,
+				time.Duration(config.RequestTimeoutSeconds)*time.Second, worker.ObserveLogicalDemand)
+			defer stop()
+		}
 		phase := "running"
 		if len(qualifications) == 0 {
 			phase = "awaiting-qualification"

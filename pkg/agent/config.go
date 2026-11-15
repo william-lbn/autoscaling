@@ -185,6 +185,10 @@ func (c *Config) validate() error {
 			source, ok := c.DSGA.PrepareQualifications[vmUID]
 			erc.Whenf(ec, control.ValidateID(vmUID, "automatic VM UID") != nil || automatic.Validate() != nil || !ok || source.Validate() != nil, "automatic DSGA memory policy requires valid explicit targets and original qualification")
 		}
+		for vmUID, shadow := range c.DSGA.CacheShadow {
+			erc.Whenf(ec, control.ValidateID(vmUID, "cache shadow VM UID") != nil ||
+				shadow.validate() != nil, "invalid trusted DSGA cache shadow scope and windows")
+		}
 		if c.DSGA.ControlSocketPath != "" {
 			erc.Whenf(ec, localcontrol.ValidateSocketPath(c.DSGA.ControlSocketPath) != nil, "invalid private DSGA coordination socket path")
 		}
