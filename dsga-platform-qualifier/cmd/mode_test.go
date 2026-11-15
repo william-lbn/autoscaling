@@ -23,6 +23,8 @@ func TestAutomaticQualificationRetriesOnlyReadOnlyCollection(t *testing.T) {
 		{"automatic", true, transient, 2},
 		{"manual", false, transient, 1},
 		{"unauthorized", true, apierrors.NewUnauthorized("fixture"), 1},
+		{"physical_outside", true, qualificationissuer.ErrOutsideBudgetBelowProof, 1},
+		{"physical_target", true, qualificationissuer.ErrTargetBudgetAboveUsableMemory, 1},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			calls := 0

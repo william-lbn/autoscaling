@@ -104,6 +104,9 @@ type Collection struct {
 	SnapshotSHA256       string
 }
 
+var ErrOutsideBudgetBelowProof = errors.New("configured Guest Outside is below the exact enforced physical bound")
+var ErrTargetBudgetAboveUsableMemory = errors.New("target complete budget exceeds observed original minimum usable memory")
+
 // CollectionStage reports the failing check without exposing the underlying input or API response.
 func CollectionStage(err error) string {
 	var failure *collectionFailure
@@ -127,7 +130,7 @@ func qualifiedTargets(a resourceguard.GuestQualificationArtifact, floors map[con
 	}
 	// Source Outside是预留合同，不是证明；先核全部真实内核/在途/allocator分项确被覆盖。
 	if a.CurrentLimits.OutsideUpperBytes < a.Outside.TotalBytes {
-		return nil, fmt.Errorf("configured Guest Outside is below the exact enforced physical bound")
+		return nil, ErrOutsideBudgetBelowProof
 	}
 	system := a.Outside.SystemBytes + a.Outside.KernelAndInitialRootBytes
 	transition := a.Outside.ConditionalOccupiedBytes + a.Outside.CPUStockPaidBytes
@@ -157,8 +160,11 @@ func qualifiedTargets(a resourceguard.GuestQualificationArtifact, floors map[con
 			limits.MemoryMaxBytes = intent.NormalMemoryMaxBytes
 		}
 		total, e := limits.TotalUpperBytes()
-		if e != nil || total > uint64(usable) {
-			return nil, fmt.Errorf("target complete budget exceeds observed original minimum usable memory")
+		if e != nil {
+			return nil, fmt.Errorf("target total hard budget cannot be computed")
+		}
+		if total > uint64(usable) {
+			return nil, ErrTargetBudgetAboveUsableMemory
 		}
 		targets = append(targets, budget.QualifiedTarget{VMMemoryBytes: n, GuestUsableMemoryBytes: usable, Limits: limits, SystemOutsidePGBytes: system, TransitionBytes: transition, SafetyBytes: safety})
 	}

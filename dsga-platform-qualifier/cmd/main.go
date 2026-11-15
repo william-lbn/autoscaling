@@ -139,7 +139,10 @@ func collectQualification(ctx context.Context, collect func(context.Context) (qu
 	defer cancel()
 	for {
 		result, err := collect(ctx)
-		if err == nil || !automatic || ctx.Err() != nil || apierrors.IsForbidden(err) || apierrors.IsUnauthorized(err) {
+		// Exact physical bounds are evaluated only after the original Guest artifact
+		// is verified. The frozen limits cannot change by repeating this read.
+		if err == nil || !automatic || ctx.Err() != nil || apierrors.IsForbidden(err) || apierrors.IsUnauthorized(err) ||
+			errors.Is(err, qualificationissuer.ErrOutsideBudgetBelowProof) || errors.Is(err, qualificationissuer.ErrTargetBudgetAboveUsableMemory) {
 			return result, err
 		}
 		timer := time.NewTimer(time.Second)
@@ -217,6 +220,10 @@ func main() {
 		}
 		reason := "unconfirmed"
 		switch {
+		case errors.Is(err, qualificationissuer.ErrOutsideBudgetBelowProof):
+			reason = "outside_budget_below_proof"
+		case errors.Is(err, qualificationissuer.ErrTargetBudgetAboveUsableMemory):
+			reason = "target_budget_above_usable_memory"
 		case errors.Is(err, context.DeadlineExceeded):
 			reason = "deadline"
 		case errors.Is(err, context.Canceled):
