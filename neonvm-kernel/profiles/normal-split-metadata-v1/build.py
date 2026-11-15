@@ -51,7 +51,21 @@ def main():
     out.mkdir(parents=True)
     context=out/'context';context.mkdir()
     for name,row in desc['baseline_context_inputs'].items():
-        src=kernel/row['repo_path'];assert sha(src)==row['sha256'],row['repo_path'];dst=context/name;dst.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,dst);dst.chmod(row['original_tar_mode'])
+        src = kernel / row['repo_path']
+        dst = context / name
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        historical_commit = row.get('source_commit')
+        if historical_commit is not None:
+            if re.fullmatch(r'[a-f0-9]{40}', historical_commit) is None:
+                raise ValueError(f'Invalid historical kernel input source: {name}')
+            git_path = src.relative_to(repo).as_posix()
+            raw = subprocess.check_output(['git', '-C', str(repo), 'show', f'{historical_commit}:{git_path}'])
+            dst.write_bytes(raw)
+        else:
+            shutil.copy2(src, dst)
+        if sha(dst) != row['sha256']:
+            raise ValueError(f'Kernel context input differs from its reviewed digest: {name}')
+        dst.chmod(row['original_tar_mode'])
     for name in [PATCH_NAME,'linux-config-amd64-6.12.26']:
         dst=context/'profiles/normal-split-metadata-v1'/name;dst.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(profile/name,dst)
     (context/'metadata-baseline.config').write_bytes(basecfg)
