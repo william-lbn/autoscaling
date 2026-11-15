@@ -3,13 +3,52 @@ PATCH_NAME='0008-Neon-kernfs-Require-admin-for-control-metadata.patch'
 from pathlib import Path
 import argparse,json,hashlib,subprocess,shutil,time,os,re
 
+def sha(path):
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def pinned_source_dockerfile(context, archive, source):
+    name, expected = source['name'], source['sha256']
+    if name != 'linux-6.12.26.tar.xz' or re.fullmatch(r'[a-f0-9]{64}', expected) is None:
+        raise ValueError('Invalid reviewed Linux source archive lock')
+    if not archive.is_file() or sha(archive) != expected:
+        raise ValueError('Linux source archive differs from the reviewed digest')
+    copied = context / name
+    shutil.copyfile(archive, copied)
+    copied.chmod(0o444)
+    if sha(copied) != expected:
+        raise ValueError('Linux source archive changed during context preparation')
+    start = BASE_DOCKERFILE.index('COPY echo-source-url.sh echo-source-url.sh\n')
+    end = BASE_DOCKERFILE.index('# Apply any patches', start)
+    source_step = (
+        f'COPY {name} {name}\n'
+        'RUN --network=none set -eu; rm arg-check-succeeded; '
+        f'printf "%s  %s\\n" {expected} {name} | sha256sum -c -; '
+        f'mkdir linux-${{KERNEL_VERSION}}; tar --strip-components=1 -C linux-${{KERNEL_VERSION}} -xf {name}\n\n'
+    )
+    return BASE_DOCKERFILE[:start] + source_step + BASE_DOCKERFILE[end:]
+
+
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--output',required=True);args=parser.parse_args()
-    out=Path(args.output);assert out.is_absolute() and not out.exists();out.mkdir(parents=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--output', required=True, type=Path)
+    parser.add_argument('--source-archive', type=Path, help='Use the authorized Linux source archive by exact SHA256')
+    parser.add_argument('--prepare-only', action='store_true', help='Prepare the pinned context without running Docker')
+    args = parser.parse_args()
+    if args.prepare_only and args.source_archive is None:
+        parser.error('--prepare-only requires the reviewed --source-archive')
+    out=args.output
+    if not out.is_absolute() or out.exists():
+        parser.error('--output must name a new absolute directory')
     profile=Path(__file__).resolve().parent;kernel=profile.parents[1];repo=kernel.parent
-    desc=json.loads((profile/'config-source.json').read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+    desc=json.loads((profile/'config-source.json').read_text())
     assert sha(profile/PATCH_NAME)==desc['patch_sha256'] and sha(profile/'linux-config-amd64-6.12.26')==desc['source_config_sha256']
     cfg=(profile/'linux-config-amd64-6.12.26').read_bytes();basecfg=cfg.replace(b'CONFIG_NEON_DSGA_CONTROL_METADATA_GUARD=y\n',b'');assert hashlib.sha256(basecfg).hexdigest()==desc['base_resolved_config_sha256']
+    if args.source_archive is not None and (not args.source_archive.is_file() or
+            sha(args.source_archive) != desc['linux_source_archive']['sha256']):
+        parser.error('Linux source archive differs from the reviewed digest')
+    out.mkdir(parents=True)
     context=out/'context';context.mkdir()
     for name,row in desc['baseline_context_inputs'].items():
         src=kernel/row['repo_path'];assert sha(src)==row['sha256'],row['repo_path'];dst=context/name;dst.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,dst);dst.chmod(row['original_tar_mode'])
@@ -28,14 +67,21 @@ def main():
     extra+='FROM control_metadata_build AS control_metadata_receipt\n'
     extra+='RUN --network=none set -eu; cd /build/linux-6.12.26; mkdir /control-metadata-receipt; cp .config /control-metadata-receipt/kernel.config; cp /tmp/control-default-off.config /control-metadata-receipt/default-off.config; cp include/config/kernel.release /control-metadata-receipt/kernel.release; cp init/Kconfig /control-metadata-receipt/Kconfig.source; cp fs/kernfs/inode.c /control-metadata-receipt/kernfs-inode.source.c; objcopy --dump-section .notes=/control-metadata-receipt/kernel-notes.bin vmlinux; sha256sum /build/linux-6.12.26.tar.xz init/Kconfig fs/kernfs/inode.c mm/page_counter.c security/landlock/task.c include/uapi/linux/landlock.h /build/patches/*.patch .config arch/x86/boot/bzImage >/control-metadata-receipt/actual-source-SHA256SUMS; objdump -d --disassemble=kernfs_iop_setattr vmlinux >/control-metadata-receipt/kernfs-setattr.asm; objdump -d --disassemble=kernfs_vfs_xattr_set vmlinux >/control-metadata-receipt/kernfs-xattr.asm; objdump -d --disassemble=kernfs_vfs_user_xattr_set vmlinux >/control-metadata-receipt/kernfs-user-xattr.asm; cat /sys/fs/cgroup/memory.max >/control-metadata-receipt/memory.max; cat /sys/fs/cgroup/cpu.max >/control-metadata-receipt/cpu.max\n'
     extra+='FROM scratch AS control_metadata_export\nCOPY --from=control_metadata_receipt /build/linux-6.12.26/arch/x86/boot/bzImage /vmlinuz\nCOPY --from=control_metadata_receipt /control-metadata-receipt/ /\n'
-    (context/'Dockerfile').write_text(BASE_DOCKERFILE+extra)
+    dockerfile = BASE_DOCKERFILE
+    if args.source_archive is not None:
+        dockerfile = pinned_source_dockerfile(context, args.source_archive, desc['linux_source_archive'])
+    (context/'Dockerfile').write_text(dockerfile+extra)
     source={str(p.relative_to(context)):sha(p)for p in sorted(context.rglob('*'))if p.is_file()};(out/'source-lock.json').write_text(json.dumps({'repo_head':subprocess.check_output(['git','-C',str(repo),'rev-parse','HEAD'],text=True).strip(),'profile':desc,'input_hashes':source,'input_modes':{str(p.relative_to(context)):oct(p.stat().st_mode & 0o7777)for p in sorted(context.rglob('*'))if p.is_file()},'suffix':suffix},ensure_ascii=False,indent=2)+'\n')
     cmd=['docker','buildx','build','--builder','neon-data','--resource','memory=6g','--resource','memory-swap=6g','--resource','cpu-quota=400000','--platform','linux/amd64','--network','host','--allow','network.host','--progress','plain','--target','control_metadata_export']
     arguments={'KERNEL_VERSION':'6.12.26','AMD64_KERNEL_CONFIG':'profiles/normal-v1/linux-config-amd64-6.12.26','VERSION_SUFFIX':'-william-normal-v1-pidcap-946be0d25506','UBUNTU_IMG_TAG':'24.04','UBUNTU_IMG_SHA':'@sha256:3afff29dffbc200d202546dc6c4f614edc3b109691e7ab4aa23d02b42ba86790','ALPINE_IMG_TAG':'3.19.7','ALPINE_IMG_SHA_AMD64':'@sha256:06793e3dc83d9a0733c70010283ed1735ff75fc0d40e3eac330aaef41a2f5049','ALPINE_IMG_SHA_ARM64':'@sha256:b77521a60a51daad2b199da6efdd78956f79739d36379c2d13165f18ae1c4bee','NORMAL_SPLIT_VERSION_SUFFIX':'-william-normal-split-v1-e210f5e3ee94','CONTROL_METADATA_VERSION_SUFFIX':suffix}
     for name,value in arguments.items():cmd+=['--build-arg',name+'='+value]
     for name in ['HTTP_PROXY','HTTPS_PROXY','NO_PROXY','http_proxy','https_proxy','no_proxy']:cmd+=['--build-arg',name]
     cmd+=['--metadata-file',str(out/'build-metadata.json'),'--output','type=local,dest='+str(out/'export'),str(context)]
-    (out/'command.json').write_text(json.dumps(cmd,indent=2)+'\n');start=time.monotonic()
+    (out/'command.json').write_text(json.dumps(cmd,indent=2)+'\n')
+    if args.prepare_only:
+        (out/'result.json').write_text(json.dumps({'prepared_only': True, 'build_exit': None, 'normal_authorized': False, 'E': 0}, indent=2)+'\n')
+        return
+    start=time.monotonic()
     with(out/'build.log').open('wb')as log:run=subprocess.run(cmd,stdout=log,stderr=subprocess.STDOUT)
     result={'build_exit':run.returncode,'seconds':time.monotonic()-start,'normal_authorized':False,'E':0}
     if run.returncode==0:
