@@ -361,7 +361,8 @@ func TestSchedulerEvictedPreBirthNeedsTrustedNodeStopAndUnusedVM(t *testing.T) {
 			})
 			d.store, err = hostguard.NewStore(s.core, f.Core.CoordinationV1(), n.Binding, s.holder)
 			require.NoError(t, err)
-			err = s.retirePod(ctx, d, p)
+			s.domains[n.Binding.NodeName] = d
+			err = s.reconcile(ctx, d)
 			after, readErr := d.store.Load(ctx)
 			require.NoError(t, readErr)
 			if mode != "complete" && mode != "registered" {

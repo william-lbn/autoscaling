@@ -13,6 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 
+	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 )
@@ -134,12 +135,15 @@ func (s *Service) reconcileWork(ctx context.Context, d domain, snapshot *hostgua
 		attempted++
 		var err error
 		if pod.Status.Phase == core.PodSucceeded || pod.Status.Phase == core.PodFailed {
-			if _, terminalErr := hostguard.TerminalPodDigest(&pod); terminalErr != nil && pod.Annotations[hostguard.OrdinaryStopSourceAnnotation] == "" {
+			// Evicted VM Pods may lack a kubelet container identity. The managed
+			// retirement path validates the original Runner or node stop source.
+			_, hasVMOwner := vmv1.VirtualMachineOwnerForPod(&pod)
+			if _, terminalErr := hostguard.TerminalPodDigest(&pod); !hasVMOwner && terminalErr != nil && pod.Annotations[hostguard.OrdinaryStopSourceAnnotation] == "" {
 				// 缺退出证明只保留/补全完整ordinary计费，不写退休或释放。
 				_, _, err = s.observeRetainedOrdinary(ctx, d, &pod)
 			} else {
 				err = s.retirePod(ctx, d, &pod)
-				if err != nil && s.ObserveUnchargedTerminalOrdinary(ctx, d.config.Binding.NodeName, &pod) == nil {
+				if err != nil && !hasVMOwner && s.ObserveUnchargedTerminalOrdinary(ctx, d.config.Binding.NodeName, &pod) == nil {
 					err = nil
 				}
 			}
