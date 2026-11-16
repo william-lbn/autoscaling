@@ -114,14 +114,15 @@ func verifyVMCancelledBeforeSend(t *testing.T, ctx context.Context, api *ownerAP
 		bad.Sources.JournalSHA256 = "wrong-original-wal"
 		require.Error(t, bad.ValidateFor(command, vmStep.CommandSHA256))
 		progress, err = worker.Advance(ctx)
-		require.NoError(t, err)
-		require.Equal(t, pgexec.ExternalStep, progress, "VM domain closed; complete budget/admission AbortReconcile is still owed")
+		require.ErrorContains(t, err, "no complete original initial outside budget is retained")
+		require.Equal(t, pgexec.AwaitingFact, progress, "the target outside claim cannot fund reconciliation at the original capacity")
 		require.Equal(t, settled, budgetStep(t, store, journal.ResizeVM), "retry must not replace original NoEffect audit")
 	}
 	latest, err := store.Load(ctx)
 	require.NoError(t, err)
 	require.NotNil(t, latest.State().Active)
 	require.True(t, latest.State().Active.AbortRequested)
+	require.Nil(t, latest.State().Active.Cleanup)
 	require.Equal(t, before.BudgetHeld, latest.State().BudgetHeld)
 	require.Equal(t, before.HighWater, latest.State().HighWater)
 	for _, step := range before.Active.Steps {

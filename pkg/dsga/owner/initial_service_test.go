@@ -1013,9 +1013,16 @@ func productionInitialServiceWithFixtureHook(t *testing.T, mode string, fixtureH
 			verifyActiveServiceSafety(t, ctx, mode, api, store, client, session, resources, worker, config, source, pg, root, qmp, transfer)
 			return nil
 		}
-		progress, err := worker.Advance(ctx)
-		require.NoError(t, err)
-		require.Equal(t, pgexec.Recorded, progress)
+		var progress pgexec.Progress
+		if mode == "trusted-prepare-replies" {
+			// 建立并打开原初始预算后，沿完整生产链测试下一次Prepare的未知回复。
+			worker = runTrustedPrepareReplies(t, ctx, api, client, store, session, resources, worker, config, source, request)
+			defer worker.CloseIdleConnections()
+		} else {
+			progress, err = worker.Advance(ctx)
+			require.NoError(t, err)
+			require.Equal(t, pgexec.Recorded, progress)
+		}
 		if strings.HasPrefix(mode, "active-safety-quiesce-") {
 			unreceived := strings.Contains(mode, "unreceived")
 			pg.faults(unreceived, !unreceived)

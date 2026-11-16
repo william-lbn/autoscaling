@@ -209,7 +209,7 @@ func verifyClosedHostSettlement(t *testing.T, ctx context.Context, api *ownerAPI
 	snapshot, err = allocator.Load(ctx)
 	require.NoError(t, err)
 	if cancelledPlan == nil {
-		require.EqualValues(t, 4, snapshot.State().ProtocolVersion)
+		require.EqualValues(t, max(initial.ProtocolVersion, 4), snapshot.State().ProtocolVersion)
 	} else {
 		require.EqualValues(t, 6, snapshot.State().ProtocolVersion)
 		_, _, err = allocator.Reserve(ctx, snapshot, *cancelledPlan)
@@ -220,8 +220,16 @@ func verifyClosedHostSettlement(t *testing.T, ctx context.Context, api *ownerAPI
 	require.Equal(t, &closed, row.Settled)
 	used, err := snapshot.State().UsedBytes()
 	require.NoError(t, err)
-	require.Less(t, used, before)
 	require.Equal(t, closed.Request.TargetVMMemoryBytes, row.MemoryBytes)
+	if mode == "host-settle-scheduler-loop" {
+		original, err := initial.Placement(host.RunnerPodUID)
+		require.NoError(t, err)
+		require.NotZero(t, original.PodMemoryLimitBytes)
+		require.Equal(t, original.PodMemoryLimitBytes, row.PodMemoryLimitBytes)
+		require.Equal(t, before, used, "Guest shrink cannot release the live Pod's hard-limit reservation")
+	} else {
+		require.Less(t, used, before)
+	}
 	claims, err := budgetclaims.New(client.CoreV1(), binding())
 	require.NoError(t, err)
 	_, err = claims.ReadCurrent(ctx, latest)
@@ -231,7 +239,11 @@ func verifyClosedHostSettlement(t *testing.T, ctx context.Context, api *ownerAPI
 	_, _, err = allocator.Reserve(ctx, snapshot, snapshot.State().Holds[0].Plan)
 	require.Error(t, err)
 	_, _, err = allocator.HoldPlacement(ctx, snapshot, waiting)
-	require.NoError(t, err, "明确结清后的容量可供新Pod使用")
+	if mode == "host-settle-scheduler-loop" {
+		require.Error(t, err, "waiting Pod still exceeds the budget with the original Pod hard limit")
+	} else {
+		require.NoError(t, err, "明确结清后的容量可供新Pod使用")
+	}
 	_, err = client.CoreV1().ConfigMaps("testing").Get(ctx, oldRef.Name, metav1.GetOptions{})
 	require.True(t, apierrors.IsNotFound(err), "同原Pod的旧失效Host来源可回收")
 	_, err = client.CoreV1().ConfigMaps("testing").Get(ctx, otherRef.Name, metav1.GetOptions{})

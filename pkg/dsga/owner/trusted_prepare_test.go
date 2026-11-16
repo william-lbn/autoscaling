@@ -23,7 +23,6 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
-	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
 
 // 新组合显式增加有限任务/系统组协议事实；只改变本用例，不悄悄让所有旧
@@ -41,29 +40,14 @@ func qualifiedRootFixture(root *guestRootFixture) {
 	root.view.Actual.System = &resourceguard.SystemEvidence{Scope: resourceguard.SystemChargedScope, MemoryMaxBytes: 16 << 20, MemoryCurrentBytes: 4 << 20, SwapMaxBytes: 0, SwapCurrentBytes: 0, ProcessCount: 3, PID1Member: true, RootUserspaceCount: 0}
 }
 
-func trustedQualificationFixture(t *testing.T, ctx context.Context, client *kubefake.Clientset, root *guestRootFixture, p budget.Prepared) budget.QualificationSource {
-	t.Helper()
-	birth, birthRef, _, err := vmguard.ReadPublished(ctx, client.CoreV1(), binding(), nil)
-	require.NoError(t, err)
-	runnerRaw, err := json.Marshal(birth.Identity)
-	require.NoError(t, err)
-	root.mu.Lock()
-	bootstrapRaw, err := json.Marshal(root.view.Bootstrap)
-	root.mu.Unlock()
-	require.NoError(t, err)
-	q := budget.PlatformQualification{ProtocolVersion: 1, Identity: p.Identity, Incarnation: binding().Incarnation, ReportID: "explicit-qualified-platform-fixture", RootBootstrapSHA256: vmguard.SourceDigest(bootstrapRaw), RunnerBirth: birthRef, RunnerIdentitySHA256: vmguard.SourceDigest(runnerRaw), RunnerPodName: p.RunnerPodName, RunnerPodUID: birth.Identity.RunnerPodUID, NodeName: "node-one", NodeUID: birth.Identity.NodeUID, RunnerRestartCount: p.RunnerRestartCount, HoldUntilExplicitSettlement: true, Targets: []budget.QualifiedTarget{{VMMemoryBytes: p.Request.TargetVMMemoryBytes, GuestUsableMemoryBytes: p.GuestUsableMemoryBytes, Limits: p.Limits, SystemOutsidePGBytes: p.SystemOutsidePG.UpperBytes, TransitionBytes: p.Transition.UpperBytes, SafetyBytes: p.Safety.UpperBytes}}}
-	require.NoError(t, q.Validate())
-	raw, err := json.Marshal(q)
-	require.NoError(t, err)
-	ref := vmReservation(t, client, "original-platform-qualification", budgetclaims.QualificationKind, q)
-	return budget.QualificationSource{Claim: ref, SHA256: vmguard.SourceDigest(raw)}
-}
-
 // 一条组合复用真实Agent/Runner扩容后半链：Start回复丢失时零Create，普通
 // 查询不重发；独立原重放的Create提交后丢回复，随后Record提交后丢回复，
 // SDK重建仍固定同一UID。没有手填Prepare Completed或Outside承诺。
-func runTrustedPrepareReplies(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, store *journal.Store, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, source budget.QualificationSource, request control.Request) (*PGWorker, budget.Prepared, budget.ObjectRef) {
+func runTrustedPrepareReplies(t *testing.T, ctx context.Context, api *ownerAPI, client *kubefake.Clientset, store *journal.Store, session *Session, resources *ResourceWorker, worker *PGWorker, config compute.Config, source budget.QualificationSource, request control.Request) *PGWorker {
 	t.Helper()
+	before, err := store.Load(ctx)
+	require.NoError(t, err)
+	require.True(t, before.State().InitialAdmissionReady())
 	creates := 0
 	loseCreate := true
 	client.PrependReactor("create", "configmaps", func(action kt.Action) (bool, runtime.Object, error) {
@@ -85,8 +69,9 @@ func runTrustedPrepareReplies(t *testing.T, ctx context.Context, api *ownerAPI, 
 	api.mu.Lock()
 	api.loseJournalReply = true
 	api.mu.Unlock()
-	_, err := worker.Advance(ctx)
-	require.Error(t, err)
+	_, err = worker.Advance(ctx)
+	var write *journal.UnconfirmedWrite
+	require.ErrorAs(t, err, &write, "the first lost reply must come from the actual Prepare Start CAS")
 	require.Zero(t, creates)
 	for i := 0; i < 2; i++ {
 		_, err = worker.Advance(ctx)
@@ -107,7 +92,6 @@ func runTrustedPrepareReplies(t *testing.T, ctx context.Context, api *ownerAPI, 
 	api.mu.Unlock()
 	_, err = worker.Advance(ctx)
 	require.Error(t, err, "Record实际提交后丢回复，仍须从原WAL恢复")
-	var write *journal.UnconfirmedWrite
 	require.ErrorAs(t, err, &write, "此处必须到达真正Record CAS，不能把前置失败当丢回复")
 	require.Equal(t, 1, creates)
 	worker.CloseIdleConnections()
@@ -133,7 +117,7 @@ func runTrustedPrepareReplies(t *testing.T, ctx context.Context, api *ownerAPI, 
 	resourcesSnapshot, err := resources.client.InspectState(ctx)
 	require.NoError(t, err)
 	require.Nil(t, resourcesSnapshot.Original, "Prepare不能提前执行GuestReady")
-	return rebuilt, p, *p.OutsideClaim
+	return rebuilt
 }
 
 // 正常全链完成后再经永久预算读者、真实Publisher结清，检查资格释放中会
