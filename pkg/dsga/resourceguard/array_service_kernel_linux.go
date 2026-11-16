@@ -142,7 +142,7 @@ func readArraySplitAddressSpaces(l Limits) (*AddressSpaceEvidence, error) {
 	if e != nil {
 		return nil, e
 	}
-	out, e := collectAddressSpaces(l, func() (string, error) { return kernelText(pgCgroup + "/private/cgroup.procs") }, func(pid int) (processAddressSample, error) {
+	out, e := sampleAddressSpaces(l, func() (string, error) { return kernelText(pgCgroup + "/private/cgroup.procs") }, func(pid int) (processAddressSample, error) {
 		return inspectProcessAddressSpaceGroup(pid, l.AddressSpaceMaxBytes, uid, "0::/neon-postgres/private\n")
 	})
 	if e != nil {

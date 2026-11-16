@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 )
@@ -222,51 +223,61 @@ func (p processActivity) covers(a *AddressSpaceEvidence) bool {
 	return p.tasks != nil && p.populated == (a.Processes != 0) && p.tasks.CurrentTasks >= a.Processes
 }
 
-// Bracket the potentially slow /proc scan. An earlier pids.current may describe
-// the previous process set, even when the address space scan itself is stable.
+const processBoundsAttempts = 8
+
+// 进程地址空间与前后两份 task 活动读回属于同一轮。失败轮的证据全部丢弃，
+// 避免用一轮的 pids.current 给另一轮的 PID 集合签字。
 func readProcessBounds(readActivity func() (processActivity, error), readSpaces func() (*AddressSpaceEvidence, error)) (processActivity, *AddressSpaceEvidence, error) {
-	for range 3 {
+	var lastChurn error
+	for attempt := 0; attempt < processBoundsAttempts; attempt++ {
+		if attempt != 0 {
+			// 同一 Guard 锁内错开短时 fork/exit；七次计划退避合计 39 ms。
+			// 持续变动仍返回未知，由原 Owner 的安全关闭路径处理。
+			time.Sleep(time.Millisecond << min(attempt-1, 3))
+		}
 		before, err := readActivity()
 		if err != nil {
 			return processActivity{}, nil, err
 		}
+		if before.tasks == nil || before.tasks.CurrentTasks > before.tasks.MaxTasks {
+			return processActivity{}, nil, unconfirmedProcessTaskBound()
+		}
 		spaces, err := readSpaces()
 		if err != nil {
+			if errors.Is(err, errAddressSpaceChurn) {
+				lastChurn = err
+				continue
+			}
 			return processActivity{}, nil, err
 		}
 		after, err := readActivity()
 		if err != nil {
 			return processActivity{}, nil, err
 		}
+		if after.tasks == nil || before.tasks.MaxTasks != after.tasks.MaxTasks || after.tasks.CurrentTasks > after.tasks.MaxTasks {
+			return processActivity{}, nil, unconfirmedProcessTaskBound()
+		}
 		if before.covers(spaces) && after.covers(spaces) {
-			if before.tasks.MaxTasks != after.tasks.MaxTasks || before.tasks.CurrentTasks > before.tasks.MaxTasks || after.tasks.CurrentTasks > after.tasks.MaxTasks {
-				return processActivity{}, nil, fmt.Errorf("%w: task bound changed or was exceeded during address space inspection", ErrUnknown)
-			}
 			return after, spaces, nil
 		}
+		lastChurn = &kernelBoundsSourceError{step: "address_task_membership", err: errAddressSpaceChurn}
 	}
-	return processActivity{}, nil, fmt.Errorf("%w: %w", ErrUnknown, errAddressSpaceChurn)
+	return processActivity{}, nil, errors.Join(ErrUnknown, lastChurn)
 }
 
-// 原资源锁不阻止PG fork/exit，cgroup.procs也不承诺顺序/无重复。每轮只接受
-// 两次完整枚举集合相同、逐PID两次starttime一致的观察；瞬态消失、重复或换代
-// 最多重读三轮，无睡眠/后台重试，不把此前部分核验与新集合拼接。真实权限/
-// 限额错误立即拒绝，持续繁忙返回Unknown且无凭据，调用者只能稍后重读。
-// 新fork继承硬限/NNP；可信root迁入与子组创建必须由平台隔离，不能由快照证明。
-func collectAddressSpaces(l Limits, readPIDs func() (string, error), inspect func(int) (processAddressSample, error)) (*AddressSpaceEvidence, error) {
-	for attempt := 0; attempt < 3; attempt++ {
-		result, err := sampleAddressSpaces(l, readPIDs, inspect)
-		if err == nil {
-			return result, nil
-		}
-		if !errors.Is(err, errAddressSpaceChurn) && !errors.Is(err, os.ErrNotExist) && !errors.Is(err, syscall.ESRCH) {
-			return nil, err
-		}
-	}
-	return nil, fmt.Errorf("%w: %w", ErrUnknown, errAddressSpaceChurn)
+func unconfirmedProcessTaskBound() error {
+	return &kernelBoundsSourceError{step: "cgroup_task_activity", err: fmt.Errorf("%w: task bound missing, changed or exceeded during address space inspection", ErrUnknown)}
 }
 
-func sampleAddressSpaces(l Limits, readPIDs func() (string, error), inspect func(int) (processAddressSample, error)) (*AddressSpaceEvidence, error) {
+// 原资源锁不阻止 PG fork/exit。每轮仍要求两份成员集合相同，逐 PID 两次
+// starttime 一致。新进程继承硬限和 NNP；特权迁入和子组创建由平台隔离。
+func sampleAddressSpaces(l Limits, readPIDs func() (string, error), inspect func(int) (processAddressSample, error)) (_ *AddressSpaceEvidence, err error) {
+	step := "address_initial_membership"
+	defer func() {
+		if err != nil && kernelBoundsSource(err) == "" {
+			err = &kernelBoundsSourceError{step: step, err: err}
+		}
+	}()
 	raw, err := readPIDs()
 	if err != nil {
 		return nil, err
@@ -275,14 +286,16 @@ func sampleAddressSpaces(l Limits, readPIDs func() (string, error), inspect func
 	if err != nil {
 		return nil, err
 	}
+	step = "address_initial_process_sample"
 	samples := make(map[int]processAddressSample, len(pids))
 	for _, pid := range pids {
 		sample, err := inspect(pid)
 		if err != nil {
-			return nil, err
+			return nil, addressSpaceSampleError(err)
 		}
 		samples[pid] = sample
 	}
+	step = "address_final_membership"
 	raw, err = readPIDs()
 	if err != nil {
 		return nil, err
@@ -294,11 +307,12 @@ func sampleAddressSpaces(l Limits, readPIDs func() (string, error), inspect func
 	if !slices.Equal(pids, after) {
 		return nil, errAddressSpaceChurn
 	}
+	step = "address_final_process_sample"
 	result := &AddressSpaceEvidence{Processes: 0, MaxHardBytes: 0, MaxVirtualBytes: 0, Irreversible: true}
 	for _, pid := range after {
 		sample, err := inspect(pid)
 		if err != nil {
-			return nil, err
+			return nil, addressSpaceSampleError(err)
 		}
 		if sample.start != samples[pid].start {
 			return nil, errAddressSpaceChurn
@@ -311,4 +325,11 @@ func sampleAddressSpaces(l Limits, readPIDs func() (string, error), inspect func
 		result.MaxVirtualBytes = max(result.MaxVirtualBytes, sample.virtual)
 	}
 	return result, nil
+}
+
+func addressSpaceSampleError(err error) error {
+	if errors.Is(err, os.ErrNotExist) || errors.Is(err, syscall.ESRCH) {
+		return errors.Join(errAddressSpaceChurn, err)
+	}
+	return err
 }

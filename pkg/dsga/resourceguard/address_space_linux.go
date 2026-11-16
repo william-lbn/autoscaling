@@ -162,7 +162,7 @@ func readAddressSpaces(l Limits) (*AddressSpaceEvidence, error) {
 	if err != nil {
 		return nil, err
 	}
-	return collectAddressSpaces(l, func() (string, error) {
+	return sampleAddressSpaces(l, func() (string, error) {
 		return kernelText(pgCgroup + "/cgroup.procs")
 	}, func(pid int) (processAddressSample, error) {
 		return inspectProcessAddressSpace(pid, l.AddressSpaceMaxBytes, uid)

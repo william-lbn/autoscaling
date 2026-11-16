@@ -83,7 +83,7 @@ func TestAddressSpacePIDListsAndBoundedStableObservation(t *testing.T) {
 		require.Error(t, err, raw)
 	}
 	limits := Limits{MemoryMaxBytes: 0, PidsMaxTasks: 64, AddressSpaceMaxBytes: finiteAS, SystemMemoryMaxBytes: 0, OutsideUpperBytes: 0, HugePools: nil}
-	for _, mode := range []string{"reorder", "empty", "fork-once", "exit-once", "reuse-once", "duplicate-once", "busy", "bad-limit"} {
+	for _, mode := range []string{"reorder", "empty", "fork-once", "fork-burst", "exit-once", "reuse-once", "duplicate-once", "busy", "bad-limit", "lost-group", "inspect-denied"} {
 		t.Run(mode, func(t *testing.T) {
 			reads, calls := 0, 0
 			read := func() (string, error) {
@@ -95,6 +95,12 @@ func TestAddressSpacePIDListsAndBoundedStableObservation(t *testing.T) {
 					if reads == 1 {
 						return "100", nil
 					}
+				case "fork-burst":
+					if reads <= 10 && reads%2 == 1 {
+						return "300", nil
+					}
+				case "lost-group":
+					return "", os.ErrNotExist
 				case "duplicate-once":
 					if reads == 1 {
 						return "100\n100", nil
@@ -118,18 +124,42 @@ func TestAddressSpacePIDListsAndBoundedStableObservation(t *testing.T) {
 				if mode == "bad-limit" {
 					return processAddressSample{}, fmt.Errorf("unlimited process")
 				}
+				if mode == "inspect-denied" {
+					return processAddressSample{}, os.ErrPermission
+				}
 				start := control.Uint64(pid)
 				if mode == "reuse-once" && calls == 3 {
 					start++
 				}
-				return processAddressSample{start: start, hard: finiteAS, virtual: 64 << 20}, nil
+				virtual := control.Uint64(64 << 20)
+				if pid == 300 {
+					virtual = finiteAS
+				}
+				return processAddressSample{start: start, hard: finiteAS, virtual: virtual}, nil
 			}
-			evidence, err := collectAddressSpaces(limits, read, inspect)
+			activity := processActivity{populated: mode != "empty", tasks: &TaskLimitEvidence{MaxTasks: 64, CurrentTasks: 2}}
+			if mode == "empty" {
+				// Before bootstrap the empty domain can still have kernel pids.max=max.
+				activity.tasks = &TaskLimitEvidence{MaxTasks: math.MaxUint64}
+			}
+			_, evidence, err := readProcessBounds(func() (processActivity, error) { return activity, nil },
+				func() (*AddressSpaceEvidence, error) { return sampleAddressSpaces(limits, read, inspect) })
 			switch mode {
 			case "busy":
 				require.ErrorIs(t, err, ErrUnknown)
+				require.ErrorIs(t, err, errAddressSpaceChurn)
+				require.Equal(t, "address_final_membership", kernelBoundsSource(err))
 				require.Nil(t, evidence)
-				require.Equal(t, 6, reads)
+				require.Equal(t, 2*processBoundsAttempts, reads)
+			case "lost-group", "inspect-denied":
+				if mode == "lost-group" {
+					require.ErrorIs(t, err, os.ErrNotExist)
+				} else {
+					require.ErrorIs(t, err, os.ErrPermission)
+				}
+				require.NotErrorIs(t, err, errAddressSpaceChurn)
+				require.Nil(t, evidence)
+				require.Equal(t, 1, reads)
 			case "bad-limit":
 				require.Error(t, err)
 				require.NotErrorIs(t, err, ErrUnknown)
@@ -144,6 +174,10 @@ func TestAddressSpacePIDListsAndBoundedStableObservation(t *testing.T) {
 				} else {
 					require.Equal(t, control.Uint64(2), evidence.Processes)
 					require.Equal(t, finiteAS, evidence.MaxHardBytes)
+					require.Equal(t, control.Uint64(64<<20), evidence.MaxVirtualBytes)
+				}
+				if mode == "fork-burst" {
+					require.Equal(t, 12, reads)
 				}
 			}
 		})
@@ -179,9 +213,11 @@ func TestProcessBoundsRejectsUnconfirmedActivity(t *testing.T) {
 		before, after processActivity
 		wantReads     int
 	}{
-		{"persistent membership change", processActivity{false, &TaskLimitEvidence{128, 0}}, processActivity{true, &TaskLimitEvidence{128, 16}}, 6},
+		{"persistent membership change", processActivity{false, &TaskLimitEvidence{128, 0}}, processActivity{true, &TaskLimitEvidence{128, 16}}, 2 * processBoundsAttempts},
 		{"limit changed", processActivity{true, &TaskLimitEvidence{128, 16}}, processActivity{true, &TaskLimitEvidence{64, 16}}, 2},
-		{"limit exceeded", processActivity{true, &TaskLimitEvidence{128, 129}}, processActivity{true, &TaskLimitEvidence{128, 16}}, 2},
+		{"limit exceeded before scan", processActivity{true, &TaskLimitEvidence{128, 129}}, processActivity{true, &TaskLimitEvidence{128, 16}}, 1},
+		{"limit exceeded after membership mismatch", processActivity{false, &TaskLimitEvidence{128, 0}}, processActivity{true, &TaskLimitEvidence{128, 129}}, 2},
+		{"missing task evidence", processActivity{true, nil}, processActivity{true, &TaskLimitEvidence{128, 16}}, 1},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			readCount := 0
@@ -198,6 +234,10 @@ func TestProcessBoundsRejectsUnconfirmedActivity(t *testing.T) {
 			require.Empty(t, activity)
 			require.Nil(t, observed)
 			require.Equal(t, tc.wantReads, readCount)
+			if tc.wantReads != 2*processBoundsAttempts {
+				require.NotErrorIs(t, err, errAddressSpaceChurn)
+				require.Equal(t, "cgroup_task_activity", kernelBoundsSource(err))
+			}
 		})
 	}
 }
