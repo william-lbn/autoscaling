@@ -1,3 +1,4 @@
+import gzip
 import hashlib
 import io
 import json
@@ -26,7 +27,7 @@ def append(archive, name, data):
 
 
 class GuestOCI(unittest.TestCase):
-    def build(self, archive, layers, architecture="amd64", image_index=False):
+    def build(self, archive, layers, architecture="amd64", image_index=False, *, compressed=True, diff_ids_override=None):
         def blob(data, media_type=None):
             key = checksum(data)
             append(archive, "blobs/sha256/" + key, data)
@@ -38,14 +39,22 @@ class GuestOCI(unittest.TestCase):
         def json_blob(value):
             return blob(json.dumps(value).encode())
 
-        config = json_blob({"os": "linux", "architecture": architecture})
         collected = []
+        diff_ids = []
         for entries in layers:
             content = io.BytesIO()
-            with tarfile.open(mode="w:gz", fileobj=content) as layer:
+            with tarfile.open(mode="w:", fileobj=content) as layer:
                 for name, data in entries:
                     append(layer, name, data)
-            collected.append(blob(content.getvalue(), "application/vnd.oci.image.layer.v1.tar+gzip"))
+            raw = content.getvalue()
+            diff_ids.append("sha256:" + checksum(raw))
+            if compressed:
+                collected.append(blob(gzip.compress(raw, mtime=0), "application/vnd.oci.image.layer.v1.tar+gzip"))
+            else:
+                collected.append(blob(raw, "application/vnd.oci.image.layer.v1.tar"))
+        if diff_ids_override is not None:
+            diff_ids = diff_ids_override(diff_ids)
+        config = json_blob({"os": "linux", "architecture": architecture, "rootfs": {"type": "layers", "diff_ids": diff_ids}})
         manifest = json_blob({"config": config, "layers": collected})
         if image_index:
             manifest["platform"] = {"os": "linux", "architecture": architecture}
@@ -55,12 +64,12 @@ class GuestOCI(unittest.TestCase):
         append(archive, "index.json", json.dumps({"manifests": [image]}).encode())
         return image["digest"], manifest["digest"]
 
-    def inspect(self, updates, kernel=KERNEL_FINAL, arch="amd64", image_index=False):
+    def inspect(self, updates, kernel=KERNEL_FINAL, arch="amd64", image_index=False, **build_options):
         layers = [[("disk.qcow2", DISK), ("vmlinuz", KERNEL_ORIGINAL)], updates]
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "guest.oci.tar"
             with tarfile.open(path, "w:") as archive:
-                image, platform = self.build(archive, layers, image_index=image_index)
+                image, platform = self.build(archive, layers, image_index=image_index, **build_options)
             value = distribution.inspect_guest_oci(path, image, arch, checksum(DISK), checksum(kernel))
         self.assertEqual(value["image_digest"], image)
         self.assertEqual(value["platform_manifest_digest"], platform)
@@ -90,6 +99,16 @@ class GuestOCI(unittest.TestCase):
             self.inspect([("vmlinuz/a", KERNEL_FINAL)])
         with self.assertRaisesRegex(ValueError, "Ambiguous or non-regular"):
             self.inspect([("vmlinuz", b"")])
+
+    def test_rootfs_diff_ids_match_the_uncompressed_layer_order(self):
+        updates = [("vmlinuz", KERNEL_FINAL)]
+        compressed = self.inspect(updates)
+        uncompressed = self.inspect(updates, compressed=False)
+        self.assertEqual(compressed["rootfs_diff_ids"], uncompressed["rootfs_diff_ids"])
+        with self.assertRaisesRegex(ValueError, "uncompressed layer differs"):
+            self.inspect(updates, diff_ids_override=lambda ids: ids[::-1])
+        with self.assertRaisesRegex(ValueError, "does not identify the uncompressed layers"):
+            self.inspect(updates, diff_ids_override=lambda ids: ids[:1])
 
     def test_normal_readback_uses_final_disk_and_independent_inputs(self):
         expected = checksum(b"independent")

@@ -2,6 +2,8 @@
 """校验候选发行的不可变来源、依赖闭包与实际 Guest kernel 收据。"""
 
 import argparse
+from contextlib import nullcontext
+import gzip
 import hashlib
 import json
 import os
@@ -282,6 +284,17 @@ def guest_layer(files, paths, disk_output=None):
             if name in replacements or name in removed or opaque}
 
 
+class HashedLayer:
+    def __init__(self, stream):
+        self.stream = stream
+        self.digest = hashlib.sha256()
+
+    def read(self, size):
+        chunk = self.stream.read(size)
+        self.digest.update(chunk)
+        return chunk
+
+
 def inspect_guest_oci(archive_path, image_digest, arch, disk_sha256, kernel_sha256, *, disk_output=None):
     """核对归档中平台真实可见的磁盘和内核，保留分别覆盖的层与摘要。"""
     validate_arch(arch)
@@ -317,15 +330,31 @@ def inspect_guest_oci(archive_path, image_digest, arch, disk_sha256, kernel_sha2
             config = oci_json(content)
         if config.get("os") != "linux" or config.get("architecture") != arch:
             raise ValueError("Guest OCI config belongs to another operating system or architecture")
+        rootfs = config.get("rootfs")
+        layers = manifest["layers"]
+        if not isinstance(rootfs, dict) or rootfs.get("type") != "layers":
+            raise ValueError("Guest OCI config has no layered root filesystem")
+        diff_ids = rootfs.get("diff_ids")
+        if (not isinstance(diff_ids, list) or len(diff_ids) != len(layers)
+                or not all(isinstance(d, str) and DIGEST.fullmatch(d) for d in diff_ids)):
+            raise ValueError("Guest OCI config does not identify the uncompressed layers in order")
 
-        for layer in manifest["layers"]:
+        for layer, diff_id in zip(layers, diff_ids, strict=True):
             compressed = layer["mediaType"] in {"application/vnd.oci.image.layer.v1.tar+gzip",
                                                "application/vnd.docker.image.rootfs.diff.tar.gzip"}
             if not compressed and layer["mediaType"] != "application/vnd.oci.image.layer.v1.tar":
                 raise ValueError("Unsupported Guest OCI layer encoding")
             with oci_blob(archive, layer) as content:
-                with tarfile.open(fileobj=content, mode="r|gz" if compressed else "r|") as files:
-                    changes = guest_layer(files, expected, disk_output)
+                decompressor = gzip.GzipFile(fileobj=content) if compressed else nullcontext(content)
+                with decompressor as uncompressed:
+                    source = HashedLayer(uncompressed)
+                    with tarfile.open(fileobj=source, mode="r|") as files:
+                        changes = guest_layer(files, expected, disk_output)
+                    # The diff ID includes all uncompressed bytes, including tar padding.
+                    while source.read(1 << 20):
+                        pass
+                if "sha256:" + source.digest.hexdigest() != diff_id:
+                    raise ValueError(f"Guest OCI uncompressed layer differs from config: {layer['digest']}")
             for name, material in changes.items():
                 history[name].append({"layer_digest": layer["digest"], "material": material})
 
@@ -334,7 +363,8 @@ def inspect_guest_oci(archive_path, image_digest, arch, disk_sha256, kernel_sha2
         if final is None or final["sha256"] != checksum:
             raise ValueError(f"Final Guest artifact does not match locked bytes: {name}")
     return {"image_digest": image_digest, "platform_manifest_digest": platform["digest"],
-            "config_digest": config_digest, "architecture": "linux/" + arch, "assets": history}
+            "config_digest": config_digest, "architecture": "linux/" + arch,
+            "rootfs_diff_ids": diff_ids, "assets": history}
 
 
 def readback_guest_root(disk, scratch, builder, plan, base_sha, major, postgres_sha):
