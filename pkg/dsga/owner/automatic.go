@@ -205,6 +205,7 @@ func (w *PGWorker) advanceAutomaticChecked(ctx context.Context) (pgexec.Progress
 			w.recordAutomaticOutcome("reconciled_" + string(disposition))
 			d.pending, d.pendingRV = nil, ""
 			d.engine.Accepted(now)
+			w.recordAutomaticEvaluation(now, nil, nil, "", true)
 			return pgexec.Reconciled, nil
 		}
 		if d.pendingRV != "" && s.ResourceVersion() != d.pendingRV {
@@ -214,6 +215,7 @@ func (w *PGWorker) advanceAutomaticChecked(ctx context.Context) (pgexec.Progress
 			// PG/Root/VM执行未知，也不发布NoEffect领域回执。
 			d.pending, d.pendingRV = nil, ""
 			d.engine.Reset()
+			w.recordAutomaticEvaluation(now, nil, nil, "begin_rv_advanced", false)
 			return pgexec.Reconciled, nil
 		}
 		if m.Active != nil {
@@ -223,9 +225,17 @@ func (w *PGWorker) advanceAutomaticChecked(ctx context.Context) (pgexec.Progress
 		sample, err := w.sampleAutomatic(ctx, s)
 		if err != nil {
 			d.engine.Reset()
+			w.recordAutomaticEvaluation(time.Now(), nil, nil, "source_unavailable", false)
 			return pgexec.AwaitingFact, fmt.Errorf("%w: %w", ErrPolicyObservation, err)
 		}
-		target, selected, err := d.engine.Evaluate(time.Now(), sample)
+		evaluatedAt := time.Now()
+		target, selected, err := d.engine.Evaluate(evaluatedAt, sample)
+		var proposed *policy.Target
+		if selected {
+			copy := target
+			proposed = &copy
+		}
+		w.recordAutomaticEvaluation(evaluatedAt, &sample, proposed, "", false)
 		if err != nil {
 			return pgexec.AwaitingFact, fmt.Errorf("%w: %w", ErrPolicyObservation, err)
 		}
@@ -274,6 +284,7 @@ func (w *PGWorker) advanceAutomaticChecked(ctx context.Context) (pgexec.Progress
 		w.recordAutomaticOutcome("not_accepted_deadline_fenced")
 		d.pending, d.pendingRV = nil, ""
 		d.engine.Reset()
+		w.recordAutomaticEvaluation(time.Now(), nil, nil, "begin_deadline_fenced", false)
 		return pgexec.Reconciled, nil
 	}
 	d.pendingRV = s.ResourceVersion()
@@ -285,7 +296,9 @@ func (w *PGWorker) advanceAutomaticChecked(ctx context.Context) (pgexec.Progress
 	w.recordAutomaticOutcome(string(disposition))
 	if disposition == journal.Accepted || disposition == journal.Replayed {
 		d.pending, d.pendingRV = nil, ""
-		d.engine.Accepted(time.Now())
+		acceptedAt := time.Now()
+		d.engine.Accepted(acceptedAt)
+		w.recordAutomaticEvaluation(acceptedAt, nil, nil, "", true)
 		return pgexec.Recorded, nil
 	}
 	return pgexec.AwaitingFact, fmt.Errorf("%w: original Begin not accepted", ErrPolicyObservation)

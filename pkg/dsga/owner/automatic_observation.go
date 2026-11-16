@@ -38,7 +38,22 @@ type AutomaticPolicySource struct {
 
 type AutomaticSample = policy.Sample
 
-func (w *PGWorker) captureAutomaticDecision(request control.Request, sample policy.Sample) {
+// AutomaticEvaluation 记录候选策略对照所需的原 Owner 输入。失效读取仅记录
+// 窗口重置，尝试前的目标不代表 Begin 或任何物理结果。
+type AutomaticEvaluation struct {
+	ProtocolVersion uint32                        `json:"protocol_version"`
+	Instance        control.Instance              `json:"instance"`
+	IssuerEpoch     control.Uint64                `json:"issuer_epoch"`
+	At              time.Time                     `json:"at"`
+	Source          AutomaticPolicySource         `json:"source"`
+	Sample          *AutomaticSample              `json:"sample,omitempty"`
+	Window          *policy.EvaluationObservation `json:"window,omitempty"`
+	Proposed        *policy.Target                `json:"proposed,omitempty"`
+	ResetReason     string                        `json:"reset_reason,omitempty"`
+	Accepted        bool                          `json:"accepted,omitempty"`
+}
+
+func (w *PGWorker) automaticPolicySource() AutomaticPolicySource {
 	d := w.automatic
 	config := d.config
 	config.Targets = append([]policy.Target(nil), config.Targets...)
@@ -49,8 +64,29 @@ func (w *PGWorker) captureAutomaticDecision(request control.Request, sample poli
 		// 采用当时已应用的选择，不拿Desired冒充实际用于Evaluate的策略。
 		source.Kind, source.SelectionGeneration, source.SelectionSHA256 = "runtime_selection", w.runtimeStatus.AppliedGeneration, w.runtimeStatus.AppliedSHA256
 	}
+	return source
+}
+
+func (w *PGWorker) recordAutomaticEvaluation(at time.Time, sample *policy.Sample, proposed *policy.Target, resetReason string, accepted bool) {
+	if w.observeAutomaticEvaluation == nil {
+		return
+	}
+	instance, epoch := w.Binding()
+	trace := AutomaticEvaluation{ProtocolVersion: 1, Instance: instance, IssuerEpoch: epoch,
+		At: at, Source: w.automaticPolicySource(), Proposed: proposed, ResetReason: resetReason, Accepted: accepted}
+	if sample != nil {
+		copy := *sample
+		copy.Eligible = append([]bool(nil), sample.Eligible...)
+		window := w.automatic.engine.Observation()
+		trace.Sample, trace.Window = &copy, &window
+	}
+	w.observeAutomaticEvaluation(trace)
+}
+
+func (w *PGWorker) captureAutomaticDecision(request control.Request, sample policy.Sample) {
+	d := w.automatic
 	sample.Eligible = append([]bool(nil), sample.Eligible...)
-	d.pendingDecision = &AutomaticDecision{ProtocolVersion: 1, Request: request, Source: source,
+	d.pendingDecision = &AutomaticDecision{ProtocolVersion: 1, Request: request, Source: w.automaticPolicySource(),
 		Sample: sample, Window: d.engine.Observation()}
 	w.recordAutomaticOutcome("selected")
 }

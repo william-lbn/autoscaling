@@ -70,6 +70,7 @@ func startDSGACacheShadow(
 		defer close(done)
 		ticker := time.NewTicker(time.Duration(config.SampleIntervalSeconds) * time.Second)
 		defer ticker.Stop()
+		var lastSample control.Uint64
 		for {
 			select {
 			case <-ctx.Done():
@@ -82,13 +83,21 @@ func startDSGACacheShadow(
 					logger.Debug("DSGA cache shadow observation unavailable")
 					continue
 				}
-				estimated, err := config.estimate(instance, time.Now(), fact)
+				evaluatedAt := time.Now()
+				estimated, err := config.estimate(instance, evaluatedAt, fact)
 				if err != nil {
 					logger.Debug("DSGA cache shadow sample outside policy window")
 					continue
 				}
+				if fact.Sample.SampledAtUnixMicros <= lastSample {
+					logger.Debug("DSGA cache shadow sample clock did not advance")
+					continue
+				}
+				lastSample = fact.Sample.SampledAtUnixMicros
 				logger.Info("DSGA cache shadow working set",
 					zap.Uint64("estimated_bytes", estimated),
+					zap.Time("evaluated_at", evaluatedAt),
+					zap.Any("observation", fact),
 					zap.Uint32("block_bytes", fact.Sample.Demand.BlockBytes),
 					zap.Uint32("covered_seconds", fact.Sample.Demand.CoveredSeconds))
 			}

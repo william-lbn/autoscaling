@@ -122,8 +122,11 @@ func verifyProductionAutomaticBegin(t *testing.T, ctx context.Context, api *owne
 	loopCtx, stop := context.WithCancel(ctx)
 	defer stop()
 	var ticks []Tick
+	var evaluations []AutomaticEvaluation
 	var original *control.Request
-	err = worker.Run(loopCtx, PGLoopOptions{Control: nil, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, PollInterval: 5 * time.Millisecond, Observe: func(tick Tick) {
+	err = worker.Run(loopCtx, PGLoopOptions{Control: nil, Wake: nil, Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, PollInterval: 5 * time.Millisecond, ObserveAutomaticEvaluation: func(value AutomaticEvaluation) {
+		evaluations = append(evaluations, value)
+	}, Observe: func(tick Tick) {
 		ticks = append(ticks, tick)
 		if worker.automatic.pending != nil {
 			copyRequest := *worker.automatic.pending
@@ -146,6 +149,24 @@ func verifyProductionAutomaticBegin(t *testing.T, ctx context.Context, api *owne
 	require.Equal(t, ticks[0].AutomaticDecisions[0].Sample, ticks[1].AutomaticDecisions[0].Sample)
 	require.Equal(t, ticks[0].AutomaticDecisions[0].Window, ticks[1].AutomaticDecisions[0].Window)
 	require.Equal(t, ticks[0].AutomaticDecisions[0].Source, ticks[1].AutomaticDecisions[0].Source)
+	require.Len(t, evaluations, 2, "丢回复后的重读只记录一次原接受，不重新选择")
+	first, accepted := evaluations[0], evaluations[1]
+	require.Equal(t, ticks[0].AutomaticDecisions[0].Sample, *first.Sample)
+	require.Equal(t, ticks[0].AutomaticDecisions[0].Window, *first.Window)
+	require.Equal(t, ticks[0].AutomaticDecisions[0].Source, first.Source)
+	require.False(t, first.Accepted)
+	require.True(t, accepted.Accepted)
+	require.Nil(t, accepted.Sample)
+	require.Equal(t, first.Instance, accepted.Instance)
+	require.Equal(t, first.IssuerEpoch, accepted.IssuerEpoch)
+	replayed, err := policy.Replay(policy.ReplayTrace{ProtocolVersion: 1, PolicyRevision: first.Source.AutomaticSHA256,
+		Configuration: first.Source.Configuration, Events: []policy.ReplayEvent{
+			{Kind: "evaluate", At: first.At, Sample: first.Sample}, {Kind: "accepted", At: accepted.At},
+		}})
+	require.NoError(t, err)
+	require.False(t, replayed.Pending)
+	require.Equal(t, first.Proposed, replayed.Evaluations[0].Target)
+	require.Nil(t, worker.observeAutomaticEvaluation, "退出后不保留上次试验的收集入口")
 	require.NotNil(t, original)
 	latest, err := store.Load(ctx)
 	require.NoError(t, err)

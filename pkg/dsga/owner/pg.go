@@ -46,19 +46,20 @@ type PGWorker struct {
 	initial   *initialexec.Executor
 	// 管理恢复复用创建本worker时的原资源owner/SDK，不另建空客户端以
 	// 绕过GuestReady或修复未知。生命周期仍由Agent同一Session持有。
-	resourceOwner             *ResourceWorker
-	automatic                 *automaticMemory
-	qualification             *budget.QualificationSource
-	productionCore            coreclient.CoreV1Interface
-	runtimeReader             RuntimeSelectionReader
-	runtimeStatus             *runtimeselection.Status
-	runtimeNext               time.Time
-	suspensionOperation       string
-	suspensionDrain           *control.PreparedResponse
-	safety                    *serviceSafety
-	idleServiceDiagnostic     *IdleServiceDiagnostic
-	automaticDecisions        []AutomaticDecision
-	automaticDecisionSequence uint64
+	resourceOwner              *ResourceWorker
+	automatic                  *automaticMemory
+	qualification              *budget.QualificationSource
+	productionCore             coreclient.CoreV1Interface
+	runtimeReader              RuntimeSelectionReader
+	runtimeStatus              *runtimeselection.Status
+	runtimeNext                time.Time
+	suspensionOperation        string
+	suspensionDrain            *control.PreparedResponse
+	safety                     *serviceSafety
+	idleServiceDiagnostic      *IdleServiceDiagnostic
+	automaticDecisions         []AutomaticDecision
+	automaticDecisionSequence  uint64
+	observeAutomaticEvaluation func(AutomaticEvaluation)
 	// Run期间独占SDK/控制入口，避免重复启动两个轮询goroutine竞争Pending。
 	// Run返回后可由旧的测试/嵌入调用重新进入；ControlEndpoint本身不可复用。
 	running atomic.Bool
@@ -694,6 +695,8 @@ type PGLoopOptions struct {
 	CapacityAdmissionRecovery <-chan control.Key
 	// Observe供状态/指标使用，必须有界返回，不打印凭据或误把Recorded当VM完成。
 	Observe func(Tick)
+	// ObserveAutomaticEvaluation 仅供隔离试验采集实际策略输入，回调必须有界。
+	ObserveAutomaticEvaluation func(AutomaticEvaluation)
 	// 仅同包直接测试的同步屏障；生产为nil，不能提供事实、许可或替换SDK。
 	beforePeriodicAdvance func(context.Context)
 }
@@ -709,6 +712,8 @@ func (worker *PGWorker) Run(ctx context.Context, options PGLoopOptions) error {
 		return fmt.Errorf("PG worker loop already running")
 	}
 	defer worker.running.Store(false)
+	worker.observeAutomaticEvaluation = options.ObserveAutomaticEvaluation
+	defer func() { worker.observeAutomaticEvaluation = nil }()
 	if worker.resourceOwner != nil {
 		if !worker.resourceOwner.running.CompareAndSwap(false, true) {
 			return fmt.Errorf("resource execution loop already running")

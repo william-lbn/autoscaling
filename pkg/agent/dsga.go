@@ -209,13 +209,19 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 			}
 		}
 		instance, epoch := worker.Binding()
+		var observeAutomaticEvaluation func(owner.AutomaticEvaluation)
 		if shadow, enabled := config.CacheShadow[string(r.vmUID)]; enabled {
 			if err := shadow.validate(); err != nil {
 				return err
 			}
-			stop := startDSGACacheShadow(ownerCtx, logger, instance, shadow,
+			logger.Info("DSGA cache shadow source", zap.Any("instance", instance),
+				zap.Uint64("issuer_epoch", uint64(epoch)), zap.Any("configuration", shadow))
+			stop := startDSGACacheShadow(ownerCtx, logger.With(zap.Uint64("issuer_epoch", uint64(epoch))), instance, shadow,
 				time.Duration(config.RequestTimeoutSeconds)*time.Second, worker.ObserveLogicalDemand)
 			defer stop()
+			observeAutomaticEvaluation = func(value owner.AutomaticEvaluation) {
+				logger.Info("DSGA cache shadow original memory evaluation", zap.Any("evaluation", value))
+			}
 		}
 		phase := "running"
 		if len(qualifications) == 0 {
@@ -239,7 +245,7 @@ func (r *Runner) runDSGA(ctx context.Context, logger *zap.Logger, updated util.C
 		// 重发未知PG/Root/VM POST，也不另开legacy执行器绕过领域。
 		stage = "pg_run"
 		var diagnostic dsgaTickDiagnostic
-		return worker.Run(ownerCtx, owner.PGLoopOptions{RuntimeSelection: runtimeRead, EnableInFlightGrow: true, PollInterval: time.Duration(config.PollIntervalSeconds) * time.Second, Control: endpoint, Wake: updated.Recv(), Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, Observe: func(tick owner.Tick) {
+		return worker.Run(ownerCtx, owner.PGLoopOptions{RuntimeSelection: runtimeRead, EnableInFlightGrow: true, PollInterval: time.Duration(config.PollIntervalSeconds) * time.Second, Control: endpoint, Wake: updated.Recv(), Replay: nil, AdmissionReplay: nil, ResourceReplay: nil, PrepareReplay: nil, InitialAdmissionReplay: nil, VMReplay: nil, AbortReplay: nil, UnchangedAdmissionRecovery: nil, CapacityAdmissionRecovery: nil, ObserveAutomaticEvaluation: observeAutomaticEvaluation, Observe: func(tick owner.Tick) {
 			diagnostic.observe(logger, tick)
 			if tick.RuntimeSelection != nil || len(tick.AutomaticDecisions) > 0 || tick.SuspensionDrain != nil {
 				if tick.RuntimeSelection != nil && tick.RuntimeSelection.AppliedGeneration > 0 {
