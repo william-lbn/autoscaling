@@ -394,12 +394,20 @@ def readback_guest_root(disk, scratch, builder, plan, base_sha, major, postgres_
 
 
 def verify_normal_guest_oci(archive, image_digest, disk_sha, kernel_sha, builder, builder_sha,
-                            plan, plan_sha, base_sha, major, postgres_sha):
+                            plan, plan_sha, base_sha, major, postgres_sha, runtime_elf_sha256=None):
     builder, plan = pathlib.Path(builder).resolve(strict=True), pathlib.Path(plan).resolve(strict=True)
     if major not in (17, 18) or not all(HASH.fullmatch(d) for d in (builder_sha, plan_sha, base_sha, postgres_sha)):
         raise ValueError("Normal Guest verification requires PG17 or PG18 and immutable build checksums")
     if sha256(builder) != builder_sha or sha256(plan) != plan_sha:
         raise ValueError("Builder or plan differs from the independent build input")
+    if runtime_elf_sha256 is not None:
+        # 旧收据可继续检查原闭包。发行模式显式提供三份独立 ELF 摘要，
+        # 禁止用部分校验或盘内清单自证同源。
+        if (not isinstance(runtime_elf_sha256, dict)
+                or set(runtime_elf_sha256) != {"compute_ctl", "neonvmd", "dsga_resource_guard"}
+                or not all(isinstance(value, str) and HASH.fullmatch(value) and value != "0" * 64
+                           for value in runtime_elf_sha256.values())):
+            raise ValueError("Normal Guest runtime ELF input digests are incomplete or invalid")
     with tempfile.TemporaryDirectory(prefix="neon-guest-readback-") as directory:
         scratch = pathlib.Path(directory)
         disk = scratch / "disk.qcow2"
@@ -414,6 +422,8 @@ def verify_normal_guest_oci(archive, image_digest, disk_sha, kernel_sha, builder
             isinstance(root.get(key), str) and HASH.fullmatch(root[key])
             for key in ("system_manifest_sha256", "native_birth_manifest_sha256"))):
         raise ValueError("Final Guest root receipt differs from the independent build input")
+    if runtime_elf_sha256 is not None and root.get("runtime_elf_sha256") != runtime_elf_sha256:
+        raise ValueError("Final Guest runtime ELF digests differ from the independent build inputs")
     if sha256(builder) != builder_sha or sha256(plan) != plan_sha:
         raise ValueError("Builder or plan changed during Guest verification")
     return {"kind": "normal-guest-oci-readback", "protocol_version": 1,
@@ -441,6 +451,8 @@ def main():
     for name in ("builder", "builder-sha256", "plan", "plan-sha256", "base-sha256", "postgres-sha256"):
         normal.add_argument("--" + name, required=True)
     normal.add_argument("--postgres-major", required=True, type=int, choices=[17, 18])
+    normal.add_argument("--runtime-elf-sha256", type=pathlib.Path,
+                        help="JSON with independently built compute_ctl, neonvmd and dsga_resource_guard digests")
     for command in [verify, inspect, aggregate]:
         command.add_argument("--source-commit", required=True)
         command.add_argument("--version", required=True)
@@ -457,9 +469,14 @@ def main():
         write_json(args.output, value)
         return
     if args.command == "verify-normal-guest-oci":
+        runtime = None
+        if args.runtime_elf_sha256:
+            runtime = json.loads(args.runtime_elf_sha256.read_bytes(), object_pairs_hook=unique_object)
+            if runtime is None:
+                raise ValueError("Normal Guest runtime ELF input digests are absent")
         value = verify_normal_guest_oci(args.archive, args.image_digest, args.disk_sha256, args.kernel_sha256,
                                         args.builder, args.builder_sha256, args.plan, args.plan_sha256,
-                                        args.base_sha256, args.postgres_major, args.postgres_sha256)
+                                        args.base_sha256, args.postgres_major, args.postgres_sha256, runtime)
         write_json(args.output, value)
         return
     identity = execution_identity()

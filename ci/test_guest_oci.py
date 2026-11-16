@@ -141,13 +141,22 @@ class GuestOCI(unittest.TestCase):
                 self.assertEqual(result["root"], receipt)
                 self.assertEqual(result["oci"]["image_digest"], image)
                 self.assertFalse(scratch_paths[0].exists())
+                inputs = {key: checksum(key.encode()) for key in ("compute_ctl", "neonvmd", "dsga_resource_guard")}
+                with self.assertRaisesRegex(ValueError, "runtime ELF digests differ"):
+                    distribution.verify_normal_guest_oci(*args, runtime_elf_sha256=inputs)
+                receipt["runtime_elf_sha256"] = inputs
+                self.assertEqual(distribution.verify_normal_guest_oci(*args, runtime_elf_sha256=inputs)["root"], receipt)
+                with self.assertRaisesRegex(ValueError, "runtime ELF digests differ"):
+                    distribution.verify_normal_guest_oci(*args, runtime_elf_sha256={**inputs, "neonvmd": expected})
+                with self.assertRaisesRegex(ValueError, "incomplete or invalid"):
+                    distribution.verify_normal_guest_oci(*args, runtime_elf_sha256={"compute_ctl": expected})
                 receipt["postgres_major"] = 17
                 with self.assertRaisesRegex(ValueError, "root receipt differs"):
                     distribution.verify_normal_guest_oci(*args)
                 args[3] = checksum(KERNEL_ORIGINAL)
                 with self.assertRaisesRegex(ValueError, "Final Guest artifact.*vmlinuz"):
                     distribution.verify_normal_guest_oci(*args)
-                self.assertEqual(readback.call_count, 2)
+                self.assertEqual(readback.call_count, 5)
                 plan.write_bytes(b"changed")
                 with self.assertRaisesRegex(ValueError, "Builder or plan differs"):
                     distribution.verify_normal_guest_oci(*args)

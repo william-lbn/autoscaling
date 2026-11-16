@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -9,16 +10,17 @@ import (
 )
 
 type normalImageReadback struct {
-	Kind                string `json:"kind"`
-	ProtocolVersion     uint32 `json:"protocol_version"`
-	Architecture        string `json:"architecture"`
-	BuildPlanSHA256     string `json:"build_plan_sha256"`
-	BaseImageSHA256     string `json:"base_image_sha256"`
-	SystemProfile       string `json:"system_profile"`
-	SystemSHA256        string `json:"system_manifest_sha256"`
-	NativeBirthSHA256   string `json:"native_birth_manifest_sha256"`
-	PostgreSQLMajor     uint32 `json:"postgres_major"`
-	PostgreSQLELFSHA256 string `json:"postgres_elf_sha256"`
+	Kind                string            `json:"kind"`
+	ProtocolVersion     uint32            `json:"protocol_version"`
+	Architecture        string            `json:"architecture"`
+	BuildPlanSHA256     string            `json:"build_plan_sha256"`
+	BaseImageSHA256     string            `json:"base_image_sha256"`
+	SystemProfile       string            `json:"system_profile"`
+	SystemSHA256        string            `json:"system_manifest_sha256"`
+	NativeBirthSHA256   string            `json:"native_birth_manifest_sha256"`
+	PostgreSQLMajor     uint32            `json:"postgres_major"`
+	PostgreSQLELFSHA256 string            `json:"postgres_elf_sha256"`
+	RuntimeELFSHA256    map[string]string `json:"runtime_elf_sha256"`
 }
 
 // Readback uses the same closure builders as image generation against an
@@ -93,10 +95,32 @@ func readbackNormalImage(root string, planRaw []byte, baseSHA string, major uint
 		}
 	}
 
+	// 从已经重新计算并与原盘逐字节比对的 System3 中取出 ELF 摘要。
+	// 发行方可将它们和同一次构建产物比较，避免来源标签掩盖旧可执行文件。
+	var inventory resourceguard.NormalSystemSourceManifest
+	if err := json.Unmarshal(system, &inventory); err != nil {
+		return receipt, err
+	}
+	runtimePaths := map[string]string{
+		"/usr/local/bin/compute_ctl":      "compute_ctl",
+		"/neonvm/bin/neonvmd":             "neonvmd",
+		"/neonvm/bin/dsga-resource-guard": "dsga_resource_guard",
+	}
+	runtimeELFs := make(map[string]string, len(runtimePaths))
+	for _, file := range inventory.Files {
+		if component, ok := runtimePaths[file.Path]; ok {
+			runtimeELFs[component] = file.SHA256
+		}
+	}
+	if len(runtimeELFs) != len(runtimePaths) {
+		return receipt, fmt.Errorf("normal Guest System3 lacks a runtime executable")
+	}
+
 	return normalImageReadback{
 		Kind: "normal-guest-root-readback", ProtocolVersion: 1, Architecture: targetArchLinuxAmd64,
 		BuildPlanSHA256: normalDigest(planRaw), BaseImageSHA256: baseSHA,
 		SystemProfile: resourceguard.NormalSystemSourceV3ProfileID, SystemSHA256: normalDigest(system),
 		NativeBirthSHA256: normalDigest(native), PostgreSQLMajor: major, PostgreSQLELFSHA256: postgresSHA,
+		RuntimeELFSHA256: runtimeELFs,
 	}, nil
 }

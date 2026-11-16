@@ -146,6 +146,15 @@ func TestNormalImageReadbackRequiresOriginalFinalClosure(t *testing.T) {
 		got.BuildPlanSHA256 != normalDigest(planRaw) || got.PostgreSQLMajor != 17 || got.PostgreSQLELFSHA256 != postgres {
 		t.Fatalf("unexpected final disk receipt %+v: %v", got, err)
 	}
+	for component, file := range map[string]string{
+		"compute_ctl":         "/usr/local/bin/compute_ctl",
+		"neonvmd":             "/neonvm/bin/neonvmd",
+		"dsga_resource_guard": "/neonvm/bin/dsga-resource-guard",
+	} {
+		if got.RuntimeELFSHA256[component] != normalDigest(read(file)) {
+			t.Fatalf("runtime executable %s does not identify its on-disk bytes", component)
+		}
+	}
 	if _, err := readbackNormalImage(root, append(bytes.Clone(planRaw), '\n'), base, 17, postgres); err == nil {
 		t.Fatal("a different original plan was accepted")
 	}
