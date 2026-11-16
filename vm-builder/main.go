@@ -105,6 +105,8 @@ var (
 	normalBaseDigest                = flag.String("normal-base-image-sha", "", "Original base image declaration for final inventory; not final image self hash")
 	normalOrdinaryControls          = flag.Uint("normal-ordinary-controls-version", 1, "Explicit fixed ordinary controls version: 1 or 2; version 2 requires normal-split-v3 and original package lock")
 	normalOrdinaryPackageLock       = flag.String("normal-ordinary-package-lock", "", "Original Linux source/package build lock for explicit ordinary controls version 2")
+	normalOrdinaryInputRoot         = flag.String("normal-ordinary-input-root", "", "Verify the staged ordinary source inputs against the original package lock and exit")
+	normalOrdinaryPackageLockSHA    = flag.String("normal-ordinary-package-lock-sha256", "", "Independently pinned SHA256 for the ordinary input verification action")
 	srcImage                        = flag.String("src", "", `Docker image used as source for virtual machine disk image: --src=alpine:3.19`)
 	dstImage                        = flag.String("dst", "", `Docker image with resulting disk image: --dst=vm-alpine:3.19`)
 	size                            = flag.String("size", "1G", `Size for disk image: --size=1G`)
@@ -191,6 +193,23 @@ type inittabCommand struct {
 
 func main() {
 	flag.Parse()
+	if *normalOrdinaryInputRoot != "" || *normalOrdinaryPackageLockSHA != "" {
+		if *normalManifestRoot != "" || *normalReadback || *normalPrepareConfigsOnly || *normalPrepareTrustedComputeOnly || *srcImage != "" || *dstImage != "" || *version {
+			log.Fatal("ordinary input verification is a separate read-only build action")
+		}
+		lock, err := readNormalOrdinaryV2BuildLock(*systemModeFlag, *normalOrdinaryControls, *normalOrdinaryPackageLock)
+		if err != nil {
+			log.Fatal(err)
+		}
+		receipt, err := verifyNormalOrdinaryInputs(*normalOrdinaryInputRoot, lock, *normalOrdinaryPackageLockSHA)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := json.NewEncoder(os.Stdout).Encode(receipt); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 	if *normalReadback && (*normalManifestRoot == "" || *normalPrepareTrustedComputeOnly || *normalPrepareConfigsOnly ||
 		*normalNativeBirthVersion != 1 || !normalNativePGDigest(*normalNativePostgresSHA) || !normalNativePGDigest(*normalBaseDigest)) {
 		log.Fatal("normal readback requires an isolated final root, collector1, and original base and PostgreSQL digests")
