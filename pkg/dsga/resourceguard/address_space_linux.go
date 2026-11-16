@@ -3,6 +3,7 @@
 package resourceguard
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -39,7 +40,13 @@ func inspectProcessAddressSpace(pid int, ceiling control.Uint64, uid uint64) (pr
 	return inspectProcessAddressSpaceGroup(pid, ceiling, uid, "0::/neon-postgres\n")
 }
 
-func inspectProcessAddressSpaceGroup(pid int, ceiling control.Uint64, uid uint64, expectedGroup string) (_ processAddressSample, err error) {
+func inspectProcessAddressSpaceGroup(pid int, ceiling control.Uint64, uid uint64, expectedGroup string) (processAddressSample, error) {
+	return inspectAddressSpaceFromProc(pid, ceiling, uid, expectedGroup, func(name string) (string, error) {
+		return boundedProcessText(pid, name)
+	})
+}
+
+func inspectAddressSpaceFromProc(pid int, ceiling control.Uint64, uid uint64, expectedGroup string, read func(string) (string, error)) (_ processAddressSample, err error) {
 	step := "address_domain"
 	defer func() {
 		if err != nil {
@@ -50,7 +57,7 @@ func inspectProcessAddressSpaceGroup(pid int, ceiling control.Uint64, uid uint64
 		return processAddressSample{}, fmt.Errorf("unsupported fixed process domain")
 	}
 	step = "address_initial_process_stat"
-	first, err := boundedProcessText(pid, "stat")
+	first, err := read("stat")
 	if err != nil {
 		return processAddressSample{}, err
 	}
@@ -59,7 +66,7 @@ func inspectProcessAddressSpaceGroup(pid int, ceiling control.Uint64, uid uint64
 		return processAddressSample{}, err
 	}
 	step = "address_process_membership"
-	group, err := boundedProcessText(pid, "cgroup")
+	group, err := read("cgroup")
 	if err != nil {
 		return processAddressSample{}, err
 	}
@@ -67,7 +74,7 @@ func inspectProcessAddressSpaceGroup(pid int, ceiling control.Uint64, uid uint64
 		return processAddressSample{}, fmt.Errorf("address space process left original cgroup")
 	}
 	step = "address_process_uid"
-	status, err := boundedProcessText(pid, "status")
+	status, err := read("status")
 	if err != nil {
 		return processAddressSample{}, err
 	}
@@ -75,17 +82,17 @@ func inspectProcessAddressSpaceGroup(pid int, ceiling control.Uint64, uid uint64
 		return processAddressSample{}, err
 	}
 	step = "address_process_limits"
-	limits, err := boundedProcessText(pid, "limits")
+	limits, err := read("limits")
 	if err != nil {
 		return processAddressSample{}, err
 	}
 	step = "address_process_limit_facts"
-	hard, virtual, err := processAddressSpace(limits, status, ceiling)
-	if err != nil {
-		return processAddressSample{}, err
+	hard, virtual, factsErr := processAddressSpace(limits, status, ceiling)
+	if factsErr != nil && !errors.Is(factsErr, errAddressSpaceMappingUnavailable) {
+		return processAddressSample{}, factsErr
 	}
 	step = "address_final_process_stat"
-	second, err := boundedProcessText(pid, "stat")
+	second, err := read("stat")
 	if err != nil {
 		return processAddressSample{}, err
 	}
@@ -93,7 +100,27 @@ func inspectProcessAddressSpaceGroup(pid int, ceiling control.Uint64, uid uint64
 	if err != nil || start != end {
 		return processAddressSample{}, errAddressSpaceChurn
 	}
+	if factsErr != nil {
+		step = "address_process_limit_facts"
+		return processAddressSample{}, missingAddressSpace(second, pid)
+	}
 	return processAddressSample{start: control.Uint64(start), hard: hard, virtual: virtual}, nil
+}
+
+func missingAddressSpace(stat string, pid int) error {
+	fields, err := processStatFields(stat, pid)
+	if err != nil {
+		return err
+	}
+	// procfs can observe exit_mm before the task becomes a zombie. The same
+	// PID/starttime's kernel PF_EXITING bit permits another full scan, not a
+	// zero-valued sample. A stable process without a mapping remains unknown.
+	const pfExiting = 0x00000004
+	flags, err := canonicalUint(fields[6]) // /proc/<pid>/stat field 9.
+	if err == nil && (flags&pfExiting != 0 || fields[0] == "Z" || fields[0] == "X") {
+		return errAddressSpaceChurn
+	}
+	return errAddressSpaceMappingUnavailable
 }
 
 func postgresUID() (uint64, error) {

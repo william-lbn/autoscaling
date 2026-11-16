@@ -123,7 +123,7 @@ func processAddressSpace(limits, status string, ceiling control.Uint64) (hard, v
 				return 0, 0, fmt.Errorf("invalid process virtual size unit")
 			}
 			n, parseErr := canonicalUint(fields[1])
-			if parseErr != nil || n == 0 || n > uint64(hard)/1024 {
+			if parseErr != nil || n > uint64(hard)/1024 {
 				return 0, 0, fmt.Errorf("existing process virtual size exceeds hard ceiling")
 			}
 			virtual = control.Uint64(n * 1024)
@@ -133,13 +133,18 @@ func processAddressSpace(limits, status string, ceiling control.Uint64) (hard, v
 			}
 		}
 	}
-	for _, found := range want {
-		if !found {
+	for field, found := range want {
+		if field != "VmSize:" && !found {
 			return 0, 0, fmt.Errorf("incomplete process privilege or address space facts")
 		}
 	}
+	if virtual == 0 {
+		return 0, 0, errAddressSpaceMappingUnavailable
+	}
 	return hard, virtual, nil
 }
+
+var errAddressSpaceMappingUnavailable = errors.New("process address space was not observed")
 
 func canonicalUint(s string) (uint64, error) {
 	n, err := strconv.ParseUint(s, 10, 64)
