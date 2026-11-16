@@ -1,0 +1,59 @@
+{
+  "scope": "historical R65 v1 Request digest compatibility only; not cache action acceptance",
+  "source_path": "work/c5-shadow-live-r1/evidence/c5-owner-shadow-r65/SUMMARY.json",
+  "source_sha256": "1d6fd7ff5f00ce00a8ef50d47de945e898f93ab8dd7b4109c0e4466e0dd6474a",
+  "records": [
+    {
+      "postgres_major": 17,
+      "request": {
+        "protocol_version": 1,
+        "key": {
+          "instance": {
+            "vm_uid": "1e053a7b-a2af-4b68-a9b6-f3c1d5aa6ff2",
+            "compute_instance_id": "ci_7e549dbee4efc60ac97b4c24f51acddd",
+            "pg_boot_id": "17141575386455422730"
+          },
+          "issuer_epoch": "4",
+          "revision": "4",
+          "operation_id": {
+            "high": "15563781919139036462",
+            "low": "4942706779675263433"
+          }
+        },
+        "kind": "shrink",
+        "expected_capacity_generation": "4",
+        "target_buffers": 256,
+        "target_vm_memory_bytes": "7516192768",
+        "budget_commitment_id": "automatic-d7fda931ebedfd2e449805a0e77581c9",
+        "deadline_unix_ms": "1794833857247"
+      },
+      "journal_request_sha256": "c5d28bda34eb5cb5347bdbed8800e1d48b8e86b890bfe1c74cebd5665682ce8f"
+    },
+    {
+      "postgres_major": 18,
+      "request": {
+        "protocol_version": 1,
+        "key": {
+          "instance": {
+            "vm_uid": "2c682ddb-1cb7-405e-ae2e-c5fcc25e55ea",
+            "compute_instance_id": "ci_de655e51b058d75fe8a6892f11c55754",
+            "pg_boot_id": "10007030416959378875"
+          },
+          "issuer_epoch": "4",
+          "revision": "1",
+          "operation_id": {
+            "high": "10259624916015385180",
+            "low": "9856452041670090782"
+          }
+        },
+        "kind": "grow",
+        "expected_capacity_generation": "1",
+        "target_buffers": 2048,
+        "target_vm_memory_bytes": "8589934592",
+        "budget_commitment_id": "automatic-8e618280d7d80a5c88c926e9016b601e",
+        "deadline_unix_ms": "1794839228612"
+      },
+      "journal_request_sha256": "1d7dd8168188a9777d379ee5f75b8226a35f259d684b970bb3af3591338a3e13"
+    }
+  ]
+}

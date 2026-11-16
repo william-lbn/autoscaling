@@ -18,7 +18,9 @@ const QualificationKind = "platform-qualification-v1"
 // Qualification只从构造器固定的集群/namespace读取可信配置选定的原UID。
 // 资格对象与Outside一样须immutable、同VM且有保护finalizer；签发者必须另有
 // 受限权限。本读者不生成认证、不从Node标签或当前RSS猜测平台余量。
-func (r *Reader) Qualification(ctx context.Context, source budget.QualificationSource) (budget.PlatformQualification, error) {
+// readLegacyQualification 保留原 v1 格式、kind 和来源核验；公开 Qualification
+// 通过显式版本分派调用它，绝不把新的 allocation 来源投影成旧平台资格。
+func (r *Reader) readLegacyQualification(ctx context.Context, source budget.QualificationSource) (budget.PlatformQualification, error) {
 	var q budget.PlatformQualification
 	if err := source.Validate(); err != nil {
 		return q, err
