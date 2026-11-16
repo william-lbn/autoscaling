@@ -365,7 +365,7 @@ jobs:
           GO_DIGEST: ${{ needs.go-base.outputs.digest }}
         run: |
           python3 ci/record.py --name neonvm-daemon --image "$REGISTRY/neonvm-daemon:$TAG" \
-            --digest "$DIGEST" --dependency "autoscaling-go-base=$GO_DIGEST" --output output/neonvm-daemon.json
+            --digest "$DIGEST" --dependency "autoscaling-go-base=$GO_DIGEST" --inspect-runtime-elf --output output/neonvm-daemon.json
       - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
           name: images-autoscaling-neonvm-daemon-attempt${{ github.run_attempt }}
@@ -470,6 +470,7 @@ jobs:
         run: |
           set -euo pipefail
           dependencies=()
+          readback=()
           if [[ "$NAME" != cluster-autoscaler-neonvm ]]; then
             dependencies+=(--dependency "autoscaling-go-base=$GO_DIGEST")
           fi
@@ -477,9 +478,10 @@ jobs:
             dependencies+=(--dependency "vm-kernel=$KERNEL_DIGEST")
           elif [[ "$NAME" == vm-builder ]]; then
             dependencies+=(--dependency "neonvm-daemon=$DAEMON_DIGEST")
+            readback+=(--inspect-runtime-elf)
           fi
           python3 ci/record.py --name "$NAME" --image "$REGISTRY/$NAME:$TAG" --digest "$DIGEST" \
-            --output "output/$NAME.json" "${dependencies[@]}"
+            --output "output/$NAME.json" "${dependencies[@]}" "${readback[@]}"
       - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
           name: images-autoscaling-${{ matrix.name }}-attempt${{ github.run_attempt }}
