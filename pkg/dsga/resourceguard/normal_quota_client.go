@@ -64,7 +64,11 @@ func (c *Client) normalQuotaCall(ctx context.Context, v NormalQuotaEnvelope, act
 	}
 	v = cloneNormalQuota(v)
 	c.mu.Lock()
-	if c.normalProtocolVersion != 1 || (v.ProtocolVersion == 2 && c.onlineShrinkVersion != 1) || !observer && (c.busy || c.arrayPending != nil || c.repair != nil || c.pending != nil && !reflect.DeepEqual(*c.pending, v.Command) || c.normalPending != nil && (!explicit || !reflect.DeepEqual(*c.normalPending, v))) || observer && c.normalPending != nil && !reflect.DeepEqual(*c.normalPending, v) {
+	// 恢复同一已持久信封时，旧 Guard 见证失效可以让普通 GET /state 无法返回。
+	// 只允许显式 normal-recover 核这一笔原命令；能力仍由普通状态观察确认。
+	retainedDiscovery := action == "normal-recover" && !c.normalProfileObserved
+	unsupported := c.normalProtocolVersion != 1 || v.ProtocolVersion == 2 && c.onlineShrinkVersion != 1
+	if unsupported && !retainedDiscovery || !observer && (c.busy || c.arrayPending != nil || c.repair != nil || c.pending != nil && !reflect.DeepEqual(*c.pending, v.Command) || c.normalPending != nil && (!explicit || !reflect.DeepEqual(*c.normalPending, v))) || observer && c.normalPending != nil && !reflect.DeepEqual(*c.normalPending, v) {
 		c.mu.Unlock()
 		return out, &ClientError{Code: "normal_original_pending_or_unavailable"}
 	}
@@ -89,6 +93,10 @@ func (c *Client) normalQuotaCall(ctx context.Context, v NormalQuotaEnvelope, act
 		return NormalQuotaEvidence{}, &ClientError{MayHaveExecuted: !observer, Code: "normal_evidence_unconfirmed"}
 	}
 	c.mu.Lock()
+	if retainedDiscovery && c.normalProfileObserved && (c.normalProtocolVersion != 1 || v.ProtocolVersion == 2 && c.onlineShrinkVersion != 1) {
+		c.mu.Unlock()
+		return NormalQuotaEvidence{}, &ClientError{MayHaveExecuted: true, Code: "normal_profile_changed_during_recovery"}
+	}
 	if c.normalPending != nil && reflect.DeepEqual(*c.normalPending, v) {
 		c.normalPending = nil
 		if c.pending != nil && reflect.DeepEqual(*c.pending, v.Command) {

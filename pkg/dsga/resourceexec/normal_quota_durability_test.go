@@ -19,6 +19,7 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 	"net/http"
 	"net/http/httptest"
@@ -35,6 +36,8 @@ type normalDurabilityFixture struct {
 	model                                                                           journal.Model
 	prepared                                                                        budget.Prepared
 	command                                                                         resourceguard.Command
+	actual                                                                          resourceguard.Evidence
+	aggregate                                                                       budget.RootAggregate
 	executor                                                                        *Executor
 	prefix                                                                          int
 	recoverCalls, stateCalls, observeCalls, pgCalls, patchCalls, forbiddenRootCalls int
@@ -42,7 +45,13 @@ type normalDurabilityFixture struct {
 	allowPGFence                                                                    bool
 }
 
-func normalDurabilityModel(t *testing.T, p budget.Prepared, c resourceguard.Command) journal.Model {
+type normalDurabilityInitial struct {
+	Budget  budget.Initial                 `json:"initial"`
+	Command budget.InitialAdmissionCommand `json:"command"`
+	Receipt budget.InitialAdmissionReceipt `json:"receipt"`
+}
+
+func normalDurabilityModel(t *testing.T, p budget.Prepared, c resourceguard.Command, initial *normalDurabilityInitial) journal.Model {
 	t.Helper()
 	m, err := journal.New(p.Request.Key.Instance.VMUID, "1234567890abcdef1234567890abcdef", "durability-owner")
 	require.NoError(t, err)
@@ -50,6 +59,14 @@ func normalDurabilityModel(t *testing.T, p budget.Prepared, c resourceguard.Comm
 	require.NoError(t, err)
 	m, err = m.BindPG(m.Owner, p.Request.Key.Instance)
 	require.NoError(t, err)
+	if initial != nil {
+		m, err = m.BindInitialBudget(m.Owner, initial.Budget)
+		require.NoError(t, err)
+		m, err = m.StartInitialAdmission(m.Owner, initial.Command)
+		require.NoError(t, err)
+		m, err = m.RecordInitialAdmission(m.Owner, initial.Receipt)
+		require.NoError(t, err)
+	}
 	m, disposition, err := m.Begin(m.Owner, p.Request, 0)
 	require.NoError(t, err)
 	require.Equal(t, journal.Accepted, disposition)
@@ -82,6 +99,10 @@ func normalDurabilityModel(t *testing.T, p budget.Prepared, c resourceguard.Comm
 }
 
 func newNormalDurabilityFixture(t *testing.T) *normalDurabilityFixture {
+	return normalDurabilityWithInitial(t, false)
+}
+
+func normalDurabilityWithInitial(t *testing.T, withInitialBudget bool) *normalDurabilityFixture {
 	t.Helper()
 	read := func(n string, out any) {
 		raw, err := os.ReadFile("../../api/dsga/testdata/" + n)
@@ -90,6 +111,14 @@ func newNormalDurabilityFixture(t *testing.T) *normalDurabilityFixture {
 	}
 	var q control.Request
 	read("request-v1.json", &q)
+	var initial *normalDurabilityInitial
+	if withInitialBudget {
+		initial = new(normalDurabilityInitial)
+		raw, err := os.ReadFile("../journal/testdata/initial-domain.json")
+		require.NoError(t, err)
+		require.NoError(t, json.Unmarshal(raw, initial))
+		q.Key.Instance = initial.Budget.Instance
+	}
 	q.Key.IssuerEpoch = 1
 	q.Key.Revision = 1
 	var response control.ControlResponse
@@ -114,13 +143,19 @@ func newNormalDurabilityFixture(t *testing.T) *normalDurabilityFixture {
 	shared := control.SharedCostResponse{ProtocolVersion: 1, StartupMainUpperBytes: 16 << 20, StartupArraysUpperBytes: 16 << 20, CurrentMainAndArraysUpperBytes: 96 << 20, Observed: s}
 	id := resourceguard.Identity{VMUID: q.Key.Instance.VMUID, ComputeInstanceID: q.Key.Instance.ComputeInstanceID, GuestBootID: "12345678-1234-1234-1234-123456789abc", CgroupDevice: 2, CgroupInode: 3}
 	limits := resourceguard.Limits{MemoryMaxBytes: 256 << 20, OutsideUpperBytes: 32 << 20, HugePools: []resourceguard.HugePool{{PageSizeKB: 2048, Pages: 8}}}
+	if initial != nil {
+		id = initial.Budget.PGAggregate.Identity
+		limits.PidsMaxTasks = initial.Budget.PGAggregate.Bootstrap.Limits.PidsMaxTasks
+		limits.SystemMemoryMaxBytes = initial.Budget.PGAggregate.Bootstrap.Limits.SystemMemoryMaxBytes
+	}
 	fence := control.FenceResponse{ProtocolVersion: 1, RequestedInstance: q.Key.Instance, RequestedEpoch: 1, Disposition: control.Fenced, Observed: s}
 	upper, err := budget.GrowSharedUpper(shared, q.TargetBuffers)
 	require.NoError(t, err)
 	p := budget.Prepared{ProtocolVersion: 1, NormalQuotaProtocolVersion: 1, NormalQuotaFence: &fence, Request: q, Identity: id, RunnerPodName: "runner", VMBeforeMemoryBytes: 512 << 20, GuestUsableMemoryBytes: q.TargetVMMemoryBytes, Shared: shared, TargetSharedUpperBytes: upper, Limits: limits, SystemOutsidePG: budget.Bound{Kind: budget.CommittedUpper, UpperBytes: 24 << 20, SourceID: "system"}, Transition: budget.Bound{Kind: budget.CommittedUpper, UpperBytes: 4 << 20, SourceID: "transition"}, Safety: budget.Bound{Kind: budget.CommittedUpper, UpperBytes: 4 << 20, SourceID: "safety"}}
 	require.NoError(t, p.ValidateFor(q, id))
-	c := resourceguard.Command{ProtocolVersion: 1, Identity: id, IssuerEpoch: 1, Revision: 1, BudgetCommitmentID: q.BudgetCommitmentID, PostmasterPID: 123, PostmasterStartTicks: 10, MemoryMaxBytes: limits.MemoryMaxBytes, OutsideUpperBytes: limits.OutsideUpperBytes, HugePools: limits.HugePools}
-	f := &normalDurabilityFixture{model: normalDurabilityModel(t, p, c), prepared: p, command: c, prefix: 4}
+	c := resourceguard.Command{ProtocolVersion: 1, Identity: id, IssuerEpoch: 1, Revision: 1, BudgetCommitmentID: q.BudgetCommitmentID, PostmasterPID: 123, PostmasterStartTicks: 10, MemoryMaxBytes: limits.MemoryMaxBytes, PidsMaxTasks: limits.PidsMaxTasks, SystemMemoryMaxBytes: limits.SystemMemoryMaxBytes, OutsideUpperBytes: limits.OutsideUpperBytes, HugePools: limits.HugePools}
+	require.NoError(t, c.Validate())
+	f := &normalDurabilityFixture{model: normalDurabilityModel(t, p, c, initial), prepared: p, command: c, prefix: 4}
 	reply := func(w http.ResponseWriter, v any) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Cache-Control", "no-store")
@@ -151,7 +186,7 @@ func newNormalDurabilityFixture(t *testing.T) *normalDurabilityFixture {
 			Data        []byte `json:"data"`
 		}{1, "zlib-v1", f.model.Incarnation, hex.EncodeToString(sum[:]), compressed.Bytes()})
 		require.NoError(t, err)
-		vm := &vmv1.VirtualMachine{TypeMeta: metav1.TypeMeta{APIVersion: vmv1.SchemeGroupVersion.String(), Kind: "VirtualMachine"}, ObjectMeta: metav1.ObjectMeta{Namespace: "test", Name: "durability-vm", UID: "dsg-vm-1", ResourceVersion: "original-1", Annotations: map[string]string{control.ModeAnnotation: "1:1234567890abcdef1234567890abcdef", control.JournalAnnotation: string(encoded)}}}
+		vm := &vmv1.VirtualMachine{TypeMeta: metav1.TypeMeta{APIVersion: vmv1.SchemeGroupVersion.String(), Kind: "VirtualMachine"}, ObjectMeta: metav1.ObjectMeta{Namespace: "test", Name: "durability-vm", UID: types.UID(id.VMUID), ResourceVersion: "original-1", Annotations: map[string]string{control.ModeAnnotation: "1:1234567890abcdef1234567890abcdef", control.JournalAnnotation: string(encoded)}}}
 		vm.Spec.DSGABootstrap = &vmv1.DSGABootstrap{ProtocolVersion: 1, Incarnation: "1234567890abcdef1234567890abcdef", ComputeInstanceID: id.ComputeInstanceID, VMUID: id.VMUID, ConfigSecretUID: "config-secret-1", Ready: true}
 		vm.Status.Phase = vmv1.VmRunning
 		vm.Status.PodName = "runner"
@@ -161,7 +196,7 @@ func newNormalDurabilityFixture(t *testing.T) *normalDurabilityFixture {
 	t.Cleanup(api.Close)
 	generated, err := vmclient.NewForConfig(&rest.Config{Host: api.URL})
 	require.NoError(t, err)
-	store, err := journal.NewStore(generated.NeonvmV1().VirtualMachines("test"), journal.Binding{Namespace: "test", Name: "durability-vm", VMUID: "dsg-vm-1", Incarnation: "1234567890abcdef1234567890abcdef"})
+	store, err := journal.NewStore(generated.NeonvmV1().VirtualMachines("test"), journal.Binding{Namespace: "test", Name: "durability-vm", VMUID: types.UID(id.VMUID), Incarnation: "1234567890abcdef1234567890abcdef"})
 	require.NoError(t, err)
 	pgServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/dsg/v1/capabilities" {
@@ -190,8 +225,21 @@ func newNormalDurabilityFixture(t *testing.T) *normalDurabilityFixture {
 	require.NoError(t, err)
 	t.Cleanup(pg.CloseIdleConnections)
 	actual := resourceguard.Evidence{ProtocolVersion: 1, Identity: id, MemoryMaxBytes: c.MemoryMaxBytes, MemoryCurrentBytes: 4 << 20, GuestMemTotalBytes: q.TargetVMMemoryBytes, HugePools: limits.HugePools, WholePoolUpperBytes: 16 << 20, HugeOvercommitDisabled: true}
-	view := resourceguard.View{ProtocolVersion: 1, NormalQuotaProtocolVersion: 1, Identity: id, IssuerFloorEpoch: 1, Bootstrap: resourceguard.BootstrapCommand{ProtocolVersion: 1, Identity: id, IssuerEpoch: 1, BudgetCommitmentID: "bootstrap", Limits: limits}, BootstrapApplied: true, Original: &c, Applied: false, Birth: &resourceguard.ProcessIdentity{ProtocolVersion: 1, Identity: id, PostmasterPID: 123, PostmasterStartTicks: 10}, Actual: actual}
+	if initial != nil {
+		actual.TaskLimit = &resourceguard.TaskLimitEvidence{MaxTasks: limits.PidsMaxTasks}
+		actual.System = &resourceguard.SystemEvidence{Scope: resourceguard.SystemChargedScope, MemoryMaxBytes: limits.SystemMemoryMaxBytes, PID1Member: true}
+		actual.CgroupPopulated = true
+	}
+	f.actual = actual
+	require.NoError(t, actual.ValidateFor(c))
+	view := resourceguard.View{ProtocolVersion: 1, NormalQuotaProtocolVersion: 1, Identity: id, IssuerFloorEpoch: 1, Bootstrap: resourceguard.BootstrapCommand{ProtocolVersion: 1, Identity: id, IssuerEpoch: 1, BudgetCommitmentID: "bootstrap", Limits: limits}, BootstrapApplied: true, SystemPlacementObserved: actual.System != nil, Original: &c, Applied: false, Birth: &resourceguard.ProcessIdentity{ProtocolVersion: 1, Identity: id, PostmasterPID: 123, PostmasterStartTicks: 10}, Actual: actual}
 	require.NoError(t, view.Validate())
+	if initial != nil {
+		settled := view
+		settled.Held, settled.Applied = &c, true
+		f.aggregate, err = budget.RootAggregateFromView(settled)
+		require.NoError(t, err)
+	}
 	rootServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		f.mu.Lock()
 		if r.URL.Path == "/dsg/v1/resource/state" {
@@ -263,6 +311,104 @@ func TestNormalQuotaDurabilityConfirmsOriginalWithoutContinuation(t *testing.T) 
 	f.mu.Unlock()
 	require.Nil(t, f.executor.resources.NormalQuotaPending())
 }
+
+func TestNormalQuotaDurabilityRecoversSettledGuestReadyBehindOriginalFinalizationFence(t *testing.T) {
+	for _, mode := range []string{"same", "cold-start", "no-closure", "unconfirmed-closure", "wrong-guest-audit", "changed-owner"} {
+		t.Run(mode, func(t *testing.T) {
+			f := normalDurabilityWithInitial(t, true)
+			command := f.command
+			if mode == "wrong-guest-audit" {
+				command.Revision++
+			}
+			audit, err := json.Marshal(Audit{
+				ProtocolVersion: 2, Command: command, Evidence: f.actual, PGAggregate: f.aggregate,
+				Fence: *f.prepared.NormalQuotaFence, Shared: f.prepared.Shared,
+				RunnerPodName: f.prepared.RunnerPodName, VMMemoryBytes: f.prepared.Request.TargetVMMemoryBytes,
+			})
+			require.NoError(t, err)
+			var decoded Audit
+			require.NoError(t, json.Unmarshal(audit, &decoded))
+			m := f.model
+			key := f.commandKey()
+			for _, step := range m.Active.Steps {
+				if step.Action != journal.GuestReady && step.Action != journal.ResizePG {
+					continue
+				}
+				data := audit
+				if step.Action == journal.ResizePG {
+					data, err = json.Marshal(m.Active.Request)
+					require.NoError(t, err)
+					m, err = m.Start(m.Owner, key, step.Action, key.Instance.ComputeInstanceID, data)
+					require.NoError(t, err)
+					for _, current := range m.Active.Steps {
+						if current.Action == step.Action {
+							step = current
+						}
+					}
+				}
+				m, err = m.Record(m.Owner, key, journal.Observation{Key: key, RequestSHA256: m.Active.RequestSHA256,
+					CommandSHA256: step.CommandSHA256, Ordinal: step.Ordinal, Action: step.Action,
+					Result: journal.Completed, SourceID: step.TargetID, Data: data})
+				require.NoError(t, err)
+			}
+			if mode != "no-closure" {
+				gen, err := m.PendingFinalizationGenerationForClosure()
+				require.NoError(t, err)
+				close := control.AdmissionRequest{ProtocolVersion: 1, Instance: key.Instance, IssuerEpoch: m.Owner.Epoch,
+					Revision: 2, ExpectedCapacityGeneration: gen, Open: false, BudgetCommitmentID: m.Active.Request.BudgetCommitmentID}
+				m, err = m.StartServiceClosure(m.Owner, close)
+				require.NoError(t, err)
+				if mode != "unconfirmed-closure" {
+					pg := f.prepared.Shared.Observed
+					pg.CapacityGeneration, pg.AdmissionOpen, pg.AdmissionRevision = gen, false, close.Revision
+					digest, err := close.ContextSHA256()
+					require.NoError(t, err)
+					m, err = m.RecordServiceClosure(m.Owner, control.AdmissionResponse{ProtocolVersion: 1,
+						Request: close, ContextSHA256: digest, Disposition: control.AdmissionApplied, Observed: pg}, false)
+					require.NoError(t, err)
+				}
+			}
+			f.mu.Lock()
+			f.model = m
+			before := m.Clone()
+			if mode == "changed-owner" {
+				f.afterRecover = func() {
+					f.mu.Lock()
+					defer f.mu.Unlock()
+					f.model, err = f.model.Takeover(f.model.Owner, "successor")
+					require.NoError(t, err)
+				}
+			}
+			f.mu.Unlock()
+			var result error
+			if mode == "cold-start" {
+				result = ReconcileClosedQuotaDurability(context.Background(), f.executor.store, f.executor.resources, m.Owner, key)
+			} else {
+				var progress pgexec.Progress
+				progress, result = f.executor.ConfirmNormalQuotaDurability(context.Background(), key)
+				require.Equal(t, pgexec.AwaitingFact, progress)
+			}
+			f.assertNoContinuation(t)
+			f.mu.Lock()
+			defer f.mu.Unlock()
+			require.Zero(t, f.stateCalls, "Root recovery must work without using unavailable normal state")
+			switch mode {
+			case "same", "cold-start":
+				require.NoError(t, result)
+				require.Equal(t, before, f.model)
+				require.Equal(t, 1, f.recoverCalls)
+				require.False(t, f.executor.resources.NormalQuotaEnabled(), "the single original acknowledgment cannot advertise ordinary write capability")
+			case "changed-owner":
+				require.ErrorIs(t, result, resourceguard.ErrUnknown)
+				require.Equal(t, 1, f.recoverCalls)
+			default:
+				require.Error(t, result)
+				require.Zero(t, f.recoverCalls)
+			}
+		})
+	}
+}
+
 func (f *normalDurabilityFixture) commandKey() control.Key { return f.prepared.Request.Key }
 
 func TestNormalQuotaDurabilityRejectsInvalidCancelledAndPartialOriginal(t *testing.T) {
@@ -337,7 +483,7 @@ func TestNormalQuotaDurabilityRechecksOriginalAfterRootConfirmation(t *testing.T
 				case "command-during-rpc":
 					c := f.command
 					c.Revision++
-					f.model = normalDurabilityModel(t, f.prepared, c)
+					f.model = normalDurabilityModel(t, f.prepared, c, nil)
 				}
 				require.NoError(t, err)
 			}

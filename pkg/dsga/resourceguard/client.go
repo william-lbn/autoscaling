@@ -34,6 +34,7 @@ type ClientConfig struct {
 type ClientError struct {
 	MayHaveExecuted bool
 	Code            string
+	HTTPStatus      int
 }
 
 func (e *ClientError) Error() string { return "DSGA resource call: " + e.Code }
@@ -49,6 +50,7 @@ type Client struct {
 	arrayPending          *ArrayAuthorityCommand
 	arrayProtocolVersion  uint32
 	normalProtocolVersion uint32
+	normalProfileObserved bool
 	onlineShrinkVersion   uint32
 	normalPending         *NormalQuotaEnvelope
 }
@@ -140,6 +142,7 @@ func (c *Client) InspectState(ctx context.Context) (View, error) {
 	if v.NormalQuotaProtocolVersion == 1 {
 		c.normalProtocolVersion = 1
 	}
+	c.normalProfileObserved = true
 	c.onlineShrinkVersion = v.OnlineShrinkProtocolVersion
 	c.mu.Unlock()
 	return v, nil
@@ -196,7 +199,7 @@ func (c *Client) call(ctx context.Context, observer bool, path string, body any,
 	defer response.Body.Close()
 	media, _, err := mime.ParseMediaType(response.Header.Get("Content-Type"))
 	if response.StatusCode != http.StatusOK || err != nil || media != "application/json" || response.Header.Get("Cache-Control") != "no-store" || response.Header.Get("Content-Encoding") != "" {
-		return &ClientError{MayHaveExecuted: true, Code: "response_unconfirmed"}
+		return &ClientError{MayHaveExecuted: true, Code: "response_unconfirmed", HTTPStatus: response.StatusCode}
 	}
 	data, err = io.ReadAll(io.LimitReader(response.Body, 32*1024+1))
 	if err != nil || len(data) > 32*1024 || json.Unmarshal(data, result) != nil {

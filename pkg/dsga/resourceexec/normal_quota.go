@@ -65,7 +65,7 @@ func (e *Executor) RecoverNormalQuota(ctx context.Context, key control.Key) (pge
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
-	if err = e.confirmNormalQuotaOriginal(ctx, original.envelope); err != nil {
+	if err = e.confirmNormalQuotaOriginal(ctx, original.envelope, false); err != nil {
 		return pgexec.AwaitingFact, err
 	}
 	return e.advanceSelected(ctx, nil, &original.envelope)
@@ -80,28 +80,58 @@ func (e *Executor) ConfirmNormalQuotaDurability(ctx context.Context, key control
 	if err != nil {
 		return pgexec.AwaitingFact, err
 	}
-	if err = e.confirmNormalQuotaOriginal(ctx, original.envelope); err != nil {
-		return pgexec.AwaitingFact, err
+	return pgexec.AwaitingFact, e.confirmSelectedNormalQuotaDurability(ctx, original)
+}
+
+func (e *Executor) confirmSelectedNormalQuotaDurability(ctx context.Context, original normalQuotaRecoverySelection) error {
+	if err := e.confirmNormalQuotaOriginal(ctx, original.envelope, original.closure != nil); err != nil {
+		return err
 	}
-	if err = ctx.Err(); err != nil {
-		return pgexec.AwaitingFact, err
+	if err := ctx.Err(); err != nil {
+		return err
 	}
 	current, err := e.store.Load(ctx)
 	if err != nil {
-		return pgexec.AwaitingFact, err
+		return err
 	}
 	m := current.State()
 	// Root的fsync与外层CAS没有跨域原子性。期间换owner/原意图/取消或cleanup时
 	// 保留原Unknown，不将Root确认解释为当前GuestReady完成，也不跟随新Active。
 	if m.Owner != e.actor || m.ResourceIdentity == nil || *m.ResourceIdentity != e.id || m.Active == nil || !reflect.DeepEqual(*m.Active, original.operation) {
-		return pgexec.AwaitingFact, resourceguard.ErrUnknown
+		return resourceguard.ErrUnknown
 	}
-	return pgexec.AwaitingFact, nil
+	if original.closure != nil && (!current.Dispatchable() || !reflect.DeepEqual(m.ServiceClosure, original.closure)) {
+		return resourceguard.ErrUnknown
+	}
+	return nil
+}
+
+// ReconcileClosedQuotaDurability 供新 Owner 在正常 Root 状态因同一持久见证失效而
+// 无法读回时使用。先按已完成 GuestReady 和原持久关闭重新执行完整耐久回证，
+// 再由调用方重新读 Root 并走正常 fence。这个入口没有 PG、VM 或预算执行器。
+func ReconcileClosedQuotaDurability(ctx context.Context, store *journal.Store, resources *resourceguard.Client, actor journal.Owner, key control.Key) error {
+	if store == nil || resources == nil {
+		return resourceguard.ErrUnknown
+	}
+	id, epoch := resources.Binding()
+	if epoch != actor.Epoch || id.VMUID != key.Instance.VMUID || id.ComputeInstanceID != key.Instance.ComputeInstanceID {
+		return resourceguard.ErrUnknown
+	}
+	selection := Executor{store: store, resources: resources, actor: actor, instance: key.Instance, id: id}
+	original, err := selection.normalQuotaRecoveryOriginal(ctx, key, true)
+	if err != nil {
+		return err
+	}
+	if original.closure == nil {
+		return resourceguard.ErrUnknown
+	}
+	return selection.confirmSelectedNormalQuotaDurability(ctx, original)
 }
 
 type normalQuotaRecoverySelection struct {
 	envelope  resourceguard.NormalQuotaEnvelope
 	operation journal.Operation
+	closure   *journal.ServiceClosure
 }
 
 // rootOnly只增加新确认入口的取消/实例门；旧Recover的选择及后验语义保持。
@@ -121,7 +151,27 @@ func (e *Executor) normalQuotaRecoveryOriginal(ctx context.Context, key control.
 		return normalQuotaRecoverySelection{}, fmt.Errorf("normal durability confirmation cannot adopt cancelled or changed original operation")
 	}
 	step, source := guestStep(m.Active)
-	if step == nil || source == nil || step.Phase != journal.Unconfirmed || step.DispatchedBy == nil || step.TargetID != e.instance.ComputeInstanceID {
+	var closure *journal.ServiceClosure
+	// 已完成 GuestReady 后，Guard 的进程级 fsync 见证仍可能失效。只复用已结算
+	// 关闸保护的原 Finalize 边界，不回写 GuestReady 或把原命令重发给 PG/VM。
+	if step == nil && rootOnly && snapshot.Dispatchable() && m.ServiceClosure != nil &&
+		!m.ServiceClosure.Pending() && m.ServiceClosure.Reason == "finalize_source_unconfirmed" {
+		if _, err := m.PendingFinalizationGenerationForClosure(); err != nil {
+			return normalQuotaRecoverySelection{}, err
+		}
+		for i := range m.Active.Steps {
+			candidate := &m.Active.Steps[i]
+			switch candidate.Action {
+			case journal.PrepareBudget:
+				source = candidate
+			case journal.GuestReady:
+				step = candidate
+			}
+		}
+		closure = m.ServiceClosure
+	}
+	if step == nil || source == nil || step.DispatchedBy == nil || step.TargetID != e.instance.ComputeInstanceID ||
+		(closure == nil && step.Phase != journal.Unconfirmed) || (closure != nil && step.Phase != journal.Settled) {
 		return normalQuotaRecoverySelection{}, fmt.Errorf("normal recovery original GuestReady unavailable")
 	}
 	var p budget.Prepared
@@ -129,15 +179,22 @@ func (e *Executor) normalQuotaRecoveryOriginal(ctx context.Context, key control.
 	if json.Unmarshal(source.Observation.Data, &p) != nil || p.NormalQuotaProtocolVersion != 1 || p.ValidateFor(m.Active.Request, e.id) != nil || json.Unmarshal(step.Command, &c) != nil || c.Validate() != nil || c.IssuerEpoch != step.DispatchedBy.Epoch || c.IssuerEpoch > e.actor.Epoch || !commandMatches(c, p) {
 		return normalQuotaRecoverySelection{}, fmt.Errorf("normal recovery changed original command or budget")
 	}
+	if closure != nil {
+		var original Audit
+		if json.Unmarshal(step.Observation.Data, &original) != nil || original.ProtocolVersion != 2 ||
+			!reflect.DeepEqual(original.Command, c) || original.Evidence.ValidateFor(c) != nil {
+			return normalQuotaRecoverySelection{}, fmt.Errorf("normal recovery lacks settled original GuestReady evidence")
+		}
+	}
 	envelope, err := normalQuotaEnvelope(m.Active, c, p)
 	if err != nil {
 		return normalQuotaRecoverySelection{}, err
 	}
-	return normalQuotaRecoverySelection{envelope: envelope, operation: *m.Active}, nil
+	return normalQuotaRecoverySelection{envelope: envelope, operation: *m.Active, closure: closure}, nil
 }
 
-func (e *Executor) confirmNormalQuotaOriginal(ctx context.Context, envelope resourceguard.NormalQuotaEnvelope) error {
-	if !e.resources.NormalQuotaEnabled() {
+func (e *Executor) confirmNormalQuotaOriginal(ctx context.Context, envelope resourceguard.NormalQuotaEnvelope, retainedFinalization bool) error {
+	if !e.resources.NormalQuotaEnabled() && !retainedFinalization {
 		if _, err := e.resources.InspectState(ctx); err != nil {
 			return err
 		}

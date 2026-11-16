@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"reflect"
 	"sync/atomic"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
 )
 
@@ -105,6 +107,17 @@ func (session *Session) newResourceWorker(ctx context.Context, config resourcegu
 		}
 	}()
 	view, err := client.InspectState(callCtx)
+	var readback *resourceguard.ClientError
+	if recovery && !initial && model.Active != nil && model.ServiceClosure != nil &&
+		!model.ServiceClosure.Pending() && model.ServiceClosure.Reason == "finalize_source_unconfirmed" &&
+		errors.As(err, &readback) && readback.HTTPStatus == http.StatusConflict {
+		// 新 Owner 拿不到失去进程级见证后的普通状态。先恢复这一笔已结算
+		// GuestReady 的 Root 持久证明，随后仍须重新读回正常状态并通过原 floor。
+		if recoverErr := resourceexec.ReconcileClosedQuotaDurability(callCtx, session.store, client, session.actor, model.Active.Request.Key); recoverErr != nil {
+			return nil, errors.Join(err, recoverErr)
+		}
+		view, err = client.InspectState(callCtx)
+	}
 	if err != nil {
 		return nil, err
 	}
