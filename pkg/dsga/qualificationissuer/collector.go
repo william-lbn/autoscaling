@@ -221,6 +221,10 @@ func (c *Collector) Collect(ctx context.Context) (Collection, error) {
 	defer cancel()
 	report, bundle, e := c.gather(ctx)
 	if e != nil {
+		var failure *collectionFailure
+		if errors.As(e, &failure) {
+			return zero, e
+		}
 		return zero, &collectionFailure{"gather", e}
 	}
 	proposed := Config{ProtocolVersion: 1, Binding: c.config.Binding, NodeName: c.config.NodeName, NodeUID: c.config.NodeUID, ReportSHA256: SHA256(bundle.Report), ControlSocketPath: c.config.ControlSocketPath, TimeoutSeconds: c.config.TimeoutSeconds, ReportPath: filepath.Join(c.config.OutputDirectory, "report.json"), LinuxArtifactPath: filepath.Join(c.config.OutputDirectory, "linux-artifact.json"), ContinuousArtifactPath: filepath.Join(c.config.OutputDirectory, "continuous-artifact.json")}
@@ -258,7 +262,7 @@ func (c *Collector) gather(ctx context.Context) (Report, Bundle, error) {
 	b := c.config.Binding
 	vm, e := c.vm.NeonvmV1().VirtualMachines(b.Namespace).Get(ctx, b.Name, metav1.GetOptions{})
 	if e != nil {
-		return report, bundle, e
+		return report, bundle, &collectionFailure{"gather_original_vm", e}
 	}
 	if vm == nil || vm.UID != b.VMUID || vm.Spec.DSGABootstrap == nil || vm.Spec.DSGABootstrap.Incarnation != b.Incarnation || vm.DeletionTimestamp != nil {
 		return report, bundle, fmt.Errorf("original actual collector VM changed")
@@ -270,7 +274,7 @@ func (c *Collector) gather(ctx context.Context) (Report, Bundle, error) {
 	model := snap.State()
 	discovered, view, e := c.root.Read(ctx, b)
 	if e != nil {
-		return report, bundle, e
+		return report, bundle, &collectionFailure{"gather_guest_root", e}
 	}
 	if view.GuestQualification == nil || view.GuestQualificationUnavailable != nil {
 		return report, bundle, fmt.Errorf("original Guest qualification source unavailable; old state success is not qualification")
@@ -284,7 +288,7 @@ func (c *Collector) gather(ctx context.Context) (Report, Bundle, error) {
 	}
 	secret, e := c.core.Secrets(b.Namespace).Get(ctx, b.Name+"-config", metav1.GetOptions{})
 	if e != nil {
-		return report, bundle, e
+		return report, bundle, &collectionFailure{"gather_runtime_secret", e}
 	}
 	if bootstrap.CheckReady(vm, secret, false) != nil || string(secret.UID) != a.ConfigSecretUID || SHA256(secret.Data[resourceguard.ResourceSecretKey]) != a.ResourceSourceSHA256 {
 		return report, bundle, fmt.Errorf("artifact differs from original immutable Runtime Secret")
@@ -305,7 +309,7 @@ func (c *Collector) gather(ctx context.Context) (Report, Bundle, error) {
 	}
 	lease, e := c.coord.Leases(b.Namespace).Get(ctx, journal.LeaseName(b), metav1.GetOptions{})
 	if e != nil {
-		return report, bundle, e
+		return report, bundle, &collectionFailure{"gather_owner_lease", e}
 	}
 	reader, e := vmguard.NewReader(c.core, b, string(lease.UID))
 	if e != nil {
@@ -313,7 +317,7 @@ func (c *Collector) gather(ctx context.Context) (Report, Bundle, error) {
 	}
 	birth, ref, pub, e := reader.Inspect(ctx, nil, model.Owner)
 	if e != nil {
-		return report, bundle, e
+		return report, bundle, &collectionFailure{"gather_runner_publication", e}
 	}
 	if birth.Identity.VMUID != string(b.VMUID) || birth.Identity.Incarnation != b.Incarnation || birth.InitialMode == nil || birth.InitialMode.RuntimeSHA256 != a.RuntimeDocumentSHA256 || birth.InitialMode.ResourceSHA256 != a.ResourceSourceSHA256 || birth.InitialMode.ConfigSecretUID != a.ConfigSecretUID || birth.Identity.MinimumBytes != a.MinimumVMBytes || birth.Identity.MaximumBytes != a.MaximumVMBytes || birth.Identity.BlockBytes != a.BlockBytes || pub.Actual == nil || pub.State == nil || pub.State.Pending != nil || pub.Actual.RequestedBytes != pub.Actual.ActualBytes || pub.InitialBootstrap == nil {
 		return report, bundle, fmt.Errorf("actual settled original Runner initial publication required")
@@ -348,7 +352,7 @@ func (c *Collector) gather(ctx context.Context) (Report, Bundle, error) {
 				}
 				value, readErr := claims.Qualification(ctx, *c.config.PreviousQualification)
 				if readErr != nil {
-					return report, bundle, readErr
+					return report, bundle, &collectionFailure{"gather_prior_qualification", readErr}
 				}
 				if value.Identity != a.Identity || value.Incarnation != b.Incarnation || value.RootBootstrapSHA256 != a.RootBootstrapSHA256 || value.RunnerBirth != ref || value.RunnerIdentitySHA256 != runnerSHA {
 					return report, bundle, fmt.Errorf("retained qualification belongs to another original birth")
@@ -372,7 +376,7 @@ func (c *Collector) gather(ctx context.Context) (Report, Bundle, error) {
 	}
 	node, e := c.core.Nodes().Get(ctx, c.config.NodeName, metav1.GetOptions{})
 	if e != nil {
-		return report, bundle, e
+		return report, bundle, &collectionFailure{"gather_original_host", e}
 	}
 	if string(node.UID) != c.config.NodeUID || birth.Identity.NodeUID != c.config.NodeUID || vm.Status.Node != node.Name {
 		return report, bundle, fmt.Errorf("actual Host identity differs")

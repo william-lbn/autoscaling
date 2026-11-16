@@ -3,13 +3,20 @@ package qualificationissuer
 import (
 	"context"
 	"encoding/json"
-	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
-	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+	"errors"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
+
+	vmfake "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned/fake"
+	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	ktesting "k8s.io/client-go/testing"
 )
 
 // 本文件只核只读装配边界/最小规格算术及本地归档，不签真实Guest资格，不创建Kube对象。
@@ -74,6 +81,28 @@ func TestCollectorConfigRejectsUnboundAndUnorderedIntent(t *testing.T) {
 		t.Fatal("nil collector returned report")
 	}
 }
+
+func TestCollectorOriginalVMReadKeepsForbiddenStage(t *testing.T) {
+	cfg := collectorConfigUnit(t)
+	vm := vmfake.NewSimpleClientset()
+	denied := apierrors.NewForbidden(schema.GroupResource{Group: "vm.neon.tech", Resource: "virtualmachines"},
+		cfg.Binding.Name, errors.New("private authorization detail"))
+	vm.PrependReactor("get", "virtualmachines", func(action ktesting.Action) (bool, runtime.Object, error) {
+		if action.GetNamespace() != cfg.Binding.Namespace || action.(ktesting.GetAction).GetName() != cfg.Binding.Name {
+			t.Fatal("collector did not attempt to read the bound original VM")
+		}
+		return true, nil, denied
+	})
+	c := Collector{config: cfg, vm: vm}
+	got, err := c.Collect(context.Background())
+	if !apierrors.IsForbidden(err) || CollectionStage(err) != "gather_original_vm" || !reflect.DeepEqual(got, Collection{}) {
+		t.Fatalf("denial stage=%q err=%v, want original VM read failure and no collection", CollectionStage(err), err)
+	}
+	if len(vm.Actions()) != 1 {
+		t.Fatal("collector proceeded past the first denied read")
+	}
+}
+
 func collectionUnit(t *testing.T) (Collection, string) {
 	t.Helper()
 	_, _, cfg, bundle, _ := issuerFixture(t)
