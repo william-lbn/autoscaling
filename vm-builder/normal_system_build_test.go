@@ -102,7 +102,12 @@ func TestNormalSystemBuildCompletePublicationUsesFull18cAndNativeBinding(t *test
 func TestNormalImageReadbackRequiresOriginalFinalClosure(t *testing.T) {
 	root, initial := normalSystemCompleteFixture(t)
 	base := strings.Repeat("ab", 32)
-	planRaw := normalTestJSON(normalTestPlan())
+	plan := normalTestPlan()
+	planRaw := normalTestJSON(plan)
+	dataParent := filepath.Join(root, normalPGDataParent)
+	if err := os.MkdirAll(dataParent, 0755); err != nil {
+		t.Fatal(err)
+	}
 	if err := publishCompleteNormalNativeBirthImage(root, initial); err != nil {
 		t.Fatal(err)
 	}
@@ -117,6 +122,25 @@ func TestNormalImageReadbackRequiresOriginalFinalClosure(t *testing.T) {
 	postgres := normalDigest(read("/usr/local/bin/postgres"))
 	system := read(resourceguard.NormalSystemSourceManifestPath)
 	native := read(normalNativeBuildPath)
+	if _, err := readbackNormalImage(root, planRaw, base, 17, postgres); err == nil || !strings.Contains(err.Error(), "PGDATA parent owner") {
+		t.Fatal("accepted a root-owned PGDATA parent", err)
+	}
+	image, err := newNormalNativeImage(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := image.checkNormalPGDataParent(plan, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chmod(dataParent, 0775); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := readbackNormalImage(root, planRaw, base, 17, postgres); err == nil || !strings.Contains(err.Error(), "owner-only writes") {
+		t.Fatal("accepted a PGDATA parent writable by other users", err)
+	}
+	if err := os.Chmod(dataParent, 0755); err != nil {
+		t.Fatal(err)
+	}
 	got, err := readbackNormalImage(root, planRaw, base, 17, postgres)
 	if err != nil || got.SystemSHA256 != normalDigest(system) || got.NativeBirthSHA256 != normalDigest(native) ||
 		got.BuildPlanSHA256 != normalDigest(planRaw) || got.PostgreSQLMajor != 17 || got.PostgreSQLELFSHA256 != postgres {

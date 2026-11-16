@@ -267,6 +267,15 @@ func main() {
 		version := uint32(2)
 		if *systemModeFlag == normalSplitV3BuildMode {
 			version = 3
+			if *normalNativeBirthVersion == 1 {
+				image, err := newNormalNativeImage(*normalManifestRoot)
+				if err != nil {
+					log.Fatal(err)
+				}
+				if err := image.checkNormalPGDataParent(plan, true); err != nil {
+					log.Fatal(err)
+				}
+			}
 			if *normalOrdinaryControls == 2 {
 				if _, e := prepareNormalSystemStockUdevAssets(*normalManifestRoot, packageLock, plan.ComputeUID, plan.ComputeGID, 2); e != nil {
 					log.Fatal(e)

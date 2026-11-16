@@ -36,6 +36,9 @@ func readbackNormalImage(root string, planRaw []byte, baseSHA string, major uint
 	if err != nil {
 		return receipt, err
 	}
+	if err := image.checkNormalPGDataParent(plan, false); err != nil {
+		return receipt, err
+	}
 	manifests := []struct {
 		path     string
 		limit    int64
