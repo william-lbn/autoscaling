@@ -90,11 +90,12 @@ def verify_source(source):
         raise ValueError("Checkout is not the exact requested source SHA")
 
 
-def validate_record(item, source, version, arch, execution):
+def validate_record(item, source, version, arch, execution, allow_normal=False):
     validate_arch(arch)
     validate_tag(version)
     name = item.get("name")
-    if name not in LOCK["images"]:
+    is_normal = allow_normal and name == "vm-kernel-normal"
+    if name not in LOCK["images"] and not is_normal:
         raise ValueError(f"Unexpected image: {name}")
     expected = {
         "kind": "runtime",
@@ -110,26 +111,28 @@ def validate_record(item, source, version, arch, execution):
     if not DIGEST.fullmatch(item.get("digest", "")):
         raise ValueError(f"Image {name} has an invalid digest")
     dependencies = item.get("dependencies")
-    if not isinstance(dependencies, dict) or set(dependencies) != set(LOCK["images"][name]):
+    expected_dependencies = [] if is_normal else LOCK["images"][name]
+    if not isinstance(dependencies, dict) or set(dependencies) != set(expected_dependencies):
         raise ValueError(f"Image {name} has an incomplete dependency closure")
     if any(not DIGEST.fullmatch(value) for value in dependencies.values()):
         raise ValueError(f"Image {name} has an unpinned dependency")
 
 
-def load_records(directory, source, version, arch, execution):
+def load_records(directory, source, version, arch, execution, allow_normal=False):
     records = {}
     for path in sorted(pathlib.Path(directory).rglob("*.json")):
         item = read_json(path)
         if not isinstance(item, dict) or item.get("kind") != "runtime":
             continue
-        validate_record(item, source, version, arch, execution)
+        validate_record(item, source, version, arch, execution, allow_normal=allow_normal)
         name = item["name"]
         # 即使两份字节相同也拒绝重复，避免错误合并下载目录掩盖来源混用。
         if name in records:
             raise ValueError(f"Duplicate image record: {name}")
         records[name] = item
-    if set(records) != set(LOCK["images"]):
-        raise ValueError(f"Incomplete distribution: missing={sorted(set(LOCK['images']) - set(records))}")
+    expected = set(LOCK["images"]) | ({"vm-kernel-normal"} if allow_normal else set())
+    if set(records) != expected:
+        raise ValueError(f"Incomplete distribution: missing={sorted(expected - set(records))}")
     for name, item in records.items():
         for dependency, digest in item["dependencies"].items():
             if digest != records[dependency]["digest"]:
@@ -189,10 +192,10 @@ def kernel_receipt(directory, arch):
     }
 
 
-def collect(directory, kernel_directory, source, version, arch, execution):
+def collect(directory, kernel_directory, source, version, arch, execution, normal_kernel_directory=None):
     verify_source(source)
     validate_attempt(version, arch, execution)
-    records = load_records(directory, source, version, arch, execution)
+    records = load_records(directory, source, version, arch, execution, allow_normal=normal_kernel_directory is not None)
     observed_kernel = kernel_receipt(kernel_directory, arch)
     observed_kernel["image"] = records["vm-kernel"]["image"] + "@" + records["vm-kernel"]["digest"]
     # 三份原始文件由 kernel job 从其 digest 拉取的镜像导出，并与 kernel record 一同审计。
@@ -202,6 +205,10 @@ def collect(directory, kernel_directory, source, version, arch, execution):
                         "kernel": kernel_receipt(kernel_directory, arch)}
     if binding != expected_binding:
         raise ValueError("Kernel receipt is not bound to this release's exact image and run")
+    normal = {}
+    if normal_kernel_directory is not None:
+        from normal_kernel import collect_receipt
+        normal["normal_kernel"] = collect_receipt(normal_kernel_directory, records["vm-kernel-normal"], source, version, arch, execution)
     return {
         "kind": "distribution-capabilities",
         "schema_version": LOCK["schema_version"],
@@ -217,6 +224,7 @@ def collect(directory, kernel_directory, source, version, arch, execution):
         "latest_eligible": False,
         "vm_builder_default_system_mode": LOCK["vm_builder_default_system_mode"],
         "kernel": observed_kernel,
+        **normal,
         "expected_audited_identity": expected_audited_identity(),
         "image_digests": {name: item["digest"] for name, item in sorted(records.items())},
         "requirements_for_normal": [
@@ -379,7 +387,9 @@ def readback_guest_root(disk, scratch, builder, plan, base_sha, major, postgres_
     root.mkdir()
     subprocess.run(["qemu-img", "convert", "-f", "qcow2", "-O", "raw", "-S", "4k", disk, raw], check=True)
     subprocess.run(["qemu-img", "compare", "-q", "-f", "raw", "-F", "qcow2", raw, disk], check=True)
-    output = subprocess.check_output([
+    # Hosted runner仅提升隔离挂载和原Builder读回；qemu转换与摘要校验保持普通用户。
+    privilege = [] if os.geteuid() == 0 else ["sudo", "-n"]
+    output = subprocess.check_output(privilege + [
         "unshare", "--mount", "--net", "--propagation", "private", "bash", "-ceu", '''
             mount -t ext4 -o loop,ro,noload,nodev,nosuid,noexec -- "$1" "$2"
             trap 'umount -- "$2"' EXIT
@@ -462,6 +472,7 @@ def main():
     inspect.add_argument("--output", required=True)
     aggregate.add_argument("--directory", required=True)
     aggregate.add_argument("--kernel-directory", required=True)
+    aggregate.add_argument("--normal-kernel-directory", help="Original explicit normal-kernel readback; never replaces the legacy kernel")
     aggregate.add_argument("--output", required=True)
     args = parser.parse_args()
     if args.command == "inspect-guest-oci":
@@ -492,7 +503,8 @@ def main():
                                 "image_digest": args.digest, "execution": identity,
                                 "kernel": kernel_receipt(args.directory, args.arch)})
         return
-    value = collect(args.directory, args.kernel_directory, args.source_commit, args.version, args.arch, identity)
+    value = collect(args.directory, args.kernel_directory, args.source_commit, args.version, args.arch, identity,
+                    args.normal_kernel_directory)
     write_json(args.output, value)
     print(f"Verified {len(value['image_digests'])} immutable image records; candidate, normal_qualification=false")
 

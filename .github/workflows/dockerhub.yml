@@ -4,6 +4,10 @@ on:
     branches: [main, codex/dsga-autoscaling-20261019]
   workflow_dispatch:
     inputs:
+      normal_kernel:
+        description: Build the separately audited amd64 normal candidate kernel
+        type: boolean
+        default: false
       arch:
         description: Native build architecture
         type: choice
@@ -11,6 +15,10 @@ on:
         default: amd64
   workflow_call:
     inputs:
+      normal_kernel:
+        description: Include the audited normal kernel without granting runtime qualification
+        type: boolean
+        default: false
       tag:
         type: string
         required: true
@@ -55,12 +63,14 @@ jobs:
       - id: meta
         env:
           INPUT_TAG: ${{ inputs.tag }}
+          NORMAL_KERNEL: ${{ inputs.normal_kernel }}
         run: |
           set -euo pipefail
+          if [[ "$NORMAL_KERNEL" == true ]]; then [[ "$ARCH" == amd64 ]]; fi
           sha=$(git rev-parse HEAD)
           if [[ -n "$INPUT_TAG" ]]; then
             tag="$INPUT_TAG"
-          elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
+          elif [[ "$GITHUB_REF" == refs/heads/main && "$NORMAL_KERNEL" != true ]]; then
             tag="$(date -u +%Y.%m.%d-%H%M%S)-${sha:0:12}-r${GITHUB_RUN_ID}-a${GITHUB_RUN_ATTEMPT}"
           else
             tag="0.2.0-dsga.${GITHUB_RUN_ID}.${GITHUB_RUN_ATTEMPT}.${ARCH}"
@@ -321,6 +331,84 @@ jobs:
           path: output/kernel/
           retention-days: 90
           if-no-files-found: error
+  normal-kernel:
+    if: inputs.normal_kernel
+    needs: [prepare, test-coverage]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.prepare.outputs.source }}
+          repository: william-lbn/autoscaling
+          persist-credentials: false
+          fetch-depth: 0 # Reviewed profile pins one original historical context file by commit.
+      - name: Verify original source, run and explicit amd64 lane
+        env:
+          TAG: ${{ needs.prepare.outputs.tag }}
+        run: |
+          [[ "$ARCH" == amd64 ]]
+          python3 ci/distribution.py verify --source-commit "$RELEASE_SOURCE" --version "$TAG" --arch "$ARCH"
+      - uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+        id: normal-builder
+        with:
+          version: v0.38.1
+          driver-opts: |
+            memory=6g
+            memory-swap=6g
+            cpu-quota=400000
+          buildkitd-config-inline: |
+            [worker.oci]
+              max-parallelism = 1
+      - name: Fetch and verify the original reviewed Linux source archive
+        run: |
+          mkdir -p kernel-input
+          curl --fail --location --retry 2 --proto '=https' --tlsv1.2 \
+            https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.26.tar.xz \
+            --output kernel-input/linux-6.12.26.tar.xz
+          python3 - <<'CHECK'
+          import hashlib, json, pathlib
+          profile = json.loads(pathlib.Path('neonvm-kernel/profiles/normal-split-metadata-v1/config-source.json').read_text())
+          archive = pathlib.Path('kernel-input') / profile['linux_source_archive']['name']
+          with archive.open('rb') as stream:
+              assert hashlib.file_digest(stream, 'sha256').hexdigest() == profile['linux_source_archive']['sha256']
+          CHECK
+      - name: Reproduce the audited kernel and independently read the published immutable image
+        env:
+          TAG: ${{ needs.prepare.outputs.tag }}
+          BUILDER: ${{ steps.normal-builder.outputs.name }}
+        run: |
+          python3 ci/normal_kernel.py build --source-commit "$RELEASE_SOURCE" --version "$TAG" \
+            --builder "$BUILDER" --source-archive kernel-input/linux-6.12.26.tar.xz \
+            --output output/normal-build
+      - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: images-autoscaling-normal-kernel-attempt${{ github.run_attempt }}
+          path: output/vm-kernel-normal.json
+          retention-days: 90
+          if-no-files-found: error
+      - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: autoscaling-normal-kernel-receipt-attempt${{ github.run_attempt }}
+          path: output/normal-build/readback/
+          retention-days: 90
+          if-no-files-found: error
+      - name: Preserve failed builds, source locks and any already published digest
+        if: always()
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: autoscaling-normal-kernel-build-attempt${{ github.run_attempt }}
+          path: |
+            output/normal-build/*.json
+            output/normal-build/build.log
+            output/normal-build/export/
+            output/normal-build/readback/
+          retention-days: 90
+          if-no-files-found: warn
   daemon:
     needs: [prepare, go-base]
     runs-on: ${{ inputs.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
@@ -489,7 +577,12 @@ jobs:
           retention-days: 90
           if-no-files-found: error
   verify-distribution:
-    needs: [prepare, tests, go-base, kernel, daemon, components]
+    needs: [prepare, tests, go-base, kernel, normal-kernel, daemon, components]
+    if: >-
+      always() && needs.prepare.result == 'success' && needs.tests.result == 'success' &&
+      needs.go-base.result == 'success' && needs.kernel.result == 'success' &&
+      needs.daemon.result == 'success' && needs.components.result == 'success' &&
+      ((!inputs.normal_kernel && needs.normal-kernel.result == 'skipped') || needs.normal-kernel.result == 'success')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -506,17 +599,24 @@ jobs:
         with:
           name: autoscaling-kernel-receipt-attempt${{ github.run_attempt }}
           path: artifacts/kernel
+      - uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
+        if: inputs.normal_kernel
+        with:
+          name: autoscaling-normal-kernel-receipt-attempt${{ github.run_attempt }}
+          path: artifacts/normal-kernel
       - name: Verify complete image graph and declare candidate capabilities
         env:
           TAG: ${{ needs.prepare.outputs.tag }}
         run: |
-          python3 ci/distribution.py collect --directory artifacts/images --kernel-directory artifacts/kernel \
+          normal=()
+          if [[ "${{ inputs.normal_kernel }}" == true ]]; then normal+=(--normal-kernel-directory artifacts/normal-kernel); fi
+          python3 ci/distribution.py collect --directory artifacts/images --kernel-directory artifacts/kernel "${normal[@]}" \
             --source-commit "$RELEASE_SOURCE" --version "$TAG" --arch "$ARCH" \
             --output output/autoscaling-capabilities.json
           cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
           ## Autoscaling candidate distribution
           The image graph is complete and pinned to one source commit, architecture and run attempt.
-          The Guest kernel is the default source build; the VM builder default is legacy.
+          The default Guest kernel and VM builder remain legacy. An explicitly selected normal kernel is separate audited material.
           `normal_qualification=false`, `production_ready=false`, `latest_eligible=false`.
           This artifact records packaging and source identity; physical normal-mode acceptance remains separate.
           SUMMARY
