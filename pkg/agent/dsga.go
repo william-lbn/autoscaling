@@ -7,6 +7,7 @@ import (
 
 	"go.uber.org/zap"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
@@ -288,6 +289,7 @@ func logDSGAOwnerCallbackFailure(logger *zap.Logger, stage string, err error) {
 func dsgaOwnerFailureCode(err error) string {
 	// 有界解包避免任意错误链的循环；不把外部Error正文拼进可记录值。
 	queue := []error{err}
+	fallback := "unclassified"
 	for remaining := 16; remaining > 0 && len(queue) != 0; remaining-- {
 		e := queue[0]
 		queue = queue[1:]
@@ -300,6 +302,14 @@ func dsgaOwnerFailureCode(err error) string {
 			return "context_deadline"
 		case owner.ErrLeadershipLost:
 			return "leadership_lost"
+		case owner.ErrServiceSafety:
+			if fallback == "unclassified" {
+				fallback = "service_safety"
+			}
+		case owner.ErrPolicyObservation:
+			if fallback == "unclassified" {
+				fallback = "policy_observation"
+			}
 		case resourceguard.ErrUnknown:
 			return "resource_unknown"
 		case vmexec.ErrSnapshotChanged:
@@ -308,6 +318,33 @@ func dsgaOwnerFailureCode(err error) string {
 			return "vm_unknown"
 		}
 		switch typed := e.(type) {
+		case *journal.UnconfirmedWrite:
+			if typed == nil {
+				return "journal_write_unconfirmed"
+			}
+			if status, ok := typed.Err.(*apierrors.StatusError); ok && status != nil {
+				switch status.ErrStatus.Reason {
+				case metav1.StatusReasonForbidden:
+					return "journal_write_forbidden"
+				case metav1.StatusReasonInvalid:
+					return "journal_write_invalid"
+				case metav1.StatusReasonConflict:
+					return "journal_write_conflict"
+				case metav1.StatusReasonTooManyRequests, metav1.StatusReasonServiceUnavailable, metav1.StatusReasonTimeout, metav1.StatusReasonServerTimeout:
+					return "journal_write_unavailable"
+				}
+			}
+			return "journal_write_unconfirmed"
+		case *compute.CallError:
+			if typed == nil {
+				return "compute_other"
+			}
+			switch typed.Code {
+			case "capability_binding_changed", "context_cancelled", "credential_unavailable", "http_unconfirmed", "invalid_admission_fact", "invalid_admission_query_binding", "invalid_admission_query_fact", "invalid_fence_fact", "invalid_memory_fact", "invalid_query_fact", "invalid_response_headers", "invalid_response_schema", "invalid_shared_cost_fact", "response_unconfirmed", "transport_unconfirmed", "unresolved_original_admission_or_resize", "unresolved_original_intent":
+				return "compute_" + typed.Code
+			default:
+				return "compute_other"
+			}
 		case *credential.Error:
 			if typed == nil {
 				return "credential_other"
@@ -341,7 +378,7 @@ func dsgaOwnerFailureCode(err error) string {
 			queue = append(queue, wrapped.Unwrap())
 		}
 	}
-	return "unclassified"
+	return fallback
 }
 
 // dsgaTickDiagnostic只观察原Run串行回调，不改变错误、进度、WAL或重放。

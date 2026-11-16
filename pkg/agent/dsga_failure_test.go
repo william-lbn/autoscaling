@@ -10,11 +10,14 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest/observer"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/api"
+	"github.com/neondatabase/autoscaling/pkg/dsga/compute"
 	"github.com/neondatabase/autoscaling/pkg/dsga/credential"
+	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/owner"
 	"github.com/neondatabase/autoscaling/pkg/dsga/pgexec"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
@@ -76,6 +79,13 @@ func TestDSGAOwnerCallbackDiagnosticIsBoundedAndRedacted(t *testing.T) {
 		{errors.Join(errors.New("https://user:password/private"), resourceErr), "resource_response_unconfirmed"},
 		{&credential.Error{Code: "Bearer sensitive-token"}, "credential_other"},
 		{&resourceguard.ClientError{Code: "password=private"}, "resource_other"},
+		{&compute.CallError{Code: "invalid_admission_query_fact", MayHaveExecuted: true}, "compute_invalid_admission_query_fact"},
+		{&compute.CallError{Code: "Bearer sensitive-token"}, "compute_other"},
+		{&journal.UnconfirmedWrite{Err: &apierrors.StatusError{ErrStatus: metav1.Status{Reason: metav1.StatusReasonInvalid, Message: "private patch body"}}}, "journal_write_invalid"},
+		{&journal.UnconfirmedWrite{Err: &dsgaCyclicFailure{}}, "journal_write_unconfirmed"},
+		{owner.ErrServiceSafety, "service_safety"},
+		{owner.ErrPolicyObservation, "policy_observation"},
+		{errors.Join(owner.ErrServiceSafety, resourceErr), "resource_response_unconfirmed"},
 		{&dsgaCyclicFailure{}, "unclassified"},
 		{context.Canceled, "context_canceled"},
 	} {
