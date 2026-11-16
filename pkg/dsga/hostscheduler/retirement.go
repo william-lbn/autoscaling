@@ -40,6 +40,9 @@ func (s *Service) protectPod(ctx context.Context, pod *core.Pod) (*core.Pod, err
 		return nil, errors.Join(writeErr, err)
 	}
 	if actual.UID != pod.UID || actual.ResourceVersion == "" || actual.DeletionTimestamp != nil || !slices.Contains(actual.Finalizers, hostguard.PodProtectionFinalizer) {
+		if apierrors.IsForbidden(writeErr) || apierrors.IsUnauthorized(writeErr) {
+			return nil, fmt.Errorf("original Pod allocation protection is unconfirmed: scheduler lacks permission to persist Pod protection")
+		}
 		return nil, fmt.Errorf("original Pod allocation protection is unconfirmed")
 	}
 	canonical := pod.DeepCopy()
