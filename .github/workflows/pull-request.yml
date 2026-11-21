@@ -1,7 +1,7 @@
 name: Autoscaling pull request checks
 on:
   push:
-    branches: [autoscaling-dsga-v0.1]
+    branches: [autoscaling-dsga-v0.1, 'codex/dsga-autoscaling-*']
   pull_request:
 permissions:
   contents: read
