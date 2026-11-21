@@ -1,7 +1,8 @@
 name: Docker Hub Autoscaling distribution
 on:
   push:
-    branches: [main, 'codex/dsga-autoscaling-*']
+    # Feature-branch pushes run pull-request.yml quality gates; image distribution is reserved for main, manual release, or workflow_call.
+    branches: [main]
   workflow_dispatch:
     inputs:
       normal_kernel:
