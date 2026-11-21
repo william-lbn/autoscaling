@@ -1,7 +1,7 @@
 name: Docker Hub Autoscaling distribution
 on:
   push:
-    branches: [main, codex/dsga-autoscaling-20261019]
+    branches: [main, 'codex/dsga-autoscaling-*']
   workflow_dispatch:
     inputs:
       normal_kernel:
