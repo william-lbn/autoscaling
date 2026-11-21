@@ -159,6 +159,22 @@ func verifyShrinkPartialAfterGrow(t *testing.T, ctx context.Context, api *ownerA
 	require.NoError(t, err)
 	var initial hostguard.Model
 	require.NoError(t, json.Unmarshal([]byte(node.Annotations[hostguard.LedgerAnnotation]), &initial))
+	// Install all fake-client reactors before starting the concurrent lease-renewal
+	// goroutine. client-go's fake tracker/reactor slice is not safe to mutate while
+	// the elector is invoking the same fake client under -race.
+	var rejectOld atomic.Bool
+	client.PrependReactor("get", "configmaps", func(action kt.Action) (bool, runtime.Object, error) {
+		if action.(kt.GetAction).GetName() != f.Sources.OutsideClaim.Name || !rejectOld.Load() {
+			return false, nil, nil
+		}
+		obj, err := client.Tracker().Get(core.SchemeGroupVersion.WithResource("configmaps"), binding().Namespace, f.Sources.OutsideClaim.Name)
+		if err != nil {
+			return true, nil, err
+		}
+		cm := obj.(*core.ConfigMap).DeepCopy()
+		cm.UID = "replacement-qualified-outside-uid"
+		return true, cm, nil
+	})
 	stopRenewal := keepUnchangedHostLease(t, ctx, client, initial.Binding)
 	defer stopRenewal()
 	allocator, err := hostguard.NewStore(client.CoreV1(), client.CoordinationV1(), initial.Binding, "host-fixture-holder")
@@ -216,19 +232,6 @@ func verifyShrinkPartialAfterGrow(t *testing.T, ctx context.Context, api *ownerA
 	require.NoError(t, err)
 	require.Equal(t, journal.NoEffect, budgetStep(t, store, journal.ResizeVM).Observation.Result)
 	// 旧大VM资格不可被同名新UID接替；当前Root限额漂移也不能登记Cleanup。
-	var rejectOld atomic.Bool
-	client.PrependReactor("get", "configmaps", func(action kt.Action) (bool, runtime.Object, error) {
-		if action.(kt.GetAction).GetName() != f.Sources.OutsideClaim.Name || !rejectOld.Load() {
-			return false, nil, nil
-		}
-		obj, err := client.Tracker().Get(core.SchemeGroupVersion.WithResource("configmaps"), binding().Namespace, f.Sources.OutsideClaim.Name)
-		if err != nil {
-			return true, nil, err
-		}
-		cm := obj.(*core.ConfigMap).DeepCopy()
-		cm.UID = "replacement-qualified-outside-uid"
-		return true, cm, nil
-	})
 	rejectOld.Store(true)
 	_, err = worker.Advance(ctx)
 	require.Error(t, err)
