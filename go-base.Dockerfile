@@ -1,21 +1,15 @@
-# Base image for go dependencies, to speed up builds when they haven't changed.
-# For more, see https://github.com/neondatabase/go-chef
+# Cache Go module downloads without asking go-chef to compile every dependency.
+# The go-chef recipe path currently attempts to compile the stdlib internal/abi package
+# as an external module package on the Linux release builder. This layer is only a
+# build cache: application compilation and all functional tests remain in their
+# existing downstream build/test stages.
 ARG GOLANG_IMG_TAG=replaceme
 ARG GOLANG_IMG_SHA=replaceme
-FROM golang:$GOLANG_IMG_TAG$GOLANG_IMG_SHA AS chef
+FROM golang:$GOLANG_IMG_TAG$GOLANG_IMG_SHA AS builder
 
-ARG GO_CHEF_VERSION=v0.1.0
-RUN go install github.com/neondatabase/go-chef@$GO_CHEF_VERSION
 WORKDIR /workspace
 
-FROM chef AS planner
-COPY . .
-# Produce a "recipe" containing information about all the packages imported.
-# This step is usually NOT cached, but because the recipe is usually the same, follow-up steps
-# usually WILL be cached.
-RUN go-chef --prepare recipe.json
-
-FROM chef AS builder
-COPY --from=planner /workspace/recipe.json recipe.json
-# Compile the dependencies baesd on the "recipe" alone -- usually cached.
-RUN CGO_ENABLED=0 go-chef --cook recipe.json
+# Copy only the module manifests so dependency caching is invalidated only when
+# the dependency graph changes. go mod download preserves go.mod/go.sum selection.
+COPY go.mod go.sum ./
+RUN go mod download
