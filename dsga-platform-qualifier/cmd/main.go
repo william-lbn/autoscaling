@@ -81,6 +81,7 @@ func runIssuerMode(ctx context.Context, configPath, kubeconfigPath string, autom
 			_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"issued": false, "unconfirmed": true, "claim": unknown.Claim, "report_sha256": config.ReportSHA256, "diagnostic_code": publicationDiagnostic(unknown.Err)})
 			return &qualificationFailure{"publication_unconfirmed", err}
 		}
+		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"issued": false, "stage": "publication_before_create", "diagnostic_code": publicationDiagnostic(err)})
 		return &qualificationFailure{"publication", err}
 	}
 	return json.NewEncoder(os.Stdout).Encode(result)

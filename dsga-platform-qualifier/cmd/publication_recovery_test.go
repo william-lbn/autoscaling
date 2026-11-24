@@ -94,3 +94,45 @@ func TestQualifierReadDefaultsRespectExplicitLimits(t *testing.T) {
 		t.Fatal("explicit client policy changed")
 	}
 }
+
+func TestAutomaticPublicationRetriesOnlyProvenPreCreateSourceDrift(t *testing.T) {
+	c := recoveryConfig()
+	calls := 0
+	_, err := publishAutomaticWithInterval(context.Background(), c, func(ctx context.Context, next qualificationissuer.Config) (qualificationissuer.Result, error) {
+		calls++
+		if next.ResumeClaimUID != "" || next != c {
+			t.Fatal("pre-create retry changed original inputs")
+		}
+		if calls < 3 {
+			return qualificationissuer.Result{}, qualificationissuer.ErrSourcesChangedBeforePublication
+		}
+		return qualificationissuer.Result{ReportSHA256: c.ReportSHA256}, nil
+	}, time.Millisecond)
+	if err != nil || calls != 3 {
+		t.Fatalf("proven no-write read was not bounded/retried: calls=%d err=%v", calls, err)
+	}
+}
+func TestAutomaticPublicationDoesNotRetryUnconfirmedCreateWithPreCreateCause(t *testing.T) {
+	calls := 0
+	c := recoveryConfig()
+	_, err := publishAutomaticWithInterval(context.Background(), c, func(context.Context, qualificationissuer.Config) (qualificationissuer.Result, error) {
+		calls++
+		return qualificationissuer.Result{}, &qualificationissuer.Unconfirmed{Claim: budget.ObjectRef{Name: "dsga-q-" + c.ReportSHA256[:56]}, Err: qualificationissuer.ErrSourcesChangedBeforePublication}
+	}, time.Millisecond)
+	if err == nil || calls != 1 {
+		t.Fatal("unknown CREATE identity replayed")
+	}
+}
+func TestAutomaticPreCreateReadHonorsCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	calls := 0
+	_, err := publishAutomaticWithInterval(ctx, recoveryConfig(), func(context.Context, qualificationissuer.Config) (qualificationissuer.Result, error) {
+		calls++
+		cancel()
+		return qualificationissuer.Result{}, qualificationissuer.ErrSourcesChangedBeforePublication
+	}, time.Second)
+	var unknown *qualificationissuer.Unconfirmed
+	if calls != 1 || !errors.Is(err, context.Canceled) || errors.As(err, &unknown) {
+		t.Fatal("no-write cancellation extended or mislabeled")
+	}
+}

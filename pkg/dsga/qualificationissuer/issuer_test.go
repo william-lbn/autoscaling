@@ -642,3 +642,21 @@ func TestIssuerFreshElectorJournalOwnerTwoCapture(t *testing.T) {
 		})
 	}
 }
+
+func TestPrePublicationSourceDriftIsProvenWithoutCreate(t *testing.T) {
+	issuer, client, _, bundle, _ := issuerFixture(t)
+	calls := 0
+	issuer.inspect = func(context.Context, Report) (string, error) {
+		calls++
+		if calls == 1 {
+			return "first", nil
+		}
+		return "second", nil
+	}
+	_, err := issuer.Publish(context.Background(), bundle)
+	require.ErrorIs(t, err, ErrSourcesChangedBeforePublication)
+	require.Equal(t, 2, calls)
+	for _, action := range client.Actions() {
+		require.NotEqual(t, "create", action.GetVerb())
+	}
+}

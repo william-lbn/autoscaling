@@ -49,6 +49,15 @@ func publishAutomaticWithInterval(ctx context.Context, config qualificationissue
 			return result, nil
 		}
 		var unknown *qualificationissuer.Unconfirmed
+		// SDK明确证明尚未CREATE的来源漂移，只重读同一报告；不换报告、不改变资格条件。
+		if original.UID == "" && !errors.As(err, &unknown) && errors.Is(err, qualificationissuer.ErrSourcesChangedBeforePublication) {
+			select {
+			case <-wait.Done():
+				return zero, errors.Join(err, wait.Err())
+			case <-time.After(interval):
+				continue
+			}
+		}
 		if original.UID == "" {
 			if !errors.As(err, &unknown) || unknown.Claim.UID == "" || unknown.Claim.Name != "dsga-q-"+config.ReportSHA256[:56] {
 				return zero, err
@@ -75,13 +84,22 @@ func publicationDiagnostic(err error) string {
 		return "api_unauthorized"
 	}
 	for message, code := range map[string]string{
-		"original platform sources changed after publication":  "source_changed_after",
-		"original platform sources changed before publication": "source_changed_before",
-		"original qualification consumer readback unconfirmed": "consumer_readback",
-		"original protected qualification object changed":      "protected_object_changed",
-		"qualification VM controller changed":                  "vm_owner_changed",
-		"qualification provenance changed":                     "provenance_changed",
-		"qualification recovery identity changed":              "recovery_identity_changed",
+		"qualification requires stable original idle resource binding":              "idle_binding_unconfirmed",
+		"original VM owner Lease unconfirmed":                                       "vm_lease_unconfirmed",
+		"original Host Lease unconfirmed":                                           "host_lease_unconfirmed",
+		"original Host placement or profile unconfirmed":                            "host_placement_unconfirmed",
+		"original complete Guest artifact unavailable during qualification capture": "guest_artifact_unavailable",
+		"original complete Guest artifact changed during qualification capture":     "guest_artifact_changed",
+		"Root identity, original birth or current owner changed":                    "root_owner_changed",
+		"live Host Pod lacks original full placement":                               "host_pod_placement_unconfirmed",
+		"ordinary Host Pod requires actual positive hard memory limits":             "host_pod_limit_unconfirmed",
+		"original platform sources changed after publication":                       "source_changed_after",
+		"original platform sources changed before publication":                      "source_changed_before",
+		"original qualification consumer readback unconfirmed":                      "consumer_readback",
+		"original protected qualification object changed":                           "protected_object_changed",
+		"qualification VM controller changed":                                       "vm_owner_changed",
+		"qualification provenance changed":                                          "provenance_changed",
+		"qualification recovery identity changed":                                   "recovery_identity_changed",
 	} {
 		if strings.Contains(err.Error(), message) {
 			return code

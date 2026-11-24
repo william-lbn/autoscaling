@@ -3,6 +3,7 @@ package qualificationissuer
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"slices"
@@ -58,6 +59,9 @@ type Result struct {
 	ContinuousArtifactSHA256 string                     `json:"continuous_artifact_sha256"`
 }
 
+// ErrSourcesChangedBeforePublication只表示两次只读快照不同，尚未进入CREATE；未知写结果绝不使用此错误。
+var ErrSourcesChangedBeforePublication = errors.New("original platform sources changed before publication")
+
 func (i *Issuer) Publish(ctx context.Context, bundle Bundle) (Result, error) {
 	var zero Result
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(i.config.TimeoutSeconds)*time.Second)
@@ -72,8 +76,11 @@ func (i *Issuer) Publish(ctx context.Context, bundle Bundle) (Result, error) {
 		return zero, err
 	}
 	after, err := i.inspect(ctx, report)
-	if err != nil || before != after {
-		return zero, fmt.Errorf("original platform sources changed before publication")
+	if err != nil {
+		return zero, fmt.Errorf("original platform sources changed before publication: %w", err)
+	}
+	if before != after {
+		return zero, ErrSourcesChangedBeforePublication
 	}
 	q := report.Qualification
 	raw, err := json.Marshal(q)
