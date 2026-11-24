@@ -23,6 +23,10 @@ import (
 )
 
 func run(ctx context.Context, configPath, kubeconfigPath string) error {
+	return runIssuerMode(ctx, configPath, kubeconfigPath, false)
+}
+
+func runIssuerMode(ctx context.Context, configPath, kubeconfigPath string, automatic bool) error {
 	config, bundle, err := qualificationissuer.LoadInputs(configPath)
 	if err != nil {
 		return &qualificationFailure{"issuer_input", err}
@@ -41,6 +45,7 @@ func run(ctx context.Context, configPath, kubeconfigPath string) error {
 		return fmt.Errorf("trusted Kubernetes client configuration unavailable")
 	}
 	connection.Timeout = time.Duration(config.TimeoutSeconds) * time.Second
+	configureQualifierReads(connection)
 	connection.UserAgent = "dsga-platform-qualifier"
 	core, err := kubernetes.NewForConfig(connection)
 	if err != nil {
@@ -55,16 +60,25 @@ func run(ctx context.Context, configPath, kubeconfigPath string) error {
 		return &qualificationFailure{"issuer_root", err}
 	}
 	defer root.Close()
-	issuer, err := qualificationissuer.New(core.CoreV1(), core.CoordinationV1(), vms, root, config)
-	if err != nil {
-		return &qualificationFailure{"issuer_setup", err}
+	// SDK每次仍验证原报告与完整实时来源；恢复只带入原CREATE返回的UID。
+	publish := func(ctx context.Context, next qualificationissuer.Config) (qualificationissuer.Result, error) {
+		issuer, setupErr := qualificationissuer.New(core.CoreV1(), core.CoordinationV1(), vms, root, next)
+		if setupErr != nil {
+			return qualificationissuer.Result{}, &qualificationFailure{"issuer_setup", setupErr}
+		}
+		return issuer.Publish(ctx, bundle)
 	}
-	result, err := issuer.Publish(ctx, bundle)
+	var result qualificationissuer.Result
+	if automatic {
+		result, err = publishAutomatic(ctx, config, publish)
+	} else {
+		result, err = publish(ctx, config)
+	}
 	if err != nil {
 		var unknown *qualificationissuer.Unconfirmed
 		if errors.As(err, &unknown) {
 			// 仅输出原对象定位信息；不输出报告原文、Root 状态、Kube 错误正文或凭据。
-			_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"issued": false, "unconfirmed": true, "claim": unknown.Claim, "report_sha256": config.ReportSHA256})
+			_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"issued": false, "unconfirmed": true, "claim": unknown.Claim, "report_sha256": config.ReportSHA256, "diagnostic_code": publicationDiagnostic(unknown.Err)})
 			return &qualificationFailure{"publication_unconfirmed", err}
 		}
 		return &qualificationFailure{"publication", err}
@@ -77,7 +91,7 @@ func runCollect(ctx context.Context, configPath, kubeconfigPath string) error {
 	return runCollectMode(ctx, configPath, kubeconfigPath, false)
 }
 
-// 自动供应允许有界只读重采集。资格发布只执行一次，未知结果保留原对象。
+// 自动供应允许有界只读重采集。CREATE只执行一次，已知原UID的未知确认执行有界只读恢复。
 func runCollectMode(ctx context.Context, configPath, kubeconfigPath string, publish bool) error {
 	config, err := qualificationissuer.LoadCollectorConfig(configPath)
 	if err != nil {
@@ -97,6 +111,7 @@ func runCollectMode(ctx context.Context, configPath, kubeconfigPath string, publ
 		return fmt.Errorf("trusted Kubernetes collector configuration unavailable")
 	}
 	connection.Timeout = time.Duration(config.TimeoutSeconds) * time.Second
+	configureQualifierReads(connection)
 	connection.UserAgent = "dsga-platform-qualifier-collector-read-only"
 	core, err := kubernetes.NewForConfig(connection)
 	if err != nil {
@@ -128,7 +143,7 @@ func runCollectMode(ctx context.Context, configPath, kubeconfigPath string, publ
 		return &qualificationFailure{"evidence_write", err}
 	}
 	if publish {
-		return run(ctx, config.OutputDirectory+"/issuer-config.proposed.json", kubeconfigPath)
+		return runIssuerMode(ctx, config.OutputDirectory+"/issuer-config.proposed.json", kubeconfigPath, true)
 	}
 	return json.NewEncoder(os.Stdout).Encode(map[string]any{"collected": true, "published": false, "report_sha256": collection.ProposedIssuerConfig.ReportSHA256, "snapshot_sha256": collection.SnapshotSHA256, "proposed_issuer_config": config.OutputDirectory + "/issuer-config.proposed.json"})
 }
@@ -195,7 +210,7 @@ func restrictJobOutputVolume(path string) error {
 func main() {
 	config := flag.String("config", "", "root protected issuer startup configuration")
 	collectConfig := flag.String("collect-config", "", "root protected read-only collector configuration; never publishes")
-	collectPublishConfig := flag.String("collect-publish-config", "", "collect original evidence then publish once; never retry an unconfirmed publication")
+	collectPublishConfig := flag.String("collect-publish-config", "", "collect original evidence, create once, then confirm original returned UID read-only")
 	kubeconfig := flag.String("kubeconfig", "", "root protected kubeconfig; otherwise fixed in-cluster credentials")
 	flag.Parse()
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)

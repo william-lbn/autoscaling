@@ -20,7 +20,7 @@ func (w *PGWorker) suspendCompute(ctx context.Context, snapshot *journal.Snapsho
 		return pgexec.AwaitingFact, ErrLeadershipLost
 	}
 	if c := m.ServiceClosure; c != nil {
-		if c.SuspensionOperation != operation {
+		if c.SuspensionOperation != operation && !w.selectedSafetyClosedSuspension(m, operation) {
 			return pgexec.AwaitingFact, ErrServiceSafety
 		}
 		if c.Pending() {
@@ -140,7 +140,7 @@ func (w *PGWorker) dispatchComputeSuspension(ctx context.Context, snapshot *jour
 func (w *PGWorker) observeSuspensionDrain(ctx context.Context, snapshot *journal.Snapshot, operation string) (*control.PreparedResponse, error) {
 	m := snapshot.State()
 	if !snapshot.Dispatchable() || m.Owner != w.session.Actor() || m.ServiceClosure == nil ||
-		m.ServiceClosure.SuspensionOperation != operation || m.ServiceClosure.Pending() {
+		m.ServiceClosure.SuspensionOperation != operation && !w.selectedSafetyClosedSuspension(m, operation) || m.ServiceClosure.Pending() {
 		return nil, ErrServiceSafety
 	}
 	if err := w.session.Check(ctx); err != nil {
@@ -162,10 +162,21 @@ func (w *PGWorker) observeSuspensionDrain(ctx context.Context, snapshot *journal
 	if err := w.session.Check(ctx); err != nil {
 		return nil, err
 	}
-	if err := m.CheckComputeSuspensionDrain(operation, fact); err != nil {
+	check := m.CheckComputeSuspensionDrain(operation, fact)
+	if w.selectedSafetyClosedSuspension(m, operation) {
+		check = m.CheckClosedSafetyDrain(fact)
+	}
+	if err := check; err != nil {
 		// A valid native response can still report existing sessions. Keep
 		// the same Owner and wait for them to drain without reopening admission.
 		return nil, errors.Join(ErrServiceSafety, err)
 	}
 	return &fact, nil
+}
+
+func (w *PGWorker) selectedSafetyClosedSuspension(m journal.Model, operation string) bool {
+	// suspensionOperation is installed only after the trusted runtime selection
+	// and its original qualification have been authenticated. A root control
+	// request alone cannot attach a different Operation to an old safety close.
+	return operation != "" && w.suspensionOperation == operation && m.HasSettledIdleServiceClosure()
 }
