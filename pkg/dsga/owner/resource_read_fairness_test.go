@@ -222,9 +222,18 @@ func runResourceReadSchedule(t *testing.T, mode string, count int) {
 		api.mu.Lock()
 		require.Equal(t, vmVersion, api.vm.ResourceVersion)
 		api.mu.Unlock()
+		if mode == "lease-changed" {
+			// 已确认原 Run 拒绝纯读并完成 join 后，显式结束夹具外层选主。
+			// 不等待续租线程与另一 holder 的时序竞争耗尽测试期限；不放宽任何生产 Lease 校验。
+			cancel()
+		}
 		return nil
 	})
-	require.NoError(t, err)
+	if mode == "lease-changed" {
+		require.ErrorIs(t, err, context.Canceled)
+	} else {
+		require.NoError(t, err)
+	}
 }
 
 // 单独核Submit接线，不执行Run或写任何领域；回复是本地错误哨兵，不冒PG事实。
