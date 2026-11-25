@@ -29,3 +29,5 @@
 构建、原生 SDK 检查和必要镜像打包在 Linux 构建机执行。依赖使用已提交的公开维护 SHA，不保留本地路径替换。运行与改动相关的 Go 测试、Chart 合同及真实集成；私有 fixture 未提供的跳过必须单独记录。
 
 维护分支为 `codex/dsga-autoscaling-20261019`。提交和关键解释使用中文，保留原作者源码注释、许可证及机器协议名称。上游原 README 的完整历史见 [a5e925b 快照](https://github.com/william-lbn/autoscaling/blob/a5e925b5f9180e083e9c86dd7be4ee3f55b014cb/README.md)；该快照是参考资料，不是当前产品安装入口。
+
+Host 部署初始化、固定身份与未知写恢复规则见 [Host 首次建账](docs/Host首次建账.md)。

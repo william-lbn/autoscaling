@@ -301,16 +301,23 @@ func (s *Service) reconcile(ctx context.Context, d domain) error {
 	defer d.work.running.Store(false)
 	snapshot, err := d.store.Load(ctx)
 	if errors.Is(err, hostguard.ErrUninitialized) {
-		if d.config.InitializeAtResourceVersion == "" {
+		bootstrapVersion := d.config.InitializeAtResourceVersion
+		if bootstrapVersion == "" && d.config.InitializeMode != KubernetesSnapshotBootstrap {
 			return fmt.Errorf("explicit original Node bootstrap resourceVersion is required")
 		}
-		// 策略读取与随后初始化使用同一原 RV；期间 Node 变化由原 CAS 拒绝。
+		// 原 Node UID、Lease UID、Profile、系统预算及 Capacity/Allocatable 仍固定。
+		// 显式快照模式允许部署期间的元数据/状态版本自然推进；本轮从头
+		// 读取 Node 和完整已分配 Pod 集，随后只用本轮 RV 做一次原子初始化。
+		// Load 仅在账本、Origin 和保护终结器全部不存在时返回 ErrUninitialized。
+		// CAS 冲突或未知回复不在此处重放；下轮先权威读取，已提交则保留原 Origin。
 		if d.config.KubernetesBudget != nil {
 			node, readErr := s.core.Nodes().Get(ctx, d.config.Binding.NodeName, metav1.GetOptions{})
 			if readErr != nil {
 				return readErr
 			}
-			if node.ResourceVersion != d.config.InitializeAtResourceVersion {
+			if d.config.InitializeMode == KubernetesSnapshotBootstrap {
+				bootstrapVersion = node.ResourceVersion
+			} else if node.ResourceVersion != bootstrapVersion {
 				return fmt.Errorf("original Kubernetes budget bootstrap Node version changed")
 			}
 			if err := d.config.KubernetesBudget.Inspect(node, d.config.Profile, d.config.SystemBytes); err != nil {
@@ -329,7 +336,7 @@ func (s *Service) reconcile(ctx context.Context, d domain) error {
 			}
 			rows = append(rows, p)
 		}
-		snapshot, err = d.store.InitializeAllocations(ctx, d.config.InitializeAtResourceVersion, d.config.SystemBytes, d.config.Profile, rows)
+		snapshot, err = d.store.InitializeAllocations(ctx, bootstrapVersion, d.config.SystemBytes, d.config.Profile, rows)
 	}
 	if err != nil {
 		return err

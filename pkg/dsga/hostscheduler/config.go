@@ -9,6 +9,10 @@ import (
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 )
 
+// KubernetesSnapshotBootstrap 只授权对原 UID/Lease/预算策略做首次建账。
+// resourceVersion 是单次快照的 CAS 条件，不是部署期间必须保持不变的身份。
+const KubernetesSnapshotBootstrap = "kubernetes-current-snapshot-v1"
+
 type NodeConfig struct {
 	Binding hostguard.Binding `json:"binding"`
 	Profile hostguard.Profile `json:"profile"`
@@ -16,8 +20,11 @@ type NodeConfig struct {
 	// Allocatable 内额外系统预算，不声称整台 Host 内核绝对硬上界。
 	SystemBytes      control.Uint64                    `json:"system_bytes"`
 	KubernetesBudget *hostguard.KubernetesBudgetPolicy `json:"kubernetes_budget,omitempty"`
-	// 仅首次引导使用固定原RV，重试不能改成当前RV。已初始化后只读恢复。
+	// 兼容旧显式冻结模式：原 RV 不得在重试中刷新。与 InitializeMode 互斥。
 	InitializeAtResourceVersion string `json:"initialize_at_resource_version,omitempty"`
+	// 新模式每次重新读取完整 Node/Pod 快照，并用此次 Node RV 做原子 CAS。
+	// 必须同时提供不可变的原 KubernetesBudget；已有或损坏账本绝不重建。
+	InitializeMode string `json:"initialize_mode,omitempty"`
 }
 
 type Config struct {
@@ -31,6 +38,9 @@ func (c Config) Validate(schedulerName string) error {
 	for i, n := range c.Nodes {
 		if n.Binding.Validate() != nil || n.Profile.Validate() != nil || n.Profile.SchedulerName != schedulerName || n.SystemBytes == 0 {
 			return fmt.Errorf("invalid original Node domain/profile/system upper bound")
+		}
+		if n.InitializeMode != "" && (n.InitializeMode != KubernetesSnapshotBootstrap || n.InitializeAtResourceVersion != "" || n.KubernetesBudget == nil) {
+			return fmt.Errorf("snapshot bootstrap requires its explicit original budget and excludes a frozen resourceVersion")
 		}
 		if n.KubernetesBudget != nil {
 			policy := *n.KubernetesBudget
