@@ -283,7 +283,16 @@ func (s *Service) bootstrapAssigned(ctx context.Context, node string) ([]core.Po
 		if err != nil {
 			return nil, err
 		}
-		pods = append(pods, list.Items...)
+		for i := range list.Items {
+			pod := &list.Items[i]
+			if hostguard.UnprotectedTerminalOrdinary(pod) {
+				if err := s.bootstrapHistory(ctx, node, pod); err != nil {
+					return nil, fmt.Errorf("historical Pod %s/%s: %w", pod.Namespace, pod.Name, err)
+				}
+				continue
+			}
+			pods = append(pods, *pod)
+		}
 		if len(pods) > hostguard.MaxPlacements {
 			return nil, fmt.Errorf("assigned Pod set exceeds bounded Host ledger")
 		}
@@ -332,7 +341,7 @@ func (s *Service) reconcile(ctx context.Context, d domain) error {
 		for i := range pods {
 			_, p, _, err := s.allocation(ctx, d.config, &pods[i], 0)
 			if err != nil {
-				return err
+				return fmt.Errorf("initial Host Pod %s/%s: %w", pods[i].Namespace, pods[i].Name, err)
 			}
 			rows = append(rows, p)
 		}

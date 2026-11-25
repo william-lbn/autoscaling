@@ -38,7 +38,7 @@ func (s *Service) allocation(ctx context.Context, n NodeConfig, expected *core.P
 	// 新候选及VM仍须属于本调度域；同UID读取期间的调度器漂移也须拒绝。
 	foreignScheduler := pod.Spec.SchedulerName != n.Profile.SchedulerName && (pod.Spec.NodeName == "" || hasVMOwner)
 	if pod.UID != expected.UID || pod.ResourceVersion == "" || pod.DeletionTimestamp != nil || pod.Status.Phase == core.PodSucceeded || pod.Status.Phase == core.PodFailed || pod.Spec.NodeName != "" && pod.Spec.NodeName != n.Binding.NodeName || pod.Spec.SchedulerName != expected.Spec.SchedulerName || foreignScheduler {
-		return nil, none, nil, fmt.Errorf("original Pod identity/Node/scheduler changed")
+		return nil, none, nil, fmt.Errorf("original Pod identity/Node/scheduler changed: %s/%s", expected.Namespace, expected.Name)
 	}
 	if _, _, migrating := vmv1.MigrationOwnerForPod(pod); migrating {
 		return nil, none, nil, fmt.Errorf("migration requires an independent complete Host reservation protocol")

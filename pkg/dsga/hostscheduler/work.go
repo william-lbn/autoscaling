@@ -134,6 +134,11 @@ func (s *Service) reconcileWork(ctx context.Context, d domain, snapshot *hostgua
 		w.pending = w.pending[1:]
 		attempted++
 		var err error
+		// 未受本域保护且从未占账的完整历史 Job 只读观察。若存在原行、
+		// 持有或来源变化，仍回到原退休/保留路径，绝不按缺行猜测关闭。
+		if hostguard.UnprotectedTerminalOrdinary(&pod) && s.ObserveUntrackedTerminalOrdinary(ctx, d.config.Binding.NodeName, &pod) == nil {
+			continue
+		}
 		if pod.Status.Phase == core.PodSucceeded || pod.Status.Phase == core.PodFailed {
 			// Evicted VM Pods may lack a kubelet container identity. The managed
 			// retirement path validates the original Runner or node stop source.

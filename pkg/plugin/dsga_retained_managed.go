@@ -26,6 +26,14 @@ func closedManagedEvent(pod *core.Pod) bool {
 // observeHostEvent与可执行Reserve显式分离。关闭受管Pod只恢复原成本视图，
 // Framework的Filter/Reserve和旧ApproveLegacy继续使用原拒绝关闭对象的路径。
 func (s *PluginState) observeHostEvent(ctx context.Context, pod *core.Pod) (*core.Pod, *hostguard.Placement, error) {
+	// 初始事件包含共享集群保留的已结束 Job。先只读确认完整退出且
+	// 无原账本占用；失败继续阻止事件确认，不返回零 Placement 授权。
+	if s.host != nil && s.host.HasNode(pod.Spec.NodeName) && hostguard.UnprotectedTerminalOrdinary(pod) {
+		if err := s.host.ObserveUntrackedTerminalOrdinary(ctx, pod.Spec.NodeName, pod); err != nil {
+			return nil, nil, err
+		}
+		return pod, nil, nil
+	}
 	if s.host != nil && s.host.HasNode(pod.Spec.NodeName) && closedManagedEvent(pod) {
 		canonical, held, err := s.host.ObserveRetainedManaged(ctx, pod.Spec.NodeName, pod)
 		if err != nil {

@@ -123,6 +123,15 @@ func (s *Store) ObserveUnchargedTerminalOrdinary(ctx context.Context, snapshot *
 		pod.Annotations[OrdinaryStopSourceAnnotation] != "" {
 		return fmt.Errorf("uncharged observation requires original terminating Pod without a retirement intent")
 	}
+	return s.observeUnchargedTerminalOrdinary(ctx, snapshot, pod)
+}
+
+// 两类只读观察共用原账本无行/无持有、原 Node 双重核验及完整原 Pod
+// 重读。终态只用于证明未记账历史，不赋予任何释放已有容量的权限。
+func (s *Store) observeUnchargedTerminalOrdinary(ctx context.Context, snapshot *Snapshot, pod *core.Pod) error {
+	if snapshot == nil || snapshot.model.Binding != s.binding || pod == nil || pod.Spec.NodeName != s.binding.NodeName {
+		return fmt.Errorf("uncharged observation requires original Host and Pod")
+	}
 	if _, vm := vmv1.VirtualMachineOwnerForPod(pod); vm {
 		return fmt.Errorf("VM Pod requires its original retirement path")
 	}
