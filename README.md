@@ -1,163 +1,31 @@
-# Autoscaling
+# Neon 虚拟化与资源自动伸缩
 
-Vertical autoscaling for a fleet of postgres instances running in a Kubernetes cluster.
+本维护分支提供 NeonVM、Scheduler、节点 Agent、资源安全协议和资格工具，服务于通用内网 Helm 产品。它与 Neon 托管服务的上游开发环境不同。完整系统部署统一使用 [Neon Helm 标准入口](https://github.com/william-lbn/neon-helm/blob/codex/dsga-neon-helm-v3-20261019/README.md)，不直接用本仓库的开发 YAML 或旧 `make deploy` 组装产品。
 
-For more on how Neon's Autoscaling works, check out <https://neon.tech/docs/introduction/autoscaling>.
+## 组件职责
 
-## Development status
+| 组件 | 职责 |
+| --- | --- |
+| NeonVM Controller | 管理 VM、Runner 生命周期及经协议允许的资源调整 |
+| Runner | 在 Kubernetes Pod 中承载 QEMU 与 Guest |
+| 设备插件 | 向 Kubernetes 声明实际 KVM 设备 |
+| Scheduler | 根据原 Node/Lease 身份及 Host 账本管理可调度容量 |
+| Agent | 读取当前实例与业务信号，协调自动伸缩和安全状态 |
+| Root 与资源协议 | 验证原实例、Owner、预算和实际资源变化，未知状态关闭准入 |
+| Qualifier | 基于真实原始观察发布逐实例资格，不能用配置存在代替 |
 
-Autoscaling is used internally within Neon, and makes some minor assumptions about Neon-specifics.
+详细边界见[当前架构](ARCHITECTURE.md)。DSGA 实现位于 `pkg/dsga/`；[正常内存配额说明](pkg/dsga/resourceguard/normal_quota_budget.zh.md)描述 Guest 内存边界。
 
-We do not officially support use of autoscaling externally — in other words, you're welcome to try
-it out yourself, submit bugs, fork the code, etc., but we make no guarantees about timely responses
-to issues from running locally.
+## 部署和验证边界
 
-For help from the community, check out our Discord: <https://neon.tech/discord>.
+节点地址、名称、UID 和 Lease 不进入复用发行模板。安装入口按显式标签筛选当时合格的 Linux/amd64 KVM 节点，再从当前集群读取身份与容量。现有 5 个 worker 已完成 PG17/PG18 自动内存、公开业务生命周期验收；1..16 Host 是当前合同上限，不代表各种规模与硬件均已实测。
 
-## Quick access
+可信 Host 集合与普通放置筛选分开：开放放置条件不授予全局 Node 写权限。Agent 不得获得 Node PATCH；Scheduler 只对本次可信 Node 名称拥有所需权限。新增 Node 连续接入暂缓，不能把 Kubernetes Node Ready 直接当成完整 Host 与资格注册。
 
-The deployment files and a vm-builder binary are attached to each release.
+内存验收必须观察同一 Compute 的 Guest 物理增长与回缩、原数据、WAL 结清。改 VM spec、Runner 资源或 cgroup 数字都不能代替原生证明。Root 读取未确认时关闭准入仍正确；安全恢复必须验证原关闭原因和原预算，不能健康读一次就自动开放。
 
-Check out [Building and running](#building-and-running) below for local development.
+## 开发与维护
 
-## How it works
+构建、原生 SDK 检查和必要镜像打包在 Linux 构建机执行。依赖使用已提交的公开维护 SHA，不保留本地路径替换。运行与改动相关的 Go 测试、Chart 合同及真实集成；私有 fixture 未提供的跳过必须单独记录。
 
-We want to dynamically change the amount of CPUs and memory of running postgres instances, _without
-breaking TCP connections to postgres_.
-
-This relatively easy when there's already spare resources on the physical (Kubernetes) node, but it
-takes careful coordination to move postgres instances from one node to another when the original
-node doesn't have the room.
-
-We've tried a bunch of existing tools and settled on the following:
-
-* Use [VM live migration](https://www.qemu.org/docs/master/devel/migration/index.html) to move running
-  postgres instances between physical nodes
-* QEMU is used as our hypervisor
-* [NeonVM](./README-NeonVM.md) orchestrates NeonVM VMs as custom resources in
-  K8s, and is responsible for scaling allocated resources (CPU and memory)
-* A modified K8s scheduler ensures that we don't overcommit resources and triggers migrations when
-  demand is above a pre-configured threshold
-* Each K8s node has an `autoscaler-agent` pod that triggers scaling decisions and makes resource
-  requests to the K8s scheduler on the VMs' behalf to reserve additional resources for them
-* Each compute node runs the `vm-monitor` binary, which communicates to the autoscaler-agent so that it can
-  immediately respond to memory pressure by scaling up (among other things).
-* For Neon's postgres instances, we also track cache usage and potentially scale based on the
-  heuristically determined working set size, which dramatically speeds up OLTP workloads.
-
-Networking is preserved across migrations by giving each VM an additional IP address on a bridge
-network spanning the cluster with a flat topology; the L2 network figures out "by itself" where to
-send the packets after migration.
-
-For more information, refer to [ARCHITECTURE.md](./ARCHITECTURE.md).
-
-## Building and running
-
-> [!NOTE]
-> NeonVM and Autoscaling are not expected to work outside Linux x86.
-
-### Install dependencies
-
-To run autoscaling locally you need to install dependencies:
-- [`kubectl`]
-- [`kind`]/[`k3d`]
-- [`kuttl`] (for e2e tests)
-
-[`kubectl`]: https://kubernetes.io/docs/tasks/tools/#kubectl
-[`kind`]: https://kubernetes.io/docs/tasks/tools/#kind
-[`kuttl`]: https://kuttl.dev/
-[`k3d`]: https://k3d.io
-
-### Running locally
-
-Build NeonVM Linux kernel (it takes time, can be run only once)
-
-```sh
-make kernel
-```
-
-Build docker images:
-
-```sh
-make docker-build
-```
-
-Start local cluster with [`kind`] or [`k3d`]:
-
-```sh
-make kind-setup # or make k3d-setup
-```
-
-Deploy NeonVM and Autoscaling components
-
-```sh
-make deploy
-```
-
-Build and load the test VM:
-
-```sh
-make vm-examples
-```
-
-Start the test VM:
-
-```sh
-kubectl apply -f vm-deploy.yaml
-```
-
-### Running pgbench
-
-Broadly, the `run-bench.sh` script just exists to be expensive on CPU, so that more vCPU will be
-allocated to the vm. You can run it with:
-
-```sh
-scripts/run-bench.sh
-# or:
-VM_NAME=postgres16-disk-test scripts/run-bench.sh
-```
-
-### Running `allocate-loop`
-
-To test on-demand memory reservation, the [`allocate-loop`] binary is built into the test VM, and
-can be used to slowly increasing memory allocations of arbitrary size. For example:
-
-```sh
-# After ssh-ing into the VM:
-cgexec -g memory:neon-test allocate-loop 256 2280
-#^^^^^^^^^^^^^^^^^^^^^^^^^               ^^^ ^^^^
-# run it in the neon-test cgroup  ;  use 256 <-> 2280 MiB
-```
-
-[`allocate-loop`]: vm-examples/pg16-disk-test/allocate-loop.c
-
-### E2E tests
-
-To run the end-to-end tests, you need to have [`kuttl`] installed. You can run the tests with:
-```sh
-make e2e
-```
-
-### `make run-e2e`
-
-During active development, when the kernel is already built and cluster created, one can do `make run-e2e` to test current code, which resolves to `make deploy vm-examples e2e`.
-
-
-## Contributing
-
-Splitting PRs into commits is preferred, as it allows for cleaner git history and makes the review easier.
-
-For all commits, we require PR number to be present in the commit subject:
-```
-  neonvm: Remove neonvm-runner version [2/2] (#1381)
-                                             ^ like that
-```
-
-This happens automatically when PRs are merged with squash. When PRs are merged with rebase, we have a helper script `scripts/git-pr-number.sh`. 
-
-Therefore, workflow becomes:
-1. Create your commits locally.
-2. Create a PR.
-3. Run `scripts/git-pr-number.sh`, it will detect there is a PR open and will adjust the commit subjects.
-4. `git push --force-with-lease origin <YOUR BRANCH>`.
-   **Warning:** Using `git push -f` (force push) can overwrite remote branch history and delete commits made by others. It is safer to use `git push --force-with-lease`, which ensures the force push only proceeds if the remote branch has not been updated since your last fetch.
+维护分支为 `codex/dsga-autoscaling-20261019`。提交和关键解释使用中文，保留原作者源码注释、许可证及机器协议名称。上游原 README 的完整历史见 [a5e925b 快照](https://github.com/william-lbn/autoscaling/blob/a5e925b5f9180e083e9c86dd7be4ee3f55b014cb/README.md)；该快照是参考资料，不是当前产品安装入口。
