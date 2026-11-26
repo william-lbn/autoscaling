@@ -25,7 +25,7 @@ import (
 
 func TestCPUAuthorityUsesCurrentOriginalObjectsInsteadOfCallerGeneration(t *testing.T) {
 	for _, mode := range []string{"valid", "future-caller", "stale-caller", "wrong-pod", "wrong-boot", "wrong-node",
-		"wrong-vm", "changed-target", "changed-max", "changed-min", "changed-pod-limit", "held", "migrating", "restarted", "missing-container", "missing-journal", "corrupt-journal", "foreign-journal", "missing-rv", "historical-version", "changed-actual-request", "changed-actual-limit", "missing-actual-container", "container-not-running", "initial-pending-read", "initial-pending-write"} {
+		"wrong-vm", "changed-target", "changed-max", "changed-min", "changed-pod-limit", "held", "migrating", "restarted", "missing-container", "missing-journal", "corrupt-journal", "foreign-journal", "missing-rv", "historical-version", "changed-actual-request", "changed-actual-limit", "missing-actual-container", "container-not-running", "initial-pending-read", "initial-pending-write", "initial-target-drift"} {
 		t.Run(mode, func(t *testing.T) {
 			id := cpuFixtureIdentity()
 			kind := true
@@ -65,7 +65,7 @@ func TestCPUAuthorityUsesCurrentOriginalObjectsInsteadOfCallerGeneration(t *test
 				pod.Spec.Containers = nil
 			case "container-not-running":
 				pod.Status.ContainerStatuses[0].State.Running = nil
-			case "initial-pending-read", "initial-pending-write":
+			case "initial-pending-read", "initial-pending-write", "initial-target-drift":
 				vm.Status.Phase = vmv1.VmPending
 			case "future-caller":
 				command.Generation = 3
@@ -100,7 +100,22 @@ func TestCPUAuthorityUsesCurrentOriginalObjectsInsteadOfCallerGeneration(t *test
 			coreClient := kubefake.NewSimpleClientset(pod, node)
 			authorize := managedCPUAuthority(id, 500, 2000, "2", vms.NeonvmV1(), coreClient.CoreV1(), "ns", "vm", "runner")
 			var err error
-			if mode == "initial-pending-read" {
+			if mode == "initial-pending-read" || mode == "initial-target-drift" {
+				target := vmv1.MilliCPU(1500)
+				if mode == "initial-target-drift" {
+					target = 1000
+				}
+				birth := managedCPUInitialGeneration(id, 500, 2000, "2", vms.NeonvmV1(), coreClient.CoreV1(), "ns", "vm", "runner")
+				generation, birthErr := birth(context.Background(), target)
+				if mode == "initial-target-drift" {
+					if birthErr == nil {
+						t.Fatal("changed birth target accepted")
+					}
+					return
+				}
+				if birthErr != nil || generation != vm.Generation || generation <= 0 {
+					t.Fatal("birth invented a generation or depended on PG startup", generation, birthErr)
+				}
 				var fact runnercpu.NodeCommitment
 				read := managedCPUAuthorityMode(id, 500, 2000, "2", vms.NeonvmV1(), coreClient.CoreV1(), "ns", "vm", "runner", false, &fact)
 				err = read(context.Background(), runnercpu.Command{}, 0)

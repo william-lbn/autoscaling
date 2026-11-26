@@ -334,7 +334,8 @@ func authorizeManagedCPU(id runnercpu.Identity, fixedMin, fixedMax vmv1.MilliCPU
 		return managedCPUSource{}, fmt.Errorf("original CPU Kubernetes source missing")
 	}
 	return managedCPUSource{
-		authorize: managedCPUAuthority(id, fixedMin, fixedMax, fixedPodCPU, vms.NeonvmV1(), core.CoreV1(), namespace, name, podName),
+		initialGeneration: managedCPUInitialGeneration(id, fixedMin, fixedMax, fixedPodCPU, vms.NeonvmV1(), core.CoreV1(), namespace, name, podName),
+		authorize:         managedCPUAuthority(id, fixedMin, fixedMax, fixedPodCPU, vms.NeonvmV1(), core.CoreV1(), namespace, name, podName),
 		observe: func(ctx context.Context) (runnercpu.NodeCommitment, error) {
 			var fact runnercpu.NodeCommitment
 			read := managedCPUAuthorityMode(id, fixedMin, fixedMax, fixedPodCPU, vms.NeonvmV1(), core.CoreV1(), namespace, name, podName, false, &fact)
@@ -344,8 +345,9 @@ func authorizeManagedCPU(id runnercpu.Identity, fixedMin, fixedMax vmv1.MilliCPU
 }
 
 type managedCPUSource struct {
-	authorize func(context.Context, runnercpu.Command, vmv1.MilliCPU) error
-	observe   func(context.Context) (runnercpu.NodeCommitment, error)
+	initialGeneration func(context.Context, vmv1.MilliCPU) (int64, error)
+	authorize         func(context.Context, runnercpu.Command, vmv1.MilliCPU) error
+	observe           func(context.Context) (runnercpu.NodeCommitment, error)
 }
 
 func managedCPUAuthority(id runnercpu.Identity, fixedMin, fixedMax vmv1.MilliCPU, fixedPodCPU string,
@@ -356,6 +358,17 @@ func managedCPUAuthority(id runnercpu.Identity, fixedMin, fixedMax vmv1.MilliCPU
 func managedCPUAuthorityMode(id runnercpu.Identity, fixedMin, fixedMax vmv1.MilliCPU, fixedPodCPU string,
 	vms vmtyped.NeonvmV1Interface, core coreclient.CoreV1Interface, namespace, name, podName string,
 	requireCommand bool, capture *runnercpu.NodeCommitment) func(context.Context, runnercpu.Command, vmv1.MilliCPU) error {
+	return managedCPUAuthoritySources(id, fixedMin, fixedMax, fixedPodCPU, vms, core, namespace, name, podName, requireCommand, capture, nil)
+}
+
+type cpuBirthSource struct {
+	Generation int64
+	Target     vmv1.MilliCPU
+}
+
+func managedCPUAuthoritySources(id runnercpu.Identity, fixedMin, fixedMax vmv1.MilliCPU, fixedPodCPU string,
+	vms vmtyped.NeonvmV1Interface, core coreclient.CoreV1Interface, namespace, name, podName string,
+	requireCommand bool, capture *runnercpu.NodeCommitment, captureBirth *cpuBirthSource) func(context.Context, runnercpu.Command, vmv1.MilliCPU) error {
 	return func(ctx context.Context, c runnercpu.Command, cpu vmv1.MilliCPU) error {
 		bounded, cancel := context.WithTimeout(ctx, 3*time.Second)
 		defer cancel()
@@ -439,7 +452,25 @@ func managedCPUAuthorityMode(id runnercpu.Identity, fixedMin, fixedMax vmv1.Mill
 		if capture != nil {
 			*capture = fact
 		}
+		if captureBirth != nil {
+			*captureBirth = cpuBirthSource{Generation: vm.Generation, Target: vm.Spec.Guest.CPUs.Use}
+		}
 		return nil
+	}
+}
+
+func managedCPUInitialGeneration(id runnercpu.Identity, fixedMin, fixedMax vmv1.MilliCPU, fixedPodCPU string,
+	vms vmtyped.NeonvmV1Interface, core coreclient.CoreV1Interface, namespace, name, podName string) func(context.Context, vmv1.MilliCPU) (int64, error) {
+	return func(ctx context.Context, initialTarget vmv1.MilliCPU) (int64, error) {
+		var source cpuBirthSource
+		inspect := managedCPUAuthoritySources(id, fixedMin, fixedMax, fixedPodCPU, vms, core, namespace, name, podName, false, nil, &source)
+		if err := inspect(ctx, runnercpu.Command{}, 0); err != nil {
+			return 0, err
+		}
+		if source.Generation <= 0 || source.Target != initialTarget {
+			return 0, fmt.Errorf("original initial CPU target changed before durable birth intent")
+		}
+		return source.Generation, nil
 	}
 }
 
@@ -517,6 +548,14 @@ func initializeManagedCPU(spec *vmv1.VirtualMachineSpec, runner *vmguard.Runner)
 		}
 		return state, cleanup, nil
 	}
+	birthCtx, birthCancel := context.WithTimeout(context.Background(), 3*time.Second)
+	generation, birthErr := authority.initialGeneration(birthCtx, spec.Guest.CPUs.Use)
+	birthCancel()
+	if birthErr != nil {
+		cleanup()
+		return nil, nil, birthErr
+	}
+	state.intent.Generation = generation
 	if err = state.saveLocked(); err == nil {
 		err = state.applyKernelLocked()
 	}

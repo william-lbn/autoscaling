@@ -5,7 +5,7 @@ FROM $GO_BASE_IMG AS builder
 
 # Build the manager binary
 COPY . .
-RUN CGO_ENABLED=0 go build -o manager neonvm-controller/cmd/*.go
+RUN CGO_ENABLED=0 go build -o manager ./neonvm-controller/cmd
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
