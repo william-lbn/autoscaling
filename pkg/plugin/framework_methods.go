@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
 
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostscheduler"
 	"github.com/neondatabase/autoscaling/pkg/plugin/metrics"
 	"github.com/neondatabase/autoscaling/pkg/plugin/reconcile"
 	"github.com/neondatabase/autoscaling/pkg/plugin/state"
@@ -129,7 +130,8 @@ func (e *AutoscaleEnforcer) Filter(
 	}
 
 	// 网络只读预检位于本地mu之前；完整Host硬预算不足或来源未知均不放行。
-	if err := e.state.checkHost(ctx, pod, nodeName); err != nil {
+	preview, err := e.state.checkHostPreview(ctx, pod, nodeName)
+	if err != nil {
 		return framework.NewStatus(framework.Unschedulable, "original Host capacity not confirmed: "+err.Error())
 	}
 
@@ -143,6 +145,9 @@ func (e *AutoscaleEnforcer) Filter(
 		)
 	}
 
+	if preview != nil {
+		applyHostAllocation(&podState, preview.Allocation)
+	}
 	// precreate a map for the pods that are proposed to exist on this node, so that we're not doing
 	// this with the lock acquired.
 	proposedPods := make(map[types.UID]*framework.PodInfo)
@@ -162,7 +167,7 @@ func (e *AutoscaleEnforcer) Filter(
 
 	var approve bool
 	ns.node.Speculatively(func(n *state.Node) (commit bool) {
-		approve = e.filterCheck(logger, ns.node, n, podState, proposedPods)
+		approve = e.filterCheck(logger, ns.node, n, podState, proposedPods, preview)
 		return false // never commit these changes; we're just using this for a temp node.
 	})
 
@@ -179,6 +184,7 @@ func (e *AutoscaleEnforcer) filterCheck(
 	tmpNode *state.Node,
 	filterPod state.Pod,
 	otherPods map[types.UID]*framework.PodInfo,
+	previews ...*hostscheduler.PlacementPreview,
 ) (ok bool) {
 	type podInfo struct {
 		Namespace string
@@ -235,6 +241,9 @@ func (e *AutoscaleEnforcer) filterCheck(
 		tmpNode.AddPod(pod)
 	}
 
+	if len(previews) > 0 && !applyHostCPUPreview(tmpNode, filterPod, previews[0]) {
+		return false
+	}
 	// At this point:
 	// * oldNode has the actual local state for the node
 	// * tmpNode has the state as given by the filter pods

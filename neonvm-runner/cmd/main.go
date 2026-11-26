@@ -33,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
+	"github.com/neondatabase/autoscaling/pkg/api"
 	"github.com/neondatabase/autoscaling/pkg/api/runnerdiagnostic"
 	"github.com/neondatabase/autoscaling/pkg/dsga/bootstrap"
 	"github.com/neondatabase/autoscaling/pkg/dsga/resourceguard"
@@ -579,6 +580,16 @@ func runQEMU(
 	}
 
 	var cgroupPath string
+	var managedCPUState *managedCPU
+	if cfg.managedMemory != nil {
+		var closeCPU func()
+		var err error
+		managedCPUState, closeCPU, err = initializeManagedCPU(vmSpec, cfg.managedMemory)
+		if err != nil {
+			return fmt.Errorf("initialize original Runner CPU bandwidth: %w", err)
+		}
+		defer closeCPU()
+	}
 
 	// 受管内存QEMU必须继承原Runner/Pod共同硬限，不能经旧CPU组逃出统一memcg。
 	if cfg.usesLegacyQEMUCgroup() {
@@ -613,7 +624,7 @@ func runQEMU(
 	var cpuLimitMutex sync.Mutex
 
 	callbacks = cpuServerCallbacks{
-		get: func(logger *zap.Logger) (*vmv1.MilliCPU, int, error) {
+		get: func(logger *zap.Logger) (*api.VCPUCgroup, int, error) {
 			switch cfg.cpuScalingMode {
 			case vmv1.CpuScalingModeSysfs:
 				cpu, status, err := getNeonvmDaemonCPU()
@@ -624,19 +635,23 @@ func runQEMU(
 				storedCpu := vmv1.MilliCPU(lastValue.Load())
 				if storedCpu.RoundedUp() != cpu.RoundedUp() {
 					logger.Warn("CPU from NeonVM Daemon does not match stored value, returning daemon value to let controller reconcile correct state", zap.Any("stored", storedCpu), zap.Any("current", cpu))
-					return &cpu, 0, nil
+					return &api.VCPUCgroup{VCPUs: cpu}, 0, nil
 				}
-				return &storedCpu, 0, nil
+				return &api.VCPUCgroup{VCPUs: storedCpu}, 0, nil
 
 			case vmv1.CpuScalingModeQMP:
-				return lo.ToPtr(vmv1.MilliCPU(lastValue.Load())), 0, nil
+				return &api.VCPUCgroup{VCPUs: vmv1.MilliCPU(lastValue.Load())}, 0, nil
 			default:
 				panic(fmt.Errorf("unknown CPU scaling mode %q", cfg.cpuScalingMode))
 			}
 		},
-		set: func(logger *zap.Logger, cpu vmv1.MilliCPU) (int, error) {
+		set: func(_ context.Context, logger *zap.Logger, change api.VCPUChange) (int, error) {
 			cpuLimitMutex.Lock()
 			defer cpuLimitMutex.Unlock()
+			if change.Managed != nil {
+				return http.StatusConflict, fmt.Errorf("managed CPU command cannot enter legacy Runner")
+			}
+			cpu := change.VCPUs
 			switch cfg.cpuScalingMode {
 			case vmv1.CpuScalingModeSysfs:
 				status, err := setNeonvmDaemonCPU(cpu)
@@ -684,6 +699,12 @@ func runQEMU(
 		},
 	}
 
+	// DSGA 回调不读取 lastValue，也不进入旧四倍超配/外部 CPU 子组。
+	if managedCPUState != nil {
+		callbacks = managedCPUCallbacks(managedCPUState)
+	} else if vmSpec.DSGABootstrap != nil {
+		callbacks = historicalCPUCallbacks(vmSpec, cfg.managedMemory)
+	}
 	wg.Add(1)
 	monitoring := vmSpec.EnableNetworkMonitoring != nil && *vmSpec.EnableNetworkMonitoring
 	go listenForHTTPRequests(ctx, logger, vmSpec.RunnerPort, callbacks, &wg, monitoring)
@@ -1109,9 +1130,9 @@ func getNeonvmDaemonCPU() (_ vmv1.MilliCPU, status int, _ error) {
 		return 0, http.StatusBadGateway, fmt.Errorf("neonvm-daemon responded with status %d", resp.StatusCode)
 	}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return 0, http.StatusBadGateway, fmt.Errorf("could not read response: %w", err)
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 65))
+	if err != nil || len(body) > 64 {
+		return 0, http.StatusBadGateway, fmt.Errorf("could not read bounded CPU response: %v", err)
 	}
 
 	value, err := strconv.ParseUint(string(body), 10, 32)

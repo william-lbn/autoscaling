@@ -167,6 +167,9 @@ func inspectClaim(n *core.Node, p Plan, source string, ref budget.ObjectRef, exp
 	if err != nil || h.SourceID != source {
 		return fmt.Errorf("original Host claim is not the complete published Node hold")
 	}
+	if err := m.CheckCPUCapacity(n); err != nil {
+		return err
+	}
 	used, usedErr := m.UsedBytes()
 	total, capErr := capacity(n)
 	if usedErr != nil || capErr != nil || used > total {
@@ -398,6 +401,12 @@ func (s *Store) initialize(ctx context.Context, expectedVersion string, outside 
 			}
 		}
 	}
+	if profile != nil && profile.CPUAccountingVersion == CPUAccountingVersion {
+		m.ProtocolVersion = 11
+	}
+	if err := m.CheckCPUCapacity(n); err != nil {
+		return nil, err
+	}
 	used, err := m.UsedBytes()
 	if m.Validate() != nil || err != nil || used > total {
 		return nil, fmt.Errorf("complete initial Host allocation exceeds original Node capacity or is invalid")
@@ -440,12 +449,21 @@ func (s *Store) holdPlacementFor(ctx context.Context, snapshot *Snapshot, p Plac
 				return nil, none, fmt.Errorf("placement Pod hardlimit differs from original UID")
 			}
 		}
+		if p.CPUAccountingVersion == CPUAccountingVersion {
+			request, err := PodCPURequest(pod)
+			if err != nil || p.CommittedCPUMillicores < request {
+				return nil, none, fmt.Errorf("original complete Pod CPU request is not covered")
+			}
+		}
 	}
 	n, total, err := s.placementNode(ctx, snapshot)
 	if err != nil {
 		return nil, none, err
 	}
 	m, err := snapshot.model.reservePlacementFor(p, key, total)
+	if err == nil {
+		err = m.CheckCPUCapacity(n)
+	}
 	if err != nil {
 		return nil, none, err
 	}
@@ -484,11 +502,20 @@ func (s *Store) CheckPlacement(ctx context.Context, snapshot *Snapshot, p Placem
 			return fmt.Errorf("candidate Pod hardlimit differs from original UID")
 		}
 	}
-	_, total, err := s.placementNode(ctx, snapshot)
+	if p.CPUAccountingVersion == CPUAccountingVersion {
+		request, err := PodCPURequest(pod)
+		if err != nil || p.CommittedCPUMillicores < request {
+			return fmt.Errorf("candidate complete Pod CPU request is not covered")
+		}
+	}
+	node, total, err := s.placementNode(ctx, snapshot)
 	if err != nil {
 		return err
 	}
-	_, err = snapshot.model.reservePlacementFor(p, key, total)
+	next, err := snapshot.model.reservePlacementFor(p, key, total)
+	if err == nil {
+		err = next.CheckCPUCapacity(node)
+	}
 	return err
 }
 
@@ -577,6 +604,9 @@ func (s *Store) Reserve(ctx context.Context, snapshot *Snapshot, p Plan) (*Snaps
 	}
 	total, err := capacity(snapshot.node)
 	if err != nil {
+		return nil, none, err
+	}
+	if err := snapshot.model.CheckCPUCapacity(snapshot.node); err != nil {
 		return nil, none, err
 	}
 	next, held, err := snapshot.model.reserve(actor, p, total)

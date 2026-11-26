@@ -1533,7 +1533,7 @@ func podSpec(
 							MountPropagation: lo.ToPtr(corev1.MountPropagationNone),
 						}
 
-						if config.DisableRunnerCgroup {
+						if config.DisableRunnerCgroup && (vm.Spec.DSGABootstrap == nil || vm.Spec.DSGABootstrap.RuntimeContractVersion == 0) {
 							return []corev1.VolumeMount{images}
 						} else {
 							// the /sys/fs/cgroup mount is only necessary if neonvm-runner has to
@@ -1579,7 +1579,7 @@ func podSpec(
 						},
 					},
 				}
-				if config.DisableRunnerCgroup {
+				if config.DisableRunnerCgroup && (vm.Spec.DSGABootstrap == nil || vm.Spec.DSGABootstrap.RuntimeContractVersion == 0) {
 					return []corev1.Volume{images}
 				} else {
 					return []corev1.Volume{images, cgroup}

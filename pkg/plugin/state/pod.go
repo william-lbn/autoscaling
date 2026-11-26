@@ -40,8 +40,11 @@ type Pod struct {
 	// Migrating is true iff there is a VirtualMachineMigration with this pod as the source.
 	Migrating bool
 
-	CPU PodResources[vmv1.MilliCPU]
-	Mem PodResources[api.Bytes]
+	// Host固定CPU承诺与Guest目标独立；普通Pod已确认0request也由显式版本区分。
+	HostCPUAccountingVersion uint32
+	HostCommittedCPU         vmv1.MilliCPU
+	CPU                      PodResources[vmv1.MilliCPU]
+	Mem                      PodResources[api.Bytes]
 }
 
 // MarshalLogObject implements zapcore.ObjectMarshaler so that Pod can be used with zap.Object.

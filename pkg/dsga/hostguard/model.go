@@ -133,7 +133,7 @@ func SourceID(origin string, p Plan) string {
 }
 
 func (m Model) Validate() error {
-	if (m.ProtocolVersion < 1 || m.ProtocolVersion > 10) || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
+	if (m.ProtocolVersion < 1 || m.ProtocolVersion > 11) || m.Binding.Validate() != nil || control.ValidateIncarnation(m.Origin) != nil || m.LeaseFloor.Validate() != nil || m.Sequence == 0 || m.Holds == nil || len(m.Holds) > MaxHolds {
 		return fmt.Errorf("invalid durable Host allocation model")
 	}
 	// v10明确理解独立Pod硬限floor；旧版本新字段必须拒绝，不能静默漏计。
@@ -168,6 +168,9 @@ func (m Model) Validate() error {
 				}
 			}
 		}
+	}
+	if err := m.validateCPUAccounting(); err != nil {
+		return err
 	}
 	if err := m.validatePlacements(); err != nil {
 		return err

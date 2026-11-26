@@ -12,10 +12,12 @@ import (
 // KubernetesSnapshotBootstrap 只授权对原 UID/Lease/预算策略做首次建账。
 // resourceVersion 是单次快照的 CAS 条件，不是部署期间必须保持不变的身份。
 const KubernetesSnapshotBootstrap = "kubernetes-current-snapshot-v1"
+const CPUAccountingUpgradeSnapshot = "original-placement-snapshot-v1"
 
 type NodeConfig struct {
-	Binding hostguard.Binding `json:"binding"`
-	Profile hostguard.Profile `json:"profile"`
+	CPUAccountingUpgradeMode string            `json:"cpu_accounting_upgrade_mode,omitempty"`
+	Binding                  hostguard.Binding `json:"binding"`
+	Profile                  hostguard.Profile `json:"profile"`
 	// 旧模式为原持续硬约束系统域；显式 KubernetesBudget 模式下仅为
 	// Allocatable 内额外系统预算，不声称整台 Host 内核绝对硬上界。
 	SystemBytes      control.Uint64                    `json:"system_bytes"`
@@ -41,6 +43,14 @@ func (c Config) Validate(schedulerName string) error {
 		}
 		if n.InitializeMode != "" && (n.InitializeMode != KubernetesSnapshotBootstrap || n.InitializeAtResourceVersion != "" || n.KubernetesBudget == nil) {
 			return fmt.Errorf("snapshot bootstrap requires its explicit original budget and excludes a frozen resourceVersion")
+		}
+		if n.CPUAccountingUpgradeMode != "" && (n.CPUAccountingUpgradeMode != CPUAccountingUpgradeSnapshot ||
+			n.Profile.CPUAccountingVersion != hostguard.CPUAccountingVersion) {
+			return fmt.Errorf("CPU upgrade requires explicit original-placement snapshot mode")
+		}
+		if n.Profile.CPUAccountingVersion == hostguard.CPUAccountingVersion &&
+			(n.KubernetesBudget == nil || n.KubernetesBudget.ProtocolVersion != 2) {
+			return fmt.Errorf("fixed CPU Host profile requires explicit Kubernetes budget policy v2")
 		}
 		if n.KubernetesBudget != nil {
 			policy := *n.KubernetesBudget

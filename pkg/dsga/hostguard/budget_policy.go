@@ -17,19 +17,26 @@ const KubernetesBudgetScope = "kubernetes-node-memory-budget-v1"
 // SystemReservationBytes 只保留 Allocatable 内尚未扣除的系统预算；所有 Pod/VM
 // 仍须以完整硬限额和固定开销入原账本。此策略不替代 Guest 的持续硬约束证据。
 type KubernetesBudgetPolicy struct {
-	ProtocolVersion        uint32         `json:"protocol_version"`
-	Scope                  string         `json:"scope"`
-	NodeName               string         `json:"node_name"`
-	NodeUID                string         `json:"node_uid"`
-	CapacityBytes          control.Uint64 `json:"capacity_bytes"`
-	AllocatableBytes       control.Uint64 `json:"allocatable_bytes"`
-	SystemReservationBytes control.Uint64 `json:"system_reservation_bytes"`
-	ProfileSHA256          string         `json:"profile_sha256"`
+	CapacityCPUMillicores    control.Uint64 `json:"capacity_cpu_millicores,omitempty"`
+	AllocatableCPUMillicores control.Uint64 `json:"allocatable_cpu_millicores,omitempty"`
+	ProtocolVersion          uint32         `json:"protocol_version"`
+	Scope                    string         `json:"scope"`
+	NodeName                 string         `json:"node_name"`
+	NodeUID                  string         `json:"node_uid"`
+	CapacityBytes            control.Uint64 `json:"capacity_bytes"`
+	AllocatableBytes         control.Uint64 `json:"allocatable_bytes"`
+	SystemReservationBytes   control.Uint64 `json:"system_reservation_bytes"`
+	ProfileSHA256            string         `json:"profile_sha256"`
 }
 
 func (p KubernetesBudgetPolicy) Validate() error {
+	if p.ProtocolVersion == 1 && (p.CapacityCPUMillicores != 0 || p.AllocatableCPUMillicores != 0) ||
+		p.ProtocolVersion == 2 && (p.CapacityCPUMillicores == 0 || p.AllocatableCPUMillicores == 0 ||
+			p.AllocatableCPUMillicores > p.CapacityCPUMillicores) {
+		return fmt.Errorf("Kubernetes CPU capacity/version policy differs")
+	}
 	h, err := hex.DecodeString(p.ProfileSHA256)
-	if p.ProtocolVersion != 1 || p.Scope != KubernetesBudgetScope || control.ValidateID(p.NodeName, "budget Node") != nil || control.ValidateID(p.NodeUID, "budget Node UID") != nil || p.CapacityBytes == 0 || p.AllocatableBytes == 0 || p.AllocatableBytes > p.CapacityBytes || p.SystemReservationBytes == 0 || p.SystemReservationBytes >= p.AllocatableBytes || err != nil || len(h) != sha256.Size || hex.EncodeToString(h) != p.ProfileSHA256 {
+	if (p.ProtocolVersion != 1 && p.ProtocolVersion != 2) || p.Scope != KubernetesBudgetScope || control.ValidateID(p.NodeName, "budget Node") != nil || control.ValidateID(p.NodeUID, "budget Node UID") != nil || p.CapacityBytes == 0 || p.AllocatableBytes == 0 || p.AllocatableBytes > p.CapacityBytes || p.SystemReservationBytes == 0 || p.SystemReservationBytes >= p.AllocatableBytes || err != nil || len(h) != sha256.Size || hex.EncodeToString(h) != p.ProfileSHA256 {
 		return fmt.Errorf("explicit Kubernetes Node budget requires fixed identity, exact capacity and in-allocatable reservation")
 	}
 	return nil
@@ -70,6 +77,18 @@ func (p KubernetesBudgetPolicy) Inspect(node *core.Node, profile Profile, outsid
 	digest, err := ProfileSHA256(profile)
 	if err != nil || digest != p.ProfileSHA256 || outside != p.SystemReservationBytes || node == nil || node.Name != p.NodeName || string(node.UID) != p.NodeUID || node.ResourceVersion == "" || node.DeletionTimestamp != nil {
 		return fmt.Errorf("original Kubernetes budget identity/profile/reservation changed")
+	}
+	if profile.CPUAccountingVersion == CPUAccountingVersion {
+		if p.ProtocolVersion != 2 {
+			return fmt.Errorf("fixed CPU accounting requires Kubernetes budget policy v2")
+		}
+		capacityCPU, allocatableCPU, err := nodeCPUCapacity(node)
+		if err != nil || capacityCPU != p.CapacityCPUMillicores || allocatableCPU != p.AllocatableCPUMillicores ||
+			profile.SystemCPUMillicores >= allocatableCPU {
+			return fmt.Errorf("original Kubernetes CPU capacity/allocatable/system commitment changed")
+		}
+	} else if p.ProtocolVersion != 1 {
+		return fmt.Errorf("historical profile cannot acquire a CPU policy")
 	}
 	capacity, exactCapacity := node.Status.Capacity.Memory().AsInt64()
 	allocatable, exactAllocatable := node.Status.Allocatable.Memory().AsInt64()

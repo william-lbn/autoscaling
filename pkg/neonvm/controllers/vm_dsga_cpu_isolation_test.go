@@ -24,7 +24,9 @@ import (
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/api"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/api/runnercpu"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
@@ -50,6 +52,7 @@ func TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus(t *testing.T) {
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
 			var reads, writes, current atomic.Int64
+			var originalCPU runnercpu.Identity
 			current.Store(1000)
 			if scenario.mode == "ready" || scenario.mode == "oversized" {
 				current.Store(1500)
@@ -62,7 +65,9 @@ func TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus(t *testing.T) {
 						w.WriteHeader(http.StatusServiceUnavailable)
 						return
 					}
-					_ = json.NewEncoder(w).Encode(api.VCPUCgroup{VCPUs: vmv1.MilliCPU(current.Load())})
+					observed := observedCPUFixture(originalCPU, 7, vmv1.MilliCPU(current.Load()))
+					observed.Managed.ObservationNonce = r.URL.Query().Get("observation_nonce")
+					_ = json.NewEncoder(w).Encode(observed)
 					if scenario.mode == "oversized" {
 						// 合法JSON加空白旧解码可接受；新契约必须按体积拒绝。
 						_, _ = w.Write([]byte(strings.Repeat(" ", 5000)))
@@ -82,6 +87,7 @@ func TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus(t *testing.T) {
 			}))
 			defer server.Close()
 			p, vm, state := managedCPUStatusFixture(t, server.Listener.Addr().String(), scenario.phase)
+			originalCPU = originalRunnerCPUIdentity(vm, "runner-uid", "0123456789abcdef0123456789abcdef", "node-uid")
 			if scenario.mode == "bad-source" {
 				state.UID = "replacement-state"
 			}
@@ -148,6 +154,11 @@ func managedCPUStatusFixture(t *testing.T, address string, phase vmv1.VmPhase) (
 	require.NoError(t, err)
 	mode := vmv1.CpuScalingModeSysfs
 	vm.Spec.CpuScalingMode, vm.Spec.RunnerPort = &mode, int32(portNumber)
+	vm.Spec.DSGABootstrap.RuntimeContractVersion = vmv1.RuntimeContractFixedCPU
+	vm.Spec.Guest.CPUs.Min, vm.Spec.Guest.CPUs.Max = 500, 2000
+	vm.Spec.PodResources.Requests = core.ResourceList{core.ResourceCPU: resource.MustParse("2")}
+	vm.Spec.PodResources.Limits = core.ResourceList{core.ResourceCPU: resource.MustParse("2")}
+
 	vm.Generation, vm.Finalizers = 7, append(vm.Finalizers, virtualmachineFinalizer)
 	vm.Status.PodName, vm.Status.Node, vm.Status.PodIP, vm.Status.Phase = "runner", "node", host, phase
 	vm.Status.MemorySize = resource.NewQuantity(1<<30, resource.BinarySI)
@@ -169,9 +180,38 @@ func managedCPUStatusFixture(t *testing.T, address string, phase vmv1.VmPhase) (
 	require.NoError(t, err)
 	birthCM := &core.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: birthRef.Name, Namespace: vm.Namespace, UID: "birth-uid", ResourceVersion: "1", Labels: map[string]string{vmguard.ClaimLabel: "binding-v1"}, Finalizers: []string{vmguard.ProtectionFinalizer}, OwnerReferences: owner}, Immutable: &immutable, Data: map[string]string{vmguard.ClaimKey: string(birthRaw)}}
 	stateCM := &core.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: stateRef.Name, Namespace: vm.Namespace, UID: "state-uid", Labels: map[string]string{vmguard.ClaimLabel: "state-v1"}, Finalizers: []string{vmguard.ProtectionFinalizer}, OwnerReferences: owner}, Immutable: &mutable, Data: map[string]string{vmguard.ClaimKey: string(stateRaw)}}
-	pod := &core.Pod{ObjectMeta: metav1.ObjectMeta{Name: "runner", Namespace: vm.Namespace, UID: "runner-uid", ResourceVersion: "1", OwnerReferences: owner}, Spec: core.PodSpec{NodeName: "node"}, Status: core.PodStatus{Phase: core.PodRunning, PodIP: host, ContainerStatuses: []core.ContainerStatus{{Name: runnerContainerName, Ready: true}}}}
-	node := &core.Node{ObjectMeta: metav1.ObjectMeta{Name: "node", UID: "node-uid", ResourceVersion: "1"}}
+	pod := &core.Pod{ObjectMeta: metav1.ObjectMeta{Name: "runner", Namespace: vm.Namespace, UID: "runner-uid", ResourceVersion: "1", OwnerReferences: owner}, Spec: core.PodSpec{NodeName: "node", Containers: []core.Container{{Name: runnerContainerName, Resources: *vm.Spec.PodResources.DeepCopy()}}}, Status: core.PodStatus{Phase: core.PodRunning, PodIP: host, ContainerStatuses: []core.ContainerStatus{{Name: runnerContainerName, Ready: true, ContainerID: "containerd://original", State: core.ContainerState{Running: &core.ContainerStateRunning{}}}}}}
+	node := controllerCPUNodeFixture(t, vm, pod)
 	p.client = fake.NewClientBuilder().WithScheme(p.r.Scheme).WithStatusSubresource(&vmv1.VirtualMachine{}).WithObjects(vm, secret, birthCM, pod, node).Build()
 	p.r.Client, p.r.APIReader, p.origVM = p.client, p.client, vm
 	return p, vm, stateCM
+}
+
+func observedCPUFixture(id runnercpu.Identity, generation int64, cpu vmv1.MilliCPU) api.VCPUCgroup {
+	return api.VCPUCgroup{VCPUs: cpu, Managed: &runnercpu.Observation{
+		ObservedBootTimeNS: 1, ProtocolVersion: runnercpu.ProtocolVersion, Scope: runnercpu.Scope, Identity: id,
+		NodeCommitment: runnercpu.NodeCommitment{ProtocolVersion: 1, Scope: runnercpu.NodeCommitmentScope, LedgerOrigin: strings.Repeat("a", 32), LedgerSequence: 1, NodeResourceVersion: "1", CommittedMillicores: 2000}, Generation: generation, CgroupDevice: 1, CgroupInode: 2, QEMUPID: 42, QEMUStartTicks: 7, QuotaUS: uint64(cpu) * 100,
+		PeriodUS: runnercpu.PeriodUS, Weight: 100, OnlineVCPUs: cpu.RoundedUp(),
+		MaximumVCPUs: 2, MaximumMillicores: 2000, CommittedMillicores: 2000, TargetMillicores: uint32(cpu)}}
+}
+
+func controllerCPUNodeFixture(t *testing.T, vm *vmv1.VirtualMachine, pod *core.Pod) *core.Node {
+	t.Helper()
+	profile := hostguard.Profile{ID: "cpu-fixture-only", SchedulerName: "neonvm-scheduler", VMOverheadBytes: 64 << 20,
+		PodOverheadBytes: 16 << 20, CPUAccountingVersion: 1, SystemCPUMillicores: 250}
+	rows := []hostguard.Placement{{Namespace: vm.Namespace, PodName: pod.Name, PodUID: string(pod.UID), VMName: vm.Name,
+		VMUID: string(vm.UID), Incarnation: vm.Spec.DSGABootstrap.Incarnation, Managed: true, MemoryBytes: 2 << 30,
+		HostOverheadBytes: profile.VMOverheadBytes, PodMemoryLimitBytes: 3 << 30, CPUAccountingVersion: 1, CommittedCPUMillicores: 2000}}
+	model := hostguard.Model{ProtocolVersion: 11, Binding: hostguard.Binding{NodeName: "node", NodeUID: "node-uid", Namespace: "system",
+		LeaseName: "node-allocator", LeaseUID: "node-lease"}, Origin: strings.Repeat("a", 32),
+		LeaseFloor: journal.Owner{HolderID: "cpu-node-owner", Epoch: 1}, Sequence: 1, OutsideBytes: 1 << 30, Holds: []hostguard.Hold{},
+		Profile: &profile, Placements: &rows}
+	require.NoError(t, model.Validate())
+	raw, err := json.Marshal(model)
+	require.NoError(t, err)
+	return &core.Node{ObjectMeta: metav1.ObjectMeta{Name: "node", UID: "node-uid", ResourceVersion: "1",
+		Finalizers:  []string{hostguard.ProtectionFinalizer},
+		Annotations: map[string]string{hostguard.LedgerAnnotation: string(raw), hostguard.OriginAnnotation: "1:" + model.Origin}},
+		Status: core.NodeStatus{Capacity: core.ResourceList{core.ResourceCPU: resource.MustParse("8"), core.ResourceMemory: resource.MustParse("8Gi")},
+			Allocatable: core.ResourceList{core.ResourceCPU: resource.MustParse("7"), core.ResourceMemory: resource.MustParse("7Gi")}}}
 }

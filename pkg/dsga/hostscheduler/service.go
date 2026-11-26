@@ -121,26 +121,50 @@ func checkProfile(snapshot *hostguard.Snapshot, n NodeConfig) error {
 // CheckPlacement在Filter只读重核原Pod/VM、完整Node账本/profile和新鲜Lease。
 // 不调用protectPod或任何CAS；不能以此结果替代最终Reserve。
 func (s *Service) CheckPlacement(ctx context.Context, node string, pod *core.Pod, target control.Uint64) error {
+	_, err := s.CheckPlacementAllocation(ctx, node, pod, target)
+	return err
+}
+
+// CheckPlacementAllocation额外返回只读原分配视图，供本地CPU/Guest双视图试算。
+// 没有保护/CAS/发布，不得拿它替代Reserve。
+func (s *Service) CheckPlacementAllocation(ctx context.Context, node string, pod *core.Pod, target control.Uint64) (hostguard.Placement, error) {
+	preview, err := s.CheckPlacementPreview(ctx, node, pod, target)
+	if err != nil {
+		return hostguard.Placement{}, err
+	}
+	return preview.Allocation, nil
+}
+
+func (s *Service) CheckPlacementPreview(ctx context.Context, node string, pod *core.Pod, target control.Uint64) (*PlacementPreview, error) {
 	d, ok := s.domains[node]
 	if !ok {
-		return fmt.Errorf("node is not an explicitly configured Host domain")
+		return nil, fmt.Errorf("node is not an explicitly configured Host domain")
 	}
 	_, p, vm, err := s.allocation(ctx, d.config, pod, target)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	snapshot, err := d.store.Load(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if err := checkProfile(snapshot, d.config); err != nil {
-		return err
+	if err = checkProfile(snapshot, d.config); err != nil {
+		return nil, err
 	}
 	key, err := s.placementKey(ctx, p, vm)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return d.store.CheckPlacement(ctx, snapshot, p, key)
+	if err = d.store.CheckPlacement(ctx, snapshot, p, key); err != nil {
+		return nil, err
+	}
+	m := snapshot.State()
+	result := &PlacementPreview{Allocation: p, Held: append([]hostguard.Placement{}, (*m.Placements)...)}
+	if m.Profile.CPUAccountingVersion == hostguard.CPUAccountingVersion {
+		result.SystemCPUMillicores = m.Profile.SystemCPUMillicores
+		result.AllocatableCPUMillicores = control.Uint64(snapshot.Node().Status.Allocatable.Cpu().MilliValue())
+	}
+	return result, nil
 }
 
 // Key只来自再次读取且UID/RV未变的原VM Active。试算与最终Reserve共用，
@@ -347,6 +371,10 @@ func (s *Service) reconcile(ctx context.Context, d domain) error {
 		}
 		snapshot, err = d.store.InitializeAllocations(ctx, bootstrapVersion, d.config.SystemBytes, d.config.Profile, rows)
 	}
+	if err != nil {
+		return err
+	}
+	snapshot, err = s.upgradeCPUAccounting(ctx, d, snapshot)
 	if err != nil {
 		return err
 	}

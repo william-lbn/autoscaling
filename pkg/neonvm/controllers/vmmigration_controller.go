@@ -53,8 +53,9 @@ const (
 // VirtualMachineMigrationReconciler reconciles a VirtualMachineMigration object
 type VirtualMachineMigrationReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
-	Config *ReconcilerConfig
+	APIReader client.Reader
+	Scheme    *runtime.Scheme
+	Config    *ReconcilerConfig
 
 	Metrics ReconcilerMetrics
 }
@@ -141,14 +142,24 @@ func (r *VirtualMachineMigrationReconciler) Reconcile(ctx context.Context, req c
 		return ctrl.Result{}, err
 	}
 
+	// 原VM必须直接读取；在finalizer、VM状态、Pod和QMP的任何legacy副作用之前判断。
+	// 读取未知不继续；原Controller UID不符也不能按同名新VM重新解释旧迁移。
+	selected, err := originalMigrationVM(ctx, r.APIReader, migration)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	if requiresControlledDSGAMigration(selected) {
+		return r.retainControlledDSGAMigration(ctx, migration)
+	}
 	getVM := func() (*vmv1.VirtualMachine, error) {
-		var vm vmv1.VirtualMachine
-		err := r.Get(ctx, types.NamespacedName{Name: migration.Spec.VmName, Namespace: migration.Namespace}, &vm)
+		current, err := originalMigrationVM(ctx, r.APIReader, migration)
 		if err != nil {
-			log.Error(err, "Failed to get VM", "VmName", migration.Spec.VmName)
 			return nil, err
 		}
-		return &vm, nil
+		if current.UID != selected.UID || requiresControlledDSGAMigration(current) {
+			return nil, fmt.Errorf("original migration VM identity or controlled mode changed")
+		}
+		return current, nil
 	}
 
 	if !migration.DeletionTimestamp.IsZero() {
@@ -653,6 +664,7 @@ func (r *VirtualMachineMigrationReconciler) doFinalizerOperationsForVirtualMachi
 // Note that the Pods will be also watched in order to ensure its
 // desirable state on the cluster
 func (r *VirtualMachineMigrationReconciler) SetupWithManager(mgr ctrl.Manager) (ReconcilerWithMetrics, error) {
+	r.APIReader = mgr.GetAPIReader()
 	cntrlName := "virtualmachinemigration"
 	reconciler := WithMetrics(
 		withCatchPanic(r),

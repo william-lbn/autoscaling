@@ -21,13 +21,18 @@ const MaxPlacements = 256
 // ID须对应目标平台实际认证；本代码认证持有和算术，不从ID猜测物理上界。
 // v3的OutsideBytes只覆盖固定系统域，其余普通Pod/旧VM/DSGA VM全部入Placements。
 type Profile struct {
-	ID               string         `json:"id"`
-	SchedulerName    string         `json:"scheduler_name"`
-	VMOverheadBytes  control.Uint64 `json:"vm_overhead_bytes"`
-	PodOverheadBytes control.Uint64 `json:"pod_overhead_bytes"`
+	CPUAccountingVersion uint32         `json:"cpu_accounting_version,omitempty"`
+	SystemCPUMillicores  control.Uint64 `json:"system_cpu_millicores,omitempty"`
+	ID                   string         `json:"id"`
+	SchedulerName        string         `json:"scheduler_name"`
+	VMOverheadBytes      control.Uint64 `json:"vm_overhead_bytes"`
+	PodOverheadBytes     control.Uint64 `json:"pod_overhead_bytes"`
 }
 
 func (p Profile) Validate() error {
+	if err := p.validateCPU(); err != nil {
+		return err
+	}
 	if control.ValidateID(p.ID, "qualified Host profile") != nil || control.ValidateID(p.SchedulerName, "Host scheduler") != nil || p.VMOverheadBytes == 0 || p.PodOverheadBytes == 0 {
 		return fmt.Errorf("invalid fixed Host allocation profile")
 	}
@@ -48,15 +53,17 @@ func (p *Profile) UnmarshalJSON(raw []byte) error {
 // 重启从原Node账本恢复，Pod/VM传播注解不能降低它。普通Pod的MemoryBytes必须
 // 来自完整硬限额，VM来自原VM的Use/已批准/实际值与本次目标最大值，不打折overcommit。
 type Placement struct {
-	Namespace         string         `json:"namespace"`
-	PodName           string         `json:"pod_name"`
-	PodUID            string         `json:"pod_uid"`
-	VMName            string         `json:"vm_name"`
-	VMUID             string         `json:"vm_uid"`
-	Incarnation       string         `json:"incarnation"`
-	Managed           bool           `json:"managed"`
-	MemoryBytes       control.Uint64 `json:"memory_bytes"`
-	HostOverheadBytes control.Uint64 `json:"host_overhead_bytes"`
+	CPUAccountingVersion   uint32         `json:"cpu_accounting_version,omitempty"`
+	CommittedCPUMillicores control.Uint64 `json:"committed_cpu_millicores,omitempty"`
+	Namespace              string         `json:"namespace"`
+	PodName                string         `json:"pod_name"`
+	PodUID                 string         `json:"pod_uid"`
+	VMName                 string         `json:"vm_name"`
+	VMUID                  string         `json:"vm_uid"`
+	Incarnation            string         `json:"incarnation"`
+	Managed                bool           `json:"managed"`
+	MemoryBytes            control.Uint64 `json:"memory_bytes"`
+	HostOverheadBytes      control.Uint64 `json:"host_overhead_bytes"`
 	// 与真实VM值分开：只表示完整原Pod硬限的保守计费floor。
 	PodMemoryLimitBytes control.Uint64 `json:"pod_memory_limit_bytes,omitempty"`
 	// 仅v4原owner结清时设置；普通容量写者不可构造或清除它。
@@ -67,6 +74,9 @@ type Placement struct {
 }
 
 func (p Placement) Bytes() (control.Uint64, error) {
+	if p.CPUAccountingVersion > CPUAccountingVersion || p.CPUAccountingVersion == 0 && p.CommittedCPUMillicores != 0 {
+		return 0, fmt.Errorf("invalid original placement CPU accounting version")
+	}
 	for _, s := range []string{p.Namespace, p.PodName, p.PodUID} {
 		if control.ValidateID(s, "original Pod allocation") != nil {
 			return 0, fmt.Errorf("invalid original Pod allocation identity")

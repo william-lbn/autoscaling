@@ -5,7 +5,7 @@ FROM $GO_BASE_IMG AS builder
 
 COPY . .
 # Build
-RUN CGO_ENABLED=0 go build -o /runner neonvm-runner/cmd/*.go
+RUN CGO_ENABLED=0 go build -o /runner ./neonvm-runner/cmd
 
 FROM alpine:$ALPINE_IMG_TAG$ALPINE_IMG_SHA
 

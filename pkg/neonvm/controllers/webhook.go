@@ -125,11 +125,13 @@ func (w *VMWebhook) ValidateDelete(ctx context.Context, obj runtime.Object) (adm
 }
 
 type VMMigrationWebhook struct {
-	Recorder record.EventRecorder
-	Config   *ReconcilerConfig
+	APIReader client.Reader
+	Recorder  record.EventRecorder
+	Config    *ReconcilerConfig
 }
 
 func (w *VMMigrationWebhook) SetupWithManager(mgr ctrl.Manager) error {
+	w.APIReader = mgr.GetAPIReader()
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(&vmv1.VirtualMachineMigration{}).
 		WithDefaulter(w).
@@ -151,12 +153,18 @@ var _ webhook.CustomValidator = (*VMWebhook)(nil)
 // ValidateCreate implements webhook.CustomValidator
 func (w *VMMigrationWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	vmm := obj.(*vmv1.VirtualMachineMigration)
+	if err := w.validateOriginalMigration(ctx, vmm); err != nil {
+		return nil, err
+	}
 	return vmm.ValidateCreate()
 }
 
 // ValidateUpdate implements webhook.CustomValidator
 func (w *VMMigrationWebhook) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
 	newVMM := newObj.(*vmv1.VirtualMachineMigration)
+	if err := w.validateOriginalMigration(ctx, newVMM); err != nil {
+		return nil, err
+	}
 	return validateUpdate(ctx, w.Config, w.Recorder, oldObj, newVMM)
 }
 

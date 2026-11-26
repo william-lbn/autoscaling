@@ -285,6 +285,9 @@ func (r *Runner) RunQEMU(ctx context.Context, cmd *exec.Cmd) error {
 		}
 		return r.finishProcess(launch, 2, 0, 0, 0, runnerdiagnostic.At(runnerdiagnostic.StageCommandStart, err))
 	}
+	// 只在原 Start 成功且唯一 Wait 尚未消费时捕获只读 CPU 观察者。
+	r.captureCPUProcess(cmd)
+	defer r.closeCPUProcess()
 	var initialRun initialLifecycleRun
 	var initialErr error
 	if r.initial != nil {

@@ -62,10 +62,17 @@ func TestDSGAPublishedCRDActuallyFencesHoldAndIdentityChanges(t *testing.T) {
 	}
 	held := heldBootstrapVM()
 	require.True(t, validate(held, nil), "valid held CREATE must compile/evaluate all root and nested rules")
-	for _, scenario := range []string{"remove", "add_online", "change_ciid", "pod_name", "node", "network", "ssh", "restart", "running_phase", "partial_release", "zero_incarnation"} {
+	for _, scenario := range []string{"remove", "add_online", "change_ciid", "pod_name", "node", "network", "ssh", "restart", "running_phase", "partial_release", "zero_incarnation", "add_runtime", "change_runtime", "remove_runtime"} {
 		t.Run(scenario, func(t *testing.T) {
 			old, next := held.DeepCopy(), held.DeepCopy()
 			switch scenario {
+			case "add_runtime":
+				next.Spec.DSGABootstrap.RuntimeContractVersion = 1
+			case "change_runtime":
+				old.Spec.DSGABootstrap.RuntimeContractVersion = 1
+				next.Spec.DSGABootstrap.RuntimeContractVersion = 2
+			case "remove_runtime":
+				old.Spec.DSGABootstrap.RuntimeContractVersion = 1
 			case "remove":
 				next.Spec.DSGABootstrap = nil
 			case "add_online":

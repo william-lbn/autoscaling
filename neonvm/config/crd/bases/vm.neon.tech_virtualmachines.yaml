@@ -1227,6 +1227,12 @@ spec:
                     minLength: 32
                     pattern: ^[0-9a-f]{32}$
                     type: string
+                  runtimeContractVersion:
+                    description: 创建时冻结的Runtime合同；0历史，1为完整固定Pod CPU承诺。
+                    format: int32
+                    maximum: 1
+                    minimum: 0
+                    type: integer
                   protocolVersion:
                     format: int32
                     maximum: 1
@@ -1250,6 +1256,8 @@ spec:
                 - message: DSGA bootstrap identity is immutable
                   rule: self.protocolVersion == oldSelf.protocolVersion && self.incarnation
                     == oldSelf.incarnation && self.computeInstanceID == oldSelf.computeInstanceID
+                - message: DSGA Runtime contract is immutable from creation
+                  rule: has(self.runtimeContractVersion) == has(oldSelf.runtimeContractVersion) && (!has(self.runtimeContractVersion) || self.runtimeContractVersion == oldSelf.runtimeContractVersion)
                 - message: ready DSGA bootstrap cannot change
                   rule: '!oldSelf.ready || self == oldSelf'
                 - message: DSGA release requires both immutable UIDs

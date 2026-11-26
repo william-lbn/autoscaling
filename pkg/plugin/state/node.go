@@ -300,7 +300,8 @@ func (n *Node) AddPod(pod Pod) {
 		panic("cannot add Pod that already exists")
 	}
 
-	n.CPU.add(&pod.CPU, pod.Migrating)
+	cpu := pod.hostCPU()
+	n.CPU.add(&cpu, pod.Migrating)
 	n.Mem.add(&pod.Mem, pod.Migrating)
 	n.pods.Set(pod.UID, pod)
 	if pod.Migratable {
@@ -346,7 +347,16 @@ func (n *Node) ReconcilePodReserved(pod *Pod) (done bool) {
 		panic("cannot reconcile reserved resources for Pod that doesn't exist in the node state")
 	}
 
-	cpuDone := n.CPU.reconcilePod(&pod.CPU, pod.Migrating)
+	cpuDone := false
+	if pod.HostCPUAccountingVersion == 1 {
+		// 原最大包络已持有；本地Guest目标改变不再次授予或退还Node CPU。
+		cpuDone = pod.CPU.Requested <= pod.HostCommittedCPU
+		if cpuDone {
+			pod.CPU.Reserved = pod.CPU.Requested
+		}
+	} else {
+		cpuDone = n.CPU.reconcilePod(&pod.CPU, pod.Migrating)
+	}
 	memDone := n.Mem.reconcilePod(&pod.Mem, pod.Migrating)
 	n.pods.Set(pod.UID, *pod)
 
@@ -365,7 +375,7 @@ func (n *Node) RemovePod(uid types.UID) (exists bool) {
 
 	n.pods.Delete(uid)
 	n.migratablePods.Delete(uid)
-	n.CPU.remove(pod.CPU, pod.Migrating)
+	n.CPU.remove(pod.hostCPU(), pod.Migrating)
 	n.Mem.remove(pod.Mem, pod.Migrating)
 	return true
 }

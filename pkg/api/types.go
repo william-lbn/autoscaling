@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
+	"github.com/neondatabase/autoscaling/pkg/api/runnercpu"
 	"github.com/neondatabase/autoscaling/pkg/util"
 )
 
@@ -476,13 +477,16 @@ func (m MoreResources) And(cmp MoreResources) MoreResources {
 // VCPUChange is used to notify runner that it had some changes in its CPUs
 // runner uses this info to adjust qemu cgroup
 type VCPUChange struct {
-	VCPUs vmv1.MilliCPU
+	VCPUs   vmv1.MilliCPU
+	Managed *runnercpu.Command `json:"managed,omitempty"`
 }
 
 // VCPUCgroup is used in runner to reply to controller
 // it represents the vCPU usage as controlled by cgroup
 type VCPUCgroup struct {
-	VCPUs vmv1.MilliCPU
+	VCPUs           vmv1.MilliCPU
+	Managed         *runnercpu.Observation `json:"managed,omitempty"`
+	HistoricalGuest *runnercpu.Historical  `json:"historical_guest,omitempty"`
 }
 
 ////////////////////////////////////
