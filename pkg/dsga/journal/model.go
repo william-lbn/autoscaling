@@ -122,12 +122,13 @@ type Step struct {
 }
 
 type Operation struct {
-	Request        control.Request `json:"request"`
-	RequestSHA256  string          `json:"request_sha256"`
-	Origin         Owner           `json:"origin"`
-	AbortRequested bool            `json:"abort_requested"`
-	Steps          []Step          `json:"steps"`
-	Cleanup        *Step           `json:"cleanup"`
+	AllocationPlan *budget.AllocationPlan `json:"allocation_plan,omitempty"`
+	Request        control.Request        `json:"request"`
+	RequestSHA256  string                 `json:"request_sha256"`
+	Origin         Owner                  `json:"origin"`
+	AbortRequested bool                   `json:"abort_requested"`
+	Steps          []Step                 `json:"steps"`
+	Cleanup        *Step                  `json:"cleanup"`
 	// 首次Start与撤销顶层关闭证明同CAS保存。它不是当前许可；只供后续
 	// 完整取消核验“本操作之前”的原预算关闭链，历史淘汰后也不能猜测补造。
 	PriorBudgetBoundary *ClosedBudgetBoundary `json:"prior_budget_boundary,omitempty"`
@@ -325,13 +326,19 @@ func (operation Operation) Validate() error {
 	if operation.Origin.Epoch != operation.Request.Key.IssuerEpoch {
 		return fmt.Errorf("operation epoch differs from original owner")
 	}
-	actions := plan(operation.Request.Kind)
+	if operation.AllocationPlan != nil && (operation.AllocationPlan.Validate() != nil || operation.AllocationPlan.Request != operation.Request) {
+		return fmt.Errorf("allocation operation differs from immutable original request")
+	}
+	actions := operation.actions()
 	if len(operation.Steps) != len(actions) {
 		return fmt.Errorf("operation plan changed")
 	}
 	priorSuccessful := true
 	for i, step := range operation.Steps {
 		if err := step.validate(operation, i+1, actions[i]); err != nil {
+			return err
+		}
+		if err := operation.validateCacheStep(step); err != nil {
 			return err
 		}
 		if step.Phase != Planned && !priorSuccessful {
@@ -555,6 +562,10 @@ func cloneStep(step Step) Step {
 }
 
 func cloneOperation(operation Operation) Operation {
+	if operation.AllocationPlan != nil {
+		frozen := operation.AllocationPlan.Clone()
+		operation.AllocationPlan = &frozen
+	}
 	if operation.PriorBudgetBoundary != nil {
 		prior := *operation.PriorBudgetBoundary
 		operation.PriorBudgetBoundary = &prior

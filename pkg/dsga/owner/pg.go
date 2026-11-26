@@ -33,17 +33,18 @@ import (
 // 凭据配置来自可信控制面；每次取凭据还检查真实Lease/journal，不能因重新发现
 // 或HTTP失败清空Pending。它不替代预算/Host/Guest/VM领域适配器。
 type PGWorker struct {
-	session   *Session
-	client    *compute.Client
-	executor  *pgexec.Executor
-	admission *admissionexec.Executor
-	resources *resourceexec.Executor
-	quiesce   *quiesceexec.Executor
-	finalize  *budgetexec.Executor
-	vm        *vmexec.Executor
-	host      *hostexec.Consumer
-	prepare   *prepareexec.Executor
-	initial   *initialexec.Executor
+	cacheAllocationSource *budget.QualificationSource
+	session               *Session
+	client                *compute.Client
+	executor              *pgexec.Executor
+	admission             *admissionexec.Executor
+	resources             *resourceexec.Executor
+	quiesce               *quiesceexec.Executor
+	finalize              *budgetexec.Executor
+	vm                    *vmexec.Executor
+	host                  *hostexec.Consumer
+	prepare               *prepareexec.Executor
+	initial               *initialexec.Executor
 	// 管理恢复复用创建本worker时的原资源owner/SDK，不另建空客户端以
 	// 绕过GuestReady或修复未知。生命周期仍由Agent同一Session持有。
 	resourceOwner              *ResourceWorker
@@ -135,6 +136,23 @@ func (session *Session) NewPGWorker(ctx context.Context, config compute.Config, 
 		}
 		initial = true
 	}
+	var pendingLFC *control.LFCAllocationRequest
+	if active := model.Active; active != nil && active.AllocationPlan != nil {
+		for _, step := range active.Steps {
+			if step.Phase == journal.Unconfirmed && (step.Action == journal.RepartitionLFCBefore || step.Action == journal.RepartitionLFCAfter) {
+				var original control.LFCAllocationRequest
+				if json.Unmarshal(step.Command, &original) != nil {
+					return nil, fmt.Errorf("invalid durable original LFC command")
+				}
+				pendingLFC = &original
+				break
+			}
+		}
+	}
+	if config.LFCAllocationPending != nil && (pendingLFC == nil || *config.LFCAllocationPending != *pendingLFC) {
+		return nil, fmt.Errorf("PG worker cannot discard original LFC SDK pending")
+	}
+	config.LFCAllocationPending = pendingLFC
 	var pending *control.Request
 	var admissionPending *control.AdmissionRequest
 	if held := model.InitialHeld; held != nil && held.Admission != nil && held.Admission.Phase == journal.Unconfirmed && !model.InitialAdmissionReady() && (model.ServiceClosure == nil || model.ServiceClosure.Pending()) {
@@ -437,6 +455,9 @@ func (worker *PGWorker) Advance(ctx context.Context) (pgexec.Progress, error) {
 		}
 	}
 	progress, err := worker.executor.Advance(callCtx)
+	if err == nil && progress == pgexec.ExternalStep {
+		progress, err = worker.advanceCacheAllocation(callCtx)
+	}
 	if err == nil && progress == pgexec.ExternalStep && worker.prepare != nil {
 		progress, err = worker.prepare.Advance(callCtx)
 	}

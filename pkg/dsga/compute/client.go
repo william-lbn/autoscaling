@@ -24,11 +24,12 @@ const maxResponseBytes = 32 * 1024
 // Config只能来自可信协调器配置/持久恢复，不能由普通业务请求提供。固定完整实例
 // 和当前issuer epoch，刷新凭据不改变身份。Token从独立认证服务取得，不写日志/账本。
 type Config struct {
-	BaseURL     string
-	Instance    control.Instance
-	IssuerEpoch control.Uint64
-	Timeout     time.Duration
-	Transport   *http.Transport
+	LFCAllocationPending *control.LFCAllocationRequest
+	BaseURL              string
+	Instance             control.Instance
+	IssuerEpoch          control.Uint64
+	Timeout              time.Duration
+	Transport            *http.Transport
 	// 执行和观察可同时刷新凭据，此回调须可并发调用；错误可能含秘密，绝不回显。
 	Token func(context.Context) (string, error)
 	// Pending由持久日志恢复原意图。可为旧boot/epoch，但VM/Compute归属必须一致；
@@ -55,6 +56,7 @@ func (err *CallError) Error() string {
 }
 
 type Client struct {
+	lfcPending            *control.LFCAllocationRequest
 	admissionPolicy       control.AdmissionPolicy
 	base                  string
 	instance              control.Instance
@@ -82,7 +84,7 @@ func New(ctx context.Context, config Config) (*Client, error) {
 // 协商。不能拿它重造已有未知Client；有Pending或已指定boot时直接拒绝。
 // 新boot在返回Client前固定，此后Capabilities仍严格比较，永不自动改绑。
 func DiscoverInitial(ctx context.Context, config Config) (*Client, error) {
-	if config.Instance.PGBootID != 0 || config.Pending != nil || config.AdmissionPending != nil || config.AdmissionClose != nil || config.AdmissionContinuation != nil {
+	if config.Instance.PGBootID != 0 || config.LFCAllocationPending != nil || config.Pending != nil || config.AdmissionPending != nil || config.AdmissionClose != nil || config.AdmissionContinuation != nil {
 		return nil, &CallError{MayHaveExecuted: false, Code: "initial_discovery_has_history"}
 	}
 	return newClient(ctx, config, true)
@@ -144,6 +146,14 @@ func newClient(ctx context.Context, config Config, initial bool) (*Client, error
 			return nil, &CallError{MayHaveExecuted: false, Code: "invalid_pending_intent"}
 		}
 		client.pending = &request
+	}
+
+	if config.LFCAllocationPending != nil {
+		p := *config.LFCAllocationPending
+		if p.Validate() != nil || p.Key.Instance != config.Instance || p.Key.IssuerEpoch > config.IssuerEpoch || config.Pending != nil {
+			return nil, &CallError{Code: "invalid_original_lfc_pending"}
+		}
+		client.lfcPending = &p
 	}
 	for i := range client.transports {
 		owned := transport.Clone()
@@ -340,7 +350,7 @@ func (client *Client) Resize(ctx context.Context, intent control.Request) (fact 
 		return fact, err
 	}
 	client.mu.Lock()
-	if client.inFlight || client.admissionInFlight || client.admissionPending != nil || client.admissionClose != nil || (client.pending != nil && *client.pending != intent) {
+	if client.inFlight || client.lfcPending != nil || client.admissionInFlight || client.admissionPending != nil || client.admissionClose != nil || (client.pending != nil && *client.pending != intent) {
 		client.mu.Unlock()
 		return fact, &CallError{MayHaveExecuted: false, Code: "unresolved_original_intent"}
 	}

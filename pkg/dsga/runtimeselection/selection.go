@@ -25,13 +25,15 @@ const LabelKey = "internal.autoscaling.neon.tech/runtime-selection"
 const LabelValue = "v1"
 
 type Selection struct {
-	Namespace       string                     `json:"namespace"`
-	Name            string                     `json:"name"`
-	ProtocolVersion uint32                     `json:"protocol_version"`
-	Instance        control.Instance           `json:"instance"`
-	Incarnation     string                     `json:"incarnation"`
-	Generation      control.Uint64             `json:"generation"`
-	Qualification   budget.QualificationSource `json:"qualification"`
+	// v2只选择独立immutable分配资格；Base仍是Qualification，不能双计两份预算。
+	CacheAllocationQualification *budget.QualificationSource `json:"cache_allocation_qualification,omitempty"`
+	Namespace                    string                      `json:"namespace"`
+	Name                         string                      `json:"name"`
+	ProtocolVersion              uint32                      `json:"protocol_version"`
+	Instance                     control.Instance            `json:"instance"`
+	Incarnation                  string                      `json:"incarnation"`
+	Generation                   control.Uint64              `json:"generation"`
+	Qualification                budget.QualificationSource  `json:"qualification"`
 	// nil 明确关闭新自动建议，不取消已接受/未知动作，也不撤销现有安全预算。
 	Automatic *policy.Config `json:"automatic,omitempty"`
 	// SuspensionOperation is the Control Plane's durable Operation for this boot.
@@ -39,8 +41,13 @@ type Selection struct {
 }
 
 func (s Selection) Validate() error {
-	if control.ValidateID(s.Namespace, "namespace") != nil || control.ValidateID(s.Name, "VM name") != nil || s.ProtocolVersion != 1 || s.Instance.Validate() != nil || control.ValidateIncarnation(s.Incarnation) != nil || s.Generation == 0 || s.Qualification.Validate() != nil || s.Automatic != nil && s.Automatic.Validate() != nil {
+	if control.ValidateID(s.Namespace, "namespace") != nil || control.ValidateID(s.Name, "VM name") != nil || (s.ProtocolVersion != 1 && s.ProtocolVersion != 2) || s.Instance.Validate() != nil || control.ValidateIncarnation(s.Incarnation) != nil || s.Generation == 0 || s.Qualification.Validate() != nil || s.Automatic != nil && s.Automatic.Validate() != nil {
 		return fmt.Errorf("invalid trusted runtime selection")
+	}
+	if s.ProtocolVersion == 1 && s.CacheAllocationQualification != nil || s.ProtocolVersion == 2 &&
+		(s.CacheAllocationQualification == nil || s.CacheAllocationQualification.Validate() != nil ||
+			s.CacheAllocationQualification.Claim == s.Qualification.Claim || s.Automatic != nil) {
+		return fmt.Errorf("cache runtime v2 requires one independent source and an explicit full-vector selection")
 	}
 	if s.SuspensionOperation != "" && (control.ValidateID(s.SuspensionOperation, "suspension operation") != nil || s.Automatic != nil) {
 		return fmt.Errorf("suspension selection requires one operation and no new automatic policy")
@@ -141,4 +148,19 @@ func Decode(cm *core.ConfigMap, binding journal.Binding, namespace string) (Sele
 
 func validBinding(b journal.Binding) bool {
 	return control.ValidateID(b.Namespace, "namespace") == nil && control.ValidateID(b.Name, "VM name") == nil && control.ValidateID(string(b.VMUID), "VM UID") == nil && control.ValidateIncarnation(b.Incarnation) == nil
+}
+
+// WithCacheAllocationQualification供可信CP生产者使用；不会签发资格或推导预算数值。
+// 自动v1策略只理解VM/PG目标，必须显式关闭，不能把分配源投影成旧自动向量。
+func WithCacheAllocationQualification(original Selection, source budget.QualificationSource) (Selection, error) {
+	if original.Validate() != nil || source.Validate() != nil || original.Automatic != nil || source.Claim == original.Qualification.Claim {
+		return Selection{}, fmt.Errorf("cache runtime selection requires original base and explicit independent qualification")
+	}
+	frozen := source
+	original.ProtocolVersion = 2
+	original.CacheAllocationQualification = &frozen
+	if err := original.Validate(); err != nil {
+		return Selection{}, err
+	}
+	return original, nil
 }

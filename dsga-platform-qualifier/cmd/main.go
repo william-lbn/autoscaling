@@ -66,6 +66,13 @@ func runIssuerMode(ctx context.Context, configPath, kubeconfigPath string, autom
 		if setupErr != nil {
 			return qualificationissuer.Result{}, &qualificationFailure{"issuer_setup", setupErr}
 		}
+		var original qualificationissuer.Report
+		if json.Unmarshal(bundle.Report, &original) != nil {
+			return qualificationissuer.Result{}, &qualificationFailure{"issuer_report", fmt.Errorf("original report unavailable")}
+		}
+		if original.ProtocolVersion == 3 {
+			return issuer.PublishAllocation(ctx, bundle)
+		}
 		return issuer.Publish(ctx, bundle)
 	}
 	var result qualificationissuer.Result

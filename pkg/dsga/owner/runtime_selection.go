@@ -66,7 +66,7 @@ func (w *PGWorker) refreshRuntimeSelection(ctx context.Context) bool {
 		w.runtimeStatus.State = "waiting_for_original_owner"
 		return false
 	}
-	if state.Active != nil || w.client.Pending() != nil || w.resourceOwner == nil || w.resourceOwner.client.Pending() != nil {
+	if state.Active != nil || w.client.Pending() != nil || w.client.PendingLFCAllocation() != nil || w.resourceOwner == nil || w.resourceOwner.client.Pending() != nil {
 		w.runtimeStatus.State = "waiting_for_original_operation"
 		return false
 	}
@@ -79,6 +79,21 @@ func (w *PGWorker) refreshRuntimeSelection(ctx context.Context) bool {
 	if err != nil || q.Identity != identity || q.Incarnation != w.session.binding.Incarnation {
 		w.runtimeStatus.State = "waiting_for_original_qualification"
 		return false
+	}
+	if selected.CacheAllocationQualification == nil {
+		if w.cacheAllocationSource != nil {
+			w.runtimeStatus.State = "original_cache_qualification_missing"
+			return false
+		}
+	} else {
+		if w.cacheAllocationSource != nil && *w.cacheAllocationSource != *selected.CacheAllocationQualification {
+			w.runtimeStatus.State = "original_cache_qualification_changed"
+			return false
+		}
+		if err := w.safety.claims.AuthenticateAllocationSource(ctx, *selected.CacheAllocationQualification, selected.Qualification); err != nil {
+			w.runtimeStatus.State = "waiting_for_original_cache_qualification"
+			return false
+		}
 	}
 	if selected.Automatic != nil {
 		for _, target := range selected.Automatic.Targets {
@@ -120,6 +135,10 @@ func (w *PGWorker) refreshRuntimeSelection(ctx context.Context) bool {
 			w.runtimeStatus.State = "invalid_automatic_policy"
 			return false
 		}
+	}
+	if selected.CacheAllocationQualification != nil && w.cacheAllocationSource == nil {
+		frozen := *selected.CacheAllocationQualification
+		w.cacheAllocationSource = &frozen
 	}
 	// 这里只换可丢弃的采样窗口。SDK、Journal、原资格、待决命令均不重建。
 	w.automatic = automatic

@@ -53,21 +53,49 @@ func (e *Unconfirmed) Error() string {
 func (e *Unconfirmed) Unwrap() error { return e.Err }
 
 type Result struct {
-	Source                   budget.QualificationSource `json:"source"`
-	ReportSHA256             string                     `json:"report_sha256"`
-	LinuxArtifactSHA256      string                     `json:"linux_artifact_sha256"`
-	ContinuousArtifactSHA256 string                     `json:"continuous_artifact_sha256"`
+	// 仅分配源发布返回：Source是额外选择文档，BaseSource仍是唯一父预算来源。
+	BaseSource               *budget.QualificationSource `json:"base_source,omitempty"`
+	Source                   budget.QualificationSource  `json:"source"`
+	ReportSHA256             string                      `json:"report_sha256"`
+	LinuxArtifactSHA256      string                      `json:"linux_artifact_sha256"`
+	ContinuousArtifactSHA256 string                      `json:"continuous_artifact_sha256"`
 }
 
 // ErrSourcesChangedBeforePublication只表示两次只读快照不同，尚未进入CREATE；未知写结果绝不使用此错误。
 var ErrSourcesChangedBeforePublication = errors.New("original platform sources changed before publication")
 
 func (i *Issuer) Publish(ctx context.Context, bundle Bundle) (Result, error) {
+	return i.publish(ctx, bundle, false)
+}
+func (i *Issuer) PublishAllocation(ctx context.Context, bundle Bundle) (Result, error) {
+	return i.publish(ctx, bundle, true)
+}
+func (i *Issuer) publish(ctx context.Context, bundle Bundle, allocation bool) (Result, error) {
 	var zero Result
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(i.config.TimeoutSeconds)*time.Second)
 	defer cancel()
 	report, err := i.config.authenticate(bundle)
 	if err != nil {
+		return zero, err
+	}
+	if allocation != (report.ProtocolVersion == 3) {
+		return zero, fmt.Errorf("publication mode differs from authenticated report")
+	}
+	reader, err := budgetclaims.New(i.core, i.config.Binding)
+	if err != nil {
+		return zero, err
+	}
+	checkBase := func() error {
+		if !allocation {
+			return nil
+		}
+		actual, e := reader.Qualification(ctx, report.AllocationQualification.Base)
+		if e != nil || !reflect.DeepEqual(actual, report.Qualification) {
+			return fmt.Errorf("allocation original immutable Base changed")
+		}
+		return nil
+	}
+	if err = checkBase(); err != nil {
 		return zero, err
 	}
 	// 全部认证和两次真实读取都在任何写入之前；没有平台报告不能生成测试 CM。
@@ -82,15 +110,24 @@ func (i *Issuer) Publish(ctx context.Context, bundle Bundle) (Result, error) {
 	if before != after {
 		return zero, ErrSourcesChangedBeforePublication
 	}
-	q := report.Qualification
+	var q any = report.Qualification
+	kind, prefix := budgetclaims.QualificationKind, "dsga-q-"
+	if allocation {
+		q = *report.AllocationQualification
+		kind = budgetclaims.AllocationQualificationKind
+		prefix = "dsga-aq-"
+	}
 	raw, err := json.Marshal(q)
 	if err != nil || len(raw) > journal.MaxObservationBytes {
 		return zero, fmt.Errorf("qualification body exceeds existing consumer contract")
 	}
 	yes := true
-	name := "dsga-q-" + i.config.ReportSHA256[:56]
+	name := prefix + i.config.ReportSHA256[:56]
+	if allocation {
+		name = prefix + i.config.ReportSHA256[:55]
+	}
 	annotations := map[string]string{ReportAnnotation: i.config.ReportSHA256, LinuxAnnotation: report.LinuxArtifactSHA256, ContinuousAnnotation: report.ContinuousArtifactSHA256}
-	expected := &core.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: i.config.Binding.Namespace, OwnerReferences: []metav1.OwnerReference{{APIVersion: "vm.neon.tech/v1", Kind: "VirtualMachine", Name: i.config.Binding.Name, UID: i.config.Binding.VMUID, Controller: &yes, BlockOwnerDeletion: &yes}}, Finalizers: []string{budgetclaims.ProtectionFinalizer}, Labels: map[string]string{budgetclaims.ClaimLabel: budgetclaims.QualificationKind}, Annotations: annotations}, Immutable: &yes, Data: map[string]string{budgetclaims.ClaimKey: string(raw)}}
+	expected := &core.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: i.config.Binding.Namespace, OwnerReferences: []metav1.OwnerReference{{APIVersion: "vm.neon.tech/v1", Kind: "VirtualMachine", Name: i.config.Binding.Name, UID: i.config.Binding.VMUID, Controller: &yes, BlockOwnerDeletion: &yes}}, Finalizers: []string{budgetclaims.ProtectionFinalizer}, Labels: map[string]string{budgetclaims.ClaimLabel: kind}, Annotations: annotations}, Immutable: &yes, Data: map[string]string{budgetclaims.ClaimKey: string(raw)}}
 	ref := budget.ObjectRef{Name: name, UID: i.config.ResumeClaimUID}
 	if ref.UID == "" {
 		made, createErr := i.core.ConfigMaps(expected.Namespace).Create(ctx, expected, metav1.CreateOptions{})
@@ -118,19 +155,29 @@ func (i *Issuer) Publish(ctx context.Context, bundle Bundle) (Result, error) {
 		return zero, &Unconfirmed{Claim: ref, Err: fmt.Errorf("original platform sources changed after publication")}
 	}
 	source := budget.QualificationSource{Claim: ref, SHA256: SHA256(raw)}
-	reader, err := budgetclaims.New(i.core, i.config.Binding)
-	if err != nil {
+	if err = checkBase(); err != nil {
 		return zero, &Unconfirmed{Claim: ref, Err: err}
 	}
-	checked, err := reader.Qualification(ctx, source)
-	if err != nil || !reflect.DeepEqual(q, checked) {
-		return zero, &Unconfirmed{Claim: ref, Err: fmt.Errorf("original qualification consumer readback unconfirmed")}
+	if allocation {
+		if err = reader.AuthenticateAllocationSource(ctx, source, report.AllocationQualification.Base); err != nil {
+			return zero, &Unconfirmed{Claim: ref, Err: fmt.Errorf("original allocation qualification readback unconfirmed")}
+		}
+	} else {
+		checked, e := reader.Qualification(ctx, source)
+		if e != nil || !reflect.DeepEqual(q, checked) {
+			return zero, &Unconfirmed{Claim: ref, Err: fmt.Errorf("original qualification consumer readback unconfirmed")}
+		}
 	}
-	return Result{Source: source, ReportSHA256: i.config.ReportSHA256, LinuxArtifactSHA256: report.LinuxArtifactSHA256, ContinuousArtifactSHA256: report.ContinuousArtifactSHA256}, nil
+	result := Result{Source: source, ReportSHA256: i.config.ReportSHA256, LinuxArtifactSHA256: report.LinuxArtifactSHA256, ContinuousArtifactSHA256: report.ContinuousArtifactSHA256}
+	if allocation {
+		base := report.AllocationQualification.Base
+		result.BaseSource = &base
+	}
+	return result, nil
 }
 
 func checkCreated(got, want *core.ConfigMap, ref budget.ObjectRef) error {
-	if got == nil || got.Namespace != want.Namespace || got.Name != ref.Name || string(got.UID) != ref.UID || got.ResourceVersion == "" || got.DeletionTimestamp != nil || got.Immutable == nil || !*got.Immutable || len(got.Data) != 1 || len(got.BinaryData) != 0 || !reflect.DeepEqual(got.Data, want.Data) || got.Labels[budgetclaims.ClaimLabel] != budgetclaims.QualificationKind || !slices.Contains(got.Finalizers, budgetclaims.ProtectionFinalizer) {
+	if got == nil || got.Namespace != want.Namespace || got.Name != ref.Name || string(got.UID) != ref.UID || got.ResourceVersion == "" || got.DeletionTimestamp != nil || got.Immutable == nil || !*got.Immutable || len(got.Data) != 1 || len(got.BinaryData) != 0 || !reflect.DeepEqual(got.Data, want.Data) || (want.Labels[budgetclaims.ClaimLabel] != budgetclaims.QualificationKind && want.Labels[budgetclaims.ClaimLabel] != budgetclaims.AllocationQualificationKind || got.Labels[budgetclaims.ClaimLabel] != want.Labels[budgetclaims.ClaimLabel]) || !slices.Contains(got.Finalizers, budgetclaims.ProtectionFinalizer) {
 		return fmt.Errorf("original protected qualification object changed")
 	}
 	owner := metav1.GetControllerOf(got)

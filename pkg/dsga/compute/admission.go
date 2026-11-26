@@ -134,7 +134,7 @@ func (client *Client) AdmissionClosureStatus(ctx context.Context, intent control
 func (client *Client) reserveAdmission(original control.AdmissionRequest, closeIntent *control.AdmissionRequest) error {
 	client.mu.Lock()
 	defer client.mu.Unlock()
-	if client.admissionContinuation != nil || client.admissionInFlight || (client.admissionPending != nil && *client.admissionPending != original) || (client.admissionClose != nil && (closeIntent == nil || *client.admissionClose != *closeIntent)) || (closeIntent == nil && original.Open && (client.inFlight || client.pending != nil)) {
+	if client.admissionContinuation != nil || client.admissionInFlight || (client.admissionPending != nil && *client.admissionPending != original) || (client.admissionClose != nil && (closeIntent == nil || *client.admissionClose != *closeIntent)) || (closeIntent == nil && original.Open && (client.inFlight || client.pending != nil || client.lfcPending != nil)) {
 		return &CallError{Code: "unresolved_original_admission_or_resize"}
 	}
 	retained := original
