@@ -26,7 +26,7 @@ func (s *VirtualMachineSpec) DSGARuntimeCPUBudget() (uint32, uint32, error) {
 		return 0, 0, fmt.Errorf("explicit fixed CPU Runtime contract is not selected")
 	}
 	maximum := uint32(s.Guest.CPUs.Max)
-	if maximum < 10 || int64(maximum) > RuntimeMaximumMillicores || s.Guest.CPUs.Use < 10 ||
+	if maximum < 10 || s.Guest.CPUs.Min < 10 || int64(maximum) > RuntimeMaximumMillicores || s.Guest.CPUs.Use < 10 ||
 		s.Guest.CPUs.Use > s.Guest.CPUs.Max || s.Guest.CPUs.Min > s.Guest.CPUs.Use {
 		return 0, 0, fmt.Errorf("Runtime CPU target is outside the frozen declared range")
 	}

@@ -17,6 +17,7 @@ import (
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/api"
 	"github.com/neondatabase/autoscaling/pkg/api/runnercpu"
+	"github.com/neondatabase/autoscaling/pkg/dsga/cpureader"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
@@ -129,9 +130,31 @@ func (r *VMReconciler) managedScaling(ctx context.Context, vm *vmv1.VirtualMachi
 		(previousCPU.Status == metav1.ConditionTrue || previousCPU.Reason == "HistoricalTopologyUnobserved")
 	r.updateVMStatusMemory(ctx, vm, memory)
 	vm.Status.Phase = vmv1.VmScaling
-	cpu, err := getRunnerCPULimits(ctx, vm)
 	cpuDone := false
 	strict := vm.Spec.DSGABootstrap.RuntimeContractVersion == vmv1.RuntimeContractFixedCPU
+	var cpu *api.VCPUCgroup
+	if strict {
+		reader, readerErr := cpureader.NewForAPIReader(r.APIReader)
+		if readerErr != nil {
+			err = readerErr
+		} else {
+			observed, readErr := reader.Observe(ctx, journal.Binding{Namespace: vm.Namespace, Name: vm.Name, VMUID: vm.UID,
+				Incarnation: vm.Spec.DSGABootstrap.Incarnation}, vm.Spec.DSGABootstrap.ComputeInstanceID)
+			if observed != nil && (readErr == nil || errors.Is(readErr, cpureader.ErrPending)) {
+				current, currentErr := observed.Millicores()
+				if currentErr != nil {
+					err = currentErr
+				} else {
+					cpu = &api.VCPUCgroup{VCPUs: vmv1.MilliCPU(current), Managed: observed}
+					err = nil
+				}
+			} else {
+				err = readErr
+			}
+		}
+	} else {
+		cpu, err = getRunnerCPULimits(ctx, vm)
+	}
 	expected := originalRunnerCPUIdentity(vm, string(pod.UID), original.RunnerBootID, original.NodeUID)
 	if err == nil && strict {
 		if cpu.Managed.Identity != expected || cpu.Managed.Generation > vm.Generation {
@@ -144,8 +167,17 @@ func (r *VMReconciler) managedScaling(ctx context.Context, vm *vmv1.VirtualMachi
 				cpu.Managed.Generation == vm.Generation &&
 				cpu.Managed.OnlineVCPUs == vm.Spec.Guest.CPUs.Use.RoundedUp()
 			if !cpuDone {
-				err = sendRunnerCPUChange(ctx, vm, api.VCPUChange{VCPUs: vm.Spec.Guest.CPUs.Use,
-					Managed: &runnercpu.Command{ProtocolVersion: runnercpu.ProtocolVersion, Identity: expected, Generation: vm.Generation}})
+				target, generation := vm.Spec.Guest.CPUs.Use, vm.Generation
+				if cpu.Managed.Pending {
+					// 原未知动作必须先逐字完成，下一轮才能采纳当前新generation。
+					target, generation = vmv1.MilliCPU(cpu.Managed.TargetMillicores), cpu.Managed.Generation
+				}
+				if generation <= 0 {
+					err = fmt.Errorf("original initial CPU birth remains pending before its generation is confirmed")
+				} else {
+					err = sendRunnerCPUChange(ctx, vm, api.VCPUChange{VCPUs: target,
+						Managed: &runnercpu.Command{ProtocolVersion: runnercpu.ProtocolVersion, Identity: expected, Generation: generation}})
+				}
 			}
 		}
 	} else if err == nil {

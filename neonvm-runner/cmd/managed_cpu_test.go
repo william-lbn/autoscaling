@@ -64,7 +64,7 @@ func managedCPUFixture() (*managedCPU, *fakeCPUGroup, *vmv1.MilliCPU) {
 		"cpu.weight": "100", "cpu.stat": "usage_usec 100\nnr_periods 2\nnr_throttled 1\nthrottled_usec 40\n",
 		"cpu.pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=12\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"}}
 	online := vmv1.MilliCPU(1000)
-	state := &managedCPU{verifyCommitment: func(context.Context) (runnercpu.NodeCommitment, error) { return cpuNodeFactFixture(), nil }, process: func() (int, uint64, error) { return 42, 7, nil }, kernel: group, durable: true, intent: cpuIntent{ProtocolVersion: 1, Identity: cpuFixtureIdentity(),
+	state := &managedCPU{verifyCommitment: func(context.Context) (runnercpu.NodeCommitment, error) { return cpuNodeFactFixture(), nil }, process: func() (int, uint64, error) { return 42, 7, nil }, kernel: group, durable: true, intent: cpuIntent{MinimumMillicores: 500, ProtocolVersion: 1, Identity: cpuFixtureIdentity(),
 		MaximumMillicores: 2000, CommittedMillicores: 2000, MaximumVCPUs: 2, CgroupDevice: 1, CgroupInode: 2, Generation: 1, TargetMillicores: 500},
 		persist: func(cpuIntent) error { return nil }, authorize: func(context.Context, runnercpu.Command, vmv1.MilliCPU) error { return nil },
 		getGuest: func() (vmv1.MilliCPU, int, error) { return online, http.StatusOK, nil },

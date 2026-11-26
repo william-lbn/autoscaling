@@ -58,6 +58,9 @@ type Statistics struct {
 // Observation 额度包含原 Runner、QEMU、控制与 I/O 线程的同组成本。
 // 这只是该组的带宽上界；weight/低使用量都不保证最低吞吐，也不是小规格出生资格。
 type Observation struct {
+	// Nonce只将本次真实读回绑定到调用；不产生Owner/floor、预算或跨boot时间许可。
+	ObservationNonce    string         `json:"observation_nonce,omitempty"`
+	ObservedBootTimeNS  uint64         `json:"observed_boot_time_ns,omitempty"`
 	NodeCommitment      NodeCommitment `json:"node_commitment"`
 	MaximumMillicores   uint32         `json:"maximum_millicores"`
 	CommittedMillicores uint32         `json:"committed_millicores"`
@@ -91,6 +94,9 @@ func (o Observation) Millicores() (uint32, error) {
 }
 
 func (o Observation) Validate() error {
+	if o.ObservationNonce != "" && (ValidateObservationNonce(o.ObservationNonce) != nil || o.ObservedBootTimeNS == 0) {
+		return fmt.Errorf("invalid CPU observation challenge")
+	}
 	if err := o.NodeCommitment.Validate(); err != nil {
 		return err
 	}

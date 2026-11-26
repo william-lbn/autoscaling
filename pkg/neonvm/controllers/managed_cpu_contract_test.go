@@ -36,6 +36,7 @@ func TestManagedCPUControllerRequiresOriginalKernelFacts(t *testing.T) {
 					return
 				}
 				observed := observedCPUFixture(id, 7, 1500)
+				observed.Managed.ObservationNonce = r.URL.Query().Get("observation_nonce")
 				switch mode {
 				case "logical-only":
 					observed.Managed = nil

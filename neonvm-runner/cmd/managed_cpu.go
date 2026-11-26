@@ -18,6 +18,7 @@ var errCPUUnconfirmed = errors.New("original CPU action remains unconfirmed")
 
 // cpuIntent 是原执行日志，不是调度预算。先持久意图再写内核/Guest；未知不由新目标覆盖。
 type cpuIntent struct {
+	MinimumMillicores   uint32             `json:"minimum_millicores"`
 	CommittedMillicores uint32             `json:"committed_millicores"`
 	ProtocolVersion     uint32             `json:"protocol_version"`
 	Identity            runnercpu.Identity `json:"identity"`
@@ -52,7 +53,7 @@ type managedCPU struct {
 }
 
 func (s *managedCPU) validateTarget(cpu vmv1.MilliCPU) error {
-	if cpu < 10 || uint32(cpu) > s.intent.MaximumMillicores ||
+	if s.intent.MinimumMillicores < 10 || uint32(cpu) < s.intent.MinimumMillicores || uint32(cpu) > s.intent.MaximumMillicores ||
 		cpu.RoundedUp() > s.intent.MaximumVCPUs {
 		return fmt.Errorf("CPU entitlement exceeds original fixed topology or Pod budget")
 	}
@@ -96,7 +97,18 @@ func (s *managedCPU) change(ctx context.Context, command api.VCPUChange) (int, e
 		command.Managed.Identity != s.intent.Identity || s.validateTarget(command.VCPUs) != nil {
 		return http.StatusConflict, fmt.Errorf("original CPU command identity or envelope differs")
 	}
-	if err := s.authorize(ctx, *command.Managed, command.VCPUs); err != nil {
+	exactPending := s.durable && s.intent.Pending && command.Managed.Generation == s.intent.Generation &&
+		uint32(command.VCPUs) == s.intent.TargetMillicores
+	if exactPending {
+		// 只恢复已fsync的逐字原intent。API当前目标即使已前进，也不能覆盖未知旧动作。
+		// 原VM/冻结min/max、Pod/Node完整持有、原Runner/QEMU/cgroup仍必须成立。
+		if s.verifyCommitment == nil {
+			return http.StatusServiceUnavailable, errCPUUnconfirmed
+		}
+		if _, err := s.verifyCommitment(ctx); err != nil {
+			return http.StatusServiceUnavailable, errors.Join(errCPUUnconfirmed, err)
+		}
+	} else if err := s.authorize(ctx, *command.Managed, command.VCPUs); err != nil {
 		return http.StatusConflict, err
 	}
 	if !s.durable {
@@ -197,7 +209,11 @@ func (s *managedCPU) observeLocked() (*api.VCPUCgroup, error) {
 	if err != nil || guest == 0 || guest%1000 != 0 {
 		return nil, errors.Join(errCPUUnconfirmed, err, fmt.Errorf("Guest online CPU topology is not an integer fact"))
 	}
-	observed := &runnercpu.Observation{NodeCommitment: commitment, ProtocolVersion: runnercpu.ProtocolVersion, Scope: runnercpu.Scope,
+	bootNS, clockErr := cpuObservationBootTime()
+	if clockErr != nil {
+		return nil, errors.Join(errCPUUnconfirmed, clockErr)
+	}
+	observed := &runnercpu.Observation{ObservedBootTimeNS: bootNS, NodeCommitment: commitment, ProtocolVersion: runnercpu.ProtocolVersion, Scope: runnercpu.Scope,
 		Identity: s.intent.Identity, Generation: s.intent.Generation, CgroupDevice: dev, CgroupInode: ino, QEMUPID: uint32(pid), QEMUStartTicks: start,
 		QuotaUS: quota, PeriodUS: period, Weight: weight, OnlineVCPUs: uint32(guest) / 1000,
 		MaximumVCPUs: s.intent.MaximumVCPUs, TargetMillicores: s.intent.TargetMillicores, MaximumMillicores: s.intent.MaximumMillicores, CommittedMillicores: s.intent.CommittedMillicores,

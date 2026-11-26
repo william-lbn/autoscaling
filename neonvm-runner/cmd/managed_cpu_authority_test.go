@@ -25,7 +25,7 @@ import (
 
 func TestCPUAuthorityUsesCurrentOriginalObjectsInsteadOfCallerGeneration(t *testing.T) {
 	for _, mode := range []string{"valid", "future-caller", "stale-caller", "wrong-pod", "wrong-boot", "wrong-node",
-		"wrong-vm", "changed-target", "changed-max", "changed-pod-limit", "held", "migrating", "restarted", "missing-container", "missing-journal", "corrupt-journal", "foreign-journal", "missing-rv", "historical-version", "changed-actual-request", "changed-actual-limit", "missing-actual-container", "container-not-running", "initial-pending-read", "initial-pending-write"} {
+		"wrong-vm", "changed-target", "changed-max", "changed-min", "changed-pod-limit", "held", "migrating", "restarted", "missing-container", "missing-journal", "corrupt-journal", "foreign-journal", "missing-rv", "historical-version", "changed-actual-request", "changed-actual-limit", "missing-actual-container", "container-not-running", "initial-pending-read", "initial-pending-write"} {
 		t.Run(mode, func(t *testing.T) {
 			id := cpuFixtureIdentity()
 			kind := true
@@ -81,6 +81,8 @@ func TestCPUAuthorityUsesCurrentOriginalObjectsInsteadOfCallerGeneration(t *test
 				vm.UID = "replacement"
 			case "changed-target":
 				vm.Spec.Guest.CPUs.Use = 500
+			case "changed-min":
+				vm.Spec.Guest.CPUs.Min = 250
 			case "changed-max":
 				vm.Spec.Guest.CPUs.Max = 4000
 			case "changed-pod-limit":
@@ -96,11 +98,11 @@ func TestCPUAuthorityUsesCurrentOriginalObjectsInsteadOfCallerGeneration(t *test
 			}
 			vms := vmfake.NewSimpleClientset(vm)
 			coreClient := kubefake.NewSimpleClientset(pod, node)
-			authorize := managedCPUAuthority(id, 2000, "2", vms.NeonvmV1(), coreClient.CoreV1(), "ns", "vm", "runner")
+			authorize := managedCPUAuthority(id, 500, 2000, "2", vms.NeonvmV1(), coreClient.CoreV1(), "ns", "vm", "runner")
 			var err error
 			if mode == "initial-pending-read" {
 				var fact runnercpu.NodeCommitment
-				read := managedCPUAuthorityMode(id, 2000, "2", vms.NeonvmV1(), coreClient.CoreV1(), "ns", "vm", "runner", false, &fact)
+				read := managedCPUAuthorityMode(id, 500, 2000, "2", vms.NeonvmV1(), coreClient.CoreV1(), "ns", "vm", "runner", false, &fact)
 				err = read(context.Background(), runnercpu.Command{}, 0)
 				if err == nil && fact.Validate() != nil {
 					t.Fatal("early CPU source has no original Node commitment")

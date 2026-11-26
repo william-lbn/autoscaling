@@ -15,6 +15,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/neondatabase/autoscaling/pkg/api"
+	"github.com/neondatabase/autoscaling/pkg/api/runnercpu"
 )
 
 type cpuServerCallbacks struct {
@@ -134,6 +135,11 @@ func handleCPUCurrent(
 		return
 	}
 
+	values, present := r.URL.Query()["observation_nonce"]
+	if present && (len(values) != 1 || runnercpu.ValidateObservationNonce(values[0]) != nil) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	cpus, status, err := get(logger)
 	if err != nil {
 		logger.Error("could not get cgroup quota", zap.Error(err))
@@ -142,6 +148,24 @@ func handleCPUCurrent(
 		}
 		w.WriteHeader(status)
 		return
+	}
+	nonce := ""
+	if present {
+		if len(values) != 1 || runnercpu.ValidateObservationNonce(values[0]) != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		nonce = values[0]
+		if cpus == nil || cpus.Managed == nil || cpus.Managed.ObservedBootTimeNS == 0 {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		// 不改原观察指针；仅在真实读取完成之后回显本次challenge。
+		copyCPU := *cpus
+		copyManaged := *cpus.Managed
+		copyManaged.ObservationNonce = nonce
+		copyCPU.Managed = &copyManaged
+		cpus = &copyCPU
 	}
 	resp := cpus
 	body, err := json.Marshal(resp)

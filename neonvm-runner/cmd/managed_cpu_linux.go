@@ -315,7 +315,7 @@ func (j *cpuJournal) save(state cpuIntent) error {
 
 // authorizeManagedCPU 固定使用原 InCluster 来源。VM generation/target 和原 Pod 都要直接复核。
 // 不使用 HTTP 自报 generation 产生 floor，也不引入一份独立 Scheduler/预算。
-func authorizeManagedCPU(id runnercpu.Identity, fixedMax vmv1.MilliCPU, fixedPodCPU string) (managedCPUSource, error) {
+func authorizeManagedCPU(id runnercpu.Identity, fixedMin, fixedMax vmv1.MilliCPU, fixedPodCPU string) (managedCPUSource, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return managedCPUSource{}, err
@@ -334,10 +334,10 @@ func authorizeManagedCPU(id runnercpu.Identity, fixedMax vmv1.MilliCPU, fixedPod
 		return managedCPUSource{}, fmt.Errorf("original CPU Kubernetes source missing")
 	}
 	return managedCPUSource{
-		authorize: managedCPUAuthority(id, fixedMax, fixedPodCPU, vms.NeonvmV1(), core.CoreV1(), namespace, name, podName),
+		authorize: managedCPUAuthority(id, fixedMin, fixedMax, fixedPodCPU, vms.NeonvmV1(), core.CoreV1(), namespace, name, podName),
 		observe: func(ctx context.Context) (runnercpu.NodeCommitment, error) {
 			var fact runnercpu.NodeCommitment
-			read := managedCPUAuthorityMode(id, fixedMax, fixedPodCPU, vms.NeonvmV1(), core.CoreV1(), namespace, name, podName, false, &fact)
+			read := managedCPUAuthorityMode(id, fixedMin, fixedMax, fixedPodCPU, vms.NeonvmV1(), core.CoreV1(), namespace, name, podName, false, &fact)
 			err := read(ctx, runnercpu.Command{}, 0)
 			return fact, err
 		}}, nil
@@ -348,12 +348,12 @@ type managedCPUSource struct {
 	observe   func(context.Context) (runnercpu.NodeCommitment, error)
 }
 
-func managedCPUAuthority(id runnercpu.Identity, fixedMax vmv1.MilliCPU, fixedPodCPU string,
+func managedCPUAuthority(id runnercpu.Identity, fixedMin, fixedMax vmv1.MilliCPU, fixedPodCPU string,
 	vms vmtyped.NeonvmV1Interface, core coreclient.CoreV1Interface, namespace, name, podName string) func(context.Context, runnercpu.Command, vmv1.MilliCPU) error {
-	return managedCPUAuthorityMode(id, fixedMax, fixedPodCPU, vms, core, namespace, name, podName, true, nil)
+	return managedCPUAuthorityMode(id, fixedMin, fixedMax, fixedPodCPU, vms, core, namespace, name, podName, true, nil)
 }
 
-func managedCPUAuthorityMode(id runnercpu.Identity, fixedMax vmv1.MilliCPU, fixedPodCPU string,
+func managedCPUAuthorityMode(id runnercpu.Identity, fixedMin, fixedMax vmv1.MilliCPU, fixedPodCPU string,
 	vms vmtyped.NeonvmV1Interface, core coreclient.CoreV1Interface, namespace, name, podName string,
 	requireCommand bool, capture *runnercpu.NodeCommitment) func(context.Context, runnercpu.Command, vmv1.MilliCPU) error {
 	return func(ctx context.Context, c runnercpu.Command, cpu vmv1.MilliCPU) error {
@@ -371,7 +371,7 @@ func managedCPUAuthorityMode(id runnercpu.Identity, fixedMax vmv1.MilliCPU, fixe
 		if string(vm.UID) != id.VMUID || vm.DeletionTimestamp != nil || b == nil || !b.Ready ||
 			b.RuntimeContractVersion != vmv1.RuntimeContractFixedCPU || b.VMUID != id.VMUID || b.Incarnation != id.Incarnation || b.ComputeInstanceID != id.ComputeInstanceID ||
 			(requireCommand && (vm.Generation != c.Generation || c.Identity != id || vm.Spec.Guest.CPUs.Use != cpu)) ||
-			vm.Spec.Guest.CPUs.Max != fixedMax || vm.Spec.PodResources.Limits.Cpu().String() != fixedPodCPU ||
+			vm.Spec.Guest.CPUs.Min != fixedMin || vm.Spec.Guest.CPUs.Max != fixedMax || vm.Spec.PodResources.Limits.Cpu().String() != fixedPodCPU ||
 			vm.Spec.CpuScalingMode == nil || *vm.Spec.CpuScalingMode != vmv1.CpuScalingModeSysfs ||
 			vm.Status.PodName != podName || vm.Status.RestartCount != 0 {
 			return fmt.Errorf("CPU intent differs from current original VM")
@@ -474,7 +474,7 @@ func initializeManagedCPU(spec *vmv1.VirtualMachineSpec, runner *vmguard.Runner)
 		return nil, nil, err
 	}
 	cleanup := func() { group.close(); unix.Close(journal.fd) }
-	authority, err := authorizeManagedCPU(id, spec.Guest.CPUs.Max, podLimit.String())
+	authority, err := authorizeManagedCPU(id, spec.Guest.CPUs.Min, spec.Guest.CPUs.Max, podLimit.String())
 	if err != nil {
 		cleanup()
 		return nil, nil, err
@@ -487,7 +487,7 @@ func initializeManagedCPU(spec *vmv1.VirtualMachineSpec, runner *vmguard.Runner)
 		cleanup()
 		return nil, nil, commitmentErr
 	}
-	intent := cpuIntent{ProtocolVersion: 1, Identity: id, MaximumMillicores: maxCPU, CommittedMillicores: committed,
+	intent := cpuIntent{MinimumMillicores: uint32(spec.Guest.CPUs.Min), ProtocolVersion: 1, Identity: id, MaximumMillicores: maxCPU, CommittedMillicores: committed,
 		MaximumVCPUs: spec.Guest.CPUs.Max.RoundedUp(), CgroupDevice: group.dev, CgroupInode: group.ino,
 		TargetMillicores: uint32(spec.Guest.CPUs.Use), Pending: true}
 	previous, err := journal.load()
@@ -499,7 +499,7 @@ func initializeManagedCPU(spec *vmv1.VirtualMachineSpec, runner *vmguard.Runner)
 		getGuest: getNeonvmDaemonCPU, setGuest: setNeonvmDaemonCPU}
 	if previous != nil {
 		if previous.ProtocolVersion != intent.ProtocolVersion || previous.Identity != intent.Identity ||
-			previous.MaximumMillicores != intent.MaximumMillicores || previous.CommittedMillicores != intent.CommittedMillicores || previous.MaximumVCPUs != intent.MaximumVCPUs ||
+			previous.MinimumMillicores != intent.MinimumMillicores || previous.MaximumMillicores != intent.MaximumMillicores || previous.CommittedMillicores != intent.CommittedMillicores || previous.MaximumVCPUs != intent.MaximumVCPUs ||
 			previous.CgroupDevice != intent.CgroupDevice || previous.CgroupInode != intent.CgroupInode ||
 			previous.Generation < 0 || state.validateTarget(vmv1.MilliCPU(previous.TargetMillicores)) != nil {
 			cleanup()

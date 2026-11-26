@@ -65,7 +65,9 @@ func TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus(t *testing.T) {
 						w.WriteHeader(http.StatusServiceUnavailable)
 						return
 					}
-					_ = json.NewEncoder(w).Encode(observedCPUFixture(originalCPU, 7, vmv1.MilliCPU(current.Load())))
+					observed := observedCPUFixture(originalCPU, 7, vmv1.MilliCPU(current.Load()))
+					observed.Managed.ObservationNonce = r.URL.Query().Get("observation_nonce")
+					_ = json.NewEncoder(w).Encode(observed)
 					if scenario.mode == "oversized" {
 						// 合法JSON加空白旧解码可接受；新契约必须按体积拒绝。
 						_, _ = w.Write([]byte(strings.Repeat(" ", 5000)))
@@ -178,7 +180,7 @@ func managedCPUStatusFixture(t *testing.T, address string, phase vmv1.VmPhase) (
 	require.NoError(t, err)
 	birthCM := &core.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: birthRef.Name, Namespace: vm.Namespace, UID: "birth-uid", ResourceVersion: "1", Labels: map[string]string{vmguard.ClaimLabel: "binding-v1"}, Finalizers: []string{vmguard.ProtectionFinalizer}, OwnerReferences: owner}, Immutable: &immutable, Data: map[string]string{vmguard.ClaimKey: string(birthRaw)}}
 	stateCM := &core.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: stateRef.Name, Namespace: vm.Namespace, UID: "state-uid", Labels: map[string]string{vmguard.ClaimLabel: "state-v1"}, Finalizers: []string{vmguard.ProtectionFinalizer}, OwnerReferences: owner}, Immutable: &mutable, Data: map[string]string{vmguard.ClaimKey: string(stateRaw)}}
-	pod := &core.Pod{ObjectMeta: metav1.ObjectMeta{Name: "runner", Namespace: vm.Namespace, UID: "runner-uid", ResourceVersion: "1", OwnerReferences: owner}, Spec: core.PodSpec{NodeName: "node", Containers: []core.Container{{Name: runnerContainerName, Resources: *vm.Spec.PodResources.DeepCopy()}}}, Status: core.PodStatus{Phase: core.PodRunning, PodIP: host, ContainerStatuses: []core.ContainerStatus{{Name: runnerContainerName, Ready: true}}}}
+	pod := &core.Pod{ObjectMeta: metav1.ObjectMeta{Name: "runner", Namespace: vm.Namespace, UID: "runner-uid", ResourceVersion: "1", OwnerReferences: owner}, Spec: core.PodSpec{NodeName: "node", Containers: []core.Container{{Name: runnerContainerName, Resources: *vm.Spec.PodResources.DeepCopy()}}}, Status: core.PodStatus{Phase: core.PodRunning, PodIP: host, ContainerStatuses: []core.ContainerStatus{{Name: runnerContainerName, Ready: true, ContainerID: "containerd://original", State: core.ContainerState{Running: &core.ContainerStateRunning{}}}}}}
 	node := controllerCPUNodeFixture(t, vm, pod)
 	p.client = fake.NewClientBuilder().WithScheme(p.r.Scheme).WithStatusSubresource(&vmv1.VirtualMachine{}).WithObjects(vm, secret, birthCM, pod, node).Build()
 	p.r.Client, p.r.APIReader, p.origVM = p.client, p.client, vm
@@ -187,7 +189,7 @@ func managedCPUStatusFixture(t *testing.T, address string, phase vmv1.VmPhase) (
 
 func observedCPUFixture(id runnercpu.Identity, generation int64, cpu vmv1.MilliCPU) api.VCPUCgroup {
 	return api.VCPUCgroup{VCPUs: cpu, Managed: &runnercpu.Observation{
-		ProtocolVersion: runnercpu.ProtocolVersion, Scope: runnercpu.Scope, Identity: id,
+		ObservedBootTimeNS: 1, ProtocolVersion: runnercpu.ProtocolVersion, Scope: runnercpu.Scope, Identity: id,
 		NodeCommitment: runnercpu.NodeCommitment{ProtocolVersion: 1, Scope: runnercpu.NodeCommitmentScope, LedgerOrigin: strings.Repeat("a", 32), LedgerSequence: 1, NodeResourceVersion: "1", CommittedMillicores: 2000}, Generation: generation, CgroupDevice: 1, CgroupInode: 2, QEMUPID: 42, QEMUStartTicks: 7, QuotaUS: uint64(cpu) * 100,
 		PeriodUS: runnercpu.PeriodUS, Weight: 100, OnlineVCPUs: cpu.RoundedUp(),
 		MaximumVCPUs: 2, MaximumMillicores: 2000, CommittedMillicores: 2000, TargetMillicores: uint32(cpu)}}
