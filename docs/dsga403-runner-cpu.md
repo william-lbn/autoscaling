@@ -33,3 +33,14 @@ DSGABootstrap.runtimeContractVersion 是创建即冻结的 uint32：省略/0 保
 Controller 的 DSGACPUEntitlementReady 专门表示严格合同下实际 cap/承诺/Guest 拓扑都完成。版本 0 新 Runner 提供 historical_guest，只读实际原 Guest 整数拓扑并关联原 QEMU/Birth，不提供带宽资格，也不接受新增 CPU 写；DSGACPUReady 仍可按此历史实际拓扑确认业务，EntitlementReady 始终 false/HistoricalContract。旧二进制缺新拓扑字段时，只有原 Running 且原 CPU 确认代次不变的连续服务状态可保留，明确标 HistoricalTopologyUnobserved；新代次或在途伸缩不据 logical VCPUs/lastValue 完成。缺少这段历史确认的旧 VM 无法宣称无缝升级，应维持原版本后由原受控替换流程迁移，不能在线补写不可变合同或 PodResources。
 
 站点 kubelet/运行时若把 cpu.max 改回 Pod 最大限额，Node 最大承诺仍持有，但当前 target cap 未完成，新的严格 CPU 就绪为 false，须用持续实读及节流/SLO现场资格解决。受控 native kernel 通过与真实 QEMU/Guest/SQL资格分别归档。
+
+
+## 原Node唯一CPU账与调度视图
+
+自定义调度器关闭了默认 NodeResourcesFit，单独的 Pod request 不能替代真实调度承诺。Host model v11 将每个原 Placement 的 cpu_accounting_version=1 与 committed_cpu_millicores 持久入原 Node UID/RV CAS，Profile 固定 cpu_accounting_version=1 及 allocatable 内额外 system_cpu_millicores。所有新授予同 RV 同时核 CPU allocatable 与原 normal 内存，CPU不另建账本，不重新扣 Capacity-Allocatable；Host HugeTLB 尚未启用，不从旧normal值投影成池额度。
+
+普通Pod用锁定Kubernetes完整 PodRequests（含init/native sidecar/overhead）；VM至少持有声明最大CPU与完整Pod请求的较大值，严格Runtime1另核实际Runner request==limit。CPU持有一直到原Pod/QEMU退出协议完整结清，内存Grow/Shrink/PG缓存结算及本地cache缺Pod都不会退还。Filter只消费同原Node的只读帧，保留缺cache的旧持有；Guest CPU目标与Host固定承诺分开，最终仍由原Node CAS授予。
+
+KubernetesBudgetPolicy v2 冻结 capacity_cpu_millicores/allocatable_cpu_millicores；旧v1及CPU版本0保持原冻结投影，未知版本拒绝。已有v10只能在显式 cpu_accounting_upgrade_mode=original-placement-snapshot-v1 下，完整重读每个原Pod/VM来源后由原Node Owner做同RV CPU轴升级；原Origin/内存/holds/Claim/Settlement/Barrier不变。任一来源未知不补0，保留旧账和不可资格；需要先完成原生命周期清理再启新profile。CPU升级丢回复从原Node恢复，不重复创建域。
+
+Node回执 node_commitment 给出原账Origin/sequence/Node RV及整个Pod固定承诺。Runner每次实读和写前核原v11同Pod持有，Controller另向原Node/Pod直接读取比对后才允许新CPU权益条件为真。此链不依赖PG初始化完成，出生只需原VM/Birth/Pod/Node预算、原QEMU和Guest实际CPU；避免CP等待Running后才配置PG的环。Condition不是无限期采样新鲜度证明；本次nonce只读reader接线完成前不能据滞留True发布新路由。

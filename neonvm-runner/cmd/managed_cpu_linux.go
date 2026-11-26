@@ -20,6 +20,7 @@ import (
 	vmclient "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned"
 	vmtyped "github.com/neondatabase/autoscaling/neonvm/client/clientset/versioned/typed/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/api/runnercpu"
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 	"golang.org/x/sys/unix"
@@ -332,25 +333,29 @@ func authorizeManagedCPU(id runnercpu.Identity, fixedMax vmv1.MilliCPU, fixedPod
 	if namespace == "" || name == "" || podName == "" {
 		return managedCPUSource{}, fmt.Errorf("original CPU Kubernetes source missing")
 	}
-	read := managedCPUAuthorityMode(id, fixedMax, fixedPodCPU, vms.NeonvmV1(), core.CoreV1(), namespace, name, podName, false)
 	return managedCPUSource{
 		authorize: managedCPUAuthority(id, fixedMax, fixedPodCPU, vms.NeonvmV1(), core.CoreV1(), namespace, name, podName),
-		observe:   func(ctx context.Context) error { return read(ctx, runnercpu.Command{}, 0) }}, nil
+		observe: func(ctx context.Context) (runnercpu.NodeCommitment, error) {
+			var fact runnercpu.NodeCommitment
+			read := managedCPUAuthorityMode(id, fixedMax, fixedPodCPU, vms.NeonvmV1(), core.CoreV1(), namespace, name, podName, false, &fact)
+			err := read(ctx, runnercpu.Command{}, 0)
+			return fact, err
+		}}, nil
 }
 
 type managedCPUSource struct {
 	authorize func(context.Context, runnercpu.Command, vmv1.MilliCPU) error
-	observe   func(context.Context) error
+	observe   func(context.Context) (runnercpu.NodeCommitment, error)
 }
 
 func managedCPUAuthority(id runnercpu.Identity, fixedMax vmv1.MilliCPU, fixedPodCPU string,
 	vms vmtyped.NeonvmV1Interface, core coreclient.CoreV1Interface, namespace, name, podName string) func(context.Context, runnercpu.Command, vmv1.MilliCPU) error {
-	return managedCPUAuthorityMode(id, fixedMax, fixedPodCPU, vms, core, namespace, name, podName, true)
+	return managedCPUAuthorityMode(id, fixedMax, fixedPodCPU, vms, core, namespace, name, podName, true, nil)
 }
 
 func managedCPUAuthorityMode(id runnercpu.Identity, fixedMax vmv1.MilliCPU, fixedPodCPU string,
 	vms vmtyped.NeonvmV1Interface, core coreclient.CoreV1Interface, namespace, name, podName string,
-	requireCommand bool) func(context.Context, runnercpu.Command, vmv1.MilliCPU) error {
+	requireCommand bool, capture *runnercpu.NodeCommitment) func(context.Context, runnercpu.Command, vmv1.MilliCPU) error {
 	return func(ctx context.Context, c runnercpu.Command, cpu vmv1.MilliCPU) error {
 		bounded, cancel := context.WithTimeout(ctx, 3*time.Second)
 		defer cancel()
@@ -360,7 +365,7 @@ func managedCPUAuthorityMode(id runnercpu.Identity, fixedMax vmv1.MilliCPU, fixe
 		}
 		b := vm.Spec.DSGABootstrap
 		held, heldErr := vm.DSGABootstrapHeld()
-		if heldErr != nil || held || (vm.Status.Phase != vmv1.VmRunning && vm.Status.Phase != vmv1.VmScaling) {
+		if heldErr != nil || held || (vm.Status.Phase != vmv1.VmRunning && vm.Status.Phase != vmv1.VmScaling && (requireCommand || vm.Status.Phase != vmv1.VmPending)) {
 			return errors.Join(heldErr, fmt.Errorf("CPU requires the original released non-migrating VM"))
 		}
 		if string(vm.UID) != id.VMUID || vm.DeletionTimestamp != nil || b == nil || !b.Ready ||
@@ -422,6 +427,18 @@ func managedCPUAuthorityMode(id runnercpu.Identity, fixedMax vmv1.MilliCPU, fixe
 		if err != nil || string(node.UID) != id.NodeUID || node.DeletionTimestamp != nil {
 			return errors.Join(err, fmt.Errorf("CPU Node differs from original Birth"))
 		}
+		fact, err := hostguard.InspectCPUCommitment(node, journal.Binding{Namespace: namespace, Name: name, VMUID: vm.UID,
+			Incarnation: id.Incarnation}, podName, id.RunnerPodUID, maximum, committed)
+		if err != nil {
+			return err
+		}
+		requested, requestErr := hostguard.PodCPURequest(pod)
+		if requestErr != nil || uint64(requested) > fact.CommittedMillicores {
+			return fmt.Errorf("current whole-Pod CPU requests exceed original Node commitment")
+		}
+		if capture != nil {
+			*capture = fact
+		}
 		return nil
 	}
 }
@@ -461,6 +478,14 @@ func initializeManagedCPU(spec *vmv1.VirtualMachineSpec, runner *vmguard.Runner)
 	if err != nil {
 		cleanup()
 		return nil, nil, err
+	}
+	// 出生CPU承诺只依赖原Node/Pod来源，不依赖PG完成初始化。
+	initCtx, initCancel := context.WithTimeout(context.Background(), 15*time.Second)
+	_, commitmentErr := authority.observe(initCtx)
+	initCancel()
+	if commitmentErr != nil {
+		cleanup()
+		return nil, nil, commitmentErr
 	}
 	intent := cpuIntent{ProtocolVersion: 1, Identity: id, MaximumMillicores: maxCPU, CommittedMillicores: committed,
 		MaximumVCPUs: spec.Guest.CPUs.Max.RoundedUp(), CgroupDevice: group.dev, CgroupInode: group.ino,

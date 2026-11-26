@@ -68,6 +68,11 @@ func (s *Service) allocation(ctx context.Context, n NodeConfig, expected *core.P
 			return nil, none, nil, fmt.Errorf("complete Pod memory limit is invalid or overflows")
 		}
 		p.MemoryBytes = control.Uint64(v)
+		p.CPUAccountingVersion = n.Profile.CPUAccountingVersion
+		p.CommittedCPUMillicores, err = CPUPlacementCommitment(n, pod, nil)
+		if err != nil {
+			return nil, none, nil, err
+		}
 		return pod.DeepCopy(), p, nil, nil
 	}
 	controller := metav1.GetControllerOf(pod)
@@ -91,6 +96,15 @@ func (s *Service) allocation(ctx context.Context, n NodeConfig, expected *core.P
 	slots := vm.Spec.Guest.MemorySlots
 	if !exact || slot <= 0 || slots.Min == 0 || slots.Use < slots.Min || slots.Max < slots.Use || uint64(slots.Max) > uint64(math.MaxInt64)/uint64(slot) {
 		return nil, none, nil, fmt.Errorf("original VM memory geometry is invalid")
+	}
+	if vm.Spec.DSGABootstrap != nil && vm.Spec.DSGABootstrap.RuntimeContractVersion == vmv1.RuntimeContractFixedCPU &&
+		n.Profile.CPUAccountingVersion != hostguard.CPUAccountingVersion {
+		return nil, none, nil, fmt.Errorf("strict Runtime CPU requires original v11 CPU-accounted Host domain")
+	}
+	p.CPUAccountingVersion = n.Profile.CPUAccountingVersion
+	p.CommittedCPUMillicores, err = CPUPlacementCommitment(n, pod, vm)
+	if err != nil {
+		return nil, none, nil, err
 	}
 	p.VMName, p.VMUID, p.HostOverheadBytes = vm.Name, string(vm.UID), n.Profile.VMOverheadBytes
 	p.MemoryBytes = control.Uint64(uint64(slot) * uint64(slots.Use))

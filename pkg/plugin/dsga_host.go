@@ -7,6 +7,7 @@ import (
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
+	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/api"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
@@ -29,6 +30,8 @@ func (s *PluginState) hostCallContext() (context.Context, context.CancelFunc) {
 // 不含Host开销；普通Pod按完整硬limit而非requests。容量不打折memory
 // overcommit；受管VM不再经旧批准/自动迁移流程，防止两套写者相互越过许可。
 func applyHostAllocation(p *state.Pod, allocation hostguard.Placement) {
+	p.HostCPUAccountingVersion = allocation.CPUAccountingVersion
+	p.HostCommittedCPU = vmv1.MilliCPU(allocation.CommittedCPUMillicores)
 	p.Mem.Reserved = api.Bytes(allocation.MemoryBytes)
 	p.Mem.Overcommit = resource.NewQuantity(1, resource.DecimalSI)
 	if allocation.VMUID == "" || allocation.Managed {
@@ -60,13 +63,23 @@ func (s *PluginState) reserveHost(ctx context.Context, pod *core.Pod, node strin
 // checkHost只读过滤明确Host域，nil/域外继续旧路径。它不修改评分或放置规则，
 // 每次失败交调度器正常重试；Reserve仍是真正授予的唯一CAS入口。
 func (s *PluginState) checkHost(ctx context.Context, pod *core.Pod, node string) error {
-	if s.host == nil || !s.host.HasNode(node) {
-		return nil
+	_, err := s.checkHostAllocation(ctx, pod, node)
+	return err
+}
+
+func (s *PluginState) checkHostAllocation(ctx context.Context, pod *core.Pod, node string) (*hostguard.Placement, error) {
+	preview, err := s.checkHostPreview(ctx, pod, node)
+	if err != nil || preview == nil {
+		return nil, err
 	}
-	// 完整Host事务包含多个原对象GET/Lease核验及Node CAS；单CRUD期限
-	// 仍由原调用方维护，不把它误当整个事务的总期限。
-	timeout := hostscheduler.HostOperationTimeout
-	bounded, cancel := context.WithTimeout(ctx, timeout)
+	return &preview.Allocation, nil
+}
+
+func (s *PluginState) checkHostPreview(ctx context.Context, pod *core.Pod, node string) (*hostscheduler.PlacementPreview, error) {
+	if s.host == nil || !s.host.HasNode(node) {
+		return nil, nil
+	}
+	bounded, cancel := context.WithTimeout(ctx, hostscheduler.HostOperationTimeout)
 	defer cancel()
-	return s.host.CheckPlacement(bounded, node, pod, control.Uint64(0))
+	return s.host.CheckPlacementPreview(bounded, node, pod, 0)
 }

@@ -26,6 +26,7 @@ import (
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
 	"github.com/neondatabase/autoscaling/pkg/api/runnercpu"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
+	"github.com/neondatabase/autoscaling/pkg/dsga/hostguard"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
 )
@@ -177,8 +178,8 @@ func managedCPUStatusFixture(t *testing.T, address string, phase vmv1.VmPhase) (
 	require.NoError(t, err)
 	birthCM := &core.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: birthRef.Name, Namespace: vm.Namespace, UID: "birth-uid", ResourceVersion: "1", Labels: map[string]string{vmguard.ClaimLabel: "binding-v1"}, Finalizers: []string{vmguard.ProtectionFinalizer}, OwnerReferences: owner}, Immutable: &immutable, Data: map[string]string{vmguard.ClaimKey: string(birthRaw)}}
 	stateCM := &core.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: stateRef.Name, Namespace: vm.Namespace, UID: "state-uid", Labels: map[string]string{vmguard.ClaimLabel: "state-v1"}, Finalizers: []string{vmguard.ProtectionFinalizer}, OwnerReferences: owner}, Immutable: &mutable, Data: map[string]string{vmguard.ClaimKey: string(stateRaw)}}
-	pod := &core.Pod{ObjectMeta: metav1.ObjectMeta{Name: "runner", Namespace: vm.Namespace, UID: "runner-uid", ResourceVersion: "1", OwnerReferences: owner}, Spec: core.PodSpec{NodeName: "node"}, Status: core.PodStatus{Phase: core.PodRunning, PodIP: host, ContainerStatuses: []core.ContainerStatus{{Name: runnerContainerName, Ready: true}}}}
-	node := &core.Node{ObjectMeta: metav1.ObjectMeta{Name: "node", UID: "node-uid", ResourceVersion: "1"}}
+	pod := &core.Pod{ObjectMeta: metav1.ObjectMeta{Name: "runner", Namespace: vm.Namespace, UID: "runner-uid", ResourceVersion: "1", OwnerReferences: owner}, Spec: core.PodSpec{NodeName: "node", Containers: []core.Container{{Name: runnerContainerName, Resources: *vm.Spec.PodResources.DeepCopy()}}}, Status: core.PodStatus{Phase: core.PodRunning, PodIP: host, ContainerStatuses: []core.ContainerStatus{{Name: runnerContainerName, Ready: true}}}}
+	node := controllerCPUNodeFixture(t, vm, pod)
 	p.client = fake.NewClientBuilder().WithScheme(p.r.Scheme).WithStatusSubresource(&vmv1.VirtualMachine{}).WithObjects(vm, secret, birthCM, pod, node).Build()
 	p.r.Client, p.r.APIReader, p.origVM = p.client, p.client, vm
 	return p, vm, stateCM
@@ -187,7 +188,28 @@ func managedCPUStatusFixture(t *testing.T, address string, phase vmv1.VmPhase) (
 func observedCPUFixture(id runnercpu.Identity, generation int64, cpu vmv1.MilliCPU) api.VCPUCgroup {
 	return api.VCPUCgroup{VCPUs: cpu, Managed: &runnercpu.Observation{
 		ProtocolVersion: runnercpu.ProtocolVersion, Scope: runnercpu.Scope, Identity: id,
-		Generation: generation, CgroupDevice: 1, CgroupInode: 2, QEMUPID: 42, QEMUStartTicks: 7, QuotaUS: uint64(cpu) * 100,
+		NodeCommitment: runnercpu.NodeCommitment{ProtocolVersion: 1, Scope: runnercpu.NodeCommitmentScope, LedgerOrigin: strings.Repeat("a", 32), LedgerSequence: 1, NodeResourceVersion: "1", CommittedMillicores: 2000}, Generation: generation, CgroupDevice: 1, CgroupInode: 2, QEMUPID: 42, QEMUStartTicks: 7, QuotaUS: uint64(cpu) * 100,
 		PeriodUS: runnercpu.PeriodUS, Weight: 100, OnlineVCPUs: cpu.RoundedUp(),
 		MaximumVCPUs: 2, MaximumMillicores: 2000, CommittedMillicores: 2000, TargetMillicores: uint32(cpu)}}
+}
+
+func controllerCPUNodeFixture(t *testing.T, vm *vmv1.VirtualMachine, pod *core.Pod) *core.Node {
+	t.Helper()
+	profile := hostguard.Profile{ID: "cpu-fixture-only", SchedulerName: "neonvm-scheduler", VMOverheadBytes: 64 << 20,
+		PodOverheadBytes: 16 << 20, CPUAccountingVersion: 1, SystemCPUMillicores: 250}
+	rows := []hostguard.Placement{{Namespace: vm.Namespace, PodName: pod.Name, PodUID: string(pod.UID), VMName: vm.Name,
+		VMUID: string(vm.UID), Incarnation: vm.Spec.DSGABootstrap.Incarnation, Managed: true, MemoryBytes: 2 << 30,
+		HostOverheadBytes: profile.VMOverheadBytes, PodMemoryLimitBytes: 3 << 30, CPUAccountingVersion: 1, CommittedCPUMillicores: 2000}}
+	model := hostguard.Model{ProtocolVersion: 11, Binding: hostguard.Binding{NodeName: "node", NodeUID: "node-uid", Namespace: "system",
+		LeaseName: "node-allocator", LeaseUID: "node-lease"}, Origin: strings.Repeat("a", 32),
+		LeaseFloor: journal.Owner{HolderID: "cpu-node-owner", Epoch: 1}, Sequence: 1, OutsideBytes: 1 << 30, Holds: []hostguard.Hold{},
+		Profile: &profile, Placements: &rows}
+	require.NoError(t, model.Validate())
+	raw, err := json.Marshal(model)
+	require.NoError(t, err)
+	return &core.Node{ObjectMeta: metav1.ObjectMeta{Name: "node", UID: "node-uid", ResourceVersion: "1",
+		Finalizers:  []string{hostguard.ProtectionFinalizer},
+		Annotations: map[string]string{hostguard.LedgerAnnotation: string(raw), hostguard.OriginAnnotation: "1:" + model.Origin}},
+		Status: core.NodeStatus{Capacity: core.ResourceList{core.ResourceCPU: resource.MustParse("8"), core.ResourceMemory: resource.MustParse("8Gi")},
+			Allocatable: core.ResourceList{core.ResourceCPU: resource.MustParse("7"), core.ResourceMemory: resource.MustParse("7Gi")}}}
 }

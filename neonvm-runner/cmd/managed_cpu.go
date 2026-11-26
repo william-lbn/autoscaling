@@ -38,7 +38,7 @@ type cpuKernel interface {
 }
 
 type managedCPU struct {
-	verifyCommitment func(context.Context) error
+	verifyCommitment func(context.Context) (runnercpu.NodeCommitment, error)
 	process          func() (int, uint64, error)
 	mu               sync.Mutex
 	kernel           cpuKernel
@@ -144,7 +144,7 @@ func (s *managedCPU) observeLocked() (*api.VCPUCgroup, error) {
 		return nil, fmt.Errorf("original CPU commitment source unavailable")
 	}
 	verifyCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	verifyErr := s.verifyCommitment(verifyCtx)
+	commitment, verifyErr := s.verifyCommitment(verifyCtx)
 	cancel()
 	if verifyErr != nil {
 		return nil, errors.Join(errCPUUnconfirmed, verifyErr)
@@ -197,7 +197,7 @@ func (s *managedCPU) observeLocked() (*api.VCPUCgroup, error) {
 	if err != nil || guest == 0 || guest%1000 != 0 {
 		return nil, errors.Join(errCPUUnconfirmed, err, fmt.Errorf("Guest online CPU topology is not an integer fact"))
 	}
-	observed := &runnercpu.Observation{ProtocolVersion: runnercpu.ProtocolVersion, Scope: runnercpu.Scope,
+	observed := &runnercpu.Observation{NodeCommitment: commitment, ProtocolVersion: runnercpu.ProtocolVersion, Scope: runnercpu.Scope,
 		Identity: s.intent.Identity, Generation: s.intent.Generation, CgroupDevice: dev, CgroupInode: ino, QEMUPID: uint32(pid), QEMUStartTicks: start,
 		QuotaUS: quota, PeriodUS: period, Weight: weight, OnlineVCPUs: uint32(guest) / 1000,
 		MaximumVCPUs: s.intent.MaximumVCPUs, TargetMillicores: s.intent.TargetMillicores, MaximumMillicores: s.intent.MaximumMillicores, CommittedMillicores: s.intent.CommittedMillicores,

@@ -136,6 +136,8 @@ func (r *VMReconciler) managedScaling(ctx context.Context, vm *vmv1.VirtualMachi
 	if err == nil && strict {
 		if cpu.Managed.Identity != expected || cpu.Managed.Generation > vm.Generation {
 			err = fmt.Errorf("CPU observation differs from original Runner Birth")
+		} else if verifyErr := r.verifyCPUNodeCommitment(ctx, vm, pod, expected, cpu.Managed.NodeCommitment); verifyErr != nil {
+			err = verifyErr
 		} else {
 			r.updateVMStatusCPU(ctx, vm, pod, cpu.Managed.OnlineVCPUs, cpu)
 			cpuDone = cpu.VCPUs == vm.Spec.Guest.CPUs.Use && !cpu.Managed.Pending &&

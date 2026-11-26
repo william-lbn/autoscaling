@@ -58,8 +58,9 @@ type Statistics struct {
 // Observation 额度包含原 Runner、QEMU、控制与 I/O 线程的同组成本。
 // 这只是该组的带宽上界；weight/低使用量都不保证最低吞吐，也不是小规格出生资格。
 type Observation struct {
-	MaximumMillicores   uint32 `json:"maximum_millicores"`
-	CommittedMillicores uint32 `json:"committed_millicores"`
+	NodeCommitment      NodeCommitment `json:"node_commitment"`
+	MaximumMillicores   uint32         `json:"maximum_millicores"`
+	CommittedMillicores uint32         `json:"committed_millicores"`
 	// QEMUPID 属于原 Runner 的 PID namespace，不是可脱离 Pod/boot 使用的宿主PID。
 	QEMUPID          uint32     `json:"qemu_pid"`
 	QEMUStartTicks   uint64     `json:"qemu_start_ticks"`
@@ -90,6 +91,12 @@ func (o Observation) Millicores() (uint32, error) {
 }
 
 func (o Observation) Validate() error {
+	if err := o.NodeCommitment.Validate(); err != nil {
+		return err
+	}
+	if o.NodeCommitment.CommittedMillicores < uint64(o.CommittedMillicores) {
+		return fmt.Errorf("Node commitment does not cover original Runner CPU")
+	}
 	if err := o.Identity.Validate(); err != nil {
 		return err
 	}
