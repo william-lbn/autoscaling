@@ -17,6 +17,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 )
@@ -52,8 +53,9 @@ func newMigrationTestParams(t *testing.T) *migrationTestParams {
 	}
 
 	params.r = &VirtualMachineMigrationReconciler{
-		Client: params.client,
-		Scheme: scheme,
+		Client:    params.client,
+		APIReader: params.client,
+		Scheme:    scheme,
 		Config: &ReconcilerConfig{
 			DisableRunnerCgroup:     false,
 			MaxConcurrentReconciles: 10,
@@ -75,6 +77,9 @@ func newMigrationTestParams(t *testing.T) *migrationTestParams {
 
 // initVM initializes the VM in the fake client and returns the VM
 func (p *migrationTestParams) createVM(vm *vmv1.VirtualMachine) {
+	if vm.UID == "" {
+		vm.UID = "legacy-original-vm"
+	}
 	err := p.client.Create(p.ctx, vm)
 	require.NoError(p.t, err)
 
@@ -87,6 +92,9 @@ func (p *migrationTestParams) refetchVM(vm *vmv1.VirtualMachine) {
 }
 
 func (p *migrationTestParams) createMigration(vmm *vmv1.VirtualMachineMigration) {
+	if vmm.UID == "" {
+		vmm.UID = types.UID("original-" + vmm.Name)
+	}
 	err := p.client.Create(p.ctx, vmm)
 	require.NoError(p.t, err)
 

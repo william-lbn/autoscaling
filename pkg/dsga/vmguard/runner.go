@@ -42,15 +42,16 @@ type Config struct {
 }
 
 type Runner struct {
-	engine  *engine
-	store   *journal.Store
-	core    coreclient.CoreV1Interface
-	coord   coordclient.CoordinationV1Interface
-	birth   Birth
-	pod     string
-	node    string
-	claims  *budgetclaims.Reader
-	initial initialLifecycle
+	cpuProcess *cpuProcessObserver
+	engine     *engine
+	store      *journal.Store
+	core       coreclient.CoreV1Interface
+	coord      coordclient.CoordinationV1Interface
+	birth      Birth
+	pod        string
+	node       string
+	claims     *budgetclaims.Reader
+	initial    initialLifecycle
 }
 
 // Initialize只用于一次明确的原Runner出生，必须在QEMU启动之前。目录由启动
@@ -246,7 +247,7 @@ func boundRunner(store *journal.Store, coreClient coreclient.CoreV1Interface, co
 	if err != nil {
 		return nil, err
 	}
-	r := &Runner{store: store, core: coreClient, coord: coord, birth: birth, pod: c.PodName, node: c.NodeName, claims: claims, engine: nil}
+	r := &Runner{cpuProcess: &cpuProcessObserver{}, store: store, core: coreClient, coord: coord, birth: birth, pod: c.PodName, node: c.NodeName, claims: claims, engine: nil}
 	r.engine = &engine{dir: c.StateDir, id: birth.Identity, binding: ref, native: &nativeQMP{id: birth.Identity, path: filepath.Join(c.StateDir, "qmp.sock"), timeout: 2 * time.Second}, now: time.Now, read: nil}
 	r.engine.read = r.authorize
 	r.engine.initialMode = cloneInitialMode(birth.InitialMode)

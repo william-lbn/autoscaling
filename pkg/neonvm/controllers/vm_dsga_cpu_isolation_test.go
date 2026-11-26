@@ -24,6 +24,7 @@ import (
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/api"
 	control "github.com/neondatabase/autoscaling/pkg/api/dsga"
+	"github.com/neondatabase/autoscaling/pkg/api/runnercpu"
 	"github.com/neondatabase/autoscaling/pkg/dsga/budget"
 	"github.com/neondatabase/autoscaling/pkg/dsga/journal"
 	"github.com/neondatabase/autoscaling/pkg/dsga/vmguard"
@@ -50,6 +51,7 @@ func TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus(t *testing.T) {
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
 			var reads, writes, current atomic.Int64
+			var originalCPU runnercpu.Identity
 			current.Store(1000)
 			if scenario.mode == "ready" || scenario.mode == "oversized" {
 				current.Store(1500)
@@ -62,7 +64,7 @@ func TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus(t *testing.T) {
 						w.WriteHeader(http.StatusServiceUnavailable)
 						return
 					}
-					_ = json.NewEncoder(w).Encode(api.VCPUCgroup{VCPUs: vmv1.MilliCPU(current.Load())})
+					_ = json.NewEncoder(w).Encode(observedCPUFixture(originalCPU, 7, vmv1.MilliCPU(current.Load())))
 					if scenario.mode == "oversized" {
 						// 合法JSON加空白旧解码可接受；新契约必须按体积拒绝。
 						_, _ = w.Write([]byte(strings.Repeat(" ", 5000)))
@@ -82,6 +84,7 @@ func TestManagedCPUFailureDoesNotDiscardVerifiedMemoryStatus(t *testing.T) {
 			}))
 			defer server.Close()
 			p, vm, state := managedCPUStatusFixture(t, server.Listener.Addr().String(), scenario.phase)
+			originalCPU = originalRunnerCPUIdentity(vm, "runner-uid", "0123456789abcdef0123456789abcdef", "node-uid")
 			if scenario.mode == "bad-source" {
 				state.UID = "replacement-state"
 			}
@@ -148,6 +151,11 @@ func managedCPUStatusFixture(t *testing.T, address string, phase vmv1.VmPhase) (
 	require.NoError(t, err)
 	mode := vmv1.CpuScalingModeSysfs
 	vm.Spec.CpuScalingMode, vm.Spec.RunnerPort = &mode, int32(portNumber)
+	vm.Spec.DSGABootstrap.RuntimeContractVersion = vmv1.RuntimeContractFixedCPU
+	vm.Spec.Guest.CPUs.Min, vm.Spec.Guest.CPUs.Max = 500, 2000
+	vm.Spec.PodResources.Requests = core.ResourceList{core.ResourceCPU: resource.MustParse("2")}
+	vm.Spec.PodResources.Limits = core.ResourceList{core.ResourceCPU: resource.MustParse("2")}
+
 	vm.Generation, vm.Finalizers = 7, append(vm.Finalizers, virtualmachineFinalizer)
 	vm.Status.PodName, vm.Status.Node, vm.Status.PodIP, vm.Status.Phase = "runner", "node", host, phase
 	vm.Status.MemorySize = resource.NewQuantity(1<<30, resource.BinarySI)
@@ -174,4 +182,12 @@ func managedCPUStatusFixture(t *testing.T, address string, phase vmv1.VmPhase) (
 	p.client = fake.NewClientBuilder().WithScheme(p.r.Scheme).WithStatusSubresource(&vmv1.VirtualMachine{}).WithObjects(vm, secret, birthCM, pod, node).Build()
 	p.r.Client, p.r.APIReader, p.origVM = p.client, p.client, vm
 	return p, vm, stateCM
+}
+
+func observedCPUFixture(id runnercpu.Identity, generation int64, cpu vmv1.MilliCPU) api.VCPUCgroup {
+	return api.VCPUCgroup{VCPUs: cpu, Managed: &runnercpu.Observation{
+		ProtocolVersion: runnercpu.ProtocolVersion, Scope: runnercpu.Scope, Identity: id,
+		Generation: generation, CgroupDevice: 1, CgroupInode: 2, QEMUPID: 42, QEMUStartTicks: 7, QuotaUS: uint64(cpu) * 100,
+		PeriodUS: runnercpu.PeriodUS, Weight: 100, OnlineVCPUs: cpu.RoundedUp(),
+		MaximumVCPUs: 2, MaximumMillicores: 2000, CommittedMillicores: 2000, TargetMillicores: uint32(cpu)}}
 }

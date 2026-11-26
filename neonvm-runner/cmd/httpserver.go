@@ -14,13 +14,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 
-	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/api"
 )
 
 type cpuServerCallbacks struct {
-	get   func(*zap.Logger) (*vmv1.MilliCPU, int, error)
-	set   func(*zap.Logger, vmv1.MilliCPU) (int, error)
+	get   func(*zap.Logger) (*api.VCPUCgroup, int, error)
+	set   func(context.Context, *zap.Logger, api.VCPUChange) (int, error)
 	ready func(*zap.Logger) bool
 }
 
@@ -87,16 +86,16 @@ func handleCPUChange(
 	logger *zap.Logger,
 	w http.ResponseWriter,
 	r *http.Request,
-	set func(*zap.Logger, vmv1.MilliCPU) (int, error),
+	set func(context.Context, *zap.Logger, api.VCPUChange) (int, error),
 ) {
 	if r.Method != "POST" {
 		logger.Error("unexpected method", zap.String("method", r.Method))
 		w.WriteHeader(400)
 		return
 	}
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		logger.Error("could not read body", zap.Error(err))
+	body, err := io.ReadAll(io.LimitReader(r.Body, 4097))
+	if err != nil || len(body) > 4096 {
+		logger.Error("could not read bounded CPU body", zap.Error(err))
 		w.WriteHeader(400)
 		return
 	}
@@ -110,7 +109,7 @@ func handleCPUChange(
 
 	// update cgroup
 	logger.Info("got CPU update", zap.Float64("CPU", parsed.VCPUs.AsFloat64()))
-	status, err := set(logger, parsed.VCPUs)
+	status, err := set(r.Context(), logger, parsed)
 	if err != nil {
 		logger.Error("could not set cgroup limit", zap.Error(err))
 		if status == 0 {
@@ -127,7 +126,7 @@ func handleCPUCurrent(
 	logger *zap.Logger,
 	w http.ResponseWriter,
 	r *http.Request,
-	get func(*zap.Logger) (*vmv1.MilliCPU, int, error),
+	get func(*zap.Logger) (*api.VCPUCgroup, int, error),
 ) {
 	if r.Method != "GET" {
 		logger.Error("unexpected method", zap.String("method", r.Method))
@@ -144,7 +143,7 @@ func handleCPUCurrent(
 		w.WriteHeader(status)
 		return
 	}
-	resp := api.VCPUCgroup{VCPUs: *cpus}
+	resp := cpus
 	body, err := json.Marshal(resp)
 	if err != nil {
 		logger.Error("could not marshal body", zap.Error(err))

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,15 +12,20 @@ import (
 
 	vmv1 "github.com/neondatabase/autoscaling/neonvm/apis/neonvm/v1"
 	"github.com/neondatabase/autoscaling/pkg/api"
+	"github.com/neondatabase/autoscaling/pkg/api/runnercpu"
 )
 
 func setRunnerCPULimits(ctx context.Context, vm *vmv1.VirtualMachine, cpu vmv1.MilliCPU) error {
+	if vm.Spec.DSGABootstrap != nil {
+		return fmt.Errorf("managed CPU change requires the original Birth identity")
+	}
+	return sendRunnerCPUChange(ctx, vm, api.VCPUChange{VCPUs: cpu})
+}
+
+func sendRunnerCPUChange(ctx context.Context, vm *vmv1.VirtualMachine, update api.VCPUChange) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-
 	url := fmt.Sprintf("http://%s:%d/cpu_change", vm.Status.PodIP, vm.Spec.RunnerPort)
-
-	update := api.VCPUChange{VCPUs: cpu}
 
 	data, err := json.Marshal(update)
 	if err != nil {
@@ -43,6 +49,8 @@ func setRunnerCPULimits(ctx context.Context, vm *vmv1.VirtualMachine, cpu vmv1.M
 	}
 	return nil
 }
+
+var errHistoricalCPUUnobserved = errors.New("historical Runner has no original Guest topology observation")
 
 func getRunnerCPULimits(ctx context.Context, vm *vmv1.VirtualMachine) (*api.VCPUCgroup, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -81,5 +89,48 @@ func getRunnerCPULimits(ctx context.Context, vm *vmv1.VirtualMachine) (*api.VCPU
 		return nil, err
 	}
 
+	if vm.Spec.DSGABootstrap != nil && vm.Spec.DSGABootstrap.RuntimeContractVersion == 0 {
+		if result.Managed != nil {
+			return nil, fmt.Errorf("historical Runtime cannot self-upgrade a managed CPU receipt")
+		}
+		observed := result.HistoricalGuest
+		if observed == nil {
+			return nil, errHistoricalCPUUnobserved
+		}
+		b := vm.Spec.DSGABootstrap
+		if observed.Validate() != nil || result.VCPUs != vmv1.MilliCPU(observed.OnlineVCPUs*1000) ||
+			observed.MaximumVCPUs != vm.Spec.Guest.CPUs.Max.RoundedUp() ||
+			observed.Identity.VMUID != string(vm.UID) || observed.Identity.ComputeInstanceID != b.ComputeInstanceID ||
+			observed.Identity.Incarnation != b.Incarnation {
+			return nil, fmt.Errorf("historical CPU receipt is not original actual Guest topology")
+		}
+		return &result, nil
+	}
+	if vm.Spec.DSGABootstrap != nil {
+		maximum, committed, budgetErr := vm.Spec.DSGARuntimeCPUBudget()
+		if budgetErr != nil {
+			return nil, budgetErr
+		}
+		if result.HistoricalGuest != nil || result.Managed == nil ||
+			result.Managed.MaximumMillicores != maximum || result.Managed.CommittedMillicores != committed {
+			return nil, fmt.Errorf("original CPU fixed Pod commitment differs")
+		}
+		if result.Managed == nil || result.Managed.Validate() != nil {
+			return nil, fmt.Errorf("original CPU kernel observation unavailable")
+		}
+		current, err := result.Managed.Millicores()
+		b := vm.Spec.DSGABootstrap
+		id := result.Managed.Identity
+		if err != nil || uint32(result.VCPUs) != current || id.VMUID != string(vm.UID) ||
+			id.Incarnation != b.Incarnation || id.ComputeInstanceID != b.ComputeInstanceID {
+			return nil, fmt.Errorf("original CPU observation identity or kernel quota differs")
+		}
+	}
 	return &result, nil
+}
+
+func originalRunnerCPUIdentity(vm *vmv1.VirtualMachine, podUID, bootID, nodeUID string) runnercpu.Identity {
+	b := vm.Spec.DSGABootstrap
+	return runnercpu.Identity{VMUID: string(vm.UID), ComputeInstanceID: b.ComputeInstanceID,
+		Incarnation: b.Incarnation, RunnerPodUID: podUID, RunnerBootID: bootID, NodeUID: nodeUID}
 }

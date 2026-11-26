@@ -13,10 +13,15 @@ import (
 // 这是启动屏障，不是预算/领导权/运行期缩容许可；完整journal和Secret内容在
 // Controller/Webhook外层用可信reader进一步校验，避免API包循环依赖journal。
 // +kubebuilder:validation:XValidation:rule="self.protocolVersion == oldSelf.protocolVersion && self.incarnation == oldSelf.incarnation && self.computeInstanceID == oldSelf.computeInstanceID",message="DSGA bootstrap identity is immutable"
+// +kubebuilder:validation:XValidation:rule="has(self.runtimeContractVersion) == has(oldSelf.runtimeContractVersion) && (!has(self.runtimeContractVersion) || self.runtimeContractVersion == oldSelf.runtimeContractVersion)",message="DSGA Runtime contract is immutable from creation"
 // +kubebuilder:validation:XValidation:rule="!oldSelf.ready || self == oldSelf",message="ready DSGA bootstrap cannot change"
 // +kubebuilder:validation:XValidation:rule="self.ready ? size(self.vmUID) > 0 && size(self.configSecretUID) > 0 : size(self.vmUID) == 0 && size(self.configSecretUID) == 0",message="DSGA release requires both immutable UIDs"
 // +kubebuilder:validation:XValidation:rule="self.incarnation != '00000000000000000000000000000000'",message="DSGA incarnation cannot be zero"
 type DSGABootstrap struct {
+	// 0为原历史合同；1显式要求整个Runner固定CPU最大承诺。创建时冻结，不能在线改版。
+	// +kubebuilder:validation:Minimum=0
+	// +kubebuilder:validation:Maximum=1
+	RuntimeContractVersion uint32 `json:"runtimeContractVersion,omitempty"`
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=1
 	ProtocolVersion uint32 `json:"protocolVersion"`
@@ -60,6 +65,9 @@ func (vm *VirtualMachine) DSGABootstrapHeld() (bool, error) {
 		}
 		return false, nil
 	}
+	if err := vm.Spec.validateDSGARuntimeContract(); err != nil {
+		return true, err
+	}
 	if bootstrap.ProtocolVersion != 1 || control.ValidateIncarnation(bootstrap.Incarnation) != nil || control.ValidateID(bootstrap.ComputeInstanceID, "Compute") != nil {
 		return true, fmt.Errorf("malformed DSGA bootstrap identity")
 	}
@@ -90,7 +98,7 @@ func (vm *VirtualMachine) validateDSGABootstrapUpdate(before *VirtualMachine) er
 	if old == nil || next == nil {
 		return fmt.Errorf("DSGA bootstrap cannot be added or removed after creation")
 	}
-	if vm.UID != before.UID || vm.Name != before.Name || vm.Namespace != before.Namespace || old.ProtocolVersion != next.ProtocolVersion || old.Incarnation != next.Incarnation || old.ComputeInstanceID != next.ComputeInstanceID {
+	if vm.UID != before.UID || vm.Name != before.Name || vm.Namespace != before.Namespace || old.ProtocolVersion != next.ProtocolVersion || old.RuntimeContractVersion != next.RuntimeContractVersion || old.Incarnation != next.Incarnation || old.ComputeInstanceID != next.ComputeInstanceID {
 		return fmt.Errorf("DSGA bootstrap identity is immutable")
 	}
 	if old.Ready && !reflect.DeepEqual(old, next) {
