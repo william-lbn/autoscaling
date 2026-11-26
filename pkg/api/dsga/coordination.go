@@ -116,18 +116,22 @@ const (
 // 只有ResourceOnly允许PG boot为0；该端点仍固定原VM/Compute、当前owner和
 // 原Root摘要，不允许Begin/取消/PG重放，正式PG端点不能接受0代替其实际boot。
 type CoordinationCommand struct {
-	ProtocolVersion    uint32              `json:"protocol_version"`
-	Instance           CoordinationBinding `json:"instance"`
-	ExpectedOwnerEpoch Uint64              `json:"expected_owner_epoch"`
-	Action             CoordinationAction  `json:"action"`
-	Request            *Request            `json:"request,omitempty"`
-	Key                *Key                `json:"key,omitempty"`
-	Selector           string              `json:"selector,omitempty"`
+	Allocation         *CacheAllocationChoice `json:"allocation,omitempty"`
+	ProtocolVersion    uint32                 `json:"protocol_version"`
+	Instance           CoordinationBinding    `json:"instance"`
+	ExpectedOwnerEpoch Uint64                 `json:"expected_owner_epoch"`
+	Action             CoordinationAction     `json:"action"`
+	Request            *Request               `json:"request,omitempty"`
+	Key                *Key                   `json:"key,omitempty"`
+	Selector           string                 `json:"selector,omitempty"`
 }
 
 func (c CoordinationCommand) Validate() error {
 	if c.ProtocolVersion != 1 || c.ExpectedOwnerEpoch == 0 || c.Instance.Validate() != nil || c.Instance.PGBootID == 0 && !c.Action.ResourceOnly() {
 		return fmt.Errorf("invalid coordination binding")
+	}
+	if c.Allocation != nil && c.Action != CoordinationBeginCacheAllocation {
+		return fmt.Errorf("allocation choice on another action")
 	}
 	switch c.Action {
 	case CoordinationSuspendCompute, CoordinationObserveSuspendedDrain:
@@ -137,6 +141,11 @@ func (c CoordinationCommand) Validate() error {
 	case CoordinationState, CoordinationResourceState:
 		if c.Request != nil || c.Key != nil || c.Selector != "" {
 			return fmt.Errorf("state command has execution parameters")
+		}
+	case CoordinationBeginCacheAllocation:
+		if c.Allocation == nil || c.Allocation.Validate() != nil || c.Request == nil || c.Request.Validate() != nil ||
+			c.Request.Key.Instance != Instance(c.Instance) || c.Request.Key.IssuerEpoch > c.ExpectedOwnerEpoch || c.Key != nil || c.Selector != "" {
+			return fmt.Errorf("cache allocation requires one exact original request and choice")
 		}
 	case CoordinationBegin:
 		if c.Request == nil || c.Request.Validate() != nil || c.Request.Key.Instance != Instance(c.Instance) || c.Request.Key.IssuerEpoch > c.ExpectedOwnerEpoch || c.Key != nil || c.Selector != "" {
@@ -177,6 +186,10 @@ func (c *CoordinationCommand) UnmarshalJSON(data []byte) error {
 // Clone避免同进程调用者在提交后修改指针内容，与HTTP解码出的私有副本同样
 // 固定完整决定；不从共享指针读取下一轮的新目标。
 func (c CoordinationCommand) Clone() CoordinationCommand {
+	if c.Allocation != nil {
+		copy := *c.Allocation
+		c.Allocation = &copy
+	}
 	if c.Request != nil {
 		request := *c.Request
 		c.Request = &request
@@ -186,4 +199,34 @@ func (c CoordinationCommand) Clone() CoordinationCommand {
 		c.Key = &key
 	}
 	return c
+}
+
+const CoordinationBeginCacheAllocation CoordinationAction = "begin_cache_allocation"
+
+// 数值/来源来自worker已冻结的原资格，管理请求只能选择两个原ID和明确scope。
+type CacheAllocationChoice struct {
+	Scope            string `json:"scope"`
+	FromAllocationID string `json:"from_allocation_id"`
+	ToAllocationID   string `json:"to_allocation_id"`
+}
+
+func (c CacheAllocationChoice) Validate() error {
+	if c.Scope != "retained_parent_normal" || c.FromAllocationID == c.ToAllocationID ||
+		ValidateID(c.FromAllocationID, "from allocation") != nil || ValidateID(c.ToAllocationID, "to allocation") != nil {
+		return fmt.Errorf("invalid original cache allocation choice")
+	}
+	return nil
+}
+func (c *CacheAllocationChoice) UnmarshalJSON(raw []byte) error {
+	type plain CacheAllocationChoice
+	var p plain
+	if err := UnmarshalObject(raw, &p); err != nil {
+		return err
+	}
+	next := CacheAllocationChoice(p)
+	if err := next.Validate(); err != nil {
+		return err
+	}
+	*c = next
+	return nil
 }

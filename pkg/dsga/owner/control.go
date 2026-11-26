@@ -221,6 +221,22 @@ func (worker *PGWorker) executeControl(ctx context.Context, command control.Coor
 			return result, fmt.Errorf("original resource owner is unavailable")
 		}
 		return worker.resourceOwner.executeResourceControl(callCtx, command)
+	case control.CoordinationBeginCacheAllocation:
+		var snapshot *journal.Snapshot
+		snapshot, result.Disposition, err = worker.beginCacheAllocation(callCtx, *command.Request, *command.Allocation)
+		if err == nil {
+			result.Progress = pgexec.Idle
+			if result.Disposition == journal.Accepted {
+				result.Progress = pgexec.Recorded
+			}
+			if result.Disposition == journal.Replayed {
+				result.Progress = pgexec.Replayed
+			}
+			if snapshot != nil {
+				state := snapshot.State()
+				result.State = &state
+			}
+		}
 	case control.CoordinationBegin, control.CoordinationCancel:
 		var snapshot *journal.Snapshot
 		snapshot, err = worker.session.store.Load(callCtx)

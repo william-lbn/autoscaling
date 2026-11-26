@@ -69,16 +69,17 @@ func (c *Config) UnmarshalJSON(raw []byte) error {
 // Linux 平台报告；本包不补目标、不按比例外推，也不将文件摘要解释为内核事实。
 // 两份 artifact 保留真实 Linux 验收与持续强制合同原文；root 配置固定本报告原 SHA。
 type Report struct {
-	ProtocolVersion          uint32                       `json:"protocol_version"`
-	Scope                    string                       `json:"scope"`
-	Qualification            budget.PlatformQualification `json:"qualification"`
-	ConfigSecretUID          string                       `json:"config_secret_uid"`
-	ResourceSourceSHA256     string                       `json:"resource_source_sha256"`
-	LinuxArtifactSHA256      string                       `json:"linux_artifact_sha256"`
-	ContinuousArtifactSHA256 string                       `json:"continuous_artifact_sha256"`
-	HostBinding              hostguard.Binding            `json:"host_binding"`
-	HostProfileSHA256        string                       `json:"host_profile_sha256"`
-	HostSystemBytes          control.Uint64               `json:"host_system_bytes"`
+	AllocationQualification  *budget.AllocationQualification `json:"allocation_qualification,omitempty"`
+	ProtocolVersion          uint32                          `json:"protocol_version"`
+	Scope                    string                          `json:"scope"`
+	Qualification            budget.PlatformQualification    `json:"qualification"`
+	ConfigSecretUID          string                          `json:"config_secret_uid"`
+	ResourceSourceSHA256     string                          `json:"resource_source_sha256"`
+	LinuxArtifactSHA256      string                          `json:"linux_artifact_sha256"`
+	ContinuousArtifactSHA256 string                          `json:"continuous_artifact_sha256"`
+	HostBinding              hostguard.Binding               `json:"host_binding"`
+	HostProfileSHA256        string                          `json:"host_profile_sha256"`
+	HostSystemBytes          control.Uint64                  `json:"host_system_bytes"`
 	// v2 将 Host 容量预算与 Guest 物理证明分离；公开资格 DTO 仍为原 v1。
 	HostKubernetesBudget *hostguard.KubernetesBudgetPolicy `json:"host_kubernetes_budget,omitempty"`
 	// 新collector显式绑定完整原Guest投影；省略仍为既有独立外部报告合同。
@@ -87,7 +88,7 @@ type Report struct {
 }
 
 func (r Report) Validate() error {
-	if r.GuestArtifactSHA256 != "" && (r.ProtocolVersion != 2 || r.Scope != KubernetesBudgetReportScope || !validSHA(r.GuestArtifactSHA256)) {
+	if r.GuestArtifactSHA256 != "" && ((r.ProtocolVersion != 2 && r.ProtocolVersion != 3) || (r.Scope != KubernetesBudgetReportScope && r.Scope != AllocationReportScope) || !validSHA(r.GuestArtifactSHA256)) {
 		return fmt.Errorf("original Guest artifact requires versioned Kubernetes budget report")
 	}
 	if r.Qualification.Validate() != nil || control.ValidateID(r.ConfigSecretUID, "original config Secret UID") != nil || !validSHA(r.ResourceSourceSHA256) || !validSHA(r.LinuxArtifactSHA256) || !validSHA(r.ContinuousArtifactSHA256) || r.HostBinding.Validate() != nil || !validSHA(r.HostProfileSHA256) || r.HostSystemBytes == 0 || r.HostBinding.NodeName != r.Qualification.NodeName || string(r.HostBinding.NodeUID) != r.Qualification.NodeUID {
@@ -95,13 +96,22 @@ func (r Report) Validate() error {
 	}
 	switch r.ProtocolVersion {
 	case 1:
-		if r.Scope != ReportScope || r.HostKubernetesBudget != nil {
+		if r.Scope != ReportScope || r.HostKubernetesBudget != nil || r.AllocationQualification != nil {
 			return fmt.Errorf("legacy report cannot change Host proof semantics")
 		}
 	case 2:
 		p := r.HostKubernetesBudget
-		if r.Scope != KubernetesBudgetReportScope || p == nil || p.Validate() != nil || p.NodeName != r.HostBinding.NodeName || p.NodeUID != string(r.HostBinding.NodeUID) || p.ProfileSHA256 != r.HostProfileSHA256 || p.SystemReservationBytes != r.HostSystemBytes {
+		if r.AllocationQualification != nil || r.Scope != KubernetesBudgetReportScope || p == nil || p.Validate() != nil || p.NodeName != r.HostBinding.NodeName || p.NodeUID != string(r.HostBinding.NodeUID) || p.ProfileSHA256 != r.HostProfileSHA256 || p.SystemReservationBytes != r.HostSystemBytes {
 			return fmt.Errorf("v2 requires explicit original Kubernetes budget policy; Guest proof remains mandatory")
+		}
+	case 3:
+		p := r.HostKubernetesBudget
+		a := r.AllocationQualification
+		if r.Scope != AllocationReportScope || r.GuestArtifactSHA256 == "" || p == nil || p.Validate() != nil ||
+			p.NodeName != r.HostBinding.NodeName || p.NodeUID != string(r.HostBinding.NodeUID) ||
+			p.ProfileSHA256 != r.HostProfileSHA256 || p.SystemReservationBytes != r.HostSystemBytes ||
+			a == nil || a.MatchBase(a.Base, r.Qualification) != nil {
+			return fmt.Errorf("allocation report requires exact original Base and complete Host/Guest sources")
 		}
 	default:
 		return fmt.Errorf("unsupported private platform report version")
